@@ -20,35 +20,30 @@ public sealed class SystemIdentityMarkupTests
     public void EverySingleSystemEntryUsesSharedSuggestions()
     {
         var search = Load("Views", "SearchView.axaml");
-        AssertEntry(
-            search,
-            "{Binding Search.Query, Mode=TwoWay}");
+        AssertEntry(search, "{Binding Search.Query, Mode=TwoWay}");
         Assert.Contains(
             search.Descendants(),
-            element => element.Attribute("Text")?.Value ==
-                "Inline system suggestions come from EDSM with an Ardent fallback; the resolved center and coordinates still come from Spansh. Saving updates only the compatible sphereLimit fields.");
-        AssertEntry(
-            Load("Views", "GuardianView.axaml"),
-            "{Binding Guardian.OriginSystemName, Mode=TwoWay}");
-        AssertEntry(
-            Load(null, "JourneyWindow.axaml"),
-            "{Binding StartSystemQuery, Mode=TwoWay}");
-        AssertEntry(
-            Load("Views", "DiagnosticsView.axaml"),
-            "{Binding VisitedStarsCache.SystemName, Mode=TwoWay}");
+            element =>
+                element.Attribute("Text")?.Value
+                == "Inline system suggestions come from EDSM with an Ardent fallback; the resolved center and coordinates still come from Spansh. Saving updates only the compatible sphereLimit fields."
+        );
+        AssertEntry(Load("Views", "GuardianView.axaml"), "{Binding Guardian.OriginSystemName, Mode=TwoWay}");
+        AssertEntry(Load(null, "JourneyWindow.axaml"), "{Binding StartSystemQuery, Mode=TwoWay}");
+        AssertEntry(Load("Views", "DiagnosticsView.axaml"), "{Binding VisitedStarsCache.SystemName, Mode=TwoWay}");
     }
 
     [Fact]
     public void SphereLookupActionAlignsWithTheTopOfTheAutocomplete()
     {
         var search = Load("Views", "SearchView.axaml");
-        var entry = search.Descendants().Single(element =>
-            element.Name.LocalName == "SystemNameEntry"
-            && element.Attribute("Text")?.Value ==
-                "{Binding Search.Query, Mode=TwoWay}");
+        var entry = search
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "SystemNameEntry"
+                && element.Attribute("Text")?.Value == "{Binding Search.Query, Mode=TwoWay}"
+            );
         var row = entry.Parent!;
-        var button = row.Elements().Single(element =>
-            element.Name.LocalName == "Button");
+        var button = row.Elements().Single(element => element.Name.LocalName == "Button");
 
         Assert.Equal("Grid", row.Name.LocalName);
         Assert.Equal("*,Auto", row.Attribute("ColumnDefinitions")?.Value);
@@ -59,22 +54,14 @@ public sealed class SystemIdentityMarkupTests
     public void ResultTablesDoNotCopyOnSystemNameClick()
     {
         var search = Load("Views", "SearchView.axaml");
-        AssertNoCopyBehavior(FindItemsHost(
-            search,
-            "{Binding Search.SearchResults}"));
-        AssertNoCopyBehavior(FindItemsHost(
-            search,
-            "{Binding NearestSystems.Results}"));
+        AssertNoCopyBehavior(FindItemsHost(search, "{Binding Search.SearchResults}"));
+        AssertNoCopyBehavior(FindItemsHost(search, "{Binding NearestSystems.Results}"));
 
         var guardian = Load("Views", "GuardianView.axaml");
-        AssertNoCopyBehavior(FindItemsHost(
-            guardian,
-            "{Binding Guardian.Rows}"));
+        AssertNoCopyBehavior(FindItemsHost(guardian, "{Binding Guardian.Rows}"));
 
         var boxel = Load("Views", "BoxelView.axaml");
-        AssertNoCopyBehavior(FindItemsHost(
-            boxel,
-            "{Binding BoxelSearch.Systems}"));
+        AssertNoCopyBehavior(FindItemsHost(boxel, "{Binding BoxelSearch.Systems}"));
     }
 
     [Fact]
@@ -96,25 +83,31 @@ public sealed class SystemIdentityMarkupTests
             Load(null, "BiologyCodexWindow.axaml"),
         };
 
-        Assert.All(documents, document =>
-            Assert.Contains(
-                document.Descendants(),
-                element => element.Name.LocalName == "Button"
-                    && HasCopyBehavior(element)
-                    && element.Attribute("Classes")?.Value
-                        .Split(' ', StringSplitOptions.RemoveEmptyEntries)
-                        .Contains("link", StringComparer.Ordinal) == true));
+        Assert.All(
+            documents,
+            document =>
+                Assert.Contains(
+                    document.Descendants(),
+                    element =>
+                        element.Name.LocalName == "Button"
+                        && HasCopyBehavior(element)
+                        && element
+                            .Attribute("Classes")
+                            ?.Value.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                            .Contains("link", StringComparer.Ordinal) == true
+                )
+        );
     }
 
     [Fact]
     public void OverviewCopiesSystemNameAndId64Separately()
     {
         var overview = Load("Views", "OverviewView.axaml");
-        var copyValues = overview.Descendants()
+        var copyValues = overview
+            .Descendants()
             .Where(element => element.Name.LocalName == "Button")
             .SelectMany(element => element.Attributes())
-            .Where(attribute => attribute.Name.LocalName ==
-                "ClipboardCopyBehavior.Text")
+            .Where(attribute => attribute.Name.LocalName == "ClipboardCopyBehavior.Text")
             .Select(attribute => attribute.Value)
             .ToArray();
 
@@ -122,8 +115,8 @@ public sealed class SystemIdentityMarkupTests
         Assert.Contains("{Binding OverviewSystemAddress}", copyValues);
         Assert.Contains(
             overview.Descendants(),
-            element => element.Attribute("Text")?.Value ==
-                "{Binding OverviewSystemAddressText}");
+            element => element.Attribute("Text")?.Value == "{Binding OverviewSystemAddressText}"
+        );
     }
 
     [Fact]
@@ -135,15 +128,20 @@ public sealed class SystemIdentityMarkupTests
             Load("Views", "TravelView.axaml"),
             Load("Views", "BoxelView.axaml"),
             Load(null, "RouteWindow.axaml"),
-        }.SelectMany(Values).ToArray();
+        }
+            .SelectMany(Values)
+            .ToArray();
 
-        Assert.DoesNotContain(values, value =>
-            value.Contains("NextHop.SystemAddress", StringComparison.Ordinal)
-            || value.Contains("SelectedCenterSystem.SystemAddress", StringComparison.Ordinal)
-            || value.Contains("ParentBoxel.", StringComparison.Ordinal)
-            || value.Contains("PreviousSiblingBoxel.", StringComparison.Ordinal)
-            || value.Contains("CurrentHierarchyBoxel.", StringComparison.Ordinal)
-            || value.Contains("NextSiblingBoxel.", StringComparison.Ordinal));
+        Assert.DoesNotContain(
+            values,
+            value =>
+                value.Contains("NextHop.SystemAddress", StringComparison.Ordinal)
+                || value.Contains("SelectedCenterSystem.SystemAddress", StringComparison.Ordinal)
+                || value.Contains("ParentBoxel.", StringComparison.Ordinal)
+                || value.Contains("PreviousSiblingBoxel.", StringComparison.Ordinal)
+                || value.Contains("CurrentHierarchyBoxel.", StringComparison.Ordinal)
+                || value.Contains("NextSiblingBoxel.", StringComparison.Ordinal)
+        );
         Assert.Contains("{Binding Search.CenterSystemAddress}", values);
         Assert.Contains("{Binding Route.NextHopSystemAddress}", values);
         Assert.Contains("{Binding FleetCarrierRoute.NextHopSystemAddress}", values);
@@ -159,59 +157,50 @@ public sealed class SystemIdentityMarkupTests
             Load(null, "SphericalSearchOverlayPresentation.axaml"),
         };
 
-        Assert.All(documents, document =>
-            Assert.DoesNotContain(
-                document.Root!.DescendantsAndSelf(),
-                HasCopyBehavior));
+        Assert.All(documents, document => Assert.DoesNotContain(document.Root!.DescendantsAndSelf(), HasCopyBehavior));
     }
 
     private static void AssertEntry(XDocument document, string textBinding)
     {
         Assert.Contains(
             document.Descendants(),
-            element => element.Name.LocalName == "SystemNameEntry"
+            element =>
+                element.Name.LocalName == "SystemNameEntry"
                 && element.Attribute("Text")?.Value == textBinding
-                && element.Attribute("PlaceholderText")?.Value
-                    == "System name or id64");
+                && element.Attribute("PlaceholderText")?.Value == "System name or id64"
+        );
     }
 
-    private static XElement FindItemsHost(
-        XDocument document,
-        string itemsSource)
+    private static XElement FindItemsHost(XDocument document, string itemsSource)
     {
-        return document.Descendants().Single(element =>
-            element.Attribute("ItemsSource")?.Value == itemsSource);
+        return document.Descendants().Single(element => element.Attribute("ItemsSource")?.Value == itemsSource);
     }
 
     private static void AssertNoCopyBehavior(XElement element)
     {
-        Assert.DoesNotContain(
-            element.DescendantsAndSelf(),
-            HasCopyBehavior);
+        Assert.DoesNotContain(element.DescendantsAndSelf(), HasCopyBehavior);
     }
 
     private static bool HasCopyBehavior(XElement element)
     {
-        return element.Attributes().Any(attribute =>
-            attribute.Name.LocalName == "ClipboardCopyBehavior.Text"
-            && attribute.Name.NamespaceName.Contains(
-                "SrvSurvey.Desktop.Behaviors",
-                StringComparison.Ordinal));
+        return element
+            .Attributes()
+            .Any(attribute =>
+                attribute.Name.LocalName == "ClipboardCopyBehavior.Text"
+                && attribute.Name.NamespaceName.Contains("SrvSurvey.Desktop.Behaviors", StringComparison.Ordinal)
+            );
     }
 
-    private static string[] Values(XDocument document) => document.Descendants()
-        .SelectMany(element => element.Attributes())
-        .Select(attribute => attribute.Value)
-        .ToArray();
+    private static string[] Values(XDocument document) =>
+        document
+            .Descendants()
+            .SelectMany(element => element.Attributes())
+            .Select(attribute => attribute.Value)
+            .ToArray();
 
     private static XDocument Load(string? subdirectory, string fileName)
     {
-        var segments = new List<string>
-        {
-            FindRepositoryRoot(),
-            "src",
-            "SrvSurvey.Desktop",
-        };
+        var segments = new List<string> { FindRepositoryRoot(), "src", "SrvSurvey.Desktop" };
         if (subdirectory is not null)
         {
             segments.Add(subdirectory);
@@ -234,7 +223,6 @@ public sealed class SystemIdentityMarkupTests
             current = current.Parent;
         }
 
-        throw new DirectoryNotFoundException(
-            "Could not locate the repository root.");
+        throw new DirectoryNotFoundException("Could not locate the repository root.");
     }
 }

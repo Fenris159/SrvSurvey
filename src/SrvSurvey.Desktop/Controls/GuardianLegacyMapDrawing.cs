@@ -15,17 +15,10 @@ internal static class GuardianLegacyMapDrawing
     internal static readonly Color UnknownFill = Color.FromRgb(47, 79, 79);
     internal static readonly Color SiteHeading = Color.FromArgb(128, 139, 0, 0);
     internal static readonly Color TowerHeading = Color.FromArgb(128, 66, 44, 255);
-    internal static readonly Color IndividualTowerHeading =
-        Color.FromArgb(32, 66, 44, 255);
+    internal static readonly Color IndividualTowerHeading = Color.FromArgb(32, 66, 44, 255);
     internal static readonly Color Target = Colors.Lime;
 
-    private static readonly Point[] ObeliskPoints =
-    [
-        new(-0.5, 2),
-        new(-1.5, -1.5),
-        new(2.5, -0.5),
-        new(-0.5, 2),
-    ];
+    private static readonly Point[] ObeliskPoints = [new(-0.5, 2), new(-1.5, -1.5), new(2.5, -0.5), new(-0.5, 2)];
 
     private static readonly Point[] BrokenObeliskPoints =
     [
@@ -35,14 +28,7 @@ internal static class GuardianLegacyMapDrawing
         new(-0.5, 2.5),
     ];
 
-    private static readonly Point[] PylonPoints =
-    [
-        new(0, -3),
-        new(6, 0),
-        new(0, 3),
-        new(-6, 0),
-        new(0, -3),
-    ];
+    private static readonly Point[] PylonPoints = [new(0, -3), new(6, 0), new(0, 3), new(-6, 0), new(0, -3)];
 
     private static readonly Point[] ComponentPoints =
     [
@@ -56,18 +42,13 @@ internal static class GuardianLegacyMapDrawing
         new(0, 5),
     ];
 
-    private static readonly Point[] RelicPoints =
-    [
-        new(-8, -8),
-        new(8, -8),
-        new(0, 8),
-        new(-8, -8),
-    ];
+    private static readonly Point[] RelicPoints = [new(-8, -8), new(8, -8), new(0, 8), new(-8, -8)];
 
     internal static GuardianLegacyPointStyle GetPointStyle(
         GuardianPoiType type,
         GuardianPoiStatus status,
-        bool isActiveObelisk = false)
+        bool isActiveObelisk = false
+    )
     {
         return type switch
         {
@@ -75,49 +56,31 @@ internal static class GuardianLegacyMapDrawing
                 Colors.Transparent,
                 isActiveObelisk ? Cyan : DarkCyan,
                 0.5,
-                GuardianLegacyStrokePattern.Solid),
+                GuardianLegacyStrokePattern.Solid
+            ),
             GuardianPoiType.Pylon => StatusStrokeStyle(status, 2),
             GuardianPoiType.Component => GetComponentStyle(status),
             GuardianPoiType.Relic => GetRelicStyle(status),
-            GuardianPoiType.DestructiblePanel => new(
-                Colors.Transparent,
-                Cyan,
-                1,
-                GuardianLegacyStrokePattern.Solid),
+            GuardianPoiType.DestructiblePanel => new(Colors.Transparent, Cyan, 1, GuardianLegacyStrokePattern.Solid),
             _ => GetArtifactStyle(type, status),
         };
     }
 
-    private static GuardianLegacyPointStyle GetArtifactStyle(
-        GuardianPoiType type,
-        GuardianPoiStatus status)
+    private static GuardianLegacyPointStyle GetArtifactStyle(GuardianPoiType type, GuardianPoiStatus status)
     {
         if (status == GuardianPoiStatus.Unknown)
         {
-            return new GuardianLegacyPointStyle(
-                Colors.Transparent,
-                Cyan,
-                3,
-                GuardianLegacyStrokePattern.Dot);
+            return new GuardianLegacyPointStyle(Colors.Transparent, Cyan, 3, GuardianLegacyStrokePattern.Dot);
         }
 
         if (status == GuardianPoiStatus.Absent)
         {
-            return new GuardianLegacyPointStyle(
-                MissingFill,
-                MissingStroke,
-                3,
-                GuardianLegacyStrokePattern.Solid);
+            return new GuardianLegacyPointStyle(MissingFill, MissingStroke, 3, GuardianLegacyStrokePattern.Solid);
         }
 
-        if (status == GuardianPoiStatus.Empty
-            || type == GuardianPoiType.EmptyPuddle)
+        if (status == GuardianPoiStatus.Empty || type == GuardianPoiType.EmptyPuddle)
         {
-            return new GuardianLegacyPointStyle(
-                Colors.Gold,
-                Colors.Yellow,
-                3,
-                GuardianLegacyStrokePattern.Solid);
+            return new GuardianLegacyPointStyle(Colors.Gold, Colors.Yellow, 3, GuardianLegacyStrokePattern.Solid);
         }
 
         return type switch
@@ -126,37 +89,42 @@ internal static class GuardianLegacyMapDrawing
                 Color.FromRgb(255, 127, 39),
                 Color.FromRgb(147, 58, 0),
                 3,
-                GuardianLegacyStrokePattern.Solid),
+                GuardianLegacyStrokePattern.Solid
+            ),
             GuardianPoiType.Casket => new(
                 Color.FromRgb(34, 177, 76),
                 Color.FromRgb(17, 87, 38),
                 3,
-                GuardianLegacyStrokePattern.Solid),
+                GuardianLegacyStrokePattern.Solid
+            ),
             GuardianPoiType.Tablet => new(
                 Color.FromRgb(153, 217, 234),
                 Color.FromRgb(33, 135, 160),
                 3,
-                GuardianLegacyStrokePattern.Solid),
+                GuardianLegacyStrokePattern.Solid
+            ),
             GuardianPoiType.Totem => new(
                 Color.FromRgb(63, 72, 204),
                 Color.FromRgb(29, 34, 105),
                 3,
-                GuardianLegacyStrokePattern.Solid),
+                GuardianLegacyStrokePattern.Solid
+            ),
             GuardianPoiType.Urn => new(
                 Color.FromRgb(163, 73, 164),
                 Color.FromRgb(84, 37, 84),
                 3,
-                GuardianLegacyStrokePattern.Solid),
+                GuardianLegacyStrokePattern.Solid
+            ),
             _ => new GuardianLegacyPointStyle(
                 Color.FromRgb(100, 0, 0),
                 Colors.Red,
                 3,
-                GuardianLegacyStrokePattern.Solid),
+                GuardianLegacyStrokePattern.Solid
+            ),
         };
     }
 
-    private static GuardianLegacyPointStyle GetComponentStyle(
-        GuardianPoiStatus status)
+    private static GuardianLegacyPointStyle GetComponentStyle(GuardianPoiStatus status)
     {
         var color = status switch
         {
@@ -169,49 +137,34 @@ internal static class GuardianLegacyMapDrawing
             Colors.Transparent,
             color,
             1,
-            status == GuardianPoiStatus.Empty
-                ? GuardianLegacyStrokePattern.Solid
-                : GuardianLegacyStrokePattern.Dash);
+            status == GuardianPoiStatus.Empty ? GuardianLegacyStrokePattern.Solid : GuardianLegacyStrokePattern.Dash
+        );
     }
 
-    private static GuardianLegacyPointStyle GetRelicStyle(
-        GuardianPoiStatus status)
+    private static GuardianLegacyPointStyle GetRelicStyle(GuardianPoiStatus status)
     {
         return status == GuardianPoiStatus.Present
-            ? new GuardianLegacyPointStyle(
-                RelicBlue,
-                Cyan,
-                2,
-                GuardianLegacyStrokePattern.Solid)
-            : new GuardianLegacyPointStyle(
-                MissingFill,
-                MissingStroke,
-                1,
-                GuardianLegacyStrokePattern.Solid);
+            ? new GuardianLegacyPointStyle(RelicBlue, Cyan, 2, GuardianLegacyStrokePattern.Solid)
+            : new GuardianLegacyPointStyle(MissingFill, MissingStroke, 1, GuardianLegacyStrokePattern.Solid);
     }
 
     internal static double GetGlyphRotation(
         GuardianProjectedPoint point,
         GuardianSiteMapProjection projection,
-        double commanderHeading)
+        double commanderHeading
+    )
     {
-        var relativeHeading = double.IsFinite(commanderHeading)
-            ? commanderHeading
-            : 0;
+        var relativeHeading = double.IsFinite(commanderHeading) ? commanderHeading : 0;
         return point.Type switch
         {
-            GuardianPoiType.Obelisk or GuardianPoiType.BrokenObelisk =>
-                NormalizeDegrees(point.Rotation - relativeHeading + 167.5),
-            GuardianPoiType.Pylon =>
-                NormalizeDegrees(point.Rotation - relativeHeading),
-            GuardianPoiType.Component =>
-                NormalizeDegrees(point.Rotation - relativeHeading - 45),
-            GuardianPoiType.Relic when point.RelicHeading >= 0
-                && projection.SiteHeading >= 0 => NormalizeDegrees(
-                    point.RelicHeading
-                    - projection.SiteHeading
-                    - relativeHeading
-                    - 180),
+            GuardianPoiType.Obelisk or GuardianPoiType.BrokenObelisk => NormalizeDegrees(
+                point.Rotation - relativeHeading + 167.5
+            ),
+            GuardianPoiType.Pylon => NormalizeDegrees(point.Rotation - relativeHeading),
+            GuardianPoiType.Component => NormalizeDegrees(point.Rotation - relativeHeading - 45),
+            GuardianPoiType.Relic when point.RelicHeading >= 0 && projection.SiteHeading >= 0 => NormalizeDegrees(
+                point.RelicHeading - projection.SiteHeading - relativeHeading - 180
+            ),
             GuardianPoiType.Relic => NormalizeDegrees(-relativeHeading),
             _ => 0,
         };
@@ -221,7 +174,8 @@ internal static class GuardianLegacyMapDrawing
         GuardianPoiType type,
         Point center,
         double rotation,
-        double scale = 1)
+        double scale = 1
+    )
     {
         var source = type switch
         {
@@ -233,25 +187,18 @@ internal static class GuardianLegacyMapDrawing
             _ => [],
         };
         return source
-            .Select(point => center + RotateClockwise(
-                new Point(point.X * scale, point.Y * scale),
-                rotation))
+            .Select(point => center + RotateClockwise(new Point(point.X * scale, point.Y * scale), rotation))
             .ToArray();
     }
 
-    internal static IReadOnlyList<Point> CreateComponentMaterialCenters(
-        Point center,
-        double scale = 1)
+    internal static IReadOnlyList<Point> CreateComponentMaterialCenters(Point center, double scale = 1)
     {
         return new[] { -150d, 92d, -28d }
-            .Select(angle => center + RotateClockwise(
-                new Point(0, 8 * scale),
-                angle))
+            .Select(angle => center + RotateClockwise(new Point(0, 8 * scale), angle))
             .ToArray();
     }
 
-    internal static Color? GetComponentMaterialColor(
-        GuardianComponentMaterial material)
+    internal static Color? GetComponentMaterialColor(GuardianComponentMaterial material)
     {
         return material switch
         {
@@ -262,22 +209,17 @@ internal static class GuardianLegacyMapDrawing
         };
     }
 
-    internal static Color GetActiveObeliskEffectColor(
-        GuardianProjectedPoint point)
+    internal static Color GetActiveObeliskEffectColor(GuardianProjectedPoint point)
     {
         if (point.IsRamTahNeededObelisk)
         {
             return Cyan;
         }
 
-        return point.IsScannedObelisk
-            ? Color.FromRgb(255, 111, 0)
-            : Colors.LightGray;
+        return point.IsScannedObelisk ? Color.FromRgb(255, 111, 0) : Colors.LightGray;
     }
 
-    internal static double GetPuddleRadius(
-        GuardianSiteMapProjection projection,
-        GuardianProjectedPoint point)
+    internal static double GetPuddleRadius(GuardianSiteMapProjection projection, GuardianProjectedPoint point)
     {
         if (point.Status == GuardianPoiStatus.Unknown)
         {
@@ -292,29 +234,20 @@ internal static class GuardianLegacyMapDrawing
         return point.Status == GuardianPoiStatus.Absent ? 4 : 5;
     }
 
-    internal static (Point Start, Point End) CreateHeadingLine(
-        Point center,
-        double length,
-        double rotation)
+    internal static (Point Start, Point End) CreateHeadingLine(Point center, double length, double rotation)
     {
         var direction = RotateClockwise(new Point(0, length), rotation);
         return (center - direction, center + direction);
     }
 
-    internal static IReadOnlyList<Point> CreateWedge(
-        Point center,
-        double radius,
-        double rotation,
-        int segments = 12)
+    internal static IReadOnlyList<Point> CreateWedge(Point center, double radius, double rotation, int segments = 12)
     {
         var points = new List<Point>(segments + 2) { center };
         for (var index = 0; index <= segments; index++)
         {
             var angle = rotation + 240 + (90d * index / segments);
             var radians = angle * Math.PI / 180;
-            points.Add(new Point(
-                center.X + Math.Cos(radians) * radius,
-                center.Y + Math.Sin(radians) * radius));
+            points.Add(new Point(center.X + Math.Cos(radians) * radius, center.Y + Math.Sin(radians) * radius));
         }
 
         return points;
@@ -325,12 +258,11 @@ internal static class GuardianLegacyMapDrawing
         var radians = degrees * Math.PI / 180;
         return new Point(
             point.X * Math.Cos(radians) - point.Y * Math.Sin(radians),
-            point.X * Math.Sin(radians) + point.Y * Math.Cos(radians));
+            point.X * Math.Sin(radians) + point.Y * Math.Cos(radians)
+        );
     }
 
-    private static GuardianLegacyPointStyle StatusStrokeStyle(
-        GuardianPoiStatus status,
-        double width)
+    private static GuardianLegacyPointStyle StatusStrokeStyle(GuardianPoiStatus status, double width)
     {
         var color = status switch
         {
@@ -339,11 +271,7 @@ internal static class GuardianLegacyMapDrawing
             GuardianPoiStatus.Empty => Colors.Yellow,
             _ => Cyan,
         };
-        return new GuardianLegacyPointStyle(
-            Colors.Transparent,
-            color,
-            width,
-            GuardianLegacyStrokePattern.Solid);
+        return new GuardianLegacyPointStyle(Colors.Transparent, color, width, GuardianLegacyStrokePattern.Solid);
     }
 
     private static double NormalizeDegrees(double degrees)
@@ -357,7 +285,8 @@ internal readonly record struct GuardianLegacyPointStyle(
     Color Fill,
     Color Stroke,
     double StrokeWidth,
-    GuardianLegacyStrokePattern Pattern)
+    GuardianLegacyStrokePattern Pattern
+)
 {
     internal bool HasFill => Fill.A > 0;
 }

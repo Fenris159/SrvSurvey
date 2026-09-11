@@ -6,17 +6,24 @@ public sealed class BoxelSurveyStatsStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        "SrvSurvey-BoxelSurveyStatsStoreTests-" + Guid.NewGuid().ToString("N"));
+        "SrvSurvey-BoxelSurveyStatsStoreTests-" + Guid.NewGuid().ToString("N")
+    );
 
     [Fact]
     public async Task SaveLoadAndIndexPreserveSystemBodiesAndHelium()
     {
         var store = new BoxelSurveyStatsStore(temporaryDirectory);
         var source = new BoxelSurveyStatsState();
-        source.Apply(Parse(
-            """{"timestamp":"2026-07-10T12:00:00Z","event":"FSDJump","StarSystem":"Praea Euq IL-P c5-0","SystemAddress":2001}"""));
-        source.Apply(Parse(
-            """{"event":"Scan","SystemAddress":2001,"BodyID":2,"PlanetClass":"Water world","MassEM":1.1,"AtmosphereComposition":[{"Name":"Helium","Percent":27.4}]}"""));
+        source.Apply(
+            Parse(
+                """{"timestamp":"2026-07-10T12:00:00Z","event":"FSDJump","StarSystem":"Praea Euq IL-P c5-0","SystemAddress":2001}"""
+            )
+        );
+        source.Apply(
+            Parse(
+                """{"event":"Scan","SystemAddress":2001,"BodyID":2,"PlanetClass":"Water world","MassEM":1.1,"AtmosphereComposition":[{"Name":"Helium","Percent":27.4}]}"""
+            )
+        );
         Assert.True(source.TryCreateDocument("Praea Euq IL-P c5-", out var document));
 
         await store.SaveBoxelAsync("F123", document);
@@ -37,11 +44,11 @@ public sealed class BoxelSurveyStatsStoreTests : IDisposable
         Assert.Equal(27.4, entry.MinHeliumPercent);
         Assert.Equal("F123", catalog.FrontierId);
         Assert.False(File.Exists(Path.Combine(temporaryDirectory, "F123-live.json")));
-        Assert.True(File.Exists(Path.Combine(
-            temporaryDirectory,
-            BoxelSurveyStatsStore.StoreDirectoryName,
-            "F123",
-            "index.json")));
+        Assert.True(
+            File.Exists(
+                Path.Combine(temporaryDirectory, BoxelSurveyStatsStore.StoreDirectoryName, "F123", "index.json")
+            )
+        );
     }
 
     [Fact]
@@ -78,17 +85,10 @@ public sealed class BoxelSurveyStatsStoreTests : IDisposable
     public async Task DamagedBoxelFileDoesNotHideTheIndex()
     {
         var store = new BoxelSurveyStatsStore(temporaryDirectory);
-        await store.SaveBoxelAsync(
-            "F123",
-            CreateDocument("Praea Euq IL-P c5-", "Praea Euq IL-P c5-0", 2001));
-        var commanderDirectory = Path.Combine(
-            temporaryDirectory,
-            BoxelSurveyStatsStore.StoreDirectoryName,
-            "F123");
+        await store.SaveBoxelAsync("F123", CreateDocument("Praea Euq IL-P c5-", "Praea Euq IL-P c5-0", 2001));
+        var commanderDirectory = Path.Combine(temporaryDirectory, BoxelSurveyStatsStore.StoreDirectoryName, "F123");
         File.Delete(Path.Combine(commanderDirectory, "index.json"));
-        await File.WriteAllTextAsync(
-            Path.Combine(commanderDirectory, "broken.json"),
-            "not json");
+        await File.WriteAllTextAsync(Path.Combine(commanderDirectory, "broken.json"), "not json");
 
         var entry = Assert.Single(await store.ListIndexAsync("F123"));
         Assert.Equal("Praea Euq IL-P c5-", entry.Prefix);
@@ -98,10 +98,7 @@ public sealed class BoxelSurveyStatsStoreTests : IDisposable
     public async Task CollidingSanitizedPrefixesRemainLoadableWhenEitherIsResaved()
     {
         var store = new BoxelSurveyStatsStore(temporaryDirectory);
-        var source = CreateDocument(
-            "Praea Euq IL-P c5-",
-            "Praea Euq IL-P c5-0",
-            2001);
+        var source = CreateDocument("Praea Euq IL-P c5-", "Praea Euq IL-P c5-0", 2001);
         var first = source with { Prefix = "Odd:name" };
         var second = source with { Prefix = "Odd/name" };
 
@@ -115,15 +112,10 @@ public sealed class BoxelSurveyStatsStoreTests : IDisposable
 
         Assert.Equal(first.Prefix, (await store.LoadBoxelAsync("F123", first.Prefix))?.Prefix);
         Assert.Equal(second.Prefix, (await store.LoadBoxelAsync("F123", second.Prefix))?.Prefix);
-        var commanderDirectory = Path.Combine(
-            temporaryDirectory,
-            BoxelSurveyStatsStore.StoreDirectoryName,
-            "F123");
-        var boxelFiles = Directory.EnumerateFiles(commanderDirectory, "*.json")
-            .Where(path => !string.Equals(
-                Path.GetFileName(path),
-                "index.json",
-                StringComparison.OrdinalIgnoreCase))
+        var commanderDirectory = Path.Combine(temporaryDirectory, BoxelSurveyStatsStore.StoreDirectoryName, "F123");
+        var boxelFiles = Directory
+            .EnumerateFiles(commanderDirectory, "*.json")
+            .Where(path => !string.Equals(Path.GetFileName(path), "index.json", StringComparison.OrdinalIgnoreCase))
             .ToArray();
         Assert.Equal(2, boxelFiles.Length);
     }
@@ -144,21 +136,15 @@ public sealed class BoxelSurveyStatsStoreTests : IDisposable
     public async Task RejectsInvalidFrontierId(string frontierId)
     {
         var store = new BoxelSurveyStatsStore(temporaryDirectory);
-        await Assert.ThrowsAsync<ArgumentException>(
-            () => store.ListIndexAsync(frontierId));
-        await Assert.ThrowsAsync<ArgumentException>(
-            () => store.LoadBoxelAsync(frontierId, "Praea Euq IL-P c5-"));
+        await Assert.ThrowsAsync<ArgumentException>(() => store.ListIndexAsync(frontierId));
+        await Assert.ThrowsAsync<ArgumentException>(() => store.LoadBoxelAsync(frontierId, "Praea Euq IL-P c5-"));
     }
 
     [Fact]
     public void SanitizeKeepsTrailingHyphenAndReplacesIllegalCharacters()
     {
-        Assert.Equal(
-            "Praea Euq IL-P c5-",
-            BoxelSurveyStatsStore.SanitizePrefix("Praea Euq IL-P c5-"));
-        Assert.Equal(
-            "Odd_name_here",
-            BoxelSurveyStatsStore.SanitizePrefix("Odd:name/here"));
+        Assert.Equal("Praea Euq IL-P c5-", BoxelSurveyStatsStore.SanitizePrefix("Praea Euq IL-P c5-"));
+        Assert.Equal("Odd_name_here", BoxelSurveyStatsStore.SanitizePrefix("Odd:name/here"));
     }
 
     public void Dispose()
@@ -169,16 +155,16 @@ public sealed class BoxelSurveyStatsStoreTests : IDisposable
         }
     }
 
-    private static BoxelSurveyBoxelDocument CreateDocument(
-        string prefix,
-        string generatedName,
-        long address)
+    private static BoxelSurveyBoxelDocument CreateDocument(string prefix, string generatedName, long address)
     {
         var state = new BoxelSurveyStatsState();
-        state.Apply(Parse(
-            $$"""
-            {"timestamp":"2026-07-10T12:00:00Z","event":"FSDJump","StarSystem":"{{generatedName}}","SystemAddress":{{address}}}
-            """));
+        state.Apply(
+            Parse(
+                $$"""
+                {"timestamp":"2026-07-10T12:00:00Z","event":"FSDJump","StarSystem":"{{generatedName}}","SystemAddress":{{address}}}
+                """
+            )
+        );
         Assert.True(state.TryCreateDocument(prefix, out var document));
         return document;
     }
@@ -187,7 +173,8 @@ public sealed class BoxelSurveyStatsStoreTests : IDisposable
     {
         Assert.True(
             SrvSurvey.Core.Journal.JournalEventEnvelope.TryParse(json, out var journalEvent, out var error),
-            error);
+            error
+        );
         return Assert.IsType<SrvSurvey.Core.Journal.JournalEventEnvelope>(journalEvent);
     }
 }

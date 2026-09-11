@@ -52,17 +52,18 @@ public sealed class QuestIndicatorViewModelTests
         viewModel.Update([snapshot], status, enabled: true);
         Assert.False(viewModel.ShouldShow);
 
-        viewModel.Update(
-            [snapshot],
-            status with { GuiFocus = GuiFocus.ExternalPanel },
-            enabled: true);
+        viewModel.Update([snapshot], status with { GuiFocus = GuiFocus.ExternalPanel }, enabled: true);
         Assert.True(viewModel.ShouldShow);
 
         viewModel.Update(
             [snapshot],
-            status with { GuiFocus = GuiFocus.NoFocus },
+            status with
+            {
+                GuiFocus = GuiFocus.NoFocus,
+            },
             enabled: true,
-            musicTrack: "SystemMap");
+            musicTrack: "SystemMap"
+        );
         Assert.False(viewModel.ShouldShow);
     }
 
@@ -72,10 +73,7 @@ public sealed class QuestIndicatorViewModelTests
         var viewModel = new QuestIndicatorViewModel();
         var snapshot = CreateSnapshot() with
         {
-            BodyLocations = new Dictionary<string, string>
-            {
-                ["bad"] = "not-coordinates",
-            },
+            BodyLocations = new Dictionary<string, string> { ["bad"] = "not-coordinates" },
         };
 
         viewModel.Update([snapshot], null, enabled: false);
@@ -98,22 +96,12 @@ public sealed class QuestIndicatorViewModelTests
             false,
             null,
             2,
-            new Dictionary<string, string>
-            {
-                ["scan"] = "visible,1,3",
-                ["hidden"] = "hidden",
-            },
-            new Dictionary<string, string>
-            {
-                ["scan"] = "Scan the beacon",
-                ["hidden"] = "Hidden task",
-            },
+            new Dictionary<string, string> { ["scan"] = "visible,1,3", ["hidden"] = "hidden" },
+            new Dictionary<string, string> { ["scan"] = "Scan the beacon", ["hidden"] = "Hidden task" },
             [],
             new HashSet<string>(),
-            new Dictionary<string, string>
-            {
-                ["Beacon"] = "0,0.001,200",
-            },
-            []);
+            new Dictionary<string, string> { ["Beacon"] = "0,0.001,200" },
+            []
+        );
     }
 }

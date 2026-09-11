@@ -19,30 +19,30 @@ public sealed class FrontierCommunityGoalOrderingTests
 
         Assert.Equal(
             ["Active sooner", "Active later", "Newest completion", "Older completion"],
-            ordered.Select(goal => goal.Title));
+            ordered.Select(goal => goal.Title)
+        );
     }
 
-    private static FrontierCommunityGoalSnapshot Goal(
-        string title,
-        bool complete,
-        string lastUpdated) => new(
-        null,
-        title,
-        string.Empty,
-        string.Empty,
-        string.Empty,
-        string.Empty,
-        string.Empty,
-        DateTimeOffset.Parse(lastUpdated).AddDays(1),
-        complete,
-        0,
-        null,
-        0,
-        0,
-        string.Empty,
-        null,
-        0,
-        null,
-        false,
-        [new FrontierDataPointSnapshot("inara.lastUpdate", lastUpdated)]);
+    private static FrontierCommunityGoalSnapshot Goal(string title, bool complete, string lastUpdated) =>
+        new(
+            null,
+            title,
+            string.Empty,
+            string.Empty,
+            string.Empty,
+            string.Empty,
+            string.Empty,
+            DateTimeOffset.Parse(lastUpdated).AddDays(1),
+            complete,
+            0,
+            null,
+            0,
+            0,
+            string.Empty,
+            null,
+            0,
+            null,
+            false,
+            [new FrontierDataPointSnapshot("inara.lastUpdate", lastUpdated)]
+        );
 }

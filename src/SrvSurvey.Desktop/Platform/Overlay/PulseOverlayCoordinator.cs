@@ -24,20 +24,15 @@ public sealed class PulseOverlayCoordinator : IDisposable
         PulseOverlayViewModel viewModel,
         IOverlayPlatformService platform,
         IGameWindowTracker gameWindowTracker,
-        LegacyOverlayLayout? overlayLayout = null)
+        LegacyOverlayLayout? overlayLayout = null
+    )
     {
-        this.viewModel = viewModel
-            ?? throw new ArgumentNullException(nameof(viewModel));
-        this.platform = platform
-            ?? throw new ArgumentNullException(nameof(platform));
-        this.gameWindowTracker = gameWindowTracker
-            ?? throw new ArgumentNullException(nameof(gameWindowTracker));
+        this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
+        this.platform = platform ?? throw new ArgumentNullException(nameof(platform));
+        this.gameWindowTracker = gameWindowTracker ?? throw new ArgumentNullException(nameof(gameWindowTracker));
         this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
-        timer = new OverlayDispatcherTimer
-        {
-            Interval = TimeSpan.FromMilliseconds(500),
-        };
+        timer = new OverlayDispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
         timer.Tick += OnTimerTick;
         timer.Start();
         SynchronizeWindow();
@@ -78,15 +73,16 @@ public sealed class PulseOverlayCoordinator : IDisposable
         SynchronizeWindow();
     }
 
-    private void OnViewModelPropertyChanged(
-        object? sender,
-        PropertyChangedEventArgs eventArgs)
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
-        if (eventArgs.PropertyName is nameof(PulseOverlayViewModel.ShouldShow)
-            or nameof(PulseOverlayViewModel.PulseHeight)
-            or nameof(PulseOverlayViewModel.IsScoActive)
-            or nameof(PulseOverlayViewModel.IsScoCoolingDown)
-            or nameof(PulseOverlayViewModel.IsScoReady))
+        if (
+            eventArgs.PropertyName
+            is nameof(PulseOverlayViewModel.ShouldShow)
+                or nameof(PulseOverlayViewModel.PulseHeight)
+                or nameof(PulseOverlayViewModel.IsScoActive)
+                or nameof(PulseOverlayViewModel.IsScoCoolingDown)
+                or nameof(PulseOverlayViewModel.IsScoReady)
+        )
         {
             SynchronizeWindow();
         }
@@ -100,14 +96,16 @@ public sealed class PulseOverlayCoordinator : IDisposable
         }
 
         gameWindow = gameWindowTracker.GetSnapshot();
-        if (isSuppressed
+        if (
+            isSuppressed
             || !viewModel.ShouldShow
             || !platform.Capabilities.SupportsPassiveOverlay
             || !platform.Capabilities.SupportsClickThrough
             || !platform.Capabilities.SupportsGameWindowTracking
             || !gameWindow.IsAvailable
             || !gameWindow.IsVisible
-            || !gameWindow.IsForeground)
+            || !gameWindow.IsForeground
+        )
         {
             CloseWindow();
             return;
@@ -145,23 +143,16 @@ public sealed class PulseOverlayCoordinator : IDisposable
     private void PositionWindow(Window overlay)
     {
         OverlayThemeResources.ApplyOpacity(overlay, overlayLayout, PlotterName);
-        var screen = overlay.Screens.ScreenFromBounds(gameWindow.ClientBounds)
-            ?? overlay.Screens.Primary;
+        var screen = overlay.Screens.ScreenFromBounds(gameWindow.ClientBounds) ?? overlay.Screens.Primary;
         if (screen is null)
         {
             return;
         }
 
-        var size = OverlayWindowMetrics.PrepareForPlacement(
-            overlay, overlayLayout, PlotterName, screen.Scaling);
-        var position = overlayLayout.GetPosition(
-                PlotterName,
-                gameWindow.ClientBounds,
-                size)
-            ?? OverlayWindowPlacement.BottomLeft(
-                gameWindow.ClientBounds,
-                size,
-                margin: 8);
+        var size = OverlayWindowMetrics.PrepareForPlacement(overlay, overlayLayout, PlotterName, screen.Scaling);
+        var position =
+            overlayLayout.GetPosition(PlotterName, gameWindow.ClientBounds, size)
+            ?? OverlayWindowPlacement.BottomLeft(gameWindow.ClientBounds, size, margin: 8);
         if (overlay.Position != position)
         {
             overlay.Position = position;

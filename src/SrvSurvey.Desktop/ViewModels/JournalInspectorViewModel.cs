@@ -17,8 +17,7 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
     private readonly AsyncCommand copyCodeCommand;
     private readonly AsyncCommand copyCoordinatesCommand;
     private readonly AsyncCommand replayCommand;
-    private readonly Func<JournalEventEnvelope, Task<QuestRuntimeUpdateResult>>?
-        replayEvent;
+    private readonly Func<JournalEventEnvelope, Task<QuestRuntimeUpdateResult>>? replayEvent;
     private Func<string, Task>? clipboardWriter;
     private readonly ObservableCollection<JournalInspectorEventViewModel> events = [];
     private IReadOnlyList<JournalInspectorPropertyViewModel> properties = [];
@@ -28,15 +27,11 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
     private string statusMessage = string.Empty;
     private bool replayConfirmed;
 
-    public JournalInspectorViewModel(
-        Func<JournalEventEnvelope, Task<QuestRuntimeUpdateResult>>?
-            replayEvent = null)
+    public JournalInspectorViewModel(Func<JournalEventEnvelope, Task<QuestRuntimeUpdateResult>>? replayEvent = null)
     {
         this.replayEvent = replayEvent;
         copyCodeCommand = new AsyncCommand(CopyCodeAsync, CanCopyCode);
-        copyCoordinatesCommand = new AsyncCommand(
-            CopyCoordinatesAsync,
-            CanCopyCoordinates);
+        copyCoordinatesCommand = new AsyncCommand(CopyCoordinatesAsync, CanCopyCoordinates);
         replayCommand = new AsyncCommand(ReplayAsync, CanReplay);
         CopyCodeCommand = copyCodeCommand;
         CopyCoordinatesCommand = copyCoordinatesCommand;
@@ -125,23 +120,15 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
         copyCoordinatesCommand.RaiseCanExecuteChanged();
     }
 
-    public void ApplyUpdate(
-        IReadOnlyList<JournalEventEnvelope> journalEvents,
-        EliteStatus? latestStatus)
+    public void ApplyUpdate(IReadOnlyList<JournalEventEnvelope> journalEvents, EliteStatus? latestStatus)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
         if (journalEvents.Count > 0)
         {
-            var firstRetainedIndex = Math.Max(
-                0,
-                journalEvents.Count - MaximumEventCount);
-            for (var index = firstRetainedIndex;
-                 index < journalEvents.Count;
-                 index++)
+            var firstRetainedIndex = Math.Max(0, journalEvents.Count - MaximumEventCount);
+            for (var index = firstRetainedIndex; index < journalEvents.Count; index++)
             {
-                events.Insert(
-                    0,
-                    new JournalInspectorEventViewModel(journalEvents[index]));
+                events.Insert(0, new JournalInspectorEventViewModel(journalEvents[index]));
             }
 
             while (events.Count > MaximumEventCount)
@@ -173,15 +160,9 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
         }
 
         var rows = new List<JournalInspectorPropertyViewModel>();
-        foreach (var property in SelectedEvent.JournalEvent.Payload
-                     .EnumerateObject())
+        foreach (var property in SelectedEvent.JournalEvent.Payload.EnumerateObject())
         {
-            AddPropertyRows(
-                rows,
-                property.Name,
-                AppendLuaPropertyAccess("entry", property.Name),
-                property.Value,
-                0);
+            AddPropertyRows(rows, property.Name, AppendLuaPropertyAccess("entry", property.Name), property.Value, 0);
         }
 
         Properties = rows;
@@ -193,17 +174,21 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
         string path,
         string luaAccess,
         JsonElement value,
-        int depth)
+        int depth
+    )
     {
         var selectable = path != "event" && IsLuaScalar(value);
-        rows.Add(new JournalInspectorPropertyViewModel(
-            path,
-            luaAccess,
-            FormatJsonValue(value),
-            depth,
-            selectable,
-            value.Clone(),
-            RegenerateCode));
+        rows.Add(
+            new JournalInspectorPropertyViewModel(
+                path,
+                luaAccess,
+                FormatJsonValue(value),
+                depth,
+                selectable,
+                value.Clone(),
+                RegenerateCode
+            )
+        );
         if (value.ValueKind == JsonValueKind.Object)
         {
             foreach (var property in value.EnumerateObject())
@@ -213,7 +198,8 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
                     path + "." + property.Name,
                     AppendLuaPropertyAccess(luaAccess, property.Name),
                     property.Value,
-                    depth + 1);
+                    depth + 1
+                );
             }
         }
         else if (value.ValueKind == JsonValueKind.Array)
@@ -221,12 +207,7 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
             var index = 0;
             foreach (var item in value.EnumerateArray())
             {
-                AddPropertyRows(
-                    rows,
-                    $"{path}[{index}]",
-                    $"{luaAccess}[{index + 1}]",
-                    item,
-                    depth + 1);
+                AddPropertyRows(rows, $"{path}[{index}]", $"{luaAccess}[{index + 1}]", item, depth + 1);
                 index++;
             }
         }
@@ -242,22 +223,17 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
 
         var clauses = Properties
             .Where(property => property.IsIncluded && property.IsSelectable)
-            .Select(property =>
-                $"{property.LuaAccess} == {ToLuaLiteral(property.Value)}")
+            .Select(property => $"{property.LuaAccess} == {ToLuaLiteral(property.Value)}")
             .ToArray();
         var builder = new StringBuilder();
-        builder.Append("function on_")
-            .Append(SelectedEvent.EventName)
-            .AppendLine("(entry)");
+        builder.Append("function on_").Append(SelectedEvent.EventName).AppendLine("(entry)");
         if (clauses.Length == 0)
         {
             builder.AppendLine("  -- TODO: your code");
         }
         else
         {
-            builder.Append("  if ")
-                .Append(string.Join(" and ", clauses))
-                .AppendLine(" then");
+            builder.Append("  if ").Append(string.Join(" and ", clauses)).AppendLine(" then");
             builder.AppendLine("    -- TODO: your code");
             builder.AppendLine("  end");
         }
@@ -296,25 +272,21 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
         }
 
         await CopyAsync(
-            string.Create(
-                CultureInfo.InvariantCulture,
-                $"{status.Latitude}, {status.Longitude}"),
-            "The current latitude and longitude were copied.");
+            string.Create(CultureInfo.InvariantCulture, $"{status.Latitude}, {status.Longitude}"),
+            "The current latitude and longitude were copied."
+        );
     }
 
     private bool CanReplay()
     {
-        return replayEvent is not null
-            && SelectedEvent is not null
-            && ReplayConfirmed;
+        return replayEvent is not null && SelectedEvent is not null && ReplayConfirmed;
     }
 
     public async Task ReplayAsync()
     {
         if (!CanReplay() || replayEvent is null || SelectedEvent is null)
         {
-            StatusMessage =
-                "Select an event and confirm that replay may change active quest progress.";
+            StatusMessage = "Select an event and confirm that replay may change active quest progress.";
             return;
         }
 
@@ -323,21 +295,23 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
         {
             var result = await replayEvent(selected.JournalEvent);
             ReplayConfirmed = false;
-            StatusMessage = result.Warnings.Count > 0
-                ? string.Join(Environment.NewLine, result.Warnings)
-                : $"Replayed {selected.EventName} into the active quest runtime.";
+            StatusMessage =
+                result.Warnings.Count > 0
+                    ? string.Join(Environment.NewLine, result.Warnings)
+                    : $"Replayed {selected.EventName} into the active quest runtime.";
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException
-                or InvalidOperationException
-                or ArgumentException
-                or HttpRequestException)
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or UnauthorizedAccessException
+                        or InvalidDataException
+                        or InvalidOperationException
+                        or ArgumentException
+                        or HttpRequestException
+            )
         {
             ReplayConfirmed = false;
-            StatusMessage = "The journal event was not replayed: "
-                + exception.Message;
+            StatusMessage = "The journal event was not replayed: " + exception.Message;
         }
     }
 
@@ -345,38 +319,43 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
     {
         try
         {
-            var writer = clipboardWriter
-                ?? throw new InvalidOperationException(
-                    "The clipboard is unavailable.");
+            var writer = clipboardWriter ?? throw new InvalidOperationException("The clipboard is unavailable.");
             await writer(text);
             StatusMessage = successMessage;
         }
-        catch (Exception exception) when (
-            exception is InvalidOperationException
-                or IOException
-                or NotSupportedException
-                or System.Runtime.InteropServices.ExternalException
-                or UnauthorizedAccessException)
+        catch (Exception exception)
+            when (exception
+                    is InvalidOperationException
+                        or IOException
+                        or NotSupportedException
+                        or System.Runtime.InteropServices.ExternalException
+                        or UnauthorizedAccessException
+            )
         {
-            StatusMessage = "The clipboard could not be updated: "
-                + exception.Message;
+            StatusMessage = "The clipboard could not be updated: " + exception.Message;
         }
     }
 
     private static bool IsLuaScalar(JsonElement value)
     {
-        if (value.ValueKind == JsonValueKind.String
+        if (
+            value.ValueKind == JsonValueKind.String
             && DateTimeOffset.TryParse(
                 value.GetString(),
                 CultureInfo.InvariantCulture,
                 DateTimeStyles.RoundtripKind,
-                out _))
+                out _
+            )
+        )
         {
             return false;
         }
 
-        return value.ValueKind is JsonValueKind.String or JsonValueKind.Number
-            or JsonValueKind.True or JsonValueKind.False;
+        return value.ValueKind
+            is JsonValueKind.String
+                or JsonValueKind.Number
+                or JsonValueKind.True
+                or JsonValueKind.False;
     }
 
     private static string FormatJsonValue(JsonElement value)
@@ -403,9 +382,7 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
             };
     }
 
-    private static string AppendLuaPropertyAccess(
-        string parent,
-        string propertyName)
+    private static string AppendLuaPropertyAccess(string parent, string propertyName)
     {
         return IsLuaIdentifier(propertyName)
             ? parent + "." + propertyName
@@ -432,8 +409,7 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
             }
             else if (char.IsControl(character))
             {
-                builder.Append('\\').Append(
-                    ((int)character).ToString("D3", CultureInfo.InvariantCulture));
+                builder.Append('\\').Append(((int)character).ToString("D3", CultureInfo.InvariantCulture));
             }
             else
             {
@@ -448,18 +424,37 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
     {
         return value.Length > 0
             && (char.IsLetter(value[0]) || value[0] == '_')
-            && value.Skip(1).All(character =>
-                char.IsLetterOrDigit(character) || character == '_')
+            && value.Skip(1).All(character => char.IsLetterOrDigit(character) || character == '_')
             && !LuaKeywords.Contains(value);
     }
 
     private static readonly HashSet<string> LuaKeywords = new(
-    [
-        "and", "break", "do", "else", "elseif", "end", "false", "for",
-        "function", "goto", "if", "in", "local", "nil", "not", "or",
-        "repeat", "return", "then", "true", "until", "while",
-    ],
-        StringComparer.Ordinal);
+        [
+            "and",
+            "break",
+            "do",
+            "else",
+            "elseif",
+            "end",
+            "false",
+            "for",
+            "function",
+            "goto",
+            "if",
+            "in",
+            "local",
+            "nil",
+            "not",
+            "or",
+            "repeat",
+            "return",
+            "then",
+            "true",
+            "until",
+            "while",
+        ],
+        StringComparer.Ordinal
+    );
 
     private static string CreateStatusText(EliteStatus? value)
     {
@@ -472,7 +467,8 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
         if (value.Destination is { } destination)
         {
             lines.Add(
-                $"Destination: {destination.Name ?? destination.NameLocalised ?? "?"} body:{destination.Body} id64:{destination.System}");
+                $"Destination: {destination.Name ?? destination.NameLocalised ?? "?"} body:{destination.Body} id64:{destination.System}"
+            );
         }
 
         if (value.Flags != StatusFlags.None)
@@ -485,8 +481,7 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
             lines.Add($"Flags2: {value.Flags2} ({(uint)value.Flags2})");
         }
 
-        lines.Add(
-            $"GuiFocus: {value.GuiFocus}, Pips: {string.Join(", ", value.Pips)}, FireGroup: {value.FireGroup}");
+        lines.Add($"GuiFocus: {value.GuiFocus}, Pips: {string.Join(", ", value.Pips)}, FireGroup: {value.FireGroup}");
         if (!string.IsNullOrWhiteSpace(value.BodyName))
         {
             lines.Add("BodyName: " + value.BodyName);
@@ -494,23 +489,23 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
 
         if (value.HasLatitudeLongitude)
         {
-            lines.Add(string.Create(CultureInfo.InvariantCulture,
-                $"Lat/Long: {value.Latitude}, {value.Longitude}, Heading: {value.NormalizedHeading} deg, Altitude: {value.Altitude}, Temp: {value.Temperature}"));
+            lines.Add(
+                string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"Lat/Long: {value.Latitude}, {value.Longitude}, Heading: {value.NormalizedHeading} deg, Altitude: {value.Altitude}, Temp: {value.Temperature}"
+                )
+            );
         }
 
         if (!string.IsNullOrWhiteSpace(value.SelectedWeapon))
         {
-            lines.Add(
-                $"SelectedWeapon: {value.SelectedWeapon} / {value.SelectedWeaponLocalised}");
+            lines.Add($"SelectedWeapon: {value.SelectedWeapon} / {value.SelectedWeaponLocalised}");
         }
 
         return string.Join(Environment.NewLine, lines);
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -522,15 +517,12 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
         return true;
     }
 
-    private void OnPropertyChanged(
-        [CallerMemberName] string? propertyName = null)
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private sealed class AsyncCommand(
-        Func<Task> execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class AsyncCommand(Func<Task> execute, Func<bool> canExecute) : ICommand
     {
         private bool running;
 
@@ -576,8 +568,8 @@ public sealed class JournalInspectorEventViewModel
 
     public string EventName => JournalEvent.EventName;
 
-    public string Timestamp => JournalEvent.Timestamp?.ToLocalTime()
-        .ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)
+    public string Timestamp =>
+        JournalEvent.Timestamp?.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)
         ?? "No timestamp";
 }
 
@@ -593,7 +585,8 @@ public sealed class JournalInspectorPropertyViewModel : INotifyPropertyChanged
         int depth,
         bool isSelectable,
         JsonElement value,
-        Action changed)
+        Action changed
+    )
     {
         Path = path;
         LuaAccess = luaAccess;
@@ -631,9 +624,7 @@ public sealed class JournalInspectorPropertyViewModel : INotifyPropertyChanged
             }
 
             isIncluded = value;
-            PropertyChanged?.Invoke(
-                this,
-                new PropertyChangedEventArgs(nameof(IsIncluded)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsIncluded)));
             changed();
         }
     }

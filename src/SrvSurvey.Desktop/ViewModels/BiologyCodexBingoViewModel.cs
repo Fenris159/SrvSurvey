@@ -13,24 +13,18 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
 {
     private const string Unavailable = "—";
 
-    private static readonly IReadOnlyDictionary<string, string> EdAstroLinks =
-        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["Anomaly"] =
-                "https://edastro.b-cdn.net/mapcharts/codex/codex-anomalies-regions.jpg",
-            ["Mollusc"] =
-                "https://edastro.b-cdn.net/mapcharts/codex/codex-molluscs-regions.jpg",
-            ["Lagrange"] =
-                "https://edastro.b-cdn.net/mapcharts/codex/codex-lagrangeclouds-regions.jpg",
-            ["Storm"] =
-                "https://edastro.b-cdn.net/mapcharts/codex/codex-lagrangeclouds-regions.jpg",
-            ["Crystals"] =
-                "https://edastro.b-cdn.net/mapcharts/codex/codex-crystals-regions.jpg",
-            ["Guardian"] =
-                "https://edastro.b-cdn.net/mapcharts/codex/codex-aliens-regions.jpg",
-            ["Thargoid"] =
-                "https://edastro.b-cdn.net/mapcharts/codex/codex-aliens-regions.jpg",
-        };
+    private static readonly IReadOnlyDictionary<string, string> EdAstroLinks = new Dictionary<string, string>(
+        StringComparer.OrdinalIgnoreCase
+    )
+    {
+        ["Anomaly"] = "https://edastro.b-cdn.net/mapcharts/codex/codex-anomalies-regions.jpg",
+        ["Mollusc"] = "https://edastro.b-cdn.net/mapcharts/codex/codex-molluscs-regions.jpg",
+        ["Lagrange"] = "https://edastro.b-cdn.net/mapcharts/codex/codex-lagrangeclouds-regions.jpg",
+        ["Storm"] = "https://edastro.b-cdn.net/mapcharts/codex/codex-lagrangeclouds-regions.jpg",
+        ["Crystals"] = "https://edastro.b-cdn.net/mapcharts/codex/codex-crystals-regions.jpg",
+        ["Guardian"] = "https://edastro.b-cdn.net/mapcharts/codex/codex-aliens-regions.jpg",
+        ["Thargoid"] = "https://edastro.b-cdn.net/mapcharts/codex/codex-aliens-regions.jpg",
+    };
 
     private readonly CommanderCodexStore store;
     private readonly CanonnCodexChallengeImporter canonnImporter;
@@ -38,10 +32,12 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
     private readonly ICodexDiscoveryLocationClient locationClient;
     private readonly CodexBingoNode rootDefinition;
     private readonly CodexBingoTreeNodeViewModel rootNode;
+
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Usage",
         "CA2213:Disposable fields should be disposed",
-        Justification = "An in-flight refresh may release this gate after disposal cancellation.")]
+        Justification = "An in-flight refresh may release this gate after disposal cancellation."
+    )]
     private readonly SemaphoreSlim refreshLock = new(1, 1);
     private readonly AsyncCommand openWindowCommand;
     private readonly AsyncCommand refreshCommand;
@@ -75,8 +71,7 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
     private string? activeCommanderName;
     private string? currentSystemName;
     private int? currentRegionId;
-    private string statusMessage =
-        "Waiting for a commander before calculating Codex completion.";
+    private string statusMessage = "Waiting for a commander before calculating Codex completion.";
     private string discoveryBody = Unavailable;
     private string discoveryRegion = "Select a Codex entry";
     private string discoveryDate = Unavailable;
@@ -91,74 +86,50 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
         ExobiologyReferenceCatalog catalog,
         CanonnCodexChallengeImporter canonnImporter,
         CommanderCodexJournalImporter journalImporter,
-        ICodexDiscoveryLocationClient locationClient)
+        ICodexDiscoveryLocationClient locationClient
+    )
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
         ArgumentNullException.ThrowIfNull(catalog);
-        this.canonnImporter = canonnImporter
-            ?? throw new ArgumentNullException(nameof(canonnImporter));
-        this.journalImporter = journalImporter
-            ?? throw new ArgumentNullException(nameof(journalImporter));
-        this.locationClient = locationClient
-            ?? throw new ArgumentNullException(nameof(locationClient));
+        this.canonnImporter = canonnImporter ?? throw new ArgumentNullException(nameof(canonnImporter));
+        this.journalImporter = journalImporter ?? throw new ArgumentNullException(nameof(journalImporter));
+        this.locationClient = locationClient ?? throw new ArgumentNullException(nameof(locationClient));
         rootDefinition = CodexBingoCatalog.Build(catalog.Entries);
         rootNode = new CodexBingoTreeNodeViewModel(rootDefinition, true);
         RootNodes = [rootNode];
         regions = CreateRegions(null);
         selectedRegion = regions[0];
 
-        openWindowCommand = new AsyncCommand(
-            OpenWindowAsync,
-            () => windowOpener is not null);
+        openWindowCommand = new AsyncCommand(OpenWindowAsync, () => windowOpener is not null);
         refreshCommand = new AsyncCommand(RefreshAsync, CanRunBusyAction);
-        importCanonnCommand = new AsyncCommand(
-            ImportCanonnAsync,
-            CanImport);
-        importJournalsCommand = new AsyncCommand(
-            ImportJournalsAsync,
-            CanImport);
-        requestManualCommand = new AsyncCommand(
-            RequestManualOverrideAsync,
-            CanRequestManualOverride);
+        importCanonnCommand = new AsyncCommand(ImportCanonnAsync, CanImport);
+        importJournalsCommand = new AsyncCommand(ImportJournalsAsync, CanImport);
+        requestManualCommand = new AsyncCommand(RequestManualOverrideAsync, CanRequestManualOverride);
         confirmManualCommand = new AsyncCommand(
             ConfirmManualOverrideAsync,
-            () => IsManualConfirmationPending && !IsBusy);
-        cancelManualCommand = new DelegateCommand(
-            CancelManualOverride,
-            () => IsManualConfirmationPending && !IsBusy);
+            () => IsManualConfirmationPending && !IsBusy
+        );
+        cancelManualCommand = new DelegateCommand(CancelManualOverride, () => IsManualConfirmationPending && !IsBusy);
         copyNameCommand = new AsyncCommand(CopyNameAsync, HasSelection);
-        copyEntryIdCommand = new AsyncCommand(
-            CopyEntryIdAsync,
-            CanUseSelectedEntry);
-        openCanonnResearchCommand = new AsyncCommand(
-            OpenCanonnResearchAsync,
-            CanUseSelectedEntry);
-        openBioforgeCommand = new AsyncCommand(
-            OpenBioforgeAsync,
-            CanOpenBioforge);
-        openEdAstroCommand = new AsyncCommand(
-            OpenEdAstroAsync,
-            CanOpenEdAstro);
-        openLocationCommand = new AsyncCommand(
-            OpenLocationAsync,
-            () => selectedLocationUri is not null && !IsBusy);
+        copyEntryIdCommand = new AsyncCommand(CopyEntryIdAsync, CanUseSelectedEntry);
+        openCanonnResearchCommand = new AsyncCommand(OpenCanonnResearchAsync, CanUseSelectedEntry);
+        openBioforgeCommand = new AsyncCommand(OpenBioforgeAsync, CanOpenBioforge);
+        openEdAstroCommand = new AsyncCommand(OpenEdAstroAsync, CanOpenEdAstro);
+        openLocationCommand = new AsyncCommand(OpenLocationAsync, () => selectedLocationUri is not null && !IsBusy);
         openCanonnChallengeCommand = new AsyncCommand(
             () => LaunchUriAsync(WellKnownUris.CanonnChallenge, "Canonn Challenge"),
-            () => uriLauncher is not null && !IsBusy);
+            () => uriLauncher is not null && !IsBusy
+        );
         openUndiscoveredCommand = new AsyncCommand(
             OpenUndiscoveredAsync,
-            () => SelectedCommander is not null && uriLauncher is not null && !IsBusy);
+            () => SelectedCommander is not null && uriLauncher is not null && !IsBusy
+        );
         findNearestCommand = new AsyncCommand(
             FindNearestAsync,
-            () => SelectedNode?.Definition.Entry is not null
-                && nearestSearchHandler is not null
-                && !IsBusy);
-        findMissingVariantsCommand = new AsyncCommand(
-            FindMissingVariantsAsync,
-            CanFindMissingVariants);
-        rootNode.ApplyProgress(CodexBingoCatalog.CalculateProgress(
-            rootDefinition,
-            new HashSet<long>()));
+            () => SelectedNode?.Definition.Entry is not null && nearestSearchHandler is not null && !IsBusy
+        );
+        findMissingVariantsCommand = new AsyncCommand(FindMissingVariantsAsync, CanFindMissingVariants);
+        rootNode.ApplyProgress(CodexBingoCatalog.CalculateProgress(rootDefinition, new HashSet<long>()));
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -235,13 +206,15 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
         }
     }
 
-    public string CommanderSummary => SelectedCommander is null
-        ? "No commander selected"
-        : $"{SelectedCommander.CommanderName} · {SelectedCommander.FrontierId}";
+    public string CommanderSummary =>
+        SelectedCommander is null
+            ? "No commander selected"
+            : $"{SelectedCommander.CommanderName} · {SelectedCommander.FrontierId}";
 
-    public string RegionSummary => SelectedRegion.RegionId == 0
-        ? "Completion across all galactic regions"
-        : $"Regional firsts in {SelectedRegion.Name}";
+    public string RegionSummary =>
+        SelectedRegion.RegionId == 0
+            ? "Completion across all galactic regions"
+            : $"Regional firsts in {SelectedRegion.Name}";
 
     public string WindowTitle => $"Codex Bingo · {CompletionText}";
 
@@ -255,77 +228,82 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
 
     public string CompletionText => rootNode.Completion.ToString("P2");
 
-    public string RemainingText => TotalCount == 0
-        ? "No Codex entries loaded"
-        : $"{RemainingCount:N0} scans to go · each entry is "
-            + (1d / TotalCount).ToString("P2");
+    public string RemainingText =>
+        TotalCount == 0
+            ? "No Codex entries loaded"
+            : $"{RemainingCount:N0} scans to go · each entry is " + (1d / TotalCount).ToString("P2");
 
-    public string SelectedTitle => SelectedNode?.Definition.Name
-        ?? "Select a Codex category or entry";
+    public string SelectedTitle => SelectedNode?.Definition.Name ?? "Select a Codex category or entry";
 
-    public string SelectedKind => SelectedNode?.Definition.Kind switch
-    {
-        CodexBingoNodeKind.HudCategory => "HUD category",
-        CodexBingoNodeKind.SubClass => "Subclass",
-        CodexBingoNodeKind.Group => "Group",
-        CodexBingoNodeKind.Species => "Species",
-        CodexBingoNodeKind.Entry => "Codex entry",
-        _ => "The Codex",
-    };
+    public string SelectedKind =>
+        SelectedNode?.Definition.Kind switch
+        {
+            CodexBingoNodeKind.HudCategory => "HUD category",
+            CodexBingoNodeKind.SubClass => "Subclass",
+            CodexBingoNodeKind.Group => "Group",
+            CodexBingoNodeKind.Species => "Species",
+            CodexBingoNodeKind.Entry => "Codex entry",
+            _ => "The Codex",
+        };
 
-    public string SelectedProgress => SelectedNode is null
-        ? string.Empty
-        : $"{SelectedNode.DiscoveredCount:N0} of {SelectedNode.TotalCount:N0} · "
-            + SelectedNode.Completion.ToString("P1");
+    public string SelectedProgress =>
+        SelectedNode is null
+            ? string.Empty
+            : $"{SelectedNode.DiscoveredCount:N0} of {SelectedNode.TotalCount:N0} · "
+                + SelectedNode.Completion.ToString("P1");
 
-    public double SelectedCompletionPercent =>
-        SelectedNode?.CompletionPercent ?? 0;
+    public double SelectedCompletionPercent => SelectedNode?.CompletionPercent ?? 0;
 
     public bool HasSelectedEntry => SelectedNode?.Definition.Entry is not null;
 
-    public string SelectedEntryId => SelectedNode?.Definition.Entry is { } entry
-        ? entry.EntryId.ToString(CultureInfo.InvariantCulture)
-        : Unavailable;
+    public string SelectedEntryId =>
+        SelectedNode?.Definition.Entry is { } entry
+            ? entry.EntryId.ToString(CultureInfo.InvariantCulture)
+            : Unavailable;
 
-    public string SelectedReward => SelectedNode?.Definition.Reward is > 0 and var reward
-        ? reward.ToString("N0", CultureInfo.CurrentCulture) + " CR"
-        : Unavailable;
+    public string SelectedReward =>
+        SelectedNode?.Definition.Reward is > 0 and var reward
+            ? reward.ToString("N0", CultureInfo.CurrentCulture) + " CR"
+            : Unavailable;
 
-    public bool SelectedIsDiscovered => SelectedNode?.IsComplete == true
-        && HasSelectedEntry;
+    public bool SelectedIsDiscovered => SelectedNode?.IsComplete == true && HasSelectedEntry;
 
     public bool SelectedIsJournalVerified => GetSelectedFirst()?.SystemAddress > 0;
 
     public bool SelectedIsManual => GetSelectedFirst()?.SystemAddress == -1;
 
-    public string SelectedState => !HasSelectedEntry
-        ? "Aggregate completion"
-        : (SelectedIsJournalVerified) switch
-        {
-            true => "Journal verified",
-            false => (SelectedIsManual) switch
+    public string SelectedState =>
+        !HasSelectedEntry
+            ? "Aggregate completion"
+            : (SelectedIsJournalVerified) switch
             {
-                true => "Manual / Canonn import",
-                false => "Undiscovered"
-            }
-        };
+                true => "Journal verified",
+                false => (SelectedIsManual) switch
+                {
+                    true => "Manual / Canonn import",
+                    false => "Undiscovered",
+                },
+            };
 
-    public string ManualActionText => SelectedIsManual
-        ? "Remove manual scan"
-        : (SelectedIsJournalVerified) switch
-        {
-            true => "Journal verified",
-            false => "I have scanned this"
-        };
+    public string ManualActionText =>
+        SelectedIsManual
+            ? "Remove manual scan"
+            : (SelectedIsJournalVerified) switch
+            {
+                true => "Journal verified",
+                false => "I have scanned this",
+            };
 
-    public string ManualConfirmationText => SelectedNode?.Definition.Entry is { } entry
-        ? ((SelectedIsManual) switch
-        {
-            true => "Remove the locationless manual/imported discovery for ",
-            false => "Confirm that you previously scanned "
-        })
-            + $"{SelectedTitle} (#{entry.EntryId})?"
-        : string.Empty;
+    public string ManualConfirmationText =>
+        SelectedNode?.Definition.Entry is { } entry
+            ? (
+                (SelectedIsManual) switch
+                {
+                    true => "Remove the locationless manual/imported discovery for ",
+                    false => "Confirm that you previously scanned ",
+                }
+            ) + $"{SelectedTitle} (#{entry.EntryId})?"
+            : string.Empty;
 
     public string DiscoveryBody
     {
@@ -425,17 +403,14 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
         openWindowCommand.RaiseCanExecuteChanged();
     }
 
-    public void SetPlatformServices(
-        Func<string, Task>? writer,
-        Func<Uri, Task<bool>>? launcher)
+    public void SetPlatformServices(Func<string, Task>? writer, Func<Uri, Task<bool>>? launcher)
     {
         clipboardWriter = writer;
         uriLauncher = launcher;
         RaiseCommands();
     }
 
-    public void SetNearestSearchHandler(
-        Func<CodexBingoNearestRequest, Task>? searchHandler)
+    public void SetNearestSearchHandler(Func<CodexBingoNearestRequest, Task>? searchHandler)
     {
         nearestSearchHandler = searchHandler;
         RaiseCommands();
@@ -446,26 +421,17 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
         string? commanderName,
         string? systemName,
         GalacticCoordinate? position,
-        bool forceRefresh = false)
+        bool forceRefresh = false
+    )
     {
-        var newRegionId = position is null
-            ? null
-            : GalacticRegionMap.Find(position.Value)?.Id;
-        var changed = !string.Equals(
-                activeFrontierId,
-                frontierId,
-                StringComparison.OrdinalIgnoreCase)
+        var newRegionId = position is null ? null : GalacticRegionMap.Find(position.Value)?.Id;
+        var changed =
+            !string.Equals(activeFrontierId, frontierId, StringComparison.OrdinalIgnoreCase)
             || !string.Equals(activeCommanderName, commanderName, StringComparison.Ordinal)
             || currentRegionId != newRegionId;
-        activeFrontierId = string.IsNullOrWhiteSpace(frontierId)
-            ? null
-            : frontierId;
-        activeCommanderName = string.IsNullOrWhiteSpace(commanderName)
-            ? null
-            : commanderName;
-        currentSystemName = string.IsNullOrWhiteSpace(systemName)
-            ? null
-            : systemName;
+        activeFrontierId = string.IsNullOrWhiteSpace(frontierId) ? null : frontierId;
+        activeCommanderName = string.IsNullOrWhiteSpace(commanderName) ? null : commanderName;
+        currentSystemName = string.IsNullOrWhiteSpace(systemName) ? null : systemName;
         currentRegionId = newRegionId;
         if (changed || forceRefresh || !initialized)
         {
@@ -512,38 +478,34 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
             IsBusy = true;
             StatusMessage = "Loading Commander Codex ledgers…";
             var previousFrontierId = SelectedCommander?.FrontierId;
-            var catalog = await store.DiscoverCommandersAsync(
-                CancellationToken.None);
-            var options = catalog.Commanders
-                .Select(data => new CommanderCodexOptionViewModel(
+            var catalog = await store.DiscoverCommandersAsync(CancellationToken.None);
+            var options = catalog
+                .Commanders.Select(data => new CommanderCodexOptionViewModel(
                     data.FrontierId,
                     data.CommanderName ?? data.FrontierId,
-                    string.Equals(
-                        data.FrontierId,
-                        activeFrontierId,
-                        StringComparison.OrdinalIgnoreCase)))
+                    string.Equals(data.FrontierId, activeFrontierId, StringComparison.OrdinalIgnoreCase)
+                ))
                 .ToList();
-            if (activeFrontierId is not null
-                && options.All(option => !string.Equals(
-                    option.FrontierId,
-                    activeFrontierId,
-                    StringComparison.OrdinalIgnoreCase)))
+            if (
+                activeFrontierId is not null
+                && options.All(option =>
+                    !string.Equals(option.FrontierId, activeFrontierId, StringComparison.OrdinalIgnoreCase)
+                )
+            )
             {
-                options.Add(new CommanderCodexOptionViewModel(
-                    activeFrontierId,
-                    activeCommanderName ?? activeFrontierId,
-                    true));
+                options.Add(
+                    new CommanderCodexOptionViewModel(activeFrontierId, activeCommanderName ?? activeFrontierId, true)
+                );
             }
 
             Commanders = options
                 .OrderByDescending(option => option.IsActive)
                 .ThenBy(option => option.CommanderName, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
-            selectedCommander = Commanders.FirstOrDefault(option =>
-                    string.Equals(
-                        option.FrontierId,
-                        previousFrontierId,
-                        StringComparison.OrdinalIgnoreCase))
+            selectedCommander =
+                Commanders.FirstOrDefault(option =>
+                    string.Equals(option.FrontierId, previousFrontierId, StringComparison.OrdinalIgnoreCase)
+                )
                 ?? Commanders.FirstOrDefault(option => option.IsActive)
                 ?? (Commanders.Count > 0 ? Commanders[0] : null);
             OnPropertyChanged(nameof(SelectedCommander));
@@ -551,9 +513,7 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
 
             var previousRegionId = SelectedRegion.RegionId;
             Regions = CreateRegions(currentRegionId);
-            selectedRegion = Regions.FirstOrDefault(option =>
-                    option.RegionId == previousRegionId)
-                ?? Regions[0];
+            selectedRegion = Regions.FirstOrDefault(option => option.RegionId == previousRegionId) ?? Regions[0];
             OnPropertyChanged(nameof(SelectedRegion));
             OnPropertyChanged(nameof(RegionSummary));
             initialized = true;
@@ -604,7 +564,8 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
             var result = await canonnImporter.ImportAsync(
                 commander.FrontierId,
                 commander.CommanderName,
-                CancellationToken.None);
+                CancellationToken.None
+            );
             StatusMessage = result.IsSuccess
                 ? $"Canonn matched {result.MatchedEntryCount:N0} entries and added "
                     + $"{result.AddedEntryCount:N0}; {result.UnmatchedEntryCount:N0} "
@@ -633,22 +594,21 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
         {
             var progress = new CallbackProgress<CommanderCodexJournalImportProgress>(value =>
             {
-                StatusMessage = $"Scanning journal {value.ProcessedFileCount:N0} of "
+                StatusMessage =
+                    $"Scanning journal {value.ProcessedFileCount:N0} of "
                     + $"{value.TotalFileCount:N0}: {value.CurrentFile}";
             });
-            var result = await journalImporter.ImportAsync(
-                commander.FrontierId,
-                progress,
-                CancellationToken.None);
-            StatusMessage = $"Scanned {result.JournalFileCount:N0} journals and "
+            var result = await journalImporter.ImportAsync(commander.FrontierId, progress, CancellationToken.None);
+            StatusMessage =
+                $"Scanned {result.JournalFileCount:N0} journals and "
                 + $"{result.DiscoveryEventCount:N0} Codex events; added "
                 + $"{result.ChangedEntryCount:N0} global/regional firsts."
-                + (result.MalformedLineCount > 0
-                    ? $" Ignored {result.MalformedLineCount:N0} malformed lines."
-                    : string.Empty)
-                + (result.Warnings.Count > 0
-                    ? " " + string.Join(" ", result.Warnings)
-                    : string.Empty);
+                + (
+                    result.MalformedLineCount > 0
+                        ? $" Ignored {result.MalformedLineCount:N0} malformed lines."
+                        : string.Empty
+                )
+                + (result.Warnings.Count > 0 ? " " + string.Join(" ", result.Warnings) : string.Empty);
             await LoadLedgerCoreAsync(preserveStatus: true);
         }
         finally
@@ -665,9 +625,11 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
 
     public async Task ConfirmManualOverrideAsync()
     {
-        if (SelectedCommander is not { } commander
+        if (
+            SelectedCommander is not { } commander
             || SelectedNode?.Definition.Entry is not { } entry
-            || !IsManualConfirmationPending)
+            || !IsManualConfirmationPending
+        )
         {
             return;
         }
@@ -681,7 +643,8 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
                 commander.CommanderName,
                 entry.EntryId,
                 shouldDiscover,
-                cancellationToken: CancellationToken.None);
+                cancellationToken: CancellationToken.None
+            );
             StatusMessage = !result.IsSuccess
                 ? "Manual discovery update failed: " + result.Error
                 : (result.Changed) switch
@@ -689,9 +652,9 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
                     true => (shouldDiscover) switch
                     {
                         true => $"Marked {SelectedTitle} as previously scanned.",
-                        false => $"Removed the manual discovery for {SelectedTitle}."
+                        false => $"Removed the manual discovery for {SelectedTitle}.",
                     },
-                    false => "The journal-backed discovery was left unchanged."
+                    false => "The journal-backed discovery was left unchanged.",
                 };
             IsManualConfirmationPending = false;
             await LoadLedgerCoreAsync(preserveStatus: true);
@@ -733,12 +696,12 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
             commander.FrontierId,
             commander.CommanderName,
             region.RegionId,
-            CancellationToken.None);
-        if (!string.Equals(
-                SelectedCommander?.FrontierId,
-                commander.FrontierId,
-                StringComparison.OrdinalIgnoreCase)
-            || SelectedRegion.RegionId != region.RegionId)
+            CancellationToken.None
+        );
+        if (
+            !string.Equals(SelectedCommander?.FrontierId, commander.FrontierId, StringComparison.OrdinalIgnoreCase)
+            || SelectedRegion.RegionId != region.RegionId
+        )
         {
             return;
         }
@@ -755,10 +718,8 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
         if (!preserveStatus)
         {
             StatusMessage = result.Exists
-                ? $"Loaded {DiscoveredCount:N0} of {TotalCount:N0} entries for "
-                    + $"{commander.CommanderName}."
-                : $"No {region.Name} discoveries are recorded for "
-                    + $"{commander.CommanderName}.";
+                ? $"Loaded {DiscoveredCount:N0} of {TotalCount:N0} entries for " + $"{commander.CommanderName}."
+                : $"No {region.Name} discoveries are recorded for " + $"{commander.CommanderName}.";
             if (result.Warnings.Count > 0)
             {
                 StatusMessage += " " + string.Join(" ", result.Warnings);
@@ -769,9 +730,7 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
     private void ApplyProgress(IReadOnlySet<long> discoveredEntryIds)
     {
         var selectedKey = SelectedNode?.Definition.Key;
-        rootNode.ApplyProgress(CodexBingoCatalog.CalculateProgress(
-            rootDefinition,
-            discoveredEntryIds));
+        rootNode.ApplyProgress(CodexBingoCatalog.CalculateProgress(rootDefinition, discoveredEntryIds));
         if (selectedKey is not null)
         {
             selectedNode = rootNode.Find(selectedKey);
@@ -822,8 +781,7 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
 
         locationCancellation = new CancellationTokenSource();
         var cancellationToken = locationCancellation.Token;
-        if (SelectedNode?.Definition.Entry is not { } entry
-            || GetSelectedFirst() is not { SystemAddress: > 0 } first)
+        if (SelectedNode?.Definition.Entry is not { } entry || GetSelectedFirst() is not { SystemAddress: > 0 } first)
         {
             return;
         }
@@ -831,17 +789,13 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
         CodexDiscoveryLocationLoadResult result;
         try
         {
-            result = await locationClient.GetAsync(
-                first.SystemAddress,
-                first.BodyId,
-                cancellationToken);
+            result = await locationClient.GetAsync(first.SystemAddress, first.BodyId, cancellationToken);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             return;
         }
-        if (cancellationToken.IsCancellationRequested
-            || SelectedNode?.Definition.Entry?.EntryId != entry.EntryId)
+        if (cancellationToken.IsCancellationRequested || SelectedNode?.Definition.Entry?.EntryId != entry.EntryId)
         {
             return;
         }
@@ -861,10 +815,11 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
 
     private CommanderCodexFirst? GetSelectedFirst()
     {
-        return SelectedNode?.Definition.Entry is { } entry
+        return
+            SelectedNode?.Definition.Entry is { } entry
             && selectedLedger?.Firsts.TryGetValue(entry.EntryId, out var first) == true
-                ? first
-                : null;
+            ? first
+            : null;
     }
 
     private async Task<bool> OpenWindowAsync()
@@ -875,7 +830,8 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
 
     public Task CopyNameAsync()
     {
-        var text = SelectedNode?.Definition.Entry?.DisplayName
+        var text =
+            SelectedNode?.Definition.Entry?.DisplayName
             ?? SelectedNode?.Definition.Species
             ?? SelectedNode?.Definition.Name;
         return CopyAsync(text, "Codex name");
@@ -883,10 +839,7 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
 
     public Task CopyEntryIdAsync()
     {
-        return CopyAsync(
-            SelectedNode?.Definition.Entry?.EntryId.ToString(
-                CultureInfo.InvariantCulture),
-            "entry ID");
+        return CopyAsync(SelectedNode?.Definition.Entry?.EntryId.ToString(CultureInfo.InvariantCulture), "entry ID");
     }
 
     public Task<bool> OpenCanonnResearchAsync()
@@ -897,30 +850,28 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
                     WellKnownUris.CanonnCodexRegionsEntryPrefix
                         + entry.EntryId.ToString(CultureInfo.InvariantCulture)
                         + "&hud_category="
-                        + Uri.EscapeDataString(entry.HudCategory ?? string.Empty)),
-                "Canonn Research")
+                        + Uri.EscapeDataString(entry.HudCategory ?? string.Empty)
+                ),
+                "Canonn Research"
+            )
             : Task.FromResult(false);
     }
 
     public Task<bool> OpenBioforgeAsync()
     {
-        var text = SelectedNode?.Definition.Entry?.DisplayName
-            ?? SelectedNode?.Definition.Species;
+        var text = SelectedNode?.Definition.Entry?.DisplayName ?? SelectedNode?.Definition.Species;
         return string.IsNullOrWhiteSpace(text)
             ? Task.FromResult(false)
             : LaunchUriAsync(
-                new Uri(
-                    WellKnownUris.CanonnBioforgeEntryPrefix
-                        + Uri.EscapeDataString(text)),
-                "Canonn Bioforge");
+                new Uri(WellKnownUris.CanonnBioforgeEntryPrefix + Uri.EscapeDataString(text)),
+                "Canonn Bioforge"
+            );
     }
 
     public Task<bool> OpenEdAstroAsync()
     {
         var uri = CreateEdAstroUri(SelectedNode?.Definition);
-        return uri is null
-            ? Task.FromResult(false)
-            : LaunchUriAsync(uri, "EDAstro Codex map");
+        return uri is null ? Task.FromResult(false) : LaunchUriAsync(uri, "EDAstro Codex map");
     }
 
     public Task<bool> OpenLocationAsync()
@@ -937,10 +888,8 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
             return Task.FromResult(false);
         }
 
-        var uri = WellKnownUris.CanonnUndiscoveredCodexCommanderPrefix
-            + Uri.EscapeDataString(commander.CommanderName);
-        if (!string.IsNullOrWhiteSpace(currentSystemName)
-            && commander.IsActive)
+        var uri = WellKnownUris.CanonnUndiscoveredCodexCommanderPrefix + Uri.EscapeDataString(commander.CommanderName);
+        if (!string.IsNullOrWhiteSpace(currentSystemName) && commander.IsActive)
         {
             uri += "&System=" + Uri.EscapeDataString(currentSystemName);
         }
@@ -950,18 +899,20 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
 
     public async Task FindNearestAsync()
     {
-        if (SelectedNode?.Definition.Entry is not { } entry
-            || nearestSearchHandler is null)
+        if (SelectedNode?.Definition.Entry is not { } entry || nearestSearchHandler is null)
         {
             return;
         }
 
-        await nearestSearchHandler(new CodexBingoNearestRequest(
-            CodexBingoNearestMode.Signal,
-            entry.DisplayName ?? SelectedNode.Definition.Name,
-            null,
-            null,
-            []));
+        await nearestSearchHandler(
+            new CodexBingoNearestRequest(
+                CodexBingoNearestMode.Signal,
+                entry.DisplayName ?? SelectedNode.Definition.Name,
+                null,
+                null,
+                []
+            )
+        );
     }
 
     public async Task FindMissingVariantsAsync()
@@ -971,8 +922,8 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
             return;
         }
 
-        var missing = node.Children
-            .Where(child => child.Definition.Entry is not null && !child.IsComplete)
+        var missing = node
+            .Children.Where(child => child.Definition.Entry is not null && !child.IsComplete)
             .Select(child => child.Definition.Name)
             .ToArray();
         if (missing.Length == 0)
@@ -980,12 +931,15 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
             return;
         }
 
-        await nearestSearchHandler(new CodexBingoNearestRequest(
-            CodexBingoNearestMode.MissingVariants,
-            null,
-            node.Definition.Genus,
-            node.Definition.Species,
-            missing));
+        await nearestSearchHandler(
+            new CodexBingoNearestRequest(
+                CodexBingoNearestMode.MissingVariants,
+                null,
+                node.Definition.Genus,
+                node.Definition.Species,
+                missing
+            )
+        );
     }
 
     private async Task CopyAsync(string? text, string description)
@@ -1009,9 +963,7 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
         }
 
         var launched = await uriLauncher(uri);
-        StatusMessage = launched
-            ? $"Opened {description}."
-            : $"Could not open {description}.";
+        StatusMessage = launched ? $"Opened {description}." : $"Could not open {description}.";
         return launched;
     }
 
@@ -1028,9 +980,8 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
         }
 
         var match = EdAstroLinks.FirstOrDefault(pair =>
-            node.Name.Contains(
-                pair.Key,
-                StringComparison.OrdinalIgnoreCase));
+            node.Name.Contains(pair.Key, StringComparison.OrdinalIgnoreCase)
+        );
         if (match.Value is not null)
         {
             return new Uri(match.Value);
@@ -1047,27 +998,19 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
             genus = "anemone";
         }
 
-        return new Uri(
-            WellKnownUris.EdastroOrganicMapPrefix
-                + Uri.EscapeDataString(genus)
-                + "-regions.jpg");
+        return new Uri(WellKnownUris.EdastroOrganicMapPrefix + Uri.EscapeDataString(genus) + "-regions.jpg");
     }
 
-    private static CodexBingoRegionOptionViewModel[] CreateRegions(
-        int? currentRegionId)
+    private static CodexBingoRegionOptionViewModel[] CreateRegions(int? currentRegionId)
     {
-        return new[]
-            {
-                new CodexBingoRegionOptionViewModel(
-                    0,
-                    "All regions",
-                    false),
-            }
-            .Concat(GalacticRegionMap.Regions.Select(region =>
-                new CodexBingoRegionOptionViewModel(
+        return new[] { new CodexBingoRegionOptionViewModel(0, "All regions", false) }
+            .Concat(
+                GalacticRegionMap.Regions.Select(region => new CodexBingoRegionOptionViewModel(
                     region.Id,
                     region.Name,
-                    region.Id == currentRegionId)))
+                    region.Id == currentRegionId
+                ))
+            )
             .ToArray();
     }
 
@@ -1075,31 +1018,25 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
 
     private bool CanImport() => SelectedCommander is not null && !IsBusy;
 
-    private bool HasSelection() => SelectedNode is not null
-        && clipboardWriter is not null
-        && !IsBusy;
+    private bool HasSelection() => SelectedNode is not null && clipboardWriter is not null && !IsBusy;
 
-    private bool CanUseSelectedEntry() => HasSelectedEntry
-        && !IsBusy;
+    private bool CanUseSelectedEntry() => HasSelectedEntry && !IsBusy;
 
-    private bool CanRequestManualOverride() => HasSelectedEntry
-        && !SelectedIsJournalVerified
-        && !IsBusy;
+    private bool CanRequestManualOverride() => HasSelectedEntry && !SelectedIsJournalVerified && !IsBusy;
 
-    private bool CanOpenBioforge() => SelectedNode is not null
-        && (SelectedNode.Definition.Entry is not null
-            || !string.IsNullOrWhiteSpace(SelectedNode.Definition.Species))
+    private bool CanOpenBioforge() =>
+        SelectedNode is not null
+        && (SelectedNode.Definition.Entry is not null || !string.IsNullOrWhiteSpace(SelectedNode.Definition.Species))
         && uriLauncher is not null
         && !IsBusy;
 
-    private bool CanOpenEdAstro() => CreateEdAstroUri(SelectedNode?.Definition) is not null
-        && uriLauncher is not null
-        && !IsBusy;
+    private bool CanOpenEdAstro() =>
+        CreateEdAstroUri(SelectedNode?.Definition) is not null && uriLauncher is not null && !IsBusy;
 
-    private bool CanFindMissingVariants() => SelectedNode is { } node
+    private bool CanFindMissingVariants() =>
+        SelectedNode is { } node
         && !string.IsNullOrWhiteSpace(node.Definition.Species)
-        && node.Children.Any(child =>
-            child.Definition.Entry is not null && !child.IsComplete)
+        && node.Children.Any(child => child.Definition.Entry is not null && !child.IsComplete)
         && nearestSearchHandler is not null
         && !IsBusy;
 
@@ -1161,10 +1098,7 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -1176,9 +1110,7 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
         return true;
     }
 
-    private sealed class AsyncCommand(
-        Func<Task> execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class AsyncCommand(Func<Task> execute, Func<bool> canExecute) : ICommand
     {
         private bool executing;
 
@@ -1212,9 +1144,7 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
         }
     }
 
-    private sealed class DelegateCommand(
-        Action execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class DelegateCommand(Action execute, Func<bool> canExecute) : ICommand
     {
         public event EventHandler? CanExecuteChanged;
 
@@ -1249,16 +1179,11 @@ public sealed class CodexBingoTreeNodeViewModel : INotifyPropertyChanged
     private int totalCount;
     private bool isExpanded;
 
-    public CodexBingoTreeNodeViewModel(
-        CodexBingoNode definition,
-        bool expand = false)
+    public CodexBingoTreeNodeViewModel(CodexBingoNode definition, bool expand = false)
     {
-        Definition = definition
-            ?? throw new ArgumentNullException(nameof(definition));
+        Definition = definition ?? throw new ArgumentNullException(nameof(definition));
         isExpanded = expand;
-        Children = definition.Children
-            .Select(child => new CodexBingoTreeNodeViewModel(child))
-            .ToArray();
+        Children = definition.Children.Select(child => new CodexBingoTreeNodeViewModel(child)).ToArray();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -1269,8 +1194,7 @@ public sealed class CodexBingoTreeNodeViewModel : INotifyPropertyChanged
 
     public string Name => Definition.Name;
 
-    public string EntryId => Definition.Entry?.EntryId.ToString(
-        CultureInfo.InvariantCulture) ?? string.Empty;
+    public string EntryId => Definition.Entry?.EntryId.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
 
     public bool IsEntry => Definition.Entry is not null;
 
@@ -1286,9 +1210,7 @@ public sealed class CodexBingoTreeNodeViewModel : INotifyPropertyChanged
         private set => SetField(ref totalCount, value);
     }
 
-    public double Completion => TotalCount == 0
-        ? 0
-        : (double)DiscoveredCount / TotalCount;
+    public double Completion => TotalCount == 0 ? 0 : (double)DiscoveredCount / TotalCount;
 
     public double CompletionPercent => Completion * 100;
 
@@ -1296,13 +1218,14 @@ public sealed class CodexBingoTreeNodeViewModel : INotifyPropertyChanged
 
     public bool IsIncomplete => TotalCount > 0 && !IsComplete;
 
-    public string CompletionText => IsEntry
-        ? (IsComplete) switch
-        {
-            true => "Discovered",
-            false => "Missing"
-        }
-        : $"{DiscoveredCount:N0}/{TotalCount:N0} · {Completion:P1}";
+    public string CompletionText =>
+        IsEntry
+            ? (IsComplete) switch
+            {
+                true => "Discovered",
+                false => "Missing",
+            }
+            : $"{DiscoveredCount:N0}/{TotalCount:N0} · {Completion:P1}";
 
     public bool IsExpanded
     {
@@ -1348,10 +1271,7 @@ public sealed class CodexBingoTreeNodeViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -1364,28 +1284,24 @@ public sealed class CodexBingoTreeNodeViewModel : INotifyPropertyChanged
     }
 }
 
-public sealed record CommanderCodexOptionViewModel(
-    string FrontierId,
-    string CommanderName,
-    bool IsActive)
+public sealed record CommanderCodexOptionViewModel(string FrontierId, string CommanderName, bool IsActive)
 {
-    public string DisplayName => IsActive
-        ? CommanderName + " · active"
-        : CommanderName;
+    public string DisplayName => IsActive ? CommanderName + " · active" : CommanderName;
 }
 
-public sealed record CodexBingoRegionOptionViewModel(
-    int RegionId,
-    string Name,
-    bool IsCurrent)
+public sealed record CodexBingoRegionOptionViewModel(int RegionId, string Name, bool IsCurrent)
 {
-    public string DisplayName => RegionId == 0
-        ? Name
-        : $"#{RegionId} {Name}" + ((IsCurrent) switch
-        {
-            true => " · current",
-            false => string.Empty
-        });
+    public string DisplayName =>
+        RegionId == 0
+            ? Name
+            : $"#{RegionId} {Name}"
+                + (
+                    (IsCurrent) switch
+                    {
+                        true => " · current",
+                        false => string.Empty,
+                    }
+                );
 }
 
 public enum CodexBingoNearestMode
@@ -1399,4 +1315,5 @@ public sealed record CodexBingoNearestRequest(
     string? Signal,
     string? Genus,
     string? Species,
-    IReadOnlyList<string> Variants);
+    IReadOnlyList<string> Variants
+);

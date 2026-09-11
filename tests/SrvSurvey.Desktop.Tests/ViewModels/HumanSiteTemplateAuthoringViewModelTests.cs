@@ -5,9 +5,7 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class HumanSiteTemplateAuthoringViewModelTests : IDisposable
 {
-    private readonly string directory = Path.Combine(
-        Path.GetTempPath(),
-        $"SrvSurvey-author-view-{Guid.NewGuid():N}");
+    private readonly string directory = Path.Combine(Path.GetTempPath(), $"SrvSurvey-author-view-{Guid.NewGuid():N}");
 
     [Fact]
     public void LivePointsAndShieldTogglesBuildPreviewWithoutMutatingCatalog()
@@ -15,14 +13,13 @@ public sealed class HumanSiteTemplateAuthoringViewModelTests : IDisposable
         var catalog = HumanSiteTemplateCatalog.LoadEmbedded();
         var template = catalog.Templates[0];
         var previewChanges = 0;
-        var viewModel = new HumanSiteTemplateAuthoringViewModel(
-            catalog,
-            () => previewChanges++);
+        var viewModel = new HumanSiteTemplateAuthoringViewModel(catalog, () => previewChanges++);
         viewModel.UpdateContext(
             Site(template),
             new HumanSiteMapPoint(0, 0),
             currentRelativeHeading: 10,
-            currentShieldsUp: false);
+            currentShieldsUp: false
+        );
         viewModel.StartCommand.Execute(null);
         viewModel.BeginPolygonCommand.Execute(null);
 
@@ -30,12 +27,14 @@ public sealed class HumanSiteTemplateAuthoringViewModelTests : IDisposable
             Site(template),
             new HumanSiteMapPoint(10, 0),
             currentRelativeHeading: 20,
-            currentShieldsUp: true);
+            currentShieldsUp: true
+        );
         viewModel.UpdateContext(
             Site(template),
             new HumanSiteMapPoint(10, 10),
             currentRelativeHeading: 30,
-            currentShieldsUp: false);
+            currentShieldsUp: false
+        );
         viewModel.EndPolygonCommand.Execute(null);
         viewModel.BuildingName = "QA Building";
         viewModel.CommitBuildingCommand.Execute(null);
@@ -51,14 +50,13 @@ public sealed class HumanSiteTemplateAuthoringViewModelTests : IDisposable
     {
         var catalog = HumanSiteTemplateCatalog.LoadEmbedded();
         var template = catalog.Templates[0];
-        var viewModel = new HumanSiteTemplateAuthoringViewModel(
-            catalog,
-            () => { });
+        var viewModel = new HumanSiteTemplateAuthoringViewModel(catalog, () => { });
         viewModel.UpdateContext(
             Site(template),
             new HumanSiteMapPoint(1.5, -2.5),
             currentRelativeHeading: 270,
-            currentShieldsUp: false);
+            currentShieldsUp: false
+        );
         viewModel.StartCommand.Execute(null);
         viewModel.SecurityLevel = 3;
         viewModel.Floor = 2;
@@ -69,8 +67,7 @@ public sealed class HumanSiteTemplateAuthoringViewModelTests : IDisposable
         viewModel.AddSecureDoorCommand.Execute(null);
 
         Assert.Equal(template.NamedPoints.Count + 1, viewModel.NamedPointCount);
-        Assert.Equal(template.DataTerminals.Count + 1,
-            viewModel.DataTerminalCount);
+        Assert.Equal(template.DataTerminals.Count + 1, viewModel.DataTerminalCount);
         var door = viewModel.PreviewTemplate!.SecureDoors[^1];
         Assert.Equal(new HumanSiteMapPoint(1.5, -2.5), door.Offset);
         Assert.Equal(270, door.Rotation);
@@ -83,14 +80,13 @@ public sealed class HumanSiteTemplateAuthoringViewModelTests : IDisposable
     {
         var catalog = HumanSiteTemplateCatalog.LoadEmbedded();
         var template = catalog.Templates[0];
-        var viewModel = new HumanSiteTemplateAuthoringViewModel(
-            catalog,
-            () => { });
+        var viewModel = new HumanSiteTemplateAuthoringViewModel(catalog, () => { });
         viewModel.UpdateContext(
             Site(template),
             new HumanSiteMapPoint(1, 2),
             currentRelativeHeading: 0,
-            currentShieldsUp: false);
+            currentShieldsUp: false
+        );
         viewModel.StartCommand.Execute(null);
         viewModel.NamedPointName = "Exported Point";
         viewModel.AddNamedPointCommand.Execute(null);
@@ -100,9 +96,7 @@ public sealed class HumanSiteTemplateAuthoringViewModelTests : IDisposable
 
         await using var stream = File.OpenRead(path);
         var reloaded = HumanSiteTemplateCatalog.Load(stream);
-        Assert.Equal("Exported Point", reloaded.Find(
-            template.Economy,
-            template.SubType)!.NamedPoints[^1].Name);
+        Assert.Equal("Exported Point", reloaded.Find(template.Economy, template.SubType)!.NamedPoints[^1].Name);
         Assert.Equal(path, viewModel.LastExportPath);
         Assert.Contains("verified", viewModel.StatusMessage);
     }
@@ -111,21 +105,24 @@ public sealed class HumanSiteTemplateAuthoringViewModelTests : IDisposable
     public void ActiveSiteChangeDiscardsOnlyInMemoryDraft()
     {
         var catalog = HumanSiteTemplateCatalog.LoadEmbedded();
-        var viewModel = new HumanSiteTemplateAuthoringViewModel(
-            catalog,
-            () => { });
+        var viewModel = new HumanSiteTemplateAuthoringViewModel(catalog, () => { });
         viewModel.UpdateContext(
             Site(catalog.Templates[0]),
             new HumanSiteMapPoint(0, 0),
             currentRelativeHeading: 0,
-            currentShieldsUp: false);
+            currentShieldsUp: false
+        );
         viewModel.StartCommand.Execute(null);
 
         viewModel.UpdateContext(
-            Site(catalog.Templates[1]) with { MarketId = 2 },
+            Site(catalog.Templates[1]) with
+            {
+                MarketId = 2,
+            },
             new HumanSiteMapPoint(0, 0),
             currentRelativeHeading: 0,
-            currentShieldsUp: false);
+            currentShieldsUp: false
+        );
 
         Assert.False(viewModel.IsAuthoring);
         Assert.Contains("discarded", viewModel.StatusMessage);
@@ -159,7 +156,8 @@ public sealed class HumanSiteTemplateAuthoringViewModelTests : IDisposable
             DockingDeniedReason: null,
             HasLanded: false,
             FirstApproached: DateTimeOffset.UtcNow,
-            LastUpdated: DateTimeOffset.UtcNow);
+            LastUpdated: DateTimeOffset.UtcNow
+        );
     }
 
     public void Dispose()

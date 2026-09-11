@@ -17,101 +17,102 @@ public static class OverlayThemeResources
 
     private static readonly object ThemeWindowsLock = new();
     private static readonly List<WeakReference<Window>> ThemeWindows = [];
-    private static readonly ConditionalWeakTable<Window, ScaleRegistration>
-        ScaleRegistrations = new();
-    private static readonly ConditionalWeakTable<Window, LegacyPresentationRegistration>
-        LegacyPresentationRegistrations = new();
-    private static readonly ConditionalWeakTable<Window, LayoutSettingsRegistration>
-        LayoutSettingsRegistrations = new();
-    private static readonly Dictionary<string, string> ResourceMappings =
-        CreateResourceMappings(
-            "Window",
-            "Surface",
-            "RaisedSurface",
-            "Header",
-            "Accent",
-            "AccentMuted",
-            "Text",
-            "MutedText",
-            "Border",
-            "Success",
-            "Warning",
-            "Danger",
-            "Primary",
-            "PrimaryDim",
-            "Secondary",
-            "SecondaryDim",
-            "DangerDim",
-            "SuccessDim",
-            "MenuGold",
-            "BioConfirmed",
-            "BioConfirmedDim",
-            "BioPotential",
-            "BioConfirmedDimPotential",
-            "BioPrediction",
-            "BioPredictionPotential",
-            "BioGold",
-            "BioGoldDim",
-            "BioGoldFill",
-            "BioGoldDimFill",
-            "BioGoldPotential",
-            "BioGoldDimPotential",
-            "BioGalacticRegion",
-            "BioGalacticRegionPotential",
-            "BioUnknown",
-            "BioUnknownGlyph",
-            "BioHatch",
-            "BioEmpty",
-            "BioWhite",
-            "BioConfirmedEdge",
-            "BioConfirmedDimEdge",
-            "BioPredictionEdge",
-            "BioGoldEdge",
-            "BioGoldDimEdge",
-            "BioGalacticRegionEdge",
-            "BioUnknownEdge",
-            "BioConfirmedSegmentEdge",
-            "BioConfirmedPotentialSegmentEdge",
-            "BioConfirmedDimSegmentEdge",
-            "BioConfirmedDimPotentialSegmentEdge",
-            "BioPredictionSegmentEdge",
-            "BioPredictionPotentialSegmentEdge",
-            "BioGoldSegmentEdge",
-            "BioGoldPotentialSegmentEdge",
-            "BioGoldDimSegmentEdge",
-            "BioGoldDimPotentialSegmentEdge",
-            "BioGalacticRegionSegmentEdge",
-            "BioGalacticRegionPotentialSegmentEdge",
-            "ColoniseSurplus",
-            "ColoniseSurplusDim",
-            "ColoniseDeficit",
-            "ColoniseDeficitDim",
-            "ColoniseHighlight",
-            "ColoniseItem",
-            "ColoniseItemDim",
-            "ColoniseRowHighlight",
-            "FczCheckpoint",
-            "FczCheckpointLocal",
-            "FczPowerPost",
-            "GuardianBackground",
-            "GuardianHeader",
-            "GuardianPrimary",
-            "GuardianPrimaryDim",
-            "GuardianSecondary",
-            "GuardianSecondaryDim",
-            "GuardianText",
-            "GuardianMuted",
-            "GuardianDanger",
-            "GuardianSuccess",
-            "GuardianWarning",
-            "GuardianSurface");
+    private static readonly ConditionalWeakTable<Window, ScaleRegistration> ScaleRegistrations = new();
+    private static readonly ConditionalWeakTable<
+        Window,
+        LegacyPresentationRegistration
+    > LegacyPresentationRegistrations = new();
+    private static readonly ConditionalWeakTable<Window, LayoutSettingsRegistration> LayoutSettingsRegistrations =
+        new();
+    private static readonly Dictionary<string, string> ResourceMappings = CreateResourceMappings(
+        "Window",
+        "Surface",
+        "RaisedSurface",
+        "Header",
+        "Accent",
+        "AccentMuted",
+        "Text",
+        "MutedText",
+        "Border",
+        "Success",
+        "Warning",
+        "Danger",
+        "Primary",
+        "PrimaryDim",
+        "Secondary",
+        "SecondaryDim",
+        "DangerDim",
+        "SuccessDim",
+        "MenuGold",
+        "BioConfirmed",
+        "BioConfirmedDim",
+        "BioPotential",
+        "BioConfirmedDimPotential",
+        "BioPrediction",
+        "BioPredictionPotential",
+        "BioGold",
+        "BioGoldDim",
+        "BioGoldFill",
+        "BioGoldDimFill",
+        "BioGoldPotential",
+        "BioGoldDimPotential",
+        "BioGalacticRegion",
+        "BioGalacticRegionPotential",
+        "BioUnknown",
+        "BioUnknownGlyph",
+        "BioHatch",
+        "BioEmpty",
+        "BioWhite",
+        "BioConfirmedEdge",
+        "BioConfirmedDimEdge",
+        "BioPredictionEdge",
+        "BioGoldEdge",
+        "BioGoldDimEdge",
+        "BioGalacticRegionEdge",
+        "BioUnknownEdge",
+        "BioConfirmedSegmentEdge",
+        "BioConfirmedPotentialSegmentEdge",
+        "BioConfirmedDimSegmentEdge",
+        "BioConfirmedDimPotentialSegmentEdge",
+        "BioPredictionSegmentEdge",
+        "BioPredictionPotentialSegmentEdge",
+        "BioGoldSegmentEdge",
+        "BioGoldPotentialSegmentEdge",
+        "BioGoldDimSegmentEdge",
+        "BioGoldDimPotentialSegmentEdge",
+        "BioGalacticRegionSegmentEdge",
+        "BioGalacticRegionPotentialSegmentEdge",
+        "ColoniseSurplus",
+        "ColoniseSurplusDim",
+        "ColoniseDeficit",
+        "ColoniseDeficitDim",
+        "ColoniseHighlight",
+        "ColoniseItem",
+        "ColoniseItemDim",
+        "ColoniseRowHighlight",
+        "FczCheckpoint",
+        "FczCheckpointLocal",
+        "FczPowerPost",
+        "GuardianBackground",
+        "GuardianHeader",
+        "GuardianPrimary",
+        "GuardianPrimaryDim",
+        "GuardianSecondary",
+        "GuardianSecondaryDim",
+        "GuardianText",
+        "GuardianMuted",
+        "GuardianDanger",
+        "GuardianSuccess",
+        "GuardianWarning",
+        "GuardianSurface"
+    );
 
-    private static Dictionary<string, string> CreateResourceMappings(
-        params string[] resourceNames) =>
+    private static Dictionary<string, string> CreateResourceMappings(params string[] resourceNames) =>
         resourceNames.ToDictionary(
             name => $"Raven{name}Brush",
             name => $"RavenOverlay{name}Brush",
-            StringComparer.Ordinal);
+            StringComparer.Ordinal
+        );
 
     public static void Apply(Window window)
     {
@@ -120,10 +121,7 @@ public static class OverlayThemeResources
         ApplyThemeResources(window);
     }
 
-    public static void Apply(
-        Window window,
-        LegacyOverlayLayout layout,
-        string plotterName)
+    public static void Apply(Window window, LegacyOverlayLayout layout, string plotterName)
     {
         Apply(window, layout, plotterName, OverlayWindowRegistry.Shared);
     }
@@ -132,7 +130,8 @@ public static class OverlayThemeResources
         Window window,
         LegacyOverlayLayout layout,
         string plotterName,
-        OverlayWindowRegistry registry)
+        OverlayWindowRegistry registry
+    )
     {
         ArgumentNullException.ThrowIfNull(layout);
         ArgumentNullException.ThrowIfNull(registry);
@@ -152,9 +151,7 @@ public static class OverlayThemeResources
         lock (ThemeWindowsLock)
         {
             windows = ThemeWindows
-                .Select(reference => reference.TryGetTarget(out var window)
-                    ? window
-                    : null)
+                .Select(reference => reference.TryGetTarget(out var window) ? window : null)
                 .Where(window => window is not null)
                 .Cast<Window>()
                 .ToArray();
@@ -182,10 +179,7 @@ public static class OverlayThemeResources
         {
             foreach (var mapping in ResourceMappings)
             {
-                if (application.Resources.TryGetResource(
-                        mapping.Value,
-                        application.ActualThemeVariant,
-                        out var value))
+                if (application.Resources.TryGetResource(mapping.Value, application.ActualThemeVariant, out var value))
                 {
                     window.Resources[mapping.Key] = value;
                 }
@@ -216,18 +210,15 @@ public static class OverlayThemeResources
 
         _ = window.TryFindResource("RavenWindowBrush", out var windowBrush);
         _ = window.TryFindResource(RavenWarningBrushResource, out var warningBrush);
-        ApplySurfaceChrome(
-            surface,
-            isEditorPreview: false,
-            windowBrush as IBrush,
-            warningBrush as IBrush);
+        ApplySurfaceChrome(surface, isEditorPreview: false, windowBrush as IBrush, warningBrush as IBrush);
     }
 
     internal static void ApplySurfaceChrome(
         Border surface,
         bool isEditorPreview,
         IBrush? windowBrush = null,
-        IBrush? warningBrush = null)
+        IBrush? warningBrush = null
+    )
     {
         ArgumentNullException.ThrowIfNull(surface);
         surface.Margin = new Thickness(isEditorPreview ? 1 : 0);
@@ -264,30 +255,20 @@ public static class OverlayThemeResources
         }
     }
 
-    private static void RegisterLayoutSettings(
-        Window window,
-        LegacyOverlayLayout layout,
-        string plotterName)
+    private static void RegisterLayoutSettings(Window window, LegacyOverlayLayout layout, string plotterName)
     {
-        if (LayoutSettingsRegistrations.TryGetValue(
-                window,
-                out var existing))
+        if (LayoutSettingsRegistrations.TryGetValue(window, out var existing))
         {
             existing.Validate(layout, plotterName);
             return;
         }
 
-        LayoutSettingsRegistrations.Add(
-            window,
-            new LayoutSettingsRegistration(window, layout, plotterName));
+        LayoutSettingsRegistrations.Add(window, new LayoutSettingsRegistration(window, layout, plotterName));
     }
 
-    internal static void ApplyLegacyPresentation(
-        Window window,
-        string plotterName)
+    internal static void ApplyLegacyPresentation(Window window, string plotterName)
     {
-        var definition = OverlayLayoutCatalog.Supported.FirstOrDefault(
-            candidate => candidate.Name == plotterName);
+        var definition = OverlayLayoutCatalog.Supported.FirstOrDefault(candidate => candidate.Name == plotterName);
         if (definition is null)
         {
             return;
@@ -297,8 +278,10 @@ public static class OverlayThemeResources
         // Do not register the legacy LayoutUpdated normalizer: it would later
         // walk the editor preview shell and strip the folder tab's padding,
         // background, border, and corner radius after the window opens.
-        if (OverlayRuntimePresentationFactory.UsesDedicatedHostChrome(plotterName)
-            || GuardianOverlayPresentationFactory.IsSupported(plotterName))
+        if (
+            OverlayRuntimePresentationFactory.UsesDedicatedHostChrome(plotterName)
+            || GuardianOverlayPresentationFactory.IsSupported(plotterName)
+        )
         {
             ApplyDedicatedPresentationChrome(window);
             return;
@@ -306,9 +289,8 @@ public static class OverlayThemeResources
 
         var registration = LegacyPresentationRegistrations.GetValue(
             window,
-            candidate => new LegacyPresentationRegistration(
-                candidate,
-                definition));
+            candidate => new LegacyPresentationRegistration(candidate, definition)
+        );
         registration.ApplyPresentation();
     }
 
@@ -341,9 +323,7 @@ public static class OverlayThemeResources
         surface.Opacity = 1d;
     }
 
-    internal static void NormalizeLegacyOverlayControl(
-        Control control,
-        Control rootSurface)
+    internal static void NormalizeLegacyOverlayControl(Control control, Control rootSurface)
     {
         ArgumentNullException.ThrowIfNull(control);
         ArgumentNullException.ThrowIfNull(rootSurface);
@@ -396,9 +376,7 @@ public static class OverlayThemeResources
         }
     }
 
-    internal static void ReplaceSurfaceContent(
-        Border surface,
-        StackPanel replacement)
+    internal static void ReplaceSurfaceContent(Border surface, StackPanel replacement)
     {
         ArgumentNullException.ThrowIfNull(surface);
         ArgumentNullException.ThrowIfNull(replacement);
@@ -416,17 +394,12 @@ public static class OverlayThemeResources
     {
         var padding = border.Padding;
         var corner = border.CornerRadius;
-        return Math.Max(
-                Math.Max(padding.Left, padding.Top),
-                Math.Max(padding.Right, padding.Bottom)) >= 6d
-            && Math.Max(
-                Math.Max(corner.TopLeft, corner.TopRight),
-                Math.Max(corner.BottomLeft, corner.BottomRight)) >= 5d;
+        return Math.Max(Math.Max(padding.Left, padding.Top), Math.Max(padding.Right, padding.Bottom)) >= 6d
+            && Math.Max(Math.Max(corner.TopLeft, corner.TopRight), Math.Max(corner.BottomLeft, corner.BottomRight))
+                >= 5d;
     }
 
-    internal static void ApplyLegacyFormFactor(
-        Window window,
-        string plotterName)
+    internal static void ApplyLegacyFormFactor(Window window, string plotterName)
     {
         ArgumentNullException.ThrowIfNull(window);
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
@@ -443,12 +416,9 @@ public static class OverlayThemeResources
             window.MinWidth = width.Value;
         }
 
-        if (window.SizeToContent is SizeToContent.WidthAndHeight
-            or SizeToContent.Width)
+        if (window.SizeToContent is SizeToContent.WidthAndHeight or SizeToContent.Width)
         {
-            if (!double.IsNaN(window.MaxWidth)
-                && window.MaxWidth > 0
-                && window.MaxWidth < width.Value)
+            if (!double.IsNaN(window.MaxWidth) && window.MaxWidth > 0 && window.MaxWidth < width.Value)
             {
                 window.MaxWidth = double.PositiveInfinity;
             }
@@ -467,18 +437,13 @@ public static class OverlayThemeResources
     internal static double? GetLegacyFormFactorWidth(string plotterName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
-        var definition = OverlayLayoutCatalog.Supported.FirstOrDefault(
-            candidate => string.Equals(
-                candidate.Name,
-                plotterName,
-                StringComparison.Ordinal));
+        var definition = OverlayLayoutCatalog.Supported.FirstOrDefault(candidate =>
+            string.Equals(candidate.Name, plotterName, StringComparison.Ordinal)
+        );
         return definition?.PreviewSize.Width;
     }
 
-    public static void ApplyOpacity(
-        Window window,
-        LegacyOverlayLayout layout,
-        string plotterName)
+    public static void ApplyOpacity(Window window, LegacyOverlayLayout layout, string plotterName)
     {
         ArgumentNullException.ThrowIfNull(window);
         ArgumentNullException.ThrowIfNull(layout);
@@ -491,38 +456,25 @@ public static class OverlayThemeResources
         }
     }
 
-    public static void ApplyScale(
-        Window window,
-        LegacyOverlayLayout layout)
+    public static void ApplyScale(Window window, LegacyOverlayLayout layout)
     {
         ArgumentNullException.ThrowIfNull(window);
         ArgumentNullException.ThrowIfNull(layout);
-        var scaleIndex = OverlayWindowRegistry.Shared.TryGetPlotterName(
-            window,
-            out var plotterName)
-                ? layout.GetScaleIndex(plotterName)
-                : layout.ScaleIndex;
+        var scaleIndex = OverlayWindowRegistry.Shared.TryGetPlotterName(window, out var plotterName)
+            ? layout.GetScaleIndex(plotterName)
+            : layout.ScaleIndex;
         ApplyScale(window, scaleIndex, window.RenderScaling);
     }
 
-    public static void ApplyScale(
-        Window window,
-        LegacyOverlayLayout layout,
-        string plotterName)
+    public static void ApplyScale(Window window, LegacyOverlayLayout layout, string plotterName)
     {
         ArgumentNullException.ThrowIfNull(window);
         ArgumentNullException.ThrowIfNull(layout);
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
-        ApplyScale(
-            window,
-            layout.GetScaleIndex(plotterName),
-            window.RenderScaling);
+        ApplyScale(window, layout.GetScaleIndex(plotterName), window.RenderScaling);
     }
 
-    public static void ApplyScale(
-        Window window,
-        int scaleIndex,
-        double renderScaling)
+    public static void ApplyScale(Window window, int scaleIndex, double renderScaling)
     {
         ArgumentNullException.ThrowIfNull(window);
         var registration = GetOrCreateScaleRegistration(window);
@@ -531,17 +483,13 @@ public static class OverlayThemeResources
             return;
         }
 
-        var factor = OverlayScaleCatalog.GetRelativeScale(
-            scaleIndex,
-            renderScaling);
+        var factor = OverlayScaleCatalog.GetRelativeScale(scaleIndex, renderScaling);
         if (Math.Abs(registration.AppliedFactor - factor) <= 0.0001d)
         {
             return;
         }
 
-        registration.Container.LayoutTransform = new ScaleTransform(
-            factor,
-            factor);
+        registration.Container.LayoutTransform = new ScaleTransform(factor, factor);
         window.MinWidth = Scale(registration.BaseMinWidth, factor);
         window.MinHeight = Scale(registration.BaseMinHeight, factor);
         window.MaxWidth = Scale(registration.BaseMaxWidth, factor);
@@ -549,14 +497,12 @@ public static class OverlayThemeResources
 
         // Respect content-driven hosts: only force the axes the window is not
         // already measuring from its presentation tree.
-        if (window.SizeToContent is SizeToContent.Manual
-            or SizeToContent.Height)
+        if (window.SizeToContent is SizeToContent.Manual or SizeToContent.Height)
         {
             window.Width = Scale(registration.BaseWidth, factor);
         }
 
-        if (window.SizeToContent is SizeToContent.Manual
-            or SizeToContent.Width)
+        if (window.SizeToContent is SizeToContent.Manual or SizeToContent.Width)
         {
             window.Height = Scale(registration.BaseHeight, factor);
         }
@@ -564,11 +510,7 @@ public static class OverlayThemeResources
         registration.AppliedFactor = factor;
     }
 
-    public static void SetBaseSize(
-        Window window,
-        LegacyOverlayLayout layout,
-        double width,
-        double height)
+    public static void SetBaseSize(Window window, LegacyOverlayLayout layout, double width, double height)
     {
         ArgumentNullException.ThrowIfNull(window);
         ArgumentNullException.ThrowIfNull(layout);
@@ -582,11 +524,13 @@ public static class OverlayThemeResources
             throw new ArgumentOutOfRangeException(nameof(height));
         }
 
-        var registration = GetOrCreateScaleRegistration(window)
-            ?? throw new InvalidOperationException(
-                "The overlay window content cannot be scaled.");
-        if (Math.Abs(registration.BaseWidth - width) <= 0.0001d
-            && Math.Abs(registration.BaseHeight - height) <= 0.0001d)
+        var registration =
+            GetOrCreateScaleRegistration(window)
+            ?? throw new InvalidOperationException("The overlay window content cannot be scaled.");
+        if (
+            Math.Abs(registration.BaseWidth - width) <= 0.0001d
+            && Math.Abs(registration.BaseHeight - height) <= 0.0001d
+        )
         {
             ApplyScale(window, layout);
             return;
@@ -617,7 +561,8 @@ public static class OverlayThemeResources
             window.MinWidth,
             window.MinHeight,
             window.MaxWidth,
-            window.MaxHeight);
+            window.MaxHeight
+        );
         window.Content = null;
         registration.Container.Child = content;
         window.Content = registration.Container;
@@ -634,14 +579,11 @@ public static class OverlayThemeResources
     {
         private readonly Window window;
         private readonly OverlayLayoutDefinition definition;
-        private readonly HashSet<Control> normalized =
-            new(ReferenceEqualityComparer.Instance);
+        private readonly HashSet<Control> normalized = new(ReferenceEqualityComparer.Instance);
         private Border? rootSurface;
         private bool headerApplied;
 
-        public LegacyPresentationRegistration(
-            Window window,
-            OverlayLayoutDefinition definition)
+        public LegacyPresentationRegistration(Window window, OverlayLayoutDefinition definition)
         {
             this.window = window;
             this.definition = definition;
@@ -660,9 +602,10 @@ public static class OverlayThemeResources
 
             // Shared presentation templates own their full visual grammar.
             // Do not inject headers or normalize spacing into them.
-            if (OverlayRuntimePresentationFactory.IsSupported(definition.Name)
-                || GuardianOverlayPresentationFactory.IsSupported(
-                    definition.Name))
+            if (
+                OverlayRuntimePresentationFactory.IsSupported(definition.Name)
+                || GuardianOverlayPresentationFactory.IsSupported(definition.Name)
+            )
             {
                 return;
             }
@@ -688,24 +631,26 @@ public static class OverlayThemeResources
 
             var stack = new StackPanel { Spacing = 3d };
             stack.Classes.Add("legacy-runtime-surface");
-            _ = window.TryFindResource(
-                RavenWarningBrushResource,
-                out var warning);
-            stack.Children.Add(new TextBlock
-            {
-                Text = definition.DisplayName,
-                FontSize = 12d,
-                FontWeight = FontWeight.SemiBold,
-                Foreground = warning as IBrush,
-                TextTrimming = TextTrimming.CharacterEllipsis,
-            });
-            stack.Children.Add(new Border
-            {
-                Height = 1d,
-                Margin = new Thickness(0, 1),
-                Background = warning as IBrush,
-                Opacity = 0.65d,
-            });
+            _ = window.TryFindResource(RavenWarningBrushResource, out var warning);
+            stack.Children.Add(
+                new TextBlock
+                {
+                    Text = definition.DisplayName,
+                    FontSize = 12d,
+                    FontWeight = FontWeight.SemiBold,
+                    Foreground = warning as IBrush,
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+                }
+            );
+            stack.Children.Add(
+                new Border
+                {
+                    Height = 1d,
+                    Margin = new Thickness(0, 1),
+                    Background = warning as IBrush,
+                    Opacity = 0.65d,
+                }
+            );
             ReplaceSurfaceContent(surface, stack);
         }
 
@@ -732,9 +677,7 @@ public static class OverlayThemeResources
 
         private void NormalizeRealizedControls()
         {
-            foreach (var control in window
-                         .GetVisualDescendants()
-                         .OfType<Control>())
+            foreach (var control in window.GetVisualDescendants().OfType<Control>())
             {
                 Normalize(control);
             }
@@ -752,8 +695,7 @@ public static class OverlayThemeResources
 
         private static bool ContainsTitle(Control control, string title)
         {
-            if (control is TextBlock text
-                && string.Equals(text.Text, title, StringComparison.Ordinal))
+            if (control is TextBlock text && string.Equals(text.Text, title, StringComparison.Ordinal))
             {
                 return true;
             }
@@ -761,10 +703,8 @@ public static class OverlayThemeResources
             return control switch
             {
                 Border { Child: Control child } => ContainsTitle(child, title),
-                Panel panel => panel.Children.Any(child =>
-                    ContainsTitle(child, title)),
-                ContentControl { Content: Control content } =>
-                    ContainsTitle(content, title),
+                Panel panel => panel.Children.Any(child => ContainsTitle(child, title)),
+                ContentControl { Content: Control content } => ContainsTitle(content, title),
                 _ => false,
             };
         }
@@ -805,7 +745,8 @@ public static class OverlayThemeResources
         double baseMinWidth,
         double baseMinHeight,
         double baseMaxWidth,
-        double baseMaxHeight)
+        double baseMaxHeight
+    )
     {
         public LayoutTransformControl Container { get; } = container;
 
@@ -831,10 +772,7 @@ public static class OverlayThemeResources
         private readonly string plotterName;
         private bool closed;
 
-        public LayoutSettingsRegistration(
-            Window window,
-            LegacyOverlayLayout layout,
-            string plotterName)
+        public LayoutSettingsRegistration(Window window, LegacyOverlayLayout layout, string plotterName)
         {
             this.window = window;
             this.layout = layout;
@@ -843,19 +781,17 @@ public static class OverlayThemeResources
             window.Closed += OnWindowClosed;
         }
 
-        public void Validate(
-            LegacyOverlayLayout expectedLayout,
-            string expectedPlotterName)
+        public void Validate(LegacyOverlayLayout expectedLayout, string expectedPlotterName)
         {
-            if (!ReferenceEquals(layout, expectedLayout)
-                || !string.Equals(
-                    plotterName,
-                    expectedPlotterName,
-                    StringComparison.Ordinal))
+            if (
+                !ReferenceEquals(layout, expectedLayout)
+                || !string.Equals(plotterName, expectedPlotterName, StringComparison.Ordinal)
+            )
             {
                 throw new InvalidOperationException(
                     $"{window.GetType().Name} is already wired to "
-                        + $"'{plotterName}' using a different overlay layout.");
+                        + $"'{plotterName}' using a different overlay layout."
+                );
             }
         }
 

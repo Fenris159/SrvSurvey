@@ -6,7 +6,8 @@ public sealed class JournalSettingsStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-journal-settings-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-journal-settings-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void MissingSettingsHaveNoOverride()
@@ -24,9 +25,7 @@ public sealed class JournalSettingsStoreTests : IDisposable
 
         store.Save(new JournalPreferences("  D:\\Elite Journals  "));
 
-        Assert.Equal(
-            new JournalPreferences("D:\\Elite Journals"),
-            store.Load());
+        Assert.Equal(new JournalPreferences("D:\\Elite Journals"), store.Load());
         Assert.Contains("\"Keep\": 42", File.ReadAllText(path));
     }
 
@@ -40,7 +39,6 @@ public sealed class JournalSettingsStoreTests : IDisposable
 
     private JournalSettingsStore CreateStore()
     {
-        return new JournalSettingsStore(
-            Path.Combine(temporaryDirectory, "ui-settings.json"));
+        return new JournalSettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json"));
     }
 }

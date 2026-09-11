@@ -12,49 +12,89 @@ public sealed class MiningSpeechOutput : IDisposable
     private Thread? worker;
     private volatile bool disposed;
     public static bool IsSupported => OperatingSystem.IsWindows();
+
     public Task<IReadOnlyList<string>> GetVoicesAsync()
     {
-        var result = new TaskCompletionSource<IReadOnlyList<string>>(TaskCreationOptions.RunContinuationsAsynchronously);
-        if (!Enqueue(speaker =>
-        {
-            try
+        var result = new TaskCompletionSource<IReadOnlyList<string>>(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        if (
+            !Enqueue(speaker =>
             {
-                dynamic voices = ((dynamic)speaker).GetVoices();
-                var names = new List<string>();
-                for (var index = 0; index < voices.Count; index++) names.Add((string)voices.Item(index).GetDescription());
-                result.TrySetResult(names);
-            }
-            catch (Exception ex) { result.TrySetException(ex); }
-        })) result.TrySetResult([]);
+                try
+                {
+                    dynamic voices = ((dynamic)speaker).GetVoices();
+                    var names = new List<string>();
+                    for (var index = 0; index < voices.Count; index++)
+                    {
+                        names.Add((string)voices.Item(index).GetDescription());
+                    }
+
+                    result.TrySetResult(names);
+                }
+                catch (Exception ex)
+                {
+                    result.TrySetException(ex);
+                }
+            })
+        )
+        {
+            result.TrySetResult([]);
+        }
+
         return result.Task.WaitAsync(TimeSpan.FromSeconds(5));
     }
-    public void Speak(string text, string voice, int volume, int rate) => Enqueue(speaker =>
-    {
-        dynamic sapi = speaker;
-        sapi.Volume = Math.Clamp(volume, 0, 100);
-        sapi.Rate = Math.Clamp(rate, -10, 10);
-        if (!string.IsNullOrEmpty(voice))
+
+    public void Speak(string text, string voice, int volume, int rate) =>
+        Enqueue(speaker =>
         {
-            dynamic voices = sapi.GetVoices();
-            for (var index = 0; index < voices.Count; index++)
-                if ((string)voices.Item(index).GetDescription() == voice) { sapi.Voice = voices.Item(index); break; }
-        }
-        sapi.Speak(text, 0);
-    });
+            dynamic sapi = speaker;
+            sapi.Volume = Math.Clamp(volume, 0, 100);
+            sapi.Rate = Math.Clamp(rate, -10, 10);
+            if (!string.IsNullOrEmpty(voice))
+            {
+                dynamic voices = sapi.GetVoices();
+                for (var index = 0; index < voices.Count; index++)
+                {
+                    if ((string)voices.Item(index).GetDescription() == voice)
+                    {
+                        sapi.Voice = voices.Item(index);
+                        break;
+                    }
+                }
+            }
+            sapi.Speak(text, 0);
+        });
+
     private bool Enqueue(Action<object> action)
     {
         lock (sync)
         {
-            if (disposed || !OperatingSystem.IsWindows()) return false;
+            if (disposed || !OperatingSystem.IsWindows())
+            {
+                return false;
+            }
+
             if (worker is null)
             {
-                worker = new Thread(() => { if (OperatingSystem.IsWindows()) Run(); }) { IsBackground = true, Name = "Mining announcements" };
+                worker = new Thread(() =>
+                {
+                    if (OperatingSystem.IsWindows())
+                    {
+                        Run();
+                    }
+                })
+                {
+                    IsBackground = true,
+                    Name = "Mining announcements",
+                };
                 worker.SetApartmentState(ApartmentState.STA);
                 worker.Start();
             }
             return queue.TryAdd(action);
         }
     }
+
     [SupportedOSPlatform("windows")]
     private void Run()
     {
@@ -62,20 +102,45 @@ public sealed class MiningSpeechOutput : IDisposable
         try
         {
             var type = Type.GetTypeFromProgID("SAPI.SpVoice");
-            if (type is null) return;
+            if (type is null)
+            {
+                return;
+            }
+
             speaker = Activator.CreateInstance(type);
-            if (speaker is null) return;
+            if (speaker is null)
+            {
+                return;
+            }
+
             foreach (var action in queue.GetConsumingEnumerable())
             {
-                if (disposed) break;
-                try { action(speaker); }
-                catch (Exception ex) when (ex is COMException or Microsoft.CSharp.RuntimeBinder.RuntimeBinderException) { /* A failed voice must not interrupt journal processing. */ }
+                if (disposed)
+                {
+                    break;
+                }
+
+                try
+                {
+                    action(speaker);
+                }
+                catch (Exception ex) when (ex is COMException or Microsoft.CSharp.RuntimeBinder.RuntimeBinderException)
+                { /* A failed voice must not interrupt journal processing. */
+                }
             }
         }
-        catch (Exception ex) when (ex is COMException or System.Reflection.TargetInvocationException) { /* Voice enumeration reports unavailability through its bounded timeout. */ }
+        catch (Exception ex) when (ex is COMException or System.Reflection.TargetInvocationException)
+        { /* Voice enumeration reports unavailability through its bounded timeout. */
+        }
         finally
         {
-            try { if (speaker is not null && Marshal.IsComObject(speaker)) Marshal.FinalReleaseComObject(speaker); }
+            try
+            {
+                if (speaker is not null && Marshal.IsComObject(speaker))
+                {
+                    Marshal.FinalReleaseComObject(speaker);
+                }
+            }
             finally
             {
                 lock (sync)
@@ -86,14 +151,22 @@ public sealed class MiningSpeechOutput : IDisposable
             }
         }
     }
+
     public void Dispose()
     {
         lock (sync)
         {
-            if (disposed) return;
+            if (disposed)
+            {
+                return;
+            }
+
             disposed = true;
             queue.CompleteAdding();
-            if (worker is null) queue.Dispose();
+            if (worker is null)
+            {
+                queue.Dispose();
+            }
         }
     }
 }

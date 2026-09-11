@@ -30,8 +30,7 @@ public sealed class OverlayVisibilityPolicyTests
     [Fact]
     public void RequestedEligibleOverlayCanBeHostedAndPresented()
     {
-        var decision = OverlayVisibilityPolicy.Evaluate(
-            CreateVisibleFacts());
+        var decision = OverlayVisibilityPolicy.Evaluate(CreateVisibleFacts());
 
         Assert.True(decision.ShouldHost);
         Assert.True(decision.ShouldPresent);
@@ -41,14 +40,15 @@ public sealed class OverlayVisibilityPolicyTests
     [Fact]
     public void PolicyPermissionIsSeparateFromIntentAndHostEligibility()
     {
-        var notRequested = OverlayVisibilityPolicy.Evaluate(
-            CreateVisibleFacts() with { Requested = false });
-        var hostIneligible = OverlayVisibilityPolicy.Evaluate(
-            CreateVisibleFacts() with { HostEligible = false });
-        var userDisabled = OverlayVisibilityPolicy.Evaluate(
-            CreateVisibleFacts() with { UserEnabled = false });
+        var notRequested = OverlayVisibilityPolicy.Evaluate(CreateVisibleFacts() with { Requested = false });
+        var hostIneligible = OverlayVisibilityPolicy.Evaluate(CreateVisibleFacts() with { HostEligible = false });
+        var userDisabled = OverlayVisibilityPolicy.Evaluate(CreateVisibleFacts() with { UserEnabled = false });
         var globallySuppressed = OverlayVisibilityPolicy.Evaluate(
-            CreateVisibleFacts() with { ManualSuppressed = true });
+            CreateVisibleFacts() with
+            {
+                ManualSuppressed = true,
+            }
+        );
 
         Assert.True(notRequested.Permitted);
         Assert.True(hostIneligible.Permitted);
@@ -61,24 +61,12 @@ public sealed class OverlayVisibilityPolicyTests
     {
         (OverlayVisibilityFacts Facts, OverlayVisibilityReasons Reason)[] cases =
         {
-            (
-                CreateVisibleFacts() with { Requested = false },
-                OverlayVisibilityReasons.DomainNotRequested),
-            (
-                CreateVisibleFacts() with { HostEligible = false },
-                OverlayVisibilityReasons.HostIneligible),
-            (
-                CreateVisibleFacts() with { ManualSuppressed = true },
-                OverlayVisibilityReasons.ManualSuppressed),
-            (
-                CreateVisibleFacts() with { SuitSuppressed = true },
-                OverlayVisibilityReasons.SuitSuppressed),
-            (
-                CreateVisibleFacts() with { SessionSuppressed = true },
-                OverlayVisibilityReasons.SessionSuppressed),
-            (
-                CreateVisibleFacts() with { PriorityObscured = true },
-                OverlayVisibilityReasons.PriorityObscured),
+            (CreateVisibleFacts() with { Requested = false }, OverlayVisibilityReasons.DomainNotRequested),
+            (CreateVisibleFacts() with { HostEligible = false }, OverlayVisibilityReasons.HostIneligible),
+            (CreateVisibleFacts() with { ManualSuppressed = true }, OverlayVisibilityReasons.ManualSuppressed),
+            (CreateVisibleFacts() with { SuitSuppressed = true }, OverlayVisibilityReasons.SuitSuppressed),
+            (CreateVisibleFacts() with { SessionSuppressed = true }, OverlayVisibilityReasons.SessionSuppressed),
+            (CreateVisibleFacts() with { PriorityObscured = true }, OverlayVisibilityReasons.PriorityObscured),
         };
 
         foreach (var (facts, expectedReason) in cases)
@@ -96,15 +84,9 @@ public sealed class OverlayVisibilityPolicyTests
     {
         (OverlayVisibilityFacts Facts, OverlayVisibilityReasons Reason)[] cases =
         {
-            (
-                CreateVisibleFacts() with { UserEnabled = false },
-                OverlayVisibilityReasons.UserDisabled),
-            (
-                CreateVisibleFacts() with { GalaxyMapAllowed = false },
-                OverlayVisibilityReasons.GalaxyMapExcluded),
-            (
-                CreateVisibleFacts() with { EditorSuppressed = true },
-                OverlayVisibilityReasons.EditorSuppressed),
+            (CreateVisibleFacts() with { UserEnabled = false }, OverlayVisibilityReasons.UserDisabled),
+            (CreateVisibleFacts() with { GalaxyMapAllowed = false }, OverlayVisibilityReasons.GalaxyMapExcluded),
+            (CreateVisibleFacts() with { EditorSuppressed = true }, OverlayVisibilityReasons.EditorSuppressed),
         };
 
         foreach (var (facts, expectedReason) in cases)
@@ -145,24 +127,23 @@ public sealed class OverlayVisibilityPolicyTests
                 | OverlayVisibilityReasons.SuitSuppressed
                 | OverlayVisibilityReasons.SessionSuppressed
                 | OverlayVisibilityReasons.PriorityObscured,
-            decision.Reasons);
+            decision.Reasons
+        );
     }
 
     [Fact]
     public void ClearingTemporaryBlockersRestoresPresentationFromCurrentFacts()
     {
-        var blockedFacts = CreateVisibleFacts() with
-        {
-            UserEnabled = false,
-            GalaxyMapAllowed = false,
-        };
+        var blockedFacts = CreateVisibleFacts() with { UserEnabled = false, GalaxyMapAllowed = false };
 
         var blocked = OverlayVisibilityPolicy.Evaluate(blockedFacts);
-        var restored = OverlayVisibilityPolicy.Evaluate(blockedFacts with
-        {
-            UserEnabled = true,
-            GalaxyMapAllowed = true,
-        });
+        var restored = OverlayVisibilityPolicy.Evaluate(
+            blockedFacts with
+            {
+                UserEnabled = true,
+                GalaxyMapAllowed = true,
+            }
+        );
 
         Assert.True(blocked.ShouldHost);
         Assert.False(blocked.ShouldPresent);
@@ -171,14 +152,16 @@ public sealed class OverlayVisibilityPolicyTests
         Assert.Equal(OverlayVisibilityReasons.None, restored.Reasons);
     }
 
-    private static OverlayVisibilityFacts CreateVisibleFacts() => new(
-        Requested: true,
-        HostEligible: true,
-        UserEnabled: true,
-        GalaxyMapAllowed: true,
-        EditorSuppressed: false,
-        ManualSuppressed: false,
-        SuitSuppressed: false,
-        SessionSuppressed: false,
-        PriorityObscured: false);
+    private static OverlayVisibilityFacts CreateVisibleFacts() =>
+        new(
+            Requested: true,
+            HostEligible: true,
+            UserEnabled: true,
+            GalaxyMapAllowed: true,
+            EditorSuppressed: false,
+            ManualSuppressed: false,
+            SuitSuppressed: false,
+            SessionSuppressed: false,
+            PriorityObscured: false
+        );
 }

@@ -12,19 +12,13 @@ public sealed partial class OverlayCategorySettingsWindow : Window
         InitializeComponent();
     }
 
-    public OverlayCategorySettingsWindow(
-        OverlaySettingsCategoryDefinition definition,
-        MainWindowViewModel viewModel)
+    public OverlayCategorySettingsWindow(OverlaySettingsCategoryDefinition definition, MainWindowViewModel viewModel)
         : this()
     {
         ArgumentNullException.ThrowIfNull(definition);
         ArgumentNullException.ThrowIfNull(viewModel);
         Title = $"{definition.DisplayName} overlay settings";
         DataContext = viewModel;
-        CategorySettingsContent.Content = new OverlaySettingsView(
-            definition.Category)
-        {
-            DataContext = viewModel,
-        };
+        CategorySettingsContent.Content = new OverlaySettingsView(definition.Category) { DataContext = viewModel };
     }
 }

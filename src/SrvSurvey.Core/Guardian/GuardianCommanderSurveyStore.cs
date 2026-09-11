@@ -7,34 +7,37 @@ namespace SrvSurvey.Core.Guardian;
 [System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Design",
     "CA1001:Types that own disposable fields should be disposable",
-    Justification = "The store is application-scoped and its semaphore may still have in-flight waiters.")]
+    Justification = "The store is application-scoped and its semaphore may still have in-flight waiters."
+)]
 public sealed class GuardianCommanderSurveyStore(string dataDirectory)
 {
     private static readonly char[] CrossPlatformInvalidFileNameCharacters =
-        ['<', '>', ':', '"', '/', '\\', '|', '?', '*', '\0'];
-    private static readonly SearchValues<char> InvalidFileNameSearch =
-        SearchValues.Create(CrossPlatformInvalidFileNameCharacters);
-    private static readonly JsonSerializerOptions SerializerOptions = new()
-    {
-        WriteIndented = true,
-    };
+    [
+        '<',
+        '>',
+        ':',
+        '"',
+        '/',
+        '\\',
+        '|',
+        '?',
+        '*',
+        '\0',
+    ];
+    private static readonly SearchValues<char> InvalidFileNameSearch = SearchValues.Create(
+        CrossPlatformInvalidFileNameCharacters
+    );
+    private static readonly JsonSerializerOptions SerializerOptions = new() { WriteIndented = true };
     private readonly SemaphoreSlim saveLock = new(1, 1);
     private readonly string dataDirectory = GetFullPath(dataDirectory);
 
-    public string GetSurveyPath(
-        string frontierId,
-        bool isOdyssey,
-        string bodyName,
-        int index,
-        bool isRuins)
+    public string GetSurveyPath(string frontierId, bool isOdyssey, string bodyName, int index, bool isRuins)
     {
         ValidateFrontierId(frontierId);
         ValidateBodyName(bodyName);
         if (index < 1)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(index),
-                "A Guardian site index must be positive.");
+            throw new ArgumentOutOfRangeException(nameof(index), "A Guardian site index must be positive.");
         }
 
         var folder = Path.Combine(dataDirectory, "guardian", frontierId);
@@ -43,34 +46,26 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
             folder = Path.Combine(folder, "legacy");
         }
 
-        return Path.Combine(
-            folder,
-            $"{bodyName}-{(isRuins ? "ruins" : "structure")}-{index}.json");
+        return Path.Combine(folder, $"{bodyName}-{(isRuins ? "ruins" : "structure")}-{index}.json");
     }
 
     public async Task<string> SaveAsync(
         string frontierId,
         bool isOdyssey,
         GuardianCommanderSiteSurvey survey,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentNullException.ThrowIfNull(survey);
-        var path = GetSurveyPath(
-            frontierId,
-            isOdyssey,
-            survey.BodyName,
-            survey.Index,
-            IsRuins(survey));
+        var path = GetSurveyPath(frontierId, isOdyssey, survey.BodyName, survey.Index, IsRuins(survey));
         await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             var root = File.Exists(path)
-                ? await ReadExistingAsync(path, cancellationToken)
-                    .ConfigureAwait(false)
+                ? await ReadExistingAsync(path, cancellationToken).ConfigureAwait(false)
                 : new JsonObject();
             WriteSurvey(root, survey, !isOdyssey);
-            await WriteAtomicAsync(path, root, cancellationToken)
-                .ConfigureAwait(false);
+            await WriteAtomicAsync(path, root, cancellationToken).ConfigureAwait(false);
             return path;
         }
         finally
@@ -79,9 +74,7 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
         }
     }
 
-    private static async Task<JsonObject> ReadExistingAsync(
-        string path,
-        CancellationToken cancellationToken)
+    private static async Task<JsonObject> ReadExistingAsync(string path, CancellationToken cancellationToken)
     {
         try
         {
@@ -91,30 +84,24 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
                 FileAccess.Read,
                 FileShare.ReadWrite | FileShare.Delete,
                 16 * 1024,
-                FileOptions.Asynchronous | FileOptions.SequentialScan);
-            var node = await JsonNode.ParseAsync(
-                    stream,
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
+                FileOptions.Asynchronous | FileOptions.SequentialScan
+            );
+            var node = await JsonNode.ParseAsync(stream, cancellationToken: cancellationToken).ConfigureAwait(false);
             return node as JsonObject
                 ?? throw new InvalidDataException(
-                    $"The Guardian survey is not a JSON object and was not overwritten: {path}");
+                    $"The Guardian survey is not a JSON object and was not overwritten: {path}"
+                );
         }
-        catch (Exception exception) when (
-            exception is JsonException
-                or IOException
-                or UnauthorizedAccessException)
+        catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
         {
             throw new InvalidDataException(
                 $"The Guardian survey is malformed and was not overwritten: {path}",
-                exception);
+                exception
+            );
         }
     }
 
-    private static void WriteSurvey(
-        JsonObject root,
-        GuardianCommanderSiteSurvey survey,
-        bool isLegacy)
+    private static void WriteSurvey(JsonObject root, GuardianCommanderSiteSurvey survey, bool isLegacy)
     {
         root["name"] = survey.Name;
         root["nameLocalised"] = survey.LocalizedName;
@@ -133,11 +120,9 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
         root["relicTowerHeading"] = survey.Survey.RelicTowerHeading;
         root["notes"] = survey.Notes;
         root["legacy"] = isLegacy;
-        root["obeliskGroups"] = string.Concat(
-            survey.ObeliskGroups.Order());
+        root["obeliskGroups"] = string.Concat(survey.ObeliskGroups.Order());
         root["activeObelisks"] = WriteObelisks(survey.ActiveObelisks);
-        root["relicHeadings"] = WriteRelicHeadings(
-            survey.Survey.RelicHeadings);
+        root["relicHeadings"] = WriteRelicHeadings(survey.Survey.RelicHeadings);
         WritePoiStatuses(root, survey.Survey.PoiStatuses);
         root["rawPoi"] = survey.Survey.RawPointsOfInterest is null
             ? null
@@ -145,38 +130,26 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
         WriteComponentMaterials(root, survey.Survey.ComponentMaterials);
     }
 
-    private static void WriteOptionalCatalogMetadata(
-        JsonObject root,
-        GuardianCommanderSiteSurvey survey)
+    private static void WriteOptionalCatalogMetadata(JsonObject root, GuardianCommanderSiteSurvey survey)
     {
-        SetOrRemove(
-            root,
-            "localSiteId",
-            survey.LocalSiteId > 0 ? survey.LocalSiteId : null);
+        SetOrRemove(root, "localSiteId", survey.LocalSiteId > 0 ? survey.LocalSiteId : null);
         SetOrRemove(root, "catalogBodyName", survey.CatalogBodyName);
         SetOrRemove(
             root,
             "starPos",
-            survey.StarPosition is { } position
-                ? new JsonArray(position.X, position.Y, position.Z)
-                : null);
+            survey.StarPosition is { } position ? new JsonArray(position.X, position.Y, position.Z) : null
+        );
         SetOrRemove(root, "distanceToArrival", survey.DistanceToArrivalLs);
         SetOrRemove(
             root,
             "mapMarkerOffset",
             survey.MapMarkerOffset == default
                 ? null
-                : new JsonObject
-                {
-                    ["x"] = survey.MapMarkerOffset.X,
-                    ["y"] = survey.MapMarkerOffset.Y,
-                });
+                : new JsonObject { ["x"] = survey.MapMarkerOffset.X, ["y"] = survey.MapMarkerOffset.Y }
+        );
     }
 
-    private static void SetOrRemove(
-        JsonObject root,
-        string propertyName,
-        JsonNode? value)
+    private static void SetOrRemove(JsonObject root, string propertyName, JsonNode? value)
     {
         if (value is null)
         {
@@ -187,9 +160,7 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
         root[propertyName] = value;
     }
 
-    private static void WriteLocation(
-        JsonObject root,
-        GuardianSurfaceLocation? location)
+    private static void WriteLocation(JsonObject root, GuardianSurfaceLocation? location)
     {
         if (location is null)
         {
@@ -207,8 +178,7 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
         node["long"] = location.Value.Longitude;
     }
 
-    private static JsonArray WriteObelisks(
-        IEnumerable<GuardianObelisk> obelisks)
+    private static JsonArray WriteObelisks(IEnumerable<GuardianObelisk> obelisks)
     {
         var array = new JsonArray();
         foreach (var obelisk in obelisks.OrderBy(item => item.Name))
@@ -221,14 +191,14 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
                     + string.Join(',', obelisk.ItemCodes)
                     + "-"
                     + obelisk.LogCode
-                    + "-");
+                    + "-"
+            );
         }
 
         return array;
     }
 
-    private static JsonObject WriteRelicHeadings(
-        IReadOnlyDictionary<string, int> headings)
+    private static JsonObject WriteRelicHeadings(IReadOnlyDictionary<string, int> headings)
     {
         var node = new JsonObject();
         foreach (var heading in headings.OrderBy(pair => pair.Key))
@@ -239,49 +209,41 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
         return node;
     }
 
-    private static void WritePoiStatuses(
-        JsonObject root,
-        IReadOnlyDictionary<string, GuardianPoiStatus> statuses)
+    private static void WritePoiStatuses(JsonObject root, IReadOnlyDictionary<string, GuardianPoiStatus> statuses)
     {
         root.Remove("poiStatus");
         root.Remove("confirmedPOI");
-        root["poiPresent"] = JoinStatuses(
-            statuses,
-            GuardianPoiStatus.Present);
-        root["poiAbsent"] = JoinStatuses(
-            statuses,
-            GuardianPoiStatus.Absent);
-        root["poiEmpty"] = JoinStatuses(
-            statuses,
-            GuardianPoiStatus.Empty);
+        root["poiPresent"] = JoinStatuses(statuses, GuardianPoiStatus.Present);
+        root["poiAbsent"] = JoinStatuses(statuses, GuardianPoiStatus.Absent);
+        root["poiEmpty"] = JoinStatuses(statuses, GuardianPoiStatus.Empty);
     }
 
     private static string JoinStatuses(
         IReadOnlyDictionary<string, GuardianPoiStatus> statuses,
-        GuardianPoiStatus expected)
+        GuardianPoiStatus expected
+    )
     {
         return string.Join(
             ',',
-            statuses
-                .Where(pair => pair.Value == expected)
-                .Select(pair => pair.Key)
-                .Order(StringComparer.Ordinal));
+            statuses.Where(pair => pair.Value == expected).Select(pair => pair.Key).Order(StringComparer.Ordinal)
+        );
     }
 
-    private static JsonArray WriteRawPoints(
-        IEnumerable<GuardianPointOfInterest> points)
+    private static JsonArray WriteRawPoints(IEnumerable<GuardianPointOfInterest> points)
     {
         var array = new JsonArray();
         foreach (var point in points)
         {
-            array.Add(new JsonObject
-            {
-                ["name"] = point.Name,
-                ["type"] = GetLegacyPoiType(point.Type),
-                ["angle"] = point.Angle,
-                ["dist"] = point.Distance,
-                ["rot"] = point.Rotation,
-            });
+            array.Add(
+                new JsonObject
+                {
+                    ["name"] = point.Name,
+                    ["type"] = GetLegacyPoiType(point.Type),
+                    ["angle"] = point.Angle,
+                    ["dist"] = point.Distance,
+                    ["rot"] = point.Rotation,
+                }
+            );
         }
 
         return array;
@@ -289,15 +251,12 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
 
     private static void WriteComponentMaterials(
         JsonObject root,
-        IReadOnlyDictionary<string, GuardianComponentLoadout> components)
+        IReadOnlyDictionary<string, GuardianComponentLoadout> components
+    )
     {
-        var pending = new Dictionary<string, GuardianComponentLoadout>(
-            components,
-            StringComparer.Ordinal);
+        var pending = new Dictionary<string, GuardianComponentLoadout>(components, StringComparer.Ordinal);
         var output = MergeExistingComponentMaterials(root, components, pending);
-        foreach (var component in pending.Values.OrderBy(
-                     item => item.Name,
-                     StringComparer.Ordinal))
+        foreach (var component in pending.Values.OrderBy(item => item.Name, StringComparer.Ordinal))
         {
             output.Add(component.ToLegacyString());
         }
@@ -308,7 +267,8 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
     private static JsonArray MergeExistingComponentMaterials(
         JsonObject root,
         IReadOnlyDictionary<string, GuardianComponentLoadout> components,
-        Dictionary<string, GuardianComponentLoadout> pending)
+        Dictionary<string, GuardianComponentLoadout> pending
+    )
     {
         var output = new JsonArray();
         if (root["components"] is not { } existingNode)
@@ -319,7 +279,8 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
         if (existingNode is not JsonArray existing)
         {
             throw new InvalidDataException(
-                "The Guardian component-material data uses an unsupported JSON shape and was not overwritten.");
+                "The Guardian component-material data uses an unsupported JSON shape and was not overwritten."
+            );
         }
 
         foreach (var node in existing)
@@ -333,17 +294,16 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
     private static JsonNode? MergeComponentNode(
         JsonNode? node,
         IReadOnlyDictionary<string, GuardianComponentLoadout> components,
-        Dictionary<string, GuardianComponentLoadout> pending)
+        Dictionary<string, GuardianComponentLoadout> pending
+    )
     {
-        if (node is JsonValue value
+        if (
+            node is JsonValue value
             && value.TryGetValue<string>(out var encoded)
-            && GuardianComponentLoadout.TryParseLegacy(
-                encoded,
-                out var existingComponent))
+            && GuardianComponentLoadout.TryParseLegacy(encoded, out var existingComponent)
+        )
         {
-            if (components.TryGetValue(
-                existingComponent.Name,
-                out var replacement))
+            if (components.TryGetValue(existingComponent.Name, out var replacement))
             {
                 pending.Remove(existingComponent.Name);
                 return replacement.ToLegacyString();
@@ -354,42 +314,39 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
 
         return node?.DeepClone();
     }
+
     private static string GetLegacyPoiType(GuardianPoiType type)
     {
         return type switch
         {
             GuardianPoiType.BrokenObelisk => "brokeObelisk",
             GuardianPoiType.DestructiblePanel => "destructablePanel",
-            _ => char.ToLowerInvariant(type.ToString()[0])
-                + type.ToString()[1..],
+            _ => char.ToLowerInvariant(type.ToString()[0]) + type.ToString()[1..],
         };
     }
 
-    private static async Task WriteAtomicAsync(
-        string path,
-        JsonObject root,
-        CancellationToken cancellationToken)
+    private static async Task WriteAtomicAsync(string path, JsonObject root, CancellationToken cancellationToken)
     {
-        var folder = Path.GetDirectoryName(path)
-            ?? throw new InvalidOperationException(
-                "The Guardian survey path has no parent folder.");
+        var folder =
+            Path.GetDirectoryName(path)
+            ?? throw new InvalidOperationException("The Guardian survey path has no parent folder.");
         Directory.CreateDirectory(folder);
         var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
         try
         {
-            await using (var stream = new FileStream(
-                             temporaryPath,
-                             FileMode.CreateNew,
-                             FileAccess.Write,
-                             FileShare.None,
-                             16 * 1024,
-                             FileOptions.Asynchronous))
+            await using (
+                var stream = new FileStream(
+                    temporaryPath,
+                    FileMode.CreateNew,
+                    FileAccess.Write,
+                    FileShare.None,
+                    16 * 1024,
+                    FileOptions.Asynchronous
+                )
+            )
             {
-                await JsonSerializer.SerializeAsync(
-                        stream,
-                        root,
-                        SerializerOptions,
-                        cancellationToken)
+                await JsonSerializer
+                    .SerializeAsync(stream, root, SerializerOptions, cancellationToken)
                     .ConfigureAwait(false);
                 await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
             }
@@ -407,22 +364,20 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
 
     private static bool IsRuins(GuardianCommanderSiteSurvey survey)
     {
-        return survey.Name.StartsWith(
-                "$Ancient:#index=",
-                StringComparison.Ordinal)
+        return survey.Name.StartsWith("$Ancient:#index=", StringComparison.Ordinal)
             || survey.SiteType is "Alpha" or "Beta" or "Gamma";
     }
 
     private static void ValidateObelisk(GuardianObelisk obelisk)
     {
-        if (string.IsNullOrWhiteSpace(obelisk.Name)
+        if (
+            string.IsNullOrWhiteSpace(obelisk.Name)
             || obelisk.Name.Contains('-', StringComparison.Ordinal)
             || obelisk.LogCode.Contains('-', StringComparison.Ordinal)
-            || obelisk.ItemCodes.Any(
-                item => item.Contains('-', StringComparison.Ordinal)))
+            || obelisk.ItemCodes.Any(item => item.Contains('-', StringComparison.Ordinal))
+        )
         {
-            throw new InvalidDataException(
-                "A Guardian obelisk cannot be encoded in the legacy format.");
+            throw new InvalidDataException("A Guardian obelisk cannot be encoded in the legacy format.");
         }
     }
 
@@ -431,33 +386,27 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
         ArgumentException.ThrowIfNullOrWhiteSpace(frontierId);
         if (!IsSingleFileName(frontierId))
         {
-            throw new ArgumentException(
-                "The Frontier ID must be a folder name, not a path.",
-                nameof(frontierId));
+            throw new ArgumentException("The Frontier ID must be a folder name, not a path.", nameof(frontierId));
         }
     }
 
     private static void ValidateBodyName(string bodyName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(bodyName);
-        if (!IsSingleFileName(bodyName)
-            || bodyName.AsSpan().IndexOfAny(InvalidFileNameSearch) >= 0)
+        if (!IsSingleFileName(bodyName) || bodyName.AsSpan().IndexOfAny(InvalidFileNameSearch) >= 0)
         {
             throw new ArgumentException(
                 "The body name cannot be represented by a cross-platform survey filename.",
-                nameof(bodyName));
+                nameof(bodyName)
+            );
         }
     }
 
     private static bool IsSingleFileName(string value)
     {
         return value is not "." and not ".."
-            && string.Equals(
-                Path.GetFileName(value),
-                value,
-                StringComparison.Ordinal)
-            && value.IndexOfAny(
-                [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar]) < 0;
+            && string.Equals(Path.GetFileName(value), value, StringComparison.Ordinal)
+            && value.IndexOfAny([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar]) < 0;
     }
 
     private static string GetFullPath(string path)

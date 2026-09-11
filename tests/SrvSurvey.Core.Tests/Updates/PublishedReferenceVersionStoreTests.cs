@@ -4,10 +4,7 @@ namespace SrvSurvey.Core.Tests.Updates;
 
 public sealed class PublishedReferenceVersionStoreTests : IDisposable
 {
-    private readonly string root = Path.Combine(
-        Path.GetTempPath(),
-        "SrvSurvey.Tests",
-        Guid.NewGuid().ToString("N"));
+    private readonly string root = Path.Combine(Path.GetTempPath(), "SrvSurvey.Tests", Guid.NewGuid().ToString("N"));
 
     [Fact]
     public void LoadReadsImportedWinFormsVersionFields()
@@ -26,7 +23,8 @@ public sealed class PublishedReferenceVersionStoreTests : IDisposable
               "pubGGG": 3,
               "unknownPlayerSetting": true
             }
-            """);
+            """
+        );
 
         var result = new PublishedReferenceVersionStore().Load(root);
 
@@ -37,9 +35,7 @@ public sealed class PublishedReferenceVersionStoreTests : IDisposable
         Assert.Equal(15, result.Settlements);
         Assert.Equal(2, result.Nicknames);
         Assert.Equal(3, result.GreenGasGiants);
-        Assert.Contains(
-            "unknownPlayerSetting",
-            File.ReadAllText(Path.Combine(root, "settings.json")));
+        Assert.Contains("unknownPlayerSetting", File.ReadAllText(Path.Combine(root, "settings.json")));
     }
 
     [Fact]

@@ -24,11 +24,7 @@ public sealed class HumanSiteViewModelOptions
 
     public Func<bool>? PublishCanonnGeometry { get; init; }
 
-    public Action<CanonnHumanSitePublicationResult>? ReportCanonnPublication
-    {
-        get;
-        init;
-    }
+    public Action<CanonnHumanSitePublicationResult>? ReportCanonnPublication { get; init; }
 
     public Version? ClientVersion { get; init; }
 }

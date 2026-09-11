@@ -20,9 +20,7 @@ public sealed class DiagnosticsLogViewModel : INotifyPropertyChanged, IDisposabl
     private string statusMessage = string.Empty;
     private bool disposed;
 
-    public DiagnosticsLogViewModel(
-        ApplicationLogService? applicationLog,
-        Action<Action>? dispatch = null)
+    public DiagnosticsLogViewModel(ApplicationLogService? applicationLog, Action<Action>? dispatch = null)
     {
         this.applicationLog = applicationLog;
         this.dispatch = dispatch ?? DispatchToUiThread;
@@ -66,11 +64,9 @@ public sealed class DiagnosticsLogViewModel : INotifyPropertyChanged, IDisposabl
         private set => SetField(ref persistenceStatus, value);
     }
 
-    public string LogDirectory => applicationLog?.LogDirectory
-        ?? "Application logging is unavailable.";
+    public string LogDirectory => applicationLog?.LogDirectory ?? "Application logging is unavailable.";
 
-    public string CurrentLogPath => applicationLog?.CurrentLogPath
-        ?? "No session log file is available.";
+    public string CurrentLogPath => applicationLog?.CurrentLogPath ?? "No session log file is available.";
 
     public string StatusMessage
     {
@@ -88,7 +84,8 @@ public sealed class DiagnosticsLogViewModel : INotifyPropertyChanged, IDisposabl
 
     public void SetPlatformServices(
         Func<string, Task>? writeClipboard,
-        Func<DirectoryInfo, Task<bool>>? launchDirectory)
+        Func<DirectoryInfo, Task<bool>>? launchDirectory
+    )
     {
         clipboardWriter = writeClipboard;
         directoryLauncher = launchDirectory;
@@ -131,15 +128,16 @@ public sealed class DiagnosticsLogViewModel : INotifyPropertyChanged, IDisposabl
             applicationLog.Append("Logs copied");
             StatusMessage = "The current session log was copied to the clipboard.";
         }
-        catch (Exception exception) when (
-            exception is InvalidOperationException
-                or IOException
-                or NotSupportedException
-                or System.Runtime.InteropServices.ExternalException
-                or UnauthorizedAccessException)
+        catch (Exception exception)
+            when (exception
+                    is InvalidOperationException
+                        or IOException
+                        or NotSupportedException
+                        or System.Runtime.InteropServices.ExternalException
+                        or UnauthorizedAccessException
+            )
         {
-            StatusMessage = "The session log could not be copied: "
-                + exception.Message;
+            StatusMessage = "The session log could not be copied: " + exception.Message;
         }
     }
 
@@ -170,21 +168,19 @@ public sealed class DiagnosticsLogViewModel : INotifyPropertyChanged, IDisposabl
 
         try
         {
-            var launched = await directoryLauncher(
-                new DirectoryInfo(applicationLog.LogDirectory));
-            StatusMessage = launched
-                ? "Opened the application log folder."
-                : "The log folder could not be opened.";
+            var launched = await directoryLauncher(new DirectoryInfo(applicationLog.LogDirectory));
+            StatusMessage = launched ? "Opened the application log folder." : "The log folder could not be opened.";
         }
-        catch (Exception exception) when (
-            exception is InvalidOperationException
-                or IOException
-                or NotSupportedException
-                or System.Runtime.InteropServices.ExternalException
-                or UnauthorizedAccessException)
+        catch (Exception exception)
+            when (exception
+                    is InvalidOperationException
+                        or IOException
+                        or NotSupportedException
+                        or System.Runtime.InteropServices.ExternalException
+                        or UnauthorizedAccessException
+            )
         {
-            StatusMessage = "The log folder could not be opened: "
-                + exception.Message;
+            StatusMessage = "The log folder could not be opened: " + exception.Message;
         }
     }
 
@@ -203,9 +199,7 @@ public sealed class DiagnosticsLogViewModel : INotifyPropertyChanged, IDisposabl
     private string GetLogText()
     {
         var text = applicationLog?.Text;
-        return string.IsNullOrEmpty(text)
-            ? "No log entries have been recorded for this session."
-            : text;
+        return string.IsNullOrEmpty(text) ? "No log entries have been recorded for this session." : text;
     }
 
     private string GetSessionDescription()
@@ -245,10 +239,7 @@ public sealed class DiagnosticsLogViewModel : INotifyPropertyChanged, IDisposabl
         }
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -265,9 +256,7 @@ public sealed class DiagnosticsLogViewModel : INotifyPropertyChanged, IDisposabl
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private sealed class DelegateCommand(
-        Action execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class DelegateCommand(Action execute, Func<bool> canExecute) : ICommand
     {
         public event EventHandler? CanExecuteChanged
         {
@@ -284,12 +273,9 @@ public sealed class DiagnosticsLogViewModel : INotifyPropertyChanged, IDisposabl
         public bool CanExecute(object? parameter) => canExecute();
 
         public void Execute(object? parameter) => execute();
-
     }
 
-    private sealed class AsyncCommand(
-        Func<Task> execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class AsyncCommand(Func<Task> execute, Func<bool> canExecute) : ICommand
     {
         private bool isExecuting;
 

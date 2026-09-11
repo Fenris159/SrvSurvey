@@ -8,8 +8,7 @@ public sealed class OverlayPresentationModeSelectorTests
     [InlineData(OverlayHostKind.Windows)]
     [InlineData(OverlayHostKind.LinuxX11)]
     [InlineData(OverlayHostKind.LinuxXWayland)]
-    public void OrdinaryDesktopKeepsExistingMultipleWindowBehavior(
-        OverlayHostKind host)
+    public void OrdinaryDesktopKeepsExistingMultipleWindowBehavior(OverlayHostKind host)
     {
         var decision = Select(host);
 
@@ -19,12 +18,9 @@ public sealed class OverlayPresentationModeSelectorTests
     [Theory]
     [InlineData(OverlayHostKind.LinuxX11)]
     [InlineData(OverlayHostKind.LinuxXWayland)]
-    public void GamescopeSelectsCombinedWindowForX11CompatibleHosts(
-        OverlayHostKind host)
+    public void GamescopeSelectsCombinedWindowForX11CompatibleHosts(OverlayHostKind host)
     {
-        var decision = Select(
-            host,
-            gamescopeWaylandDisplay: "gamescope-0");
+        var decision = Select(host, gamescopeWaylandDisplay: "gamescope-0");
 
         Assert.Equal(OverlayPresentationMode.CombinedWindow, decision.Mode);
         Assert.Contains("Gamescope", decision.Reason);
@@ -33,9 +29,7 @@ public sealed class OverlayPresentationModeSelectorTests
     [Fact]
     public void WindowsOnlyUsesCombinedWindowWhenExplicitlyRequested()
     {
-        var decision = Select(
-            OverlayHostKind.Windows,
-            hostOverride: "combined");
+        var decision = Select(OverlayHostKind.Windows, hostOverride: "combined");
 
         Assert.Equal(OverlayPresentationMode.CombinedWindow, decision.Mode);
     }
@@ -46,7 +40,8 @@ public sealed class OverlayPresentationModeSelectorTests
         var decision = Select(
             OverlayHostKind.LinuxXWayland,
             hostOverride: "separate",
-            gamescopeWaylandDisplay: "gamescope-0");
+            gamescopeWaylandDisplay: "gamescope-0"
+        );
 
         Assert.Equal(OverlayPresentationMode.MultipleWindows, decision.Mode);
     }
@@ -54,9 +49,7 @@ public sealed class OverlayPresentationModeSelectorTests
     [Fact]
     public void PureWaylandFailsClosedToExistingUnavailablePath()
     {
-        var decision = Select(
-            OverlayHostKind.LinuxWayland,
-            hostOverride: "combined");
+        var decision = Select(OverlayHostKind.LinuxWayland, hostOverride: "combined");
 
         Assert.Equal(OverlayPresentationMode.MultipleWindows, decision.Mode);
         Assert.Contains("does not expose", decision.Reason);
@@ -65,13 +58,15 @@ public sealed class OverlayPresentationModeSelectorTests
     private static OverlayPresentationDecision Select(
         OverlayHostKind host,
         string? hostOverride = null,
-        string? gamescopeWaylandDisplay = null)
+        string? gamescopeWaylandDisplay = null
+    )
     {
         return OverlayPresentationModeSelector.Select(
             OverlayPlatformCapabilities.ForHost(host),
             hostOverride,
             gamescopeWaylandDisplay,
             gamescopeDisplay: null,
-            currentDesktop: null);
+            currentDesktop: null
+        );
     }
 }

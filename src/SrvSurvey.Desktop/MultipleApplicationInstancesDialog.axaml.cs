@@ -10,19 +10,17 @@ public sealed partial class MultipleApplicationInstancesDialog : Window
         InitializeComponent();
     }
 
-    public MultipleApplicationInstancesDialog(
-        int otherInstanceCount,
-        int unverifiedInstanceCount = 0) : this()
+    public MultipleApplicationInstancesDialog(int otherInstanceCount, int unverifiedInstanceCount = 0)
+        : this()
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(otherInstanceCount, 1);
         ArgumentOutOfRangeException.ThrowIfNegative(unverifiedInstanceCount);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(
-            unverifiedInstanceCount,
-            otherInstanceCount);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(unverifiedInstanceCount, otherInstanceCount);
         var total = otherInstanceCount + 1;
-        InstanceCountText.Text = total == 2
-            ? "2 SrvSurvey instances are currently running."
-            : $"{total:N0} SrvSurvey instances are currently running.";
+        InstanceCountText.Text =
+            total == 2
+                ? "2 SrvSurvey instances are currently running."
+                : $"{total:N0} SrvSurvey instances are currently running.";
         if (unverifiedInstanceCount > 0)
         {
             VerificationWarningText.IsVisible = true;

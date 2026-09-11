@@ -25,20 +25,15 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
         ColonizationCommodityOverlayViewModel viewModel,
         IOverlayPlatformService platform,
         IGameWindowTracker gameWindowTracker,
-        LegacyOverlayLayout? overlayLayout = null)
+        LegacyOverlayLayout? overlayLayout = null
+    )
     {
-        this.viewModel = viewModel
-            ?? throw new ArgumentNullException(nameof(viewModel));
-        this.platform = platform
-            ?? throw new ArgumentNullException(nameof(platform));
-        this.gameWindowTracker = gameWindowTracker
-            ?? throw new ArgumentNullException(nameof(gameWindowTracker));
+        this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
+        this.platform = platform ?? throw new ArgumentNullException(nameof(platform));
+        this.gameWindowTracker = gameWindowTracker ?? throw new ArgumentNullException(nameof(gameWindowTracker));
         this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
         this.viewModel.PropertyChanged += OnViewModelPropertyChanged;
-        timer = new OverlayDispatcherTimer
-        {
-            Interval = TimeSpan.FromMilliseconds(250),
-        };
+        timer = new OverlayDispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
         timer.Tick += OnTimerTick;
         timer.Start();
         SynchronizeWindow();
@@ -101,12 +96,9 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
         SynchronizeWindow();
     }
 
-    private void OnViewModelPropertyChanged(
-        object? sender,
-        PropertyChangedEventArgs eventArgs)
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
-        if (eventArgs.PropertyName
-            == nameof(ColonizationCommodityOverlayViewModel.ShouldAutoShow))
+        if (eventArgs.PropertyName == nameof(ColonizationCommodityOverlayViewModel.ShouldAutoShow))
         {
             SynchronizeWindow();
         }
@@ -120,16 +112,17 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
         }
 
         gameWindow = gameWindowTracker.GetSnapshot();
-        var wantsWindow = manualShow && viewModel.CanShowManually
-            || viewModel.ShouldAutoShow;
-        if (isSuppressed
+        var wantsWindow = manualShow && viewModel.CanShowManually || viewModel.ShouldAutoShow;
+        if (
+            isSuppressed
             || !wantsWindow
             || !platform.Capabilities.SupportsPassiveOverlay
             || !platform.Capabilities.SupportsClickThrough
             || !platform.Capabilities.SupportsGameWindowTracking
             || !gameWindow.IsAvailable
             || !gameWindow.IsVisible
-            || !gameWindow.IsForeground)
+            || !gameWindow.IsForeground
+        )
         {
             CloseWindow();
             return;
@@ -142,10 +135,7 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
         }
 
         var overlay = new ColonizationCommodityOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(
-            overlay,
-            overlayLayout,
-            PlotterName);
+        OverlayThemeResources.Apply(overlay, overlayLayout, PlotterName);
         overlay.Opened += (_, _) =>
         {
             PositionWindow(overlay, gameWindow.ClientBounds);
@@ -170,23 +160,16 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
 
     private void PositionWindow(Window window, PixelRect gameBounds)
     {
-        OverlayThemeResources.ApplyOpacity(
-            window,
-            overlayLayout,
-            PlotterName);
-        var screen = window.Screens.ScreenFromBounds(gameBounds)
-            ?? window.Screens.Primary;
+        OverlayThemeResources.ApplyOpacity(window, overlayLayout, PlotterName);
+        var screen = window.Screens.ScreenFromBounds(gameBounds) ?? window.Screens.Primary;
         if (screen is null)
         {
             return;
         }
 
-        var size = OverlayWindowMetrics.PrepareForPlacement(
-            window, overlayLayout, PlotterName, screen.Scaling);
-        var position = overlayLayout.GetPosition(
-                PlotterName,
-                gameBounds,
-                size)
+        var size = OverlayWindowMetrics.PrepareForPlacement(window, overlayLayout, PlotterName, screen.Scaling);
+        var position =
+            overlayLayout.GetPosition(PlotterName, gameBounds, size)
             ?? OverlayWindowPlacement.TopRight(gameBounds, size);
         if (window.Position != position)
         {

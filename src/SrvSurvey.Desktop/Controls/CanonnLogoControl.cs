@@ -18,8 +18,7 @@ public sealed class CanonnLogoControl : Control
 
     private static readonly Lazy<Bitmap> Logo = new(CreateLogo);
 
-    internal static byte[] GetOriginalPngBytes() =>
-        Convert.FromBase64String(OriginalCanonnLogo);
+    internal static byte[] GetOriginalPngBytes() => Convert.FromBase64String(OriginalCanonnLogo);
 
     public override void Render(DrawingContext context)
     {
@@ -35,17 +34,14 @@ public sealed class CanonnLogoControl : Control
         }
 
         var bitmap = Logo.Value;
-        var scale = Math.Min(
-            destination.Width / bitmap.Size.Width,
-            destination.Height / bitmap.Size.Height);
-        var size = new Size(
-            bitmap.Size.Width * scale,
-            bitmap.Size.Height * scale);
+        var scale = Math.Min(destination.Width / bitmap.Size.Width, destination.Height / bitmap.Size.Height);
+        var size = new Size(bitmap.Size.Width * scale, bitmap.Size.Height * scale);
         var target = new Rect(
             destination.Center.X - size.Width / 2,
             destination.Center.Y - size.Height / 2,
             size.Width,
-            size.Height);
+            size.Height
+        );
         context.DrawImage(bitmap, new Rect(bitmap.Size), target);
     }
 

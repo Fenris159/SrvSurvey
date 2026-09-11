@@ -12,8 +12,7 @@ public sealed class BiologyRewardSettingsViewModel : INotifyPropertyChanged
 
     public BiologyRewardSettingsViewModel(BiologyRewardSettingsStore settingsStore)
     {
-        this.settingsStore = settingsStore
-            ?? throw new ArgumentNullException(nameof(settingsStore));
+        this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         thresholds = settingsStore.Load();
     }
 
@@ -22,28 +21,28 @@ public sealed class BiologyRewardSettingsViewModel : INotifyPropertyChanged
     public double BucketOneMillions
     {
         get => thresholds.BucketOneMillions;
-        set => Update(BiologyRewardThresholds.Normalize(
-            value,
-            thresholds.BucketTwoMillions,
-            thresholds.BucketThreeMillions));
+        set =>
+            Update(
+                BiologyRewardThresholds.Normalize(value, thresholds.BucketTwoMillions, thresholds.BucketThreeMillions)
+            );
     }
 
     public double BucketTwoMillions
     {
         get => thresholds.BucketTwoMillions;
-        set => Update(BiologyRewardThresholds.Normalize(
-            thresholds.BucketOneMillions,
-            value,
-            thresholds.BucketThreeMillions));
+        set =>
+            Update(
+                BiologyRewardThresholds.Normalize(thresholds.BucketOneMillions, value, thresholds.BucketThreeMillions)
+            );
     }
 
     public double BucketThreeMillions
     {
         get => thresholds.BucketThreeMillions;
-        set => Update(BiologyRewardThresholds.Normalize(
-            thresholds.BucketOneMillions,
-            thresholds.BucketTwoMillions,
-            value));
+        set =>
+            Update(
+                BiologyRewardThresholds.Normalize(thresholds.BucketOneMillions, thresholds.BucketTwoMillions, value)
+            );
     }
 
     public BiologyRewardThresholds Thresholds => thresholds;
@@ -54,16 +53,13 @@ public sealed class BiologyRewardSettingsViewModel : INotifyPropertyChanged
     public static long PreviewOneBarReward => 1;
 
     /// <summary>Just above bucket one so only the bottom two segments fill.</summary>
-    public long PreviewTwoBarReward =>
-        ToPreviewRewardAbove(thresholds.BucketOneMillions);
+    public long PreviewTwoBarReward => ToPreviewRewardAbove(thresholds.BucketOneMillions);
 
     /// <summary>Just above bucket two so three segments fill.</summary>
-    public long PreviewThreeBarReward =>
-        ToPreviewRewardAbove(thresholds.BucketTwoMillions);
+    public long PreviewThreeBarReward => ToPreviewRewardAbove(thresholds.BucketTwoMillions);
 
     /// <summary>Just above bucket three so all four segments fill.</summary>
-    public long PreviewFourBarReward =>
-        ToPreviewRewardAbove(thresholds.BucketThreeMillions);
+    public long PreviewFourBarReward => ToPreviewRewardAbove(thresholds.BucketThreeMillions);
 
     /// <summary>Legacy alias used by earlier preview bindings.</summary>
     public long BucketOneSampleReward => PreviewTwoBarReward;
@@ -105,14 +101,10 @@ public sealed class BiologyRewardSettingsViewModel : INotifyPropertyChanged
             settingsStore.Save(thresholds);
             StatusMessage = string.Empty;
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
-            StatusMessage =
-                "Reward bands changed for this session but could not be saved: "
-                + exception.Message;
+            StatusMessage = "Reward bands changed for this session but could not be saved: " + exception.Message;
         }
 
         OnPropertyChanged(nameof(BucketOneMillions));

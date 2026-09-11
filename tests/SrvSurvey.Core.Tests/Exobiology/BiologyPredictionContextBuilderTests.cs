@@ -12,32 +12,32 @@ public sealed class BiologyPredictionContextBuilderTests
     public void BuildsLegacyUnitsEnvironmentAndKnowledgeFromJournalState()
     {
         var state = new SystemScanState();
-        var position = new GalacticCoordinate(
-            1099.21875,
-            -146.6875,
-            -133.59375);
-        state.Apply(Parse(
-            $$"""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[{{position.X}},{{position.Y}},{{position.Z}}]}"""));
-        state.Apply(Parse(
-            """{"event":"Scan","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"L","StellarMass":1,"Radius":695700000,"SurfaceTemperature":5000}"""));
+        var position = new GalacticCoordinate(1099.21875, -146.6875, -133.59375);
+        state.Apply(
+            Parse(
+                $$"""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[{{position.X}},{{position.Y}},{{position.Z}}]}"""
+            )
+        );
+        state.Apply(
+            Parse(
+                """{"event":"Scan","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"L","StellarMass":1,"Radius":695700000,"SurfaceTemperature":5000}"""
+            )
+        );
         state.Apply(Parse(PlanetScan));
-        state.Apply(Parse(
-            """{"event":"FSSBodySignals","SystemAddress":42,"BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""));
-        state.Apply(Parse(
-            """{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida","Species":"$Codex_Ent_Aleoids_02_Name;","Species_Localised":"Aleoida Coronamus"}"""));
+        state.Apply(
+            Parse(
+                """{"event":"FSSBodySignals","SystemAddress":42,"BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""
+            )
+        );
+        state.Apply(
+            Parse(
+                """{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida","Species":"$Codex_Ent_Aleoids_02_Name;","Species_Localised":"Aleoida Coronamus"}"""
+            )
+        );
 
         var snapshot = state.CreateSnapshot();
-        var nebulaCatalog = new NebulaCatalog(
-        [
-            new GalacticCoordinate(
-                position.X + 42,
-                position.Y,
-                position.Z),
-        ]);
-        var inputs = BiologyPredictionContextBuilder.Build(
-            snapshot,
-            bodyId: 1,
-            nebulaCatalog);
+        var nebulaCatalog = new NebulaCatalog([new GalacticCoordinate(position.X + 42, position.Y, position.Z)]);
+        var inputs = BiologyPredictionContextBuilder.Build(snapshot, bodyId: 1, nebulaCatalog);
 
         Assert.NotNull(inputs);
         Assert.Equal("Rocky body", inputs.Context.PlanetClass);
@@ -53,13 +53,9 @@ public sealed class BiologyPredictionContextBuilderTests
         Assert.True(inputs.Context.IsWithinGuardianBubble);
         Assert.True(inputs.Knowledge.AllGeneraKnown);
         Assert.Equal(["Aleoida"], inputs.Knowledge.KnownGenera);
-        Assert.Equal(
-            "Aleoida Coronamus",
-            inputs.Knowledge.KnownSpeciesByGenus["Aleoida"]);
+        Assert.Equal("Aleoida Coronamus", inputs.Knowledge.KnownSpeciesByGenus["Aleoida"]);
 
-        var prediction = new BiologyPredictionEvaluator(
-            BiologyCriteriaCatalog.LoadEmbedded())
-            .Evaluate(inputs.Context);
+        var prediction = new BiologyPredictionEvaluator(BiologyCriteriaCatalog.LoadEmbedded()).Evaluate(inputs.Context);
         Assert.Contains("Aleoida Coronamus - Lime", prediction.Predictions);
         Assert.True(prediction.HasCompleteContext);
     }
@@ -68,20 +64,25 @@ public sealed class BiologyPredictionContextBuilderTests
     public void ChoosesBrightestStarAcrossBarycentreSiblings()
     {
         var state = new SystemScanState();
-        state.Apply(Parse(
-            """{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""));
-        state.Apply(Parse(
-            """{"event":"ScanBaryCentre","SystemAddress":42,"BodyID":2}"""));
-        state.Apply(Parse(
-            """{"event":"Scan","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"DA","Radius":10,"SurfaceTemperature":1000,"SemiMajorAxis":100,"Parents":[{"Null":2}]}"""));
-        state.Apply(Parse(
-            """{"event":"Scan","SystemAddress":42,"BodyName":"Test B","BodyID":1,"StarType":"M_RedGiant","Radius":1,"SurfaceTemperature":100,"SemiMajorAxis":1,"Parents":[{"Null":2}]}"""));
-        state.Apply(Parse(
-            """{"event":"Scan","SystemAddress":42,"BodyName":"Test 3","BodyID":3,"PlanetClass":"Rocky body","Landable":true,"SemiMajorAxis":10,"Parents":[{"Null":2}]}"""));
+        state.Apply(Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""));
+        state.Apply(Parse("""{"event":"ScanBaryCentre","SystemAddress":42,"BodyID":2}"""));
+        state.Apply(
+            Parse(
+                """{"event":"Scan","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"DA","Radius":10,"SurfaceTemperature":1000,"SemiMajorAxis":100,"Parents":[{"Null":2}]}"""
+            )
+        );
+        state.Apply(
+            Parse(
+                """{"event":"Scan","SystemAddress":42,"BodyName":"Test B","BodyID":1,"StarType":"M_RedGiant","Radius":1,"SurfaceTemperature":100,"SemiMajorAxis":1,"Parents":[{"Null":2}]}"""
+            )
+        );
+        state.Apply(
+            Parse(
+                """{"event":"Scan","SystemAddress":42,"BodyName":"Test 3","BodyID":3,"PlanetClass":"Rocky body","Landable":true,"SemiMajorAxis":10,"Parents":[{"Null":2}]}"""
+            )
+        );
 
-        var inputs = BiologyPredictionContextBuilder.Build(
-            state.CreateSnapshot(),
-            bodyId: 3);
+        var inputs = BiologyPredictionContextBuilder.Build(state.CreateSnapshot(), bodyId: 3);
 
         Assert.NotNull(inputs);
         Assert.Equal(["D"], inputs.Context.StarTypes);
@@ -94,41 +95,49 @@ public sealed class BiologyPredictionContextBuilderTests
     public void ResolvesKnownGenusFromRawLegacyIdentityWithoutLocalizedText()
     {
         var state = new SystemScanState();
-        state.Apply(Parse(
-            """{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""));
-        state.Apply(Parse(
-            """{"event":"Scan","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"G","StellarMass":1,"Radius":695700000,"SurfaceTemperature":5000}"""));
+        state.Apply(Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""));
+        state.Apply(
+            Parse(
+                """{"event":"Scan","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"G","StellarMass":1,"Radius":695700000,"SurfaceTemperature":5000}"""
+            )
+        );
         state.Apply(Parse(PlanetScan));
-        state.Apply(Parse(
-            """{"event":"FSSBodySignals","SystemAddress":42,"BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""));
-        state.Apply(Parse(
-            """{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Brancae_Name;","Species":"$Codex_Ent_Seed_Name;","Variant":"$Codex_Ent_Seed_Name;"}"""));
+        state.Apply(
+            Parse(
+                """{"event":"FSSBodySignals","SystemAddress":42,"BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""
+            )
+        );
+        state.Apply(
+            Parse(
+                """{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Brancae_Name;","Species":"$Codex_Ent_Seed_Name;","Variant":"$Codex_Ent_Seed_Name;"}"""
+            )
+        );
 
-        var inputs = BiologyPredictionContextBuilder.Build(
-            state.CreateSnapshot(),
-            bodyId: 1);
+        var inputs = BiologyPredictionContextBuilder.Build(state.CreateSnapshot(), bodyId: 1);
 
         Assert.NotNull(inputs);
         Assert.Equal(["Brain Trees"], inputs.Knowledge.KnownGenera);
-        Assert.True(inputs.Knowledge.KnownSpeciesByGenus.ContainsKey(
-            "Brain Trees"));
+        Assert.True(inputs.Knowledge.KnownSpeciesByGenus.ContainsKey("Brain Trees"));
     }
 
     [Fact]
     public void ResolvesGenusOnlyLegacySignalToCriteriaDisplayName()
     {
         var state = new SystemScanState();
-        state.Apply(Parse(
-            """{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""));
-        state.Apply(Parse(
-            """{"event":"Scan","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"G","StellarMass":1,"Radius":695700000,"SurfaceTemperature":5000}"""));
+        state.Apply(Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""));
+        state.Apply(
+            Parse(
+                """{"event":"Scan","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"G","StellarMass":1,"Radius":695700000,"SurfaceTemperature":5000}"""
+            )
+        );
         state.Apply(Parse(PlanetScan));
-        state.Apply(Parse(
-            """{"event":"FSSBodySignals","SystemAddress":42,"BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Brancae_Name;","Genus_Localised":"Brain Tree"}]}"""));
+        state.Apply(
+            Parse(
+                """{"event":"FSSBodySignals","SystemAddress":42,"BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Brancae_Name;","Genus_Localised":"Brain Tree"}]}"""
+            )
+        );
 
-        var inputs = BiologyPredictionContextBuilder.Build(
-            state.CreateSnapshot(),
-            bodyId: 1);
+        var inputs = BiologyPredictionContextBuilder.Build(state.CreateSnapshot(), bodyId: 1);
 
         Assert.NotNull(inputs);
         Assert.Equal(["Brain Trees"], inputs.Knowledge.KnownGenera);
@@ -142,23 +151,19 @@ public sealed class BiologyPredictionContextBuilderTests
     [InlineData("TTS", "TTS")]
     public void FlattensLegacyStarFamilies(string starType, string expected)
     {
-        Assert.Equal(
-            expected,
-            BiologyPredictionContextBuilder.FlattenStarType(starType));
+        Assert.Equal(expected, BiologyPredictionContextBuilder.FlattenStarType(starType));
     }
 
     [Fact]
     public void RejectsBodiesWithoutLandabilityOrParentData()
     {
         var state = new SystemScanState();
-        state.Apply(Parse(
-            """{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
-        state.Apply(Parse(
-            """{"event":"Scan","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"PlanetClass":"Rocky body"}"""));
+        state.Apply(Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+        state.Apply(
+            Parse("""{"event":"Scan","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"PlanetClass":"Rocky body"}""")
+        );
 
-        Assert.Null(BiologyPredictionContextBuilder.Build(
-            state.CreateSnapshot(),
-            bodyId: 1));
+        Assert.Null(BiologyPredictionContextBuilder.Build(state.CreateSnapshot(), bodyId: 1));
     }
 
     private const string PlanetScan = """
@@ -185,10 +190,7 @@ public sealed class BiologyPredictionContextBuilderTests
 
     private static JournalEventEnvelope Parse(string json)
     {
-        var success = JournalEventEnvelope.TryParse(
-            json,
-            out var journalEvent,
-            out var error);
+        var success = JournalEventEnvelope.TryParse(json, out var journalEvent, out var error);
         Assert.True(success, error);
         return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }

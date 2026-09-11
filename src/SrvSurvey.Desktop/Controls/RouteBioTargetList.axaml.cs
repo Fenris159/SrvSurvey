@@ -13,23 +13,20 @@ public sealed partial class RouteBioTargetList : UserControl
     private readonly TranslateTransform scrollThumbTransform = new();
     private bool viewportUpdatePending;
 
-    public static readonly StyledProperty<
-        IReadOnlyList<RouteBioTargetItemViewModel>?> ItemsSourceProperty =
-        AvaloniaProperty.Register<
-            RouteBioTargetList,
-            IReadOnlyList<RouteBioTargetItemViewModel>?>(nameof(ItemsSource));
+    public static readonly StyledProperty<IReadOnlyList<RouteBioTargetItemViewModel>?> ItemsSourceProperty =
+        AvaloniaProperty.Register<RouteBioTargetList, IReadOnlyList<RouteBioTargetItemViewModel>?>(nameof(ItemsSource));
 
-    public static readonly StyledProperty<bool> IsInteractiveProperty =
-        AvaloniaProperty.Register<RouteBioTargetList, bool>(
-            nameof(IsInteractive));
+    public static readonly StyledProperty<bool> IsInteractiveProperty = AvaloniaProperty.Register<
+        RouteBioTargetList,
+        bool
+    >(nameof(IsInteractive));
 
     static RouteBioTargetList()
     {
         ItemsSourceProperty.Changed.AddClassHandler<RouteBioTargetList>(
             static (control, eventArgs) =>
-                control.ApplyItemsSource(
-                    eventArgs.NewValue as
-                        IReadOnlyList<RouteBioTargetItemViewModel>));
+                control.ApplyItemsSource(eventArgs.NewValue as IReadOnlyList<RouteBioTargetItemViewModel>)
+        );
     }
 
     public RouteBioTargetList()
@@ -40,8 +37,7 @@ public sealed partial class RouteBioTargetList : UserControl
         AttachedToVisualTree += (_, _) => ScheduleViewportUpdate();
     }
 
-    public event EventHandler<RouteBioCompletionRequestedEventArgs>?
-        CompletionRequested;
+    public event EventHandler<RouteBioCompletionRequestedEventArgs>? CompletionRequested;
 
     public IReadOnlyList<RouteBioTargetItemViewModel>? ItemsSource
     {
@@ -55,8 +51,7 @@ public sealed partial class RouteBioTargetList : UserControl
         set => SetValue(IsInteractiveProperty, value);
     }
 
-    private void ApplyItemsSource(
-        IReadOnlyList<RouteBioTargetItemViewModel>? items)
+    private void ApplyItemsSource(IReadOnlyList<RouteBioTargetItemViewModel>? items)
     {
         BodyItems.ItemsSource = items;
         BodyScroller.Offset = default;
@@ -77,7 +72,8 @@ public sealed partial class RouteBioTargetList : UserControl
                 viewportUpdatePending = false;
                 UpdateViewport();
             },
-            DispatcherPriority.Loaded);
+            DispatcherPriority.Loaded
+        );
     }
 
     private void UpdateViewport()
@@ -93,8 +89,7 @@ public sealed partial class RouteBioTargetList : UserControl
         var visibleHeight = 0d;
         for (var index = 0; index < MaxVisibleItemCount; index++)
         {
-            if (BodyItems.ContainerFromIndex(index) is not Control container
-                || container.Bounds.Height <= 0)
+            if (BodyItems.ContainerFromIndex(index) is not Control container || container.Bounds.Height <= 0)
             {
                 ScheduleViewportUpdate();
                 return;
@@ -112,17 +107,14 @@ public sealed partial class RouteBioTargetList : UserControl
         UpdateScrollIndicator();
     }
 
-    private void BodyScroller_ScrollChanged(
-        object? sender,
-        ScrollChangedEventArgs eventArgs)
+    private void BodyScroller_ScrollChanged(object? sender, ScrollChangedEventArgs eventArgs)
     {
         UpdateScrollIndicator();
     }
 
     private void UpdateScrollIndicator()
     {
-        var hasOverflowItems = (ItemsSource?.Count ?? 0)
-            > MaxVisibleItemCount;
+        var hasOverflowItems = (ItemsSource?.Count ?? 0) > MaxVisibleItemCount;
         ScrollIndicator.IsVisible = hasOverflowItems;
         if (!hasOverflowItems)
         {
@@ -133,29 +125,21 @@ public sealed partial class RouteBioTargetList : UserControl
         var viewport = BodyScroller.Viewport.Height;
         var overflow = extent - viewport;
         var indicatorHeight = ScrollIndicator.Bounds.Height;
-        var isScrollable = extent > 0
-            && viewport > 0
-            && overflow > 0.5
-            && indicatorHeight > 0;
+        var isScrollable = extent > 0 && viewport > 0 && overflow > 0.5 && indicatorHeight > 0;
         ScrollThumb.IsVisible = isScrollable;
         if (!isScrollable)
         {
             return;
         }
 
-        var thumbHeight = Math.Clamp(
-            indicatorHeight * viewport / extent,
-            MinimumThumbHeight,
-            indicatorHeight);
+        var thumbHeight = Math.Clamp(indicatorHeight * viewport / extent, MinimumThumbHeight, indicatorHeight);
         var availableTravel = Math.Max(0, indicatorHeight - thumbHeight);
         var progress = Math.Clamp(BodyScroller.Offset.Y / overflow, 0, 1);
         ScrollThumb.Height = thumbHeight;
         scrollThumbTransform.Y = availableTravel * progress;
     }
 
-    private void RouteBioTargetRow_CompletionRequested(
-        object? sender,
-        RouteBioCompletionRequestedEventArgs eventArgs)
+    private void RouteBioTargetRow_CompletionRequested(object? sender, RouteBioCompletionRequestedEventArgs eventArgs)
     {
         CompletionRequested?.Invoke(this, eventArgs);
     }

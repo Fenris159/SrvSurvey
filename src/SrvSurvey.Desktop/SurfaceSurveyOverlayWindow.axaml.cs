@@ -10,8 +10,7 @@ public sealed partial class SurfaceSurveyOverlayWindow : Window
         InitializeComponent();
     }
 
-    public SurfaceSurveyOverlayWindow(
-        SurfaceSurveyOverlayViewModel viewModel)
+    public SurfaceSurveyOverlayWindow(SurfaceSurveyOverlayViewModel viewModel)
     {
         ArgumentNullException.ThrowIfNull(viewModel);
         InitializeComponent();

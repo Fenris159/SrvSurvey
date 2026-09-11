@@ -12,9 +12,8 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 public sealed class LegacyOverlayLayoutStore
 {
     private static readonly ConcurrentDictionary<string, object> FileLocks = new(
-        OperatingSystem.IsWindows()
-            ? StringComparer.OrdinalIgnoreCase
-            : StringComparer.Ordinal);
+        OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
+    );
     private readonly string dataDirectory;
     private readonly string plottersPath;
     private readonly string settingsPath;
@@ -27,9 +26,7 @@ public sealed class LegacyOverlayLayoutStore
         this.dataDirectory = Path.GetFullPath(dataDirectory);
         plottersPath = Path.Combine(this.dataDirectory, "plotters.json");
         settingsPath = Path.Combine(this.dataDirectory, "settings.json");
-        scaleOverridesPath = Path.Combine(
-            this.dataDirectory,
-            "overlay-scale-overrides.json");
+        scaleOverridesPath = Path.Combine(this.dataDirectory, "overlay-scale-overrides.json");
         fileLock = FileLocks.GetOrAdd(plottersPath, _ => new object());
     }
 
@@ -41,8 +38,7 @@ public sealed class LegacyOverlayLayoutStore
         }
     }
 
-    public LegacyOverlayLayoutSaveResult Save(
-        IReadOnlyDictionary<string, LegacyOverlayPlacement> placements)
+    public LegacyOverlayLayoutSaveResult Save(IReadOnlyDictionary<string, LegacyOverlayPlacement> placements)
     {
         return Save(placements, 1d, updateDefaultOpacity: false);
     }
@@ -50,23 +46,24 @@ public sealed class LegacyOverlayLayoutStore
     public LegacyOverlayLayoutSaveResult Save(
         IReadOnlyDictionary<string, LegacyOverlayPlacement> placements,
         double defaultOpacity,
-        bool updateDefaultOpacity)
+        bool updateDefaultOpacity
+    )
     {
         ArgumentNullException.ThrowIfNull(placements);
         if (placements.Count == 0 && !updateDefaultOpacity)
         {
             throw new ArgumentException(
                 "At least one overlay placement or a global opacity change is required.",
-                nameof(placements));
+                nameof(placements)
+            );
         }
 
-        if (updateDefaultOpacity
-            && (!double.IsFinite(defaultOpacity)
-                || defaultOpacity is < 0 or > 1))
+        if (updateDefaultOpacity && (!double.IsFinite(defaultOpacity) || defaultOpacity is < 0 or > 1))
         {
             throw new ArgumentOutOfRangeException(
                 nameof(defaultOpacity),
-                "Global overlay opacity must be from 0 to 1.");
+                "Global overlay opacity must be from 0 to 1."
+            );
         }
 
         lock (fileLock)
@@ -83,14 +80,11 @@ public sealed class LegacyOverlayLayoutStore
                     settingsBackupPath = SaveDefaultOpacityCore(defaultOpacity);
                 }
 
-                (scaleOverridesBackupPath, updatedScaleOverrideCount) =
-                    SaveScaleOverridesCore(placements);
-                var result = placements.Count > 0
-                    ? SaveCore(placements)
-                    : new LegacyOverlayLayoutSaveResult(
-                        settingsPath,
-                        null,
-                        0);
+                (scaleOverridesBackupPath, updatedScaleOverrideCount) = SaveScaleOverridesCore(placements);
+                var result =
+                    placements.Count > 0
+                        ? SaveCore(placements)
+                        : new LegacyOverlayLayoutSaveResult(settingsPath, null, 0);
                 return result with
                 {
                     SettingsBackupPath = settingsBackupPath,
@@ -105,25 +99,20 @@ public sealed class LegacyOverlayLayoutStore
                 {
                     if (updateDefaultOpacity)
                     {
-                        RestoreFile(
-                            settingsPath,
-                            settingsBackupPath,
-                            settingsExisted);
+                        RestoreFile(settingsPath, settingsBackupPath, settingsExisted);
                     }
 
                     if (updatedScaleOverrideCount > 0)
                     {
-                        RestoreFile(
-                            scaleOverridesPath,
-                            scaleOverridesBackupPath,
-                            scaleOverridesExisted);
+                        RestoreFile(scaleOverridesPath, scaleOverridesBackupPath, scaleOverridesExisted);
                     }
                 }
                 catch (Exception rollbackException)
                 {
                     throw new IOException(
                         "The overlay layout save failed and its settings rollback also failed.",
-                        new AggregateException(saveException, rollbackException));
+                        new AggregateException(saveException, rollbackException)
+                    );
                 }
 
                 throw;
@@ -131,25 +120,23 @@ public sealed class LegacyOverlayLayoutStore
         }
     }
 
-    private static void ApplyScaleOverrides(Dictionary<string, LegacyOverlayPlacement> positions, IReadOnlyDictionary<string, int> scaleOverrides)
+    private static void ApplyScaleOverrides(
+        Dictionary<string, LegacyOverlayPlacement> positions,
+        IReadOnlyDictionary<string, int> scaleOverrides
+    )
     {
         foreach (var entry in scaleOverrides)
         {
             if (positions.TryGetValue(entry.Key, out var placement))
             {
-                positions[entry.Key] = placement with
-                {
-                    ScaleIndex = entry.Value,
-                };
+                positions[entry.Key] = placement with { ScaleIndex = entry.Value };
             }
         }
-
     }
 
     private LegacyOverlayLayout LoadCore()
     {
-        var positions = new Dictionary<string, LegacyOverlayPlacement>(
-            StringComparer.Ordinal);
+        var positions = new Dictionary<string, LegacyOverlayPlacement>(StringComparer.Ordinal);
         var errors = new List<string>();
         if (File.Exists(plottersPath))
         {
@@ -158,28 +145,26 @@ public sealed class LegacyOverlayLayoutStore
                 var root = ParseObject(plottersPath);
                 foreach (var entry in root)
                 {
-                    if (entry.Value is not JsonValue value
-                        || !value.TryGetValue<string>(out var text))
+                    if (entry.Value is not JsonValue value || !value.TryGetValue<string>(out var text))
                     {
-                        throw new InvalidDataException(
-                            $"Overlay position '{entry.Key}' must be a string.");
+                        throw new InvalidDataException($"Overlay position '{entry.Key}' must be a string.");
                     }
 
                     positions[entry.Key] = ParsePlacement(entry.Key, text);
                 }
             }
-            catch (Exception exception) when (
-                exception is IOException
-                    or UnauthorizedAccessException
-                    or JsonException
-                    or InvalidDataException
-                    or FormatException
-                    or OverflowException)
+            catch (Exception exception)
+                when (exception
+                        is IOException
+                            or UnauthorizedAccessException
+                            or JsonException
+                            or InvalidDataException
+                            or FormatException
+                            or OverflowException
+                )
             {
                 positions.Clear();
-                errors.Add(
-                    $"Could not read legacy overlay layout '{plottersPath}': "
-                    + exception.Message);
+                errors.Add($"Could not read legacy overlay layout '{plottersPath}': " + exception.Message);
             }
         }
 
@@ -189,24 +174,20 @@ public sealed class LegacyOverlayLayoutStore
 
         // New mining warnings start at the player's flight-warning placement.
         // Once saved independently, never overwrite their position or scale.
-        if (!positions.ContainsKey("PlotMiningWarning")
-            && positions.TryGetValue("PlotFlightWarning", out var flightWarning))
+        if (
+            !positions.ContainsKey("PlotMiningWarning")
+            && positions.TryGetValue("PlotFlightWarning", out var flightWarning)
+        )
         {
             positions["PlotMiningWarning"] = flightWarning;
         }
 
-        return new LegacyOverlayLayout(
-            positions,
-            defaultOpacity,
-            errors.Count == 0 ? null : string.Join(" ", errors));
+        return new LegacyOverlayLayout(positions, defaultOpacity, errors.Count == 0 ? null : string.Join(" ", errors));
     }
 
-    private LegacyOverlayLayoutSaveResult SaveCore(
-        IReadOnlyDictionary<string, LegacyOverlayPlacement> placements)
+    private LegacyOverlayLayoutSaveResult SaveCore(IReadOnlyDictionary<string, LegacyOverlayPlacement> placements)
     {
-        var root = File.Exists(plottersPath)
-            ? ParseObject(plottersPath)
-            : [];
+        var root = File.Exists(plottersPath) ? ParseObject(plottersPath) : [];
 
         ValidateExistingPlacements(root);
         foreach (var entry in placements)
@@ -220,24 +201,17 @@ public sealed class LegacyOverlayLayoutStore
         }
 
         Directory.CreateDirectory(dataDirectory);
-        var backupPath = File.Exists(plottersPath)
-            ? CreateVerifiedBackup()
-            : null;
+        var backupPath = File.Exists(plottersPath) ? CreateVerifiedBackup() : null;
         var temporaryPath = $"{plottersPath}.{Guid.NewGuid():N}.tmp";
         try
         {
-            using (var stream = new FileStream(
-                       temporaryPath,
-                       FileMode.CreateNew,
-                       FileAccess.Write,
-                       FileShare.None))
-            using (var writer = new Utf8JsonWriter(
-                       stream,
-                       new JsonWriterOptions
-                       {
-                           Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                           Indented = true,
-                       }))
+            using (var stream = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            using (
+                var writer = new Utf8JsonWriter(
+                    stream,
+                    new JsonWriterOptions { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping, Indented = true }
+                )
+            )
             {
                 root.WriteTo(writer);
             }
@@ -246,14 +220,15 @@ public sealed class LegacyOverlayLayoutStore
             ValidateExistingPlacements(verified);
             foreach (var entry in placements)
             {
-                if (verified[entry.Key] is not JsonValue value
+                if (
+                    verified[entry.Key] is not JsonValue value
                     || !value.TryGetValue<string>(out var text)
-                    || !HasSameDesktopPlacement(
-                        ParsePlacement(entry.Key, text),
-                        entry.Value))
+                    || !HasSameDesktopPlacement(ParsePlacement(entry.Key, text), entry.Value)
+                )
                 {
                     throw new InvalidDataException(
-                        $"Overlay position '{entry.Key}' could not be verified before saving.");
+                        $"Overlay position '{entry.Key}' could not be verified before saving."
+                    );
                 }
             }
 
@@ -267,50 +242,39 @@ public sealed class LegacyOverlayLayoutStore
             }
         }
 
-        return new LegacyOverlayLayoutSaveResult(
-            plottersPath,
-            backupPath,
-            placements.Count);
+        return new LegacyOverlayLayoutSaveResult(plottersPath, backupPath, placements.Count);
     }
 
     private string? SaveDefaultOpacityCore(double defaultOpacity)
     {
-        var root = File.Exists(settingsPath)
-            ? ParseObject(settingsPath)
-            : [];
+        var root = File.Exists(settingsPath) ? ParseObject(settingsPath) : [];
         root["plotterOpacity"] = defaultOpacity * 100d;
 
         Directory.CreateDirectory(dataDirectory);
-        var backupPath = File.Exists(settingsPath)
-            ? CreateVerifiedBackup(settingsPath, "settings")
-            : null;
+        var backupPath = File.Exists(settingsPath) ? CreateVerifiedBackup(settingsPath, "settings") : null;
         var temporaryPath = $"{settingsPath}.{Guid.NewGuid():N}.tmp";
         try
         {
-            using (var stream = new FileStream(
-                       temporaryPath,
-                       FileMode.CreateNew,
-                       FileAccess.Write,
-                       FileShare.None))
-            using (var writer = new Utf8JsonWriter(
-                       stream,
-                       new JsonWriterOptions
-                       {
-                           Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                           Indented = true,
-                       }))
+            using (var stream = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            using (
+                var writer = new Utf8JsonWriter(
+                    stream,
+                    new JsonWriterOptions { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping, Indented = true }
+                )
+            )
             {
                 root.WriteTo(writer);
             }
 
             var verified = ParseObject(temporaryPath);
-            if (verified["plotterOpacity"] is not JsonValue value
+            if (
+                verified["plotterOpacity"] is not JsonValue value
                 || !value.TryGetValue<double>(out var percent)
                 || !double.IsFinite(percent)
-                || Math.Abs((percent / 100d) - defaultOpacity) > 0.0001d)
+                || Math.Abs((percent / 100d) - defaultOpacity) > 0.0001d
+            )
             {
-                throw new InvalidDataException(
-                    "Global overlay opacity could not be verified before saving.");
+                throw new InvalidDataException("Global overlay opacity could not be verified before saving.");
             }
 
             File.Move(temporaryPath, settingsPath, true);
@@ -327,16 +291,15 @@ public sealed class LegacyOverlayLayoutStore
     }
 
     private (string? BackupPath, int UpdatedCount) SaveScaleOverridesCore(
-        IReadOnlyDictionary<string, LegacyOverlayPlacement> placements)
+        IReadOnlyDictionary<string, LegacyOverlayPlacement> placements
+    )
     {
         if (placements.Count == 0)
         {
             return (null, 0);
         }
 
-        var root = File.Exists(scaleOverridesPath)
-            ? ParseObject(scaleOverridesPath)
-            : [];
+        var root = File.Exists(scaleOverridesPath) ? ParseObject(scaleOverridesPath) : [];
         var updatedCount = 0;
         foreach (var entry in placements)
         {
@@ -372,18 +335,13 @@ public sealed class LegacyOverlayLayoutStore
         var temporaryPath = $"{scaleOverridesPath}.{Guid.NewGuid():N}.tmp";
         try
         {
-            using (var stream = new FileStream(
-                       temporaryPath,
-                       FileMode.CreateNew,
-                       FileAccess.Write,
-                       FileShare.None))
-            using (var writer = new Utf8JsonWriter(
-                       stream,
-                       new JsonWriterOptions
-                       {
-                           Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                           Indented = true,
-                       }))
+            using (var stream = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            using (
+                var writer = new Utf8JsonWriter(
+                    stream,
+                    new JsonWriterOptions { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping, Indented = true }
+                )
+            )
             {
                 root.WriteTo(writer);
             }
@@ -395,7 +353,8 @@ public sealed class LegacyOverlayLayoutStore
                 if (actual != entry.Value.ScaleIndex)
                 {
                     throw new InvalidDataException(
-                        $"Overlay scale override '{entry.Key}' could not be verified before saving.");
+                        $"Overlay scale override '{entry.Key}' could not be verified before saving."
+                    );
                 }
             }
 
@@ -419,31 +378,29 @@ public sealed class LegacyOverlayLayoutStore
 
     private string CreateVerifiedBackup(string sourcePath, string filePrefix)
     {
-        var backupDirectory = Path.Combine(
-            dataDirectory,
-            "overlay-layout-backups");
+        var backupDirectory = Path.Combine(dataDirectory, "overlay-layout-backups");
         Directory.CreateDirectory(backupDirectory);
         var backupPath = Path.Combine(
             backupDirectory,
-            $"{filePrefix}-{DateTimeOffset.UtcNow:yyyyMMddTHHmmssfffffffZ}-{Guid.NewGuid():N}.json");
+            $"{filePrefix}-{DateTimeOffset.UtcNow:yyyyMMddTHHmmssfffffffZ}-{Guid.NewGuid():N}.json"
+        );
         File.Copy(sourcePath, backupPath, false);
 
-        if (!CryptographicOperations.FixedTimeEquals(
+        if (
+            !CryptographicOperations.FixedTimeEquals(
                 SHA256.HashData(File.ReadAllBytes(sourcePath)),
-                SHA256.HashData(File.ReadAllBytes(backupPath))))
+                SHA256.HashData(File.ReadAllBytes(backupPath))
+            )
+        )
         {
             File.Delete(backupPath);
-            throw new IOException(
-                "The overlay layout backup did not match its source.");
+            throw new IOException("The overlay layout backup did not match its source.");
         }
 
         return backupPath;
     }
 
-    private static void RestoreFile(
-        string path,
-        string? backupPath,
-        bool existed)
+    private static void RestoreFile(string path, string? backupPath, bool existed)
     {
         if (existed && backupPath is not null)
         {
@@ -459,11 +416,9 @@ public sealed class LegacyOverlayLayoutStore
     {
         foreach (var entry in root)
         {
-            if (entry.Value is not JsonValue value
-                || !value.TryGetValue<string>(out var text))
+            if (entry.Value is not JsonValue value || !value.TryGetValue<string>(out var text))
             {
-                throw new InvalidDataException(
-                    $"Overlay position '{entry.Key}' must be a string.");
+                throw new InvalidDataException($"Overlay position '{entry.Key}' must be a string.");
             }
 
             _ = ParsePlacement(entry.Key, text);
@@ -472,8 +427,7 @@ public sealed class LegacyOverlayLayoutStore
 
     private static string GetVrSuffix(JsonNode? node)
     {
-        if (node is not JsonValue value
-            || !value.TryGetValue<string>(out var text))
+        if (node is not JsonValue value || !value.TryGetValue<string>(out var text))
         {
             return string.Empty;
         }
@@ -500,16 +454,11 @@ public sealed class LegacyOverlayLayoutStore
         };
         var opacity = placement.Opacity is null
             ? string.Empty
-            : ", " + placement.Opacity.Value.ToString(
-                "0.################",
-                CultureInfo.InvariantCulture);
-        return $"{horizontal}:{placement.HorizontalOffset}, "
-            + $"{vertical}:{placement.VerticalOffset}{opacity}";
+            : ", " + placement.Opacity.Value.ToString("0.################", CultureInfo.InvariantCulture);
+        return $"{horizontal}:{placement.HorizontalOffset}, " + $"{vertical}:{placement.VerticalOffset}{opacity}";
     }
 
-    private static bool HasSameDesktopPlacement(
-        LegacyOverlayPlacement actual,
-        LegacyOverlayPlacement expected)
+    private static bool HasSameDesktopPlacement(LegacyOverlayPlacement actual, LegacyOverlayPlacement expected)
     {
         return actual.Horizontal == expected.Horizontal
             && actual.HorizontalOffset == expected.HorizontalOffset
@@ -525,21 +474,20 @@ public sealed class LegacyOverlayLayoutStore
             return false;
         }
 
-        return !left.HasValue
-            || Math.Abs(left.Value - right!.Value) <= 0.0000001d;
+        return !left.HasValue || Math.Abs(left.Value - right!.Value) <= 0.0000001d;
     }
 
-    private static void ValidatePlacement(
-        string name,
-        LegacyOverlayPlacement placement)
+    private static void ValidatePlacement(string name, LegacyOverlayPlacement placement)
     {
-        if (placement.Opacity is not null
-            && (!double.IsFinite(placement.Opacity.Value)
-                || placement.Opacity.Value is < 0 or > 1))
+        if (
+            placement.Opacity is not null
+            && (!double.IsFinite(placement.Opacity.Value) || placement.Opacity.Value is < 0 or > 1)
+        )
         {
             throw new ArgumentOutOfRangeException(
                 nameof(placement),
-                $"Overlay position '{name}' opacity must be from 0 to 1.");
+                $"Overlay position '{name}' opacity must be from 0 to 1."
+            );
         }
 
         if (placement.ScaleIndex is { } scaleIndex)
@@ -548,8 +496,7 @@ public sealed class LegacyOverlayLayoutStore
         }
     }
 
-    private Dictionary<string, int> LoadScaleOverrides(
-        List<string> errors)
+    private Dictionary<string, int> LoadScaleOverrides(List<string> errors)
     {
         if (!File.Exists(scaleOverridesPath))
         {
@@ -562,25 +509,25 @@ public sealed class LegacyOverlayLayoutStore
             var result = new Dictionary<string, int>(StringComparer.Ordinal);
             foreach (var entry in root)
             {
-                var scaleIndex = ReadScaleOverride(entry.Value, entry.Key)
-                    ?? throw new InvalidDataException(
-                        $"Overlay scale override '{entry.Key}' must be an integer.");
+                var scaleIndex =
+                    ReadScaleOverride(entry.Value, entry.Key)
+                    ?? throw new InvalidDataException($"Overlay scale override '{entry.Key}' must be an integer.");
                 ValidateScaleIndex(entry.Key, scaleIndex);
                 result[entry.Key] = scaleIndex;
             }
 
             return result;
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or JsonException
-                or InvalidDataException
-                or ArgumentException)
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or UnauthorizedAccessException
+                        or JsonException
+                        or InvalidDataException
+                        or ArgumentException
+            )
         {
-            errors.Add(
-                $"Could not read overlay scale overrides '{scaleOverridesPath}': "
-                + exception.Message);
+            errors.Add($"Could not read overlay scale overrides '{scaleOverridesPath}': " + exception.Message);
             return new Dictionary<string, int>(StringComparer.Ordinal);
         }
     }
@@ -592,14 +539,12 @@ public sealed class LegacyOverlayLayoutStore
             return null;
         }
 
-        if (node is JsonValue value
-            && value.TryGetValue<int>(out var scaleIndex))
+        if (node is JsonValue value && value.TryGetValue<int>(out var scaleIndex))
         {
             return scaleIndex;
         }
 
-        throw new InvalidDataException(
-            $"Overlay scale override '{name}' must be an integer.");
+        throw new InvalidDataException($"Overlay scale override '{name}' must be an integer.");
     }
 
     private static void ValidateScaleIndex(string name, int scaleIndex)
@@ -608,7 +553,8 @@ public sealed class LegacyOverlayLayoutStore
         {
             throw new ArgumentOutOfRangeException(
                 nameof(scaleIndex),
-                $"Overlay scale override '{name}' uses unsupported index {scaleIndex}.");
+                $"Overlay scale override '{name}' uses unsupported index {scaleIndex}."
+            );
         }
     }
 
@@ -627,24 +573,17 @@ public sealed class LegacyOverlayLayoutStore
                 return null;
             }
 
-            if (!opacity.TryGetValue<double>(out var percent)
-                || !double.IsFinite(percent))
+            if (!opacity.TryGetValue<double>(out var percent) || !double.IsFinite(percent))
             {
-                throw new InvalidDataException(
-                    "Legacy plotterOpacity must be a finite number.");
+                throw new InvalidDataException("Legacy plotterOpacity must be a finite number.");
             }
 
             return Math.Clamp(percent / 100d, 0, 1);
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or JsonException
-                or InvalidDataException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or JsonException or InvalidDataException)
         {
-            errors.Add(
-                $"Could not read legacy overlay opacity '{settingsPath}': "
-                + exception.Message);
+            errors.Add($"Could not read legacy overlay opacity '{settingsPath}': " + exception.Message);
             return null;
         }
     }
@@ -657,26 +596,19 @@ public sealed class LegacyOverlayLayoutStore
                 {
                     AllowTrailingCommas = true,
                     CommentHandling = JsonCommentHandling.Skip,
-                })
-            as JsonObject
-            ?? throw new InvalidDataException(
-                $"'{path}' is not a JSON object.");
+                }
+            ) as JsonObject
+            ?? throw new InvalidDataException($"'{path}' is not a JSON object.");
     }
 
-    private static LegacyOverlayPlacement ParsePlacement(
-        string name,
-        string value)
+    private static LegacyOverlayPlacement ParsePlacement(string name, string value)
     {
         var vrStart = value.IndexOf('{');
         var desktop = vrStart >= 0 ? value[..vrStart] : value;
-        var parts = desktop.Split(
-            [':', ','],
-            StringSplitOptions.TrimEntries
-                | StringSplitOptions.RemoveEmptyEntries);
+        var parts = desktop.Split([':', ','], StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length is < 4 or > 5)
         {
-            throw new InvalidDataException(
-                $"Overlay position '{name}' has an invalid desktop layout.");
+            throw new InvalidDataException($"Overlay position '{name}' has an invalid desktop layout.");
         }
 
         var horizontal = ParseHorizontal(name, parts[0]);
@@ -689,17 +621,10 @@ public sealed class LegacyOverlayLayoutStore
             opacity = ParseOpacity(name, parts[4]);
         }
 
-        return new LegacyOverlayPlacement(
-            horizontal,
-            horizontalOffset,
-            vertical,
-            verticalOffset,
-            opacity);
+        return new LegacyOverlayPlacement(horizontal, horizontalOffset, vertical, verticalOffset, opacity);
     }
 
-    private static LegacyHorizontalAnchor ParseHorizontal(
-        string name,
-        string value)
+    private static LegacyHorizontalAnchor ParseHorizontal(string name, string value)
     {
         return value.ToLowerInvariant() switch
         {
@@ -707,14 +632,11 @@ public sealed class LegacyOverlayLayoutStore
             "center" => LegacyHorizontalAnchor.Center,
             "right" => LegacyHorizontalAnchor.Right,
             "screen" or "os" => LegacyHorizontalAnchor.Screen,
-            _ => throw new InvalidDataException(
-                $"Overlay position '{name}' has unknown horizontal anchor '{value}'."),
+            _ => throw new InvalidDataException($"Overlay position '{name}' has unknown horizontal anchor '{value}'."),
         };
     }
 
-    private static LegacyVerticalAnchor ParseVertical(
-        string name,
-        string value)
+    private static LegacyVerticalAnchor ParseVertical(string name, string value)
     {
         return value.ToLowerInvariant() switch
         {
@@ -722,28 +644,22 @@ public sealed class LegacyOverlayLayoutStore
             "middle" => LegacyVerticalAnchor.Middle,
             "bottom" => LegacyVerticalAnchor.Bottom,
             "screen" or "os" => LegacyVerticalAnchor.Screen,
-            _ => throw new InvalidDataException(
-                $"Overlay position '{name}' has unknown vertical anchor '{value}'."),
+            _ => throw new InvalidDataException($"Overlay position '{name}' has unknown vertical anchor '{value}'."),
         };
     }
 
     private static double ParseOpacity(string name, string value)
     {
-        if ((!double.TryParse(
-                value,
-                NumberStyles.Float,
-                CultureInfo.CurrentCulture,
-                out var opacity)
-             && !double.TryParse(
-                 value,
-                 NumberStyles.Float,
-                 CultureInfo.InvariantCulture,
-                 out opacity))
+        if (
+            (
+                !double.TryParse(value, NumberStyles.Float, CultureInfo.CurrentCulture, out var opacity)
+                && !double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out opacity)
+            )
             || !double.IsFinite(opacity)
-            || opacity is < 0 or > 1)
+            || opacity is < 0 or > 1
+        )
         {
-            throw new InvalidDataException(
-                $"Overlay position '{name}' opacity must be from 0 to 1.");
+            throw new InvalidDataException($"Overlay position '{name}' opacity must be from 0 to 1.");
         }
 
         return opacity;
@@ -758,28 +674,25 @@ public sealed class LegacyOverlayLayout
     public LegacyOverlayLayout(
         IReadOnlyDictionary<string, LegacyOverlayPlacement> placements,
         double? defaultOpacity,
-        string? error)
+        string? error
+    )
     {
         ArgumentNullException.ThrowIfNull(placements);
         state = new LayoutState(
-            new Dictionary<string, LegacyOverlayPlacement>(
-                placements,
-                StringComparer.Ordinal),
+            new Dictionary<string, LegacyOverlayPlacement>(placements, StringComparer.Ordinal),
             defaultOpacity,
-            error);
+            error
+        );
     }
 
-    public static LegacyOverlayLayout Empty { get; } = new(
-        new Dictionary<string, LegacyOverlayPlacement>(StringComparer.Ordinal),
-        null,
-        null);
+    public static LegacyOverlayLayout Empty { get; } =
+        new(new Dictionary<string, LegacyOverlayPlacement>(StringComparer.Ordinal), null, null);
 
     public event EventHandler? ScaleIndexChanged;
 
     public event EventHandler? Changed;
 
-    public IReadOnlyDictionary<string, LegacyOverlayPlacement> Placements =>
-        Volatile.Read(ref state).Placements;
+    public IReadOnlyDictionary<string, LegacyOverlayPlacement> Placements => Volatile.Read(ref state).Placements;
 
     public double? DefaultOpacity => Volatile.Read(ref state).DefaultOpacity;
 
@@ -791,9 +704,7 @@ public sealed class LegacyOverlayLayout
     {
         if (!OverlayScaleCatalog.IsSupported(index))
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(index),
-                $"Overlay scale index {index} is not supported.");
+            throw new ArgumentOutOfRangeException(nameof(index), $"Overlay scale index {index} is not supported.");
         }
 
         if (Volatile.Read(ref scaleIndex) == index)
@@ -811,56 +722,44 @@ public sealed class LegacyOverlayLayout
         ArgumentNullException.ThrowIfNull(updated);
         if (ReferenceEquals(this, Empty))
         {
-            throw new InvalidOperationException(
-                "The shared empty overlay layout cannot be changed.");
+            throw new InvalidOperationException("The shared empty overlay layout cannot be changed.");
         }
 
         var updatedState = Volatile.Read(ref updated.state);
         Volatile.Write(
             ref state,
             new LayoutState(
-                new Dictionary<string, LegacyOverlayPlacement>(
-                    updatedState.Placements,
-                    StringComparer.Ordinal),
+                new Dictionary<string, LegacyOverlayPlacement>(updatedState.Placements, StringComparer.Ordinal),
                 updatedState.DefaultOpacity,
-                updatedState.Error));
+                updatedState.Error
+            )
+        );
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
-    public bool SetPlacement(
-        string plotterName,
-        LegacyOverlayPlacement placement)
+    public bool SetPlacement(string plotterName, LegacyOverlayPlacement placement)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
         ArgumentNullException.ThrowIfNull(placement);
         if (ReferenceEquals(this, Empty))
         {
-            throw new InvalidOperationException(
-                "The shared empty overlay layout cannot be changed.");
+            throw new InvalidOperationException("The shared empty overlay layout cannot be changed.");
         }
 
         while (true)
         {
             var current = Volatile.Read(ref state);
-            if (current.Placements.TryGetValue(plotterName, out var existing)
-                && existing == placement)
+            if (current.Placements.TryGetValue(plotterName, out var existing) && existing == placement)
             {
                 return false;
             }
 
-            var placements = new Dictionary<string, LegacyOverlayPlacement>(
-                current.Placements,
-                StringComparer.Ordinal)
+            var placements = new Dictionary<string, LegacyOverlayPlacement>(current.Placements, StringComparer.Ordinal)
             {
                 [plotterName] = placement,
             };
-            var updated = new LayoutState(
-                placements,
-                current.DefaultOpacity,
-                current.Error);
-            if (ReferenceEquals(
-                    Interlocked.CompareExchange(ref state, updated, current),
-                    current))
+            var updated = new LayoutState(placements, current.DefaultOpacity, current.Error);
+            if (ReferenceEquals(Interlocked.CompareExchange(ref state, updated, current), current))
             {
                 Changed?.Invoke(this, EventArgs.Empty);
                 return true;
@@ -868,10 +767,7 @@ public sealed class LegacyOverlayLayout
         }
     }
 
-    public PixelPoint? GetPosition(
-        string plotterName,
-        PixelRect gameBounds,
-        PixelSize overlaySize)
+    public PixelPoint? GetPosition(string plotterName, PixelRect gameBounds, PixelSize overlaySize)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
         var snapshot = Volatile.Read(ref state);
@@ -882,26 +778,20 @@ public sealed class LegacyOverlayLayout
 
         var x = placement.Horizontal switch
         {
-            LegacyHorizontalAnchor.Left =>
-                gameBounds.X + placement.HorizontalOffset,
-            LegacyHorizontalAnchor.Center =>
-                gameBounds.X + ((gameBounds.Width - overlaySize.Width) / 2)
-                    + placement.HorizontalOffset,
-            LegacyHorizontalAnchor.Right =>
-                gameBounds.Right - overlaySize.Width
-                    - placement.HorizontalOffset,
+            LegacyHorizontalAnchor.Left => gameBounds.X + placement.HorizontalOffset,
+            LegacyHorizontalAnchor.Center => gameBounds.X
+                + ((gameBounds.Width - overlaySize.Width) / 2)
+                + placement.HorizontalOffset,
+            LegacyHorizontalAnchor.Right => gameBounds.Right - overlaySize.Width - placement.HorizontalOffset,
             _ => placement.HorizontalOffset,
         };
         var y = placement.Vertical switch
         {
-            LegacyVerticalAnchor.Top =>
-                gameBounds.Y + placement.VerticalOffset,
-            LegacyVerticalAnchor.Middle =>
-                gameBounds.Y + ((gameBounds.Height - overlaySize.Height) / 2)
-                    + placement.VerticalOffset,
-            LegacyVerticalAnchor.Bottom =>
-                gameBounds.Bottom - overlaySize.Height
-                    - placement.VerticalOffset,
+            LegacyVerticalAnchor.Top => gameBounds.Y + placement.VerticalOffset,
+            LegacyVerticalAnchor.Middle => gameBounds.Y
+                + ((gameBounds.Height - overlaySize.Height) / 2)
+                + placement.VerticalOffset,
+            LegacyVerticalAnchor.Bottom => gameBounds.Bottom - overlaySize.Height - placement.VerticalOffset,
             _ => placement.VerticalOffset,
         };
         return new PixelPoint(x, y);
@@ -911,26 +801,27 @@ public sealed class LegacyOverlayLayout
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
         var snapshot = Volatile.Read(ref state);
-        return snapshot.Placements.TryGetValue(plotterName, out var placement)
-            && placement.Opacity is not null
-                ? placement.Opacity
-                : snapshot.DefaultOpacity;
+        return snapshot.Placements.TryGetValue(plotterName, out var placement) && placement.Opacity is not null
+            ? placement.Opacity
+            : snapshot.DefaultOpacity;
     }
 
     public int GetScaleIndex(string plotterName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
         var snapshot = Volatile.Read(ref state);
-        return snapshot.Placements.TryGetValue(plotterName, out var placement)
+        return
+            snapshot.Placements.TryGetValue(plotterName, out var placement)
             && placement.ScaleIndex is { } placementScaleIndex
-                ? placementScaleIndex
-                : ScaleIndex;
+            ? placementScaleIndex
+            : ScaleIndex;
     }
 
     private sealed record LayoutState(
         IReadOnlyDictionary<string, LegacyOverlayPlacement> Placements,
         double? DefaultOpacity,
-        string? Error);
+        string? Error
+    );
 }
 
 public sealed record LegacyOverlayPlacement(
@@ -939,12 +830,10 @@ public sealed record LegacyOverlayPlacement(
     LegacyVerticalAnchor Vertical,
     int VerticalOffset,
     double? Opacity,
-    int? ScaleIndex = null);
+    int? ScaleIndex = null
+);
 
-public sealed record LegacyOverlayLayoutSaveResult(
-    string Path,
-    string? BackupPath,
-    int UpdatedPlacementCount)
+public sealed record LegacyOverlayLayoutSaveResult(string Path, string? BackupPath, int UpdatedPlacementCount)
 {
     public string? SettingsBackupPath { get; init; }
 

@@ -8,7 +8,8 @@ public sealed class HumanSiteMaterialStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-human-material-{Guid.NewGuid():N}");
+        $"SrvSurvey-human-material-{Guid.NewGuid():N}"
+    );
     private readonly HumanSiteLiveSnapshot site = CreateSite();
 
     [Fact]
@@ -20,7 +21,8 @@ public sealed class HumanSiteMaterialStoreTests : IDisposable
             path,
             """
             {"name":"Old","marketId":12345,"systemAddress":42,"completed":false,"totalMatCount":2,"countMats":{"graphene":2},"countTypes":{"Component":2},"countBuildings":{"HAB":2},"matLocations":["graphene_Component_1.5_-2.25"],"future":{"keep":true}}
-            """);
+            """
+        );
         var store = new HumanSiteMaterialStore(temporaryDirectory);
 
         var result = await store.AppendAsync(
@@ -32,20 +34,19 @@ public sealed class HumanSiteMaterialStoreTests : IDisposable
                     "Data",
                     2,
                     new HumanSiteMapPoint(3.25, 4.5),
-                    null),
-            ]);
+                    null
+                ),
+            ]
+        );
 
         Assert.Equal(path, result.Path);
         Assert.Equal(4, result.Survey.TotalMaterialCount);
         Assert.Equal(2, result.Survey.CountByMaterial["graphene"]);
         Assert.Equal(2, result.Survey.CountByMaterial["opinionpolls"]);
         Assert.Equal(2, result.Survey.Materials.Count);
-        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!
-            .AsObject();
+        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.True(root["future"]!["keep"]!.GetValue<bool>());
-        Assert.Equal(
-            "opinionpolls_Data_3.25_4.5",
-            root["matLocations"]![1]!.GetValue<string>());
+        Assert.Equal("opinionpolls_Data_3.25_4.5", root["matLocations"]![1]!.GetValue<string>());
     }
 
     [Fact]
@@ -55,14 +56,12 @@ public sealed class HumanSiteMaterialStoreTests : IDisposable
         Directory.CreateDirectory(Path.GetDirectoryName(oldPath)!);
         await File.WriteAllTextAsync(
             oldPath,
-            """{"completed":true,"totalMatCount":1,"matLocations":["old_Data_1_2"]}""");
-        var time = new FixedTimeProvider(
-            DateTimeOffset.Parse("2026-07-25T13:14:15Z"));
+            """{"completed":true,"totalMatCount":1,"matLocations":["old_Data_1_2"]}"""
+        );
+        var time = new FixedTimeProvider(DateTimeOffset.Parse("2026-07-25T13:14:15Z"));
         var store = new HumanSiteMaterialStore(temporaryDirectory, time);
 
-        var result = await store.AppendAsync(
-            Context(),
-            [Material("new", "Component", 5, 6)]);
+        var result = await store.AppendAsync(Context(), [Material("new", "Component", 5, 6)]);
 
         Assert.NotEqual(oldPath, result.Path);
         Assert.EndsWith("42-12345-2026-07-25 131415.json", result.Path);
@@ -74,9 +73,7 @@ public sealed class HumanSiteMaterialStoreTests : IDisposable
     public async Task CompletionClosesSurveyAndNextLoadIsEmpty()
     {
         var store = new HumanSiteMaterialStore(temporaryDirectory);
-        await store.AppendAsync(
-            Context(),
-            [Material("graphene", "Component", 1, 2)]);
+        await store.AppendAsync(Context(), [Material("graphene", "Component", 1, 2)]);
 
         var completed = await store.CompleteAsync(Context());
         var loaded = await store.LoadActiveAsync(Context());
@@ -97,9 +94,9 @@ public sealed class HumanSiteMaterialStoreTests : IDisposable
         var store = new HumanSiteMaterialStore(temporaryDirectory);
 
         var load = await store.LoadActiveAsync(Context());
-        await Assert.ThrowsAsync<InvalidDataException>(() => store.AppendAsync(
-            Context(),
-            [Material("graphene", "Component", 1, 2)]));
+        await Assert.ThrowsAsync<InvalidDataException>(() =>
+            store.AppendAsync(Context(), [Material("graphene", "Component", 1, 2)])
+        );
 
         Assert.Equal(path, load.Path);
         Assert.NotNull(load.Error);
@@ -112,12 +109,9 @@ public sealed class HumanSiteMaterialStoreTests : IDisposable
         var store = new HumanSiteMaterialStore(temporaryDirectory);
 
         await Task.WhenAll(
-            store.AppendAsync(
-                Context(),
-                [Material("graphene", "Component", 1, 2)]),
-            store.AppendAsync(
-                Context(),
-                [Material("opinionpolls", "Data", 3, 4)]));
+            store.AppendAsync(Context(), [Material("graphene", "Component", 1, 2)]),
+            store.AppendAsync(Context(), [Material("opinionpolls", "Data", 3, 4)])
+        );
         var loaded = await store.LoadActiveAsync(Context());
 
         Assert.NotNull(loaded.Survey);
@@ -139,8 +133,7 @@ public sealed class HumanSiteMaterialStoreTests : IDisposable
         Assert.Equal(first.Path, second.Path);
         Assert.Equal(1, second.Survey.ThreatLevel);
         Assert.Equal(1, loaded.Survey!.ThreatLevel);
-        var root = JsonNode.Parse(await File.ReadAllTextAsync(second.Path))!
-            .AsObject();
+        var root = JsonNode.Parse(await File.ReadAllTextAsync(second.Path))!.AsObject();
         Assert.Equal(1, root["threatLevel"]!.GetValue<int>());
         Assert.Equal("Test Settlement", root["name"]!.GetValue<string>());
     }
@@ -160,26 +153,12 @@ public sealed class HumanSiteMaterialStoreTests : IDisposable
 
     private string SurveyPath(string timestamp)
     {
-        return Path.Combine(
-            temporaryDirectory,
-            "footMatStats",
-            "F123",
-            $"42-12345-{timestamp}.json");
+        return Path.Combine(temporaryDirectory, "footMatStats", "F123", $"42-12345-{timestamp}.json");
     }
 
-    private static HumanSiteCollectedMaterial Material(
-        string name,
-        string type,
-        double x,
-        double y)
+    private static HumanSiteCollectedMaterial Material(string name, string type, double x, double y)
     {
-        return new HumanSiteCollectedMaterial(
-            name,
-            null,
-            type,
-            1,
-            new HumanSiteMapPoint(x, y),
-            null);
+        return new HumanSiteCollectedMaterial(name, null, type, 1, new HumanSiteMapPoint(x, y), null);
     }
 
     private static HumanSiteLiveSnapshot CreateSite()
@@ -210,11 +189,11 @@ public sealed class HumanSiteMaterialStoreTests : IDisposable
             null,
             true,
             default,
-            default);
+            default
+        );
     }
 
-    private sealed class FixedTimeProvider(DateTimeOffset value)
-        : TimeProvider
+    private sealed class FixedTimeProvider(DateTimeOffset value) : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => value;
     }

@@ -14,7 +14,8 @@ public sealed class BundledAssetImageConverterTests
             "SrvSurvey.Desktop",
             "Assets",
             "Bodies",
-            "earth-like-world.png");
+            "earth-like-world.png"
+        );
         var openCount = 0;
         var decoded = new object();
         var converter = new BundledAssetImageConverter(
@@ -27,20 +28,12 @@ public sealed class BundledAssetImageConverterTests
             {
                 Assert.True(stream.Length > 0);
                 return decoded;
-            });
-        const string asset =
-            "avares://SrvSurvey.Desktop/Assets/Bodies/earth-like-world.png";
+            }
+        );
+        const string asset = "avares://SrvSurvey.Desktop/Assets/Bodies/earth-like-world.png";
 
-        var first = converter.Convert(
-            asset,
-            typeof(object),
-            null,
-            CultureInfo.InvariantCulture);
-        var second = converter.Convert(
-            asset,
-            typeof(object),
-            null,
-            CultureInfo.InvariantCulture);
+        var first = converter.Convert(asset, typeof(object), null, CultureInfo.InvariantCulture);
+        var second = converter.Convert(asset, typeof(object), null, CultureInfo.InvariantCulture);
 
         Assert.Same(decoded, first);
         Assert.Same(first, second);
@@ -55,16 +48,11 @@ public sealed class BundledAssetImageConverterTests
     public void RejectsNonAvaloniaResourcePaths(string? value)
     {
         var converter = new BundledAssetImageConverter(
-            _ => throw new InvalidOperationException(
-                "The asset loader must not run."),
-            _ => throw new InvalidOperationException(
-                "The asset decoder must not run."));
+            _ => throw new InvalidOperationException("The asset loader must not run."),
+            _ => throw new InvalidOperationException("The asset decoder must not run.")
+        );
 
-        var result = converter.Convert(
-            value,
-            typeof(object),
-            null,
-            CultureInfo.InvariantCulture);
+        var result = converter.Convert(value, typeof(object), null, CultureInfo.InvariantCulture);
 
         Assert.Null(result);
     }

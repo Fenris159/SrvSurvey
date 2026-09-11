@@ -12,57 +12,52 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 internal static class OverlayRuntimePresentationFactory
 {
     public static bool IsSupported(string plotterName) =>
-        plotterName is
-            "PlotBioStatus"
-            or "PlotBioSystem"
-            or "PlotBodyInfo"
-            or "PlotBuildCommodities"
-            or "PlotFlightWarning"
-            or "PlotFloatie"
-            or "PlotFootCombat"
-            or "PlotFSS"
-            or "PlotFSSInfo"
-            or "PlotGalMap"
-            or "PlotMiningNotifications"
-            or "PlotMiningReference"
-            or "PlotMiningFiregroups"
-            or "PlotMiningWarning"
-            or "PlotSurfaceMining"
-            or "PlotMineMap"
-            or "PlotGrounded"
-            or "PlotGuardians"
-            or "PlotGuardianStatus"
-            or "PlotGuardianSystem"
-            or "PlotHumanSite"
-            or "PlotJumpInfo"
-            or "PlotFleetCarrierRoute"
-            or "PlotRouteBio"
-            or "PlotMassacre"
-            or "PlotMiniTrack"
-            or "PlotMultiGameCommander"
-            or "PlotPriorScans"
-            or "PlotPulse"
-            or "PlotQuestMini"
-            or "PlotRamTah"
-            or "PlotSphericalSearch"
-            or "PlotStationInfo"
-            or "PlotSysStatus"
-            or "PlotTrackTarget";
+        plotterName
+            is "PlotBioStatus"
+                or "PlotBioSystem"
+                or "PlotBodyInfo"
+                or "PlotBuildCommodities"
+                or "PlotFlightWarning"
+                or "PlotFloatie"
+                or "PlotFootCombat"
+                or "PlotFSS"
+                or "PlotFSSInfo"
+                or "PlotGalMap"
+                or "PlotMiningNotifications"
+                or "PlotMiningReference"
+                or "PlotMiningFiregroups"
+                or "PlotMiningWarning"
+                or "PlotSurfaceMining"
+                or "PlotMineMap"
+                or "PlotGrounded"
+                or "PlotGuardians"
+                or "PlotGuardianStatus"
+                or "PlotGuardianSystem"
+                or "PlotHumanSite"
+                or "PlotJumpInfo"
+                or "PlotFleetCarrierRoute"
+                or "PlotRouteBio"
+                or "PlotMassacre"
+                or "PlotMiniTrack"
+                or "PlotMultiGameCommander"
+                or "PlotPriorScans"
+                or "PlotPulse"
+                or "PlotQuestMini"
+                or "PlotRamTah"
+                or "PlotSphericalSearch"
+                or "PlotStationInfo"
+                or "PlotSysStatus"
+                or "PlotTrackTarget";
 
-    public static bool TryCreate(
-        string plotterName,
-        out Control? presentation,
-        out object? dataContext) => TryCreate(
-            plotterName,
-            previewStateIndex: 0,
-            out presentation,
-            out dataContext);
+    public static bool TryCreate(string plotterName, out Control? presentation, out object? dataContext) =>
+        TryCreate(plotterName, previewStateIndex: 0, out presentation, out dataContext);
 
     public static bool TryCreate(
         string plotterName,
         int previewStateIndex,
         out Control? presentation,
-        out object? dataContext)
+        out object? dataContext
+    )
     {
         if (!IsSupported(plotterName))
         {
@@ -92,16 +87,15 @@ internal static class OverlayRuntimePresentationFactory
         return CreateEditorDataContextOnly(plotterName, previewStateIndex: 0);
     }
 
-    public static object CreateEditorDataContextOnly(
-        string plotterName,
-        int previewStateIndex)
+    public static object CreateEditorDataContextOnly(string plotterName, int previewStateIndex)
     {
         if (!IsSupported(plotterName))
         {
             throw new ArgumentOutOfRangeException(
                 nameof(plotterName),
                 plotterName,
-                "No shared presentation is registered for this plotter.");
+                "No shared presentation is registered for this plotter."
+            );
         }
 
         return CreateEditorDataContext(plotterName, previewStateIndex);
@@ -147,13 +141,10 @@ internal static class OverlayRuntimePresentationFactory
             _ => null,
         };
 
-    public static IReadOnlyList<OverlayEditorPreviewStateDefinition>
-        GetEditorPreviewStates(string plotterName) =>
+    public static IReadOnlyList<OverlayEditorPreviewStateDefinition> GetEditorPreviewStates(string plotterName) =>
         OverlayEditorPreviewCatalog.GetStates(plotterName);
 
-    public static object CreateEditorDataContext(
-        string plotterName,
-        int previewStateIndex = 0) =>
+    public static object CreateEditorDataContext(string plotterName, int previewStateIndex = 0) =>
         OverlayEditorPreviewCatalog.Create(plotterName, previewStateIndex);
 
     /// <summary>
@@ -161,6 +152,5 @@ internal static class OverlayRuntimePresentationFactory
     /// All shared presentations own their surface chrome, so every runtime
     /// presentation path uses the same dedicated host treatment.
     /// </summary>
-    public static bool UsesDedicatedHostChrome(string plotterName) =>
-        IsSupported(plotterName);
+    public static bool UsesDedicatedHostChrome(string plotterName) => IsSupported(plotterName);
 }

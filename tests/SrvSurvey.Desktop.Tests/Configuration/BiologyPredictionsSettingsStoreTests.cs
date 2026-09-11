@@ -6,7 +6,8 @@ public sealed class BiologyPredictionsSettingsStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        "SrvSurvey-BiologyPredictionsSettings-" + Guid.NewGuid().ToString("N"));
+        "SrvSurvey-BiologyPredictionsSettings-" + Guid.NewGuid().ToString("N")
+    );
 
     [Fact]
     public void MissingDocumentUsesLegacyCompatibleDefaults()
@@ -38,11 +39,7 @@ public sealed class BiologyPredictionsSettingsStoreTests : IDisposable
     {
         Directory.CreateDirectory(temporaryDirectory);
         var path = Path.Combine(temporaryDirectory, "ui-settings.json");
-        File.WriteAllText(
-            path,
-            "{\"BiologyPredictions\":{\"RowSize\":"
-                + storedValue
-                + "}}");
+        File.WriteAllText(path, "{\"BiologyPredictions\":{\"RowSize\":" + storedValue + "}}");
 
         var preferences = new BiologyPredictionsSettingsStore(path).Load();
 
@@ -59,7 +56,6 @@ public sealed class BiologyPredictionsSettingsStoreTests : IDisposable
 
     private BiologyPredictionsSettingsStore CreateStore()
     {
-        return new BiologyPredictionsSettingsStore(
-            Path.Combine(temporaryDirectory, "ui-settings.json"));
+        return new BiologyPredictionsSettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json"));
     }
 }

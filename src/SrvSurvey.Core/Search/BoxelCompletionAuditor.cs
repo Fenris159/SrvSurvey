@@ -7,20 +7,17 @@ public sealed class BoxelCompletionAuditor
     private readonly IBoxelLocalSystemReader localSystemReader;
     private readonly IBoxelSystemResolver systemResolver;
 
-    public BoxelCompletionAuditor(
-        IBoxelLocalSystemReader localSystemReader,
-        IBoxelSystemResolver systemResolver)
+    public BoxelCompletionAuditor(IBoxelLocalSystemReader localSystemReader, IBoxelSystemResolver systemResolver)
     {
-        this.localSystemReader = localSystemReader
-            ?? throw new ArgumentNullException(nameof(localSystemReader));
-        this.systemResolver = systemResolver
-            ?? throw new ArgumentNullException(nameof(systemResolver));
+        this.localSystemReader = localSystemReader ?? throw new ArgumentNullException(nameof(localSystemReader));
+        this.systemResolver = systemResolver ?? throw new ArgumentNullException(nameof(systemResolver));
     }
 
     public async Task<BoxelCompletionAuditResult> AuditAsync(
         BoxelCompletionAuditRequest request,
         Func<BoxelCompletionAuditProgress, CancellationToken, Task>? progress = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.FrontierId);
@@ -33,9 +30,8 @@ public sealed class BoxelCompletionAuditor
 
         try
         {
-            var local = await localSystemReader.ReadAllAsync(
-                    request.FrontierId,
-                    cancellationToken)
+            var local = await localSystemReader
+                .ReadAllAsync(request.FrontierId, cancellationToken)
                 .ConfigureAwait(false);
             errors.AddRange(local.Errors);
             var localByPrefix = GroupByPrefix(local.Systems);
@@ -45,10 +41,7 @@ public sealed class BoxelCompletionAuditor
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 BoxelCompletionAuditEntry? entry = null;
-                if (!string.Equals(
-                        boxel.Prefix,
-                        request.ExcludedPrefix,
-                        StringComparison.Ordinal))
+                if (!string.Equals(boxel.Prefix, request.ExcludedPrefix, StringComparison.Ordinal))
                 {
                     entry = request.EmptyPrefixes.Contains(boxel.Prefix)
                         ? new BoxelCompletionAuditEntry(boxel, -1, false, true)
@@ -58,7 +51,8 @@ public sealed class BoxelCompletionAuditor
                                 routeByPrefix.GetValueOrDefault(boxel.Prefix) ?? [],
                                 request,
                                 errors,
-                                cancellationToken)
+                                cancellationToken
+                            )
                             .ConfigureAwait(false);
                     entries.Add(entry);
                 }
@@ -67,32 +61,19 @@ public sealed class BoxelCompletionAuditor
                 if (progress is not null)
                 {
                     await progress(
-                            new BoxelCompletionAuditProgress(
-                                processed,
-                                request.Boxels.Count,
-                                boxel.Prefix,
-                                entry),
-                            cancellationToken)
+                            new BoxelCompletionAuditProgress(processed, request.Boxels.Count, boxel.Prefix, entry),
+                            cancellationToken
+                        )
                         .ConfigureAwait(false);
                 }
             }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            return new BoxelCompletionAuditResult(
-                entries,
-                errors,
-                true,
-                processed,
-                request.Boxels.Count);
+            return new BoxelCompletionAuditResult(entries, errors, true, processed, request.Boxels.Count);
         }
 
-        return new BoxelCompletionAuditResult(
-            entries,
-            errors,
-            false,
-            processed,
-            request.Boxels.Count);
+        return new BoxelCompletionAuditResult(entries, errors, false, processed, request.Boxels.Count);
     }
 
     private async Task<BoxelCompletionAuditEntry> AuditBoxelAsync(
@@ -101,56 +82,55 @@ public sealed class BoxelCompletionAuditor
         IReadOnlyList<BoxelSystemObservation> routeSystems,
         BoxelCompletionAuditRequest request,
         List<string> errors,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var systems = new Dictionary<string, AuditedSystem>(StringComparer.Ordinal);
         Merge(systems, localSystems, AuditObservationSource.LocalProfile, request);
         Merge(systems, routeSystems, AuditObservationSource.NavRoute, request);
         try
         {
-            var spanshSystems = await systemResolver.SearchAsync(boxel, cancellationToken)
-                .ConfigureAwait(false);
+            var spanshSystems = await systemResolver.SearchAsync(boxel, cancellationToken).ConfigureAwait(false);
             Merge(systems, spanshSystems, AuditObservationSource.Spansh, request);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             throw;
         }
-        catch (Exception exception) when (
-            exception is HttpRequestException
-                or TaskCanceledException
-                or InvalidDataException
-                or JsonException)
+        catch (Exception exception)
+            when (exception is HttpRequestException or TaskCanceledException or InvalidDataException or JsonException)
         {
             errors.Add($"Spansh audit failed for {boxel.Prefix}: {exception.Message}");
         }
 
-        var systemCount = systems.Count == 0
-            ? 0
-            : systems.Values.Max(system => system.Boxel.N2) + 1;
+        var systemCount = systems.Count == 0 ? 0 : systems.Values.Max(system => system.Boxel.N2) + 1;
         return new BoxelCompletionAuditEntry(
             boxel,
             systemCount,
             systems.Count > 0 && systems.Values.All(system => system.IsComplete),
-            false);
+            false
+        );
     }
 
     private static Dictionary<string, IReadOnlyList<BoxelSystemObservation>> GroupByPrefix(
-        IEnumerable<BoxelSystemObservation> systems)
+        IEnumerable<BoxelSystemObservation> systems
+    )
     {
         return systems
             .GroupBy(system => system.Boxel.Prefix, StringComparer.Ordinal)
             .ToDictionary(
                 group => group.Key,
                 group => (IReadOnlyList<BoxelSystemObservation>)group.ToArray(),
-                StringComparer.Ordinal);
+                StringComparer.Ordinal
+            );
     }
 
     private static void Merge(
         IDictionary<string, AuditedSystem> systems,
         IEnumerable<BoxelSystemObservation> observations,
         AuditObservationSource source,
-        BoxelCompletionAuditRequest request)
+        BoxelCompletionAuditRequest request
+    )
     {
         foreach (var observation in observations)
         {
@@ -158,22 +138,17 @@ public sealed class BoxelCompletionAuditor
             var isComplete = existing?.IsComplete ?? false;
             if (source == AuditObservationSource.LocalProfile)
             {
-                isComplete |= request.CompletionMode == BoxelCompletionMode.FssAllBodies
-                    ? observation.FssAllBodies
-                        && observation.VisitedAt > request.StartedOn
-                    : observation.VisitedAt > request.StartedOn
-                        || request.SkipAlreadyVisited;
+                isComplete |=
+                    request.CompletionMode == BoxelCompletionMode.FssAllBodies
+                        ? observation.FssAllBodies && observation.VisitedAt > request.StartedOn
+                        : observation.VisitedAt > request.StartedOn || request.SkipAlreadyVisited;
             }
-            else if (source == AuditObservationSource.Spansh
-                && observation.HasKnownBodies
-                && request.SkipKnownToSpansh)
+            else if (source == AuditObservationSource.Spansh && observation.HasKnownBodies && request.SkipKnownToSpansh)
             {
                 isComplete |= observation.SpanshUpdatedAt < request.StartedOn;
             }
 
-            systems[observation.Boxel.GeneratedName] = new AuditedSystem(
-                observation.Boxel,
-                isComplete);
+            systems[observation.Boxel.GeneratedName] = new AuditedSystem(observation.Boxel, isComplete);
         }
     }
 
@@ -196,23 +171,22 @@ public sealed record BoxelCompletionAuditRequest(
     bool SkipAlreadyVisited,
     bool SkipKnownToSpansh,
     BoxelCompletionMode CompletionMode,
-    IReadOnlyList<BoxelSystemObservation> RouteSystems);
+    IReadOnlyList<BoxelSystemObservation> RouteSystems
+);
 
-public sealed record BoxelCompletionAuditEntry(
-    BoxelAddress Boxel,
-    int SystemCount,
-    bool IsComplete,
-    bool IsEmpty);
+public sealed record BoxelCompletionAuditEntry(BoxelAddress Boxel, int SystemCount, bool IsComplete, bool IsEmpty);
 
 public sealed record BoxelCompletionAuditProgress(
     int Processed,
     int Total,
     string Prefix,
-    BoxelCompletionAuditEntry? Entry);
+    BoxelCompletionAuditEntry? Entry
+);
 
 public sealed record BoxelCompletionAuditResult(
     IReadOnlyList<BoxelCompletionAuditEntry> Entries,
     IReadOnlyList<string> Errors,
     bool WasCancelled,
     int Processed,
-    int Total);
+    int Total
+);

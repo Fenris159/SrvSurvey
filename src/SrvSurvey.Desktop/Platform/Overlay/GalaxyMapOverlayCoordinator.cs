@@ -25,22 +25,17 @@ public sealed class GalaxyMapOverlayCoordinator : IDisposable
         GalaxyMapOverlayViewModel viewModel,
         IOverlayPlatformService platform,
         IGameWindowTracker gameWindowTracker,
-        LegacyOverlayLayout? overlayLayout = null)
+        LegacyOverlayLayout? overlayLayout = null
+    )
     {
-        this.viewModel = viewModel
-            ?? throw new ArgumentNullException(nameof(viewModel));
-        this.platform = platform
-            ?? throw new ArgumentNullException(nameof(platform));
-        this.gameWindowTracker = gameWindowTracker
-            ?? throw new ArgumentNullException(nameof(gameWindowTracker));
+        this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
+        this.platform = platform ?? throw new ArgumentNullException(nameof(platform));
+        this.gameWindowTracker = gameWindowTracker ?? throw new ArgumentNullException(nameof(gameWindowTracker));
         this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
         registry = OverlayWindowRegistry.Shared;
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
         registry.SetGalaxyMapContextActive(viewModel.IsGalaxyMapOpen);
-        timer = new OverlayDispatcherTimer
-        {
-            Interval = TimeSpan.FromMilliseconds(250),
-        };
+        timer = new OverlayDispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
         timer.Tick += OnTimerTick;
         timer.Start();
         SynchronizeWindow();
@@ -83,21 +78,21 @@ public sealed class GalaxyMapOverlayCoordinator : IDisposable
         SynchronizeWindow();
     }
 
-    private void OnViewModelPropertyChanged(
-        object? sender,
-        PropertyChangedEventArgs eventArgs)
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
-        if (eventArgs.PropertyName is nameof(
-                GalaxyMapOverlayViewModel.IsGalaxyMapOpen))
+        if (eventArgs.PropertyName is nameof(GalaxyMapOverlayViewModel.IsGalaxyMapOpen))
         {
             registry.SetGalaxyMapContextActive(viewModel.IsGalaxyMapOpen);
         }
 
-        if (eventArgs.PropertyName is nameof(GalaxyMapOverlayViewModel.ShouldShow)
-            or nameof(GalaxyMapOverlayViewModel.IsGalaxyMapOpen)
-            or nameof(GalaxyMapOverlayViewModel.PrimarySystem)
-            or nameof(GalaxyMapOverlayViewModel.SecondarySystem)
-            or nameof(GalaxyMapOverlayViewModel.Factions))
+        if (
+            eventArgs.PropertyName
+            is nameof(GalaxyMapOverlayViewModel.ShouldShow)
+                or nameof(GalaxyMapOverlayViewModel.IsGalaxyMapOpen)
+                or nameof(GalaxyMapOverlayViewModel.PrimarySystem)
+                or nameof(GalaxyMapOverlayViewModel.SecondarySystem)
+                or nameof(GalaxyMapOverlayViewModel.Factions)
+        )
         {
             SynchronizeWindow();
         }
@@ -111,14 +106,16 @@ public sealed class GalaxyMapOverlayCoordinator : IDisposable
         }
 
         gameWindow = gameWindowTracker.GetSnapshot();
-        if (isSuppressed
+        if (
+            isSuppressed
             || !viewModel.ShouldShow
             || !platform.Capabilities.SupportsPassiveOverlay
             || !platform.Capabilities.SupportsClickThrough
             || !platform.Capabilities.SupportsGameWindowTracking
             || !gameWindow.IsAvailable
             || !gameWindow.IsVisible
-            || !gameWindow.IsForeground)
+            || !gameWindow.IsForeground
+        )
         {
             CloseWindow();
             return;
@@ -131,10 +128,7 @@ public sealed class GalaxyMapOverlayCoordinator : IDisposable
         }
 
         var overlay = new GalaxyMapOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(
-            overlay,
-            overlayLayout,
-            PlotterName);
+        OverlayThemeResources.Apply(overlay, overlayLayout, PlotterName);
         overlay.Opened += (_, _) =>
         {
             PositionWindow(overlay, gameWindow.ClientBounds);
@@ -158,23 +152,16 @@ public sealed class GalaxyMapOverlayCoordinator : IDisposable
 
     private void PositionWindow(Window window, PixelRect gameBounds)
     {
-        OverlayThemeResources.ApplyOpacity(
-            window,
-            overlayLayout,
-            PlotterName);
-        var screen = window.Screens.ScreenFromBounds(gameBounds)
-            ?? window.Screens.Primary;
+        OverlayThemeResources.ApplyOpacity(window, overlayLayout, PlotterName);
+        var screen = window.Screens.ScreenFromBounds(gameBounds) ?? window.Screens.Primary;
         if (screen is null)
         {
             return;
         }
 
-        var size = OverlayWindowMetrics.PrepareForPlacement(
-            window, overlayLayout, PlotterName, screen.Scaling);
-        var position = overlayLayout.GetPosition(
-                PlotterName,
-                gameBounds,
-                size)
+        var size = OverlayWindowMetrics.PrepareForPlacement(window, overlayLayout, PlotterName, screen.Scaling);
+        var position =
+            overlayLayout.GetPosition(PlotterName, gameBounds, size)
             ?? OverlayWindowPlacement.TopLeft(gameBounds, size, 8);
         if (window.Position != position)
         {

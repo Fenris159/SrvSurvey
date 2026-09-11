@@ -10,20 +10,21 @@ public sealed class GroundTargetOverlayViewModelTests
     public void WrapsGuidanceAndReportsPassivePreparation()
     {
         var groundTarget = new GroundTargetViewModel(
-            new GroundTargetSettingsStore(Path.Combine(
-                Path.GetTempPath(),
-                $"SrvSurvey-ground-target-overlay-tests-{Guid.NewGuid():N}")));
+            new GroundTargetSettingsStore(
+                Path.Combine(Path.GetTempPath(), $"SrvSurvey-ground-target-overlay-tests-{Guid.NewGuid():N}")
+            )
+        );
         var viewModel = new GroundTargetOverlayViewModel(
             groundTarget,
-            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows));
+            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows)
+        );
 
         Assert.Same(groundTarget, viewModel.GroundTarget);
         Assert.Equal("PASSIVE", viewModel.InputMode);
 
-        viewModel.ApplyPreparation(new OverlayPreparationResult(
-            IsPrepared: true,
-            IsClickThrough: false,
-            "Click-through was rejected."));
+        viewModel.ApplyPreparation(
+            new OverlayPreparationResult(IsPrepared: true, IsClickThrough: false, "Click-through was rejected.")
+        );
 
         Assert.Equal("BLOCKED", viewModel.InputMode);
         Assert.Equal("Click-through was rejected.", viewModel.PlatformStatus);

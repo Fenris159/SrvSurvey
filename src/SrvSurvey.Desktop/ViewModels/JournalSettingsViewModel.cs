@@ -12,24 +12,19 @@ public sealed class JournalSettingsViewModel : INotifyPropertyChanged
     private string directoryPath;
     private string statusMessage;
 
-    public JournalSettingsViewModel(
-        JournalSettingsStore settingsStore,
-        string? commandLineOverride = null)
+    public JournalSettingsViewModel(JournalSettingsStore settingsStore, string? commandLineOverride = null)
     {
-        this.settingsStore = settingsStore
-            ?? throw new ArgumentNullException(nameof(settingsStore));
+        this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         IsCommandLineOverride = !string.IsNullOrWhiteSpace(commandLineOverride);
-        directoryPath = (commandLineOverride
-                ?? settingsStore.Load().Directory
-                ?? string.Empty)
-            .Trim();
+        directoryPath = (commandLineOverride ?? settingsStore.Load().Directory ?? string.Empty).Trim();
         statusMessage = IsCommandLineOverride
             ? "The --journal-directory startup option controls this instance. "
                 + "Remove that option to use the persisted folder."
             : GetPathStatus(directoryPath);
         saveAndRestartCommand = new AsyncCommand(
             SaveAndRestartAsync,
-            () => !IsCommandLineOverride && Directory.Exists(DirectoryPath));
+            () => !IsCommandLineOverride && Directory.Exists(DirectoryPath)
+        );
         SaveAndRestartCommand = saveAndRestartCommand;
     }
 
@@ -51,9 +46,7 @@ public sealed class JournalSettingsViewModel : INotifyPropertyChanged
             }
 
             directoryPath = normalized;
-            StatusMessage = IsCommandLineOverride
-                ? statusMessage
-                : GetPathStatus(normalized);
+            StatusMessage = IsCommandLineOverride ? statusMessage : GetPathStatus(normalized);
             OnPropertyChanged();
             saveAndRestartCommand.RaiseCanExecuteChanged();
         }
@@ -80,9 +73,7 @@ public sealed class JournalSettingsViewModel : INotifyPropertyChanged
     {
         if (!saveAndRestartCommand.CanExecute(null))
         {
-            StatusMessage = IsCommandLineOverride
-                ? statusMessage
-                : GetPathStatus(DirectoryPath);
+            StatusMessage = IsCommandLineOverride ? statusMessage : GetPathStatus(DirectoryPath);
             return;
         }
 
@@ -90,13 +81,10 @@ public sealed class JournalSettingsViewModel : INotifyPropertyChanged
         {
             settingsStore.Save(new JournalPreferences(DirectoryPath));
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidOperationException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidOperationException)
         {
-            StatusMessage = "The journal folder could not be saved: "
-                + exception.Message;
+            StatusMessage = "The journal folder could not be saved: " + exception.Message;
             return;
         }
 
@@ -117,7 +105,8 @@ public sealed class JournalSettingsViewModel : INotifyPropertyChanged
         }
         catch (Exception exception)
         {
-            StatusMessage = "Journal folder saved, but automatic restart failed: "
+            StatusMessage =
+                "Journal folder saved, but automatic restart failed: "
                 + exception.Message
                 + " Close and reopen SrvSurvey manually.";
         }
@@ -127,8 +116,7 @@ public sealed class JournalSettingsViewModel : INotifyPropertyChanged
     {
         if (string.IsNullOrWhiteSpace(path))
         {
-            return "No persisted override is set; platform defaults and "
-                + "SRVSURVEY_JOURNAL_DIR will be checked.";
+            return "No persisted override is set; platform defaults and " + "SRVSURVEY_JOURNAL_DIR will be checked.";
         }
 
         return Directory.Exists(path)
@@ -142,9 +130,7 @@ public sealed class JournalSettingsViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private sealed class AsyncCommand(
-        Func<Task> execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class AsyncCommand(Func<Task> execute, Func<bool> canExecute) : ICommand
     {
         public event EventHandler? CanExecuteChanged;
 

@@ -14,53 +14,41 @@ public sealed class GuardianOverlayCoordinatorTests
     public async Task SuccessfulZoomPreparationRegistersAnInteractiveChild()
     {
         var root = CreateTemporaryDirectory();
-        var existingWindows = OverlayWindowRegistry.Shared.Snapshot()
+        var existingWindows = OverlayWindowRegistry
+            .Shared.Snapshot()
             .Select(registration => registration.Window)
             .ToHashSet();
         try
         {
             using var guardian = await CreateLiveGuardianAsync(root);
-            var platform = new FakeOverlayPlatform(
-                zoomClickThrough: true,
-                zoomInteractive: true);
+            var platform = new FakeOverlayPlatform(zoomClickThrough: true, zoomInteractive: true);
             using var coordinator = new GuardianOverlayCoordinator(
                 guardian,
                 platform,
-                new FakeGameWindowTracker(AvailableGameWindow));
+                new FakeGameWindowTracker(AvailableGameWindow)
+            );
 
-            var guardianRegistrations = OverlayWindowRegistry.Shared.Snapshot()
+            var guardianRegistrations = OverlayWindowRegistry
+                .Shared.Snapshot()
                 .Where(registration =>
-                    !existingWindows.Contains(registration.Window)
-                    && registration.PlotterName == "PlotGuardians")
+                    !existingWindows.Contains(registration.Window) && registration.PlotterName == "PlotGuardians"
+                )
                 .ToArray();
 
+            Assert.Contains(platform.PreparedWindows, window => window is GuardianZoomOverlayWindow);
+            Assert.Contains(platform.InteractiveWindows, window => window is GuardianZoomOverlayWindow);
+            Assert.Contains(guardianRegistrations, registration => registration.Window is GuardianOverlayWindow);
+            Assert.Contains(guardianRegistrations, registration => registration.Window is GuardianZoomOverlayWindow);
+            Assert.Single(guardianRegistrations, registration => registration.ParticipatesInPlacement);
             Assert.Contains(
-                platform.PreparedWindows,
-                window => window is GuardianZoomOverlayWindow);
-            Assert.Contains(
-                platform.InteractiveWindows,
-                window => window is GuardianZoomOverlayWindow);
+                guardianRegistrations,
+                registration => registration.Window is GuardianOverlayWindow && registration.ParticipatesInPlacement
+            );
             Assert.Contains(
                 guardianRegistrations,
                 registration =>
-                    registration.Window is GuardianOverlayWindow);
-            Assert.Contains(
-                guardianRegistrations,
-                registration =>
-                    registration.Window is GuardianZoomOverlayWindow);
-            Assert.Single(
-                guardianRegistrations,
-                registration => registration.ParticipatesInPlacement);
-            Assert.Contains(
-                guardianRegistrations,
-                registration =>
-                    registration.Window is GuardianOverlayWindow
-                    && registration.ParticipatesInPlacement);
-            Assert.Contains(
-                guardianRegistrations,
-                registration =>
-                    registration.Window is GuardianZoomOverlayWindow
-                    && !registration.ParticipatesInPlacement);
+                    registration.Window is GuardianZoomOverlayWindow && !registration.ParticipatesInPlacement
+            );
         }
         finally
         {
@@ -71,21 +59,18 @@ public sealed class GuardianOverlayCoordinatorTests
     [AvaloniaTheory]
     [InlineData(false, true)]
     [InlineData(true, false)]
-    public async Task ZoomPreparationFailureIsLatchedWithoutSuppressingSite(
-        bool zoomClickThrough,
-        bool zoomInteractive)
+    public async Task ZoomPreparationFailureIsLatchedWithoutSuppressingSite(bool zoomClickThrough, bool zoomInteractive)
     {
         var root = CreateTemporaryDirectory();
         try
         {
             using var guardian = await CreateLiveGuardianAsync(root);
-            var platform = new FakeOverlayPlatform(
-                zoomClickThrough,
-                zoomInteractive);
+            var platform = new FakeOverlayPlatform(zoomClickThrough, zoomInteractive);
             using var coordinator = new GuardianOverlayCoordinator(
                 guardian,
                 platform,
-                new FakeGameWindowTracker(AvailableGameWindow));
+                new FakeGameWindowTracker(AvailableGameWindow)
+            );
 
             Assert.True(coordinator.IsLiveSiteVisible);
             Assert.Equal(1, platform.ZoomPreparationCount);
@@ -97,8 +82,8 @@ public sealed class GuardianOverlayCoordinatorTests
             Assert.Equal(1, platform.ZoomPreparationCount);
             Assert.DoesNotContain(
                 OverlayWindowRegistry.Shared.Snapshot(),
-                registration =>
-                    registration.Window is GuardianZoomOverlayWindow);
+                registration => registration.Window is GuardianZoomOverlayWindow
+            );
         }
         finally
         {
@@ -106,43 +91,44 @@ public sealed class GuardianOverlayCoordinatorTests
         }
     }
 
-    private static GameWindowSnapshot AvailableGameWindow { get; } = new(
-        NativeHandle: (nint)1,
-        ProcessId: 42,
-        ClientBounds: new PixelRect(0, 0, 1920, 1080),
-        IsVisible: true,
-        IsForeground: true);
+    private static GameWindowSnapshot AvailableGameWindow { get; } =
+        new(
+            NativeHandle: (nint)1,
+            ProcessId: 42,
+            ClientBounds: new PixelRect(0, 0, 1920, 1080),
+            IsVisible: true,
+            IsForeground: true
+        );
 
-    private static async Task<GuardianViewModel> CreateLiveGuardianAsync(
-        string root)
+    private static async Task<GuardianViewModel> CreateLiveGuardianAsync(string root)
     {
         var guardian = new GuardianViewModel(root);
         await guardian.LoadProfileAsync("F123", isOdyssey: true);
         await guardian.ApplyJournalEventsAsync(
-        [
-            Parse(
-                """{"event":"Location","StarSystem":"Synuefe XR-H d11-102","SystemAddress":3515254557027}"""),
-            Parse(
-                """{"event":"ApproachSettlement","Name":"$Ancient:#index=1;","Name_Localised":"Ancient Ruins (1)","SystemAddress":3515254557027,"BodyID":13,"BodyName":"Synuefe XR-H d11-102 1 b","Latitude":-46.576923,"Longitude":133.985107}"""),
-        ],
-        "Test Commander");
-        guardian.UpdateStatus(new EliteStatus
-        {
-            Flags = StatusFlags.HasLatLong | StatusFlags.InSrv,
-            Latitude = -46.576923,
-            Longitude = 133.985107,
-            PlanetRadius = 1_000_000,
-        });
+            [
+                Parse("""{"event":"Location","StarSystem":"Synuefe XR-H d11-102","SystemAddress":3515254557027}"""),
+                Parse(
+                    """{"event":"ApproachSettlement","Name":"$Ancient:#index=1;","Name_Localised":"Ancient Ruins (1)","SystemAddress":3515254557027,"BodyID":13,"BodyName":"Synuefe XR-H d11-102 1 b","Latitude":-46.576923,"Longitude":133.985107}"""
+                ),
+            ],
+            "Test Commander"
+        );
+        guardian.UpdateStatus(
+            new EliteStatus
+            {
+                Flags = StatusFlags.HasLatLong | StatusFlags.InSrv,
+                Latitude = -46.576923,
+                Longitude = 133.985107,
+                PlanetRadius = 1_000_000,
+            }
+        );
         Assert.True(guardian.ShouldShowLiveSiteOverlay);
         return guardian;
     }
 
     private static JournalEventEnvelope Parse(string json)
     {
-        var success = JournalEventEnvelope.TryParse(
-            json,
-            out var journalEvent,
-            out var error);
+        var success = JournalEventEnvelope.TryParse(json, out var journalEvent, out var error);
         Assert.True(success, error);
         return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }
@@ -152,7 +138,8 @@ public sealed class GuardianOverlayCoordinatorTests
         var path = Path.Combine(
             Path.GetTempPath(),
             "SrvSurvey.GuardianOverlayCoordinatorTests",
-            Guid.NewGuid().ToString("N"));
+            Guid.NewGuid().ToString("N")
+        );
         Directory.CreateDirectory(path);
         return path;
     }
@@ -165,9 +152,7 @@ public sealed class GuardianOverlayCoordinatorTests
         }
     }
 
-    private sealed class FakeOverlayPlatform(
-        bool zoomClickThrough,
-        bool zoomInteractive) : IOverlayPlatformService
+    private sealed class FakeOverlayPlatform(bool zoomClickThrough, bool zoomInteractive) : IOverlayPlatformService
     {
         public OverlayPlatformCapabilities Capabilities { get; } =
             OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows);
@@ -190,38 +175,32 @@ public sealed class GuardianOverlayCoordinatorTests
             return new OverlayPreparationResult(
                 IsPrepared: zoomClickThrough,
                 IsClickThrough: zoomClickThrough,
-                Status: zoomClickThrough ? "Prepared" : "Unavailable");
+                Status: zoomClickThrough ? "Prepared" : "Unavailable"
+            );
         }
 
-        public OverlayInteractionResult SetInteractive(
-            Window window,
-            bool interactive)
+        public OverlayInteractionResult SetInteractive(Window window, bool interactive)
         {
             if (interactive)
             {
                 InteractiveWindows.Add(window);
             }
 
-            var succeeded = window is not GuardianZoomOverlayWindow
-                || zoomInteractive;
+            var succeeded = window is not GuardianZoomOverlayWindow || zoomInteractive;
             return new OverlayInteractionResult(
                 IsPrepared: succeeded,
                 IsInteractive: interactive && succeeded,
-                Status: succeeded ? "Prepared" : "Unavailable");
+                Status: succeeded ? "Prepared" : "Unavailable"
+            );
         }
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
     }
 
-    private sealed class FakeGameWindowTracker(GameWindowSnapshot snapshot)
-        : IGameWindowTracker
+    private sealed class FakeGameWindowTracker(GameWindowSnapshot snapshot) : IGameWindowTracker
     {
         public GameWindowSnapshot GetSnapshot() => snapshot;
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
     }
 }

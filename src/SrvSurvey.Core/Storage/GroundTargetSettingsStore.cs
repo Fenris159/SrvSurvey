@@ -7,29 +7,21 @@ namespace SrvSurvey.Core.Storage;
 [System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Design",
     "CA1001:Types that own disposable fields should be disposable",
-    Justification = "The store is application-scoped and its semaphore may still have in-flight waiters.")]
+    Justification = "The store is application-scoped and its semaphore may still have in-flight waiters."
+)]
 public sealed class GroundTargetSettingsStore(string dataDirectory)
 {
-    private static readonly JsonSerializerOptions SerializerOptions = new()
-    {
-        WriteIndented = true,
-    };
+    private static readonly JsonSerializerOptions SerializerOptions = new() { WriteIndented = true };
 
     private readonly SemaphoreSlim saveLock = new(1, 1);
 
-    public string Path { get; } = System.IO.Path.Combine(
-        System.IO.Path.GetFullPath(dataDirectory),
-        "settings.json");
+    public string Path { get; } = System.IO.Path.Combine(System.IO.Path.GetFullPath(dataDirectory), "settings.json");
 
     public GroundTargetSettingsLoadResult Load()
     {
         if (!File.Exists(Path))
         {
-            return new GroundTargetSettingsLoadResult(
-                Path,
-                false,
-                GroundTargetSnapshot.Empty,
-                null);
+            return new GroundTargetSettingsLoadResult(Path, false, GroundTargetSnapshot.Empty, null);
         }
 
         try
@@ -37,11 +29,7 @@ public sealed class GroundTargetSettingsStore(string dataDirectory)
             var root = JsonNode.Parse(File.ReadAllText(Path)) as JsonObject;
             if (root is null)
             {
-                return new GroundTargetSettingsLoadResult(
-                    Path,
-                    true,
-                    null,
-                    $"{Path} does not contain a JSON object.");
+                return new GroundTargetSettingsLoadResult(Path, true, null, $"{Path} does not contain a JSON object.");
             }
 
             var active = GetBoolean(root, "targetLatLongActive") ?? false;
@@ -53,10 +41,9 @@ public sealed class GroundTargetSettingsStore(string dataDirectory)
                 return new GroundTargetSettingsLoadResult(
                     Path,
                     true,
-                    new GroundTargetSnapshot(
-                        active,
-                        new SurfaceCoordinate(latitude, longitude)),
-                    null);
+                    new GroundTargetSnapshot(active, new SurfaceCoordinate(latitude, longitude)),
+                    null
+                );
             }
             catch (ArgumentOutOfRangeException exception)
             {
@@ -64,25 +51,17 @@ public sealed class GroundTargetSettingsStore(string dataDirectory)
                     Path,
                     true,
                     null,
-                    $"The saved ground target is invalid: {exception.Message}");
+                    $"The saved ground target is invalid: {exception.Message}"
+                );
             }
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or JsonException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)
         {
-            return new GroundTargetSettingsLoadResult(
-                Path,
-                true,
-                null,
-                $"Could not read {Path}: {exception.Message}");
+            return new GroundTargetSettingsLoadResult(Path, true, null, $"Could not read {Path}: {exception.Message}");
         }
     }
 
-    public async Task SaveAsync(
-        GroundTargetSnapshot snapshot,
-        CancellationToken cancellationToken = default)
+    public async Task SaveAsync(GroundTargetSnapshot snapshot, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -93,19 +72,20 @@ public sealed class GroundTargetSettingsStore(string dataDirectory)
             {
                 try
                 {
-                    root = JsonNode.Parse(await File.ReadAllTextAsync(
-                            Path,
-                            cancellationToken).ConfigureAwait(false)) as JsonObject
+                    root =
+                        JsonNode.Parse(await File.ReadAllTextAsync(Path, cancellationToken).ConfigureAwait(false))
+                            as JsonObject
                         ?? throw new InvalidDataException(
                             $"The settings file is malformed and was not overwritten: "
-                                + $"{Path} does not contain a JSON object.");
+                                + $"{Path} does not contain a JSON object."
+                        );
                 }
                 catch (JsonException exception)
                 {
                     throw new InvalidDataException(
-                        "The settings file is malformed and was not overwritten: "
-                            + exception.Message,
-                        exception);
+                        "The settings file is malformed and was not overwritten: " + exception.Message,
+                        exception
+                    );
                 }
             }
             else
@@ -123,26 +103,26 @@ public sealed class GroundTargetSettingsStore(string dataDirectory)
             coordinate["long"] = snapshot.Target.Longitude;
             root["targetLatLongActive"] = snapshot.IsActive;
 
-            var directory = System.IO.Path.GetDirectoryName(Path)
-                ?? throw new InvalidOperationException(
-                    $"The settings path has no parent directory: {Path}");
+            var directory =
+                System.IO.Path.GetDirectoryName(Path)
+                ?? throw new InvalidOperationException($"The settings path has no parent directory: {Path}");
             Directory.CreateDirectory(directory);
             var temporaryPath = $"{Path}.{Guid.NewGuid():N}.tmp";
             try
             {
-                await using (var stream = new FileStream(
-                                 temporaryPath,
-                                 FileMode.CreateNew,
-                                 FileAccess.Write,
-                                 FileShare.None,
-                                 16 * 1024,
-                                 FileOptions.Asynchronous))
+                await using (
+                    var stream = new FileStream(
+                        temporaryPath,
+                        FileMode.CreateNew,
+                        FileAccess.Write,
+                        FileShare.None,
+                        16 * 1024,
+                        FileOptions.Asynchronous
+                    )
+                )
                 {
-                    await JsonSerializer.SerializeAsync(
-                            stream,
-                            root,
-                            SerializerOptions,
-                            cancellationToken)
+                    await JsonSerializer
+                        .SerializeAsync(stream, root, SerializerOptions, cancellationToken)
                         .ConfigureAwait(false);
                     await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
                 }
@@ -165,10 +145,7 @@ public sealed class GroundTargetSettingsStore(string dataDirectory)
 
     private static bool? GetBoolean(JsonObject root, string propertyName)
     {
-        return root[propertyName] is JsonValue value
-            && value.TryGetValue<bool>(out var result)
-                ? result
-                : null;
+        return root[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result) ? result : null;
     }
 
     private static double? GetDouble(JsonObject root, string propertyName)
@@ -191,7 +168,8 @@ public sealed record GroundTargetSettingsLoadResult(
     string Path,
     bool Exists,
     GroundTargetSnapshot? Snapshot,
-    string? Error)
+    string? Error
+)
 {
     public bool IsSuccess => Snapshot is not null;
 }

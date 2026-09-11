@@ -12,7 +12,11 @@ public sealed class AdaptiveTabHeaderPanel : WrapPanel
     protected override Size MeasureOverride(Size constraint)
     {
         var tabs = Children.OfType<TabItem>().Where(t => t.Header is TextBlock).ToArray();
-        if (tabs.Length == 0) return base.MeasureOverride(constraint);
+        if (tabs.Length == 0)
+        {
+            return base.MeasureOverride(constraint);
+        }
+
         var headers = tabs.Select(t => (TextBlock)t.Header!).ToArray();
         var chrome = new double[tabs.Length];
         for (var i = 0; i < tabs.Length; i++)
@@ -28,13 +32,27 @@ public sealed class AdaptiveTabHeaderPanel : WrapPanel
             for (var i = 0; i < headers.Length; i++)
             {
                 var header = headers[i];
-                var probe = new TextBlock { Text = header.Text, FontFamily = header.FontFamily, FontWeight = header.FontWeight, FontStyle = header.FontStyle, FontSize = size };
+                var probe = new TextBlock
+                {
+                    Text = header.Text,
+                    FontFamily = header.FontFamily,
+                    FontWeight = header.FontWeight,
+                    FontStyle = header.FontStyle,
+                    FontSize = size,
+                };
                 probe.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
                 width += probe.DesiredSize.Width + chrome[i];
             }
-            if (width <= constraint.Width) break;
+            if (width <= constraint.Width)
+            {
+                break;
+            }
         }
-        foreach (var header in headers) header.FontSize = size;
+        foreach (var header in headers)
+        {
+            header.FontSize = size;
+        }
+
         return base.MeasureOverride(constraint);
     }
 }

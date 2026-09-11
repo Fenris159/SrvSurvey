@@ -25,9 +25,7 @@ public sealed class PublishedDataIndexClientTests
     public async Task GetAsyncParsesTheLegacyPublishedIndex()
     {
         var handler = new StubHandler(HttpStatusCode.OK, ValidPayload);
-        var client = new PublishedDataIndexClient(
-            new HttpClient(handler),
-            new Uri("https://example.test/data.json"));
+        var client = new PublishedDataIndexClient(new HttpClient(handler), new Uri("https://example.test/data.json"));
 
         var result = await client.GetAsync();
 
@@ -49,24 +47,25 @@ public sealed class PublishedDataIndexClientTests
     [InlineData("{}")]
     [InlineData("[]")]
     [InlineData("{\"ghVer\":\"not-a-version\"}")]
-    [InlineData("""
-        {
-          "ghVer": "2.0.95.23",
-          "msVer": "2.0.95.0",
-          "bioCriteria": -1,
-          "bioEngine": 4,
-          "codexRef": 10,
-          "settlementTemplate": 48,
-          "guardian": 68,
-          "settlements": 15,
-          "nicknames": 1,
-          "ggg": 1
-        }
-        """)]
+    [InlineData(
+        """
+            {
+              "ghVer": "2.0.95.23",
+              "msVer": "2.0.95.0",
+              "bioCriteria": -1,
+              "bioEngine": 4,
+              "codexRef": 10,
+              "settlementTemplate": 48,
+              "guardian": 68,
+              "settlements": 15,
+              "nicknames": 1,
+              "ggg": 1
+            }
+            """
+    )]
     public async Task GetAsyncRejectsIncompleteOrInvalidIndexes(string payload)
     {
-        var client = new PublishedDataIndexClient(
-            new HttpClient(new StubHandler(HttpStatusCode.OK, payload)));
+        var client = new PublishedDataIndexClient(new HttpClient(new StubHandler(HttpStatusCode.OK, payload)));
 
         await Assert.ThrowsAsync<InvalidDataException>(() => client.GetAsync());
     }
@@ -75,12 +74,10 @@ public sealed class PublishedDataIndexClientTests
     public async Task GetAsyncRejectsUnsuccessfulResponses()
     {
         var client = new PublishedDataIndexClient(
-            new HttpClient(new StubHandler(
-                HttpStatusCode.TooManyRequests,
-                "rate limited")));
+            new HttpClient(new StubHandler(HttpStatusCode.TooManyRequests, "rate limited"))
+        );
 
-        var exception = await Assert.ThrowsAsync<HttpRequestException>(
-            () => client.GetAsync());
+        var exception = await Assert.ThrowsAsync<HttpRequestException>(() => client.GetAsync());
 
         Assert.Equal(HttpStatusCode.TooManyRequests, exception.StatusCode);
     }
@@ -89,20 +86,16 @@ public sealed class PublishedDataIndexClientTests
     public async Task GetAsyncRejectsOversizedPublishedIndexes()
     {
         var client = new PublishedDataIndexClient(
-            new HttpClient(new StubHandler(
-                HttpStatusCode.OK,
-                new string(' ', (64 * 1024) + 1))));
+            new HttpClient(new StubHandler(HttpStatusCode.OK, new string(' ', (64 * 1024) + 1)))
+        );
 
-        var exception = await Assert.ThrowsAsync<InvalidDataException>(
-            () => client.GetAsync());
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(() => client.GetAsync());
 
         Assert.Contains("published-data index", exception.Message);
         Assert.Contains("safety limit", exception.Message);
     }
 
-    private sealed class StubHandler(
-        HttpStatusCode statusCode,
-        string payload) : HttpMessageHandler
+    private sealed class StubHandler(HttpStatusCode statusCode, string payload) : HttpMessageHandler
     {
         public Uri? RequestUri { get; private set; }
 
@@ -110,17 +103,17 @@ public sealed class PublishedDataIndexClientTests
 
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
             RequestUri = request.RequestUri;
             NoCache = request.Headers.CacheControl?.NoCache == true;
-            return Task.FromResult(new HttpResponseMessage(statusCode)
-            {
-                Content = new StringContent(
-                    payload,
-                    Encoding.UTF8,
-                    "application/json"),
-            });
+            return Task.FromResult(
+                new HttpResponseMessage(statusCode)
+                {
+                    Content = new StringContent(payload, Encoding.UTF8, "application/json"),
+                }
+            );
         }
     }
 }

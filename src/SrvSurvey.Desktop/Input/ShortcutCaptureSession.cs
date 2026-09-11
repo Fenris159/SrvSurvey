@@ -7,22 +7,17 @@ public static class ShortcutCaptureSession
     private static int activeCaptures;
     private static long suppressUntilUtcTicks;
 
-    public static bool IsActive => Volatile.Read(ref activeCaptures) > 0
-        || DateTime.UtcNow.Ticks < Volatile.Read(ref suppressUntilUtcTicks);
+    public static bool IsActive =>
+        Volatile.Read(ref activeCaptures) > 0 || DateTime.UtcNow.Ticks < Volatile.Read(ref suppressUntilUtcTicks);
 
-    internal static void Begin(
-        object owner,
-        Action<ControllerInputChange> onControllerInput)
+    internal static void Begin(object owner, Action<ControllerInputChange> onControllerInput)
     {
         ArgumentNullException.ThrowIfNull(owner);
         ArgumentNullException.ThrowIfNull(onControllerInput);
         lock (Sync)
         {
-            controllerCaptures.RemoveAll(target =>
-                ReferenceEquals(target.Owner, owner));
-            controllerCaptures.Add(new CaptureTarget(
-                owner,
-                onControllerInput));
+            controllerCaptures.RemoveAll(target => ReferenceEquals(target.Owner, owner));
+            controllerCaptures.Add(new CaptureTarget(owner, onControllerInput));
             Volatile.Write(ref activeCaptures, controllerCaptures.Count);
         }
     }
@@ -32,14 +27,11 @@ public static class ShortcutCaptureSession
         ArgumentNullException.ThrowIfNull(owner);
         lock (Sync)
         {
-            controllerCaptures.RemoveAll(target =>
-                ReferenceEquals(target.Owner, owner));
+            controllerCaptures.RemoveAll(target => ReferenceEquals(target.Owner, owner));
             Volatile.Write(ref activeCaptures, controllerCaptures.Count);
         }
 
-        Volatile.Write(
-            ref suppressUntilUtcTicks,
-            DateTime.UtcNow.AddMilliseconds(250).Ticks);
+        Volatile.Write(ref suppressUntilUtcTicks, DateTime.UtcNow.AddMilliseconds(250).Ticks);
     }
 
     internal static bool TryCapture(ControllerInputChange change)
@@ -47,9 +39,7 @@ public static class ShortcutCaptureSession
         Action<ControllerInputChange>? capture;
         lock (Sync)
         {
-            capture = controllerCaptures.Count == 0
-                ? null
-                : controllerCaptures[^1].OnControllerInput;
+            capture = controllerCaptures.Count == 0 ? null : controllerCaptures[^1].OnControllerInput;
         }
 
         if (capture is null)
@@ -61,7 +51,5 @@ public static class ShortcutCaptureSession
         return true;
     }
 
-    private sealed record CaptureTarget(
-        object Owner,
-        Action<ControllerInputChange> OnControllerInput);
+    private sealed record CaptureTarget(object Owner, Action<ControllerInputChange> OnControllerInput);
 }

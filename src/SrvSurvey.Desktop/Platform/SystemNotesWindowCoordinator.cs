@@ -11,14 +11,10 @@ public sealed class SystemNotesWindowCoordinator : IDisposable
     private bool isOpening;
     private bool disposed;
 
-    public SystemNotesWindowCoordinator(
-        SystemNotesViewModel viewModel,
-        Window owner)
+    public SystemNotesWindowCoordinator(SystemNotesViewModel viewModel, Window owner)
     {
-        this.viewModel = viewModel
-            ?? throw new ArgumentNullException(nameof(viewModel));
-        this.owner = owner
-            ?? throw new ArgumentNullException(nameof(owner));
+        this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
+        this.owner = owner ?? throw new ArgumentNullException(nameof(owner));
         this.viewModel.SetWindowOpener(ShowOrActivateAsync);
     }
 

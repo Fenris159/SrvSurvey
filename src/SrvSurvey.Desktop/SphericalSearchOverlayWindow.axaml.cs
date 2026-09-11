@@ -10,8 +10,7 @@ public sealed partial class SphericalSearchOverlayWindow : Window
         InitializeComponent();
     }
 
-    public SphericalSearchOverlayWindow(
-        SphericalSearchOverlayViewModel viewModel)
+    public SphericalSearchOverlayWindow(SphericalSearchOverlayViewModel viewModel)
     {
         ArgumentNullException.ThrowIfNull(viewModel);
         InitializeComponent();

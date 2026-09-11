@@ -16,11 +16,9 @@ public sealed class SdlGamepadInputStateTests
         state.UpdateButton(SDL.GamepadButton.South, isPressed: false);
 
         Assert.Equal(
-            [
-                new ControllerInputChange("B1", IsPressed: true),
-                new ControllerInputChange("B1", IsPressed: false),
-            ],
-            changes);
+            [new ControllerInputChange("B1", IsPressed: true), new ControllerInputChange("B1", IsPressed: false)],
+            changes
+        );
     }
 
     [Fact]
@@ -43,7 +41,8 @@ public sealed class SdlGamepadInputStateTests
                 new ControllerInputChange("PovR", IsPressed: true),
                 new ControllerInputChange("PovR", IsPressed: false),
             ],
-            changes);
+            changes
+        );
     }
 
     [Fact]
@@ -57,9 +56,7 @@ public sealed class SdlGamepadInputStateTests
         state.UpdateButton(SDL.GamepadButton.DPadRight, isPressed: true);
         state.EndBatch();
 
-        Assert.Equal(
-            [new ControllerInputChange("PovUR", IsPressed: true)],
-            changes);
+        Assert.Equal([new ControllerInputChange("PovUR", IsPressed: true)], changes);
     }
 
     [Fact]
@@ -67,8 +64,7 @@ public sealed class SdlGamepadInputStateTests
     {
         var tracker = new ControllerChordTracker();
         string? chord = null;
-        var state = new SdlGamepadInputState(change =>
-            chord ??= tracker.UpdateToken(change.Token, change.IsPressed));
+        var state = new SdlGamepadInputState(change => chord ??= tracker.UpdateToken(change.Token, change.IsPressed));
 
         state.BeginBatch();
         state.UpdateButton(SDL.GamepadButton.DPadUp, isPressed: true);
@@ -91,9 +87,7 @@ public sealed class SdlGamepadInputStateTests
 
         state.Clear();
 
-        Assert.Equal(
-            [new ControllerInputChange("B1", IsPressed: true)],
-            changes);
+        Assert.Equal([new ControllerInputChange("B1", IsPressed: true)], changes);
     }
 
     [Fact]
@@ -108,10 +102,8 @@ public sealed class SdlGamepadInputStateTests
         state.UpdateAxis(SDL.GamepadAxis.LeftTrigger, 0);
 
         Assert.Equal(
-            [
-                new ControllerInputChange("LT", IsPressed: true),
-                new ControllerInputChange("LT", IsPressed: false),
-            ],
-            changes);
+            [new ControllerInputChange("LT", IsPressed: true), new ControllerInputChange("LT", IsPressed: false)],
+            changes
+        );
     }
 }

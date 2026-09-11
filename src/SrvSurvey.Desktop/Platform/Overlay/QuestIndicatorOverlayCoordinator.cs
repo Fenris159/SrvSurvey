@@ -23,20 +23,15 @@ public sealed class QuestIndicatorOverlayCoordinator : IDisposable
         QuestIndicatorViewModel viewModel,
         IOverlayPlatformService platform,
         IGameWindowTracker gameWindowTracker,
-        LegacyOverlayLayout? overlayLayout = null)
+        LegacyOverlayLayout? overlayLayout = null
+    )
     {
-        this.viewModel = viewModel
-            ?? throw new ArgumentNullException(nameof(viewModel));
-        this.platform = platform
-            ?? throw new ArgumentNullException(nameof(platform));
-        this.gameWindowTracker = gameWindowTracker
-            ?? throw new ArgumentNullException(nameof(gameWindowTracker));
+        this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
+        this.platform = platform ?? throw new ArgumentNullException(nameof(platform));
+        this.gameWindowTracker = gameWindowTracker ?? throw new ArgumentNullException(nameof(gameWindowTracker));
         this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
-        timer = new OverlayDispatcherTimer
-        {
-            Interval = TimeSpan.FromMilliseconds(250),
-        };
+        timer = new OverlayDispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
         timer.Tick += OnTimerTick;
         timer.Start();
         SynchronizeWindow();
@@ -80,9 +75,7 @@ public sealed class QuestIndicatorOverlayCoordinator : IDisposable
         SynchronizeWindow();
     }
 
-    private void OnViewModelPropertyChanged(
-        object? sender,
-        PropertyChangedEventArgs eventArgs)
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
         if (eventArgs.PropertyName == nameof(QuestIndicatorViewModel.ShouldShow))
         {
@@ -98,7 +91,8 @@ public sealed class QuestIndicatorOverlayCoordinator : IDisposable
         }
 
         gameWindow = gameWindowTracker.GetSnapshot();
-        var shouldShow = !isSuppressed
+        var shouldShow =
+            !isSuppressed
             && viewModel.ShouldShow
             && platform.Capabilities.SupportsPassiveOverlay
             && platform.Capabilities.SupportsClickThrough
@@ -119,10 +113,7 @@ public sealed class QuestIndicatorOverlayCoordinator : IDisposable
         }
 
         var overlay = new QuestIndicatorOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(
-            overlay,
-            overlayLayout,
-            PlotterName);
+        OverlayThemeResources.Apply(overlay, overlayLayout, PlotterName);
         overlay.Opened += (_, _) => PrepareWindow(overlay);
         overlay.Closed += (_, _) =>
         {
@@ -150,27 +141,17 @@ public sealed class QuestIndicatorOverlayCoordinator : IDisposable
 
     private void PositionWindow(QuestIndicatorOverlayWindow overlay)
     {
-        OverlayThemeResources.ApplyOpacity(
-            overlay,
-            overlayLayout,
-            PlotterName);
-        var screen = overlay.Screens.ScreenFromBounds(gameWindow.ClientBounds)
-            ?? overlay.Screens.Primary;
+        OverlayThemeResources.ApplyOpacity(overlay, overlayLayout, PlotterName);
+        var screen = overlay.Screens.ScreenFromBounds(gameWindow.ClientBounds) ?? overlay.Screens.Primary;
         if (screen is null)
         {
             return;
         }
 
-        var size = OverlayWindowMetrics.PrepareForPlacement(
-            overlay, overlayLayout, PlotterName, screen.Scaling);
-        var position = overlayLayout.GetPosition(
-                PlotterName,
-                gameWindow.ClientBounds,
-                size)
-            ?? OverlayWindowPlacement.TopRight(
-                gameWindow.ClientBounds,
-                size,
-                margin: 8);
+        var size = OverlayWindowMetrics.PrepareForPlacement(overlay, overlayLayout, PlotterName, screen.Scaling);
+        var position =
+            overlayLayout.GetPosition(PlotterName, gameWindow.ClientBounds, size)
+            ?? OverlayWindowPlacement.TopRight(gameWindow.ClientBounds, size, margin: 8);
         if (overlay.Position != position)
         {
             overlay.Position = position;

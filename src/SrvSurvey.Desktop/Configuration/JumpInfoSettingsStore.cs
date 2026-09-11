@@ -19,14 +19,9 @@ public sealed class JumpInfoSettingsStore
         return new JumpInfoPreferences(
             GetBoolean(jumpInfo, "AutoShow", defaults.AutoShow),
             GetBoolean(jumpInfo, "Minimal", defaults.Minimal),
-            GetBoolean(
-                jumpInfo,
-                "ShowWhenNextHopSelected",
-                defaults.ShowWhenNextHopSelected),
-            GetBoolean(
-                jumpInfo,
-                "UseSpanshLastUpdated",
-                defaults.UseSpanshLastUpdated));
+            GetBoolean(jumpInfo, "ShowWhenNextHopSelected", defaults.ShowWhenNextHopSelected),
+            GetBoolean(jumpInfo, "UseSpanshLastUpdated", defaults.UseSpanshLastUpdated)
+        );
     }
 
     public void Save(JumpInfoPreferences preferences)
@@ -44,22 +39,14 @@ public sealed class JumpInfoSettingsStore
             root["Version"] = 1;
             jumpInfo["AutoShow"] = preferences.AutoShow;
             jumpInfo["Minimal"] = preferences.Minimal;
-            jumpInfo["ShowWhenNextHopSelected"] =
-                preferences.ShowWhenNextHopSelected;
-            jumpInfo["UseSpanshLastUpdated"] =
-                preferences.UseSpanshLastUpdated;
+            jumpInfo["ShowWhenNextHopSelected"] = preferences.ShowWhenNextHopSelected;
+            jumpInfo["UseSpanshLastUpdated"] = preferences.UseSpanshLastUpdated;
         });
     }
 
-    private static bool GetBoolean(
-        JsonObject? source,
-        string propertyName,
-        bool fallback)
+    private static bool GetBoolean(JsonObject? source, string propertyName, bool fallback)
     {
-        return source?[propertyName] is JsonValue value
-            && value.TryGetValue<bool>(out var result)
-                ? result
-                : fallback;
+        return source?[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result) ? result : fallback;
     }
 }
 
@@ -67,11 +54,9 @@ public sealed record JumpInfoPreferences(
     bool AutoShow,
     bool Minimal,
     bool ShowWhenNextHopSelected,
-    bool UseSpanshLastUpdated = false)
+    bool UseSpanshLastUpdated = false
+)
 {
-    public static JumpInfoPreferences Default { get; } = new(
-        AutoShow: true,
-        Minimal: false,
-        ShowWhenNextHopSelected: false,
-        UseSpanshLastUpdated: false);
+    public static JumpInfoPreferences Default { get; } =
+        new(AutoShow: true, Minimal: false, ShowWhenNextHopSelected: false, UseSpanshLastUpdated: false);
 }

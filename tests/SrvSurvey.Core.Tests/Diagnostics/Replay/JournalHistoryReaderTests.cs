@@ -10,14 +10,11 @@ public sealed class JournalHistoryReaderTests
         using var temp = new TemporaryDirectory();
         await File.WriteAllTextAsync(
             Path.Combine(temp.Path, "Journal.2026-08-21T180000.01.log"),
-            "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Commander\",\"Name\":\"History Cmdr\",\"FID\":\"F123456\"}\n");
-        await File.WriteAllTextAsync(
-            Path.Combine(temp.Path, "Journal.2026-08-21T190000.01.log"),
-            string.Empty);
+            "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Commander\",\"Name\":\"History Cmdr\",\"FID\":\"F123456\"}\n"
+        );
+        await File.WriteAllTextAsync(Path.Combine(temp.Path, "Journal.2026-08-21T190000.01.log"), string.Empty);
 
-        var history = await new JournalHistoryReader().LoadAsync(
-            temp.Path,
-            CancellationToken.None);
+        var history = await new JournalHistoryReader().LoadAsync(temp.Path, CancellationToken.None);
 
         Assert.Single(history.Events);
         Assert.Equal(2, history.FileCount);
@@ -30,11 +27,10 @@ public sealed class JournalHistoryReaderTests
         await File.WriteAllTextAsync(
             Path.Combine(temp.Path, "Journal.2026-08-21T180000.01.log"),
             "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Commander\",\"Name\":\"History Cmdr\",\"FID\":\"F123456\"}\n"
-                + "{\"timestamp\":\"2026-08-21T18:00:01Z\",\"event\":");
+                + "{\"timestamp\":\"2026-08-21T18:00:01Z\",\"event\":"
+        );
 
-        var history = await new JournalHistoryReader().LoadAsync(
-            temp.Path,
-            CancellationToken.None);
+        var history = await new JournalHistoryReader().LoadAsync(temp.Path, CancellationToken.None);
 
         Assert.Single(history.Events);
         Assert.Equal("Commander", history.Events[0].EventName);
@@ -50,15 +46,17 @@ public sealed class JournalHistoryReaderTests
                 "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Commander\",\"Name\":\"History Cmdr\",\"FID\":\"F123456\"}",
                 "{\"timestamp\":\"2026-08-21T18:00:01Z\",\"event\":\"Location\"}",
                 "{\"timestamp\":\"2026-08-21T18:00:02Z\",\"event\":\"Shutdown\"}",
-            ]);
+            ]
+        );
 
-        var history = await new JournalHistoryReader(maximumLoadedEvents: 2)
-            .LoadAsync(temp.Path, CancellationToken.None);
+        var history = await new JournalHistoryReader(maximumLoadedEvents: 2).LoadAsync(
+            temp.Path,
+            CancellationToken.None
+        );
 
         Assert.Equal(3, history.TotalEventCount);
         Assert.True(history.IsWindowed);
-        Assert.Equal(["Location", "Shutdown"], history.Events
-            .Select(item => item.EventName));
+        Assert.Equal(["Location", "Shutdown"], history.Events.Select(item => item.EventName));
         Assert.Equal(1, history.Events[0].Index);
     }
 
@@ -66,9 +64,7 @@ public sealed class JournalHistoryReaderTests
     {
         public TemporaryDirectory()
         {
-            Path = System.IO.Path.Combine(
-                System.IO.Path.GetTempPath(),
-                $"SrvSurvey-history-tests-{Guid.NewGuid():N}");
+            Path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"SrvSurvey-history-tests-{Guid.NewGuid():N}");
             Directory.CreateDirectory(Path);
         }
 

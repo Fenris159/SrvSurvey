@@ -19,21 +19,16 @@ public sealed class ScreenshotProcessingSettingsStore
             GetBoolean(settings, "Enabled") ?? defaults.Enabled,
             GetBoolean(settings, "AddBanner") ?? defaults.AddBanner,
             GetBoolean(settings, "DeleteOriginal") ?? defaults.DeleteOriginal,
-            GetBoolean(settings, "UseGuardianAerialFolder")
-                ?? defaults.UseGuardianAerialFolder,
+            GetBoolean(settings, "UseGuardianAerialFolder") ?? defaults.UseGuardianAerialFolder,
             GetString(settings, "SourceFolder") ?? defaults.SourceFolder,
             GetString(settings, "TargetFolder") ?? defaults.TargetFolder,
-            GetBoolean(settings, "RotateAlphaAerial")
-                ?? defaults.RotateAlphaAerial,
+            GetBoolean(settings, "RotateAlphaAerial") ?? defaults.RotateAlphaAerial,
             GetBannerColor(settings?["BannerColor"], defaults.BannerColor),
-            GetBoolean(settings, "BannerLocalTime")
-                ?? defaults.BannerLocalTime,
-            GetDouble(settings, "AerialAltitudeAlpha")
-                ?? defaults.AerialAltitudeAlpha,
-            GetDouble(settings, "AerialAltitudeBeta")
-                ?? defaults.AerialAltitudeBeta,
-            GetDouble(settings, "AerialAltitudeGamma")
-                ?? defaults.AerialAltitudeGamma);
+            GetBoolean(settings, "BannerLocalTime") ?? defaults.BannerLocalTime,
+            GetDouble(settings, "AerialAltitudeAlpha") ?? defaults.AerialAltitudeAlpha,
+            GetDouble(settings, "AerialAltitudeBeta") ?? defaults.AerialAltitudeBeta,
+            GetDouble(settings, "AerialAltitudeGamma") ?? defaults.AerialAltitudeGamma
+        );
     }
 
     public void Save(ScreenshotProcessingPreferences preferences)
@@ -52,8 +47,7 @@ public sealed class ScreenshotProcessingSettingsStore
             settings["Enabled"] = preferences.Enabled;
             settings["AddBanner"] = preferences.AddBanner;
             settings["DeleteOriginal"] = preferences.DeleteOriginal;
-            settings["UseGuardianAerialFolder"] =
-                preferences.UseGuardianAerialFolder;
+            settings["UseGuardianAerialFolder"] = preferences.UseGuardianAerialFolder;
             settings["SourceFolder"] = preferences.SourceFolder;
             settings["TargetFolder"] = preferences.TargetFolder;
             settings["RotateAlphaAerial"] = preferences.RotateAlphaAerial;
@@ -67,35 +61,29 @@ public sealed class ScreenshotProcessingSettingsStore
 
     private static bool? GetBoolean(JsonObject? root, string name)
     {
-        return root?[name] is JsonValue value
-            && value.TryGetValue<bool>(out var result)
-                ? result
-                : null;
+        return root?[name] is JsonValue value && value.TryGetValue<bool>(out var result) ? result : null;
     }
 
     private static double? GetDouble(JsonObject? root, string name)
     {
-        return root?[name] is JsonValue value
-            && value.TryGetValue<double>(out var result)
-            && double.IsFinite(result)
-                ? result
-                : null;
+        return root?[name] is JsonValue value && value.TryGetValue<double>(out var result) && double.IsFinite(result)
+            ? result
+            : null;
     }
 
     private static string? GetString(JsonObject? root, string name)
     {
-        return root?[name] is JsonValue value
+        return
+            root?[name] is JsonValue value
             && value.TryGetValue<string>(out var result)
             && !string.IsNullOrWhiteSpace(result)
-                ? result
-                : null;
+            ? result
+            : null;
     }
 
     private static string GetBannerColor(JsonNode? value, string fallback)
     {
-        if (value is JsonValue text
-            && text.TryGetValue<string>(out var color)
-            && !string.IsNullOrWhiteSpace(color))
+        if (value is JsonValue text && text.TryGetValue<string>(out var color) && !string.IsNullOrWhiteSpace(color))
         {
             return color.Trim();
         }
@@ -115,11 +103,12 @@ public sealed class ScreenshotProcessingSettingsStore
 
     private static byte? GetByte(JsonObject root, string name)
     {
-        return root[name] is JsonValue value
+        return
+            root[name] is JsonValue value
             && value.TryGetValue<int>(out var result)
             && result is >= byte.MinValue and <= byte.MaxValue
-                ? (byte)result
-                : null;
+            ? (byte)result
+            : null;
     }
 }
 
@@ -135,16 +124,13 @@ public sealed record ScreenshotProcessingPreferences(
     bool BannerLocalTime,
     double AerialAltitudeAlpha,
     double AerialAltitudeBeta,
-    double AerialAltitudeGamma)
+    double AerialAltitudeGamma
+)
 {
     public static ScreenshotProcessingPreferences CreateDefaults()
     {
-        var pictures = Environment.GetFolderPath(
-            Environment.SpecialFolder.MyPictures);
-        var source = Path.Combine(
-            pictures,
-            "Frontier Developments",
-            "Elite Dangerous");
+        var pictures = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+        var source = Path.Combine(pictures, "Frontier Developments", "Elite Dangerous");
         return new ScreenshotProcessingPreferences(
             false,
             true,
@@ -157,6 +143,7 @@ public sealed record ScreenshotProcessingPreferences(
             false,
             1200,
             1550,
-            1600);
+            1600
+        );
     }
 }

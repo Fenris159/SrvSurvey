@@ -11,7 +11,8 @@ public interface IReleaseUpdateService
     Task<ReleaseUpdateResult> CheckAsync(
         ReleaseVersion currentVersion,
         ReleaseChannel channel,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }
 
 public sealed record ReleaseUpdateResult(
@@ -21,14 +22,13 @@ public sealed record ReleaseUpdateResult(
     Uri ReleaseUri,
     CrossPlatformReleasePackage? Package,
     ReleaseChannel Channel,
-    string ReleaseNotes = "");
+    string ReleaseNotes = ""
+);
 
 public sealed class ReleaseUpdateService : IReleaseUpdateService
 {
-    public static readonly Uri DevelopmentReleaseUri = new(
-        "https://github.com/Fenris159/SrvSurvey/releases");
-    public static readonly Uri StableReleaseUri = new(
-        "https://github.com/njthomson/SrvSurvey/releases");
+    public static readonly Uri DevelopmentReleaseUri = new("https://github.com/Fenris159/SrvSurvey/releases");
+    public static readonly Uri StableReleaseUri = new("https://github.com/njthomson/SrvSurvey/releases");
 
     private readonly ICrossPlatformReleaseClient releaseClient;
     private readonly string? runtimeIdentifier;
@@ -39,34 +39,30 @@ public sealed class ReleaseUpdateService : IReleaseUpdateService
         ICrossPlatformReleaseClient? releaseClient = null,
         string? runtimeIdentifier = null,
         Uri? developmentReleaseUri = null,
-        Uri? stableReleaseUri = null)
+        Uri? stableReleaseUri = null
+    )
     {
         this.releaseClient = releaseClient ?? new CrossPlatformReleaseClient();
         this.runtimeIdentifier = runtimeIdentifier;
-        this.developmentReleaseUri = developmentReleaseUri
-            ?? DevelopmentReleaseUri;
+        this.developmentReleaseUri = developmentReleaseUri ?? DevelopmentReleaseUri;
         this.stableReleaseUri = stableReleaseUri ?? StableReleaseUri;
     }
 
     public async Task<ReleaseUpdateResult> CheckAsync(
         ReleaseVersion currentVersion,
         ReleaseChannel channel,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        var currentRuntimeIdentifier = runtimeIdentifier
-            ?? CrossPlatformReleaseClient.ResolveCurrentRuntimeIdentifier();
-        var release = await releaseClient.GetLatestAsync(
-                currentRuntimeIdentifier,
-                channel,
-                cancellationToken)
+        var currentRuntimeIdentifier =
+            runtimeIdentifier ?? CrossPlatformReleaseClient.ResolveCurrentRuntimeIdentifier();
+        var release = await releaseClient
+            .GetLatestAsync(currentRuntimeIdentifier, channel, cancellationToken)
             .ConfigureAwait(false);
         var latestVersion = release?.Version;
-        var isUpdateAvailable = latestVersion is { } available
-            && available > currentVersion;
-        var releaseUri = release?.ReleaseUri
-            ?? (channel == ReleaseChannel.Development
-                ? developmentReleaseUri
-                : stableReleaseUri);
+        var isUpdateAvailable = latestVersion is { } available && available > currentVersion;
+        var releaseUri =
+            release?.ReleaseUri ?? (channel == ReleaseChannel.Development ? developmentReleaseUri : stableReleaseUri);
         return new ReleaseUpdateResult(
             currentVersion,
             latestVersion,
@@ -74,6 +70,7 @@ public sealed class ReleaseUpdateService : IReleaseUpdateService
             releaseUri,
             isUpdateAvailable ? release!.Package : null,
             channel,
-            isUpdateAvailable ? release!.ReleaseNotes : string.Empty);
+            isUpdateAvailable ? release!.ReleaseNotes : string.Empty
+        );
     }
 }

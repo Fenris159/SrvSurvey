@@ -10,7 +10,8 @@ public sealed partial class SaveBoxelSearchDialog : Window
         InitializeComponent();
     }
 
-    public SaveBoxelSearchDialog(string suggestedName) : this()
+    public SaveBoxelSearchDialog(string suggestedName)
+        : this()
     {
         SearchNameBox.Text = suggestedName;
         Opened += (_, _) =>

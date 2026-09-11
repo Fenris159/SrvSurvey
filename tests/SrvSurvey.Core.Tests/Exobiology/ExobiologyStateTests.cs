@@ -14,19 +14,22 @@ public sealed class ExobiologyStateTests
         AleoidaVariant,
         AleoidaSpecies,
         "Aleoida Arcus - Yellow",
-        7_252_500);
+        7_252_500
+    );
 
     [Fact]
     public void ThreeSamplesTrackActiveStateAndFirstFootfallReward()
     {
         var state = CreateState();
-        state.UpdateStatus(new EliteStatus
-        {
-            Flags = StatusFlags.HasLatLong,
-            Latitude = 12.5,
-            Longitude = -45.25,
-            BodyName = "Test A 1",
-        });
+        state.UpdateStatus(
+            new EliteStatus
+            {
+                Flags = StatusFlags.HasLatLong,
+                Latitude = 12.5,
+                Longitude = -45.25,
+                BodyName = "Test A 1",
+            }
+        );
         ApplyFirstFootfall(state);
 
         Assert.True(state.Apply(Event(Organic("Log"))));
@@ -44,9 +47,7 @@ public sealed class ExobiologyStateTests
         Assert.Null(snapshot.ScanOne);
         Assert.Null(snapshot.ScanTwo);
         Assert.Equal(36_262_500, snapshot.OrganicRewards);
-        Assert.Equal(
-            "123456_7_2310101_7252500_True",
-            Assert.Single(snapshot.ScannedBioEntryIds));
+        Assert.Equal("123456_7_2310101_7252500_True", Assert.Single(snapshot.ScannedBioEntryIds));
     }
 
     [Fact]
@@ -73,23 +74,14 @@ public sealed class ExobiologyStateTests
             "$Codex_Ent_Aleoids_01_C_Name;",
             AleoidaSpecies,
             "Aleoida Arcus - Turquoise",
-            Aleoida.Reward);
+            Aleoida.Reward
+        );
         var sample = Sample(alternateVariant);
-        var seed = new ExobiologySnapshot(
-            "123456|7|" + AleoidaSpecies,
-            sample,
-            null,
-            0,
-            [],
-            0);
+        var seed = new ExobiologySnapshot("123456|7|" + AleoidaSpecies, sample, null, 0, [], 0);
 
-        var state = new ExobiologyState(
-            new ExobiologyReferenceCatalog([Aleoida, alternateVariant]),
-            seed);
+        var state = new ExobiologyState(new ExobiologyReferenceCatalog([Aleoida, alternateVariant]), seed);
 
-        Assert.Equal(
-            alternateVariant.DisplayName,
-            state.ActiveSpeciesDisplayName);
+        Assert.Equal(alternateVariant.DisplayName, state.ActiveSpeciesDisplayName);
     }
 
     [Fact]
@@ -100,16 +92,13 @@ public sealed class ExobiologyStateTests
             "$Codex_Ent_Bacterial_01_A_Name;",
             "$Codex_Ent_Bacterial_01_Name;",
             "Bacterium",
-            1_000_000);
+            1_000_000
+        );
         var state = CreateState(other);
         state.Apply(Event(Organic("Log")));
         state.Apply(Event(Organic("Sample")));
 
-        state.Apply(Event(Organic(
-            "Log",
-            other.VariantName,
-            other.SpeciesName,
-            "$Codex_Ent_Bacterial_Genus_Name;")));
+        state.Apply(Event(Organic("Log", other.VariantName, other.SpeciesName, "$Codex_Ent_Bacterial_Genus_Name;")));
 
         Assert.Equal(other.SpeciesName, state.ScanOne?.Species);
         Assert.Null(state.ScanTwo);
@@ -119,23 +108,27 @@ public sealed class ExobiologyStateTests
     public void SwitchingBodyOnNewOrganicAbandonsPriorActiveSamples()
     {
         var state = CreateState();
-        state.UpdateStatus(new EliteStatus
-        {
-            Flags = StatusFlags.HasLatLong,
-            Latitude = 1,
-            Longitude = 2,
-            BodyName = "Test System 1",
-        });
+        state.UpdateStatus(
+            new EliteStatus
+            {
+                Flags = StatusFlags.HasLatLong,
+                Latitude = 1,
+                Longitude = 2,
+                BodyName = "Test System 1",
+            }
+        );
         Assert.True(state.Apply(Event(Organic("Log", bodyId: 7))));
         Assert.Equal("Test System 1", state.ScanOne?.Body);
 
-        state.UpdateStatus(new EliteStatus
-        {
-            Flags = StatusFlags.HasLatLong,
-            Latitude = 3,
-            Longitude = 4,
-            BodyName = "Test System 2",
-        });
+        state.UpdateStatus(
+            new EliteStatus
+            {
+                Flags = StatusFlags.HasLatLong,
+                Latitude = 3,
+                Longitude = 4,
+                BodyName = "Test System 2",
+            }
+        );
         Assert.True(state.Apply(Event(Organic("Log", bodyId: 8))));
 
         Assert.NotNull(state.ScanOne);
@@ -148,24 +141,27 @@ public sealed class ExobiologyStateTests
     public void StatusBodyChangeWithoutNewOrganicKeepsStaleActiveSample()
     {
         var state = CreateState();
-        state.UpdateStatus(new EliteStatus
-        {
-            Flags = StatusFlags.HasLatLong,
-            Latitude = 1,
-            Longitude = 2,
-            BodyName = "Test System 1",
-        });
+        state.UpdateStatus(
+            new EliteStatus
+            {
+                Flags = StatusFlags.HasLatLong,
+                Latitude = 1,
+                Longitude = 2,
+                BodyName = "Test System 1",
+            }
+        );
         Assert.True(state.Apply(Event(Organic("Log", bodyId: 7))));
 
-        state.UpdateStatus(new EliteStatus
-        {
-            Flags = StatusFlags.HasLatLong,
-            Latitude = 5,
-            Longitude = 6,
-            BodyName = "Test System 2",
-        });
-        state.Apply(Event(
-            """{"event":"ApproachBody","Body":"Test System 2","SystemAddress":123456}"""));
+        state.UpdateStatus(
+            new EliteStatus
+            {
+                Flags = StatusFlags.HasLatLong,
+                Latitude = 5,
+                Longitude = 6,
+                BodyName = "Test System 2",
+            }
+        );
+        state.Apply(Event("""{"event":"ApproachBody","Body":"Test System 2","SystemAddress":123456}"""));
 
         // Legacy keeps the active sample and surfaces a stale-body warning in UI.
         Assert.NotNull(state.ScanOne);
@@ -177,22 +173,26 @@ public sealed class ExobiologyStateTests
     public void StatusComputesDistanceRemainingFromNearestActiveSample()
     {
         var state = CreateState();
-        state.UpdateStatus(new EliteStatus
-        {
-            Flags = StatusFlags.HasLatLong,
-            Latitude = 0,
-            Longitude = 0,
-            PlanetRadius = 1_000,
-        });
+        state.UpdateStatus(
+            new EliteStatus
+            {
+                Flags = StatusFlags.HasLatLong,
+                Latitude = 0,
+                Longitude = 0,
+                PlanetRadius = 1_000,
+            }
+        );
         state.Apply(Event(Organic("Log")));
 
-        state.UpdateStatus(new EliteStatus
-        {
-            Flags = StatusFlags.HasLatLong,
-            Latitude = 0,
-            Longitude = 1,
-            PlanetRadius = 1_000,
-        });
+        state.UpdateStatus(
+            new EliteStatus
+            {
+                Flags = StatusFlags.HasLatLong,
+                Latitude = 0,
+                Longitude = 1,
+                PlanetRadius = 1_000,
+            }
+        );
 
         Assert.Equal(17.453, state.NearestActiveSampleDistance!.Value, 3);
         Assert.Equal(150, state.RequiredSampleDistance);
@@ -207,33 +207,26 @@ public sealed class ExobiologyStateTests
             ExobiologyState.RadicoidaUnicaSpecies,
             ExobiologyState.RadicoidaUnicaSpecies,
             "Radicoida Unica",
-            119_037);
+            119_037
+        );
         var state = CreateState(radicoida);
         Complete(state, Organic("Log"), Organic("Sample"), Organic("Analyse"));
         Complete(
             state,
-            Organic(
-                "Log",
-                radicoida.VariantName,
-                radicoida.SpeciesName,
-                "$Codex_Ent_Ingensradices_Genus_Name;"),
-            Organic(
-                "Sample",
-                radicoida.VariantName,
-                radicoida.SpeciesName,
-                "$Codex_Ent_Ingensradices_Genus_Name;"),
-            Organic(
-                "Analyse",
-                radicoida.VariantName,
-                radicoida.SpeciesName,
-                "$Codex_Ent_Ingensradices_Genus_Name;"));
+            Organic("Log", radicoida.VariantName, radicoida.SpeciesName, "$Codex_Ent_Ingensradices_Genus_Name;"),
+            Organic("Sample", radicoida.VariantName, radicoida.SpeciesName, "$Codex_Ent_Ingensradices_Genus_Name;"),
+            Organic("Analyse", radicoida.VariantName, radicoida.SpeciesName, "$Codex_Ent_Ingensradices_Genus_Name;")
+        );
         Assert.Equal(2, state.UnclaimedScanCount);
         Assert.Equal(1, state.CountRadicoidaUnica);
 
-        state.Apply(Event(
-            $$"""
-            {"event":"SellOrganicData","BioData":[{"Species":"{{radicoida.SpeciesName}}","Value":119037,"Bonus":0}]}
-            """));
+        state.Apply(
+            Event(
+                $$"""
+                {"event":"SellOrganicData","BioData":[{"Species":"{{radicoida.SpeciesName}}","Value":119037,"Bonus":0}]}
+                """
+            )
+        );
 
         Assert.Equal(1, state.UnclaimedScanCount);
         Assert.Equal(7_252_500, state.OrganicRewards);
@@ -249,10 +242,9 @@ public sealed class ExobiologyStateTests
             null,
             7_252_500,
             ["123_7_2310101_7252500_False"],
-            4);
-        var state = new ExobiologyState(
-            new ExobiologyReferenceCatalog([Aleoida]),
-            seed);
+            4
+        );
+        var state = new ExobiologyState(new ExobiologyReferenceCatalog([Aleoida]), seed);
 
         state.Apply(Event("{\"event\":\"Died\"}"));
 
@@ -272,10 +264,9 @@ public sealed class ExobiologyStateTests
             null,
             7_252_500,
             ["123_7_2310101_7252500_False"],
-            0);
-        var state = new ExobiologyState(
-            new ExobiologyReferenceCatalog([Aleoida]),
-            seed);
+            0
+        );
+        var state = new ExobiologyState(new ExobiologyReferenceCatalog([Aleoida]), seed);
 
         state.ClearUnclaimedRewards();
 
@@ -288,16 +279,8 @@ public sealed class ExobiologyStateTests
     [Fact]
     public void FirstFootfallCorrectionRewritesCompatibilityEntryAndReward()
     {
-        var seed = new ExobiologySnapshot(
-            null,
-            null,
-            null,
-            7_252_500,
-            ["123456_7_2310101_7252500_False"],
-            0);
-        var state = new ExobiologyState(
-            new ExobiologyReferenceCatalog([Aleoida]),
-            seed);
+        var seed = new ExobiologySnapshot(null, null, null, 7_252_500, ["123456_7_2310101_7252500_False"], 0);
+        var state = new ExobiologyState(new ExobiologyReferenceCatalog([Aleoida]), seed);
 
         state.SetFirstFootfall(123456, 7, true);
 
@@ -310,9 +293,12 @@ public sealed class ExobiologyStateTests
     {
         var state = CreateState();
         Assert.False(state.ToggleCurrentBodyFirstFootfall());
-        state.Apply(Event(
-            "{\"event\":\"Scan\",\"SystemAddress\":123456,\"BodyID\":7,"
-                + "\"BodyName\":\"Test A 1\",\"WasFootfalled\":true}"));
+        state.Apply(
+            Event(
+                "{\"event\":\"Scan\",\"SystemAddress\":123456,\"BodyID\":7,"
+                    + "\"BodyName\":\"Test A 1\",\"WasFootfalled\":true}"
+            )
+        );
 
         Assert.True(state.ToggleCurrentBodyFirstFootfall());
         Assert.True(state.CurrentBodyFirstFootfall);
@@ -324,9 +310,12 @@ public sealed class ExobiologyStateTests
     public void FirstFootfallCorrectionWithoutOrganicScansAdvancesVersion()
     {
         var state = CreateState();
-        state.Apply(Event(
-            "{\"event\":\"Scan\",\"SystemAddress\":123456,\"BodyID\":7,"
-                + "\"BodyName\":\"Test A 1\",\"WasFootfalled\":true}"));
+        state.Apply(
+            Event(
+                "{\"event\":\"Scan\",\"SystemAddress\":123456,\"BodyID\":7,"
+                    + "\"BodyName\":\"Test A 1\",\"WasFootfalled\":true}"
+            )
+        );
         var before = state.Version;
 
         Assert.True(state.SetCurrentBodyFirstFootfall(true));
@@ -336,26 +325,27 @@ public sealed class ExobiologyStateTests
         Assert.Empty(state.CreateSnapshot().ScannedBioEntryIds);
     }
 
-    private static ExobiologyState CreateState(
-        params ExobiologyReference[] additional)
+    private static ExobiologyState CreateState(params ExobiologyReference[] additional)
     {
-        return new ExobiologyState(
-            new ExobiologyReferenceCatalog([Aleoida, .. additional]));
+        return new ExobiologyState(new ExobiologyReferenceCatalog([Aleoida, .. additional]));
     }
 
     private static void ApplyFirstFootfall(ExobiologyState state)
     {
-        state.Apply(Event(
-            "{\"event\":\"Location\",\"SystemAddress\":123456,\"Population\":0}"));
-        state.Apply(Event(
-            "{\"event\":\"Scan\",\"SystemAddress\":123456,\"BodyID\":7,\"BodyName\":\"Test A 1\",\"WasFootfalled\":false}"));
-        state.Apply(Event(
-            "{\"event\":\"Disembark\",\"SystemAddress\":123456,\"BodyID\":7,\"OnPlanet\":true,\"OnStation\":false}"));
+        state.Apply(Event("{\"event\":\"Location\",\"SystemAddress\":123456,\"Population\":0}"));
+        state.Apply(
+            Event(
+                "{\"event\":\"Scan\",\"SystemAddress\":123456,\"BodyID\":7,\"BodyName\":\"Test A 1\",\"WasFootfalled\":false}"
+            )
+        );
+        state.Apply(
+            Event(
+                "{\"event\":\"Disembark\",\"SystemAddress\":123456,\"BodyID\":7,\"OnPlanet\":true,\"OnStation\":false}"
+            )
+        );
     }
 
-    private static void Complete(
-        ExobiologyState state,
-        params string[] events)
+    private static void Complete(ExobiologyState state, params string[] events)
     {
         foreach (var json in events)
         {
@@ -368,11 +358,12 @@ public sealed class ExobiologyStateTests
         string variant = AleoidaVariant,
         string species = AleoidaSpecies,
         string genus = AleoidaGenus,
-        int bodyId = 7)
+        int bodyId = 7
+    )
     {
         return $$"""
-        {"event":"ScanOrganic","ScanType":"{{scanType}}","Genus":"{{genus}}","Species":"{{species}}","Variant":"{{variant}}","SystemAddress":123456,"Body":{{bodyId}}}
-        """;
+            {"event":"ScanOrganic","ScanType":"{{scanType}}","Genus":"{{genus}}","Species":"{{species}}","Variant":"{{variant}}","SystemAddress":123456,"Body":{{bodyId}}}
+            """;
     }
 
     private static BioSampleSnapshot Sample(ExobiologyReference reference)
@@ -384,14 +375,13 @@ public sealed class ExobiologyStateTests
             reference.SpeciesName,
             "Active",
             reference.EntryId,
-            "Test A 1");
+            "Test A 1"
+        );
     }
 
     private static JournalEventEnvelope Event(string json)
     {
-        Assert.True(
-            JournalEventEnvelope.TryParse(json, out var journalEvent, out var error),
-            error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
         return journalEvent!;
     }
 }

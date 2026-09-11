@@ -6,7 +6,8 @@ public sealed class SystemNicknameCatalogTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-nickname-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-nickname-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void LocalNamesOverrideRavenNamesCaseInsensitively()
@@ -23,7 +24,8 @@ public sealed class SystemNicknameCatalogTests : IDisposable
                 "Shinrarta Dezhra": "Founders World"
               }
             }
-            """);
+            """
+        );
         File.WriteAllText(
             Path.Combine(temporaryDirectory, "pub", "nicknames.json"),
             """
@@ -31,7 +33,8 @@ public sealed class SystemNicknameCatalogTests : IDisposable
               "sol": "Raven Sol",
               "Colonia": "The Colonia Nebula"
             }
-            """);
+            """
+        );
 
         var catalog = SystemNicknameCatalog.Load(temporaryDirectory);
 
@@ -48,14 +51,13 @@ public sealed class SystemNicknameCatalogTests : IDisposable
     public void MalformedAndInvalidEntriesAreNonDestructiveWarnings()
     {
         Directory.CreateDirectory(Path.Combine(temporaryDirectory, "pub"));
-        var localPath = Path.Combine(
-            temporaryDirectory,
-            "system-nick-names.json");
+        var localPath = Path.Combine(temporaryDirectory, "system-nick-names.json");
         const string malformed = "{\"map\":";
         File.WriteAllText(localPath, malformed);
         File.WriteAllText(
             Path.Combine(temporaryDirectory, "pub", "nicknames.json"),
-            "{\"Valid\":\"Name\",\"Invalid\":42}");
+            "{\"Valid\":\"Name\",\"Invalid\":42}"
+        );
 
         var catalog = SystemNicknameCatalog.Load(temporaryDirectory);
 

@@ -38,15 +38,15 @@ public sealed class CachingCanonnSystemPoiClientTests
 
     private sealed class StubClient : ICanonnSystemPoiClient
     {
-        private TaskCompletionSource<CanonnSystemPoiResult> completion =
-            CreateCompletion();
+        private TaskCompletionSource<CanonnSystemPoiResult> completion = CreateCompletion();
 
         public int CallCount { get; private set; }
 
         public Task<CanonnSystemPoiResult> GetAsync(
             string systemName,
             string commanderName,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             CallCount++;
             return completion.Task;
@@ -64,11 +64,9 @@ public sealed class CachingCanonnSystemPoiClientTests
             completion = CreateCompletion();
         }
 
-        private static TaskCompletionSource<CanonnSystemPoiResult>
-            CreateCompletion()
+        private static TaskCompletionSource<CanonnSystemPoiResult> CreateCompletion()
         {
-            return new TaskCompletionSource<CanonnSystemPoiResult>(
-                TaskCreationOptions.RunContinuationsAsynchronously);
+            return new TaskCompletionSource<CanonnSystemPoiResult>(TaskCreationOptions.RunContinuationsAsynchronously);
         }
     }
 }

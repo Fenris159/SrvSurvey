@@ -8,14 +8,13 @@ public sealed class ReleasePackageDownloadServiceTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-release-download-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-release-download-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public async Task DownloadAsyncVerifiesThenAtomicallyActivatesPackage()
     {
-        var bytes = Enumerable.Range(0, 300_000)
-            .Select(value => (byte)(value % 251))
-            .ToArray();
+        var bytes = Enumerable.Range(0, 300_000).Select(value => (byte)(value % 251)).ToArray();
         var handler = new StubHandler(_ => Response(bytes));
         var progress = new List<ReleasePackageDownloadProgress>();
         var package = CreatePackage(bytes);
@@ -25,7 +24,8 @@ public sealed class ReleasePackageDownloadServiceTests : IDisposable
             new Version(2, 0, 95, 23),
             package,
             temporaryDirectory,
-            new CallbackProgress<ReleasePackageDownloadProgress>(progress.Add));
+            new CallbackProgress<ReleasePackageDownloadProgress>(progress.Add)
+        );
 
         Assert.True(result.Downloaded);
         Assert.Equal(bytes, await File.ReadAllBytesAsync(result.ArchivePath));
@@ -36,7 +36,8 @@ public sealed class ReleasePackageDownloadServiceTests : IDisposable
         Assert.Contains("SrvSurvey-XP/1.0", handler.UserAgent);
         Assert.DoesNotContain(
             Directory.GetFiles(Path.GetDirectoryName(result.ArchivePath)!),
-            path => path.EndsWith(".partial", StringComparison.Ordinal));
+            path => path.EndsWith(".partial", StringComparison.Ordinal)
+        );
         Assert.Equal(package.Size, progress[^1].DownloadedBytes);
     }
 
@@ -48,14 +49,10 @@ public sealed class ReleasePackageDownloadServiceTests : IDisposable
         var archivePath = GetArchivePath(package);
         Directory.CreateDirectory(Path.GetDirectoryName(archivePath)!);
         await File.WriteAllBytesAsync(archivePath, bytes);
-        var handler = new StubHandler(_ =>
-            throw new InvalidOperationException("Network should not be used."));
+        var handler = new StubHandler(_ => throw new InvalidOperationException("Network should not be used."));
         var service = new ReleasePackageDownloadService(new HttpClient(handler));
 
-        var result = await service.DownloadAsync(
-            new Version(2, 0, 95, 23),
-            package,
-            temporaryDirectory);
+        var result = await service.DownloadAsync(new Version(2, 0, 95, 23), package, temporaryDirectory);
 
         Assert.False(result.Downloaded);
         Assert.Equal(bytes, await File.ReadAllBytesAsync(archivePath));
@@ -72,19 +69,17 @@ public sealed class ReleasePackageDownloadServiceTests : IDisposable
         var archivePath = GetArchivePath(package);
         Directory.CreateDirectory(Path.GetDirectoryName(archivePath)!);
         await File.WriteAllBytesAsync(archivePath, existing);
-        var service = new ReleasePackageDownloadService(
-            new HttpClient(new StubHandler(_ => Response(downloaded))));
+        var service = new ReleasePackageDownloadService(new HttpClient(new StubHandler(_ => Response(downloaded))));
 
         await Assert.ThrowsAsync<InvalidDataException>(() =>
-            service.DownloadAsync(
-                new Version(2, 0, 95, 23),
-                package,
-                temporaryDirectory));
+            service.DownloadAsync(new Version(2, 0, 95, 23), package, temporaryDirectory)
+        );
 
         Assert.Equal(existing, await File.ReadAllBytesAsync(archivePath));
         Assert.DoesNotContain(
             Directory.GetFiles(Path.GetDirectoryName(archivePath)!),
-            path => path.EndsWith(".partial", StringComparison.Ordinal));
+            path => path.EndsWith(".partial", StringComparison.Ordinal)
+        );
     }
 
     [Fact]
@@ -96,16 +91,12 @@ public sealed class ReleasePackageDownloadServiceTests : IDisposable
         var content = new ByteArrayContent(response);
         content.Headers.ContentLength = null;
         var service = new ReleasePackageDownloadService(
-            new HttpClient(new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = content,
-            })));
+            new HttpClient(new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = content }))
+        );
 
         await Assert.ThrowsAsync<InvalidDataException>(() =>
-            service.DownloadAsync(
-                new Version(2, 0, 95, 23),
-                package,
-                temporaryDirectory));
+            service.DownloadAsync(new Version(2, 0, 95, 23), package, temporaryDirectory)
+        );
 
         Assert.False(File.Exists(GetArchivePath(package)));
     }
@@ -114,18 +105,13 @@ public sealed class ReleasePackageDownloadServiceTests : IDisposable
     public async Task DownloadAsyncRejectsMetadataBeforeNetworkOrDiskMutation()
     {
         var bytes = new byte[] { 1, 2, 3 };
-        var package = CreatePackage(bytes) with
-        {
-            ArchiveName = "../escape.zip",
-        };
+        var package = CreatePackage(bytes) with { ArchiveName = "../escape.zip" };
         var handler = new StubHandler(_ => Response(bytes));
         var service = new ReleasePackageDownloadService(new HttpClient(handler));
 
         await Assert.ThrowsAsync<InvalidDataException>(() =>
-            service.DownloadAsync(
-                new Version(2, 0, 95, 23),
-                package,
-                temporaryDirectory));
+            service.DownloadAsync(new Version(2, 0, 95, 23), package, temporaryDirectory)
+        );
 
         Assert.Null(handler.RequestUri);
         Assert.False(Directory.Exists(temporaryDirectory));
@@ -147,7 +133,8 @@ public sealed class ReleasePackageDownloadServiceTests : IDisposable
             "packages",
             "2.0.95.23",
             package.RuntimeIdentifier,
-            package.ArchiveName);
+            package.ArchiveName
+        );
     }
 
     private static CrossPlatformReleasePackage CreatePackage(byte[] bytes)
@@ -158,20 +145,16 @@ public sealed class ReleasePackageDownloadServiceTests : IDisposable
             "zip",
             bytes.LongLength,
             Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant(),
-            new Uri("https://downloads.example.test/package.zip"));
+            new Uri("https://downloads.example.test/package.zip")
+        );
     }
 
     private static HttpResponseMessage Response(byte[] bytes)
     {
-        return new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new ByteArrayContent(bytes),
-        };
+        return new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(bytes) };
     }
 
-    private sealed class StubHandler(
-        Func<HttpRequestMessage, HttpResponseMessage> response)
-        : HttpMessageHandler
+    private sealed class StubHandler(Func<HttpRequestMessage, HttpResponseMessage> response) : HttpMessageHandler
     {
         public Uri? RequestUri { get; private set; }
 
@@ -181,7 +164,8 @@ public sealed class ReleasePackageDownloadServiceTests : IDisposable
 
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
             RequestUri = request.RequestUri;
             NoCache = request.Headers.CacheControl?.NoCache == true;

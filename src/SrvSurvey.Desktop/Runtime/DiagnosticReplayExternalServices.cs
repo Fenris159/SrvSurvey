@@ -1,80 +1,62 @@
 using SrvSurvey.Core.Frontier;
-using SrvSurvey.Desktop.Platform.Frontier;
-using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform;
+using SrvSurvey.Desktop.Platform.Frontier;
+using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.Runtime;
 
-internal sealed class DiagnosticReplayFrontierAccountService
-    : IFrontierAccountService
+internal sealed class DiagnosticReplayFrontierAccountService : IFrontierAccountService
 {
     public event EventHandler? AuthorizationCallbackReceived
     {
-        add
-        {
-            _ = value;
-        }
-        remove
-        {
-            _ = value;
-        }
+        add { _ = value; }
+        remove { _ = value; }
     }
 
-    public void SetActiveCommander(string? frontierId, string? commanderName)
-    {
-    }
+    public void SetActiveCommander(string? frontierId, string? commanderName) { }
 
     public Task<IReadOnlyList<FrontierLinkedCommander>> GetLinkedCommandersAsync(
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         cancellationToken.ThrowIfCancellationRequested();
         return Task.FromResult<IReadOnlyList<FrontierLinkedCommander>>([]);
     }
 
-    public Task<FrontierAccountState> GetStateAsync(
-        CancellationToken cancellationToken = default)
+    public Task<FrontierAccountState> GetStateAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        return Task.FromResult(new FrontierAccountState(
-            IsLinked: false,
-            Snapshot: null,
-            LastCapiRefreshAt: null));
+        return Task.FromResult(new FrontierAccountState(IsLinked: false, Snapshot: null, LastCapiRefreshAt: null));
     }
 
-    public Task<FrontierAccountSnapshot> ConnectAsync(
-        CancellationToken cancellationToken = default)
+    public Task<FrontierAccountSnapshot> ConnectAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         return Task.FromException<FrontierAccountSnapshot>(Unavailable());
     }
 
-    public Task CancelConnectionAsync(
-        CancellationToken cancellationToken = default)
+    public Task CancelConnectionAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         return Task.CompletedTask;
     }
 
-    public Task<FrontierAccountSnapshot> RefreshAsync(
-        CancellationToken cancellationToken = default)
+    public Task<FrontierAccountSnapshot> RefreshAsync(CancellationToken cancellationToken = default)
     {
         return ConnectAsync(cancellationToken);
     }
 
     public Task UnlinkAsync(CancellationToken cancellationToken = default)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-        return Task.CompletedTask;
+        return CancelConnectionAsync(cancellationToken);
     }
 
-    public void Dispose()
-    {
-    }
+    public void Dispose() { }
 
-    private static InvalidOperationException Unavailable() => new(
-        "Frontier account access is unavailable during diagnostic replay.");
+    private static InvalidOperationException Unavailable() =>
+        new("Frontier account access is unavailable during diagnostic replay.");
 }
 
 internal sealed class DiagnosticReplayGameWindowSwitcher : IGameWindowSwitcher
@@ -85,30 +67,24 @@ internal sealed class DiagnosticReplayGameWindowSwitcher : IGameWindowSwitcher
 
     public bool TryActivateNext() => false;
 
-    public void Dispose()
-    {
-    }
+    public void Dispose() { }
 }
 
-internal sealed class DiagnosticReplayScreenshotProcessingService
-    : IScreenshotProcessingService
+internal sealed class DiagnosticReplayScreenshotProcessingService : IScreenshotProcessingService
 {
     public Task<ScreenshotProcessingResult> ProcessAsync(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         ScreenshotProcessingPreferences preferences,
         string? commanderName,
-        IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>?
-            guardianContexts = null,
+        IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>? guardianContexts = null,
         ScreenshotNavigationContext? navigationContext = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var warnings = preferences.Enabled
-            && journalEvents.Any(item => item.EventName == "Screenshot")
-                ? new[]
-                {
-                    "Screenshot file processing is unavailable during diagnostic replay.",
-                }
+        var warnings =
+            preferences.Enabled && journalEvents.Any(item => item.EventName == "Screenshot")
+                ? new[] { "Screenshot file processing is unavailable during diagnostic replay." }
                 : [];
         return Task.FromResult(new ScreenshotProcessingResult([], warnings));
     }

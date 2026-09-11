@@ -35,27 +35,24 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
 
     public GroundTargetViewModel(GroundTargetSettingsStore settingsStore)
     {
-        this.settingsStore = settingsStore
-            ?? throw new ArgumentNullException(nameof(settingsStore));
+        this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         var loadResult = settingsStore.Load();
-        state = new GroundTargetState(
-            loadResult.Snapshot ?? GroundTargetSnapshot.Empty);
+        state = new GroundTargetState(loadResult.Snapshot ?? GroundTargetSnapshot.Empty);
         if (loadResult.Snapshot is not null)
         {
             UpdateTargetInputs(loadResult.Snapshot.Target);
         }
 
-        statusMessage = loadResult.Error
-            ?? (loadResult.Exists
-                ? $"Loaded the legacy ground target from "
-                    + System.IO.Path.GetFileName(loadResult.Path)
-                    + "."
-                : "No saved ground target is active.");
+        statusMessage =
+            loadResult.Error
+            ?? (
+                loadResult.Exists
+                    ? $"Loaded the legacy ground target from " + System.IO.Path.GetFileName(loadResult.Path) + "."
+                    : "No saved ground target is active."
+            );
         SetTargetCommand = new AsyncCommand(SetTargetAsync, () => true);
         ClearTargetCommand = new AsyncCommand(ClearTargetAsync, () => state.IsActive);
-        useCurrentLocationCommand = new AsyncCommand(
-            UseCurrentLocationAsync,
-            () => state.CurrentLocation is not null);
+        useCurrentLocationCommand = new AsyncCommand(UseCurrentLocationAsync, () => state.CurrentLocation is not null);
         UseCurrentLocationCommand = useCurrentLocationCommand;
         UpdateDisplay();
     }
@@ -146,9 +143,7 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
 
     public string TargetStatusLabel => state.IsActive ? "ACTIVE" : "INACTIVE";
 
-    public bool ShouldShow => state.IsActive
-        && state.Solution is not null
-        && isStatusEligible;
+    public bool ShouldShow => state.IsActive && state.Solution is not null && isStatusEligible;
 
     public bool HasLevelApproach => approach == GroundTargetApproach.Level;
 
@@ -215,17 +210,13 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
         }
 
         musicTrack = value;
-        isStatusEligible = status is not null
-            && IsOverlayStatusEligible(status, musicTrack);
+        isStatusEligible = status is not null && IsOverlayStatusEligible(status, musicTrack);
         OnPropertyChanged(nameof(ShouldShow));
     }
 
     public async Task SetTargetAsync()
     {
-        if (!state.TrySetTarget(
-                TargetLatitude,
-                TargetLongitude,
-                out var error))
+        if (!state.TrySetTarget(TargetLatitude, TargetLongitude, out var error))
         {
             StatusMessage = error ?? "The ground target is invalid.";
             return;
@@ -235,9 +226,7 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
         await SaveAsync("Ground target saved.");
     }
 
-    public async Task SetTargetAsync(
-        SurfaceCoordinate target,
-        string successMessage)
+    public async Task SetTargetAsync(SurfaceCoordinate target, string successMessage)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(successMessage);
         state.SetTarget(target);
@@ -276,15 +265,18 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
             return false;
         }
 
-        await SaveAsync(value
-            ? "Ground-target guidance enabled."
-            : "Ground-target guidance hidden; the saved coordinates were retained.");
+        await SaveAsync(
+            value
+                ? "Ground-target guidance enabled."
+                : "Ground-target guidance hidden; the saved coordinates were retained."
+        );
         return true;
     }
 
     public async Task<int> ApplyJournalEventsAsync(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
-        bool allowCommands)
+        bool allowCommands
+    )
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
         if (!allowCommands)
@@ -301,8 +293,7 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
         return applied;
     }
 
-    private async Task<int> TryApplyTargetCommandAsync(
-        JournalEventEnvelope journalEvent)
+    private async Task<int> TryApplyTargetCommandAsync(JournalEventEnvelope journalEvent)
     {
         if (!TryReadTargetCommand(journalEvent, out var message))
         {
@@ -312,14 +303,14 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
         return await ApplyTargetCommandAsync(message).ConfigureAwait(true);
     }
 
-    private static bool TryReadTargetCommand(
-        JournalEventEnvelope journalEvent,
-        out string? message)
+    private static bool TryReadTargetCommand(JournalEventEnvelope journalEvent, out string? message)
     {
         message = null;
-        if (journalEvent.EventName != "SendText"
+        if (
+            journalEvent.EventName != "SendText"
             || !journalEvent.Payload.TryGetProperty("Message", out var value)
-            || value.ValueKind != System.Text.Json.JsonValueKind.String)
+            || value.ValueKind != System.Text.Json.JsonValueKind.String
+        )
         {
             return false;
         }
@@ -366,14 +357,15 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
             await settingsStore.SaveAsync(state.CreateSnapshot());
             StatusMessage = successMessage;
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException
-                or InvalidOperationException)
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or UnauthorizedAccessException
+                        or InvalidDataException
+                        or InvalidOperationException
+            )
         {
-            StatusMessage = "The target changed for this session but could not be saved: "
-                + exception.Message;
+            StatusMessage = "The target changed for this session but could not be saved: " + exception.Message;
         }
     }
 
@@ -388,9 +380,7 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
         CurrentCoordinates = state.CurrentLocation is SurfaceCoordinate current
             ? $"{current.Latitude:F6}, {current.Longitude:F6}"
             : Unavailable;
-        TargetCoordinates = state.IsActive
-            ? $"{state.Target.Latitude:F6}, {state.Target.Longitude:F6}"
-            : Unavailable;
+        TargetCoordinates = state.IsActive ? $"{state.Target.Latitude:F6}, {state.Target.Longitude:F6}" : Unavailable;
         OnPropertyChanged(nameof(IsTargetActive));
         OnPropertyChanged(nameof(TargetStatusLabel));
         OnPropertyChanged(nameof(ShouldShow));
@@ -443,41 +433,31 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(HasTooSteepApproach));
     }
 
-    private static bool IsOverlayStatusEligible(
-        EliteStatus status,
-        string? musicTrack)
+    private static bool IsOverlayStatusEligible(EliteStatus status, string? musicTrack)
     {
-        if (!status.HasLatitudeLongitude
-            || status.PlanetRadius <= 0
-            || status.InTaxi)
+        if (!status.HasLatitudeLongitude || status.PlanetRadius <= 0 || status.InTaxi)
         {
             return false;
         }
 
-        var mode = OverlayGameModeResolver.Resolve(
-            status,
-            musicTrack: musicTrack);
-        return mode is OverlayGameMode.CommsPanel
-            or OverlayGameMode.SuperCruising
-            or OverlayGameMode.Flying
-            or OverlayGameMode.Landed
-            or OverlayGameMode.InSrv
-            or OverlayGameMode.OnFoot
-            or OverlayGameMode.GlideMode
-            or OverlayGameMode.InFighter;
+        var mode = OverlayGameModeResolver.Resolve(status, musicTrack: musicTrack);
+        return mode
+            is OverlayGameMode.CommsPanel
+                or OverlayGameMode.SuperCruising
+                or OverlayGameMode.Flying
+                or OverlayGameMode.Landed
+                or OverlayGameMode.InSrv
+                or OverlayGameMode.OnFoot
+                or OverlayGameMode.GlideMode
+                or OverlayGameMode.InFighter;
     }
 
     private static string FormatDistance(double distance)
     {
-        return distance >= 1_000
-            ? $"{distance / 1_000:N2} km"
-            : $"{distance:N0} m";
+        return distance >= 1_000 ? $"{distance / 1_000:N2} km" : $"{distance:N0} m";
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -494,9 +474,7 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private sealed class AsyncCommand(
-        Func<Task> execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class AsyncCommand(Func<Task> execute, Func<bool> canExecute) : ICommand
     {
         public event EventHandler? CanExecuteChanged;
 

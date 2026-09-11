@@ -7,35 +7,28 @@ public sealed class InaraSettingsMarkupTests
     [Fact]
     public void InaraCardUsesCommanderKeyOptInAndWarnsAboutDuplicateUploads()
     {
-        var values = LoadSettingsView().Descendants()
+        var values = LoadSettingsView()
+            .Descendants()
             .SelectMany(element => element.Attributes())
             .Select(attribute => attribute.Value)
             .ToArray();
 
         Assert.Contains(
             "Enable Inara uploads in only one application at a time to avoid duplicate commander events.",
-            values);
+            values
+        );
         Assert.Contains("{Binding Inara.SaveApiKeyCommand}", values);
         Assert.Contains("{Binding Inara.RequestClearApiKeyCommand}", values);
         Assert.Contains("{Binding Inara.ConfirmClearApiKeyCommand}", values);
         Assert.DoesNotContain(
             values,
-            value => value.Contains(
-                "Developer test mode",
-                StringComparison.OrdinalIgnoreCase));
-        Assert.DoesNotContain(
-            values,
-            value => value.Contains(
-                "Inara.UploadEnabled",
-                StringComparison.Ordinal));
+            value => value.Contains("Developer test mode", StringComparison.OrdinalIgnoreCase)
+        );
+        Assert.DoesNotContain(values, value => value.Contains("Inara.UploadEnabled", StringComparison.Ordinal));
     }
 
-    private static XDocument LoadSettingsView() => XDocument.Load(Path.Combine(
-        FindRepositoryRoot(),
-        "src",
-        "SrvSurvey.Desktop",
-        "Views",
-        "SettingsView.axaml"));
+    private static XDocument LoadSettingsView() =>
+        XDocument.Load(Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "Views", "SettingsView.axaml"));
 
     private static string FindRepositoryRoot()
     {
@@ -50,7 +43,6 @@ public sealed class InaraSettingsMarkupTests
             current = current.Parent;
         }
 
-        throw new DirectoryNotFoundException(
-            "Could not locate the repository root.");
+        throw new DirectoryNotFoundException("Could not locate the repository root.");
     }
 }

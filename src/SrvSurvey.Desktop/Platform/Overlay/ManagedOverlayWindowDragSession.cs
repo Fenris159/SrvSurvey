@@ -6,8 +6,7 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 internal sealed class ManagedOverlayWindowDragSession
 {
-    private static readonly Dictionary<Window, ManagedOverlayWindowDragSession>
-        ActiveSessions = [];
+    private static readonly Dictionary<Window, ManagedOverlayWindowDragSession> ActiveSessions = [];
 
     private readonly Window window;
     private readonly IPointer pointer;
@@ -15,20 +14,15 @@ internal sealed class ManagedOverlayWindowDragSession
     private readonly PixelPoint initialPointerPosition;
     private bool stopped;
 
-    private ManagedOverlayWindowDragSession(
-        Window window,
-        PointerPressedEventArgs eventArgs)
+    private ManagedOverlayWindowDragSession(Window window, PointerPressedEventArgs eventArgs)
     {
         this.window = window;
         pointer = eventArgs.Pointer;
         initialWindowPosition = window.Position;
-        initialPointerPosition = window.PointToScreen(
-            eventArgs.GetPosition(window));
+        initialPointerPosition = window.PointToScreen(eventArgs.GetPosition(window));
     }
 
-    internal static void Begin(
-        Window window,
-        PointerPressedEventArgs eventArgs)
+    internal static void Begin(Window window, PointerPressedEventArgs eventArgs)
     {
         ArgumentNullException.ThrowIfNull(window);
         ArgumentNullException.ThrowIfNull(eventArgs);
@@ -50,15 +44,13 @@ internal sealed class ManagedOverlayWindowDragSession
     internal static PixelPoint CalculatePosition(
         PixelPoint initialWindowPosition,
         PixelPoint initialPointerPosition,
-        PixelPoint currentPointerPosition)
+        PixelPoint currentPointerPosition
+    )
     {
         return new PixelPoint(
-            initialWindowPosition.X
-                + currentPointerPosition.X
-                - initialPointerPosition.X,
-            initialWindowPosition.Y
-                + currentPointerPosition.Y
-                - initialPointerPosition.Y);
+            initialWindowPosition.X + currentPointerPosition.X - initialPointerPosition.X,
+            initialWindowPosition.Y + currentPointerPosition.Y - initialPointerPosition.Y
+        );
     }
 
     private void OnPointerMoved(object? sender, PointerEventArgs eventArgs)
@@ -68,18 +60,12 @@ internal sealed class ManagedOverlayWindowDragSession
             return;
         }
 
-        var currentPointerPosition = window.PointToScreen(
-            eventArgs.GetPosition(window));
-        window.Position = CalculatePosition(
-            initialWindowPosition,
-            initialPointerPosition,
-            currentPointerPosition);
+        var currentPointerPosition = window.PointToScreen(eventArgs.GetPosition(window));
+        window.Position = CalculatePosition(initialWindowPosition, initialPointerPosition, currentPointerPosition);
         eventArgs.Handled = true;
     }
 
-    private void OnPointerReleased(
-        object? sender,
-        PointerReleasedEventArgs eventArgs)
+    private void OnPointerReleased(object? sender, PointerReleasedEventArgs eventArgs)
     {
         if (ReferenceEquals(eventArgs.Pointer, pointer))
         {
@@ -87,9 +73,7 @@ internal sealed class ManagedOverlayWindowDragSession
         }
     }
 
-    private void OnPointerCaptureLost(
-        object? sender,
-        PointerCaptureLostEventArgs eventArgs)
+    private void OnPointerCaptureLost(object? sender, PointerCaptureLostEventArgs eventArgs)
     {
         Stop(releasePointer: false);
     }

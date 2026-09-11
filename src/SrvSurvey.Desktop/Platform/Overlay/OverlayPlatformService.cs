@@ -32,16 +32,13 @@ public interface IOverlayPlatformService : IDisposable
         ArgumentNullException.ThrowIfNull(eventArgs);
         window.BeginMoveDrag(eventArgs);
     }
-
 }
 
 internal interface ICombinedOverlayNativeService
 {
     bool SuppressNativeWindow(Window window);
 
-    OverlayInteractionResult SetInteractiveRegions(
-        Window window,
-        IReadOnlyList<PixelRect> regions);
+    OverlayInteractionResult SetInteractiveRegions(Window window, IReadOnlyList<PixelRect> regions);
 }
 
 public static class OverlayPlatformService
@@ -62,20 +59,17 @@ public static class OverlayPlatformService
                     {
                         SupportsClickThrough = false,
                         SupportsGameWindowTracking = false,
-                    });
+                    }
+                );
         }
 
         return new PortableOverlayPlatformService(capabilities);
     }
 }
 
-public sealed record OverlayPreparationResult(
-    bool IsPrepared,
-    bool IsClickThrough,
-    string Status);
+public sealed record OverlayPreparationResult(bool IsPrepared, bool IsClickThrough, string Status);
 
-internal sealed class PortableOverlayPlatformService(
-    OverlayPlatformCapabilities capabilities) : IOverlayPlatformService
+internal sealed class PortableOverlayPlatformService(OverlayPlatformCapabilities capabilities) : IOverlayPlatformService
 {
     public OverlayPlatformCapabilities Capabilities { get; } = capabilities;
 
@@ -85,26 +79,21 @@ internal sealed class PortableOverlayPlatformService(
         return new OverlayPreparationResult(
             Capabilities.SupportsPassiveOverlay,
             IsClickThrough: false,
-            Capabilities.StatusText);
+            Capabilities.StatusText
+        );
     }
 
     public OverlayInteractionResult SetInteractive(Window window, bool interactive)
     {
         ArgumentNullException.ThrowIfNull(window);
-        return new OverlayInteractionResult(
-            IsPrepared: false,
-            IsInteractive: false,
-            Capabilities.StatusText);
+        return new OverlayInteractionResult(IsPrepared: false, IsInteractive: false, Capabilities.StatusText);
     }
 
-    public void Dispose()
-    {
-    }
+    public void Dispose() { }
 }
 
 [SupportedOSPlatform("windows")]
-internal sealed partial class WindowsOverlayPlatformService
-    : IOverlayPlatformService, ICombinedOverlayNativeService
+internal sealed partial class WindowsOverlayPlatformService : IOverlayPlatformService, ICombinedOverlayNativeService
 {
     private const int ExtendedWindowStyle = -20;
     private const long ToolWindow = 0x00000080L;
@@ -129,7 +118,8 @@ internal sealed partial class WindowsOverlayPlatformService
         return new OverlayPreparationResult(
             result.IsPrepared,
             IsClickThrough: result.IsPrepared && !result.IsInteractive,
-            result.Status);
+            result.Status
+        );
     }
 
     public OverlayInteractionResult SetInteractive(Window window, bool interactive)
@@ -141,13 +131,13 @@ internal sealed partial class WindowsOverlayPlatformService
             return new OverlayInteractionResult(
                 IsPrepared: false,
                 IsInteractive: false,
-                "The native Windows overlay handle is not available.");
+                "The native Windows overlay handle is not available."
+            );
         }
 
         var style = GetWindowLongPtr(handle, ExtendedWindowStyle);
         var updated = interactive
-            ? (style | (nint)(ToolWindow | Layered))
-                & ~(nint)(Transparent | NoActivate)
+            ? (style | (nint)(ToolWindow | Layered)) & ~(nint)(Transparent | NoActivate)
             : style | (nint)(ToolWindow | Transparent | Layered | NoActivate);
         Marshal.SetLastPInvokeError(0);
         var previous = SetWindowLongPtr(handle, ExtendedWindowStyle, updated);
@@ -157,33 +147,27 @@ internal sealed partial class WindowsOverlayPlatformService
             return new OverlayInteractionResult(
                 IsPrepared: false,
                 IsInteractive: false,
-                $"Windows overlay interaction mode could not be changed (error {error}).");
+                $"Windows overlay interaction mode could not be changed (error {error})."
+            );
         }
 
-        if (!SetWindowPos(
-                handle,
-                nint.Zero,
-                0,
-                0,
-                0,
-                0,
-                NoSize | NoMove | NoZOrder | DoNotActivate | FrameChanged))
+        if (!SetWindowPos(handle, nint.Zero, 0, 0, 0, 0, NoSize | NoMove | NoZOrder | DoNotActivate | FrameChanged))
         {
             error = Marshal.GetLastPInvokeError();
             _ = SetWindowLongPtr(handle, ExtendedWindowStyle, style);
             return new OverlayInteractionResult(
                 IsPrepared: false,
                 IsInteractive: false,
-                $"Windows overlay interaction mode could not be refreshed (error {error}).");
+                $"Windows overlay interaction mode could not be refreshed (error {error})."
+            );
         }
 
         window.IsHitTestVisible = interactive;
         return new OverlayInteractionResult(
             IsPrepared: true,
             IsInteractive: interactive,
-            interactive
-                ? "Overlay edit mode is active on Windows."
-                : Capabilities.StatusText);
+            interactive ? "Overlay edit mode is active on Windows." : Capabilities.StatusText
+        );
     }
 
     public IDisposable BeginVisibleCursorSession(Window window)
@@ -210,12 +194,11 @@ internal sealed partial class WindowsOverlayPlatformService
             previousForeground,
             GetForegroundWindow,
             SetForegroundWindow,
-            IsCurrentProcessOverlayWindow);
+            IsCurrentProcessOverlayWindow
+        );
     }
 
-    public void Dispose()
-    {
-    }
+    public void Dispose() { }
 
     public bool SuppressNativeWindow(Window window)
     {
@@ -230,9 +213,7 @@ internal sealed partial class WindowsOverlayPlatformService
         return true;
     }
 
-    public OverlayInteractionResult SetInteractiveRegions(
-        Window window,
-        IReadOnlyList<PixelRect> regions)
+    public OverlayInteractionResult SetInteractiveRegions(Window window, IReadOnlyList<PixelRect> regions)
     {
         ArgumentNullException.ThrowIfNull(window);
         ArgumentNullException.ThrowIfNull(regions);
@@ -242,7 +223,8 @@ internal sealed partial class WindowsOverlayPlatformService
             return new OverlayInteractionResult(
                 IsPrepared: false,
                 IsInteractive: false,
-                "The native Windows overlay host is not available.");
+                "The native Windows overlay host is not available."
+            );
         }
 
         if (regions.Count == 0)
@@ -257,7 +239,8 @@ internal sealed partial class WindowsOverlayPlatformService
             return new OverlayInteractionResult(
                 IsPrepared: false,
                 IsInteractive: false,
-                "The Windows overlay input region could not be created.");
+                "The Windows overlay input region could not be created."
+            );
         }
 
         var regionTransferred = false;
@@ -267,11 +250,7 @@ internal sealed partial class WindowsOverlayPlatformService
             {
                 var right = checked(rectangle.X + rectangle.Width);
                 var bottom = checked(rectangle.Y + rectangle.Height);
-                var part = CreateRectRgn(
-                    rectangle.X,
-                    rectangle.Y,
-                    right,
-                    bottom);
+                var part = CreateRectRgn(rectangle.X, rectangle.Y, right, bottom);
                 if (part == nint.Zero)
                 {
                     continue;
@@ -279,11 +258,7 @@ internal sealed partial class WindowsOverlayPlatformService
 
                 try
                 {
-                    _ = CombineRgn(
-                        combinedRegion,
-                        combinedRegion,
-                        part,
-                        RegionOr);
+                    _ = CombineRgn(combinedRegion, combinedRegion, part, RegionOr);
                 }
                 finally
                 {
@@ -303,14 +278,16 @@ internal sealed partial class WindowsOverlayPlatformService
                 return new OverlayInteractionResult(
                     IsPrepared: false,
                     IsInteractive: false,
-                    "The Windows overlay input region could not be applied.");
+                    "The Windows overlay input region could not be applied."
+                );
             }
 
             regionTransferred = true;
             return new OverlayInteractionResult(
                 IsPrepared: true,
                 IsInteractive: true,
-                "Combined overlay edit mode is active on Windows.");
+                "Combined overlay edit mode is active on Windows."
+            );
         }
         finally
         {
@@ -324,14 +301,8 @@ internal sealed partial class WindowsOverlayPlatformService
     [LibraryImport("user32.dll", EntryPoint = "GetWindowLongPtrW")]
     private static partial nint GetWindowLongPtr(nint window, int index);
 
-    [LibraryImport(
-        "user32.dll",
-        EntryPoint = "SetWindowLongPtrW",
-        SetLastError = true)]
-    private static partial nint SetWindowLongPtr(
-        nint window,
-        int index,
-        nint value);
+    [LibraryImport("user32.dll", EntryPoint = "SetWindowLongPtrW", SetLastError = true)]
+    private static partial nint SetWindowLongPtr(nint window, int index, nint value);
 
     [LibraryImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -342,15 +313,15 @@ internal sealed partial class WindowsOverlayPlatformService
         int y,
         int width,
         int height,
-        uint flags);
+        uint flags
+    );
 
     [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool ShowWindow(nint window, int command);
 
     [LibraryImport("user32.dll")]
-    private static partial int ShowCursor(
-        [MarshalAs(UnmanagedType.Bool)] bool show);
+    private static partial int ShowCursor([MarshalAs(UnmanagedType.Bool)] bool show);
 
     [LibraryImport("user32.dll")]
     private static partial nint GetForegroundWindow();
@@ -370,61 +341,45 @@ internal sealed partial class WindowsOverlayPlatformService
     private static partial nint SetFocus(nint window);
 
     [LibraryImport("user32.dll")]
-    private static partial uint GetWindowThreadProcessId(
-        nint window,
-        out uint processId);
+    private static partial uint GetWindowThreadProcessId(nint window, out uint processId);
 
     [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool AttachThreadInput(
         uint attachThread,
         uint attachToThread,
-        [MarshalAs(UnmanagedType.Bool)] bool attach);
+        [MarshalAs(UnmanagedType.Bool)] bool attach
+    );
 
     [LibraryImport("kernel32.dll")]
     private static partial uint GetCurrentThreadId();
 
     [LibraryImport("user32.dll", EntryPoint = "LoadCursorW")]
-    private static partial nint LoadCursor(
-        nint instance,
-        nint cursorName);
+    private static partial nint LoadCursor(nint instance, nint cursorName);
 
     [LibraryImport("user32.dll")]
     private static partial nint SetCursor(nint cursor);
 
     [LibraryImport("user32.dll")]
-    private static partial int SetWindowRgn(
-        nint window,
-        nint region,
-        [MarshalAs(UnmanagedType.Bool)] bool redraw);
+    private static partial int SetWindowRgn(nint window, nint region, [MarshalAs(UnmanagedType.Bool)] bool redraw);
 
     [LibraryImport("gdi32.dll")]
-    private static partial nint CreateRectRgn(
-        int left,
-        int top,
-        int right,
-        int bottom);
+    private static partial nint CreateRectRgn(int left, int top, int right, int bottom);
 
     [LibraryImport("gdi32.dll")]
-    private static partial int CombineRgn(
-        nint destination,
-        nint source1,
-        nint source2,
-        int mode);
+    private static partial int CombineRgn(nint destination, nint source1, nint source2, int mode);
 
     [LibraryImport("gdi32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool DeleteObject(nint objectHandle);
 
-    private static void ActivateOverlayWindow(
-        nint handle,
-        nint previousForeground)
+    private static void ActivateOverlayWindow(nint handle, nint previousForeground)
     {
         var currentThread = GetCurrentThreadId();
-        var foregroundThread = previousForeground == nint.Zero
-            ? 0
-            : GetWindowThreadProcessId(previousForeground, out _);
-        var attached = foregroundThread != 0
+        var foregroundThread =
+            previousForeground == nint.Zero ? 0 : GetWindowThreadProcessId(previousForeground, out _);
+        var attached =
+            foregroundThread != 0
             && foregroundThread != currentThread
             && AttachThreadInput(currentThread, foregroundThread, attach: true);
         try
@@ -438,10 +393,7 @@ internal sealed partial class WindowsOverlayPlatformService
         {
             if (attached)
             {
-                _ = AttachThreadInput(
-                    currentThread,
-                    foregroundThread,
-                    attach: false);
+                _ = AttachThreadInput(currentThread, foregroundThread, attach: false);
             }
         }
     }
@@ -455,10 +407,8 @@ internal sealed partial class WindowsOverlayPlatformService
 
         _ = GetWindowThreadProcessId(handle, out var processId);
         return processId == (uint)Environment.ProcessId
-            && ((long)GetWindowLongPtr(handle, ExtendedWindowStyle)
-                & ToolWindow) != 0;
+            && ((long)GetWindowLongPtr(handle, ExtendedWindowStyle) & ToolWindow) != 0;
     }
-
 }
 
 internal sealed class CursorVisibilitySession : IDisposable
@@ -467,9 +417,7 @@ internal sealed class CursorVisibilitySession : IDisposable
     private readonly Func<bool, int> showCursor;
     private int remainingAdjustments;
 
-    private CursorVisibilitySession(
-        Func<bool, int> showCursor,
-        int adjustments)
+    private CursorVisibilitySession(Func<bool, int> showCursor, int adjustments)
     {
         this.showCursor = showCursor;
         remainingAdjustments = adjustments;
@@ -492,9 +440,7 @@ internal sealed class CursorVisibilitySession : IDisposable
 
     public void Dispose()
     {
-        var remaining = Interlocked.Exchange(
-            ref remainingAdjustments,
-            0);
+        var remaining = Interlocked.Exchange(ref remainingAdjustments, 0);
         for (var index = 0; index < remaining; index++)
         {
             _ = showCursor(false);
@@ -517,25 +463,21 @@ internal sealed class ForegroundCursorVisibilitySession : IDisposable
         nint previousForeground,
         Func<nint> getForegroundWindow,
         Func<nint, bool> setForegroundWindow,
-        Func<nint, bool> isInteractionWindow)
+        Func<nint, bool> isInteractionWindow
+    )
     {
-        this.cursorVisibilitySession = cursorVisibilitySession
-            ?? throw new ArgumentNullException(nameof(cursorVisibilitySession));
+        this.cursorVisibilitySession =
+            cursorVisibilitySession ?? throw new ArgumentNullException(nameof(cursorVisibilitySession));
         this.interactionWindow = interactionWindow;
         this.previousForeground = previousForeground;
-        this.getForegroundWindow = getForegroundWindow
-            ?? throw new ArgumentNullException(nameof(getForegroundWindow));
-        this.setForegroundWindow = setForegroundWindow
-            ?? throw new ArgumentNullException(nameof(setForegroundWindow));
-        this.isInteractionWindow = isInteractionWindow
-            ?? throw new ArgumentNullException(nameof(isInteractionWindow));
+        this.getForegroundWindow = getForegroundWindow ?? throw new ArgumentNullException(nameof(getForegroundWindow));
+        this.setForegroundWindow = setForegroundWindow ?? throw new ArgumentNullException(nameof(setForegroundWindow));
+        this.isInteractionWindow = isInteractionWindow ?? throw new ArgumentNullException(nameof(isInteractionWindow));
     }
 
     public void Dispose()
     {
-        var visibility = Interlocked.Exchange(
-            ref cursorVisibilitySession,
-            null);
+        var visibility = Interlocked.Exchange(ref cursorVisibilitySession, null);
         if (visibility is null)
         {
             return;
@@ -543,17 +485,15 @@ internal sealed class ForegroundCursorVisibilitySession : IDisposable
 
         visibility.Dispose();
         var currentForeground = getForegroundWindow();
-        if (previousForeground != nint.Zero
+        if (
+            previousForeground != nint.Zero
             && previousForeground != interactionWindow
-            && (currentForeground == interactionWindow
-                || isInteractionWindow(currentForeground)))
+            && (currentForeground == interactionWindow || isInteractionWindow(currentForeground))
+        )
         {
             _ = setForegroundWindow(previousForeground);
         }
     }
 }
 
-public sealed record OverlayInteractionResult(
-    bool IsPrepared,
-    bool IsInteractive,
-    string Status);
+public sealed record OverlayInteractionResult(bool IsPrepared, bool IsInteractive, string Status);

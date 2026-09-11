@@ -16,7 +16,8 @@ public sealed class MineMapViewModelTests
         using var viewModel = new MineMapViewModel(
             directory.Path,
             new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
-            _ => { });
+            _ => { }
+        );
 
         Assert.Null(viewModel.ActiveSurvey);
         Assert.Equal(["All"], viewModel.ContainsOptions);
@@ -35,7 +36,8 @@ public sealed class MineMapViewModelTests
         using var viewModel = new MineMapViewModel(
             directory.Path,
             new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
-            _ => { });
+            _ => { }
+        );
         var row = Assert.Single(viewModel.FilteredSurveys);
 
         Assert.True(viewModel.SelectSurvey(row.Id));
@@ -52,7 +54,8 @@ public sealed class MineMapViewModelTests
         using var viewModel = new MineMapViewModel(
             directory.Path,
             new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
-            _ => { });
+            _ => { }
+        );
         var changes = new List<string?>();
         viewModel.PropertyChanged += (_, args) => changes.Add(args.PropertyName);
 
@@ -73,7 +76,8 @@ public sealed class MineMapViewModelTests
         using var viewModel = new MineMapViewModel(
             directory.Path,
             new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
-            _ => { });
+            _ => { }
+        );
 
         viewModel.SortSurveysCommand.Execute("SystemName");
         viewModel.SortHotspotsCommand.Execute("Name");
@@ -83,9 +87,7 @@ public sealed class MineMapViewModelTests
         Assert.Equal(string.Empty, viewModel.SurveySortIndicators["BodyType"]);
         Assert.Equal("↑", viewModel.HotspotSortIndicators["Name"]);
         Assert.Equal("↑", viewModel.SurfaceHuntSortIndicators["PeakSellPriceValue"]);
-        Assert.Equal(
-            1_931,
-            viewModel.SurfaceHuntRows[0].PeakSellPriceValue);
+        Assert.Equal(1_931, viewModel.SurfaceHuntRows[0].PeakSellPriceValue);
         viewModel.SortHotspotsCommand.Execute("Name");
         Assert.Equal("↓", viewModel.HotspotSortIndicators["Name"]);
     }
@@ -95,10 +97,7 @@ public sealed class MineMapViewModelTests
     {
         using var directory = new TemporaryDirectory();
         var settingsPath = Path.Combine(directory.Path, "ui-settings.json");
-        using (var viewModel = new MineMapViewModel(
-            directory.Path,
-            new MineMapSettingsStore(settingsPath),
-            _ => { }))
+        using (var viewModel = new MineMapViewModel(directory.Path, new MineMapSettingsStore(settingsPath), _ => { }))
         {
             var gold = Assert.Single(viewModel.HotspotRows, row => row.Name == "Gold");
             gold.IsInOverlay = true;
@@ -109,13 +108,8 @@ public sealed class MineMapViewModelTests
             Assert.Equal("48,005 CR/t", reference.AverageSellPrice);
         }
 
-        using var restored = new MineMapViewModel(
-            directory.Path,
-            new MineMapSettingsStore(settingsPath),
-            _ => { });
-        Assert.True(Assert.Single(
-            restored.HotspotRows,
-            row => row.Name == "Gold").IsInOverlay);
+        using var restored = new MineMapViewModel(directory.Path, new MineMapSettingsStore(settingsPath), _ => { });
+        Assert.True(Assert.Single(restored.HotspotRows, row => row.Name == "Gold").IsInOverlay);
         Assert.Single(restored.MiningReferenceRows);
     }
 
@@ -127,14 +121,9 @@ public sealed class MineMapViewModelTests
         var settings = new MineMapSettingsStore(settingsPath);
         settings.Save(new MineMapPreferences(false, ["Low Temp Diamonds"]));
 
-        using var viewModel = new MineMapViewModel(
-            directory.Path,
-            settings,
-            _ => { });
+        using var viewModel = new MineMapViewModel(directory.Path, settings, _ => { });
 
-        Assert.True(Assert.Single(
-            viewModel.HotspotRows,
-            row => row.Name == "Low Temperature Diamonds").IsInOverlay);
+        Assert.True(Assert.Single(viewModel.HotspotRows, row => row.Name == "Low Temperature Diamonds").IsInOverlay);
     }
 
     [Fact]
@@ -146,7 +135,8 @@ public sealed class MineMapViewModelTests
             directory.Path,
             new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
             _ => { },
-            () => launches++);
+            () => launches++
+        );
 
         viewModel.OpenSurfaceMiningGuideCommand.Execute(null);
 
@@ -161,21 +151,22 @@ public sealed class MineMapViewModelTests
         using var viewModel = new MineMapViewModel(
             directory.Path,
             new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
-            messages.Add);
-        Assert.True(JournalEventEnvelope.TryParse(
-            """{"event":"SendText","Message":".mining 120 4 high/low"}""",
-            out var command,
-            out _));
+            messages.Add
+        );
+        Assert.True(
+            JournalEventEnvelope.TryParse(
+                """{"event":"SendText","Message":".mining 120 4 high/low"}""",
+                out var command,
+                out _
+            )
+        );
 
         await viewModel.ApplyUpdateAsync(
             [command!],
             Context(new SurfaceCoordinate(1, 2)),
-            new EliteStatus
-            {
-                Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
-                PlanetRadius = 855_573.1875m,
-            },
-            allowCommands: true);
+            new EliteStatus { Flags = StatusFlags.InSrv | StatusFlags.HasLatLong, PlanetRadius = 855_573.1875m },
+            allowCommands: true
+        );
 
         Assert.True(viewModel.HasActiveSurvey);
         Assert.True(viewModel.ShouldShowOverlay);
@@ -190,11 +181,15 @@ public sealed class MineMapViewModelTests
         using var viewModel = new MineMapViewModel(
             directory.Path,
             new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
-            _ => { });
-        Assert.True(JournalEventEnvelope.TryParse(
-            """{"event":"SendText","Message":".mining 120 4 high/low"}""",
-            out var command,
-            out _));
+            _ => { }
+        );
+        Assert.True(
+            JournalEventEnvelope.TryParse(
+                """{"event":"SendText","Message":".mining 120 4 high/low"}""",
+                out var command,
+                out _
+            )
+        );
         var initial = new SurfaceCoordinate(1, 2);
         var moved = new SurfaceCoordinate(1.001, 2.002);
 
@@ -207,7 +202,8 @@ public sealed class MineMapViewModelTests
                 Heading = 25,
                 PlanetRadius = 855_573.1875m,
             },
-            allowCommands: true);
+            allowCommands: true
+        );
         await viewModel.ApplyUpdateAsync(
             [],
             Context(moved),
@@ -217,7 +213,8 @@ public sealed class MineMapViewModelTests
                 Heading = 137,
                 PlanetRadius = 855_573.1875m,
             },
-            allowCommands: true);
+            allowCommands: true
+        );
 
         Assert.Equal(moved, viewModel.PlayerLocation);
         Assert.Equal(137, viewModel.PlayerHeading);
@@ -235,17 +232,22 @@ public sealed class MineMapViewModelTests
             new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
             _ => { },
             editBookmark: id => editRequest = id,
-            bookmarkCatalog: bookmarks.Catalog);
-        Assert.True(JournalEventEnvelope.TryParse(
-            """{"event":"SendText","Message":".mining 120 4 high/low"}""",
-            out var command,
-            out _));
+            bookmarkCatalog: bookmarks.Catalog
+        );
+        Assert.True(
+            JournalEventEnvelope.TryParse(
+                """{"event":"SendText","Message":".mining 120 4 high/low"}""",
+                out var command,
+                out _
+            )
+        );
 
         await viewModel.ApplyUpdateAsync(
             [command!],
             Context(new SurfaceCoordinate(1, 2)),
             new EliteStatus { Flags = StatusFlags.InSrv | StatusFlags.HasLatLong },
-            allowCommands: true);
+            allowCommands: true
+        );
 
         var shared = Assert.Single(bookmarks.Items, item => item.System == "Wille");
         Assert.True(shared.IsSurfaceMiningMap);
@@ -255,7 +257,8 @@ public sealed class MineMapViewModelTests
         Assert.Equal(shared.SurfaceMiningMap.Notes, shared.Notes);
         Assert.Equal(
             $"Signal {shared.SurfaceMiningMap.LocationSignal} · {shared.SurfaceMiningMap.MineralAmount} amount · {shared.SurfaceMiningMap.Density} density",
-            shared.DisplayDetails);
+            shared.DisplayDetails
+        );
         bookmarks.SelectBookmark(shared.Id);
         bookmarks.Notes = "Return with a Rhino";
         bookmarks.SurfaceSignal = 6;
@@ -300,7 +303,8 @@ public sealed class MineMapViewModelTests
             directory.Path,
             new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
             _ => { },
-            bookmarkCatalog: catalog);
+            bookmarkCatalog: catalog
+        );
         var survey = Assert.Single(viewModel.FilteredSurveys);
         viewModel.SelectedContains = "Ruby";
         viewModel.SelectedBodyType = "Rocky body";
@@ -322,22 +326,23 @@ public sealed class MineMapViewModelTests
         using var viewModel = new MineMapViewModel(
             directory.Path,
             new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
-            _ => { });
-        Assert.True(JournalEventEnvelope.TryParse(
-            """{"event":"SendText","Message":".mining 120 4 high/low"}""",
-            out var command,
-            out _));
+            _ => { }
+        );
+        Assert.True(
+            JournalEventEnvelope.TryParse(
+                """{"event":"SendText","Message":".mining 120 4 high/low"}""",
+                out var command,
+                out _
+            )
+        );
         viewModel.OnlyShowWhileOnGround = true;
 
         await viewModel.ApplyUpdateAsync(
             [command!],
             Context(new SurfaceCoordinate(1, 2)),
-            new EliteStatus
-            {
-                Flags = StatusFlags.InMainShip | StatusFlags.HasLatLong,
-                PlanetRadius = 855_573.1875m,
-            },
-            allowCommands: true);
+            new EliteStatus { Flags = StatusFlags.InMainShip | StatusFlags.HasLatLong, PlanetRadius = 855_573.1875m },
+            allowCommands: true
+        );
 
         Assert.False(viewModel.ShouldShowOverlay);
     }
@@ -349,15 +354,22 @@ public sealed class MineMapViewModelTests
         using var viewModel = new MineMapViewModel(
             directory.Path,
             new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
-            _ => { });
-        Assert.True(JournalEventEnvelope.TryParse(
-            """{"event":"SendText","Message":".mining 120 4 high/low"}""",
-            out var firstCommand,
-            out _));
-        Assert.True(JournalEventEnvelope.TryParse(
-            """{"event":"SendText","Message":".mining 80 2 low/high"}""",
-            out var secondCommand,
-            out _));
+            _ => { }
+        );
+        Assert.True(
+            JournalEventEnvelope.TryParse(
+                """{"event":"SendText","Message":".mining 120 4 high/low"}""",
+                out var firstCommand,
+                out _
+            )
+        );
+        Assert.True(
+            JournalEventEnvelope.TryParse(
+                """{"event":"SendText","Message":".mining 80 2 low/high"}""",
+                out var secondCommand,
+                out _
+            )
+        );
         var currentStatus = new EliteStatus
         {
             Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
@@ -368,16 +380,19 @@ public sealed class MineMapViewModelTests
             [firstCommand!],
             Context(new SurfaceCoordinate(1, 2)),
             currentStatus,
-            allowCommands: true);
+            allowCommands: true
+        );
         await viewModel.ApplyUpdateAsync(
             [secondCommand!],
             Context(new SurfaceCoordinate(3, 4), systemAddress: 987654321, bodyId: 8, bodyName: "Wille 4"),
             currentStatus,
-            allowCommands: true);
+            allowCommands: true
+        );
 
         var firstSurvey = Assert.Single(
             viewModel.FilteredSurveys,
-            row => row.SignalNumber == "4" && row.SystemName == "Wille");
+            row => row.SignalNumber == "4" && row.SystemName == "Wille"
+        );
         viewModel.SelectSurvey(firstSurvey);
 
         Assert.Null(viewModel.PlayerLocation);
@@ -392,15 +407,22 @@ public sealed class MineMapViewModelTests
         using var viewModel = new MineMapViewModel(
             directory.Path,
             new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
-            messages.Add);
-        Assert.True(JournalEventEnvelope.TryParse(
-            """{"event":"SendText","Message":".mining 120 4 high/low"}""",
-            out var createCommand,
-            out _));
-        Assert.True(JournalEventEnvelope.TryParse(
-            """{"event":"SendText","Message":".mine 15 unobtainium 1.2"}""",
-            out var invalidCommand,
-            out _));
+            messages.Add
+        );
+        Assert.True(
+            JournalEventEnvelope.TryParse(
+                """{"event":"SendText","Message":".mining 120 4 high/low"}""",
+                out var createCommand,
+                out _
+            )
+        );
+        Assert.True(
+            JournalEventEnvelope.TryParse(
+                """{"event":"SendText","Message":".mine 15 unobtainium 1.2"}""",
+                out var invalidCommand,
+                out _
+            )
+        );
         var context = Context(new SurfaceCoordinate(1, 2));
         var status = new EliteStatus
         {
@@ -408,15 +430,9 @@ public sealed class MineMapViewModelTests
             PlanetRadius = 855_573.1875m,
         };
 
-        await viewModel.ApplyUpdateAsync(
-            [createCommand!, invalidCommand!],
-            context,
-            status,
-            allowCommands: true);
+        await viewModel.ApplyUpdateAsync([createCommand!, invalidCommand!], context, status, allowCommands: true);
 
-        Assert.Contains(messages, message => message.Contains(
-            "Hotspot List",
-            StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(messages, message => message.Contains("Hotspot List", StringComparison.OrdinalIgnoreCase));
         Assert.Contains("Hotspot List", viewModel.StatusText);
     }
 
@@ -424,10 +440,21 @@ public sealed class MineMapViewModelTests
         SurfaceCoordinate location,
         long systemAddress = 123456789,
         int bodyId = 5,
-        string bodyName = "Wille 2 C") => new(
-        "F123", "Fenris", "Wille", systemAddress,
-        new GalacticCoordinate(1, 2, 3), bodyId, bodyName, "Rocky Ice body",
-        129.5, 855_573.1875, location);
+        string bodyName = "Wille 2 C"
+    ) =>
+        new(
+            "F123",
+            "Fenris",
+            "Wille",
+            systemAddress,
+            new GalacticCoordinate(1, 2, 3),
+            bodyId,
+            bodyName,
+            "Rocky Ice body",
+            129.5,
+            855_573.1875,
+            location
+        );
 
     private static void SeedSurvey(string directory)
     {
@@ -452,31 +479,38 @@ public sealed class MineMapViewModelTests
             Center = center,
             CreatedAt = now,
             UpdatedAt = now,
-            Markers = [new MineMapMarker
-            {
-                Material = "Ruby",
-                Location = MineMapService.GetDestination(center, 15, 1240, 855_573.1875),
-                CreatedAt = now,
-            }],
+            Markers =
+            [
+                new MineMapMarker
+                {
+                    Material = "Ruby",
+                    Location = MineMapService.GetDestination(center, 15, 1240, 855_573.1875),
+                    CreatedAt = now,
+                },
+            ],
         };
-        new BookmarkCatalog(directory).Save(new GalacticBookmark
-        {
-            Id = survey.Id,
-            System = survey.SystemName,
-            Body = survey.BodyName,
-            Position = survey.SystemPosition,
-            CategoryAssignments = [BookmarkCategoryCatalog.SurfaceMining],
-            SurfaceMiningMap = survey,
-            Updated = survey.UpdatedAt,
-        });
+        new BookmarkCatalog(directory).Save(
+            new GalacticBookmark
+            {
+                Id = survey.Id,
+                System = survey.SystemName,
+                Body = survey.BodyName,
+                Position = survey.SystemPosition,
+                CategoryAssignments = [BookmarkCategoryCatalog.SurfaceMining],
+                SurfaceMiningMap = survey,
+                Updated = survey.UpdatedAt,
+            }
+        );
     }
 
     private sealed class TemporaryDirectory : IDisposable
     {
         public TemporaryDirectory()
         {
-            Path = System.IO.Path.Combine(System.IO.Path.GetTempPath(),
-                "SrvSurvey-MineMap-Desktop-" + Guid.NewGuid().ToString("N"));
+            Path = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(),
+                "SrvSurvey-MineMap-Desktop-" + Guid.NewGuid().ToString("N")
+            );
             Directory.CreateDirectory(Path);
         }
 
@@ -484,7 +518,10 @@ public sealed class MineMapViewModelTests
 
         public void Dispose()
         {
-            if (Directory.Exists(Path)) Directory.Delete(Path, recursive: true);
+            if (Directory.Exists(Path))
+            {
+                Directory.Delete(Path, recursive: true);
+            }
         }
     }
 }

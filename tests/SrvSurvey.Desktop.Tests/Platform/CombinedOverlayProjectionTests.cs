@@ -12,7 +12,8 @@ public sealed class CombinedOverlayProjectionTests
             new PixelRect(100, 200, 1920, 1080),
             new PixelPoint(400, 500),
             new Size(240, 100),
-            scaling: 1.5);
+            scaling: 1.5
+        );
 
         Assert.NotNull(projection);
         Assert.Equal(200, projection.Left);
@@ -27,7 +28,8 @@ public sealed class CombinedOverlayProjectionTests
             new PixelRect(100, 100, 800, 600),
             new PixelPoint(50, 650),
             new Size(200, 100),
-            scaling: 1);
+            scaling: 1
+        );
 
         Assert.NotNull(projection);
         Assert.Equal(-50, projection.Left);
@@ -42,7 +44,8 @@ public sealed class CombinedOverlayProjectionTests
             new PixelRect(100, 100, 800, 600),
             new PixelPoint(1000, 800),
             new Size(200, 100),
-            scaling: 1);
+            scaling: 1
+        );
 
         Assert.Null(projection);
     }

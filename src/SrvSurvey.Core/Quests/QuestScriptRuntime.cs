@@ -9,16 +9,12 @@ namespace SrvSurvey.Core.Quests;
 
 public sealed class QuestScriptRuntime : IAsyncDisposable
 {
-    private readonly Func<RavenQuestReference, string, CancellationToken,
-        Task<string?>>? chapterSourceProvider;
-    private readonly Func<RavenCommanderQuest, CancellationToken, Task>?
-        saveProgress;
-    private readonly Func<RavenQuestState, CancellationToken, Task>?
-        transitionState;
+    private readonly Func<RavenQuestReference, string, CancellationToken, Task<string?>>? chapterSourceProvider;
+    private readonly Func<RavenCommanderQuest, CancellationToken, Task>? saveProgress;
+    private readonly Func<RavenQuestState, CancellationToken, Task>? transitionState;
     private readonly Action<string>? log;
     private readonly SemaphoreSlim runtimeLock = new(1, 1);
-    private readonly Dictionary<string, QuestChapterRuntime> loadedChapters =
-        new(StringComparer.Ordinal);
+    private readonly Dictionary<string, QuestChapterRuntime> loadedChapters = new(StringComparer.Ordinal);
     private readonly HashSet<string> chaptersToStart = new(StringComparer.Ordinal);
     private readonly HashSet<string> chaptersToStop = new(StringComparer.Ordinal);
     private RavenQuestState? pendingTerminalState;
@@ -29,27 +25,23 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
     public QuestScriptRuntime(
         RavenCommanderQuest progress,
         QuestCommanderContext? commanderContext = null,
-        Func<RavenQuestReference, string, CancellationToken, Task<string?>>?
-            chapterSourceProvider = null,
+        Func<RavenQuestReference, string, CancellationToken, Task<string?>>? chapterSourceProvider = null,
         Func<RavenCommanderQuest, CancellationToken, Task>? saveProgress = null,
         Func<RavenQuestState, CancellationToken, Task>? transitionState = null,
-        Action<string>? log = null)
+        Action<string>? log = null
+    )
     {
         Progress = progress ?? throw new ArgumentNullException(nameof(progress));
-        Definition = progress.Quest
-            ?? throw new ArgumentException(
-                "Quest progress must include a hydrated definition.",
-                nameof(progress));
-        if (!string.Equals(
-                progress.Publisher,
-                Definition.Publisher,
-                StringComparison.Ordinal)
+        Definition =
+            progress.Quest
+            ?? throw new ArgumentException("Quest progress must include a hydrated definition.", nameof(progress));
+        if (
+            !string.Equals(progress.Publisher, Definition.Publisher, StringComparison.Ordinal)
             || !string.Equals(progress.Id, Definition.Id, StringComparison.Ordinal)
-            || progress.Version.CompareTo(Definition.Version) != 0)
+            || progress.Version.CompareTo(Definition.Version) != 0
+        )
         {
-            throw new ArgumentException(
-                "Quest progress and definition identities do not match.",
-                nameof(progress));
+            throw new ArgumentException("Quest progress and definition identities do not match.", nameof(progress));
         }
 
         CommanderContext = commanderContext ?? QuestCommanderContext.Empty;
@@ -73,9 +65,7 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
 
     public int UnreadMessageCount => Progress.Messages.Count(message => !message.Read);
 
-    public async Task InitializeAsync(
-        bool startFirstChapter = false,
-        CancellationToken cancellationToken = default)
+    public async Task InitializeAsync(bool startFirstChapter = false, CancellationToken cancellationToken = default)
     {
         await runtimeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
@@ -85,23 +75,19 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
             EnsureChapterStates();
             foreach (var chapter in Progress.Chapters.Where(IsActive).ToArray())
             {
-                await LoadChapterAsync(chapter.Id, cancellationToken)
-                    .ConfigureAwait(false);
+                await LoadChapterAsync(chapter.Id, cancellationToken).ConfigureAwait(false);
             }
 
-            if (startFirstChapter
+            if (
+                startFirstChapter
                 && !Progress.Chapters.Any(IsActive)
-                && !string.IsNullOrWhiteSpace(Definition.FirstChapter))
+                && !string.IsNullOrWhiteSpace(Definition.FirstChapter)
+            )
             {
-                Progress = Progress with
-                {
-                    StartTime = Progress.StartTime ?? DateTimeOffset.UtcNow,
-                    EndTime = null,
-                };
+                Progress = Progress with { StartTime = Progress.StartTime ?? DateTimeOffset.UtcNow, EndTime = null };
                 RequestStartChapter(Definition.FirstChapter);
                 dirty = true;
-                await ApplyPendingChapterChangesAsync(cancellationToken)
-                    .ConfigureAwait(false);
+                await ApplyPendingChapterChangesAsync(cancellationToken).ConfigureAwait(false);
             }
 
             await SaveIfDirtyAsync(cancellationToken).ConfigureAwait(false);
@@ -112,18 +98,16 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
         }
     }
 
-    public async Task<bool> ProcessJournalEntryAsync(
-        JsonElement entry,
-        CancellationToken cancellationToken = default)
+    public async Task<bool> ProcessJournalEntryAsync(JsonElement entry, CancellationToken cancellationToken = default)
     {
-        if (entry.ValueKind != JsonValueKind.Object
+        if (
+            entry.ValueKind != JsonValueKind.Object
             || !entry.TryGetProperty("event", out var eventNode)
             || eventNode.ValueKind != JsonValueKind.String
-            || string.IsNullOrWhiteSpace(eventNode.GetString()))
+            || string.IsNullOrWhiteSpace(eventNode.GetString())
+        )
         {
-            throw new ArgumentException(
-                "A quest journal entry must be an object with an event name.",
-                nameof(entry));
+            throw new ArgumentException("A quest journal entry must be an object with an event name.", nameof(entry));
         }
 
         await runtimeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -133,40 +117,26 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
             var eventName = eventNode.GetString()!;
             var eventTable = QuestLuaConverter.ToLua(entry).Read<LuaTable>();
             var shouldSave = false;
-            var active = Progress.Chapters
-                .Where(IsActive)
-                .Select(chapter => chapter.Id)
-                .ToArray();
+            var active = Progress.Chapters.Where(IsActive).Select(chapter => chapter.Id).ToArray();
             foreach (var chapterId in active)
             {
-                var chapter = await LoadChapterAsync(
-                        chapterId,
-                        cancellationToken)
+                var chapter = await LoadChapterAsync(chapterId, cancellationToken).ConfigureAwait(false);
+                shouldSave |= await chapter
+                    .ProcessJournalEntryAsync(eventName, eventTable, cancellationToken)
                     .ConfigureAwait(false);
-                shouldSave |= await chapter.ProcessJournalEntryAsync(
-                        eventName,
-                        eventTable,
-                        cancellationToken)
-                    .ConfigureAwait(false);
-                if (eventName == "ReceiveText"
-                    && TryParseHumanoidEmote(
-                        entry,
-                        out var actor,
-                        out var action,
-                        out var target))
+                if (
+                    eventName == "ReceiveText"
+                    && TryParseHumanoidEmote(entry, out var actor, out var action, out var target)
+                )
                 {
-                    shouldSave |= await chapter.InvokeIfPresentAsync(
-                            "onEmote",
-                            [actor, action, target],
-                            cancellationToken)
+                    shouldSave |= await chapter
+                        .InvokeIfPresentAsync("onEmote", [actor, action, target], cancellationToken)
                         .ConfigureAwait(false);
                 }
             }
 
-            await ApplyPendingChapterChangesAsync(cancellationToken)
-                .ConfigureAwait(false);
-            if (Progress.KeptJournalEvents.ContainsKey(eventName)
-                || eventName is "Docked" or "FSDJump")
+            await ApplyPendingChapterChangesAsync(cancellationToken).ConfigureAwait(false);
+            if (Progress.KeptJournalEvents.ContainsKey(eventName) || eventName is "Docked" or "FSDJump")
             {
                 Progress.KeptJournalEvents[eventName] = entry.Clone();
                 dirty = true;
@@ -182,9 +152,7 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
         }
     }
 
-    public async Task MarkMessageReadAsync(
-        string messageId,
-        CancellationToken cancellationToken = default)
+    public async Task MarkMessageReadAsync(string messageId, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
         await runtimeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -192,11 +160,11 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
         {
             ThrowIfDisposed();
             var index = Progress.Messages.FindIndex(message =>
-                string.Equals(message.Id, messageId, StringComparison.Ordinal));
+                string.Equals(message.Id, messageId, StringComparison.Ordinal)
+            );
             if (index < 0)
             {
-                throw new KeyNotFoundException(
-                    $"Quest message '{messageId}' was not found.");
+                throw new KeyNotFoundException($"Quest message '{messageId}' was not found.");
             }
 
             var message = Progress.Messages[index];
@@ -207,21 +175,15 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
 
             if (!string.IsNullOrWhiteSpace(message.Chapter))
             {
-                var chapter = await RequireActiveChapterAsync(
-                        message.Chapter,
-                        cancellationToken)
-                    .ConfigureAwait(false);
-                dirty |= await chapter.InvokeIfPresentAsync(
-                        "onMsgRead",
-                        [new LuaValue(messageId)],
-                        cancellationToken)
+                var chapter = await RequireActiveChapterAsync(message.Chapter, cancellationToken).ConfigureAwait(false);
+                dirty |= await chapter
+                    .InvokeIfPresentAsync("onMsgRead", [new LuaValue(messageId)], cancellationToken)
                     .ConfigureAwait(false);
             }
 
             Progress.Messages[index] = message with { Read = true };
             dirty = true;
-            await ApplyPendingChapterChangesAsync(cancellationToken)
-                .ConfigureAwait(false);
+            await ApplyPendingChapterChangesAsync(cancellationToken).ConfigureAwait(false);
             await SaveIfDirtyAsync(cancellationToken).ConfigureAwait(false);
         }
         finally
@@ -233,7 +195,8 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
     public async Task ReplyToMessageAsync(
         string messageId,
         string actionId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
         ArgumentException.ThrowIfNullOrWhiteSpace(actionId);
@@ -242,33 +205,30 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
         {
             ThrowIfDisposed();
             var index = Progress.Messages.FindIndex(message =>
-                string.Equals(message.Id, messageId, StringComparison.Ordinal));
+                string.Equals(message.Id, messageId, StringComparison.Ordinal)
+            );
             if (index < 0)
             {
-                throw new KeyNotFoundException(
-                    $"Quest message '{messageId}' was not found.");
+                throw new KeyNotFoundException($"Quest message '{messageId}' was not found.");
             }
 
             var message = Progress.Messages[index];
             if (string.IsNullOrWhiteSpace(message.Chapter))
             {
-                throw new InvalidOperationException(
-                    $"Quest message '{messageId}' has no chapter action context.");
+                throw new InvalidOperationException($"Quest message '{messageId}' has no chapter action context.");
             }
 
-            var chapter = await RequireActiveChapterAsync(
-                    message.Chapter,
-                    cancellationToken)
-                .ConfigureAwait(false);
-            dirty |= await chapter.InvokeRequiredAsync(
+            var chapter = await RequireActiveChapterAsync(message.Chapter, cancellationToken).ConfigureAwait(false);
+            dirty |= await chapter
+                .InvokeRequiredAsync(
                     "onMsgAction",
                     [new LuaValue(actionId), new LuaValue(messageId)],
-                    cancellationToken)
+                    cancellationToken
+                )
                 .ConfigureAwait(false);
             Progress.Messages[index] = message with { Replied = actionId };
             dirty = true;
-            await ApplyPendingChapterChangesAsync(cancellationToken)
-                .ConfigureAwait(false);
+            await ApplyPendingChapterChangesAsync(cancellationToken).ConfigureAwait(false);
             await SaveIfDirtyAsync(cancellationToken).ConfigureAwait(false);
         }
         finally
@@ -280,7 +240,8 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
     public async Task<JsonElement> RunDebugAsync(
         string chapterId,
         string code,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(chapterId);
         ArgumentException.ThrowIfNullOrWhiteSpace(code);
@@ -288,14 +249,9 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
         try
         {
             ThrowIfDisposed();
-            var chapter = await RequireActiveChapterAsync(
-                    chapterId,
-                    cancellationToken)
-                .ConfigureAwait(false);
-            var result = await chapter.RunDebugAsync(code, cancellationToken)
-                .ConfigureAwait(false);
-            await ApplyPendingChapterChangesAsync(cancellationToken)
-                .ConfigureAwait(false);
+            var chapter = await RequireActiveChapterAsync(chapterId, cancellationToken).ConfigureAwait(false);
+            var result = await chapter.RunDebugAsync(code, cancellationToken).ConfigureAwait(false);
+            await ApplyPendingChapterChangesAsync(cancellationToken).ConfigureAwait(false);
             await SaveIfDirtyAsync(cancellationToken).ConfigureAwait(false);
             return result;
         }
@@ -308,7 +264,8 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
     public async Task SetChapterActiveAsync(
         string chapterId,
         bool active,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(chapterId);
         await runtimeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -330,8 +287,7 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
                 RequestStopChapter(chapterId);
             }
 
-            await ApplyPendingChapterChangesAsync(cancellationToken)
-                .ConfigureAwait(false);
+            await ApplyPendingChapterChangesAsync(cancellationToken).ConfigureAwait(false);
             await SaveIfDirtyAsync(cancellationToken).ConfigureAwait(false);
         }
         finally
@@ -340,8 +296,7 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
         }
     }
 
-    public async Task PrepareDevelopmentChaptersAsync(
-        CancellationToken cancellationToken = default)
+    public async Task PrepareDevelopmentChaptersAsync(CancellationToken cancellationToken = default)
     {
         await runtimeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
@@ -349,8 +304,7 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
             ThrowIfDisposed();
             foreach (var chapterId in Definition.Chapters.Keys)
             {
-                var chapter = await LoadChapterAsync(chapterId, cancellationToken)
-                    .ConfigureAwait(false);
+                var chapter = await LoadChapterAsync(chapterId, cancellationToken).ConfigureAwait(false);
                 chapter.PullVariables();
             }
         }
@@ -361,7 +315,8 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
     }
 
     public async Task<QuestDevelopmentStateSnapshot> GetDevelopmentStateAsync(
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         await runtimeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
@@ -369,8 +324,7 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
             ThrowIfDisposed();
             foreach (var chapterId in Definition.Chapters.Keys)
             {
-                var chapter = await LoadChapterAsync(chapterId, cancellationToken)
-                    .ConfigureAwait(false);
+                var chapter = await LoadChapterAsync(chapterId, cancellationToken).ConfigureAwait(false);
                 chapter.PullVariables();
             }
 
@@ -378,13 +332,15 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
                 Progress.Reference,
                 Definition.Title,
                 Progress.Objectives.ToDictionary(StringComparer.Ordinal),
-                Progress.Chapters.Select(chapter =>
-                    new QuestDevelopmentChapterSnapshot(
+                Progress
+                    .Chapters.Select(chapter => new QuestDevelopmentChapterSnapshot(
                         chapter.Id,
                         IsActive(chapter),
-                        CloneJsonMap(chapter.Variables)))
+                        CloneJsonMap(chapter.Variables)
+                    ))
                     .ToArray(),
-                Progress.Messages.Select(CloneMessage).ToArray());
+                Progress.Messages.Select(CloneMessage).ToArray()
+            );
         }
         finally
         {
@@ -394,7 +350,8 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
 
     public async Task UpdateDevelopmentObjectivesAsync(
         IReadOnlyDictionary<string, string> objectives,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentNullException.ThrowIfNull(objectives);
         foreach (var pair in objectives)
@@ -425,7 +382,8 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
     public async Task UpdateDevelopmentChapterVariablesAsync(
         string chapterId,
         IReadOnlyDictionary<string, JsonElement> variables,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(chapterId);
         ArgumentNullException.ThrowIfNull(variables);
@@ -433,16 +391,13 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
         try
         {
             ThrowIfDisposed();
-            var runtime = await LoadChapterAsync(chapterId, cancellationToken)
-                .ConfigureAwait(false);
+            var runtime = await LoadChapterAsync(chapterId, cancellationToken).ConfigureAwait(false);
             runtime.PullVariables();
             var state = RequireChapterState(chapterId);
-            var unknown = variables.Keys.FirstOrDefault(key =>
-                !state.Variables.ContainsKey(key));
+            var unknown = variables.Keys.FirstOrDefault(key => !state.Variables.ContainsKey(key));
             if (unknown is not null)
             {
-                throw new InvalidDataException(
-                    $"Cannot add new chapter variable '{unknown}'.");
+                throw new InvalidDataException($"Cannot add new chapter variable '{unknown}'.");
             }
 
             state.Variables.Clear();
@@ -463,7 +418,8 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
 
     public async Task UpdateDevelopmentMessagesAsync(
         IReadOnlyList<RavenQuestMessage> messages,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentNullException.ThrowIfNull(messages);
         var duplicate = messages
@@ -472,14 +428,12 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
             .FirstOrDefault(group => group.Count() > 1);
         if (messages.Any(message => string.IsNullOrWhiteSpace(message.Id)))
         {
-            throw new InvalidDataException(
-                "Every delivered quest message must have an ID.");
+            throw new InvalidDataException("Every delivered quest message must have an ID.");
         }
 
         if (duplicate is not null)
         {
-            throw new InvalidDataException(
-                $"Delivered quest message ID '{duplicate.Key}' is duplicated.");
+            throw new InvalidDataException($"Delivered quest message ID '{duplicate.Key}' is duplicated.");
         }
 
         await runtimeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -555,8 +509,7 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
     {
         if (InvokingChapterId is null)
         {
-            throw new InvalidOperationException(
-                "A quest can only advance chapters while invoking a chapter script.");
+            throw new InvalidOperationException("A quest can only advance chapters while invoking a chapter script.");
         }
 
         RequestStartChapter(id);
@@ -581,8 +534,7 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
         }
 
         var converted = QuestLuaConverter.ToJson(value);
-        if (!Progress.Variables.TryGetValue(name, out var prior)
-            || !JsonElement.DeepEquals(prior, converted))
+        if (!Progress.Variables.TryGetValue(name, out var prior) || !JsonElement.DeepEquals(prior, converted))
         {
             Progress.Variables[name] = converted;
             dirty = true;
@@ -592,31 +544,22 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
     internal LuaValue GetQuestVariable(string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        return Progress.Variables.TryGetValue(name, out var value)
-            ? QuestLuaConverter.ToLua(value)
-            : LuaValue.Nil;
+        return Progress.Variables.TryGetValue(name, out var value) ? QuestLuaConverter.ToLua(value) : LuaValue.Nil;
     }
 
-    internal void SendMessage(
-        string? id,
-        string? from,
-        string? subject,
-        string? body)
+    internal void SendMessage(string? id, string? from, string? subject, string? body)
     {
         var declared = string.IsNullOrWhiteSpace(id)
             ? null
-            : Definition.Messages.FirstOrDefault(message =>
-                string.Equals(message.Id, id, StringComparison.Ordinal));
+            : Definition.Messages.FirstOrDefault(message => string.Equals(message.Id, id, StringComparison.Ordinal));
         if (!string.IsNullOrWhiteSpace(id) && declared is null && body is null)
         {
-            throw new KeyNotFoundException(
-                $"Quest message definition '{id}' was not found.");
+            throw new KeyNotFoundException($"Quest message definition '{id}' was not found.");
         }
 
         if (declared?.Actions?.Count > 0 && InvokingChapterId is null)
         {
-            throw new InvalidOperationException(
-                $"Quest message '{declared.Id}' requires a chapter action context.");
+            throw new InvalidOperationException($"Quest message '{declared.Id}' requires a chapter action context.");
         }
 
         var resolvedFrom = from ?? declared?.From;
@@ -624,22 +567,15 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
         var resolvedBody = body ?? declared?.Body;
         var message = new RavenQuestMessage
         {
-            Id = declared?.Id
-                ?? id
-                ?? DateTimeOffset.UtcNow.ToString(
-                    "yyyyMMddhhmmss",
-                    CultureInfo.InvariantCulture),
+            Id = declared?.Id ?? id ?? DateTimeOffset.UtcNow.ToString("yyyyMMddhhmmss", CultureInfo.InvariantCulture),
             Received = DateTimeOffset.UtcNow,
             From = resolvedFrom == declared?.From ? null : resolvedFrom,
-            Subject = resolvedSubject == declared?.Subject
-                ? null
-                : resolvedSubject,
+            Subject = resolvedSubject == declared?.Subject ? null : resolvedSubject,
             Body = resolvedBody == declared?.Body ? null : resolvedBody,
             Chapter = InvokingChapterId,
             Actions = declared?.Actions?.Keys.ToArray(),
         };
-        Progress.Messages.RemoveAll(existing =>
-            string.Equals(existing.Id, message.Id, StringComparison.Ordinal));
+        Progress.Messages.RemoveAll(existing => string.Equals(existing.Id, message.Id, StringComparison.Ordinal));
         Progress.Messages.Add(message);
         if (declared?.Tags is not null)
         {
@@ -655,16 +591,15 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
     internal bool DeleteMessage(string id)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
-        var removed = Progress.Messages.RemoveAll(message =>
-            string.Equals(message.Id, id, StringComparison.Ordinal)) > 0;
+        var removed =
+            Progress.Messages.RemoveAll(message => string.Equals(message.Id, id, StringComparison.Ordinal)) > 0;
         dirty |= removed;
         return removed;
     }
 
     internal void AddTags(LuaValue value)
     {
-        foreach (var tag in ReadStringValues(value).Where(tag =>
-            !string.IsNullOrWhiteSpace(tag)))
+        foreach (var tag in ReadStringValues(value).Where(tag => !string.IsNullOrWhiteSpace(tag)))
         {
             dirty |= Progress.Tags.Add(tag);
         }
@@ -700,11 +635,7 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
         }
     }
 
-    internal void TrackLocation(
-        string name,
-        double latitude,
-        double longitude,
-        float size)
+    internal void TrackLocation(string name, double latitude, double longitude, float size)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         _ = new SurfaceCoordinate(latitude, longitude);
@@ -717,9 +648,12 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
             ',',
             latitude.ToString("R", CultureInfo.InvariantCulture),
             longitude.ToString("R", CultureInfo.InvariantCulture),
-            size.ToString("R", CultureInfo.InvariantCulture));
-        if (!Progress.BodyLocations.TryGetValue(name, out var prior)
-            || !string.Equals(prior, value, StringComparison.Ordinal))
+            size.ToString("R", CultureInfo.InvariantCulture)
+        );
+        if (
+            !Progress.BodyLocations.TryGetValue(name, out var prior)
+            || !string.Equals(prior, value, StringComparison.Ordinal)
+        )
         {
             Progress.BodyLocations[name] = value;
             dirty = true;
@@ -748,20 +682,16 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
             .ToHashSet(StringComparer.Ordinal);
         names.Add("Docked");
         names.Add("FSDJump");
-        var existingNames = Progress.KeptJournalEvents.Keys.ToHashSet(
-            StringComparer.Ordinal);
+        var existingNames = Progress.KeptJournalEvents.Keys.ToHashSet(StringComparer.Ordinal);
         if (existingNames.SetEquals(names))
         {
             return;
         }
 
-        var replacement = new Dictionary<string, JsonElement>(
-            StringComparer.Ordinal);
+        var replacement = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
         foreach (var name in names)
         {
-            replacement[name] = Progress.KeptJournalEvents.TryGetValue(
-                name,
-                out var prior)
+            replacement[name] = Progress.KeptJournalEvents.TryGetValue(name, out var prior)
                 ? prior.Clone()
                 : JsonSerializer.SerializeToElement<object?>(null);
         }
@@ -792,54 +722,51 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
         }
 
         var waypoints = coordinates
-            .Select(pair => pair.Value.ToString()
-                .Split(',', StringSplitOptions.TrimEntries)
-                .Select(value => double.Parse(
-                    value,
-                    CultureInfo.InvariantCulture))
-                .ToArray())
+            .Select(pair =>
+                pair.Value.ToString()
+                    .Split(',', StringSplitOptions.TrimEntries)
+                    .Select(value => double.Parse(value, CultureInfo.InvariantCulture))
+                    .ToArray()
+            )
             .ToList();
-        Progress.Routes.RemoveAll(route =>
-            string.Equals(route.Id, id, StringComparison.Ordinal));
-        Progress.Routes.Add(new RavenQuestRoute
-        {
-            Id = id,
-            Width = width,
-            Waypoints = waypoints,
-        });
+        Progress.Routes.RemoveAll(route => string.Equals(route.Id, id, StringComparison.Ordinal));
+        Progress.Routes.Add(
+            new RavenQuestRoute
+            {
+                Id = id,
+                Width = width,
+                Waypoints = waypoints,
+            }
+        );
         dirty = true;
     }
 
     internal void ClearRoute(string id)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
-        dirty |= Progress.Routes.RemoveAll(route =>
-            string.Equals(route.Id, id, StringComparison.Ordinal)) > 0;
+        dirty |= Progress.Routes.RemoveAll(route => string.Equals(route.Id, id, StringComparison.Ordinal)) > 0;
     }
 
-    internal void SetObjectiveState(
-        LuaValue value,
-        LegacyQuestObjectiveState? state,
-        int current = -1,
-        int total = -1)
+    internal void SetObjectiveState(LuaValue value, LegacyQuestObjectiveState? state, int current = -1, int total = -1)
     {
         foreach (var id in ReadStringValues(value))
         {
             if (!Definition.Objectives.ContainsKey(id))
             {
-                throw new KeyNotFoundException(
-                    $"Unknown objective ID '{id}'.");
+                throw new KeyNotFoundException($"Unknown objective ID '{id}'.");
             }
 
-            var objective = ParseObjective(
-                Progress.Objectives.GetValueOrDefault(id));
+            var objective = ParseObjective(Progress.Objectives.GetValueOrDefault(id));
             var updated = new LegacyQuestObjective(
                 state ?? objective.State,
                 current >= 0 ? current : objective.Current,
-                total >= 0 ? total : objective.Total);
+                total >= 0 ? total : objective.Total
+            );
             var formatted = FormatObjective(updated);
-            if (!Progress.Objectives.TryGetValue(id, out var prior)
-                || !string.Equals(prior, formatted, StringComparison.Ordinal))
+            if (
+                !Progress.Objectives.TryGetValue(id, out var prior)
+                || !string.Equals(prior, formatted, StringComparison.Ordinal)
+            )
             {
                 Progress.Objectives[id] = formatted;
                 dirty = true;
@@ -857,27 +784,21 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
 
     internal bool CheckObjectives(LuaValue value, string state)
     {
-        if (!Enum.TryParse<LegacyQuestObjectiveState>(
-                state,
-                ignoreCase: false,
-                out var expected))
+        if (!Enum.TryParse<LegacyQuestObjectiveState>(state, ignoreCase: false, out var expected))
         {
-            throw new ArgumentException(
-                $"Unknown objective state '{state}'.",
-                nameof(state));
+            throw new ArgumentException($"Unknown objective state '{state}'.", nameof(state));
         }
 
-        return ReadStringValues(value).All(id =>
-        {
-            if (!Definition.Objectives.ContainsKey(id))
+        return ReadStringValues(value)
+            .All(id =>
             {
-                throw new KeyNotFoundException(
-                    $"Unknown objective ID '{id}'.");
-            }
+                if (!Definition.Objectives.ContainsKey(id))
+                {
+                    throw new KeyNotFoundException($"Unknown objective ID '{id}'.");
+                }
 
-            return ParseObjective(
-                Progress.Objectives.GetValueOrDefault(id)).State == expected;
-        });
+                return ParseObjective(Progress.Objectives.GetValueOrDefault(id)).State == expected;
+            });
     }
 
     internal int GetObjectiveCurrent(string id)
@@ -895,8 +816,7 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
     internal bool IsObjectiveActive(string id)
     {
         RequireObjective(id);
-        return ParseObjective(Progress.Objectives.GetValueOrDefault(id)).State
-            == LegacyQuestObjectiveState.visible;
+        return ParseObjective(Progress.Objectives.GetValueOrDefault(id)).State == LegacyQuestObjectiveState.visible;
     }
 
     internal void SetInvokingChapter(string? chapterId)
@@ -914,9 +834,7 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
         log?.Invoke($"[{Progress.Id}/{InvokingChapterId}] {message}");
     }
 
-    private async Task<QuestChapterRuntime> LoadChapterAsync(
-        string chapterId,
-        CancellationToken cancellationToken)
+    private async Task<QuestChapterRuntime> LoadChapterAsync(string chapterId, CancellationToken cancellationToken)
     {
         if (loadedChapters.TryGetValue(chapterId, out var loaded))
         {
@@ -925,24 +843,19 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
 
         _ = RequireChapterState(chapterId);
         string? source = null;
-        if (Definition.Chapters.TryGetValue(chapterId, out var embedded)
-            && !string.IsNullOrWhiteSpace(embedded))
+        if (Definition.Chapters.TryGetValue(chapterId, out var embedded) && !string.IsNullOrWhiteSpace(embedded))
         {
             source = embedded;
         }
         else if (chapterSourceProvider is not null)
         {
-            source = await chapterSourceProvider(
-                    Progress.Reference,
-                    chapterId,
-                    cancellationToken)
+            source = await chapterSourceProvider(Progress.Reference, chapterId, cancellationToken)
                 .ConfigureAwait(false);
         }
 
         if (string.IsNullOrWhiteSpace(source))
         {
-            throw new InvalidDataException(
-                $"Quest chapter '{chapterId}' has no script source.");
+            throw new InvalidDataException($"Quest chapter '{chapterId}' has no script source.");
         }
 
         loaded = new QuestChapterRuntime(this, chapterId, source);
@@ -953,29 +866,26 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
 
     private async Task<QuestChapterRuntime> RequireActiveChapterAsync(
         string chapterId,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var state = RequireChapterState(chapterId);
         if (!IsActive(state))
         {
-            throw new InvalidOperationException(
-                $"Quest chapter '{chapterId}' is not active.");
+            throw new InvalidOperationException($"Quest chapter '{chapterId}' is not active.");
         }
 
-        return await LoadChapterAsync(chapterId, cancellationToken)
-            .ConfigureAwait(false);
+        return await LoadChapterAsync(chapterId, cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task ApplyPendingChapterChangesAsync(
-        CancellationToken cancellationToken)
+    private async Task ApplyPendingChapterChangesAsync(CancellationToken cancellationToken)
     {
         var iterations = 0;
         while (chaptersToStop.Count > 0 || chaptersToStart.Count > 0)
         {
             if (++iterations > 100)
             {
-                throw new InvalidOperationException(
-                    "Quest chapter transitions exceeded the safety limit.");
+                throw new InvalidOperationException("Quest chapter transitions exceeded the safety limit.");
             }
 
             var stopping = chaptersToStop.ToArray();
@@ -989,8 +899,7 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
             chaptersToStart.Clear();
             foreach (var chapterId in starting)
             {
-                await StartChapterAsync(chapterId, cancellationToken)
-                    .ConfigureAwait(false);
+                await StartChapterAsync(chapterId, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -1003,9 +912,7 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
         }
     }
 
-    private async Task StartChapterAsync(
-        string chapterId,
-        CancellationToken cancellationToken)
+    private async Task StartChapterAsync(string chapterId, CancellationToken cancellationToken)
     {
         var state = RequireChapterState(chapterId);
         if (IsActive(state))
@@ -1013,18 +920,9 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
             return;
         }
 
-        ReplaceChapterState(state with
-        {
-            StartTime = DateTimeOffset.UtcNow,
-            EndTime = null,
-        });
-        var runtime = await LoadChapterAsync(chapterId, cancellationToken)
-            .ConfigureAwait(false);
-        dirty |= await runtime.InvokeIfPresentAsync(
-                "onStart",
-                [],
-                cancellationToken)
-            .ConfigureAwait(false);
+        ReplaceChapterState(state with { StartTime = DateTimeOffset.UtcNow, EndTime = null });
+        var runtime = await LoadChapterAsync(chapterId, cancellationToken).ConfigureAwait(false);
+        dirty |= await runtime.InvokeIfPresentAsync("onStart", [], cancellationToken).ConfigureAwait(false);
         dirty = true;
     }
 
@@ -1048,9 +946,7 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
 
     private async Task SaveIfDirtyAsync(CancellationToken cancellationToken)
     {
-        var transitionPending = TerminalState is not null
-            && !terminalTransitionSent
-            && transitionState is not null;
+        var transitionPending = TerminalState is not null && !terminalTransitionSent && transitionState is not null;
         if (!dirty && !transitionPending)
         {
             return;
@@ -1071,12 +967,9 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
             dirty = false;
         }
 
-        if (TerminalState is { } terminal
-            && !terminalTransitionSent
-            && transitionState is not null)
+        if (TerminalState is { } terminal && !terminalTransitionSent && transitionState is not null)
         {
-            await transitionState(terminal, cancellationToken)
-                .ConfigureAwait(false);
+            await transitionState(terminal, cancellationToken).ConfigureAwait(false);
             terminalTransitionSent = true;
         }
     }
@@ -1089,9 +982,11 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
             ids.Add(Definition.FirstChapter);
         }
 
-        foreach (var id in ids.Where(id =>
-            Progress.Chapters.All(chapter =>
-                !string.Equals(chapter.Id, id, StringComparison.Ordinal))))
+        foreach (
+            var id in ids.Where(id =>
+                Progress.Chapters.All(chapter => !string.Equals(chapter.Id, id, StringComparison.Ordinal))
+            )
+        )
         {
             Progress.Chapters.Add(new RavenQuestChapterState { Id = id });
         }
@@ -1106,10 +1001,10 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
 
         foreach (var eventName in new[] { "Docked", "FSDJump" })
         {
-            if (!Progress.KeptJournalEvents.ContainsKey(eventName)
-                && CommanderContext.PriorJournalEvents.TryGetValue(
-                    eventName,
-                    out var entry))
+            if (
+                !Progress.KeptJournalEvents.ContainsKey(eventName)
+                && CommanderContext.PriorJournalEvents.TryGetValue(eventName, out var entry)
+            )
             {
                 Progress.KeptJournalEvents[eventName] = entry.Clone();
                 dirty = true;
@@ -1120,28 +1015,27 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
     private void RequireDefinedChapter(string id)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
-        if (!Definition.Chapters.ContainsKey(id)
-            && Progress.Chapters.All(chapter =>
-                !string.Equals(chapter.Id, id, StringComparison.Ordinal)))
+        if (
+            !Definition.Chapters.ContainsKey(id)
+            && Progress.Chapters.All(chapter => !string.Equals(chapter.Id, id, StringComparison.Ordinal))
+        )
         {
-            throw new KeyNotFoundException(
-                $"Quest chapter '{id}' is not defined.");
+            throw new KeyNotFoundException($"Quest chapter '{id}' is not defined.");
         }
     }
 
     private RavenQuestChapterState RequireChapterState(string id)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
-        return Progress.Chapters.FirstOrDefault(chapter =>
-            string.Equals(chapter.Id, id, StringComparison.Ordinal))
-            ?? throw new KeyNotFoundException(
-                $"Quest chapter '{id}' was not found.");
+        return Progress.Chapters.FirstOrDefault(chapter => string.Equals(chapter.Id, id, StringComparison.Ordinal))
+            ?? throw new KeyNotFoundException($"Quest chapter '{id}' was not found.");
     }
 
     private void ReplaceChapterState(RavenQuestChapterState replacement)
     {
         var index = Progress.Chapters.FindIndex(chapter =>
-            string.Equals(chapter.Id, replacement.Id, StringComparison.Ordinal));
+            string.Equals(chapter.Id, replacement.Id, StringComparison.Ordinal)
+        );
         if (index < 0)
         {
             Progress.Chapters.Add(replacement);
@@ -1175,54 +1069,45 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
         };
     }
 
-    private static Dictionary<string, JsonElement> CloneJsonMap(
-        IReadOnlyDictionary<string, JsonElement> source)
+    private static Dictionary<string, JsonElement> CloneJsonMap(IReadOnlyDictionary<string, JsonElement> source)
     {
-        return source.ToDictionary(
-            pair => pair.Key,
-            pair => pair.Value.Clone(),
-            StringComparer.Ordinal);
+        return source.ToDictionary(pair => pair.Key, pair => pair.Value.Clone(), StringComparer.Ordinal);
     }
 
-    private static bool TryParseHumanoidEmote(
-        JsonElement entry,
-        out string actor,
-        out string action,
-        out string target)
+    private static bool TryParseHumanoidEmote(JsonElement entry, out string actor, out string action, out string target)
     {
         actor = string.Empty;
         action = string.Empty;
         target = string.Empty;
-        if (!entry.TryGetProperty("Message", out var messageNode)
+        if (
+            !entry.TryGetProperty("Message", out var messageNode)
             || messageNode.ValueKind != JsonValueKind.String
             || messageNode.GetString() is not { } message
-            || !message.StartsWith("$HumanoidEmote_", StringComparison.Ordinal))
+            || !message.StartsWith("$HumanoidEmote_", StringComparison.Ordinal)
+        )
         {
             return false;
         }
 
-        var parts = message.Split(
-            [':', ';'],
-            StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length < 4
+        var parts = message.Split([':', ';'], StringSplitOptions.RemoveEmptyEntries);
+        if (
+            parts.Length < 4
             || !TryReadAssignment(parts[2], out actor)
-            || !TryReadAssignment(parts[3], out var rawAction))
+            || !TryReadAssignment(parts[3], out var rawAction)
+        )
         {
             return false;
         }
 
         var actionStart = rawAction.IndexOf('_');
-        var actionEnd = actionStart < 0
-            ? -1
-            : rawAction.IndexOf('_', actionStart + 1);
+        var actionEnd = actionStart < 0 ? -1 : rawAction.IndexOf('_', actionStart + 1);
         if (actionStart < 0 || actionEnd <= actionStart + 1)
         {
             return false;
         }
 
         action = rawAction[(actionStart + 1)..actionEnd];
-        if (parts.Length >= 5
-            && !TryReadAssignment(parts[^1], out target))
+        if (parts.Length >= 5 && !TryReadAssignment(parts[^1], out target))
         {
             return false;
         }
@@ -1246,9 +1131,7 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
     private static string[] ReadStringValues(LuaValue value)
     {
         return value.Type == LuaValueType.Table
-            ? value.Read<LuaTable>()
-                .Select(pair => pair.Value.ToString())
-                .ToArray()
+            ? value.Read<LuaTable>().Select(pair => pair.Value.ToString()).ToArray()
             : [value.ToString()];
     }
 
@@ -1256,21 +1139,16 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            return new LegacyQuestObjective(
-                LegacyQuestObjectiveState.hidden,
-                0,
-                0);
+            return new LegacyQuestObjective(LegacyQuestObjectiveState.hidden, 0, 0);
         }
 
         var parts = value.Split(',', StringSplitOptions.TrimEntries);
-        if (parts.Length is not 1 and not 3
-            || !Enum.TryParse<LegacyQuestObjectiveState>(
-                parts[0],
-                ignoreCase: false,
-                out var state))
+        if (
+            parts.Length is not 1 and not 3
+            || !Enum.TryParse<LegacyQuestObjectiveState>(parts[0], ignoreCase: false, out var state)
+        )
         {
-            throw new InvalidDataException(
-                $"Quest objective state '{value}' is invalid.");
+            throw new InvalidDataException($"Quest objective state '{value}' is invalid.");
         }
 
         if (parts.Length == 1)
@@ -1278,19 +1156,12 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
             return new LegacyQuestObjective(state, 0, 0);
         }
 
-        if (!int.TryParse(
-                parts[1],
-                NumberStyles.Integer,
-                CultureInfo.InvariantCulture,
-                out var current)
-            || !int.TryParse(
-                parts[2],
-                NumberStyles.Integer,
-                CultureInfo.InvariantCulture,
-                out var total))
+        if (
+            !int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var current)
+            || !int.TryParse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out var total)
+        )
         {
-            throw new InvalidDataException(
-                $"Quest objective state '{value}' is invalid.");
+            throw new InvalidDataException($"Quest objective state '{value}' is invalid.");
         }
 
         return new LegacyQuestObjective(state, current, total);
@@ -1304,7 +1175,8 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
                 ',',
                 objective.State,
                 objective.Current.ToString(CultureInfo.InvariantCulture),
-                objective.Total.ToString(CultureInfo.InvariantCulture));
+                objective.Total.ToString(CultureInfo.InvariantCulture)
+            );
     }
 
     private void ThrowIfDisposed()
@@ -1320,10 +1192,7 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
         private LuaState? state;
         private HashSet<string> variableNames = new(StringComparer.Ordinal);
 
-        public QuestChapterRuntime(
-            QuestScriptRuntime owner,
-            string chapterId,
-            string source)
+        public QuestChapterRuntime(QuestScriptRuntime owner, string chapterId, string source)
         {
             this.owner = owner;
             this.chapterId = chapterId;
@@ -1340,11 +1209,10 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
                 "quest_print",
                 (context, _) =>
                 {
-                    owner.WriteLog(string.Join(
-                        ", ",
-                        context.Arguments.ToArray().Select(value => value.ToString())));
+                    owner.WriteLog(string.Join(", ", context.Arguments.ToArray().Select(value => value.ToString())));
                     return new(0);
-                });
+                }
+            );
             await state.DoStringAsync(
                 """
                 function arrlen(tt)
@@ -1355,14 +1223,15 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
                     return count
                 end
                 """,
-                cancellationToken: cancellationToken);
+                cancellationToken: cancellationToken
+            );
             state.Environment["quest"] = new QuestScriptQuestApi(owner);
             state.Environment["objective"] = new QuestScriptObjectiveApi(owner);
             state.Environment["chapter"] = new QuestScriptChapterApi(owner, chapterId);
             state.Environment["cmdr"] = new QuestScriptCommanderApi(owner);
 
-            var priorNames = state.Environment
-                .Where(pair => pair.Key.Type == LuaValueType.String)
+            var priorNames = state
+                .Environment.Where(pair => pair.Key.Type == LuaValueType.String)
                 .Select(pair => pair.Key.Read<string>())
                 .ToHashSet(StringComparer.Ordinal);
             try
@@ -1370,15 +1239,14 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
                 var closure = state.Load(source, $"@{chapterId}.lua");
                 await state.RunAsync(closure, cancellationToken);
             }
-            catch (Exception exception) when (
-                exception is not OperationCanceledException)
+            catch (Exception exception) when (exception is not OperationCanceledException)
             {
                 throw CreateScriptException("load", exception);
             }
 
-            variableNames = state.GetCurrentEnvironment()
-                .Where(pair => pair.Key.Type == LuaValueType.String
-                    && pair.Value.Type != LuaValueType.Function)
+            variableNames = state
+                .GetCurrentEnvironment()
+                .Where(pair => pair.Key.Type == LuaValueType.String && pair.Value.Type != LuaValueType.Function)
                 .Select(pair => pair.Key.Read<string>())
                 .Where(name => !priorNames.Contains(name))
                 .ToHashSet(StringComparer.Ordinal);
@@ -1389,18 +1257,17 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
         public Task<bool> ProcessJournalEntryAsync(
             string eventName,
             LuaTable entry,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
-            return InvokeIfPresentAsync(
-                "on_" + eventName,
-                [entry],
-                cancellationToken);
+            return InvokeIfPresentAsync("on_" + eventName, [entry], cancellationToken);
         }
 
         public Task<bool> InvokeIfPresentAsync(
             string functionName,
             LuaValue[] arguments,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
             var current = RequireState();
             return current.Environment[functionName].Type == LuaValueType.Function
@@ -1411,32 +1278,25 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
         public async Task<bool> InvokeRequiredAsync(
             string functionName,
             LuaValue[] arguments,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
             cancellationToken.ThrowIfCancellationRequested();
             var current = RequireState();
             if (!current.Environment[functionName].TryRead<LuaFunction>(out var function))
             {
-                throw new InvalidOperationException(
-                    $"Quest chapter '{chapterId}' has no function '{functionName}'.");
+                throw new InvalidOperationException($"Quest chapter '{chapterId}' has no function '{functionName}'.");
             }
 
             owner.SetInvokingChapter(chapterId);
             try
             {
-                var result = await current.CallAsync(
-                    function,
-                    arguments,
-                    cancellationToken);
+                var result = await current.CallAsync(function, arguments, cancellationToken);
                 return result.Length > 0
                     && result[0] != LuaValue.Nil
-                    && !string.Equals(
-                        result[0].ToString(),
-                        "false",
-                        StringComparison.Ordinal);
+                    && !string.Equals(result[0].ToString(), "false", StringComparison.Ordinal);
             }
-            catch (Exception exception) when (
-                exception is not OperationCanceledException)
+            catch (Exception exception) when (exception is not OperationCanceledException)
             {
                 throw CreateScriptException(functionName, exception);
             }
@@ -1446,22 +1306,17 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
             }
         }
 
-        public async Task<JsonElement> RunDebugAsync(
-            string code,
-            CancellationToken cancellationToken)
+        public async Task<JsonElement> RunDebugAsync(string code, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             try
             {
-                var result = await RequireState().DoStringAsync(
-                    code,
-                    cancellationToken: cancellationToken);
+                var result = await RequireState().DoStringAsync(code, cancellationToken: cancellationToken);
                 return result.Length == 0
                     ? JsonSerializer.SerializeToElement<object?>(null)
                     : QuestLuaConverter.ToJson(result[0]);
             }
-            catch (Exception exception) when (
-                exception is not OperationCanceledException)
+            catch (Exception exception) when (exception is not OperationCanceledException)
             {
                 throw CreateScriptException("debug", exception);
             }
@@ -1495,20 +1350,12 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
 
         private LuaState RequireState()
         {
-            return state
-                ?? throw new ObjectDisposedException(
-                    $"Quest chapter '{chapterId}'");
+            return state ?? throw new ObjectDisposedException($"Quest chapter '{chapterId}'");
         }
 
-        private QuestScriptException CreateScriptException(
-            string functionName,
-            Exception exception)
+        private QuestScriptException CreateScriptException(string functionName, Exception exception)
         {
-            return new QuestScriptException(
-                owner.Progress.Reference,
-                chapterId,
-                functionName,
-                exception);
+            return new QuestScriptException(owner.Progress.Reference, chapterId, functionName, exception);
         }
     }
 }
@@ -1518,39 +1365,36 @@ public sealed record QuestDevelopmentStateSnapshot(
     string Title,
     IReadOnlyDictionary<string, string> Objectives,
     IReadOnlyList<QuestDevelopmentChapterSnapshot> Chapters,
-    IReadOnlyList<RavenQuestMessage> Messages);
+    IReadOnlyList<RavenQuestMessage> Messages
+);
 
 public sealed record QuestDevelopmentChapterSnapshot(
     string Id,
     bool IsActive,
-    IReadOnlyDictionary<string, JsonElement> Variables);
+    IReadOnlyDictionary<string, JsonElement> Variables
+);
 
 public sealed record QuestCommanderContext(
     string CommanderName,
     JsonElement? Status,
     QuestSurfaceContext? Surface,
     IReadOnlyDictionary<string, QuestFactionSnapshot> Factions,
-    IReadOnlyDictionary<string, JsonElement>? PriorJournalEvents = null)
+    IReadOnlyDictionary<string, JsonElement>? PriorJournalEvents = null
+)
 {
-    public static QuestCommanderContext Empty { get; } = new(
-        string.Empty,
-        null,
-        null,
-        new Dictionary<string, QuestFactionSnapshot>(StringComparer.Ordinal));
+    public static QuestCommanderContext Empty { get; } =
+        new(string.Empty, null, null, new Dictionary<string, QuestFactionSnapshot>(StringComparer.Ordinal));
 }
 
-public sealed record QuestSurfaceContext(
-    double Latitude,
-    double Longitude,
-    double PlanetRadius,
-    int Heading);
+public sealed record QuestSurfaceContext(double Latitude, double Longitude, double PlanetRadius, int Heading);
 
 public sealed record QuestFactionSnapshot(
     double Reputation,
     double Influence,
     IReadOnlyList<string> ActiveStates,
     IReadOnlyList<string> PendingStates,
-    IReadOnlyList<string> RecoveringStates);
+    IReadOnlyList<string> RecoveringStates
+);
 
 public sealed class QuestScriptException : Exception
 {
@@ -1558,11 +1402,12 @@ public sealed class QuestScriptException : Exception
         RavenQuestReference quest,
         string chapterId,
         string functionName,
-        Exception innerException)
+        Exception innerException
+    )
         : base(
-            $"Quest '{quest}' chapter '{chapterId}' failed while running '{functionName}': "
-                + innerException.Message,
-            innerException)
+            $"Quest '{quest}' chapter '{chapterId}' failed while running '{functionName}': " + innerException.Message,
+            innerException
+        )
     {
         Quest = quest;
         ChapterId = chapterId;
@@ -1602,18 +1447,14 @@ public partial class QuestScriptQuestApi
     public void StopChapter(string id) => runtime.RequestStopChapter(id);
 
     [LuaMember("set")]
-    public void Set(string name, LuaValue value) =>
-        runtime.SetQuestVariable(name, value);
+    public void Set(string name, LuaValue value) => runtime.SetQuestVariable(name, value);
 
     [LuaMember("get")]
     public LuaValue Get(string name) => runtime.GetQuestVariable(name);
 
     [LuaMember("sendMsg")]
-    public void SendMessage(
-        string? id = null,
-        string? from = null,
-        string? subject = null,
-        string? body = null) => runtime.SendMessage(id, from, subject, body);
+    public void SendMessage(string? id = null, string? from = null, string? subject = null, string? body = null) =>
+        runtime.SendMessage(id, from, subject, body);
 
     [LuaMember("deleteMsg")]
     public bool DeleteMessage(string id) => runtime.DeleteMessage(id);
@@ -1631,11 +1472,8 @@ public partial class QuestScriptQuestApi
     public void ClearTags() => runtime.ClearTags();
 
     [LuaMember("trackLocation")]
-    public void TrackLocation(
-        string name,
-        double latitude,
-        double longitude,
-        float size) => runtime.TrackLocation(name, latitude, longitude, size);
+    public void TrackLocation(string name, double latitude, double longitude, float size) =>
+        runtime.TrackLocation(name, latitude, longitude, size);
 
     [LuaMember("clearLocation")]
     public void ClearLocation(string name) => runtime.ClearLocation(name);
@@ -1647,8 +1485,7 @@ public partial class QuestScriptQuestApi
     public void KeepLast(LuaValue value) => runtime.KeepLast(value);
 
     [LuaMember("setRoute")]
-    public void SetRoute(string id, double width, LuaTable coordinates) =>
-        runtime.SetRoute(id, width, coordinates);
+    public void SetRoute(string id, double width, LuaTable coordinates) => runtime.SetRoute(id, width, coordinates);
 
     [LuaMember("clearRoute")]
     public void ClearRoute(string id) => runtime.ClearRoute(id);
@@ -1665,27 +1502,17 @@ public partial class QuestScriptObjectiveApi
     }
 
     [LuaMember("complete")]
-    public void Complete(LuaValue value) => runtime.SetObjectiveState(
-        value,
-        LegacyQuestObjectiveState.complete);
+    public void Complete(LuaValue value) => runtime.SetObjectiveState(value, LegacyQuestObjectiveState.complete);
 
     [LuaMember("failed")]
-    public void Failed(LuaValue value) => runtime.SetObjectiveState(
-        value,
-        LegacyQuestObjectiveState.failed);
+    public void Failed(LuaValue value) => runtime.SetObjectiveState(value, LegacyQuestObjectiveState.failed);
 
     [LuaMember("hide")]
-    public void Hide(LuaValue value) => runtime.SetObjectiveState(
-        value,
-        LegacyQuestObjectiveState.hidden);
+    public void Hide(LuaValue value) => runtime.SetObjectiveState(value, LegacyQuestObjectiveState.hidden);
 
     [LuaMember("show")]
     public void Show(LuaValue value, int current = -1, int total = -1) =>
-        runtime.SetObjectiveState(
-            value,
-            LegacyQuestObjectiveState.visible,
-            current,
-            total);
+        runtime.SetObjectiveState(value, LegacyQuestObjectiveState.visible, current, total);
 
     [LuaMember("progress")]
     public void Progress(LuaValue value, int current, int total) =>
@@ -1698,8 +1525,7 @@ public partial class QuestScriptObjectiveApi
     public bool IsActive(string id) => runtime.IsObjectiveActive(id);
 
     [LuaMember("check")]
-    public bool Check(LuaValue value, string state) =>
-        runtime.CheckObjectives(value, state);
+    public bool Check(LuaValue value, string state) => runtime.CheckObjectives(value, state);
 
     [LuaMember("getCurrent")]
     public int GetCurrent(string id) => runtime.GetObjectiveCurrent(id);
@@ -1714,9 +1540,7 @@ public partial class QuestScriptChapterApi
     private readonly QuestScriptRuntime runtime;
     private readonly string chapterId;
 
-    public QuestScriptChapterApi(
-        QuestScriptRuntime runtime,
-        string chapterId)
+    public QuestScriptChapterApi(QuestScriptRuntime runtime, string chapterId)
     {
         this.runtime = runtime;
         this.chapterId = chapterId;
@@ -1761,9 +1585,7 @@ public partial class QuestScriptCommanderApi
     }
 
     [LuaMember("getFactionStates")]
-    public LuaTable GetFactionStates(
-        string factionName,
-        string tense = "active")
+    public LuaTable GetFactionStates(string factionName, string tense = "active")
     {
         var faction = FindFaction(factionName);
         var values = tense switch
@@ -1773,7 +1595,8 @@ public partial class QuestScriptCommanderApi
             "recovering" => faction?.RecoveringStates ?? [],
             _ => throw new ArgumentException(
                 "Faction state tense must be active, pending, or recovering.",
-                nameof(tense)),
+                nameof(tense)
+            ),
         };
         var result = new LuaTable(values.Count, 0);
         for (var index = 0; index < values.Count; index++)
@@ -1785,9 +1608,8 @@ public partial class QuestScriptCommanderApi
     }
 
     [LuaMember("status")]
-    public LuaValue Status => runtime.CommanderContext.Status is { } status
-        ? QuestLuaConverter.ToLua(status)
-        : LuaValue.Nil;
+    public LuaValue Status =>
+        runtime.CommanderContext.Status is { } status ? QuestLuaConverter.ToLua(status) : LuaValue.Nil;
 
     [LuaMember("distanceFrom")]
     public double DistanceFrom(double latitude, double longitude)
@@ -1801,14 +1623,12 @@ public partial class QuestScriptCommanderApi
         return SurfaceNavigation.GetDistance(
             new SurfaceCoordinate(latitude, longitude),
             new SurfaceCoordinate(surface.Latitude, surface.Longitude),
-            surface.PlanetRadius);
+            surface.PlanetRadius
+        );
     }
 
     [LuaMember("isWithin")]
-    public bool IsWithin(
-        double latitude,
-        double longitude,
-        double targetDistance)
+    public bool IsWithin(double latitude, double longitude, double targetDistance)
     {
         var distance = DistanceFrom(latitude, longitude);
         return distance >= 0 && distance < targetDistance;
@@ -1842,7 +1662,8 @@ public partial class QuestScriptCommanderApi
 
     private QuestFactionSnapshot? FindFaction(string name)
     {
-        return runtime.CommanderContext.Factions.FirstOrDefault(pair =>
-            string.Equals(pair.Key, name, StringComparison.Ordinal)).Value;
+        return runtime
+            .CommanderContext.Factions.FirstOrDefault(pair => string.Equals(pair.Key, name, StringComparison.Ordinal))
+            .Value;
     }
 }

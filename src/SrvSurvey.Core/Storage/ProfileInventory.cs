@@ -5,19 +5,20 @@ namespace SrvSurvey.Core.Storage;
 public sealed record ProfileInventory(
     string RootPath,
     IReadOnlyList<string> RelativeDirectories,
-    IReadOnlyList<ProfileInventoryEntry> Entries)
+    IReadOnlyList<ProfileInventoryEntry> Entries
+)
 {
     public static async Task<ProfileInventory> CreateAsync(
         string rootPath,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(rootPath);
 
         var root = Path.GetFullPath(rootPath);
         if (!Directory.Exists(root))
         {
-            throw new DirectoryNotFoundException(
-                $"The legacy profile directory does not exist: {root}");
+            throw new DirectoryNotFoundException($"The legacy profile directory does not exist: {root}");
         }
 
         RejectReparsePoint(new DirectoryInfo(root));
@@ -56,22 +57,22 @@ public sealed record ProfileInventory(
         {
             cancellationToken.ThrowIfCancellationRequested();
             var fileInfo = new FileInfo(file);
-            var hash = await ComputeSha256Async(file, cancellationToken)
-                .ConfigureAwait(false);
+            var hash = await ComputeSha256Async(file, cancellationToken).ConfigureAwait(false);
             fileInfo.Refresh();
-            entries.Add(new ProfileInventoryEntry(
-                NormalizeRelativePath(root, file),
-                fileInfo.Length,
-                fileInfo.LastWriteTimeUtc,
-                hash));
+            entries.Add(
+                new ProfileInventoryEntry(
+                    NormalizeRelativePath(root, file),
+                    fileInfo.Length,
+                    fileInfo.LastWriteTimeUtc,
+                    hash
+                )
+            );
         }
 
         return new ProfileInventory(root, directories, entries);
     }
 
-    internal static async Task<string> ComputeSha256Async(
-        string path,
-        CancellationToken cancellationToken)
+    internal static async Task<string> ComputeSha256Async(string path, CancellationToken cancellationToken)
     {
         await using var stream = new FileStream(
             path,
@@ -79,9 +80,9 @@ public sealed record ProfileInventory(
             FileAccess.Read,
             FileShare.ReadWrite | FileShare.Delete,
             64 * 1024,
-            FileOptions.Asynchronous | FileOptions.SequentialScan);
-        var hash = await SHA256.HashDataAsync(stream, cancellationToken)
-            .ConfigureAwait(false);
+            FileOptions.Asynchronous | FileOptions.SequentialScan
+        );
+        var hash = await SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false);
         return Convert.ToHexStringLower(hash);
     }
 
@@ -89,27 +90,20 @@ public sealed record ProfileInventory(
     {
         if (string.IsNullOrWhiteSpace(relativePath) || Path.IsPathRooted(relativePath))
         {
-            throw new InvalidDataException(
-                $"The profile contains an invalid relative path: {relativePath}");
+            throw new InvalidDataException($"The profile contains an invalid relative path: {relativePath}");
         }
 
-        var platformRelativePath = relativePath.Replace(
-            '/',
-            Path.DirectorySeparatorChar);
+        var platformRelativePath = relativePath.Replace('/', Path.DirectorySeparatorChar);
         var resolvedRoot = Path.GetFullPath(rootPath);
-        var resolvedPath = Path.GetFullPath(
-            Path.Combine(resolvedRoot, platformRelativePath));
+        var resolvedPath = Path.GetFullPath(Path.Combine(resolvedRoot, platformRelativePath));
         var rootPrefix = Path.EndsInDirectorySeparator(resolvedRoot)
             ? resolvedRoot
             : resolvedRoot + Path.DirectorySeparatorChar;
-        var comparison = OperatingSystem.IsWindows()
-            ? StringComparison.OrdinalIgnoreCase
-            : StringComparison.Ordinal;
+        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
 
         if (!resolvedPath.StartsWith(rootPrefix, comparison))
         {
-            throw new InvalidDataException(
-                $"The profile path escapes its root directory: {relativePath}");
+            throw new InvalidDataException($"The profile path escapes its root directory: {relativePath}");
         }
 
         return resolvedPath;
@@ -117,8 +111,7 @@ public sealed record ProfileInventory(
 
     private static string NormalizeRelativePath(string root, string path)
     {
-        return Path.GetRelativePath(root, path)
-            .Replace(Path.DirectorySeparatorChar, '/');
+        return Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/');
     }
 
     private static void RejectReparsePoint(FileSystemInfo info)
@@ -126,13 +119,10 @@ public sealed record ProfileInventory(
         if ((info.Attributes & FileAttributes.ReparsePoint) != 0)
         {
             throw new InvalidDataException(
-                $"Profile import does not follow symbolic links or junctions: {info.FullName}");
+                $"Profile import does not follow symbolic links or junctions: {info.FullName}"
+            );
         }
     }
 }
 
-public sealed record ProfileInventoryEntry(
-    string RelativePath,
-    long Length,
-    DateTime LastWriteTimeUtc,
-    string Sha256);
+public sealed record ProfileInventoryEntry(string RelativePath, long Length, DateTime LastWriteTimeUtc, string Sha256);

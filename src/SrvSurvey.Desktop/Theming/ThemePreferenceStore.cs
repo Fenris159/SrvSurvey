@@ -1,6 +1,6 @@
+using System.Text.Json.Nodes;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Configuration;
-using System.Text.Json.Nodes;
 
 namespace SrvSurvey.Desktop.Theming;
 
@@ -20,11 +20,13 @@ public sealed class ThemePreferenceStore
     public string? LoadThemeKey()
     {
         var settings = documentStore.Load();
-        if (settings["Version"] is not JsonValue version
+        if (
+            settings["Version"] is not JsonValue version
             || !version.TryGetValue<int>(out var versionNumber)
             || versionNumber != CurrentVersion
             || settings["Theme"] is not JsonValue theme
-            || !theme.TryGetValue<string>(out var themeKey))
+            || !theme.TryGetValue<string>(out var themeKey)
+        )
         {
             return null;
         }

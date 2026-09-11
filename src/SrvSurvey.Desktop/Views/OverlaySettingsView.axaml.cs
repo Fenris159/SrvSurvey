@@ -11,9 +11,7 @@ public sealed partial class OverlaySettingsView : UserControl
     private readonly OverlaySettingsCategory category;
 
     public OverlaySettingsView()
-        : this(OverlaySettingsCategory.Global)
-    {
-    }
+        : this(OverlaySettingsCategory.Global) { }
 
     public OverlaySettingsView(OverlaySettingsCategory category)
     {
@@ -54,11 +52,9 @@ public sealed partial class OverlaySettingsView : UserControl
         GuardianOverlayCard.IsVisible = category == OverlaySettingsCategory.Guardian;
         StationInformationCard.IsVisible = category == OverlaySettingsCategory.Travel;
         HumanSettlementCard.IsVisible = category == OverlaySettingsCategory.Quests;
-        HumanTemplateAuthoringExpander.IsVisible =
-            category == OverlaySettingsCategory.Quests;
+        HumanTemplateAuthoringExpander.IsVisible = category == OverlaySettingsCategory.Quests;
         JumpInformationCard.IsVisible = category == OverlaySettingsCategory.Travel;
-        ColonizationShoppingCard.IsVisible =
-            category == OverlaySettingsCategory.Colonization;
+        ColonizationShoppingCard.IsVisible = category == OverlaySettingsCategory.Colonization;
 
         var isExploration = category == OverlaySettingsCategory.Exploration;
         var isExobiology = category == OverlaySettingsCategory.Exobiology;
@@ -80,8 +76,7 @@ public sealed partial class OverlaySettingsView : UserControl
             return;
         }
 
-        var definition = OverlaySettingsCategoryCatalog.All.Single(candidate =>
-            candidate.Category == category);
+        var definition = OverlaySettingsCategoryCatalog.All.Single(candidate => candidate.Category == category);
         OverlaySettingsEyebrow.Text = $"{definition.Eyebrow} OVERLAYS";
         OverlaySettingsTitle.Text = $"{definition.DisplayName} overlay settings";
         OverlaySettingsDescription.Text = definition.Description;
@@ -102,14 +97,16 @@ public sealed partial class OverlaySettingsView : UserControl
 
     private async void OverlayExceptions_Click(object? sender, RoutedEventArgs eventArgs)
     {
-        if (DataContext is not MainWindowViewModel viewModel || TopLevel.GetTopLevel(this) is not Window owner) return;
+        if (DataContext is not MainWindowViewModel viewModel || TopLevel.GetTopLevel(this) is not Window owner)
+        {
+            return;
+        }
+
         var window = new OverlayExceptionsWindow { DataContext = viewModel.OverlayExceptions.ForCategory(category) };
         await window.ShowDialog(owner);
     }
 
-    private void BeginVrAdjustment_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private void BeginVrAdjustment_Click(object? sender, RoutedEventArgs eventArgs)
     {
         if (DataContext is MainWindowViewModel viewModel)
         {
@@ -117,13 +114,10 @@ public sealed partial class OverlaySettingsView : UserControl
         }
     }
 
-    private async void ExportHumanSiteTemplates_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private async void ExportHumanSiteTemplates_Click(object? sender, RoutedEventArgs eventArgs)
     {
         var topLevel = TopLevel.GetTopLevel(this);
-        if (topLevel?.StorageProvider is null
-            || DataContext is not MainWindowViewModel viewModel)
+        if (topLevel?.StorageProvider is null || DataContext is not MainWindowViewModel viewModel)
         {
             return;
         }
@@ -135,17 +129,13 @@ public sealed partial class OverlaySettingsView : UserControl
                 SuggestedFileName = "humanSiteTemplates.json",
                 FileTypeChoices =
                 [
-                    new FilePickerFileType("JSON catalog")
-                    {
-                        Patterns = ["*.json"],
-                        MimeTypes = ["application/json"],
-                    },
+                    new FilePickerFileType("JSON catalog") { Patterns = ["*.json"], MimeTypes = ["application/json"] },
                 ],
-            });
+            }
+        );
         if (file is not null)
         {
-            await viewModel.HumanSite.TemplateAuthor.ExportAsync(
-                file.Path.LocalPath);
+            await viewModel.HumanSite.TemplateAuthor.ExportAsync(file.Path.LocalPath);
         }
     }
 }

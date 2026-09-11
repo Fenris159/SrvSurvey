@@ -14,8 +14,7 @@ public sealed class GuardianOverlayPresentationRenderingTests
     [AvaloniaFact]
     public void GuardianZoomOrbsRenderAtTheirCompactOverlaySize()
     {
-        var window = new GuardianZoomOverlayWindow(
-            new GuardianZoomOverlayViewModel(_ => { }));
+        var window = new GuardianZoomOverlayWindow(new GuardianZoomOverlayViewModel(_ => { }));
         try
         {
             OverlayThemeResources.Apply(window);
@@ -24,8 +23,7 @@ public sealed class GuardianOverlayPresentationRenderingTests
 
             Assert.NotNull(frame);
             Assert.Equal(new PixelSize(42, 20), frame.PixelSize);
-            var outputPath = Environment.GetEnvironmentVariable(
-                "SRVSURVEY_GUARDIAN_ZOOM_RENDER_OUTPUT");
+            var outputPath = Environment.GetEnvironmentVariable("SRVSURVEY_GUARDIAN_ZOOM_RENDER_OUTPUT");
             if (!string.IsNullOrWhiteSpace(outputPath))
             {
                 var outputDirectory = Path.GetDirectoryName(outputPath);
@@ -47,20 +45,13 @@ public sealed class GuardianOverlayPresentationRenderingTests
     public void EveryGuardianEditorPresentationRendersAtItsCatalogSize()
     {
         var hashes = new HashSet<string>(StringComparer.Ordinal);
-        var outputDirectory = Environment.GetEnvironmentVariable(
-            "SRVSURVEY_GUARDIAN_RENDER_OUTPUT");
+        var outputDirectory = Environment.GetEnvironmentVariable("SRVSURVEY_GUARDIAN_RENDER_OUTPUT");
         if (!string.IsNullOrWhiteSpace(outputDirectory))
         {
             Directory.CreateDirectory(outputDirectory);
         }
 
-        foreach (var plotterName in new[]
-                 {
-                     "PlotGuardians",
-                     "PlotGuardianStatus",
-                     "PlotGuardianSystem",
-                     "PlotRamTah",
-                 })
+        foreach (var plotterName in new[] { "PlotGuardians", "PlotGuardianStatus", "PlotGuardianSystem", "PlotRamTah" })
         {
             var definition = OverlayLayoutCatalog.GetRequired(plotterName);
             var preview = new OverlayPositionPreviewWindow(definition);
@@ -82,9 +73,7 @@ public sealed class GuardianOverlayPresentationRenderingTests
                 hashes.Add(Convert.ToHexString(SHA256.HashData(png)));
                 if (!string.IsNullOrWhiteSpace(outputDirectory))
                 {
-                    File.WriteAllBytes(
-                        Path.Combine(outputDirectory, $"{plotterName}.png"),
-                        png);
+                    File.WriteAllBytes(Path.Combine(outputDirectory, $"{plotterName}.png"), png);
                 }
             }
             finally

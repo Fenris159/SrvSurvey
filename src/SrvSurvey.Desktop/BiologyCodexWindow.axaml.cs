@@ -5,8 +5,8 @@ using Avalonia.Media.Imaging;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform;
-using SrvSurvey.Desktop.ViewModels;
 using SrvSurvey.Desktop.Runtime;
+using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop;
 
@@ -20,18 +20,12 @@ public sealed partial class BiologyCodexWindow : Window
     private Bitmap? loadedImage;
 
     public BiologyCodexWindow()
-        : this(CreateDesignViewModel(), CreateDesignImageCache())
-    {
-    }
+        : this(CreateDesignViewModel(), CreateDesignImageCache()) { }
 
-    public BiologyCodexWindow(
-        BiologyCodexViewModel viewModel,
-        CodexImageCache imageCache)
+    public BiologyCodexWindow(BiologyCodexViewModel viewModel, CodexImageCache imageCache)
     {
-        this.viewModel = viewModel
-            ?? throw new ArgumentNullException(nameof(viewModel));
-        this.imageCache = imageCache
-            ?? throw new ArgumentNullException(nameof(imageCache));
+        this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
+        this.imageCache = imageCache ?? throw new ArgumentNullException(nameof(imageCache));
         InitializeComponent();
         DataContext = viewModel;
         if (DesktopExternalEffectPolicy.IsAllowed)
@@ -53,9 +47,7 @@ public sealed partial class BiologyCodexWindow : Window
         base.OnClosed(e);
     }
 
-    private void OnViewModelPropertyChanged(
-        object? sender,
-        PropertyChangedEventArgs eventArgs)
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
         if (eventArgs.PropertyName is nameof(BiologyCodexViewModel.SelectedImageUrl))
         {
@@ -78,16 +70,13 @@ public sealed partial class BiologyCodexWindow : Window
         }
 
         ReplaceImage(null);
-        ImageStatusText.Text = forceRefresh
-            ? "Refreshing reference image…"
-            : "Loading reference image…";
-        var result = await TryLoadImageResultAsync(
-            organism,
-            forceRefresh,
-            loadCancellation);
-        if (result is null
+        ImageStatusText.Text = forceRefresh ? "Refreshing reference image…" : "Loading reference image…";
+        var result = await TryLoadImageResultAsync(organism, forceRefresh, loadCancellation);
+        if (
+            result is null
             || cancellationToken.IsCancellationRequested
-            || viewModel.SelectedOrganism?.EntryId != organism.EntryId)
+            || viewModel.SelectedOrganism?.EntryId != organism.EntryId
+        )
         {
             return;
         }
@@ -112,7 +101,8 @@ public sealed partial class BiologyCodexWindow : Window
     private async Task<CodexImageCacheResult?> TryLoadImageResultAsync(
         BiologyCodexOrganismViewModel organism,
         bool forceRefresh,
-        CancellationTokenSource loadCancellation)
+        CancellationTokenSource loadCancellation
+    )
     {
         var cancellationToken = loadCancellation.Token;
         var imageLoadTask = imageCache.GetAsync(
@@ -120,12 +110,11 @@ public sealed partial class BiologyCodexWindow : Window
             organism.ImageUrl!,
             organism.LocalImageName,
             forceRefresh,
-            cancellationToken);
+            cancellationToken
+        );
         try
         {
-            return await imageLoadTask.WaitAsync(
-                ImageLoadTimeout,
-                cancellationToken);
+            return await imageLoadTask.WaitAsync(ImageLoadTimeout, cancellationToken);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -135,9 +124,7 @@ public sealed partial class BiologyCodexWindow : Window
         {
             await loadCancellation.CancelAsync();
             ObserveFault(imageLoadTask);
-            SetImageUnavailableIfCurrent(
-                organism.EntryId,
-                "The reference image download timed out.");
+            SetImageUnavailableIfCurrent(organism.EntryId, "The reference image download timed out.");
             return null;
         }
         catch (Exception exception)
@@ -155,9 +142,7 @@ public sealed partial class BiologyCodexWindow : Window
         }
     }
 
-    private void ApplyImageResult(
-        BiologyCodexOrganismViewModel organism,
-        CodexImageCacheResult result)
+    private void ApplyImageResult(BiologyCodexOrganismViewModel organism, CodexImageCacheResult result)
     {
         if (!result.IsSuccess)
         {
@@ -170,28 +155,21 @@ public sealed partial class BiologyCodexWindow : Window
             ReplaceImage(new Bitmap(result.Path));
             ImageStatusText.Text = FormatImageStatus(organism, result);
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or ArgumentException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or ArgumentException)
         {
             ReplaceImage(null);
-            ImageStatusText.Text = "Image could not be decoded: "
-                + exception.Message;
+            ImageStatusText.Text = "Image could not be decoded: " + exception.Message;
         }
     }
 
-    private static string FormatImageStatus(
-        BiologyCodexOrganismViewModel organism,
-        CodexImageCacheResult result)
+    private static string FormatImageStatus(BiologyCodexOrganismViewModel organism, CodexImageCacheResult result)
     {
         if (result.IsLocal)
         {
             return "Local flora reference image";
         }
 
-        return organism.ImageCreditText
-            + (result.IsFromCache ? " · cached" : " · downloaded");
+        return organism.ImageCreditText + (result.IsFromCache ? " · cached" : " · downloaded");
     }
 
     private void ReplaceImage(Bitmap? image)
@@ -206,9 +184,9 @@ public sealed partial class BiologyCodexWindow : Window
         _ = task.ContinueWith(
             static completedTask => _ = completedTask.Exception,
             CancellationToken.None,
-            TaskContinuationOptions.ExecuteSynchronously
-                | TaskContinuationOptions.OnlyOnFaulted,
-            TaskScheduler.Default);
+            TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnFaulted,
+            TaskScheduler.Default
+        );
     }
 
     private void ResetImage_Click(object? sender, RoutedEventArgs eventArgs)
@@ -216,9 +194,7 @@ public sealed partial class BiologyCodexWindow : Window
         ImageViewport.ResetView();
     }
 
-    private async void RefreshImage_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private async void RefreshImage_Click(object? sender, RoutedEventArgs eventArgs)
     {
         await LoadSelectedImageAsync(forceRefresh: true);
     }
@@ -235,22 +211,18 @@ public sealed partial class BiologyCodexWindow : Window
 
     private static BiologyCodexViewModel CreateDesignViewModel()
     {
-        var temporaryDirectory = Path.Combine(
-            Path.GetTempPath(),
-            "SrvSurvey-BiologyCodex-Design");
+        var temporaryDirectory = Path.Combine(Path.GetTempPath(), "SrvSurvey-BiologyCodex-Design");
         return new BiologyCodexViewModel(
             new SystemSurveyViewModel(
-                new SystemSurveySettingsStore(
-                    Path.Combine(temporaryDirectory, "ui-settings.json"))),
+                new SystemSurveySettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json"))
+            ),
             ExobiologyReferenceCatalog.LoadEmbedded(),
-            BiologyCriteriaCatalog.LoadEmbedded());
+            BiologyCriteriaCatalog.LoadEmbedded()
+        );
     }
 
     private static CodexImageCache CreateDesignImageCache()
     {
-        return new CodexImageCache(Path.Combine(
-            Path.GetTempPath(),
-            "SrvSurvey-BiologyCodex-Design",
-            "images"));
+        return new CodexImageCache(Path.Combine(Path.GetTempPath(), "SrvSurvey-BiologyCodex-Design", "images"));
     }
 }

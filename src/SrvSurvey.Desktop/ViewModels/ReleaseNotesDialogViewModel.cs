@@ -6,23 +6,19 @@ public sealed record ReleaseNotesDialogViewModel(
     string Title,
     string Introduction,
     string ChangesHeading,
-    IReadOnlyList<ReleaseNoteChangeViewModel> Changes)
+    IReadOnlyList<ReleaseNoteChangeViewModel> Changes
+)
 {
     public bool HasIntroduction => !string.IsNullOrWhiteSpace(Introduction);
 
-    public static ReleaseNotesDialogViewModel Create(
-        string fallbackTitle,
-        string markdown)
+    public static ReleaseNotesDialogViewModel Create(string fallbackTitle, string markdown)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(fallbackTitle);
         ArgumentException.ThrowIfNullOrWhiteSpace(markdown);
 
-        var lines = markdown.Replace("\r\n", "\n", StringComparison.Ordinal)
-            .Replace('\r', '\n')
-            .Split('\n');
+        var lines = markdown.Replace("\r\n", "\n", StringComparison.Ordinal).Replace('\r', '\n').Split('\n');
         var title = fallbackTitle;
-        var titleIndex = Array.FindIndex(lines, line =>
-            line.TrimStart().StartsWith("# ", StringComparison.Ordinal));
+        var titleIndex = Array.FindIndex(lines, line => line.TrimStart().StartsWith("# ", StringComparison.Ordinal));
         if (titleIndex >= 0)
         {
             title = RemoveInlineMarkdown(lines[titleIndex].Trim()[2..]);
@@ -35,7 +31,8 @@ public sealed record ReleaseNotesDialogViewModel(
                 title,
                 string.Empty,
                 "What's changed",
-                [new ReleaseNoteChangeViewModel(RemoveInlineMarkdown(markdown.Trim()))]);
+                [new ReleaseNoteChangeViewModel(RemoveInlineMarkdown(markdown.Trim()))]
+            );
         }
 
         var introductionStart = titleIndex switch
@@ -44,27 +41,22 @@ public sealed record ReleaseNotesDialogViewModel(
             _ when titleIndex < changesIndex => titleIndex + 1,
             _ => changesIndex,
         };
-        var introduction = JoinParagraphs(
-            lines[introductionStart..changesIndex]);
+        var introduction = JoinParagraphs(lines[introductionStart..changesIndex]);
         var heading = RemoveInlineMarkdown(lines[changesIndex].Trim()[3..]);
         var changes = ParseChanges(lines[(changesIndex + 1)..]);
-        return new ReleaseNotesDialogViewModel(
-            title,
-            introduction,
-            heading,
-            changes);
+        return new ReleaseNotesDialogViewModel(title, introduction, heading, changes);
     }
 
-    private static List<ReleaseNoteChangeViewModel> ParseChanges(
-        IReadOnlyList<string> lines)
+    private static List<ReleaseNoteChangeViewModel> ParseChanges(IReadOnlyList<string> lines)
     {
         var changes = new List<ReleaseNoteChangeViewModel>();
         var current = new List<string>();
         foreach (var line in lines)
         {
             var trimmed = line.Trim();
-            if (trimmed.StartsWith("- ", StringComparison.Ordinal)
-                || trimmed.StartsWith("* ", StringComparison.Ordinal))
+            if (
+                trimmed.StartsWith("- ", StringComparison.Ordinal) || trimmed.StartsWith("* ", StringComparison.Ordinal)
+            )
             {
                 AddChange(changes, current);
                 current.Add(trimmed[2..]);
@@ -91,17 +83,14 @@ public sealed record ReleaseNotesDialogViewModel(
         return heading.StartsWith("What's changed", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static void AddChange(
-        List<ReleaseNoteChangeViewModel> changes,
-        List<string> lines)
+    private static void AddChange(List<ReleaseNoteChangeViewModel> changes, List<string> lines)
     {
         if (lines.Count == 0)
         {
             return;
         }
 
-        changes.Add(new ReleaseNoteChangeViewModel(
-            RemoveInlineMarkdown(string.Join(' ', lines))));
+        changes.Add(new ReleaseNoteChangeViewModel(RemoveInlineMarkdown(string.Join(' ', lines))));
         lines.Clear();
     }
 

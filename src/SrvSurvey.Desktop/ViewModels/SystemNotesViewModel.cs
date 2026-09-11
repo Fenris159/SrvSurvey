@@ -37,12 +37,11 @@ public sealed class SystemNotesViewModel : INotifyPropertyChanged
     public SystemNotesViewModel(
         SystemNoteStore noteStore,
         SystemNotesSettingsStore settingsStore,
-        JourneyService? journeyService = null)
+        JourneyService? journeyService = null
+    )
     {
-        this.noteStore = noteStore
-            ?? throw new ArgumentNullException(nameof(noteStore));
-        this.settingsStore = settingsStore
-            ?? throw new ArgumentNullException(nameof(settingsStore));
+        this.noteStore = noteStore ?? throw new ArgumentNullException(nameof(noteStore));
+        this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         this.journeyService = journeyService;
         var settings = settingsStore.Load();
         alwaysOnTop = settings.Snapshot?.AlwaysOnTop ?? false;
@@ -50,39 +49,27 @@ public sealed class SystemNotesViewModel : INotifyPropertyChanged
             ? "Open notes for the current system."
             : settings.Error ?? "The system-notes settings could not be loaded.";
         openWindowCommand = new AsyncCommand(OpenWindowAsync, CanOpenWindow);
-        openCanonnCommand = new AsyncCommand(
-            OpenCanonnAsync,
-            HasLoadedSystem);
-        openSpanshCommand = new AsyncCommand(
-            OpenSpanshAsync,
-            HasLoadedSystemAddress);
-        openEdsmCommand = new AsyncCommand(
-            OpenEdsmAsync,
-            HasLoadedSystemAddress);
-        openImagesCommand = new AsyncCommand(
-            OpenImagesAsync,
-            () => HasImagesDirectory);
+        openCanonnCommand = new AsyncCommand(OpenCanonnAsync, HasLoadedSystem);
+        openSpanshCommand = new AsyncCommand(OpenSpanshAsync, HasLoadedSystemAddress);
+        openEdsmCommand = new AsyncCommand(OpenEdsmAsync, HasLoadedSystemAddress);
+        openImagesCommand = new AsyncCommand(OpenImagesAsync, () => HasImagesDirectory);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public bool HasCurrentSystem => currentContext is not null;
 
-    public string SystemName => loadedContext?.SystemName
-        ?? currentContext?.SystemName
-        ?? Unavailable;
+    public string SystemName => loadedContext?.SystemName ?? currentContext?.SystemName ?? Unavailable;
 
-    public string SystemAddress => (loadedContext ?? currentContext) is { } context
-        ? context.SystemAddress.ToString()
-        : Unavailable;
+    public string SystemAddress =>
+        (loadedContext ?? currentContext) is { } context ? context.SystemAddress.ToString() : Unavailable;
 
     public string Notes
     {
         get => notes;
         set
         {
-            if (!SetField(ref notes, value ?? string.Empty)
-                || isApplyingLoad)
+            if (!SetField(ref notes, value ?? string.Empty) || isApplyingLoad)
             {
                 return;
             }
@@ -132,8 +119,7 @@ public sealed class SystemNotesViewModel : INotifyPropertyChanged
 
     public string SaveButtonText => IsBusy ? "Saving\u2026" : "Save notes";
 
-    public bool HasImagesDirectory => !string.IsNullOrWhiteSpace(imagesDirectory)
-        && Directory.Exists(imagesDirectory);
+    public bool HasImagesDirectory => !string.IsNullOrWhiteSpace(imagesDirectory) && Directory.Exists(imagesDirectory);
 
     public string? ImagesDirectory => imagesDirectory;
 
@@ -152,18 +138,15 @@ public sealed class SystemNotesViewModel : INotifyPropertyChanged
         string? commanderName,
         string? systemName,
         long? systemAddress,
-        GalacticCoordinate? starPosition)
+        GalacticCoordinate? starPosition
+    )
     {
-        var next = string.IsNullOrWhiteSpace(frontierId)
+        var next =
+            string.IsNullOrWhiteSpace(frontierId)
             || string.IsNullOrWhiteSpace(systemName)
             || systemAddress is null or <= 0
                 ? null
-                : new SystemNoteContext(
-                    frontierId,
-                    commanderName,
-                    systemName,
-                    systemAddress.Value,
-                    starPosition);
+                : new SystemNoteContext(frontierId, commanderName, systemName, systemAddress.Value, starPosition);
         if (IsSameSystem(currentContext, next))
         {
             currentContext = next;
@@ -191,9 +174,7 @@ public sealed class SystemNotesViewModel : INotifyPropertyChanged
         openWindowCommand.RaiseCanExecuteChanged();
     }
 
-    public void SetPlatformServices(
-        Func<Uri, Task<bool>>? launchUri,
-        Func<DirectoryInfo, Task<bool>>? launchDirectory)
+    public void SetPlatformServices(Func<Uri, Task<bool>>? launchUri, Func<DirectoryInfo, Task<bool>>? launchDirectory)
     {
         uriLauncher = launchUri;
         directoryLauncher = launchDirectory;
@@ -211,14 +192,10 @@ public sealed class SystemNotesViewModel : INotifyPropertyChanged
         {
             IsBusy = true;
             StatusMessage = $"Loading notes for {context.SystemName}\u2026";
-            var result = await noteStore.LoadAsync(
-                context.FrontierId,
-                context.SystemName,
-                context.SystemAddress);
+            var result = await noteStore.LoadAsync(context.FrontierId, context.SystemName, context.SystemAddress);
             if (!result.IsSuccess)
             {
-                StatusMessage = result.Error
-                    ?? "The system notes could not be loaded.";
+                StatusMessage = result.Error ?? "The system notes could not be loaded.";
                 return false;
             }
 
@@ -234,8 +211,7 @@ public sealed class SystemNotesViewModel : INotifyPropertyChanged
             }
 
             IsDirty = false;
-            imagesDirectory = settingsStore.GetImagesDirectory(
-                context.SystemName);
+            imagesDirectory = settingsStore.GetImagesDirectory(context.SystemName);
             OnPropertyChanged(nameof(SystemName));
             OnPropertyChanged(nameof(SystemAddress));
             OnPropertyChanged(nameof(ImagesDirectory));
@@ -246,14 +222,10 @@ public sealed class SystemNotesViewModel : INotifyPropertyChanged
             RaiseCommands();
             return true;
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException
-                or ArgumentException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidDataException or ArgumentException)
         {
-            StatusMessage = "The system notes could not be loaded: "
-                + exception.Message;
+            StatusMessage = "The system notes could not be loaded: " + exception.Message;
             return false;
         }
         finally
@@ -276,21 +248,17 @@ public sealed class SystemNotesViewModel : INotifyPropertyChanged
             var path = await noteStore.SaveAsync(context, Notes);
             if (journeyService is not null)
             {
-                await journeyService.IncrementNoteCountAsync(
-                    context.SystemAddress);
+                await journeyService.IncrementNoteCountAsync(context.SystemAddress);
             }
 
             IsDirty = false;
             StatusMessage = $"Saved notes to {Path.GetFileName(path)}.";
             return true;
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
-            StatusMessage = "The system notes were not saved: "
-                + exception.Message;
+            StatusMessage = "The system notes were not saved: " + exception.Message;
             return false;
         }
         finally
@@ -310,18 +278,13 @@ public sealed class SystemNotesViewModel : INotifyPropertyChanged
         try
         {
             await settingsStore.SaveAlwaysOnTopAsync(value);
-            StatusMessage = value
-                ? "System notes will stay above other windows."
-                : "Always on top is off.";
+            StatusMessage = value ? "System notes will stay above other windows." : "Always on top is off.";
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
             AlwaysOnTop = !value;
-            StatusMessage = "The always-on-top preference was not saved: "
-                + exception.Message;
+            StatusMessage = "The always-on-top preference was not saved: " + exception.Message;
         }
     }
 
@@ -333,27 +296,23 @@ public sealed class SystemNotesViewModel : INotifyPropertyChanged
         }
 
         var system = Uri.EscapeDataString(context.SystemName);
-        return LaunchUriAsync(
-            new Uri(WellKnownUris.CanonnSignalsSystemPrefix + system),
-            "Canonn Signals");
+        return LaunchUriAsync(new Uri(WellKnownUris.CanonnSignalsSystemPrefix + system), "Canonn Signals");
     }
 
     public Task OpenSpanshAsync()
     {
         return LaunchSystemAddressAsync(
-            address => new Uri(
-                WellKnownUris.SpanshSystemPrefix
-                    + address.ToString(CultureInfo.InvariantCulture)),
-            "Spansh");
+            address => new Uri(WellKnownUris.SpanshSystemPrefix + address.ToString(CultureInfo.InvariantCulture)),
+            "Spansh"
+        );
     }
 
     public Task OpenEdsmAsync()
     {
         return LaunchSystemAddressAsync(
-            address => new Uri(
-                WellKnownUris.EdsmSystemById64Prefix
-                    + address.ToString(CultureInfo.InvariantCulture)),
-            "EDSM");
+            address => new Uri(WellKnownUris.EdsmSystemById64Prefix + address.ToString(CultureInfo.InvariantCulture)),
+            "EDSM"
+        );
     }
 
     public async Task OpenImagesAsync()
@@ -377,13 +336,10 @@ public sealed class SystemNotesViewModel : INotifyPropertyChanged
                 ? "Opened the system screenshot folder."
                 : "The operating system could not open the screenshot folder.";
         }
-        catch (Exception exception) when (
-            exception is InvalidOperationException
-                or NotSupportedException
-                or UnauthorizedAccessException)
+        catch (Exception exception)
+            when (exception is InvalidOperationException or NotSupportedException or UnauthorizedAccessException)
         {
-            StatusMessage = "The screenshot folder could not be opened: "
-                + exception.Message;
+            StatusMessage = "The screenshot folder could not be opened: " + exception.Message;
         }
     }
 
@@ -411,9 +367,7 @@ public sealed class SystemNotesViewModel : INotifyPropertyChanged
 
     private bool CanOpenWindow()
     {
-        return currentContext is not null
-            && windowOpener is not null
-            && !IsBusy;
+        return currentContext is not null && windowOpener is not null && !IsBusy;
     }
 
     private async Task OpenWindowAsync()
@@ -440,9 +394,7 @@ public sealed class SystemNotesViewModel : INotifyPropertyChanged
         return loadedContext?.SystemAddress > 0 && !IsBusy;
     }
 
-    private Task LaunchSystemAddressAsync(
-        Func<long, Uri> createUri,
-        string label)
+    private Task LaunchSystemAddressAsync(Func<long, Uri> createUri, string label)
     {
         if (loadedContext is not { SystemAddress: > 0 } context)
         {
@@ -463,17 +415,12 @@ public sealed class SystemNotesViewModel : INotifyPropertyChanged
         try
         {
             var launched = await uriLauncher(uri);
-            StatusMessage = launched
-                ? $"Opened {label}."
-                : $"The operating system could not open {label}.";
+            StatusMessage = launched ? $"Opened {label}." : $"The operating system could not open {label}.";
         }
-        catch (Exception exception) when (
-            exception is InvalidOperationException
-                or NotSupportedException
-                or UriFormatException)
+        catch (Exception exception)
+            when (exception is InvalidOperationException or NotSupportedException or UriFormatException)
         {
-            StatusMessage = $"{label} could not be opened: "
-                + exception.Message;
+            StatusMessage = $"{label} could not be opened: " + exception.Message;
         }
     }
 
@@ -492,28 +439,17 @@ public sealed class SystemNotesViewModel : INotifyPropertyChanged
         openImagesCommand.RaiseCanExecuteChanged();
     }
 
-    private static bool IsSameSystem(
-        SystemNoteContext? left,
-        SystemNoteContext? right)
+    private static bool IsSameSystem(SystemNoteContext? left, SystemNoteContext? right)
     {
         return left is null && right is null
             || left is not null
                 && right is not null
                 && left.SystemAddress == right.SystemAddress
-                && string.Equals(
-                    left.FrontierId,
-                    right.FrontierId,
-                    StringComparison.OrdinalIgnoreCase)
-                && string.Equals(
-                    left.SystemName,
-                    right.SystemName,
-                    StringComparison.OrdinalIgnoreCase);
+                && string.Equals(left.FrontierId, right.FrontierId, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(left.SystemName, right.SystemName, StringComparison.OrdinalIgnoreCase);
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -530,9 +466,7 @@ public sealed class SystemNotesViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private sealed class AsyncCommand(
-        Func<Task> execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class AsyncCommand(Func<Task> execute, Func<bool> canExecute) : ICommand
     {
         public event EventHandler? CanExecuteChanged;
 

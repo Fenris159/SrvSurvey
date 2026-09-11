@@ -34,19 +34,15 @@ public sealed record FrontierAccountSnapshot(
     DateTimeOffset? CommanderReputationFetchedAt = null,
     IReadOnlyList<FrontierDataPointSnapshot>? CarrierEndpointData = null,
     DateTimeOffset? InaraCommunityGoalsFetchedAt = null,
-    string InaraCommunityGoalsError = "")
+    string InaraCommunityGoalsError = ""
+)
 {
     public long FleetValue => Ships.Sum(ship => ship.Value);
 
-    public long NetWorth => Credits - Debt + FleetValue
-        + (Carrier?.BankBalance ?? 0);
+    public long NetWorth => Credits - Debt + FleetValue + (Carrier?.BankBalance ?? 0);
 }
 
-public sealed record FrontierRankSnapshot(
-    string Key,
-    string Category,
-    int Level,
-    string Name);
+public sealed record FrontierRankSnapshot(string Key, string Category, int Level, string Name);
 
 public sealed record FrontierShipSnapshot(
     long? Id,
@@ -75,7 +71,8 @@ public sealed record FrontierShipSnapshot(
     long? StationId = null,
     IReadOnlyList<FrontierShipModuleSnapshot>? Modules = null,
     IReadOnlyList<FrontierLaunchBaySnapshot>? LaunchBays = null,
-    IReadOnlyList<FrontierDataPointSnapshot>? DataPoints = null);
+    IReadOnlyList<FrontierDataPointSnapshot>? DataPoints = null
+);
 
 public sealed record FrontierCarrierSnapshot(
     string Callsign,
@@ -118,22 +115,18 @@ public sealed record FrontierCarrierSnapshot(
     IReadOnlyList<FrontierReputationSnapshot>? Reputation = null,
     FrontierMarketSnapshot? Market = null,
     FrontierShipyardSnapshot? Shipyard = null,
-    IReadOnlyList<FrontierDataPointSnapshot>? DataPoints = null);
+    IReadOnlyList<FrontierDataPointSnapshot>? DataPoints = null
+);
 
 public sealed record FrontierCarrierEndpointSnapshot(
     FrontierCarrierSnapshot? Carrier,
     IReadOnlyList<FrontierReputationSnapshot> CommanderReputation,
-    IReadOnlyList<FrontierDataPointSnapshot> DataPoints);
+    IReadOnlyList<FrontierDataPointSnapshot> DataPoints
+);
 
-public sealed record FrontierCapacitySnapshot(
-    string Category,
-    int Used);
+public sealed record FrontierCapacitySnapshot(string Category, int Used);
 
-public sealed record FrontierInventorySnapshot(
-    string Category,
-    string Name,
-    int Quantity,
-    long Value);
+public sealed record FrontierInventorySnapshot(string Category, string Name, int Quantity, long Value);
 
 public sealed record FrontierMarketOrderSnapshot(
     string Category,
@@ -141,7 +134,8 @@ public sealed record FrontierMarketOrderSnapshot(
     int Quantity,
     int? Remaining,
     long Price,
-    bool IsBlackMarket);
+    bool IsBlackMarket
+);
 
 public sealed record FrontierLocationSnapshot(
     long? Id,
@@ -149,7 +143,8 @@ public sealed record FrontierLocationSnapshot(
     string Name,
     string Allegiance,
     string MinorFaction,
-    IReadOnlyList<string> Services);
+    IReadOnlyList<string> Services
+);
 
 public sealed record FrontierShipModuleSnapshot(
     string Slot,
@@ -165,24 +160,20 @@ public sealed record FrontierShipModuleSnapshot(
     string Blueprint,
     int? BlueprintLevel,
     IReadOnlyList<string> ExperimentalEffects,
-    string InternalName = "");
+    string InternalName = ""
+);
 
-public sealed record FrontierLaunchBaySnapshot(
-    string Slot,
-    string Vehicle,
-    string Loadout,
-    int Rebuilds);
+public sealed record FrontierLaunchBaySnapshot(string Slot, string Vehicle, string Loadout, int Rebuilds);
 
-public sealed record FrontierNamedValueSnapshot(
-    string Name,
-    string Value);
+public sealed record FrontierNamedValueSnapshot(string Name, string Value);
 
 public sealed record FrontierCarrierFinanceSnapshot(
     long CargoValue,
     long AllTimeProfit,
     int ItemsForSale,
     int PurchaseOrders,
-    long PurchaseOrderAllocation);
+    long PurchaseOrderAllocation
+);
 
 public sealed record FrontierCarrierCrewSnapshot(
     string Service,
@@ -192,18 +183,18 @@ public sealed record FrontierCarrierCrewSnapshot(
     string Faction,
     long Salary,
     string Status,
-    DateTimeOffset? LastChanged);
+    DateTimeOffset? LastChanged
+);
 
 public sealed record FrontierCarrierJumpSnapshot(
     string System,
     string State,
     DateTimeOffset? ArrivedAt,
     DateTimeOffset? DepartedAt,
-    long VisitDurationSeconds);
+    long VisitDurationSeconds
+);
 
-public sealed record FrontierReputationSnapshot(
-    string Faction,
-    double Score);
+public sealed record FrontierReputationSnapshot(string Faction, double Score);
 
 public sealed record FrontierMarketSnapshot(
     long? Id,
@@ -216,12 +207,10 @@ public sealed record FrontierMarketSnapshot(
     IReadOnlyList<FrontierEconomySnapshot> Economies,
     IReadOnlyList<FrontierCommoditySnapshot> Commodities,
     DateTimeOffset FetchedAt,
-    IReadOnlyList<FrontierDataPointSnapshot>? DataPoints = null);
+    IReadOnlyList<FrontierDataPointSnapshot>? DataPoints = null
+);
 
-public sealed record FrontierEconomySnapshot(
-    long? Id,
-    string Name,
-    double Proportion);
+public sealed record FrontierEconomySnapshot(long? Id, string Name, double Proportion);
 
 public sealed record FrontierCommoditySnapshot(
     long? Id,
@@ -235,7 +224,8 @@ public sealed record FrontierCommoditySnapshot(
     int StockBracket,
     long Stock,
     long Demand,
-    IReadOnlyList<string> StatusFlags);
+    IReadOnlyList<string> StatusFlags
+);
 
 public sealed record FrontierShipyardSnapshot(
     long? Id,
@@ -249,7 +239,8 @@ public sealed record FrontierShipyardSnapshot(
     IReadOnlyList<FrontierOutfittingModuleSnapshot> Modules,
     IReadOnlyList<FrontierShipForSaleSnapshot> Ships,
     DateTimeOffset FetchedAt,
-    IReadOnlyList<FrontierDataPointSnapshot>? DataPoints = null);
+    IReadOnlyList<FrontierDataPointSnapshot>? DataPoints = null
+);
 
 public sealed record FrontierOutfittingModuleSnapshot(
     long? Id,
@@ -257,14 +248,10 @@ public sealed record FrontierOutfittingModuleSnapshot(
     string Name,
     long Cost,
     string Sku,
-    int Stock);
+    int Stock
+);
 
-public sealed record FrontierShipForSaleSnapshot(
-    long? Id,
-    string Name,
-    long BaseValue,
-    string Sku,
-    int Stock);
+public sealed record FrontierShipForSaleSnapshot(long? Id, string Name, long BaseValue, string Sku, int Stock);
 
 public sealed record FrontierCommunityGoalSnapshot(
     long? Id,
@@ -288,8 +275,7 @@ public sealed record FrontierCommunityGoalSnapshot(
     IReadOnlyList<FrontierDataPointSnapshot>? DataPoints = null,
     string ActivityType = "",
     bool HasPlayerContributionData = false,
-    bool HasContributorData = false);
+    bool HasContributorData = false
+);
 
-public sealed record FrontierDataPointSnapshot(
-    string Path,
-    string Value);
+public sealed record FrontierDataPointSnapshot(string Path, string Value);

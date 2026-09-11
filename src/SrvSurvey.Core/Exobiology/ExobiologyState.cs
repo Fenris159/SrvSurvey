@@ -7,8 +7,7 @@ namespace SrvSurvey.Core.Exobiology;
 
 public sealed class ExobiologyState
 {
-    public const string RadicoidaUnicaSpecies =
-        "$Codex_Ent_Ingensradices_Unicus_Name;";
+    public const string RadicoidaUnicaSpecies = "$Codex_Ent_Ingensradices_Unicus_Name;";
 
     private readonly ExobiologyReferenceCatalog catalog;
     private readonly Dictionary<BodyKey, BodyState> bodies = [];
@@ -19,9 +18,7 @@ public sealed class ExobiologyState
     private BodyKey? currentBodyKey;
     private double currentPlanetRadius;
 
-    public ExobiologyState(
-        ExobiologyReferenceCatalog catalog,
-        ExobiologySnapshot? seed = null)
+    public ExobiologyState(ExobiologyReferenceCatalog catalog, ExobiologySnapshot? seed = null)
     {
         this.catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
         Reset(seed);
@@ -41,8 +38,8 @@ public sealed class ExobiologyState
 
     public int UnclaimedScanCount => scannedBioEntryIds.Count;
 
-    public bool? CurrentBodyFirstFootfall => currentBodyKey is not null
-        && bodies.TryGetValue(currentBodyKey.Value, out var body)
+    public bool? CurrentBodyFirstFootfall =>
+        currentBodyKey is not null && bodies.TryGetValue(currentBodyKey.Value, out var body)
             ? body.FirstFootfall
             : null;
 
@@ -56,8 +53,8 @@ public sealed class ExobiologyState
 
     public double? RequiredSampleDistance => (ScanTwo ?? ScanOne)?.Radius;
 
-    public double? RemainingSampleDistance => RequiredSampleDistance is not null
-        && NearestActiveSampleDistance is not null
+    public double? RemainingSampleDistance =>
+        RequiredSampleDistance is not null && NearestActiveSampleDistance is not null
             ? Math.Max(0, RequiredSampleDistance.Value - NearestActiveSampleDistance.Value)
             : null;
 
@@ -83,8 +80,7 @@ public sealed class ExobiologyState
             case "Location":
             case "FSDJump":
             case "CarrierJump":
-                currentSystemPopulation = GetInt64(root, "Population")
-                    ?? currentSystemPopulation;
+                currentSystemPopulation = GetInt64(root, "Population") ?? currentSystemPopulation;
                 currentBodyName = GetString(root, "Body") ?? currentBodyName;
                 return true;
 
@@ -124,7 +120,8 @@ public sealed class ExobiologyState
             ScanTwo,
             OrganicRewards,
             scannedBioEntryIds.Order(StringComparer.Ordinal).ToArray(),
-            CountRadicoidaUnica);
+            CountRadicoidaUnica
+        );
     }
 
     public void Reset(ExobiologySnapshot? seed = null)
@@ -145,8 +142,8 @@ public sealed class ExobiologyState
                 activeReference = catalog.FindByEntryId(activeSample.EntryId);
             }
 
-            ActiveSpeciesDisplayName = activeReference?.DisplayName
-                ?? catalog.FindBySpecies(activeSample.Species)?.DisplayName;
+            ActiveSpeciesDisplayName =
+                activeReference?.DisplayName ?? catalog.FindBySpecies(activeSample.Species)?.DisplayName;
         }
 
         UpdateSampleDistance();
@@ -178,12 +175,11 @@ public sealed class ExobiologyState
 
         var prefix = $"{systemAddress}_{bodyId}_";
         var changed = false;
-        foreach (var entry in scannedBioEntryIds
-                     .Where(entry => entry.StartsWith(prefix, StringComparison.Ordinal))
-                     .ToArray())
+        foreach (
+            var entry in scannedBioEntryIds.Where(entry => entry.StartsWith(prefix, StringComparison.Ordinal)).ToArray()
+        )
         {
-            if (!ScannedBioEntry.TryParse(entry, out var parsed)
-                || parsed.FirstFootfall == value)
+            if (!ScannedBioEntry.TryParse(entry, out var parsed) || parsed.FirstFootfall == value)
             {
                 continue;
             }
@@ -250,8 +246,7 @@ public sealed class ExobiologyState
 
     private void ApplyDisembark(JsonElement root)
     {
-        if (!(GetBoolean(root, "OnPlanet") ?? false)
-            || (GetBoolean(root, "OnStation") ?? false))
+        if (!(GetBoolean(root, "OnPlanet") ?? false) || (GetBoolean(root, "OnStation") ?? false))
         {
             return;
         }
@@ -276,23 +271,23 @@ public sealed class ExobiologyState
     {
         var variant = GetString(root, "Variant");
         var species = GetString(root, "Species");
-        var reference = catalog.FindByVariant(variant)
-            ?? catalog.FindBySpecies(species);
+        var reference = catalog.FindByVariant(variant) ?? catalog.FindBySpecies(species);
         var systemAddress = GetInt64(root, "SystemAddress");
         var bodyId = GetInt32(root, "Body");
         var scanType = GetString(root, "ScanType");
-        if (reference is null
+        if (
+            reference is null
             || systemAddress is null
             || bodyId is null
             || string.IsNullOrWhiteSpace(species)
-            || string.IsNullOrWhiteSpace(scanType))
+            || string.IsNullOrWhiteSpace(scanType)
+        )
         {
             return false;
         }
 
         var activeHash = $"{systemAddress}|{bodyId}|{species}";
-        if (LastOrganicScan is not null
-            && !string.Equals(LastOrganicScan, activeHash, StringComparison.Ordinal))
+        if (LastOrganicScan is not null && !string.Equals(LastOrganicScan, activeHash, StringComparison.Ordinal))
         {
             ScanOne = null;
             ScanTwo = null;
@@ -300,9 +295,8 @@ public sealed class ExobiologyState
 
         LastOrganicScan = activeHash;
         currentBodyKey = new BodyKey(systemAddress.Value, bodyId.Value);
-        ActiveSpeciesDisplayName = GetString(root, "Variant_Localised")
-            ?? GetString(root, "Species_Localised")
-            ?? reference.DisplayName;
+        ActiveSpeciesDisplayName =
+            GetString(root, "Variant_Localised") ?? GetString(root, "Species_Localised") ?? reference.DisplayName;
         var genus = GetString(root, "Genus") ?? string.Empty;
         var sample = new BioSampleSnapshot(
             currentLocation,
@@ -311,7 +305,8 @@ public sealed class ExobiologyState
             species,
             "Active",
             reference.EntryId,
-            currentBodyName);
+            currentBodyName
+        );
 
         if (scanType == "Log")
         {
@@ -340,17 +335,18 @@ public sealed class ExobiologyState
                 CountRadicoidaUnica++;
             }
 
-            var body = bodies.GetValueOrDefault(
-                new BodyKey(systemAddress.Value, bodyId.Value));
+            var body = bodies.GetValueOrDefault(new BodyKey(systemAddress.Value, bodyId.Value));
             var entry = new ScannedBioEntry(
                 systemAddress.Value,
                 bodyId.Value,
                 reference.EntryId,
                 reference.Reward,
-                body?.FirstFootfall ?? false);
+                body?.FirstFootfall ?? false
+            );
             var prefix = entry.ToString()[..entry.ToString().LastIndexOf('_')];
             var prior = scannedBioEntryIds.FirstOrDefault(candidate =>
-                candidate.StartsWith(prefix, StringComparison.Ordinal));
+                candidate.StartsWith(prefix, StringComparison.Ordinal)
+            );
             if (prior is not null)
             {
                 scannedBioEntryIds.Remove(prior);
@@ -367,8 +363,7 @@ public sealed class ExobiologyState
 
     private void ApplySale(JsonElement root)
     {
-        if (!root.TryGetProperty("BioData", out var bioData)
-            || bioData.ValueKind != JsonValueKind.Array)
+        if (!root.TryGetProperty("BioData", out var bioData) || bioData.ValueKind != JsonValueKind.Array)
         {
             return;
         }
@@ -393,7 +388,8 @@ public sealed class ExobiologyState
             var rewardText = value.Value.ToString(CultureInfo.InvariantCulture);
             var match = scannedBioEntryIds.FirstOrDefault(candidate =>
                 candidate.Contains(reference.EntryIdPrefix, StringComparison.Ordinal)
-                && candidate.Contains(rewardText, StringComparison.Ordinal));
+                && candidate.Contains(rewardText, StringComparison.Ordinal)
+            );
             if (match is not null)
             {
                 scannedBioEntryIds.Remove(match);
@@ -434,16 +430,16 @@ public sealed class ExobiologyState
             .ToArray();
         try
         {
-            NearestActiveSampleDistance = activeSamples.Length == 0
-                ? null
-                : activeSamples.Min(sample => SurfaceNavigation.GetDistance(
-                    new SurfaceCoordinate(
-                        sample.Location.Latitude,
-                        sample.Location.Longitude),
-                    new SurfaceCoordinate(
-                        currentLocation.Latitude,
-                        currentLocation.Longitude),
-                    currentPlanetRadius));
+            NearestActiveSampleDistance =
+                activeSamples.Length == 0
+                    ? null
+                    : activeSamples.Min(sample =>
+                        SurfaceNavigation.GetDistance(
+                            new SurfaceCoordinate(sample.Location.Latitude, sample.Location.Longitude),
+                            new SurfaceCoordinate(currentLocation.Latitude, currentLocation.Longitude),
+                            currentPlanetRadius
+                        )
+                    );
         }
         catch (ArgumentOutOfRangeException)
         {
@@ -468,9 +464,7 @@ public sealed class ExobiologyState
     {
         var systemAddress = GetInt64(root, "SystemAddress");
         var bodyId = GetInt32(root, "BodyID");
-        return systemAddress is null || bodyId is null
-            ? null
-            : new BodyKey(systemAddress.Value, bodyId.Value);
+        return systemAddress is null || bodyId is null ? null : new BodyKey(systemAddress.Value, bodyId.Value);
     }
 
     private static int GetGenusRange(string genus)
@@ -479,28 +473,25 @@ public sealed class ExobiologyState
         {
             "$Codex_Ent_Fumerolas_Genus_Name;" => 100,
             "$Codex_Ent_Aleoids_Genus_Name;"
-                or "$Codex_Ent_Clypeus_Genus_Name;"
-                or "$Codex_Ent_Conchas_Genus_Name;"
-                or "$Codex_Ent_Shrubs_Genus_Name;"
-                or "$Codex_Ent_Recepta_Genus_Name;" => 150,
+            or "$Codex_Ent_Clypeus_Genus_Name;"
+            or "$Codex_Ent_Conchas_Genus_Name;"
+            or "$Codex_Ent_Shrubs_Genus_Name;"
+            or "$Codex_Ent_Recepta_Genus_Name;" => 150,
             "$Codex_Ent_Tussocks_Genus_Name;" => 200,
-            "$Codex_Ent_Cactoid_Genus_Name;"
-                or "$Codex_Ent_Fungoids_Genus_Name;" => 300,
+            "$Codex_Ent_Cactoid_Genus_Name;" or "$Codex_Ent_Fungoids_Genus_Name;" => 300,
             "$Codex_Ent_Bacterial_Genus_Name;"
-                or "$Codex_Ent_Fonticulus_Genus_Name;"
-                or "$Codex_Ent_Stratum_Genus_Name;" => 500,
-            "$Codex_Ent_Osseus_Genus_Name;"
-                or "$Codex_Ent_Tubus_Genus_Name;" => 800,
+            or "$Codex_Ent_Fonticulus_Genus_Name;"
+            or "$Codex_Ent_Stratum_Genus_Name;" => 500,
+            "$Codex_Ent_Osseus_Genus_Name;" or "$Codex_Ent_Tubus_Genus_Name;" => 800,
             "$Codex_Ent_Electricae_Genus_Name;" => 1000,
             "$Codex_Ent_Vents_Name;"
-                or "$Codex_Ent_Sphere_Name;"
-                or "$Codex_Ent_Cone_Name;"
-                or "$Codex_Ent_Brancae_Name;"
-                or "$Codex_Ent_Ground_Struct_Ice_Name;"
-                or "$Codex_Ent_Tube_Name;" => 100,
-            "$Codex_Ent_Barnacles_Name;"
-                or "$Codex_Ent_Thargoid_Coral_Name;"
-                or "$Codex_Ent_Thargoid_Tower_Name;" => 85,
+            or "$Codex_Ent_Sphere_Name;"
+            or "$Codex_Ent_Cone_Name;"
+            or "$Codex_Ent_Brancae_Name;"
+            or "$Codex_Ent_Ground_Struct_Ice_Name;"
+            or "$Codex_Ent_Tube_Name;" => 100,
+            "$Codex_Ent_Barnacles_Name;" or "$Codex_Ent_Thargoid_Coral_Name;" or "$Codex_Ent_Thargoid_Tower_Name;" =>
+                85,
             "$Codex_Ent_Ingensradices_Genus_Name;" => 15,
             _ => 50,
         };
@@ -508,36 +499,38 @@ public sealed class ExobiologyState
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
-            && value.ValueKind == JsonValueKind.String
-                ? value.GetString()
-                : null;
+        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+            ? value.GetString()
+            : null;
     }
 
     private static bool? GetBoolean(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
+        return
+            root.TryGetProperty(propertyName, out var value)
             && value.ValueKind is JsonValueKind.True or JsonValueKind.False
-                ? value.GetBoolean()
-                : null;
+            ? value.GetBoolean()
+            : null;
     }
 
     private static long? GetInt64(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
+        return
+            root.TryGetProperty(propertyName, out var value)
             && value.ValueKind == JsonValueKind.Number
             && value.TryGetInt64(out var number)
-                ? number
-                : null;
+            ? number
+            : null;
     }
 
     private static int? GetInt32(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
+        return
+            root.TryGetProperty(propertyName, out var value)
             && value.ValueKind == JsonValueKind.Number
             && value.TryGetInt32(out var number)
-                ? number
-                : null;
+            ? number
+            : null;
     }
 
     private readonly record struct BodyKey(long SystemAddress, int BodyId);
@@ -549,12 +542,7 @@ public sealed class ExobiologyState
         public bool FirstFootfall { get; set; }
     }
 
-    private sealed record ScannedBioEntry(
-        long SystemAddress,
-        int BodyId,
-        long EntryId,
-        long Reward,
-        bool FirstFootfall)
+    private sealed record ScannedBioEntry(long SystemAddress, int BodyId, long EntryId, long Reward, bool FirstFootfall)
     {
         public override string ToString()
         {
@@ -565,22 +553,19 @@ public sealed class ExobiologyState
         {
             result = null!;
             var parts = value.Split('_', StringSplitOptions.TrimEntries);
-            if (parts.Length < 5
+            if (
+                parts.Length < 5
                 || !long.TryParse(parts[0], out var systemAddress)
                 || !int.TryParse(parts[1], out var bodyId)
                 || !long.TryParse(parts[2], out var entryId)
                 || !long.TryParse(parts[3], out var reward)
-                || !bool.TryParse(parts[4], out var firstFootfall))
+                || !bool.TryParse(parts[4], out var firstFootfall)
+            )
             {
                 return false;
             }
 
-            result = new ScannedBioEntry(
-                systemAddress,
-                bodyId,
-                entryId,
-                reward,
-                firstFootfall);
+            result = new ScannedBioEntry(systemAddress, bodyId, entryId, reward, firstFootfall);
             return true;
         }
     }
@@ -595,7 +580,8 @@ public sealed record BioSampleSnapshot(
     string Species,
     string Status,
     long EntryId,
-    string? Body);
+    string? Body
+);
 
 public sealed record ExobiologySnapshot(
     string? LastOrganicScan,
@@ -603,8 +589,8 @@ public sealed record ExobiologySnapshot(
     BioSampleSnapshot? ScanTwo,
     long OrganicRewards,
     IReadOnlyList<string> ScannedBioEntryIds,
-    int CountRadicoidaUnica)
+    int CountRadicoidaUnica
+)
 {
-    public static ExobiologySnapshot Empty { get; } =
-        new(null, null, null, 0, [], 0);
+    public static ExobiologySnapshot Empty { get; } = new(null, null, null, 0, [], 0);
 }

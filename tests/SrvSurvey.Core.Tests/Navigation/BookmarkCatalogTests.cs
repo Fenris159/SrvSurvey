@@ -1,7 +1,7 @@
+using System.Text.Json;
 using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Search;
-using System.Text.Json;
 
 namespace SrvSurvey.Core.Tests.Navigation;
 
@@ -10,11 +10,7 @@ public sealed class BookmarkCatalogTests
     [Fact]
     public void DisplayBodyOmitsRepeatedSystemPrefix()
     {
-        var bookmark = new GalacticBookmark
-        {
-            System = "LTT 4428",
-            Body = "LTT 4428 E 5 a",
-        };
+        var bookmark = new GalacticBookmark { System = "LTT 4428", Body = "LTT 4428 E 5 a" };
 
         Assert.Equal("E 5 a", bookmark.DisplayBody);
         Assert.Equal("LTT 4428 E 5 a", bookmark.CombinedBodyAndRing);
@@ -29,35 +25,32 @@ public sealed class BookmarkCatalogTests
             var center = new SurfaceCoordinate(12.345, -67.89);
             var markerLocation = new SurfaceCoordinate(12.355, -67.88);
             var id = Guid.NewGuid();
-            new BookmarkCatalog(directory).Save(new GalacticBookmark
-            {
-                Id = id,
-                System = "Wille",
-                Body = "Wille 2 d",
-                CategoryAssignments = [BookmarkCategoryCatalog.SurfaceMining],
-                SurfaceMiningMap = new MineMapSurvey
+            new BookmarkCatalog(directory).Save(
+                new GalacticBookmark
                 {
                     Id = id,
-                    FrontierId = "F123",
-                    SystemName = "Wille",
-                    SystemAddress = 42,
-                    SystemPosition = new GalacticCoordinate(1, 2, 3),
-                    BodyId = 2,
-                    BodyName = "Wille 2 d",
-                    BodyType = "Rocky body",
-                    LocationSignal = 4,
-                    PlanetRadiusMeters = 855_573,
-                    Center = center,
-                    Markers = [new MineMapMarker
+                    System = "Wille",
+                    Body = "Wille 2 d",
+                    CategoryAssignments = [BookmarkCategoryCatalog.SurfaceMining],
+                    SurfaceMiningMap = new MineMapSurvey
                     {
-                        Material = "Ruby",
-                        Location = markerLocation,
-                    }],
-                },
-            });
+                        Id = id,
+                        FrontierId = "F123",
+                        SystemName = "Wille",
+                        SystemAddress = 42,
+                        SystemPosition = new GalacticCoordinate(1, 2, 3),
+                        BodyId = 2,
+                        BodyName = "Wille 2 d",
+                        BodyType = "Rocky body",
+                        LocationSignal = 4,
+                        PlanetRadiusMeters = 855_573,
+                        Center = center,
+                        Markers = [new MineMapMarker { Material = "Ruby", Location = markerLocation }],
+                    },
+                }
+            );
 
-            var restored = Assert.Single(new BookmarkCatalog(directory).Items)
-                .SurfaceMiningMap!;
+            var restored = Assert.Single(new BookmarkCatalog(directory).Items).SurfaceMiningMap!;
             Assert.Equal(center, restored.Center);
             Assert.Equal(markerLocation, Assert.Single(restored.Markers).Location);
             var json = File.ReadAllText(Path.Combine(directory, "bookmarks.json"));
@@ -65,7 +58,10 @@ public sealed class BookmarkCatalogTests
         }
         finally
         {
-            if (Directory.Exists(directory)) Directory.Delete(directory, true);
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
         }
     }
 
@@ -88,7 +84,10 @@ public sealed class BookmarkCatalogTests
         }
         finally
         {
-            if (Directory.Exists(directory)) Directory.Delete(directory, true);
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
         }
     }
 
@@ -102,30 +101,27 @@ public sealed class BookmarkCatalogTests
             catalog.Save(new GalacticBookmark { System = "Sol" });
             var invalid = SurfaceBookmark(Guid.NewGuid(), 4, new SurfaceCoordinate(1, 2)) with
             {
-                SurfaceMiningMap = SurfaceBookmark(
-                    Guid.NewGuid(),
-                    4,
-                    new SurfaceCoordinate(1, 2)).SurfaceMiningMap,
+                SurfaceMiningMap = SurfaceBookmark(Guid.NewGuid(), 4, new SurfaceCoordinate(1, 2)).SurfaceMiningMap,
             };
 
-            Assert.Throws<JsonException>(() => catalog.Import(
-                JsonSerializer.Serialize(new[] { invalid })));
+            Assert.Throws<JsonException>(() => catalog.Import(JsonSerializer.Serialize(new[] { invalid })));
             Assert.Single(catalog.Items);
         }
         finally
         {
-            if (Directory.Exists(directory)) Directory.Delete(directory, true);
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
         }
     }
 
     [Fact]
     public void ParseReportsInvalidSurfaceCoordinatesAsJsonErrors()
     {
-        var bookmark = SurfaceBookmark(
-            Guid.NewGuid(),
-            4,
-            new SurfaceCoordinate(1, 2));
-        var json = JsonSerializer.Serialize(new[] { bookmark })
+        var bookmark = SurfaceBookmark(Guid.NewGuid(), 4, new SurfaceCoordinate(1, 2));
+        var json = JsonSerializer
+            .Serialize(new[] { bookmark })
             .Replace("\"Latitude\":1", "\"Latitude\":91", StringComparison.Ordinal);
 
         var exception = Assert.Throws<JsonException>(() => BookmarkCatalog.Parse(json));
@@ -136,12 +132,12 @@ public sealed class BookmarkCatalogTests
     [Fact]
     public void ValidationMessageDescribesCurrentRequirements()
     {
-        var exception = Assert.Throws<JsonException>(() =>
-            BookmarkCatalog.Parse("[{\"Rating\":6}]"));
+        var exception = Assert.Throws<JsonException>(() => BookmarkCatalog.Parse("[{\"Rating\":6}]"));
 
         Assert.Contains("system and rating between 0 and 5", exception.Message);
         Assert.DoesNotContain("category", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
+
     [Fact]
     public void RestoreRecoversBackedUpEditsAndRetainsPreviousCatalogOnDisk()
     {
@@ -150,13 +146,20 @@ public sealed class BookmarkCatalogTests
         {
             var catalog = new BookmarkCatalog(directory);
             var bookmark = new GalacticBookmark { System = "Sol", Notes = "Original" };
-            catalog.Save(bookmark); var backup = catalog.Export();
+            catalog.Save(bookmark);
+            var backup = catalog.Export();
             catalog.Save(bookmark with { Notes = "Edited" });
             catalog.Restore(backup);
             Assert.Equal("Original", Assert.Single(catalog.Items).Notes);
             Assert.Contains("Edited", File.ReadAllText(Path.Combine(directory, "bookmarks.json.before-restore")));
         }
-        finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
     }
 
     [Fact]
@@ -166,12 +169,20 @@ public sealed class BookmarkCatalogTests
         try
         {
             var catalog = new BookmarkCatalog(directory);
-            catalog.Import("""[{"system":"Sol","body":"Earth A Ring","materials":"Platinum","rating":"4","overlap_type":"2x","notes":"Test"}]""");
+            catalog.Import(
+                """[{"system":"Sol","body":"Earth A Ring","materials":"Platinum","rating":"4","overlap_type":"2x","notes":"Test"}]"""
+            );
             Assert.Equal("2x", Assert.Single(catalog.Items).Overlaps);
             Assert.ThrowsAny<System.Text.Json.JsonException>(() => catalog.Import("[42]"));
             Assert.Single(catalog.Items);
         }
-        finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
     }
 
     [Fact]
@@ -181,7 +192,16 @@ public sealed class BookmarkCatalogTests
         try
         {
             var catalog = new BookmarkCatalog(directory);
-            catalog.Save(new GalacticBookmark { System = "Sol", Body = "Earth A Ring", Category = "Mining", Notes = "Test", Rating = 4 });
+            catalog.Save(
+                new GalacticBookmark
+                {
+                    System = "Sol",
+                    Body = "Earth A Ring",
+                    Category = "Mining",
+                    Notes = "Test",
+                    Rating = 4,
+                }
+            );
             catalog.Save(new GalacticBookmark { System = "Achenar", Category = "Location" });
             var backup = catalog.Export();
             var restored = new BookmarkCatalog(directory);
@@ -193,7 +213,13 @@ public sealed class BookmarkCatalogTests
             Assert.ThrowsAny<System.Text.Json.JsonException>(() => restored.Import("not json"));
             Assert.Equal(2, new BookmarkCatalog(directory).Items.Count);
         }
-        finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
     }
 
     [Fact]
@@ -203,11 +229,7 @@ public sealed class BookmarkCatalogTests
         try
         {
             var catalog = new BookmarkCatalog(directory);
-            catalog.Save(new GalacticBookmark
-            {
-                System = "LTT 4428",
-                CategoryAssignments = ["Mining", "POI"],
-            });
+            catalog.Save(new GalacticBookmark { System = "LTT 4428", CategoryAssignments = ["Mining", "POI"] });
 
             Assert.Single(catalog.Filter("Mining", string.Empty));
             Assert.Single(catalog.Filter("POI", string.Empty));
@@ -218,7 +240,10 @@ public sealed class BookmarkCatalogTests
         }
         finally
         {
-            if (Directory.Exists(directory)) Directory.Delete(directory, true);
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
         }
     }
 
@@ -229,12 +254,14 @@ public sealed class BookmarkCatalogTests
         try
         {
             var catalog = new BookmarkCatalog(directory);
-            catalog.Save(new GalacticBookmark
-            {
-                System = "Delkar",
-                Body = "Delkar 7",
-                Ring = "A Ring",
-            });
+            catalog.Save(
+                new GalacticBookmark
+                {
+                    System = "Delkar",
+                    Body = "Delkar 7",
+                    Ring = "A Ring",
+                }
+            );
 
             var restored = Assert.Single(new BookmarkCatalog(directory).Items);
             Assert.Equal("7", restored.DisplayBody);
@@ -246,14 +273,14 @@ public sealed class BookmarkCatalogTests
         }
         finally
         {
-            if (Directory.Exists(directory)) Directory.Delete(directory, true);
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
         }
     }
 
-    private static GalacticBookmark SurfaceBookmark(
-        Guid id,
-        int signal,
-        SurfaceCoordinate center)
+    private static GalacticBookmark SurfaceBookmark(Guid id, int signal, SurfaceCoordinate center)
     {
         var map = new MineMapSurvey
         {

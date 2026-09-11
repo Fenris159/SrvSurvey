@@ -19,8 +19,12 @@ public sealed class GuardianZoomOverlayViewModel
     {
         public event EventHandler? CanExecuteChanged
         {
-            add { /* This command is always executable. */ }
-            remove { /* This command is always executable. */ }
+            add
+            { /* This command is always executable. */
+            }
+            remove
+            { /* This command is always executable. */
+            }
         }
 
         public bool CanExecute(object? parameter) => true;

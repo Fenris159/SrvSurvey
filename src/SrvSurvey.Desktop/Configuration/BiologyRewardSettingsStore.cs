@@ -17,7 +17,8 @@ public sealed class BiologyRewardSettingsStore
         return BiologyRewardThresholds.Normalize(
             GetDouble(settings, "BucketOneMillions", 3),
             GetDouble(settings, "BucketTwoMillions", 7),
-            GetDouble(settings, "BucketThreeMillions", 12));
+            GetDouble(settings, "BucketThreeMillions", 12)
+        );
     }
 
     public void Save(BiologyRewardThresholds thresholds)
@@ -26,7 +27,8 @@ public sealed class BiologyRewardSettingsStore
         var normalized = BiologyRewardThresholds.Normalize(
             thresholds.BucketOneMillions,
             thresholds.BucketTwoMillions,
-            thresholds.BucketThreeMillions);
+            thresholds.BucketThreeMillions
+        );
         documentStore.Update(root =>
         {
             root["Version"] = 1;
@@ -43,10 +45,7 @@ public sealed class BiologyRewardSettingsStore
         });
     }
 
-    private static double GetDouble(
-        JsonObject? settings,
-        string propertyName,
-        double fallback)
+    private static double GetDouble(JsonObject? settings, string propertyName, double fallback)
     {
         if (settings?[propertyName] is not JsonValue value)
         {
@@ -65,14 +64,16 @@ public sealed class BiologyRewardSettingsStore
 public sealed record BiologyRewardThresholds(
     double BucketOneMillions,
     double BucketTwoMillions,
-    double BucketThreeMillions)
+    double BucketThreeMillions
+)
 {
     public static BiologyRewardThresholds Default { get; } = new(3, 7, 12);
 
     public static BiologyRewardThresholds Normalize(
         double bucketOneMillions,
         double bucketTwoMillions,
-        double bucketThreeMillions)
+        double bucketThreeMillions
+    )
     {
         var one = NormalizeValue(bucketOneMillions, 3);
         var two = Math.Max(one, NormalizeValue(bucketTwoMillions, 7));

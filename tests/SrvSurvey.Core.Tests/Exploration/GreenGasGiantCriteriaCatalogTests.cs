@@ -4,8 +4,7 @@ namespace SrvSurvey.Core.Tests.Exploration;
 
 public sealed class GreenGasGiantCriteriaCatalogTests
 {
-    private readonly GreenGasGiantCriteriaCatalog catalog =
-        GreenGasGiantCriteriaCatalog.LoadEmbedded();
+    private readonly GreenGasGiantCriteriaCatalog catalog = GreenGasGiantCriteriaCatalog.LoadEmbedded();
 
     [Theory]
     [InlineData("Sudarsky class I gas giant", 77.450478, "likely")]
@@ -14,10 +13,7 @@ public sealed class GreenGasGiantCriteriaCatalogTests
     [InlineData("Sudarsky class III gas giant", 310.0005, "potential-approx")]
     [InlineData("Sudarsky class V gas giant", 310, null)]
     [InlineData("Rocky body", 310, null)]
-    public void MatchesShippedTemperatureCriteria(
-        string planetClass,
-        double temperature,
-        string? expected)
+    public void MatchesShippedTemperatureCriteria(string planetClass, double temperature, string? expected)
     {
         Assert.Equal(expected, catalog.Match(planetClass, temperature));
     }

@@ -10,14 +10,14 @@ public sealed class BiologyPredictionEvaluator
 
     public BiologyPredictionEvaluator(BiologyCriteriaCatalog catalog)
     {
-        this.catalog = catalog
-            ?? throw new ArgumentNullException(nameof(catalog));
+        this.catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
     }
 
     public BiologyPredictionResult Evaluate(
         BiologyPredictionContext context,
         BiologyPredictionKnowledge? knowledge = null,
-        string? targetVariant = null)
+        string? targetVariant = null
+    )
     {
         ArgumentNullException.ThrowIfNull(context);
         knowledge ??= BiologyPredictionKnowledge.Empty;
@@ -31,7 +31,8 @@ public sealed class BiologyPredictionEvaluator
                 species: null,
                 variant: null,
                 commonChildren: null,
-                inheritedClauses: []);
+                inheritedClauses: []
+            );
         }
 
         return state.CreateResult();
@@ -42,16 +43,15 @@ public sealed class BiologyPredictionEvaluator
         private readonly BiologyPredictionContext context;
         private readonly BiologyPredictionKnowledge knowledge;
         private readonly string? targetVariant;
-        private readonly Dictionary<string, BiologyPrediction> predictions = new(
-            StringComparer.Ordinal);
-        private readonly HashSet<string> missingProperties = new(
-            StringComparer.Ordinal);
+        private readonly Dictionary<string, BiologyPrediction> predictions = new(StringComparer.Ordinal);
+        private readonly HashSet<string> missingProperties = new(StringComparer.Ordinal);
         private readonly List<BiologyCriteriaClause> targetClauses = [];
 
         public EvaluationState(
             BiologyPredictionContext context,
             BiologyPredictionKnowledge knowledge,
-            string? targetVariant)
+            string? targetVariant
+        )
         {
             this.context = context;
             this.knowledge = knowledge;
@@ -64,7 +64,8 @@ public sealed class BiologyPredictionEvaluator
             string? species,
             string? variant,
             IReadOnlyList<BiologyCriteriaNode>? commonChildren,
-            IReadOnlyList<BiologyCriteriaClause> inheritedClauses)
+            IReadOnlyList<BiologyCriteriaClause> inheritedClauses
+        )
         {
             commonChildren = criteria.CommonChildren ?? commonChildren;
             genus = criteria.Genus ?? genus;
@@ -82,26 +83,16 @@ public sealed class BiologyPredictionEvaluator
             }
 
             var currentClauses = inheritedClauses
-                .Concat(criteria.Query.Where(
-                    clause => clause.Operator != BiologyCriteriaOperator.Comment))
+                .Concat(criteria.Query.Where(clause => clause.Operator != BiologyCriteriaOperator.Comment))
                 .ToArray();
             var currentName = FormatPredictionName(genus, species, variant);
             var targetMatch = false;
             if (currentName is not null)
             {
-                targetMatch = string.Equals(
-                    targetVariant,
-                    currentName,
-                    StringComparison.Ordinal);
+                targetMatch = string.Equals(targetVariant, currentName, StringComparison.Ordinal);
                 if (targetVariant is null || targetMatch)
                 {
-                    predictions.TryAdd(
-                        currentName,
-                        new BiologyPrediction(
-                            currentName,
-                            genus!,
-                            species!,
-                            variant!));
+                    predictions.TryAdd(currentName, new BiologyPrediction(currentName, genus!, species!, variant!));
                 }
 
                 if (targetMatch)
@@ -110,9 +101,7 @@ public sealed class BiologyPredictionEvaluator
                 }
             }
 
-            var children = criteria.UseCommonChildren
-                ? commonChildren
-                : criteria.Children;
+            var children = criteria.UseCommonChildren ? commonChildren : criteria.Children;
             if (children is null)
             {
                 return targetMatch;
@@ -120,13 +109,7 @@ public sealed class BiologyPredictionEvaluator
 
             foreach (var child in children)
             {
-                targetMatch |= Evaluate(
-                    child,
-                    genus,
-                    species,
-                    variant,
-                    commonChildren,
-                    currentClauses);
+                targetMatch |= Evaluate(child, genus, species, variant, commonChildren, currentClauses);
             }
 
             return targetMatch;
@@ -135,32 +118,27 @@ public sealed class BiologyPredictionEvaluator
         public BiologyPredictionResult CreateResult()
         {
             return new BiologyPredictionResult(
-                predictions.Values
-                    .OrderBy(prediction => prediction.Name, StringComparer.Ordinal)
-                    .ToArray(),
+                predictions.Values.OrderBy(prediction => prediction.Name, StringComparer.Ordinal).ToArray(),
                 missingProperties.Order(StringComparer.Ordinal).ToArray(),
-                targetClauses
-                    .DistinctBy(clause => clause.RawText, StringComparer.Ordinal)
-                    .ToArray());
+                targetClauses.DistinctBy(clause => clause.RawText, StringComparer.Ordinal).ToArray()
+            );
         }
 
         private bool ShouldSkipKnown(string? genus, string? species)
         {
-            if (!string.IsNullOrEmpty(genus)
+            if (
+                !string.IsNullOrEmpty(genus)
                 && knowledge.AllGeneraKnown
                 && knowledge.KnownGenera.Count > 0
-                && !knowledge.KnownGenera.Contains(
-                    genus,
-                    StringComparer.OrdinalIgnoreCase))
+                && !knowledge.KnownGenera.Contains(genus, StringComparer.OrdinalIgnoreCase)
+            )
             {
                 return true;
             }
 
             return genus is not null
                 && species is not null
-                && knowledge.KnownSpeciesByGenus.Keys.Contains(
-                    genus,
-                    StringComparer.OrdinalIgnoreCase);
+                && knowledge.KnownSpeciesByGenus.Keys.Contains(genus, StringComparer.OrdinalIgnoreCase);
         }
 
         private bool Matches(BiologyCriteriaClause clause)
@@ -182,110 +160,88 @@ public sealed class BiologyPredictionEvaluator
                 BiologyCriteriaOperator.All => MatchesAll(clause, bodyValue),
                 BiologyCriteriaOperator.Not => MatchesNone(clause, bodyValue),
                 BiologyCriteriaOperator.Range => MatchesRange(clause, bodyValue),
-                BiologyCriteriaOperator.Composition =>
-                    MatchesComposition(clause, bodyValue),
-                _ => throw new InvalidOperationException(
-                    $"Unsupported biology criteria operator: {clause.Operator}"),
+                BiologyCriteriaOperator.Composition => MatchesComposition(clause, bodyValue),
+                _ => throw new InvalidOperationException($"Unsupported biology criteria operator: {clause.Operator}"),
             };
         }
 
-        private static bool MatchesAny(
-            BiologyCriteriaClause clause,
-            object bodyValue)
+        private static bool MatchesAny(BiologyCriteriaClause clause, object bodyValue)
         {
-            if (clause.Property == "mats"
-                && bodyValue is IReadOnlyDictionary<string, double> materials)
+            if (clause.Property == "mats" && bodyValue is IReadOnlyDictionary<string, double> materials)
             {
-                return clause.Values.Any(value => materials.Any(
-                    material => string.Equals(
-                            material.Key,
-                            value,
-                            StringComparison.OrdinalIgnoreCase)
-                        && material.Value > MaterialPresenceThreshold));
+                return clause.Values.Any(value =>
+                    materials.Any(material =>
+                        string.Equals(material.Key, value, StringComparison.OrdinalIgnoreCase)
+                        && material.Value > MaterialPresenceThreshold
+                    )
+                );
             }
 
             var bodyValues = ToStrings(bodyValue);
             if (clause.Property == "body")
             {
-                return clause.Values.Any(value => bodyValues.Any(
-                    body => body.StartsWith(
-                        value,
-                        StringComparison.OrdinalIgnoreCase)));
+                return clause.Values.Any(value =>
+                    bodyValues.Any(body => body.StartsWith(value, StringComparison.OrdinalIgnoreCase))
+                );
             }
 
             if (clause.Property == "volcanism")
             {
                 if (clause.Values[0] == "Any")
                 {
-                    return bodyValues.Any(
-                        value => !value.Equals(
-                            "None",
-                            StringComparison.OrdinalIgnoreCase));
+                    return bodyValues.Any(value => !value.Equals("None", StringComparison.OrdinalIgnoreCase));
                 }
 
-                return clause.Values.Any(value => bodyValues.Any(
-                    body => body.Contains(
-                        value,
-                        StringComparison.OrdinalIgnoreCase)));
+                return clause.Values.Any(value =>
+                    bodyValues.Any(body => body.Contains(value, StringComparison.OrdinalIgnoreCase))
+                );
             }
 
-            return clause.Values.Any(value => bodyValues.Any(
-                body => body.Equals(
-                    value,
-                    StringComparison.OrdinalIgnoreCase)));
+            return clause.Values.Any(value =>
+                bodyValues.Any(body => body.Equals(value, StringComparison.OrdinalIgnoreCase))
+            );
         }
 
-        private static bool MatchesAll(
-            BiologyCriteriaClause clause,
-            object bodyValue)
+        private static bool MatchesAll(BiologyCriteriaClause clause, object bodyValue)
         {
             var bodyValues = ToStrings(bodyValue);
-            return clause.Values.All(value => bodyValues.Any(
-                body => body.Equals(
-                    value,
-                    StringComparison.OrdinalIgnoreCase)));
+            return clause.Values.All(value =>
+                bodyValues.Any(body => body.Equals(value, StringComparison.OrdinalIgnoreCase))
+            );
         }
 
-        private static bool MatchesNone(
-            BiologyCriteriaClause clause,
-            object bodyValue)
+        private static bool MatchesNone(BiologyCriteriaClause clause, object bodyValue)
         {
             var bodyValues = ToStrings(bodyValue);
-            return !clause.Values.Any(value => bodyValues.Any(
-                body => body.Equals(
-                    value,
-                    StringComparison.OrdinalIgnoreCase)));
+            return !clause.Values.Any(value =>
+                bodyValues.Any(body => body.Equals(value, StringComparison.OrdinalIgnoreCase))
+            );
         }
 
-        private static bool MatchesRange(
-            BiologyCriteriaClause clause,
-            object bodyValue)
+        private static bool MatchesRange(BiologyCriteriaClause clause, object bodyValue)
         {
             if (bodyValue is not double value)
             {
-                throw new InvalidOperationException(
-                    $"Biology criteria '{clause}' requires a numeric value.");
+                throw new InvalidOperationException($"Biology criteria '{clause}' requires a numeric value.");
             }
 
             return (clause.Minimum is null || value >= clause.Minimum)
                 && (clause.Maximum is null || value <= clause.Maximum);
         }
 
-        private static bool MatchesComposition(
-            BiologyCriteriaClause clause,
-            object bodyValue)
+        private static bool MatchesComposition(BiologyCriteriaClause clause, object bodyValue)
         {
             if (bodyValue is not IReadOnlyDictionary<string, double> composition)
             {
-                throw new InvalidOperationException(
-                    $"Biology criteria '{clause}' requires a composition.");
+                throw new InvalidOperationException($"Biology criteria '{clause}' requires a composition.");
             }
 
-            return clause.Compositions.Any(requirement => composition.Any(
-                item => item.Key.Equals(
-                        requirement.Key,
-                        StringComparison.OrdinalIgnoreCase)
-                    && item.Value >= requirement.Value));
+            return clause.Compositions.Any(requirement =>
+                composition.Any(item =>
+                    item.Key.Equals(requirement.Key, StringComparison.OrdinalIgnoreCase)
+                    && item.Value >= requirement.Value
+                )
+            );
         }
 
         private bool TryGetValue(string property, out object value)
@@ -298,20 +254,17 @@ public sealed class BiologyPredictionEvaluator
                 "pressure" => context.SurfacePressure,
                 "atmosphere" => context.Atmosphere,
                 "atmosType" => context.AtmosphereType,
-                "atmosComp" => NormalizeAtmosphereComposition(
-                    context.AtmosphereComposition),
+                "atmosComp" => NormalizeAtmosphereComposition(context.AtmosphereComposition),
                 "matsComp" or "mats" => context.Materials,
                 "dist" => context.DistanceFromArrivalLs,
                 "volcanism" => context.Volcanism,
-                "regions" => context.RegionId?.ToString(
-                    CultureInfo.InvariantCulture),
+                "regions" => context.RegionId?.ToString(CultureInfo.InvariantCulture),
                 "star" => context.StarTypes,
                 "parentStar" => context.ParentStarTypes,
                 "primaryStar" => context.PrimaryStarType,
                 "nebulae" => context.NebulaDistanceLy,
                 "guardian" => context.IsWithinGuardianBubble?.ToString(),
-                _ => throw new InvalidOperationException(
-                    $"Unsupported biology criteria property: {property}"),
+                _ => throw new InvalidOperationException($"Unsupported biology criteria property: {property}"),
             };
 
             if (candidate is null)
@@ -324,9 +277,9 @@ public sealed class BiologyPredictionEvaluator
             return true;
         }
 
-        private static IReadOnlyDictionary<string, double>?
-            NormalizeAtmosphereComposition(
-                IReadOnlyDictionary<string, double>? composition)
+        private static IReadOnlyDictionary<string, double>? NormalizeAtmosphereComposition(
+            IReadOnlyDictionary<string, double>? composition
+        )
         {
             if (composition?.Count != 1)
             {
@@ -334,11 +287,7 @@ public sealed class BiologyPredictionEvaluator
             }
 
             var item = composition.First();
-            return new Dictionary<string, double>(
-                StringComparer.OrdinalIgnoreCase)
-            {
-                [item.Key] = 100,
-            };
+            return new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase) { [item.Key] = 100 };
         }
 
         private static IReadOnlyList<string> ToStrings(object value)
@@ -347,26 +296,21 @@ public sealed class BiologyPredictionEvaluator
             {
                 string single => [single],
                 IReadOnlyList<string> list => list,
-                IReadOnlyDictionary<string, double> dictionary =>
-                    dictionary.Keys.ToArray(),
+                IReadOnlyDictionary<string, double> dictionary => dictionary.Keys.ToArray(),
                 _ => throw new InvalidOperationException(
-                    $"Biology criteria expected text values, not {value.GetType().Name}."),
+                    $"Biology criteria expected text values, not {value.GetType().Name}."
+                ),
             };
         }
 
-        private static string? FormatPredictionName(
-            string? genus,
-            string? species,
-            string? variant)
+        private static string? FormatPredictionName(string? genus, string? species, string? variant)
         {
             if (genus is null || species is null || variant is null)
             {
                 return null;
             }
 
-            return variant.Length == 0
-                ? species
-                : $"{genus} {species} - {variant}".Trim();
+            return variant.Length == 0 ? species : $"{genus} {species} - {variant}".Trim();
         }
     }
 }
@@ -414,28 +358,25 @@ public sealed record BiologyPredictionKnowledge
 
     public IReadOnlyCollection<string> KnownGenera { get; init; } = [];
 
-    public IReadOnlyDictionary<string, string> KnownSpeciesByGenus { get; init; }
-        = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    public IReadOnlyDictionary<string, string> KnownSpeciesByGenus { get; init; } =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 }
 
 public sealed record BiologyPredictionResult(
     IReadOnlyList<BiologyPrediction> PredictionDetails,
     IReadOnlyList<string> MissingProperties,
-    IReadOnlyList<BiologyCriteriaClause> TargetClauses)
+    IReadOnlyList<BiologyCriteriaClause> TargetClauses
+)
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Performance",
         "S2365:Properties should not make collection copies",
-        Justification = "This get-only property caches one immutable snapshot during construction.")]
-    public IReadOnlyList<string> Predictions { get; } = PredictionDetails
-        .Select(prediction => prediction.Name)
-        .ToArray();
+        Justification = "This get-only property caches one immutable snapshot during construction."
+    )]
+    public IReadOnlyList<string> Predictions { get; } =
+        PredictionDetails.Select(prediction => prediction.Name).ToArray();
 
     public bool HasCompleteContext => MissingProperties.Count == 0;
 }
 
-public sealed record BiologyPrediction(
-    string Name,
-    string Genus,
-    string Species,
-    string Variant);
+public sealed record BiologyPrediction(string Name, string Genus, string Species, string Variant);

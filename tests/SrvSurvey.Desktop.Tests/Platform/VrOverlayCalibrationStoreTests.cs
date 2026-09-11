@@ -7,7 +7,8 @@ public sealed class VrOverlayCalibrationStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-vr-calibration-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-vr-calibration-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void LegacyCalibrationRoundTripsUsingInvariantFormatting()
@@ -20,9 +21,7 @@ public sealed class VrOverlayCalibrationStoreTests : IDisposable
         var calibration = VrOverlayCalibration.Parse(legacy);
 
         Assert.NotNull(calibration);
-        Assert.Equal(calibration, VrOverlayCalibration.Parse(
-            calibration.ToString(),
-            allowDesktopPrefix: false));
+        Assert.Equal(calibration, VrOverlayCalibration.Parse(calibration.ToString(), allowDesktopPrefix: false));
     }
 
     [Fact]
@@ -34,9 +33,7 @@ public sealed class VrOverlayCalibrationStoreTests : IDisposable
         var originalPlotters = File.ReadAllText(plottersPath);
         var originalOverride = File.ReadAllText(overridePath);
 
-        var catalog = new VrOverlayCalibrationStore(
-            paths.Data,
-            paths.Factory).Load();
+        var catalog = new VrOverlayCalibrationStore(paths.Data, paths.Factory).Load();
 
         Assert.Equal(12, catalog.Resolve("PlotJumpInfo", null)!.Scale);
         Assert.Equal(18, catalog.Resolve("PlotJumpInfo", "testbuggy")!.Scale);
@@ -51,10 +48,7 @@ public sealed class VrOverlayCalibrationStoreTests : IDisposable
         var plottersPath = Path.Combine(paths.Data, "plotters.json");
         var original = File.ReadAllText(plottersPath);
         var store = new VrOverlayCalibrationStore(paths.Data, paths.Factory);
-        var calibration = new VrOverlayCalibration(
-            21.5f,
-            new Vector3(1, 2, 3),
-            new Vector3(4, 5, 6));
+        var calibration = new VrOverlayCalibration(21.5f, new Vector3(1, 2, 3), new Vector3(4, 5, 6));
 
         var result = store.Save("PlotJumpInfo", calibration);
 
@@ -72,20 +66,13 @@ public sealed class VrOverlayCalibrationStoreTests : IDisposable
     {
         var paths = CreateFiles();
         var store = new VrOverlayCalibrationStore(paths.Data, paths.Factory);
-        var calibration = new VrOverlayCalibration(
-            25,
-            new Vector3(-1, -2, -3),
-            new Vector3(7, 8, 9));
+        var calibration = new VrOverlayCalibration(25, new Vector3(-1, -2, -3), new Vector3(7, 8, 9));
 
         var result = store.Save("PlotJumpInfo", calibration, "testbuggy");
 
         Assert.NotNull(result.BackupPath);
-        Assert.Contains(
-            "\"FutureOverlay\"",
-            File.ReadAllText(result.Path));
-        Assert.Equal(
-            calibration,
-            store.Load().Resolve("PlotJumpInfo", "testbuggy"));
+        Assert.Contains("\"FutureOverlay\"", File.ReadAllText(result.Path));
+        Assert.Equal(calibration, store.Load().Resolve("PlotJumpInfo", "testbuggy"));
     }
 
     [Theory]
@@ -97,10 +84,9 @@ public sealed class VrOverlayCalibrationStoreTests : IDisposable
         var paths = CreateFiles();
         var store = new VrOverlayCalibrationStore(paths.Data, paths.Factory);
 
-        Assert.Throws<InvalidDataException>(() => store.Save(
-            "PlotJumpInfo",
-            new VrOverlayCalibration(10, Vector3.Zero, Vector3.Zero),
-            mode));
+        Assert.Throws<InvalidDataException>(() =>
+            store.Save("PlotJumpInfo", new VrOverlayCalibration(10, Vector3.Zero, Vector3.Zero), mode)
+        );
     }
 
     public void Dispose()
@@ -119,20 +105,19 @@ public sealed class VrOverlayCalibrationStoreTests : IDisposable
         Directory.CreateDirectory(factoryDirectory);
         Directory.CreateDirectory(Path.Combine(data, "vr"));
         var factory = Path.Combine(factoryDirectory, "plotters.json");
-        File.WriteAllText(
-            factory,
-            "{\"PlotJumpInfo\":\"center:0, top:8 "
-            + "{ s: 10, p: <1, 2, 3>, r: <4, 5, 6>}\"}");
+        File.WriteAllText(factory, "{\"PlotJumpInfo\":\"center:0, top:8 " + "{ s: 10, p: <1, 2, 3>, r: <4, 5, 6>}\"}");
         File.WriteAllText(
             Path.Combine(data, "plotters.json"),
             "{\"PlotJumpInfo\":\"center:0, top:8 "
-            + "{ s: 12, p: <1, 2, 3>, r: <4, 5, 6>}\","
-            + "\"FutureOverlay\":\"right:4, bottom:5\"}");
+                + "{ s: 12, p: <1, 2, 3>, r: <4, 5, 6>}\","
+                + "\"FutureOverlay\":\"right:4, bottom:5\"}"
+        );
         File.WriteAllText(
             Path.Combine(data, "vr", "testbuggy.json"),
             "{\"PlotJumpInfo\":\"{ s: 18, p: <7, 8, 9>, "
-            + "r: <10, 11, 12>}\",\"FutureOverlay\":"
-            + "\"{ s: 13, p: <1, 1, 1>, r: <2, 2, 2>}\"}");
+                + "r: <10, 11, 12>}\",\"FutureOverlay\":"
+                + "\"{ s: 13, p: <1, 1, 1>, r: <2, 2, 2>}\"}"
+        );
         return (data, factory);
     }
 }

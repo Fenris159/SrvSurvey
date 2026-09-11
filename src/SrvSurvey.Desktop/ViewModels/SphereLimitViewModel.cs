@@ -21,9 +21,7 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
     private IReadOnlyList<StarSystemReference> searchResults = [];
     private StarSystemReference? selectedCenterSystem;
     private string query = string.Empty;
-    private string radius = SphereLimitState.DefaultRadius.ToString(
-        "G",
-        CultureInfo.CurrentCulture);
+    private string radius = SphereLimitState.DefaultRadius.ToString("G", CultureInfo.CurrentCulture);
     private string statusMessage = "Waiting for a commander profile.";
     private string currentSystemName = Unavailable;
     private long? currentSystemAddress;
@@ -47,14 +45,10 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
     private string? commanderName;
     private bool isOdyssey = true;
 
-    public SphereLimitViewModel(
-        CommanderProfileStore profileStore,
-        IStarSystemResolver systemResolver)
+    public SphereLimitViewModel(CommanderProfileStore profileStore, IStarSystemResolver systemResolver)
     {
-        this.profileStore = profileStore
-            ?? throw new ArgumentNullException(nameof(profileStore));
-        this.systemResolver = systemResolver
-            ?? throw new ArgumentNullException(nameof(systemResolver));
+        this.profileStore = profileStore ?? throw new ArgumentNullException(nameof(profileStore));
+        this.systemResolver = systemResolver ?? throw new ArgumentNullException(nameof(systemResolver));
         searchCommand = new AsyncCommand(SearchSystemsAsync, CanSearch);
         SearchCommand = searchCommand;
         enableCommand = new AsyncCommand(EnableAsync, CanEnable);
@@ -76,11 +70,10 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
                 return;
             }
 
-            if (selectedCenterSystem is not null
-                && !string.Equals(
-                    selectedCenterSystem.Name,
-                    value?.Trim(),
-                    StringComparison.OrdinalIgnoreCase))
+            if (
+                selectedCenterSystem is not null
+                && !string.Equals(selectedCenterSystem.Name, value?.Trim(), StringComparison.OrdinalIgnoreCase)
+            )
             {
                 SelectedCenterSystem = null;
             }
@@ -143,21 +136,16 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
 
     public long? CurrentSystemAddress => currentSystemAddress;
 
-    public string CurrentSystemAddressText => SystemAddressFormatter.Format(
-        currentSystemAddress);
+    public string CurrentSystemAddressText => SystemAddressFormatter.Format(currentSystemAddress);
 
-    public string CenterSystemName => selectedCenterSystem?.Name
-        ?? state.CenterSystemName
-        ?? Unavailable;
+    public string CenterSystemName => selectedCenterSystem?.Name ?? state.CenterSystemName ?? Unavailable;
 
     public bool HasCenterSystemAddress => selectedCenterSystem?.SystemAddress is > 0;
 
-    public long? CenterSystemAddress => selectedCenterSystem?.SystemAddress is > 0
-        ? selectedCenterSystem.SystemAddress
-        : null;
+    public long? CenterSystemAddress =>
+        selectedCenterSystem?.SystemAddress is > 0 ? selectedCenterSystem.SystemAddress : null;
 
-    public string CenterSystemAddressText => SystemAddressFormatter.Format(
-        selectedCenterSystem?.SystemAddress);
+    public string CenterSystemAddressText => SystemAddressFormatter.Format(selectedCenterSystem?.SystemAddress);
 
     public string CenterPosition
     {
@@ -187,9 +175,8 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
 
     public bool ShouldShowGalaxyMapOverlay => IsGalaxyMapOpen && state.IsActive;
 
-    private bool IsGalaxyMapOpen => OverlayGameModeResolver.Resolve(
-        status,
-        musicTrack: musicTrack) == OverlayGameMode.GalaxyMap;
+    private bool IsGalaxyMapOpen =>
+        OverlayGameModeResolver.Resolve(status, musicTrack: musicTrack) == OverlayGameMode.GalaxyMap;
 
     public string DestinationSystemName
     {
@@ -251,7 +238,8 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
         string profileFrontierId,
         string? profileCommanderName,
         bool profileIsOdyssey,
-        SphereLimitSnapshot snapshot)
+        SphereLimitSnapshot snapshot
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(profileFrontierId);
         ArgumentNullException.ThrowIfNull(snapshot);
@@ -261,8 +249,7 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
         state.Reset(snapshot);
         Radius = state.Radius.ToString("G", CultureInfo.CurrentCulture);
         SearchResults = [];
-        if (state.Center is { } center
-            && state.CenterSystemName is { } centerName)
+        if (state.Center is { } center && state.CenterSystemName is { } centerName)
         {
             var savedCenter = new StarSystemReference(centerName, 0, center);
             Query = string.Empty;
@@ -299,21 +286,15 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
         disableCommand.RaiseCanExecuteChanged();
     }
 
-    public void UpdateCurrentSystem(
-        string? systemName,
-        GalacticCoordinate? position,
-        long? systemAddress = null)
+    public void UpdateCurrentSystem(string? systemName, GalacticCoordinate? position, long? systemAddress = null)
     {
-        var nextSystemName = string.IsNullOrWhiteSpace(systemName)
-            ? Unavailable
-            : systemName;
+        var nextSystemName = string.IsNullOrWhiteSpace(systemName) ? Unavailable : systemName;
         var nextSystemAddress = systemAddress is > 0 ? systemAddress : null;
-        if (string.Equals(
-                currentSystemName,
-                nextSystemName,
-                StringComparison.OrdinalIgnoreCase)
+        if (
+            string.Equals(currentSystemName, nextSystemName, StringComparison.OrdinalIgnoreCase)
             && currentPosition == position
-            && currentSystemAddress == nextSystemAddress)
+            && currentSystemAddress == nextSystemAddress
+        )
         {
             return;
         }
@@ -331,7 +312,8 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
     public async Task UpdateNavigationAsync(
         NavRouteSnapshot? navRoute,
         EliteStatus? nextStatus,
-        string? nextMusicTrack = null)
+        string? nextMusicTrack = null
+    )
     {
         ApplyNavigationInputs(navRoute, nextStatus, nextMusicTrack);
         var destination = ResolveRouteDestination();
@@ -353,9 +335,7 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
 
         if (destinationPosition is null && targetChanged)
         {
-            destinationPosition = await ResolveDestinationPositionAsync(
-                destinationName,
-                destinationAddress);
+            destinationPosition = await ResolveDestinationPositionAsync(destinationName, destinationAddress);
         }
 
         if (destinationPosition is null)
@@ -367,10 +347,7 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
         ApplyDestinationEvaluation(destinationName, destinationPosition.Value);
     }
 
-    private void ApplyNavigationInputs(
-        NavRouteSnapshot? navRoute,
-        EliteStatus? nextStatus,
-        string? nextMusicTrack)
+    private void ApplyNavigationInputs(NavRouteSnapshot? navRoute, EliteStatus? nextStatus, string? nextMusicTrack)
     {
         if (navRoute is not null)
         {
@@ -386,14 +363,11 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ShouldShowGalaxyMapOverlay));
     }
 
-    private bool ApplyDestinationIdentity(
-        (string Name, long Address, GalacticCoordinate? Position) destination)
+    private bool ApplyDestinationIdentity((string Name, long Address, GalacticCoordinate? Position) destination)
     {
-        var targetChanged = destinationSystemAddress != destination.Address
-            || !string.Equals(
-                DestinationSystemName,
-                destination.Name,
-                StringComparison.OrdinalIgnoreCase);
+        var targetChanged =
+            destinationSystemAddress != destination.Address
+            || !string.Equals(DestinationSystemName, destination.Name, StringComparison.OrdinalIgnoreCase);
         if (targetChanged)
         {
             resolvedDestinationPosition = null;
@@ -401,14 +375,14 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
 
         destinationSystemAddress = destination.Address;
         DestinationSystemName = destination.Name;
-        resolvedDestinationPosition = destination.Position
-            ?? resolvedDestinationPosition;
+        resolvedDestinationPosition = destination.Position ?? resolvedDestinationPosition;
         return targetChanged;
     }
 
     private async Task<GalacticCoordinate?> ResolveDestinationPositionAsync(
         string destinationName,
-        long destinationAddress)
+        long destinationAddress
+    )
     {
         DestinationDistance = Unavailable;
         DestinationResult = "Resolving destination coordinates…";
@@ -417,20 +391,14 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
         try
         {
             var matches = await systemResolver.SearchAsync(destinationName);
-            var destinationPosition = SelectDestinationPosition(
-                matches,
-                destinationName,
-                destinationAddress);
+            var destinationPosition = SelectDestinationPosition(matches, destinationName, destinationAddress);
             resolvedDestinationPosition = destinationPosition;
             return destinationPosition;
         }
-        catch (Exception exception) when (
-            exception is HttpRequestException
-                or TaskCanceledException
-                or System.Text.Json.JsonException)
+        catch (Exception exception)
+            when (exception is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
         {
-            DestinationResult = "Destination coordinates are unavailable: "
-                + exception.Message;
+            DestinationResult = "Destination coordinates are unavailable: " + exception.Message;
             return null;
         }
     }
@@ -438,25 +406,23 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
     private static GalacticCoordinate? SelectDestinationPosition(
         IReadOnlyList<StarSystemReference> matches,
         string destinationName,
-        long destinationAddress)
+        long destinationAddress
+    )
     {
-        return matches.FirstOrDefault(candidate =>
-                destinationAddress > 0
-                && candidate.SystemAddress == destinationAddress)
-            ?.Position
-            ?? matches.FirstOrDefault(candidate => string.Equals(
-                candidate.Name,
-                destinationName,
-                StringComparison.OrdinalIgnoreCase))
-            ?.Position;
+        return matches
+                .FirstOrDefault(candidate => destinationAddress > 0 && candidate.SystemAddress == destinationAddress)
+                ?.Position
+            ?? matches
+                .FirstOrDefault(candidate =>
+                    string.Equals(candidate.Name, destinationName, StringComparison.OrdinalIgnoreCase)
+                )
+                ?.Position;
     }
 
     private void ApplyUnknownDestinationDisplay()
     {
         DestinationDistance = Unavailable;
-        if (!DestinationResult.StartsWith(
-                "Destination coordinates are unavailable:",
-                StringComparison.Ordinal))
+        if (!DestinationResult.StartsWith("Destination coordinates are unavailable:", StringComparison.Ordinal))
         {
             DestinationResult = "Destination distance is unknown";
         }
@@ -465,9 +431,7 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
         IsDestinationUnknown = true;
     }
 
-    private void ApplyDestinationEvaluation(
-        string destinationName,
-        GalacticCoordinate destinationPosition)
+    private void ApplyDestinationEvaluation(string destinationName, GalacticCoordinate destinationPosition)
     {
         var evaluation = state.Evaluate(destinationName, destinationPosition);
         if (evaluation is null)
@@ -487,12 +451,9 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
         IsDestinationUnknown = false;
     }
 
-    private (string Name, long Address, GalacticCoordinate? Position)?
-        ResolveRouteDestination()
+    private (string Name, long Address, GalacticCoordinate? Position)? ResolveRouteDestination()
     {
-        var routeDestination = latestNavRoute?.Route.Count > 1
-            ? latestNavRoute.Route[^1]
-            : null;
+        var routeDestination = latestNavRoute?.Route.Count > 1 ? latestNavRoute.Route[^1] : null;
         if (routeDestination is not null)
         {
             if (string.IsNullOrWhiteSpace(routeDestination.StarSystem))
@@ -500,23 +461,16 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
                 return null;
             }
 
-            return (
-                routeDestination.StarSystem,
-                routeDestination.SystemAddress,
-                routeDestination.Position);
+            return (routeDestination.StarSystem, routeDestination.SystemAddress, routeDestination.Position);
         }
 
         var statusDestination = status?.Destination;
-        if (statusDestination is null
-            || string.IsNullOrWhiteSpace(statusDestination.Name))
+        if (statusDestination is null || string.IsNullOrWhiteSpace(statusDestination.Name))
         {
             return null;
         }
 
-        return (
-            statusDestination.Name,
-            statusDestination.System,
-            null);
+        return (statusDestination.Name, statusDestination.System, null);
     }
 
     private void ClearDestinationDisplay()
@@ -552,12 +506,10 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
             StatusMessage = $"Searching for {Query.Trim()}…";
             var results = await systemResolver.SearchAsync(Query.Trim());
             SearchResults = results;
-            SelectedCenterSystem = results.FirstOrDefault(system =>
-                    string.Equals(
-                        system.Name,
-                        Query.Trim(),
-                        StringComparison.OrdinalIgnoreCase))
-                ?? (results.Count > 0 ? results[0] : null);
+            SelectedCenterSystem =
+                results.FirstOrDefault(system =>
+                    string.Equals(system.Name, Query.Trim(), StringComparison.OrdinalIgnoreCase)
+                ) ?? (results.Count > 0 ? results[0] : null);
             StatusMessage = results.Count switch
             {
                 0 => "No matching system was returned by Spansh.",
@@ -565,15 +517,12 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
                 _ => $"Found {results.Count:N0} matches. Choose the center system.",
             };
         }
-        catch (Exception exception) when (
-            exception is HttpRequestException
-                or TaskCanceledException
-                or System.Text.Json.JsonException)
+        catch (Exception exception)
+            when (exception is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
         {
             SearchResults = [];
             SelectedCenterSystem = null;
-            StatusMessage = "The system lookup failed without changing your limit: "
-                + exception.Message;
+            StatusMessage = "The system lookup failed without changing your limit: " + exception.Message;
         }
         finally
         {
@@ -585,16 +534,14 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
     {
         if (!TryParseRadius(Radius, out var parsedRadius))
         {
-            StatusMessage = $"Radius must be between "
+            StatusMessage =
+                $"Radius must be between "
                 + $"{SphereLimitState.MinimumRadius:N0} and "
                 + $"{SphereLimitState.MaximumRadius:N0} light-years.";
             return;
         }
 
-        if (!state.TryEnable(
-                SelectedCenterSystem,
-                parsedRadius,
-                out var error))
+        if (!state.TryEnable(SelectedCenterSystem, parsedRadius, out var error))
         {
             StatusMessage = error ?? "The spherical limit is invalid.";
             return;
@@ -616,9 +563,7 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
 
     private bool CanEnable()
     {
-        return frontierId is not null
-            && SelectedCenterSystem is not null
-            && !IsSearching;
+        return frontierId is not null && SelectedCenterSystem is not null && !IsSearching;
     }
 
     private bool CanDisable()
@@ -639,20 +584,13 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
 
         try
         {
-            await profileStore.SaveSphereLimitAsync(
-                frontierId,
-                commanderName,
-                isOdyssey,
-                state.CreateSnapshot());
+            await profileStore.SaveSphereLimitAsync(frontierId, commanderName, isOdyssey, state.CreateSnapshot());
             StatusMessage = successMessage;
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
-            StatusMessage = "The limit changed for this session but could not be saved: "
-                + exception.Message;
+            StatusMessage = "The limit changed for this session but could not be saved: " + exception.Message;
         }
     }
 
@@ -666,13 +604,9 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ShouldShowGalaxyMapOverlay));
 
         var distanceCenter = state.IsActive ? state.Center : resolvedCenter;
-        var distance = distanceCenter is { } center
-            && currentPosition is { } current
-                ? center.DistanceTo(current)
-                : (double?)null;
-        DistanceToCenter = distance is null
-            ? Unavailable
-            : $"{distance:N2} ly";
+        var distance =
+            distanceCenter is { } center && currentPosition is { } current ? center.DistanceTo(current) : (double?)null;
+        DistanceToCenter = distance is null ? Unavailable : $"{distance:N2} ly";
         if (state.CenterSystemName is not null)
         {
             LimitSummary = $"{state.Radius:N0} ly around {state.CenterSystemName}";
@@ -684,33 +618,29 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
                 : $"Candidate center: {selectedCenterSystem.Name}";
         }
 
-        var evaluation = currentPosition is { } position
-            ? state.Evaluate(CurrentSystemName, position)
-            : null;
+        var evaluation = currentPosition is { } position ? state.Evaluate(CurrentSystemName, position) : null;
         CurrentSystemResult = evaluation is null
             ? (state.IsActive) switch
             {
                 true => "Waiting for current system coordinates",
-                false => "Enable the limit to evaluate the current system"
+                false => "Enable the limit to evaluate the current system",
             }
             : (evaluation.IsInside) switch
             {
                 true => "Current system is inside the limit",
-                false => "Current system is outside the limit"
+                false => "Current system is outside the limit",
             };
     }
 
     private static bool TryParseRadius(string value, out double result)
     {
-        const NumberStyles styles = NumberStyles.Float
-            | NumberStyles.AllowThousands;
-        if ((!double.TryParse(value, styles, CultureInfo.CurrentCulture, out result)
-                && !double.TryParse(
-                    value,
-                    styles,
-                    CultureInfo.InvariantCulture,
-                    out result))
-            || !SphereLimitState.IsValidRadius(result))
+        const NumberStyles styles = NumberStyles.Float | NumberStyles.AllowThousands;
+        if (
+            (
+                !double.TryParse(value, styles, CultureInfo.CurrentCulture, out result)
+                && !double.TryParse(value, styles, CultureInfo.InvariantCulture, out result)
+            ) || !SphereLimitState.IsValidRadius(result)
+        )
         {
             result = 0;
             return false;
@@ -719,10 +649,7 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
         return true;
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -739,9 +666,7 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private sealed class AsyncCommand(
-        Func<Task> execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class AsyncCommand(Func<Task> execute, Func<bool> canExecute) : ICommand
     {
         public event EventHandler? CanExecuteChanged;
 

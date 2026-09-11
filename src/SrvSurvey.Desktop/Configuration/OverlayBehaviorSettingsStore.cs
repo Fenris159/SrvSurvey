@@ -18,10 +18,8 @@ public sealed class OverlayBehaviorSettingsStore
             GetBoolean(settings, "KeepWhenGameLosesFocus", false),
             GetBoolean(settings, "HideInDominatorSuit", false),
             GetBoolean(settings, "HideInMaverickSuit", false),
-            GetBoolean(
-                settings,
-                "HideMultiGameCommanderOverlay",
-                false));
+            GetBoolean(settings, "HideMultiGameCommanderOverlay", false)
+        );
     }
 
     public void Save(OverlayBehaviorPreferences preferences)
@@ -37,24 +35,18 @@ public sealed class OverlayBehaviorSettingsStore
             }
 
             root["Version"] = 1;
-            settings["KeepWhenGameLosesFocus"] =
-                preferences.KeepWhenGameLosesFocus;
+            settings["KeepWhenGameLosesFocus"] = preferences.KeepWhenGameLosesFocus;
             settings["HideInDominatorSuit"] = preferences.HideInDominatorSuit;
             settings["HideInMaverickSuit"] = preferences.HideInMaverickSuit;
-            settings["HideMultiGameCommanderOverlay"] =
-                preferences.HideMultiGameCommanderOverlay;
+            settings["HideMultiGameCommanderOverlay"] = preferences.HideMultiGameCommanderOverlay;
         });
     }
 
-    private static bool GetBoolean(
-        JsonObject? settings,
-        string propertyName,
-        bool fallback)
+    private static bool GetBoolean(JsonObject? settings, string propertyName, bool fallback)
     {
-        return settings?[propertyName] is JsonValue value
-            && value.TryGetValue<bool>(out var result)
-                ? result
-                : fallback;
+        return settings?[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result)
+            ? result
+            : fallback;
     }
 }
 
@@ -62,4 +54,5 @@ public sealed record OverlayBehaviorPreferences(
     bool KeepWhenGameLosesFocus,
     bool HideInDominatorSuit,
     bool HideInMaverickSuit,
-    bool HideMultiGameCommanderOverlay = false);
+    bool HideMultiGameCommanderOverlay = false
+);

@@ -9,17 +9,12 @@ public sealed class GroundTargetOverlayViewModel : INotifyPropertyChanged
     private string platformStatus;
     private string inputMode;
 
-    public GroundTargetOverlayViewModel(
-        GroundTargetViewModel groundTarget,
-        OverlayPlatformCapabilities capabilities)
+    public GroundTargetOverlayViewModel(GroundTargetViewModel groundTarget, OverlayPlatformCapabilities capabilities)
     {
-        GroundTarget = groundTarget
-            ?? throw new ArgumentNullException(nameof(groundTarget));
+        GroundTarget = groundTarget ?? throw new ArgumentNullException(nameof(groundTarget));
         ArgumentNullException.ThrowIfNull(capabilities);
         platformStatus = capabilities.StatusText;
-        inputMode = capabilities.SupportsClickThrough
-            ? "PASSIVE"
-            : "UNAVAILABLE";
+        inputMode = capabilities.SupportsClickThrough ? "PASSIVE" : "UNAVAILABLE";
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -45,10 +40,7 @@ public sealed class GroundTargetOverlayViewModel : INotifyPropertyChanged
         InputMode = result.IsClickThrough ? "PASSIVE" : "BLOCKED";
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {

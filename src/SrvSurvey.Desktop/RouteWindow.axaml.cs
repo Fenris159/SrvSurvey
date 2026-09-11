@@ -13,14 +13,11 @@ public sealed partial class RouteWindow : Window
     private readonly RouteWorkspaceViewModel viewModel;
 
     public RouteWindow()
-        : this(CreateDesignViewModel())
-    {
-    }
+        : this(CreateDesignViewModel()) { }
 
     public RouteWindow(RouteWorkspaceViewModel viewModel)
     {
-        this.viewModel = viewModel
-            ?? throw new ArgumentNullException(nameof(viewModel));
+        this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         InitializeComponent();
         DataContext = viewModel;
     }
@@ -38,47 +35,31 @@ public sealed partial class RouteWindow : Window
 
     private void HopCheckBox_Click(object? sender, RoutedEventArgs eventArgs)
     {
-        if (sender is CheckBox
-            {
-                DataContext: RouteHopItemViewModel hop,
-            })
+        if (sender is CheckBox { DataContext: RouteHopItemViewModel hop })
         {
             viewModel.SetProgressThrough(hop.Index, !hop.IsReached);
         }
     }
 
-    private async void BioTargetCheckBox_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private async void BioTargetCheckBox_Click(object? sender, RoutedEventArgs eventArgs)
     {
-        if (sender is CheckBox
-            {
-                DataContext: RouteBioTargetItemViewModel target,
-            })
+        if (sender is CheckBox { DataContext: RouteBioTargetItemViewModel target })
         {
-            await viewModel.SetBioTargetCompletedAsync(
-                target,
-                !target.IsCompleted);
+            await viewModel.SetBioTargetCompletedAsync(target, !target.IsCompleted);
         }
     }
 
-    private async void ImportSpansh_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private async void ImportSpansh_Click(object? sender, RoutedEventArgs eventArgs)
     {
         await viewModel.ImportSpanshUrlAsync(await ReadClipboardAsync());
     }
 
-    private async void ImportNames_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private async void ImportNames_Click(object? sender, RoutedEventArgs eventArgs)
     {
         await viewModel.ImportNamesTextAsync(await ReadClipboardAsync());
     }
 
-    private async void ImportFile_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private async void ImportFile_Click(object? sender, RoutedEventArgs eventArgs)
     {
         try
         {
@@ -89,13 +70,10 @@ public sealed partial class RouteWindow : Window
                     AllowMultiple = false,
                     FileTypeFilter =
                     [
-                        new FilePickerFileType("Text files")
-                        {
-                            Patterns = ["*.txt"],
-                            MimeTypes = ["text/plain"],
-                        },
+                        new FilePickerFileType("Text files") { Patterns = ["*.txt"], MimeTypes = ["text/plain"] },
                     ],
-                });
+                }
+            );
             if (files.Count == 0)
             {
                 return;
@@ -105,13 +83,10 @@ public sealed partial class RouteWindow : Window
             using var reader = new StreamReader(stream);
             await viewModel.ImportNamesTextAsync(await reader.ReadToEndAsync());
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or NotSupportedException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or NotSupportedException)
         {
-            viewModel.ReportImportError(
-                "The system-name file could not be read: " + exception.Message);
+            viewModel.ReportImportError("The system-name file could not be read: " + exception.Message);
         }
     }
 
@@ -119,37 +94,34 @@ public sealed partial class RouteWindow : Window
     {
         try
         {
-            return await (TopLevel.GetTopLevel(this)?.Clipboard
-                ?? throw new InvalidOperationException(
-                    "The desktop clipboard is not available."))
-                .TryGetTextAsync();
+            return await (
+                TopLevel.GetTopLevel(this)?.Clipboard
+                ?? throw new InvalidOperationException("The desktop clipboard is not available.")
+            ).TryGetTextAsync();
         }
-        catch (Exception exception) when (
-            exception is InvalidOperationException
-                or NotSupportedException)
+        catch (Exception exception) when (exception is InvalidOperationException or NotSupportedException)
         {
-            viewModel.ReportImportError(
-                "The clipboard could not be read: " + exception.Message);
+            viewModel.ReportImportError("The clipboard could not be read: " + exception.Message);
             return null;
         }
     }
 
     private static RouteWorkspaceViewModel CreateDesignViewModel()
     {
-        var temporaryDirectory = Path.Combine(
-            Path.GetTempPath(),
-            "SrvSurvey-Route-Design");
+        var temporaryDirectory = Path.Combine(Path.GetTempPath(), "SrvSurvey-Route-Design");
         return new RouteWorkspaceViewModel(
             new FollowRouteService(new FollowRouteStore(temporaryDirectory)),
             new RouteNameImporter(new EmptySystemResolver()),
-            new EmptySpanshRouteClient());
+            new EmptySpanshRouteClient()
+        );
     }
 
     private sealed class EmptySystemResolver : IStarSystemResolver
     {
         public Task<IReadOnlyList<StarSystemReference>> SearchAsync(
             string query,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             return Task.FromResult<IReadOnlyList<StarSystemReference>>([]);
         }
@@ -159,7 +131,8 @@ public sealed partial class RouteWindow : Window
     {
         public Task<IReadOnlyList<FollowRouteHop>> GetRouteAsync(
             SpanshRouteReference route,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             return Task.FromResult<IReadOnlyList<FollowRouteHop>>([]);
         }

@@ -48,38 +48,32 @@ public sealed partial class BoxelStatsWindow : Window
         {
             if (!StorageProvider.CanPickFolder)
             {
-                viewModel.ReportStatus(
-                    "This platform does not provide a folder picker for exports.");
+                viewModel.ReportStatus("This platform does not provide a folder picker for exports.");
                 return;
             }
 
             var folders = await StorageProvider.OpenFolderPickerAsync(
-                new FolderPickerOpenOptions
-                {
-                    Title = "Choose where to export boxel statistics",
-                    AllowMultiple = false,
-                });
-            var directory = folders.Count > 0
-                ? folders[0].TryGetLocalPath()
-                : null;
+                new FolderPickerOpenOptions { Title = "Choose where to export boxel statistics", AllowMultiple = false }
+            );
+            var directory = folders.Count > 0 ? folders[0].TryGetLocalPath() : null;
             if (!string.IsNullOrWhiteSpace(directory))
             {
                 await viewModel.ExportAsync(directory);
             }
             else if (folders.Count > 0)
             {
-                viewModel.ReportStatus(
-                    "The selected export folder is not available as a local filesystem path.");
+                viewModel.ReportStatus("The selected export folder is not available as a local filesystem path.");
             }
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or NotSupportedException
-                or InvalidOperationException)
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or UnauthorizedAccessException
+                        or NotSupportedException
+                        or InvalidOperationException
+            )
         {
-            viewModel.ReportStatus(
-                "Could not choose an export folder: " + exception.Message);
+            viewModel.ReportStatus("Could not choose an export folder: " + exception.Message);
         }
     }
 
@@ -130,23 +124,17 @@ public sealed partial class BoxelStatsWindow : Window
         {
             // A newer activation replaced this load.
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
             if (!isClosed && version == activationVersion)
             {
-                viewModel.ReportStatus(
-                    "Could not open boxel statistics: " + exception.Message);
+                viewModel.ReportStatus("Could not open boxel statistics: " + exception.Message);
             }
         }
         finally
         {
-            Interlocked.CompareExchange(
-                ref activationCancellation,
-                null,
-                cancellation);
+            Interlocked.CompareExchange(ref activationCancellation, null, cancellation);
         }
     }
 

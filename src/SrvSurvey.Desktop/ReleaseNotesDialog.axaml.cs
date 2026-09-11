@@ -11,13 +11,10 @@ public sealed partial class ReleaseNotesDialog : Window
         InitializeComponent();
     }
 
-    public ReleaseNotesDialog(
-        string fallbackTitle,
-        string releaseNotes) : this()
+    public ReleaseNotesDialog(string fallbackTitle, string releaseNotes)
+        : this()
     {
-        DataContext = ReleaseNotesDialogViewModel.Create(
-            fallbackTitle,
-            releaseNotes);
+        DataContext = ReleaseNotesDialogViewModel.Create(fallbackTitle, releaseNotes);
     }
 
     private void Close_Click(object? sender, RoutedEventArgs eventArgs)

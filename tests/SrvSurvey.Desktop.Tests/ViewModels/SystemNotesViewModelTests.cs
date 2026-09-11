@@ -9,15 +9,13 @@ public sealed class SystemNotesViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-system-notes-vm-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-system-notes-vm-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public async Task LoadsAndSavesCurrentSystemWithoutLosingSystemData()
     {
-        var systemsDirectory = Path.Combine(
-            temporaryDirectory,
-            "systems",
-            "F123");
+        var systemsDirectory = Path.Combine(temporaryDirectory, "systems", "F123");
         Directory.CreateDirectory(systemsDirectory);
         var path = Path.Combine(systemsDirectory, "Test System_42.json");
         await File.WriteAllTextAsync(
@@ -29,14 +27,10 @@ public sealed class SystemNotesViewModelTests : IDisposable
               "notes": "Before",
               "futureField": { "enabled": true }
             }
-            """);
+            """
+        );
         var viewModel = CreateViewModel();
-        viewModel.UpdateContext(
-            "F123",
-            "Drew",
-            "Test System",
-            42,
-            new GalacticCoordinate(1, 2, 3));
+        viewModel.UpdateContext("F123", "Drew", "Test System", 42, new GalacticCoordinate(1, 2, 3));
 
         var loaded = await viewModel.LoadCurrentAsync();
         viewModel.Notes = "After";
@@ -57,16 +51,13 @@ public sealed class SystemNotesViewModelTests : IDisposable
     {
         Directory.CreateDirectory(temporaryDirectory);
         var settingsPath = Path.Combine(temporaryDirectory, "settings.json");
-        await File.WriteAllTextAsync(
-            settingsPath,
-            "{\"systemNotesTopMost\":false,\"futureSetting\":42}");
+        await File.WriteAllTextAsync(settingsPath, "{\"systemNotesTopMost\":false,\"futureSetting\":42}");
         var viewModel = CreateViewModel();
 
         await viewModel.SetAlwaysOnTopAsync(true);
 
         Assert.True(viewModel.AlwaysOnTop);
-        var root = JsonNode.Parse(
-            await File.ReadAllTextAsync(settingsPath))!.AsObject();
+        var root = JsonNode.Parse(await File.ReadAllTextAsync(settingsPath))!.AsObject();
         Assert.True(root["systemNotesTopMost"]!.GetValue<bool>());
         Assert.Equal(42, root["futureSetting"]!.GetValue<int>());
     }
@@ -77,13 +68,8 @@ public sealed class SystemNotesViewModelTests : IDisposable
         var screenshotRoot = Path.Combine(temporaryDirectory, "screenshots");
         var imagesDirectory = Path.Combine(screenshotRoot, "Test- System");
         Directory.CreateDirectory(imagesDirectory);
-        var settings = new JsonObject
-        {
-            ["screenshotTargetFolder"] = screenshotRoot,
-        };
-        await File.WriteAllTextAsync(
-            Path.Combine(temporaryDirectory, "settings.json"),
-            settings.ToJsonString());
+        var settings = new JsonObject { ["screenshotTargetFolder"] = screenshotRoot };
+        await File.WriteAllTextAsync(Path.Combine(temporaryDirectory, "settings.json"), settings.ToJsonString());
         var viewModel = CreateViewModel();
         var openedUris = new List<Uri>();
         DirectoryInfo? openedDirectory = null;
@@ -97,13 +83,9 @@ public sealed class SystemNotesViewModelTests : IDisposable
             {
                 openedDirectory = directory;
                 return Task.FromResult(true);
-            });
-        viewModel.UpdateContext(
-            "F123",
-            "Drew",
-            "Test: System",
-            42,
-            null);
+            }
+        );
+        viewModel.UpdateContext("F123", "Drew", "Test: System", 42, null);
         Assert.True(await viewModel.LoadCurrentAsync());
 
         await viewModel.OpenCanonnAsync();
@@ -114,13 +96,10 @@ public sealed class SystemNotesViewModelTests : IDisposable
         Assert.True(viewModel.HasImagesDirectory);
         Assert.Equal(
             "https://canonn-science.github.io/canonn-signals/?system=Test%3A%20System",
-            openedUris[0].AbsoluteUri);
-        Assert.Equal(
-            "https://spansh.co.uk/system/42",
-            openedUris[1].AbsoluteUri);
-        Assert.Equal(
-            "https://www.edsm.net/en/system?systemID64=42",
-            openedUris[2].AbsoluteUri);
+            openedUris[0].AbsoluteUri
+        );
+        Assert.Equal("https://spansh.co.uk/system/42", openedUris[1].AbsoluteUri);
+        Assert.Equal("https://www.edsm.net/en/system?systemID64=42", openedUris[2].AbsoluteUri);
         Assert.Equal(imagesDirectory, openedDirectory?.FullName);
     }
 
@@ -150,7 +129,8 @@ public sealed class SystemNotesViewModelTests : IDisposable
     {
         return new SystemNotesViewModel(
             new SystemNoteStore(temporaryDirectory),
-            new SystemNotesSettingsStore(temporaryDirectory));
+            new SystemNotesSettingsStore(temporaryDirectory)
+        );
     }
 
     private static async Task WaitUntilAsync(Func<bool> predicate)

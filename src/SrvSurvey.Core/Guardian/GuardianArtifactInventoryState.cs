@@ -7,10 +7,8 @@ public sealed class GuardianArtifactInventoryState
 {
     private const string CountPropertyName = "Count";
 
-    private static readonly Dictionary<string, ArtifactDefinition> Definitions =
-        BuildDefinitions();
-    private readonly Dictionary<string, int> counts = new(
-        StringComparer.OrdinalIgnoreCase);
+    private static readonly Dictionary<string, ArtifactDefinition> Definitions = BuildDefinitions();
+    private readonly Dictionary<string, int> counts = new(StringComparer.OrdinalIgnoreCase);
 
     public int Version { get; private set; }
 
@@ -18,8 +16,7 @@ public sealed class GuardianArtifactInventoryState
 
     public bool Reset(CargoSnapshot? cargo)
     {
-        var replacement = new Dictionary<string, int>(
-            StringComparer.OrdinalIgnoreCase);
+        var replacement = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         foreach (var item in cargo?.Inventory ?? [])
         {
             if (TryResolve(item.Name, out var definition) && item.Count > 0)
@@ -28,9 +25,10 @@ public sealed class GuardianArtifactInventoryState
             }
         }
 
-        if (counts.Count == replacement.Count
-            && counts.All(entry => replacement.GetValueOrDefault(entry.Key)
-                == entry.Value))
+        if (
+            counts.Count == replacement.Count
+            && counts.All(entry => replacement.GetValueOrDefault(entry.Key) == entry.Value)
+        )
         {
             return false;
         }
@@ -45,28 +43,25 @@ public sealed class GuardianArtifactInventoryState
         return true;
     }
 
-    public bool Apply(
-        JournalEventEnvelope journalEvent,
-        bool isInSrv = false)
+    public bool Apply(JournalEventEnvelope journalEvent, bool isInSrv = false)
     {
         ArgumentNullException.ThrowIfNull(journalEvent);
         var changed = journalEvent.EventName switch
         {
-            "CollectCargo" => ApplyDelta(
-                GetString(journalEvent.Payload, "Type"),
-                1),
+            "CollectCargo" => ApplyDelta(GetString(journalEvent.Payload, "Type"), 1),
             "EjectCargo" => ApplyDelta(
                 GetString(journalEvent.Payload, "Type"),
-                -Math.Max(0, GetInt32(journalEvent.Payload, CountPropertyName) ?? 0)),
+                -Math.Max(0, GetInt32(journalEvent.Payload, CountPropertyName) ?? 0)
+            ),
             "MarketBuy" => ApplyDelta(
                 GetString(journalEvent.Payload, "Type"),
-                Math.Max(0, GetInt32(journalEvent.Payload, CountPropertyName) ?? 0)),
+                Math.Max(0, GetInt32(journalEvent.Payload, CountPropertyName) ?? 0)
+            ),
             "MarketSell" => ApplyDelta(
                 GetString(journalEvent.Payload, "Type"),
-                -Math.Max(0, GetInt32(journalEvent.Payload, CountPropertyName) ?? 0)),
-            "CargoTransfer" => ApplyTransfers(
-                journalEvent.Payload,
-                isInSrv),
+                -Math.Max(0, GetInt32(journalEvent.Payload, CountPropertyName) ?? 0)
+            ),
+            "CargoTransfer" => ApplyTransfers(journalEvent.Payload, isInSrv),
             "Cargo" => ApplyCargoEvent(journalEvent.Payload),
             _ => false,
         };
@@ -81,23 +76,18 @@ public sealed class GuardianArtifactInventoryState
     public int GetCount(string itemCodeOrName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(itemCodeOrName);
-        return TryResolve(itemCodeOrName, out var definition)
-            ? counts.GetValueOrDefault(definition.CommodityName)
-            : 0;
+        return TryResolve(itemCodeOrName, out var definition) ? counts.GetValueOrDefault(definition.CommodityName) : 0;
     }
 
-    public IReadOnlyList<GuardianArtifactRequirement> GetRequirements(
-        IEnumerable<string> itemCodes)
+    public IReadOnlyList<GuardianArtifactRequirement> GetRequirements(IEnumerable<string> itemCodes)
     {
         ArgumentNullException.ThrowIfNull(itemCodes);
         return itemCodes
             .Where(code => !string.IsNullOrWhiteSpace(code))
-            .Select(code => TryResolve(code, out var definition)
-                ? definition
-                : new ArtifactDefinition(code, code, code, []))
-            .GroupBy(
-                definition => definition.CommodityName,
-                StringComparer.OrdinalIgnoreCase)
+            .Select(code =>
+                TryResolve(code, out var definition) ? definition : new ArtifactDefinition(code, code, code, [])
+            )
+            .GroupBy(definition => definition.CommodityName, StringComparer.OrdinalIgnoreCase)
             .Select(group =>
             {
                 var definition = group.First();
@@ -107,7 +97,8 @@ public sealed class GuardianArtifactInventoryState
                     definition.CommodityName,
                     definition.DisplayName,
                     required,
-                    counts.GetValueOrDefault(definition.CommodityName));
+                    counts.GetValueOrDefault(definition.CommodityName)
+                );
             })
             .OrderBy(requirement => requirement.DisplayName)
             .ToArray();
@@ -120,31 +111,27 @@ public sealed class GuardianArtifactInventoryState
 
     private bool ApplyCargoEvent(JsonElement root)
     {
-        if (!root.TryGetProperty("Inventory", out var inventory)
-            || inventory.ValueKind != JsonValueKind.Array)
+        if (!root.TryGetProperty("Inventory", out var inventory) || inventory.ValueKind != JsonValueKind.Array)
         {
             return false;
         }
 
-        var replacement = new Dictionary<string, int>(
-            StringComparer.OrdinalIgnoreCase);
+        var replacement = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         foreach (var item in inventory.EnumerateArray())
         {
             var name = GetString(item, "Name");
             var count = GetInt32(item, CountPropertyName) ?? 0;
             if (TryResolve(name, out var definition) && count > 0)
             {
-                replacement[definition.CommodityName] = (int)Math.Min(
-                    int.MaxValue,
-                    (long)replacement.GetValueOrDefault(
-                        definition.CommodityName)
-                    + count);
+                replacement[definition.CommodityName] = (int)
+                    Math.Min(int.MaxValue, (long)replacement.GetValueOrDefault(definition.CommodityName) + count);
             }
         }
 
-        if (counts.Count == replacement.Count
-            && counts.All(entry => replacement.GetValueOrDefault(entry.Key)
-                == entry.Value))
+        if (
+            counts.Count == replacement.Count
+            && counts.All(entry => replacement.GetValueOrDefault(entry.Key) == entry.Value)
+        )
         {
             return false;
         }
@@ -166,10 +153,7 @@ public sealed class GuardianArtifactInventoryState
         }
 
         var previous = counts.GetValueOrDefault(definition.CommodityName);
-        var next = (int)Math.Clamp(
-            (long)previous + delta,
-            0,
-            int.MaxValue);
+        var next = (int)Math.Clamp((long)previous + delta, 0, int.MaxValue);
         if (next == previous)
         {
             return false;
@@ -189,8 +173,7 @@ public sealed class GuardianArtifactInventoryState
 
     private bool ApplyTransfers(JsonElement root, bool isInSrv)
     {
-        if (!root.TryGetProperty("Transfers", out var transfers)
-            || transfers.ValueKind != JsonValueKind.Array)
+        if (!root.TryGetProperty("Transfers", out var transfers) || transfers.ValueKind != JsonValueKind.Array)
         {
             return false;
         }
@@ -218,106 +201,52 @@ public sealed class GuardianArtifactInventoryState
                     "tocarrier" => -count,
                     _ => 0,
                 };
-            changed |= ApplyDelta(
-                GetString(transfer, "Type"),
-                delta);
+            changed |= ApplyDelta(GetString(transfer, "Type"), delta);
         }
 
         return changed;
     }
 
-    private static bool TryResolve(
-        string? itemCodeOrName,
-        out ArtifactDefinition definition)
+    private static bool TryResolve(string? itemCodeOrName, out ArtifactDefinition definition)
     {
         return Definitions.TryGetValue(itemCodeOrName ?? string.Empty, out definition!);
     }
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
-            && value.ValueKind == JsonValueKind.String
-                ? value.GetString()
-                : null;
+        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+            ? value.GetString()
+            : null;
     }
 
     private static int? GetInt32(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
+        return
+            root.TryGetProperty(propertyName, out var value)
             && value.ValueKind == JsonValueKind.Number
             && value.TryGetInt32(out var number)
-                ? number
-                : null;
+            ? number
+            : null;
     }
 
-    private static Dictionary<string, ArtifactDefinition>
-        BuildDefinitions()
+    private static Dictionary<string, ArtifactDefinition> BuildDefinitions()
     {
         var definitions = new[]
         {
-            new ArtifactDefinition(
-                "ca",
-                "ancientcasket",
-                "Guardian Casket",
-                ["casket"]),
-            new ArtifactDefinition(
-                "or",
-                "ancientorb",
-                "Guardian Orb",
-                ["orb"]),
-            new ArtifactDefinition(
-                "re",
-                "ancientrelic",
-                "Guardian Relic",
-                ["relic"]),
-            new ArtifactDefinition(
-                "ta",
-                "ancienttablet",
-                "Guardian Tablet",
-                ["tablet"]),
-            new ArtifactDefinition(
-                "to",
-                "ancienttotem",
-                "Guardian Totem",
-                ["totem"]),
-            new ArtifactDefinition(
-                "ur",
-                "ancienturn",
-                "Guardian Urn",
-                ["urn"]),
-            new ArtifactDefinition(
-                "se",
-                "unknownartifact",
-                "Thargoid Sensor",
-                ["sensor"]),
-            new ArtifactDefinition(
-                "pr",
-                "unknownartifact2",
-                "Thargoid Probe",
-                ["probe"]),
-            new ArtifactDefinition(
-                "li",
-                "unknownartifact3",
-                "Thargoid Link",
-                ["link"]),
-            new ArtifactDefinition(
-                "cy",
-                "thargoidtissuesampletype1",
-                "Cyclops Tissue Sample",
-                ["cyclops"]),
-            new ArtifactDefinition(
-                "ba",
-                "thargoidtissuesampletype2",
-                "Basilisk Tissue Sample",
-                ["basilisk"]),
-            new ArtifactDefinition(
-                "me",
-                "thargoidtissuesampletype3",
-                "Medusa Tissue Sample",
-                ["medusa"]),
+            new ArtifactDefinition("ca", "ancientcasket", "Guardian Casket", ["casket"]),
+            new ArtifactDefinition("or", "ancientorb", "Guardian Orb", ["orb"]),
+            new ArtifactDefinition("re", "ancientrelic", "Guardian Relic", ["relic"]),
+            new ArtifactDefinition("ta", "ancienttablet", "Guardian Tablet", ["tablet"]),
+            new ArtifactDefinition("to", "ancienttotem", "Guardian Totem", ["totem"]),
+            new ArtifactDefinition("ur", "ancienturn", "Guardian Urn", ["urn"]),
+            new ArtifactDefinition("se", "unknownartifact", "Thargoid Sensor", ["sensor"]),
+            new ArtifactDefinition("pr", "unknownartifact2", "Thargoid Probe", ["probe"]),
+            new ArtifactDefinition("li", "unknownartifact3", "Thargoid Link", ["link"]),
+            new ArtifactDefinition("cy", "thargoidtissuesampletype1", "Cyclops Tissue Sample", ["cyclops"]),
+            new ArtifactDefinition("ba", "thargoidtissuesampletype2", "Basilisk Tissue Sample", ["basilisk"]),
+            new ArtifactDefinition("me", "thargoidtissuesampletype3", "Medusa Tissue Sample", ["medusa"]),
         };
-        var result = new Dictionary<string, ArtifactDefinition>(
-            StringComparer.OrdinalIgnoreCase);
+        var result = new Dictionary<string, ArtifactDefinition>(StringComparer.OrdinalIgnoreCase);
         foreach (var definition in definitions)
         {
             result[definition.ShortCode] = definition;
@@ -336,7 +265,8 @@ public sealed class GuardianArtifactInventoryState
         string ShortCode,
         string CommodityName,
         string DisplayName,
-        IReadOnlyList<string> Aliases);
+        IReadOnlyList<string> Aliases
+    );
 }
 
 public sealed record GuardianArtifactRequirement(
@@ -344,7 +274,8 @@ public sealed record GuardianArtifactRequirement(
     string CommodityName,
     string DisplayName,
     int Required,
-    int Available)
+    int Available
+)
 {
     public bool IsMet => Available >= Required;
 }

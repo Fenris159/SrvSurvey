@@ -14,9 +14,7 @@ public sealed class GuidesViewModel : INotifyPropertyChanged
         ArgumentNullException.ThrowIfNull(categories);
         if (categories.Count == 0)
         {
-            throw new ArgumentException(
-                "At least one guide category is required.",
-                nameof(categories));
+            throw new ArgumentException("At least one guide category is required.", nameof(categories));
         }
 
         Categories = categories;
@@ -62,8 +60,7 @@ public sealed class GuidesViewModel : INotifyPropertyChanged
         }
     }
 
-    public IReadOnlyList<GuideSearchResultViewModel> SearchResults =>
-        searchResults;
+    public IReadOnlyList<GuideSearchResultViewModel> SearchResults => searchResults;
 
     public bool IsSearching => !string.IsNullOrWhiteSpace(SearchText);
 
@@ -73,15 +70,12 @@ public sealed class GuidesViewModel : INotifyPropertyChanged
 
     public bool HasNoSearchResults => IsSearching && SearchResults.Count == 0;
 
-    public string SearchSummary => SearchResults.Count == 1
-        ? "1 matching guide entry"
-        : $"{SearchResults.Count:N0} matching guide entries";
+    public string SearchSummary =>
+        SearchResults.Count == 1 ? "1 matching guide entry" : $"{SearchResults.Count:N0} matching guide entries";
 
     private void RefreshSearchResults()
     {
-        var terms = SearchText
-            .Split(' ', StringSplitOptions.RemoveEmptyEntries
-                | StringSplitOptions.TrimEntries);
+        var terms = SearchText.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         if (terms.Length == 0)
         {
             searchResults = [];
@@ -92,26 +86,22 @@ public sealed class GuidesViewModel : INotifyPropertyChanged
         var results = new List<GuideSearchResultViewModel>();
         foreach (var category in Categories)
         {
-            foreach (var section in category.Sections.Where(section =>
-                MatchesAllTerms(section.SearchableText, terms)
-                || MatchesAllTerms(category.SearchableText, terms)))
+            foreach (
+                var section in category.Sections.Where(section =>
+                    MatchesAllTerms(section.SearchableText, terms) || MatchesAllTerms(category.SearchableText, terms)
+                )
+            )
             {
-                results.Add(new GuideSearchResultViewModel(
-                    category.Title,
-                    section.Title,
-                    section.Summary,
-                    "Guide"));
+                results.Add(new GuideSearchResultViewModel(category.Title, section.Title, section.Summary, "Guide"));
             }
 
-            foreach (var icon in category.Icons.Where(icon =>
-                MatchesAllTerms(icon.SearchableText, terms)
-                || MatchesAllTerms(category.SearchableText, terms)))
+            foreach (
+                var icon in category.Icons.Where(icon =>
+                    MatchesAllTerms(icon.SearchableText, terms) || MatchesAllTerms(category.SearchableText, terms)
+                )
+            )
             {
-                results.Add(new GuideSearchResultViewModel(
-                    category.Title,
-                    icon.Name,
-                    icon.Meaning,
-                    "Icon glossary"));
+                results.Add(new GuideSearchResultViewModel(category.Title, icon.Name, icon.Meaning, "Icon glossary"));
             }
         }
 
@@ -121,15 +111,10 @@ public sealed class GuidesViewModel : INotifyPropertyChanged
 
     private static bool MatchesAllTerms(string value, string[] terms)
     {
-        return terms.All(term => value.Contains(
-            term,
-            StringComparison.OrdinalIgnoreCase));
+        return terms.All(term => value.Contains(term, StringComparison.OrdinalIgnoreCase));
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -153,7 +138,8 @@ public sealed record GuideCategoryViewModel(
     string Title,
     string Summary,
     IReadOnlyList<GuideSectionViewModel> Sections,
-    IReadOnlyList<GuideIconViewModel> Icons)
+    IReadOnlyList<GuideIconViewModel> Icons
+)
 {
     public string SearchableText => $"{Title} {Summary}";
 
@@ -166,15 +152,14 @@ public sealed record GuideSectionViewModel(
     string Title,
     string Summary,
     IReadOnlyList<string> Steps,
-    IReadOnlyList<string> Details)
+    IReadOnlyList<string> Details
+)
 {
     public bool HasSteps => Steps.Count > 0;
 
     public bool HasDetails => Details.Count > 0;
 
-    public string SearchableText => string.Join(
-        ' ',
-        new[] { Title, Summary }.Concat(Steps).Concat(Details));
+    public string SearchableText => string.Join(' ', new[] { Title, Summary }.Concat(Steps).Concat(Details));
 }
 
 public sealed record GuideIconViewModel(
@@ -184,19 +169,15 @@ public sealed record GuideIconViewModel(
     string Meaning,
     string AppearsIn,
     string SearchTerms = "",
-    string AssetPath = "")
+    string AssetPath = ""
+)
 {
     public bool HasAsset => !string.IsNullOrWhiteSpace(AssetPath);
 
-    public string SearchableText =>
-        $"{Symbol} {Name} {Meaning} {AppearsIn} {SearchTerms}";
+    public string SearchableText => $"{Symbol} {Name} {Meaning} {AppearsIn} {SearchTerms}";
 }
 
-public sealed record GuideSearchResultViewModel(
-    string Category,
-    string Title,
-    string Summary,
-    string Kind);
+public sealed record GuideSearchResultViewModel(string Category, string Title, string Summary, string Kind);
 
 public enum GuideIconKind
 {

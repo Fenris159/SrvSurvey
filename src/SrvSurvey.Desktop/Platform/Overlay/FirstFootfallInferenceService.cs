@@ -16,7 +16,8 @@ public sealed record FirstFootfallInferenceResult(
     FirstFootfallInferenceOutcome Outcome,
     double MaximumMatchRatio,
     int SampleCount,
-    string? Detail)
+    string? Detail
+)
 {
     public bool Detected => Outcome == FirstFootfallInferenceOutcome.Detected;
 }
@@ -29,14 +30,13 @@ public interface IFirstFootfallInferenceService : IDisposable
 
     Task<FirstFootfallInferenceResult> DetectAsync(
         FirstFootfallInferencePreferences preferences,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }
 
 public static class FirstFootfallColorDetector
 {
-    public static double GetMatchRatio(
-        IFssPixelSource source,
-        FirstFootfallInferencePreferences preferences)
+    public static double GetMatchRatio(IFssPixelSource source, FirstFootfallInferencePreferences preferences)
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(preferences);
@@ -62,9 +62,7 @@ public static class FirstFootfallColorDetector
         return (double)matches / pixelCount;
     }
 
-    private static bool Matches(
-        FssRgbPixel actual,
-        FirstFootfallInferencePreferences expected)
+    private static bool Matches(FssRgbPixel actual, FirstFootfallInferencePreferences expected)
     {
         return actual.Red > expected.Red - expected.Tolerance
             && actual.Red < expected.Red + expected.Tolerance
@@ -75,8 +73,7 @@ public static class FirstFootfallColorDetector
     }
 }
 
-public sealed class FirstFootfallInferenceService
-    : IFirstFootfallInferenceService
+public sealed class FirstFootfallInferenceService : IFirstFootfallInferenceService
 {
     private readonly IGameWindowTracker windowTracker;
     private readonly IGameScreenCapture screenCapture;
@@ -86,12 +83,11 @@ public sealed class FirstFootfallInferenceService
     public FirstFootfallInferenceService(
         IGameWindowTracker windowTracker,
         IGameScreenCapture screenCapture,
-        Func<TimeSpan, CancellationToken, Task>? delay = null)
+        Func<TimeSpan, CancellationToken, Task>? delay = null
+    )
     {
-        this.windowTracker = windowTracker
-            ?? throw new ArgumentNullException(nameof(windowTracker));
-        this.screenCapture = screenCapture
-            ?? throw new ArgumentNullException(nameof(screenCapture));
+        this.windowTracker = windowTracker ?? throw new ArgumentNullException(nameof(windowTracker));
+        this.screenCapture = screenCapture ?? throw new ArgumentNullException(nameof(screenCapture));
         this.delay = delay ?? Task.Delay;
     }
 
@@ -101,14 +97,13 @@ public sealed class FirstFootfallInferenceService
 
     public static IFirstFootfallInferenceService CreateCurrent()
     {
-        return new FirstFootfallInferenceService(
-            GameWindowTracker.CreateCurrent(),
-            GameScreenCapture.CreateCurrent());
+        return new FirstFootfallInferenceService(GameWindowTracker.CreateCurrent(), GameScreenCapture.CreateCurrent());
     }
 
     public async Task<FirstFootfallInferenceResult> DetectAsync(
         FirstFootfallInferencePreferences preferences,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         ArgumentNullException.ThrowIfNull(preferences);
@@ -118,7 +113,8 @@ public sealed class FirstFootfallInferenceService
                 FirstFootfallInferenceOutcome.Disabled,
                 0,
                 0,
-                "First-footfall screen inference is disabled.");
+                "First-footfall screen inference is disabled."
+            );
         }
 
         if (!screenCapture.IsAvailable)
@@ -127,13 +123,12 @@ public sealed class FirstFootfallInferenceService
                 FirstFootfallInferenceOutcome.Unavailable,
                 0,
                 0,
-                screenCapture.UnavailableReason);
+                screenCapture.UnavailableReason
+            );
         }
 
-        var sampleInterval = TimeSpan.FromSeconds(
-            1d / preferences.SamplesPerSecond);
-        var maximumSamples = checked(
-            preferences.DurationSeconds * preferences.SamplesPerSecond);
+        var sampleInterval = TimeSpan.FromSeconds(1d / preferences.SamplesPerSecond);
+        var maximumSamples = checked(preferences.DurationSeconds * preferences.SamplesPerSecond);
         var maximumRatio = 0d;
         for (var sample = 0; sample < maximumSamples; sample++)
         {
@@ -147,14 +142,13 @@ public sealed class FirstFootfallInferenceService
                     maximumRatio,
                     sample,
                     "Elite must remain visible and foreground while first-footfall "
-                        + "notification detection is active.");
+                        + "notification detection is active."
+                );
             }
 
             var watchBounds = GetLegacyWatchBounds(window.ClientBounds);
             var capture = screenCapture.Capture(watchBounds);
-            var ratio = FirstFootfallColorDetector.GetMatchRatio(
-                capture,
-                preferences);
+            var ratio = FirstFootfallColorDetector.GetMatchRatio(capture, preferences);
             maximumRatio = Math.Max(maximumRatio, ratio);
             if (ratio > preferences.Threshold)
             {
@@ -162,7 +156,8 @@ public sealed class FirstFootfallInferenceService
                     FirstFootfallInferenceOutcome.Detected,
                     maximumRatio,
                     sample + 1,
-                    null);
+                    null
+                );
             }
         }
 
@@ -170,7 +165,8 @@ public sealed class FirstFootfallInferenceService
             FirstFootfallInferenceOutcome.NotDetected,
             maximumRatio,
             maximumSamples,
-            null);
+            null
+        );
     }
 
     public void Dispose()
@@ -193,12 +189,12 @@ public sealed class FirstFootfallInferenceService
             clientBounds.X + (clientBounds.Width / 2) - halfWidth,
             clientBounds.Y + (int)(clientBounds.Height * 0.17),
             halfWidth * 2,
-            height);
+            height
+        );
     }
 }
 
-public sealed class UnavailableFirstFootfallInferenceService
-    : IFirstFootfallInferenceService
+public sealed class UnavailableFirstFootfallInferenceService : IFirstFootfallInferenceService
 {
     public UnavailableFirstFootfallInferenceService(string? reason = null)
     {
@@ -213,17 +209,14 @@ public sealed class UnavailableFirstFootfallInferenceService
 
     public Task<FirstFootfallInferenceResult> DetectAsync(
         FirstFootfallInferencePreferences preferences,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         cancellationToken.ThrowIfCancellationRequested();
-        return Task.FromResult(new FirstFootfallInferenceResult(
-            FirstFootfallInferenceOutcome.Unavailable,
-            0,
-            0,
-            UnavailableReason));
+        return Task.FromResult(
+            new FirstFootfallInferenceResult(FirstFootfallInferenceOutcome.Unavailable, 0, 0, UnavailableReason)
+        );
     }
 
-    public void Dispose()
-    {
-    }
+    public void Dispose() { }
 }

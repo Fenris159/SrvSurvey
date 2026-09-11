@@ -13,11 +13,7 @@ public enum FssTuningDetectionState
 
 public readonly record struct FssRgbPixel(byte Red, byte Green, byte Blue);
 
-public readonly record struct FssPixelRegion(
-    int X,
-    int Y,
-    int Width,
-    int Height)
+public readonly record struct FssPixelRegion(int X, int Y, int Width, int Height)
 {
     public int Right => X + Width;
 
@@ -38,7 +34,8 @@ public sealed record FssTuningAnalysis(
     FssPixelRegion? WatchArea,
     int WhitePixelCount,
     int YellowPixelCount,
-    string? Failure)
+    string? Failure
+)
 {
     public bool FoundWatchArea => WatchArea is not null;
 }
@@ -48,19 +45,15 @@ public static class FssTuningDetector
     public static FssTuningAnalysis Analyze(
         IFssPixelSource source,
         FssTuningDetectorSettings settings,
-        FssTuningDetectionState previousState)
+        FssTuningDetectionState previousState
+    )
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(settings);
 
         if (!TryFindWatchArea(source, settings, out var area, out var failure))
         {
-            return new FssTuningAnalysis(
-                previousState,
-                null,
-                0,
-                0,
-                failure);
+            return new FssTuningAnalysis(previousState, null, 0, 0, failure);
         }
 
         var white = 0;
@@ -92,19 +85,15 @@ public static class FssTuningDetector
             state = FssTuningDetectionState.White;
         }
 
-        return new FssTuningAnalysis(
-            state,
-            area,
-            white,
-            yellow,
-            null);
+        return new FssTuningAnalysis(state, area, white, yellow, null);
     }
 
     private static bool TryFindWatchArea(
         IFssPixelSource source,
         FssTuningDetectorSettings settings,
         out FssPixelRegion area,
-        out string? failure)
+        out string? failure
+    )
     {
         area = default;
         failure = null;
@@ -121,10 +110,7 @@ public static class FssTuningDetector
             return false;
         }
 
-        var horizontalYellow = settings.YellowBar with
-        {
-            Tolerance = settings.YellowHorizontalTolerance,
-        };
+        var horizontalYellow = settings.YellowBar with { Tolerance = settings.YellowHorizontalTolerance };
         if (!TryFindBarLeft(source, horizontalYellow, center, yellowY, out var left))
         {
             failure = "The left edge of the FSS tuning bar was not found.";
@@ -152,21 +138,15 @@ public static class FssTuningDetector
             return false;
         }
 
-        return TryBuildWatchArea(
-            source,
-            yellowY,
-            blackY,
-            watchX,
-            width,
-            out area,
-            out failure);
+        return TryBuildWatchArea(source, yellowY, blackY, watchX, width, out area, out failure);
     }
 
     private static bool TryFindYellowBarY(
         IFssPixelSource source,
         FssTuningDetectorSettings settings,
         int x,
-        out int yellowY)
+        out int yellowY
+    )
     {
         yellowY = 0;
         var y = source.Height - 1;
@@ -189,7 +169,8 @@ public static class FssTuningDetector
         FssPixelColor horizontalYellow,
         int center,
         int y,
-        out int left)
+        out int left
+    )
     {
         left = 0;
         var x = center;
@@ -212,7 +193,8 @@ public static class FssTuningDetector
         FssPixelColor horizontalYellow,
         int center,
         int y,
-        out int right)
+        out int right
+    )
     {
         right = 0;
         var x = center;
@@ -235,7 +217,8 @@ public static class FssTuningDetector
         FssTuningDetectorSettings settings,
         int blackX,
         int startY,
-        out int blackY)
+        out int blackY
+    )
     {
         blackY = 0;
         var y = startY;
@@ -260,18 +243,15 @@ public static class FssTuningDetector
         int watchX,
         int width,
         out FssPixelRegion area,
-        out string? failure)
+        out string? failure
+    )
     {
         area = default;
         failure = null;
         var heightDelta = (blackY - yellowY) / 3;
         var watchY = blackY + heightDelta;
         var height = (source.Height - watchY - 1) / 2;
-        if (height <= 0
-            || watchX < 0
-            || watchY < 0
-            || watchX + width > source.Width
-            || watchY + height > source.Height)
+        if (height <= 0 || watchX < 0 || watchY < 0 || watchX + width > source.Width || watchY + height > source.Height)
         {
             failure = "The detected FSS text area has invalid dimensions.";
             return false;

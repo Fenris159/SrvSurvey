@@ -7,7 +7,8 @@ public sealed class QuestDevelopmentFolderLoaderTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        "srv-survey-quest-folder-" + Guid.NewGuid().ToString("N"));
+        "srv-survey-quest-folder-" + Guid.NewGuid().ToString("N")
+    );
 
     [Fact]
     public async Task LoadsLegacyFolderWithoutChangingSourceBytes()
@@ -28,10 +29,12 @@ public sealed class QuestDevelopmentFolderLoaderTests : IDisposable
               "chapters":{"start":"return 'embedded'"},
               "future":{"retain":true}
             }
-            """);
+            """
+        );
         await File.WriteAllTextAsync(
             Path.Combine(temporaryDirectory, "strings.json"),
-            """{"scan":"Scan the target"}""");
+            """{"scan":"Scan the target"}"""
+        );
         await File.WriteAllTextAsync(
             Path.Combine(temporaryDirectory, "welcome.md"),
             """
@@ -42,23 +45,19 @@ public sealed class QuestDevelopmentFolderLoaderTests : IDisposable
 
             First line.
             Second line.
-            """);
-        await File.WriteAllTextAsync(
-            Path.Combine(temporaryDirectory, "start.lua"),
-            "return 'file'");
-        var originals = Directory.GetFiles(temporaryDirectory)
-            .ToDictionary(path => path, File.ReadAllBytes);
+            """
+        );
+        await File.WriteAllTextAsync(Path.Combine(temporaryDirectory, "start.lua"), "return 'file'");
+        var originals = Directory.GetFiles(temporaryDirectory).ToDictionary(path => path, File.ReadAllBytes);
 
-        var result = await new QuestDevelopmentFolderLoader().LoadAsync(
-            temporaryDirectory);
+        var result = await new QuestDevelopmentFolderLoader().LoadAsync(temporaryDirectory);
 
         Assert.Equal("Sample Quest", result.Definition.Title);
         Assert.Equal("Scan the target", result.Definition.Strings["scan"]);
         Assert.False(result.Definition.Strings.ContainsKey("old"));
         Assert.Equal("return 'file'", result.Definition.Chapters["start"]);
         Assert.True(result.Definition.ExtensionData.ContainsKey("future"));
-        var message = result.Definition.Messages.Single(item =>
-            item.Id == "welcome");
+        var message = result.Definition.Messages.Single(item => item.Id == "welcome");
         Assert.Equal("Raven Colonial", message.From);
         Assert.Equal("Welcome", message.Subject);
         Assert.Equal("Proceed: now", message.Actions!["go"]);
@@ -88,10 +87,12 @@ public sealed class QuestDevelopmentFolderLoaderTests : IDisposable
               "firstChapter":"start",
               "chapters":{"start":"return true"}
             }
-            """);
+            """
+        );
 
         var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
-            new QuestDevelopmentFolderLoader().LoadAsync(temporaryDirectory));
+            new QuestDevelopmentFolderLoader().LoadAsync(temporaryDirectory)
+        );
 
         Assert.Contains("safe", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
@@ -112,21 +113,22 @@ public sealed class QuestDevelopmentFolderLoaderTests : IDisposable
               "firstChapter":"start",
               "chapters":{}
             }
-            """);
+            """
+        );
         var original = await File.ReadAllBytesAsync(questPath);
 
         var missing = await Assert.ThrowsAsync<InvalidDataException>(() =>
-            new QuestDevelopmentFolderLoader().LoadAsync(temporaryDirectory));
+            new QuestDevelopmentFolderLoader().LoadAsync(temporaryDirectory)
+        );
         Assert.Contains("First chapter", missing.Message, StringComparison.Ordinal);
         Assert.Equal(original, await File.ReadAllBytesAsync(questPath));
 
         await File.WriteAllBytesAsync(questPath, [0xff, 0xfe, 0xfd]);
         var invalid = await Assert.ThrowsAsync<InvalidDataException>(() =>
-            new QuestDevelopmentFolderLoader().LoadAsync(temporaryDirectory));
+            new QuestDevelopmentFolderLoader().LoadAsync(temporaryDirectory)
+        );
         Assert.Contains("UTF-8", invalid.Message, StringComparison.Ordinal);
-        Assert.Equal(
-            new byte[] { 0xff, 0xfe, 0xfd },
-            await File.ReadAllBytesAsync(questPath));
+        Assert.Equal(new byte[] { 0xff, 0xfe, 0xfd }, await File.ReadAllBytesAsync(questPath));
     }
 
     [Fact]
@@ -145,16 +147,13 @@ public sealed class QuestDevelopmentFolderLoaderTests : IDisposable
               "msgs":[{"id":"welcome","from":"One","body":"One"}],
               "chapters":{"start":"return true"}
             }
-            """);
-        await File.WriteAllTextAsync(
-            Path.Combine(temporaryDirectory, "welcome.md"),
-            "from: Two\n\nTwo");
+            """
+        );
+        await File.WriteAllTextAsync(Path.Combine(temporaryDirectory, "welcome.md"), "from: Two\n\nTwo");
 
-        var result = await new QuestDevelopmentFolderLoader().LoadAsync(
-            temporaryDirectory);
+        var result = await new QuestDevelopmentFolderLoader().LoadAsync(temporaryDirectory);
 
-        Assert.Equal(2, result.Definition.Messages.Count(message =>
-            message.Id == "welcome"));
+        Assert.Equal(2, result.Definition.Messages.Count(message => message.Id == "welcome"));
         Assert.Single(result.Warnings);
     }
 

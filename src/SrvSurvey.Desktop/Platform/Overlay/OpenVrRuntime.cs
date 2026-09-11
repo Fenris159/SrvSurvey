@@ -17,7 +17,8 @@ public interface IOpenVrRuntime : IDisposable
         string plotterName,
         VrOverlayFrame frame,
         VrOverlayCalibration calibration,
-        float alpha);
+        float alpha
+    );
 
     void RemoveOverlay(string plotterName);
 
@@ -28,8 +29,7 @@ public interface IOpenVrRuntime : IDisposable
 
 public sealed class OpenVrRuntime : IOpenVrRuntime
 {
-    private readonly Dictionary<string, ulong> handles = new(
-        StringComparer.Ordinal);
+    private readonly Dictionary<string, ulong> handles = new(StringComparer.Ordinal);
     private CVRSystem? system;
     private CVROverlay? overlay;
     private float headsetYawOffset;
@@ -48,31 +48,29 @@ public sealed class OpenVrRuntime : IOpenVrRuntime
         {
             OpenVrNativeLibraryResolver.Register();
             var error = EVRInitError.None;
-            system = OpenVR.Init(
-                ref error,
-                EVRApplicationType.VRApplication_Overlay);
+            system = OpenVR.Init(ref error, EVRApplicationType.VRApplication_Overlay);
             overlay = OpenVR.Overlay;
             if (error != EVRInitError.None || system is null || overlay is null)
             {
                 Shutdown();
-                return VrRuntimeResult.Failure(
-                    $"OpenVR initialization failed: {error}.");
+                return VrRuntimeResult.Failure($"OpenVR initialization failed: {error}.");
             }
 
             headsetYawOffset = 0;
             headsetOrientationOffset = Matrix4x4.Identity;
             return VrRuntimeResult.Success("OpenVR is active.");
         }
-        catch (Exception exception) when (
-            exception is DllNotFoundException
-                or BadImageFormatException
-                or EntryPointNotFoundException
-                or TypeInitializationException
-                or InvalidOperationException)
+        catch (Exception exception)
+            when (exception
+                    is DllNotFoundException
+                        or BadImageFormatException
+                        or EntryPointNotFoundException
+                        or TypeInitializationException
+                        or InvalidOperationException
+            )
         {
             Shutdown();
-            return VrRuntimeResult.Failure(
-                "OpenVR could not be initialized: " + exception.Message);
+            return VrRuntimeResult.Failure("OpenVR could not be initialized: " + exception.Message);
         }
     }
 
@@ -80,7 +78,8 @@ public sealed class OpenVrRuntime : IOpenVrRuntime
         string plotterName,
         VrOverlayFrame frame,
         VrOverlayCalibration calibration,
-        float alpha)
+        float alpha
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
         ArgumentNullException.ThrowIfNull(frame);
@@ -90,9 +89,7 @@ public sealed class OpenVrRuntime : IOpenVrRuntime
             return VrRuntimeResult.Failure("OpenVR is not active.");
         }
 
-        if (frame.Width <= 0 || frame.Height <= 0
-            || frame.RgbaBytes.Length
-                != checked(frame.Width * frame.Height * 4))
+        if (frame.Width <= 0 || frame.Height <= 0 || frame.RgbaBytes.Length != checked(frame.Width * frame.Height * 4))
         {
             return VrRuntimeResult.Failure("The VR overlay frame is invalid.");
         }
@@ -101,29 +98,23 @@ public sealed class OpenVrRuntime : IOpenVrRuntime
         {
             var handle = GetOrCreateHandle(plotterName);
             Check(overlay.SetOverlayAlpha(handle, Math.Clamp(alpha, 0, 1)));
-            Check(overlay.SetOverlayWidthInMeters(
-                handle,
-                calibration.Scale / 10));
-            var matrix = VrOverlayTransform.Create(
-                    calibration,
-                    headsetYawOffset,
-                    headsetOrientationOffset)
+            Check(overlay.SetOverlayWidthInMeters(handle, calibration.Scale / 10));
+            var matrix = VrOverlayTransform
+                .Create(calibration, headsetYawOffset, headsetOrientationOffset)
                 .ToHmdMatrix34_t();
-            Check(overlay.SetOverlayTransformAbsolute(
-                handle,
-                ETrackingUniverseOrigin.TrackingUniverseStanding,
-                ref matrix));
-            var pinned = GCHandle.Alloc(
-                frame.RgbaBytes,
-                GCHandleType.Pinned);
+            Check(
+                overlay.SetOverlayTransformAbsolute(
+                    handle,
+                    ETrackingUniverseOrigin.TrackingUniverseStanding,
+                    ref matrix
+                )
+            );
+            var pinned = GCHandle.Alloc(frame.RgbaBytes, GCHandleType.Pinned);
             try
             {
-                Check(overlay.SetOverlayRaw(
-                    handle,
-                    pinned.AddrOfPinnedObject(),
-                    (uint)frame.Width,
-                    (uint)frame.Height,
-                    4));
+                Check(
+                    overlay.SetOverlayRaw(handle, pinned.AddrOfPinnedObject(), (uint)frame.Width, (uint)frame.Height, 4)
+                );
             }
             finally
             {
@@ -133,19 +124,15 @@ public sealed class OpenVrRuntime : IOpenVrRuntime
             Check(overlay.ShowOverlay(handle));
             return VrRuntimeResult.Success($"Published {plotterName} to OpenVR.");
         }
-        catch (Exception exception) when (
-            exception is InvalidOperationException
-                or OverflowException)
+        catch (Exception exception) when (exception is InvalidOperationException or OverflowException)
         {
-            return VrRuntimeResult.Failure(
-                $"OpenVR rejected {plotterName}: {exception.Message}");
+            return VrRuntimeResult.Failure($"OpenVR rejected {plotterName}: {exception.Message}");
         }
     }
 
     public void RemoveOverlay(string plotterName)
     {
-        if (overlay is null
-            || !handles.Remove(plotterName, out var handle))
+        if (overlay is null || !handles.Remove(plotterName, out var handle))
         {
             return;
         }
@@ -162,23 +149,15 @@ public sealed class OpenVrRuntime : IOpenVrRuntime
         }
 
         var poses = new TrackedDevicePose_t[OpenVR.k_unMaxTrackedDeviceCount];
-        system.GetDeviceToAbsoluteTrackingPose(
-            ETrackingUniverseOrigin.TrackingUniverseStanding,
-            0,
-            poses);
+        system.GetDeviceToAbsoluteTrackingPose(ETrackingUniverseOrigin.TrackingUniverseStanding, 0, poses);
         if (!poses[0].bPoseIsValid)
         {
-            return VrRuntimeResult.Failure(
-                "The headset pose is not currently valid.");
+            return VrRuntimeResult.Failure("The headset pose is not currently valid.");
         }
 
-        headsetYawOffset = VrOverlayTransform.ExtractYaw(
-            poses[0].mDeviceToAbsoluteTracking);
-        headsetOrientationOffset = Matrix4x4.CreateFromAxisAngle(
-            Vector3.UnitY,
-            headsetYawOffset);
-        return VrRuntimeResult.Success(
-            "Captured the current headset yaw as the overlay origin.");
+        headsetYawOffset = VrOverlayTransform.ExtractYaw(poses[0].mDeviceToAbsoluteTracking);
+        headsetOrientationOffset = Matrix4x4.CreateFromAxisAngle(Vector3.UnitY, headsetYawOffset);
+        return VrRuntimeResult.Success("Captured the current headset yaw as the overlay origin.");
     }
 
     public void Shutdown()
@@ -216,12 +195,12 @@ public sealed class OpenVrRuntime : IOpenVrRuntime
             return handle;
         }
 
-        var hash = Convert.ToHexStringLower(SHA256.HashData(
-            Encoding.UTF8.GetBytes(plotterName)))[..16];
+        var hash = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(plotterName)))[..16];
         var error = overlay!.CreateOverlay(
             $"com.ravencolonial.srvsurvey.{hash}",
             $"SrvSurvey {plotterName}",
-            ref handle);
+            ref handle
+        );
         Check(error);
         handles[plotterName] = handle;
         return handle;

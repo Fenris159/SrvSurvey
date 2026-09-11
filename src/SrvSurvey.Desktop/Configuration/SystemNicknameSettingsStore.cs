@@ -14,9 +14,7 @@ public sealed class SystemNicknameSettingsStore
     public bool LoadEnabled()
     {
         var settings = documentStore.Load()["SystemNicknames"] as JsonObject;
-        return settings?["Enabled"] is JsonValue enabled
-            && enabled.TryGetValue<bool>(out var value)
-            && value;
+        return settings?["Enabled"] is JsonValue enabled && enabled.TryGetValue<bool>(out var value) && value;
     }
 
     public void SaveEnabled(bool enabled)

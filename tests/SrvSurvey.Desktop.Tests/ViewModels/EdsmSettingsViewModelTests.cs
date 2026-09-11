@@ -9,44 +9,32 @@ public sealed class EdsmSettingsViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        "SrvSurvey-EdsmViewModel-" + Guid.NewGuid().ToString("N"));
+        "SrvSurvey-EdsmViewModel-" + Guid.NewGuid().ToString("N")
+    );
 
     [Fact]
     public async Task ApiKeyIsSavedWithTheCurrentCommanderName()
     {
         var viewModel = CreateViewModel();
-        viewModel.SetCommanderProfile(
-            "F123",
-            "Game Commander",
-            isOdyssey: true,
-            savedApiKey: null);
+        viewModel.SetCommanderProfile("F123", "Game Commander", isOdyssey: true, savedApiKey: null);
 
         Assert.False(viewModel.SaveCredentialsCommand.CanExecute(null));
 
         viewModel.ApiKey = "  personal-key  ";
         Assert.True(viewModel.SaveCredentialsCommand.CanExecute(null));
-        await ExecuteAndWaitForCredentialsChangedAsync(
-            viewModel,
-            viewModel.SaveCredentialsCommand);
+        await ExecuteAndWaitForCredentialsChangedAsync(viewModel, viewModel.SaveCredentialsCommand);
 
-        var profile = await new CommanderProfileStore(temporaryDirectory)
-            .LoadAsync("F123", isOdyssey: true);
+        var profile = await new CommanderProfileStore(temporaryDirectory).LoadAsync("F123", isOdyssey: true);
         Assert.Equal("Game Commander", profile.Data?.EdsmCommanderName);
         Assert.Equal("personal-key", profile.Data?.EdsmApiKey);
-        Assert.False(File.Exists(Path.Combine(
-            temporaryDirectory,
-            "ui-settings.json")));
+        Assert.False(File.Exists(Path.Combine(temporaryDirectory, "ui-settings.json")));
     }
 
     [Fact]
     public async Task ClearingCredentialsRequiresConfirmationAndRaisesAChange()
     {
         var viewModel = CreateViewModel();
-        viewModel.SetCommanderProfile(
-            "F123",
-            "Game Commander",
-            isOdyssey: true,
-            savedApiKey: "personal-key");
+        viewModel.SetCommanderProfile("F123", "Game Commander", isOdyssey: true, savedApiKey: "personal-key");
         var changes = 0;
         viewModel.CredentialsChanged += (_, _) => changes++;
 
@@ -55,12 +43,9 @@ public sealed class EdsmSettingsViewModelTests : IDisposable
         Assert.True(viewModel.IsClearCredentialsConfirmationVisible);
         Assert.Equal("personal-key", viewModel.StoredApiKey);
 
-        await ExecuteAndWaitForCredentialsChangedAsync(
-            viewModel,
-            viewModel.ConfirmClearCredentialsCommand);
+        await ExecuteAndWaitForCredentialsChangedAsync(viewModel, viewModel.ConfirmClearCredentialsCommand);
 
-        var profile = await new CommanderProfileStore(temporaryDirectory)
-            .LoadAsync("F123", isOdyssey: true);
+        var profile = await new CommanderProfileStore(temporaryDirectory).LoadAsync("F123", isOdyssey: true);
         Assert.Null(profile.Data?.EdsmCommanderName);
         Assert.Null(profile.Data?.EdsmApiKey);
         Assert.Equal(1, changes);
@@ -70,10 +55,8 @@ public sealed class EdsmSettingsViewModelTests : IDisposable
     [Fact]
     public async Task SaveCompletionCannotOverwriteAProfileLoadedDuringTheWrite()
     {
-        var saveStarted = new TaskCompletionSource(
-            TaskCreationOptions.RunContinuationsAsynchronously);
-        var releaseSave = new TaskCompletionSource(
-            TaskCreationOptions.RunContinuationsAsynchronously);
+        var saveStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseSave = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         string? savedFrontierId = null;
         string? savedEdsmName = null;
         string? savedApiKey = null;
@@ -83,7 +66,8 @@ public sealed class EdsmSettingsViewModelTests : IDisposable
             bool isOdyssey,
             string? edsmCommanderName,
             string? apiKey,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
             savedFrontierId = frontierId;
             savedEdsmName = edsmCommanderName;
@@ -95,26 +79,16 @@ public sealed class EdsmSettingsViewModelTests : IDisposable
         var viewModel = CreateViewModel(SaveAsync);
         var changes = 0;
         viewModel.CredentialsChanged += (_, _) => changes++;
-        viewModel.SetCommanderProfile(
-            "F123",
-            "First Commander",
-            isOdyssey: true,
-            savedApiKey: null);
+        viewModel.SetCommanderProfile("F123", "First Commander", isOdyssey: true, savedApiKey: null);
         viewModel.ApiKey = "first-key";
         try
         {
             viewModel.SaveCredentialsCommand.Execute(null);
             await saveStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
-            viewModel.SetCommanderProfile(
-                "F456",
-                "Second Commander",
-                isOdyssey: true,
-                savedApiKey: "second-key");
-            var saveFinished = new TaskCompletionSource(
-                TaskCreationOptions.RunContinuationsAsynchronously);
-            viewModel.SaveCredentialsCommand.CanExecuteChanged += (_, _) =>
-                saveFinished.TrySetResult();
+            viewModel.SetCommanderProfile("F456", "Second Commander", isOdyssey: true, savedApiKey: "second-key");
+            var saveFinished = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            viewModel.SaveCredentialsCommand.CanExecuteChanged += (_, _) => saveFinished.TrySetResult();
             releaseSave.TrySetResult();
             await saveFinished.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
@@ -139,12 +113,15 @@ public sealed class EdsmSettingsViewModelTests : IDisposable
     {
         var viewModel = CreateViewModel();
 
-        viewModel.ReportPublicationResult(new EdsmPublicationResult(
-            QueuedEventCount: 2,
-            AcceptedEventCount: 0,
-            PendingEventCount: 2,
-            QueuedEventNames: ["FSDJump"],
-            Warnings: []));
+        viewModel.ReportPublicationResult(
+            new EdsmPublicationResult(
+                QueuedEventCount: 2,
+                AcceptedEventCount: 0,
+                PendingEventCount: 2,
+                QueuedEventNames: ["FSDJump"],
+                Warnings: []
+            )
+        );
 
         Assert.Contains("Queued 2 EDSM journal event", viewModel.PublicationStatus);
         Assert.True(viewModel.HasPublicationStatus);
@@ -159,28 +136,19 @@ public sealed class EdsmSettingsViewModelTests : IDisposable
     }
 
     private EdsmSettingsViewModel CreateViewModel(
-        Func<
-            string,
-            string?,
-            bool,
-            string?,
-            string?,
-            CancellationToken,
-            Task>? saveCredentialsAsync = null)
+        Func<string, string?, bool, string?, string?, CancellationToken, Task>? saveCredentialsAsync = null
+    )
     {
-        return new EdsmSettingsViewModel(
-            new CommanderProfileStore(temporaryDirectory),
-            saveCredentialsAsync);
+        return new EdsmSettingsViewModel(new CommanderProfileStore(temporaryDirectory), saveCredentialsAsync);
     }
 
     private static async Task ExecuteAndWaitForCredentialsChangedAsync(
         EdsmSettingsViewModel viewModel,
-        ICommand command)
+        ICommand command
+    )
     {
-        var changed = new TaskCompletionSource(
-            TaskCreationOptions.RunContinuationsAsynchronously);
-        void OnCredentialsChanged(object? sender, EventArgs args) =>
-            changed.TrySetResult();
+        var changed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        void OnCredentialsChanged(object? sender, EventArgs args) => changed.TrySetResult();
 
         // HasStoredCredentials changes before the notification and remaining UI state.
         // Await the event being asserted, rather than polling that intermediate field.

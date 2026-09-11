@@ -125,14 +125,14 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
+      - name: Restore local tools
+        run: dotnet tool restore
+
       - name: Restore
         run: dotnet restore SrvSurvey.slnx
 
-      - name: Verify formatting
-        run: >-
-          dotnet format whitespace SrvSurvey.slnx
-          --no-restore
-          --verify-no-changes
+      - name: Verify C# formatting
+        run: dotnet csharpier check .
 
       - name: Build
         run: dotnet build SrvSurvey.slnx --configuration Release --no-restore

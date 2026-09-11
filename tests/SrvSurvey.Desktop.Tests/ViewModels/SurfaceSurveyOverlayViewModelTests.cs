@@ -12,7 +12,8 @@ public sealed class SurfaceSurveyOverlayViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-surface-overlay-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-surface-overlay-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void TracksLegacySizeMappingAndPassivePreparation()
@@ -21,10 +22,10 @@ public sealed class SurfaceSurveyOverlayViewModelTests : IDisposable
         using var ownedSurfaceSurvey = surfaceSurvey;
         using var viewModel = new SurfaceSurveyOverlayViewModel(
             surfaceSurvey,
-            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows));
+            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows)
+        );
         var changed = new List<string?>();
-        viewModel.PropertyChanged += (_, eventArgs) =>
-            changed.Add(eventArgs.PropertyName);
+        viewModel.PropertyChanged += (_, eventArgs) => changed.Add(eventArgs.PropertyName);
 
         Assert.Equal(380, viewModel.WindowWidth);
         Assert.Equal(500, viewModel.WindowHeight);
@@ -37,10 +38,9 @@ public sealed class SurfaceSurveyOverlayViewModelTests : IDisposable
         Assert.Contains(nameof(viewModel.WindowWidth), changed);
         Assert.Contains(nameof(viewModel.WindowHeight), changed);
 
-        viewModel.ApplyPreparation(new OverlayPreparationResult(
-            IsPrepared: true,
-            IsClickThrough: false,
-            "Click-through was rejected."));
+        viewModel.ApplyPreparation(
+            new OverlayPreparationResult(IsPrepared: true, IsClickThrough: false, "Click-through was rejected.")
+        );
 
         Assert.Equal("BLOCKED", viewModel.InputMode);
         Assert.Equal("Click-through was rejected.", viewModel.PlatformStatus);
@@ -53,12 +53,13 @@ public sealed class SurfaceSurveyOverlayViewModelTests : IDisposable
         using var ownedSurfaceSurvey = surfaceSurvey;
         using var viewModel = new SurfaceSurveyOverlayViewModel(
             surfaceSurvey,
-            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows));
+            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows)
+        );
         var layout = new LegacyOverlayLayout(
-            new Dictionary<string, LegacyOverlayPlacement>(
-                StringComparer.Ordinal),
+            new Dictionary<string, LegacyOverlayPlacement>(StringComparer.Ordinal),
             defaultOpacity: null,
-            error: null);
+            error: null
+        );
 
         survey.SurfaceRadarSize = 3;
         var first = CreateWindow(viewModel, layout);
@@ -69,44 +70,37 @@ public sealed class SurfaceSurveyOverlayViewModelTests : IDisposable
         Assert.Equal(first.Height, recreated.Height);
 
         survey.SurfaceRadarSize = 0;
-        SystemSurveyOverlayCoordinator.ApplySurfaceWindowSize(
-            recreated,
-            layout,
-            viewModel);
+        SystemSurveyOverlayCoordinator.ApplySurfaceWindowSize(recreated, layout, viewModel);
         Assert.Equal(250, recreated.Width);
         Assert.Equal(400, recreated.Height);
     }
 
     private static SurfaceSurveyOverlayWindow CreateWindow(
         SurfaceSurveyOverlayViewModel viewModel,
-        LegacyOverlayLayout layout)
+        LegacyOverlayLayout layout
+    )
     {
         var window = new SurfaceSurveyOverlayWindow(viewModel);
         OverlayThemeResources.ApplyLegacyFormFactor(window, "PlotGrounded");
         OverlayThemeResources.ApplyScale(window, layout, "PlotGrounded");
-        SystemSurveyOverlayCoordinator.ApplySurfaceWindowSize(
-            window,
-            layout,
-            viewModel);
+        SystemSurveyOverlayCoordinator.ApplySurfaceWindowSize(window, layout, viewModel);
         return window;
     }
 
-    private (SurfaceSurveyViewModel SurfaceSurvey, SystemSurveyViewModel Survey)
-        CreateSurfaceSurvey()
+    private (SurfaceSurveyViewModel SurfaceSurvey, SystemSurveyViewModel Survey) CreateSurfaceSurvey()
     {
         var survey = new SystemSurveyViewModel(
-            new SystemSurveySettingsStore(Path.Combine(
-                temporaryDirectory,
-                "ui-settings.json")));
+            new SystemSurveySettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json"))
+        );
         var store = new SystemSurfaceStore(temporaryDirectory);
         return (
             new SurfaceSurveyViewModel(
                 survey,
                 store,
-                new SurfaceSurveyJournalTracker(
-                    store,
-                    new ExobiologyReferenceCatalog([]))),
-            survey);
+                new SurfaceSurveyJournalTracker(store, new ExobiologyReferenceCatalog([]))
+            ),
+            survey
+        );
     }
 
     public void Dispose()

@@ -9,64 +9,63 @@ public interface ICommunityGoalJournalHistoryReader
 {
     Task<CommunityGoalJournalHistoryReadResult> ReadAsync(
         string frontierId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }
 
 public sealed record CommunityGoalJournalHistoryReadResult(
     IReadOnlyList<FrontierCommunityGoalSnapshot> Goals,
-    string Warning);
+    string Warning
+);
 
-public sealed class CommunityGoalJournalHistoryReader(
-    string journalDirectory) : ICommunityGoalJournalHistoryReader
+public sealed class CommunityGoalJournalHistoryReader(string journalDirectory) : ICommunityGoalJournalHistoryReader
 {
     private const int MaximumHistoryGoals = 250;
     private readonly string journalDirectory = Path.GetFullPath(
         string.IsNullOrWhiteSpace(journalDirectory)
-            ? throw new ArgumentException(
-                "A journal directory is required.",
-                nameof(journalDirectory))
-            : journalDirectory);
+            ? throw new ArgumentException("A journal directory is required.", nameof(journalDirectory))
+            : journalDirectory
+    );
 
     public async Task<CommunityGoalJournalHistoryReadResult> ReadAsync(
         string frontierId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(frontierId);
         if (!Directory.Exists(journalDirectory))
         {
             return new CommunityGoalJournalHistoryReadResult(
                 [],
-                $"Local Community Goal history was not found: {journalDirectory}");
+                $"Local Community Goal history was not found: {journalDirectory}"
+            );
         }
 
         var normalizedFrontierId = NormalizeFrontierId(frontierId);
         var latest = new Dictionary<string, HistoryGoal>(StringComparer.Ordinal);
         var malformedEntries = 0;
         var unreadableFiles = 0;
-        foreach (var file in new DirectoryInfo(journalDirectory)
-            .EnumerateFiles("Journal.*.log", SearchOption.TopDirectoryOnly)
-            .OrderBy(item => item.LastWriteTimeUtc)
-            .ThenBy(item => item.Name, StringComparer.Ordinal))
+        foreach (
+            var file in new DirectoryInfo(journalDirectory)
+                .EnumerateFiles("Journal.*.log", SearchOption.TopDirectoryOnly)
+                .OrderBy(item => item.LastWriteTimeUtc)
+                .ThenBy(item => item.Name, StringComparer.Ordinal)
+        )
         {
             cancellationToken.ThrowIfCancellationRequested();
             try
             {
-                malformedEntries += await ReadFileAsync(
-                        file,
-                        normalizedFrontierId,
-                        latest,
-                        cancellationToken)
+                malformedEntries += await ReadFileAsync(file, normalizedFrontierId, latest, cancellationToken)
                     .ConfigureAwait(false);
             }
-            catch (Exception exception) when (
-                exception is IOException or UnauthorizedAccessException)
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
             {
                 unreadableFiles++;
             }
         }
 
-        var goals = latest.Values
-            .OrderByDescending(item => item.Timestamp)
+        var goals = latest
+            .Values.OrderByDescending(item => item.Timestamp)
             .Take(MaximumHistoryGoals)
             .Select(item => item.Goal)
             .ToArray();
@@ -74,25 +73,26 @@ public sealed class CommunityGoalJournalHistoryReader(
         if (malformedEntries > 0)
         {
             warnings.Add(
-                $"Local Community Goal history ignored {malformedEntries:N0} malformed entr{(malformedEntries == 1 ? "y" : "ies")}.");
+                $"Local Community Goal history ignored {malformedEntries:N0} malformed entr{(malformedEntries == 1 ? "y" : "ies")}."
+            );
         }
 
         if (unreadableFiles > 0)
         {
             warnings.Add(
-                $"Local Community Goal history could not read {unreadableFiles:N0} journal file{(unreadableFiles == 1 ? string.Empty : "s")}.");
+                $"Local Community Goal history could not read {unreadableFiles:N0} journal file{(unreadableFiles == 1 ? string.Empty : "s")}."
+            );
         }
 
-        return new CommunityGoalJournalHistoryReadResult(
-            goals,
-            string.Join(Environment.NewLine, warnings));
+        return new CommunityGoalJournalHistoryReadResult(goals, string.Join(Environment.NewLine, warnings));
     }
 
     private static async Task<int> ReadFileAsync(
         FileInfo file,
         string targetFrontierId,
         IDictionary<string, HistoryGoal> latest,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         await using var stream = new FileStream(
             file.FullName,
@@ -100,14 +100,11 @@ public sealed class CommunityGoalJournalHistoryReader(
             FileAccess.Read,
             FileShare.ReadWrite | FileShare.Delete,
             16 * 1024,
-            FileOptions.Asynchronous | FileOptions.SequentialScan);
-        using var reader = new StreamReader(
-            stream,
-            Encoding.UTF8,
-            detectEncodingFromByteOrderMarks: true);
+            FileOptions.Asynchronous | FileOptions.SequentialScan
+        );
+        using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
         var state = new HistoryReadState();
-        while (await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false)
-               is { } line)
+        while (await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false) is { } line)
         {
             ProcessHistoryLine(line, targetFrontierId, latest, state);
         }
@@ -128,15 +125,15 @@ public sealed class CommunityGoalJournalHistoryReader(
         string line,
         string targetFrontierId,
         IDictionary<string, HistoryGoal> latest,
-        HistoryReadState state)
+        HistoryReadState state
+    )
     {
         if (!LooksRelevant(line))
         {
             return;
         }
 
-        if (!JournalEventEnvelope.TryParse(line, out var journalEvent, out _)
-            || journalEvent is null)
+        if (!JournalEventEnvelope.TryParse(line, out var journalEvent, out _) || journalEvent is null)
         {
             state.MalformedEntries++;
             return;
@@ -148,10 +145,7 @@ public sealed class CommunityGoalJournalHistoryReader(
             return;
         }
 
-        if (!string.Equals(
-                journalEvent.EventName,
-                "CommunityGoal",
-                StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(journalEvent.EventName, "CommunityGoal", StringComparison.OrdinalIgnoreCase))
         {
             return;
         }
@@ -163,10 +157,10 @@ public sealed class CommunityGoalJournalHistoryReader(
         JournalEventEnvelope journalEvent,
         string targetFrontierId,
         IDictionary<string, HistoryGoal> latest,
-        HistoryReadState state)
+        HistoryReadState state
+    )
     {
-        state.CurrentFrontierId = ReadFrontierId(journalEvent.Payload)
-            ?? state.CurrentFrontierId;
+        state.CurrentFrontierId = ReadFrontierId(journalEvent.Payload) ?? state.CurrentFrontierId;
         if (state.CurrentFrontierId is null || state.Pending.Count == 0)
         {
             return;
@@ -183,7 +177,8 @@ public sealed class CommunityGoalJournalHistoryReader(
     private static void FlushPendingGoals(
         List<JournalEventEnvelope> pending,
         IDictionary<string, HistoryGoal> latest,
-        HistoryReadState state)
+        HistoryReadState state
+    )
     {
         foreach (var pendingEvent in pending)
         {
@@ -195,7 +190,8 @@ public sealed class CommunityGoalJournalHistoryReader(
         JournalEventEnvelope journalEvent,
         string targetFrontierId,
         IDictionary<string, HistoryGoal> latest,
-        HistoryReadState state)
+        HistoryReadState state
+    )
     {
         if (state.CurrentFrontierId is null)
         {
@@ -211,18 +207,17 @@ public sealed class CommunityGoalJournalHistoryReader(
 
     private static int ApplyCommunityGoalEvent(
         JournalEventEnvelope journalEvent,
-        IDictionary<string, HistoryGoal> latest)
+        IDictionary<string, HistoryGoal> latest
+    )
     {
         try
         {
-            foreach (var parsed in FrontierCapiSnapshotParser.ParseCommunityGoals(
-                journalEvent.RawJson))
+            foreach (var parsed in FrontierCapiSnapshotParser.ParseCommunityGoals(journalEvent.RawJson))
             {
                 var timestamp = journalEvent.Timestamp ?? DateTimeOffset.MinValue;
                 var goal = AddJournalTimestamp(parsed, timestamp);
                 var key = GoalKey(goal);
-                if (!latest.TryGetValue(key, out var prior)
-                    || timestamp >= prior.Timestamp)
+                if (!latest.TryGetValue(key, out var prior) || timestamp >= prior.Timestamp)
                 {
                     latest[key] = new HistoryGoal(goal, timestamp);
                 }
@@ -230,8 +225,7 @@ public sealed class CommunityGoalJournalHistoryReader(
 
             return 0;
         }
-        catch (Exception exception) when (
-            exception is JsonException or InvalidDataException)
+        catch (Exception exception) when (exception is JsonException or InvalidDataException)
         {
             return 1;
         }
@@ -239,7 +233,8 @@ public sealed class CommunityGoalJournalHistoryReader(
 
     private static FrontierCommunityGoalSnapshot AddJournalTimestamp(
         FrontierCommunityGoalSnapshot goal,
-        DateTimeOffset timestamp)
+        DateTimeOffset timestamp
+    )
     {
         var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (var point in goal.DataPoints ?? [])
@@ -247,14 +242,10 @@ public sealed class CommunityGoalJournalHistoryReader(
             data[point.Path] = point.Value;
         }
 
-        data["journal.communityGoalTimestamp"] = timestamp.ToString(
-            "O",
-            CultureInfo.InvariantCulture);
+        data["journal.communityGoalTimestamp"] = timestamp.ToString("O", CultureInfo.InvariantCulture);
         return goal with
         {
-            DataPoints = data
-                .Select(pair => new FrontierDataPointSnapshot(pair.Key, pair.Value))
-                .ToArray(),
+            DataPoints = data.Select(pair => new FrontierDataPointSnapshot(pair.Key, pair.Value)).ToArray(),
         };
     }
 
@@ -268,15 +259,12 @@ public sealed class CommunityGoalJournalHistoryReader(
         return "goal:"
             + NormalizeText(goal.Title)
             + ":"
-            + (goal.ExpiresAt?.ToUniversalTime().ToString(
-                "O",
-                CultureInfo.InvariantCulture) ?? string.Empty);
+            + (goal.ExpiresAt?.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture) ?? string.Empty);
     }
 
     private static string? ReadFrontierId(JsonElement payload)
     {
-        if (!payload.TryGetProperty("FID", out var value)
-            || value.ValueKind != JsonValueKind.String)
+        if (!payload.TryGetProperty("FID", out var value) || value.ValueKind != JsonValueKind.String)
         {
             return null;
         }
@@ -286,30 +274,21 @@ public sealed class CommunityGoalJournalHistoryReader(
     }
 
     private static bool MatchesFrontierId(string first, string second) =>
-        string.Equals(
-            NormalizeFrontierId(first),
-            NormalizeFrontierId(second),
-            StringComparison.OrdinalIgnoreCase);
+        string.Equals(NormalizeFrontierId(first), NormalizeFrontierId(second), StringComparison.OrdinalIgnoreCase);
 
     private static string NormalizeFrontierId(string value)
     {
         var normalized = value.Trim();
-        return normalized.StartsWith('F') || normalized.StartsWith('f')
-            ? normalized[1..]
-            : normalized;
+        return normalized.StartsWith('F') || normalized.StartsWith('f') ? normalized[1..] : normalized;
     }
 
     private static string NormalizeText(string value) =>
-        string.Concat(value
-            .Where(char.IsLetterOrDigit)
-            .Select(char.ToUpperInvariant));
+        string.Concat(value.Where(char.IsLetterOrDigit).Select(char.ToUpperInvariant));
 
     private static bool LooksRelevant(string line) =>
         line.Contains("CommunityGoal", StringComparison.Ordinal)
         || line.Contains("\"Commander\"", StringComparison.Ordinal)
         || line.Contains("\"LoadGame\"", StringComparison.Ordinal);
 
-    private sealed record HistoryGoal(
-        FrontierCommunityGoalSnapshot Goal,
-        DateTimeOffset Timestamp);
+    private sealed record HistoryGoal(FrontierCommunityGoalSnapshot Goal, DateTimeOffset Timestamp);
 }

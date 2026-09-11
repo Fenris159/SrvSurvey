@@ -11,10 +11,7 @@ public sealed class GroundTargetStateTests
     [InlineData("12.5/-45.25", 12.5, -45.25)]
     [InlineData("12.5°N 45.25°W", 12.5, -45.25)]
     [InlineData("12.5 S / 45.25 E", -12.5, 45.25)]
-    public void ParsesLegacyAndCardinalCoordinatePairs(
-        string text,
-        double expectedLatitude,
-        double expectedLongitude)
+    public void ParsesLegacyAndCardinalCoordinatePairs(string text, double expectedLatitude, double expectedLongitude)
     {
         Assert.True(GroundTargetState.TryParse(text, out var coordinate));
 
@@ -27,15 +24,17 @@ public sealed class GroundTargetStateTests
     {
         var state = new GroundTargetState();
         state.SetTarget(new SurfaceCoordinate(0, 1));
-        state.UpdateStatus(new EliteStatus
-        {
-            Flags = StatusFlags.HasLatLong,
-            Latitude = 0,
-            Longitude = 0,
-            PlanetRadius = 1_000,
-            Heading = 45,
-            Altitude = 17.4532925,
-        });
+        state.UpdateStatus(
+            new EliteStatus
+            {
+                Flags = StatusFlags.HasLatLong,
+                Latitude = 0,
+                Longitude = 0,
+                PlanetRadius = 1_000,
+                Heading = 45,
+                Altitude = 17.4532925,
+            }
+        );
 
         Assert.NotNull(state.Solution);
         Assert.Equal(17.453, state.Solution.Distance, 3);
@@ -49,13 +48,15 @@ public sealed class GroundTargetStateTests
     public void CurrentLocationCanBecomeTargetAndClearMatchesLegacySettings()
     {
         var state = new GroundTargetState();
-        state.UpdateStatus(new EliteStatus
-        {
-            Flags = StatusFlags.HasLatLong,
-            Latitude = -12.25,
-            Longitude = 88.5,
-            PlanetRadius = 6_000_000,
-        });
+        state.UpdateStatus(
+            new EliteStatus
+            {
+                Flags = StatusFlags.HasLatLong,
+                Latitude = -12.25,
+                Longitude = 88.5,
+                PlanetRadius = 6_000_000,
+            }
+        );
 
         Assert.True(state.TryUseCurrentLocation(out var error), error);
         Assert.True(state.IsActive);
@@ -86,8 +87,7 @@ public sealed class GroundTargetStateTests
     [Fact]
     public void InvalidOrOutOfRangeCoordinatesAreRejectedWithoutChangingTarget()
     {
-        var state = new GroundTargetState(
-            new GroundTargetSnapshot(true, new SurfaceCoordinate(1, 2)));
+        var state = new GroundTargetState(new GroundTargetSnapshot(true, new SurfaceCoordinate(1, 2)));
 
         Assert.False(state.TrySetTarget("north", "west", out var parseError));
         Assert.NotNull(parseError);
@@ -99,8 +99,7 @@ public sealed class GroundTargetStateTests
     [Fact]
     public void NoSolutionIsReportedWithoutSurfaceStatus()
     {
-        var state = new GroundTargetState(
-            new GroundTargetSnapshot(true, new SurfaceCoordinate(1, 2)));
+        var state = new GroundTargetState(new GroundTargetSnapshot(true, new SurfaceCoordinate(1, 2)));
 
         Assert.Null(state.Solution);
         Assert.False(state.TryUseCurrentLocation(out var error));

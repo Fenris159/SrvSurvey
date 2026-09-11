@@ -9,7 +9,8 @@ public sealed class ScreenshotProcessingViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-screenshot-vm-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-screenshot-vm-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void PreferencesAndShortcutTogglePersist()
@@ -19,9 +20,7 @@ public sealed class ScreenshotProcessingViewModelTests : IDisposable
         Directory.CreateDirectory(source);
         var path = Path.Combine(temporaryDirectory, "ui-settings.json");
         var store = new ScreenshotProcessingSettingsStore(path);
-        var viewModel = new ScreenshotProcessingViewModel(
-            store,
-            new StubProcessor(ScreenshotProcessingResult.Empty));
+        var viewModel = new ScreenshotProcessingViewModel(store, new StubProcessor(ScreenshotProcessingResult.Empty));
 
         viewModel.Enabled = true;
         viewModel.SourceFolder = source;
@@ -35,9 +34,7 @@ public sealed class ScreenshotProcessingViewModelTests : IDisposable
         var saved = store.Load();
         Assert.True(saved.Enabled);
         Assert.Equal(source, saved.SourceFolder);
-        Assert.Equal(
-            Path.Combine(temporaryDirectory, "target"),
-            saved.TargetFolder);
+        Assert.Equal(Path.Combine(temporaryDirectory, "target"), saved.TargetFolder);
         Assert.True(saved.DeleteOriginal);
         Assert.False(saved.AddBanner);
         Assert.Equal(1_100, saved.AerialAltitudeAlpha);
@@ -49,25 +46,20 @@ public sealed class ScreenshotProcessingViewModelTests : IDisposable
     [Fact]
     public async Task ProcessingResultIsReportedWithWarnings()
     {
-        var store = new ScreenshotProcessingSettingsStore(
-            Path.Combine(temporaryDirectory, "ui-settings.json"));
+        var store = new ScreenshotProcessingSettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json"));
         var result = new ScreenshotProcessingResult(
-            [new ScreenshotConversion(
-                "source.bmp",
-                "target.png",
-                false,
-                null)],
-            ["The original was retained."]);
+            [new ScreenshotConversion("source.bmp", "target.png", false, null)],
+            ["The original was retained."]
+        );
         var processor = new StubProcessor(result);
         var viewModel = new ScreenshotProcessingViewModel(store, processor);
         var journalEvent = Parse(
             """
             {"timestamp":"2026-07-25T12:00:00Z","event":"Screenshot","Filename":"\\ED_Pictures\\source.bmp"}
-            """);
+            """
+        );
 
-        await viewModel.ProcessJournalEventsAsync(
-            [journalEvent],
-            "Commander Test");
+        await viewModel.ProcessJournalEventsAsync([journalEvent], "Commander Test");
 
         Assert.Equal("Commander Test", processor.CommanderName);
         Assert.Same(journalEvent, Assert.Single(processor.Events));
@@ -77,10 +69,7 @@ public sealed class ScreenshotProcessingViewModelTests : IDisposable
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(
-            json,
-            out var journalEvent,
-            out var error), error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
         return journalEvent!;
     }
 
@@ -92,8 +81,7 @@ public sealed class ScreenshotProcessingViewModelTests : IDisposable
         }
     }
 
-    private sealed class StubProcessor(ScreenshotProcessingResult result)
-        : IScreenshotProcessingService
+    private sealed class StubProcessor(ScreenshotProcessingResult result) : IScreenshotProcessingService
     {
         public IReadOnlyList<JournalEventEnvelope> Events { get; private set; } = [];
 
@@ -103,10 +91,10 @@ public sealed class ScreenshotProcessingViewModelTests : IDisposable
             IReadOnlyList<JournalEventEnvelope> journalEvents,
             ScreenshotProcessingPreferences preferences,
             string? commanderName,
-            IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>?
-                guardianContexts = null,
+            IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>? guardianContexts = null,
             ScreenshotNavigationContext? navigationContext = null,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             Events = journalEvents;
             CommanderName = commanderName;

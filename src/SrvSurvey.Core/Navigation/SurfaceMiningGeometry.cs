@@ -9,13 +9,18 @@ public static class SurfaceMiningGeometry
     public const double ResourceRadiusMeters = 70;
     public const double RigWarningDistanceMeters = 4_000;
 
-    public static SurfaceCoordinate VehicleCenter(SurfaceCoordinate cockpit, double heading, double radius)
-        => OffsetBehind(cockpit, heading, radius, 4);
+    public static SurfaceCoordinate VehicleCenter(SurfaceCoordinate cockpit, double heading, double radius) =>
+        OffsetBehind(cockpit, heading, radius, 4);
 
-    public static SurfaceCoordinate DeployedRig(SurfaceCoordinate cockpit, double heading, double radius)
-        => OffsetBehind(cockpit, heading, radius, 7);
+    public static SurfaceCoordinate DeployedRig(SurfaceCoordinate cockpit, double heading, double radius) =>
+        OffsetBehind(cockpit, heading, radius, 7);
 
-    private static SurfaceCoordinate OffsetBehind(SurfaceCoordinate origin, double heading, double radius, double meters)
+    private static SurfaceCoordinate OffsetBehind(
+        SurfaceCoordinate origin,
+        double heading,
+        double radius,
+        double meters
+    )
     {
         if (!double.IsFinite(radius) || radius <= 0)
         {
@@ -31,13 +36,22 @@ public static class SurfaceMiningGeometry
         var longitude = origin.Longitude * Math.PI / 180;
         var bearing = (heading + 180) * Math.PI / 180;
         var angle = meters / radius;
-        var resultLatitude = Math.Asin(Math.Clamp(
-            Math.Sin(latitude) * Math.Cos(angle)
-            + Math.Cos(latitude) * Math.Sin(angle) * Math.Cos(bearing), -1, 1));
-        var resultLongitude = longitude + Math.Atan2(
-            Math.Sin(bearing) * Math.Sin(angle) * Math.Cos(latitude),
-            Math.Cos(angle) - Math.Sin(latitude) * Math.Sin(resultLatitude));
-        return new SurfaceCoordinate(resultLatitude * 180 / Math.PI,
-            SurfaceNavigation.NormalizeDegrees(resultLongitude * 180 / Math.PI + 180) - 180);
+        var resultLatitude = Math.Asin(
+            Math.Clamp(
+                Math.Sin(latitude) * Math.Cos(angle) + Math.Cos(latitude) * Math.Sin(angle) * Math.Cos(bearing),
+                -1,
+                1
+            )
+        );
+        var resultLongitude =
+            longitude
+            + Math.Atan2(
+                Math.Sin(bearing) * Math.Sin(angle) * Math.Cos(latitude),
+                Math.Cos(angle) - Math.Sin(latitude) * Math.Sin(resultLatitude)
+            );
+        return new SurfaceCoordinate(
+            resultLatitude * 180 / Math.PI,
+            SurfaceNavigation.NormalizeDegrees(resultLongitude * 180 / Math.PI + 180) - 180
+        );
     }
 }

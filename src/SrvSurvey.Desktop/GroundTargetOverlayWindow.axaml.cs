@@ -8,9 +8,7 @@ namespace SrvSurvey.Desktop;
 public sealed partial class GroundTargetOverlayWindow : Window
 {
     public GroundTargetOverlayWindow()
-        : this(CreateDesignViewModel())
-    {
-    }
+        : this(CreateDesignViewModel()) { }
 
     public GroundTargetOverlayWindow(GroundTargetOverlayViewModel viewModel)
     {
@@ -23,9 +21,9 @@ public sealed partial class GroundTargetOverlayWindow : Window
     {
         return new GroundTargetOverlayViewModel(
             new GroundTargetViewModel(
-                new GroundTargetSettingsStore(Path.Combine(
-                    Path.GetTempPath(),
-                    "SrvSurvey-GroundTarget-Overlay-Design"))),
-            OverlayPlatformCapabilities.DetectCurrent());
+                new GroundTargetSettingsStore(Path.Combine(Path.GetTempPath(), "SrvSurvey-GroundTarget-Overlay-Design"))
+            ),
+            OverlayPlatformCapabilities.DetectCurrent()
+        );
     }
 }

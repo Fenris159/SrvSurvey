@@ -9,12 +9,9 @@ namespace SrvSurvey.Desktop;
 public sealed partial class FleetCarrierRouteOverlayWindow : Window
 {
     public FleetCarrierRouteOverlayWindow()
-        : this(CreateDesignViewModel())
-    {
-    }
+        : this(CreateDesignViewModel()) { }
 
-    public FleetCarrierRouteOverlayWindow(
-        FleetCarrierRouteOverlayViewModel viewModel)
+    public FleetCarrierRouteOverlayWindow(FleetCarrierRouteOverlayViewModel viewModel)
     {
         ArgumentNullException.ThrowIfNull(viewModel);
         InitializeComponent();
@@ -23,25 +20,24 @@ public sealed partial class FleetCarrierRouteOverlayWindow : Window
 
     private static FleetCarrierRouteOverlayViewModel CreateDesignViewModel()
     {
-        var temporaryDirectory = Path.Combine(
-            Path.GetTempPath(),
-            "SrvSurvey-Fleet-Carrier-Route-Overlay-Design");
+        var temporaryDirectory = Path.Combine(Path.GetTempPath(), "SrvSurvey-Fleet-Carrier-Route-Overlay-Design");
         return new FleetCarrierRouteOverlayViewModel(
             new RouteWorkspaceViewModel(
-                new FollowRouteService(new FollowRouteStore(
-                    temporaryDirectory,
-                    FollowRouteKind.FleetCarrier)),
+                new FollowRouteService(new FollowRouteStore(temporaryDirectory, FollowRouteKind.FleetCarrier)),
                 new RouteNameImporter(new EmptySystemResolver()),
                 new EmptySpanshRouteClient(),
-                FollowRouteKind.FleetCarrier),
-            OverlayPlatformCapabilities.DetectCurrent());
+                FollowRouteKind.FleetCarrier
+            ),
+            OverlayPlatformCapabilities.DetectCurrent()
+        );
     }
 
     private sealed class EmptySystemResolver : IStarSystemResolver
     {
         public Task<IReadOnlyList<StarSystemReference>> SearchAsync(
             string query,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             return Task.FromResult<IReadOnlyList<StarSystemReference>>([]);
         }
@@ -51,7 +47,8 @@ public sealed partial class FleetCarrierRouteOverlayWindow : Window
     {
         public Task<IReadOnlyList<FollowRouteHop>> GetRouteAsync(
             SpanshRouteReference route,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             return Task.FromResult<IReadOnlyList<FollowRouteHop>>([]);
         }

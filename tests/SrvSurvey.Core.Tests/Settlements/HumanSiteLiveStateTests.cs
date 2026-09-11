@@ -24,8 +24,7 @@ public sealed class HumanSiteLiveStateTests
         Assert.Equal("Raven Colonial", site.FactionName);
         Assert.Equal("War", site.FactionState);
         Assert.Equal(["dock", "refuel"], site.Services);
-        Assert.Equal(DateTimeOffset.Parse("2026-07-25T03:00:00Z"),
-            site.FirstApproached);
+        Assert.Equal(DateTimeOffset.Parse("2026-07-25T03:00:00Z"), site.FirstApproached);
     }
 
     [Fact]
@@ -33,19 +32,18 @@ public sealed class HumanSiteLiveStateTests
     {
         var state = CreateState();
 
-        Assert.False(state.Apply(Parse(ApproachJson.Replace(
-            "Haberlandt Survey",
-            "$Ancient:#index=1;"))));
-        Assert.False(state.Apply(Parse(ApproachJson.Replace(
-            "\"dock\",\"refuel\"",
-            "\"dock\",\"socialspace\""))));
-        Assert.False(state.Apply(Parse(ApproachJson
-            .Replace("Haberlandt Survey", "Planetary Construction Site: Raven")
-            .Replace("\"dock\",\"refuel\"",
-                "\"dock\",\"colonisationcontribution\""))));
-        Assert.False(state.Apply(Parse(ApproachJson.Replace(
-            "$government_Democracy;",
-            "$government_Engineer;"))));
+        Assert.False(state.Apply(Parse(ApproachJson.Replace("Haberlandt Survey", "$Ancient:#index=1;"))));
+        Assert.False(state.Apply(Parse(ApproachJson.Replace("\"dock\",\"refuel\"", "\"dock\",\"socialspace\""))));
+        Assert.False(
+            state.Apply(
+                Parse(
+                    ApproachJson
+                        .Replace("Haberlandt Survey", "Planetary Construction Site: Raven")
+                        .Replace("\"dock\",\"refuel\"", "\"dock\",\"colonisationcontribution\"")
+                )
+            )
+        );
+        Assert.False(state.Apply(Parse(ApproachJson.Replace("$government_Democracy;", "$government_Engineer;"))));
         Assert.Null(state.CurrentSite);
     }
 
@@ -55,29 +53,41 @@ public sealed class HumanSiteLiveStateTests
         var state = CreateState();
         state.Apply(Parse(ApproachJson));
 
-        Assert.True(state.Apply(Parse(
-            """
-            {"event":"DockingRequested","StationName":"Haberlandt Survey","MarketID":12345,"StationType":"OnFootSettlement","LandingPads":{"Small":2,"Medium":0,"Large":1}}
-            """)));
-        Assert.Equal(HumanSiteDockingStatus.Requested,
-            state.CurrentSite!.Docking);
+        Assert.True(
+            state.Apply(
+                Parse(
+                    """
+                    {"event":"DockingRequested","StationName":"Haberlandt Survey","MarketID":12345,"StationType":"OnFootSettlement","LandingPads":{"Small":2,"Medium":0,"Large":1}}
+                    """
+                )
+            )
+        );
+        Assert.Equal(HumanSiteDockingStatus.Requested, state.CurrentSite!.Docking);
         Assert.Equal(4, state.CurrentSite.SubType);
         Assert.Equal("Fornax", state.CurrentSite.Template!.Name);
 
-        Assert.True(state.Apply(Parse(
-            """
-            {"event":"DockingGranted","StationName":"Haberlandt Survey","MarketID":12345,"StationType":"OnFootSettlement","LandingPad":3}
-            """)));
-        Assert.Equal(HumanSiteDockingStatus.Granted,
-            state.CurrentSite.Docking);
+        Assert.True(
+            state.Apply(
+                Parse(
+                    """
+                    {"event":"DockingGranted","StationName":"Haberlandt Survey","MarketID":12345,"StationType":"OnFootSettlement","LandingPad":3}
+                    """
+                )
+            )
+        );
+        Assert.Equal(HumanSiteDockingStatus.Granted, state.CurrentSite.Docking);
         Assert.Equal(3, state.CurrentSite.GrantedPad);
 
-        Assert.True(state.Apply(Parse(
-            """
-            {"event":"Docked","StationName":"Haberlandt Survey","MarketID":12345,"StationType":"OnFootSettlement","LandingPads":{"Small":2,"Medium":0,"Large":1}}
-            """)));
-        Assert.Equal(HumanSiteDockingStatus.Docked,
-            state.CurrentSite.Docking);
+        Assert.True(
+            state.Apply(
+                Parse(
+                    """
+                    {"event":"Docked","StationName":"Haberlandt Survey","MarketID":12345,"StationType":"OnFootSettlement","LandingPads":{"Small":2,"Medium":0,"Large":1}}
+                    """
+                )
+            )
+        );
+        Assert.Equal(HumanSiteDockingStatus.Docked, state.CurrentSite.Docking);
         Assert.True(state.CurrentSite.HasLanded);
     }
 
@@ -87,10 +97,13 @@ public sealed class HumanSiteLiveStateTests
         var state = CreateState();
         state.Apply(Parse(ApproachJson));
 
-        state.Apply(Parse(
-            """
-            {"event":"DockingRequested","MarketID":12345,"StationType":"OnFootSettlement","LandingPads":{"Small":1,"Medium":0,"Large":0}}
-            """));
+        state.Apply(
+            Parse(
+                """
+                {"event":"DockingRequested","MarketID":12345,"StationType":"OnFootSettlement","LandingPads":{"Small":1,"Medium":0,"Large":0}}
+                """
+            )
+        );
 
         Assert.Equal(0, state.CurrentSite!.SubType);
         Assert.Null(state.CurrentSite.Template);
@@ -102,21 +115,15 @@ public sealed class HumanSiteLiveStateTests
         var state = CreateState();
         state.Apply(Parse(ApproachJson));
 
-        Assert.False(state.Apply(Parse(
-            """{"event":"DockingDenied","MarketID":999,"Reason":"NoSpace"}""")));
-        Assert.True(state.Apply(Parse(
-            """{"event":"DockingDenied","MarketID":12345,"Reason":"NoSpace"}""")));
-        Assert.Equal(HumanSiteDockingStatus.Denied,
-            state.CurrentSite!.Docking);
+        Assert.False(state.Apply(Parse("""{"event":"DockingDenied","MarketID":999,"Reason":"NoSpace"}""")));
+        Assert.True(state.Apply(Parse("""{"event":"DockingDenied","MarketID":12345,"Reason":"NoSpace"}""")));
+        Assert.Equal(HumanSiteDockingStatus.Denied, state.CurrentSite!.Docking);
         Assert.Equal("NoSpace", state.CurrentSite.DockingDeniedReason);
 
-        Assert.True(state.Apply(Parse(
-            """{"event":"DockingCancelled","MarketID":12345}""")));
-        Assert.Equal(HumanSiteDockingStatus.None,
-            state.CurrentSite.Docking);
+        Assert.True(state.Apply(Parse("""{"event":"DockingCancelled","MarketID":12345}""")));
+        Assert.Equal(HumanSiteDockingStatus.None, state.CurrentSite.Docking);
 
-        Assert.True(state.Apply(Parse(
-            """{"event":"SupercruiseEntry"}""")));
+        Assert.True(state.Apply(Parse("""{"event":"SupercruiseEntry"}""")));
         Assert.Null(state.CurrentSite);
     }
 
@@ -129,8 +136,7 @@ public sealed class HumanSiteLiveStateTests
         var state = CreateState();
         state.Apply(Parse(ApproachJson));
 
-        Assert.True(state.Apply(Parse(
-            $$"""{"event":"{{eventName}}"}""")));
+        Assert.True(state.Apply(Parse($$"""{"event":"{{eventName}}"}""")));
 
         Assert.Null(state.CurrentSite);
     }
@@ -141,8 +147,7 @@ public sealed class HumanSiteLiveStateTests
         var state = CreateState();
         state.Apply(Parse(ApproachJson));
 
-        Assert.True(state.Apply(Parse(
-            """{"event":"Music","MusicTrack":"MainMenu"}""")));
+        Assert.True(state.Apply(Parse("""{"event":"Music","MusicTrack":"MainMenu"}""")));
 
         Assert.Null(state.CurrentSite);
     }
@@ -152,37 +157,30 @@ public sealed class HumanSiteLiveStateTests
     {
         var state = CreateState();
         state.Apply(Parse(ApproachJson));
-        state.Apply(Parse(
-            """
-            {"event":"DockingRequested","MarketID":12345,"StationType":"OnFootSettlement","LandingPads":{"Small":2,"Medium":0,"Large":1}}
-            """));
+        state.Apply(
+            Parse(
+                """
+                {"event":"DockingRequested","MarketID":12345,"StationType":"OnFootSettlement","LandingPads":{"Small":2,"Medium":0,"Large":1}}
+                """
+            )
+        );
 
-        state.Apply(Parse(ApproachJson.Replace(
-            "2026-07-25T03:00:00Z",
-            "2026-07-25T03:10:00Z")));
+        state.Apply(Parse(ApproachJson.Replace("2026-07-25T03:00:00Z", "2026-07-25T03:10:00Z")));
 
         Assert.Equal(4, state.CurrentSite!.SubType);
         Assert.Equal("Fornax", state.CurrentSite.Template!.Name);
-        Assert.Equal(DateTimeOffset.Parse("2026-07-25T03:00:00Z"),
-            state.CurrentSite.FirstApproached);
-        Assert.Equal(DateTimeOffset.Parse("2026-07-25T03:10:00Z"),
-            state.CurrentSite.LastUpdated);
+        Assert.Equal(DateTimeOffset.Parse("2026-07-25T03:00:00Z"), state.CurrentSite.FirstApproached);
+        Assert.Equal(DateTimeOffset.Parse("2026-07-25T03:10:00Z"), state.CurrentSite.LastUpdated);
     }
 
     [Fact]
     public void InferredGeometryUpdatesTemplateAndNormalizesHeading()
     {
         var state = CreateState();
-        var template = HumanSiteTemplateCatalog.LoadEmbedded()
-            .Find(HumanSiteEconomy.Agriculture, 4)!;
+        var template = HumanSiteTemplateCatalog.LoadEmbedded().Find(HumanSiteEconomy.Agriculture, 4)!;
         state.Apply(Parse(ApproachJson));
 
-        var changed = state.ApplyGeometry(new HumanSiteGeometrySolution(
-            4,
-            template,
-            -10,
-            1,
-            0.5));
+        var changed = state.ApplyGeometry(new HumanSiteGeometrySolution(4, template, -10, 1, 0.5));
 
         Assert.True(changed);
         Assert.Equal(4, state.CurrentSite!.SubType);
@@ -206,7 +204,8 @@ public sealed class HumanSiteLiveStateTests
             4,
             275,
             new HumanSiteLandingPads(2, 0, 1),
-            HumanSiteGeometrySource.AutoDock);
+            HumanSiteGeometrySource.AutoDock
+        );
 
         Assert.True(state.ApplyKnowledge(knowledge));
         Assert.Equal(4, state.CurrentSite!.SubType);
@@ -231,7 +230,8 @@ public sealed class HumanSiteLiveStateTests
             4,
             275,
             HumanSiteLandingPads.Empty,
-            HumanSiteGeometrySource.AutoDock);
+            HumanSiteGeometrySource.AutoDock
+        );
         var external = local with
         {
             SubType = 1,
@@ -241,33 +241,25 @@ public sealed class HumanSiteLiveStateTests
         };
         state.ApplyKnowledge(local);
 
-        Assert.True(state.ApplyKnowledge(
-            external,
-            HumanSiteKnowledgeMergeMode.FillMissing));
+        Assert.True(state.ApplyKnowledge(external, HumanSiteKnowledgeMergeMode.FillMissing));
 
         Assert.Equal(4, state.CurrentSite!.SubType);
         Assert.Equal(275, state.CurrentSite.Heading);
-        Assert.Equal(
-            new HumanSiteLandingPads(2, 0, 1),
-            state.CurrentSite.AvailablePads);
+        Assert.Equal(new HumanSiteLandingPads(2, 0, 1), state.CurrentSite.AvailablePads);
     }
 
     private static HumanSiteLiveState CreateState()
     {
-        return new HumanSiteLiveState(
-            HumanSiteTemplateCatalog.LoadEmbedded());
+        return new HumanSiteLiveState(HumanSiteTemplateCatalog.LoadEmbedded());
     }
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(
-            JournalEventEnvelope.TryParse(json, out var value, out var error),
-            error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out var value, out var error), error);
         return Assert.IsType<JournalEventEnvelope>(value);
     }
 
-    private const string ApproachJson =
-        """
+    private const string ApproachJson = """
         {"timestamp":"2026-07-25T03:00:00Z","event":"ApproachSettlement","Name":"Haberlandt Survey","Name_Localised":"Haberlandt Survey","MarketID":12345,"SystemAddress":42,"BodyID":3,"BodyName":"Raven 1 a","Latitude":12.5,"Longitude":-45.25,"StationEconomy":"$economy_Agri;","StationEconomy_Localised":"Agriculture","StationFaction":{"Name":"Raven Colonial","FactionState":"War"},"StationGovernment":"$government_Democracy;","StationGovernment_Localised":"Democracy","StationServices":["dock","refuel"]}
         """;
 }

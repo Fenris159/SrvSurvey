@@ -3,8 +3,8 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using SrvSurvey.Core.Network;
-using SrvSurvey.Desktop.ViewModels;
 using SrvSurvey.Desktop.Runtime;
+using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Views;
 
@@ -32,9 +32,7 @@ public sealed partial class DiagnosticsView : UserControl
             connectedReleaseUpdates = viewModel.ReleaseUpdates;
             if (DesktopExternalEffectPolicy.IsAllowed)
             {
-                connectedViewModel.SetPlatformServices(
-                    WriteClipboardAsync,
-                    LaunchDirectoryAsync);
+                connectedViewModel.SetPlatformServices(WriteClipboardAsync, LaunchDirectoryAsync);
                 connectedInspector.SetClipboardWriter(WriteClipboardAsync);
                 connectedReleaseUpdates.SetUriLauncher(LaunchUriAsync);
             }
@@ -53,53 +51,51 @@ public sealed partial class DiagnosticsView : UserControl
 
     private async Task WriteClipboardAsync(string text)
     {
-        var clipboard = TopLevel.GetTopLevel(this)?.Clipboard
-            ?? throw new InvalidOperationException(
-                "The desktop clipboard is not available.");
+        var clipboard =
+            TopLevel.GetTopLevel(this)?.Clipboard
+            ?? throw new InvalidOperationException("The desktop clipboard is not available.");
         await clipboard.SetTextAsync(text);
         await clipboard.FlushAsync();
     }
 
     private Task<bool> LaunchDirectoryAsync(DirectoryInfo directory)
     {
-        var launcher = TopLevel.GetTopLevel(this)?.Launcher
-            ?? throw new InvalidOperationException(
-                "The desktop launcher is not available.");
+        var launcher =
+            TopLevel.GetTopLevel(this)?.Launcher
+            ?? throw new InvalidOperationException("The desktop launcher is not available.");
         return launcher.LaunchDirectoryInfoAsync(directory);
     }
 
     private Task<bool> LaunchUriAsync(Uri uri)
     {
-        var launcher = TopLevel.GetTopLevel(this)?.Launcher
-            ?? throw new InvalidOperationException(
-                "The desktop launcher is not available.");
+        var launcher =
+            TopLevel.GetTopLevel(this)?.Launcher
+            ?? throw new InvalidOperationException("The desktop launcher is not available.");
         return launcher.LaunchUriAsync(uri);
     }
 
-    private async void ReleaseNotes_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private async void ReleaseNotes_Click(object? sender, RoutedEventArgs eventArgs)
     {
-        if (DataContext is not MainWindowViewModel viewModel
+        if (
+            DataContext is not MainWindowViewModel viewModel
             || !viewModel.ReleaseUpdates.HasReleaseNotes
-            || TopLevel.GetTopLevel(this) is not Window owner)
+            || TopLevel.GetTopLevel(this) is not Window owner
+        )
         {
             return;
         }
 
         var dialog = new ReleaseNotesDialog(
             $"SrvSurvey-XP {viewModel.ReleaseUpdates.LatestVersion}",
-            viewModel.ReleaseUpdates.ReleaseNotes);
+            viewModel.ReleaseUpdates.ReleaseNotes
+        );
         await dialog.ShowDialog(owner);
     }
 
-    private async void ChooseVisitedStarsCache_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private async void ChooseVisitedStarsCache_Click(object? sender, RoutedEventArgs eventArgs)
     {
         var topLevel = TopLevel.GetTopLevel(this);
-        if (topLevel?.StorageProvider is null
-            || DataContext is not MainWindowViewModel viewModel)
+        if (topLevel?.StorageProvider is null || DataContext is not MainWindowViewModel viewModel)
         {
             return;
         }
@@ -111,12 +107,10 @@ public sealed partial class DiagnosticsView : UserControl
                 AllowMultiple = false,
                 FileTypeFilter =
                 [
-                    new FilePickerFileType("Elite visited-stars cache")
-                    {
-                        Patterns = ["VisitedStarsCache.dat"],
-                    },
+                    new FilePickerFileType("Elite visited-stars cache") { Patterns = ["VisitedStarsCache.dat"] },
                 ],
-            });
+            }
+        );
         var file = files.Count > 0 ? files[0] : null;
         if (file is not null)
         {
@@ -124,14 +118,14 @@ public sealed partial class DiagnosticsView : UserControl
         }
     }
 
-    private async void ExportJournalReplay_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private async void ExportJournalReplay_Click(object? sender, RoutedEventArgs eventArgs)
     {
         var topLevel = TopLevel.GetTopLevel(this);
-        if (topLevel?.StorageProvider is null
+        if (
+            topLevel?.StorageProvider is null
             || DataContext is not MainWindowViewModel viewModel
-            || !viewModel.JournalHistory.HasEvents)
+            || !viewModel.JournalHistory.HasEvents
+        )
         {
             return;
         }
@@ -150,7 +144,8 @@ public sealed partial class DiagnosticsView : UserControl
                         MimeTypes = ["application/zip"],
                     },
                 ],
-            });
+            }
+        );
         var path = file?.TryGetLocalPath();
         if (!string.IsNullOrWhiteSpace(path))
         {
@@ -158,9 +153,7 @@ public sealed partial class DiagnosticsView : UserControl
         }
     }
 
-    private async void OpenVisitedStarsWebsite_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private async void OpenVisitedStarsWebsite_Click(object? sender, RoutedEventArgs eventArgs)
     {
         if (!DesktopExternalEffectPolicy.IsAllowed)
         {

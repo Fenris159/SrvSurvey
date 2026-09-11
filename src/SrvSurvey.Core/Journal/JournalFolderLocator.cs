@@ -2,9 +2,7 @@ using System.Runtime.InteropServices;
 
 namespace SrvSurvey.Core.Journal;
 
-public sealed record JournalFolderResolution(
-    string? SelectedPath,
-    IReadOnlyList<string> CandidatePaths)
+public sealed record JournalFolderResolution(string? SelectedPath, IReadOnlyList<string> CandidatePaths)
 {
     public bool IsFound => SelectedPath is not null;
 }
@@ -13,12 +11,7 @@ public static class JournalFolderLocator
 {
     public const string EnvironmentVariableName = "SRVSURVEY_JOURNAL_DIR";
 
-    private static readonly string[] JournalSegments =
-    [
-        "Saved Games",
-        "Frontier Developments",
-        "Elite Dangerous",
-    ];
+    private static readonly string[] JournalSegments = ["Saved Games", "Frontier Developments", "Elite Dangerous"];
 
     public static JournalFolderResolution ResolveCurrent(string? configuredPath = null)
     {
@@ -27,7 +20,7 @@ public static class JournalFolderLocator
             : (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) switch
             {
                 true => DesktopPlatform.Linux,
-                false => DesktopPlatform.Other
+                false => DesktopPlatform.Other,
             };
 
         return Resolve(
@@ -35,7 +28,8 @@ public static class JournalFolderLocator
             Environment.GetEnvironmentVariable(EnvironmentVariableName),
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
             platform,
-            Directory.Exists);
+            Directory.Exists
+        );
     }
 
     public static JournalFolderResolution Resolve(
@@ -43,13 +37,12 @@ public static class JournalFolderLocator
         string? environmentPath,
         string? userProfile,
         DesktopPlatform platform,
-        Func<string, bool> directoryExists)
+        Func<string, bool> directoryExists
+    )
     {
         ArgumentNullException.ThrowIfNull(directoryExists);
 
-        var comparer = platform == DesktopPlatform.Windows
-            ? StringComparer.OrdinalIgnoreCase
-            : StringComparer.Ordinal;
+        var comparer = platform == DesktopPlatform.Windows ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
         var candidates = new List<string>();
         var seen = new HashSet<string>(comparer);
 
@@ -64,9 +57,7 @@ public static class JournalFolderLocator
             }
         }
 
-        return new JournalFolderResolution(
-            candidates.FirstOrDefault(directoryExists),
-            candidates.AsReadOnly());
+        return new JournalFolderResolution(candidates.FirstOrDefault(directoryExists), candidates.AsReadOnly());
 
         void AddCandidate(string? path)
         {
@@ -78,9 +69,7 @@ public static class JournalFolderLocator
         }
     }
 
-    public static IReadOnlyList<string> GetPlatformDefaults(
-        string userProfile,
-        DesktopPlatform platform)
+    public static IReadOnlyList<string> GetPlatformDefaults(string userProfile, DesktopPlatform platform)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(userProfile);
 
@@ -113,18 +102,17 @@ public static class JournalFolderLocator
             Join(
                 DesktopPlatform.Linux,
                 userProfile,
-                [".var", "app", "com.valvesoftware.Steam", ".local", "share", "Steam", .. protonJournalSegments]),
+                [".var", "app", "com.valvesoftware.Steam", ".local", "share", "Steam", .. protonJournalSegments]
+            ),
             Join(
                 DesktopPlatform.Linux,
                 userProfile,
-                [".var", "app", "com.valvesoftware.Steam", "data", "Steam", .. protonJournalSegments]),
+                [".var", "app", "com.valvesoftware.Steam", "data", "Steam", .. protonJournalSegments]
+            ),
         ];
     }
 
-    private static string Join(
-        DesktopPlatform platform,
-        string root,
-        IReadOnlyList<string> segments)
+    private static string Join(DesktopPlatform platform, string root, IReadOnlyList<string> segments)
     {
         var separator = platform == DesktopPlatform.Windows ? '\\' : '/';
         var trimmedRoot = root.TrimEnd('\\', '/');

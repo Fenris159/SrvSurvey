@@ -10,8 +10,7 @@ public sealed partial class SurfaceMiningOverlayWindow : Window
         InitializeComponent();
     }
 
-    public SurfaceMiningOverlayWindow(
-        SurfaceMiningOverlayViewModel viewModel)
+    public SurfaceMiningOverlayWindow(SurfaceMiningOverlayViewModel viewModel)
     {
         ArgumentNullException.ThrowIfNull(viewModel);
         InitializeComponent();

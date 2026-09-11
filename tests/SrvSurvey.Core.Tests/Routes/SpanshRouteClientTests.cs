@@ -7,8 +7,7 @@ namespace SrvSurvey.Core.Tests.Routes;
 
 public sealed class SpanshRouteClientTests
 {
-    private static readonly Guid RouteId = Guid.Parse(
-        "74FA2952-2048-11F1-8302-B948FF6DF5C1");
+    private static readonly Guid RouteId = Guid.Parse("74FA2952-2048-11F1-8302-B948FF6DF5C1");
 
     [Fact]
     public async Task GenericJobDetectsAndStructuresExobiologyBodies()
@@ -43,10 +42,10 @@ public sealed class SpanshRouteClientTests
                 }
               ]
             }
-            """);
+            """
+        );
 
-        var hops = await client.GetRouteAsync(
-            new SpanshRouteReference(RouteId, SpanshRouteKind.Generic));
+        var hops = await client.GetRouteAsync(new SpanshRouteReference(RouteId, SpanshRouteKind.Generic));
 
         var hop = Assert.Single(hops);
         Assert.Equal("Test System", hop.Name);
@@ -63,8 +62,7 @@ public sealed class SpanshRouteClientTests
     [Theory]
     [InlineData(SpanshRouteKind.Riches)]
     [InlineData(SpanshRouteKind.Exobiology)]
-    public async Task ValuableWorldRoutesReadResultArrays(
-        SpanshRouteKind kind)
+    public async Task ValuableWorldRoutesReadResultArrays(SpanshRouteKind kind)
     {
         var client = CreateClient(
             """
@@ -81,10 +79,10 @@ public sealed class SpanshRouteClientTests
                 }
               ]
             }
-            """);
+            """
+        );
 
-        var hops = await client.GetRouteAsync(
-            new SpanshRouteReference(RouteId, kind));
+        var hops = await client.GetRouteAsync(new SpanshRouteReference(RouteId, kind));
 
         var hop = Assert.Single(hops);
         Assert.Equal("Exomastery Stop", hop.Name);
@@ -132,10 +130,10 @@ public sealed class SpanshRouteClientTests
                 }
               ]
             }
-            """);
+            """
+        );
 
-        var hops = await client.GetRouteAsync(
-            new SpanshRouteReference(RouteId, SpanshRouteKind.Riches));
+        var hops = await client.GetRouteAsync(new SpanshRouteReference(RouteId, SpanshRouteKind.Riches));
 
         var hop = Assert.Single(hops);
         Assert.Null(hop.Notes);
@@ -200,17 +198,15 @@ public sealed class SpanshRouteClientTests
                 }
               ]
             }
-            """);
+            """
+        );
 
-        var hops = await client.GetRouteAsync(
-            new SpanshRouteReference(RouteId, SpanshRouteKind.Exobiology));
+        var hops = await client.GetRouteAsync(new SpanshRouteReference(RouteId, SpanshRouteKind.Exobiology));
 
         var hop = Assert.Single(hops);
         Assert.Null(hop.Notes);
         Assert.Equal(["A 2", "B 1"], hop.BioTargets.Select(body => body.BodyName));
-        Assert.Equal(
-            ["Stratum Tectonicas", "Bacterium Acies"],
-            hop.BioTargets[0].Species);
+        Assert.Equal(["Stratum Tectonicas", "Bacterium Acies"], hop.BioTargets[0].Species);
         Assert.Equal(27428800, hop.BioTargets[0].EstimatedBiologyValue);
         Assert.True(hop.BioTargets[0].IsBiological);
         Assert.Empty(hop.BioTargets[1].Species);
@@ -220,8 +216,7 @@ public sealed class SpanshRouteClientTests
     [Theory]
     [InlineData(SpanshRouteKind.Tourist)]
     [InlineData(SpanshRouteKind.Neutron)]
-    public async Task TouristAndNeutronRoutesReadSystemJumps(
-        SpanshRouteKind kind)
+    public async Task TouristAndNeutronRoutesReadSystemJumps(SpanshRouteKind kind)
     {
         var client = CreateClient(
             """
@@ -248,10 +243,10 @@ public sealed class SpanshRouteClientTests
                 ]
               }
             }
-            """);
+            """
+        );
 
-        var hops = await client.GetRouteAsync(
-            new SpanshRouteReference(RouteId, kind));
+        var hops = await client.GetRouteAsync(new SpanshRouteReference(RouteId, kind));
 
         Assert.Equal(2, hops.Count);
         Assert.Equal("Sol", hops[0].Name);
@@ -291,10 +286,10 @@ public sealed class SpanshRouteClientTests
                 ]
               }
             }
-            """);
+            """
+        );
 
-        var hops = await client.GetRouteAsync(
-            new SpanshRouteReference(RouteId, SpanshRouteKind.Galaxy));
+        var hops = await client.GetRouteAsync(new SpanshRouteReference(RouteId, SpanshRouteKind.Galaxy));
 
         var hop = Assert.Single(hops);
         Assert.True(hop.Refuel);
@@ -335,10 +330,10 @@ public sealed class SpanshRouteClientTests
                 ]
               }
             }
-            """);
+            """
+        );
 
-        var hops = await client.GetRouteAsync(
-            new SpanshRouteReference(RouteId, SpanshRouteKind.FleetCarrier));
+        var hops = await client.GetRouteAsync(new SpanshRouteReference(RouteId, SpanshRouteKind.FleetCarrier));
 
         var hop = Assert.Single(hops);
         Assert.Equal("Carrier Stop", hop.Name);
@@ -381,10 +376,10 @@ public sealed class SpanshRouteClientTests
                 ]
               }
             }
-            """);
+            """
+        );
 
-        var hops = await client.GetRouteAsync(
-            new SpanshRouteReference(RouteId, SpanshRouteKind.Colonisation));
+        var hops = await client.GetRouteAsync(new SpanshRouteReference(RouteId, SpanshRouteKind.Colonisation));
 
         var hop = Assert.Single(hops);
         Assert.Equal("Candidate System", hop.Name);
@@ -438,10 +433,10 @@ public sealed class SpanshRouteClientTests
                 }
               ]
             }
-            """);
+            """
+        );
 
-        var hops = await client.GetRouteAsync(
-            new SpanshRouteReference(RouteId, SpanshRouteKind.Trade));
+        var hops = await client.GetRouteAsync(new SpanshRouteReference(RouteId, SpanshRouteKind.Trade));
 
         Assert.Equal(["Sol", "Barnard's Star", "Achenar"], hops.Select(hop => hop.Name));
         Assert.Equal(1, hops[0].SystemAddress);
@@ -450,23 +445,17 @@ public sealed class SpanshRouteClientTests
     }
 
     [Theory]
-    [InlineData(
-        "{\"status\":\"ok\",\"result\":{\"system_jumps\":[{\"system\":\"Sol\"}]}}",
-        "Sol")]
-    [InlineData(
-        "{\"status\":\"ok\",\"result\":{\"jumps\":[{\"name\":\"Colonia\"}]}}",
-        "Colonia")]
+    [InlineData("{\"status\":\"ok\",\"result\":{\"system_jumps\":[{\"system\":\"Sol\"}]}}", "Sol")]
+    [InlineData("{\"status\":\"ok\",\"result\":{\"jumps\":[{\"name\":\"Colonia\"}]}}", "Colonia")]
     [InlineData(
         "{\"status\":\"ok\",\"result\":[{\"source\":{\"system\":\"Achenar\"},\"destination\":{\"system\":\"Sol\"}}]}",
-        "Achenar")]
-    public async Task BareJobIdsAutoDetectTheReturnedRouteShape(
-        string response,
-        string expectedFirstSystem)
+        "Achenar"
+    )]
+    public async Task BareJobIdsAutoDetectTheReturnedRouteShape(string response, string expectedFirstSystem)
     {
         var client = CreateClient(response);
 
-        var hops = await client.GetRouteAsync(
-            new SpanshRouteReference(RouteId, SpanshRouteKind.Generic));
+        var hops = await client.GetRouteAsync(new SpanshRouteReference(RouteId, SpanshRouteKind.Generic));
 
         Assert.NotEmpty(hops);
         Assert.Equal(expectedFirstSystem, hops[0].Name);
@@ -482,38 +471,39 @@ public sealed class SpanshRouteClientTests
               "status": "ok",
               "result": [{ "name": "Sol", "id64": 1, "x": 0, "y": 0, "z": 0 }]
             }
-            """);
+            """
+        );
         var client = new SpanshRouteClient(
             new HttpClient(handler),
             new Uri("https://example.test/api/"),
             TimeSpan.Zero,
-            TimeSpan.FromSeconds(1));
+            TimeSpan.FromSeconds(1)
+        );
 
-        var hops = await client.GetRouteAsync(
-            new SpanshRouteReference(RouteId, SpanshRouteKind.Generic));
+        var hops = await client.GetRouteAsync(new SpanshRouteReference(RouteId, SpanshRouteKind.Generic));
 
         Assert.Single(hops);
         Assert.Equal(2, handler.Requests.Count);
         Assert.All(
             handler.Requests,
-            uri => Assert.Equal(
-                "https://example.test/api/results/74FA2952-2048-11F1-8302-B948FF6DF5C1",
-                uri.AbsoluteUri));
+            uri =>
+                Assert.Equal("https://example.test/api/results/74FA2952-2048-11F1-8302-B948FF6DF5C1", uri.AbsoluteUri)
+        );
     }
 
     [Fact]
     public async Task PendingRouteTimesOutWithLastKnownState()
     {
         var client = new SpanshRouteClient(
-            new HttpClient(new SequenceHandler(
-                "{\"state\":\"queued\",\"status\":\"waiting\"}")),
+            new HttpClient(new SequenceHandler("{\"state\":\"queued\",\"status\":\"waiting\"}")),
             new Uri("https://example.test/api/"),
             TimeSpan.Zero,
-            TimeSpan.Zero);
+            TimeSpan.Zero
+        );
 
-        var exception = await Assert.ThrowsAsync<TimeoutException>(
-            () => client.GetRouteAsync(
-                new SpanshRouteReference(RouteId, SpanshRouteKind.Generic)));
+        var exception = await Assert.ThrowsAsync<TimeoutException>(() =>
+            client.GetRouteAsync(new SpanshRouteReference(RouteId, SpanshRouteKind.Generic))
+        );
 
         Assert.Contains("queued", exception.Message);
         Assert.Contains("waiting", exception.Message);
@@ -522,18 +512,14 @@ public sealed class SpanshRouteClientTests
     [Fact]
     public async Task CompletedFailureAndMalformedPayloadAreRejected()
     {
-        var failed = CreateClient(
-            "{\"state\":\"completed\",\"status\":\"error\"}");
-        var malformed = CreateClient(
-            "{\"state\":\"completed\",\"status\":\"ok\",\"result\":{}}");
-        var reference = new SpanshRouteReference(
-            RouteId,
-            SpanshRouteKind.Generic);
+        var failed = CreateClient("{\"state\":\"completed\",\"status\":\"error\"}");
+        var malformed = CreateClient("{\"state\":\"completed\",\"status\":\"ok\",\"result\":{}}");
+        var reference = new SpanshRouteReference(RouteId, SpanshRouteKind.Generic);
 
-        var failedException = await Assert.ThrowsAsync<InvalidDataException>(
-            () => failed.GetRouteAsync(reference));
-        var malformedException = await Assert.ThrowsAsync<InvalidDataException>(
-            () => malformed.GetRouteAsync(reference));
+        var failedException = await Assert.ThrowsAsync<InvalidDataException>(() => failed.GetRouteAsync(reference));
+        var malformedException = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            malformed.GetRouteAsync(reference)
+        );
 
         Assert.Contains("error", failedException.Message);
         Assert.Contains("route hops", malformedException.Message);
@@ -542,28 +528,23 @@ public sealed class SpanshRouteClientTests
     [Fact]
     public async Task HttpFailuresAreNotHidden()
     {
-        var handler = new SequenceHandler("{}")
-        {
-            StatusCode = HttpStatusCode.ServiceUnavailable,
-        };
-        var client = new SpanshRouteClient(
-            new HttpClient(handler),
-            new Uri("https://example.test/api/"));
+        var handler = new SequenceHandler("{}") { StatusCode = HttpStatusCode.ServiceUnavailable };
+        var client = new SpanshRouteClient(new HttpClient(handler), new Uri("https://example.test/api/"));
 
-        await Assert.ThrowsAsync<HttpRequestException>(
-            () => client.GetRouteAsync(
-                new SpanshRouteReference(RouteId, SpanshRouteKind.Generic)));
+        await Assert.ThrowsAsync<HttpRequestException>(() =>
+            client.GetRouteAsync(new SpanshRouteReference(RouteId, SpanshRouteKind.Generic))
+        );
     }
 
     private static SpanshRouteClient CreateClient(string response)
     {
         return new SpanshRouteClient(
             new HttpClient(new SequenceHandler(response)),
-            new Uri("https://example.test/api/"));
+            new Uri("https://example.test/api/")
+        );
     }
 
-    private sealed class SequenceHandler(params string[] responses)
-        : HttpMessageHandler
+    private sealed class SequenceHandler(params string[] responses) : HttpMessageHandler
     {
         private int requestIndex;
 
@@ -573,20 +554,18 @@ public sealed class SpanshRouteClientTests
 
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
             Requests.Add(request.RequestUri!);
-            var responseIndex = Math.Min(
-                Interlocked.Increment(ref requestIndex) - 1,
-                responses.Length - 1);
-            return Task.FromResult(new HttpResponseMessage(StatusCode)
-            {
-                Content = new StringContent(
-                    responses[responseIndex],
-                    Encoding.UTF8,
-                    "application/json"),
-                RequestMessage = request,
-            });
+            var responseIndex = Math.Min(Interlocked.Increment(ref requestIndex) - 1, responses.Length - 1);
+            return Task.FromResult(
+                new HttpResponseMessage(StatusCode)
+                {
+                    Content = new StringContent(responses[responseIndex], Encoding.UTF8, "application/json"),
+                    RequestMessage = request,
+                }
+            );
         }
     }
 }

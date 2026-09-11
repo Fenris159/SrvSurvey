@@ -6,8 +6,7 @@ namespace SrvSurvey.Desktop.Platform.Inara;
 
 public interface IInaraCommunityGoalClient
 {
-    Task<InaraCommunityGoalsResult> GetRecentAsync(
-        CancellationToken cancellationToken = default);
+    Task<InaraCommunityGoalsResult> GetRecentAsync(CancellationToken cancellationToken = default);
 }
 
 public sealed record InaraCommunityGoalSnapshot(
@@ -24,29 +23,31 @@ public sealed record InaraCommunityGoalSnapshot(
     int? Contributors,
     long? ContributionsTotal,
     DateTimeOffset? LastUpdatedAt,
-    string InaraUrl);
+    string InaraUrl
+);
 
 public sealed record InaraCommunityGoalsResult(
     IReadOnlyList<InaraCommunityGoalSnapshot> Goals,
     DateTimeOffset FetchedAt,
     bool IsStale,
-    string Warning);
+    string Warning
+);
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Design",
     "CA1001:Types that own disposable fields should be disposable",
-    Justification = "The injected client is application-scoped and its gate may have in-flight waiters.")]
+    Justification = "The injected client is application-scoped and its gate may have in-flight waiters."
+)]
 public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
 {
     public const string Endpoint = "https://inara.cz/inapi/v1/";
     public static readonly TimeSpan DefaultCacheAge = TimeSpan.FromMinutes(15);
 
     private const long MaximumResponseBytes = 2 * 1024 * 1024;
-    private static readonly JsonSerializerOptions JsonOptions =
-        new(JsonSerializerDefaults.Web)
-        {
-            WriteIndented = true,
-        };
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
+    {
+        WriteIndented = true,
+    };
 
     private readonly HttpClient httpClient;
     private readonly string apiKey;
@@ -62,10 +63,10 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
         string appVersion,
         string cachePath,
         Func<DateTimeOffset>? utcNow = null,
-        TimeSpan? cacheAge = null)
+        TimeSpan? cacheAge = null
+    )
     {
-        this.httpClient = httpClient
-            ?? throw new ArgumentNullException(nameof(httpClient));
+        this.httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         ArgumentException.ThrowIfNullOrWhiteSpace(apiKey);
         ArgumentException.ThrowIfNullOrWhiteSpace(appVersion);
         ArgumentException.ThrowIfNullOrWhiteSpace(cachePath);
@@ -76,12 +77,10 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
         this.cacheAge = cacheAge ?? DefaultCacheAge;
     }
 
-    public async Task<InaraCommunityGoalsResult> GetRecentAsync(
-        CancellationToken cancellationToken = default)
+    public async Task<InaraCommunityGoalsResult> GetRecentAsync(CancellationToken cancellationToken = default)
     {
         var now = utcNow();
-        var cached = await TryLoadCacheAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var cached = await TryLoadCacheAsync(cancellationToken).ConfigureAwait(false);
         if (cached is not null && now - cached.FetchedAt < cacheAge)
         {
             return ToResult(cached, isStale: false, string.Empty);
@@ -91,8 +90,7 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
         try
         {
             now = utcNow();
-            cached = await TryLoadCacheAsync(cancellationToken)
-                .ConfigureAwait(false);
+            cached = await TryLoadCacheAsync(cancellationToken).ConfigureAwait(false);
             if (cached is not null && now - cached.FetchedAt < cacheAge)
             {
                 return ToResult(cached, isStale: false, string.Empty);
@@ -100,18 +98,13 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
 
             try
             {
-                var fetched = await FetchAsync(now, cancellationToken)
-                    .ConfigureAwait(false);
-                await SaveCacheAsync(fetched, cancellationToken)
-                    .ConfigureAwait(false);
+                var fetched = await FetchAsync(now, cancellationToken).ConfigureAwait(false);
+                await SaveCacheAsync(fetched, cancellationToken).ConfigureAwait(false);
                 return ToResult(fetched, isStale: false, string.Empty);
             }
-            catch (Exception exception) when (
-                IsRecoverable(exception, cancellationToken))
+            catch (Exception exception) when (IsRecoverable(exception, cancellationToken))
             {
-                var warning =
-                    "Inara Community Goal enrichment could not be refreshed: "
-                    + exception.Message;
+                var warning = "Inara Community Goal enrichment could not be refreshed: " + exception.Message;
                 return cached is null
                     ? new InaraCommunityGoalsResult([], now, false, warning)
                     : ToResult(cached, isStale: true, warning);
@@ -125,61 +118,52 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
 
     private async Task<InaraCommunityGoalCache> FetchAsync(
         DateTimeOffset fetchedAt,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
-        var payload = JsonSerializer.SerializeToUtf8Bytes(new
-        {
-            header = new
+        var payload = JsonSerializer.SerializeToUtf8Bytes(
+            new
             {
-                appName = "SrvSurvey",
-                appVersion,
-                isBeingDeveloped = true,
-                APIkey = apiKey,
-            },
-            events = new[]
-            {
-                new
+                header = new
                 {
-                    eventName = "getCommunityGoalsRecent",
-                    eventTimestamp = fetchedAt.ToString(
-                        "O",
-                        CultureInfo.InvariantCulture),
-                    eventData = Array.Empty<object>(),
+                    appName = "SrvSurvey",
+                    appVersion,
+                    isBeingDeveloped = true,
+                    APIkey = apiKey,
                 },
-            },
-        });
+                events = new[]
+                {
+                    new
+                    {
+                        eventName = "getCommunityGoalsRecent",
+                        eventTimestamp = fetchedAt.ToString("O", CultureInfo.InvariantCulture),
+                        eventData = Array.Empty<object>(),
+                    },
+                },
+            }
+        );
         using var request = new HttpRequestMessage(HttpMethod.Post, Endpoint)
         {
             Content = new ByteArrayContent(payload),
         };
-        request.Content.Headers.ContentType = new MediaTypeHeaderValue(
-            "application/json")
-        {
-            CharSet = "utf-8",
-        };
-        using var response = await httpClient.SendAsync(
-                request,
-                HttpCompletionOption.ResponseHeadersRead,
-                cancellationToken)
+        request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" };
+        using var response = await httpClient
+            .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
             throw new HttpRequestException(
                 $"Inara returned HTTP {(int)response.StatusCode}.",
                 null,
-                response.StatusCode);
+                response.StatusCode
+            );
         }
 
-        var content = await ReadBoundedTextAsync(
-                response.Content,
-                cancellationToken)
-            .ConfigureAwait(false);
+        var content = await ReadBoundedTextAsync(response.Content, cancellationToken).ConfigureAwait(false);
         return ParseResponse(content, fetchedAt);
     }
 
-    internal static InaraCommunityGoalCache ParseResponse(
-        string content,
-        DateTimeOffset fetchedAt)
+    internal static InaraCommunityGoalCache ParseResponse(string content, DateTimeOffset fetchedAt)
     {
         using var document = JsonDocument.Parse(content);
         var root = document.RootElement;
@@ -187,15 +171,14 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
         if (headerStatus is null or < 200 or >= 300)
         {
             throw new InvalidDataException(
-                $"Inara returned API status {headerStatus?.ToString(CultureInfo.InvariantCulture) ?? "unknown"}.");
+                $"Inara returned API status {headerStatus?.ToString(CultureInfo.InvariantCulture) ?? "unknown"}."
+            );
         }
 
         var events = GetProperty(root, "events");
-        if (events is not { ValueKind: JsonValueKind.Array }
-            || events.Value.GetArrayLength() == 0)
+        if (events is not { ValueKind: JsonValueKind.Array } || events.Value.GetArrayLength() == 0)
         {
-            throw new InvalidDataException(
-                "Inara returned no Community Goal response event.");
+            throw new InvalidDataException("Inara returned no Community Goal response event.");
         }
 
         var responseEvent = events.Value[0];
@@ -203,17 +186,18 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
         if (eventStatus is null or < 200 or >= 300)
         {
             throw new InvalidDataException(
-                $"Inara returned Community Goal status {eventStatus?.ToString(CultureInfo.InvariantCulture) ?? "unknown"}.");
+                $"Inara returned Community Goal status {eventStatus?.ToString(CultureInfo.InvariantCulture) ?? "unknown"}."
+            );
         }
 
         var eventData = GetProperty(responseEvent, "eventData");
         if (eventData is not { ValueKind: JsonValueKind.Array })
         {
-            throw new InvalidDataException(
-                "Inara returned malformed Community Goal data.");
+            throw new InvalidDataException("Inara returned malformed Community Goal data.");
         }
 
-        var goals = eventData.Value.EnumerateArray()
+        var goals = eventData
+            .Value.EnumerateArray()
             .Where(item => item.ValueKind == JsonValueKind.Object)
             .Take(100)
             .Select(ParseGoal)
@@ -238,11 +222,11 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
             GetInt32(goal, "contributorsNum"),
             GetInt64(goal, "contributionsTotal"),
             GetDateTimeOffset(goal, "lastUpdate"),
-            GetString(goal, "inaraURL"));
+            GetString(goal, "inaraURL")
+        );
     }
 
-    private async Task<InaraCommunityGoalCache?> TryLoadCacheAsync(
-        CancellationToken cancellationToken)
+    private async Task<InaraCommunityGoalCache?> TryLoadCacheAsync(CancellationToken cancellationToken)
     {
         if (!File.Exists(cachePath))
         {
@@ -257,11 +241,10 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
                 FileAccess.Read,
                 FileShare.Read,
                 bufferSize: 4096,
-                useAsync: true);
-            return await JsonSerializer.DeserializeAsync<InaraCommunityGoalCache>(
-                    stream,
-                    JsonOptions,
-                    cancellationToken)
+                useAsync: true
+            );
+            return await JsonSerializer
+                .DeserializeAsync<InaraCommunityGoalCache>(stream, JsonOptions, cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (JsonException)
@@ -270,30 +253,28 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
         }
     }
 
-    private async Task SaveCacheAsync(
-        InaraCommunityGoalCache cache,
-        CancellationToken cancellationToken)
+    private async Task SaveCacheAsync(InaraCommunityGoalCache cache, CancellationToken cancellationToken)
     {
-        var directory = Path.GetDirectoryName(cachePath)
-            ?? throw new InvalidOperationException(
-                "Inara Community Goal cache has no parent directory.");
+        var directory =
+            Path.GetDirectoryName(cachePath)
+            ?? throw new InvalidOperationException("Inara Community Goal cache has no parent directory.");
         Directory.CreateDirectory(directory);
         var temporaryPath = cachePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try
         {
-            await using (var stream = new FileStream(
-                temporaryPath,
-                FileMode.CreateNew,
-                FileAccess.Write,
-                FileShare.None,
-                bufferSize: 4096,
-                useAsync: true))
+            await using (
+                var stream = new FileStream(
+                    temporaryPath,
+                    FileMode.CreateNew,
+                    FileAccess.Write,
+                    FileShare.None,
+                    bufferSize: 4096,
+                    useAsync: true
+                )
+            )
             {
-                await JsonSerializer.SerializeAsync(
-                        stream,
-                        cache,
-                        JsonOptions,
-                        cancellationToken)
+                await JsonSerializer
+                    .SerializeAsync(stream, cache, JsonOptions, cancellationToken)
                     .ConfigureAwait(false);
             }
 
@@ -308,7 +289,8 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
     internal static void TryDeleteTemporaryFile(
         string temporaryPath,
         Func<string, bool>? fileExists = null,
-        Action<string>? deleteFile = null)
+        Action<string>? deleteFile = null
+    )
     {
         fileExists ??= File.Exists;
         deleteFile ??= File.Delete;
@@ -319,27 +301,21 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
                 deleteFile(temporaryPath);
             }
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or System.Security.SecurityException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or System.Security.SecurityException)
         {
             // Best-effort cleanup must not replace the cache save failure.
         }
     }
 
-    private static async Task<string> ReadBoundedTextAsync(
-        HttpContent content,
-        CancellationToken cancellationToken)
+    private static async Task<string> ReadBoundedTextAsync(HttpContent content, CancellationToken cancellationToken)
     {
-        await using var source = await content.ReadAsStreamAsync(cancellationToken)
-            .ConfigureAwait(false);
+        await using var source = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         using var destination = new MemoryStream();
         var buffer = new byte[8192];
         while (true)
         {
-            var read = await source.ReadAsync(buffer, cancellationToken)
-                .ConfigureAwait(false);
+            var read = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
             if (read == 0)
             {
                 break;
@@ -347,33 +323,22 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
 
             if (destination.Length + read > MaximumResponseBytes)
             {
-                throw new InvalidDataException(
-                    $"Inara response exceeded {MaximumResponseBytes:N0} bytes.");
+                throw new InvalidDataException($"Inara response exceeded {MaximumResponseBytes:N0} bytes.");
             }
 
-            await destination.WriteAsync(buffer.AsMemory(0, read), cancellationToken)
-                .ConfigureAwait(false);
+            await destination.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
         }
 
         return System.Text.Encoding.UTF8.GetString(destination.ToArray());
     }
 
-    private static bool IsRecoverable(
-        Exception exception,
-        CancellationToken cancellationToken)
+    private static bool IsRecoverable(Exception exception, CancellationToken cancellationToken)
     {
-        return exception is HttpRequestException
-            or IOException
-            or InvalidDataException
-            or JsonException
-            || exception is OperationCanceledException
-                && !cancellationToken.IsCancellationRequested;
+        return exception is HttpRequestException or IOException or InvalidDataException or JsonException
+            || exception is OperationCanceledException && !cancellationToken.IsCancellationRequested;
     }
 
-    private static InaraCommunityGoalsResult ToResult(
-        InaraCommunityGoalCache cache,
-        bool isStale,
-        string warning) =>
+    private static InaraCommunityGoalsResult ToResult(InaraCommunityGoalCache cache, bool isStale, string warning) =>
         new(cache.Goals, cache.FetchedAt, isStale, warning);
 
     private static JsonElement? GetProperty(JsonElement? owner, string name)
@@ -390,10 +355,7 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
 
         foreach (var property in value.EnumerateObject())
         {
-            if (string.Equals(
-                property.Name,
-                name,
-                StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase))
             {
                 return property.Value;
             }
@@ -413,19 +375,13 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
     private static int? GetInt32(JsonElement? owner, string name)
     {
         var value = GetProperty(owner, name);
-        return value is { ValueKind: JsonValueKind.Number }
-            && value.Value.TryGetInt32(out var number)
-                ? number
-                : null;
+        return value is { ValueKind: JsonValueKind.Number } && value.Value.TryGetInt32(out var number) ? number : null;
     }
 
     private static long? GetInt64(JsonElement owner, string name)
     {
         var value = GetProperty(owner, name);
-        return value is { ValueKind: JsonValueKind.Number }
-            && value.Value.TryGetInt64(out var number)
-                ? number
-                : null;
+        return value is { ValueKind: JsonValueKind.Number } && value.Value.TryGetInt64(out var number) ? number : null;
     }
 
     private static bool? GetBoolean(JsonElement owner, string name)
@@ -439,18 +395,16 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
         };
     }
 
-    private static DateTimeOffset? GetDateTimeOffset(
-        JsonElement owner,
-        string name)
+    private static DateTimeOffset? GetDateTimeOffset(JsonElement owner, string name)
     {
         var value = GetProperty(owner, name);
-        return value is { ValueKind: JsonValueKind.String }
-            && value.Value.TryGetDateTimeOffset(out var timestamp)
-                ? timestamp
-                : null;
+        return value is { ValueKind: JsonValueKind.String } && value.Value.TryGetDateTimeOffset(out var timestamp)
+            ? timestamp
+            : null;
     }
 }
 
 internal sealed record InaraCommunityGoalCache(
     DateTimeOffset FetchedAt,
-    IReadOnlyList<InaraCommunityGoalSnapshot> Goals);
+    IReadOnlyList<InaraCommunityGoalSnapshot> Goals
+);

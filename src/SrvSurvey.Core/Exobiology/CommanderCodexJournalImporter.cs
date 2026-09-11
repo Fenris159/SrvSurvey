@@ -3,31 +3,27 @@ using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Core.Exobiology;
 
-public sealed class CommanderCodexJournalImporter(
-    string journalDirectory,
-    CommanderCodexStore store)
+public sealed class CommanderCodexJournalImporter(string journalDirectory, CommanderCodexStore store)
 {
     private const int BatchSize = 2_048;
 
     private readonly string journalDirectory = Path.GetFullPath(
         string.IsNullOrWhiteSpace(journalDirectory)
-            ? throw new ArgumentException(
-                "A journal directory is required.",
-                nameof(journalDirectory))
-            : journalDirectory);
-    private readonly CommanderCodexStore store = store
-        ?? throw new ArgumentNullException(nameof(store));
+            ? throw new ArgumentException("A journal directory is required.", nameof(journalDirectory))
+            : journalDirectory
+    );
+    private readonly CommanderCodexStore store = store ?? throw new ArgumentNullException(nameof(store));
 
     public async Task<CommanderCodexJournalImportResult> ImportAsync(
         string frontierId,
         IProgress<CommanderCodexJournalImportProgress>? progress = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(frontierId);
         if (!Directory.Exists(journalDirectory))
         {
-            return CommanderCodexJournalImportResult.Failed(
-                $"The journal folder does not exist: {journalDirectory}");
+            return CommanderCodexJournalImportResult.Failed($"The journal folder does not exist: {journalDirectory}");
         }
 
         var filesResult = TryEnumerateJournalFiles();
@@ -43,19 +39,16 @@ public sealed class CommanderCodexJournalImporter(
         {
             cancellationToken.ThrowIfCancellationRequested();
             var file = files[index];
-            await ImportFileSafelyAsync(
-                    file,
-                    frontierId,
-                    warnings,
-                    totals,
-                    cancellationToken)
-                .ConfigureAwait(false);
-            progress?.Report(new CommanderCodexJournalImportProgress(
-                index + 1,
-                files.Length,
-                file.Name,
-                totals.DiscoveryEvents,
-                totals.ChangedEntries));
+            await ImportFileSafelyAsync(file, frontierId, warnings, totals, cancellationToken).ConfigureAwait(false);
+            progress?.Report(
+                new CommanderCodexJournalImportProgress(
+                    index + 1,
+                    files.Length,
+                    file.Name,
+                    totals.DiscoveryEvents,
+                    totals.ChangedEntries
+                )
+            );
         }
 
         return new CommanderCodexJournalImportResult(
@@ -64,7 +57,8 @@ public sealed class CommanderCodexJournalImporter(
             totals.MalformedLines,
             totals.DiscoveryEvents,
             totals.ChangedEntries,
-            warnings);
+            warnings
+        );
     }
 
     private (FileInfo[]? Files, string? Error) TryEnumerateJournalFiles()
@@ -77,8 +71,7 @@ public sealed class CommanderCodexJournalImporter(
                 .ToArray();
             return (files, null);
         }
-        catch (Exception exception) when (
-            exception is IOException or UnauthorizedAccessException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
             return (null, exception.Message);
         }
@@ -89,23 +82,18 @@ public sealed class CommanderCodexJournalImporter(
         string frontierId,
         List<string> warnings,
         ImportTotals totals,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         try
         {
-            var fileResult = await ImportFileAsync(
-                    file,
-                    frontierId,
-                    warnings,
-                    cancellationToken)
-                .ConfigureAwait(false);
+            var fileResult = await ImportFileAsync(file, frontierId, warnings, cancellationToken).ConfigureAwait(false);
             totals.ParsedEvents += fileResult.ParsedEvents;
             totals.MalformedLines += fileResult.MalformedLines;
             totals.DiscoveryEvents += fileResult.DiscoveryEvents;
             totals.ChangedEntries += fileResult.ChangedEntries;
         }
-        catch (Exception exception) when (
-            exception is IOException or UnauthorizedAccessException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
             warnings.Add($"{file.Name}: {exception.Message}");
         }
@@ -126,11 +114,10 @@ public sealed class CommanderCodexJournalImporter(
         FileInfo file,
         string frontierId,
         List<string> warnings,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
-        var tracker = new CommanderCodexJournalTracker(
-            store,
-            frontierIdFilter: frontierId);
+        var tracker = new CommanderCodexJournalTracker(store, frontierIdFilter: frontierId);
         var batch = new List<JournalEventEnvelope>(BatchSize);
         var parsedEvents = 0;
         var malformedLines = 0;
@@ -142,11 +129,9 @@ public sealed class CommanderCodexJournalImporter(
             FileAccess.Read,
             FileShare.ReadWrite | FileShare.Delete,
             16 * 1024,
-            FileOptions.Asynchronous | FileOptions.SequentialScan);
-        using var reader = new StreamReader(
-            stream,
-            Encoding.UTF8,
-            detectEncodingFromByteOrderMarks: true);
+            FileOptions.Asynchronous | FileOptions.SequentialScan
+        );
+        using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
         while (await reader.ReadLineAsync(cancellationToken) is { } line)
         {
             if (string.IsNullOrWhiteSpace(line))
@@ -154,11 +139,7 @@ public sealed class CommanderCodexJournalImporter(
                 continue;
             }
 
-            if (!JournalEventEnvelope.TryParse(
-                    line,
-                    out var journalEvent,
-                    out _)
-                || journalEvent is null)
+            if (!JournalEventEnvelope.TryParse(line, out var journalEvent, out _) || journalEvent is null)
             {
                 malformedLines++;
                 continue;
@@ -169,55 +150,56 @@ public sealed class CommanderCodexJournalImporter(
             if (batch.Count >= BatchSize)
             {
                 await ApplyBatchAsync(
-                    tracker,
-                    batch,
-                    warnings,
-                    result =>
-                    {
-                        discoveryEvents += result.DiscoveryEventCount;
-                        changedEntries += result.ChangedEntryCount;
-                    },
-                    cancellationToken).ConfigureAwait(false);
+                        tracker,
+                        batch,
+                        warnings,
+                        result =>
+                        {
+                            discoveryEvents += result.DiscoveryEventCount;
+                            changedEntries += result.ChangedEntryCount;
+                        },
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false);
             }
         }
 
         await ApplyBatchAsync(
-            tracker,
-            batch,
-            warnings,
-            result =>
-            {
-                discoveryEvents += result.DiscoveryEventCount;
-                changedEntries += result.ChangedEntryCount;
-            },
-            cancellationToken).ConfigureAwait(false);
-        return new FileImportCounts(
-            parsedEvents,
-            malformedLines,
-            discoveryEvents,
-            changedEntries);
+                tracker,
+                batch,
+                warnings,
+                result =>
+                {
+                    discoveryEvents += result.DiscoveryEventCount;
+                    changedEntries += result.ChangedEntryCount;
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+        return new FileImportCounts(parsedEvents, malformedLines, discoveryEvents, changedEntries);
     }
 
     private readonly record struct FileImportCounts(
         int ParsedEvents,
         int MalformedLines,
         int DiscoveryEvents,
-        int ChangedEntries);
+        int ChangedEntries
+    );
 
     private static async Task ApplyBatchAsync(
         CommanderCodexJournalTracker tracker,
         List<JournalEventEnvelope> batch,
         List<string> warnings,
         Action<CommanderCodexJournalTrackResult> applyResult,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         if (batch.Count == 0)
         {
             return;
         }
 
-        var result = await tracker.ApplyAsync(batch, cancellationToken)
-            .ConfigureAwait(false);
+        var result = await tracker.ApplyAsync(batch, cancellationToken).ConfigureAwait(false);
         foreach (var warning in result.Warnings)
         {
             warnings.Add(warning);
@@ -233,7 +215,8 @@ public sealed record CommanderCodexJournalImportProgress(
     int TotalFileCount,
     string CurrentFile,
     int DiscoveryEventCount,
-    int ChangedEntryCount);
+    int ChangedEntryCount
+);
 
 public sealed record CommanderCodexJournalImportResult(
     int JournalFileCount,
@@ -241,18 +224,13 @@ public sealed record CommanderCodexJournalImportResult(
     int MalformedLineCount,
     int DiscoveryEventCount,
     int ChangedEntryCount,
-    IReadOnlyList<string> Warnings)
+    IReadOnlyList<string> Warnings
+)
 {
     public bool IsSuccess => Warnings.Count == 0;
 
     public static CommanderCodexJournalImportResult Failed(string error)
     {
-        return new CommanderCodexJournalImportResult(
-            0,
-            0,
-            0,
-            0,
-            0,
-            [error]);
+        return new CommanderCodexJournalImportResult(0, 0, 0, 0, 0, [error]);
     }
 }

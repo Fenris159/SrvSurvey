@@ -6,16 +6,15 @@ public sealed class QuestSettingsStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-quest-settings-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-quest-settings-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void PreferenceRoundTripsWithoutRemovingOtherSettings()
     {
         Directory.CreateDirectory(temporaryDirectory);
         var path = Path.Combine(temporaryDirectory, "ui.json");
-        File.WriteAllText(
-            path,
-            "{\"Theme\":\"green-dark\",\"Future\":{\"Value\":42}}");
+        File.WriteAllText(path, "{\"Theme\":\"green-dark\",\"Future\":{\"Value\":42}}");
         var store = new QuestSettingsStore(path);
 
         Assert.False(store.LoadEnabled());

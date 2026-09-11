@@ -7,7 +7,8 @@ public sealed class LocalizationSettingsStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-localization-settings-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-localization-settings-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void LegacyLanguageLoadsUntilCrossPlatformPreferenceIsSaved()
@@ -15,8 +16,7 @@ public sealed class LocalizationSettingsStoreTests : IDisposable
         var dataDirectory = Path.Combine(temporaryDirectory, "profile");
         var settingsPath = Path.Combine(temporaryDirectory, "ui-settings.json");
         Directory.CreateDirectory(dataDirectory);
-        const string legacySettings =
-            "{\"lang\":\"fr\",\"futureLegacyValue\":42}";
+        const string legacySettings = "{\"lang\":\"fr\",\"futureLegacyValue\":42}";
         var legacyPath = Path.Combine(dataDirectory, "settings.json");
         File.WriteAllText(legacyPath, legacySettings);
         var store = new LocalizationSettingsStore(settingsPath, dataDirectory);
@@ -28,9 +28,7 @@ public sealed class LocalizationSettingsStoreTests : IDisposable
         Assert.Equal("de", store.Load());
         Assert.Equal(legacySettings, File.ReadAllText(legacyPath));
         var root = JsonNode.Parse(File.ReadAllText(settingsPath)) as JsonObject;
-        Assert.Equal(
-            "de",
-            root?["Localization"]?["Language"]?.GetValue<string>());
+        Assert.Equal("de", root?["Localization"]?["Language"]?.GetValue<string>());
     }
 
     [Fact]
@@ -39,20 +37,12 @@ public sealed class LocalizationSettingsStoreTests : IDisposable
         var dataDirectory = Path.Combine(temporaryDirectory, "profile");
         var settingsPath = Path.Combine(temporaryDirectory, "ui-settings.json");
         Directory.CreateDirectory(dataDirectory);
-        File.WriteAllText(
-            Path.Combine(dataDirectory, "settings.json"),
-            "{\"lang\":\"Klingon\"}");
+        File.WriteAllText(Path.Combine(dataDirectory, "settings.json"), "{\"lang\":\"Klingon\"}");
 
-        Assert.Equal(
-            "en",
-            new LocalizationSettingsStore(settingsPath, dataDirectory).Load());
+        Assert.Equal("en", new LocalizationSettingsStore(settingsPath, dataDirectory).Load());
 
-        File.WriteAllText(
-            Path.Combine(dataDirectory, "settings.json"),
-            "{not json");
-        Assert.Equal(
-            "en",
-            new LocalizationSettingsStore(settingsPath, dataDirectory).Load());
+        File.WriteAllText(Path.Combine(dataDirectory, "settings.json"), "{not json");
+        Assert.Equal("en", new LocalizationSettingsStore(settingsPath, dataDirectory).Load());
     }
 
     public void Dispose()

@@ -6,12 +6,13 @@ public sealed record BoxelSurveyStatsCatalog(
     string FrontierId,
     int SchemaVersion,
     DateTimeOffset UpdatedAt,
-    IReadOnlyList<BoxelSurveyIndexEntry> Index)
+    IReadOnlyList<BoxelSurveyIndexEntry> Index
+)
 {
     public const int CurrentSchemaVersion = 1;
 
-    public static BoxelSurveyStatsCatalog Empty(string frontierId)
-        => new(frontierId, CurrentSchemaVersion, DateTimeOffset.MinValue, []);
+    public static BoxelSurveyStatsCatalog Empty(string frontierId) =>
+        new(frontierId, CurrentSchemaVersion, DateTimeOffset.MinValue, []);
 }
 
 public sealed record BoxelSurveyIndexEntry(
@@ -26,11 +27,10 @@ public sealed record BoxelSurveyIndexEntry(
     double? MinHeliumPercent,
     double? MaxHeliumPercent,
     long CurrentValue,
-    long MappedPotentialValue)
+    long MappedPotentialValue
+)
 {
-    public int? HighestRecordedSuffix => VisitedSystemCount > 0
-        ? Math.Max(0, ImpliedPopulation - 1)
-        : null;
+    public int? HighestRecordedSuffix => VisitedSystemCount > 0 ? Math.Max(0, ImpliedPopulation - 1) : null;
 }
 
 public sealed record BoxelSurveyBoxelDocument(
@@ -39,7 +39,8 @@ public sealed record BoxelSurveyBoxelDocument(
     DateTimeOffset? LastVisited,
     double? MinHeliumPercent,
     double? MaxHeliumPercent,
-    IReadOnlyList<BoxelSurveySystemContribution> Systems);
+    IReadOnlyList<BoxelSurveySystemContribution> Systems
+);
 
 public sealed record BoxelSurveySystemContribution(
     string GeneratedName,
@@ -54,7 +55,8 @@ public sealed record BoxelSurveySystemContribution(
     long ScanValue,
     long CurrentValue,
     long MappedPotentialValue,
-    IReadOnlyList<BoxelSurveyBodyContribution> Bodies);
+    IReadOnlyList<BoxelSurveyBodyContribution> Bodies
+);
 
 public sealed record BoxelSurveyBodyContribution(
     int BodyId,
@@ -70,32 +72,28 @@ public sealed record BoxelSurveyBodyContribution(
     bool WasDiscovered = false,
     bool WasMapped = false,
     bool DssComplete = false,
-    bool DssEfficiencyBonus = false);
+    bool DssEfficiencyBonus = false
+);
 
-public sealed record BoxelSurveyClassCounts(
-    int Count,
-    int Terraformable,
-    int Landable,
-    int Atmospheric)
+public sealed record BoxelSurveyClassCounts(int Count, int Terraformable, int Landable, int Atmospheric)
 {
     public static BoxelSurveyClassCounts Zero { get; } = new(0, 0, 0, 0);
 
-    public BoxelSurveyClassCounts Add(BoxelSurveyClassCounts other)
-        => new(
+    public BoxelSurveyClassCounts Add(BoxelSurveyClassCounts other) =>
+        new(
             Count + other.Count,
             Terraformable + other.Terraformable,
             Landable + other.Landable,
-            Atmospheric + other.Atmospheric);
+            Atmospheric + other.Atmospheric
+        );
 
-    public BoxelSurveyClassCounts AddBody(
-        bool terraformable,
-        bool landable,
-        bool atmospheric)
-        => new(
+    public BoxelSurveyClassCounts AddBody(bool terraformable, bool landable, bool atmospheric) =>
+        new(
             Count + 1,
             Terraformable + (terraformable ? 1 : 0),
             Landable + (landable ? 1 : 0),
-            Atmospheric + (atmospheric ? 1 : 0));
+            Atmospheric + (atmospheric ? 1 : 0)
+        );
 }
 
 public sealed record BoxelSurveyBoxelSnapshot(
@@ -115,46 +113,41 @@ public sealed record BoxelSurveyBoxelSnapshot(
     long MappedPotentialValue,
     int OtherTerraformableCount,
     IReadOnlyDictionary<BoxelPlanetClass, BoxelSurveyClassCounts> Classes,
-    IReadOnlyList<BoxelSurveySystemContribution> Systems)
+    IReadOnlyList<BoxelSurveySystemContribution> Systems
+)
 {
-    public static BoxelSurveyBoxelSnapshot Empty { get; } = new(
-        string.Empty,
-        BoxelAddress.MinimumMassCode,
-        null,
-        null,
-        0,
-        0,
-        0,
-        0,
-        0,
-        null,
-        null,
-        0,
-        0,
-        0,
-        0,
-        new Dictionary<BoxelPlanetClass, BoxelSurveyClassCounts>(),
-        []);
+    public static BoxelSurveyBoxelSnapshot Empty { get; } =
+        new(
+            string.Empty,
+            BoxelAddress.MinimumMassCode,
+            null,
+            null,
+            0,
+            0,
+            0,
+            0,
+            0,
+            null,
+            null,
+            0,
+            0,
+            0,
+            0,
+            new Dictionary<BoxelPlanetClass, BoxelSurveyClassCounts>(),
+            []
+        );
 
-    public double? BodyAverage => Visited <= 0
-        ? null
-        : FssDiscoveryBodyCountSum / (double)Visited;
+    public double? BodyAverage => Visited <= 0 ? null : FssDiscoveryBodyCountSum / (double)Visited;
 
-    public int? HighestRecordedSuffix => Visited > 0
-        ? Math.Max(0, ImpliedPopulation - 1)
-        : null;
+    public int? HighestRecordedSuffix => Visited > 0 ? Math.Max(0, ImpliedPopulation - 1) : null;
 
-    public double? ValuePerSystem => Visited <= 0
-        ? null
-        : CurrentValue / (double)Visited;
+    public double? ValuePerSystem => Visited <= 0 ? null : CurrentValue / (double)Visited;
 
-    public BoxelSurveyClassCounts CountsOf(BoxelPlanetClass classified)
-        => Classes.TryGetValue(classified, out var counts)
-            ? counts
-            : BoxelSurveyClassCounts.Zero;
+    public BoxelSurveyClassCounts CountsOf(BoxelPlanetClass classified) =>
+        Classes.TryGetValue(classified, out var counts) ? counts : BoxelSurveyClassCounts.Zero;
 
-    public BoxelSurveyIndexEntry ToIndexEntry()
-        => new(
+    public BoxelSurveyIndexEntry ToIndexEntry() =>
+        new(
             Prefix,
             MassCode,
             BoxelId64,
@@ -166,7 +159,8 @@ public sealed record BoxelSurveyBoxelSnapshot(
             MinHeliumPercent,
             MaxHeliumPercent,
             CurrentValue,
-            MappedPotentialValue);
+            MappedPotentialValue
+        );
 }
 
 internal sealed record BoxelSurveyValueRequest(
@@ -177,12 +171,12 @@ internal sealed record BoxelSurveyValueRequest(
     bool WasMapped,
     bool DssComplete,
     bool DssEfficiencyBonus,
-    bool IsOdyssey);
+    bool IsOdyssey
+);
 
 internal static class BoxelSurveyValueCalculator
 {
-    public static (int Scan, int Current, int Mapped) Calculate(
-        BoxelSurveyValueRequest request)
+    public static (int Scan, int Current, int Mapped) Calculate(BoxelSurveyValueRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
         var shared = new ExplorationValueRequest
@@ -195,15 +189,15 @@ internal static class BoxelSurveyValueCalculator
             IsOdyssey = request.IsOdyssey,
         };
         var scan = ExplorationValueCalculator.Calculate(
-            CloneValueRequest(shared, isMapped: false, withEfficiencyBonus: false));
+            CloneValueRequest(shared, isMapped: false, withEfficiencyBonus: false)
+        );
         var mapped = ExplorationValueCalculator.Calculate(
-            CloneValueRequest(shared, isMapped: true, withEfficiencyBonus: true));
+            CloneValueRequest(shared, isMapped: true, withEfficiencyBonus: true)
+        );
         var current = request.DssComplete
             ? ExplorationValueCalculator.Calculate(
-                CloneValueRequest(
-                    shared,
-                    isMapped: true,
-                    withEfficiencyBonus: request.DssEfficiencyBonus))
+                CloneValueRequest(shared, isMapped: true, withEfficiencyBonus: request.DssEfficiencyBonus)
+            )
             : scan;
         return (scan, current, mapped);
     }
@@ -211,8 +205,9 @@ internal static class BoxelSurveyValueCalculator
     private static ExplorationValueRequest CloneValueRequest(
         ExplorationValueRequest shared,
         bool isMapped,
-        bool withEfficiencyBonus)
-        => new()
+        bool withEfficiencyBonus
+    ) =>
+        new()
         {
             BodyClass = shared.BodyClass,
             IsTerraformable = shared.IsTerraformable,

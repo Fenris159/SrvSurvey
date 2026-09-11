@@ -8,7 +8,8 @@ public sealed class VoxStellarSharingViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        "SrvSurvey-VoxStellarViewModel-" + Guid.NewGuid().ToString("N"));
+        "SrvSurvey-VoxStellarViewModel-" + Guid.NewGuid().ToString("N")
+    );
 
     [Fact]
     public void JournalSharingIsOptInAndPersistsImmediately()
@@ -43,16 +44,10 @@ public sealed class VoxStellarSharingViewModelTests : IDisposable
     {
         var viewModel = CreateViewModel(isAvailable: true);
 
-        viewModel.ReportPublicationResult(new VoxStellarPublicationResult(
-            ["Scan", "FSDJump"],
-            []));
-        Assert.Equal(
-            "Queued 2 exploration events for VoxStellar.",
-            viewModel.StatusMessage);
+        viewModel.ReportPublicationResult(new VoxStellarPublicationResult(["Scan", "FSDJump"], []));
+        Assert.Equal("Queued 2 exploration events for VoxStellar.", viewModel.StatusMessage);
 
-        viewModel.ReportPublicationResult(new VoxStellarPublicationResult(
-            [],
-            ["simulated warning"]));
+        viewModel.ReportPublicationResult(new VoxStellarPublicationResult([], ["simulated warning"]));
         Assert.Equal("simulated warning", viewModel.StatusMessage);
     }
 
@@ -64,9 +59,6 @@ public sealed class VoxStellarSharingViewModelTests : IDisposable
         }
     }
 
-    private VoxStellarSharingViewModel CreateViewModel(bool isAvailable) => new(
-        new VoxStellarSettingsStore(Path.Combine(
-            temporaryDirectory,
-            "ui-settings.json")),
-        isAvailable);
+    private VoxStellarSharingViewModel CreateViewModel(bool isAvailable) =>
+        new(new VoxStellarSettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json")), isAvailable);
 }

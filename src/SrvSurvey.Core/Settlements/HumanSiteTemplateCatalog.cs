@@ -6,27 +6,22 @@ namespace SrvSurvey.Core.Settlements;
 
 public sealed class HumanSiteTemplateCatalog
 {
-    private static readonly JsonSerializerOptions CaseInsensitiveJson = new()
-    {
-        PropertyNameCaseInsensitive = true,
-    };
+    private static readonly JsonSerializerOptions CaseInsensitiveJson = new() { PropertyNameCaseInsensitive = true };
 
-    private const string ResourceName =
-        "SrvSurvey.Core.Resources.humanSiteTemplates.json";
+    private const string ResourceName = "SrvSurvey.Core.Resources.humanSiteTemplates.json";
 
     private readonly HumanSiteTemplate[] templates;
-    private readonly FrozenDictionary<HumanSiteTemplateKey, HumanSiteTemplate>
-        byKey;
+    private readonly FrozenDictionary<HumanSiteTemplateKey, HumanSiteTemplate> byKey;
 
     public HumanSiteTemplateCatalog(IEnumerable<HumanSiteTemplate> templates)
     {
         ArgumentNullException.ThrowIfNull(templates);
         this.templates = templates.ToArray();
         Validate(this.templates);
-        byKey = this.templates.ToFrozenDictionary(
-            template => new HumanSiteTemplateKey(
-                template.Economy,
-                template.SubType));
+        byKey = this.templates.ToFrozenDictionary(template => new HumanSiteTemplateKey(
+            template.Economy,
+            template.SubType
+        ));
     }
 
     public IReadOnlyList<HumanSiteTemplate> Templates => templates;
@@ -35,17 +30,12 @@ public sealed class HumanSiteTemplateCatalog
 
     public HumanSiteTemplate? Find(HumanSiteEconomy economy, int subType)
     {
-        return byKey.GetValueOrDefault(
-            new HumanSiteTemplateKey(economy, subType));
+        return byKey.GetValueOrDefault(new HumanSiteTemplateKey(economy, subType));
     }
 
-    public IReadOnlyList<HumanSiteTemplate> ForEconomy(
-        HumanSiteEconomy economy)
+    public IReadOnlyList<HumanSiteTemplate> ForEconomy(HumanSiteEconomy economy)
     {
-        return templates
-            .Where(template => template.Economy == economy)
-            .OrderBy(template => template.SubType)
-            .ToArray();
+        return templates.Where(template => template.Economy == economy).OrderBy(template => template.SubType).ToArray();
     }
 
     public HumanSiteTemplateCatalog WithTemplate(HumanSiteTemplate template)
@@ -53,8 +43,8 @@ public sealed class HumanSiteTemplateCatalog
         ArgumentNullException.ThrowIfNull(template);
         var updated = templates.ToList();
         var existingIndex = updated.FindIndex(candidate =>
-            candidate.Economy == template.Economy
-            && candidate.SubType == template.SubType);
+            candidate.Economy == template.Economy && candidate.SubType == template.SubType
+        );
         if (existingIndex >= 0)
         {
             updated[existingIndex] = template;
@@ -70,9 +60,9 @@ public sealed class HumanSiteTemplateCatalog
     public static HumanSiteTemplateCatalog LoadEmbedded()
     {
         var assembly = typeof(HumanSiteTemplateCatalog).Assembly;
-        using var stream = assembly.GetManifestResourceStream(ResourceName)
-            ?? throw new InvalidOperationException(
-                $"Embedded resource '{ResourceName}' was not found.");
+        using var stream =
+            assembly.GetManifestResourceStream(ResourceName)
+            ?? throw new InvalidOperationException($"Embedded resource '{ResourceName}' was not found.");
         return Load(stream);
     }
 
@@ -81,31 +71,25 @@ public sealed class HumanSiteTemplateCatalog
         ArgumentNullException.ThrowIfNull(stream);
         try
         {
-            var rows = JsonSerializer.Deserialize<TemplateRow[]>(
-                    stream,
-                    CaseInsensitiveJson)
-                ?? throw new InvalidDataException(
-                    "The human settlement template catalog is empty.");
+            var rows =
+                JsonSerializer.Deserialize<TemplateRow[]>(stream, CaseInsensitiveJson)
+                ?? throw new InvalidDataException("The human settlement template catalog is empty.");
             return new HumanSiteTemplateCatalog(rows.Select(ToTemplate));
         }
         catch (JsonException exception)
         {
-            throw new InvalidDataException(
-                "The human settlement template catalog is not valid JSON.",
-                exception);
+            throw new InvalidDataException("The human settlement template catalog is not valid JSON.", exception);
         }
     }
 
     private static HumanSiteTemplate ToTemplate(TemplateRow row)
     {
-        if (!Enum.TryParse<HumanSiteEconomy>(
-                row.Economy,
-                ignoreCase: true,
-                out var economy)
-            || economy == HumanSiteEconomy.Unknown)
+        if (
+            !Enum.TryParse<HumanSiteEconomy>(row.Economy, ignoreCase: true, out var economy)
+            || economy == HumanSiteEconomy.Unknown
+        )
         {
-            throw new InvalidDataException(
-                $"Unknown human settlement economy '{row.Economy}'.");
+            throw new InvalidDataException($"Unknown human settlement economy '{row.Economy}'.");
         }
 
         return new HumanSiteTemplate(
@@ -117,35 +101,23 @@ public sealed class HumanSiteTemplateCatalog
             (row.NamedPoi ?? []).Select(ToNamedPoi).ToArray(),
             (row.DataTerminals ?? []).Select(ToPoi).ToArray(),
             (row.CzPoints ?? []).Select(ToPoi).ToArray(),
-            (row.Buildings ?? []).Select(ToBuilding).ToArray());
+            (row.Buildings ?? []).Select(ToBuilding).ToArray()
+        );
     }
 
     private static HumanSiteLandingPad ToLandingPad(PoiRow row)
     {
-        if (!Enum.TryParse<HumanSiteLandingPadSize>(
-                row.Size,
-                ignoreCase: true,
-                out var size))
+        if (!Enum.TryParse<HumanSiteLandingPadSize>(row.Size, ignoreCase: true, out var size))
         {
-            throw new InvalidDataException(
-                $"Unknown human settlement landing-pad size '{row.Size}'.");
+            throw new InvalidDataException($"Unknown human settlement landing-pad size '{row.Size}'.");
         }
 
-        return new HumanSiteLandingPad(
-            ToPoint(row.Offset),
-            row.Rotation,
-            row.SecurityLevel,
-            row.Floor,
-            size);
+        return new HumanSiteLandingPad(ToPoint(row.Offset), row.Rotation, row.SecurityLevel, row.Floor, size);
     }
 
     private static HumanSitePointOfInterest ToPoi(PoiRow row)
     {
-        return new HumanSitePointOfInterest(
-            ToPoint(row.Offset),
-            row.Rotation,
-            row.SecurityLevel,
-            row.Floor);
+        return new HumanSitePointOfInterest(ToPoint(row.Offset), row.Rotation, row.SecurityLevel, row.Floor);
     }
 
     private static HumanSiteNamedPointOfInterest ToNamedPoi(PoiRow row)
@@ -155,14 +127,13 @@ public sealed class HumanSiteTemplateCatalog
             row.Rotation,
             row.SecurityLevel,
             row.Floor,
-            row.Name ?? string.Empty);
+            row.Name ?? string.Empty
+        );
     }
 
     private static HumanSiteBuilding ToBuilding(BuildingRow row)
     {
-        return new HumanSiteBuilding(
-            row.Name ?? string.Empty,
-            (row.Paths ?? []).Select(ToBuildingPath).ToArray());
+        return new HumanSiteBuilding(row.Name ?? string.Empty, (row.Paths ?? []).Select(ToBuildingPath).ToArray());
     }
 
     private static HumanSiteBuildingPath ToBuildingPath(PathRow row)
@@ -179,41 +150,38 @@ public sealed class HumanSiteTemplateCatalog
 
     private static HumanSiteMapPoint ToPoint(PointRow? row)
     {
-        return row is null
-            ? new HumanSiteMapPoint(double.NaN, double.NaN)
-            : new HumanSiteMapPoint(row.X, row.Y);
+        return row is null ? new HumanSiteMapPoint(double.NaN, double.NaN) : new HumanSiteMapPoint(row.X, row.Y);
     }
 
     private static void Validate(HumanSiteTemplate[] templates)
     {
         if (templates.Length == 0)
         {
-            throw new InvalidDataException(
-                "The human settlement template catalog has no entries.");
+            throw new InvalidDataException("The human settlement template catalog has no entries.");
         }
 
         var duplicate = templates
-            .GroupBy(template => new HumanSiteTemplateKey(
-                template.Economy,
-                template.SubType))
+            .GroupBy(template => new HumanSiteTemplateKey(template.Economy, template.SubType))
             .FirstOrDefault(group => group.Count() > 1);
         if (duplicate is not null)
         {
             throw new InvalidDataException(
-                "Duplicate human settlement template "
-                + $"'{duplicate.Key.Economy}/{duplicate.Key.SubType}'.");
+                "Duplicate human settlement template " + $"'{duplicate.Key.Economy}/{duplicate.Key.SubType}'."
+            );
         }
 
         foreach (var template in templates)
         {
-            if (template.SubType <= 0
+            if (
+                template.SubType <= 0
                 || string.IsNullOrWhiteSpace(template.Name)
                 || template.LandingPads.Count == 0
-                || template.Buildings.Count == 0)
+                || template.Buildings.Count == 0
+            )
             {
                 throw new InvalidDataException(
-                    $"Human settlement template "
-                    + $"'{template.Economy}/{template.SubType}' is incomplete.");
+                    $"Human settlement template " + $"'{template.Economy}/{template.SubType}' is incomplete."
+                );
             }
 
             ValidatePoints(template);
@@ -222,37 +190,35 @@ public sealed class HumanSiteTemplateCatalog
 
     private static void ValidatePoints(HumanSiteTemplate template)
     {
-        var points = template.LandingPads
-            .Select(point => point.Offset)
+        var points = template
+            .LandingPads.Select(point => point.Offset)
             .Concat(template.SecureDoors.Select(point => point.Offset))
             .Concat(template.NamedPoints.Select(point => point.Offset))
             .Concat(template.DataTerminals.Select(point => point.Offset))
             .Concat(template.ConflictZonePoints.Select(point => point.Offset))
-            .Concat(template.Buildings.SelectMany(
-                building => building.Paths.SelectMany(path => path.Points)));
+            .Concat(template.Buildings.SelectMany(building => building.Paths.SelectMany(path => path.Points)));
         if (points.Any(point => !point.IsFinite))
         {
             throw new InvalidDataException(
-                $"Human settlement template "
-                + $"'{template.Economy}/{template.SubType}' has an invalid point.");
+                $"Human settlement template " + $"'{template.Economy}/{template.SubType}' has an invalid point."
+            );
         }
 
-        if (template.Buildings.Any(building =>
+        if (
+            template.Buildings.Any(building =>
                 string.IsNullOrWhiteSpace(building.Name)
                 || building.Paths.Count == 0
-                || building.Paths.Any(path =>
-                    path.Points.Count == 0
-                    || path.PointTypes.Count != path.Points.Count)))
+                || building.Paths.Any(path => path.Points.Count == 0 || path.PointTypes.Count != path.Points.Count)
+            )
+        )
         {
             throw new InvalidDataException(
-                $"Human settlement template "
-                + $"'{template.Economy}/{template.SubType}' has an invalid building path.");
+                $"Human settlement template " + $"'{template.Economy}/{template.SubType}' has an invalid building path."
+            );
         }
     }
 
-    private readonly record struct HumanSiteTemplateKey(
-        HumanSiteEconomy Economy,
-        int SubType);
+    private readonly record struct HumanSiteTemplateKey(HumanSiteEconomy Economy, int SubType);
 
     private sealed record TemplateRow(
         [property: JsonPropertyName("economy")] string? Economy,
@@ -263,7 +229,8 @@ public sealed class HumanSiteTemplateCatalog
         [property: JsonPropertyName("namedPoi")] PoiRow[]? NamedPoi,
         [property: JsonPropertyName("dataTerminals")] PoiRow[]? DataTerminals,
         [property: JsonPropertyName("czPoints")] PoiRow[]? CzPoints,
-        [property: JsonPropertyName("buildings")] BuildingRow[]? Buildings);
+        [property: JsonPropertyName("buildings")] BuildingRow[]? Buildings
+    );
 
     private sealed record PoiRow(
         [property: JsonPropertyName("offset")] PointRow? Offset,
@@ -271,20 +238,24 @@ public sealed class HumanSiteTemplateCatalog
         [property: JsonPropertyName("level")] int SecurityLevel,
         [property: JsonPropertyName("floor")] int Floor,
         [property: JsonPropertyName("name")] string? Name,
-        [property: JsonPropertyName("size")] string? Size);
+        [property: JsonPropertyName("size")] string? Size
+    );
 
     private sealed record PointRow(
         [property: JsonPropertyName("X")] double X,
-        [property: JsonPropertyName("Y")] double Y);
+        [property: JsonPropertyName("Y")] double Y
+    );
 
     private sealed record BuildingRow(
         [property: JsonPropertyName("name")] string? Name,
-        [property: JsonPropertyName("paths")] PathRow[]? Paths);
+        [property: JsonPropertyName("paths")] PathRow[]? Paths
+    );
 
     private sealed record PathRow(
         [property: JsonPropertyName("PathPoints")] PointRow[]? PathPoints,
         [property: JsonPropertyName("PathTypes")] byte[]? PathTypes,
-        [property: JsonPropertyName("FillMode")] int FillMode);
+        [property: JsonPropertyName("FillMode")] int FillMode
+    );
 }
 
 public sealed record HumanSiteTemplate(
@@ -296,44 +267,34 @@ public sealed record HumanSiteTemplate(
     IReadOnlyList<HumanSiteNamedPointOfInterest> NamedPoints,
     IReadOnlyList<HumanSitePointOfInterest> DataTerminals,
     IReadOnlyList<HumanSitePointOfInterest> ConflictZonePoints,
-    IReadOnlyList<HumanSiteBuilding> Buildings);
+    IReadOnlyList<HumanSiteBuilding> Buildings
+);
 
-public record HumanSitePointOfInterest(
-    HumanSiteMapPoint Offset,
-    double Rotation,
-    int SecurityLevel,
-    int Floor);
+public record HumanSitePointOfInterest(HumanSiteMapPoint Offset, double Rotation, int SecurityLevel, int Floor);
 
 public sealed record HumanSiteNamedPointOfInterest(
     HumanSiteMapPoint Offset,
     double Rotation,
     int SecurityLevel,
     int Floor,
-    string Name) : HumanSitePointOfInterest(
-        Offset,
-        Rotation,
-        SecurityLevel,
-        Floor);
+    string Name
+) : HumanSitePointOfInterest(Offset, Rotation, SecurityLevel, Floor);
 
 public sealed record HumanSiteLandingPad(
     HumanSiteMapPoint Offset,
     double Rotation,
     int SecurityLevel,
     int Floor,
-    HumanSiteLandingPadSize Size) : HumanSitePointOfInterest(
-        Offset,
-        Rotation,
-        SecurityLevel,
-        Floor);
+    HumanSiteLandingPadSize Size
+) : HumanSitePointOfInterest(Offset, Rotation, SecurityLevel, Floor);
 
-public sealed record HumanSiteBuilding(
-    string Name,
-    IReadOnlyList<HumanSiteBuildingPath> Paths);
+public sealed record HumanSiteBuilding(string Name, IReadOnlyList<HumanSiteBuildingPath> Paths);
 
 public sealed record HumanSiteBuildingPath(
     IReadOnlyList<HumanSiteMapPoint> Points,
     IReadOnlyList<byte> PointTypes,
-    int FillMode);
+    int FillMode
+);
 
 public readonly record struct HumanSiteMapPoint(double X, double Y)
 {
@@ -341,9 +302,7 @@ public readonly record struct HumanSiteMapPoint(double X, double Y)
 
     public bool IsPlausibleMapOffset(double maximumDistance = 10_000)
     {
-        return IsFinite
-            && Math.Abs(X) <= maximumDistance
-            && Math.Abs(Y) <= maximumDistance;
+        return IsFinite && Math.Abs(X) <= maximumDistance && Math.Abs(Y) <= maximumDistance;
     }
 }
 

@@ -39,25 +39,16 @@ public sealed class NetworkSurfaceCoverageTests
         "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModelFactory.cs",
     ];
 
-    private static readonly string[] ResponseOwners =
-        HttpClientOwners
-            .Where(path => !path.EndsWith(
-                    "MainWindowViewModel.cs",
-                    StringComparison.Ordinal)
-                && !path.EndsWith("MiningWorkspaceViewModel.cs", StringComparison.Ordinal)
-                && !path.EndsWith(
-                    "EddnPublisher.cs",
-                    StringComparison.Ordinal)
-                && !path.EndsWith(
-                    "VoxStellarPublisher.cs",
-                    StringComparison.Ordinal)
-                && !path.EndsWith(
-                    "DiagnosticReplayContext.cs",
-                    StringComparison.Ordinal)
-                && !path.EndsWith(
-                    "MainWindowViewModelFactory.cs",
-                    StringComparison.Ordinal))
-            .ToArray();
+    private static readonly string[] ResponseOwners = HttpClientOwners
+        .Where(path =>
+            !path.EndsWith("MainWindowViewModel.cs", StringComparison.Ordinal)
+            && !path.EndsWith("MiningWorkspaceViewModel.cs", StringComparison.Ordinal)
+            && !path.EndsWith("EddnPublisher.cs", StringComparison.Ordinal)
+            && !path.EndsWith("VoxStellarPublisher.cs", StringComparison.Ordinal)
+            && !path.EndsWith("DiagnosticReplayContext.cs", StringComparison.Ordinal)
+            && !path.EndsWith("MainWindowViewModelFactory.cs", StringComparison.Ordinal)
+        )
+        .ToArray();
 
     private static readonly NetworkSurface[] Surfaces =
     [
@@ -78,7 +69,8 @@ public sealed class NetworkSurfaceCoverageTests
                 "tests/SrvSurvey.Core.Tests/Updates/ReleasePackageDownloadServiceTests.cs",
                 "tests/SrvSurvey.Core.Tests/Updates/ReleasePackageStagingServiceTests.cs",
                 "tests/SrvSurvey.Core.Tests/Updates/ReleaseInstallationTransactionTests.cs",
-            ]),
+            ]
+        ),
         new(
             "system-lookup-and-enrichment",
             [
@@ -97,7 +89,8 @@ public sealed class NetworkSurfaceCoverageTests
                 "tests/SrvSurvey.Core.Tests/Navigation/SystemSummaryClientTests.cs",
                 "tests/SrvSurvey.Core.Tests/Exobiology/CodexDiscoveryLocationClientTests.cs",
                 "tests/SrvSurvey.Core.Tests/Search/SpanshStarSystemResolverTests.cs",
-            ]),
+            ]
+        ),
         new(
             "spansh-search-and-routes",
             [
@@ -109,7 +102,8 @@ public sealed class NetworkSurfaceCoverageTests
                 "tests/SrvSurvey.Core.Tests/Routes/SpanshRouteClientTests.cs",
                 "tests/SrvSurvey.Core.Tests/Search/NearestSystemsClientTests.cs",
                 "tests/SrvSurvey.Core.Tests/Search/SpanshBoxelClientTests.cs",
-            ]),
+            ]
+        ),
         new(
             "canonn-runtime-services",
             [
@@ -123,7 +117,8 @@ public sealed class NetworkSurfaceCoverageTests
                 "tests/SrvSurvey.Core.Tests/Exobiology/CanonnSystemPoiClientTests.cs",
                 "tests/SrvSurvey.Core.Tests/Search/NearestSystemsClientTests.cs",
                 "tests/SrvSurvey.Core.Tests/Settlements/CanonnHumanSiteClientTests.cs",
-            ]),
+            ]
+        ),
         new(
             "eddn-publication",
             [
@@ -139,28 +134,31 @@ public sealed class NetworkSurfaceCoverageTests
                 "tests/SrvSurvey.Core.Tests/Network/EddnCompanionFileReaderTests.cs",
                 "tests/SrvSurvey.Core.Tests/Network/EddnOutboxTests.cs",
                 "tests/SrvSurvey.Core.Tests/Network/EddnTransportTests.cs",
-            ]),
+            ]
+        ),
         new(
             "inara-publication",
             ["src/SrvSurvey.Core/Inara/InaraPublisher.cs"],
-            ["tests/SrvSurvey.Core.Tests/Inara/InaraPublisherTests.cs"]),
+            ["tests/SrvSurvey.Core.Tests/Inara/InaraPublisherTests.cs"]
+        ),
         new(
             "edsm-publication",
             ["src/SrvSurvey.Core/Edsm/EdsmPublisher.cs"],
-            ["tests/SrvSurvey.Core.Tests/Edsm/EdsmPublisherTests.cs"]),
+            ["tests/SrvSurvey.Core.Tests/Edsm/EdsmPublisherTests.cs"]
+        ),
         new(
             "voxstellar-publication",
             ["src/SrvSurvey.Core/Network/VoxStellarPublisher.cs"],
-            ["tests/SrvSurvey.Core.Tests/Network/VoxStellarPublisherTests.cs"]),
+            ["tests/SrvSurvey.Core.Tests/Network/VoxStellarPublisherTests.cs"]
+        ),
         new(
             "inara-community-goal-read",
             [
                 "src/SrvSurvey.Desktop/Platform/Inara/InaraCommunityGoalClient.cs",
                 "src/SrvSurvey.Desktop/Platform/Inara/InaraCommunityGoalEnricher.cs",
             ],
-            [
-                "tests/SrvSurvey.Desktop.Tests/Platform/InaraCommunityGoalClientTests.cs",
-            ]),
+            ["tests/SrvSurvey.Desktop.Tests/Platform/InaraCommunityGoalClientTests.cs"]
+        ),
         new(
             "raven-colonial-quests-and-ggg",
             [
@@ -172,7 +170,8 @@ public sealed class NetworkSurfaceCoverageTests
                 "tests/SrvSurvey.Core.Tests/Colonization/RavenColonialClientTests.cs",
                 "tests/SrvSurvey.Core.Tests/Quests/RavenQuestClientTests.cs",
                 "tests/SrvSurvey.Core.Tests/Exploration/GreenGasGiantClientTests.cs",
-            ]),
+            ]
+        ),
         new(
             "frontier-commander-profile",
             [
@@ -182,7 +181,8 @@ public sealed class NetworkSurfaceCoverageTests
             [
                 "tests/SrvSurvey.Desktop.Tests/Platform/FrontierAccountServiceTests.cs",
                 "tests/SrvSurvey.Core.Tests/Frontier/FrontierCapiSnapshotParserTests.cs",
-            ]),
+            ]
+        ),
         new(
             "downloaded-caches-and-images",
             [
@@ -192,11 +192,13 @@ public sealed class NetworkSurfaceCoverageTests
             [
                 "tests/SrvSurvey.Core.Tests/Storage/VisitedStarsCacheServiceTests.cs",
                 "tests/SrvSurvey.Desktop.Tests/Platform/CodexImageCacheTests.cs",
-            ]),
+            ]
+        ),
         new(
             "diagnostic-network-denial",
             ["src/SrvSurvey.Desktop/Runtime/DiagnosticReplayContext.cs"],
-            ["tests/SrvSurvey.Desktop.Tests/Runtime/DiagnosticReplayContextTests.cs"]),
+            ["tests/SrvSurvey.Desktop.Tests/Runtime/DiagnosticReplayContextTests.cs"]
+        ),
     ];
 
     [Fact]
@@ -209,15 +211,16 @@ public sealed class NetworkSurfaceCoverageTests
             Assert.NotEmpty(surface.TestFiles);
             foreach (var path in surface.ProductionFiles)
             {
-                Assert.True(File.Exists(Path.Combine(root, Native(path))),
-                    $"Missing {surface.Name} production evidence: {path}");
+                Assert.True(
+                    File.Exists(Path.Combine(root, Native(path))),
+                    $"Missing {surface.Name} production evidence: {path}"
+                );
             }
 
             foreach (var path in surface.TestFiles)
             {
                 var absolutePath = Path.Combine(root, Native(path));
-                Assert.True(File.Exists(absolutePath),
-                    $"Missing {surface.Name} test evidence: {path}");
+                Assert.True(File.Exists(absolutePath), $"Missing {surface.Name} test evidence: {path}");
                 Assert.Contains("Assert.", File.ReadAllText(absolutePath));
             }
         }
@@ -227,13 +230,9 @@ public sealed class NetworkSurfaceCoverageTests
     public void ModernHttpInventoryIsExplicitAndEveryResponseIsStreamBounded()
     {
         var root = FindRepositoryRoot();
-        var actual = Directory.EnumerateFiles(
-                Path.Combine(root, "src"),
-                "*.cs",
-                SearchOption.AllDirectories)
-            .Where(path => File.ReadAllText(path).Contains(
-                "HttpClient",
-                StringComparison.Ordinal))
+        var actual = Directory
+            .EnumerateFiles(Path.Combine(root, "src"), "*.cs", SearchOption.AllDirectories)
+            .Where(path => File.ReadAllText(path).Contains("HttpClient", StringComparison.Ordinal))
             .Select(path => Relative(root, path))
             .Order(StringComparer.Ordinal)
             .ToArray();
@@ -247,9 +246,9 @@ public sealed class NetworkSurfaceCoverageTests
             Assert.Contains("Bytes", source);
         }
 
-        var compositionRoot = File.ReadAllText(Path.Combine(
-            root,
-            Native("src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs")));
+        var compositionRoot = File.ReadAllText(
+            Path.Combine(root, Native("src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"))
+        );
         Assert.DoesNotContain("ReadAsStreamAsync", compositionRoot);
         Assert.DoesNotContain("ReadAsStringAsync", compositionRoot);
         Assert.DoesNotContain("ReadFromJsonAsync", compositionRoot);
@@ -259,19 +258,15 @@ public sealed class NetworkSurfaceCoverageTests
     public void StartupChecksForApplicationAndReferenceDataUpdates()
     {
         var root = FindRepositoryRoot();
-        var window = File.ReadAllText(Path.Combine(
-            root,
-            Native("src/SrvSurvey.Desktop/MainWindow.axaml.cs")));
-        var referenceService = File.ReadAllText(Path.Combine(
-            root,
-            Native("src/SrvSurvey.Core/Updates/PublishedReferenceUpdateService.cs")));
+        var window = File.ReadAllText(Path.Combine(root, Native("src/SrvSurvey.Desktop/MainWindow.axaml.cs")));
+        var referenceService = File.ReadAllText(
+            Path.Combine(root, Native("src/SrvSurvey.Core/Updates/PublishedReferenceUpdateService.cs"))
+        );
 
         Assert.Contains("ReleaseUpdates.CheckAsync()", window);
         Assert.Contains("ReferenceDataUpdates.RefreshAsync()", window);
         Assert.Contains("indexClient.GetAsync", referenceService);
-        Assert.Contains(
-            "remoteVersion > currentVersion || !source.IsLocal",
-            referenceService);
+        Assert.Contains("remoteVersion > currentVersion || !source.IsLocal", referenceService);
         Assert.Contains("ActivateAsync", referenceService);
     }
 
@@ -280,9 +275,7 @@ public sealed class NetworkSurfaceCoverageTests
         var current = new DirectoryInfo(AppContext.BaseDirectory);
         while (current is not null)
         {
-            if (File.Exists(Path.Combine(
-                    current.FullName,
-                    "SrvSurvey.slnx")))
+            if (File.Exists(Path.Combine(current.FullName, "SrvSurvey.slnx")))
             {
                 return current.FullName;
             }
@@ -306,5 +299,6 @@ public sealed class NetworkSurfaceCoverageTests
     private sealed record NetworkSurface(
         string Name,
         IReadOnlyList<string> ProductionFiles,
-        IReadOnlyList<string> TestFiles);
+        IReadOnlyList<string> TestFiles
+    );
 }

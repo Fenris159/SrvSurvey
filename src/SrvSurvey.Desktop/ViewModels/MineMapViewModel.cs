@@ -41,7 +41,8 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         Action<string> notify,
         Action? openSurfaceMiningGuide = null,
         Action<Guid>? editBookmark = null,
-        BookmarkCatalog? bookmarkCatalog = null)
+        BookmarkCatalog? bookmarkCatalog = null
+    )
     {
         service = new MineMapService(dataDirectory, bookmarkCatalog);
         this.settingsStore = settingsStore;
@@ -50,20 +51,20 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         var preferences = settingsStore.Load();
         onlyShowWhileOnGround = preferences.OnlyShowWhileOnGround;
         var selectedReferenceCommodities = preferences
-            .EffectiveMiningReferenceCommodities
-            .Select(name => SurfaceMiningCommodityCatalog.TryResolve(name, out var commodity)
-                ? commodity.Name
-                : name)
+            .EffectiveMiningReferenceCommodities.Select(name =>
+                SurfaceMiningCommodityCatalog.TryResolve(name, out var commodity) ? commodity.Name : name
+            )
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        hotspotRows = SurfaceMiningCommodityCatalog.All
-            .Select(commodity => new SurfaceMiningCommodityRowViewModel(
+        hotspotRows = SurfaceMiningCommodityCatalog
+            .All.Select(commodity => new SurfaceMiningCommodityRowViewModel(
                 commodity,
                 selectedReferenceCommodities.Contains(commodity.Name),
-                OnMiningReferenceSelectionChanged))
+                OnMiningReferenceSelectionChanged
+            ))
             .ToArray();
         miningReferenceRows = ReadMiningReferenceRows();
-        surfaceHuntRows = SurfaceMiningCommodityCatalog.HuntReferences
-            .Select(reference => new SurfaceMiningHuntRowViewModel(reference))
+        surfaceHuntRows = SurfaceMiningCommodityCatalog
+            .HuntReferences.Select(reference => new SurfaceMiningHuntRowViewModel(reference))
             .ToArray();
         service.Changed += OnServiceChanged;
         ZoomInCommand = new WorkspaceCommand(() => ViewportZoom = Math.Min(15, ViewportZoom + 0.5));
@@ -87,8 +88,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
             Changed(nameof(SurfaceHuntRows));
             Changed(nameof(SurfaceHuntSortIndicators));
         });
-        OpenSurfaceMiningGuideCommand = new WorkspaceCommand(
-            openSurfaceMiningGuide ?? (() => { }));
+        OpenSurfaceMiningGuideCommand = new WorkspaceCommand(openSurfaceMiningGuide ?? (() => { }));
         EditSelectedBookmarkCommand = new WorkspaceCommand(() =>
         {
             if (SelectedSurveyRow is { } row)
@@ -110,7 +110,10 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         get => searchText;
         set
         {
-            if (Set(ref searchText, value)) RefreshFilteredSurveys();
+            if (Set(ref searchText, value))
+            {
+                RefreshFilteredSurveys();
+            }
         }
     }
 
@@ -119,7 +122,10 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         get => selectedContains;
         set
         {
-            if (Set(ref selectedContains, value)) RefreshFilteredSurveys();
+            if (Set(ref selectedContains, value))
+            {
+                RefreshFilteredSurveys();
+            }
         }
     }
 
@@ -128,7 +134,10 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         get => selectedBodyType;
         set
         {
-            if (Set(ref selectedBodyType, value)) RefreshFilteredSurveys();
+            if (Set(ref selectedBodyType, value))
+            {
+                RefreshFilteredSurveys();
+            }
         }
     }
 
@@ -136,14 +145,11 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
 
     public IReadOnlyList<string> BodyTypeOptions { get; private set; } = ["All"];
 
-    public IReadOnlyList<SurfaceMiningCommodityRowViewModel> HotspotRows =>
-        hotspotSorter.Apply(hotspotRows);
+    public IReadOnlyList<SurfaceMiningCommodityRowViewModel> HotspotRows => hotspotSorter.Apply(hotspotRows);
 
-    public IReadOnlyList<SurfaceMiningHuntRowViewModel> SurfaceHuntRows =>
-        surfaceHuntSorter.Apply(surfaceHuntRows);
+    public IReadOnlyList<SurfaceMiningHuntRowViewModel> SurfaceHuntRows => surfaceHuntSorter.Apply(surfaceHuntRows);
 
-    public IReadOnlyList<SurfaceMiningCommodityRowViewModel> MiningReferenceRows =>
-        miningReferenceRows;
+    public IReadOnlyList<SurfaceMiningCommodityRowViewModel> MiningReferenceRows => miningReferenceRows;
 
     public bool ShouldShowMiningReference => MiningReferenceRows.Count > 0;
 
@@ -165,25 +171,23 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
 
     public string LiveMapTitle => ActiveSurvey?.Name ?? "No live mining map";
 
-    public string LiveMapDescription => ActiveSurvey is { } survey
-        ? $"{survey.SystemName} · {survey.BodyName} · {survey.MineralAmount} mineral amount · {survey.Density} density"
-        : "Stand on a mining-location border, face its center, and send .mining <heading> <number> <amount>/<density>, i.e. .mining 120 4 high/low.";
+    public string LiveMapDescription =>
+        ActiveSurvey is { } survey
+            ? $"{survey.SystemName} · {survey.BodyName} · {survey.MineralAmount} mineral amount · {survey.Density} density"
+            : "Stand on a mining-location border, face its center, and send .mining <heading> <number> <amount>/<density>, i.e. .mining 120 4 high/low.";
 
     public static string LiveMapCommandHelp =>
         "Stand on the mining-location border and face its center, then use .mining <heading> <number> <amount>/<density>, i.e. .mining 120 4 high/low.";
 
-    public string LiveMapLocation => ActiveSurvey is { } survey
-        ? $"{survey.Center.Latitude:0.000000}, {survey.Center.Longitude:0.000000}"
-        : "—";
+    public string LiveMapLocation =>
+        ActiveSurvey is { } survey ? $"{survey.Center.Latitude:0.000000}, {survey.Center.Longitude:0.000000}" : "—";
 
     public string SelectedMapSystem => ActiveSurvey?.SystemName ?? "—";
 
-    public string SelectedMapBody => ActiveSurvey is { } survey
-        ? GalacticBookmark.TrimSystemPrefix(survey.SystemName, survey.BodyName)
-        : "—";
+    public string SelectedMapBody =>
+        ActiveSurvey is { } survey ? GalacticBookmark.TrimSystemPrefix(survey.SystemName, survey.BodyName) : "—";
 
-    public string SelectedMapSignal => ActiveSurvey?.LocationSignal.ToString(
-        CultureInfo.InvariantCulture) ?? "—";
+    public string SelectedMapSignal => ActiveSurvey?.LocationSignal.ToString(CultureInfo.InvariantCulture) ?? "—";
 
     public string SelectedMapAmount => ActiveSurvey?.MineralAmount.ToString() ?? "—";
 
@@ -203,13 +207,9 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         }
     }
 
-    public SurfaceCoordinate? PlayerLocation => IsActiveSurveyCurrentContext
-        ? context?.PlayerLocation
-        : null;
+    public SurfaceCoordinate? PlayerLocation => IsActiveSurveyCurrentContext ? context?.PlayerLocation : null;
 
-    public double PlayerHeading => IsActiveSurveyCurrentContext
-        ? status?.NormalizedHeading ?? 0
-        : 0;
+    public double PlayerHeading => IsActiveSurveyCurrentContext ? status?.NormalizedHeading ?? 0 : 0;
 
     public double ViewportZoom
     {
@@ -231,27 +231,33 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         get => onlyShowWhileOnGround;
         set
         {
-            if (!Set(ref onlyShowWhileOnGround, value)) return;
+            if (!Set(ref onlyShowWhileOnGround, value))
+            {
+                return;
+            }
+
             try
             {
                 SavePreferences();
                 StatusText = string.Empty;
             }
-            catch (Exception exception) when (exception is IOException
-                or UnauthorizedAccessException
-                or InvalidOperationException)
+            catch (Exception exception)
+                when (exception is IOException or UnauthorizedAccessException or InvalidOperationException)
             {
-                StatusText = "Surface Mining map setting changed for this session but could not be saved: " + exception.Message;
+                StatusText =
+                    "Surface Mining map setting changed for this session but could not be saved: " + exception.Message;
             }
             Changed(nameof(ShouldShowOverlay));
         }
     }
 
-    public bool ShouldShowOverlay => IsActiveSurveyCurrentContext
+    public bool ShouldShowOverlay =>
+        IsActiveSurveyCurrentContext
         && status is { HasLatitudeLongitude: true }
         && (!OnlyShowWhileOnGround || IsOnGround(status));
 
-    private bool IsActiveSurveyCurrentContext => ActiveSurvey is { } survey
+    private bool IsActiveSurveyCurrentContext =>
+        ActiveSurvey is { } survey
         && context is { } current
         && survey.FrontierId == current.FrontierId
         && survey.SystemAddress == current.SystemAddress
@@ -264,12 +270,11 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
             SavePreferences();
             StatusText = string.Empty;
         }
-        catch (Exception exception) when (exception is IOException
-            or UnauthorizedAccessException
-            or InvalidOperationException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidOperationException)
         {
-            StatusText = "Mining reference selection changed for this session but could not be saved: "
-                + exception.Message;
+            StatusText =
+                "Mining reference selection changed for this session but could not be saved: " + exception.Message;
         }
 
         miningReferenceRows = ReadMiningReferenceRows();
@@ -279,15 +284,15 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     }
 
     private SurfaceMiningCommodityRowViewModel[] ReadMiningReferenceRows() =>
-        hotspotRows.Where(row => row.IsInOverlay)
-            .OrderBy(row => row.Name, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
+        hotspotRows.Where(row => row.IsInOverlay).OrderBy(row => row.Name, StringComparer.OrdinalIgnoreCase).ToArray();
 
-    private void SavePreferences() => settingsStore.Save(new MineMapPreferences(
-        OnlyShowWhileOnGround,
-        hotspotRows.Where(row => row.IsInOverlay)
-            .Select(row => row.Name)
-            .ToArray()));
+    private void SavePreferences() =>
+        settingsStore.Save(
+            new MineMapPreferences(
+                OnlyShowWhileOnGround,
+                hotspotRows.Where(row => row.IsInOverlay).Select(row => row.Name).ToArray()
+            )
+        );
 
     public MineMapSurveyRowViewModel? SelectedSurveyRow
     {
@@ -319,14 +324,11 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
 
     public ICommand SortSurfaceHuntCommand { get; }
 
-    public WorkspaceSortIndicators SurveySortIndicators =>
-        new(surveySorter.Indicator);
+    public WorkspaceSortIndicators SurveySortIndicators => new(surveySorter.Indicator);
 
-    public WorkspaceSortIndicators HotspotSortIndicators =>
-        new(hotspotSorter.Indicator);
+    public WorkspaceSortIndicators HotspotSortIndicators => new(hotspotSorter.Indicator);
 
-    public WorkspaceSortIndicators SurfaceHuntSortIndicators =>
-        new(surfaceHuntSorter.Indicator);
+    public WorkspaceSortIndicators SurfaceHuntSortIndicators => new(surfaceHuntSorter.Indicator);
 
     public ICommand OpenSurfaceMiningGuideCommand { get; }
 
@@ -336,7 +338,8 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         MineMapCommandContext? nextContext,
         EliteStatus? latestStatus,
-        bool allowCommands)
+        bool allowCommands
+    )
     {
         context = nextContext;
         status = latestStatus;
@@ -345,7 +348,8 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
             journalEvents,
             nextContext,
             allowCommands,
-            CancellationToken.None);
+            CancellationToken.None
+        );
         foreach (var message in results.Select(result => result.Message))
         {
             StatusText = message;
@@ -394,7 +398,8 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         var viewModel = new MineMapViewModel(
             root,
             new MineMapSettingsStore(Path.Combine(root, "ui-settings.json")),
-            _ => { });
+            _ => { }
+        );
         var center = new SurfaceCoordinate(-18.4216, 74.0921);
         const double radius = 855_573.1875;
         var now = DateTimeOffset.UtcNow;
@@ -418,15 +423,39 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
             UpdatedAt = now,
             Markers =
             [
-                new MineMapMarker { Material = "Ruby", Location = MineMapService.GetDestination(center, 15, 1240, radius), CreatedAt = now },
-                new MineMapMarker { Material = "Gold", Location = MineMapService.GetDestination(center, 90, 2100, radius), CreatedAt = now },
-                new MineMapMarker { Material = "Thortveitite", Location = MineMapService.GetDestination(center, 225, 3400, radius), CreatedAt = now },
+                new MineMapMarker
+                {
+                    Material = "Ruby",
+                    Location = MineMapService.GetDestination(center, 15, 1240, radius),
+                    CreatedAt = now,
+                },
+                new MineMapMarker
+                {
+                    Material = "Gold",
+                    Location = MineMapService.GetDestination(center, 90, 2100, radius),
+                    CreatedAt = now,
+                },
+                new MineMapMarker
+                {
+                    Material = "Thortveitite",
+                    Location = MineMapService.GetDestination(center, 225, 3400, radius),
+                    CreatedAt = now,
+                },
             ],
         };
         viewModel.context = new MineMapCommandContext(
-            "preview", "Fenris", "Wille", 123456789,
-            viewModel.editorSurvey.SystemPosition, 3, "Wille 2 C", "Rocky Ice body",
-            129, radius, MineMapService.GetDestination(center, 190, 450, radius));
+            "preview",
+            "Fenris",
+            "Wille",
+            123456789,
+            viewModel.editorSurvey.SystemPosition,
+            3,
+            "Wille 2 C",
+            "Rocky Ice body",
+            129,
+            radius,
+            MineMapService.GetDestination(center, 190, 450, radius)
+        );
         viewModel.status = new EliteStatus
         {
             Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
@@ -446,16 +475,34 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     private void RefreshCatalog()
     {
         var surveys = CatalogSurveys;
-        ContainsOptions = ["All", .. surveys.SelectMany(survey => survey.Markers)
-            .Select(marker => marker.Material)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)];
-        BodyTypeOptions = ["All", .. surveys.Select(survey => survey.BodyType)
-            .Where(value => !string.IsNullOrWhiteSpace(value))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)];
-        if (!ContainsOptions.Contains(SelectedContains, StringComparer.OrdinalIgnoreCase)) SelectedContains = "All";
-        if (!BodyTypeOptions.Contains(SelectedBodyType, StringComparer.OrdinalIgnoreCase)) SelectedBodyType = "All";
+        ContainsOptions =
+        [
+            "All",
+            .. surveys
+                .SelectMany(survey => survey.Markers)
+                .Select(marker => marker.Material)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(value => value, StringComparer.OrdinalIgnoreCase),
+        ];
+        BodyTypeOptions =
+        [
+            "All",
+            .. surveys
+                .Select(survey => survey.BodyType)
+                .Where(value => !string.IsNullOrWhiteSpace(value))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(value => value, StringComparer.OrdinalIgnoreCase),
+        ];
+        if (!ContainsOptions.Contains(SelectedContains, StringComparer.OrdinalIgnoreCase))
+        {
+            SelectedContains = "All";
+        }
+
+        if (!BodyTypeOptions.Contains(SelectedBodyType, StringComparer.OrdinalIgnoreCase))
+        {
+            SelectedBodyType = "All";
+        }
+
         Changed(nameof(ContainsOptions));
         Changed(nameof(BodyTypeOptions));
         RefreshMarkerFilters();
@@ -465,28 +512,45 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     private void RefreshFilteredSurveys()
     {
         var query = SearchText.Trim();
-        FilteredSurveys = surveySorter.Apply(CatalogSurveys
-            .Where(survey => string.Equals(SelectedContains, "All", StringComparison.OrdinalIgnoreCase)
-                || survey.Markers.Any(marker => string.Equals(marker.Material, SelectedContains, StringComparison.OrdinalIgnoreCase)))
-            .Where(survey => string.Equals(SelectedBodyType, "All", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(survey.BodyType, SelectedBodyType, StringComparison.OrdinalIgnoreCase))
-            .Where(survey => query.Length == 0
-                || Searchable(survey).Contains(query, StringComparison.OrdinalIgnoreCase))
-            .Select(survey => new MineMapSurveyRowViewModel(survey))
-            .ToArray());
+        FilteredSurveys = surveySorter.Apply(
+            CatalogSurveys
+                .Where(survey =>
+                    string.Equals(SelectedContains, "All", StringComparison.OrdinalIgnoreCase)
+                    || survey.Markers.Any(marker =>
+                        string.Equals(marker.Material, SelectedContains, StringComparison.OrdinalIgnoreCase)
+                    )
+                )
+                .Where(survey =>
+                    string.Equals(SelectedBodyType, "All", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(survey.BodyType, SelectedBodyType, StringComparison.OrdinalIgnoreCase)
+                )
+                .Where(survey =>
+                    query.Length == 0 || Searchable(survey).Contains(query, StringComparison.OrdinalIgnoreCase)
+                )
+                .Select(survey => new MineMapSurveyRowViewModel(survey))
+                .ToArray()
+        );
     }
 
     private void RefreshMarkerFilters()
     {
-        var previous = MarkerFilters.ToDictionary(filter => filter.Name, filter => filter.IsVisible, StringComparer.OrdinalIgnoreCase);
-        MarkerFilters = ActiveSurvey?.Markers.Select(marker => marker.Material)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
-            .Select(value => new MineMapMarkerFilterViewModel(
-                value,
-                previous.GetValueOrDefault(value, true),
-                RaiseMapState))
-            .ToArray() ?? [];
+        var previous = MarkerFilters.ToDictionary(
+            filter => filter.Name,
+            filter => filter.IsVisible,
+            StringComparer.OrdinalIgnoreCase
+        );
+        MarkerFilters =
+            ActiveSurvey
+                ?.Markers.Select(marker => marker.Material)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
+                .Select(value => new MineMapMarkerFilterViewModel(
+                    value,
+                    previous.GetValueOrDefault(value, true),
+                    RaiseMapState
+                ))
+                .ToArray()
+            ?? [];
         Changed(nameof(VisibleMaterials));
     }
 
@@ -495,10 +559,11 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         Changed(nameof(VisibleMaterials));
     }
 
-    public IReadOnlySet<string> VisibleMaterials => MarkerFilters
-        .Where(filter => filter.IsVisible)
-        .Select(filter => filter.Name)
-        .ToHashSet(StringComparer.OrdinalIgnoreCase);
+    public IReadOnlySet<string> VisibleMaterials =>
+        MarkerFilters
+            .Where(filter => filter.IsVisible)
+            .Select(filter => filter.Name)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
     private void RaiseLiveState()
     {
@@ -519,22 +584,23 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         RefreshMarkerFilters();
     }
 
-    private static bool IsOnGround(EliteStatus current) => current.OnFootOnPlanet
-        || current.InSrv
-        || current.InMainShip && current.Landed;
+    private static bool IsOnGround(EliteStatus current) =>
+        current.OnFootOnPlanet || current.InSrv || current.InMainShip && current.Landed;
 
-    private static string Searchable(MineMapSurvey survey) => string.Join(' ',
-        survey.SystemName,
-        survey.BodyName,
-        survey.BodyType,
-        survey.Name,
-        survey.MineralAmount.ToString(),
-        survey.Density.ToString(),
-        survey.Notes,
-        survey.SystemAddress.ToString(CultureInfo.InvariantCulture));
+    private static string Searchable(MineMapSurvey survey) =>
+        string.Join(
+            ' ',
+            survey.SystemName,
+            survey.BodyName,
+            survey.BodyType,
+            survey.Name,
+            survey.MineralAmount.ToString(),
+            survey.Density.ToString(),
+            survey.Notes,
+            survey.SystemAddress.ToString(CultureInfo.InvariantCulture)
+        );
 
     private IReadOnlyList<MineMapSurvey> CatalogSurveys => service.Surveys;
-
 }
 
 public sealed record MineMapSurveyRowViewModel(
@@ -548,7 +614,8 @@ public sealed record MineMapSurveyRowViewModel(
     string MineralAmount,
     string Density,
     string UpdatedText,
-    string Notes)
+    string Notes
+)
 {
     private static readonly SrvSurvey.Core.Search.GalacticCoordinate Sol = new(0, 0, 0);
 
@@ -564,27 +631,18 @@ public sealed record MineMapSurveyRowViewModel(
             survey.MineralAmount.ToString(),
             survey.Density.ToString(),
             survey.UpdatedAt.ToLocalTime().ToString("d", CultureInfo.CurrentCulture),
-            survey.Notes)
-    {
-    }
+            survey.Notes
+        ) { }
 
     public int SignalValue => int.Parse(SignalNumber, CultureInfo.InvariantCulture);
 
-    public string DisplayBodyName => GalacticBookmark.TrimSystemPrefix(
-        SystemName,
-        BodyName);
+    public string DisplayBodyName => GalacticBookmark.TrimSystemPrefix(SystemName, BodyName);
 
-    public double DistanceValue => double.Parse(
-        DistanceText[..DistanceText.IndexOf(' ')],
-        CultureInfo.CurrentCulture);
+    public double DistanceValue => double.Parse(DistanceText[..DistanceText.IndexOf(' ')], CultureInfo.CurrentCulture);
 
-    public double ArrivalValue => double.Parse(
-        ArrivalText[..ArrivalText.IndexOf(' ')],
-        CultureInfo.CurrentCulture);
+    public double ArrivalValue => double.Parse(ArrivalText[..ArrivalText.IndexOf(' ')], CultureInfo.CurrentCulture);
 
-    public DateTime UpdatedValue => DateTime.Parse(
-        UpdatedText,
-        CultureInfo.CurrentCulture);
+    public DateTime UpdatedValue => DateTime.Parse(UpdatedText, CultureInfo.CurrentCulture);
 }
 
 public sealed class SurfaceMiningCommodityRowViewModel : WorkspaceObservable
@@ -595,7 +653,8 @@ public sealed class SurfaceMiningCommodityRowViewModel : WorkspaceObservable
     public SurfaceMiningCommodityRowViewModel(
         SurfaceMiningCommodity commodity,
         bool isInOverlay = false,
-        Action? selectionChanged = null)
+        Action? selectionChanged = null
+    )
     {
         Category = commodity.Category;
         Name = commodity.Name;
@@ -607,14 +666,17 @@ public sealed class SurfaceMiningCommodityRowViewModel : WorkspaceObservable
         Icy = Available(commodity.Icy);
         AverageSellPrice = $"{commodity.AverageSellPrice:N0} CR/t";
         MaximumSellPrice = $"{commodity.MaximumSellPrice:N0} CR/t";
-        BodyTypes = string.Join(", ", new[]
-        {
-            commodity.HighMetalContent ? "HMC" : null,
-            commodity.MetalRich ? "MR" : null,
-            commodity.Rocky ? "Rocky" : null,
-            commodity.RockyIce ? "Rocky Ice" : null,
-            commodity.Icy ? "Icy" : null,
-        }.Where(value => value is not null));
+        BodyTypes = string.Join(
+            ", ",
+            new[]
+            {
+                commodity.HighMetalContent ? "HMC" : null,
+                commodity.MetalRich ? "MR" : null,
+                commodity.Rocky ? "Rocky" : null,
+                commodity.RockyIce ? "Rocky Ice" : null,
+                commodity.Icy ? "Icy" : null,
+            }.Where(value => value is not null)
+        );
         this.isInOverlay = isInOverlay;
         this.selectionChanged = selectionChanged ?? (() => { });
     }
@@ -636,7 +698,11 @@ public sealed class SurfaceMiningCommodityRowViewModel : WorkspaceObservable
         get => isInOverlay;
         set
         {
-            if (!Set(ref isInOverlay, value)) return;
+            if (!Set(ref isInOverlay, value))
+            {
+                return;
+            }
+
             selectionChanged();
         }
     }
@@ -647,10 +713,8 @@ public sealed class SurfaceMiningCommodityRowViewModel : WorkspaceObservable
 
     private static string Available(bool available) => available ? "✓" : "—";
 
-    private static int ParsePrice(string value) => int.Parse(
-        value[..value.IndexOf(' ')],
-        NumberStyles.AllowThousands,
-        CultureInfo.CurrentCulture);
+    private static int ParsePrice(string value) =>
+        int.Parse(value[..value.IndexOf(' ')], NumberStyles.AllowThousands, CultureInfo.CurrentCulture);
 }
 
 public sealed record SurfaceMiningHuntRowViewModel(
@@ -663,7 +727,8 @@ public sealed record SurfaceMiningHuntRowViewModel(
     string AverageGalacticPrice,
     string PeakSellPrice,
     int AverageGalacticPriceValue,
-    int PeakSellPriceValue)
+    int PeakSellPriceValue
+)
 {
     public SurfaceMiningHuntRowViewModel(SurfaceMiningHuntReference reference)
         : this(
@@ -676,9 +741,8 @@ public sealed record SurfaceMiningHuntRowViewModel(
             $"{reference.AverageGalacticPrice:N0} CR/t",
             $"{reference.PeakSellPrice:N0} CR/t",
             reference.AverageGalacticPrice,
-            reference.PeakSellPrice)
-    {
-    }
+            reference.PeakSellPrice
+        ) { }
 }
 
 public sealed class MineMapMarkerFilterViewModel : WorkspaceObservable
@@ -702,7 +766,10 @@ public sealed class MineMapMarkerFilterViewModel : WorkspaceObservable
         get => isVisible;
         set
         {
-            if (Set(ref isVisible, value)) changed();
+            if (Set(ref isVisible, value))
+            {
+                changed();
+            }
         }
     }
 }

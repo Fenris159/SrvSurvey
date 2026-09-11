@@ -9,10 +9,7 @@ public sealed class FrontierCapiSnapshotParserTests
     {
         var fetchedAt = DateTimeOffset.Parse("2026-07-29T12:00:00Z");
 
-        var snapshot = FrontierCapiSnapshotParser.Parse(
-            ProfileJson,
-            CarrierJson,
-            fetchedAt);
+        var snapshot = FrontierCapiSnapshotParser.Parse(ProfileJson, CarrierJson, fetchedAt);
 
         Assert.Equal("Fenris", snapshot.CommanderName);
         Assert.Equal(1_234_567_890, snapshot.Credits);
@@ -25,9 +22,7 @@ public sealed class FrontierCapiSnapshotParserTests
         Assert.Equal(42_000_000, snapshot.FleetValue);
         Assert.Equal("Elite", snapshot.Ranks.Single(rank => rank.Key == "explore").Name);
         Assert.Contains("Horizons", snapshot.Capabilities);
-        Assert.Equal(
-            100,
-            Assert.Single(snapshot.CommanderReputation!).Score);
+        Assert.Equal(100, Assert.Single(snapshot.CommanderReputation!).Score);
 
         var carrier = Assert.IsType<FrontierCarrierSnapshot>(snapshot.Carrier);
         Assert.Equal("RAV-001", carrier.Callsign);
@@ -47,16 +42,14 @@ public sealed class FrontierCapiSnapshotParserTests
     [Fact]
     public void PreservesCommanderMetadataWithoutManufacturingCarrierOwnership()
     {
-        const string profile =
-            """
+        const string profile = """
             {
               "commander":{"name":"Drew","rank":{}},
               "ships":[],
               "reputation":{"alliance":"85.5","federation":50}
             }
             """;
-        const string carrierEnvelope =
-            """
+        const string carrierEnvelope = """
             {
               "reputation":[
                 {"majorFaction":"federation","score":75},
@@ -66,45 +59,35 @@ public sealed class FrontierCapiSnapshotParserTests
             }
             """;
 
-        var snapshot = FrontierCapiSnapshotParser.Parse(
-            profile,
-            carrierEnvelope,
-            DateTimeOffset.UnixEpoch);
+        var snapshot = FrontierCapiSnapshotParser.Parse(profile, carrierEnvelope, DateTimeOffset.UnixEpoch);
 
         Assert.Null(snapshot.Carrier);
         Assert.Equal(3, snapshot.CommanderReputation!.Count);
-        Assert.Equal(
-            75,
-            snapshot.CommanderReputation.Single(item =>
-                item.Faction == "Federation").Score);
-        Assert.Contains(snapshot.CarrierEndpointData!, point =>
-            point.Path == "fleetcarrier.futureAccountMetadata.available"
-                && point.Value == "Yes");
+        Assert.Equal(75, snapshot.CommanderReputation.Single(item => item.Faction == "Federation").Score);
+        Assert.Contains(
+            snapshot.CarrierEndpointData!,
+            point => point.Path == "fleetcarrier.futureAccountMetadata.available" && point.Value == "Yes"
+        );
     }
 
     [Fact]
     public void SupportsIdKeyedShipAndOrderObjects()
     {
-        const string profile =
-            """
+        const string profile = """
             {
               "commander":{"name":"Drew","currentShipId":7,"rank":{}},
               "ships":{"7":{"id":7,"name":"sidewinder","value":{"total":32000}}},
               "lastSystem":{"name":"Sol"}
             }
             """;
-        const string carrier =
-            """
+        const string carrier = """
             {
               "name":{"callsign":"ABC-123"},
               "orders":{"onfootmicroresources":{"sales":{"9":{"name":"healthmonitor","locName":"Health Monitor","stock":3,"price":4200}}}}
             }
             """;
 
-        var snapshot = FrontierCapiSnapshotParser.Parse(
-            profile,
-            carrier,
-            DateTimeOffset.UnixEpoch);
+        var snapshot = FrontierCapiSnapshotParser.Parse(profile, carrier, DateTimeOffset.UnixEpoch);
 
         Assert.Equal("Sidewinder", Assert.Single(snapshot.Ships).Type);
         var sale = Assert.Single(snapshot.Carrier!.SellOrders);
@@ -115,8 +98,7 @@ public sealed class FrontierCapiSnapshotParserTests
     [Fact]
     public void ParsesDetailedShipLocationAndPreservesEveryProfileScalar()
     {
-        const string profile =
-            """
+        const string profile = """
             {
               "commander":{"id":88,"name":"Drew","currentShipId":7,"rank":{}},
               "lastSystem":{"id":12,"systemaddress":34,"name":"Sol","allegiance":"federation"},
@@ -135,10 +117,7 @@ public sealed class FrontierCapiSnapshotParserTests
             }
             """;
 
-        var snapshot = FrontierCapiSnapshotParser.Parse(
-            profile,
-            null,
-            DateTimeOffset.UnixEpoch);
+        var snapshot = FrontierCapiSnapshotParser.Parse(profile, null, DateTimeOffset.UnixEpoch);
 
         Assert.Equal(88, snapshot.CommanderId);
         Assert.Equal("Federation", snapshot.LastSystemDetails!.Allegiance);
@@ -153,15 +132,14 @@ public sealed class FrontierCapiSnapshotParserTests
         Assert.Equal(5, Assert.Single(ship.LaunchBays!).Rebuilds);
         Assert.Contains(
             snapshot.ProfileData!,
-            point => point.Path == "profile.customFutureField.nested"
-                && point.Value == "1234");
+            point => point.Path == "profile.customFutureField.nested" && point.Value == "1234"
+        );
     }
 
     [Fact]
     public void ParsesMarketShipyardAndAllEndpointScalars()
     {
-        const string market =
-            """
+        const string market = """
             {
               "id":128,"name":"Jameson Memorial","outpostType":"starport",
               "imported":["gold"],"exported":["tea"],"prohibited":["slaves"],
@@ -171,8 +149,7 @@ public sealed class FrontierCapiSnapshotParserTests
               "futureMarketValue":true
             }
             """;
-        const string shipyard =
-            """
+        const string shipyard = """
             {
               "id":128,"name":"Jameson Memorial","outpostType":"starport",
               "services":{"shipyard":"ok","outfitting":"ok"},
@@ -189,20 +166,22 @@ public sealed class FrontierCapiSnapshotParserTests
         Assert.Equal("Starport", parsedMarket.OutpostType);
         Assert.Equal("Gold", Assert.Single(parsedMarket.Commodities).Name);
         Assert.Equal(0.75, Assert.Single(parsedMarket.Economies).Proportion);
-        Assert.Contains(parsedMarket.DataPoints!, point =>
-            point.Path == "market.futureMarketValue" && point.Value == "Yes");
+        Assert.Contains(
+            parsedMarket.DataPoints!,
+            point => point.Path == "market.futureMarketValue" && point.Value == "Yes"
+        );
         Assert.Equal("Heat Sink Launcher", Assert.Single(parsedShipyard.Modules).Name);
         Assert.Equal("Sidewinder", Assert.Single(parsedShipyard.Ships).Name);
-        Assert.Contains(parsedShipyard.DataPoints!, point =>
-            point.Path == "shipyard.futureShipyardValue"
-                && point.Value == "available");
+        Assert.Contains(
+            parsedShipyard.DataPoints!,
+            point => point.Path == "shipyard.futureShipyardValue" && point.Value == "available"
+        );
     }
 
     [Fact]
     public void ParsesCommunityGoalProgressDescriptionAndCommanderStanding()
     {
-        const string communityGoals =
-            """
+        const string communityGoals = """
             {
               "active":[{
                 "CGID":321,"Title":"Deliver medicines","Description":"Support the relief effort.",
@@ -216,8 +195,7 @@ public sealed class FrontierCapiSnapshotParserTests
             }
             """;
 
-        var goal = Assert.Single(
-            FrontierCapiSnapshotParser.ParseCommunityGoals(communityGoals));
+        var goal = Assert.Single(FrontierCapiSnapshotParser.ParseCommunityGoals(communityGoals));
 
         Assert.Equal(321, goal.Id);
         Assert.Equal("Support the relief effort.", goal.Description);
@@ -227,15 +205,13 @@ public sealed class FrontierCapiSnapshotParserTests
         Assert.Equal(25, goal.PlayerPercentile);
         Assert.True(goal.HasPlayerContributionData);
         Assert.True(goal.HasContributorData);
-        Assert.Contains(goal.DataPoints!, point =>
-            point.Path == "goal.futureGoalField" && point.Value == "retained");
+        Assert.Contains(goal.DataPoints!, point => point.Path == "goal.futureGoalField" && point.Value == "retained");
     }
 
     [Fact]
     public void ParsesCurrentCapiCommunityGoalAliasesAndBriefing()
     {
-        const string communityGoals =
-            """
+        const string communityGoals = """
             {
               "activeCommunityGoals":[{
                 "id":855,
@@ -253,8 +229,7 @@ public sealed class FrontierCapiSnapshotParserTests
             }
             """;
 
-        var goal = Assert.Single(
-            FrontierCapiSnapshotParser.ParseCommunityGoals(communityGoals));
+        var goal = Assert.Single(FrontierCapiSnapshotParser.ParseCommunityGoals(communityGoals));
 
         Assert.Equal(855, goal.Id);
         Assert.Equal("Robardin Rock", goal.Market);
@@ -262,9 +237,7 @@ public sealed class FrontierCapiSnapshotParserTests
         Assert.Equal("tradelist", goal.ActivityType);
         Assert.Equal(34_500_000, goal.TargetTotal);
         Assert.Equal(1_971_753, goal.CurrentTotal);
-        Assert.Equal(
-            "Colonia Council is calling on pilots.\n\n- Credits and a cargo rack.",
-            goal.Description);
+        Assert.Equal("Colonia Council is calling on pilots.\n\n- Credits and a cargo rack.", goal.Description);
         Assert.DoesNotContain("{{top5}}", goal.Description);
         Assert.False(goal.HasPlayerContributionData);
         Assert.False(goal.HasContributorData);
@@ -273,8 +246,7 @@ public sealed class FrontierCapiSnapshotParserTests
     [Fact]
     public void ParsesEveryGoalInCurrentCapiActiveArray()
     {
-        const string communityGoals =
-            """
+        const string communityGoals = """
             {
               "activeCommunityGoals":[
                 {"id":855,"title":"Carcosa","expiry":"2026-08-06 10:00:00"},
@@ -284,8 +256,7 @@ public sealed class FrontierCapiSnapshotParserTests
             }
             """;
 
-        var goals = FrontierCapiSnapshotParser.ParseCommunityGoals(
-            communityGoals);
+        var goals = FrontierCapiSnapshotParser.ParseCommunityGoals(communityGoals);
 
         Assert.Equal(3, goals.Count);
         Assert.Equal([855, 856, 857], goals.Select(goal => goal.Id));
@@ -295,16 +266,13 @@ public sealed class FrontierCapiSnapshotParserTests
     public void RejectsProfileWithoutCommanderIdentity()
     {
         var exception = Assert.Throws<InvalidDataException>(() =>
-            FrontierCapiSnapshotParser.Parse(
-                "{\"commander\":{}}",
-                null,
-                DateTimeOffset.UnixEpoch));
+            FrontierCapiSnapshotParser.Parse("{\"commander\":{}}", null, DateTimeOffset.UnixEpoch)
+        );
 
         Assert.Contains("commander name", exception.Message);
     }
 
-    private const string ProfileJson =
-        """
+    private const string ProfileJson = """
         {
           "commander": {
             "name": "Fenris",
@@ -334,8 +302,7 @@ public sealed class FrontierCapiSnapshotParserTests
         }
         """;
 
-    private const string CarrierJson =
-        """
+    private const string CarrierJson = """
         {
           "name": {
             "callsign":"RAV-001",

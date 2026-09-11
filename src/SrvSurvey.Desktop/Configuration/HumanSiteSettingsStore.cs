@@ -22,31 +22,17 @@ public sealed class HumanSiteSettingsStore
             GetDouble(settings, "ShipZoom", defaults.ShipZoom, 0.2, 15),
             GetDouble(settings, "SrvZoom", defaults.SrvZoom, 0.2, 15),
             GetDouble(settings, "FootZoom", defaults.FootZoom, 0.2, 15),
-            GetBoolean(
-                settings,
-                "AutoZoomInside",
-                defaults.AutoZoomInside),
+            GetBoolean(settings, "AutoZoomInside", defaults.AutoZoomInside),
             GetDouble(settings, "InsideZoom", defaults.InsideZoom, 0.2, 15),
             GetBoolean(settings, "AutoZoomTool", defaults.AutoZoomTool),
             GetDouble(settings, "ToolZoom", defaults.ToolZoom, 0.2, 15),
             GetBoolean(settings, "ShowMedkits", defaults.ShowMedkits),
             GetBoolean(settings, "ShowBatteries", defaults.ShowBatteries),
-            GetBoolean(
-                settings,
-                "ShowDataTerminals",
-                defaults.ShowDataTerminals),
-            GetBoolean(
-                settings,
-                "ShowCollectedMaterials",
-                defaults.ShowCollectedMaterials),
-            GetBoolean(
-                settings,
-                "TrackMaterialCollection",
-                defaults.TrackMaterialCollection),
-            GetBoolean(
-                settings,
-                "SuppressForActiveBuildProjects",
-                defaults.SuppressForActiveBuildProjects));
+            GetBoolean(settings, "ShowDataTerminals", defaults.ShowDataTerminals),
+            GetBoolean(settings, "ShowCollectedMaterials", defaults.ShowCollectedMaterials),
+            GetBoolean(settings, "TrackMaterialCollection", defaults.TrackMaterialCollection),
+            GetBoolean(settings, "SuppressForActiveBuildProjects", defaults.SuppressForActiveBuildProjects)
+        );
     }
 
     public void Save(HumanSitePreferences preferences)
@@ -75,37 +61,22 @@ public sealed class HumanSiteSettingsStore
             settings["ShowMedkits"] = preferences.ShowMedkits;
             settings["ShowBatteries"] = preferences.ShowBatteries;
             settings["ShowDataTerminals"] = preferences.ShowDataTerminals;
-            settings["ShowCollectedMaterials"] =
-                preferences.ShowCollectedMaterials;
-            settings["TrackMaterialCollection"] =
-                preferences.TrackMaterialCollection;
-            settings["SuppressForActiveBuildProjects"] =
-                preferences.SuppressForActiveBuildProjects;
+            settings["ShowCollectedMaterials"] = preferences.ShowCollectedMaterials;
+            settings["TrackMaterialCollection"] = preferences.TrackMaterialCollection;
+            settings["SuppressForActiveBuildProjects"] = preferences.SuppressForActiveBuildProjects;
         });
     }
 
-    private static bool GetBoolean(
-        JsonObject? source,
-        string propertyName,
-        bool fallback)
+    private static bool GetBoolean(JsonObject? source, string propertyName, bool fallback)
     {
-        return source?[propertyName] is JsonValue value
-            && value.TryGetValue<bool>(out var result)
-                ? result
-                : fallback;
+        return source?[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result) ? result : fallback;
     }
 
-    private static int GetInt32(
-        JsonObject? source,
-        string propertyName,
-        int fallback,
-        int minimum,
-        int maximum)
+    private static int GetInt32(JsonObject? source, string propertyName, int fallback, int minimum, int maximum)
     {
-        return source?[propertyName] is JsonValue value
-            && value.TryGetValue<int>(out var result)
-                ? Math.Clamp(result, minimum, maximum)
-                : fallback;
+        return source?[propertyName] is JsonValue value && value.TryGetValue<int>(out var result)
+            ? Math.Clamp(result, minimum, maximum)
+            : fallback;
     }
 
     private static double GetDouble(
@@ -113,13 +84,15 @@ public sealed class HumanSiteSettingsStore
         string propertyName,
         double fallback,
         double minimum,
-        double maximum)
+        double maximum
+    )
     {
-        return source?[propertyName] is JsonValue value
+        return
+            source?[propertyName] is JsonValue value
             && value.TryGetValue<double>(out var result)
             && double.IsFinite(result)
-                ? Math.Clamp(result, minimum, maximum)
-                : fallback;
+            ? Math.Clamp(result, minimum, maximum)
+            : fallback;
     }
 }
 
@@ -139,23 +112,26 @@ public sealed record HumanSitePreferences(
     bool ShowDataTerminals,
     bool ShowCollectedMaterials,
     bool TrackMaterialCollection,
-    bool SuppressForActiveBuildProjects)
+    bool SuppressForActiveBuildProjects
+)
 {
-    public static HumanSitePreferences Default { get; } = new(
-        AutoShow: true,
-        Width: 500,
-        Height: 600,
-        ShipZoom: 1,
-        SrvZoom: 1.5,
-        FootZoom: 2,
-        AutoZoomInside: true,
-        InsideZoom: 4,
-        AutoZoomTool: true,
-        ToolZoom: 6,
-        ShowMedkits: true,
-        ShowBatteries: true,
-        ShowDataTerminals: true,
-        ShowCollectedMaterials: true,
-        TrackMaterialCollection: false,
-        SuppressForActiveBuildProjects: true);
+    public static HumanSitePreferences Default { get; } =
+        new(
+            AutoShow: true,
+            Width: 500,
+            Height: 600,
+            ShipZoom: 1,
+            SrvZoom: 1.5,
+            FootZoom: 2,
+            AutoZoomInside: true,
+            InsideZoom: 4,
+            AutoZoomTool: true,
+            ToolZoom: 6,
+            ShowMedkits: true,
+            ShowBatteries: true,
+            ShowDataTerminals: true,
+            ShowCollectedMaterials: true,
+            TrackMaterialCollection: false,
+            SuppressForActiveBuildProjects: true
+        );
 }

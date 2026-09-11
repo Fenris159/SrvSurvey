@@ -6,7 +6,8 @@ public sealed class CargoFileReaderTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-cargo-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-cargo-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public async Task ReadAsyncPortsInventoryAndNormalizesDuplicateEntries()
@@ -43,7 +44,8 @@ public sealed class CargoFileReaderTests : IDisposable
                 { "Name": "", "Count": 4, "Stolen": 0 }
               ]
             }
-            """);
+            """
+        );
 
         var result = await CargoFileReader.ReadAsync(path);
 
@@ -67,10 +69,7 @@ public sealed class CargoFileReaderTests : IDisposable
         var path = Path.Combine(temporaryDirectory, CargoFileReader.FileName);
         await File.WriteAllTextAsync(path, "{\"event\":\"Cargo\"");
 
-        var result = await CargoFileReader.ReadAsync(
-            path,
-            maximumAttempts: 2,
-            retryDelay: TimeSpan.Zero);
+        var result = await CargoFileReader.ReadAsync(path, maximumAttempts: 2, retryDelay: TimeSpan.Zero);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(2, result.Attempts);

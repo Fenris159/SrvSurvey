@@ -17,8 +17,7 @@ public sealed partial class MainWindow : Window
 {
     private readonly MainWindowViewModel viewModel;
     private readonly bool ownsApplicationLifetime;
-    private readonly Dictionary<OverlaySettingsCategory, OverlayCategorySettingsWindow>
-        overlaySettingsWindows = [];
+    private readonly Dictionary<OverlaySettingsCategory, OverlayCategorySettingsWindow> overlaySettingsWindows = [];
     private readonly JournalMonitorSession? monitorSession;
     private IReadOnlyList<MainWindowMonitor> applicationMonitors = [];
     private PixelPoint? lastNormalPosition;
@@ -28,38 +27,25 @@ public sealed partial class MainWindow : Window
     private TrayIcon? trayIcon;
 
     public MainWindow()
-        : this(
-            new MainWindowViewModel(configuredJournalDirectory: null),
-            ownsApplicationLifetime: true)
-    {
-    }
+        : this(new MainWindowViewModel(configuredJournalDirectory: null), ownsApplicationLifetime: true) { }
 
     internal MainWindow(MainWindowViewModel viewModel)
-        : this(viewModel, ownsApplicationLifetime: false)
-    {
-    }
+        : this(viewModel, ownsApplicationLifetime: false) { }
 
-    internal MainWindow(
-        MainWindowViewModel viewModel,
-        bool ownsApplicationLifetime)
+    internal MainWindow(MainWindowViewModel viewModel, bool ownsApplicationLifetime)
     {
         this.viewModel = viewModel;
         this.ownsApplicationLifetime = ownsApplicationLifetime;
-        monitorSession = ownsApplicationLifetime
-            ? new JournalMonitorSession()
-            : null;
+        monitorSession = ownsApplicationLifetime ? new JournalMonitorSession() : null;
         InputContext = new ApplicationInputContext();
         InitializeComponent();
         DataContext = viewModel;
-        viewModel.DesktopBehavior.ApplicationWindowPreferencesChanged +=
-            OnApplicationWindowPreferencesChanged;
+        viewModel.DesktopBehavior.ApplicationWindowPreferencesChanged += OnApplicationWindowPreferencesChanged;
         Screens.Changed += OnScreensChanged;
         PositionChanged += OnPositionChanged;
         RefreshApplicationMonitors();
-        ApplyApplicationWindowPreferences(
-            viewModel.DesktopBehavior.LastApplicationWindowPosition);
-        viewModel.ReleaseUpdates.SetDiagnosticsNavigator(
-            NavigateToReleaseUpdates);
+        ApplyApplicationWindowPreferences(viewModel.DesktopBehavior.LastApplicationWindowPosition);
+        viewModel.ReleaseUpdates.SetDiagnosticsNavigator(NavigateToReleaseUpdates);
         Opened += OnOpened;
         if (ownsApplicationLifetime)
         {
@@ -67,11 +53,7 @@ public sealed partial class MainWindow : Window
         }
         Activated += (_, _) => InputContext.SetActive(true);
         Deactivated += (_, _) => InputContext.SetActive(false);
-        AddHandler(
-            GotFocusEvent,
-            OnElementGotFocus,
-            RoutingStrategies.Bubble,
-            handledEventsToo: true);
+        AddHandler(GotFocusEvent, OnElementGotFocus, RoutingStrategies.Bubble, handledEventsToo: true);
         trayIcon = CreateTrayIcon();
     }
 
@@ -82,22 +64,15 @@ public sealed partial class MainWindow : Window
         viewModel.IsSidebarCollapsed = !viewModel.IsSidebarCollapsed;
     }
 
-    private void SelectNavigationItem_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private void SelectNavigationItem_Click(object? sender, RoutedEventArgs eventArgs)
     {
-        if (sender is Button
-            {
-                CommandParameter: NavigationItemViewModel navigationItem,
-            })
+        if (sender is Button { CommandParameter: NavigationItemViewModel navigationItem })
         {
             viewModel.SelectedNavigation = navigationItem;
         }
     }
 
-    private void ToggleNavigationGroup_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private void ToggleNavigationGroup_Click(object? sender, RoutedEventArgs eventArgs)
     {
         if (sender is Button { CommandParameter: string groupKey })
         {
@@ -105,48 +80,38 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    private async void OpenDiscord_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private async void OpenDiscord_Click(object? sender, RoutedEventArgs eventArgs)
     {
         if (!DesktopExternalEffectPolicy.IsAllowed)
         {
-            Program.ApplicationLog?.Append(
-                DesktopExternalEffectPolicy.DisabledMessage);
+            Program.ApplicationLog?.Append(DesktopExternalEffectPolicy.DisabledMessage);
             return;
         }
 
         try
         {
-            await Launcher.LaunchUriAsync(
-                WellKnownUris.GuardianScienceCorpsDiscord);
+            await Launcher.LaunchUriAsync(WellKnownUris.GuardianScienceCorpsDiscord);
         }
-        catch (Exception exception) when (
-            exception is InvalidOperationException
-                or NotSupportedException)
+        catch (Exception exception) when (exception is InvalidOperationException or NotSupportedException)
         {
             Program.ApplicationLog?.Append(
-                "Could not open the Guardian Science Corps Discord link: "
-                + exception.Message);
+                "Could not open the Guardian Science Corps Discord link: " + exception.Message
+            );
         }
     }
 
-    private void OpenCategoryOverlaySettings_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private void OpenCategoryOverlaySettings_Click(object? sender, RoutedEventArgs eventArgs)
     {
         eventArgs.Handled = true;
-        if (sender is not Button { CommandParameter: string navigationKey }
-            || !OverlaySettingsCategoryCatalog.TryGet(
-                navigationKey,
-                out var definition))
+        if (
+            sender is not Button { CommandParameter: string navigationKey }
+            || !OverlaySettingsCategoryCatalog.TryGet(navigationKey, out var definition)
+        )
         {
             return;
         }
 
-        if (overlaySettingsWindows.TryGetValue(
-                definition.Category,
-                out var existing))
+        if (overlaySettingsWindows.TryGetValue(definition.Category, out var existing))
         {
             existing.Activate();
             return;
@@ -154,8 +119,7 @@ public sealed partial class MainWindow : Window
 
         var window = new OverlayCategorySettingsWindow(definition, viewModel);
         overlaySettingsWindows.Add(definition.Category, window);
-        window.Closed += (_, _) =>
-            overlaySettingsWindows.Remove(definition.Category);
+        window.Closed += (_, _) => overlaySettingsWindows.Remove(definition.Category);
         window.Show(this);
     }
 
@@ -174,8 +138,8 @@ public sealed partial class MainWindow : Window
 
         _ = monitorSession!.Start(
             RunMonitorAsync,
-            exception => Program.ApplicationLog?.Append(
-                "Journal monitor stopped unexpectedly: " + exception));
+            exception => Program.ApplicationLog?.Append("Journal monitor stopped unexpectedly: " + exception)
+        );
     }
 
     internal void NavigateToReleaseUpdates()
@@ -190,16 +154,12 @@ public sealed partial class MainWindow : Window
         ApplyApplicationWindowPreferences(currentPosition);
     }
 
-    private void OnApplicationWindowPreferencesChanged(
-        object? sender,
-        EventArgs eventArgs)
+    private void OnApplicationWindowPreferencesChanged(object? sender, EventArgs eventArgs)
     {
         ApplyApplicationWindowPreferences(lastPosition: null);
     }
 
-    private void OnPositionChanged(
-        object? sender,
-        PixelPointEventArgs eventArgs)
+    private void OnPositionChanged(object? sender, PixelPointEventArgs eventArgs)
     {
         if (WindowState == WindowState.Normal)
         {
@@ -211,31 +171,28 @@ public sealed partial class MainWindow : Window
     {
         applicationMonitors = MainWindowPlacement.DescribeScreens(Screens.All);
         viewModel.DesktopBehavior.SetAvailableMonitors(
-            applicationMonitors.Select(monitor =>
-                new ApplicationMonitorOption(
-                    monitor.Id,
-                    monitor.DisplayName)));
+            applicationMonitors.Select(monitor => new ApplicationMonitorOption(monitor.Id, monitor.DisplayName))
+        );
     }
 
-    private void ApplyApplicationWindowPreferences(
-        ApplicationWindowPosition? lastPosition)
+    private void ApplyApplicationWindowPreferences(ApplicationWindowPosition? lastPosition)
     {
-        var automaticMonitorId = IsVisible
-            ? Screens.ScreenFromWindow(this)?.DisplayName
-            : null;
+        var automaticMonitorId = IsVisible ? Screens.ScreenFromWindow(this)?.DisplayName : null;
         var placement = MainWindowPlacement.Resolve(
             applicationMonitors,
             viewModel.DesktopBehavior.PreferredMonitorId,
             viewModel.DesktopBehavior.ApplicationWindowScalePercent,
             automaticMonitorId,
-            lastPosition);
+            lastPosition
+        );
         Width = placement.Width;
         Height = placement.Height;
         MinWidth = placement.MinimumWidth;
         MinHeight = placement.MinimumHeight;
         ApplicationScaleContainer.LayoutTransform = new ScaleTransform(
             placement.ApplicationScale,
-            placement.ApplicationScale);
+            placement.ApplicationScale
+        );
         if (placement.Position is { } position)
         {
             WindowStartupLocation = WindowStartupLocation.Manual;
@@ -246,9 +203,7 @@ public sealed partial class MainWindow : Window
 
     private ApplicationWindowPosition? GetCurrentApplicationWindowPosition()
     {
-        var position = WindowState == WindowState.Normal
-            ? Position
-            : lastNormalPosition;
+        var position = WindowState == WindowState.Normal ? Position : lastNormalPosition;
         if (position is not { } point)
         {
             return null;
@@ -258,10 +213,9 @@ public sealed partial class MainWindow : Window
             point.X >= candidate.Bounds.X
             && point.X < candidate.Bounds.X + candidate.Bounds.Width
             && point.Y >= candidate.Bounds.Y
-            && point.Y < candidate.Bounds.Y + candidate.Bounds.Height);
-        return monitor is null
-            ? null
-            : new ApplicationWindowPosition(point.X, point.Y, monitor.Id);
+            && point.Y < candidate.Bounds.Y + candidate.Bounds.Height
+        );
+        return monitor is null ? null : new ApplicationWindowPosition(point.X, point.Y, monitor.Id);
     }
 
     private async Task RunMonitorAsync(CancellationToken cancellationToken)
@@ -279,12 +233,10 @@ public sealed partial class MainWindow : Window
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == WindowStateProperty
-            && WindowState == WindowState.Minimized)
+        if (change.Property == WindowStateProperty && WindowState == WindowState.Minimized)
         {
             _ = viewModel.DesktopBehavior.RequestMinimizeFocus();
-            if (viewModel.DesktopBehavior.MinimizeToTray
-                && trayIcon is not null)
+            if (viewModel.DesktopBehavior.MinimizeToTray && trayIcon is not null)
             {
                 ShowInTaskbar = false;
                 Hide();
@@ -294,9 +246,9 @@ public sealed partial class MainWindow : Window
 
     private async Task StopMonitorForProfileImportAsync()
     {
-        var session = monitorSession
-            ?? throw new InvalidOperationException(
-                "An application-owned window requires a monitor session.");
+        var session =
+            monitorSession
+            ?? throw new InvalidOperationException("An application-owned window requires a monitor session.");
         await session.StopAsync();
     }
 
@@ -323,8 +275,7 @@ public sealed partial class MainWindow : Window
 
     internal void RememberCurrentPositionForShutdown()
     {
-        if (!applicationWindowPositionSaved
-            && GetCurrentApplicationWindowPosition() is { } position)
+        if (!applicationWindowPositionSaved && GetCurrentApplicationWindowPosition() is { } position)
         {
             applicationWindowPositionSaved = true;
             viewModel.DesktopBehavior.RememberApplicationWindowPosition(position);
@@ -335,15 +286,14 @@ public sealed partial class MainWindow : Window
     {
         try
         {
-            var session = monitorSession
-                ?? throw new InvalidOperationException(
-                    "An application-owned window requires a monitor session.");
+            var session =
+                monitorSession
+                ?? throw new InvalidOperationException("An application-owned window requires a monitor session.");
             await session.StopAsync();
         }
         catch (Exception exception)
         {
-            Program.ApplicationLog?.Append(
-                "Journal monitor shutdown failed: " + exception);
+            Program.ApplicationLog?.Append("Journal monitor shutdown failed: " + exception);
         }
 
         try
@@ -352,8 +302,7 @@ public sealed partial class MainWindow : Window
         }
         catch (Exception exception)
         {
-            Program.ApplicationLog?.Append(
-                "Application service shutdown failed: " + exception);
+            Program.ApplicationLog?.Append("Application service shutdown failed: " + exception);
         }
         finally
         {
@@ -382,8 +331,7 @@ public sealed partial class MainWindow : Window
         {
             viewModel.ProfileImportPreparing -= StopMonitorForProfileImportAsync;
         }
-        viewModel.DesktopBehavior.ApplicationWindowPreferencesChanged -=
-            OnApplicationWindowPreferencesChanged;
+        viewModel.DesktopBehavior.ApplicationWindowPreferencesChanged -= OnApplicationWindowPreferencesChanged;
         Screens.Changed -= OnScreensChanged;
         PositionChanged -= OnPositionChanged;
         viewModel.ReleaseUpdates.SetDiagnosticsNavigator(null);
@@ -423,8 +371,7 @@ public sealed partial class MainWindow : Window
 
             var icon = new TrayIcon
             {
-                Icon = new WindowIcon(AssetLoader.Open(
-                    WellKnownUris.DesktopLogoAsset)),
+                Icon = new WindowIcon(AssetLoader.Open(WellKnownUris.DesktopLogoAsset)),
                 ToolTipText = "SrvSurvey - click to show",
                 Menu = menu,
                 IsVisible = true,
@@ -433,10 +380,8 @@ public sealed partial class MainWindow : Window
             TrayIcon.SetIcons(application, new TrayIcons { icon });
             return icon;
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or InvalidOperationException
-                or NotSupportedException)
+        catch (Exception exception)
+            when (exception is IOException or InvalidOperationException or NotSupportedException)
         {
             viewModel.DesktopBehavior.ReportTrayUnavailable(exception.Message);
             return null;
@@ -471,9 +416,7 @@ public sealed partial class MainWindow : Window
         Dispatcher.UIThread.Post(RestoreFromTrayCore);
     }
 
-    private void OnElementGotFocus(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private void OnElementGotFocus(object? sender, RoutedEventArgs eventArgs)
     {
         InputContext.SetTextInputActive(eventArgs.Source is TextBox);
     }

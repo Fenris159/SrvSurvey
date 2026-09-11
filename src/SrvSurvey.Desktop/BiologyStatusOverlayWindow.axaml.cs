@@ -8,9 +8,7 @@ namespace SrvSurvey.Desktop;
 public sealed partial class BiologyStatusOverlayWindow : Window
 {
     public BiologyStatusOverlayWindow()
-        : this(CreateDesignViewModel())
-    {
-    }
+        : this(CreateDesignViewModel()) { }
 
     public BiologyStatusOverlayWindow(SystemSurveyOverlayViewModel viewModel)
     {
@@ -24,10 +22,11 @@ public sealed partial class BiologyStatusOverlayWindow : Window
         var settingsPath = Path.Combine(
             Path.GetTempPath(),
             "SrvSurvey-BiologyStatus-Overlay-Design",
-            "ui-settings.json");
+            "ui-settings.json"
+        );
         return new SystemSurveyOverlayViewModel(
-            new SystemSurveyViewModel(
-                new SystemSurveySettingsStore(settingsPath)),
-            OverlayPlatformCapabilities.DetectCurrent());
+            new SystemSurveyViewModel(new SystemSurveySettingsStore(settingsPath)),
+            OverlayPlatformCapabilities.DetectCurrent()
+        );
     }
 }

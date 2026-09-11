@@ -37,8 +37,7 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
     private bool forceShow;
     private bool manuallyHidden;
     private bool isBusy;
-    private HashSet<string> questTags = new HashSet<string>(
-        StringComparer.OrdinalIgnoreCase);
+    private HashSet<string> questTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
     private SystemStationSummary? projectedStation;
     private IReadOnlyList<StationInfoLineViewModel> economyLines = [];
     private IReadOnlyList<string> relevantServices = [];
@@ -56,15 +55,11 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
     private IReadOnlyList<string>? editorProhibited;
     private bool disposed;
 
-    public StationInfoViewModel(
-        ISystemSummaryClient summaryClient,
-        StationInfoSettingsStore? settingsStore = null)
+    public StationInfoViewModel(ISystemSummaryClient summaryClient, StationInfoSettingsStore? settingsStore = null)
     {
-        this.summaryClient = summaryClient
-            ?? throw new ArgumentNullException(nameof(summaryClient));
+        this.summaryClient = summaryClient ?? throw new ArgumentNullException(nameof(summaryClient));
         this.settingsStore = settingsStore;
-        autoShow = settingsStore?.Load().AutoShow
-            ?? StationInfoPreferences.Default.AutoShow;
+        autoShow = settingsStore?.Load().AutoShow ?? StationInfoPreferences.Default.AutoShow;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -115,74 +110,72 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
         get
         {
             var destination = status?.Destination;
-            if (summary is null
+            if (
+                summary is null
                 || destination is null
                 || destination.System != systemAddress
-                || ColonizationDockingSnapshot.IsConstructionSiteName(
-                    destination.Name))
+                || ColonizationDockingSnapshot.IsConstructionSiteName(destination.Name)
+            )
             {
                 return null;
             }
 
-            return summary.Stations.FirstOrDefault(station => string.Equals(
-                station.Name,
-                destination.Name,
-                StringComparison.OrdinalIgnoreCase));
+            return summary.Stations.FirstOrDefault(station =>
+                string.Equals(station.Name, destination.Name, StringComparison.OrdinalIgnoreCase)
+            );
         }
     }
 
-    public bool HasSelectedStation =>
-        editorStationName is not null || SelectedStation is not null;
+    public bool HasSelectedStation => editorStationName is not null || SelectedStation is not null;
 
     public bool IsForced => forceShow;
 
-    public bool ShouldShow => editorStationName is not null
-        || (AutoShow
+    public bool ShouldShow =>
+        editorStationName is not null
+        || (
+            AutoShow
             && HasSelectedStation
-            && (forceShow
-                || OverlayGameModeResolver.Resolve(
-                        status,
-                        musicTrack: musicTrack)
-                        == OverlayGameMode.ExternalPanel
-                    && !manuallyHidden));
+            && (
+                forceShow
+                || OverlayGameModeResolver.Resolve(status, musicTrack: musicTrack) == OverlayGameMode.ExternalPanel
+                    && !manuallyHidden
+            )
+        );
 
-    public string StationName => editorStationName
-        ?? SelectedStation?.Name
-        ?? "No station selected";
+    public string StationName => editorStationName ?? SelectedStation?.Name ?? "No station selected";
 
-    public bool IsQuestTagged => editorIsQuestTagged
-        || (SelectedStation is { } station
-            && questTags.Contains(station.Name));
+    public bool IsQuestTagged =>
+        editorIsQuestTagged || (SelectedStation is { } station && questTags.Contains(station.Name));
 
-    public string StationType => editorStationType
-        ?? SelectedStation?.Type
-        ?? "Station information";
+    public string StationType => editorStationType ?? SelectedStation?.Type ?? "Station information";
 
-    public string LargestPadText => editorLargestPadText
-        ?? (SelectedStation?.LandingPads?.Largest is { } pad
-            ? $"Largest pad: {pad}"
-            : "Landing-pad data unavailable");
+    public string LargestPadText =>
+        editorLargestPadText
+        ?? (SelectedStation?.LandingPads?.Largest is { } pad ? $"Largest pad: {pad}" : "Landing-pad data unavailable");
 
-    public string PrimaryEconomyText => editorPrimaryEconomyText
-        ?? (SelectedStation?.PrimaryEconomy is { } economy
-            ? $"Primary economy: {economy}"
-            : "Primary economy unavailable");
+    public string PrimaryEconomyText =>
+        editorPrimaryEconomyText
+        ?? (
+            SelectedStation?.PrimaryEconomy is { } economy
+                ? $"Primary economy: {economy}"
+                : "Primary economy unavailable"
+        );
 
-    public string FactionText => editorFactionText
-        ?? (SelectedStation is { } station
-            && !string.IsNullOrWhiteSpace(station.ControllingFaction)
+    public string FactionText =>
+        editorFactionText
+        ?? (
+            SelectedStation is { } station && !string.IsNullOrWhiteSpace(station.ControllingFaction)
                 ? (string.IsNullOrWhiteSpace(station.Government)) switch
                 {
                     true => station.ControllingFaction,
-                    false => $"{station.ControllingFaction} · {station.Government}"
+                    false => $"{station.ControllingFaction} · {station.Government}",
                 }
-                : "Controlling faction unavailable");
+                : "Controlling faction unavailable"
+        );
 
-    public IReadOnlyList<StationInfoLineViewModel> EconomyLines =>
-        editorEconomyLines ?? economyLines;
+    public IReadOnlyList<StationInfoLineViewModel> EconomyLines => editorEconomyLines ?? economyLines;
 
-    public IReadOnlyList<string> RelevantServices =>
-        editorRelevantServices ?? relevantServices;
+    public IReadOnlyList<string> RelevantServices => editorRelevantServices ?? relevantServices;
 
     public bool HasRelevantServices => RelevantServices.Count > 0;
 
@@ -191,10 +184,13 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
 
     public bool HasProhibitedCommodities => ProhibitedCommodities.Count > 0;
 
-    public string UpdatedText => editorUpdatedText
-        ?? (SelectedStation?.UpdatedAt is { } updated
-            ? $"Spansh data updated {updated.ToLocalTime():d}"
-            : "Spansh update time unavailable");
+    public string UpdatedText =>
+        editorUpdatedText
+        ?? (
+            SelectedStation?.UpdatedAt is { } updated
+                ? $"Spansh data updated {updated.ToLocalTime():d}"
+                : "Spansh update time unavailable"
+        );
 
     /// <summary>
     /// Installs representative station content for the position editor.
@@ -228,20 +224,17 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(ShouldShow));
     }
 
-    public Task UpdateCurrentSystemAsync(
-        string? currentSystemName,
-        long currentSystemAddress)
+    public Task UpdateCurrentSystemAsync(string? currentSystemName, long currentSystemAddress)
     {
         if (disposed)
         {
             return Task.CompletedTask;
         }
 
-        if (string.Equals(
-                systemName,
-                currentSystemName,
-                StringComparison.OrdinalIgnoreCase)
-            && systemAddress == currentSystemAddress)
+        if (
+            string.Equals(systemName, currentSystemName, StringComparison.OrdinalIgnoreCase)
+            && systemAddress == currentSystemAddress
+        )
         {
             return PendingLoad;
         }
@@ -255,8 +248,7 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
         loadCancellation?.Dispose();
         loadCancellation = null;
         NotifyStationState();
-        if (string.IsNullOrWhiteSpace(currentSystemName)
-            || currentSystemAddress <= 0)
+        if (string.IsNullOrWhiteSpace(currentSystemName) || currentSystemAddress <= 0)
         {
             StatusMessage = "Waiting for a current system.";
             PendingLoad = Task.CompletedTask;
@@ -264,19 +256,14 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
         }
 
         loadCancellation = new CancellationTokenSource();
-        PendingLoad = LoadAsync(
-            currentSystemName,
-            currentSystemAddress,
-            loadCancellation);
+        PendingLoad = LoadAsync(currentSystemName, currentSystemAddress, loadCancellation);
         return PendingLoad;
     }
 
     public void UpdateQuestTags(IEnumerable<string> tags)
     {
         ArgumentNullException.ThrowIfNull(tags);
-        var next = tags
-            .Where(tag => !string.IsNullOrWhiteSpace(tag))
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var next = tags.Where(tag => !string.IsNullOrWhiteSpace(tag)).ToHashSet(StringComparer.OrdinalIgnoreCase);
         if (questTags.SetEquals(next))
         {
             return;
@@ -294,11 +281,10 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
         }
 
         status = currentStatus;
-        if (!forceShow
-            && OverlayGameModeResolver.Resolve(
-                currentStatus,
-                musicTrack: musicTrack)
-                != OverlayGameMode.ExternalPanel)
+        if (
+            !forceShow
+            && OverlayGameModeResolver.Resolve(currentStatus, musicTrack: musicTrack) != OverlayGameMode.ExternalPanel
+        )
         {
             manuallyHidden = false;
         }
@@ -308,10 +294,7 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
 
     public void UpdateMusicTrack(string? currentMusicTrack)
     {
-        if (disposed || string.Equals(
-                musicTrack,
-                currentMusicTrack,
-                StringComparison.Ordinal))
+        if (disposed || string.Equals(musicTrack, currentMusicTrack, StringComparison.Ordinal))
         {
             return;
         }
@@ -331,12 +314,11 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
         {
             forceShow = false;
         }
-        else if (AutoShow
-            && OverlayGameModeResolver.Resolve(
-                status,
-                musicTrack: musicTrack)
-                == OverlayGameMode.ExternalPanel
-            && HasSelectedStation)
+        else if (
+            AutoShow
+            && OverlayGameModeResolver.Resolve(status, musicTrack: musicTrack) == OverlayGameMode.ExternalPanel
+            && HasSelectedStation
+        )
         {
             manuallyHidden = !manuallyHidden;
         }
@@ -366,41 +348,35 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
     private async Task LoadAsync(
         string requestedSystemName,
         long requestedSystemAddress,
-        CancellationTokenSource cancellation)
+        CancellationTokenSource cancellation
+    )
     {
         IsBusy = true;
         StatusMessage = $"Loading stations in {requestedSystemName}...";
         try
         {
-            var result = await summaryClient.GetAsync(
-                requestedSystemName,
-                requestedSystemAddress,
-                cancellation.Token);
-            if (cancellation.IsCancellationRequested
-                || !ReferenceEquals(loadCancellation, cancellation))
+            var result = await summaryClient.GetAsync(requestedSystemName, requestedSystemAddress, cancellation.Token);
+            if (cancellation.IsCancellationRequested || !ReferenceEquals(loadCancellation, cancellation))
             {
                 return;
             }
 
             summary = result.Summary;
-            StatusMessage = result.Warnings.Count == 0
-                ? $"Loaded {summary.Stations.Count:N0} station(s)."
-                : string.Join(" ", result.Warnings);
+            StatusMessage =
+                result.Warnings.Count == 0
+                    ? $"Loaded {summary.Stations.Count:N0} station(s)."
+                    : string.Join(" ", result.Warnings);
             NotifyStationState();
         }
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
         {
             // A newer station request superseded this one.
         }
-        catch (Exception exception) when (
-            exception is HttpRequestException
-                or IOException
-                or InvalidDataException)
+        catch (Exception exception) when (exception is HttpRequestException or IOException or InvalidDataException)
         {
             if (ReferenceEquals(loadCancellation, cancellation))
             {
-                StatusMessage =
-                    $"Station information is unavailable: {exception.Message}";
+                StatusMessage = $"Station information is unavailable: {exception.Message}";
                 NotifyStationState();
             }
         }
@@ -425,13 +401,10 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
             settingsStore.Save(new StationInfoPreferences(AutoShow));
             SettingsStatus = string.Empty;
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
-            SettingsStatus =
-                $"Station information settings could not be saved: {exception.Message}";
+            SettingsStatus = $"Station information settings could not be saved: {exception.Message}";
         }
     }
 
@@ -465,13 +438,13 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
         }
 
         projectedStation = station;
-        economyLines = station?.Economies
-            .OrderByDescending(economy => economy.Value)
-            .ThenBy(economy => economy.Key)
-            .Select(economy => new StationInfoLineViewModel(
-                economy.Key,
-                $"{economy.Value:F0}%"))
-            .ToArray() ?? [];
+        economyLines =
+            station
+                ?.Economies.OrderByDescending(economy => economy.Value)
+                .ThenBy(economy => economy.Key)
+                .Select(economy => new StationInfoLineViewModel(economy.Key, $"{economy.Value:F0}%"))
+                .ToArray()
+            ?? [];
         if (station is null)
         {
             relevantServices = [];
@@ -479,14 +452,9 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
         }
 
         var services = InterestingServices
-            .Where(service => station.Services.Contains(
-                service,
-                StringComparer.OrdinalIgnoreCase))
+            .Where(service => station.Services.Contains(service, StringComparer.OrdinalIgnoreCase))
             .ToList();
-        if (string.Equals(
-            station.Government,
-            "Engineer",
-            StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(station.Government, "Engineer", StringComparison.OrdinalIgnoreCase))
         {
             services.Add("Engineer");
         }
@@ -494,10 +462,7 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
         relevantServices = services.ToArray();
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {

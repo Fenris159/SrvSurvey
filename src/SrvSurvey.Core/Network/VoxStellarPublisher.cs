@@ -18,9 +18,7 @@ public sealed class VoxStellarApplyRequest
     public bool AllowPublishing { get; init; }
 }
 
-public sealed record VoxStellarPublicationResult(
-    IReadOnlyList<string> QueuedEventNames,
-    IReadOnlyList<string> Warnings)
+public sealed record VoxStellarPublicationResult(IReadOnlyList<string> QueuedEventNames, IReadOnlyList<string> Warnings)
 {
     public static VoxStellarPublicationResult Empty { get; } = new([], []);
 }
@@ -31,7 +29,8 @@ public interface IVoxStellarPublisher
 
     Task<VoxStellarPublicationResult> ApplyAsync(
         VoxStellarApplyRequest request,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     void SetEnabled(bool enabled);
 }
@@ -43,8 +42,7 @@ public interface IVoxStellarPublisher
 /// </summary>
 public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
 {
-    private static readonly HashSet<string> AllowedEvents = new(
-        StringComparer.Ordinal)
+    private static readonly HashSet<string> AllowedEvents = new(StringComparer.Ordinal)
     {
         "Scan",
         "FSDTarget",
@@ -75,18 +73,15 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
         string? sharedKey,
         HttpClient? client = null,
         Uri? endpoint = null,
-        Action<string>? log = null)
+        Action<string>? log = null
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(softwareVersion);
         this.client = client ?? CreateSharedClient();
         ownsClient = client is null;
         this.endpoint = endpoint ?? WellKnownUris.VoxStellarWebhook;
-        signingKey = string.IsNullOrWhiteSpace(sharedKey)
-            ? []
-            : Encoding.UTF8.GetBytes(sharedKey.Trim());
-        userAgent = new ProductInfoHeaderValue(
-            "SrvSurvey-XP",
-            NormalizeProductVersion(softwareVersion));
+        signingKey = string.IsNullOrWhiteSpace(sharedKey) ? [] : Encoding.UTF8.GetBytes(sharedKey.Trim());
+        userAgent = new ProductInfoHeaderValue("SrvSurvey-XP", NormalizeProductVersion(softwareVersion));
         this.log = log ?? (_ => { });
 
         if (IsConfigured)
@@ -98,7 +93,8 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
                     SingleWriter = false,
                     FullMode = BoundedChannelFullMode.Wait,
                     AllowSynchronousContinuations = false,
-                });
+                }
+            );
             workerTask = RunWorkerAsync();
         }
     }
@@ -124,7 +120,8 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
 
     public Task<VoxStellarPublicationResult> ApplyAsync(
         VoxStellarApplyRequest request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.JournalEvents);
@@ -136,8 +133,8 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
             return Task.FromResult(VoxStellarPublicationResult.Empty);
         }
 
-        var matchingEvents = request.JournalEvents
-            .Where(journalEvent => AllowedEvents.Contains(journalEvent.EventName))
+        var matchingEvents = request
+            .JournalEvents.Where(journalEvent => AllowedEvents.Contains(journalEvent.EventName))
             .ToArray();
         if (matchingEvents.Length == 0)
         {
@@ -146,17 +143,23 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
 
         if (!IsConfigured || uploads is null)
         {
-            return Task.FromResult(new VoxStellarPublicationResult(
-                [],
-                ["VoxStellar sharing is enabled, but this build does not include the integration signing key."]));
+            return Task.FromResult(
+                new VoxStellarPublicationResult(
+                    [],
+                    ["VoxStellar sharing is enabled, but this build does not include the integration signing key."]
+                )
+            );
         }
 
         var commanderName = request.CommanderName?.Trim();
         if (string.IsNullOrWhiteSpace(commanderName))
         {
-            return Task.FromResult(new VoxStellarPublicationResult(
-                [],
-                ["VoxStellar did not queue exploration data because the active commander is unknown."]));
+            return Task.FromResult(
+                new VoxStellarPublicationResult(
+                    [],
+                    ["VoxStellar did not queue exploration data because the active commander is unknown."]
+                )
+            );
         }
 
         long generation;
@@ -176,17 +179,15 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
         {
             cancellationToken.ThrowIfCancellationRequested();
             var body = SerializeBody(commanderName, journalEvent.Payload);
-            if (uploads.Writer.TryWrite(new QueuedUpload(
-                    generation,
-                    journalEvent.EventName,
-                    body)))
+            if (uploads.Writer.TryWrite(new QueuedUpload(generation, journalEvent.EventName, body)))
             {
                 queued.Add(journalEvent.EventName);
             }
             else
             {
                 warnings.Add(
-                    $"VoxStellar could not queue {journalEvent.EventName} because its in-memory upload queue is full.");
+                    $"VoxStellar could not queue {journalEvent.EventName} because its in-memory upload queue is full."
+                );
             }
         }
 
@@ -202,47 +203,37 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
 
         try
         {
-            await foreach (var upload in uploads.Reader.ReadAllAsync(
-                               lifetimeCancellation.Token))
+            await foreach (var upload in uploads.Reader.ReadAllAsync(lifetimeCancellation.Token))
             {
                 try
                 {
                     await SendAsync(upload, lifetimeCancellation.Token);
                 }
-                catch (OperationCanceledException)
-                    when (lifetimeCancellation.IsCancellationRequested)
+                catch (OperationCanceledException) when (lifetimeCancellation.IsCancellationRequested)
                 {
                     return;
                 }
-                catch (Exception exception) when (
-                    exception is not OperationCanceledException
-                    || !lifetimeCancellation.IsCancellationRequested)
+                catch (Exception exception)
+                    when (exception is not OperationCanceledException || !lifetimeCancellation.IsCancellationRequested)
                 {
-                    WriteLog(
-                        $"VoxStellar upload for {upload.EventName} failed: {exception.Message}");
+                    WriteLog($"VoxStellar upload for {upload.EventName} failed: {exception.Message}");
                 }
             }
         }
-        catch (OperationCanceledException)
-            when (lifetimeCancellation.IsCancellationRequested)
+        catch (OperationCanceledException) when (lifetimeCancellation.IsCancellationRequested)
         {
             // Cancellation is the expected worker result during shutdown.
         }
     }
 
-    private async Task SendAsync(
-        QueuedUpload upload,
-        CancellationToken cancellationToken)
+    private async Task SendAsync(QueuedUpload upload, CancellationToken cancellationToken)
     {
-        var signature = Convert.ToHexString(
-                HMACSHA256.HashData(signingKey, upload.Body))
-            .ToLowerInvariant();
+        var signature = Convert.ToHexString(HMACSHA256.HashData(signingKey, upload.Body)).ToLowerInvariant();
         using var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
         {
             Content = new ByteArrayContent(upload.Body),
         };
-        request.Content.Headers.ContentType = new MediaTypeHeaderValue(
-            "application/json");
+        request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
         request.Headers.UserAgent.Add(userAgent);
         request.Headers.TryAddWithoutValidation("Signature", signature);
         request.Headers.ConnectionClose = true;
@@ -251,17 +242,12 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
         Task<HttpResponseMessage> sendTask;
         lock (sync)
         {
-            if (disposed
-                || !enabled
-                || consentGeneration != upload.ConsentGeneration)
+            if (disposed || !enabled || consentGeneration != upload.ConsentGeneration)
             {
                 return;
             }
 
-            sendTask = client.SendAsync(
-                request,
-                HttpCompletionOption.ResponseHeadersRead,
-                cancellationToken);
+            sendTask = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
         }
 
         using var response = await sendTask;
@@ -271,14 +257,11 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
         }
         else
         {
-            WriteLog(
-                $"VoxStellar rejected {upload.EventName} with HTTP {(int)response.StatusCode}.");
+            WriteLog($"VoxStellar rejected {upload.EventName} with HTTP {(int)response.StatusCode}.");
         }
     }
 
-    private static byte[] SerializeBody(
-        string commanderName,
-        JsonElement payload)
+    private static byte[] SerializeBody(string commanderName, JsonElement payload)
     {
         using var stream = new MemoryStream();
         using (var writer = new Utf8JsonWriter(stream))
@@ -296,16 +279,12 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
     private static string NormalizeProductVersion(string value)
     {
         var normalized = value.Trim().Replace('+', '-');
-        return string.Concat(normalized.Select(character =>
-            char.IsLetterOrDigit(character) || character is '.' or '-'
-                ? character
-                : '-'));
+        return string.Concat(
+            normalized.Select(character => char.IsLetterOrDigit(character) || character is '.' or '-' ? character : '-')
+        );
     }
 
-    private static HttpClient CreateSharedClient() => new()
-    {
-        Timeout = TimeSpan.FromSeconds(15),
-    };
+    private static HttpClient CreateSharedClient() => new() { Timeout = TimeSpan.FromSeconds(15) };
 
     private void WriteLog(string message)
     {
@@ -337,13 +316,10 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
         lifetimeCancellation.Cancel();
         try
         {
-            workerTask?.Wait(
-                TimeSpan.FromSeconds(2),
-                CancellationToken.None);
+            workerTask?.Wait(TimeSpan.FromSeconds(2), CancellationToken.None);
         }
         catch (AggregateException exception)
-            when (exception.InnerExceptions.All(inner =>
-                inner is OperationCanceledException))
+            when (exception.InnerExceptions.All(inner => inner is OperationCanceledException))
         {
             // Cancellation is the expected worker result during disposal.
         }
@@ -356,8 +332,5 @@ public sealed class VoxStellarPublisher : IVoxStellarPublisher, IDisposable
         }
     }
 
-    private sealed record QueuedUpload(
-        long ConsentGeneration,
-        string EventName,
-        byte[] Body);
+    private sealed record QueuedUpload(long ConsentGeneration, string EventName, byte[] Body);
 }

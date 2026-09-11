@@ -11,12 +11,9 @@ public sealed class VoxStellarSharingViewModel : INotifyPropertyChanged
     private VoxStellarPreferences preferences;
     private string statusMessage = string.Empty;
 
-    public VoxStellarSharingViewModel(
-        VoxStellarSettingsStore settingsStore,
-        bool isUploadAvailable)
+    public VoxStellarSharingViewModel(VoxStellarSettingsStore settingsStore, bool isUploadAvailable)
     {
-        this.settingsStore = settingsStore
-            ?? throw new ArgumentNullException(nameof(settingsStore));
+        this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         IsUploadAvailable = isUploadAvailable;
         preferences = settingsStore.Load();
         if (!IsUploadAvailable)
@@ -32,8 +29,7 @@ public sealed class VoxStellarSharingViewModel : INotifyPropertyChanged
 
     public bool IsUploadAvailable { get; }
 
-    public bool CanChangeUploadPreference =>
-        IsUploadAvailable || JournalUploadEnabled;
+    public bool CanChangeUploadPreference => IsUploadAvailable || JournalUploadEnabled;
 
     public bool JournalUploadEnabled
     {
@@ -86,13 +82,11 @@ public sealed class VoxStellarSharingViewModel : INotifyPropertyChanged
         }
         else if (result.QueuedEventNames.Count == 1)
         {
-            StatusMessage =
-                $"Queued {result.QueuedEventNames[0]} for VoxStellar.";
+            StatusMessage = $"Queued {result.QueuedEventNames[0]} for VoxStellar.";
         }
         else if (result.QueuedEventNames.Count > 1)
         {
-            StatusMessage =
-                $"Queued {result.QueuedEventNames.Count:N0} exploration events for VoxStellar.";
+            StatusMessage = $"Queued {result.QueuedEventNames.Count:N0} exploration events for VoxStellar.";
         }
     }
 
@@ -112,23 +106,21 @@ public sealed class VoxStellarSharingViewModel : INotifyPropertyChanged
                 ? string.Empty
                 : "VoxStellar upload is unavailable in this build because its integration signing key is not configured.";
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException
-                or InvalidOperationException)
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or UnauthorizedAccessException
+                        or InvalidDataException
+                        or InvalidOperationException
+            )
         {
             StatusMessage =
-                "The VoxStellar preference changed for this session but could not be saved: "
-                + exception.Message;
+                "The VoxStellar preference changed for this session but could not be saved: " + exception.Message;
         }
     }
 
-    private void OnPropertyChanged(
-        [CallerMemberName] string? propertyName = null)
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(propertyName));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

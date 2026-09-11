@@ -23,8 +23,7 @@ internal static partial class DesktopApplicationActivator
             return false;
         }
 
-        var deadline = Environment.TickCount64
-            + (long)ActivationTimeout.TotalMilliseconds;
+        var deadline = Environment.TickCount64 + (long)ActivationTimeout.TotalMilliseconds;
         do
         {
             if (TryActivateMatchingProcess(current, executablePath))
@@ -36,15 +35,12 @@ internal static partial class DesktopApplicationActivator
             {
                 Thread.Sleep(100);
             }
-        }
-        while (Environment.TickCount64 < deadline);
+        } while (Environment.TickCount64 < deadline);
 
         return false;
     }
 
-    private static bool TryActivateMatchingProcess(
-        Process current,
-        string executablePath)
+    private static bool TryActivateMatchingProcess(Process current, string executablePath)
     {
         foreach (var process in Process.GetProcessesByName(current.ProcessName))
         {
@@ -60,19 +56,15 @@ internal static partial class DesktopApplicationActivator
         return false;
     }
 
-    private static bool TryActivateProcessWindow(
-        Process current,
-        Process process,
-        string executablePath)
+    private static bool TryActivateProcessWindow(Process current, Process process, string executablePath)
     {
         try
         {
-            if (process.Id == current.Id
+            if (
+                process.Id == current.Id
                 || process.SessionId != current.SessionId
-                || !string.Equals(
-                    process.MainModule?.FileName,
-                    executablePath,
-                    StringComparison.OrdinalIgnoreCase))
+                || !string.Equals(process.MainModule?.FileName, executablePath, StringComparison.OrdinalIgnoreCase)
+            )
             {
                 return false;
             }
@@ -88,10 +80,8 @@ internal static partial class DesktopApplicationActivator
             _ = SetForegroundWindow(handle);
             return true;
         }
-        catch (Exception exception) when (
-            exception is InvalidOperationException
-                or NotSupportedException
-                or Win32Exception)
+        catch (Exception exception)
+            when (exception is InvalidOperationException or NotSupportedException or Win32Exception)
         {
             // The original instance can exit while the callback
             // process is inspecting or activating its window.

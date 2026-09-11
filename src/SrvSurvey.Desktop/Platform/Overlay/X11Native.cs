@@ -28,10 +28,8 @@ internal static partial class X11Native
         {
             return XInitThreads() != 0;
         }
-        catch (Exception exception) when (
-            exception is DllNotFoundException
-                or EntryPointNotFoundException
-                or BadImageFormatException)
+        catch (Exception exception)
+            when (exception is DllNotFoundException or EntryPointNotFoundException or BadImageFormatException)
         {
             return false;
         }
@@ -49,19 +47,14 @@ internal static partial class X11Native
     [LibraryImport("libX11.so.6")]
     internal static partial nint XSetErrorHandler(nint handler);
 
-    internal static int InvokeErrorHandler(
-        nint handler,
-        nint display,
-        ref XErrorEvent errorEvent)
+    internal static int InvokeErrorHandler(nint handler, nint display, ref XErrorEvent errorEvent)
     {
         if (handler == nint.Zero)
         {
             return 0;
         }
 
-        var callback = Marshal.GetDelegateForFunctionPointer(
-            handler,
-            typeof(XErrorHandler));
+        var callback = Marshal.GetDelegateForFunctionPointer(handler, typeof(XErrorHandler));
         object?[] arguments = [display, errorEvent];
         var result = callback.DynamicInvoke(arguments);
         errorEvent = (XErrorEvent)arguments[1]!;
@@ -72,10 +65,7 @@ internal static partial class X11Native
     internal static partial nuint XDefaultRootWindow(nint display);
 
     [LibraryImport("libX11.so.6", StringMarshalling = StringMarshalling.Utf8)]
-    internal static partial nuint XInternAtom(
-        nint display,
-        string atomName,
-        int onlyIfExists);
+    internal static partial nuint XInternAtom(nint display, string atomName, int onlyIfExists);
 
     [LibraryImport("libX11.so.6")]
     internal static partial int XGetWindowProperty(
@@ -90,7 +80,8 @@ internal static partial class X11Native
         out int actualFormat,
         out nuint itemCount,
         out nuint bytesAfter,
-        out nint propertyData);
+        out nint propertyData
+    );
 
     [LibraryImport("libX11.so.6")]
     internal static partial int XChangeProperty(
@@ -101,13 +92,11 @@ internal static partial class X11Native
         int format,
         int mode,
         nint data,
-        int elementCount);
+        int elementCount
+    );
 
     [LibraryImport("libX11.so.6")]
-    internal static partial int XGetWindowAttributes(
-        nint display,
-        nuint window,
-        out XWindowAttributes attributes);
+    internal static partial int XGetWindowAttributes(nint display, nuint window, out XWindowAttributes attributes);
 
     [LibraryImport("libX11.so.6")]
     internal static partial int XTranslateCoordinates(
@@ -118,7 +107,8 @@ internal static partial class X11Native
         int sourceY,
         out int destinationX,
         out int destinationY,
-        out nuint childWindow);
+        out nuint childWindow
+    );
 
     [LibraryImport("libX11.so.6")]
     internal static partial int XQueryTree(
@@ -127,19 +117,14 @@ internal static partial class X11Native
         out nuint root,
         out nuint parent,
         out nint children,
-        out uint childCount);
+        out uint childCount
+    );
 
     [LibraryImport("libX11.so.6")]
-    internal static partial int XGetClassHint(
-        nint display,
-        nuint window,
-        out XClassHint classHint);
+    internal static partial int XGetClassHint(nint display, nuint window, out XClassHint classHint);
 
     [LibraryImport("libX11.so.6")]
-    internal static partial int XFetchName(
-        nint display,
-        nuint window,
-        out nint windowName);
+    internal static partial int XFetchName(nint display, nuint window, out nint windowName);
 
     [LibraryImport("libX11.so.6")]
     internal static partial int XFree(nint data);
@@ -153,7 +138,8 @@ internal static partial class X11Native
         uint width,
         uint height,
         nuint planeMask,
-        int format);
+        int format
+    );
 
     [LibraryImport("libX11.so.6")]
     internal static partial int XDestroyImage(nint image);
@@ -168,17 +154,10 @@ internal static partial class X11Native
     internal static partial int XUnmapWindow(nint display, nuint window);
 
     [LibraryImport("libX11.so.6")]
-    internal static partial int XSetInputFocus(
-        nint display,
-        nuint focusWindow,
-        int revertTo,
-        nuint time);
+    internal static partial int XSetInputFocus(nint display, nuint focusWindow, int revertTo, nuint time);
 
     [LibraryImport("libX11.so.6")]
-    internal static partial int XGetInputFocus(
-        nint display,
-        out nuint focusWindow,
-        out int revertTo);
+    internal static partial int XGetInputFocus(nint display, out nuint focusWindow, out int revertTo);
 
     [LibraryImport("libX11.so.6")]
     internal static partial int XSendEvent(
@@ -186,34 +165,23 @@ internal static partial class X11Native
         nuint window,
         int propagate,
         nint eventMask,
-        ref XClientMessageEvent eventSend);
+        ref XClientMessageEvent eventSend
+    );
 
     [LibraryImport("libX11.so.6")]
-    internal static partial nuint XCreateFontCursor(
-        nint display,
-        uint shape);
+    internal static partial nuint XCreateFontCursor(nint display, uint shape);
 
     [LibraryImport("libX11.so.6")]
-    internal static partial int XDefineCursor(
-        nint display,
-        nuint window,
-        nuint cursor);
+    internal static partial int XDefineCursor(nint display, nuint window, nuint cursor);
 
     [LibraryImport("libX11.so.6")]
-    internal static partial int XUndefineCursor(
-        nint display,
-        nuint window);
+    internal static partial int XUndefineCursor(nint display, nuint window);
 
     [LibraryImport("libX11.so.6")]
-    internal static partial int XFreeCursor(
-        nint display,
-        nuint cursor);
+    internal static partial int XFreeCursor(nint display, nuint cursor);
 
     [LibraryImport("libXext.so.6")]
-    internal static partial int XShapeQueryExtension(
-        nint display,
-        out int eventBase,
-        out int errorBase);
+    internal static partial int XShapeQueryExtension(nint display, out int eventBase, out int errorBase);
 
     [LibraryImport("libXext.so.6")]
     internal static partial void XShapeCombineRectangles(
@@ -225,7 +193,8 @@ internal static partial class X11Native
         nint rectangles,
         int rectangleCount,
         int operation,
-        int ordering);
+        int ordering
+    );
 
     [LibraryImport("libXext.so.6")]
     internal static partial void XShapeCombineMask(
@@ -235,7 +204,8 @@ internal static partial class X11Native
         int xOffset,
         int yOffset,
         nuint sourcePixmap,
-        int operation);
+        int operation
+    );
 
     [StructLayout(LayoutKind.Sequential)]
     internal struct XClassHint
@@ -245,9 +215,7 @@ internal static partial class X11Native
     }
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    internal delegate int XErrorHandler(
-        nint display,
-        ref XErrorEvent errorEvent);
+    internal delegate int XErrorHandler(nint display, ref XErrorEvent errorEvent);
 
     [StructLayout(LayoutKind.Sequential)]
     internal struct XErrorEvent

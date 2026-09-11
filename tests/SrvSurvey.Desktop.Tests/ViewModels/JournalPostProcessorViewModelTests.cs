@@ -10,29 +10,24 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-post-processor-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-post-processor-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public async Task AnalyzesSelectedCommanderWithoutChangingData()
     {
         var viewModel = CreateViewModel(out var dataDirectory);
-        var originalProfile = await File.ReadAllBytesAsync(
-            Path.Combine(dataDirectory, "F123-live.json"));
+        var originalProfile = await File.ReadAllBytesAsync(Path.Combine(dataDirectory, "F123-live.json"));
         await viewModel.RefreshCommandersAsync();
         viewModel.SetBeginningOfTime();
 
         await viewModel.AnalyzeAsync();
 
         Assert.Equal("Drew (F123)", viewModel.SelectedCommander!.DisplayName);
-        Assert.Equal("1", viewModel.Statistics.Single(
-            statistic => statistic.Name == "Jumps").Value);
-        Assert.Equal("12", viewModel.Statistics.Single(
-            statistic => statistic.Name == "Cargo bought").Value);
+        Assert.Equal("1", viewModel.Statistics.Single(statistic => statistic.Name == "Jumps").Value);
+        Assert.Equal("12", viewModel.Statistics.Single(statistic => statistic.Name == "Cargo bought").Value);
         Assert.Contains("Analyzed 1 matching journal", viewModel.StatusMessage);
-        Assert.Equal(
-            originalProfile,
-            await File.ReadAllBytesAsync(
-                Path.Combine(dataDirectory, "F123-live.json")));
+        Assert.Equal(originalProfile, await File.ReadAllBytesAsync(Path.Combine(dataDirectory, "F123-live.json")));
         Assert.False(File.Exists(Path.Combine(dataDirectory, "F123-codex.json")));
     }
 
@@ -81,7 +76,8 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
                 }
               ]
             }
-            """);
+            """
+        );
         var original = await File.ReadAllBytesAsync(systemPath);
         await viewModel.RefreshCommandersAsync();
 
@@ -102,9 +98,7 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
         var systemDirectory = Path.Combine(dataDirectory, "systems", "F123");
         Directory.CreateDirectory(systemDirectory);
         var systemPath = Path.Combine(systemDirectory, "Sol_42.json");
-        await File.WriteAllTextAsync(
-            systemPath,
-            """{"name":"Sol","address":42,"future":7,"bodies":[]}""");
+        await File.WriteAllTextAsync(systemPath, """{"name":"Sol","address":42,"future":7,"bodies":[]}""");
         var original = await File.ReadAllBytesAsync(systemPath);
         await viewModel.RefreshCommandersAsync();
         viewModel.SetBeginningOfTime();
@@ -123,12 +117,7 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
         Assert.Contains("\"future\": 7", await File.ReadAllTextAsync(systemPath));
         var backupRoot = Path.Combine(temporaryDirectory, "rebuild-backups");
         var backup = Assert.Single(Directory.GetDirectories(backupRoot));
-        Assert.Equal(
-            original,
-            await File.ReadAllBytesAsync(Path.Combine(
-                backup,
-                "originals",
-                "Sol_42.json")));
+        Assert.Equal(original, await File.ReadAllBytesAsync(Path.Combine(backup, "originals", "Sol_42.json")));
     }
 
     [Fact]
@@ -136,10 +125,7 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
     {
         var client = new RecordingGreenGasGiantClient();
         var enabled = false;
-        var viewModel = CreateViewModel(
-            out var dataDirectory,
-            client,
-            () => enabled);
+        var viewModel = CreateViewModel(out var dataDirectory, client, () => enabled);
         var profilePath = Path.Combine(dataDirectory, "F123-live.json");
         var originalProfile = await File.ReadAllBytesAsync(profilePath);
         await viewModel.RefreshCommandersAsync();
@@ -180,7 +166,8 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
     private JournalPostProcessorViewModel CreateViewModel(
         out string dataDirectory,
         IGreenGasGiantClient? greenGasGiantClient = null,
-        Func<bool>? isGreenGasGiantPublicationEnabled = null)
+        Func<bool>? isGreenGasGiantPublicationEnabled = null
+    )
     {
         var journalDirectory = Path.Combine(temporaryDirectory, "journals");
         dataDirectory = Path.Combine(temporaryDirectory, "data");
@@ -188,11 +175,10 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
         Directory.CreateDirectory(dataDirectory);
         File.WriteAllText(
             Path.Combine(dataDirectory, "F123-live.json"),
-            "{\"fid\":\"F123\",\"commander\":\"Drew\",\"future\":42}");
+            "{\"fid\":\"F123\",\"commander\":\"Drew\",\"future\":42}"
+        );
         File.WriteAllText(
-            Path.Combine(
-                journalDirectory,
-            "Journal.2026-07-20T120000.01.log"),
+            Path.Combine(journalDirectory, "Journal.2026-07-20T120000.01.log"),
             """
             {"timestamp":"2026-07-20T11:59:00Z","event":"Fileheader","Odyssey":true}
             {"timestamp":"2026-07-20T12:00:00Z","event":"Commander","Name":"Drew","FID":"F123"}
@@ -204,7 +190,8 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
             {"timestamp":"2026-07-20T12:04:00Z","event":"CodexEntry","EntryID":2310101,"SystemAddress":42,"BodyID":3}
             {"timestamp":"2026-07-20T12:05:00Z","event":"Shutdown"}
 
-            """);
+            """
+        );
         var store = new CommanderCodexStore(dataDirectory);
         return new JournalPostProcessorViewModel(
             new CommanderProfileCatalog(dataDirectory),
@@ -214,20 +201,19 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
                 dataDirectory,
                 journalDirectory,
                 Path.Combine(temporaryDirectory, "rebuild-backups"),
-                () => DateTimeOffset.Parse("2026-07-25T12:00:00Z")),
+                () => DateTimeOffset.Parse("2026-07-25T12:00:00Z")
+            ),
             new CommanderCodexJournalImporter(journalDirectory, store),
             greenGasGiantClient,
-            isGreenGasGiantPublicationEnabled);
+            isGreenGasGiantPublicationEnabled
+        );
     }
 
-    private sealed class RecordingGreenGasGiantClient
-        : IGreenGasGiantClient
+    private sealed class RecordingGreenGasGiantClient : IGreenGasGiantClient
     {
         public List<GreenGasGiantCandidate> Candidates { get; } = [];
 
-        public Task PublishAsync(
-            GreenGasGiantCandidate candidate,
-            CancellationToken cancellationToken = default)
+        public Task PublishAsync(GreenGasGiantCandidate candidate, CancellationToken cancellationToken = default)
         {
             Candidates.Add(candidate);
             return Task.CompletedTask;

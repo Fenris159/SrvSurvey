@@ -6,8 +6,7 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public static class OpenVrNativeLibraryResolver
 {
-    public const string LibraryEnvironmentVariable =
-        "SRVSURVEY_OPENVR_LIBRARY";
+    public const string LibraryEnvironmentVariable = "SRVSURVEY_OPENVR_LIBRARY";
     private const string LinuxLibraryFileName = "libopenvr_api.so";
     private const string OpenVrApiLibraryName = "openvr_api";
     private static readonly object RegistrationLock = new();
@@ -27,9 +26,7 @@ public static class OpenVrNativeLibraryResolver
                 return;
             }
 
-            NativeLibrary.SetDllImportResolver(
-                typeof(OpenVR).Assembly,
-                ResolveLibrary);
+            NativeLibrary.SetDllImportResolver(typeof(OpenVR).Assembly, ResolveLibrary);
             registered = true;
         }
     }
@@ -37,91 +34,86 @@ public static class OpenVrNativeLibraryResolver
     public static IReadOnlyList<string> GetLinuxCandidates()
     {
         var candidates = new List<string>();
-        var configured = Environment.GetEnvironmentVariable(
-            LibraryEnvironmentVariable);
+        var configured = Environment.GetEnvironmentVariable(LibraryEnvironmentVariable);
         if (!string.IsNullOrWhiteSpace(configured))
         {
             try
             {
                 candidates.Add(Path.GetFullPath(configured));
             }
-            catch (Exception exception) when (
-                exception is ArgumentException
-                    or NotSupportedException
-                    or PathTooLongException)
+            catch (Exception exception)
+                when (exception is ArgumentException or NotSupportedException or PathTooLongException)
             {
                 // Leave invalid user input out of the resolver candidates.
             }
         }
 
-        candidates.Add(Path.Combine(
-            AppContext.BaseDirectory,
-            LinuxLibraryFileName));
-        var profile = Environment.GetFolderPath(
-            Environment.SpecialFolder.UserProfile);
+        candidates.Add(Path.Combine(AppContext.BaseDirectory, LinuxLibraryFileName));
+        var profile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         if (!string.IsNullOrWhiteSpace(profile))
         {
-            candidates.Add(Path.Combine(
-                profile,
-                ".steam",
-                "steam",
-                "steamapps",
-                "common",
-                "SteamVR",
-                "bin",
-                "linux64",
-                LinuxLibraryFileName));
-            candidates.Add(Path.Combine(
-                profile,
-                ".local",
-                "share",
-                "Steam",
-                "steamapps",
-                "common",
-                "SteamVR",
-                "bin",
-                "linux64",
-                LinuxLibraryFileName));
-            candidates.Add(Path.Combine(
-                profile,
-                ".var",
-                "app",
-                "com.valvesoftware.Steam",
-                ".local",
-                "share",
-                "Steam",
-                "steamapps",
-                "common",
-                "SteamVR",
-                "bin",
-                "linux64",
-                LinuxLibraryFileName));
+            candidates.Add(
+                Path.Combine(
+                    profile,
+                    ".steam",
+                    "steam",
+                    "steamapps",
+                    "common",
+                    "SteamVR",
+                    "bin",
+                    "linux64",
+                    LinuxLibraryFileName
+                )
+            );
+            candidates.Add(
+                Path.Combine(
+                    profile,
+                    ".local",
+                    "share",
+                    "Steam",
+                    "steamapps",
+                    "common",
+                    "SteamVR",
+                    "bin",
+                    "linux64",
+                    LinuxLibraryFileName
+                )
+            );
+            candidates.Add(
+                Path.Combine(
+                    profile,
+                    ".var",
+                    "app",
+                    "com.valvesoftware.Steam",
+                    ".local",
+                    "share",
+                    "Steam",
+                    "steamapps",
+                    "common",
+                    "SteamVR",
+                    "bin",
+                    "linux64",
+                    LinuxLibraryFileName
+                )
+            );
         }
 
         return candidates.Distinct(StringComparer.Ordinal).ToArray();
     }
 
-    private static nint ResolveLibrary(
-        string libraryName,
-        Assembly assembly,
-        DllImportSearchPath? searchPath)
+    private static nint ResolveLibrary(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
     {
-        if (!string.Equals(
-                libraryName,
-                OpenVrApiLibraryName,
-                StringComparison.OrdinalIgnoreCase)
-            && !string.Equals(
-                libraryName,
-                LinuxLibraryFileName,
-                StringComparison.OrdinalIgnoreCase))
+        if (
+            !string.Equals(libraryName, OpenVrApiLibraryName, StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(libraryName, LinuxLibraryFileName, StringComparison.OrdinalIgnoreCase)
+        )
         {
             return nint.Zero;
         }
 
         foreach (var candidate in GetLinuxCandidates())
         {
-            if (File.Exists(candidate)
-                && NativeLibrary.TryLoad(candidate, out var handle))
+            if (File.Exists(candidate) && NativeLibrary.TryLoad(candidate, out var handle))
             {
                 return handle;
             }

@@ -8,7 +8,8 @@ public sealed class OverlayBehaviorViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-overlay-behavior-vm-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-overlay-behavior-vm-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void SuitSuppressionRequiresOnFootAndTheMatchingPreference()
@@ -37,9 +38,7 @@ public sealed class OverlayBehaviorViewModelTests : IDisposable
         viewModel.KeepWhenGameLosesFocus = true;
         viewModel.HideMultiGameCommanderOverlay = true;
 
-        var persisted = new OverlayBehaviorSettingsStore(Path.Combine(
-            temporaryDirectory,
-            "ui-settings.json")).Load();
+        var persisted = new OverlayBehaviorSettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json")).Load();
         Assert.True(persisted.KeepWhenGameLosesFocus);
         Assert.True(persisted.HideMultiGameCommanderOverlay);
     }
@@ -55,7 +54,8 @@ public sealed class OverlayBehaviorViewModelTests : IDisposable
             hasCurrentStatus: true,
             hasCurrentCommander: true,
             shutdown: false,
-            atMainMenu: false);
+            atMainMenu: false
+        );
         Assert.False(viewModel.ShouldSuppressForSession);
 
         viewModel.UpdateSessionContext(true, true, false, true);
@@ -83,8 +83,7 @@ public sealed class OverlayBehaviorViewModelTests : IDisposable
     {
         Directory.CreateDirectory(temporaryDirectory);
         return new OverlayBehaviorViewModel(
-            new OverlayBehaviorSettingsStore(Path.Combine(
-                temporaryDirectory,
-                "ui-settings.json")));
+            new OverlayBehaviorSettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json"))
+        );
     }
 }

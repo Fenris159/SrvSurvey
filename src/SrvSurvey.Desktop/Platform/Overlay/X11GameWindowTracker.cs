@@ -47,10 +47,8 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
             X11OverlayPlatformService.RegisterErrorHandledDisplay(display);
             return new X11GameWindowTracker(display);
         }
-        catch (Exception exception) when (
-            exception is DllNotFoundException
-                or EntryPointNotFoundException
-                or BadImageFormatException)
+        catch (Exception exception)
+            when (exception is DllNotFoundException or EntryPointNotFoundException or BadImageFormatException)
         {
             if (display != nint.Zero)
             {
@@ -60,8 +58,7 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
                 }
                 finally
                 {
-                    X11OverlayPlatformService.UnregisterErrorHandledDisplay(
-                        display);
+                    X11OverlayPlatformService.UnregisterErrorHandledDisplay(display);
                 }
             }
 
@@ -79,18 +76,19 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
             }
 
             var activeWindow = ReadSingleWindow(activeWindowAtom);
-            if (activeWindow != 0
-                && activeWindow != gameWindow
-                && activeWindow != inspectedActiveWindow)
+            if (activeWindow != 0 && activeWindow != gameWindow && activeWindow != inspectedActiveWindow)
             {
                 inspectedActiveWindow = activeWindow;
                 inspectedActiveWindowIsElite = IsEliteWindow(activeWindow);
             }
 
-            if (activeWindow != 0
-                && (activeWindow == gameWindow
-                    || (activeWindow == inspectedActiveWindow
-                        && inspectedActiveWindowIsElite)))
+            if (
+                activeWindow != 0
+                && (
+                    activeWindow == gameWindow
+                    || (activeWindow == inspectedActiveWindow && inspectedActiveWindowIsElite)
+                )
+            )
             {
                 gameWindow = activeWindow;
             }
@@ -100,11 +98,7 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
                 gameWindow = FindGameWindow(activeWindow);
             }
 
-            if (gameWindow == 0
-                || !TryGetBounds(
-                    gameWindow,
-                    out var clientBounds,
-                    out var isVisible))
+            if (gameWindow == 0 || !TryGetBounds(gameWindow, out var clientBounds, out var isVisible))
             {
                 gameWindow = 0;
                 return GameWindowSnapshot.Unavailable;
@@ -115,7 +109,8 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
                 ReadProcessId(gameWindow),
                 clientBounds,
                 isVisible,
-                activeWindow == gameWindow);
+                activeWindow == gameWindow
+            );
         }
     }
 
@@ -133,8 +128,7 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
                 }
                 finally
                 {
-                    X11OverlayPlatformService.UnregisterErrorHandledDisplay(
-                        currentDisplay);
+                    X11OverlayPlatformService.UnregisterErrorHandledDisplay(currentDisplay);
                 }
             }
         }
@@ -184,10 +178,7 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
     {
         string? resourceName = null;
         string? resourceClass = null;
-        if (X11Native.XGetClassHint(
-                display,
-                window,
-                out var classHint) != 0)
+        if (X11Native.XGetClassHint(display, window, out var classHint) != 0)
         {
             try
             {
@@ -214,43 +205,25 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
             }
         }
 
-        return EliteGameWindowIdentity.MatchesX11(
-            resourceName,
-            resourceClass,
-            title);
+        return EliteGameWindowIdentity.MatchesX11(resourceName, resourceClass, title);
     }
 
-    private bool TryGetBounds(
-        nuint window,
-        out PixelRect bounds,
-        out bool isVisible)
+    private bool TryGetBounds(nuint window, out PixelRect bounds, out bool isVisible)
     {
         bounds = default;
         isVisible = false;
-        if (X11Native.XGetWindowAttributes(
-                display,
-                window,
-                out var attributes) == 0
+        if (
+            X11Native.XGetWindowAttributes(display, window, out var attributes) == 0
             || attributes.Width <= 0
             || attributes.Height <= 0
-            || X11Native.XTranslateCoordinates(
-                display,
-                window,
-                rootWindow,
-                0,
-                0,
-                out var rootX,
-                out var rootY,
-                out _) == 0)
+            || X11Native.XTranslateCoordinates(display, window, rootWindow, 0, 0, out var rootX, out var rootY, out _)
+                == 0
+        )
         {
             return false;
         }
 
-        bounds = new PixelRect(
-            rootX,
-            rootY,
-            attributes.Width,
-            attributes.Height);
+        bounds = new PixelRect(rootX, rootY, attributes.Width, attributes.Height);
         isVisible = attributes.MapState == X11Native.IsViewable;
         return true;
     }
@@ -258,9 +231,7 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
     private int? ReadProcessId(nuint window)
     {
         var values = ReadProperty(processIdAtom, window);
-        return values.Length == 0 || values[0] > int.MaxValue
-            ? null
-            : (int)values[0];
+        return values.Length == 0 || values[0] > int.MaxValue ? null : (int)values[0];
     }
 
     private nuint ReadSingleWindow(nuint atom)
@@ -276,7 +247,8 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
 
     private nuint[] ReadProperty(nuint atom, nuint window)
     {
-        if (atom == 0
+        if (
+            atom == 0
             || X11Native.XGetWindowProperty(
                 display,
                 window,
@@ -289,8 +261,10 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
                 out var actualFormat,
                 out var itemCount,
                 out _,
-                out var propertyData) != 0
-            || propertyData == nint.Zero)
+                out var propertyData
+            ) != 0
+            || propertyData == nint.Zero
+        )
         {
             return [];
         }
@@ -305,9 +279,7 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
             var values = new nuint[(int)itemCount];
             for (var index = 0; index < values.Length; index++)
             {
-                values[index] = unchecked((nuint)Marshal.ReadIntPtr(
-                    propertyData,
-                    index * nint.Size));
+                values[index] = unchecked((nuint)Marshal.ReadIntPtr(propertyData, index * nint.Size));
             }
 
             return values;
@@ -320,14 +292,10 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
 
     private nuint[] ReadRootChildren()
     {
-        if (X11Native.XQueryTree(
-                display,
-                rootWindow,
-                out _,
-                out _,
-                out var children,
-                out var childCount) == 0
-            || children == nint.Zero)
+        if (
+            X11Native.XQueryTree(display, rootWindow, out _, out _, out var children, out var childCount) == 0
+            || children == nint.Zero
+        )
         {
             return [];
         }
@@ -337,9 +305,7 @@ internal sealed class X11GameWindowTracker : IGameWindowTracker
             var values = new nuint[childCount];
             for (var index = 0; index < values.Length; index++)
             {
-                values[index] = unchecked((nuint)Marshal.ReadIntPtr(
-                    children,
-                    index * nint.Size));
+                values[index] = unchecked((nuint)Marshal.ReadIntPtr(children, index * nint.Size));
             }
 
             return values;

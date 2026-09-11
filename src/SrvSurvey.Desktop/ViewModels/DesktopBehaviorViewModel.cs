@@ -11,18 +11,13 @@ public sealed class DesktopBehaviorViewModel : INotifyPropertyChanged
     private readonly DesktopBehaviorSettingsStore settingsStore;
     private readonly IGameWindowSwitcher gameWindowSwitcher;
     private DesktopBehaviorPreferences preferences;
-    private IReadOnlyList<ApplicationMonitorOption> monitorOptions =
-        [ApplicationMonitorOption.Automatic];
+    private IReadOnlyList<ApplicationMonitorOption> monitorOptions = [ApplicationMonitorOption.Automatic];
     private string statusMessage = string.Empty;
 
-    public DesktopBehaviorViewModel(
-        DesktopBehaviorSettingsStore settingsStore,
-        IGameWindowSwitcher gameWindowSwitcher)
+    public DesktopBehaviorViewModel(DesktopBehaviorSettingsStore settingsStore, IGameWindowSwitcher gameWindowSwitcher)
     {
-        this.settingsStore = settingsStore
-            ?? throw new ArgumentNullException(nameof(settingsStore));
-        this.gameWindowSwitcher = gameWindowSwitcher
-            ?? throw new ArgumentNullException(nameof(gameWindowSwitcher));
+        this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
+        this.gameWindowSwitcher = gameWindowSwitcher ?? throw new ArgumentNullException(nameof(gameWindowSwitcher));
         preferences = settingsStore.Load();
     }
 
@@ -60,16 +55,14 @@ public sealed class DesktopBehaviorViewModel : INotifyPropertyChanged
         set => Update(preferences with { ReduceMotion = value });
     }
 
-    public IReadOnlyList<ApplicationMonitorOption> MonitorOptions =>
-        monitorOptions;
+    public IReadOnlyList<ApplicationMonitorOption> MonitorOptions => monitorOptions;
 
     public ApplicationMonitorOption SelectedMonitor
     {
-        get => monitorOptions.FirstOrDefault(option => string.Equals(
-            option.Id,
-            preferences.PreferredMonitorId,
-            MonitorIdComparison))
-            ?? ApplicationMonitorOption.Automatic;
+        get =>
+            monitorOptions.FirstOrDefault(option =>
+                string.Equals(option.Id, preferences.PreferredMonitorId, MonitorIdComparison)
+            ) ?? ApplicationMonitorOption.Automatic;
         set
         {
             if (value is not null)
@@ -79,32 +72,29 @@ public sealed class DesktopBehaviorViewModel : INotifyPropertyChanged
         }
     }
 
-    public IReadOnlyList<ApplicationWindowScaleOption>
-        ApplicationWindowScaleOptions => ApplicationWindowScaleCatalog.All;
+    public static IReadOnlyList<ApplicationWindowScaleOption> ApplicationWindowScaleOptions =>
+        ApplicationWindowScaleCatalog.All;
 
     public ApplicationWindowScaleOption SelectedApplicationWindowScale
     {
-        get => ApplicationWindowScaleCatalog.All.First(option =>
-            option.Percent == preferences.ApplicationWindowScalePercent);
+        get =>
+            ApplicationWindowScaleCatalog.All.First(option =>
+                option.Percent == preferences.ApplicationWindowScalePercent
+            );
         set
         {
             if (value is not null)
             {
-                Update(preferences with
-                {
-                    ApplicationWindowScalePercent = value.Percent,
-                });
+                Update(preferences with { ApplicationWindowScalePercent = value.Percent });
             }
         }
     }
 
     public string? PreferredMonitorId => preferences.PreferredMonitorId;
 
-    public int ApplicationWindowScalePercent =>
-        preferences.ApplicationWindowScalePercent;
+    public int ApplicationWindowScalePercent => preferences.ApplicationWindowScalePercent;
 
-    public ApplicationWindowPosition? LastApplicationWindowPosition =>
-        preferences.LastApplicationWindowPosition;
+    public ApplicationWindowPosition? LastApplicationWindowPosition => preferences.LastApplicationWindowPosition;
 
     public string StatusMessage
     {
@@ -124,28 +114,28 @@ public sealed class DesktopBehaviorViewModel : INotifyPropertyChanged
 
     public bool HasStatusMessage => !string.IsNullOrWhiteSpace(StatusMessage);
 
-    public void SetAvailableMonitors(
-        IEnumerable<ApplicationMonitorOption> availableMonitors)
+    public void SetAvailableMonitors(IEnumerable<ApplicationMonitorOption> availableMonitors)
     {
         ArgumentNullException.ThrowIfNull(availableMonitors);
-        var options = new List<ApplicationMonitorOption>
-        {
-            ApplicationMonitorOption.Automatic,
-        };
-        options.AddRange(availableMonitors
-            .Where(option => !string.IsNullOrWhiteSpace(option.Id))
-            .DistinctBy(option => option.Id, MonitorIdComparer));
+        var options = new List<ApplicationMonitorOption> { ApplicationMonitorOption.Automatic };
+        options.AddRange(
+            availableMonitors
+                .Where(option => !string.IsNullOrWhiteSpace(option.Id))
+                .DistinctBy(option => option.Id, MonitorIdComparer)
+        );
 
         var preferredMonitorId = preferences.PreferredMonitorId;
-        if (preferredMonitorId is not null
-            && !options.Any(option => string.Equals(
-                option.Id,
-                preferredMonitorId,
-                MonitorIdComparison)))
+        if (
+            preferredMonitorId is not null
+            && !options.Any(option => string.Equals(option.Id, preferredMonitorId, MonitorIdComparison))
+        )
         {
-            options.Add(new ApplicationMonitorOption(
-                preferredMonitorId,
-                $"{preferredMonitorId} (not connected; using primary monitor)"));
+            options.Add(
+                new ApplicationMonitorOption(
+                    preferredMonitorId,
+                    $"{preferredMonitorId} (not connected; using primary monitor)"
+                )
+            );
         }
 
         monitorOptions = options;
@@ -153,8 +143,7 @@ public sealed class DesktopBehaviorViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(SelectedMonitor));
     }
 
-    public void RememberApplicationWindowPosition(
-        ApplicationWindowPosition position)
+    public void RememberApplicationWindowPosition(ApplicationWindowPosition position)
     {
         ArgumentNullException.ThrowIfNull(position);
         Update(preferences with { LastApplicationWindowPosition = position });
@@ -162,8 +151,8 @@ public sealed class DesktopBehaviorViewModel : INotifyPropertyChanged
 
     public void ReportTrayUnavailable(string reason)
     {
-        StatusMessage = "The system tray is unavailable; minimize-to-tray will "
-            + "leave SrvSurvey in the taskbar. " + reason;
+        StatusMessage =
+            "The system tray is unavailable; minimize-to-tray will " + "leave SrvSurvey in the taskbar. " + reason;
     }
 
     public bool RequestStartupFocus()
@@ -176,14 +165,13 @@ public sealed class DesktopBehaviorViewModel : INotifyPropertyChanged
         return !FocusGameOnMinimize || TryFocusGame("application minimize");
     }
 
-    public void ApplyJournalEvents(
-        IReadOnlyList<JournalEventEnvelope> journalEvents,
-        bool isBootstrapRead)
+    public void ApplyJournalEvents(IReadOnlyList<JournalEventEnvelope> journalEvents, bool isBootstrapRead)
     {
-        if (isBootstrapRead
+        if (
+            isBootstrapRead
             || !FocusGameAfterFsdJump
-            || !journalEvents.Any(journalEvent =>
-                journalEvent.EventName == "FSDJump"))
+            || !journalEvents.Any(journalEvent => journalEvent.EventName == "FSDJump")
+        )
         {
             return;
         }
@@ -196,8 +184,7 @@ public sealed class DesktopBehaviorViewModel : INotifyPropertyChanged
         var focused = gameWindowSwitcher.TryActivateCurrent();
         StatusMessage = focused
             ? string.Empty
-            : "Elite Dangerous could not be focused after " + reason
-                + "; no matching game window was available.";
+            : "Elite Dangerous could not be focused after " + reason + "; no matching game window was available.";
         return focused;
     }
 
@@ -209,26 +196,18 @@ public sealed class DesktopBehaviorViewModel : INotifyPropertyChanged
         }
 
         var applicationWindowPreferencesChanged =
-            !string.Equals(
-                preferences.PreferredMonitorId,
-                next.PreferredMonitorId,
-                MonitorIdComparison)
-            || preferences.ApplicationWindowScalePercent
-                != next.ApplicationWindowScalePercent;
+            !string.Equals(preferences.PreferredMonitorId, next.PreferredMonitorId, MonitorIdComparison)
+            || preferences.ApplicationWindowScalePercent != next.ApplicationWindowScalePercent;
         preferences = next;
         try
         {
             settingsStore.Save(preferences);
             StatusMessage = string.Empty;
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
-            StatusMessage =
-                "Desktop behavior changed for this session but could not be saved: "
-                + exception.Message;
+            StatusMessage = "Desktop behavior changed for this session but could not be saved: " + exception.Message;
         }
 
         OnPropertyChanged(nameof(FocusGameOnStart));
@@ -248,14 +227,10 @@ public sealed class DesktopBehaviorViewModel : INotifyPropertyChanged
     }
 
     private static StringComparison MonitorIdComparison =>
-        OperatingSystem.IsWindows()
-            ? StringComparison.OrdinalIgnoreCase
-            : StringComparison.Ordinal;
+        OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
 
     private static StringComparer MonitorIdComparer =>
-        OperatingSystem.IsWindows()
-            ? StringComparer.OrdinalIgnoreCase
-            : StringComparer.Ordinal;
+        OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
@@ -265,9 +240,7 @@ public sealed class DesktopBehaviorViewModel : INotifyPropertyChanged
 
 public sealed record ApplicationMonitorOption(string? Id, string DisplayName)
 {
-    public static ApplicationMonitorOption Automatic { get; } = new(
-        null,
-        "Automatic (operating system default)");
+    public static ApplicationMonitorOption Automatic { get; } = new(null, "Automatic (operating system default)");
 
     public override string ToString() => DisplayName;
 }

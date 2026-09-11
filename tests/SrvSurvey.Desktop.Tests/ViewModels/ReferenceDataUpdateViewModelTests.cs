@@ -13,19 +13,19 @@ public sealed class ReferenceDataUpdateViewModelTests
             new PublishedReferenceVersions(10, 7, 4, 48, 68, 15, 0, 1),
             ["Codex reference", "biology criteria"],
             [],
-            "/profiles/reference-backups/verified");
+            "/profiles/reference-backups/verified"
+        );
         var viewModel = new ReferenceDataUpdateViewModel(
             new StubService(result),
             Path.GetTempPath(),
-            "Embedded catalogs active.");
+            "Embedded catalogs active."
+        );
 
         await viewModel.RefreshAsync();
 
         Assert.True(viewModel.IsRestartRequired);
         Assert.Contains("Codex reference", viewModel.UpdatedCatalogs);
-        Assert.Equal(
-            "Backup created this session: /profiles/reference-backups/verified",
-            viewModel.BackupDirectory);
+        Assert.Equal("Backup created this session: /profiles/reference-backups/verified", viewModel.BackupDirectory);
         Assert.Contains("Restart SrvSurvey", viewModel.StatusMessage);
     }
 
@@ -37,11 +37,9 @@ public sealed class ReferenceDataUpdateViewModelTests
             PublishedReferenceVersions.Empty,
             [],
             [],
-            null);
-        var viewModel = new ReferenceDataUpdateViewModel(
-            new StubService(result),
-            Path.GetTempPath(),
-            "Ready");
+            null
+        );
+        var viewModel = new ReferenceDataUpdateViewModel(new StubService(result), Path.GetTempPath(), "Ready");
 
         await viewModel.RefreshAsync();
 
@@ -58,11 +56,9 @@ public sealed class ReferenceDataUpdateViewModelTests
             PublishedReferenceVersions.Empty,
             ["Codex reference"],
             [],
-            null);
-        var viewModel = new ReferenceDataUpdateViewModel(
-            new StubService(result),
-            Path.GetTempPath(),
-            "Ready");
+            null
+        );
+        var viewModel = new ReferenceDataUpdateViewModel(new StubService(result), Path.GetTempPath(), "Ready");
         var restarted = false;
         viewModel.SetRestartHandler(() =>
         {
@@ -81,21 +77,19 @@ public sealed class ReferenceDataUpdateViewModelTests
     public async Task RefreshFailureReportsThatPlayerFilesWereNotChanged()
     {
         var log = new List<string>();
-        var viewModel = new ReferenceDataUpdateViewModel(
-            new FailingService(),
-            Path.GetTempPath(),
-            "Ready",
-            log.Add);
+        var viewModel = new ReferenceDataUpdateViewModel(new FailingService(), Path.GetTempPath(), "Ready", log.Add);
 
         await viewModel.RefreshAsync();
 
         Assert.False(viewModel.IsRestartRequired);
         Assert.Equal(
             "Catalogs updated this session: None; refresh failed before activation.",
-            viewModel.UpdatedCatalogs);
+            viewModel.UpdatedCatalogs
+        );
         Assert.Equal(
             "Backup created this session: Not needed; existing reference data remains active.",
-            viewModel.BackupDirectory);
+            viewModel.BackupDirectory
+        );
         Assert.Contains("failed safely", viewModel.StatusMessage);
         Assert.Contains("survey files were not changed", viewModel.StatusMessage);
         Assert.Single(log);
@@ -110,12 +104,12 @@ public sealed class ReferenceDataUpdateViewModelTests
         }
     }
 
-    private sealed class StubService(PublishedReferenceUpdateResult result)
-        : IPublishedReferenceUpdateService
+    private sealed class StubService(PublishedReferenceUpdateResult result) : IPublishedReferenceUpdateService
     {
         public Task<PublishedReferenceUpdateResult> RefreshAsync(
             string dataDirectory,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             return Task.FromResult(result);
         }
@@ -125,7 +119,8 @@ public sealed class ReferenceDataUpdateViewModelTests
     {
         public Task<PublishedReferenceUpdateResult> RefreshAsync(
             string dataDirectory,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             throw new InvalidDataException("candidate was truncated");
         }

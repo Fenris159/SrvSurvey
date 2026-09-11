@@ -8,9 +8,7 @@ public sealed class X11OverlayWindowManagerPolicyTests
     [Fact]
     public void AdvertisedKdeOnScreenDisplayAtomEnablesKdePolicy()
     {
-        var mode = X11OverlayWindowManagerPolicy.Select(
-            kdeOnScreenDisplayAtom: 42,
-            [4, 17, 42, 93]);
+        var mode = X11OverlayWindowManagerPolicy.Select(kdeOnScreenDisplayAtom: 42, [4, 17, 42, 93]);
 
         Assert.Equal(X11OverlayStackingMode.KdeOnScreenDisplay, mode);
     }
@@ -18,13 +16,12 @@ public sealed class X11OverlayWindowManagerPolicyTests
     [Theory]
     [InlineData(0, new uint[] { 42 })]
     [InlineData(42, new uint[] { 4, 17, 93 })]
-    public void MissingKdeCapabilityKeepsStandardTopmostPolicy(
-        uint kdeOnScreenDisplayAtom,
-        uint[] supportedAtoms)
+    public void MissingKdeCapabilityKeepsStandardTopmostPolicy(uint kdeOnScreenDisplayAtom, uint[] supportedAtoms)
     {
         var mode = X11OverlayWindowManagerPolicy.Select(
             kdeOnScreenDisplayAtom,
-            supportedAtoms.Select(atom => (nuint)atom).ToArray());
+            supportedAtoms.Select(atom => (nuint)atom).ToArray()
+        );
 
         Assert.Equal(X11OverlayStackingMode.StandardTopmost, mode);
     }
@@ -35,7 +32,8 @@ public sealed class X11OverlayWindowManagerPolicyTests
         var windowTypes = X11OverlayWindowManagerPolicy.CreateWindowTypes(
             X11OverlayStackingMode.KdeOnScreenDisplay,
             kdeOnScreenDisplayAtom: 42,
-            normalWindowAtom: 17);
+            normalWindowAtom: 17
+        );
 
         Assert.Equal([(nuint)42, (nuint)17], windowTypes);
     }
@@ -46,7 +44,8 @@ public sealed class X11OverlayWindowManagerPolicyTests
         var windowTypes = X11OverlayWindowManagerPolicy.CreateWindowTypes(
             X11OverlayStackingMode.StandardTopmost,
             kdeOnScreenDisplayAtom: 42,
-            normalWindowAtom: 17);
+            normalWindowAtom: 17
+        );
 
         Assert.Empty(windowTypes);
     }
@@ -56,12 +55,14 @@ public sealed class X11OverlayWindowManagerPolicyTests
     [InlineData(42, 0)]
     public void IncompleteKdeAtomPairDoesNotReplaceAvaloniaWindowType(
         uint kdeOnScreenDisplayAtom,
-        uint normalWindowAtom)
+        uint normalWindowAtom
+    )
     {
         var windowTypes = X11OverlayWindowManagerPolicy.CreateWindowTypes(
             X11OverlayStackingMode.KdeOnScreenDisplay,
             kdeOnScreenDisplayAtom,
-            normalWindowAtom);
+            normalWindowAtom
+        );
 
         Assert.Empty(windowTypes);
     }
@@ -72,7 +73,8 @@ public sealed class X11OverlayWindowManagerPolicyTests
         var position = ManagedOverlayWindowDragSession.CalculatePosition(
             initialWindowPosition: new PixelPoint(100, 200),
             initialPointerPosition: new PixelPoint(125, 240),
-            currentPointerPosition: new PixelPoint(165, 225));
+            currentPointerPosition: new PixelPoint(165, 225)
+        );
 
         Assert.Equal(new PixelPoint(140, 185), position);
     }
@@ -83,7 +85,8 @@ public sealed class X11OverlayWindowManagerPolicyTests
         var position = ManagedOverlayWindowDragSession.CalculatePosition(
             initialWindowPosition: new PixelPoint(100, 5),
             initialPointerPosition: new PixelPoint(125, 40),
-            currentPointerPosition: new PixelPoint(165, -20));
+            currentPointerPosition: new PixelPoint(165, -20)
+        );
 
         Assert.Equal(new PixelPoint(140, -55), position);
     }

@@ -7,7 +7,8 @@ public sealed class OverlayLayoutSettingsViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-overlay-settings-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-overlay-settings-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void SavePersistsChangesAndUpdatesSharedRuntimeLayout()
@@ -15,18 +16,13 @@ public sealed class OverlayLayoutSettingsViewModelTests : IDisposable
         Directory.CreateDirectory(temporaryDirectory);
         File.WriteAllText(
             Path.Combine(temporaryDirectory, "plotters.json"),
-            "{\"PlotJumpInfo\":\"center:0,top:8 "
-            + "{ s: 20, p: <1, 2, 3>, r: <4, 5, 6>}\"}");
-        File.WriteAllText(
-            Path.Combine(temporaryDirectory, "settings.json"),
-            "{\"plotterOpacity\":65}");
+            "{\"PlotJumpInfo\":\"center:0,top:8 " + "{ s: 20, p: <1, 2, 3>, r: <4, 5, 6>}\"}"
+        );
+        File.WriteAllText(Path.Combine(temporaryDirectory, "settings.json"), "{\"plotterOpacity\":65}");
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
         var activeLayout = store.Load();
-        var viewModel = new OverlayLayoutSettingsViewModel(
-            store,
-            activeLayout);
-        var editor = viewModel.Overlays.Single(
-            overlay => overlay.Name == "PlotJumpInfo");
+        var viewModel = new OverlayLayoutSettingsViewModel(store, activeLayout);
+        var editor = viewModel.Overlays.Single(overlay => overlay.Name == "PlotJumpInfo");
         viewModel.SelectedOverlay = editor;
 
         editor.HorizontalAnchor = LegacyHorizontalAnchor.Screen;
@@ -50,10 +46,13 @@ public sealed class OverlayLayoutSettingsViewModelTests : IDisposable
             activeLayout.GetPosition(
                 "PlotJumpInfo",
                 new Avalonia.PixelRect(100, 200, 1000, 600),
-                new Avalonia.PixelSize(300, 40)));
+                new Avalonia.PixelSize(300, 40)
+            )
+        );
         Assert.Contains(
             "{ s: 20, p: <1, 2, 3>, r: <4, 5, 6>}",
-            File.ReadAllText(Path.Combine(temporaryDirectory, "plotters.json")));
+            File.ReadAllText(Path.Combine(temporaryDirectory, "plotters.json"))
+        );
     }
 
     [Fact]
@@ -62,22 +61,18 @@ public sealed class OverlayLayoutSettingsViewModelTests : IDisposable
         Directory.CreateDirectory(temporaryDirectory);
         File.WriteAllText(
             Path.Combine(temporaryDirectory, "plotters.json"),
-            "{\"PlotTrackTarget\":\"right:99,bottom:77,0.4\"}");
+            "{\"PlotTrackTarget\":\"right:99,bottom:77,0.4\"}"
+        );
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
         var viewModel = new OverlayLayoutSettingsViewModel(store, store.Load());
-        viewModel.SelectedOverlay = viewModel.Overlays.Single(
-            overlay => overlay.Name == "PlotTrackTarget");
+        viewModel.SelectedOverlay = viewModel.Overlays.Single(overlay => overlay.Name == "PlotTrackTarget");
 
         viewModel.ResetSelectedCommand.Execute(null);
 
         Assert.Equal(
-            new LegacyOverlayPlacement(
-                LegacyHorizontalAnchor.Center,
-                480,
-                LegacyVerticalAnchor.Top,
-                8,
-                null),
-            viewModel.SelectedOverlay.Placement);
+            new LegacyOverlayPlacement(LegacyHorizontalAnchor.Center, 480, LegacyVerticalAnchor.Top, 8, null),
+            viewModel.SelectedOverlay.Placement
+        );
         Assert.True(viewModel.IsDirty);
     }
 
@@ -85,24 +80,19 @@ public sealed class OverlayLayoutSettingsViewModelTests : IDisposable
     public void OpacitySavePreservesPositionChangedByDragEditor()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        File.WriteAllText(
-            Path.Combine(temporaryDirectory, "plotters.json"),
-            "{\"PlotJumpInfo\":\"center:0,top:8\"}");
+        File.WriteAllText(Path.Combine(temporaryDirectory, "plotters.json"), "{\"PlotJumpInfo\":\"center:0,top:8\"}");
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
         var activeLayout = store.Load();
         var viewModel = new OverlayLayoutSettingsViewModel(store, activeLayout);
-        var editor = viewModel.Overlays.Single(
-            overlay => overlay.Name == "PlotJumpInfo");
+        var editor = viewModel.Overlays.Single(overlay => overlay.Name == "PlotJumpInfo");
         var draggedPlacement = new LegacyOverlayPlacement(
             LegacyHorizontalAnchor.Screen,
             -240,
             LegacyVerticalAnchor.Bottom,
             72,
-            null);
-        store.Save(new Dictionary<string, LegacyOverlayPlacement>
-        {
-            [editor.Name] = draggedPlacement,
-        });
+            null
+        );
+        store.Save(new Dictionary<string, LegacyOverlayPlacement> { [editor.Name] = draggedPlacement });
         activeLayout.ReplaceWith(store.Load());
 
         editor.UseCustomOpacity = true;
@@ -121,45 +111,25 @@ public sealed class OverlayLayoutSettingsViewModelTests : IDisposable
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
         var viewModel = new OverlayLayoutSettingsViewModel(store, store.Load());
 
-        var notification = viewModel.Overlays.Single(
-            overlay => overlay.Name == "PlotFloatie");
+        var notification = viewModel.Overlays.Single(overlay => overlay.Name == "PlotFloatie");
 
         Assert.Equal(
-            new LegacyOverlayPlacement(
-                LegacyHorizontalAnchor.Center,
-                0,
-                LegacyVerticalAnchor.Bottom,
-                24,
-                null),
-            notification.Placement);
+            new LegacyOverlayPlacement(LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Bottom, 24, null),
+            notification.Placement
+        );
         Assert.Equal(35, viewModel.Overlays.Count);
         Assert.Equal(
-            new LegacyOverlayPlacement(
-                LegacyHorizontalAnchor.Right,
-                8,
-                LegacyVerticalAnchor.Top,
-                8,
-                null),
-            viewModel.Overlays.Single(
-                overlay => overlay.Name == "PlotQuestMini").Placement);
+            new LegacyOverlayPlacement(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 8, null),
+            viewModel.Overlays.Single(overlay => overlay.Name == "PlotQuestMini").Placement
+        );
         Assert.Equal(
-            new LegacyOverlayPlacement(
-                LegacyHorizontalAnchor.Left,
-                8,
-                LegacyVerticalAnchor.Top,
-                8,
-                null),
-            viewModel.Overlays.Single(
-                overlay => overlay.Name == "PlotGalMap").Placement);
+            new LegacyOverlayPlacement(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Top, 8, null),
+            viewModel.Overlays.Single(overlay => overlay.Name == "PlotGalMap").Placement
+        );
         Assert.Equal(
-            new LegacyOverlayPlacement(
-                LegacyHorizontalAnchor.Left,
-                8,
-                LegacyVerticalAnchor.Bottom,
-                8,
-                null),
-            viewModel.Overlays.Single(
-                overlay => overlay.Name == "PlotPulse").Placement);
+            new LegacyOverlayPlacement(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Bottom, 8, null),
+            viewModel.Overlays.Single(overlay => overlay.Name == "PlotPulse").Placement
+        );
     }
 
     [Fact]
@@ -171,14 +141,13 @@ public sealed class OverlayLayoutSettingsViewModelTests : IDisposable
 
         Assert.Equal(
             "SystemSurvey.AutoShowBioSystem",
-            viewModel.Overlays.Single(overlay =>
-                overlay.Name == "PlotBioSystem").Description);
+            viewModel.Overlays.Single(overlay => overlay.Name == "PlotBioSystem").Description
+        );
         Assert.Equal(
             "Guardian.AutoShowRamTah",
-            viewModel.Overlays.Single(overlay =>
-                overlay.Name == "PlotRamTah").Description);
-        Assert.All(viewModel.Overlays, overlay =>
-            Assert.False(string.IsNullOrWhiteSpace(overlay.Description)));
+            viewModel.Overlays.Single(overlay => overlay.Name == "PlotRamTah").Description
+        );
+        Assert.All(viewModel.Overlays, overlay => Assert.False(string.IsNullOrWhiteSpace(overlay.Description)));
     }
 
     [Fact]

@@ -16,7 +16,8 @@ public sealed class GalaxyMapSettingsStore
         var settings = documentStore.Load()["GalaxyMap"] as JsonObject;
         return new GalaxyMapPreferences(
             GetBoolean(settings, "AutoShow", true),
-            GetBoolean(settings, "ShowFactions", true));
+            GetBoolean(settings, "ShowFactions", true)
+        );
     }
 
     public void Save(GalaxyMapPreferences preferences)
@@ -37,18 +38,12 @@ public sealed class GalaxyMapSettingsStore
         });
     }
 
-    private static bool GetBoolean(
-        JsonObject? settings,
-        string propertyName,
-        bool fallback)
+    private static bool GetBoolean(JsonObject? settings, string propertyName, bool fallback)
     {
-        return settings?[propertyName] is JsonValue value
-            && value.TryGetValue<bool>(out var result)
-                ? result
-                : fallback;
+        return settings?[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result)
+            ? result
+            : fallback;
     }
 }
 
-public sealed record GalaxyMapPreferences(
-    bool AutoShow,
-    bool ShowFactions);
+public sealed record GalaxyMapPreferences(bool AutoShow, bool ShowFactions);

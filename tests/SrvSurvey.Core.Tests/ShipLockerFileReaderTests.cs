@@ -6,15 +6,14 @@ public sealed class ShipLockerFileReaderTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-ship-locker-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-ship-locker-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public async Task ReadAsyncProjectsAllSectionsAndMergesDuplicateItems()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(
-            temporaryDirectory,
-            ShipLockerFileReader.FileName);
+        var path = Path.Combine(temporaryDirectory, ShipLockerFileReader.FileName);
         await File.WriteAllTextAsync(
             path,
             """
@@ -29,7 +28,8 @@ public sealed class ShipLockerFileReaderTests : IDisposable
               "Consumables":[{"Name":"healthpack","Name_Localised":"Medkit","Count":5}],
               "Data":[{"Name":"manufacturinginstructions","Name_Localised":"Manufacturing Instructions","Count":6}]
             }
-            """);
+            """
+        );
 
         var result = await ShipLockerFileReader.ReadAsync(path);
 
@@ -38,12 +38,12 @@ public sealed class ShipLockerFileReaderTests : IDisposable
         Assert.Equal("ShipLocker", snapshot.EventName);
         Assert.Equal(4, snapshot.Items.Count);
         var healthMonitor = snapshot.Items.Single(item =>
-            item.Name.Equals("healthmonitor", StringComparison.OrdinalIgnoreCase));
+            item.Name.Equals("healthmonitor", StringComparison.OrdinalIgnoreCase)
+        );
         Assert.Equal("Items", healthMonitor.Category);
         Assert.Equal("Health Monitor", healthMonitor.LocalizedName);
         Assert.Equal(3, healthMonitor.Count);
-        Assert.Contains(snapshot.Items, item =>
-            item.Category == "Data" && item.Count == 6);
+        Assert.Contains(snapshot.Items, item => item.Category == "Data" && item.Count == 6);
         Assert.NotNull(result.ContentHash);
     }
 
@@ -51,15 +51,10 @@ public sealed class ShipLockerFileReaderTests : IDisposable
     public async Task ReadAsyncRetriesMalformedPartialWrite()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(
-            temporaryDirectory,
-            ShipLockerFileReader.FileName);
+        var path = Path.Combine(temporaryDirectory, ShipLockerFileReader.FileName);
         await File.WriteAllTextAsync(path, "{\"event\":\"ShipLocker\"");
 
-        var result = await ShipLockerFileReader.ReadAsync(
-            path,
-            maximumAttempts: 2,
-            retryDelay: TimeSpan.Zero);
+        var result = await ShipLockerFileReader.ReadAsync(path, maximumAttempts: 2, retryDelay: TimeSpan.Zero);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(2, result.Attempts);

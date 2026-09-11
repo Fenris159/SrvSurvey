@@ -11,20 +11,11 @@ public sealed class GuardianRendererSurveyTests
         var published = Published(
             siteHeading: 123,
             towerHeading: 45,
-            statuses: new Dictionary<string, GuardianPoiStatus>
-            {
-                ["p1"] = GuardianPoiStatus.Present,
-            },
-            relicHeadings: new Dictionary<string, int>
-            {
-                ["t1"] = 200,
-            });
+            statuses: new Dictionary<string, GuardianPoiStatus> { ["p1"] = GuardianPoiStatus.Present },
+            relicHeadings: new Dictionary<string, int> { ["t1"] = 200 }
+        );
 
-        var merged = GuardianViewModel.MergeRendererSurvey(
-            "Alpha",
-            commander: null,
-            published,
-            reference: null);
+        var merged = GuardianViewModel.MergeRendererSurvey("Alpha", commander: null, published, reference: null);
 
         Assert.Equal(123, merged.SiteHeading);
         Assert.Equal(45, merged.RelicTowerHeading);
@@ -43,30 +34,17 @@ public sealed class GuardianRendererSurveyTests
                 ["p1"] = GuardianPoiStatus.Absent,
                 ["p2"] = GuardianPoiStatus.Present,
             },
-            relicHeadings: new Dictionary<string, int>
-            {
-                ["t1"] = 200,
-                ["t2"] = 210,
-            });
+            relicHeadings: new Dictionary<string, int> { ["t1"] = 200, ["t2"] = 210 }
+        );
         var commander = new GuardianSurveyData
         {
             SiteHeading = 321,
             RelicTowerHeading = 54,
-            PoiStatuses = new Dictionary<string, GuardianPoiStatus>
-            {
-                ["p1"] = GuardianPoiStatus.Empty,
-            },
-            RelicHeadings = new Dictionary<string, int>
-            {
-                ["t1"] = 220,
-            },
+            PoiStatuses = new Dictionary<string, GuardianPoiStatus> { ["p1"] = GuardianPoiStatus.Empty },
+            RelicHeadings = new Dictionary<string, int> { ["t1"] = 220 },
         };
 
-        var merged = GuardianViewModel.MergeRendererSurvey(
-            "Alpha",
-            commander,
-            published,
-            reference: null);
+        var merged = GuardianViewModel.MergeRendererSurvey("Alpha", commander, published, reference: null);
 
         Assert.Equal(321, merged.SiteHeading);
         Assert.Equal(54, merged.RelicTowerHeading);
@@ -80,7 +58,8 @@ public sealed class GuardianRendererSurveyTests
         int siteHeading,
         int towerHeading,
         IReadOnlyDictionary<string, GuardianPoiStatus> statuses,
-        IReadOnlyDictionary<string, int> relicHeadings)
+        IReadOnlyDictionary<string, int> relicHeadings
+    )
     {
         return new GuardianPublishedSite(
             1,
@@ -95,6 +74,7 @@ public sealed class GuardianRendererSurveyTests
             relicHeadings,
             [],
             string.Empty,
-            "test");
+            "test"
+        );
     }
 }

@@ -9,17 +9,12 @@ public sealed class HumanSiteOverlayViewModel : INotifyPropertyChanged
     private string platformStatus;
     private string inputMode;
 
-    public HumanSiteOverlayViewModel(
-        HumanSiteViewModel humanSite,
-        OverlayPlatformCapabilities capabilities)
+    public HumanSiteOverlayViewModel(HumanSiteViewModel humanSite, OverlayPlatformCapabilities capabilities)
     {
-        HumanSite = humanSite
-            ?? throw new ArgumentNullException(nameof(humanSite));
+        HumanSite = humanSite ?? throw new ArgumentNullException(nameof(humanSite));
         ArgumentNullException.ThrowIfNull(capabilities);
         platformStatus = capabilities.StatusText;
-        inputMode = capabilities.SupportsClickThrough
-            ? "PASSIVE"
-            : "UNAVAILABLE";
+        inputMode = capabilities.SupportsClickThrough ? "PASSIVE" : "UNAVAILABLE";
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -45,10 +40,7 @@ public sealed class HumanSiteOverlayViewModel : INotifyPropertyChanged
         InputMode = result.IsClickThrough ? "PASSIVE" : "BLOCKED";
     }
 
-    private void SetField(
-        ref string field,
-        string value,
-        [CallerMemberName] string? propertyName = null)
+    private void SetField(ref string field, string value, [CallerMemberName] string? propertyName = null)
     {
         if (string.Equals(field, value, StringComparison.Ordinal))
         {

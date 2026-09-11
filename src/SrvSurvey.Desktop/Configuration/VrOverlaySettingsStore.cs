@@ -16,7 +16,8 @@ public sealed class VrOverlaySettingsStore
         var settings = documentStore.Load()["VirtualReality"] as JsonObject;
         return new VrOverlayPreferences(
             GetBoolean(settings, "Enabled", false),
-            GetString(settings, "RuntimeProcessName", "vrserver"));
+            GetString(settings, "RuntimeProcessName", "vrserver")
+        );
     }
 
     public void Save(VrOverlayPreferences preferences)
@@ -37,30 +38,22 @@ public sealed class VrOverlaySettingsStore
         });
     }
 
-    private static bool GetBoolean(
-        JsonObject? settings,
-        string propertyName,
-        bool fallback)
+    private static bool GetBoolean(JsonObject? settings, string propertyName, bool fallback)
     {
-        return settings?[propertyName] is JsonValue value
-            && value.TryGetValue<bool>(out var result)
-                ? result
-                : fallback;
+        return settings?[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result)
+            ? result
+            : fallback;
     }
 
-    private static string GetString(
-        JsonObject? settings,
-        string propertyName,
-        string fallback)
+    private static string GetString(JsonObject? settings, string propertyName, string fallback)
     {
-        return settings?[propertyName] is JsonValue value
+        return
+            settings?[propertyName] is JsonValue value
             && value.TryGetValue<string>(out var result)
             && !string.IsNullOrWhiteSpace(result)
-                ? result.Trim()
-                : fallback;
+            ? result.Trim()
+            : fallback;
     }
 }
 
-public sealed record VrOverlayPreferences(
-    bool Enabled,
-    string RuntimeProcessName);
+public sealed record VrOverlayPreferences(bool Enabled, string RuntimeProcessName);

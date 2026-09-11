@@ -8,10 +8,7 @@ public sealed class ColonizationSystemEditorViewModelTests
     [Fact]
     public async Task LoadIsReadOnlyAndSecuredSystemRejectsEditing()
     {
-        var client = new StubClient
-        {
-            Current = System(architect: "Other Cmdr", isOpen: false),
-        };
+        var client = new StubClient { Current = System(architect: "Other Cmdr", isOpen: false) };
         var editor = Create(client);
         editor.UpdateContext(Context());
 
@@ -29,10 +26,7 @@ public sealed class ColonizationSystemEditorViewModelTests
     [Fact]
     public async Task MissingBodiesRequireExplicitConfirmationBeforeImport()
     {
-        var client = new StubClient
-        {
-            Current = System() with { Bodies = null },
-        };
+        var client = new StubClient { Current = System() with { Bodies = null } };
         var editor = Create(client);
         editor.UpdateContext(Context());
         await editor.LoadAsync();
@@ -87,13 +81,7 @@ public sealed class ColonizationSystemEditorViewModelTests
         editor.UpdateContext(Context());
         await editor.LoadAsync();
         editor.Sites[0].BodyNumber = 2;
-        client.Current = original with
-        {
-            Sites =
-            [
-                original.Sites[0] with { BodyNumber = 3 },
-            ],
-        };
+        client.Current = original with { Sites = [original.Sites[0] with { BodyNumber = 3 }] };
 
         await editor.ReviewAsync();
         await editor.ConfirmPublishAsync();
@@ -150,9 +138,7 @@ public sealed class ColonizationSystemEditorViewModelTests
 
         var published = Assert.Single(client.LastUpdate!.UpdatedSites);
         Assert.Equal(7, published.ExtensionData["future"].GetInt32());
-        Assert.DoesNotContain(
-            "remote",
-            client.LastUpdate.DeletedSiteIds);
+        Assert.DoesNotContain("remote", client.LastUpdate.DeletedSiteIds);
     }
 
     [Fact]
@@ -179,10 +165,7 @@ public sealed class ColonizationSystemEditorViewModelTests
     [Fact]
     public async Task BodyImportCannotDiscardUnsavedLocalEdits()
     {
-        var client = new StubClient
-        {
-            Current = System() with { Bodies = null },
-        };
+        var client = new StubClient { Current = System() with { Bodies = null } };
         var editor = Create(client);
         editor.UpdateContext(Context());
         await editor.LoadAsync();
@@ -198,24 +181,15 @@ public sealed class ColonizationSystemEditorViewModelTests
 
     private static ColonizationSystemEditorViewModel Create(StubClient client)
     {
-        return new ColonizationSystemEditorViewModel(
-            client,
-            ColonizationBuildCatalog.LoadEmbedded());
+        return new ColonizationSystemEditorViewModel(client, ColonizationBuildCatalog.LoadEmbedded());
     }
 
     private static ColonizationSystemEditorContext Context()
     {
-        return new ColonizationSystemEditorContext(
-            true,
-            "Test Cmdr",
-            "Test System",
-            42,
-            "secret");
+        return new ColonizationSystemEditorContext(true, "Test Cmdr", "Test System", 42, "secret");
     }
 
-    private static ColonizationSystemRecord System(
-        string? architect = "Test Cmdr",
-        bool isOpen = false)
+    private static ColonizationSystemRecord System(string? architect = "Test Cmdr", bool isOpen = false)
     {
         return new ColonizationSystemRecord
         {
@@ -243,10 +217,7 @@ public sealed class ColonizationSystemEditorViewModelTests
         };
     }
 
-    private static ColonizationSystemSite Site(
-        string id,
-        string name,
-        int body)
+    private static ColonizationSystemSite Site(string id, string name, int body)
     {
         return new ColonizationSystemSite
         {
@@ -273,7 +244,8 @@ public sealed class ColonizationSystemEditorViewModelTests
 
         public Task<ColonizationSystemRecord> GetSystemAsync(
             string systemNameOrAddress,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             SystemReadCount++;
             return Task.FromResult(Current);
@@ -281,14 +253,11 @@ public sealed class ColonizationSystemEditorViewModelTests
 
         public Task<ColonizationSystemRecord> ImportSystemBodiesAsync(
             string systemNameOrAddress,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             BodyImportCount++;
-            Current = Current with
-            {
-                Bodies = System().Bodies,
-                Revision = Current.Revision + 1,
-            };
+            Current = Current with { Bodies = System().Bodies, Revision = Current.Revision + 1 };
             return Task.FromResult(Current);
         }
 
@@ -296,26 +265,22 @@ public sealed class ColonizationSystemEditorViewModelTests
             string systemNameOrAddress,
             ColonizationSystemSiteUpdate update,
             string apiKey,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             UpdateCount++;
             LastUpdate = update;
             LastApiKey = apiKey;
-            var deleted = update.DeletedSiteIds.ToHashSet(
-                StringComparer.Ordinal);
-            var sites = Current.Sites
-                .Where(site => !deleted.Contains(site.Id))
+            var deleted = update.DeletedSiteIds.ToHashSet(StringComparer.Ordinal);
+            var sites = Current
+                .Sites.Where(site => !deleted.Contains(site.Id))
                 .ToDictionary(site => site.Id, StringComparer.Ordinal);
             foreach (var site in update.UpdatedSites)
             {
                 sites[site.Id] = site;
             }
 
-            Current = Current with
-            {
-                Revision = Current.Revision + 1,
-                Sites = sites.Values.ToList(),
-            };
+            Current = Current with { Revision = Current.Revision + 1, Sites = sites.Values.ToList() };
             return Task.FromResult(Current);
         }
 
@@ -324,105 +289,99 @@ public sealed class ColonizationSystemEditorViewModelTests
             string siteId,
             ColonizationSystemSitePatch patch,
             string apiKey,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
         public Task<ColonizationCommanderProjects> GetCommanderProjectsAsync(
             string commanderName,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
-        public Task<string?> GetCommanderByApiKeyAsync(
-            string apiKey,
-            CancellationToken cancellationToken = default) =>
+        public Task<string?> GetCommanderByApiKeyAsync(string apiKey, CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
         public Task<IReadOnlyList<string>> SaveHiddenProjectIdsAsync(
             string commanderName,
             IEnumerable<string> hiddenProjectIds,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
         public Task<ColonizationProject?> GetProjectAsync(
             string buildId,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
         public Task<ColonizationProject?> GetProjectAsync(
             long systemAddress,
             long marketId,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
         public Task<ColonizationProject> UpdateProjectAsync(
             ColonizationProjectUpdate update,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
-        public Task MarkProjectCompleteAsync(
-            string buildId,
-            CancellationToken cancellationToken = default) =>
+        public Task MarkProjectCompleteAsync(string buildId, CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
         public Task ContributeToProjectAsync(
             string buildId,
             string commanderName,
             IReadOnlyDictionary<string, int> contributions,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
         public Task SetPrimaryProjectAsync(
             string commanderName,
             string? buildId,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
         public Task<IReadOnlyList<ColonizationSystemSite>> GetSystemSitesAsync(
             string systemNameOrAddress,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
         public Task<string?> GetSystemArchitectAsync(
             string systemNameOrAddress,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
         public Task<ColonizationProject?> CreateProjectAsync(
             ColonizationProjectCreate project,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
         public Task<ColonizationFleetCarrier?> GetFleetCarrierAsync(
             long marketId,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
         public Task<ColonizationFleetCarrier> PublishFleetCarrierAsync(
             ColonizationFleetCarrierRegistration carrier,
             string apiKey,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
-        public Task<IReadOnlyDictionary<string, int>>
-            ReplaceFleetCarrierCargoAsync(
-                long marketId,
-                IReadOnlyDictionary<string, int> cargo,
-                string apiKey,
-                CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+        public Task<IReadOnlyDictionary<string, int>> ReplaceFleetCarrierCargoAsync(
+            long marketId,
+            IReadOnlyDictionary<string, int> cargo,
+            string apiKey,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
-        public Task<IReadOnlyDictionary<string, int>>
-            AdjustFleetCarrierCargoAsync(
-                long marketId,
-                IReadOnlyDictionary<string, int> cargoChanges,
-                string apiKey,
-                CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+        public Task<IReadOnlyDictionary<string, int>> AdjustFleetCarrierCargoAsync(
+            long marketId,
+            IReadOnlyDictionary<string, int> cargoChanges,
+            string apiKey,
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
         public Task PublishCurrentShipAsync(
             ColonizationCurrentShip ship,
             string apiKey,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
     }
 }

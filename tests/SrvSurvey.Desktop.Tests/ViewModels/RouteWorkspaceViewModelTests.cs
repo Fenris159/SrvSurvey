@@ -10,18 +10,15 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-route-view-model-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-route-view-model-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public async Task MissingRouteLoadsAsAnEmptyCommanderWorkspace()
     {
         var viewModel = CreateViewModel();
 
-        var initialized = await viewModel.UpdateContextAsync(
-            "F123",
-            "Sol",
-            1,
-            new GalacticCoordinate(0, 0, 0));
+        var initialized = await viewModel.UpdateContextAsync("F123", "Sol", 1, new GalacticCoordinate(0, 0, 0));
 
         Assert.True(initialized);
         Assert.True(viewModel.HasProfile);
@@ -38,11 +35,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     {
         await SaveRouteAsync(isActive: true, lastReachedIndex: 0);
         var viewModel = CreateViewModel();
-        await viewModel.UpdateContextAsync(
-            "F123",
-            "Sol",
-            1,
-            new GalacticCoordinate(0, 0, 0));
+        await viewModel.UpdateContextAsync("F123", "Sol", 1, new GalacticCoordinate(0, 0, 0));
 
         Assert.Equal(3, viewModel.RouteCount);
         Assert.Equal("Second", viewModel.NextHopName);
@@ -61,8 +54,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         await viewModel.SaveAsync();
 
         Assert.False(viewModel.IsDirty);
-        var saved = await new FollowRouteStore(temporaryDirectory)
-            .LoadAsync("F123");
+        var saved = await new FollowRouteStore(temporaryDirectory).LoadAsync("F123");
         Assert.Equal(2, saved.Route!.LastReachedIndex);
         Assert.False(saved.Route.IsActive);
         Assert.False(saved.Route.AutoCopy);
@@ -71,19 +63,11 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     [Fact]
     public async Task NameImportKeepsUnknownSystemsAndChecksCurrentFirstHop()
     {
-        var resolver = new StubResolver(new Dictionary<string, StarSystemReference>
-        {
-            ["Sol"] = new(
-                "Sol",
-                1,
-                new GalacticCoordinate(0, 0, 0)),
-        });
+        var resolver = new StubResolver(
+            new Dictionary<string, StarSystemReference> { ["Sol"] = new("Sol", 1, new GalacticCoordinate(0, 0, 0)) }
+        );
         var viewModel = CreateViewModel(resolver: resolver);
-        await viewModel.UpdateContextAsync(
-            "F123",
-            "Sol",
-            1,
-            new GalacticCoordinate(0, 0, 0));
+        await viewModel.UpdateContextAsync("F123", "Sol", 1, new GalacticCoordinate(0, 0, 0));
 
         await viewModel.ImportNamesAsync([" Sol ", "Unknown"]);
 
@@ -102,13 +86,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     {
         var imported = new[]
         {
-            new FollowRouteHop(
-                "Jackson's Lighthouse",
-                7,
-                new GalacticCoordinate(1, 2, 3),
-                null,
-                true,
-                true),
+            new FollowRouteHop("Jackson's Lighthouse", 7, new GalacticCoordinate(1, 2, 3), null, true, true),
         };
         var spanshClient = new StubSpanshClient(imported);
         var viewModel = CreateViewModel(spanshClient: spanshClient);
@@ -120,7 +98,8 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         Assert.Contains("valid Spansh route", viewModel.StatusMessage);
 
         await viewModel.ImportSpanshUrlAsync(
-            "https://spansh.co.uk/exact-plotter/results/74FA2952-2048-11F1-8302-B948FF6DF5C1");
+            "https://spansh.co.uk/exact-plotter/results/74FA2952-2048-11F1-8302-B948FF6DF5C1"
+        );
 
         Assert.Equal(1, spanshClient.CallCount);
         var hop = Assert.Single(viewModel.Hops);
@@ -131,8 +110,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     [Fact]
     public async Task FleetCarrierWorkspaceAcceptsOnlyFleetCarrierSpanshRoutes()
     {
-        var spanshClient = new StubSpanshClient(
-        [
+        var spanshClient = new StubSpanshClient([
             new FollowRouteHop(
                 "Colonia",
                 7,
@@ -149,21 +127,23 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
                     HasIcyRing: true,
                     IsSystemPristine: true,
                     MustRestock: true,
-                    RestockAmountTonnes: 3892)),
+                    RestockAmountTonnes: 3892
+                )
+            ),
         ]);
-        var viewModel = CreateViewModel(
-            spanshClient: spanshClient,
-            routeKind: FollowRouteKind.FleetCarrier);
+        var viewModel = CreateViewModel(spanshClient: spanshClient, routeKind: FollowRouteKind.FleetCarrier);
         await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
 
         await viewModel.ImportSpanshUrlAsync(
-            "https://spansh.co.uk/exact-plotter/results/74FA2952-2048-11F1-8302-B948FF6DF5C1");
+            "https://spansh.co.uk/exact-plotter/results/74FA2952-2048-11F1-8302-B948FF6DF5C1"
+        );
 
         Assert.Equal(0, spanshClient.CallCount);
         Assert.Contains("Fleet Carrier Router", viewModel.StatusMessage);
 
         await viewModel.ImportSpanshUrlAsync(
-            "https://spansh.co.uk/fleet-carrier/results/74FA2952-2048-11F1-8302-B948FF6DF5C1");
+            "https://spansh.co.uk/fleet-carrier/results/74FA2952-2048-11F1-8302-B948FF6DF5C1"
+        );
 
         Assert.Equal(1, spanshClient.CallCount);
         var hop = Assert.Single(viewModel.Hops);
@@ -184,9 +164,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     [Fact]
     public async Task FleetCarrierWorkspaceAdvancesOnlyOnCarrierJump()
     {
-        var store = new FollowRouteStore(
-            temporaryDirectory,
-            FollowRouteKind.FleetCarrier);
+        var store = new FollowRouteStore(temporaryDirectory, FollowRouteKind.FleetCarrier);
         await store.SaveAsAsync(
             (await store.CreateNewAsync("F123")) with
             {
@@ -199,27 +177,27 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
                     Hop("Second", 2, new GalacticCoordinate(3, 4, 0)),
                 ],
             },
-            "Carrier Test");
-        var viewModel = CreateViewModel(
-            routeKind: FollowRouteKind.FleetCarrier);
+            "Carrier Test"
+        );
+        var viewModel = CreateViewModel(routeKind: FollowRouteKind.FleetCarrier);
         await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
 
-        await viewModel.ApplyJournalEventsAsync(
-        [
+        await viewModel.ApplyJournalEventsAsync([
             Parse(
                 """
                 {"event":"FSDJump","StarSystem":"Second","SystemAddress":2}
-                """),
+                """
+            ),
         ]);
 
         Assert.Equal(1, viewModel.ReachedCount);
 
-        await viewModel.ApplyJournalEventsAsync(
-        [
+        await viewModel.ApplyJournalEventsAsync([
             Parse(
                 """
                 {"event":"CarrierJump","StarSystem":"Second","SystemAddress":2}
-                """),
+                """
+            ),
         ]);
 
         Assert.Equal(2, viewModel.ReachedCount);
@@ -232,17 +210,15 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     public async Task FleetCarrierCountdownUsesJournalLifecycleAndResetsForCommander()
     {
         var now = DateTimeOffset.Parse("2026-08-01T12:00:00Z");
-        var viewModel = CreateViewModel(
-            routeKind: FollowRouteKind.FleetCarrier,
-            utcNow: () => now);
+        var viewModel = CreateViewModel(routeKind: FollowRouteKind.FleetCarrier, utcNow: () => now);
         await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
 
-        viewModel.ApplyFleetCarrierJumpEvents(
-        [
+        viewModel.ApplyFleetCarrierJumpEvents([
             Parse(
                 """
                 {"timestamp":"2026-08-01T12:00:00Z","event":"CarrierJumpRequest","CarrierID":123,"SystemName":"Colonia","DepartureTime":"2026-08-01T12:15:00Z"}
-                """),
+                """
+            ),
         ]);
 
         Assert.True(viewModel.HasCarrierJumpCountdown);
@@ -267,19 +243,18 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         var viewModel = CreateViewModel();
         await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
 
-        await viewModel.ApplyJournalEventsAsync(
-        [
+        await viewModel.ApplyJournalEventsAsync([
             Parse(
                 """
                 {"timestamp":"2026-07-24T12:00:00Z","event":"FSDJump","StarSystem":"Second","SystemAddress":2,"StarPos":[3,4,0]}
-                """),
+                """
+            ),
         ]);
 
         Assert.Equal(2, viewModel.ReachedCount);
         Assert.Equal("Third", viewModel.NextHopName);
         Assert.Contains("hop #2", viewModel.StatusMessage);
-        var saved = await new FollowRouteStore(temporaryDirectory)
-            .LoadAsync("F123");
+        var saved = await new FollowRouteStore(temporaryDirectory).LoadAsync("F123");
         Assert.Equal(1, saved.Route!.LastReachedIndex);
     }
 
@@ -290,21 +265,21 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         var viewModel = CreateViewModel();
         await viewModel.UpdateContextAsync("F123", "Elsewhere", 99, null);
 
-        await viewModel.ApplyJournalEventsAsync(
-        [
+        await viewModel.ApplyJournalEventsAsync([
             Parse(
                 """
                 {"event":"FSDJump","StarSystem":"Second","SystemAddress":2}
-                """),
+                """
+            ),
         ]);
         Assert.Equal(0, viewModel.ReachedCount);
 
-        await viewModel.ApplyJournalEventsAsync(
-        [
+        await viewModel.ApplyJournalEventsAsync([
             Parse(
                 """
                 {"event":"FSDJump","StarSystem":"Third","SystemAddress":3}
-                """),
+                """
+            ),
         ]);
 
         Assert.True(viewModel.IsComplete);
@@ -342,32 +317,24 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
             copied.Add(text);
             return Task.CompletedTask;
         });
-        await viewModel.UpdateContextAsync(
-            "F123",
-            "Sol",
-            1,
-            new GalacticCoordinate(0, 0, 0));
+        await viewModel.UpdateContextAsync("F123", "Sol", 1, new GalacticCoordinate(0, 0, 0));
 
         Assert.True(viewModel.ShouldAutoCopyNextHop);
 
-        await viewModel.UpdateStatusAsync(new EliteStatus
-        {
-            GuiFocus = GuiFocus.GalaxyMap,
-            Destination = new StatusDestination
+        await viewModel.UpdateStatusAsync(
+            new EliteStatus
             {
-                System = 2,
-                Name = "Second",
-            },
-        });
-        await viewModel.UpdateStatusAsync(new EliteStatus
-        {
-            GuiFocus = GuiFocus.GalaxyMap,
-            Destination = new StatusDestination
+                GuiFocus = GuiFocus.GalaxyMap,
+                Destination = new StatusDestination { System = 2, Name = "Second" },
+            }
+        );
+        await viewModel.UpdateStatusAsync(
+            new EliteStatus
             {
-                System = 2,
-                Name = "Second",
-            },
-        });
+                GuiFocus = GuiFocus.GalaxyMap,
+                Destination = new StatusDestination { System = 2, Name = "Second" },
+            }
+        );
 
         Assert.Equal(["Second"], copied);
         Assert.True(viewModel.ShouldShowGalaxyMapOverlay);
@@ -377,10 +344,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
 
         await viewModel.UpdateStatusAsync(new EliteStatus());
         Assert.False(viewModel.ShouldShowGalaxyMapOverlay);
-        await viewModel.UpdateStatusAsync(new EliteStatus
-        {
-            GuiFocus = GuiFocus.GalaxyMap,
-        });
+        await viewModel.UpdateStatusAsync(new EliteStatus { GuiFocus = GuiFocus.GalaxyMap });
 
         Assert.Equal(["Second", "Second"], copied);
     }
@@ -396,23 +360,16 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
             copied.Add(text);
             return Task.CompletedTask;
         });
-        await viewModel.UpdateContextAsync(
-            "F123",
-            "Sol",
-            1,
-            new GalacticCoordinate(0, 0, 0));
+        await viewModel.UpdateContextAsync("F123", "Sol", 1, new GalacticCoordinate(0, 0, 0));
 
         await viewModel.UpdateStatusAsync(
             new EliteStatus
             {
                 Flags = StatusFlags.InMainShip,
-                Destination = new StatusDestination
-                {
-                    System = 2,
-                    Name = "Second",
-                },
+                Destination = new StatusDestination { System = 2, Name = "Second" },
             },
-            "GalaxyMap");
+            "GalaxyMap"
+        );
 
         Assert.True(viewModel.ShouldShowGalaxyMapOverlay);
         Assert.Equal(["Second"], copied);
@@ -433,10 +390,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
         viewModel.AutoCopy = false;
 
-        await viewModel.UpdateStatusAsync(new EliteStatus
-        {
-            GuiFocus = GuiFocus.GalaxyMap,
-        });
+        await viewModel.UpdateStatusAsync(new EliteStatus { GuiFocus = GuiFocus.GalaxyMap });
 
         Assert.False(viewModel.ShouldAutoCopyNextHop);
         Assert.Empty(copied);
@@ -447,14 +401,10 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     {
         await SaveRouteAsync(isActive: true, lastReachedIndex: 0);
         var viewModel = CreateViewModel();
-        viewModel.SetClipboardWriter(_ =>
-            throw new Exception("clipboard locked"));
+        viewModel.SetClipboardWriter(_ => throw new Exception("clipboard locked"));
         await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
 
-        await viewModel.UpdateStatusAsync(new EliteStatus
-        {
-            GuiFocus = GuiFocus.GalaxyMap,
-        });
+        await viewModel.UpdateStatusAsync(new EliteStatus { GuiFocus = GuiFocus.GalaxyMap });
 
         Assert.Contains("clipboard locked", viewModel.StatusMessage);
         Assert.Equal("AUTO-COPY READY", viewModel.NextHopClipboardStatus);
@@ -465,9 +415,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     {
         var directory = Path.Combine(temporaryDirectory, "routes");
         Directory.CreateDirectory(directory);
-        await File.WriteAllTextAsync(
-            Path.Combine(directory, "F123.json"),
-            "{\"hops\":");
+        await File.WriteAllTextAsync(Path.Combine(directory, "F123.json"), "{\"hops\":");
         var viewModel = CreateViewModel();
 
         await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
@@ -493,11 +441,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         Assert.Equal("Bubble Tour", viewModel.RouteName);
         Assert.Equal("Bubble Tour.json", viewModel.RouteFileName);
         Assert.Single(viewModel.SavedRoutes);
-        Assert.True(File.Exists(Path.Combine(
-            temporaryDirectory,
-            "Routes",
-            "F123",
-            "Bubble Tour.json")));
+        Assert.True(File.Exists(Path.Combine(temporaryDirectory, "Routes", "F123", "Bubble Tour.json")));
 
         await viewModel.ImportNamesAsync(["Beagle Point"]);
         Assert.True(viewModel.HasDefinitionChanges);
@@ -516,8 +460,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         await viewModel.ImportNamesAsync(["Sol", "Achenar"]);
         viewModel.SaveAsCommand.Execute(null);
         var notifications = new List<string?>();
-        viewModel.PropertyChanged += (_, eventArgs) =>
-            notifications.Add(eventArgs.PropertyName);
+        viewModel.PropertyChanged += (_, eventArgs) => notifications.Add(eventArgs.PropertyName);
 
         viewModel.SaveAsName = " ";
         await viewModel.ConfirmSaveAsAsync();
@@ -567,7 +510,8 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
             {
                 Hops = [Hop("Sol", 1, new GalacticCoordinate(0, 0, 0))],
             },
-            "Keep Until Deleted");
+            "Keep Until Deleted"
+        );
         var viewModel = CreateViewModel();
         await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
 
@@ -590,9 +534,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         Assert.False(viewModel.HasSavedRoute);
         Assert.Empty(viewModel.SavedRoutes);
         Assert.False(File.Exists(saved.FilePath));
-        Assert.Single(Directory.EnumerateFiles(
-            Path.Combine(temporaryDirectory, "Routes", "F123", ".trash"),
-            "*.json"));
+        Assert.Single(Directory.EnumerateFiles(Path.Combine(temporaryDirectory, "Routes", "F123", ".trash"), "*.json"));
     }
 
     [Fact]
@@ -616,20 +558,12 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     {
         await SaveRouteAsync(isActive: true, lastReachedIndex: 0);
         var viewModel = CreateViewModel();
-        await viewModel.UpdateContextAsync(
-            "F123",
-            "Sol",
-            1,
-            new GalacticCoordinate(0, 0, 0));
+        await viewModel.UpdateContextAsync("F123", "Sol", 1, new GalacticCoordinate(0, 0, 0));
         var rows = viewModel.Hops;
         var firstRow = rows[0];
         var secondRow = rows[1];
 
-        var reinitialized = await viewModel.UpdateContextAsync(
-            "F123",
-            "Sol",
-            1,
-            new GalacticCoordinate(0, 0, 0));
+        var reinitialized = await viewModel.UpdateContextAsync("F123", "Sol", 1, new GalacticCoordinate(0, 0, 0));
         viewModel.SetProgressThrough(1, reached: true);
 
         Assert.False(reinitialized);
@@ -648,29 +582,21 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
 
         var notifications = new List<string?>();
-        viewModel.PropertyChanged += (_, eventArgs) =>
-            notifications.Add(eventArgs.PropertyName);
-        var dialogs = new (
-            ICommand Command,
-            Func<bool> IsVisible,
-            string VisibilityProperty)[]
+        viewModel.PropertyChanged += (_, eventArgs) => notifications.Add(eventArgs.PropertyName);
+        var dialogs = new (ICommand Command, Func<bool> IsVisible, string VisibilityProperty)[]
         {
             (
                 viewModel.NewCommand,
                 () => viewModel.IsNewConfirmationVisible,
-                nameof(RouteWorkspaceViewModel.IsNewConfirmationVisible)),
-            (
-                viewModel.SaveAsCommand,
-                () => viewModel.IsSaveAsVisible,
-                nameof(RouteWorkspaceViewModel.IsSaveAsVisible)),
-            (
-                viewModel.NotesCommand,
-                () => viewModel.IsNotesVisible,
-                nameof(RouteWorkspaceViewModel.IsNotesVisible)),
+                nameof(RouteWorkspaceViewModel.IsNewConfirmationVisible)
+            ),
+            (viewModel.SaveAsCommand, () => viewModel.IsSaveAsVisible, nameof(RouteWorkspaceViewModel.IsSaveAsVisible)),
+            (viewModel.NotesCommand, () => viewModel.IsNotesVisible, nameof(RouteWorkspaceViewModel.IsNotesVisible)),
             (
                 viewModel.DeleteCommand,
                 () => viewModel.IsDeleteConfirmationVisible,
-                nameof(RouteWorkspaceViewModel.IsDeleteConfirmationVisible)),
+                nameof(RouteWorkspaceViewModel.IsDeleteConfirmationVisible)
+            ),
         };
         foreach (var dialog in dialogs)
         {
@@ -679,9 +605,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
             Assert.True(dialog.IsVisible());
             Assert.True(viewModel.IsDialogVisible);
             Assert.Contains(dialog.VisibilityProperty, notifications);
-            Assert.Contains(
-                nameof(RouteWorkspaceViewModel.IsDialogVisible),
-                notifications);
+            Assert.Contains(nameof(RouteWorkspaceViewModel.IsDialogVisible), notifications);
 
             notifications.Clear();
             viewModel.DismissDialogs();
@@ -689,9 +613,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
             Assert.False(viewModel.IsDialogVisible);
             Assert.False(dialog.IsVisible());
             Assert.Contains(dialog.VisibilityProperty, notifications);
-            Assert.Contains(
-                nameof(RouteWorkspaceViewModel.IsDialogVisible),
-                notifications);
+            Assert.Contains(nameof(RouteWorkspaceViewModel.IsDialogVisible), notifications);
         }
 
         Assert.True(viewModel.HasSavedRoute);
@@ -702,47 +624,47 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     public async Task BioCompletionPersistsAndKeepsSharedRowsStable()
     {
         var store = new FollowRouteStore(temporaryDirectory);
-        await store.SaveAsync(new FollowRouteDocument(
-            "F123",
-            store.GetPath("F123"),
-            true,
-            true,
-            0,
-            [
-                new FollowRouteHop(
-                    "Sol",
-                    1,
-                    new GalacticCoordinate(0, 0, 0),
-                    null,
-                    false,
-                    false,
-                    [
-                        new FollowRouteBioTarget(
-                            "A 1",
-                            10,
-                            ["Bacterium Acies", "Stratum Tectonicas"],
-                            Subtype: "Rocky body",
-                            DistanceToArrivalLs: 1500,
-                            EstimatedScanValue: 500,
-                            EstimatedMappingValue: 2221,
-                            EstimatedBiologyValue: 27428800,
-                            IsTerraformable: true,
-                            IsBiological: true),
-                    ]),
-                Hop("Second", 2, new GalacticCoordinate(3, 4, 0)),
-            ]));
+        await store.SaveAsync(
+            new FollowRouteDocument(
+                "F123",
+                store.GetPath("F123"),
+                true,
+                true,
+                0,
+                [
+                    new FollowRouteHop(
+                        "Sol",
+                        1,
+                        new GalacticCoordinate(0, 0, 0),
+                        null,
+                        false,
+                        false,
+                        [
+                            new FollowRouteBioTarget(
+                                "A 1",
+                                10,
+                                ["Bacterium Acies", "Stratum Tectonicas"],
+                                Subtype: "Rocky body",
+                                DistanceToArrivalLs: 1500,
+                                EstimatedScanValue: 500,
+                                EstimatedMappingValue: 2221,
+                                EstimatedBiologyValue: 27428800,
+                                IsTerraformable: true,
+                                IsBiological: true
+                            ),
+                        ]
+                    ),
+                    Hop("Second", 2, new GalacticCoordinate(3, 4, 0)),
+                ]
+            )
+        );
         var viewModel = CreateViewModel();
-        await viewModel.UpdateContextAsync(
-            "F123",
-            "Sol",
-            1,
-            new GalacticCoordinate(0, 0, 0));
+        await viewModel.UpdateContextAsync("F123", "Sol", 1, new GalacticCoordinate(0, 0, 0));
         var rows = viewModel.Hops;
         var hop = Assert.Single(rows, candidate => candidate.IsCurrent);
         var target = Assert.Single(hop.BioTargets);
         var notifications = new List<string?>();
-        target.PropertyChanged += (_, eventArgs) =>
-            notifications.Add(eventArgs.PropertyName);
+        target.PropertyChanged += (_, eventArgs) => notifications.Add(eventArgs.PropertyName);
 
         await viewModel.SetBioTargetCompletedAsync(target, true);
 
@@ -751,10 +673,7 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         Assert.Same(target, Assert.Single(viewModel.CurrentBioTargets));
         Assert.True(target.IsCompleted);
         Assert.Equal("Rocky body", target.Subtype);
-        Assert.EndsWith(
-            "/Assets/Bodies/rocky-body.png",
-            target.BodyIconAssetPath,
-            StringComparison.Ordinal);
+        Assert.EndsWith("/Assets/Bodies/rocky-body.png", target.BodyIconAssetPath, StringComparison.Ordinal);
         Assert.Equal("1,500 LS", target.DistanceToArrival);
         Assert.Equal("500 CR", target.EstimatedScanValue);
         Assert.Equal("2,221 CR", target.EstimatedMappingValue);
@@ -777,43 +696,37 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     public async Task BodyArrivalCompletesTheMatchingRouteTarget()
     {
         var store = new FollowRouteStore(temporaryDirectory);
-        await store.SaveAsync(new FollowRouteDocument(
-            "F123",
-            store.GetPath("F123"),
-            true,
-            true,
-            0,
-            [
-                new FollowRouteHop(
-                    "Synuefe NL-N C23-4",
-                    101,
-                    new GalacticCoordinate(0, 0, 0),
-                    null,
-                    false,
-                    false,
-                    [
-                        new FollowRouteBioTarget(
-                            "A 4",
-                            10,
-                            ["Bacterium Acies"],
-                            Subtype: "Rocky body"),
-                    ]),
-                Hop("Second", 2, new GalacticCoordinate(3, 4, 0)),
-            ]));
+        await store.SaveAsync(
+            new FollowRouteDocument(
+                "F123",
+                store.GetPath("F123"),
+                true,
+                true,
+                0,
+                [
+                    new FollowRouteHop(
+                        "Synuefe NL-N C23-4",
+                        101,
+                        new GalacticCoordinate(0, 0, 0),
+                        null,
+                        false,
+                        false,
+                        [new FollowRouteBioTarget("A 4", 10, ["Bacterium Acies"], Subtype: "Rocky body")]
+                    ),
+                    Hop("Second", 2, new GalacticCoordinate(3, 4, 0)),
+                ]
+            )
+        );
         var viewModel = CreateViewModel();
-        await viewModel.UpdateContextAsync(
-            "F123",
-            "Synuefe NL-N C23-4",
-            101,
-            new GalacticCoordinate(0, 0, 0));
+        await viewModel.UpdateContextAsync("F123", "Synuefe NL-N C23-4", 101, new GalacticCoordinate(0, 0, 0));
         var target = Assert.Single(viewModel.CurrentBioTargets);
 
-        await viewModel.ApplyJournalEventsAsync(
-        [
+        await viewModel.ApplyJournalEventsAsync([
             Parse(
                 """
                 {"event":"ApproachBody","StarSystem":"Synuefe NL-N C23-4","SystemAddress":101,"Body":"Synuefe NL-N C23-4 A 4","BodyID":10}
-                """),
+                """
+            ),
         ]);
 
         Assert.Same(target, Assert.Single(viewModel.CurrentBioTargets));
@@ -825,17 +738,12 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     [Fact]
     public void BodyArtworkChangesOnlyWhenTheBodySubtypeChanges()
     {
-        var source = new FollowRouteBioTarget(
-            "A 1",
-            10,
-            [],
-            Subtype: "Rocky body");
+        var source = new FollowRouteBioTarget("A 1", 10, [], Subtype: "Rocky body");
         var target = new RouteBioTargetItemViewModel(0, 0, source);
         var originalSegments = target.CompactDetailSegments;
         var originalInlineSegments = target.InlineSegments;
         var notifications = new List<string?>();
-        target.PropertyChanged += (_, eventArgs) =>
-            notifications.Add(eventArgs.PropertyName);
+        target.PropertyChanged += (_, eventArgs) => notifications.Add(eventArgs.PropertyName);
 
         target.Update(source);
 
@@ -843,101 +751,72 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         Assert.Same(originalSegments, target.CompactDetailSegments);
         Assert.Same(originalInlineSegments, target.InlineSegments);
         Assert.Equal("Rocky body", Assert.Single(originalSegments).Text);
-        Assert.Equal(
-            ["A 1", "Rocky body"],
-            originalInlineSegments.Select(segment => segment.Text));
+        Assert.Equal(["A 1", "Rocky body"], originalInlineSegments.Select(segment => segment.Text));
         Assert.True(originalInlineSegments[0].IsBodyName);
         Assert.True(originalInlineSegments[1].IsDetail);
-        Assert.EndsWith(
-            "/Assets/Bodies/rocky-body.png",
-            target.BodyIconAssetPath,
-            StringComparison.Ordinal);
+        Assert.EndsWith("/Assets/Bodies/rocky-body.png", target.BodyIconAssetPath, StringComparison.Ordinal);
 
         target.Update(source with { Subtype = "Water world" });
 
-        Assert.EndsWith(
-            "/Assets/Bodies/water-world.png",
-            target.BodyIconAssetPath,
-            StringComparison.Ordinal);
-        Assert.Contains(
-            nameof(RouteBioTargetItemViewModel.BodyIconAssetPath),
-            notifications);
-        Assert.Contains(
-            nameof(RouteBioTargetItemViewModel.BodyIconAccessibleName),
-            notifications);
+        Assert.EndsWith("/Assets/Bodies/water-world.png", target.BodyIconAssetPath, StringComparison.Ordinal);
+        Assert.Contains(nameof(RouteBioTargetItemViewModel.BodyIconAssetPath), notifications);
+        Assert.Contains(nameof(RouteBioTargetItemViewModel.BodyIconAccessibleName), notifications);
         Assert.NotSame(originalSegments, target.CompactDetailSegments);
         Assert.NotSame(originalInlineSegments, target.InlineSegments);
-        Assert.Contains(
-            nameof(RouteBioTargetItemViewModel.CompactDetailSegments),
-            notifications);
-        Assert.Contains(
-            nameof(RouteBioTargetItemViewModel.InlineSegments),
-            notifications);
+        Assert.Contains(nameof(RouteBioTargetItemViewModel.CompactDetailSegments), notifications);
+        Assert.Contains(nameof(RouteBioTargetItemViewModel.InlineSegments), notifications);
 
         notifications.Clear();
         target.Update(source with { Subtype = "WATER-WORLD" });
 
-        Assert.DoesNotContain(
-            nameof(RouteBioTargetItemViewModel.BodyIconAssetPath),
-            notifications);
-        Assert.DoesNotContain(
-            nameof(RouteBioTargetItemViewModel.BodyIconAccessibleName),
-            notifications);
+        Assert.DoesNotContain(nameof(RouteBioTargetItemViewModel.BodyIconAssetPath), notifications);
+        Assert.DoesNotContain(nameof(RouteBioTargetItemViewModel.BodyIconAccessibleName), notifications);
     }
 
     private RouteWorkspaceViewModel CreateViewModel(
         IStarSystemResolver? resolver = null,
         ISpanshRouteClient? spanshClient = null,
         FollowRouteKind routeKind = FollowRouteKind.Standard,
-        Func<DateTimeOffset>? utcNow = null)
+        Func<DateTimeOffset>? utcNow = null
+    )
     {
         var store = new FollowRouteStore(temporaryDirectory, routeKind);
         return new RouteWorkspaceViewModel(
             new FollowRouteService(store),
-            new RouteNameImporter(
-                resolver
-                    ?? new StubResolver(
-                        new Dictionary<string, StarSystemReference>())),
+            new RouteNameImporter(resolver ?? new StubResolver(new Dictionary<string, StarSystemReference>())),
             spanshClient ?? new StubSpanshClient([]),
             routeKind,
-            utcNow);
+            utcNow
+        );
     }
 
     private async Task SaveRouteAsync(bool isActive, int lastReachedIndex)
     {
         var store = new FollowRouteStore(temporaryDirectory);
-        await store.SaveAsync(new FollowRouteDocument(
-            "F123",
-            store.GetPath("F123"),
-            isActive,
-            true,
-            lastReachedIndex,
-            [
-                Hop("Sol", 1, new GalacticCoordinate(0, 0, 0)),
-                Hop("Second", 2, new GalacticCoordinate(3, 4, 0)),
-                Hop("Third", 3, new GalacticCoordinate(3, 4, 12)),
-            ]));
+        await store.SaveAsync(
+            new FollowRouteDocument(
+                "F123",
+                store.GetPath("F123"),
+                isActive,
+                true,
+                lastReachedIndex,
+                [
+                    Hop("Sol", 1, new GalacticCoordinate(0, 0, 0)),
+                    Hop("Second", 2, new GalacticCoordinate(3, 4, 0)),
+                    Hop("Third", 3, new GalacticCoordinate(3, 4, 12)),
+                ]
+            )
+        );
     }
 
-    private static FollowRouteHop Hop(
-        string name,
-        long address,
-        GalacticCoordinate position)
+    private static FollowRouteHop Hop(string name, long address, GalacticCoordinate position)
     {
-        return new FollowRouteHop(
-            name,
-            address,
-            position,
-            null,
-            false,
-            false);
+        return new FollowRouteHop(name, address, position, null, false, false);
     }
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(
-            JournalEventEnvelope.TryParse(json, out var journalEvent, out var error),
-            error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
         return journalEvent!;
     }
 
@@ -949,31 +828,26 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         }
     }
 
-    private sealed class StubResolver(
-        IReadOnlyDictionary<string, StarSystemReference> systems)
-        : IStarSystemResolver
+    private sealed class StubResolver(IReadOnlyDictionary<string, StarSystemReference> systems) : IStarSystemResolver
     {
         public Task<IReadOnlyList<StarSystemReference>> SearchAsync(
             string query,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
-            IReadOnlyList<StarSystemReference> result = systems.TryGetValue(
-                query,
-                out var system)
-                    ? [system]
-                    : [];
+            IReadOnlyList<StarSystemReference> result = systems.TryGetValue(query, out var system) ? [system] : [];
             return Task.FromResult(result);
         }
     }
 
-    private sealed class StubSpanshClient(
-        IReadOnlyList<FollowRouteHop> hops) : ISpanshRouteClient
+    private sealed class StubSpanshClient(IReadOnlyList<FollowRouteHop> hops) : ISpanshRouteClient
     {
         public int CallCount { get; private set; }
 
         public Task<IReadOnlyList<FollowRouteHop>> GetRouteAsync(
             SpanshRouteReference route,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             CallCount++;
             return Task.FromResult(hops);

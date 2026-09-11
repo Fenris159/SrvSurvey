@@ -11,10 +11,16 @@ public sealed class FleetCarrierJumpCountdownTrackerTests
         var tracker = new FleetCarrierJumpCountdownTracker();
         var start = DateTimeOffset.Parse("2026-08-01T12:00:00Z");
 
-        Assert.True(tracker.Apply(Parse(
-            """
-            {"timestamp":"2026-08-01T12:00:00Z","event":"CarrierJumpRequest","CarrierID":123,"SystemName":"Colonia","DepartureTime":"2026-08-01T12:15:00Z"}
-            """), start));
+        Assert.True(
+            tracker.Apply(
+                Parse(
+                    """
+                    {"timestamp":"2026-08-01T12:00:00Z","event":"CarrierJumpRequest","CarrierID":123,"SystemName":"Colonia","DepartureTime":"2026-08-01T12:15:00Z"}
+                    """
+                ),
+                start
+            )
+        );
 
         Assert.Equal("DEPARTURE TO COLONIA", tracker.Current.Title);
         Assert.Equal("15:00", tracker.Current.Countdown);
@@ -45,21 +51,37 @@ public sealed class FleetCarrierJumpCountdownTrackerTests
     {
         var tracker = new FleetCarrierJumpCountdownTracker();
         var start = DateTimeOffset.Parse("2026-08-01T12:00:00Z");
-        tracker.Apply(Parse(
-            """
-            {"timestamp":"2026-08-01T12:00:00Z","event":"CarrierJumpRequest","CarrierID":123,"SystemName":"Colonia","DepartureTime":"2026-08-01T12:15:00Z"}
-            """), start);
+        tracker.Apply(
+            Parse(
+                """
+                {"timestamp":"2026-08-01T12:00:00Z","event":"CarrierJumpRequest","CarrierID":123,"SystemName":"Colonia","DepartureTime":"2026-08-01T12:15:00Z"}
+                """
+            ),
+            start
+        );
 
-        Assert.False(tracker.Apply(Parse(
-            """
-            {"timestamp":"2026-08-01T12:01:00Z","event":"CarrierJumpCancelled","CarrierID":456}
-            """), start));
+        Assert.False(
+            tracker.Apply(
+                Parse(
+                    """
+                    {"timestamp":"2026-08-01T12:01:00Z","event":"CarrierJumpCancelled","CarrierID":456}
+                    """
+                ),
+                start
+            )
+        );
         Assert.Equal("DEPARTURE TO COLONIA", tracker.Current.Title);
 
-        Assert.True(tracker.Apply(Parse(
-            """
-            {"timestamp":"2026-08-01T12:01:00Z","event":"CarrierJumpCancelled","CarrierID":123}
-            """), start.AddMinutes(1)));
+        Assert.True(
+            tracker.Apply(
+                Parse(
+                    """
+                    {"timestamp":"2026-08-01T12:01:00Z","event":"CarrierJumpCancelled","CarrierID":123}
+                    """
+                ),
+                start.AddMinutes(1)
+            )
+        );
         Assert.Equal("CANCELLATION COOLDOWN", tracker.Current.Title);
         Assert.Equal("1:00", tracker.Current.Countdown);
         Assert.Equal("JUMP CANCELLED", tracker.Current.PhaseLabel);
@@ -71,10 +93,14 @@ public sealed class FleetCarrierJumpCountdownTrackerTests
         var tracker = new FleetCarrierJumpCountdownTracker();
         var observed = DateTimeOffset.Parse("2026-08-01T12:15:25Z");
 
-        tracker.Apply(Parse(
-            """
-            {"timestamp":"2026-08-01T12:15:25Z","event":"CarrierJump","StarSystem":"Colonia"}
-            """), observed);
+        tracker.Apply(
+            Parse(
+                """
+                {"timestamp":"2026-08-01T12:15:25Z","event":"CarrierJump","StarSystem":"Colonia"}
+                """
+            ),
+            observed
+        );
 
         Assert.True(tracker.Current.IsActive);
         Assert.Equal("JUMP COOLDOWN", tracker.Current.Title);
@@ -84,9 +110,7 @@ public sealed class FleetCarrierJumpCountdownTrackerTests
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(
-            JournalEventEnvelope.TryParse(json, out var journalEvent, out var error),
-            error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
         return journalEvent!;
     }
 }

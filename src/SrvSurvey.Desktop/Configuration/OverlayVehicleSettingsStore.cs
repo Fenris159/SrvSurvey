@@ -12,13 +12,22 @@ public sealed class OverlayVehicleSettingsStore(string path)
     public void MigrateFiregroupsCategory()
     {
         var stored = document.Load();
-        if (IsFiregroupsMigrated(stored)) return;
+        if (IsFiregroupsMigrated(stored))
+        {
+            return;
+        }
+
         document.Update(root =>
         {
-            if (root[SettingsKey] is JsonObject lists
+            if (
+                root[SettingsKey] is JsonObject lists
                 && lists[nameof(OverlaySettingsCategory.Firegroups)] is null
-                && lists[nameof(OverlaySettingsCategory.Global)] is JsonArray original)
+                && lists[nameof(OverlaySettingsCategory.Global)] is JsonArray original
+            )
+            {
                 lists[nameof(OverlaySettingsCategory.Firegroups)] = original.DeepClone();
+            }
+
             root[FiregroupsMigration] = true;
         });
     }
@@ -28,14 +37,20 @@ public sealed class OverlayVehicleSettingsStore(string path)
         var root = document.Load();
         var lists = root[SettingsKey] as JsonObject;
         var values = lists?[category.ToString()] as JsonArray;
-        if (values is null && category == OverlaySettingsCategory.Firegroups && !IsFiregroupsMigrated(root)) values = lists?[nameof(OverlaySettingsCategory.Global)] as JsonArray;
-        return values?.OfType<JsonValue>()
+        if (values is null && category == OverlaySettingsCategory.Firegroups && !IsFiregroupsMigrated(root))
+        {
+            values = lists?[nameof(OverlaySettingsCategory.Global)] as JsonArray;
+        }
+
+        return values
+            ?.OfType<JsonValue>()
             .Select(v => v.TryGetValue<string>(out var id) ? id : null)
-            .OfType<string>().ToHashSet(StringComparer.OrdinalIgnoreCase);
+            .OfType<string>()
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
     }
 
-    private static bool IsFiregroupsMigrated(JsonObject root) => root[FiregroupsMigration] is JsonValue value
-        && value.TryGetValue<bool>(out var migrated) && migrated;
+    private static bool IsFiregroupsMigrated(JsonObject root) =>
+        root[FiregroupsMigration] is JsonValue value && value.TryGetValue<bool>(out var migrated) && migrated;
 
     public void Save(OverlaySettingsCategory category, IEnumerable<string> allowed)
     {

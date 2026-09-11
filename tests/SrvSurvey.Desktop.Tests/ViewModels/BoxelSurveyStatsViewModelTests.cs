@@ -13,7 +13,8 @@ public sealed class BoxelSurveyStatsViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        "SrvSurvey-BoxelSurveyStatsViewModelTests-" + Guid.NewGuid().ToString("N"));
+        "SrvSurvey-BoxelSurveyStatsViewModelTests-" + Guid.NewGuid().ToString("N")
+    );
 
     [AvaloniaFact]
     public async Task MassCodeFilterListsOnlyRecordedPrefixesAtThatExactCode()
@@ -41,19 +42,16 @@ public sealed class BoxelSurveyStatsViewModelTests : IDisposable
         Assert.True(viewModel.IsDetailVisible);
         Assert.False(viewModel.CanShowSearchRollup);
         Assert.True(viewModel.IsSelectedBoxelScope);
-        Assert.Equal(
-            "Entire saved search (not available)",
-            viewModel.EntireSavedSearchScopeText);
+        Assert.Equal("Entire saved search (not available)", viewModel.EntireSavedSearchScopeText);
         Assert.Contains(
             "Open statistics from Saved boxel searches",
             viewModel.StatisticsScopeDescription,
-            StringComparison.Ordinal);
+            StringComparison.Ordinal
+        );
         Assert.Contains("HE", viewModel.HeliumText, StringComparison.Ordinal);
         Assert.Equal("Systems recorded: 1", viewModel.VisitedText);
         Assert.Equal("Highest recorded suffix: 0", viewModel.HighestRecordedSuffixText);
-        var water = Assert.Single(
-            viewModel.ClassRows,
-            row => row.Code == "WW");
+        var water = Assert.Single(viewModel.ClassRows, row => row.Code == "WW");
         Assert.Equal(1, water.Count);
         Assert.Equal(BoxelSurveyAverageFormatter.Placeholder, water.Average);
         Assert.Equal(19 + 1, viewModel.ClassRows.Count);
@@ -74,9 +72,9 @@ public sealed class BoxelSurveyStatsViewModelTests : IDisposable
         water = Assert.Single(viewModel.ClassRows, row => row.Code == "WW");
         Assert.Equal("1 in 1", water.Average);
         Assert.Empty(viewModel.StatusMessage);
-        var saved = new BoxelSurveyStatsSettingsStore(Path.Combine(
-            temporaryDirectory,
-            "cross-platform-ui.json")).Load();
+        var saved = new BoxelSurveyStatsSettingsStore(
+            Path.Combine(temporaryDirectory, "cross-platform-ui.json")
+        ).Load();
         Assert.Equal(1, saved.MinSystemsForAverages);
     }
 
@@ -108,32 +106,24 @@ public sealed class BoxelSurveyStatsViewModelTests : IDisposable
     {
         using var coordinator = await CreateCoordinatorWithSystemAsync();
         using var viewModel = CreateViewModel(coordinator);
-        await viewModel.FocusPrefixesAsync(
-            ["Praea Euq IL-P c5-", "Wregoe BU-Y b2-"],
-            'c');
+        await viewModel.FocusPrefixesAsync(["Praea Euq IL-P c5-", "Wregoe BU-Y b2-"], 'c');
 
         Assert.True(viewModel.CanShowSearchRollup);
         Assert.True(viewModel.IsSelectedBoxelScope);
         Assert.Equal("Entire saved search (2 boxels)", viewModel.EntireSavedSearchScopeText);
-        Assert.Contains(
-            "selected boxel only",
-            viewModel.StatisticsScopeDescription,
-            StringComparison.Ordinal);
+        Assert.Contains("selected boxel only", viewModel.StatisticsScopeDescription, StringComparison.Ordinal);
 
         viewModel.IsEntireSavedSearchScope = true;
         await viewModel.RefreshAsync();
         Assert.True(viewModel.IsEntireSavedSearchScope);
         Assert.Contains("saved search", viewModel.DetailTitle, StringComparison.Ordinal);
-        Assert.Equal(
-            "Configured search systems: — (per-boxel only)",
-            viewModel.ConfiguredSystemsText);
-        Assert.Equal(
-            "Highest recorded suffix: — (per-boxel only)",
-            viewModel.HighestRecordedSuffixText);
+        Assert.Equal("Configured search systems: — (per-boxel only)", viewModel.ConfiguredSystemsText);
+        Assert.Equal("Highest recorded suffix: — (per-boxel only)", viewModel.HighestRecordedSuffixText);
         Assert.Contains(
             "If only one boxel has recorded data",
             viewModel.StatisticsScopeDescription,
-            StringComparison.Ordinal);
+            StringComparison.Ordinal
+        );
     }
 
     [AvaloniaFact]
@@ -146,13 +136,8 @@ public sealed class BoxelSurveyStatsViewModelTests : IDisposable
 
         Assert.False(viewModel.CanShowSearchRollup);
         Assert.True(viewModel.IsSelectedBoxelScope);
-        Assert.Equal(
-            "Entire saved search (1 boxel)",
-            viewModel.EntireSavedSearchScopeText);
-        Assert.Contains(
-            "contains only one boxel",
-            viewModel.StatisticsScopeDescription,
-            StringComparison.Ordinal);
+        Assert.Equal("Entire saved search (1 boxel)", viewModel.EntireSavedSearchScopeText);
+        Assert.Contains("contains only one boxel", viewModel.StatisticsScopeDescription, StringComparison.Ordinal);
 
         viewModel.IsEntireSavedSearchScope = true;
         Assert.False(viewModel.IsEntireSavedSearchScope);
@@ -163,23 +148,15 @@ public sealed class BoxelSurveyStatsViewModelTests : IDisposable
     {
         using var coordinator = await CreateCoordinatorWithSystemAsync();
         using var viewModel = CreateViewModel(coordinator);
-        await viewModel.FocusPrefixesAsync(
-            ["Praea Euq IL-P c5-", "Wregoe BU-Y b2-"],
-            'c');
+        await viewModel.FocusPrefixesAsync(["Praea Euq IL-P c5-", "Wregoe BU-Y b2-"], 'c');
         viewModel.IsEntireSavedSearchScope = true;
         await viewModel.RefreshAsync();
-        var subscribedButton = new Button
-        {
-            Command = viewModel.RefreshCommand,
-        };
+        var subscribedButton = new Button { Command = viewModel.RefreshCommand };
 
         await Task.Run(viewModel.RefreshAsync);
 
         Assert.False(viewModel.IsBusy);
-        Assert.Contains(
-            "entire saved search",
-            viewModel.DetailTitle,
-            StringComparison.Ordinal);
+        Assert.Contains("entire saved search", viewModel.DetailTitle, StringComparison.Ordinal);
         GC.KeepAlive(subscribedButton);
     }
 
@@ -221,17 +198,19 @@ public sealed class BoxelSurveyStatsViewModelTests : IDisposable
         };
         var raiseChanged = typeof(BoxelSurveyStatsCoordinator).GetMethod(
             "RaiseChanged",
-            System.Reflection.BindingFlags.Instance
-                | System.Reflection.BindingFlags.NonPublic);
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic
+        );
         Assert.NotNull(raiseChanged);
 
         Task.Run(() =>
-        {
-            for (var index = 0; index < 20; index++)
             {
-                raiseChanged!.Invoke(coordinator, null);
-            }
-        }).GetAwaiter().GetResult();
+                for (var index = 0; index < 20; index++)
+                {
+                    raiseChanged!.Invoke(coordinator, null);
+                }
+            })
+            .GetAwaiter()
+            .GetResult();
 
         for (var attempt = 0; attempt < 50 && busyTransitions < 2; attempt++)
         {
@@ -252,10 +231,10 @@ public sealed class BoxelSurveyStatsViewModelTests : IDisposable
         var parent = BoxelAddress.Parse("Praea Euq IL-P c5-0");
         var child = parent.Children[0].WithSystemNumber(0);
         Assert.True(child.TryGetSystemAddress(out var childAddress));
-        await coordinator.ApplyJournalEventsAsync(
-        [
+        await coordinator.ApplyJournalEventsAsync([
             Parse(
-                $$"""{"timestamp":"2026-07-10T13:00:00Z","event":"FSDJump","StarSystem":"{{child.Name}}","SystemAddress":{{childAddress}}}"""),
+                $$"""{"timestamp":"2026-07-10T13:00:00Z","event":"FSDJump","StarSystem":"{{child.Name}}","SystemAddress":{{childAddress}}}"""
+            ),
         ]);
         await coordinator.FlushAsync();
         using var viewModel = CreateViewModel(coordinator);
@@ -283,9 +262,7 @@ public sealed class BoxelSurveyStatsViewModelTests : IDisposable
     {
         using var coordinator = await CreateCoordinatorWithSystemAsync();
         using var viewModel = CreateViewModel(coordinator);
-        await viewModel.FocusPrefixesAsync(
-            ["Praea Euq IL-P c5-", "Wregoe BU-Y b2-"],
-            'c');
+        await viewModel.FocusPrefixesAsync(["Praea Euq IL-P c5-", "Wregoe BU-Y b2-"], 'c');
         viewModel.ShowSearchRollup = true;
         await viewModel.RefreshAsync();
         Assert.Contains("saved search", viewModel.DetailTitle, StringComparison.Ordinal);
@@ -321,24 +298,19 @@ public sealed class BoxelSurveyStatsViewModelTests : IDisposable
     {
         using var coordinator = await CreateCoordinatorWithSystemAsync();
         using var viewModel = CreateViewModel(coordinator);
-        var storeDirectory = Path.Combine(
-            temporaryDirectory,
-            BoxelSurveyStatsStore.StoreDirectoryName);
+        var storeDirectory = Path.Combine(temporaryDirectory, BoxelSurveyStatsStore.StoreDirectoryName);
         Directory.Delete(storeDirectory, recursive: true);
         await File.WriteAllTextAsync(storeDirectory, "blocked");
-        await coordinator.ApplyJournalEventsAsync(
-        [
+        await coordinator.ApplyJournalEventsAsync([
             Parse(
-                """{"timestamp":"2026-07-10T13:00:00Z","event":"FSDJump","StarSystem":"Praea Euq IL-P c5-1","SystemAddress":2002}"""),
+                """{"timestamp":"2026-07-10T13:00:00Z","event":"FSDJump","StarSystem":"Praea Euq IL-P c5-1","SystemAddress":2002}"""
+            ),
         ]);
 
         await coordinator.FlushAsync();
         await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => { });
 
-        Assert.Contains(
-            "Could not save boxel survey statistics",
-            viewModel.StatusMessage,
-            StringComparison.Ordinal);
+        Assert.Contains("Could not save boxel survey statistics", viewModel.StatusMessage, StringComparison.Ordinal);
     }
 
     [AvaloniaFact]
@@ -349,27 +321,21 @@ public sealed class BoxelSurveyStatsViewModelTests : IDisposable
         viewModel.ReportStatus("unchanged");
         var eventField = typeof(BoxelSurveyStatsCoordinator).GetField(
             nameof(BoxelSurveyStatsCoordinator.Changed),
-            System.Reflection.BindingFlags.Instance
-                | System.Reflection.BindingFlags.NonPublic);
-        var before = Assert.IsType<MulticastDelegate>(
-            eventField?.GetValue(coordinator),
-            exactMatch: false);
-        Assert.Contains(
-            before.GetInvocationList(),
-            handler => ReferenceEquals(handler.Target, viewModel));
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic
+        );
+        var before = Assert.IsType<MulticastDelegate>(eventField?.GetValue(coordinator), exactMatch: false);
+        Assert.Contains(before.GetInvocationList(), handler => ReferenceEquals(handler.Target, viewModel));
 
         viewModel.Dispose();
-        await coordinator.ApplyJournalEventsAsync(
-        [
+        await coordinator.ApplyJournalEventsAsync([
             Parse(
-                """{"timestamp":"2026-07-10T13:00:00Z","event":"FSDJump","StarSystem":"Praea Euq IL-P c5-1","SystemAddress":2002}"""),
+                """{"timestamp":"2026-07-10T13:00:00Z","event":"FSDJump","StarSystem":"Praea Euq IL-P c5-1","SystemAddress":2002}"""
+            ),
         ]);
         await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => { });
         var after = eventField?.GetValue(coordinator) as MulticastDelegate;
 
-        Assert.DoesNotContain(
-            after?.GetInvocationList() ?? [],
-            handler => ReferenceEquals(handler.Target, viewModel));
+        Assert.DoesNotContain(after?.GetInvocationList() ?? [], handler => ReferenceEquals(handler.Target, viewModel));
         Assert.Equal("unchanged", viewModel.StatusMessage);
     }
 
@@ -381,14 +347,11 @@ public sealed class BoxelSurveyStatsViewModelTests : IDisposable
         }
     }
 
-    private BoxelSurveyStatsViewModel CreateViewModel(
-        BoxelSurveyStatsCoordinator coordinator)
+    private BoxelSurveyStatsViewModel CreateViewModel(BoxelSurveyStatsCoordinator coordinator)
     {
         Directory.CreateDirectory(temporaryDirectory);
         var settingsPath = Path.Combine(temporaryDirectory, "cross-platform-ui.json");
-        return new BoxelSurveyStatsViewModel(
-            coordinator,
-            new BoxelSurveyStatsSettingsStore(settingsPath));
+        return new BoxelSurveyStatsViewModel(coordinator, new BoxelSurveyStatsSettingsStore(settingsPath));
     }
 
     private async Task<BoxelSurveyStatsCoordinator> CreateCoordinatorWithSystemAsync()
@@ -396,17 +359,18 @@ public sealed class BoxelSurveyStatsViewModelTests : IDisposable
         Directory.CreateDirectory(temporaryDirectory);
         var coordinator = new BoxelSurveyStatsCoordinator(
             new BoxelSurveyStatsStore(temporaryDirectory),
-            TimeSpan.FromHours(1));
+            TimeSpan.FromHours(1)
+        );
         await coordinator.SwitchCommanderAsync("F123");
-        await coordinator.ApplyJournalEventsAsync(
-        [
+        await coordinator.ApplyJournalEventsAsync([
             Parse(
-                """{"timestamp":"2026-07-10T12:00:00Z","event":"FSDJump","StarSystem":"Praea Euq IL-P c5-0","SystemAddress":2001}"""),
+                """{"timestamp":"2026-07-10T12:00:00Z","event":"FSDJump","StarSystem":"Praea Euq IL-P c5-0","SystemAddress":2001}"""
+            ),
             Parse(
-                """{"event":"Scan","SystemAddress":2001,"BodyID":2,"PlanetClass":"Water world","MassEM":1,"AtmosphereComposition":[{"Name":"Helium","Percent":28.5}]}"""),
+                """{"event":"Scan","SystemAddress":2001,"BodyID":2,"PlanetClass":"Water world","MassEM":1,"AtmosphereComposition":[{"Name":"Helium","Percent":28.5}]}"""
+            ),
         ]);
         await coordinator.FlushAsync();
         return coordinator;
     }
-
 }

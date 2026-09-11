@@ -6,78 +6,61 @@ namespace SrvSurvey.Core.Exploration;
 
 public interface IGreenGasGiantClient
 {
-    Task PublishAsync(
-        GreenGasGiantCandidate candidate,
-        CancellationToken cancellationToken = default);
+    Task PublishAsync(GreenGasGiantCandidate candidate, CancellationToken cancellationToken = default);
 }
 
 public sealed class GreenGasGiantClient : IGreenGasGiantClient
 {
     private const int MaximumErrorDetailBytes = 2 * 1024;
 
-    public static Uri DefaultServiceUri { get; } = new(
-        "https://ravencolonial100-awcbdvabgze4c5cq.canadacentral-01.azurewebsites.net/");
+    public static Uri DefaultServiceUri { get; } =
+        new("https://ravencolonial100-awcbdvabgze4c5cq.canadacentral-01.azurewebsites.net/");
 
     private readonly HttpClient httpClient;
     private readonly Uri serviceUri;
 
-    public GreenGasGiantClient(
-        HttpClient? httpClient = null,
-        Uri? serviceUri = null)
+    public GreenGasGiantClient(HttpClient? httpClient = null, Uri? serviceUri = null)
     {
         this.httpClient = httpClient ?? new HttpClient();
-        this.serviceUri = new Uri(
-            EnsureTrailingSlash(serviceUri ?? DefaultServiceUri),
-            "api/ggg/create");
+        this.serviceUri = new Uri(EnsureTrailingSlash(serviceUri ?? DefaultServiceUri), "api/ggg/create");
     }
 
-    public async Task PublishAsync(
-        GreenGasGiantCandidate candidate,
-        CancellationToken cancellationToken = default)
+    public async Task PublishAsync(GreenGasGiantCandidate candidate, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(candidate);
         using var request = new HttpRequestMessage(HttpMethod.Put, serviceUri)
         {
-            Content = JsonContent.Create(new
-            {
-                cmdr = candidate.CommanderName,
-                tag = candidate.Tag,
-                starPos = new[]
+            Content = JsonContent.Create(
+                new
                 {
-                    candidate.StarPosition.X,
-                    candidate.StarPosition.Y,
-                    candidate.StarPosition.Z,
-                },
-                json = candidate.RawJournalJson,
-            }),
+                    cmdr = candidate.CommanderName,
+                    tag = candidate.Tag,
+                    starPos = new[] { candidate.StarPosition.X, candidate.StarPosition.Y, candidate.StarPosition.Z },
+                    json = candidate.RawJournalJson,
+                }
+            ),
         };
-        using var response = await httpClient.SendAsync(
-                request,
-                HttpCompletionOption.ResponseHeadersRead,
-                cancellationToken)
+        using var response = await httpClient
+            .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         if (response.IsSuccessStatusCode)
         {
             return;
         }
 
-        var detail = await ReadErrorAsync(response, cancellationToken)
-            .ConfigureAwait(false);
+        var detail = await ReadErrorAsync(response, cancellationToken).ConfigureAwait(false);
         throw new HttpRequestException(
             $"Raven Colonial rejected the Green Gas Giant candidate "
                 + $"({(int)response.StatusCode} {response.ReasonPhrase}){detail}.",
             null,
-            response.StatusCode);
+            response.StatusCode
+        );
     }
 
-    private static async Task<string> ReadErrorAsync(
-        HttpResponseMessage response,
-        CancellationToken cancellationToken)
+    private static async Task<string> ReadErrorAsync(HttpResponseMessage response, CancellationToken cancellationToken)
     {
-        var content = await BoundedHttpContent.ReadStringPrefixAsync(
-                response.Content,
-                MaximumErrorDetailBytes,
-                cancellationToken)
+        var content = await BoundedHttpContent
+            .ReadStringPrefixAsync(response.Content, MaximumErrorDetailBytes, cancellationToken)
             .ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(content))
         {
@@ -99,9 +82,7 @@ public sealed class GreenGasGiantClient : IGreenGasGiantClient
         ArgumentNullException.ThrowIfNull(uri);
         if (!uri.IsAbsoluteUri)
         {
-            throw new ArgumentException(
-                "The Raven Colonial service URI must be absolute.",
-                nameof(uri));
+            throw new ArgumentException("The Raven Colonial service URI must be absolute.", nameof(uri));
         }
 
         return UriPath.EnsureTrailingSeparator(uri);
@@ -112,4 +93,5 @@ public sealed record GreenGasGiantCandidate(
     string CommanderName,
     string Tag,
     GalacticCoordinate StarPosition,
-    string RawJournalJson);
+    string RawJournalJson
+);

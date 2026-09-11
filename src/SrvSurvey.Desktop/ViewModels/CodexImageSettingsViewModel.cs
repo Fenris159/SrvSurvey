@@ -16,17 +16,19 @@ public sealed class CodexImageSettingsViewModel : INotifyPropertyChanged
     public CodexImageSettingsViewModel(
         CodexImageSettingsStore settingsStore,
         ExobiologyReferenceCatalog catalog,
-        string defaultCacheDirectory)
+        string defaultCacheDirectory
+    )
     {
-        this.settingsStore = settingsStore
-            ?? throw new ArgumentNullException(nameof(settingsStore));
+        this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         ArgumentNullException.ThrowIfNull(catalog);
         this.defaultCacheDirectory = Path.GetFullPath(
             string.IsNullOrWhiteSpace(defaultCacheDirectory)
                 ? throw new ArgumentException(
                     "A default Codex image cache directory is required.",
-                    nameof(defaultCacheDirectory))
-                : defaultCacheDirectory);
+                    nameof(defaultCacheDirectory)
+                )
+                : defaultCacheDirectory
+        );
         BiologyEntries = catalog.BiologyEntries;
         preferences = settingsStore.Load();
         statusMessage = CreateReadyStatus(preferences);
@@ -39,21 +41,14 @@ public sealed class CodexImageSettingsViewModel : INotifyPropertyChanged
     public string CacheDirectory
     {
         get => preferences.CacheDirectory;
-        set => Update(preferences with
-        {
-            CacheDirectory = value?.Trim() ?? string.Empty,
-        });
+        set => Update(preferences with { CacheDirectory = value?.Trim() ?? string.Empty });
     }
 
     public string LocalFloraDirectory
     {
         get => preferences.LocalFloraDirectory ?? string.Empty;
-        set => Update(preferences with
-        {
-            LocalFloraDirectory = string.IsNullOrWhiteSpace(value)
-                ? null
-                : value.Trim(),
-        });
+        set =>
+            Update(preferences with { LocalFloraDirectory = string.IsNullOrWhiteSpace(value) ? null : value.Trim() });
     }
 
     public bool PreDownload
@@ -74,15 +69,11 @@ public sealed class CodexImageSettingsViewModel : INotifyPropertyChanged
         private set => SetField(ref statusMessage, value);
     }
 
-    public string EffectiveCacheDirectory =>
-        TryGetAbsolutePath(CacheDirectory) ?? defaultCacheDirectory;
+    public string EffectiveCacheDirectory => TryGetAbsolutePath(CacheDirectory) ?? defaultCacheDirectory;
 
-    public string? EffectiveLocalFloraDirectory =>
-        TryGetAbsolutePath(LocalFloraDirectory);
+    public string? EffectiveLocalFloraDirectory => TryGetAbsolutePath(LocalFloraDirectory);
 
-    internal void SetPreDownloadStatus(
-        bool active,
-        string message)
+    internal void SetPreDownloadStatus(bool active, string message)
     {
         IsPreDownloading = active;
         StatusMessage = message;
@@ -107,14 +98,11 @@ public sealed class CodexImageSettingsViewModel : INotifyPropertyChanged
             settingsStore.Save(preferences);
             StatusMessage = CreateReadyStatus(preferences);
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
             StatusMessage =
-                "The Codex image preference changed for this session but could not be saved: "
-                + exception.Message;
+                "The Codex image preference changed for this session but could not be saved: " + exception.Message;
         }
 
         OnPropertyChanged(string.Empty);
@@ -125,28 +113,25 @@ public sealed class CodexImageSettingsViewModel : INotifyPropertyChanged
         var cache = TryGetAbsolutePath(value.CacheDirectory);
         if (cache is null)
         {
-            return "The configured Codex cache path is not absolute; downloads will use "
-                + defaultCacheDirectory
-                + ".";
+            return "The configured Codex cache path is not absolute; downloads will use " + defaultCacheDirectory + ".";
         }
 
-        if (!string.IsNullOrWhiteSpace(value.LocalFloraDirectory)
-            && TryGetAbsolutePath(value.LocalFloraDirectory) is null)
+        if (
+            !string.IsNullOrWhiteSpace(value.LocalFloraDirectory)
+            && TryGetAbsolutePath(value.LocalFloraDirectory) is null
+        )
         {
             return "The local flora path is not absolute. Cached and remote Codex images remain available.";
         }
 
         return value.PreDownload
-            ? "Codex biology images will be downloaded in the background to "
-                + cache
-                + "."
+            ? "Codex biology images will be downloaded in the background to " + cache + "."
             : "Codex images are downloaded on demand to " + cache + ".";
     }
 
     private static string? TryGetAbsolutePath(string? value)
     {
-        if (string.IsNullOrWhiteSpace(value)
-            || !Path.IsPathFullyQualified(value))
+        if (string.IsNullOrWhiteSpace(value) || !Path.IsPathFullyQualified(value))
         {
             return null;
         }
@@ -155,19 +140,14 @@ public sealed class CodexImageSettingsViewModel : INotifyPropertyChanged
         {
             return Path.GetFullPath(value);
         }
-        catch (Exception exception) when (
-            exception is ArgumentException
-                or NotSupportedException
-                or PathTooLongException)
+        catch (Exception exception)
+            when (exception is ArgumentException or NotSupportedException or PathTooLongException)
         {
             return null;
         }
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -181,8 +161,6 @@ public sealed class CodexImageSettingsViewModel : INotifyPropertyChanged
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(propertyName));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

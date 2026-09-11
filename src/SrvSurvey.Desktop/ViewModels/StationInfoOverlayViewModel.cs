@@ -9,17 +9,12 @@ public sealed class StationInfoOverlayViewModel : INotifyPropertyChanged
     private string platformStatus;
     private string inputMode;
 
-    public StationInfoOverlayViewModel(
-        StationInfoViewModel stationInfo,
-        OverlayPlatformCapabilities capabilities)
+    public StationInfoOverlayViewModel(StationInfoViewModel stationInfo, OverlayPlatformCapabilities capabilities)
     {
-        StationInfo = stationInfo
-            ?? throw new ArgumentNullException(nameof(stationInfo));
+        StationInfo = stationInfo ?? throw new ArgumentNullException(nameof(stationInfo));
         ArgumentNullException.ThrowIfNull(capabilities);
         platformStatus = capabilities.StatusText;
-        inputMode = capabilities.SupportsClickThrough
-            ? "PASSIVE"
-            : "UNAVAILABLE";
+        inputMode = capabilities.SupportsClickThrough ? "PASSIVE" : "UNAVAILABLE";
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -45,10 +40,7 @@ public sealed class StationInfoOverlayViewModel : INotifyPropertyChanged
         InputMode = result.IsClickThrough ? "PASSIVE" : "BLOCKED";
     }
 
-    private void SetField(
-        ref string field,
-        string value,
-        [CallerMemberName] string? propertyName = null)
+    private void SetField(ref string field, string value, [CallerMemberName] string? propertyName = null)
     {
         if (string.Equals(field, value, StringComparison.Ordinal))
         {

@@ -21,9 +21,7 @@ public sealed class LocalizationViewModel : INotifyPropertyChanged
         Languages = LocalizationCatalog.Languages;
         var selectedCode = settingsStore.Load();
         selectedLanguage = Languages.Single(language => language.Code == selectedCode);
-        restartCommand = new AsyncCommand(
-            RestartAsync,
-            () => IsRestartRequired && restartHandler is not null);
+        restartCommand = new AsyncCommand(RestartAsync, () => IsRestartRequired && restartHandler is not null);
         RestartCommand = restartCommand;
     }
 
@@ -50,17 +48,17 @@ public sealed class LocalizationViewModel : INotifyPropertyChanged
             {
                 settingsStore.Save(value.Code);
                 IsRestartRequired = value.Code != LocalizationCatalog.CurrentLanguage;
-                StatusMessage = IsRestartRequired
-                    ? "Restart SrvSurvey to apply the selected language."
-                    : string.Empty;
+                StatusMessage = IsRestartRequired ? "Restart SrvSurvey to apply the selected language." : string.Empty;
             }
-            catch (Exception exception) when (exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException
-                or InvalidOperationException)
+            catch (Exception exception)
+                when (exception
+                        is IOException
+                            or UnauthorizedAccessException
+                            or InvalidDataException
+                            or InvalidOperationException
+                )
             {
-                StatusMessage = "The language changed for this session but could not be saved: "
-                    + exception.Message;
+                StatusMessage = "The language changed for this session but could not be saved: " + exception.Message;
             }
         }
     }
@@ -97,10 +95,7 @@ public sealed class LocalizationViewModel : INotifyPropertyChanged
         }
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -117,9 +112,7 @@ public sealed class LocalizationViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private sealed class AsyncCommand(
-        Func<Task> execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class AsyncCommand(Func<Task> execute, Func<bool> canExecute) : ICommand
     {
         private bool isExecuting;
 

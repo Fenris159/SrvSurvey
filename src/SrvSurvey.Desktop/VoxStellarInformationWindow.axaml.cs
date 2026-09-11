@@ -12,23 +12,17 @@ public sealed partial class VoxStellarInformationWindow : Window
         InitializeComponent();
     }
 
-    private async void PrivacyPolicy_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private async void PrivacyPolicy_Click(object? sender, RoutedEventArgs eventArgs)
     {
         await LaunchAsync(WellKnownUris.VoxStellarPrivacyPolicy);
     }
 
-    private async void TermsOfService_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private async void TermsOfService_Click(object? sender, RoutedEventArgs eventArgs)
     {
         await LaunchAsync(WellKnownUris.VoxStellarTermsOfService);
     }
 
-    private async void PluginSource_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private async void PluginSource_Click(object? sender, RoutedEventArgs eventArgs)
     {
         await LaunchAsync(WellKnownUris.VoxStellarPluginSource);
     }
@@ -38,13 +32,11 @@ public sealed partial class VoxStellarInformationWindow : Window
         try
         {
             DesktopExternalEffectPolicy.ThrowIfDisabled();
-            var launcher = Launcher
-                ?? throw new InvalidOperationException(
-                    "The desktop link launcher is not available.");
+            var launcher =
+                Launcher ?? throw new InvalidOperationException("The desktop link launcher is not available.");
             if (!await launcher.LaunchUriAsync(uri))
             {
-                throw new InvalidOperationException(
-                    "The default browser declined the request.");
+                throw new InvalidOperationException("The default browser declined the request.");
             }
 
             LinkFailureMessage.IsVisible = false;
@@ -52,8 +44,7 @@ public sealed partial class VoxStellarInformationWindow : Window
         }
         catch (Exception exception)
         {
-            LinkFailureMessage.Text = "The link could not be opened: "
-                + exception.Message;
+            LinkFailureMessage.Text = "The link could not be opened: " + exception.Message;
             LinkFailureMessage.IsVisible = true;
         }
     }

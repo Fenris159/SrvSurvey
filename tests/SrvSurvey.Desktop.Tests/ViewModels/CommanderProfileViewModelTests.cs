@@ -19,8 +19,16 @@ public sealed class CommanderProfileViewModelTests
         CancellationTokenRegistration registration = default;
         account.StateRequested = token =>
         {
-            if (!token.CanBeCanceled) return;
-            registration = token.Register(() => { entered.TrySetResult(); release.Wait(TimeSpan.FromSeconds(10)); });
+            if (!token.CanBeCanceled)
+            {
+                return;
+            }
+
+            registration = token.Register(() =>
+            {
+                entered.TrySetResult();
+                release.Wait(TimeSpan.FromSeconds(10));
+            });
         };
         try
         {
@@ -30,18 +38,22 @@ public sealed class CommanderProfileViewModelTests
             await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
             await viewModel.SetCommanderContextAsync("F3", "Latest", true);
             Assert.Same(latest, viewModel.Snapshot);
-            release.Set(); await older;
+            release.Set();
+            await older;
             Assert.Same(latest, viewModel.Snapshot);
             Assert.Equal("F3", account.ActiveFrontierId);
         }
-        finally { release.Set(); registration.Dispose(); }
+        finally
+        {
+            release.Set();
+            registration.Dispose();
+        }
     }
 
     [Fact]
     public async Task UnlinkedStateShowsConnectionExperienceWithoutFetching()
     {
-        var account = new StubAccountService(
-            new FrontierAccountState(false, null, null));
+        var account = new StubAccountService(new FrontierAccountState(false, null, null));
         using var viewModel = new CommanderProfileViewModel(account);
 
         await viewModel.OpenAsync();
@@ -55,8 +67,7 @@ public sealed class CommanderProfileViewModelTests
     [Fact]
     public void AuthorizationCallbackIsForwardedForWindowActivation()
     {
-        var account = new StubAccountService(
-            new FrontierAccountState(false, null, null));
+        var account = new StubAccountService(new FrontierAccountState(false, null, null));
         using var viewModel = new CommanderProfileViewModel(account);
         var received = 0;
         viewModel.AuthorizationCallbackReceived += (_, _) => received++;
@@ -70,8 +81,7 @@ public sealed class CommanderProfileViewModelTests
     public async Task CachedSnapshotProjectsCompactCommanderAndCarrierRows()
     {
         var snapshot = CreateSnapshot(DateTimeOffset.UtcNow);
-        var account = new StubAccountService(
-            new FrontierAccountState(true, snapshot, snapshot.FetchedAt));
+        var account = new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt));
         using var viewModel = new CommanderProfileViewModel(account);
 
         await viewModel.OpenAsync();
@@ -88,9 +98,7 @@ public sealed class CommanderProfileViewModelTests
         Assert.Equal("Not For Sale", Assert.Single(viewModel.CarrierCapacityRows).Category);
         Assert.Contains("24,000", viewModel.CarrierCapacityHeader);
         Assert.Single(viewModel.CommanderReputation);
-        Assert.EndsWith(
-            "/Ranks/exploration/rank-9.png",
-            Assert.Single(viewModel.Ranks).IconPath);
+        Assert.EndsWith("/Ranks/exploration/rank-9.png", Assert.Single(viewModel.Ranks).IconPath);
         Assert.EndsWith("/Factions/federation.png", viewModel.FactionIconPath);
         Assert.Single(viewModel.MarketCommodities);
         Assert.Single(viewModel.ShipyardShips);
@@ -109,10 +117,7 @@ public sealed class CommanderProfileViewModelTests
     public async Task SnapshotProjectionCollectionsKeepStableIdentityBetweenReads()
     {
         var snapshot = CreateSnapshot(DateTimeOffset.UtcNow);
-        var account = new StubAccountService(new FrontierAccountState(
-            true,
-            snapshot,
-            snapshot.FetchedAt));
+        var account = new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt));
         using var viewModel = new CommanderProfileViewModel(account);
         await viewModel.OpenAsync();
 
@@ -143,10 +148,7 @@ public sealed class CommanderProfileViewModelTests
 
         var priorRanks = viewModel.Ranks;
         var refreshed = CreateSnapshot(snapshot.FetchedAt.AddMinutes(1));
-        account.SetState(new FrontierAccountState(
-            true,
-            refreshed,
-            refreshed.FetchedAt));
+        account.SetState(new FrontierAccountState(true, refreshed, refreshed.FetchedAt));
         await viewModel.OpenAsync();
 
         Assert.NotSame(priorRanks, viewModel.Ranks);
@@ -178,11 +180,11 @@ public sealed class CommanderProfileViewModelTests
             ],
         };
         using var viewModel = new CommanderProfileViewModel(
-            new StubAccountService(new FrontierAccountState(
-                true,
-                snapshot with { CommunityGoals = [cachedGoal] },
-                fetchedAt)),
-            () => fetchedAt);
+            new StubAccountService(
+                new FrontierAccountState(true, snapshot with { CommunityGoals = [cachedGoal] }, fetchedAt)
+            ),
+            () => fetchedAt
+        );
 
         await viewModel.OpenAsync();
 
@@ -193,9 +195,7 @@ public sealed class CommanderProfileViewModelTests
         Assert.Equal("1,971,753 / 34,500,000", goal.ProgressText);
         Assert.Equal("5.72% complete", goal.ProgressPercent);
         Assert.Contains("Cargo rack reward", goal.Briefing);
-        Assert.Equal(
-            "Personal progress not supplied by Frontier or local journals",
-            goal.PlayerContribution);
+        Assert.Equal("Personal progress not supplied by Frontier or local journals", goal.PlayerContribution);
     }
 
     [Fact]
@@ -209,25 +209,24 @@ public sealed class CommanderProfileViewModelTests
             CommanderReputationFetchedAt = null,
         };
         using var viewModel = new CommanderProfileViewModel(
-            new StubAccountService(new FrontierAccountState(
-                true,
-                snapshot,
-                snapshot.FetchedAt)));
+            new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt))
+        );
         await viewModel.OpenAsync();
 
         viewModel.UpdateJournalReputation(
             "Fenris",
-            [ParseJournalEvent(
-                """
-                {"timestamp":"2026-07-29T12:05:00Z","event":"Reputation","Empire":25.5,"Federation":91,"Independent":100,"Alliance":-12}
-                """)]);
+            [
+                ParseJournalEvent(
+                    """
+                    {"timestamp":"2026-07-29T12:05:00Z","event":"Reputation","Empire":25.5,"Federation":91,"Independent":100,"Alliance":-12}
+                    """
+                ),
+            ]
+        );
 
         Assert.Null(viewModel.Carrier);
         Assert.Equal(4, viewModel.CommanderReputation.Count);
-        Assert.Equal(
-            "91%",
-            viewModel.CommanderReputation.Single(item =>
-                item.Faction == "Federation").Score);
+        Assert.Equal("91%", viewModel.CommanderReputation.Single(item => item.Faction == "Federation").Score);
 
         viewModel.UpdateJournalReputation("Another Commander", []);
 
@@ -238,27 +237,24 @@ public sealed class CommanderProfileViewModelTests
     public async Task OlderJournalReputationDoesNotOverrideNewerCapiData()
     {
         var fetchedAt = DateTimeOffset.Parse("2026-07-29T12:00:00Z");
-        var snapshot = CreateSnapshot(fetchedAt) with
-        {
-            Carrier = null,
-        };
+        var snapshot = CreateSnapshot(fetchedAt) with { Carrier = null };
         using var viewModel = new CommanderProfileViewModel(
-            new StubAccountService(new FrontierAccountState(
-                true,
-                snapshot,
-                snapshot.FetchedAt)));
+            new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt))
+        );
         await viewModel.OpenAsync();
 
         viewModel.UpdateJournalReputation(
             "Fenris",
-            [ParseJournalEvent(
-                """
-                {"timestamp":"2026-07-29T11:00:00Z","event":"Reputation","Federation":10}
-                """)]);
+            [
+                ParseJournalEvent(
+                    """
+                    {"timestamp":"2026-07-29T11:00:00Z","event":"Reputation","Federation":10}
+                    """
+                ),
+            ]
+        );
 
-        Assert.Equal(
-            "100%",
-            Assert.Single(viewModel.CommanderReputation).Score);
+        Assert.Equal("100%", Assert.Single(viewModel.CommanderReputation).Score);
     }
 
     [Fact]
@@ -275,10 +271,7 @@ public sealed class CommanderProfileViewModelTests
             Contributors = 2_913,
             TierReached = "Tier 0 / 1",
             HasContributorData = true,
-            DataPoints =
-            [
-                new("inara.fetchedAt", fetchedAt.ToString("O")),
-            ],
+            DataPoints = [new("inara.fetchedAt", fetchedAt.ToString("O"))],
         };
         var snapshot = CreateSnapshot(fetchedAt) with
         {
@@ -287,37 +280,39 @@ public sealed class CommanderProfileViewModelTests
             InaraCommunityGoalsFetchedAt = fetchedAt,
         };
         using var viewModel = new CommanderProfileViewModel(
-            new StubAccountService(new FrontierAccountState(
-                true,
-                snapshot,
-                snapshot.FetchedAt)));
+            new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt))
+        );
         await viewModel.OpenAsync();
 
         viewModel.UpdateJournalCommunityGoals(
             "Fenris",
-            [ParseJournalEvent(
-                """
-                {
-                  "timestamp":"2026-07-31T12:05:00Z",
-                  "event":"CommunityGoal",
-                  "CurrentGoals":[
+            [
+                ParseJournalEvent(
+                    """
                     {
-                      "CGID":6,
-                      "Title":"Deliver medicines",
-                      "SystemName":"Sol",
-                      "MarketName":"Galileo",
-                      "Expiry":"2026-08-02T12:00:00Z",
-                      "IsComplete":false,
-                      "CurrentTotal":6000,
-                      "PlayerContribution":325,
-                      "NumContributors":3000,
-                      "TierReached":"Tier 1",
-                      "PlayerPercentileBand":25,
-                      "Bonus":2000000
+                      "timestamp":"2026-07-31T12:05:00Z",
+                      "event":"CommunityGoal",
+                      "CurrentGoals":[
+                        {
+                          "CGID":6,
+                          "Title":"Deliver medicines",
+                          "SystemName":"Sol",
+                          "MarketName":"Galileo",
+                          "Expiry":"2026-08-02T12:00:00Z",
+                          "IsComplete":false,
+                          "CurrentTotal":6000,
+                          "PlayerContribution":325,
+                          "NumContributors":3000,
+                          "TierReached":"Tier 1",
+                          "PlayerPercentileBand":25,
+                          "Bonus":2000000
+                        }
+                      ]
                     }
-                  ]
-                }
-                """)]);
+                    """
+                ),
+            ]
+        );
 
         var goal = Assert.Single(viewModel.CommunityGoals);
         Assert.Equal("Expanded global briefing", goal.Briefing);
@@ -332,9 +327,7 @@ public sealed class CommanderProfileViewModelTests
         viewModel.UpdateJournalCommunityGoals("Another Commander", []);
 
         goal = Assert.Single(viewModel.CommunityGoals);
-        Assert.Equal(
-            "Personal progress not supplied by Frontier or local journals",
-            goal.PlayerContribution);
+        Assert.Equal("Personal progress not supplied by Frontier or local journals", goal.PlayerContribution);
         Assert.Equal("2,913 commanders", goal.Contributors);
         Assert.Equal("Tier 0 / 1", goal.Tier);
     }
@@ -372,26 +365,17 @@ public sealed class CommanderProfileViewModelTests
             PlayerPercentile = 100,
             Bonus = 45_000_000,
             HasPlayerContributionData = true,
-            DataPoints =
-            [
-                new(
-                    "journal.communityGoalTimestamp",
-                    "2026-07-23T06:54:24Z"),
-            ],
+            DataPoints = [new("journal.communityGoalTimestamp", "2026-07-23T06:54:24Z")],
         };
         var history = new StubCommunityGoalHistoryReader(
-            new CommunityGoalJournalHistoryReadResult([historyGoal], string.Empty));
+            new CommunityGoalJournalHistoryReadResult([historyGoal], string.Empty)
+        );
         using var viewModel = new CommanderProfileViewModel(
-            new StubAccountService(new FrontierAccountState(
-                true,
-                snapshot,
-                snapshot.FetchedAt)),
-            communityGoalHistoryReader: history);
+            new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt)),
+            communityGoalHistoryReader: history
+        );
 
-        await viewModel.SetCommanderContextAsync(
-            "F472567",
-            "Fenris",
-            refreshIfOpen: false);
+        await viewModel.SetCommanderContextAsync("F472567", "Fenris", refreshIfOpen: false);
         await viewModel.OpenAsync();
 
         var goal = Assert.Single(viewModel.CommunityGoals);
@@ -408,18 +392,14 @@ public sealed class CommanderProfileViewModelTests
     {
         var fetchedAt = DateTimeOffset.Parse("2026-07-31T12:00:00Z");
         var template = Assert.Single(CreateSnapshot(fetchedAt).CommunityGoals!);
-        FrontierCommunityGoalSnapshot Completed(
-            string title,
-            string lastUpdate) => template with
+        FrontierCommunityGoalSnapshot Completed(string title, string lastUpdate) =>
+            template with
             {
                 Id = null,
                 Title = title,
                 IsComplete = true,
                 ExpiresAt = DateTimeOffset.Parse(lastUpdate).AddHours(1),
-                DataPoints =
-            [
-                new("inara.lastUpdate", lastUpdate),
-            ],
+                DataPoints = [new("inara.lastUpdate", lastUpdate)],
             };
         var snapshot = CreateSnapshot(fetchedAt) with
         {
@@ -431,26 +411,22 @@ public sealed class CommanderProfileViewModelTests
             ],
         };
         using var viewModel = new CommanderProfileViewModel(
-            new StubAccountService(new FrontierAccountState(
-                true,
-                snapshot,
-                snapshot.FetchedAt)));
+            new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt))
+        );
 
         await viewModel.OpenAsync();
 
         Assert.Equal(
             ["Newest completion", "Middle completion", "Distant Worlds III"],
-            viewModel.CommunityGoals.Select(goal => goal.Title));
+            viewModel.CommunityGoals.Select(goal => goal.Title)
+        );
     }
 
     [Fact]
     public async Task PaneExpansionStateIsCachedAndIsolatedAcrossTabs()
     {
         var snapshot = CreateSnapshot(DateTimeOffset.UtcNow);
-        var account = new StubAccountService(new FrontierAccountState(
-            true,
-            snapshot,
-            snapshot.FetchedAt));
+        var account = new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt));
         using var viewModel = new CommanderProfileViewModel(account);
         await viewModel.OpenAsync();
         var profileNotifications = new List<string?>();
@@ -480,10 +456,7 @@ public sealed class CommanderProfileViewModelTests
         Assert.Same(goalPane, Assert.Single(viewModel.CommunityGoals).PaneState);
 
         var refreshed = CreateSnapshot(snapshot.FetchedAt.AddMinutes(1));
-        account.SetState(new FrontierAccountState(
-            true,
-            refreshed,
-            refreshed.FetchedAt));
+        account.SetState(new FrontierAccountState(true, refreshed, refreshed.FetchedAt));
         await viewModel.OpenAsync();
 
         Assert.False(ownedFleet.IsExpanded);
@@ -497,14 +470,10 @@ public sealed class CommanderProfileViewModelTests
     public void LocalCompanionInventoryIsProjectedAndSuppressedWhenAmbiguous()
     {
         using var viewModel = new CommanderProfileViewModel(
-            new StubAccountService(new FrontierAccountState(false, null, null)));
+            new StubAccountService(new FrontierAccountState(false, null, null))
+        );
         var timestamp = DateTimeOffset.Parse("2026-07-29T12:00:00Z");
-        var cargo = new CargoSnapshot(
-            timestamp,
-            "Cargo",
-            "Ship",
-            3,
-            [new CargoItem("gold", "Gold", 3, 1)]);
+        var cargo = new CargoSnapshot(timestamp, "Cargo", "Ship", 3, [new CargoItem("gold", "Gold", 3, 1)]);
         var locker = new ShipLockerSnapshot(
             timestamp,
             "ShipLocker",
@@ -512,20 +481,22 @@ public sealed class CommanderProfileViewModelTests
                 new ShipLockerItem("Components", "microelectrode", "Microelectrode", 4),
                 new ShipLockerItem("Items", "healthmonitor", "Health Monitor", 2),
                 new ShipLockerItem("Data", "opinionpolls", "Opinion Polls", 1),
-            ]);
+            ]
+        );
 
         viewModel.UpdateLocalInventory(cargo, locker, isSuppressed: false);
 
         Assert.Equal("Gold", Assert.Single(viewModel.CurrentShipCargo).Name);
         Assert.Contains("stolen", Assert.Single(viewModel.CurrentShipCargo).Detail);
         Assert.Equal(3, viewModel.CurrentShipLocker.Count);
-        Assert.Equal(["Items", "Components", "Data"],
-            viewModel.CurrentShipLockerGroups.Select(group => group.Category));
+        Assert.Equal(
+            ["Items", "Components", "Data"],
+            viewModel.CurrentShipLockerGroups.Select(group => group.Category)
+        );
         var cargoRows = viewModel.CurrentShipCargo;
         var lockerRows = viewModel.CurrentShipLocker;
         var inventoryNotifications = new List<string?>();
-        viewModel.PropertyChanged += (_, eventArgs) =>
-            inventoryNotifications.Add(eventArgs.PropertyName);
+        viewModel.PropertyChanged += (_, eventArgs) => inventoryNotifications.Add(eventArgs.PropertyName);
         viewModel.UpdateLocalInventory(cargo, locker, isSuppressed: false);
         Assert.Same(cargoRows, viewModel.CurrentShipCargo);
         Assert.Same(lockerRows, viewModel.CurrentShipLocker);
@@ -536,19 +507,18 @@ public sealed class CommanderProfileViewModelTests
         lockerGroup.ToggleCommand.Execute(null);
         Assert.True(lockerGroup.IsExpanded);
         viewModel.UpdateLocalInventory(cargo, locker, isSuppressed: false);
-        Assert.Same(lockerGroup, viewModel.CurrentShipLockerGroups
-            .Single(group => group.Category == lockerGroup.Category));
-        var refreshedLocker = locker with
-        {
-            Timestamp = locker.Timestamp.AddSeconds(1),
-        };
+        Assert.Same(
+            lockerGroup,
+            viewModel.CurrentShipLockerGroups.Single(group => group.Category == lockerGroup.Category)
+        );
+        var refreshedLocker = locker with { Timestamp = locker.Timestamp.AddSeconds(1) };
         viewModel.UpdateLocalInventory(cargo, refreshedLocker, isSuppressed: false);
-        var rebuiltLockerGroup = viewModel.CurrentShipLockerGroups
-            .Single(group => group.Category == lockerGroup.Category);
+        var rebuiltLockerGroup = viewModel.CurrentShipLockerGroups.Single(group =>
+            group.Category == lockerGroup.Category
+        );
         Assert.NotSame(lockerGroup, rebuiltLockerGroup);
         Assert.True(rebuiltLockerGroup.IsExpanded);
-        Assert.Equal("Microelectrode",
-            viewModel.CurrentShipLocker.Single(item => item.Category == "Components").Name);
+        Assert.Equal("Microelectrode", viewModel.CurrentShipLocker.Single(item => item.Category == "Components").Name);
         Assert.Contains("updated", viewModel.LocalInventoryStatus);
 
         viewModel.UpdateLocalInventory(cargo, locker, isSuppressed: true);
@@ -561,56 +531,35 @@ public sealed class CommanderProfileViewModelTests
     [Fact]
     public async Task CommanderSwitchSelectsSavedProfileAndClearsLocalInventory()
     {
-        var first = CreateSnapshot(DateTimeOffset.UtcNow) with
-        {
-            CommanderId = 123,
-        };
+        var first = CreateSnapshot(DateTimeOffset.UtcNow) with { CommanderId = 123 };
         var second = CreateSnapshot(DateTimeOffset.UtcNow.AddMinutes(1)) with
         {
             CommanderName = "Second",
             CommanderId = 456,
             Credits = 2_000,
         };
-        var account = new StubAccountService(
-            new FrontierAccountState(false, null, null));
-        account.SetStateForCommander(
-            "F123",
-            new FrontierAccountState(true, first, first.FetchedAt));
-        account.SetStateForCommander(
-            "F456",
-            new FrontierAccountState(true, second, second.FetchedAt));
+        var account = new StubAccountService(new FrontierAccountState(false, null, null));
+        account.SetStateForCommander("F123", new FrontierAccountState(true, first, first.FetchedAt));
+        account.SetStateForCommander("F456", new FrontierAccountState(true, second, second.FetchedAt));
         using var viewModel = new CommanderProfileViewModel(account);
 
-        await viewModel.SetCommanderContextAsync(
-            "F123",
-            "Fenris",
-            refreshIfOpen: true);
+        await viewModel.SetCommanderContextAsync("F123", "Fenris", refreshIfOpen: true);
         viewModel.UpdateLocalInventory(
-            new CargoSnapshot(
-                DateTimeOffset.UtcNow,
-                "Cargo",
-                "Ship",
-                1,
-                [new CargoItem("gold", "Gold", 1, 0)]),
+            new CargoSnapshot(DateTimeOffset.UtcNow, "Cargo", "Ship", 1, [new CargoItem("gold", "Gold", 1, 0)]),
             null,
-            isSuppressed: false);
+            isSuppressed: false
+        );
         Assert.Equal("Fenris", viewModel.CommanderName);
         Assert.True(viewModel.HasCurrentShipCargo);
 
-        await viewModel.SetCommanderContextAsync(
-            "F456",
-            "Second",
-            refreshIfOpen: true);
+        await viewModel.SetCommanderContextAsync("F456", "Second", refreshIfOpen: true);
 
         Assert.Equal("Second", viewModel.CommanderName);
         Assert.Contains("2,000", viewModel.Balance);
         Assert.False(viewModel.HasCurrentShipCargo);
         Assert.Equal("F456", account.ActiveFrontierId);
 
-        await viewModel.SetCommanderContextAsync(
-            "F123",
-            "Fenris",
-            refreshIfOpen: true);
+        await viewModel.SetCommanderContextAsync("F123", "Fenris", refreshIfOpen: true);
 
         Assert.Equal("Fenris", viewModel.CommanderName);
         Assert.Equal("F123", account.ActiveFrontierId);
@@ -620,49 +569,31 @@ public sealed class CommanderProfileViewModelTests
     public async Task ManualCommanderSelectionOverridesConsoleWithoutMixingJournalInventory()
     {
         var fetchedAt = DateTimeOffset.UtcNow;
-        var first = CreateSnapshot(fetchedAt) with
-        {
-            CommanderId = 123,
-        };
-        var second = CreateSnapshot(fetchedAt) with
-        {
-            CommanderName = "Second",
-            CommanderId = 456,
-            Credits = 2_000,
-        };
-        var account = new StubAccountService(
-            new FrontierAccountState(false, null, null));
-        account.SetStateForCommander(
-            "F123",
-            new FrontierAccountState(true, first, first.FetchedAt));
-        account.SetStateForCommander(
-            "F456",
-            new FrontierAccountState(true, second, second.FetchedAt));
+        var first = CreateSnapshot(fetchedAt) with { CommanderId = 123 };
+        var second = CreateSnapshot(fetchedAt) with { CommanderName = "Second", CommanderId = 456, Credits = 2_000 };
+        var account = new StubAccountService(new FrontierAccountState(false, null, null));
+        account.SetStateForCommander("F123", new FrontierAccountState(true, first, first.FetchedAt));
+        account.SetStateForCommander("F456", new FrontierAccountState(true, second, second.FetchedAt));
         using var viewModel = new CommanderProfileViewModel(account);
-        await viewModel.SetCommanderContextAsync(
-            "F123",
-            "Fenris",
-            refreshIfOpen: true);
+        await viewModel.SetCommanderContextAsync("F123", "Fenris", refreshIfOpen: true);
         viewModel.UpdateLocalInventory(
-            new CargoSnapshot(
-                fetchedAt,
-                "Cargo",
-                "Ship",
-                1,
-                [new CargoItem("gold", "Gold", 1, 0)]),
+            new CargoSnapshot(fetchedAt, "Cargo", "Ship", 1, [new CargoItem("gold", "Gold", 1, 0)]),
             null,
-            isSuppressed: false);
+            isSuppressed: false
+        );
 
         Assert.Equal(2, viewModel.CommanderSelectionOptions.Count);
         Assert.True(viewModel.SelectedCommanderOption!.IsAutomatic);
         Assert.True(viewModel.HasCurrentShipCargo);
         Assert.DoesNotContain(
             viewModel.CommanderSelectionOptions,
-            option => option.FrontierId == "F123" && !option.IsAutomatic);
+            option => option.FrontierId == "F123" && !option.IsAutomatic
+        );
 
         var secondOption = Assert.Single(
             viewModel.CommanderSelectionOptions,
-            option => option.FrontierId == "F456" && !option.IsAutomatic);
+            option => option.FrontierId == "F456" && !option.IsAutomatic
+        );
         await viewModel.SelectCommanderAsync(secondOption);
 
         Assert.False(viewModel.IsAutomaticCommanderSelection);
@@ -671,9 +602,7 @@ public sealed class CommanderProfileViewModelTests
         Assert.False(viewModel.HasCurrentShipCargo);
         Assert.Contains("different Frontier account", viewModel.LocalInventoryStatus);
 
-        var automatic = Assert.Single(
-            viewModel.CommanderSelectionOptions,
-            option => option.IsAutomatic);
+        var automatic = Assert.Single(viewModel.CommanderSelectionOptions, option => option.IsAutomatic);
         await viewModel.SelectCommanderAsync(automatic);
 
         Assert.True(viewModel.IsAutomaticCommanderSelection);
@@ -686,37 +615,20 @@ public sealed class CommanderProfileViewModelTests
     public async Task ManualCommanderSelectionSurvivesJournalCommanderDetection()
     {
         var fetchedAt = DateTimeOffset.UtcNow;
-        var first = CreateSnapshot(fetchedAt) with
-        {
-            CommanderId = 123,
-        };
-        var second = CreateSnapshot(fetchedAt) with
-        {
-            CommanderName = "Second",
-            CommanderId = 456,
-        };
-        var account = new StubAccountService(
-            new FrontierAccountState(false, null, null));
-        account.SetStateForCommander(
-            "F123",
-            new FrontierAccountState(true, first, first.FetchedAt));
-        account.SetStateForCommander(
-            "F456",
-            new FrontierAccountState(true, second, second.FetchedAt));
+        var first = CreateSnapshot(fetchedAt) with { CommanderId = 123 };
+        var second = CreateSnapshot(fetchedAt) with { CommanderName = "Second", CommanderId = 456 };
+        var account = new StubAccountService(new FrontierAccountState(false, null, null));
+        account.SetStateForCommander("F123", new FrontierAccountState(true, first, first.FetchedAt));
+        account.SetStateForCommander("F456", new FrontierAccountState(true, second, second.FetchedAt));
         using var viewModel = new CommanderProfileViewModel(account);
-        await viewModel.SetCommanderContextAsync(
-            "F123",
-            "Fenris",
-            refreshIfOpen: true);
+        await viewModel.SetCommanderContextAsync("F123", "Fenris", refreshIfOpen: true);
         var secondOption = Assert.Single(
             viewModel.CommanderSelectionOptions,
-            option => option.FrontierId == "F456" && !option.IsAutomatic);
+            option => option.FrontierId == "F456" && !option.IsAutomatic
+        );
         await viewModel.SelectCommanderAsync(secondOption);
 
-        await viewModel.SetCommanderContextAsync(
-            "F789",
-            "Third",
-            refreshIfOpen: true);
+        await viewModel.SetCommanderContextAsync("F789", "Third", refreshIfOpen: true);
 
         Assert.False(viewModel.IsAutomaticCommanderSelection);
         Assert.Equal("F456", account.ActiveFrontierId);
@@ -748,7 +660,8 @@ public sealed class CommanderProfileViewModelTests
                     "engine_tuned",
                     3,
                     ["drag_drives"],
-                    string.Empty),
+                    string.Empty
+                ),
                 new FrontierShipModuleSnapshot(
                     "PaintJob",
                     102,
@@ -763,7 +676,8 @@ public sealed class CommanderProfileViewModelTests
                     string.Empty,
                     null,
                     [],
-                    string.Empty),
+                    string.Empty
+                ),
                 new FrontierShipModuleSnapshot(
                     "Decal1",
                     103,
@@ -778,31 +692,20 @@ public sealed class CommanderProfileViewModelTests
                     string.Empty,
                     null,
                     [],
-                    string.Empty),
+                    string.Empty
+                ),
             ],
             DataPoints =
             [
-                new FrontierDataPointSnapshot(
-                    "ship.modules.MainEngines.module.name",
-                    "int_engine_size2_class1"),
-                new FrontierDataPointSnapshot(
-                    "ship.modules.PaintJob.module.name",
-                    "PaintJob_PantherMkII_03_02"),
-                new FrontierDataPointSnapshot(
-                    "ship.modules.Decal1.module.name",
-                    "Decal_SquadronLogo_Dynamic"),
+                new FrontierDataPointSnapshot("ship.modules.MainEngines.module.name", "int_engine_size2_class1"),
+                new FrontierDataPointSnapshot("ship.modules.PaintJob.module.name", "PaintJob_PantherMkII_03_02"),
+                new FrontierDataPointSnapshot("ship.modules.Decal1.module.name", "Decal_SquadronLogo_Dynamic"),
             ],
         };
-        var snapshot = original with
-        {
-            CurrentShip = ship,
-            Ships = [ship],
-        };
+        var snapshot = original with { CurrentShip = ship, Ships = [ship] };
         using var viewModel = new CommanderProfileViewModel(
-            new StubAccountService(new FrontierAccountState(
-                true,
-                snapshot,
-                snapshot.FetchedAt)));
+            new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt))
+        );
 
         await viewModel.OpenAsync();
 
@@ -819,13 +722,10 @@ public sealed class CommanderProfileViewModelTests
         Assert.Same(moduleGroup, Assert.Single(viewModel.CurrentShipModuleGroups));
         Assert.False(moduleGroup.IsExpanded);
         Assert.Equal(2, viewModel.CurrentShipLivery.Count);
-        Assert.All(viewModel.CurrentShipLivery,
-            item => Assert.DoesNotContain("_", item.Name));
-        Assert.Equal("Squadron Logo",
-            viewModel.CurrentShipLivery.Single(item => item.Category == "Decal").Name);
+        Assert.All(viewModel.CurrentShipLivery, item => Assert.DoesNotContain("_", item.Name));
+        Assert.Equal("Squadron Logo", viewModel.CurrentShipLivery.Single(item => item.Category == "Decal").Name);
         Assert.Equal("6%", viewModel.CurrentShipPaintwork);
-        Assert.DoesNotContain(viewModel.CurrentShipConditionRows,
-            item => item.Label == "Paintwork");
+        Assert.DoesNotContain(viewModel.CurrentShipConditionRows, item => item.Label == "Paintwork");
     }
 
     [Fact]
@@ -833,9 +733,7 @@ public sealed class CommanderProfileViewModelTests
     {
         var stale = CreateSnapshot(DateTimeOffset.UtcNow.AddHours(-1));
         var refreshed = CreateSnapshot(DateTimeOffset.UtcNow);
-        var account = new StubAccountService(
-            new FrontierAccountState(true, stale, stale.FetchedAt),
-            refreshed);
+        var account = new StubAccountService(new FrontierAccountState(true, stale, stale.FetchedAt), refreshed);
         using var viewModel = new CommanderProfileViewModel(account);
 
         await viewModel.OpenAsync();
@@ -848,23 +746,26 @@ public sealed class CommanderProfileViewModelTests
     [Fact]
     public async Task CommanderCardNavigationSelectsProfileOutsideCategoryList()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-profile-navigation-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-profile-navigation-{Guid.NewGuid():N}");
         try
         {
             var profile = new CommanderProfileViewModel(
-                new StubAccountService(new FrontierAccountState(false, null, null)));
+                new StubAccountService(new FrontierAccountState(false, null, null))
+            );
             using var main = MainWindowViewModelTestBuilder.Create(
                 Path.Combine(root, "journals"),
-                builder => builder
-                    .WithAppDataPaths(
-                        new AppDataPaths(
-                            Path.Combine(root, "config"),
-                            Path.Combine(root, "profile"),
-                            Path.Combine(root, "cache"),
-                            []))
-                    .WithFrontierProfile(profile));
+                builder =>
+                    builder
+                        .WithAppDataPaths(
+                            new AppDataPaths(
+                                Path.Combine(root, "config"),
+                                Path.Combine(root, "profile"),
+                                Path.Combine(root, "cache"),
+                                []
+                            )
+                        )
+                        .WithFrontierProfile(profile)
+            );
 
             await main.ShowProfileAsync();
 
@@ -872,8 +773,7 @@ public sealed class CommanderProfileViewModelTests
             Assert.Null(main.SelectedNavigation);
             Assert.False(main.IsOverviewSelected);
 
-            main.SelectedNavigation = main.NavigationItems.Single(
-                item => item.Key == "exploration");
+            main.SelectedNavigation = main.NavigationItems.Single(item => item.Key == "exploration");
 
             Assert.False(main.IsProfileSelected);
             Assert.True(main.IsExplorationSelected);
@@ -891,16 +791,25 @@ public sealed class CommanderProfileViewModelTests
     public async Task LinkedCarrierCargoUpdatesOnlyTheMatchingCommanderAndCallsign()
     {
         var snapshot = CreateSnapshot(DateTimeOffset.UtcNow);
-        using var profile = new CommanderProfileViewModel(new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt)));
+        using var profile = new CommanderProfileViewModel(
+            new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt))
+        );
         await profile.OpenAsync();
-        var carrier = new SrvSurvey.Core.Colonization.ColonizationFleetCarrier { Name = snapshot.Carrier!.Callsign, Cargo = new() { ["platinum"] = 42 } };
+        var carrier = new SrvSurvey.Core.Colonization.ColonizationFleetCarrier
+        {
+            Name = snapshot.Carrier!.Callsign,
+            Cargo = new() { ["platinum"] = 42 },
+        };
         profile.UpdateLinkedFleetCarriers("Someone else", [carrier]);
         Assert.DoesNotContain(profile.CarrierCargo, c => c.Name == "platinum");
         profile.UpdateLinkedFleetCarriers(snapshot.CommanderName, [carrier with { Name = "OTHER" }]);
         Assert.DoesNotContain(profile.CarrierCargo, c => c.Name == "platinum");
         profile.UpdateLinkedFleetCarriers(snapshot.CommanderName, [carrier]);
         Assert.Equal("42", Assert.Single(profile.CarrierCargo).Quantity);
-        profile.UpdateLinkedFleetCarriers(snapshot.CommanderName, [carrier with { Cargo = new() { ["platinum"] = 47 } }]);
+        profile.UpdateLinkedFleetCarriers(
+            snapshot.CommanderName,
+            [carrier with { Cargo = new() { ["platinum"] = 47 } }]
+        );
         Assert.Equal("47", Assert.Single(profile.CarrierCargo).Quantity);
         Assert.Contains("RavenColonial", profile.CarrierCargoSource);
         Assert.Equal(snapshot.Carrier.CapacityFree, profile.Carrier!.CapacityFree);
@@ -914,22 +823,46 @@ public sealed class CommanderProfileViewModelTests
         var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-carrier-startup-{Guid.NewGuid():N}");
         try
         {
-            var journals = Path.Combine(root, "journals"); Directory.CreateDirectory(journals);
-            await File.WriteAllTextAsync(Path.Combine(journals, "Journal.2026-09-06T120000.01.log"),
-                """{"timestamp":"2026-09-06T12:00:00Z","event":"LoadGame","Commander":"Fenris","FID":"F123","Odyssey":true}""" + "\n");
+            var journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            await File.WriteAllTextAsync(
+                Path.Combine(journals, "Journal.2026-09-06T120000.01.log"),
+                """{"timestamp":"2026-09-06T12:00:00Z","event":"LoadGame","Commander":"Fenris","FID":"F123","Odyssey":true}"""
+                    + "\n"
+            );
             var stale = CreateSnapshot(DateTimeOffset.UtcNow.AddHours(-1));
             var refreshed = CreateSnapshot(DateTimeOffset.UtcNow);
             var account = new StubAccountService(new FrontierAccountState(true, stale, stale.FetchedAt), refreshed);
             var pending = new TaskCompletionSource<FrontierAccountSnapshot>();
             account.PendingRefresh = pending.Task;
             var profile = new CommanderProfileViewModel(account);
-            using var main = MainWindowViewModelTestBuilder.Create(journals, builder => builder.WithAppDataPaths(new AppDataPaths(Path.Combine(root, "config"), Path.Combine(root, "profile"), Path.Combine(root, "cache"), [])).WithFrontierProfile(profile));
+            using var main = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder =>
+                    builder
+                        .WithAppDataPaths(
+                            new AppDataPaths(
+                                Path.Combine(root, "config"),
+                                Path.Combine(root, "profile"),
+                                Path.Combine(root, "cache"),
+                                []
+                            )
+                        )
+                        .WithFrontierProfile(profile)
+            );
             await main.RefreshAsync().WaitAsync(TimeSpan.FromSeconds(3));
             Assert.Equal("F123", main.FrontierId);
-            Assert.True(profile.IsBusy); Assert.Equal(1, account.RefreshCount);
+            Assert.True(profile.IsBusy);
+            Assert.Equal(1, account.RefreshCount);
             pending.SetResult(refreshed);
         }
-        finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
     }
 
     [Fact]
@@ -938,29 +871,51 @@ public sealed class CommanderProfileViewModelTests
         var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-carrier-startup-{Guid.NewGuid():N}");
         try
         {
-            var journals = Path.Combine(root, "journals"); Directory.CreateDirectory(journals);
-            await File.WriteAllTextAsync(Path.Combine(journals, "Journal.2026-09-06T120000.01.log"),
-                """{"timestamp":"2026-09-06T12:00:00Z","event":"LoadGame","Commander":"Fenris","FID":"F123","Odyssey":true}""" + "\n");
+            var journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            await File.WriteAllTextAsync(
+                Path.Combine(journals, "Journal.2026-09-06T120000.01.log"),
+                """{"timestamp":"2026-09-06T12:00:00Z","event":"LoadGame","Commander":"Fenris","FID":"F123","Odyssey":true}"""
+                    + "\n"
+            );
             var stale = CreateSnapshot(DateTimeOffset.UtcNow.AddHours(-1));
             var refreshed = CreateSnapshot(DateTimeOffset.UtcNow);
             var account = new StubAccountService(new FrontierAccountState(true, stale, stale.FetchedAt), refreshed);
             var profile = new CommanderProfileViewModel(account);
-            using var main = MainWindowViewModelTestBuilder.Create(journals, builder => builder.WithAppDataPaths(new AppDataPaths(Path.Combine(root, "config"), Path.Combine(root, "profile"), Path.Combine(root, "cache"), [])).WithFrontierProfile(profile));
+            using var main = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder =>
+                    builder
+                        .WithAppDataPaths(
+                            new AppDataPaths(
+                                Path.Combine(root, "config"),
+                                Path.Combine(root, "profile"),
+                                Path.Combine(root, "cache"),
+                                []
+                            )
+                        )
+                        .WithFrontierProfile(profile)
+            );
             await main.RefreshAsync();
-            Assert.False(main.IsProfileSelected); Assert.NotNull(profile.Carrier);
+            Assert.False(main.IsProfileSelected);
+            Assert.NotNull(profile.Carrier);
             Assert.Equal(refreshed.FetchedAt, profile.Snapshot!.FetchedAt);
             await main.RefreshAsync();
             Assert.Equal(1, account.RefreshCount);
         }
-        finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
     }
 
     [Fact]
     public async Task MainJournalRefreshSuppliesReputationWhenCarrierIsAbsent()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-profile-reputation-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-profile-reputation-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
@@ -972,7 +927,8 @@ public sealed class CommanderProfileViewModelTests
                 {"timestamp":"2026-07-29T12:00:01Z","event":"LoadGame","Commander":"Fenris","FID":"F123","Odyssey":true}
                 {"timestamp":"2026-07-29T12:05:00Z","event":"Reputation","Empire":25.5,"Federation":91,"Independent":100,"Alliance":-12}
 
-                """);
+                """
+            );
             var fetchedAt = DateTimeOffset.Parse("2026-07-29T12:00:00Z");
             var snapshot = CreateSnapshot(fetchedAt) with
             {
@@ -980,22 +936,23 @@ public sealed class CommanderProfileViewModelTests
                 CommanderReputation = [],
                 CommanderReputationFetchedAt = null,
             };
-            var account = new StubAccountService(new FrontierAccountState(
-                true,
-                snapshot,
-                snapshot.FetchedAt));
+            var account = new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt));
             var profile = new CommanderProfileViewModel(account);
             await profile.OpenAsync();
             using var main = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(
-                        new AppDataPaths(
-                            Path.Combine(root, "config"),
-                            Path.Combine(root, "profile"),
-                            Path.Combine(root, "cache"),
-                            []))
-                    .WithFrontierProfile(profile));
+                builder =>
+                    builder
+                        .WithAppDataPaths(
+                            new AppDataPaths(
+                                Path.Combine(root, "config"),
+                                Path.Combine(root, "profile"),
+                                Path.Combine(root, "cache"),
+                                []
+                            )
+                        )
+                        .WithFrontierProfile(profile)
+            );
 
             await main.ShowProfileAsync();
             await main.RefreshAsync();
@@ -1003,10 +960,7 @@ public sealed class CommanderProfileViewModelTests
             Assert.Equal("F123", account.ActiveFrontierId);
             Assert.Null(profile.Carrier);
             Assert.Equal(4, profile.CommanderReputation.Count);
-            Assert.Equal(
-                "91%",
-                profile.CommanderReputation.Single(item =>
-                    item.Faction == "Federation").Score);
+            Assert.Equal("91%", profile.CommanderReputation.Single(item => item.Faction == "Federation").Score);
         }
         finally
         {
@@ -1029,7 +983,8 @@ public sealed class CommanderProfileViewModelTests
             250_000,
             true,
             100,
-            100);
+            100
+        );
         var carrier = new FrontierCarrierSnapshot(
             "RAV-001",
             "Raven's Rest",
@@ -1050,7 +1005,8 @@ public sealed class CommanderProfileViewModelTests
             [],
             [],
             [new FrontierMarketOrderSnapshot("Commodity", "Gold", 10, 5, 1000, false)],
-            ["Refuel"]);
+            ["Refuel"]
+        );
         return new FrontierAccountSnapshot(
             "Fenris",
             1000,
@@ -1065,20 +1021,15 @@ public sealed class CommanderProfileViewModelTests
             ["Horizons"],
             carrier,
             fetchedAt,
-            LastSystemDetails: new FrontierLocationSnapshot(
-                1,
-                2,
-                "Sol",
-                "Federation",
-                "Pilots Federation",
-                []),
+            LastSystemDetails: new FrontierLocationSnapshot(1, 2, "Sol", "Federation", "Pilots Federation", []),
             LastStationDetails: new FrontierLocationSnapshot(
                 3,
                 2,
                 "Galileo",
                 "Federation",
                 "Pilots Federation",
-                ["Shipyard", "Market"]),
+                ["Shipyard", "Market"]
+            ),
             Market: new FrontierMarketSnapshot(
                 3,
                 "Galileo",
@@ -1088,20 +1039,9 @@ public sealed class CommanderProfileViewModelTests
                 [],
                 [],
                 [],
-                [new FrontierCommoditySnapshot(
-                    4,
-                    "Metals",
-                    "Gold",
-                    "Legal",
-                    100,
-                    90,
-                    95,
-                    2,
-                    3,
-                    50,
-                    200,
-                    [])],
-                fetchedAt),
+                [new FrontierCommoditySnapshot(4, "Metals", "Gold", "Legal", 100, 90, 95, 2, 3, 50, 200, [])],
+                fetchedAt
+            ),
             Shipyard: new FrontierShipyardSnapshot(
                 3,
                 "Galileo",
@@ -1111,20 +1051,10 @@ public sealed class CommanderProfileViewModelTests
                 [],
                 [],
                 [],
-                [new FrontierOutfittingModuleSnapshot(
-                    4,
-                    "Utility",
-                    "Heat Sink Launcher",
-                    3_500,
-                    string.Empty,
-                    7)],
-                [new FrontierShipForSaleSnapshot(
-                    5,
-                    "Sidewinder",
-                    32_000,
-                    string.Empty,
-                    -1)],
-                fetchedAt),
+                [new FrontierOutfittingModuleSnapshot(4, "Utility", "Heat Sink Launcher", 3_500, string.Empty, 7)],
+                [new FrontierShipForSaleSnapshot(5, "Sidewinder", 32_000, string.Empty, -1)],
+                fetchedAt
+            ),
             CommunityGoals:
             [
                 new FrontierCommunityGoalSnapshot(
@@ -1149,21 +1079,17 @@ public sealed class CommanderProfileViewModelTests
                     DataPoints: [],
                     ActivityType: "tradelist",
                     HasPlayerContributionData: true,
-                    HasContributorData: true),
+                    HasContributorData: true
+                ),
             ],
-            CommanderReputation:
-            [
-                new FrontierReputationSnapshot("Federation", 100),
-            ],
-            CommanderReputationFetchedAt: fetchedAt);
+            CommanderReputation: [new FrontierReputationSnapshot("Federation", 100)],
+            CommanderReputationFetchedAt: fetchedAt
+        );
     }
 
     private static JournalEventEnvelope ParseJournalEvent(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(
-            json,
-            out var journalEvent,
-            out var error), error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
         return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }
 
@@ -1171,12 +1097,11 @@ public sealed class CommanderProfileViewModelTests
     {
         private FrontierAccountState state;
         private readonly FrontierAccountSnapshot? refreshed;
-        private readonly Dictionary<string, FrontierAccountState> commanderStates =
-            new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, FrontierAccountState> commanderStates = new(
+            StringComparer.OrdinalIgnoreCase
+        );
 
-        public StubAccountService(
-            FrontierAccountState state,
-            FrontierAccountSnapshot? refreshed = null)
+        public StubAccountService(FrontierAccountState state, FrontierAccountSnapshot? refreshed = null)
         {
             this.state = state;
             this.refreshed = refreshed;
@@ -1203,55 +1128,53 @@ public sealed class CommanderProfileViewModelTests
             state = value;
         }
 
-        public void SetStateForCommander(
-            string frontierId,
-            FrontierAccountState value)
+        public void SetStateForCommander(string frontierId, FrontierAccountState value)
         {
             commanderStates[frontierId] = value;
         }
 
         public Task<IReadOnlyList<FrontierLinkedCommander>> GetLinkedCommandersAsync(
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             IReadOnlyList<FrontierLinkedCommander> linked = commanderStates
                 .Where(pair => pair.Value.IsLinked)
-                .Select(pair => new FrontierLinkedCommander(
-                    pair.Key,
-                    pair.Value.Snapshot?.CommanderName ?? pair.Key))
+                .Select(pair => new FrontierLinkedCommander(pair.Key, pair.Value.Snapshot?.CommanderName ?? pair.Key))
                 .ToArray();
             return Task.FromResult(linked);
         }
 
-        public Task<FrontierAccountState> GetStateAsync(
-            CancellationToken cancellationToken = default)
+        public Task<FrontierAccountState> GetStateAsync(CancellationToken cancellationToken = default)
         {
             StateRequested?.Invoke(cancellationToken);
             return Task.FromResult(
-                ActiveFrontierId is not null
-                && commanderStates.TryGetValue(ActiveFrontierId, out var scoped)
+                ActiveFrontierId is not null && commanderStates.TryGetValue(ActiveFrontierId, out var scoped)
                     ? scoped
-                    : state);
+                    : state
+            );
         }
 
-        public Task<FrontierAccountSnapshot> ConnectAsync(
-            CancellationToken cancellationToken = default)
+        public Task<FrontierAccountSnapshot> ConnectAsync(CancellationToken cancellationToken = default)
         {
             throw new NotSupportedException();
         }
 
-        public Task CancelConnectionAsync(
-            CancellationToken cancellationToken = default)
+        public Task CancelConnectionAsync(CancellationToken cancellationToken = default)
         {
             return Task.CompletedTask;
         }
 
-        public Task<FrontierAccountSnapshot> RefreshAsync(
-            CancellationToken cancellationToken = default)
+        public Task<FrontierAccountSnapshot> RefreshAsync(CancellationToken cancellationToken = default)
         {
             RefreshCount++;
-            if (PendingRefresh is not null) return PendingRefresh.WaitAsync(cancellationToken);
-            return Task.FromResult(refreshed ?? state.Snapshot
-                ?? throw new InvalidOperationException("No snapshot configured."));
+            if (PendingRefresh is not null)
+            {
+                return PendingRefresh.WaitAsync(cancellationToken);
+            }
+
+            return Task.FromResult(
+                refreshed ?? state.Snapshot ?? throw new InvalidOperationException("No snapshot configured.")
+            );
         }
 
         public Task UnlinkAsync(CancellationToken cancellationToken = default)
@@ -1259,9 +1182,7 @@ public sealed class CommanderProfileViewModelTests
             return Task.CompletedTask;
         }
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
 
         public void RaiseAuthorizationCallbackReceived()
         {
@@ -1269,15 +1190,15 @@ public sealed class CommanderProfileViewModelTests
         }
     }
 
-    private sealed class StubCommunityGoalHistoryReader(
-        CommunityGoalJournalHistoryReadResult result)
+    private sealed class StubCommunityGoalHistoryReader(CommunityGoalJournalHistoryReadResult result)
         : ICommunityGoalJournalHistoryReader
     {
         public string? RequestedFrontierId { get; private set; }
 
         public Task<CommunityGoalJournalHistoryReadResult> ReadAsync(
             string frontierId,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             RequestedFrontierId = frontierId;
             return Task.FromResult(result);

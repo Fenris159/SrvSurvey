@@ -4,11 +4,7 @@ namespace SrvSurvey.Desktop.Tests.Coverage;
 
 public sealed class RouteWindowMarkupTests
 {
-    private static readonly string[] RoutedFileNames =
-    [
-        "RouteWindow.axaml",
-        "JumpInfoOverlayPresentation.axaml",
-    ];
+    private static readonly string[] RoutedFileNames = ["RouteWindow.axaml", "JumpInfoOverlayPresentation.axaml"];
 
     private static readonly string[] FleetCarrierFooterCommands =
     [
@@ -51,8 +47,7 @@ public sealed class RouteWindowMarkupTests
     public void RouteRowsAreNotSelectableAndWindowUsesWorkspaceTitle()
     {
         var document = LoadRouteWindow();
-        var window = document.Root
-            ?? throw new InvalidDataException("RouteWindow.axaml has no root element.");
+        var window = document.Root ?? throw new InvalidDataException("RouteWindow.axaml has no root element.");
 
         Assert.Equal("{Binding WindowTitle}", window.Attribute("Title")?.Value);
 
@@ -60,20 +55,23 @@ public sealed class RouteWindowMarkupTests
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "ItemsControl"
-                && element.Attributes().Any(attribute =>
-                    attribute.Name.LocalName == "Name"
-                    && attribute.Value == "RouteHopItems"));
+                && element
+                    .Attributes()
+                    .Any(attribute => attribute.Name.LocalName == "Name" && attribute.Value == "RouteHopItems")
+            );
 
         Assert.Equal(
             "{Binding Hops}",
-            routeItems.Attributes().Single(attribute =>
-                attribute.Name.LocalName == "ItemsSource").Value);
+            routeItems.Attributes().Single(attribute => attribute.Name.LocalName == "ItemsSource").Value
+        );
         Assert.DoesNotContain(
             window.Descendants(),
-            element => element.Name.LocalName == "ListBox"
-                && element.Attributes().Any(attribute =>
-                    attribute.Name.LocalName == "ItemsSource"
-                    && attribute.Value == "{Binding Hops}"));
+            element =>
+                element.Name.LocalName == "ListBox"
+                && element
+                    .Attributes()
+                    .Any(attribute => attribute.Name.LocalName == "ItemsSource" && attribute.Value == "{Binding Hops}")
+        );
     }
 
     [Fact]
@@ -85,9 +83,7 @@ public sealed class RouteWindowMarkupTests
         var panels = FindNamedElement(document, "RouteSidebarPanels");
 
         Assert.Equal("18,18,6,18", sidebar.Attribute("Padding")?.Value);
-        Assert.Equal(
-            "Auto",
-            scroller.Attribute("VerticalScrollBarVisibility")?.Value);
+        Assert.Equal("Auto", scroller.Attribute("VerticalScrollBarVisibility")?.Value);
         Assert.Equal("0,0,12,0", panels.Attribute("Margin")?.Value);
     }
 
@@ -95,13 +91,11 @@ public sealed class RouteWindowMarkupTests
     public void SaveAsValidationUsesABooleanVisibilityBinding()
     {
         var document = LoadRouteWindow();
-        var error = document.Descendants()
-            .Single(element =>
-                element.Attribute("Text")?.Value == "{Binding SaveAsError}");
+        var error = document
+            .Descendants()
+            .Single(element => element.Attribute("Text")?.Value == "{Binding SaveAsError}");
 
-        Assert.Equal(
-            "{Binding HasSaveAsError}",
-            error.Attribute("IsVisible")?.Value);
+        Assert.Equal("{Binding HasSaveAsError}", error.Attribute("IsVisible")?.Value);
     }
 
     [Fact]
@@ -116,12 +110,8 @@ public sealed class RouteWindowMarkupTests
 
         Assert.Equal("20,20,6,20", workspace.Attribute("Margin")?.Value);
         Assert.Equal("{Binding !IsFleetCarrierWorkspace}", header.Attribute("IsVisible")?.Value);
-        Assert.Equal(
-            "Auto",
-            scroller.Attribute("VerticalScrollBarVisibility")?.Value);
-        Assert.Equal(
-            "Auto",
-            scroller.Attribute("HorizontalScrollBarVisibility")?.Value);
+        Assert.Equal("Auto", scroller.Attribute("VerticalScrollBarVisibility")?.Value);
+        Assert.Equal("Auto", scroller.Attribute("HorizontalScrollBarVisibility")?.Value);
         Assert.Equal("0,0,14,0", table.Attribute("Margin")?.Value);
         Assert.Null(routeItems.Attribute("Margin"));
     }
@@ -131,31 +121,31 @@ public sealed class RouteWindowMarkupTests
     {
         var document = LoadRouteWindow();
         var header = FindNamedElement(document, "FleetCarrierRouteHopHeader");
-        var headerTexts = header.Descendants()
+        var headerTexts = header
+            .Descendants()
             .Where(element => element.Name.LocalName == "TextBlock")
             .Select(element => element.Attribute("Text")?.Value)
             .OfType<string>()
             .ToArray();
 
-        Assert.Equal(
-            FleetCarrierHeaderTexts,
-            headerTexts);
-        Assert.Equal(
-            "{Binding IsFleetCarrierWorkspace}",
-            header.Attribute("IsVisible")?.Value);
+        Assert.Equal(FleetCarrierHeaderTexts, headerTexts);
+        Assert.Equal("{Binding IsFleetCarrierWorkspace}", header.Attribute("IsVisible")?.Value);
 
-        var carrierRow = document.Descendants().Single(element =>
-            element.Name.LocalName == "Grid"
-            && element.Attribute("IsVisible")?.Value
-                == "{Binding IsFleetCarrierHop}");
-        var bindings = carrierRow.Descendants()
+        var carrierRow = document
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "Grid"
+                && element.Attribute("IsVisible")?.Value == "{Binding IsFleetCarrierHop}"
+            );
+        var bindings = carrierRow
+            .Descendants()
             .Select(element => element.Attribute("Text")?.Value)
-            .Where(value => value?.StartsWith("{Binding Carrier", StringComparison.Ordinal) == true
-                || value == "{Binding JumpsRemaining}")
+            .Where(value =>
+                value?.StartsWith("{Binding Carrier", StringComparison.Ordinal) == true
+                || value == "{Binding JumpsRemaining}"
+            )
             .ToArray();
-        Assert.Equal(
-            FleetCarrierBindings,
-            bindings);
+        Assert.Equal(FleetCarrierBindings, bindings);
     }
 
     [Fact]
@@ -164,9 +154,8 @@ public sealed class RouteWindowMarkupTests
         var document = LoadRouteWindow();
         var text = string.Join(
             " ",
-            document.Descendants()
-                .Select(element => element.Attribute("Text")?.Value)
-                .Where(value => value is not null));
+            document.Descendants().Select(element => element.Attribute("Text")?.Value).Where(value => value is not null)
+        );
 
         Assert.Contains("BODIES", text, StringComparison.Ordinal);
         Assert.Contains("TYPE", text, StringComparison.Ordinal);
@@ -179,28 +168,35 @@ public sealed class RouteWindowMarkupTests
         Assert.Contains("NEUTRON", text, StringComparison.Ordinal);
         Assert.Contains(
             document.Descendants(),
-            element => element.Name.LocalName == "Image"
-                && element.Attribute("Source")?.Value
-                    == "avares://SrvSurvey.Desktop/Assets/Routes/refuel-star.png");
+            element =>
+                element.Name.LocalName == "Image"
+                && element.Attribute("Source")?.Value == "avares://SrvSurvey.Desktop/Assets/Routes/refuel-star.png"
+        );
         Assert.Contains(
             document.Descendants(),
-            element => element.Name.LocalName == "Image"
-                && element.Attribute("Source")?.Value
-                    == "avares://SrvSurvey.Desktop/Assets/Routes/neutron-star.png");
+            element =>
+                element.Name.LocalName == "Image"
+                && element.Attribute("Source")?.Value == "avares://SrvSurvey.Desktop/Assets/Routes/neutron-star.png"
+        );
         Assert.Contains(
             document.Descendants(),
-            element => element.Name.LocalName == "Image"
+            element =>
+                element.Name.LocalName == "Image"
                 && element.Attribute("Source")?.Value
-                    == "{Binding BodyIconAssetPath, Converter={StaticResource BundledAssetImageConverter}}");
+                    == "{Binding BodyIconAssetPath, Converter={StaticResource BundledAssetImageConverter}}"
+        );
         Assert.Contains("Scan for biological signals", text, StringComparison.Ordinal);
         Assert.Contains(
             document.Descendants(),
-            element => element.Name.LocalName == "ItemsControl"
-                && element.Attribute("ItemsSource")?.Value == "{Binding BioTargets}");
+            element =>
+                element.Name.LocalName == "ItemsControl"
+                && element.Attribute("ItemsSource")?.Value == "{Binding BioTargets}"
+        );
         Assert.Contains(
             document.Descendants(),
-            element => element.Name.LocalName == "CheckBox"
-                && element.Attribute("Click")?.Value == "BioTargetCheckBox_Click");
+            element =>
+                element.Name.LocalName == "CheckBox" && element.Attribute("Click")?.Value == "BioTargetCheckBox_Click"
+        );
     }
 
     [Fact]
@@ -208,67 +204,58 @@ public sealed class RouteWindowMarkupTests
     {
         foreach (var fileName in RoutedFileNames)
         {
-            var document = XDocument.Load(Path.Combine(
-                FindRepositoryRoot(),
-                "src",
-                "SrvSurvey.Desktop",
-                fileName));
-            var guidanceBadges = document.Descendants()
-                .Where(element => element.Name.LocalName == "Border"
+            var document = XDocument.Load(Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", fileName));
+            var guidanceBadges = document
+                .Descendants()
+                .Where(element =>
+                    element.Name.LocalName == "Border"
                     && element.Attribute("Classes")?.Value == "badge"
-                    && element.Descendants().Any(descendant =>
-                        descendant.Name.LocalName == "TextBlock"
-                        && descendant.Attribute("Text")?.Value
-                            is "REFUEL" or "NEUTRON"))
+                    && element
+                        .Descendants()
+                        .Any(descendant =>
+                            descendant.Name.LocalName == "TextBlock"
+                            && descendant.Attribute("Text")?.Value is "REFUEL" or "NEUTRON"
+                        )
+                )
                 .ToArray();
 
             Assert.Equal(2, guidanceBadges.Length);
-            Assert.All(guidanceBadges, badge => Assert.Equal(
-                "{DynamicResource RavenRouteGuidanceBadgeBrush}",
-                badge.Attribute("Background")?.Value));
+            Assert.All(
+                guidanceBadges,
+                badge =>
+                    Assert.Equal("{DynamicResource RavenRouteGuidanceBadgeBrush}", badge.Attribute("Background")?.Value)
+            );
         }
     }
 
     [Fact]
     public void ScoopableStarBadgeMatchesGuidancePillsWithoutAnIcon()
     {
-        var document = XDocument.Load(Path.Combine(
-            FindRepositoryRoot(),
-            "src",
-            "SrvSurvey.Desktop",
-            "JumpInfoOverlayPresentation.axaml"));
-        var label = document.Descendants().Single(element =>
-            element.Name.LocalName == "TextBlock"
-            && element.Attribute("Text")?.Value == "SCOOPABLE");
-        var badge = label.Parent
-            ?? throw new InvalidDataException(
-                "The scoopable label has no badge parent.");
-        var starClass = badge.Parent?.Elements().SingleOrDefault(element =>
-            element.Attribute("Text")?.Value
-                == "{Binding JumpInfo.StarClass}")
-            ?? throw new InvalidDataException(
-                "The scoopable badge has no adjacent star-class label.");
+        var document = XDocument.Load(
+            Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "JumpInfoOverlayPresentation.axaml")
+        );
+        var label = document
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "TextBlock" && element.Attribute("Text")?.Value == "SCOOPABLE"
+            );
+        var badge = label.Parent ?? throw new InvalidDataException("The scoopable label has no badge parent.");
+        var starClass =
+            badge
+                .Parent?.Elements()
+                .SingleOrDefault(element => element.Attribute("Text")?.Value == "{Binding JumpInfo.StarClass}")
+            ?? throw new InvalidDataException("The scoopable badge has no adjacent star-class label.");
 
         Assert.Equal("Border", badge.Name.LocalName);
         Assert.Equal("badge", badge.Attribute("Classes")?.Value);
-        Assert.Equal(
-            "{DynamicResource RavenRouteGuidanceBadgeBrush}",
-            badge.Attribute("Background")?.Value);
-        Assert.Equal(
-            "{Binding JumpInfo.IsScoopableStarClass}",
-            badge.Attribute("IsVisible")?.Value);
+        Assert.Equal("{DynamicResource RavenRouteGuidanceBadgeBrush}", badge.Attribute("Background")?.Value);
+        Assert.Equal("{Binding JumpInfo.IsScoopableStarClass}", badge.Attribute("IsVisible")?.Value);
         Assert.Equal("18", badge.Attribute("MinHeight")?.Value);
         Assert.Equal("7,2", badge.Attribute("Padding")?.Value);
         Assert.Equal("9", label.Attribute("FontSize")?.Value);
-        Assert.Equal(
-            "{DynamicResource RavenWarningBrush}",
-            label.Attribute("Foreground")?.Value);
-        Assert.Equal(
-            starClass.Attribute("Foreground")?.Value,
-            label.Attribute("Foreground")?.Value);
-        Assert.DoesNotContain(
-            badge.Descendants(),
-            element => element.Name.LocalName == "Image");
+        Assert.Equal("{DynamicResource RavenWarningBrush}", label.Attribute("Foreground")?.Value);
+        Assert.Equal(starClass.Attribute("Foreground")?.Value, label.Attribute("Foreground")?.Value);
+        Assert.DoesNotContain(badge.Descendants(), element => element.Name.LocalName == "Image");
         Assert.Same(starClass, badge.ElementsAfterSelf().FirstOrDefault());
     }
 
@@ -277,27 +264,23 @@ public sealed class RouteWindowMarkupTests
     {
         var document = LoadRouteWindow();
         var header = FindNamedElement(document, "RouteHopHeader");
-        var bodyItems = document.Descendants().Single(element =>
-            element.Name.LocalName == "ItemsControl"
-            && element.Attribute("ItemsSource")?.Value == "{Binding BioTargets}");
-        var bodySection = bodyItems.Parent
-            ?? throw new InvalidDataException("The route body list has no section.");
-        var bodyPanel = bodyItems.Descendants().Single(element =>
-            element.Name.LocalName == "WrapPanel"
-            && element.Attribute("ItemWidth")?.Value == "520");
+        var bodyItems = document
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "ItemsControl"
+                && element.Attribute("ItemsSource")?.Value == "{Binding BioTargets}"
+            );
+        var bodySection = bodyItems.Parent ?? throw new InvalidDataException("The route body list has no section.");
+        var bodyPanel = bodyItems
+            .Descendants()
+            .Single(element => element.Name.LocalName == "WrapPanel" && element.Attribute("ItemWidth")?.Value == "520");
 
-        Assert.DoesNotContain(
-            header.Descendants(),
-            element => element.Attribute("Text")?.Value == "BODIES");
+        Assert.DoesNotContain(header.Descendants(), element => element.Attribute("Text")?.Value == "BODIES");
         Assert.Equal("1", bodySection.Attribute("Grid.Row")?.Value);
         Assert.Equal("4", bodySection.Attribute("Grid.ColumnSpan")?.Value);
         Assert.Equal("60,12,0,0", bodySection.Attribute("Margin")?.Value);
-        Assert.Equal(
-            "{Binding HasBioTargets}",
-            bodySection.Attribute("IsVisible")?.Value);
-        Assert.Contains(
-            bodySection.Descendants(),
-            element => element.Attribute("Text")?.Value == "BODIES");
+        Assert.Equal("{Binding HasBioTargets}", bodySection.Attribute("IsVisible")?.Value);
+        Assert.Contains(bodySection.Descendants(), element => element.Attribute("Text")?.Value == "BODIES");
         Assert.Equal("Horizontal", bodyPanel.Attribute("Orientation")?.Value);
         Assert.Equal("520", bodyPanel.Attribute("ItemWidth")?.Value);
     }
@@ -306,54 +289,53 @@ public sealed class RouteWindowMarkupTests
     public void RouteLifecycleControlsAndDialogsArePresentInRequestedOrder()
     {
         var document = LoadRouteWindow();
-        var buttons = document.Descendants()
-            .Where(element => element.Name.LocalName == "Button")
-            .ToArray();
+        var buttons = document.Descendants().Where(element => element.Name.LocalName == "Button").ToArray();
         var contents = buttons
             .Select(button => button.Attribute("Content")?.Value)
             .Where(content => content is not null)
             .ToArray();
 
         Assert.Contains("Notes", contents);
-        Assert.Contains("Are you sure?", string.Join(
-            " ",
-            document.Descendants()
-                .Select(element => element.Attribute("Text")?.Value)
-                .Where(text => text is not null)));
+        Assert.Contains(
+            "Are you sure?",
+            string.Join(
+                " ",
+                document
+                    .Descendants()
+                    .Select(element => element.Attribute("Text")?.Value)
+                    .Where(text => text is not null)
+            )
+        );
         Assert.Contains(
             "Imports replace the on-screen draft. Nothing is written until Saved.",
-            document.Descendants()
-                .Select(element => element.Attribute("Text")?.Value));
+            document.Descendants().Select(element => element.Attribute("Text")?.Value)
+        );
 
-        var footer = document.Descendants()
-            .Single(element => element.Name.LocalName == "Border"
-                && element.Attribute("Grid.Row")?.Value == "2");
+        var footer = document
+            .Descendants()
+            .Single(element => element.Name.LocalName == "Border" && element.Attribute("Grid.Row")?.Value == "2");
         Assert.Equal(
             FleetCarrierFooterCommands,
-            footer.Descendants()
+            footer
+                .Descendants()
                 .Where(element => element.Name.LocalName == "Button")
                 .Select(element => element.Attribute("Command")?.Value)
                 .OfType<string>()
-                .ToArray());
+                .ToArray()
+        );
 
-        Assert.DoesNotContain(
-            document.Descendants(),
-            element => element.Attribute("Text")?.Value == "Route library");
+        Assert.DoesNotContain(document.Descendants(), element => element.Attribute("Text")?.Value == "Route library");
     }
 
-    private static XDocument LoadRouteWindow() => XDocument.Load(Path.Combine(
-        FindRepositoryRoot(),
-        "src",
-        "SrvSurvey.Desktop",
-        "RouteWindow.axaml"));
+    private static XDocument LoadRouteWindow() =>
+        XDocument.Load(Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "RouteWindow.axaml"));
 
-    private static XElement FindNamedElement(
-        XDocument document,
-        string name) => document
-        .Descendants()
-        .Single(element => element.Attributes().Any(attribute =>
-            attribute.Name.LocalName == "Name"
-            && attribute.Value == name));
+    private static XElement FindNamedElement(XDocument document, string name) =>
+        document
+            .Descendants()
+            .Single(element =>
+                element.Attributes().Any(attribute => attribute.Name.LocalName == "Name" && attribute.Value == name)
+            );
 
     private static string FindRepositoryRoot()
     {
@@ -368,7 +350,6 @@ public sealed class RouteWindowMarkupTests
             current = current.Parent;
         }
 
-        throw new DirectoryNotFoundException(
-            "Could not locate the repository root.");
+        throw new DirectoryNotFoundException("Could not locate the repository root.");
     }
 }

@@ -17,26 +17,12 @@ public sealed class NotificationSettingsStore
         var settings = documentStore.Load()["Notifications"] as JsonObject;
         return new NotificationPreferences(
             GetBoolean(settings, "Enabled", defaults.Enabled),
-            GetBoolean(
-                settings,
-                "MaterialCountAfterPickup",
-                defaults.MaterialCountAfterPickup),
-            GetBoolean(
-                settings,
-                "CargoMissionRemaining",
-                defaults.CargoMissionRemaining),
-            GetBoolean(
-                settings,
-                "CurrentBoxelSearchStatus",
-                defaults.CurrentBoxelSearchStatus),
-            GetBoolean(
-                settings,
-                "ShowNextBoxelToSearch",
-                defaults.ShowNextBoxelToSearch),
-            GetBoolean(
-                settings,
-                "ShowScreenshot",
-                defaults.ShowScreenshot));
+            GetBoolean(settings, "MaterialCountAfterPickup", defaults.MaterialCountAfterPickup),
+            GetBoolean(settings, "CargoMissionRemaining", defaults.CargoMissionRemaining),
+            GetBoolean(settings, "CurrentBoxelSearchStatus", defaults.CurrentBoxelSearchStatus),
+            GetBoolean(settings, "ShowNextBoxelToSearch", defaults.ShowNextBoxelToSearch),
+            GetBoolean(settings, "ShowScreenshot", defaults.ShowScreenshot)
+        );
     }
 
     public void Save(NotificationPreferences preferences)
@@ -53,27 +39,19 @@ public sealed class NotificationSettingsStore
 
             root["Version"] = 1;
             settings["Enabled"] = preferences.Enabled;
-            settings["MaterialCountAfterPickup"] =
-                preferences.MaterialCountAfterPickup;
-            settings["CargoMissionRemaining"] =
-                preferences.CargoMissionRemaining;
-            settings["CurrentBoxelSearchStatus"] =
-                preferences.CurrentBoxelSearchStatus;
-            settings["ShowNextBoxelToSearch"] =
-                preferences.ShowNextBoxelToSearch;
+            settings["MaterialCountAfterPickup"] = preferences.MaterialCountAfterPickup;
+            settings["CargoMissionRemaining"] = preferences.CargoMissionRemaining;
+            settings["CurrentBoxelSearchStatus"] = preferences.CurrentBoxelSearchStatus;
+            settings["ShowNextBoxelToSearch"] = preferences.ShowNextBoxelToSearch;
             settings["ShowScreenshot"] = preferences.ShowScreenshot;
         });
     }
 
-    private static bool GetBoolean(
-        JsonObject? settings,
-        string propertyName,
-        bool fallback)
+    private static bool GetBoolean(JsonObject? settings, string propertyName, bool fallback)
     {
-        return settings?[propertyName] is JsonValue value
-            && value.TryGetValue<bool>(out var result)
-                ? result
-                : fallback;
+        return settings?[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result)
+            ? result
+            : fallback;
     }
 }
 
@@ -83,13 +61,16 @@ public sealed record NotificationPreferences(
     bool CargoMissionRemaining,
     bool CurrentBoxelSearchStatus,
     bool ShowNextBoxelToSearch,
-    bool ShowScreenshot)
+    bool ShowScreenshot
+)
 {
-    public static NotificationPreferences Default { get; } = new(
-        Enabled: true,
-        MaterialCountAfterPickup: true,
-        CargoMissionRemaining: true,
-        CurrentBoxelSearchStatus: true,
-        ShowNextBoxelToSearch: true,
-        ShowScreenshot: true);
+    public static NotificationPreferences Default { get; } =
+        new(
+            Enabled: true,
+            MaterialCountAfterPickup: true,
+            CargoMissionRemaining: true,
+            CurrentBoxelSearchStatus: true,
+            ShowNextBoxelToSearch: true,
+            ShowScreenshot: true
+        );
 }

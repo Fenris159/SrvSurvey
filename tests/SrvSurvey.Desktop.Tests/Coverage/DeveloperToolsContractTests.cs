@@ -8,32 +8,22 @@ public sealed class DeveloperToolsContractTests
     public void DebugBuildsIncludeAvaloniaDeveloperToolsSupport()
     {
         var repositoryRoot = FindRepositoryRoot();
-        var project = XDocument.Load(Path.Combine(
-            repositoryRoot,
-            "src",
-            "SrvSurvey.Desktop",
-            "SrvSurvey.Desktop.csproj"));
-        var diagnosticsPackage = project.Descendants().Single(element =>
-            element.Name.LocalName == "PackageReference"
-            && element.Attribute("Include")?.Value
-                == "AvaloniaUI.DiagnosticsSupport");
-        var itemGroup = diagnosticsPackage.Parent
-            ?? throw new InvalidDataException(
-                "Developer Tools package group is missing.");
-        var app = File.ReadAllText(Path.Combine(
-            repositoryRoot,
-            "src",
-            "SrvSurvey.Desktop",
-            "App.axaml.cs"));
+        var project = XDocument.Load(
+            Path.Combine(repositoryRoot, "src", "SrvSurvey.Desktop", "SrvSurvey.Desktop.csproj")
+        );
+        var diagnosticsPackage = project
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "PackageReference"
+                && element.Attribute("Include")?.Value == "AvaloniaUI.DiagnosticsSupport"
+            );
+        var itemGroup =
+            diagnosticsPackage.Parent ?? throw new InvalidDataException("Developer Tools package group is missing.");
+        var app = File.ReadAllText(Path.Combine(repositoryRoot, "src", "SrvSurvey.Desktop", "App.axaml.cs"));
 
         Assert.Equal("2.2.3", diagnosticsPackage.Attribute("Version")?.Value);
-        Assert.Equal(
-            "'$(Configuration)' == 'Debug'",
-            itemGroup.Attribute("Condition")?.Value);
-        Assert.Contains(
-            "this.AttachDeveloperTools();",
-            app.Replace("\r\n", "\n"),
-            StringComparison.Ordinal);
+        Assert.Equal("'$(Configuration)' == 'Debug'", itemGroup.Attribute("Condition")?.Value);
+        Assert.Contains("this.AttachDeveloperTools();", app.Replace("\r\n", "\n"), StringComparison.Ordinal);
     }
 
     private static string FindRepositoryRoot()
@@ -49,7 +39,6 @@ public sealed class DeveloperToolsContractTests
             current = current.Parent;
         }
 
-        throw new DirectoryNotFoundException(
-            "Could not locate the repository root.");
+        throw new DirectoryNotFoundException("Could not locate the repository root.");
     }
 }

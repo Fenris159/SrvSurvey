@@ -7,7 +7,8 @@ public sealed class OverlayScaleSettingsStoreTests : IDisposable
 {
     private readonly string directory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-overlay-scale-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-overlay-scale-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void CatalogMatchesEveryLegacyScaleIndex()
@@ -46,9 +47,7 @@ public sealed class OverlayScaleSettingsStoreTests : IDisposable
         for (var index = 0; index < expected.Length; index++)
         {
             Assert.Equal(index, OverlayScaleCatalog.Options[index].Index);
-            Assert.Equal(
-                expected[index],
-                OverlayScaleCatalog.Options[index].AbsoluteScale);
+            Assert.Equal(expected[index], OverlayScaleCatalog.Options[index].AbsoluteScale);
         }
     }
 
@@ -76,7 +75,8 @@ public sealed class OverlayScaleSettingsStoreTests : IDisposable
                 "FutureScale": "keep"
               }
             }
-            """);
+            """
+        );
         var store = new OverlayScaleSettingsStore(path);
 
         Assert.Equal(new OverlayScalePreferences(22), store.Load());
@@ -85,9 +85,7 @@ public sealed class OverlayScaleSettingsStoreTests : IDisposable
 
         var root = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
         Assert.True(root["FutureRoot"]!.GetValue<bool>());
-        Assert.Equal(
-            "keep",
-            root["OverlayScale"]!["FutureScale"]!.GetValue<string>());
+        Assert.Equal("keep", root["OverlayScale"]!["FutureScale"]!.GetValue<string>());
         Assert.Equal(7, root["OverlayScale"]!["Index"]!.GetValue<int>());
     }
 
@@ -96,8 +94,7 @@ public sealed class OverlayScaleSettingsStoreTests : IDisposable
     {
         Directory.CreateDirectory(directory);
         var path = Path.Combine(directory, "ui-settings.json");
-        const string content =
-            "{\"Version\":1,\"OverlayScale\":{\"Index\":26.5}}";
+        const string content = "{\"Version\":1,\"OverlayScale\":{\"Index\":26.5}}";
         await File.WriteAllTextAsync(path, content);
 
         var loaded = new OverlayScaleSettingsStore(path).Load();

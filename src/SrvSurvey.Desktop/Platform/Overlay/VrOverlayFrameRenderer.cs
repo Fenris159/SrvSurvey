@@ -15,22 +15,16 @@ public static class VrOverlayFrameRenderer
         return Render(window, window.Bounds.Size, window.RenderScaling);
     }
 
-    public static VrOverlayFrame Render(
-        Visual visual,
-        Size size,
-        double scaling)
+    public static VrOverlayFrame Render(Visual visual, Size size, double scaling)
     {
         ArgumentNullException.ThrowIfNull(visual);
         var pixelSize = PixelSize.FromSize(size, scaling);
         if (pixelSize.Width <= 0 || pixelSize.Height <= 0)
         {
-            throw new InvalidOperationException(
-                "The overlay has no renderable pixel dimensions.");
+            throw new InvalidOperationException("The overlay has no renderable pixel dimensions.");
         }
 
-        using var bitmap = new RenderTargetBitmap(
-            pixelSize,
-            new Vector(96 * scaling, 96 * scaling));
+        using var bitmap = new RenderTargetBitmap(pixelSize, new Vector(96 * scaling, 96 * scaling));
         bitmap.Render(visual);
         using var stream = new MemoryStream();
         bitmap.Save(stream, PngBitmapEncoderOptions.Default);
@@ -41,33 +35,24 @@ public static class VrOverlayFrameRenderer
     {
         ArgumentNullException.ThrowIfNull(pngBytes);
         using var stream = new MemoryStream(pngBytes, writable: false);
-        using var codec = SKCodec.Create(stream)
-            ?? throw new InvalidDataException("The rendered VR frame is not a PNG image.");
-        var info = new SKImageInfo(
-            codec.Info.Width,
-            codec.Info.Height,
-            SKColorType.Rgba8888,
-            SKAlphaType.Unpremul);
+        using var codec =
+            SKCodec.Create(stream) ?? throw new InvalidDataException("The rendered VR frame is not a PNG image.");
+        var info = new SKImageInfo(codec.Info.Width, codec.Info.Height, SKColorType.Rgba8888, SKAlphaType.Unpremul);
         var byteCount = checked((long)info.RowBytes * info.Height);
         if (byteCount <= 0 || byteCount > MaximumFrameBytes)
         {
-            throw new InvalidDataException(
-                "The rendered VR frame exceeds the 256 MiB safety limit.");
+            throw new InvalidDataException("The rendered VR frame exceeds the 256 MiB safety limit.");
         }
 
         var pixels = new byte[(int)byteCount];
         var result = codec.GetPixels(info, pixels);
         if (result is not SKCodecResult.Success)
         {
-            throw new InvalidDataException(
-                $"The rendered VR frame could not be decoded: {result}.");
+            throw new InvalidDataException($"The rendered VR frame could not be decoded: {result}.");
         }
 
         return new VrOverlayFrame(info.Width, info.Height, pixels);
     }
 }
 
-public sealed record VrOverlayFrame(
-    int Width,
-    int Height,
-    byte[] RgbaBytes);
+public sealed record VrOverlayFrame(int Width, int Height, byte[] RgbaBytes);

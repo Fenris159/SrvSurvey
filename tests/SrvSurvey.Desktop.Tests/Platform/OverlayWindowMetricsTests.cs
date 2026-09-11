@@ -19,23 +19,15 @@ public sealed class OverlayWindowMetricsTests
             SizeToContent = SizeToContent.WidthAndHeight,
             Content = new Border(),
         };
-        var layout = new LegacyOverlayLayout(
-            new Dictionary<string, LegacyOverlayPlacement>(),
-            null,
-            null);
+        var layout = new LegacyOverlayLayout(new Dictionary<string, LegacyOverlayPlacement>(), null, null);
 
-        var size = OverlayWindowMetrics.PrepareForPlacement(
-            window,
-            layout,
-            "PlotSysStatus",
-            1.5d);
+        var size = OverlayWindowMetrics.PrepareForPlacement(window, layout, "PlotSysStatus", 1.5d);
 
         Assert.Equal(new PixelSize(210, 210), size);
         Assert.Equal(
             new PixelPoint(120, 770),
-            OverlayWindowPlacement.BottomLeft(
-                new PixelRect(100, 200, 1200, 800),
-                size));
+            OverlayWindowPlacement.BottomLeft(new PixelRect(100, 200, 1200, 800), size)
+        );
     }
 
     [AvaloniaFact]
@@ -48,17 +40,10 @@ public sealed class OverlayWindowMetricsTests
             SizeToContent = SizeToContent.WidthAndHeight,
             Content = new Border(),
         };
-        var layout = new LegacyOverlayLayout(
-            new Dictionary<string, LegacyOverlayPlacement>(),
-            null,
-            null);
+        var layout = new LegacyOverlayLayout(new Dictionary<string, LegacyOverlayPlacement>(), null, null);
         layout.SetScaleIndex(1);
 
-        var size = OverlayWindowMetrics.PrepareForPlacement(
-            window,
-            layout,
-            "PlotSysStatus",
-            1.5d);
+        var size = OverlayWindowMetrics.PrepareForPlacement(window, layout, "PlotSysStatus", 1.5d);
 
         Assert.Equal(new PixelSize(140, 140), size);
     }
@@ -75,8 +60,7 @@ public sealed class OverlayWindowMetricsTests
         };
         window.SetRenderScaling(1.5d);
 
-        var size = OverlayWindowMetrics.GetPixelSize(
-            new RegisteredOverlayWindow(window, "PlotSysStatus"));
+        var size = OverlayWindowMetrics.GetPixelSize(new RegisteredOverlayWindow(window, "PlotSysStatus"));
 
         Assert.Equal(new PixelSize(210, 210), size);
     }

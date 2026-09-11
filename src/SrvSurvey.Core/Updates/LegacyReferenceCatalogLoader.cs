@@ -5,10 +5,7 @@ using SrvSurvey.Core.Settlements;
 
 namespace SrvSurvey.Core.Updates;
 
-public sealed record ReferenceCatalogSource(
-    string Catalog,
-    string? LocalPath,
-    string? Warning)
+public sealed record ReferenceCatalogSource(string Catalog, string? LocalPath, string? Warning)
 {
     public bool IsLocal => LocalPath is not null && Warning is null;
 }
@@ -21,18 +18,18 @@ public sealed record LegacyReferenceCatalogLoadResult(
     GuardianSiteTemplateCatalog GuardianTemplates,
     HumanSiteTemplateCatalog HumanSiteTemplates,
     GreenGasGiantCriteriaCatalog GreenGasGiants,
-    IReadOnlyList<ReferenceCatalogSource> Sources)
+    IReadOnlyList<ReferenceCatalogSource> Sources
+)
 {
     public int LocalCatalogCount => Sources.Count(source => source.IsLocal);
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Performance",
         "S2365:Properties should not make collection copies",
-        Justification = "This get-only property caches one immutable snapshot during construction.")]
-    public IReadOnlyList<string> Warnings { get; } = Sources
-        .Where(source => source.Warning is not null)
-        .Select(source => source.Warning!)
-        .ToArray();
+        Justification = "This get-only property caches one immutable snapshot during construction."
+    )]
+    public IReadOnlyList<string> Warnings { get; } =
+        Sources.Where(source => source.Warning is not null).Select(source => source.Warning!).ToArray();
 }
 
 public static class LegacyReferenceCatalogLoader
@@ -50,7 +47,8 @@ public static class LegacyReferenceCatalogLoader
             ExobiologyReferenceCatalog.LoadEmbedded,
             path => LoadFile(path, ExobiologyReferenceCatalog.Load),
             candidate => candidate.Count,
-            sources);
+            sources
+        );
         var biologyCriteria = LoadCandidate(
             "biology criteria",
             Path.Combine(published, "bio-criteria"),
@@ -58,7 +56,8 @@ public static class LegacyReferenceCatalogLoader
             BiologyCriteriaCatalog.LoadDirectory,
             candidate => candidate.Roots.Count,
             sources,
-            Directory.Exists);
+            Directory.Exists
+        );
         var guardianSites = LoadCandidate(
             "Guardian site index",
             published,
@@ -66,18 +65,19 @@ public static class LegacyReferenceCatalogLoader
             GuardianSiteCatalog.LoadPublishedDirectory,
             candidate => candidate.Count,
             sources,
-            path => File.Exists(Path.Combine(path, "allRuins.json"))
-                && File.Exists(Path.Combine(path, "allStructures.json")));
+            path =>
+                File.Exists(Path.Combine(path, "allRuins.json"))
+                && File.Exists(Path.Combine(path, "allStructures.json"))
+        );
         var guardianPublishedSites = LoadCandidate(
             "Guardian published surveys",
             Path.Combine(published, "guardian.zip"),
             GuardianPublishedSiteCatalog.LoadEmbedded,
             path => LoadFile(path, GuardianPublishedSiteCatalog.LoadZip),
             candidate => candidate.Count,
-            sources);
-        var editableGuardianTemplates = Path.Combine(
-            root,
-            "guardianSiteTemplates.json");
+            sources
+        );
+        var editableGuardianTemplates = Path.Combine(root, "guardianSiteTemplates.json");
         var guardianTemplates = LoadCandidate(
             "Guardian site templates",
             File.Exists(editableGuardianTemplates)
@@ -86,21 +86,24 @@ public static class LegacyReferenceCatalogLoader
             GuardianSiteTemplateCatalog.LoadEmbedded,
             path => LoadFile(path, GuardianSiteTemplateCatalog.Load),
             candidate => candidate.Count,
-            sources);
+            sources
+        );
         var humanSiteTemplates = LoadCandidate(
             "human settlement templates",
             Path.Combine(published, "settlements", "humanSiteTemplates.json"),
             HumanSiteTemplateCatalog.LoadEmbedded,
             path => LoadFile(path, HumanSiteTemplateCatalog.Load),
             candidate => candidate.Count,
-            sources);
+            sources
+        );
         var greenGasGiants = LoadCandidate(
             "Green Gas Giant criteria",
             Path.Combine(published, "ggg.json"),
             GreenGasGiantCriteriaCatalog.LoadEmbedded,
             path => LoadFile(path, GreenGasGiantCriteriaCatalog.Load),
             candidate => candidate.TemperatureCount,
-            sources);
+            sources
+        );
 
         return new LegacyReferenceCatalogLoadResult(
             exobiology,
@@ -110,7 +113,8 @@ public static class LegacyReferenceCatalogLoader
             guardianTemplates,
             humanSiteTemplates,
             greenGasGiants,
-            sources);
+            sources
+        );
     }
 
     private static T LoadCandidate<T>(
@@ -120,7 +124,8 @@ public static class LegacyReferenceCatalogLoader
         Func<string, T> loadCandidate,
         Func<T, int> getCoverage,
         List<ReferenceCatalogSource> sources,
-        Func<string, bool>? exists = null)
+        Func<string, bool>? exists = null
+    )
     {
         var embedded = loadEmbedded();
         exists ??= File.Exists;
@@ -138,24 +143,24 @@ public static class LegacyReferenceCatalogLoader
             if (candidateCoverage < embeddedCoverage)
             {
                 throw new InvalidDataException(
-                    $"coverage {candidateCoverage:N0} is below the embedded baseline "
-                    + $"of {embeddedCoverage:N0}");
+                    $"coverage {candidateCoverage:N0} is below the embedded baseline " + $"of {embeddedCoverage:N0}"
+                );
             }
 
-            sources.Add(new ReferenceCatalogSource(
-                catalogName,
-                candidatePath,
-                null));
+            sources.Add(new ReferenceCatalogSource(catalogName, candidatePath, null));
             return candidate;
         }
         catch (Exception exception) when (IsRecoverable(exception))
         {
-            sources.Add(new ReferenceCatalogSource(
-                catalogName,
-                null,
-                $"Ignored legacy {catalogName} at {candidatePath}: "
-                    + exception.Message
-                    + " Embedded reference data remains active."));
+            sources.Add(
+                new ReferenceCatalogSource(
+                    catalogName,
+                    null,
+                    $"Ignored legacy {catalogName} at {candidatePath}: "
+                        + exception.Message
+                        + " Embedded reference data remains active."
+                )
+            );
             return embedded;
         }
     }
@@ -168,11 +173,12 @@ public static class LegacyReferenceCatalogLoader
 
     private static bool IsRecoverable(Exception exception)
     {
-        return exception is IOException
-            or UnauthorizedAccessException
-            or InvalidDataException
-            or System.Text.Json.JsonException
-            or ArgumentException
-            or InvalidOperationException;
+        return exception
+            is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException
+                or System.Text.Json.JsonException
+                or ArgumentException
+                or InvalidOperationException;
     }
 }

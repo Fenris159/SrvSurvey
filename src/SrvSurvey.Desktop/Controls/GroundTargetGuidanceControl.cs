@@ -6,27 +6,34 @@ namespace SrvSurvey.Desktop.Controls;
 
 public sealed class GroundTargetGuidanceControl : Control
 {
-    public static readonly StyledProperty<double> RelativeBearingDegreesProperty =
-        AvaloniaProperty.Register<GroundTargetGuidanceControl, double>(
-            nameof(RelativeBearingDegrees));
-    public static readonly StyledProperty<double> AttackAngleDegreesProperty =
-        AvaloniaProperty.Register<GroundTargetGuidanceControl, double>(
-            nameof(AttackAngleDegrees));
-    public static readonly StyledProperty<IBrush?> GridBrushProperty =
-        AvaloniaProperty.Register<GroundTargetGuidanceControl, IBrush?>(
-            nameof(GridBrush));
-    public static readonly StyledProperty<IBrush?> AccentBrushProperty =
-        AvaloniaProperty.Register<GroundTargetGuidanceControl, IBrush?>(
-            nameof(AccentBrush));
-    public static readonly StyledProperty<IBrush?> WarningBrushProperty =
-        AvaloniaProperty.Register<GroundTargetGuidanceControl, IBrush?>(
-            nameof(WarningBrush));
-    public static readonly StyledProperty<IBrush?> DangerBrushProperty =
-        AvaloniaProperty.Register<GroundTargetGuidanceControl, IBrush?>(
-            nameof(DangerBrush));
-    public static readonly StyledProperty<IBrush?> MutedBrushProperty =
-        AvaloniaProperty.Register<GroundTargetGuidanceControl, IBrush?>(
-            nameof(MutedBrush));
+    public static readonly StyledProperty<double> RelativeBearingDegreesProperty = AvaloniaProperty.Register<
+        GroundTargetGuidanceControl,
+        double
+    >(nameof(RelativeBearingDegrees));
+    public static readonly StyledProperty<double> AttackAngleDegreesProperty = AvaloniaProperty.Register<
+        GroundTargetGuidanceControl,
+        double
+    >(nameof(AttackAngleDegrees));
+    public static readonly StyledProperty<IBrush?> GridBrushProperty = AvaloniaProperty.Register<
+        GroundTargetGuidanceControl,
+        IBrush?
+    >(nameof(GridBrush));
+    public static readonly StyledProperty<IBrush?> AccentBrushProperty = AvaloniaProperty.Register<
+        GroundTargetGuidanceControl,
+        IBrush?
+    >(nameof(AccentBrush));
+    public static readonly StyledProperty<IBrush?> WarningBrushProperty = AvaloniaProperty.Register<
+        GroundTargetGuidanceControl,
+        IBrush?
+    >(nameof(WarningBrush));
+    public static readonly StyledProperty<IBrush?> DangerBrushProperty = AvaloniaProperty.Register<
+        GroundTargetGuidanceControl,
+        IBrush?
+    >(nameof(DangerBrush));
+    public static readonly StyledProperty<IBrush?> MutedBrushProperty = AvaloniaProperty.Register<
+        GroundTargetGuidanceControl,
+        IBrush?
+    >(nameof(MutedBrush));
 
     static GroundTargetGuidanceControl()
     {
@@ -37,7 +44,8 @@ public sealed class GroundTargetGuidanceControl : Control
             AccentBrushProperty,
             WarningBrushProperty,
             DangerBrushProperty,
-            MutedBrushProperty);
+            MutedBrushProperty
+        );
     }
 
     public double RelativeBearingDegrees
@@ -102,41 +110,37 @@ public sealed class GroundTargetGuidanceControl : Control
         context.DrawLine(
             new Pen(grid, 1),
             new Point(center.X, center.Y - radius),
-            new Point(center.X, center.Y - radius + 7));
+            new Point(center.X, center.Y - radius + 7)
+        );
         context.DrawLine(
             new Pen(grid, 1),
             new Point(center.X + radius - 7, center.Y),
-            new Point(center.X + radius, center.Y));
+            new Point(center.X + radius, center.Y)
+        );
         context.DrawLine(
             new Pen(grid, 1),
             new Point(center.X, center.Y + radius - 7),
-            new Point(center.X, center.Y + radius));
+            new Point(center.X, center.Y + radius)
+        );
         context.DrawLine(
             new Pen(grid, 1),
             new Point(center.X - radius, center.Y),
-            new Point(center.X - radius + 7, center.Y));
+            new Point(center.X - radius + 7, center.Y)
+        );
 
         var bearingRadians = RelativeBearingDegrees * Math.PI / 180d;
         var target = new Point(
             center.X + Math.Sin(bearingRadians) * (radius - 9),
-            center.Y - Math.Cos(bearingRadians) * (radius - 9));
+            center.Y - Math.Cos(bearingRadians) * (radius - 9)
+        );
         context.DrawLine(new Pen(accent, 2.2), center, target);
         context.DrawEllipse(accent, null, target, 4, 4);
-        RingedPointerDrawing.Draw(
-            context,
-            center,
-            20,
-            bearingDegrees: 0,
-            accent,
-            strokeThickness: 1.5);
+        RingedPointerDrawing.Draw(context, center, 20, bearingDegrees: 0, accent, strokeThickness: 1.5);
 
         var baselineY = Math.Max(94, Bounds.Height - 12);
         var origin = new Point(10, baselineY);
         var length = Math.Max(20, Math.Min(70, Bounds.Width - 22));
-        context.DrawLine(
-            new Pen(grid, 1),
-            origin,
-            new Point(origin.X + length, origin.Y));
+        context.DrawLine(new Pen(grid, 1), origin, new Point(origin.X + length, origin.Y));
         var attackAngle = Math.Clamp(AttackAngleDegrees, 0, 89);
         var attackRadians = attackAngle * Math.PI / 180d;
         var attackBrush = attackAngle switch
@@ -148,9 +152,9 @@ public sealed class GroundTargetGuidanceControl : Control
         };
         var attackEnd = new Point(
             origin.X + Math.Cos(attackRadians) * length,
-            origin.Y - Math.Sin(attackRadians) * length);
+            origin.Y - Math.Sin(attackRadians) * length
+        );
         context.DrawLine(new Pen(attackBrush, 2.6), origin, attackEnd);
         context.DrawEllipse(attackBrush, null, attackEnd, 3, 3);
     }
-
 }

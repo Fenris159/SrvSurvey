@@ -8,7 +8,8 @@ public sealed class SystemNoteStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-system-note-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-system-note-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public async Task LoadFindsLegacySystemByAddressAndReadsNotes()
@@ -22,13 +23,11 @@ public sealed class SystemNoteStoreTests : IDisposable
               "address": 10477373803,
               "notes": "Remember this place"
             }
-            """);
+            """
+        );
         var store = new SystemNoteStore(temporaryDirectory);
 
-        var result = await store.LoadAsync(
-            "F123",
-            "Renamed System",
-            10477373803);
+        var result = await store.LoadAsync("F123", "Renamed System", 10477373803);
 
         Assert.True(result.IsSuccess, result.Error);
         Assert.True(result.Exists);
@@ -51,17 +50,14 @@ public sealed class SystemNoteStoreTests : IDisposable
               "bodies": [{ "name": "Test System 1", "futureBody": 7 }],
               "futureField": { "enabled": true }
             }
-            """);
+            """
+        );
         var store = new SystemNoteStore(temporaryDirectory);
 
         await store.SaveAsync(
-            new SystemNoteContext(
-                "F123",
-                "Drew",
-                "Test System",
-                42,
-                new GalacticCoordinate(1, 2, 3)),
-            "After");
+            new SystemNoteContext("F123", "Drew", "Test System", 42, new GalacticCoordinate(1, 2, 3)),
+            "After"
+        );
 
         var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.Equal("After", root["notes"]!.GetValue<string>());
@@ -80,15 +76,9 @@ public sealed class SystemNoteStoreTests : IDisposable
         await File.WriteAllTextAsync(path, malformed);
         var store = new SystemNoteStore(temporaryDirectory);
 
-        await Assert.ThrowsAsync<InvalidDataException>(
-            () => store.SaveAsync(
-                new SystemNoteContext(
-                    "F123",
-                    "Drew",
-                    "Test System",
-                    42,
-                    null),
-                "Do not write"));
+        await Assert.ThrowsAsync<InvalidDataException>(() =>
+            store.SaveAsync(new SystemNoteContext("F123", "Drew", "Test System", 42, null), "Do not write")
+        );
 
         Assert.Equal(malformed, await File.ReadAllTextAsync(path));
     }
@@ -102,7 +92,8 @@ public sealed class SystemNoteStoreTests : IDisposable
             "Drew",
             "Test: System/One",
             42,
-            new GalacticCoordinate(1.5, -2.25, 3));
+            new GalacticCoordinate(1.5, -2.25, 3)
+        );
 
         var path = await store.SaveAsync(context, "A new note");
 
@@ -122,7 +113,8 @@ public sealed class SystemNoteStoreTests : IDisposable
         var systemsDirectory = CreateSystemsDirectory();
         await File.WriteAllTextAsync(
             Path.Combine(systemsDirectory, "Test- System_99.json"),
-            "{\"notes\":\"Found by name\"}");
+            "{\"notes\":\"Found by name\"}"
+        );
         var store = new SystemNoteStore(temporaryDirectory);
 
         var result = await store.LoadAsync("F123", "Test: System", 0);
@@ -149,8 +141,7 @@ public sealed class SystemNoteStoreTests : IDisposable
     {
         var store = new SystemNoteStore(temporaryDirectory);
 
-        await Assert.ThrowsAsync<ArgumentException>(
-            () => store.LoadAsync("../outside", "Test System", 42));
+        await Assert.ThrowsAsync<ArgumentException>(() => store.LoadAsync("../outside", "Test System", 42));
     }
 
     private string CreateSystemsDirectory()

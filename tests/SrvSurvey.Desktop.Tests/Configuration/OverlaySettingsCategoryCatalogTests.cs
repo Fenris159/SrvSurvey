@@ -22,16 +22,32 @@ public sealed class OverlaySettingsCategoryCatalogTests
                 OverlaySettingsCategory.Colonization,
                 OverlaySettingsCategory.Firegroups,
             ],
-            categories.Select(category => category.Category).ToArray());
+            categories.Select(category => category.Category).ToArray()
+        );
         Assert.Equal(
-            ["exploration", "exobiology", "travel", "boxel", "mining", "mine-map", "guardian", "quests", "colonisation", "firegroups"],
-            categories.Select(category => category.NavigationKey).ToArray());
-        Assert.All(categories, definition =>
-        {
-            Assert.False(string.IsNullOrWhiteSpace(definition.DisplayName));
-            Assert.Equal(definition.DisplayName.ToUpperInvariant(), definition.Eyebrow);
-            Assert.StartsWith("Configure ", definition.Description);
-        });
+            [
+                "exploration",
+                "exobiology",
+                "travel",
+                "boxel",
+                "mining",
+                "mine-map",
+                "guardian",
+                "quests",
+                "colonisation",
+                "firegroups",
+            ],
+            categories.Select(category => category.NavigationKey).ToArray()
+        );
+        Assert.All(
+            categories,
+            definition =>
+            {
+                Assert.False(string.IsNullOrWhiteSpace(definition.DisplayName));
+                Assert.Equal(definition.DisplayName.ToUpperInvariant(), definition.Eyebrow);
+                Assert.StartsWith("Configure ", definition.Description);
+            }
+        );
     }
 
     [Fact]
@@ -39,9 +55,7 @@ public sealed class OverlaySettingsCategoryCatalogTests
     {
         foreach (var expected in OverlaySettingsCategoryCatalog.All)
         {
-            Assert.True(OverlaySettingsCategoryCatalog.TryGet(
-                expected.NavigationKey,
-                out var actual));
+            Assert.True(OverlaySettingsCategoryCatalog.TryGet(expected.NavigationKey, out var actual));
             Assert.Same(expected, actual);
         }
     }

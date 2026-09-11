@@ -7,7 +7,8 @@ public sealed class CommanderCodexStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        "SrvSurvey-CommanderCodex-" + Guid.NewGuid().ToString("N"));
+        "SrvSurvey-CommanderCodex-" + Guid.NewGuid().ToString("N")
+    );
 
     [Fact]
     public async Task MissingLedgerReturnsCompatibleEmptyState()
@@ -30,20 +31,22 @@ public sealed class CommanderCodexStoreTests : IDisposable
         Directory.CreateDirectory(temporaryDirectory);
         await File.WriteAllTextAsync(
             Path.Combine(temporaryDirectory, "F2-codex.json"),
-            """{"fid":"F2","commander":"Zulu","codexFirsts":{}}""");
+            """{"fid":"F2","commander":"Zulu","codexFirsts":{}}"""
+        );
         await File.WriteAllTextAsync(
             Path.Combine(temporaryDirectory, "F1-codex.json"),
-            """{"fid":"F1","commander":"Alpha","codexFirsts":{}}""");
+            """{"fid":"F1","commander":"Alpha","codexFirsts":{}}"""
+        );
         await File.WriteAllTextAsync(
             Path.Combine(temporaryDirectory, "F1-codex-18.json"),
-            """{"fid":"F1","commander":"Alpha","codexFirsts":{}}""");
+            """{"fid":"F1","commander":"Alpha","codexFirsts":{}}"""
+        );
         var store = new CommanderCodexStore(temporaryDirectory);
 
         var result = await store.DiscoverCommandersAsync();
 
         Assert.True(result.IsSuccess);
-        Assert.Equal(["F1", "F2"],
-            result.Commanders.Select(commander => commander.FrontierId));
+        Assert.Equal(["F1", "F2"], result.Commanders.Select(commander => commander.FrontierId));
         Assert.Equal("Alpha", result.Commanders[0].CommanderName);
     }
 
@@ -64,7 +67,8 @@ public sealed class CommanderCodexStoreTests : IDisposable
                 "bad":"not-a-first"
               }
             }
-            """);
+            """
+        );
         var store = new CommanderCodexStore(temporaryDirectory);
 
         var result = await store.LoadAsync("F123", "Cmdr Current");
@@ -96,44 +100,44 @@ public sealed class CommanderCodexStoreTests : IDisposable
                 "2310101":"2024-01-02T00:00:00_-1_-1"
               }
             }
-            """);
+            """
+        );
         var store = new CommanderCodexStore(temporaryDirectory);
-        var firstTime = new DateTimeOffset(
-            2025,
-            1,
-            2,
-            3,
-            4,
-            5,
-            TimeSpan.Zero);
+        var firstTime = new DateTimeOffset(2025, 1, 2, 3, 4, 5, TimeSpan.Zero);
 
-        var repaired = await store.TrackAsync(new CommanderCodexTrackRequest
-        {
-            FrontierId = "F123",
-            CommanderName = "Cmdr Test",
-            EntryId = 2310101,
-            Timestamp = firstTime,
-            SystemAddress = 42,
-            BodyId = 7
-        });
-        var later = await store.TrackAsync(new CommanderCodexTrackRequest
-        {
-            FrontierId = "F123",
-            CommanderName = "Cmdr Test",
-            EntryId = 2310101,
-            Timestamp = firstTime.AddDays(1),
-            SystemAddress = 99,
-            BodyId = 8
-        });
-        var earlier = await store.TrackAsync(new CommanderCodexTrackRequest
-        {
-            FrontierId = "F123",
-            CommanderName = "Cmdr Test",
-            EntryId = 2310101,
-            Timestamp = firstTime.AddDays(-1),
-            SystemAddress = 24,
-            BodyId = 3
-        });
+        var repaired = await store.TrackAsync(
+            new CommanderCodexTrackRequest
+            {
+                FrontierId = "F123",
+                CommanderName = "Cmdr Test",
+                EntryId = 2310101,
+                Timestamp = firstTime,
+                SystemAddress = 42,
+                BodyId = 7,
+            }
+        );
+        var later = await store.TrackAsync(
+            new CommanderCodexTrackRequest
+            {
+                FrontierId = "F123",
+                CommanderName = "Cmdr Test",
+                EntryId = 2310101,
+                Timestamp = firstTime.AddDays(1),
+                SystemAddress = 99,
+                BodyId = 8,
+            }
+        );
+        var earlier = await store.TrackAsync(
+            new CommanderCodexTrackRequest
+            {
+                FrontierId = "F123",
+                CommanderName = "Cmdr Test",
+                EntryId = 2310101,
+                Timestamp = firstTime.AddDays(-1),
+                SystemAddress = 24,
+                BodyId = 3,
+            }
+        );
 
         Assert.True(repaired.IsSuccess);
         Assert.True(repaired.Changed);
@@ -155,21 +159,20 @@ public sealed class CommanderCodexStoreTests : IDisposable
     {
         var store = new CommanderCodexStore(temporaryDirectory);
 
-        var tracked = await store.TrackAsync(new CommanderCodexTrackRequest
-        {
-            FrontierId = "F123",
-            CommanderName = "Cmdr Test",
-            EntryId = 2310101,
-            Timestamp = DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
-            SystemAddress = 42,
-            BodyId = 1,
-            RegionId = 18,
-            RegionName = "Inner Orion Spur"
-        });
-        var loaded = await store.LoadAsync(
-            "F123",
-            "Cmdr Test",
-            regionId: 18);
+        var tracked = await store.TrackAsync(
+            new CommanderCodexTrackRequest
+            {
+                FrontierId = "F123",
+                CommanderName = "Cmdr Test",
+                EntryId = 2310101,
+                Timestamp = DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
+                SystemAddress = 42,
+                BodyId = 1,
+                RegionId = 18,
+                RegionName = "Inner Orion Spur",
+            }
+        );
+        var loaded = await store.LoadAsync("F123", "Cmdr Test", regionId: 18);
 
         Assert.True(tracked.IsSuccess);
         Assert.EndsWith("F123-codex-18.json", tracked.Path);
@@ -192,26 +195,14 @@ public sealed class CommanderCodexStoreTests : IDisposable
                 "2310101":"2024-01-02T00:00:00_42_7"
               }
             }
-            """);
+            """
+        );
         var store = new CommanderCodexStore(temporaryDirectory);
         var timestamp = DateTimeOffset.Parse("2026-07-24T12:00:00Z");
 
-        var added = await store.SetManualDiscoveryAsync(
-            "F123",
-            "Cmdr Test",
-            2310206,
-            true,
-            timestamp);
-        var protectedFirst = await store.SetManualDiscoveryAsync(
-            "F123",
-            "Cmdr Test",
-            2310101,
-            false);
-        var removed = await store.SetManualDiscoveryAsync(
-            "F123",
-            "Cmdr Test",
-            2310206,
-            false);
+        var added = await store.SetManualDiscoveryAsync("F123", "Cmdr Test", 2310206, true, timestamp);
+        var protectedFirst = await store.SetManualDiscoveryAsync("F123", "Cmdr Test", 2310101, false);
+        var removed = await store.SetManualDiscoveryAsync("F123", "Cmdr Test", 2310206, false);
 
         Assert.True(added.IsSuccess);
         Assert.True(added.Changed);

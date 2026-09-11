@@ -10,13 +10,11 @@ public sealed class HumanSiteOverlayViewModelTests
     {
         var viewModel = new HumanSiteOverlayViewModel(
             new HumanSiteViewModel(),
-            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows));
+            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows)
+        );
 
         Assert.Equal("PASSIVE", viewModel.InputMode);
-        viewModel.ApplyPreparation(new OverlayPreparationResult(
-            IsPrepared: false,
-            IsClickThrough: false,
-            "Blocked"));
+        viewModel.ApplyPreparation(new OverlayPreparationResult(IsPrepared: false, IsClickThrough: false, "Blocked"));
 
         Assert.Equal("BLOCKED", viewModel.InputMode);
         Assert.Equal("Blocked", viewModel.PlatformStatus);

@@ -18,7 +18,11 @@ public sealed class SystemScanStateTests
         var expected = Assert.Single(state.CreateSnapshot().Bodies).EstimatedMappedValue;
 
         state.Apply(Parse($$"""{"event":"LoadGame","Odyssey":{{(!isLive).ToString().ToLowerInvariant()}}}"""));
-        state.Apply(Parse("""{"event":"SAAScanComplete","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"ProbesUsed":4,"EfficiencyTarget":6}"""));
+        state.Apply(
+            Parse(
+                """{"event":"SAAScanComplete","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"ProbesUsed":4,"EfficiencyTarget":6}"""
+            )
+        );
 
         var body = Assert.Single(state.CreateSnapshot().Bodies);
         Assert.Equal(expected, body.EstimatedMappedValue);
@@ -30,10 +34,12 @@ public sealed class SystemScanStateTests
     {
         var state = new SystemScanState();
         Assert.False(state.SetCurrentBodyFirstFootfall(true));
-        state.Apply(Parse(
-            """{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
-        state.Apply(Parse(
-            """{"event":"Disembark","SystemAddress":42,"Body":"Test 1","BodyID":1,"OnPlanet":true,"OnStation":false}"""));
+        state.Apply(Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+        state.Apply(
+            Parse(
+                """{"event":"Disembark","SystemAddress":42,"Body":"Test 1","BodyID":1,"OnPlanet":true,"OnStation":false}"""
+            )
+        );
 
         Assert.True(state.SetCurrentBodyFirstFootfall(true));
 
@@ -46,18 +52,54 @@ public sealed class SystemScanStateTests
         var state = new SystemScanState();
 
         state.Apply(Parse("""{"event":"Fileheader","Odyssey":true}"""));
-        state.Apply(Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"Population":0,"StarPos":[1,2,3]}"""));
-        state.Apply(Parse("""{"event":"FSSDiscoveryScan","SystemName":"Test","SystemAddress":42,"BodyCount":2,"NonBodyCount":4}"""));
-        state.Apply(Parse("""{"event":"FSSSignalDiscovered","SystemAddress":42,"SignalName":"Port","SignalType":"Outpost"}"""));
-        state.Apply(Parse("""{"event":"FSSSignalDiscovered","SystemAddress":42,"SignalName":"Beacon","SignalType":"NavBeacon"}"""));
-        state.Apply(Parse("""{"event":"FSSSignalDiscovered","SystemAddress":42,"SignalName":"Cloud","SignalType":"Codex"}"""));
-        state.Apply(Parse("""{"event":"Scan","ScanType":"Detailed","StarSystem":"Test","SystemAddress":42,"BodyName":"Test A","BodyID":0,"DistanceFromArrivalLS":0,"StarType":"K","StellarMass":1,"WasDiscovered":true,"WasMapped":false}"""));
+        state.Apply(
+            Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"Population":0,"StarPos":[1,2,3]}""")
+        );
+        state.Apply(
+            Parse(
+                """{"event":"FSSDiscoveryScan","SystemName":"Test","SystemAddress":42,"BodyCount":2,"NonBodyCount":4}"""
+            )
+        );
+        state.Apply(
+            Parse("""{"event":"FSSSignalDiscovered","SystemAddress":42,"SignalName":"Port","SignalType":"Outpost"}""")
+        );
+        state.Apply(
+            Parse(
+                """{"event":"FSSSignalDiscovered","SystemAddress":42,"SignalName":"Beacon","SignalType":"NavBeacon"}"""
+            )
+        );
+        state.Apply(
+            Parse("""{"event":"FSSSignalDiscovered","SystemAddress":42,"SignalName":"Cloud","SignalType":"Codex"}""")
+        );
+        state.Apply(
+            Parse(
+                """{"event":"Scan","ScanType":"Detailed","StarSystem":"Test","SystemAddress":42,"BodyName":"Test A","BodyID":0,"DistanceFromArrivalLS":0,"StarType":"K","StellarMass":1,"WasDiscovered":true,"WasMapped":false}"""
+            )
+        );
         state.Apply(Parse(PlanetScan));
-        state.Apply(Parse("""{"event":"SAASignalsFound","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2},{"Type":"$SAA_SignalType_Geological;","Count":1}],"Genuses":[{"Genus":"$Genus_A;"},{"Genus":"$Genus_B;"}]}"""));
-        state.Apply(Parse("""{"event":"ScanOrganic","ScanType":"Analyse","SystemAddress":42,"Body":1,"Genus":"$Genus_A;"}"""));
-        state.Apply(Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":100,"Name_Localised":"Fumarole","SubCategory":"$Codex_SubCategory_Geology_and_Anomalies;"}"""));
-        state.Apply(Parse("""{"event":"SAAScanComplete","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"ProbesUsed":4,"EfficiencyTarget":6}"""));
-        state.Apply(Parse("""{"event":"Disembark","SystemAddress":42,"Body":"Test 1","BodyID":1,"OnPlanet":true,"OnStation":false}"""));
+        state.Apply(
+            Parse(
+                """{"event":"SAASignalsFound","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2},{"Type":"$SAA_SignalType_Geological;","Count":1}],"Genuses":[{"Genus":"$Genus_A;"},{"Genus":"$Genus_B;"}]}"""
+            )
+        );
+        state.Apply(
+            Parse("""{"event":"ScanOrganic","ScanType":"Analyse","SystemAddress":42,"Body":1,"Genus":"$Genus_A;"}""")
+        );
+        state.Apply(
+            Parse(
+                """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":100,"Name_Localised":"Fumarole","SubCategory":"$Codex_SubCategory_Geology_and_Anomalies;"}"""
+            )
+        );
+        state.Apply(
+            Parse(
+                """{"event":"SAAScanComplete","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"ProbesUsed":4,"EfficiencyTarget":6}"""
+            )
+        );
+        state.Apply(
+            Parse(
+                """{"event":"Disembark","SystemAddress":42,"Body":"Test 1","BodyID":1,"OnPlanet":true,"OnStation":false}"""
+            )
+        );
         state.Apply(Parse("""{"event":"FSSAllBodiesFound","SystemName":"Test","SystemAddress":42,"Count":2}"""));
 
         var snapshot = state.CreateSnapshot();
@@ -84,44 +126,44 @@ public sealed class SystemScanStateTests
         Assert.Equal(2, planet.BiologicalSignalCount);
         Assert.Equal(1, planet.AnalyzedBiologicalSignalCount);
         Assert.Equal(2, planet.Organisms.Count);
-        Assert.True(Assert.Single(
-            planet.Organisms,
-            organism => organism.Genus == "$Genus_A;").IsAnalyzed);
+        Assert.True(Assert.Single(planet.Organisms, organism => organism.Genus == "$Genus_A;").IsAnalyzed);
         Assert.Equal(1, planet.GeologicalSignalCount);
         Assert.Equal(1, planet.AnalyzedGeologicalSignalCount);
-        Assert.Equal("Fumarole", Assert.Single(
-            planet.AnalyzedGeologicalSignals));
+        Assert.Equal("Fumarole", Assert.Single(planet.AnalyzedGeologicalSignals));
         Assert.Equal(2, planet.AtmosphereComposition.Count);
         Assert.Equal(2, planet.Materials.Count);
         Assert.Single(planet.Rings);
-        Assert.Equal(
-            new SystemBodyParentSnapshot(SystemBodyParentKind.Planet, 0),
-            Assert.Single(planet.Parents));
+        Assert.Equal(new SystemBodyParentSnapshot(SystemBodyParentKind.Planet, 0), Assert.Single(planet.Parents));
         Assert.True(planet.EstimatedMappedValue > planet.ScanValue);
         Assert.Equal(planet.EstimatedMappedValue, planet.CurrentScanValue);
-        Assert.Equal(
-            snapshot.Bodies.Sum(body => (long)body.CurrentScanValue),
-            snapshot.CurrentScanValue);
+        Assert.Equal(snapshot.Bodies.Sum(body => (long)body.CurrentScanValue), snapshot.CurrentScanValue);
     }
 
     [Fact]
     public void OrganicEventsRetainCodexIdentityRewardAndDiscoveryState()
     {
         var state = new SystemScanState();
-        state.Apply(Parse(
-            """{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
-        state.Apply(Parse(
-            """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""));
-        state.Apply(Parse(
-            """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Green","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2,"IsNewEntry":true}"""));
+        state.Apply(Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+        state.Apply(
+            Parse(
+                """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""
+            )
+        );
+        state.Apply(
+            Parse(
+                """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Green","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2,"IsNewEntry":true}"""
+            )
+        );
 
-        var reported = Assert.Single(
-            Assert.Single(state.CreateSnapshot().Bodies).Organisms);
+        var reported = Assert.Single(Assert.Single(state.CreateSnapshot().Bodies).Organisms);
         Assert.False(reported.IsScanned);
         Assert.False(reported.IsAnalyzed);
 
-        state.Apply(Parse(
-            """{"event":"ScanOrganic","ScanType":"Analyse","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida","Species":"$Codex_Ent_Aleoids_01_Name;","Species_Localised":"Aleoida Arcus","Variant":"$Codex_Ent_Aleoids_01_B_Name;","Variant_Localised":"Aleoida Arcus - Green"}"""));
+        state.Apply(
+            Parse(
+                """{"event":"ScanOrganic","ScanType":"Analyse","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida","Species":"$Codex_Ent_Aleoids_01_Name;","Species_Localised":"Aleoida Arcus","Variant":"$Codex_Ent_Aleoids_01_B_Name;","Variant_Localised":"Aleoida Arcus - Green"}"""
+            )
+        );
 
         var body = Assert.Single(state.CreateSnapshot().Bodies);
         var organism = Assert.Single(body.Organisms);
@@ -143,66 +185,88 @@ public sealed class SystemScanStateTests
     public void OrganicEventsKeepMultipleSpeciesFromTheSameGenus()
     {
         var state = new SystemScanState();
-        state.Apply(Parse(
-            """{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
-        state.Apply(Parse(
-            """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2}],"Genuses":[{"Genus":"$Codex_Ent_BrainTree_Genus_Name;","Genus_Localised":"Brain Tree"}]}"""));
-        state.Apply(Parse(
-            """{"event":"ScanOrganic","ScanType":"Analyse","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_BrainTree_Genus_Name;","Species":"$Codex_Ent_BrainTree_01_Name;","Variant":"$Codex_Ent_BrainTree_01_A_Name;"}"""));
-        state.Apply(Parse(
-            """{"event":"ScanOrganic","ScanType":"Analyse","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_BrainTree_Genus_Name;","Species":"$Codex_Ent_BrainTree_02_Name;","Variant":"$Codex_Ent_BrainTree_02_A_Name;"}"""));
+        state.Apply(Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+        state.Apply(
+            Parse(
+                """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2}],"Genuses":[{"Genus":"$Codex_Ent_BrainTree_Genus_Name;","Genus_Localised":"Brain Tree"}]}"""
+            )
+        );
+        state.Apply(
+            Parse(
+                """{"event":"ScanOrganic","ScanType":"Analyse","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_BrainTree_Genus_Name;","Species":"$Codex_Ent_BrainTree_01_Name;","Variant":"$Codex_Ent_BrainTree_01_A_Name;"}"""
+            )
+        );
+        state.Apply(
+            Parse(
+                """{"event":"ScanOrganic","ScanType":"Analyse","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_BrainTree_Genus_Name;","Species":"$Codex_Ent_BrainTree_02_Name;","Variant":"$Codex_Ent_BrainTree_02_A_Name;"}"""
+            )
+        );
 
         var body = Assert.Single(state.CreateSnapshot().Bodies);
         Assert.Equal(2, body.Organisms.Count);
         Assert.Equal(2, body.AnalyzedBiologicalSignalCount);
         Assert.Equal(
-            [
-                "$Codex_Ent_BrainTree_01_A_Name;",
-                "$Codex_Ent_BrainTree_02_A_Name;",
-            ],
-            body.Organisms.Select(organism => organism.Variant));
+            ["$Codex_Ent_BrainTree_01_A_Name;", "$Codex_Ent_BrainTree_02_A_Name;"],
+            body.Organisms.Select(organism => organism.Variant)
+        );
     }
 
     [Fact]
     public void LegacyCodexEntriesUseCanonicalGenusAndKeepDistinctVariants()
     {
         var state = new SystemScanState();
-        state.Apply(Parse(
-            """{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
-        state.Apply(Parse(
-            """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2}],"Genuses":[{"Genus":"$Codex_Ent_Brancae_Name;","Genus_Localised":"Brain Tree"}]}"""));
-        state.Apply(Parse(
-            """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2100201,"Name":"$Codex_Ent_Seed_Name;","Name_Localised":"Roseum Brain Tree","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2}"""));
-        state.Apply(Parse(
-            """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2100202,"Name":"$Codex_Ent_SeedABCD_01_Name;","Name_Localised":"Gypseeum Brain Tree","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1.1,"Longitude":2.1}"""));
+        state.Apply(Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+        state.Apply(
+            Parse(
+                """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2}],"Genuses":[{"Genus":"$Codex_Ent_Brancae_Name;","Genus_Localised":"Brain Tree"}]}"""
+            )
+        );
+        state.Apply(
+            Parse(
+                """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2100201,"Name":"$Codex_Ent_Seed_Name;","Name_Localised":"Roseum Brain Tree","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2}"""
+            )
+        );
+        state.Apply(
+            Parse(
+                """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2100202,"Name":"$Codex_Ent_SeedABCD_01_Name;","Name_Localised":"Gypseeum Brain Tree","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1.1,"Longitude":2.1}"""
+            )
+        );
 
         var body = Assert.Single(state.CreateSnapshot().Bodies);
         Assert.Equal(2, body.Organisms.Count);
-        Assert.All(body.Organisms, organism =>
-        {
-            Assert.Equal("$Codex_Ent_Brancae_Name;", organism.Genus);
-            Assert.Equal("Brain Tree", organism.GenusLocalized);
-        });
-        Assert.Equal(
-            [2100201L, 2100202L],
-            body.Organisms.Select(organism => organism.EntryId));
+        Assert.All(
+            body.Organisms,
+            organism =>
+            {
+                Assert.Equal("$Codex_Ent_Brancae_Name;", organism.Genus);
+                Assert.Equal("Brain Tree", organism.GenusLocalized);
+            }
+        );
+        Assert.Equal([2100201L, 2100202L], body.Organisms.Select(organism => organism.EntryId));
     }
 
     [Fact]
     public void ExactEntryIdentityCorrectsMismatchedGenusWithoutDuplication()
     {
         var state = new SystemScanState();
-        state.Apply(Parse(
-            """{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
-        state.Apply(Parse(
-            """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""));
-        state.Apply(Parse(
-            """{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Wrong_Genus;","Species":"$Codex_Ent_Seed_Name;","Variant":"$Codex_Ent_Seed_Name;"}"""));
-        state.Apply(Parse(
-            """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2100201,"Name_Localised":"Roseum Brain Tree","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2}"""));
+        state.Apply(Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+        state.Apply(
+            Parse(
+                """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""
+            )
+        );
+        state.Apply(
+            Parse(
+                """{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Wrong_Genus;","Species":"$Codex_Ent_Seed_Name;","Variant":"$Codex_Ent_Seed_Name;"}"""
+            )
+        );
+        state.Apply(
+            Parse(
+                """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2100201,"Name_Localised":"Roseum Brain Tree","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2}"""
+            )
+        );
 
-        var organism = Assert.Single(
-            Assert.Single(state.CreateSnapshot().Bodies).Organisms);
+        var organism = Assert.Single(Assert.Single(state.CreateSnapshot().Bodies).Organisms);
         Assert.Equal("$Codex_Ent_Brancae_Name;", organism.Genus);
         Assert.Equal(2100201, organism.EntryId);
     }
@@ -211,20 +275,34 @@ public sealed class SystemScanStateTests
     public void OrganicCodexEntriesRequireSurfaceCoordinatesAndExcludeFixedLife()
     {
         var state = new SystemScanState();
-        state.Apply(Parse(
-            """{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
-        state.Apply(Parse(
-            """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""));
-        state.Apply(Parse(
-            """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"SubCategory":"$Codex_SubCategory_Organic_Structures;"}"""));
-        state.Apply(Parse(
-            """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":0,"Longitude":2}"""));
-        state.Apply(Parse(
-            """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2,"NearestDestination":"$Fixed_Event_Life_Cloud;"}"""));
+        state.Apply(Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+        state.Apply(
+            Parse(
+                """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""
+            )
+        );
+        state.Apply(
+            Parse(
+                """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"SubCategory":"$Codex_SubCategory_Organic_Structures;"}"""
+            )
+        );
+        state.Apply(
+            Parse(
+                """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":0,"Longitude":2}"""
+            )
+        );
+        state.Apply(
+            Parse(
+                """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2,"NearestDestination":"$Fixed_Event_Life_Cloud;"}"""
+            )
+        );
         Assert.Empty(Assert.Single(state.CreateSnapshot().Bodies).Organisms);
 
-        state.Apply(Parse(
-            """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2}"""));
+        state.Apply(
+            Parse(
+                """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2}"""
+            )
+        );
         Assert.Single(Assert.Single(state.CreateSnapshot().Bodies).Organisms);
     }
 
@@ -233,10 +311,18 @@ public sealed class SystemScanStateTests
     {
         var state = new SystemScanState();
         state.Apply(Parse("""{"event":"Location","StarSystem":"First","SystemAddress":1}"""));
-        state.Apply(Parse("""{"event":"Scan","SystemAddress":1,"BodyName":"First A","BodyID":0,"StarType":"G","StellarMass":1}"""));
+        state.Apply(
+            Parse(
+                """{"event":"Scan","SystemAddress":1,"BodyName":"First A","BodyID":0,"StarType":"G","StellarMass":1}"""
+            )
+        );
 
         state.Apply(Parse("""{"event":"FSDJump","StarSystem":"Second","SystemAddress":2,"StarPos":[4,5,6]}"""));
-        state.Apply(Parse("""{"event":"FSSBodySignals","SystemAddress":1,"BodyName":"First 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":3}]}"""));
+        state.Apply(
+            Parse(
+                """{"event":"FSSBodySignals","SystemAddress":1,"BodyName":"First 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":3}]}"""
+            )
+        );
 
         var snapshot = state.CreateSnapshot();
         Assert.Equal("Second", snapshot.SystemName);
@@ -248,16 +334,17 @@ public sealed class SystemScanStateTests
     [Theory]
     [InlineData("Died")]
     [InlineData("Resurrect")]
-    public void DeathLifecycleClearsCurrentBodyButRetainsSystemSurvey(
-        string eventName)
+    public void DeathLifecycleClearsCurrentBodyButRetainsSystemSurvey(string eventName)
     {
         var state = new SystemScanState();
-        state.Apply(Parse(
-            """{"event":"Location","StarSystem":"Test","SystemAddress":42,"Body":"Test 1","BodyID":1,"BodyType":"Planet"}"""));
+        state.Apply(
+            Parse(
+                """{"event":"Location","StarSystem":"Test","SystemAddress":42,"Body":"Test 1","BodyID":1,"BodyType":"Planet"}"""
+            )
+        );
         state.Apply(Parse(PlanetScan));
 
-        Assert.True(state.Apply(Parse(
-            $$"""{"event":"{{eventName}}"}""")));
+        Assert.True(state.Apply(Parse($$"""{"event":"{{eventName}}"}""")));
 
         var snapshot = state.CreateSnapshot();
         Assert.Equal(42, snapshot.SystemAddress);
@@ -269,12 +356,14 @@ public sealed class SystemScanStateTests
     public void HyperspaceDepartureClearsCurrentBodyButRetainsSystemSurvey()
     {
         var state = new SystemScanState();
-        state.Apply(Parse(
-            """{"event":"Location","StarSystem":"Test","SystemAddress":42,"Body":"Test 1","BodyID":1,"BodyType":"Planet"}"""));
+        state.Apply(
+            Parse(
+                """{"event":"Location","StarSystem":"Test","SystemAddress":42,"Body":"Test 1","BodyID":1,"BodyType":"Planet"}"""
+            )
+        );
         state.Apply(Parse(PlanetScan));
 
-        Assert.True(state.Apply(Parse(
-            """{"event":"StartJump","JumpType":"Hyperspace"}""")));
+        Assert.True(state.Apply(Parse("""{"event":"StartJump","JumpType":"Hyperspace"}""")));
 
         var snapshot = state.CreateSnapshot();
         Assert.Equal(42, snapshot.SystemAddress);
@@ -286,11 +375,13 @@ public sealed class SystemScanStateTests
     public void SupercruiseDepartureRetainsCurrentBodyIdentity()
     {
         var state = new SystemScanState();
-        state.Apply(Parse(
-            """{"event":"Location","StarSystem":"Test","SystemAddress":42,"Body":"Test 1","BodyID":1,"BodyType":"Planet"}"""));
+        state.Apply(
+            Parse(
+                """{"event":"Location","StarSystem":"Test","SystemAddress":42,"Body":"Test 1","BodyID":1,"BodyType":"Planet"}"""
+            )
+        );
 
-        Assert.False(state.Apply(Parse(
-            """{"event":"StartJump","JumpType":"Supercruise"}""")));
+        Assert.False(state.Apply(Parse("""{"event":"StartJump","JumpType":"Supercruise"}""")));
 
         Assert.Equal(1, state.CurrentBodyId);
     }
@@ -299,12 +390,12 @@ public sealed class SystemScanStateTests
     public void DssCompletionSetsScannedBodyAsCurrent()
     {
         var state = new SystemScanState();
-        state.Apply(Parse(
-            """{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+        state.Apply(Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
         state.Apply(Parse(PlanetScan));
 
-        Assert.True(state.Apply(Parse(
-            """{"event":"SAAScanComplete","SystemAddress":42,"BodyName":"Test 1","BodyID":1}""")));
+        Assert.True(
+            state.Apply(Parse("""{"event":"SAAScanComplete","SystemAddress":42,"BodyName":"Test 1","BodyID":1}"""))
+        );
 
         Assert.Equal(1, state.CurrentBodyId);
     }
@@ -315,8 +406,16 @@ public sealed class SystemScanStateTests
         var state = new SystemScanState();
         state.Apply(Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
         state.Apply(Parse("""{"event":"FSSDiscoveryScan","SystemAddress":42,"BodyCount":2}"""));
-        state.Apply(Parse("""{"event":"Scan","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"K","StellarMass":1}"""));
-        state.Apply(Parse("""{"event":"Scan","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"PlanetClass":"Rocky body","MassEM":1}"""));
+        state.Apply(
+            Parse(
+                """{"event":"Scan","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"K","StellarMass":1}"""
+            )
+        );
+        state.Apply(
+            Parse(
+                """{"event":"Scan","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"PlanetClass":"Rocky body","MassEM":1}"""
+            )
+        );
         state.Apply(Parse("""{"event":"Scan","SystemAddress":42,"BodyName":"Test A Belt Cluster 1","BodyID":2}"""));
         state.Apply(Parse("""{"event":"Scan","SystemAddress":42,"BodyName":"Test 1 A Ring","BodyID":3}"""));
         state.Apply(Parse("""{"event":"ScanBaryCentre","StarSystem":"Test","SystemAddress":42,"BodyID":4}"""));
@@ -332,10 +431,26 @@ public sealed class SystemScanStateTests
     {
         var state = new SystemScanState();
         state.Apply(Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
-        state.Apply(Parse("""{"event":"Scan","ScanType":"Detailed","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"PlanetClass":"Rocky body","MassEM":1}"""));
-        state.Apply(Parse("""{"event":"Scan","ScanType":"Detailed","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"K","StellarMass":1}"""));
-        state.Apply(Parse("""{"event":"Scan","ScanType":"Detailed","SystemAddress":42,"BodyName":"Test A Belt Cluster 1","BodyID":2}"""));
-        state.Apply(Parse("""{"event":"Scan","ScanType":"Detailed","SystemAddress":42,"BodyName":"Test 1 A Ring","BodyID":3,"PlanetClass":"Rocky body","MassEM":0.1,"Parents":[{"Ring":1}]}"""));
+        state.Apply(
+            Parse(
+                """{"event":"Scan","ScanType":"Detailed","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"PlanetClass":"Rocky body","MassEM":1}"""
+            )
+        );
+        state.Apply(
+            Parse(
+                """{"event":"Scan","ScanType":"Detailed","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"K","StellarMass":1}"""
+            )
+        );
+        state.Apply(
+            Parse(
+                """{"event":"Scan","ScanType":"Detailed","SystemAddress":42,"BodyName":"Test A Belt Cluster 1","BodyID":2}"""
+            )
+        );
+        state.Apply(
+            Parse(
+                """{"event":"Scan","ScanType":"Detailed","SystemAddress":42,"BodyName":"Test 1 A Ring","BodyID":3,"PlanetClass":"Rocky body","MassEM":0.1,"Parents":[{"Ring":1}]}"""
+            )
+        );
 
         Assert.Equal(1, state.CreateSnapshot().LastDetailedBodyId);
     }
@@ -344,24 +459,19 @@ public sealed class SystemScanStateTests
     public void ScanRetainsOrderedParentChainForStellarCalculations()
     {
         var state = new SystemScanState();
-        state.Apply(Parse(
-            """{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
-        state.Apply(Parse(
-            """{"event":"ScanBaryCentre","SystemAddress":42,"BodyID":3,"Parents":[{"Null":1}]}"""));
-        state.Apply(Parse(
-            """{"event":"Scan","SystemAddress":42,"BodyName":"Test 4","BodyID":4,"PlanetClass":"Rocky body","Parents":[{"Ring":8},{"Planet":7},{"Null":3},{"Star":0}]}"""));
+        state.Apply(Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+        state.Apply(Parse("""{"event":"ScanBaryCentre","SystemAddress":42,"BodyID":3,"Parents":[{"Null":1}]}"""));
+        state.Apply(
+            Parse(
+                """{"event":"Scan","SystemAddress":42,"BodyName":"Test 4","BodyID":4,"PlanetClass":"Rocky body","Parents":[{"Ring":8},{"Planet":7},{"Null":3},{"Star":0}]}"""
+            )
+        );
 
         var snapshot = state.CreateSnapshot();
-        var barycentre = Assert.Single(
-            snapshot.Bodies,
-            body => body.BodyId == 3);
-        var planet = Assert.Single(
-            snapshot.Bodies,
-            body => body.BodyId == 4);
+        var barycentre = Assert.Single(snapshot.Bodies, body => body.BodyId == 3);
+        var planet = Assert.Single(snapshot.Bodies, body => body.BodyId == 4);
 
-        Assert.Equal(
-            [new SystemBodyParentSnapshot(SystemBodyParentKind.Null, 1)],
-            barycentre.Parents);
+        Assert.Equal([new SystemBodyParentSnapshot(SystemBodyParentKind.Null, 1)], barycentre.Parents);
         Assert.Equal(
             [
                 new SystemBodyParentSnapshot(SystemBodyParentKind.Ring, 8),
@@ -369,7 +479,8 @@ public sealed class SystemScanStateTests
                 new SystemBodyParentSnapshot(SystemBodyParentKind.Null, 3),
                 new SystemBodyParentSnapshot(SystemBodyParentKind.Star, 0),
             ],
-            planet.Parents);
+            planet.Parents
+        );
         Assert.True(planet.HasRingParent);
     }
 
@@ -386,77 +497,88 @@ public sealed class SystemScanStateTests
     public void KnownSystemHistoryFillsMissingFieldsWithoutReplacingLiveScans()
     {
         var live = new SystemScanState();
-        live.Apply(Parse(
-            """{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
-        live.Apply(Parse(
-            """
-            {
-              "event":"Scan",
-              "SystemAddress":42,
-              "BodyName":"Test 1",
-              "BodyID":1,
-              "PlanetClass":"Rocky body",
-              "Landable":true,
-              "WasDiscovered":false,
-              "SurfaceGravity":20,
-              "Rings":[{
-                "Name":"Test 1 A Ring",
-                "RingClass":"eRingClass_Rocky",
-                "InnerRad":0,
-                "OuterRad":0
-              }]
-            }
-            """));
-        var knownState = new SystemScanState();
-        knownState.Apply(Parse(
-            """
-            {
-              "event":"Location",
-              "StarSystem":"Test",
-              "SystemAddress":42,
-              "StarPos":[1,2,3]
-            }
-            """));
-        knownState.Apply(Parse(
-            """
-            {
-              "event":"Scan",
-              "SystemAddress":42,
-              "BodyName":"Test 1",
-              "BodyID":1,
-              "PlanetClass":"Icy body",
-              "Landable":true,
-              "WasDiscovered":true,
-              "SurfaceGravity":9,
-              "SurfaceTemperature":180,
-              "AtmosphereType":"Argon",
-              "Materials":[{"Name":"iron","Percent":20}],
-              "Rings":[{
-                "Name":"Test 1 A Ring",
-                "RingClass":"eRingClass_Rocky",
-                "InnerRad":10,
-                "OuterRad":20
-              }]
-            }
-            """));
-        knownState.Apply(Parse(
-            """
-            {
-              "event":"FSSBodySignals",
-              "SystemAddress":42,
-              "BodyName":"Test 1",
-              "BodyID":1,
-              "Signals":[
-                {"Type":"$SAA_SignalType_Biological;","Count":1}
-              ],
-              "Genuses":[
+        live.Apply(Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+        live.Apply(
+            Parse(
+                """
                 {
-                  "Genus":"$Codex_Ent_Aleoids_Genus_Name;",
-                  "Genus_Localised":"Aleoida"
+                  "event":"Scan",
+                  "SystemAddress":42,
+                  "BodyName":"Test 1",
+                  "BodyID":1,
+                  "PlanetClass":"Rocky body",
+                  "Landable":true,
+                  "WasDiscovered":false,
+                  "SurfaceGravity":20,
+                  "Rings":[{
+                    "Name":"Test 1 A Ring",
+                    "RingClass":"eRingClass_Rocky",
+                    "InnerRad":0,
+                    "OuterRad":0
+                  }]
                 }
-              ]
-            }
-            """));
+                """
+            )
+        );
+        var knownState = new SystemScanState();
+        knownState.Apply(
+            Parse(
+                """
+                {
+                  "event":"Location",
+                  "StarSystem":"Test",
+                  "SystemAddress":42,
+                  "StarPos":[1,2,3]
+                }
+                """
+            )
+        );
+        knownState.Apply(
+            Parse(
+                """
+                {
+                  "event":"Scan",
+                  "SystemAddress":42,
+                  "BodyName":"Test 1",
+                  "BodyID":1,
+                  "PlanetClass":"Icy body",
+                  "Landable":true,
+                  "WasDiscovered":true,
+                  "SurfaceGravity":9,
+                  "SurfaceTemperature":180,
+                  "AtmosphereType":"Argon",
+                  "Materials":[{"Name":"iron","Percent":20}],
+                  "Rings":[{
+                    "Name":"Test 1 A Ring",
+                    "RingClass":"eRingClass_Rocky",
+                    "InnerRad":10,
+                    "OuterRad":20
+                  }]
+                }
+                """
+            )
+        );
+        knownState.Apply(
+            Parse(
+                """
+                {
+                  "event":"FSSBodySignals",
+                  "SystemAddress":42,
+                  "BodyName":"Test 1",
+                  "BodyID":1,
+                  "Signals":[
+                    {"Type":"$SAA_SignalType_Biological;","Count":1}
+                  ],
+                  "Genuses":[
+                    {
+                      "Genus":"$Codex_Ent_Aleoids_Genus_Name;",
+                      "Genus_Localised":"Aleoida"
+                    }
+                  ]
+                }
+                """
+            )
+        );
 
         var changed = live.MergeKnownData(knownState.CreateSnapshot());
 
@@ -476,8 +598,7 @@ public sealed class SystemScanStateTests
         Assert.Equal("Aleoida", Assert.Single(body.Organisms).GenusLocalized);
 
         var other = new SystemScanState();
-        other.Apply(Parse(
-            """{"event":"Location","StarSystem":"Other","SystemAddress":99}"""));
+        other.Apply(Parse("""{"event":"Location","StarSystem":"Other","SystemAddress":99}"""));
         Assert.False(live.MergeKnownData(other.CreateSnapshot()));
     }
 
@@ -485,28 +606,22 @@ public sealed class SystemScanStateTests
     public void ExternalBiologyConsentOnlyControlsGenusConfirmations()
     {
         var live = new SystemScanState();
-        live.Apply(Parse(
-            """{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+        live.Apply(Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
         var known = new SystemScanState();
-        known.Apply(Parse(
-            """{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
-        known.Apply(Parse(
-            """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""));
+        known.Apply(Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+        known.Apply(
+            Parse(
+                """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""
+            )
+        );
 
-        Assert.True(live.MergeKnownData(
-            known.CreateSnapshot(),
-            includeBiologicalData: false));
+        Assert.True(live.MergeKnownData(known.CreateSnapshot(), includeBiologicalData: false));
         var signalsOnly = Assert.Single(live.CreateSnapshot().Bodies);
         Assert.Equal(2, signalsOnly.BiologicalSignalCount);
         Assert.Empty(signalsOnly.Organisms);
 
-        Assert.True(live.MergeKnownData(
-            known.CreateSnapshot(),
-            includeBiologicalData: true));
-        Assert.Equal(
-            "Aleoida",
-            Assert.Single(Assert.Single(live.CreateSnapshot().Bodies).Organisms)
-                .GenusLocalized);
+        Assert.True(live.MergeKnownData(known.CreateSnapshot(), includeBiologicalData: true));
+        Assert.Equal("Aleoida", Assert.Single(Assert.Single(live.CreateSnapshot().Bodies).Organisms).GenusLocalized);
     }
 
     private const string PlanetScan = """
@@ -551,10 +666,7 @@ public sealed class SystemScanStateTests
 
     private static JournalEventEnvelope Parse(string json)
     {
-        var success = JournalEventEnvelope.TryParse(
-            json,
-            out var journalEvent,
-            out var error);
+        var success = JournalEventEnvelope.TryParse(json, out var journalEvent, out var error);
         Assert.True(success, error);
         return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }

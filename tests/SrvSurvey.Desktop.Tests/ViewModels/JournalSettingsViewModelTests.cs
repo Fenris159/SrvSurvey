@@ -7,7 +7,8 @@ public sealed class JournalSettingsViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-journal-settings-vm-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-journal-settings-vm-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public async Task AvailableFolderIsSavedBeforeRestartIsRequested()
@@ -68,7 +69,6 @@ public sealed class JournalSettingsViewModelTests : IDisposable
 
     private JournalSettingsStore CreateStore()
     {
-        return new JournalSettingsStore(
-            Path.Combine(temporaryDirectory, "ui-settings.json"));
+        return new JournalSettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json"));
     }
 }

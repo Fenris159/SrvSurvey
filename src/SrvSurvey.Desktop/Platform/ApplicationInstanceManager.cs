@@ -4,23 +4,18 @@ using System.Runtime.InteropServices;
 
 namespace SrvSurvey.Desktop.Platform;
 
-public sealed record ApplicationInstanceScan(
-    int ConfirmedCount,
-    int UnverifiedCount)
+public sealed record ApplicationInstanceScan(int ConfirmedCount, int UnverifiedCount)
 {
     public int TotalCount => checked(ConfirmedCount + UnverifiedCount);
 }
 
 public interface IApplicationInstanceManager
 {
-    Task<ApplicationInstanceScan> ScanOtherInstancesAsync(
-        CancellationToken cancellationToken = default);
+    Task<ApplicationInstanceScan> ScanOtherInstancesAsync(CancellationToken cancellationToken = default);
 
-    Task<int> CountOtherInstancesAsync(
-        CancellationToken cancellationToken = default);
+    Task<int> CountOtherInstancesAsync(CancellationToken cancellationToken = default);
 
-    Task CloseOtherInstancesAsync(
-        CancellationToken cancellationToken = default);
+    Task CloseOtherInstancesAsync(CancellationToken cancellationToken = default);
 }
 
 internal interface IApplicationInstanceProcessSource
@@ -30,7 +25,8 @@ internal interface IApplicationInstanceProcessSource
 
 internal sealed record ApplicationInstanceDiscovery(
     IReadOnlyList<IApplicationInstanceProcess> Confirmed,
-    int UnverifiedCount) : IDisposable
+    int UnverifiedCount
+) : IDisposable
 {
     public void Dispose()
     {
@@ -54,128 +50,86 @@ internal interface IApplicationInstanceProcess : IDisposable
     Task WaitForExitAsync(CancellationToken cancellationToken);
 }
 
-internal sealed class ApplicationInstanceManager
-    : IApplicationInstanceManager, IAsyncDisposable
+internal sealed class ApplicationInstanceManager : IApplicationInstanceManager, IAsyncDisposable
 {
-    private static readonly TimeSpan DefaultGracefulExitTimeout =
-        TimeSpan.FromSeconds(5);
-    private static readonly TimeSpan DefaultForcedExitTimeout =
-        TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan DefaultGracefulExitTimeout = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan DefaultForcedExitTimeout = TimeSpan.FromSeconds(5);
 
     private readonly IApplicationInstanceProcessSource processSource;
     private readonly TimeSpan gracefulExitTimeout;
     private readonly TimeSpan forcedExitTimeout;
 
     public ApplicationInstanceManager()
-        : this(
-            new SystemApplicationInstanceProcessSource(),
-            DefaultGracefulExitTimeout,
-            DefaultForcedExitTimeout)
-    {
-    }
+        : this(new SystemApplicationInstanceProcessSource(), DefaultGracefulExitTimeout, DefaultForcedExitTimeout) { }
 
-    public ApplicationInstanceManager(
-        string dataDirectory,
-        Func<Task> requestShutdown,
-        Action<string>? log = null)
+    public ApplicationInstanceManager(string dataDirectory, Func<Task> requestShutdown, Action<string>? log = null)
         : this(
-            new SystemApplicationInstanceProcessSource(
-                dataDirectory,
-                requestShutdown,
-                log),
+            new SystemApplicationInstanceProcessSource(dataDirectory, requestShutdown, log),
             DefaultGracefulExitTimeout,
-            DefaultForcedExitTimeout)
-    {
-    }
+            DefaultForcedExitTimeout
+        ) { }
 
     internal ApplicationInstanceManager(
         IApplicationInstanceProcessSource processSource,
         TimeSpan gracefulExitTimeout,
-        TimeSpan forcedExitTimeout)
+        TimeSpan forcedExitTimeout
+    )
     {
-        this.processSource = processSource
-            ?? throw new ArgumentNullException(nameof(processSource));
-        ArgumentOutOfRangeException.ThrowIfLessThan(
-            gracefulExitTimeout,
-            TimeSpan.Zero);
-        ArgumentOutOfRangeException.ThrowIfLessThan(
-            forcedExitTimeout,
-            TimeSpan.Zero);
+        this.processSource = processSource ?? throw new ArgumentNullException(nameof(processSource));
+        ArgumentOutOfRangeException.ThrowIfLessThan(gracefulExitTimeout, TimeSpan.Zero);
+        ArgumentOutOfRangeException.ThrowIfLessThan(forcedExitTimeout, TimeSpan.Zero);
 
         this.gracefulExitTimeout = gracefulExitTimeout;
         this.forcedExitTimeout = forcedExitTimeout;
     }
 
-    public async Task<ApplicationInstanceScan> ScanOtherInstancesAsync(
-        CancellationToken cancellationToken = default)
+    public async Task<ApplicationInstanceScan> ScanOtherInstancesAsync(CancellationToken cancellationToken = default)
     {
-        using var discovery = await DiscoverOtherInstancesAsync(cancellationToken)
-            .ConfigureAwait(false);
-        return new ApplicationInstanceScan(
-            discovery.Confirmed.Count,
-            discovery.UnverifiedCount);
+        using var discovery = await DiscoverOtherInstancesAsync(cancellationToken).ConfigureAwait(false);
+        return new ApplicationInstanceScan(discovery.Confirmed.Count, discovery.UnverifiedCount);
     }
 
-    public async Task<int> CountOtherInstancesAsync(
-        CancellationToken cancellationToken = default)
+    public async Task<int> CountOtherInstancesAsync(CancellationToken cancellationToken = default)
     {
-        var scan = await ScanOtherInstancesAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var scan = await ScanOtherInstancesAsync(cancellationToken).ConfigureAwait(false);
         return scan.TotalCount;
     }
 
-    public async Task CloseOtherInstancesAsync(
-        CancellationToken cancellationToken = default)
+    public async Task CloseOtherInstancesAsync(CancellationToken cancellationToken = default)
     {
-        using (var discovery = await DiscoverOtherInstancesAsync(cancellationToken)
-            .ConfigureAwait(false))
+        using (var discovery = await DiscoverOtherInstancesAsync(cancellationToken).ConfigureAwait(false))
         {
-            var graceful = await RequestGracefulExitAsync(
-                    discovery.Confirmed,
-                    cancellationToken)
-                .ConfigureAwait(false);
-            ForceTerminate(discovery.Confirmed.Where(instance =>
-                !graceful.Contains(instance.Id)));
-            await WaitForExitAsync(
-                    discovery.Confirmed,
-                    gracefulExitTimeout,
-                    cancellationToken)
-                .ConfigureAwait(false);
+            var graceful = await RequestGracefulExitAsync(discovery.Confirmed, cancellationToken).ConfigureAwait(false);
+            ForceTerminate(discovery.Confirmed.Where(instance => !graceful.Contains(instance.Id)));
+            await WaitForExitAsync(discovery.Confirmed, gracefulExitTimeout, cancellationToken).ConfigureAwait(false);
 
             ForceTerminate(discovery.Confirmed.Where(instance => !instance.HasExited));
-            await WaitForExitAsync(
-                    discovery.Confirmed,
-                    forcedExitTimeout,
-                    cancellationToken)
-                .ConfigureAwait(false);
+            await WaitForExitAsync(discovery.Confirmed, forcedExitTimeout, cancellationToken).ConfigureAwait(false);
         }
 
-        using var verification = await DiscoverOtherInstancesAsync(cancellationToken)
-            .ConfigureAwait(false);
+        using var verification = await DiscoverOtherInstancesAsync(cancellationToken).ConfigureAwait(false);
         var remaining = verification.Confirmed.Count(instance => !instance.HasExited);
         if (verification.UnverifiedCount > 0)
         {
             throw new IOException(
                 $"Windows or Linux prevented SrvSurvey from verifying "
-                + $"{verification.UnverifiedCount:N0} matching process(es). "
-                + "Close every SrvSurvey-XP instance manually, then retry the update. "
-                + "No installation files were changed.");
+                    + $"{verification.UnverifiedCount:N0} matching process(es). "
+                    + "Close every SrvSurvey-XP instance manually, then retry the update. "
+                    + "No installation files were changed."
+            );
         }
 
         if (remaining > 0)
         {
             throw new IOException(
-                $"Could not close {remaining:N0} other SrvSurvey instance(s). "
-                + "The update was not started.");
+                $"Could not close {remaining:N0} other SrvSurvey instance(s). " + "The update was not started."
+            );
         }
     }
 
-    private Task<ApplicationInstanceDiscovery> DiscoverOtherInstancesAsync(
-        CancellationToken cancellationToken)
+    private Task<ApplicationInstanceDiscovery> DiscoverOtherInstancesAsync(CancellationToken cancellationToken)
     {
-        return Task.Run(
-            processSource.DiscoverOtherInstances,
-            cancellationToken);
+        return Task.Run(processSource.DiscoverOtherInstances, cancellationToken);
     }
 
     public async ValueTask DisposeAsync()
@@ -188,13 +142,13 @@ internal sealed class ApplicationInstanceManager
 
     private static async Task<HashSet<int>> RequestGracefulExitAsync(
         IEnumerable<IApplicationInstanceProcess> instances,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var requested = new HashSet<int>();
         foreach (var instance in instances.Where(instance => !instance.HasExited))
         {
-            if (await instance.RequestGracefulExitAsync(cancellationToken)
-                .ConfigureAwait(false))
+            if (await instance.RequestGracefulExitAsync(cancellationToken).ConfigureAwait(false))
             {
                 requested.Add(instance.Id);
             }
@@ -203,8 +157,7 @@ internal sealed class ApplicationInstanceManager
         return requested;
     }
 
-    private static void ForceTerminate(
-        IEnumerable<IApplicationInstanceProcess> instances)
+    private static void ForceTerminate(IEnumerable<IApplicationInstanceProcess> instances)
     {
         foreach (var instance in instances)
         {
@@ -215,7 +168,8 @@ internal sealed class ApplicationInstanceManager
     private static async Task WaitForExitAsync(
         IReadOnlyCollection<IApplicationInstanceProcess> instances,
         TimeSpan timeout,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var active = instances.Where(instance => !instance.HasExited).ToArray();
         if (active.Length == 0)
@@ -223,13 +177,11 @@ internal sealed class ApplicationInstanceManager
             return;
         }
 
-        using var timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(
-            cancellationToken);
+        using var timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeoutSource.CancelAfter(timeout);
         try
         {
-            await Task.WhenAll(active.Select(instance =>
-                    instance.WaitForExitAsync(timeoutSource.Token)))
+            await Task.WhenAll(active.Select(instance => instance.WaitForExitAsync(timeoutSource.Token)))
                 .ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
@@ -239,44 +191,37 @@ internal sealed class ApplicationInstanceManager
     }
 }
 
-internal sealed class SystemApplicationInstanceProcessSource
-    : IApplicationInstanceProcessSource, IAsyncDisposable
+internal sealed class SystemApplicationInstanceProcessSource : IApplicationInstanceProcessSource, IAsyncDisposable
 {
     private readonly ApplicationInstanceRegistry? registry;
     private readonly Action<string>? log;
 
-    public SystemApplicationInstanceProcessSource()
-    {
-    }
+    public SystemApplicationInstanceProcessSource() { }
 
-    public SystemApplicationInstanceProcessSource(
-        string dataDirectory,
-        Func<Task> requestShutdown,
-        Action<string>? log)
+    public SystemApplicationInstanceProcessSource(string dataDirectory, Func<Task> requestShutdown, Action<string>? log)
     {
         this.log = log;
         try
         {
-            registry = new ApplicationInstanceRegistry(
-                dataDirectory,
-                requestShutdown,
-                log);
+            registry = new ApplicationInstanceRegistry(dataDirectory, requestShutdown, log);
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidOperationException
-                or NotSupportedException)
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or UnauthorizedAccessException
+                        or InvalidOperationException
+                        or NotSupportedException
+            )
         {
             try
             {
                 log?.Invoke(
                     "Update instance registration is unavailable; "
-                    + "continuing with process-name and executable-path discovery. "
-                    + exception.Message);
+                        + "continuing with process-name and executable-path discovery. "
+                        + exception.Message
+                );
             }
-            catch (Exception logException) when (
-                logException is IOException or InvalidOperationException)
+            catch (Exception logException) when (logException is IOException or InvalidOperationException)
             {
                 // Registry failure must not prevent application startup.
             }
@@ -292,10 +237,7 @@ internal sealed class SystemApplicationInstanceProcessSource
         var recordsByProcess = records
             .GroupBy(record => record.ProcessId)
             .ToDictionary(group => group.Key, group => group.ToArray());
-        var processes = CollectCandidateProcesses(
-            current,
-            records,
-            restartManagerProcessIds);
+        var processes = CollectCandidateProcesses(current, records, restartManagerProcessIds);
 
         var confirmed = new List<IApplicationInstanceProcess>();
         var unverified = 0;
@@ -304,38 +246,33 @@ internal sealed class SystemApplicationInstanceProcessSource
             foreach (var processId in processes.Keys.ToArray())
             {
                 var process = processes[processId];
-                var processRecords = recordsByProcess.GetValueOrDefault(process.Id)
-                    ?? [];
+                var processRecords = recordsByProcess.GetValueOrDefault(process.Id) ?? [];
                 var classification = ClassifyProcess(
                     process,
                     currentPath,
                     current.ProcessName,
                     processRecords,
-                    restartManagerProcessIds.Contains(process.Id));
+                    restartManagerProcessIds.Contains(process.Id)
+                );
                 if (classification.IsConfirmed)
                 {
-                    confirmed.Add(new SystemApplicationInstanceProcess(
-                        process,
-                        classification.Record?.PipeName));
+                    confirmed.Add(new SystemApplicationInstanceProcess(process, classification.Record?.PipeName));
                     processes.Remove(processId);
-                    log?.Invoke(
-                        $"Confirmed update instance PID {process.Id} using "
-                        + $"{classification.Method}.");
+                    log?.Invoke($"Confirmed update instance PID {process.Id} using " + $"{classification.Method}.");
                     continue;
                 }
 
                 if (classification.IsUnverified)
                 {
                     unverified++;
-                    log?.Invoke(
-                        $"Could not verify update candidate PID {process.Id}: "
-                        + classification.Error);
+                    log?.Invoke($"Could not verify update candidate PID {process.Id}: " + classification.Error);
                 }
                 else
                 {
                     log?.Invoke(
                         $"Ignored unrelated process PID {process.Id} at "
-                        + $"'{classification.Path ?? classification.Record?.ExecutablePath ?? "unknown"}'.");
+                            + $"'{classification.Path ?? classification.Record?.ExecutablePath ?? "unknown"}'."
+                    );
                 }
 
                 process.Dispose();
@@ -370,30 +307,24 @@ internal sealed class SystemApplicationInstanceProcessSource
     private IReadOnlySet<int> FindRestartManagerProcesses(string? currentPath)
     {
         return OperatingSystem.IsWindows() && currentPath is not null
-            ? WindowsRestartManagerProcessFinder.FindLockingProcessIds(
-                currentPath,
-                log)
+            ? WindowsRestartManagerProcessFinder.FindLockingProcessIds(currentPath, log)
             : new HashSet<int>();
     }
 
     private Dictionary<int, Process> CollectCandidateProcesses(
         Process current,
         IReadOnlyList<ApplicationInstanceRecord> records,
-        IReadOnlySet<int> restartManagerProcessIds)
+        IReadOnlySet<int> restartManagerProcessIds
+    )
     {
         var processes = new Dictionary<int, Process>();
         AddNamedProcesses(processes, current);
         AddRegisteredProcesses(processes, records, current.Id);
-        AddRestartManagerProcesses(
-            processes,
-            restartManagerProcessIds,
-            current.Id);
+        AddRestartManagerProcesses(processes, restartManagerProcessIds, current.Id);
         return processes;
     }
 
-    private static void AddNamedProcesses(
-        Dictionary<int, Process> processes,
-        Process current)
+    private static void AddNamedProcesses(Dictionary<int, Process> processes, Process current)
     {
         foreach (var process in Process.GetProcessesByName(current.ProcessName))
         {
@@ -409,12 +340,12 @@ internal sealed class SystemApplicationInstanceProcessSource
     private void AddRegisteredProcesses(
         Dictionary<int, Process> processes,
         IEnumerable<ApplicationInstanceRecord> records,
-        int currentProcessId)
+        int currentProcessId
+    )
     {
         foreach (var record in records)
         {
-            if (record.ProcessId == currentProcessId
-                || processes.ContainsKey(record.ProcessId))
+            if (record.ProcessId == currentProcessId || processes.ContainsKey(record.ProcessId))
             {
                 continue;
             }
@@ -433,7 +364,8 @@ internal sealed class SystemApplicationInstanceProcessSource
     private static void AddRestartManagerProcesses(
         Dictionary<int, Process> processes,
         IEnumerable<int> processIds,
-        int currentProcessId)
+        int currentProcessId
+    )
     {
         foreach (var processId in processIds)
         {
@@ -454,37 +386,25 @@ internal sealed class SystemApplicationInstanceProcessSource
         string? currentPath,
         string currentProcessName,
         IReadOnlyList<ApplicationInstanceRecord> records,
-        bool restartManagerMatch)
+        bool restartManagerMatch
+    )
     {
         var record = ValidateRecord(process, records);
         var resolved = ApplicationProcessPathResolver.TryResolve(
             process,
             out var candidatePath,
             out var method,
-            out var error);
-        var actualMatch = resolved && PathsMatch(
-            candidatePath,
-            currentPath,
-            OperatingSystem.IsWindows());
-        var registeredMatch = !resolved
+            out var error
+        );
+        var actualMatch = resolved && PathsMatch(candidatePath, currentPath, OperatingSystem.IsWindows());
+        var registeredMatch =
+            !resolved
             && record is not null
-            && PathsMatch(
-                record.ExecutablePath,
-                currentPath,
-                OperatingSystem.IsWindows());
+            && PathsMatch(record.ExecutablePath, currentPath, OperatingSystem.IsWindows());
         var sameProcessName = HasProcessName(process, currentProcessName);
-        var confirmed = actualMatch
-            || registeredMatch
-            || (!resolved && sameProcessName && restartManagerMatch);
-        var unverified = !confirmed
-            && ((!resolved && sameProcessName) || restartManagerMatch);
-        return new ProcessClassification(
-            confirmed,
-            unverified,
-            record,
-            candidatePath,
-            method,
-            error);
+        var confirmed = actualMatch || registeredMatch || (!resolved && sameProcessName && restartManagerMatch);
+        var unverified = !confirmed && ((!resolved && sameProcessName) || restartManagerMatch);
+        return new ProcessClassification(confirmed, unverified, record, candidatePath, method, error);
     }
 
     private static bool TryOpenProcess(int processId, out Process? process)
@@ -505,10 +425,7 @@ internal sealed class SystemApplicationInstanceProcessSource
     {
         try
         {
-            return string.Equals(
-                process.ProcessName,
-                expectedName,
-                StringComparison.OrdinalIgnoreCase);
+            return string.Equals(process.ProcessName, expectedName, StringComparison.OrdinalIgnoreCase);
         }
         catch (InvalidOperationException)
         {
@@ -521,13 +438,9 @@ internal sealed class SystemApplicationInstanceProcessSource
         return registry?.DisposeAsync() ?? ValueTask.CompletedTask;
     }
 
-    internal static bool PathsMatch(
-        string? candidatePath,
-        string? currentPath,
-        bool isWindows)
+    internal static bool PathsMatch(string? candidatePath, string? currentPath, bool isWindows)
     {
-        if (string.IsNullOrWhiteSpace(candidatePath)
-            || string.IsNullOrWhiteSpace(currentPath))
+        if (string.IsNullOrWhiteSpace(candidatePath) || string.IsNullOrWhiteSpace(currentPath))
         {
             return false;
         }
@@ -535,34 +448,27 @@ internal sealed class SystemApplicationInstanceProcessSource
         return string.Equals(
             candidatePath,
             currentPath,
-            isWindows
-                ? StringComparison.OrdinalIgnoreCase
-                : StringComparison.Ordinal);
+            isWindows ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal
+        );
     }
 
-    private ApplicationInstanceRecord? ValidateRecord(
-        Process process,
-        IReadOnlyList<ApplicationInstanceRecord> records)
+    private ApplicationInstanceRecord? ValidateRecord(Process process, IReadOnlyList<ApplicationInstanceRecord> records)
     {
         long startTicks;
         try
         {
             startTicks = process.StartTime.ToUniversalTime().Ticks;
         }
-        catch (Exception exception) when (
-            exception is Win32Exception or InvalidOperationException)
+        catch (Exception exception) when (exception is Win32Exception or InvalidOperationException)
         {
-            log?.Invoke(
-                $"Could not validate update registration for PID {process.Id}: "
-                + exception.Message);
+            log?.Invoke($"Could not validate update registration for PID {process.Id}: " + exception.Message);
             return null;
         }
 
         ApplicationInstanceRecord? validated = null;
         foreach (var record in records)
         {
-            if (Math.Abs(record.ProcessStartTimeUtcTicks - startTicks)
-                <= TimeSpan.FromSeconds(1).Ticks)
+            if (Math.Abs(record.ProcessStartTimeUtcTicks - startTicks) <= TimeSpan.FromSeconds(1).Ticks)
             {
                 validated = record;
             }
@@ -581,12 +487,12 @@ internal sealed class SystemApplicationInstanceProcessSource
         ApplicationInstanceRecord? Record,
         string? Path,
         string Method,
-        string? Error);
+        string? Error
+    );
 }
 
-internal sealed partial class SystemApplicationInstanceProcess(
-    Process process,
-    string? pipeName = null) : IApplicationInstanceProcess
+internal sealed partial class SystemApplicationInstanceProcess(Process process, string? pipeName = null)
+    : IApplicationInstanceProcess
 {
     private const int LinuxTerminateSignal = 15;
     private const int LinuxNoSuchProcess = 3;
@@ -608,14 +514,12 @@ internal sealed partial class SystemApplicationInstanceProcess(
         }
     }
 
-    public async Task<bool> RequestGracefulExitAsync(
-        CancellationToken cancellationToken)
+    public async Task<bool> RequestGracefulExitAsync(CancellationToken cancellationToken)
     {
-        if (pipeName is not null
-            && await ApplicationInstanceRegistry.RequestShutdownAsync(
-                    pipeName,
-                    cancellationToken)
-                .ConfigureAwait(false))
+        if (
+            pipeName is not null
+            && await ApplicationInstanceRegistry.RequestShutdownAsync(pipeName, cancellationToken).ConfigureAwait(false)
+        )
         {
             return true;
         }
@@ -637,13 +541,10 @@ internal sealed partial class SystemApplicationInstanceProcess(
                 return Marshal.GetLastPInvokeError() == LinuxNoSuchProcess;
             }
 
-            throw new PlatformNotSupportedException(
-                "Automatic updates are supported only on Windows and Linux.");
+            throw new PlatformNotSupportedException("Automatic updates are supported only on Windows and Linux.");
         }
-        catch (Exception exception) when (
-            exception is Win32Exception
-                or InvalidOperationException
-                or NotSupportedException)
+        catch (Exception exception)
+            when (exception is Win32Exception or InvalidOperationException or NotSupportedException)
         {
             return HasExited;
         }
@@ -655,10 +556,8 @@ internal sealed partial class SystemApplicationInstanceProcess(
         {
             process.Kill(entireProcessTree: true);
         }
-        catch (Exception exception) when (
-            exception is Win32Exception
-                or InvalidOperationException
-                or NotSupportedException)
+        catch (Exception exception)
+            when (exception is Win32Exception or InvalidOperationException or NotSupportedException)
         {
             // The manager verifies that every process actually exited.
         }

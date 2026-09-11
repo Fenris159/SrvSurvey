@@ -13,14 +13,16 @@ public interface INearestSystemsClient
         string biologicalSignal,
         string commanderName,
         int limit = 5,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     Task<NearestSystemsSearchResult> SearchMissingVariantsAsync(
         GalacticCoordinate reference,
         string genus,
         string species,
         IReadOnlyList<string> variantColors,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }
 
 public sealed class NearestSystemsClient : INearestSystemsClient
@@ -28,25 +30,20 @@ public sealed class NearestSystemsClient : INearestSystemsClient
     private const int MaximumResponseBytes = 8 * 1024 * 1024;
 
     private static readonly Uri DefaultCanonnBaseUri = new(
-        "https://us-central1-canonn-api-236217.cloudfunctions.net/query/");
-    private static readonly Uri DefaultSpanshBaseUri = new(
-        "https://spansh.co.uk/api/");
+        "https://us-central1-canonn-api-236217.cloudfunctions.net/query/"
+    );
+    private static readonly Uri DefaultSpanshBaseUri = new("https://spansh.co.uk/api/");
     private static readonly HttpClient SharedClient = CreateSharedClient();
 
     private readonly HttpClient client;
     private readonly Uri canonnBaseUri;
     private readonly Uri spanshBaseUri;
 
-    public NearestSystemsClient(
-        HttpClient? client = null,
-        Uri? canonnBaseUri = null,
-        Uri? spanshBaseUri = null)
+    public NearestSystemsClient(HttpClient? client = null, Uri? canonnBaseUri = null, Uri? spanshBaseUri = null)
     {
         this.client = client ?? SharedClient;
-        this.canonnBaseUri = EnsureTrailingSlash(
-            canonnBaseUri ?? DefaultCanonnBaseUri);
-        this.spanshBaseUri = EnsureTrailingSlash(
-            spanshBaseUri ?? DefaultSpanshBaseUri);
+        this.canonnBaseUri = EnsureTrailingSlash(canonnBaseUri ?? DefaultCanonnBaseUri);
+        this.spanshBaseUri = EnsureTrailingSlash(spanshBaseUri ?? DefaultSpanshBaseUri);
     }
 
     public async Task<NearestSystemsSearchResult> SearchCanonnAsync(
@@ -54,7 +51,8 @@ public sealed class NearestSystemsClient : INearestSystemsClient
         string biologicalSignal,
         string commanderName,
         int limit = 5,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(biologicalSignal);
         ArgumentOutOfRangeException.ThrowIfLessThan(limit, 1);
@@ -63,41 +61,40 @@ public sealed class NearestSystemsClient : INearestSystemsClient
             "nearest/codex",
             new Dictionary<string, string>
             {
-                ["x"] = reference.X.ToString(
-                    "R",
-                    CultureInfo.InvariantCulture),
-                ["y"] = reference.Y.ToString(
-                    "R",
-                    CultureInfo.InvariantCulture),
-                ["z"] = reference.Z.ToString(
-                    "R",
-                    CultureInfo.InvariantCulture),
+                ["x"] = reference.X.ToString("R", CultureInfo.InvariantCulture),
+                ["y"] = reference.Y.ToString("R", CultureInfo.InvariantCulture),
+                ["z"] = reference.Z.ToString("R", CultureInfo.InvariantCulture),
                 ["name"] = biologicalSignal.Trim(),
                 ["limit"] = limit.ToString(CultureInfo.InvariantCulture),
-            });
-        using var response = await client.GetAsync(
-            uri,
-            HttpCompletionOption.ResponseHeadersRead,
-            cancellationToken).ConfigureAwait(false);
+            }
+        );
+        using var response = await client
+            .GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+            .ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
-        var payload = await BoundedHttpContent.ReadFromJsonAsync<CanonnNearest>(
-                response.Content,
-                MaximumResponseBytes,
-                "The Canonn nearest-system response",
-                cancellationToken: cancellationToken)
-            .ConfigureAwait(false)
-            ?? throw new HttpRequestException(
-                "Canonn returned an empty nearest-system response.");
+        var payload =
+            await BoundedHttpContent
+                .ReadFromJsonAsync<CanonnNearest>(
+                    response.Content,
+                    MaximumResponseBytes,
+                    "The Canonn nearest-system response",
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false)
+            ?? throw new HttpRequestException("Canonn returned an empty nearest-system response.");
         var nearest = (payload.Nearest ?? [])
-            .Where(entry => !string.IsNullOrWhiteSpace(entry.System)
+            .Where(entry =>
+                !string.IsNullOrWhiteSpace(entry.System)
                 && double.IsFinite(entry.Distance)
                 && double.IsFinite(entry.X)
                 && double.IsFinite(entry.Y)
-                && double.IsFinite(entry.Z))
+                && double.IsFinite(entry.Z)
+            )
             .Take(limit)
             .ToArray();
-        var rows = await Task.WhenAll(nearest.Select(entry =>
-            CreateCanonnRowAsync(entry, commanderName, cancellationToken)))
+        var rows = await Task.WhenAll(
+                nearest.Select(entry => CreateCanonnRowAsync(entry, commanderName, cancellationToken))
+            )
             .ConfigureAwait(false);
         return new NearestSystemsSearchResult(rows, null);
     }
@@ -107,7 +104,8 @@ public sealed class NearestSystemsClient : INearestSystemsClient
         string genus,
         string species,
         IReadOnlyList<string> variantColors,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(genus);
         ArgumentException.ThrowIfNullOrWhiteSpace(species);
@@ -119,49 +117,44 @@ public sealed class NearestSystemsClient : INearestSystemsClient
             .ToArray();
         if (variants.Length == 0)
         {
-            throw new ArgumentException(
-                "At least one biological variant color is required.",
-                nameof(variantColors));
+            throw new ArgumentException("At least one biological variant color is required.", nameof(variantColors));
         }
 
         var request = new SpanshBodiesRequest(
-            new SpanshFilters(
-            [
-                new SpanshLandmarkFilter(
-                    PascalFirst(genus.Trim()),
-                    [PascalWords(species.Trim())],
-                    variants),
+            new SpanshFilters([
+                new SpanshLandmarkFilter(PascalFirst(genus.Trim()), [PascalWords(species.Trim())], variants),
             ]),
             [new SpanshSort(new SpanshSortDirection("asc"))],
             10,
             0,
-            new SpanshReference(reference.X, reference.Y, reference.Z));
-        using var requestMessage = new HttpRequestMessage(
-            HttpMethod.Post,
-            new Uri(spanshBaseUri, "bodies/search"))
+            new SpanshReference(reference.X, reference.Y, reference.Z)
+        );
+        using var requestMessage = new HttpRequestMessage(HttpMethod.Post, new Uri(spanshBaseUri, "bodies/search"))
         {
             Content = JsonContent.Create(request),
         };
-        using var response = await client.SendAsync(
-                requestMessage,
-                HttpCompletionOption.ResponseHeadersRead,
-                cancellationToken)
+        using var response = await client
+            .SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
-        var payload = await BoundedHttpContent.ReadFromJsonAsync<SpanshBodies>(
-                response.Content,
-                MaximumResponseBytes,
-                "The Spansh nearest-body response",
-                cancellationToken: cancellationToken)
-            .ConfigureAwait(false)
-            ?? throw new HttpRequestException(
-                "Spansh returned an empty bodies-search response.");
+        var payload =
+            await BoundedHttpContent
+                .ReadFromJsonAsync<SpanshBodies>(
+                    response.Content,
+                    MaximumResponseBytes,
+                    "The Spansh nearest-body response",
+                    cancellationToken: cancellationToken
+                )
+                .ConfigureAwait(false)
+            ?? throw new HttpRequestException("Spansh returned an empty bodies-search response.");
         var rows = (payload.Results ?? [])
-            .Where(body => !string.IsNullOrWhiteSpace(body.SystemName)
+            .Where(body =>
+                !string.IsNullOrWhiteSpace(body.SystemName)
                 && double.IsFinite(body.Distance)
                 && double.IsFinite(body.SystemX)
                 && double.IsFinite(body.SystemY)
-                && double.IsFinite(body.SystemZ))
+                && double.IsFinite(body.SystemZ)
+            )
             .GroupBy(body => body.SystemName!, StringComparer.OrdinalIgnoreCase)
             .Select(group => group.First())
             .Take(5)
@@ -169,36 +162,26 @@ public sealed class NearestSystemsClient : INearestSystemsClient
                 body.SystemName!,
                 body.Distance,
                 CreateSpanshNotes(body, species.Trim()),
-                new GalacticCoordinate(
-                    body.SystemX,
-                    body.SystemY,
-                    body.SystemZ),
+                new GalacticCoordinate(body.SystemX, body.SystemY, body.SystemZ),
                 body.SystemId64 > 0 ? body.SystemId64 : null,
-                NearestSystemSource.Spansh))
+                NearestSystemSource.Spansh
+            ))
             .ToArray();
         return new NearestSystemsSearchResult(
             rows,
-            string.IsNullOrWhiteSpace(payload.SearchReference)
-                ? null
-                : payload.SearchReference);
+            string.IsNullOrWhiteSpace(payload.SearchReference) ? null : payload.SearchReference
+        );
     }
 
-    public static string SummarizeCanonnSystemPoi(
-        IReadOnlyList<CanonnCodexEntry> codexEntries)
+    public static string SummarizeCanonnSystemPoi(IReadOnlyList<CanonnCodexEntry> codexEntries)
     {
         ArgumentNullException.ThrowIfNull(codexEntries);
-        var distinctSignals = codexEntries
-            .Select(entry => entry.EntryId)
-            .ToHashSet();
+        var distinctSignals = codexEntries.Select(entry => entry.EntryId).ToHashSet();
         var backup = $"System bio signals: {distinctSignals.Count:N0}";
-        var summary = new Dictionary<string, HashSet<string>>(
-            StringComparer.OrdinalIgnoreCase);
+        var summary = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
         foreach (var entry in codexEntries)
         {
-            if (!string.Equals(
-                    entry.HudCategory,
-                    "Biology",
-                    StringComparison.Ordinal))
+            if (!string.Equals(entry.HudCategory, "Biology", StringComparison.Ordinal))
             {
                 continue;
             }
@@ -226,16 +209,14 @@ public sealed class NearestSystemsClient : INearestSystemsClient
             return "No bio signals in system";
         }
 
-        return "Body " + string.Join(
-            ", ",
-            summary.Select(pair =>
-                $"{pair.Key}: {pair.Value.Count:N0} signals"));
+        return "Body " + string.Join(", ", summary.Select(pair => $"{pair.Key}: {pair.Value.Count:N0} signals"));
     }
 
     private async Task<NearestSystemSearchRow> CreateCanonnRowAsync(
         CanonnNearestEntry entry,
         string commanderName,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         string notes;
         try
@@ -247,26 +228,23 @@ public sealed class NearestSystemsClient : INearestSystemsClient
                     ["system"] = entry.System!,
                     ["odyssey"] = "Y",
                     ["cmdr"] = commanderName?.Trim() ?? string.Empty,
-                });
-            using var response = await client.GetAsync(
-                uri,
-                HttpCompletionOption.ResponseHeadersRead,
-                cancellationToken).ConfigureAwait(false);
+                }
+            );
+            using var response = await client
+                .GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                .ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-            var poi = await BoundedHttpContent.ReadFromJsonAsync<CanonnSystemPoi>(
+            var poi = await BoundedHttpContent
+                .ReadFromJsonAsync<CanonnSystemPoi>(
                     response.Content,
                     MaximumResponseBytes,
                     "The Canonn system-POI response",
-                    cancellationToken: cancellationToken)
+                    cancellationToken: cancellationToken
+                )
                 .ConfigureAwait(false);
-            notes = poi is null
-                ? "System details unavailable"
-                : SummarizeCanonnSystemPoi(poi.Codex ?? []);
+            notes = poi is null ? "System details unavailable" : SummarizeCanonnSystemPoi(poi.Codex ?? []);
         }
-        catch (Exception exception) when (
-            exception is HttpRequestException
-                or JsonException
-                or InvalidDataException)
+        catch (Exception exception) when (exception is HttpRequestException or JsonException or InvalidDataException)
         {
             notes = "System details unavailable";
         }
@@ -277,76 +255,56 @@ public sealed class NearestSystemsClient : INearestSystemsClient
             notes,
             new GalacticCoordinate(entry.X, entry.Y, entry.Z),
             null,
-            NearestSystemSource.Canonn);
+            NearestSystemSource.Canonn
+        );
     }
 
-    private Uri CreateCanonnUri(
-        string relativePath,
-        IReadOnlyDictionary<string, string> query)
+    private Uri CreateCanonnUri(string relativePath, IReadOnlyDictionary<string, string> query)
     {
         var builder = new UriBuilder(new Uri(canonnBaseUri, relativePath))
         {
             Query = string.Join(
                 "&",
-                query.Select(pair =>
-                    $"{Uri.EscapeDataString(pair.Key)}="
-                    + Uri.EscapeDataString(pair.Value))),
+                query.Select(pair => $"{Uri.EscapeDataString(pair.Key)}=" + Uri.EscapeDataString(pair.Value))
+            ),
         };
         return builder.Uri;
     }
 
-    private static string CreateSpanshNotes(
-        SpanshBody body,
-        string species)
+    private static string CreateSpanshNotes(SpanshBody body, string species)
     {
         var colors = (body.Landmarks ?? [])
-            .Where(landmark => string.Equals(
-                landmark.Subtype,
-                species,
-                StringComparison.Ordinal))
+            .Where(landmark => string.Equals(landmark.Subtype, species, StringComparison.Ordinal))
             .Select(landmark => landmark.Variant)
             .Where(variant => !string.IsNullOrWhiteSpace(variant))
             .Distinct(StringComparer.OrdinalIgnoreCase);
         var prefix = string.Join(", ", colors);
-        var bodyName = body.Name?.Replace(
-            body.SystemName + " ",
-            string.Empty,
-            StringComparison.Ordinal) ?? "Unknown";
-        var notes = $"{prefix} - body: {bodyName}, dist to arrival: "
-            + FormatLightSeconds(body.DistanceToArrival);
+        var bodyName = body.Name?.Replace(body.SystemName + " ", string.Empty, StringComparison.Ordinal) ?? "Unknown";
+        var notes = $"{prefix} - body: {bodyName}, dist to arrival: " + FormatLightSeconds(body.DistanceToArrival);
         var signalCount = (body.Signals ?? [])
-            .FirstOrDefault(signal => string.Equals(
-                signal.Name,
-                "Biological",
-                StringComparison.Ordinal))?.Count;
-        return signalCount > 0
-            ? notes + $", {signalCount:N0} bio signals"
-            : notes;
+            .FirstOrDefault(signal => string.Equals(signal.Name, "Biological", StringComparison.Ordinal))
+            ?.Count;
+        return signalCount > 0 ? notes + $", {signalCount:N0} bio signals" : notes;
     }
 
     private static string FormatLightSeconds(double distance)
     {
-        return distance > 1_000
-            ? $"{distance / 1_000:N1}k LS"
-            : $"{distance:N0} LS";
+        return distance > 1_000 ? $"{distance / 1_000:N1}k LS" : $"{distance:N0} LS";
     }
 
     private static string PascalFirst(string value)
     {
-        return value.Length == 0
-            ? string.Empty
-            : char.ToUpperInvariant(value[0]) + value[1..];
+        return value.Length == 0 ? string.Empty : char.ToUpperInvariant(value[0]) + value[1..];
     }
 
     private static string PascalWords(string value)
     {
         return string.Join(
             ' ',
-            value.Split(
-                    ' ',
-                    StringSplitOptions.RemoveEmptyEntries)
-                .Select(word => char.ToUpperInvariant(word[0])
-                    + word[1..].ToLowerInvariant()));
+            value
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                .Select(word => char.ToUpperInvariant(word[0]) + word[1..].ToLowerInvariant())
+        );
     }
 
     private static Uri EnsureTrailingSlash(Uri uri)
@@ -362,74 +320,56 @@ public sealed class NearestSystemsClient : INearestSystemsClient
 
     private static HttpClient CreateSharedClient()
     {
-        var client = new HttpClient
-        {
-            Timeout = TimeSpan.FromSeconds(20),
-        };
-        client.DefaultRequestHeaders.UserAgent.ParseAdd(
-            "SrvSurvey-Avalonia/1.0");
+        var client = new HttpClient { Timeout = TimeSpan.FromSeconds(20) };
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("SrvSurvey-Avalonia/1.0");
         return client;
     }
 
-    private sealed record CanonnNearest(
-        IReadOnlyList<CanonnNearestEntry>? Nearest);
+    private sealed record CanonnNearest(IReadOnlyList<CanonnNearestEntry>? Nearest);
 
-    private sealed record CanonnNearestEntry(
-        double Distance,
-        string? System,
-        double X,
-        double Y,
-        double Z);
+    private sealed record CanonnNearestEntry(double Distance, string? System, double X, double Y, double Z);
 
-    private sealed record CanonnSystemPoi(
-        IReadOnlyList<CanonnCodexEntry>? Codex);
+    private sealed record CanonnSystemPoi(IReadOnlyList<CanonnCodexEntry>? Codex);
 
     private sealed record SpanshBodiesRequest(
         SpanshFilters Filters,
         IReadOnlyList<SpanshSort> Sort,
         int Size,
         int Page,
-        [property: JsonPropertyName("reference_coords")]
-        SpanshReference ReferenceCoordinates);
+        [property: JsonPropertyName("reference_coords")] SpanshReference ReferenceCoordinates
+    );
 
-    private sealed record SpanshFilters(
-        IReadOnlyList<SpanshLandmarkFilter> Landmarks);
+    private sealed record SpanshFilters(IReadOnlyList<SpanshLandmarkFilter> Landmarks);
 
     private sealed record SpanshLandmarkFilter(
         string Type,
         IReadOnlyList<string> Subtype,
-        IReadOnlyList<string> Variant);
+        IReadOnlyList<string> Variant
+    );
 
-    private sealed record SpanshSort(
-        [property: JsonPropertyName("distance")]
-        SpanshSortDirection Distance);
+    private sealed record SpanshSort([property: JsonPropertyName("distance")] SpanshSortDirection Distance);
 
     private sealed record SpanshSortDirection(string Direction);
 
     private sealed record SpanshReference(double X, double Y, double Z);
 
     private sealed record SpanshBodies(
-        [property: JsonPropertyName("search_reference")]
-        string? SearchReference,
-        IReadOnlyList<SpanshBody>? Results);
+        [property: JsonPropertyName("search_reference")] string? SearchReference,
+        IReadOnlyList<SpanshBody>? Results
+    );
 
     private sealed record SpanshBody(
         double Distance,
-        [property: JsonPropertyName("distance_to_arrival")]
-        double DistanceToArrival,
+        [property: JsonPropertyName("distance_to_arrival")] double DistanceToArrival,
         string? Name,
         IReadOnlyList<SpanshSignal>? Signals,
         IReadOnlyList<SpanshLandmark>? Landmarks,
-        [property: JsonPropertyName("system_id64")]
-        long SystemId64,
-        [property: JsonPropertyName("system_name")]
-        string? SystemName,
-        [property: JsonPropertyName("system_x")]
-        double SystemX,
-        [property: JsonPropertyName("system_y")]
-        double SystemY,
-        [property: JsonPropertyName("system_z")]
-        double SystemZ);
+        [property: JsonPropertyName("system_id64")] long SystemId64,
+        [property: JsonPropertyName("system_name")] string? SystemName,
+        [property: JsonPropertyName("system_x")] double SystemX,
+        [property: JsonPropertyName("system_y")] double SystemY,
+        [property: JsonPropertyName("system_z")] double SystemZ
+    );
 
     private sealed record SpanshSignal(string? Name, int Count);
 
@@ -438,7 +378,8 @@ public sealed class NearestSystemsClient : INearestSystemsClient
 
 public sealed record NearestSystemsSearchResult(
     IReadOnlyList<NearestSystemSearchRow> Rows,
-    string? SpanshSearchReference);
+    string? SpanshSearchReference
+);
 
 public sealed record NearestSystemSearchRow(
     string SystemName,
@@ -446,7 +387,8 @@ public sealed record NearestSystemSearchRow(
     string Notes,
     GalacticCoordinate Coordinate,
     long? SystemAddress,
-    NearestSystemSource Source);
+    NearestSystemSource Source
+);
 
 public enum NearestSystemSource
 {
@@ -456,9 +398,7 @@ public enum NearestSystemSource
 
 public sealed record CanonnCodexEntry(
     string? Body,
-    [property: JsonPropertyName("english_name")]
-    string? EnglishName,
-    [property: JsonPropertyName("entryid")]
-    long? EntryId,
-    [property: JsonPropertyName("hud_category")]
-    string? HudCategory);
+    [property: JsonPropertyName("english_name")] string? EnglishName,
+    [property: JsonPropertyName("entryid")] long? EntryId,
+    [property: JsonPropertyName("hud_category")] string? HudCategory
+);

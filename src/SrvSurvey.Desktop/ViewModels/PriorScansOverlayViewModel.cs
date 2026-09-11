@@ -17,10 +17,12 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
     private readonly PriorScanPlanner planner;
     private readonly Func<string?> commanderNameProvider;
     private readonly Func<SystemSurfaceBodySnapshot?> currentSurfaceProvider;
+
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Usage",
         "CA2213:Disposable fields should be disposed",
-        Justification = "An in-flight refresh may release this gate after disposal cancellation.")]
+        Justification = "An in-flight refresh may release this gate after disposal cancellation."
+    )]
     private readonly SemaphoreSlim refreshLock = new(1, 1);
     private readonly CancellationTokenSource disposalCancellation = new();
     private CanonnSystemPoiResult? cachedResult;
@@ -46,19 +48,17 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
         ExobiologyReferenceCatalog catalog,
         Func<string?> commanderNameProvider,
         OverlayPlatformCapabilities capabilities,
-        Func<SystemSurfaceBodySnapshot?>? currentSurfaceProvider = null)
+        Func<SystemSurfaceBodySnapshot?>? currentSurfaceProvider = null
+    )
     {
         this.survey = survey ?? throw new ArgumentNullException(nameof(survey));
         this.client = client ?? throw new ArgumentNullException(nameof(client));
-        planner = new PriorScanPlanner(
-            catalog ?? throw new ArgumentNullException(nameof(catalog)));
-        this.commanderNameProvider = commanderNameProvider
-            ?? throw new ArgumentNullException(nameof(commanderNameProvider));
+        planner = new PriorScanPlanner(catalog ?? throw new ArgumentNullException(nameof(catalog)));
+        this.commanderNameProvider =
+            commanderNameProvider ?? throw new ArgumentNullException(nameof(commanderNameProvider));
         this.currentSurfaceProvider = currentSurfaceProvider ?? (() => null);
         ArgumentNullException.ThrowIfNull(capabilities);
-        inputMode = capabilities.SupportsClickThrough
-            ? "PASSIVE"
-            : "UNAVAILABLE";
+        inputMode = capabilities.SupportsClickThrough ? "PASSIVE" : "UNAVAILABLE";
         survey.PropertyChanged += OnSurveyPropertyChanged;
         Recalculate();
     }
@@ -109,23 +109,21 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
 
     public bool UseSmallRadarCircles => survey.UseSmallCanonnRadarCircles;
 
-    public string SpeciesCountText => Species.Count == 1
-        ? "1 known species"
-        : $"{Species.Count:N0} known species";
+    public string SpeciesCountText => Species.Count == 1 ? "1 known species" : $"{Species.Count:N0} known species";
 
-    public string BodyName => editorBodyName
-        ?? survey.CurrentStatus?.BodyName
-        ?? "Current body";
+    public string BodyName => editorBodyName ?? survey.CurrentStatus?.BodyName ?? "Current body";
 
-    public string HeadingText => editorHeadingText
-        ?? (survey.CurrentStatus is { } status
-            ? $"HEADING {status.NormalizedHeading:000}°"
-            : "HEADING —");
+    public string HeadingText =>
+        editorHeadingText
+        ?? (survey.CurrentStatus is { } status ? $"HEADING {status.NormalizedHeading:000}°" : "HEADING —");
 
-    public string FilterText => editorFilterText
-        ?? (survey.SkipPriorScansLowValue
-            ? $"Signals below {FormatCredits(survey.PriorScanMinimumValue)} hidden"
-            : "All known signal values");
+    public string FilterText =>
+        editorFilterText
+        ?? (
+            survey.SkipPriorScansLowValue
+                ? $"Signals below {FormatCredits(survey.PriorScanMinimumValue)} hidden"
+                : "All known signal values"
+        );
 
     public string StatusText
     {
@@ -151,8 +149,7 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
         }
     }
 
-    public bool ShouldShow => editorForceVisible
-        || (survey.ShouldLoadPriorScans && HasSpecies);
+    public bool ShouldShow => editorForceVisible || (survey.ShouldLoadPriorScans && HasSpecies);
 
     /// <summary>
     /// Installs representative Canonn prior-scan content for the position editor.
@@ -161,7 +158,8 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
         string bodyName,
         string headingText,
         IReadOnlyList<PriorScanSpeciesViewModel> speciesRows,
-        IReadOnlyList<PriorScanRadarTargetViewModel> radarRows)
+        IReadOnlyList<PriorScanRadarTargetViewModel> radarRows
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(bodyName);
         ArgumentNullException.ThrowIfNull(speciesRows);
@@ -188,9 +186,7 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
             return;
         }
 
-        if (!await refreshLock.WaitAsync(
-            0,
-            CancellationToken.None).ConfigureAwait(true))
+        if (!await refreshLock.WaitAsync(0, CancellationToken.None).ConfigureAwait(true))
         {
             return;
         }
@@ -204,12 +200,14 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
 
             await LoadPriorScansAsync(context).ConfigureAwait(true);
         }
-        catch (Exception exception) when (
-            exception is HttpRequestException
-                or JsonException
-                or TaskCanceledException
-                or IOException
-                or InvalidOperationException)
+        catch (Exception exception)
+            when (exception
+                    is HttpRequestException
+                        or JsonException
+                        or TaskCanceledException
+                        or IOException
+                        or InvalidOperationException
+            )
         {
             ApplyRefreshFailure(context, exception);
         }
@@ -233,15 +231,13 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
             return false;
         }
 
-        if (cachedResult is not null
-            && string.Equals(cachedKey, context.CacheKey, StringComparison.Ordinal))
+        if (cachedResult is not null && string.Equals(cachedKey, context.CacheKey, StringComparison.Ordinal))
         {
             Recalculate(context);
             return false;
         }
 
-        if (string.Equals(failedKey, context.CacheKey, StringComparison.Ordinal)
-            && DateTimeOffset.UtcNow < retryAfter)
+        if (string.Equals(failedKey, context.CacheKey, StringComparison.Ordinal) && DateTimeOffset.UtcNow < retryAfter)
         {
             return false;
         }
@@ -253,10 +249,9 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
     {
         IsLoading = true;
         StatusText = $"Loading Canonn signals for {context.SystemName}…";
-        var result = await client.GetAsync(
-            context.SystemName,
-            context.CommanderName,
-            disposalCancellation.Token).ConfigureAwait(true);
+        var result = await client
+            .GetAsync(context.SystemName, context.CommanderName, disposalCancellation.Token)
+            .ConfigureAwait(true);
         if (disposed)
         {
             return;
@@ -269,9 +264,7 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
         Recalculate(context);
     }
 
-    private void ApplyRefreshFailure(
-        PriorScanContext context,
-        Exception exception)
+    private void ApplyRefreshFailure(PriorScanContext context, Exception exception)
     {
         if (disposed)
         {
@@ -283,8 +276,7 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
         retainedPresentationKey = null;
         failedKey = context.CacheKey;
         retryAfter = DateTimeOffset.UtcNow.AddSeconds(30);
-        ClearPresentation(
-            "Canonn prior scans are unavailable: " + exception.Message);
+        ClearPresentation("Canonn prior scans are unavailable: " + exception.Message);
     }
 
     public void ApplyPreparation(OverlayPreparationResult result)
@@ -306,21 +298,22 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
         disposalCancellation.Dispose();
     }
 
-    private void OnSurveyPropertyChanged(
-        object? sender,
-        PropertyChangedEventArgs eventArgs)
+    private void OnSurveyPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
-        if (eventArgs.PropertyName is nameof(SystemSurveyViewModel.Snapshot)
-            or nameof(SystemSurveyViewModel.CurrentStatus)
-            or nameof(SystemSurveyViewModel.CurrentExobiology)
-            or nameof(SystemSurveyViewModel.ShouldLoadPriorScans)
-            or nameof(SystemSurveyViewModel.SkipPriorScansLowValue)
-            or nameof(SystemSurveyViewModel.PriorScanMinimumValue)
-            or nameof(SystemSurveyViewModel.HideOwnCanonnSignals)
-            or nameof(SystemSurveyViewModel.ShowCanonnSignalsOnRadar)
-            or nameof(SystemSurveyViewModel.UseSmallCanonnRadarCircles)
-            or nameof(SystemSurveyViewModel.ShouldSuppressForActiveBuildProjects)
-            or nameof(SystemSurveyViewModel.AreBiologyOverlaysSuppressedForRepeatVisit))
+        if (
+            eventArgs.PropertyName
+            is nameof(SystemSurveyViewModel.Snapshot)
+                or nameof(SystemSurveyViewModel.CurrentStatus)
+                or nameof(SystemSurveyViewModel.CurrentExobiology)
+                or nameof(SystemSurveyViewModel.ShouldLoadPriorScans)
+                or nameof(SystemSurveyViewModel.SkipPriorScansLowValue)
+                or nameof(SystemSurveyViewModel.PriorScanMinimumValue)
+                or nameof(SystemSurveyViewModel.HideOwnCanonnSignals)
+                or nameof(SystemSurveyViewModel.ShowCanonnSignalsOnRadar)
+                or nameof(SystemSurveyViewModel.UseSmallCanonnRadarCircles)
+                or nameof(SystemSurveyViewModel.ShouldSuppressForActiveBuildProjects)
+                or nameof(SystemSurveyViewModel.AreBiologyOverlaysSuppressedForRepeatVisit)
+        )
         {
             Recalculate();
         }
@@ -337,15 +330,11 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
         }
 
         var presentationKey = BuildPresentationKey(context);
-        if (cachedResult is null
-            || !string.Equals(cachedKey, context.CacheKey, StringComparison.Ordinal))
+        if (cachedResult is null || !string.Equals(cachedKey, context.CacheKey, StringComparison.Ordinal))
         {
             // Same body/system: keep the last plan while Canonn reloads so
             // status thrash does not flash empty prior rings.
-            if (!string.Equals(
-                    retainedPresentationKey,
-                    presentationKey,
-                    StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(retainedPresentationKey, presentationKey, StringComparison.OrdinalIgnoreCase))
             {
                 retainedPresentationKey = null;
                 ClearPresentation(null);
@@ -365,51 +354,51 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
             return;
         }
 
-        var plan = planner.CreatePlan(new PriorScanPlanRequest(
-            context.BodyShortName,
-            context.BodyRadiusMeters,
-            context.CurrentLocation,
-            context.HeadingDegrees,
-            cachedResult.Signals,
-            context.AnalyzedEntryIds,
-            context.PersonalSamples,
-            context.ActiveSpeciesName,
-            survey.SkipPriorScansLowValue,
-            survey.PriorScanMinimumValue,
-            survey.HideOwnCanonnSignals,
-            SystemName: context.SystemName));
-        var nextSpecies = plan.Species
-            .Select(item => PriorScanSpeciesViewModel.Create(
-                item,
-                survey.CurrentStatus?.Altitude ?? 0))
+        var plan = planner.CreatePlan(
+            new PriorScanPlanRequest(
+                context.BodyShortName,
+                context.BodyRadiusMeters,
+                context.CurrentLocation,
+                context.HeadingDegrees,
+                cachedResult.Signals,
+                context.AnalyzedEntryIds,
+                context.PersonalSamples,
+                context.ActiveSpeciesName,
+                survey.SkipPriorScansLowValue,
+                survey.PriorScanMinimumValue,
+                survey.HideOwnCanonnSignals,
+                SystemName: context.SystemName
+            )
+        );
+        var nextSpecies = plan
+            .Species.Select(item => PriorScanSpeciesViewModel.Create(item, survey.CurrentStatus?.Altitude ?? 0))
             .ToArray();
         var nextRadar = nextSpecies
             .Where(item => !item.IsAnalyzed)
-            .SelectMany(item => item.Targets.Select(target =>
-                new PriorScanRadarTargetViewModel(
+            .SelectMany(item =>
+                item.Targets.Select(target => new PriorScanRadarTargetViewModel(
                     target.DistanceMeters,
                     target.RelativeBearingDegrees,
                     item.SampleRadiusMeters,
                     item.IsActive,
-                    target.IsClose)))
+                    target.IsClose
+                ))
+            )
             .ToArray();
         // Absolute lat/long for PlotGrounded-style surface radar rings.
-        var nextSurface = plan.Species
-            .Where(item => !item.IsAnalyzed)
+        var nextSurface = plan
+            .Species.Where(item => !item.IsAnalyzed)
             .SelectMany(item =>
             {
                 var genus = item.GenusName;
-                var radius = ExobiologyReferenceCatalog.GetSampleDistanceMeters(
-                    genus);
-                return item.Targets.Select(target =>
-                    new PriorScanSurfaceMarkerViewModel(
-                        item.DisplayName,
-                        target.Location,
-                        survey.UseSmallCanonnRadarCircles
-                            ? Math.Min(radius, 40)
-                            : radius,
-                        item.IsActive,
-                        target.State == PriorScanTargetState.Close));
+                var radius = ExobiologyReferenceCatalog.GetSampleDistanceMeters(genus);
+                return item.Targets.Select(target => new PriorScanSurfaceMarkerViewModel(
+                    item.DisplayName,
+                    target.Location,
+                    survey.UseSmallCanonnRadarCircles ? Math.Min(radius, 40) : radius,
+                    item.IsActive,
+                    target.State == PriorScanTargetState.Close
+                ));
             })
             .ToArray();
 
@@ -419,9 +408,10 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
         RadarTargets = nextRadar;
         SurfaceMarkers = nextSurface;
         retainedPresentationKey = BuildPresentationKey(context);
-        StatusText = Species.Count == 0
-            ? "No unfiltered Canonn biology coordinates remain for this body."
-            : "Surface bearings update from the live journal status.";
+        StatusText =
+            Species.Count == 0
+                ? "No unfiltered Canonn biology coordinates remain for this body."
+                : "Surface bearings update from the live journal status.";
         RaiseContextProperties();
     }
 
@@ -446,10 +436,12 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
         context = null!;
         var snapshot = survey.Snapshot;
         var status = survey.CurrentStatus;
-        if (!survey.ShouldLoadPriorScans
+        if (
+            !survey.ShouldLoadPriorScans
             || status is null
             || string.IsNullOrWhiteSpace(snapshot.SystemName)
-            || string.IsNullOrWhiteSpace(status.BodyName))
+            || string.IsNullOrWhiteSpace(status.BodyName)
+        )
         {
             return false;
         }
@@ -478,51 +470,38 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
 
         // Prefer full body name + system strip so keys match Canonn short labels
         // whether or not the body is already in the system snapshot.
-        var bodyShortName = ExobiologyBodyNames.NormalizeKey(
-            body?.Name ?? status.BodyName,
-            snapshot.SystemName);
+        var bodyShortName = ExobiologyBodyNames.NormalizeKey(body?.Name ?? status.BodyName, snapshot.SystemName);
         if (bodyShortName.Length == 0)
         {
-            bodyShortName = body?.ShortName
-                ?? GetBodyShortName(status.BodyName, snapshot.SystemName);
+            bodyShortName = body?.ShortName ?? GetBodyShortName(status.BodyName, snapshot.SystemName);
         }
 
-        var analyzed = body?.Organisms
-            .Where(organism => organism.IsAnalyzed && organism.EntryId is > 0)
-            .Select(organism => organism.EntryId!.Value)
-            .ToArray()
+        var analyzed =
+            body?.Organisms.Where(organism => organism.IsAnalyzed && organism.EntryId is > 0)
+                .Select(organism => organism.EntryId!.Value)
+                .ToArray()
             ?? [];
-        var activeSamples = new[]
-            {
-                survey.CurrentExobiology.ScanOne,
-                survey.CurrentExobiology.ScanTwo,
-            }
-            .Where(sample => sample is not null
-                && (string.IsNullOrWhiteSpace(sample.Body)
-                    || ExobiologyBodyNames.Matches(
-                        sample.Body,
-                        status.BodyName,
-                        snapshot.SystemName)))
+        var activeSamples = new[] { survey.CurrentExobiology.ScanOne, survey.CurrentExobiology.ScanTwo }
+            .Where(sample =>
+                sample is not null
+                && (
+                    string.IsNullOrWhiteSpace(sample.Body)
+                    || ExobiologyBodyNames.Matches(sample.Body, status.BodyName, snapshot.SystemName)
+                )
+            )
             .Cast<BioSampleSnapshot>()
             .Select(TryCreatePersonalSample)
             .Where(sample => sample is not null)
             .Cast<PriorScanPersonalSample>()
             .ToArray();
-        var historicalSamples = currentSurfaceProvider()?.BioScans
-            .Where(sample => !string.Equals(
-                sample.Status,
-                "Died",
-                StringComparison.OrdinalIgnoreCase))
-            .Where(sample => !string.IsNullOrWhiteSpace(sample.Species))
-            .Select(sample => new PriorScanPersonalSample(
-                sample.Species,
-                sample.Location))
-            .ToArray()
+        var historicalSamples =
+            currentSurfaceProvider()
+                ?.BioScans.Where(sample => !string.Equals(sample.Status, "Died", StringComparison.OrdinalIgnoreCase))
+                .Where(sample => !string.IsNullOrWhiteSpace(sample.Species))
+                .Select(sample => new PriorScanPersonalSample(sample.Species, sample.Location))
+                .ToArray()
             ?? [];
-        var samples = activeSamples
-            .Concat(historicalSamples)
-            .Distinct()
-            .ToArray();
+        var samples = activeSamples.Concat(historicalSamples).Distinct().ToArray();
         var commander = commanderNameProvider()?.Trim() ?? string.Empty;
         context = new PriorScanContext(
             snapshot.SystemName,
@@ -532,10 +511,10 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
             status.NormalizedHeading,
             analyzed,
             samples,
-            (survey.CurrentExobiology.ScanTwo
-                ?? survey.CurrentExobiology.ScanOne)?.Species,
+            (survey.CurrentExobiology.ScanTwo ?? survey.CurrentExobiology.ScanOne)?.Species,
             commander,
-            snapshot.SystemName + "|" + commander);
+            snapshot.SystemName + "|" + commander
+        );
         return true;
     }
 
@@ -549,28 +528,20 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
         OnPropertyChanged(nameof(ShouldShow));
     }
 
-    private static SystemScanBodySnapshot? ResolveCurrentBody(
-        SystemScanSnapshot snapshot,
-        string bodyName)
+    private static SystemScanBodySnapshot? ResolveCurrentBody(SystemScanSnapshot snapshot, string bodyName)
     {
-        var byExactName = snapshot.Bodies.FirstOrDefault(body => string.Equals(
-            body.Name,
-            bodyName,
-            StringComparison.OrdinalIgnoreCase));
+        var byExactName = snapshot.Bodies.FirstOrDefault(body =>
+            string.Equals(body.Name, bodyName, StringComparison.OrdinalIgnoreCase)
+        );
         if (byExactName is not null)
         {
             return byExactName;
         }
 
         var byKey = snapshot.Bodies.FirstOrDefault(body =>
-            ExobiologyBodyNames.Matches(
-                body.Name,
-                bodyName,
-                snapshot.SystemName)
-            || ExobiologyBodyNames.Matches(
-                body.ShortName,
-                bodyName,
-                snapshot.SystemName));
+            ExobiologyBodyNames.Matches(body.Name, bodyName, snapshot.SystemName)
+            || ExobiologyBodyNames.Matches(body.ShortName, bodyName, snapshot.SystemName)
+        );
         if (byKey is not null)
         {
             return byKey;
@@ -581,9 +552,7 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
             : null;
     }
 
-    private static string GetBodyShortName(
-        string bodyName,
-        string systemName)
+    private static string GetBodyShortName(string bodyName, string systemName)
     {
         var normalized = ExobiologyBodyNames.NormalizeKey(bodyName, systemName);
         if (normalized.Length > 0)
@@ -596,16 +565,14 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
             : bodyName;
     }
 
-    private static PriorScanPersonalSample? TryCreatePersonalSample(
-        BioSampleSnapshot sample)
+    private static PriorScanPersonalSample? TryCreatePersonalSample(BioSampleSnapshot sample)
     {
         try
         {
             return new PriorScanPersonalSample(
                 sample.Species,
-                new SurfaceCoordinate(
-                    sample.Location.Latitude,
-                    sample.Location.Longitude));
+                new SurfaceCoordinate(sample.Location.Latitude, sample.Location.Longitude)
+            );
         }
         catch (ArgumentOutOfRangeException)
         {
@@ -628,10 +595,7 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
         return $"{value:N0} CR";
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -658,7 +622,8 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
         IReadOnlyList<PriorScanPersonalSample> PersonalSamples,
         string? ActiveSpeciesName,
         string CommanderName,
-        string CacheKey);
+        string CacheKey
+    );
 }
 
 public sealed record PriorScanSpeciesViewModel(
@@ -673,18 +638,15 @@ public sealed record PriorScanSpeciesViewModel(
     bool HasIdealApproach,
     bool HasSteepApproach,
     bool HasTooSteepApproach,
-    IReadOnlyList<PriorScanTargetViewModel> Targets)
+    IReadOnlyList<PriorScanTargetViewModel> Targets
+)
 {
-    public static PriorScanSpeciesViewModel Create(
-        PriorScanSpecies species,
-        double altitudeMeters)
+    public static PriorScanSpeciesViewModel Create(PriorScanSpecies species, double altitudeMeters)
     {
         var genus = species.GenusName;
-        var approachAngle = altitudeMeters > 500
-            && species.Targets.Count > 0
-            && species.Targets[0] is { DistanceMeters: > 0 } target
-                ? Math.Atan(altitudeMeters / target.DistanceMeters)
-                    * 180d / Math.PI
+        var approachAngle =
+            altitudeMeters > 500 && species.Targets.Count > 0 && species.Targets[0] is { DistanceMeters: > 0 } target
+                ? Math.Atan(altitudeMeters / target.DistanceMeters) * 180d / Math.PI
                 : 0;
         var showApproach = approachAngle > 5;
         return new PriorScanSpeciesViewModel(
@@ -699,7 +661,8 @@ public sealed record PriorScanSpeciesViewModel(
             approachAngle is > 30 and <= 50,
             approachAngle is > 50 and <= 60,
             approachAngle > 60,
-            species.Targets.Select(PriorScanTargetViewModel.Create).ToArray());
+            species.Targets.Select(PriorScanTargetViewModel.Create).ToArray()
+        );
     }
 
     private static string FormatCredits(long value)
@@ -725,7 +688,8 @@ public sealed record PriorScanTargetViewModel(
     string BearingText,
     bool IsClose,
     bool IsFar,
-    bool IsAnalyzed)
+    bool IsAnalyzed
+)
 {
     public static PriorScanTargetViewModel Create(PriorScanTarget target)
     {
@@ -736,7 +700,8 @@ public sealed record PriorScanTargetViewModel(
             $"{target.BearingDegrees:000}°",
             target.State == PriorScanTargetState.Close,
             target.State == PriorScanTargetState.Far,
-            target.State == PriorScanTargetState.Analyzed);
+            target.State == PriorScanTargetState.Analyzed
+        );
     }
 
     private static string FormatDistance(double meters)
@@ -746,7 +711,7 @@ public sealed record PriorScanTargetViewModel(
             : (meters >= 1_000) switch
             {
                 true => $"{meters / 1_000d:N1} km",
-                false => $"{meters:N0} m"
+                false => $"{meters:N0} m",
             };
     }
 }
@@ -756,7 +721,8 @@ public sealed record PriorScanRadarTargetViewModel(
     double RelativeBearingDegrees,
     int SampleRadiusMeters,
     bool IsActive,
-    bool IsClose);
+    bool IsClose
+);
 
 /// <summary>
 /// Absolute surface position for a Canonn prior-scan ring on PlotGrounded.
@@ -766,4 +732,5 @@ public sealed record PriorScanSurfaceMarkerViewModel(
     SurfaceCoordinate Location,
     int SampleRadiusMeters,
     bool IsActive,
-    bool IsClose);
+    bool IsClose
+);

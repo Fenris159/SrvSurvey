@@ -7,16 +7,15 @@ public sealed class ScreenshotProcessingSettingsStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-screenshot-settings-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-screenshot-settings-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void SaveRoundTripsAndPreservesUnknownSettings()
     {
         Directory.CreateDirectory(temporaryDirectory);
         var path = Path.Combine(temporaryDirectory, "ui-settings.json");
-        File.WriteAllText(
-            path,
-            "{\"Future\":42,\"Screenshots\":{\"FutureOption\":true}}");
+        File.WriteAllText(path, "{\"Future\":42,\"Screenshots\":{\"FutureOption\":true}}");
         var store = new ScreenshotProcessingSettingsStore(path);
         var preferences = new ScreenshotProcessingPreferences(
             true,
@@ -30,7 +29,8 @@ public sealed class ScreenshotProcessingSettingsStoreTests : IDisposable
             true,
             1100,
             1500,
-            1700);
+            1700
+        );
 
         store.Save(preferences);
 
@@ -45,10 +45,7 @@ public sealed class ScreenshotProcessingSettingsStoreTests : IDisposable
     {
         Directory.CreateDirectory(temporaryDirectory);
         var path = Path.Combine(temporaryDirectory, "ui-settings.json");
-        File.WriteAllText(
-            path,
-            "{\"Screenshots\":{\"BannerColor\":{\"A\":255,"
-            + "\"R\":18,\"G\":171,\"B\":239}}}");
+        File.WriteAllText(path, "{\"Screenshots\":{\"BannerColor\":{\"A\":255," + "\"R\":18,\"G\":171,\"B\":239}}}");
 
         var preferences = new ScreenshotProcessingSettingsStore(path).Load();
 

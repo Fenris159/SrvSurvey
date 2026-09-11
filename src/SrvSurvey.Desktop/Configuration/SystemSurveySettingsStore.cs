@@ -18,233 +18,82 @@ public sealed class SystemSurveySettingsStore
         var defaults = SystemSurveyPreferences.Default;
         return new SystemSurveyPreferences(
             GetBoolean(settings, "AutoShowBodyInfo", defaults.AutoShowBodyInfo),
-            GetBoolean(
-                settings,
-                "ShowBodyInfoInSystemMap",
-                defaults.ShowBodyInfoInSystemMap),
+            GetBoolean(settings, "ShowBodyInfoInSystemMap", defaults.ShowBodyInfoInSystemMap),
             GetInt32(
                 settings,
                 "BodyInformationPreviewExtensionSeconds",
                 defaults.BodyInformationPreviewExtensionSeconds,
                 0,
-                600),
+                600
+            ),
             GetInt32(
                 settings,
                 "BodyPredictionPreviewExtensionSeconds",
                 defaults.BodyPredictionPreviewExtensionSeconds,
                 0,
-                600),
-            GetBoolean(
-                settings,
-                "ShowBodyInfoInOrbit",
-                defaults.ShowBodyInfoInOrbit),
-            GetBoolean(
-                settings,
-                "ShowBodyInfoAtSurface",
-                defaults.ShowBodyInfoAtSurface),
-            GetBoolean(
-                settings,
-                "HideBodyInfoInBubble",
-                defaults.HideBodyInfoInBubble),
-            GetInt32(
-                settings,
-                "BodyInfoBubbleSizeLy",
-                defaults.BodyInfoBubbleSizeLy,
-                0),
-            GetBoolean(
-                settings,
-                "HideBodyInfoMaterials",
-                defaults.HideBodyInfoMaterials),
-            GetBoolean(
-                settings,
-                "AutoShowFlightWarnings",
-                defaults.AutoShowFlightWarnings),
-            GetDouble(
-                settings,
-                "HighGravityWarningLevel",
-                defaults.HighGravityWarningLevel,
-                0,
-                50),
-            GetBoolean(
-                settings,
-                "UseExternalData",
-                defaults.UseExternalData),
-            GetBoolean(
-                settings,
-                "UseExternalBioData",
-                defaults.UseExternalBioData),
-            GetBoolean(
-                settings,
-                "AutoShowBioSystem",
-                defaults.AutoShowBioSystem),
-            GetBoolean(
-                settings,
-                "AutoShowBioStatus",
-                defaults.AutoShowBioStatus),
-            GetBoolean(
-                settings,
-                "AutoHideBioPlotOnRepeat",
-                defaults.AutoHideBioPlotOnRepeat),
-            GetBoolean(
-                settings,
-                "KeepBioPlottersVisibleAfterDss",
-                defaults.KeepBioPlottersVisibleAfterDss),
-            GetInt32(
-                settings,
-                "BioPlotterDssDurationSeconds",
-                defaults.BioPlotterDssDurationSeconds,
-                0,
-                600),
-            GetBoolean(
-                settings,
-                "AutoShowPriorScans",
-                defaults.AutoShowPriorScans),
-            GetBoolean(
-                settings,
-                "SkipPriorScansLowValue",
-                defaults.SkipPriorScansLowValue),
-            GetInt32(
-                settings,
-                "PriorScanMinimumValue",
-                defaults.PriorScanMinimumValue,
-                0),
-            GetBoolean(
-                settings,
-                "HideOwnCanonnSignals",
-                defaults.HideOwnCanonnSignals),
-            GetBoolean(
-                settings,
-                "ShowCanonnSignalsOnRadar",
-                defaults.ShowCanonnSignalsOnRadar),
-            GetBoolean(
-                settings,
-                "UseSmallCanonnRadarCircles",
-                defaults.UseSmallCanonnRadarCircles),
-            GetBoolean(
-                settings,
-                "AutoShowSurfaceRadar",
-                defaults.AutoShowSurfaceRadar),
-            GetBoolean(
-                settings,
-                "AutoShowMiniTrack",
-                defaults.AutoShowMiniTrack),
-            GetInt32(
-                settings,
-                "SurfaceRadarSize",
-                defaults.SurfaceRadarSize,
-                0,
-                4),
+                600
+            ),
+            GetBoolean(settings, "ShowBodyInfoInOrbit", defaults.ShowBodyInfoInOrbit),
+            GetBoolean(settings, "ShowBodyInfoAtSurface", defaults.ShowBodyInfoAtSurface),
+            GetBoolean(settings, "HideBodyInfoInBubble", defaults.HideBodyInfoInBubble),
+            GetInt32(settings, "BodyInfoBubbleSizeLy", defaults.BodyInfoBubbleSizeLy, 0),
+            GetBoolean(settings, "HideBodyInfoMaterials", defaults.HideBodyInfoMaterials),
+            GetBoolean(settings, "AutoShowFlightWarnings", defaults.AutoShowFlightWarnings),
+            GetDouble(settings, "HighGravityWarningLevel", defaults.HighGravityWarningLevel, 0, 50),
+            GetBoolean(settings, "UseExternalData", defaults.UseExternalData),
+            GetBoolean(settings, "UseExternalBioData", defaults.UseExternalBioData),
+            GetBoolean(settings, "AutoShowBioSystem", defaults.AutoShowBioSystem),
+            GetBoolean(settings, "AutoShowBioStatus", defaults.AutoShowBioStatus),
+            GetBoolean(settings, "AutoHideBioPlotOnRepeat", defaults.AutoHideBioPlotOnRepeat),
+            GetBoolean(settings, "KeepBioPlottersVisibleAfterDss", defaults.KeepBioPlottersVisibleAfterDss),
+            GetInt32(settings, "BioPlotterDssDurationSeconds", defaults.BioPlotterDssDurationSeconds, 0, 600),
+            GetBoolean(settings, "AutoShowPriorScans", defaults.AutoShowPriorScans),
+            GetBoolean(settings, "SkipPriorScansLowValue", defaults.SkipPriorScansLowValue),
+            GetInt32(settings, "PriorScanMinimumValue", defaults.PriorScanMinimumValue, 0),
+            GetBoolean(settings, "HideOwnCanonnSignals", defaults.HideOwnCanonnSignals),
+            GetBoolean(settings, "ShowCanonnSignalsOnRadar", defaults.ShowCanonnSignalsOnRadar),
+            GetBoolean(settings, "UseSmallCanonnRadarCircles", defaults.UseSmallCanonnRadarCircles),
+            GetBoolean(settings, "AutoShowSurfaceRadar", defaults.AutoShowSurfaceRadar),
+            GetBoolean(settings, "AutoShowMiniTrack", defaults.AutoShowMiniTrack),
+            GetInt32(settings, "SurfaceRadarSize", defaults.SurfaceRadarSize, 0, 4),
             GetBoolean(
                 settings,
                 "AutoHideSurfaceRadarWithoutLandingGear",
-                defaults.AutoHideSurfaceRadarWithoutLandingGear),
-            GetBoolean(
-                settings,
-                "AutoRemoveTrackerOnSampling",
-                defaults.AutoRemoveTrackerOnSampling),
-            GetBoolean(
-                settings,
-                "AutoRemoveTrackerOnFinalSample",
-                defaults.AutoRemoveTrackerOnFinalSample),
-            GetBoolean(
-                settings,
-                "AutoTrackCompositionScans",
-                defaults.AutoTrackCompositionScans),
-            GetBoolean(
-                settings,
-                "SkipAnalyzedCompositionScans",
-                defaults.SkipAnalyzedCompositionScans),
-            GetBoolean(
-                settings,
-                "DrawBodyBiosOnlyWhenNear",
-                defaults.DrawBodyBiosOnlyWhenNear),
-            GetBoolean(
-                settings,
-                "HighlightRegionalFirsts",
-                defaults.HighlightRegionalFirsts),
-            GetBoolean(
-                settings,
-                "DimAnalyzedOrganisms",
-                defaults.DimAnalyzedOrganisms),
-            GetBoolean(
-                settings,
-                "HideGeoCountInBioSystem",
-                defaults.HideGeoCountInBioSystem),
-            GetBoolean(
-                settings,
-                "DisableBioPredictions",
-                defaults.DisableBioPredictions),
-            GetBoolean(
-                settings,
-                "ShowTemperatureRangeDebug",
-                defaults.ShowTemperatureRangeDebug),
-            GetBoolean(
-                settings,
-                "AutoShowLastFssBody",
-                defaults.AutoShowLastFssBody),
+                defaults.AutoHideSurfaceRadarWithoutLandingGear
+            ),
+            GetBoolean(settings, "AutoRemoveTrackerOnSampling", defaults.AutoRemoveTrackerOnSampling),
+            GetBoolean(settings, "AutoRemoveTrackerOnFinalSample", defaults.AutoRemoveTrackerOnFinalSample),
+            GetBoolean(settings, "AutoTrackCompositionScans", defaults.AutoTrackCompositionScans),
+            GetBoolean(settings, "SkipAnalyzedCompositionScans", defaults.SkipAnalyzedCompositionScans),
+            GetBoolean(settings, "DrawBodyBiosOnlyWhenNear", defaults.DrawBodyBiosOnlyWhenNear),
+            GetBoolean(settings, "HighlightRegionalFirsts", defaults.HighlightRegionalFirsts),
+            GetBoolean(settings, "DimAnalyzedOrganisms", defaults.DimAnalyzedOrganisms),
+            GetBoolean(settings, "HideGeoCountInBioSystem", defaults.HideGeoCountInBioSystem),
+            GetBoolean(settings, "DisableBioPredictions", defaults.DisableBioPredictions),
+            GetBoolean(settings, "ShowTemperatureRangeDebug", defaults.ShowTemperatureRangeDebug),
+            GetBoolean(settings, "AutoShowLastFssBody", defaults.AutoShowLastFssBody),
             GetBoolean(settings, "AutoShowFssInfo", defaults.AutoShowFssInfo),
-            GetBoolean(
-                settings,
-                "ShowFssInfoInSystemMap",
-                defaults.ShowFssInfoInSystemMap),
-            GetInt32(
-                settings,
-                "FssBodiesBeforeScrolling",
-                defaults.FssBodiesBeforeScrolling,
-                1,
-                20),
-            GetBoolean(
-                settings,
-                "ShowFssInfoInNavigationPanel",
-                defaults.ShowFssInfoInNavigationPanel),
-            GetBoolean(
-                settings,
-                "AutoShowSystemStatus",
-                defaults.AutoShowSystemStatus),
+            GetBoolean(settings, "ShowFssInfoInSystemMap", defaults.ShowFssInfoInSystemMap),
+            GetInt32(settings, "FssBodiesBeforeScrolling", defaults.FssBodiesBeforeScrolling, 1, 20),
+            GetBoolean(settings, "ShowFssInfoInNavigationPanel", defaults.ShowFssInfoInNavigationPanel),
+            GetBoolean(settings, "AutoShowSystemStatus", defaults.AutoShowSystemStatus),
             GetBoolean(settings, "HideGeoCount", defaults.HideGeoCount),
-            GetInt32(
-                settings,
-                "FssBodyValueFloor",
-                defaults.FssBodyValueFloor,
-                0),
-            GetBoolean(
-                settings,
-                "HighlightDssCandidates",
-                defaults.HighlightDssCandidates),
-            GetInt32(
-                settings,
-                "DssValueFloor",
-                defaults.DssValueFloor,
-                0),
-            GetBoolean(
-                settings,
-                "SkipDistantDssCandidates",
-                defaults.SkipDistantDssCandidates),
-            GetInt32(
-                settings,
-                "DssDistanceLimitLs",
-                defaults.DssDistanceLimitLs,
-                0),
-            GetBoolean(
-                settings,
-                "SkipGasGiantsForDss",
-                defaults.SkipGasGiantsForDss),
+            GetInt32(settings, "FssBodyValueFloor", defaults.FssBodyValueFloor, 0),
+            GetBoolean(settings, "HighlightDssCandidates", defaults.HighlightDssCandidates),
+            GetInt32(settings, "DssValueFloor", defaults.DssValueFloor, 0),
+            GetBoolean(settings, "SkipDistantDssCandidates", defaults.SkipDistantDssCandidates),
+            GetInt32(settings, "DssDistanceLimitLs", defaults.DssDistanceLimitLs, 0),
+            GetBoolean(settings, "SkipGasGiantsForDss", defaults.SkipGasGiantsForDss),
             GetBoolean(settings, "SkipRingsForDss", defaults.SkipRingsForDss),
-            GetBoolean(
-                settings,
-                "ShowNonBodySignals",
-                defaults.ShowNonBodySignals),
-            GetFssTuningDetectorSettings(
-                settings?["FssTuningDetector"] as JsonObject,
-                defaults.FssTuningDetector),
-            GetBoolean(
-                settings,
-                "SuppressForActiveBuildProjects",
-                defaults.SuppressForActiveBuildProjects),
+            GetBoolean(settings, "ShowNonBodySignals", defaults.ShowNonBodySignals),
+            GetFssTuningDetectorSettings(settings?["FssTuningDetector"] as JsonObject, defaults.FssTuningDetector),
+            GetBoolean(settings, "SuppressForActiveBuildProjects", defaults.SuppressForActiveBuildProjects),
             GetBoolean(
                 settings,
                 "ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn",
-                defaults.ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn));
+                defaults.ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn
+            )
+        );
     }
 
     public void Save(SystemSurveyPreferences preferences)
@@ -261,144 +110,92 @@ public sealed class SystemSurveySettingsStore
 
             root["Version"] = 1;
             settings["AutoShowBodyInfo"] = preferences.AutoShowBodyInfo;
-            settings["ShowBodyInfoInSystemMap"] =
-                preferences.ShowBodyInfoInSystemMap;
-            settings["BodyInformationPreviewExtensionSeconds"] =
-                preferences.BodyInformationPreviewExtensionSeconds;
-            settings["BodyPredictionPreviewExtensionSeconds"] =
-                preferences.BodyPredictionPreviewExtensionSeconds;
+            settings["ShowBodyInfoInSystemMap"] = preferences.ShowBodyInfoInSystemMap;
+            settings["BodyInformationPreviewExtensionSeconds"] = preferences.BodyInformationPreviewExtensionSeconds;
+            settings["BodyPredictionPreviewExtensionSeconds"] = preferences.BodyPredictionPreviewExtensionSeconds;
             settings["ShowBodyInfoInOrbit"] = preferences.ShowBodyInfoInOrbit;
-            settings["ShowBodyInfoAtSurface"] =
-                preferences.ShowBodyInfoAtSurface;
-            settings["HideBodyInfoInBubble"] =
-                preferences.HideBodyInfoInBubble;
+            settings["ShowBodyInfoAtSurface"] = preferences.ShowBodyInfoAtSurface;
+            settings["HideBodyInfoInBubble"] = preferences.HideBodyInfoInBubble;
             settings["BodyInfoBubbleSizeLy"] = preferences.BodyInfoBubbleSizeLy;
-            settings["HideBodyInfoMaterials"] =
-                preferences.HideBodyInfoMaterials;
-            settings["AutoShowFlightWarnings"] =
-                preferences.AutoShowFlightWarnings;
-            settings["HighGravityWarningLevel"] =
-                preferences.HighGravityWarningLevel;
+            settings["HideBodyInfoMaterials"] = preferences.HideBodyInfoMaterials;
+            settings["AutoShowFlightWarnings"] = preferences.AutoShowFlightWarnings;
+            settings["HighGravityWarningLevel"] = preferences.HighGravityWarningLevel;
             settings["UseExternalData"] = preferences.UseExternalData;
             settings["UseExternalBioData"] = preferences.UseExternalBioData;
             settings["AutoShowBioSystem"] = preferences.AutoShowBioSystem;
             settings["AutoShowBioStatus"] = preferences.AutoShowBioStatus;
-            settings["AutoHideBioPlotOnRepeat"] =
-                preferences.AutoHideBioPlotOnRepeat;
-            settings["KeepBioPlottersVisibleAfterDss"] =
-                preferences.KeepBioPlottersVisibleAfterDss;
-            settings["BioPlotterDssDurationSeconds"] =
-                preferences.BioPlotterDssDurationSeconds;
+            settings["AutoHideBioPlotOnRepeat"] = preferences.AutoHideBioPlotOnRepeat;
+            settings["KeepBioPlottersVisibleAfterDss"] = preferences.KeepBioPlottersVisibleAfterDss;
+            settings["BioPlotterDssDurationSeconds"] = preferences.BioPlotterDssDurationSeconds;
             settings["AutoShowPriorScans"] = preferences.AutoShowPriorScans;
-            settings["SkipPriorScansLowValue"] =
-                preferences.SkipPriorScansLowValue;
-            settings["PriorScanMinimumValue"] =
-                preferences.PriorScanMinimumValue;
-            settings["HideOwnCanonnSignals"] =
-                preferences.HideOwnCanonnSignals;
-            settings["ShowCanonnSignalsOnRadar"] =
-                preferences.ShowCanonnSignalsOnRadar;
-            settings["UseSmallCanonnRadarCircles"] =
-                preferences.UseSmallCanonnRadarCircles;
+            settings["SkipPriorScansLowValue"] = preferences.SkipPriorScansLowValue;
+            settings["PriorScanMinimumValue"] = preferences.PriorScanMinimumValue;
+            settings["HideOwnCanonnSignals"] = preferences.HideOwnCanonnSignals;
+            settings["ShowCanonnSignalsOnRadar"] = preferences.ShowCanonnSignalsOnRadar;
+            settings["UseSmallCanonnRadarCircles"] = preferences.UseSmallCanonnRadarCircles;
             settings["AutoShowSurfaceRadar"] = preferences.AutoShowSurfaceRadar;
             settings["AutoShowMiniTrack"] = preferences.AutoShowMiniTrack;
             settings["SurfaceRadarSize"] = preferences.SurfaceRadarSize;
-            settings["AutoHideSurfaceRadarWithoutLandingGear"] =
-                preferences.AutoHideSurfaceRadarWithoutLandingGear;
-            settings["AutoRemoveTrackerOnSampling"] =
-                preferences.AutoRemoveTrackerOnSampling;
-            settings["AutoRemoveTrackerOnFinalSample"] =
-                preferences.AutoRemoveTrackerOnFinalSample;
-            settings["AutoTrackCompositionScans"] =
-                preferences.AutoTrackCompositionScans;
-            settings["SkipAnalyzedCompositionScans"] =
-                preferences.SkipAnalyzedCompositionScans;
-            settings["DrawBodyBiosOnlyWhenNear"] =
-                preferences.DrawBodyBiosOnlyWhenNear;
-            settings["HighlightRegionalFirsts"] =
-                preferences.HighlightRegionalFirsts;
-            settings["DimAnalyzedOrganisms"] =
-                preferences.DimAnalyzedOrganisms;
-            settings["HideGeoCountInBioSystem"] =
-                preferences.HideGeoCountInBioSystem;
-            settings["DisableBioPredictions"] =
-                preferences.DisableBioPredictions;
-            settings["ShowTemperatureRangeDebug"] =
-                preferences.ShowTemperatureRangeDebug;
+            settings["AutoHideSurfaceRadarWithoutLandingGear"] = preferences.AutoHideSurfaceRadarWithoutLandingGear;
+            settings["AutoRemoveTrackerOnSampling"] = preferences.AutoRemoveTrackerOnSampling;
+            settings["AutoRemoveTrackerOnFinalSample"] = preferences.AutoRemoveTrackerOnFinalSample;
+            settings["AutoTrackCompositionScans"] = preferences.AutoTrackCompositionScans;
+            settings["SkipAnalyzedCompositionScans"] = preferences.SkipAnalyzedCompositionScans;
+            settings["DrawBodyBiosOnlyWhenNear"] = preferences.DrawBodyBiosOnlyWhenNear;
+            settings["HighlightRegionalFirsts"] = preferences.HighlightRegionalFirsts;
+            settings["DimAnalyzedOrganisms"] = preferences.DimAnalyzedOrganisms;
+            settings["HideGeoCountInBioSystem"] = preferences.HideGeoCountInBioSystem;
+            settings["DisableBioPredictions"] = preferences.DisableBioPredictions;
+            settings["ShowTemperatureRangeDebug"] = preferences.ShowTemperatureRangeDebug;
             settings["AutoShowLastFssBody"] = preferences.AutoShowLastFssBody;
             settings["AutoShowFssInfo"] = preferences.AutoShowFssInfo;
-            settings["ShowFssInfoInSystemMap"] =
-                preferences.ShowFssInfoInSystemMap;
-            settings["FssBodiesBeforeScrolling"] =
-                preferences.FssBodiesBeforeScrolling;
-            settings["ShowFssInfoInNavigationPanel"] =
-                preferences.ShowFssInfoInNavigationPanel;
+            settings["ShowFssInfoInSystemMap"] = preferences.ShowFssInfoInSystemMap;
+            settings["FssBodiesBeforeScrolling"] = preferences.FssBodiesBeforeScrolling;
+            settings["ShowFssInfoInNavigationPanel"] = preferences.ShowFssInfoInNavigationPanel;
             settings["AutoShowSystemStatus"] = preferences.AutoShowSystemStatus;
             settings["HideGeoCount"] = preferences.HideGeoCount;
             settings["FssBodyValueFloor"] = preferences.FssBodyValueFloor;
-            settings["HighlightDssCandidates"] =
-                preferences.HighlightDssCandidates;
+            settings["HighlightDssCandidates"] = preferences.HighlightDssCandidates;
             settings["DssValueFloor"] = preferences.DssValueFloor;
-            settings["SkipDistantDssCandidates"] =
-                preferences.SkipDistantDssCandidates;
+            settings["SkipDistantDssCandidates"] = preferences.SkipDistantDssCandidates;
             settings["DssDistanceLimitLs"] = preferences.DssDistanceLimitLs;
             settings["SkipGasGiantsForDss"] = preferences.SkipGasGiantsForDss;
             settings["SkipRingsForDss"] = preferences.SkipRingsForDss;
             settings["ShowNonBodySignals"] = preferences.ShowNonBodySignals;
-            settings["SuppressForActiveBuildProjects"] =
-                preferences.SuppressForActiveBuildProjects;
+            settings["SuppressForActiveBuildProjects"] = preferences.SuppressForActiveBuildProjects;
             settings["ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn"] =
                 preferences.ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn;
-            WriteFssTuningDetectorSettings(
-                settings,
-                preferences.FssTuningDetector);
+            WriteFssTuningDetectorSettings(settings, preferences.FssTuningDetector);
         });
     }
 
     private static FssTuningDetectorSettings GetFssTuningDetectorSettings(
         JsonObject? source,
-        FssTuningDetectorSettings fallback)
+        FssTuningDetectorSettings fallback
+    )
     {
         return new FssTuningDetectorSettings(
             GetBoolean(source, "Enabled", fallback.Enabled),
-            GetBoolean(
-                source,
-                "SaveDiagnosticImages",
-                fallback.SaveDiagnosticImages),
-            GetFssPixelColor(
-                source?["YellowBar"] as JsonObject,
-                fallback.YellowBar),
-            GetInt32(
-                source,
-                "YellowHorizontalTolerance",
-                fallback.YellowHorizontalTolerance,
-                0,
-                255),
-            GetFssPixelColor(
-                source?["BlackArea"] as JsonObject,
-                fallback.BlackArea),
-            GetFssPixelColor(
-                source?["WhiteText"] as JsonObject,
-                fallback.WhiteText),
-            GetFssPixelColor(
-                source?["YellowText"] as JsonObject,
-                fallback.YellowText));
+            GetBoolean(source, "SaveDiagnosticImages", fallback.SaveDiagnosticImages),
+            GetFssPixelColor(source?["YellowBar"] as JsonObject, fallback.YellowBar),
+            GetInt32(source, "YellowHorizontalTolerance", fallback.YellowHorizontalTolerance, 0, 255),
+            GetFssPixelColor(source?["BlackArea"] as JsonObject, fallback.BlackArea),
+            GetFssPixelColor(source?["WhiteText"] as JsonObject, fallback.WhiteText),
+            GetFssPixelColor(source?["YellowText"] as JsonObject, fallback.YellowText)
+        );
     }
 
-    private static FssPixelColor GetFssPixelColor(
-        JsonObject? source,
-        FssPixelColor fallback)
+    private static FssPixelColor GetFssPixelColor(JsonObject? source, FssPixelColor fallback)
     {
         return new FssPixelColor(
             GetInt32(source, "Red", fallback.Red, 0, 255),
             GetInt32(source, "Green", fallback.Green, 0, 255),
             GetInt32(source, "Blue", fallback.Blue, 0, 255),
-            GetInt32(source, "Tolerance", fallback.Tolerance, 0, 255));
+            GetInt32(source, "Tolerance", fallback.Tolerance, 0, 255)
+        );
     }
 
-    private static void WriteFssTuningDetectorSettings(
-        JsonObject settings,
-        FssTuningDetectorSettings preferences)
+    private static void WriteFssTuningDetectorSettings(JsonObject settings, FssTuningDetectorSettings preferences)
     {
         var detector = settings["FssTuningDetector"] as JsonObject;
         if (detector is null)
@@ -409,18 +206,14 @@ public sealed class SystemSurveySettingsStore
 
         detector["Enabled"] = preferences.Enabled;
         detector["SaveDiagnosticImages"] = preferences.SaveDiagnosticImages;
-        detector["YellowHorizontalTolerance"] =
-            preferences.YellowHorizontalTolerance;
+        detector["YellowHorizontalTolerance"] = preferences.YellowHorizontalTolerance;
         WriteFssPixelColor(detector, "YellowBar", preferences.YellowBar);
         WriteFssPixelColor(detector, "BlackArea", preferences.BlackArea);
         WriteFssPixelColor(detector, "WhiteText", preferences.WhiteText);
         WriteFssPixelColor(detector, "YellowText", preferences.YellowText);
     }
 
-    private static void WriteFssPixelColor(
-        JsonObject detector,
-        string propertyName,
-        FssPixelColor color)
+    private static void WriteFssPixelColor(JsonObject detector, string propertyName, FssPixelColor color)
     {
         var target = detector[propertyName] as JsonObject;
         if (target is null)
@@ -435,15 +228,9 @@ public sealed class SystemSurveySettingsStore
         target["Tolerance"] = color.Tolerance;
     }
 
-    private static bool GetBoolean(
-        JsonObject? source,
-        string propertyName,
-        bool fallback)
+    private static bool GetBoolean(JsonObject? source, string propertyName, bool fallback)
     {
-        return source?[propertyName] is JsonValue value
-            && value.TryGetValue<bool>(out var result)
-                ? result
-                : fallback;
+        return source?[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result) ? result : fallback;
     }
 
     private static int GetInt32(
@@ -451,12 +238,12 @@ public sealed class SystemSurveySettingsStore
         string propertyName,
         int fallback,
         int minimum,
-        int maximum = int.MaxValue)
+        int maximum = int.MaxValue
+    )
     {
-        return source?[propertyName] is JsonValue value
-            && value.TryGetValue<int>(out var result)
-                ? Math.Clamp(result, minimum, maximum)
-                : fallback;
+        return source?[propertyName] is JsonValue value && value.TryGetValue<int>(out var result)
+            ? Math.Clamp(result, minimum, maximum)
+            : fallback;
     }
 
     private static double GetDouble(
@@ -464,13 +251,15 @@ public sealed class SystemSurveySettingsStore
         string propertyName,
         double fallback,
         double minimum,
-        double maximum)
+        double maximum
+    )
     {
-        return source?[propertyName] is JsonValue value
+        return
+            source?[propertyName] is JsonValue value
             && value.TryGetValue<double>(out var result)
             && double.IsFinite(result)
-                ? Math.Clamp(result, minimum, maximum)
-                : fallback;
+            ? Math.Clamp(result, minimum, maximum)
+            : fallback;
     }
 }
 
@@ -530,65 +319,68 @@ public sealed record SystemSurveyPreferences(
     bool ShowNonBodySignals,
     FssTuningDetectorSettings FssTuningDetector,
     bool SuppressForActiveBuildProjects = false,
-    bool ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn = false)
+    bool ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn = false
+)
 {
-    public static SystemSurveyPreferences Default { get; } = new(
-        AutoShowBodyInfo: true,
-        ShowBodyInfoInSystemMap: true,
-        BodyInformationPreviewExtensionSeconds: 0,
-        BodyPredictionPreviewExtensionSeconds: 0,
-        ShowBodyInfoInOrbit: true,
-        ShowBodyInfoAtSurface: false,
-        HideBodyInfoInBubble: true,
-        BodyInfoBubbleSizeLy: 200,
-        HideBodyInfoMaterials: false,
-        AutoShowFlightWarnings: true,
-        HighGravityWarningLevel: 1,
-        UseExternalData: true,
-        UseExternalBioData: false,
-        AutoShowBioSystem: true,
-        AutoShowBioStatus: true,
-        AutoHideBioPlotOnRepeat: true,
-        KeepBioPlottersVisibleAfterDss: true,
-        BioPlotterDssDurationSeconds: 120,
-        AutoShowPriorScans: true,
-        SkipPriorScansLowValue: false,
-        PriorScanMinimumValue: 1_000_000,
-        HideOwnCanonnSignals: true,
-        ShowCanonnSignalsOnRadar: true,
-        UseSmallCanonnRadarCircles: true,
-        AutoShowSurfaceRadar: true,
-        AutoShowMiniTrack: false,
-        SurfaceRadarSize: 3,
-        AutoHideSurfaceRadarWithoutLandingGear: false,
-        AutoRemoveTrackerOnSampling: true,
-        AutoRemoveTrackerOnFinalSample: false,
-        AutoTrackCompositionScans: true,
-        SkipAnalyzedCompositionScans: true,
-        DrawBodyBiosOnlyWhenNear: true,
-        HighlightRegionalFirsts: false,
-        DimAnalyzedOrganisms: true,
-        HideGeoCountInBioSystem: false,
-        DisableBioPredictions: false,
-        ShowTemperatureRangeDebug: false,
-        AutoShowLastFssBody: true,
-        AutoShowFssInfo: true,
-        ShowFssInfoInSystemMap: false,
-        FssBodiesBeforeScrolling: 4,
-        ShowFssInfoInNavigationPanel: false,
-        AutoShowSystemStatus: true,
-        HideGeoCount: false,
-        FssBodyValueFloor: 10_000,
-        HighlightDssCandidates: true,
-        DssValueFloor: 1_000_000,
-        SkipDistantDssCandidates: false,
-        DssDistanceLimitLs: 100_000,
-        SkipGasGiantsForDss: true,
-        SkipRingsForDss: true,
-        ShowNonBodySignals: false,
-        FssTuningDetector: FssTuningDetectorSettings.Default,
-        SuppressForActiveBuildProjects: false,
-        ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn: false);
+    public static SystemSurveyPreferences Default { get; } =
+        new(
+            AutoShowBodyInfo: true,
+            ShowBodyInfoInSystemMap: true,
+            BodyInformationPreviewExtensionSeconds: 0,
+            BodyPredictionPreviewExtensionSeconds: 0,
+            ShowBodyInfoInOrbit: true,
+            ShowBodyInfoAtSurface: false,
+            HideBodyInfoInBubble: true,
+            BodyInfoBubbleSizeLy: 200,
+            HideBodyInfoMaterials: false,
+            AutoShowFlightWarnings: true,
+            HighGravityWarningLevel: 1,
+            UseExternalData: true,
+            UseExternalBioData: false,
+            AutoShowBioSystem: true,
+            AutoShowBioStatus: true,
+            AutoHideBioPlotOnRepeat: true,
+            KeepBioPlottersVisibleAfterDss: true,
+            BioPlotterDssDurationSeconds: 120,
+            AutoShowPriorScans: true,
+            SkipPriorScansLowValue: false,
+            PriorScanMinimumValue: 1_000_000,
+            HideOwnCanonnSignals: true,
+            ShowCanonnSignalsOnRadar: true,
+            UseSmallCanonnRadarCircles: true,
+            AutoShowSurfaceRadar: true,
+            AutoShowMiniTrack: false,
+            SurfaceRadarSize: 3,
+            AutoHideSurfaceRadarWithoutLandingGear: false,
+            AutoRemoveTrackerOnSampling: true,
+            AutoRemoveTrackerOnFinalSample: false,
+            AutoTrackCompositionScans: true,
+            SkipAnalyzedCompositionScans: true,
+            DrawBodyBiosOnlyWhenNear: true,
+            HighlightRegionalFirsts: false,
+            DimAnalyzedOrganisms: true,
+            HideGeoCountInBioSystem: false,
+            DisableBioPredictions: false,
+            ShowTemperatureRangeDebug: false,
+            AutoShowLastFssBody: true,
+            AutoShowFssInfo: true,
+            ShowFssInfoInSystemMap: false,
+            FssBodiesBeforeScrolling: 4,
+            ShowFssInfoInNavigationPanel: false,
+            AutoShowSystemStatus: true,
+            HideGeoCount: false,
+            FssBodyValueFloor: 10_000,
+            HighlightDssCandidates: true,
+            DssValueFloor: 1_000_000,
+            SkipDistantDssCandidates: false,
+            DssDistanceLimitLs: 100_000,
+            SkipGasGiantsForDss: true,
+            SkipRingsForDss: true,
+            ShowNonBodySignals: false,
+            FssTuningDetector: FssTuningDetectorSettings.Default,
+            SuppressForActiveBuildProjects: false,
+            ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn: false
+        );
 }
 
 public sealed record FssTuningDetectorSettings(
@@ -598,20 +390,19 @@ public sealed record FssTuningDetectorSettings(
     int YellowHorizontalTolerance,
     FssPixelColor BlackArea,
     FssPixelColor WhiteText,
-    FssPixelColor YellowText)
+    FssPixelColor YellowText
+)
 {
-    public static FssTuningDetectorSettings Default { get; } = new(
-        Enabled: true,
-        SaveDiagnosticImages: false,
-        YellowBar: new FssPixelColor(193, 156, 65, 60),
-        YellowHorizontalTolerance: 100,
-        BlackArea: new FssPixelColor(0, 0, 0, 30),
-        WhiteText: new FssPixelColor(255, 255, 255, 50),
-        YellowText: new FssPixelColor(233, 197, 24, 50));
+    public static FssTuningDetectorSettings Default { get; } =
+        new(
+            Enabled: true,
+            SaveDiagnosticImages: false,
+            YellowBar: new FssPixelColor(193, 156, 65, 60),
+            YellowHorizontalTolerance: 100,
+            BlackArea: new FssPixelColor(0, 0, 0, 30),
+            WhiteText: new FssPixelColor(255, 255, 255, 50),
+            YellowText: new FssPixelColor(233, 197, 24, 50)
+        );
 }
 
-public sealed record FssPixelColor(
-    int Red,
-    int Green,
-    int Blue,
-    int Tolerance);
+public sealed record FssPixelColor(int Red, int Green, int Blue, int Tolerance);

@@ -16,12 +16,9 @@ public sealed class FleetCarrierJumpCountdownTracker
     private string destination = string.Empty;
     private DateTimeOffset targetTime;
 
-    public FleetCarrierJumpCountdownState Current { get; private set; } =
-        FleetCarrierJumpCountdownState.Inactive;
+    public FleetCarrierJumpCountdownState Current { get; private set; } = FleetCarrierJumpCountdownState.Inactive;
 
-    public bool Apply(
-        JournalEventEnvelope journalEvent,
-        DateTimeOffset now)
+    public bool Apply(JournalEventEnvelope journalEvent, DateTimeOffset now)
     {
         ArgumentNullException.ThrowIfNull(journalEvent);
         var changed = journalEvent.EventName switch
@@ -66,9 +63,7 @@ public sealed class FleetCarrierJumpCountdownTracker
 
     private bool ApplyJumpRequest(JournalEventEnvelope journalEvent)
     {
-        var departure = GetDateTimeOffset(
-            journalEvent.Payload,
-            "DepartureTime");
+        var departure = GetDateTimeOffset(journalEvent.Payload, "DepartureTime");
         if (departure is null)
         {
             return false;
@@ -76,19 +71,17 @@ public sealed class FleetCarrierJumpCountdownTracker
 
         kind = FleetCarrierJumpCountdownKind.Scheduled;
         carrierId = GetIdentifier(journalEvent.Payload, "CarrierID");
-        destination = GetString(journalEvent.Payload, "SystemName")
+        destination =
+            GetString(journalEvent.Payload, "SystemName")
             ?? GetString(journalEvent.Payload, "StarSystem")
             ?? string.Empty;
         targetTime = departure.Value;
         return true;
     }
 
-    private bool ApplyCancellation(
-        JournalEventEnvelope journalEvent,
-        DateTimeOffset now)
+    private bool ApplyCancellation(JournalEventEnvelope journalEvent, DateTimeOffset now)
     {
-        if (kind != FleetCarrierJumpCountdownKind.Scheduled
-            || !MatchesCarrier(journalEvent.Payload))
+        if (kind != FleetCarrierJumpCountdownKind.Scheduled || !MatchesCarrier(journalEvent.Payload))
         {
             return false;
         }
@@ -99,24 +92,18 @@ public sealed class FleetCarrierJumpCountdownTracker
         return true;
     }
 
-    private bool ApplyCompletedJump(
-        JournalEventEnvelope journalEvent,
-        DateTimeOffset now)
+    private bool ApplyCompletedJump(JournalEventEnvelope journalEvent, DateTimeOffset now)
     {
         var completedAt = journalEvent.Timestamp ?? now;
         kind = FleetCarrierJumpCountdownKind.PostJumpCooldown;
         targetTime = RoundToNearestMinute(completedAt) + PostJumpCooldown;
-        destination = GetString(journalEvent.Payload, "StarSystem")
-            ?? destination;
+        destination = GetString(journalEvent.Payload, "StarSystem") ?? destination;
         return true;
     }
 
-    private bool ApplyCarrierLocation(
-        JournalEventEnvelope journalEvent,
-        DateTimeOffset now)
+    private bool ApplyCarrierLocation(JournalEventEnvelope journalEvent, DateTimeOffset now)
     {
-        if (kind != FleetCarrierJumpCountdownKind.Scheduled
-            || !MatchesCarrier(journalEvent.Payload))
+        if (kind != FleetCarrierJumpCountdownKind.Scheduled || !MatchesCarrier(journalEvent.Payload))
         {
             return false;
         }
@@ -129,23 +116,22 @@ public sealed class FleetCarrierJumpCountdownTracker
 
         kind = FleetCarrierJumpCountdownKind.PostJumpCooldown;
         targetTime = RoundToNearestMinute(observedAt) + PostJumpCooldown;
-        destination = GetString(journalEvent.Payload, "StarSystem")
-            ?? destination;
+        destination = GetString(journalEvent.Payload, "StarSystem") ?? destination;
         return true;
     }
 
     private void Normalize(DateTimeOffset now)
     {
-        if (kind == FleetCarrierJumpCountdownKind.Scheduled
-            && now >= targetTime)
+        if (kind == FleetCarrierJumpCountdownKind.Scheduled && now >= targetTime)
         {
             kind = FleetCarrierJumpCountdownKind.PostJumpCooldown;
             targetTime = RoundToNearestMinute(targetTime) + PostJumpCooldown;
         }
 
-        if (kind is FleetCarrierJumpCountdownKind.PostJumpCooldown
-                or FleetCarrierJumpCountdownKind.CancellationCooldown
-            && now >= targetTime)
+        if (
+            kind is FleetCarrierJumpCountdownKind.PostJumpCooldown or FleetCarrierJumpCountdownKind.CancellationCooldown
+            && now >= targetTime
+        )
         {
             kind = FleetCarrierJumpCountdownKind.None;
             carrierId = null;
@@ -161,9 +147,7 @@ public sealed class FleetCarrierJumpCountdownTracker
             return FleetCarrierJumpCountdownState.Inactive;
         }
 
-        var secondsRemaining = Math.Max(
-            0,
-            (int)Math.Ceiling((targetTime - now).TotalSeconds));
+        var secondsRemaining = Math.Max(0, (int)Math.Ceiling((targetTime - now).TotalSeconds));
         if (kind == FleetCarrierJumpCountdownKind.PostJumpCooldown)
         {
             return new FleetCarrierJumpCountdownState(
@@ -173,7 +157,8 @@ public sealed class FleetCarrierJumpCountdownTracker
                 "CARRIER ARRIVED",
                 string.Empty,
                 false,
-                destination);
+                destination
+            );
         }
 
         if (kind == FleetCarrierJumpCountdownKind.CancellationCooldown)
@@ -185,7 +170,8 @@ public sealed class FleetCarrierJumpCountdownTracker
                 "JUMP CANCELLED",
                 string.Empty,
                 false,
-                string.Empty);
+                string.Empty
+            );
         }
 
         string phaseLabel;
@@ -194,15 +180,13 @@ public sealed class FleetCarrierJumpCountdownTracker
         if (secondsRemaining > JumpLockSeconds)
         {
             phaseLabel = "JUMP INITIATION IN";
-            phaseCountdown = FormatCountdown(
-                secondsRemaining - JumpLockSeconds);
+            phaseCountdown = FormatCountdown(secondsRemaining - JumpLockSeconds);
             hasPhaseCountdown = true;
         }
         else if (secondsRemaining > PadLockdownSeconds)
         {
             phaseLabel = "PAD LOCKDOWN IN";
-            phaseCountdown = FormatCountdown(
-                secondsRemaining - PadLockdownSeconds);
+            phaseCountdown = FormatCountdown(secondsRemaining - PadLockdownSeconds);
             hasPhaseCountdown = true;
         }
         else
@@ -221,7 +205,8 @@ public sealed class FleetCarrierJumpCountdownTracker
             phaseLabel,
             phaseCountdown,
             hasPhaseCountdown,
-            destination);
+            destination
+        );
     }
 
     private bool MatchesCarrier(JsonElement payload)
@@ -234,14 +219,7 @@ public sealed class FleetCarrierJumpCountdownTracker
 
     private static DateTimeOffset RoundToNearestMinute(DateTimeOffset value)
     {
-        var rounded = new DateTimeOffset(
-            value.Year,
-            value.Month,
-            value.Day,
-            value.Hour,
-            value.Minute,
-            0,
-            value.Offset);
+        var rounded = new DateTimeOffset(value.Year, value.Month, value.Day, value.Hour, value.Minute, 0, value.Offset);
         return value.Second >= 30 ? rounded.AddMinutes(1) : rounded;
     }
 
@@ -253,10 +231,9 @@ public sealed class FleetCarrierJumpCountdownTracker
 
     private static string? GetString(JsonElement payload, string name)
     {
-        return payload.TryGetProperty(name, out var property)
-            && property.ValueKind == JsonValueKind.String
-                ? property.GetString()
-                : null;
+        return payload.TryGetProperty(name, out var property) && property.ValueKind == JsonValueKind.String
+            ? property.GetString()
+            : null;
     }
 
     private static string? GetIdentifier(JsonElement payload, string name)
@@ -274,18 +251,17 @@ public sealed class FleetCarrierJumpCountdownTracker
         };
     }
 
-    private static DateTimeOffset? GetDateTimeOffset(
-        JsonElement payload,
-        string name)
+    private static DateTimeOffset? GetDateTimeOffset(JsonElement payload, string name)
     {
         var value = GetString(payload, name);
         return DateTimeOffset.TryParse(
             value,
             CultureInfo.InvariantCulture,
             DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
-            out var parsed)
-                ? parsed
-                : null;
+            out var parsed
+        )
+            ? parsed
+            : null;
     }
 }
 
@@ -296,16 +272,11 @@ public sealed record FleetCarrierJumpCountdownState(
     string PhaseLabel,
     string PhaseCountdown,
     bool HasPhaseCountdown,
-    string Destination)
+    string Destination
+)
 {
-    public static FleetCarrierJumpCountdownState Inactive { get; } = new(
-        false,
-        "CARRIER JUMP",
-        "No jump scheduled",
-        string.Empty,
-        string.Empty,
-        false,
-        string.Empty);
+    public static FleetCarrierJumpCountdownState Inactive { get; } =
+        new(false, "CARRIER JUMP", "No jump scheduled", string.Empty, string.Empty, false, string.Empty);
 }
 
 public enum FleetCarrierJumpCountdownKind

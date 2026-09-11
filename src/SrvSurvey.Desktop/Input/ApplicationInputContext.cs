@@ -7,8 +7,7 @@ public sealed class ApplicationInputContext
 
     public bool IsActive => Volatile.Read(ref isActive) != 0;
 
-    public bool IsTextInputActive =>
-        Volatile.Read(ref isTextInputActive) != 0;
+    public bool IsTextInputActive => Volatile.Read(ref isTextInputActive) != 0;
 
     public bool AreShortcutsActive => IsActive && !IsTextInputActive;
 

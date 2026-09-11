@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Input.Platform;
-using SrvSurvey.Desktop.ViewModels;
 using SrvSurvey.Desktop.Runtime;
+using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Views;
 
@@ -17,12 +17,9 @@ public sealed partial class SearchView : UserControl
 
     private void ConnectClipboard()
     {
-        if (DesktopExternalEffectPolicy.IsAllowed
-            && DataContext is MainWindowViewModel viewModel)
+        if (DesktopExternalEffectPolicy.IsAllowed && DataContext is MainWindowViewModel viewModel)
         {
-            viewModel.NearestSystems.SetPlatformServices(
-                WriteClipboardAsync,
-                LaunchUriAsync);
+            viewModel.NearestSystems.SetPlatformServices(WriteClipboardAsync, LaunchUriAsync);
         }
     }
 
@@ -36,18 +33,18 @@ public sealed partial class SearchView : UserControl
 
     private async Task WriteClipboardAsync(string text)
     {
-        var clipboard = TopLevel.GetTopLevel(this)?.Clipboard
-            ?? throw new InvalidOperationException(
-                "The desktop clipboard is not available.");
+        var clipboard =
+            TopLevel.GetTopLevel(this)?.Clipboard
+            ?? throw new InvalidOperationException("The desktop clipboard is not available.");
         await clipboard.SetTextAsync(text);
         await clipboard.FlushAsync();
     }
 
     private Task<bool> LaunchUriAsync(Uri uri)
     {
-        var launcher = TopLevel.GetTopLevel(this)?.Launcher
-            ?? throw new InvalidOperationException(
-                "The desktop link launcher is not available.");
+        var launcher =
+            TopLevel.GetTopLevel(this)?.Launcher
+            ?? throw new InvalidOperationException("The desktop link launcher is not available.");
         return launcher.LaunchUriAsync(uri);
     }
 }

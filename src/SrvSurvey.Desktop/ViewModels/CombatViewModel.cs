@@ -28,18 +28,16 @@ public sealed class CombatViewModel : INotifyPropertyChanged
     public CombatViewModel(
         CombatSettingsStore settingsStore,
         CommanderProfileStore profileStore,
-        CombatState? state = null)
+        CombatState? state = null
+    )
     {
-        this.settingsStore = settingsStore
-            ?? throw new ArgumentNullException(nameof(settingsStore));
-        this.profileStore = profileStore
-            ?? throw new ArgumentNullException(nameof(profileStore));
+        this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
+        this.profileStore = profileStore ?? throw new ArgumentNullException(nameof(profileStore));
         this.state = state ?? new CombatState();
         var preferences = settingsStore.Load();
         autoShowFootCombat = preferences.AutoShowFootCombat;
         autoShowMassacreMissions = preferences.AutoShowMassacreMissions;
-        suppressForActiveBuildProjects =
-            preferences.SuppressForActiveBuildProjects;
+        suppressForActiveBuildProjects = preferences.SuppressForActiveBuildProjects;
         RebuildMassacreMissions();
     }
 
@@ -114,29 +112,24 @@ public sealed class CombatViewModel : INotifyPropertyChanged
 
     public string FootCombatBonds => $"{state.FootCombatBonds:N0} CR";
 
-    public IReadOnlyList<MassacreMissionViewModel> MassacreMissions =>
-        massacreMissions;
+    public IReadOnlyList<MassacreMissionViewModel> MassacreMissions => massacreMissions;
 
     public bool HasMassacreMissions => state.MassacreMissions.Count > 0;
 
-    public bool ShouldShowFootCombat => AutoShowFootCombat
-        && !ShouldSuppressOverlays
-        && state.IsAtWarSettlement
-        && IsFootCombatStatusEligible(status);
+    public bool ShouldShowFootCombat =>
+        AutoShowFootCombat && !ShouldSuppressOverlays && state.IsAtWarSettlement && IsFootCombatStatusEligible(status);
 
-    public bool ShouldShowMassacreMissions => AutoShowMassacreMissions
-        && !ShouldSuppressOverlays
-        && HasMassacreMissions
-        && IsMassacreStatusEligible(status);
+    public bool ShouldShowMassacreMissions =>
+        AutoShowMassacreMissions && !ShouldSuppressOverlays && HasMassacreMissions && IsMassacreStatusEligible(status);
 
-    private bool ShouldSuppressOverlays =>
-        SuppressForActiveBuildProjects && hasActiveBuildProjects;
+    private bool ShouldSuppressOverlays => SuppressForActiveBuildProjects && hasActiveBuildProjects;
 
     public void LoadProfile(
         string? profileFrontierId,
         string? profileCommanderName,
         bool profileIsOdyssey,
-        CombatSnapshot snapshot)
+        CombatSnapshot snapshot
+    )
     {
         frontierId = profileFrontierId;
         commanderName = profileCommanderName;
@@ -169,42 +162,47 @@ public sealed class CombatViewModel : INotifyPropertyChanged
             "FDEV-RAVEN",
             "Raven",
             profileIsOdyssey: true,
-            new CombatSnapshot(
-            [
+            new CombatSnapshot([
                 new MassacreMissionSnapshot(
                     MissionId: 1001,
                     MissionGiver: "Raven Colonial",
                     TargetFaction: "Blue Fortune Corp",
                     Expires: null,
                     KillCount: 20,
-                    Remaining: 8),
+                    Remaining: 8
+                ),
                 new MassacreMissionSnapshot(
                     MissionId: 1002,
                     MissionGiver: "Allied Co-op",
                     TargetFaction: "Silver Legal Group",
                     Expires: null,
                     KillCount: 15,
-                    Remaining: 7),
+                    Remaining: 7
+                ),
                 new MassacreMissionSnapshot(
                     MissionId: 1003,
                     MissionGiver: "System Authority",
                     TargetFaction: "Crimson Raiders",
                     Expires: null,
                     KillCount: 10,
-                    Remaining: 0),
-            ]));
+                    Remaining: 0
+                ),
+            ])
+        );
         state.InstallEditorSession(
             settlementName: "Mitchell's Claim",
             factionState: "War",
             kills: 22,
-            bonds: 6_420_000);
+            bonds: 6_420_000
+        );
         NotifyAllState();
     }
 
     public async Task ApplyUpdateAsync(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         EliteStatus? currentStatus,
-        bool processHistoricalProgress)
+        bool processHistoricalProgress
+    )
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
         if (currentStatus is not null)
@@ -223,16 +221,13 @@ public sealed class CombatViewModel : INotifyPropertyChanged
                 modeChanged |= musicTrack is not null;
                 musicTrack = null;
             }
-            else if (journalEvent.EventName == "Music"
-                && journalEvent.Payload.TryGetProperty(
-                    "MusicTrack",
-                    out var track))
+            else if (
+                journalEvent.EventName == "Music"
+                && journalEvent.Payload.TryGetProperty("MusicTrack", out var track)
+            )
             {
                 var nextMusicTrack = track.GetString();
-                modeChanged |= !string.Equals(
-                    musicTrack,
-                    nextMusicTrack,
-                    StringComparison.Ordinal);
+                modeChanged |= !string.Equals(musicTrack, nextMusicTrack, StringComparison.Ordinal);
                 musicTrack = nextMusicTrack;
             }
 
@@ -244,7 +239,8 @@ public sealed class CombatViewModel : INotifyPropertyChanged
             var result = state.Apply(
                 journalEvent,
                 countProgress: processHistoricalProgress,
-                countFootCombat: ShouldShowFootCombat);
+                countFootCombat: ShouldShowFootCombat
+            );
             stateChanged |= result.StateChanged;
             persistenceChanged |= result.PersistenceChanged;
             UpdateFootSession();
@@ -269,12 +265,8 @@ public sealed class CombatViewModel : INotifyPropertyChanged
     private bool ShouldApplyMissionEvent(string eventName)
     {
         return AutoShowMassacreMissions
-            || eventName is not (
-                "MissionAccepted"
-                or "MissionCompleted"
-                or "MissionFailed"
-                or "MissionAbandoned"
-                or "Bounty");
+            || eventName
+                is not ("MissionAccepted" or "MissionCompleted" or "MissionFailed" or "MissionAbandoned" or "Bounty");
     }
 
     private void UpdateFootSession()
@@ -297,21 +289,14 @@ public sealed class CombatViewModel : INotifyPropertyChanged
 
         try
         {
-            await profileStore.SaveCombatAsync(
-                frontierId,
-                commanderName,
-                isOdyssey,
-                state.CreateSnapshot());
+            await profileStore.SaveCombatAsync(frontierId, commanderName, isOdyssey, state.CreateSnapshot());
             StatusMessage = "Combat mission progress saved.";
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
-            StatusMessage = "Combat mission progress changed for this session "
-                + "but could not be saved: "
-                + exception.Message;
+            StatusMessage =
+                "Combat mission progress changed for this session " + "but could not be saved: " + exception.Message;
         }
     }
 
@@ -319,18 +304,15 @@ public sealed class CombatViewModel : INotifyPropertyChanged
     {
         try
         {
-            settingsStore.Save(new CombatPreferences(
-                AutoShowFootCombat,
-                AutoShowMassacreMissions,
-                SuppressForActiveBuildProjects));
+            settingsStore.Save(
+                new CombatPreferences(AutoShowFootCombat, AutoShowMassacreMissions, SuppressForActiveBuildProjects)
+            );
             StatusMessage = string.Empty;
         }
-        catch (Exception exception) when (
-            exception is IOException or UnauthorizedAccessException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            StatusMessage = "Combat overlay settings changed for this session "
-                + "but could not be saved: "
-                + exception.Message;
+            StatusMessage =
+                "Combat overlay settings changed for this session " + "but could not be saved: " + exception.Message;
         }
     }
 
@@ -347,8 +329,8 @@ public sealed class CombatViewModel : INotifyPropertyChanged
 
     private void RebuildMassacreMissions()
     {
-        massacreMissions = state.MassacreMissions
-            .OrderBy(mission => mission.TargetFaction, StringComparer.Ordinal)
+        massacreMissions = state
+            .MassacreMissions.OrderBy(mission => mission.TargetFaction, StringComparer.Ordinal)
             .ThenBy(mission => mission.MissionGiver, StringComparer.Ordinal)
             .Select(mission => new MassacreMissionViewModel(mission))
             .ToArray();
@@ -362,12 +344,8 @@ public sealed class CombatViewModel : INotifyPropertyChanged
 
     private bool IsFootCombatStatusEligible(EliteStatus? status)
     {
-        var mode = OverlayGameModeResolver.Resolve(
-            status,
-            musicTrack: musicTrack);
-        return status is not null
-            && status.Altitude < 100
-            && mode is OverlayGameMode.OnFoot or OverlayGameMode.InSrv;
+        var mode = OverlayGameModeResolver.Resolve(status, musicTrack: musicTrack);
+        return status is not null && status.Altitude < 100 && mode is OverlayGameMode.OnFoot or OverlayGameMode.InSrv;
     }
 
     private bool IsMassacreStatusEligible(EliteStatus? status)
@@ -377,19 +355,15 @@ public sealed class CombatViewModel : INotifyPropertyChanged
             return false;
         }
 
-        var mode = OverlayGameModeResolver.Resolve(
-            status,
-            musicTrack: musicTrack);
-        return mode is OverlayGameMode.ExternalPanel
-            or OverlayGameMode.StationServices
-            or OverlayGameMode.SuperCruising
-            or OverlayGameMode.Flying;
+        var mode = OverlayGameModeResolver.Resolve(status, musicTrack: musicTrack);
+        return mode
+            is OverlayGameMode.ExternalPanel
+                or OverlayGameMode.StationServices
+                or OverlayGameMode.SuperCruising
+                or OverlayGameMode.Flying;
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -401,17 +375,13 @@ public sealed class CombatViewModel : INotifyPropertyChanged
         return true;
     }
 
-    private void OnPropertyChanged(
-        [CallerMemberName] string? propertyName = null)
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(propertyName));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
 
-public sealed class MassacreMissionViewModel(
-    MassacreMissionSnapshot mission)
+public sealed class MassacreMissionViewModel(MassacreMissionSnapshot mission)
 {
     public long MissionId => mission.MissionId;
 

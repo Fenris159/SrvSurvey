@@ -24,20 +24,16 @@ public sealed class CombatOverlayCoordinator : IDisposable
         CombatViewModel combat,
         IOverlayPlatformService platform,
         IGameWindowTracker gameWindowTracker,
-        LegacyOverlayLayout? overlayLayout = null)
+        LegacyOverlayLayout? overlayLayout = null
+    )
     {
         this.combat = combat ?? throw new ArgumentNullException(nameof(combat));
-        this.platform = platform
-            ?? throw new ArgumentNullException(nameof(platform));
-        this.gameWindowTracker = gameWindowTracker
-            ?? throw new ArgumentNullException(nameof(gameWindowTracker));
+        this.platform = platform ?? throw new ArgumentNullException(nameof(platform));
+        this.gameWindowTracker = gameWindowTracker ?? throw new ArgumentNullException(nameof(gameWindowTracker));
         this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
         viewModel = new CombatOverlayViewModel(combat, platform.Capabilities);
         combat.PropertyChanged += OnCombatPropertyChanged;
-        timer = new OverlayDispatcherTimer
-        {
-            Interval = TimeSpan.FromMilliseconds(250),
-        };
+        timer = new OverlayDispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
         timer.Tick += OnTimerTick;
         timer.Start();
         SynchronizeWindows();
@@ -45,8 +41,7 @@ public sealed class CombatOverlayCoordinator : IDisposable
 
     public event EventHandler? VisibilityChanged;
 
-    public bool IsVisible => footCombatWindow is not null
-        || massacreWindow is not null;
+    public bool IsVisible => footCombatWindow is not null || massacreWindow is not null;
 
     public bool IsFootCombatVisible => footCombatWindow is not null;
 
@@ -87,12 +82,13 @@ public sealed class CombatOverlayCoordinator : IDisposable
         SynchronizeWindows();
     }
 
-    private void OnCombatPropertyChanged(
-        object? sender,
-        PropertyChangedEventArgs eventArgs)
+    private void OnCombatPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
-        if (eventArgs.PropertyName is nameof(CombatViewModel.ShouldShowFootCombat)
-            or nameof(CombatViewModel.ShouldShowMassacreMissions))
+        if (
+            eventArgs.PropertyName
+            is nameof(CombatViewModel.ShouldShowFootCombat)
+                or nameof(CombatViewModel.ShouldShowMassacreMissions)
+        )
         {
             SynchronizeWindows();
         }
@@ -106,7 +102,8 @@ public sealed class CombatOverlayCoordinator : IDisposable
         }
 
         gameWindow = gameWindowTracker.GetSnapshot();
-        var platformReady = !isSuppressed
+        var platformReady =
+            !isSuppressed
             && platform.Capabilities.SupportsPassiveOverlay
             && platform.Capabilities.SupportsClickThrough
             && platform.Capabilities.SupportsGameWindowTracking
@@ -114,10 +111,8 @@ public sealed class CombatOverlayCoordinator : IDisposable
             && gameWindow.IsVisible
             && gameWindow.IsForeground;
 
-        SynchronizeFootCombatWindow(
-            platformReady && combat.ShouldShowFootCombat);
-        SynchronizeMassacreWindow(
-            platformReady && combat.ShouldShowMassacreMissions);
+        SynchronizeFootCombatWindow(platformReady && combat.ShouldShowFootCombat);
+        SynchronizeMassacreWindow(platformReady && combat.ShouldShowMassacreMissions);
     }
 
     private void SynchronizeFootCombatWindow(bool shouldShow)
@@ -136,9 +131,7 @@ public sealed class CombatOverlayCoordinator : IDisposable
 
         var overlay = new FootCombatOverlayWindow(viewModel);
         OverlayThemeResources.Apply(overlay, overlayLayout, "PlotFootCombat");
-        overlay.Opened += (_, _) => PrepareWindow(
-            overlay,
-            PositionTopLeft);
+        overlay.Opened += (_, _) => PrepareWindow(overlay, PositionTopLeft);
         overlay.Closed += (_, _) =>
         {
             if (ReferenceEquals(footCombatWindow, overlay))
@@ -168,9 +161,7 @@ public sealed class CombatOverlayCoordinator : IDisposable
 
         var overlay = new MassacreMissionsOverlayWindow(viewModel);
         OverlayThemeResources.Apply(overlay, overlayLayout, "PlotMassacre");
-        overlay.Opened += (_, _) => PrepareWindow(
-            overlay,
-            PositionTopRight);
+        overlay.Opened += (_, _) => PrepareWindow(overlay, PositionTopRight);
         overlay.Closed += (_, _) =>
         {
             if (ReferenceEquals(massacreWindow, overlay))
@@ -184,9 +175,7 @@ public sealed class CombatOverlayCoordinator : IDisposable
         VisibilityChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    private void PrepareWindow(
-        Window window,
-        Action<Window, PixelRect> position)
+    private void PrepareWindow(Window window, Action<Window, PixelRect> position)
     {
         position(window, gameWindow.ClientBounds);
         var preparation = platform.PreparePassiveWindow(window);
@@ -201,43 +190,30 @@ public sealed class CombatOverlayCoordinator : IDisposable
 
     private void PositionTopLeft(Window window, PixelRect gameBounds)
     {
-        PositionWindow(
-            window,
-            gameBounds,
-            "PlotFootCombat",
-            OverlayWindowPlacement.TopLeft);
+        PositionWindow(window, gameBounds, "PlotFootCombat", OverlayWindowPlacement.TopLeft);
     }
 
     private void PositionTopRight(Window window, PixelRect gameBounds)
     {
-        PositionWindow(
-            window,
-            gameBounds,
-            "PlotMassacre",
-            OverlayWindowPlacement.TopRight);
+        PositionWindow(window, gameBounds, "PlotMassacre", OverlayWindowPlacement.TopRight);
     }
 
     private void PositionWindow(
         Window window,
         PixelRect gameBounds,
         string plotterName,
-        Func<PixelRect, PixelSize, int, PixelPoint> placement)
+        Func<PixelRect, PixelSize, int, PixelPoint> placement
+    )
     {
         OverlayThemeResources.ApplyOpacity(window, overlayLayout, plotterName);
-        var screen = window.Screens.ScreenFromBounds(gameBounds)
-            ?? window.Screens.Primary;
+        var screen = window.Screens.ScreenFromBounds(gameBounds) ?? window.Screens.Primary;
         if (screen is null)
         {
             return;
         }
 
-        var size = OverlayWindowMetrics.PrepareForPlacement(
-            window,
-            overlayLayout,
-            plotterName,
-            screen.Scaling);
-        var position = overlayLayout.GetPosition(plotterName, gameBounds, size)
-            ?? placement(gameBounds, size, 8);
+        var size = OverlayWindowMetrics.PrepareForPlacement(window, overlayLayout, plotterName, screen.Scaling);
+        var position = overlayLayout.GetPosition(plotterName, gameBounds, size) ?? placement(gameBounds, size, 8);
         if (window.Position != position)
         {
             window.Position = position;

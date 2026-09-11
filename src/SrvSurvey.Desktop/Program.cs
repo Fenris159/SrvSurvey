@@ -14,8 +14,7 @@ namespace SrvSurvey.Desktop;
 
 internal static class Program
 {
-    internal const string SoftwareRenderingEnvironmentVariable =
-        "SRVSURVEY_SOFTWARE_RENDERING";
+    internal const string SoftwareRenderingEnvironmentVariable = "SRVSURVEY_SOFTWARE_RENDERING";
 
     internal static string[] StartupArguments { get; private set; } = [];
 
@@ -34,13 +33,11 @@ internal static class Program
 
         StartupArguments = updateStartup.ApplicationArguments.ToArray();
         ApplicationUpdateBootstrap.SetPendingConfirmation(
-            updateStartup.Mode == ApplicationUpdateStartupMode.Confirm
-                ? updateStartup.PlanPath
-                : null);
+            updateStartup.Mode == ApplicationUpdateStartupMode.Confirm ? updateStartup.PlanPath : null
+        );
         ApplicationUpdateBootstrap.SetPendingOutcome(
-            updateStartup.Mode == ApplicationUpdateStartupMode.Result
-                ? updateStartup.PlanPath
-                : null);
+            updateStartup.Mode == ApplicationUpdateStartupMode.Result ? updateStartup.PlanPath : null
+        );
         if (!TryResolveStartupContext(out var startupContext))
         {
             return;
@@ -52,13 +49,10 @@ internal static class Program
         LocalizationCatalog.Initialize(language);
         LocalizationCatalog.ApplyCulture(language);
         var applicationLog = new ApplicationLogService(
-            startupContext.DiagnosticReplay?.LogsDirectory
-                ?? appDataPaths.DataDirectory);
+            startupContext.DiagnosticReplay?.LogsDirectory ?? appDataPaths.DataDirectory
+        );
         ApplicationLog = applicationLog;
-        if (TryHandleFrontierCallback(
-                startupContext,
-                appDataPaths,
-                applicationLog))
+        if (TryHandleFrontierCallback(startupContext, appDataPaths, applicationLog))
         {
             return;
         }
@@ -67,51 +61,46 @@ internal static class Program
         var x11ThreadingInitialized = displayCapabilities.UsesX11Compatibility
             ? X11Native.TryInitializeThreading()
             : (bool?)null;
-        applicationLog.Append(
-            $"SrvSurvey {typeof(Program).Assembly.GetName().Version}");
+        applicationLog.Append($"SrvSurvey {typeof(Program).Assembly.GetName().Version}");
         applicationLog.Append($"New log path: {applicationLog.CurrentLogPath}");
         applicationLog.Append($"Data folder: {appDataPaths.DataDirectory}");
         if (startupContext.DiagnosticReplay is { } diagnosticReplay)
         {
             applicationLog.Append(
                 "Diagnostic replay mode: external effects disabled; "
-                + $"commander will be established by {diagnosticReplay.Commander.Name} "
-                + $"({diagnosticReplay.Commander.FrontierId}).");
-            applicationLog.Append(
-                $"Replay session: {diagnosticReplay.Session.SessionDirectory}");
+                    + $"commander will be established by {diagnosticReplay.Commander.Name} "
+                    + $"({diagnosticReplay.Commander.FrontierId})."
+            );
+            applicationLog.Append($"Replay session: {diagnosticReplay.Session.SessionDirectory}");
         }
-        applicationLog.Append(
-            $"Platform: {Environment.OSVersion.Platform} ({Environment.OSVersion.VersionString})");
-        applicationLog.Append(
-            $"Display host: {displayCapabilities.Host}");
+        applicationLog.Append($"Platform: {Environment.OSVersion.Platform} ({Environment.OSVersion.VersionString})");
+        applicationLog.Append($"Display host: {displayCapabilities.Host}");
         if (x11ThreadingInitialized is not null)
         {
-            applicationLog.Append(x11ThreadingInitialized.Value
-                ? "X11 threading: initialized before platform startup."
-                : "X11 threading: initialization was unavailable; native X11 access may be unsafe.");
+            applicationLog.Append(
+                x11ThreadingInitialized.Value
+                    ? "X11 threading: initialized before platform startup."
+                    : "X11 threading: initialization was unavailable; native X11 access may be unsafe."
+            );
         }
 
         var useSoftwareRendering = IsSoftwareRenderingRequested(
-            Environment.GetEnvironmentVariable(SoftwareRenderingEnvironmentVariable));
+            Environment.GetEnvironmentVariable(SoftwareRenderingEnvironmentVariable)
+        );
         applicationLog.Append(
-            useSoftwareRendering
-                ? "Windows renderer: software (diagnostic override)."
-                : "Windows renderer: automatic.");
+            useSoftwareRendering ? "Windows renderer: software (diagnostic override)." : "Windows renderer: automatic."
+        );
         using var traceListener = new ApplicationLogTraceListener(applicationLog);
-        void HandleUnhandledException(
-            object sender,
-            UnhandledExceptionEventArgs eventArgs)
+        void HandleUnhandledException(object sender, UnhandledExceptionEventArgs eventArgs)
         {
-            applicationLog.Append(
-                "Unhandled process exception: " + eventArgs.ExceptionObject);
+            applicationLog.Append("Unhandled process exception: " + eventArgs.ExceptionObject);
         }
 
         AppDomain.CurrentDomain.UnhandledException += HandleUnhandledException;
         Trace.Listeners.Add(traceListener);
         try
         {
-            BuildAvaloniaApp(useSoftwareRendering)
-                .StartWithClassicDesktopLifetime(args);
+            BuildAvaloniaApp(useSoftwareRendering).StartWithClassicDesktopLifetime(args);
         }
         catch (Exception exception)
         {
@@ -126,69 +115,55 @@ internal static class Program
         }
     }
 
-    private static bool TryRunUpdateHelper(
-        ApplicationUpdateStartup updateStartup)
+    private static bool TryRunUpdateHelper(ApplicationUpdateStartup updateStartup)
     {
         if (updateStartup.Mode != ApplicationUpdateStartupMode.Apply)
         {
             return false;
         }
 
-        Environment.ExitCode = ApplicationUpdateBootstrap.RunHelperAsync(
-                updateStartup.PlanPath!)
+        Environment.ExitCode = ApplicationUpdateBootstrap
+            .RunHelperAsync(updateStartup.PlanPath!)
             .GetAwaiter()
             .GetResult();
         return true;
     }
 
-    private static bool TryResolveStartupContext(
-        [NotNullWhen(true)] out DesktopStartupContext? startupContext)
+    private static bool TryResolveStartupContext([NotNullWhen(true)] out DesktopStartupContext? startupContext)
     {
         try
         {
-            startupContext = DesktopStartupContext.ResolveAsync(
-                    StartupArguments,
-                    AppDataPaths.ResolveCurrent,
-                    CancellationToken.None)
+            startupContext = DesktopStartupContext
+                .ResolveAsync(StartupArguments, AppDataPaths.ResolveCurrent, CancellationToken.None)
                 .GetAwaiter()
                 .GetResult();
             return true;
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or InvalidDataException
-                or UnauthorizedAccessException
-                or ArgumentException)
+        catch (Exception exception)
+            when (exception is IOException or InvalidDataException or UnauthorizedAccessException or ArgumentException)
         {
-            Console.Error.WriteLine(GetStartupFailureMessage(
-                StartupArguments,
-                exception));
+            Console.Error.WriteLine(GetStartupFailureMessage(StartupArguments, exception));
             Environment.ExitCode = 2;
             startupContext = null;
             return false;
         }
     }
 
-    internal static string GetStartupFailureMessage(
-        IReadOnlyList<string> arguments,
-        Exception exception)
+    internal static string GetStartupFailureMessage(IReadOnlyList<string> arguments, Exception exception)
     {
         ArgumentNullException.ThrowIfNull(arguments);
         ArgumentNullException.ThrowIfNull(exception);
-        var startupMode = StartupOptions.HasDiagnosticReplayOption(arguments)
-            ? "diagnostic replay"
-            : "normal startup";
+        var startupMode = StartupOptions.HasDiagnosticReplayOption(arguments) ? "diagnostic replay" : "normal startup";
         return $"SrvSurvey {startupMode} could not start: {exception.Message}";
     }
 
     private static bool TryHandleFrontierCallback(
         DesktopStartupContext startupContext,
         AppDataPaths appDataPaths,
-        ApplicationLogService applicationLog)
+        ApplicationLogService applicationLog
+    )
     {
-        var frontierCallback = startupContext.IsDiagnosticReplay
-            ? null
-            : FrontierOAuthCallback.Find(StartupArguments);
+        var frontierCallback = startupContext.IsDiagnosticReplay ? null : FrontierOAuthCallback.Find(StartupArguments);
         if (frontierCallback is null)
         {
             return false;
@@ -196,63 +171,53 @@ internal static class Program
 
         try
         {
-            using var frontier = FrontierAccountService.CreateCurrent(
-                appDataPaths.DataDirectory);
-            frontier.HandleCallbackAsync(frontierCallback)
-                .GetAwaiter()
-                .GetResult();
-            var activated = DesktopApplicationActivator
-                .TryActivateExistingInstance();
-            applicationLog.Append(
-                "Frontier authorization callback completed securely.");
+            using var frontier = FrontierAccountService.CreateCurrent(appDataPaths.DataDirectory);
+            frontier.HandleCallbackAsync(frontierCallback).GetAwaiter().GetResult();
+            var activated = DesktopApplicationActivator.TryActivateExistingInstance();
+            applicationLog.Append("Frontier authorization callback completed securely.");
             applicationLog.Append(
                 activated
                     ? "Frontier callback restored the running application."
-                    : "Frontier callback completed without a running application window to restore.");
+                    : "Frontier callback completed without a running application window to restore."
+            );
             Environment.ExitCode = 0;
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or InvalidDataException
-                or InvalidOperationException
-                or NotSupportedException
-                or HttpRequestException
-                or TaskCanceledException
-                or UnauthorizedAccessException)
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or InvalidDataException
+                        or InvalidOperationException
+                        or NotSupportedException
+                        or HttpRequestException
+                        or TaskCanceledException
+                        or UnauthorizedAccessException
+            )
         {
-            applicationLog.Append(
-                "Frontier authorization callback failed: "
-                + exception.Message);
+            applicationLog.Append("Frontier authorization callback failed: " + exception.Message);
             Environment.ExitCode = 1;
         }
 
         return true;
     }
 
-    public static AppBuilder BuildAvaloniaApp()
-        => BuildAvaloniaApp(useSoftwareRendering: false);
+    public static AppBuilder BuildAvaloniaApp() => BuildAvaloniaApp(useSoftwareRendering: false);
 
-    internal static bool IsSoftwareRenderingRequested(string? value)
-        => value is not null
-            && (string.Equals(value, "1", StringComparison.Ordinal)
-                || string.Equals(value, "true", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(value, "software", StringComparison.OrdinalIgnoreCase));
+    internal static bool IsSoftwareRenderingRequested(string? value) =>
+        value is not null
+        && (
+            string.Equals(value, "1", StringComparison.Ordinal)
+            || string.Equals(value, "true", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(value, "software", StringComparison.OrdinalIgnoreCase)
+        );
 
     private static AppBuilder BuildAvaloniaApp(bool useSoftwareRendering)
     {
-        var builder = AppBuilder
-            .Configure<App>()
-            .UsePlatformDetect();
+        var builder = AppBuilder.Configure<App>().UsePlatformDetect();
         if (useSoftwareRendering && OperatingSystem.IsWindows())
         {
-            builder = builder.With(new Win32PlatformOptions
-            {
-                RenderingMode = [Win32RenderingMode.Software],
-            });
+            builder = builder.With(new Win32PlatformOptions { RenderingMode = [Win32RenderingMode.Software] });
         }
 
-        return builder
-            .WithInterFont()
-            .LogToTrace();
+        return builder.WithInterFont().LogToTrace();
     }
 }

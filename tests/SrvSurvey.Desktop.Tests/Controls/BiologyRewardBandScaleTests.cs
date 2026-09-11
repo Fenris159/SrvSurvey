@@ -1,8 +1,8 @@
-using Avalonia.Media;
-using Avalonia.Controls;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using SkiaSharp;
 using SrvSurvey.Desktop.Configuration;
@@ -132,16 +132,10 @@ public sealed class BiologyRewardBandScaleTests
         Assert.Same(Brushes.DarkCyan, control.PredictionPotentialSegmentEdgeBrush);
         Assert.Same(Brushes.Gold, control.HighlightFilledSegmentEdgeBrush);
         Assert.Same(Brushes.Goldenrod, control.HighlightPotentialSegmentEdgeBrush);
-        Assert.Same(
-            Brushes.DarkGoldenrod,
-            control.DimmedHighlightFilledSegmentEdgeBrush);
-        Assert.Same(
-            Brushes.Olive,
-            control.DimmedHighlightPotentialSegmentEdgeBrush);
+        Assert.Same(Brushes.DarkGoldenrod, control.DimmedHighlightFilledSegmentEdgeBrush);
+        Assert.Same(Brushes.Olive, control.DimmedHighlightPotentialSegmentEdgeBrush);
         Assert.Same(Brushes.Gray, control.GlobalRegionalFilledSegmentEdgeBrush);
-        Assert.Same(
-            Brushes.White,
-            control.GlobalRegionalPotentialSegmentEdgeBrush);
+        Assert.Same(Brushes.White, control.GlobalRegionalPotentialSegmentEdgeBrush);
     }
 
     [AvaloniaFact]
@@ -177,10 +171,8 @@ public sealed class BiologyRewardBandScaleTests
             stream.Position = 0;
             using var bitmap = SKBitmap.Decode(stream);
             Assert.NotNull(bitmap);
-            Assert.Contains(bitmap.Pixels, pixel =>
-                pixel.Green > 180 && pixel.Red < 100 && pixel.Blue < 100);
-            Assert.Contains(bitmap.Pixels, pixel =>
-                pixel.Red > 150 && pixel.Blue > 150 && pixel.Green < 140);
+            Assert.Contains(bitmap.Pixels, pixel => pixel.Green > 180 && pixel.Red < 100 && pixel.Blue < 100);
+            Assert.Contains(bitmap.Pixels, pixel => pixel.Red > 150 && pixel.Blue > 150 && pixel.Green < 140);
         }
         finally
         {
@@ -191,10 +183,7 @@ public sealed class BiologyRewardBandScaleTests
     [Fact]
     public void UnknownRewardUsesQuestionStateEvenWithMaximum()
     {
-        var state = BiologyRewardBandScale.Calculate(
-            0,
-            20_000_000,
-            BiologyRewardThresholds.Default);
+        var state = BiologyRewardBandScale.Calculate(0, 20_000_000, BiologyRewardThresholds.Default);
 
         Assert.True(state.IsUnknown);
         Assert.Empty(state.Segments);
@@ -203,10 +192,7 @@ public sealed class BiologyRewardBandScaleTests
     [Fact]
     public void MinimumAndMaximumPreserveLegacyStrictBucketRules()
     {
-        var state = BiologyRewardBandScale.Calculate(
-            3_000_000,
-            12_000_000,
-            BiologyRewardThresholds.Default);
+        var state = BiologyRewardBandScale.Calculate(3_000_000, 12_000_000, BiologyRewardThresholds.Default);
 
         Assert.False(state.IsUnknown);
         Assert.Equal(
@@ -216,35 +202,23 @@ public sealed class BiologyRewardBandScaleTests
                 BiologyRewardBandSegment.Potential,
                 BiologyRewardBandSegment.Empty,
             ],
-            state.Segments);
+            state.Segments
+        );
     }
 
     [Fact]
     public void RewardAboveHighestThresholdFillsAllBands()
     {
-        var state = BiologyRewardBandScale.Calculate(
-            12_000_001,
-            12_000_001,
-            BiologyRewardThresholds.Default);
+        var state = BiologyRewardBandScale.Calculate(12_000_001, 12_000_001, BiologyRewardThresholds.Default);
 
-        Assert.All(
-            state.Segments,
-            segment => Assert.Equal(BiologyRewardBandSegment.Filled, segment));
+        Assert.All(state.Segments, segment => Assert.Equal(BiologyRewardBandSegment.Filled, segment));
     }
 
     [Fact]
     public void SignalGroupFrameAddsInsetsWithoutConstrainingItsChild()
     {
-        var child = new Border
-        {
-            Width = 30,
-            Height = 28,
-        };
-        var control = new BiologyRewardBandGroupControl
-        {
-            Child = child,
-            FrameBrush = Brushes.Orange,
-        };
+        var child = new Border { Width = 30, Height = 28 };
+        var control = new BiologyRewardBandGroupControl { Child = child, FrameBrush = Brushes.Orange };
 
         control.Measure(Size.Infinity);
         control.Arrange(new Rect(control.DesiredSize));

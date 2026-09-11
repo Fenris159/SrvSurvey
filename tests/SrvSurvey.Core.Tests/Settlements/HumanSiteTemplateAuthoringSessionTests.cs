@@ -29,7 +29,8 @@ public sealed class HumanSiteTemplateAuthoringSessionTests
         Assert.Equal(2, projection.Buildings[^1].Paths.Count);
         Assert.Contains(
             projection.Buildings[^1].Paths[1].Segments,
-            segment => segment.Kind == HumanSitePathSegmentKind.CubicBezier);
+            segment => segment.Kind == HumanSitePathSegmentKind.CubicBezier
+        );
     }
 
     [Fact]
@@ -40,20 +41,14 @@ public sealed class HumanSiteTemplateAuthoringSessionTests
 
         session.AddNamedPoint("Battery", offset, securityLevel: 2, floor: 3);
         session.AddDataTerminal(offset, securityLevel: 1, floor: 2);
-        session.AddSecureDoor(
-            offset,
-            rotation: -90,
-            securityLevel: 3,
-            floor: 1);
+        session.AddSecureDoor(offset, rotation: -90, securityLevel: 3, floor: 1);
 
         var named = Assert.Single(session.Template.NamedPoints);
         Assert.Equal("Battery", named.Name);
         Assert.Equal(2, named.SecurityLevel);
         Assert.Equal(3, named.Floor);
-        Assert.Equal(270, Assert.Single(
-            session.Template.SecureDoors).Rotation);
-        Assert.Equal(2, Assert.Single(
-            session.Template.DataTerminals).Floor);
+        Assert.Equal(270, Assert.Single(session.Template.SecureDoors).Rotation);
+        Assert.Equal(2, Assert.Single(session.Template.DataTerminals).Floor);
     }
 
     [Fact]
@@ -61,16 +56,11 @@ public sealed class HumanSiteTemplateAuthoringSessionTests
     {
         var session = new HumanSiteTemplateAuthoringSession(Template());
 
-        Assert.Throws<InvalidOperationException>(() =>
-            session.CommitBuilding("HAB"));
+        Assert.Throws<InvalidOperationException>(() => session.CommitBuilding("HAB"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => session.AddCircle(new HumanSiteMapPoint(0, 0), radius: 0));
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            session.AddCircle(new HumanSiteMapPoint(0, 0), radius: 0));
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
-            session.AddNamedPoint(
-                "Battery",
-                new HumanSiteMapPoint(double.NaN, 0),
-                securityLevel: 0,
-                floor: 1));
+            session.AddNamedPoint("Battery", new HumanSiteMapPoint(double.NaN, 0), securityLevel: 0, floor: 1)
+        );
 
         Assert.Empty(session.Template.Buildings);
         Assert.Empty(session.Template.NamedPoints);
@@ -83,11 +73,7 @@ public sealed class HumanSiteTemplateAuthoringSessionTests
         session.AddCircle(new HumanSiteMapPoint(0, 0), radius: 2);
         Assert.True(session.RemoveLastPendingPath());
         Assert.False(session.RemoveLastPendingPath());
-        session.AddNamedPoint(
-            "Medkit",
-            new HumanSiteMapPoint(1, 1),
-            securityLevel: 0,
-            floor: 1);
+        session.AddNamedPoint("Medkit", new HumanSiteMapPoint(1, 1), securityLevel: 0, floor: 1);
 
         Assert.True(session.RemoveLastNamedPoint());
         Assert.False(session.RemoveLastNamedPoint());
@@ -99,18 +85,12 @@ public sealed class HumanSiteTemplateAuthoringSessionTests
             HumanSiteEconomy.Agriculture,
             1,
             "Test",
-            [
-                new HumanSiteLandingPad(
-                    new HumanSiteMapPoint(1, 1),
-                    0,
-                    0,
-                    0,
-                    HumanSiteLandingPadSize.Small),
-            ],
+            [new HumanSiteLandingPad(new HumanSiteMapPoint(1, 1), 0, 0, 0, HumanSiteLandingPadSize.Small)],
             [],
             [],
             [],
             [],
-            []);
+            []
+        );
     }
 }

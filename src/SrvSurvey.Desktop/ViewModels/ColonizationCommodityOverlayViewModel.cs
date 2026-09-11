@@ -7,18 +7,15 @@ using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed class ColonizationCommodityOverlayViewModel
-    : INotifyPropertyChanged
+public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChanged
 {
     private ColonizationCommodityPlan plan = EmptyPlan();
     private EliteStatus? status;
     private string? musicTrack;
-    private ColonizationOverlayPreferences preferences =
-        ColonizationOverlayPreferences.Default;
+    private ColonizationOverlayPreferences preferences = ColonizationOverlayPreferences.Default;
     private IReadOnlyList<string> projectNames = [];
     private IReadOnlyList<ColonizationCommodityGroupViewModel> groups = [];
-    private HashSet<string> pendingCommodities =
-        new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+    private HashSet<string> pendingCommodities = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
     private bool hasMarketSinceDocking;
     private bool isSquadronBankOpen;
     private bool showSatisfiedGroups;
@@ -57,29 +54,27 @@ public sealed class ColonizationCommodityOverlayViewModel
 
     public bool HasPendingCargo => pendingCommodities.Count > 0;
 
-    public bool HasFleetCarriers => preferences.ShowFleetCarrierCargo
-        && Plan.FleetCarriers.Count > 0;
+    public bool HasFleetCarriers => preferences.ShowFleetCarrierCargo && Plan.FleetCarriers.Count > 0;
 
     public bool IsConstructionComplete => Plan.IsConstructionComplete;
 
     public bool IsConstructionFailed => Plan.IsConstructionFailed;
 
-    public bool HasWarning => Plan.IsLocalProjectUntracked
-        || Plan.IsDockedAtUntrackedFleetCarrier
-        || IsConstructionFailed;
+    public bool HasWarning =>
+        Plan.IsLocalProjectUntracked || Plan.IsDockedAtUntrackedFleetCarrier || IsConstructionFailed;
 
-    public string WarningText => IsConstructionFailed
-        ? "Construction failed"
-        : (Plan.IsLocalProjectUntracked) switch
-        {
-            true => "This construction site is not in the active project list.",
-            false => (Plan.IsDockedAtUntrackedFleetCarrier) switch
+    public string WarningText =>
+        IsConstructionFailed
+            ? "Construction failed"
+            : (Plan.IsLocalProjectUntracked) switch
             {
-                true => "The current Fleet Carrier is not linked to this "
-                                                                                                   + "commander in Raven Colonial.",
-                false => string.Empty
-            }
-        };
+                true => "This construction site is not in the active project list.",
+                false => (Plan.IsDockedAtUntrackedFleetCarrier) switch
+                {
+                    true => "The current Fleet Carrier is not linked to this " + "commander in Raven Colonial.",
+                    false => string.Empty,
+                },
+            };
 
     public string RemainingSummary
     {
@@ -101,17 +96,14 @@ public sealed class ColonizationCommodityOverlayViewModel
                 return string.Empty;
             }
 
-            var trips = Plan.FleetCarrierDeficitTrips is long tripCount
-                ? $" | {tripCount:N0} trips"
-                : string.Empty;
+            var trips = Plan.FleetCarrierDeficitTrips is long tripCount ? $" | {tripCount:N0} trips" : string.Empty;
             var names = string.Join(
                 "  •  ",
                 Plan.FleetCarriers.Select(carrier =>
-                    string.IsNullOrWhiteSpace(carrier.DisplayName)
-                        ? carrier.Name
-                        : carrier.DisplayName));
-            return $"{Plan.FleetCarriers.Count:N0} FCs: "
-                + $"{Plan.FleetCarrierDeficit:N0} deficit{trips}\n{names}";
+                    string.IsNullOrWhiteSpace(carrier.DisplayName) ? carrier.Name : carrier.DisplayName
+                )
+            );
+            return $"{Plan.FleetCarriers.Count:N0} FCs: " + $"{Plan.FleetCarrierDeficit:N0} deficit{trips}\n{names}";
         }
     }
 
@@ -119,23 +111,22 @@ public sealed class ColonizationCommodityOverlayViewModel
     {
         get
         {
-            var mode = OverlayGameModeResolver.Resolve(
-                status,
-                musicTrack: musicTrack);
+            var mode = OverlayGameModeResolver.Resolve(status, musicTrack: musicTrack);
             return preferences.AutoShow
                 && Plan.HasContent
-                && mode is not OverlayGameMode.FsdJumping
-                    and not OverlayGameMode.GalaxyMap
-                    and not OverlayGameMode.ExternalPanel
-                && (mode == OverlayGameMode.StationServices
-                && ((hasMarketSinceDocking && Plan.ProjectNames.Count > 0)
-                    || Plan.IsAtConstructionSite)
-            || preferences.ShowOnRightPanel
-                && mode == OverlayGameMode.InternalPanel
-                && Plan.ProjectNames.Count > 0
-            || Plan.IsAtConstructionSite
-                && mode == OverlayGameMode.Docked
-            || isSquadronBankOpen);
+                && mode
+                    is not OverlayGameMode.FsdJumping
+                        and not OverlayGameMode.GalaxyMap
+                        and not OverlayGameMode.ExternalPanel
+                && (
+                    mode == OverlayGameMode.StationServices
+                        && ((hasMarketSinceDocking && Plan.ProjectNames.Count > 0) || Plan.IsAtConstructionSite)
+                    || preferences.ShowOnRightPanel
+                        && mode == OverlayGameMode.InternalPanel
+                        && Plan.ProjectNames.Count > 0
+                    || Plan.IsAtConstructionSite && mode == OverlayGameMode.Docked
+                    || isSquadronBankOpen
+                );
         }
     }
 
@@ -143,14 +134,13 @@ public sealed class ColonizationCommodityOverlayViewModel
     {
         get
         {
-            var mode = OverlayGameModeResolver.Resolve(
-                status,
-                musicTrack: musicTrack);
+            var mode = OverlayGameModeResolver.Resolve(status, musicTrack: musicTrack);
             return preferences.AutoShow
                 && Plan.HasContent
-                && mode is not OverlayGameMode.Offline
-                and not OverlayGameMode.FsdJumping
-                and not OverlayGameMode.ExternalPanel;
+                && mode
+                    is not OverlayGameMode.Offline
+                        and not OverlayGameMode.FsdJumping
+                        and not OverlayGameMode.ExternalPanel;
         }
     }
 
@@ -161,10 +151,7 @@ public sealed class ColonizationCommodityOverlayViewModel
 
     public void UpdateMusicTrack(string? currentMusicTrack)
     {
-        if (string.Equals(
-                musicTrack,
-                currentMusicTrack,
-                StringComparison.Ordinal))
+        if (string.Equals(musicTrack, currentMusicTrack, StringComparison.Ordinal))
         {
             return;
         }
@@ -180,12 +167,10 @@ public sealed class ColonizationCommodityOverlayViewModel
             : (preferences.ShowFleetCarrierDelta) switch
             {
                 true => "FC Δ",
-                false => "FC"
+                false => "FC",
             };
 
-    public string ShipColumnHeader => preferences.InlineFleetCarrierCargo
-        ? string.Empty
-        : "SHIP";
+    public string ShipColumnHeader => preferences.InlineFleetCarrierCargo ? string.Empty : "SHIP";
 
     public string PlatformStatus
     {
@@ -199,15 +184,14 @@ public sealed class ColonizationCommodityOverlayViewModel
         private set => SetField(ref isClickThrough, value);
     }
 
-    public string InputMode => IsClickThrough
-        ? "CLICK-THROUGH"
-        : "PASS-THROUGH UNAVAILABLE";
+    public string InputMode => IsClickThrough ? "CLICK-THROUGH" : "PASS-THROUGH UNAVAILABLE";
 
     public void Apply(
         ColonizationCommodityPlan updatedPlan,
         EliteStatus? updatedStatus,
         bool updatedHasMarketSinceDocking = false,
-        bool updatedIsSquadronBankOpen = false)
+        bool updatedIsSquadronBankOpen = false
+    )
     {
         ArgumentNullException.ThrowIfNull(updatedPlan);
         Plan = updatedPlan;
@@ -225,8 +209,7 @@ public sealed class ColonizationCommodityOverlayViewModel
         OnPropertyChanged(nameof(CollapseModeText));
     }
 
-    public void ApplyPreferences(
-        ColonizationOverlayPreferences updatedPreferences)
+    public void ApplyPreferences(ColonizationOverlayPreferences updatedPreferences)
     {
         ArgumentNullException.ThrowIfNull(updatedPreferences);
         preferences = updatedPreferences;
@@ -237,12 +220,12 @@ public sealed class ColonizationCommodityOverlayViewModel
         OnPropertyChanged(nameof(ShipColumnHeader));
     }
 
-    public void ApplyPendingFleetCarrierCargo(
-        IEnumerable<string>? commodities)
+    public void ApplyPendingFleetCarrierCargo(IEnumerable<string>? commodities)
     {
-        pendingCommodities = commodities?
-            .Where(commodity => !string.IsNullOrWhiteSpace(commodity))
-            .ToHashSet(StringComparer.OrdinalIgnoreCase)
+        pendingCommodities =
+            commodities
+                ?.Where(commodity => !string.IsNullOrWhiteSpace(commodity))
+                .ToHashSet(StringComparer.OrdinalIgnoreCase)
             ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         RebuildGroups();
         OnPropertyChanged(nameof(HasPendingCargo));
@@ -258,36 +241,36 @@ public sealed class ColonizationCommodityOverlayViewModel
 
     private void RebuildGroups()
     {
-        Groups = Plan.Rows
-            .GroupBy(row => row.Category)
+        Groups = Plan
+            .Rows.GroupBy(row => row.Category)
             .Select(group =>
             {
-                var rows = group.Select((row, rowIndex) =>
-                        new ColonizationCommodityOverlayRowViewModel(
-                            row,
-                            preferences.ShowFleetCarrierCargo,
-                            preferences.ShowFleetCarrierDelta,
-                            preferences.InlineFleetCarrierCargo,
-                            preferences
-                                .HighlightAlmostCoveredFleetCarrierLoads,
-                            pendingCommodities.Contains(row.Commodity),
-                            rowIndex % 2 == 0))
+                var rows = group
+                    .Select(
+                        (row, rowIndex) =>
+                            new ColonizationCommodityOverlayRowViewModel(
+                                row,
+                                preferences.ShowFleetCarrierCargo,
+                                preferences.ShowFleetCarrierDelta,
+                                preferences.InlineFleetCarrierCargo,
+                                preferences.HighlightAlmostCoveredFleetCarrierLoads,
+                                pendingCommodities.Contains(row.Commodity),
+                                rowIndex % 2 == 0
+                            )
+                    )
                     .ToArray();
-                var canCollapse = !Plan.IsAtConstructionSite
+                var canCollapse =
+                    !Plan.IsAtConstructionSite
                     && preferences.ShowFleetCarrierCargo
                     && Plan.FleetCarriers.Count > 0
-                    && rows.All(row =>
-                        row.FleetCarriersHaveEnough && row.InShip == 0);
-                var isCollapsed = canCollapse
-                    && (preferences.CollapseCoveredGroups
-                        ^ showSatisfiedGroups);
+                    && rows.All(row => row.FleetCarriersHaveEnough && row.InShip == 0);
+                var isCollapsed = canCollapse && (preferences.CollapseCoveredGroups ^ showSatisfiedGroups);
                 return new ColonizationCommodityGroupViewModel(
                     group.Key,
                     isCollapsed ? [] : rows,
                     isCollapsed,
-                    isCollapsed
-                        ? $"{rows.Length:N0} commodities covered by linked FCs"
-                        : string.Empty);
+                    isCollapsed ? $"{rows.Length:N0} commodities covered by linked FCs" : string.Empty
+                );
             })
             .ToArray();
     }
@@ -326,14 +309,11 @@ public sealed class ColonizationCommodityOverlayViewModel
             IsLocalProjectUntracked = false,
             IsDockedAtUntrackedFleetCarrier = false,
             IsConstructionComplete = false,
-            IsConstructionFailed = false
+            IsConstructionFailed = false,
         };
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -345,12 +325,9 @@ public sealed class ColonizationCommodityOverlayViewModel
         return true;
     }
 
-    private void OnPropertyChanged(
-        [CallerMemberName] string? propertyName = null)
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(propertyName));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
 
@@ -358,7 +335,8 @@ public sealed record ColonizationCommodityGroupViewModel(
     string Name,
     IReadOnlyList<ColonizationCommodityOverlayRowViewModel> Rows,
     bool IsCollapsed,
-    string CollapsedSummary);
+    string CollapsedSummary
+);
 
 public sealed record ColonizationCommodityOverlayRowViewModel(
     string Commodity,
@@ -375,7 +353,8 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
     bool ShowFleetCarrierDelta,
     bool InlineFleetCarrierCargo,
     bool HighlightAlmostCoveredFleetCarrierLoads,
-    bool IsPending)
+    bool IsPending
+)
 {
     public ColonizationCommodityOverlayRowViewModel(
         ColonizationCommodityPlanRow row,
@@ -384,7 +363,8 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
         bool inlineFleetCarrierCargo,
         bool highlightAlmostCoveredFleetCarrierLoads,
         bool isPending,
-        bool isAlternateRow)
+        bool isAlternateRow
+    )
         : this(
             row.Commodity,
             row.DisplayName,
@@ -400,7 +380,8 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
             showFleetCarrierDelta,
             inlineFleetCarrierCargo,
             highlightAlmostCoveredFleetCarrierLoads,
-            isPending)
+            isPending
+        )
     {
         IsAvailableAtCurrentMarket = row.IsAvailableAtCurrentMarket;
         IsUnavailableAtCurrentMarket = row.IsUnavailableAtCurrentMarket;
@@ -423,26 +404,24 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
         && CanCompleteFleetCarrierLoad
         && (!InlineFleetCarrierCargo || InShip == 0);
 
-    public bool IsFleetCarrierValueNormal =>
-        !IsFleetCarrierLoadHighlighted;
+    public bool IsFleetCarrierValueNormal => !IsFleetCarrierLoadHighlighted;
 
     public bool HasMarketBadge => IsAvailableAtCurrentMarket;
 
-    public string MarketBadgeText => IsFleetCarrierLoadHighlighted
-        ? (InShip >= FleetCarrierDeficit) switch
-        {
-            true => "FC READY",
-            false => "FC LOAD"
-        }
-        : "MARKET";
+    public string MarketBadgeText =>
+        IsFleetCarrierLoadHighlighted
+            ? (InShip >= FleetCarrierDeficit) switch
+            {
+                true => "FC READY",
+                false => "FC LOAD",
+            }
+            : "MARKET";
 
     public double RowOpacity => IsUnavailableAtCurrentMarket ? 0.48 : 1;
 
     public string NeededText => IsPending ? "..." : Needed.ToString("N0");
 
-    public string InShipText => !InlineFleetCarrierCargo && InShip > 0
-        ? InShip.ToString("N0")
-        : string.Empty;
+    public string InShipText => !InlineFleetCarrierCargo && InShip > 0 ? InShip.ToString("N0") : string.Empty;
 
     public string OnFleetCarriersText
     {
@@ -463,16 +442,13 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
                 return string.Empty;
             }
 
-            if (!ShowFleetCarrierDelta
-                && !IsFleetCarrierLoadHighlighted)
+            if (!ShowFleetCarrierDelta && !IsFleetCarrierLoadHighlighted)
             {
                 return OnFleetCarriers.ToString("N0");
             }
 
             var difference = OnFleetCarriers - Needed;
-            return difference > 0
-                ? $"+{difference:N0}"
-                : difference.ToString("N0");
+            return difference > 0 ? $"+{difference:N0}" : difference.ToString("N0");
         }
     }
 
@@ -490,13 +466,14 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
 
     public bool IsDimmedDeficit => !IsSatisfied && IsDimmedItem;
 
-    public string AssignmentText => IsAssignedToCommander
-        ? "PIN"
-        : (IsAssignedToOther) switch
-        {
-            true => "OTHER",
-            false => string.Empty
-        };
+    public string AssignmentText =>
+        IsAssignedToCommander
+            ? "PIN"
+            : (IsAssignedToOther) switch
+            {
+                true => "OTHER",
+                false => string.Empty,
+            };
 
     public bool HasAssignment => IsAssignedToCommander || IsAssignedToOther;
 }

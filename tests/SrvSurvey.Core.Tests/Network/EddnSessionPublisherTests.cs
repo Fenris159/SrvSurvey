@@ -9,10 +9,8 @@ public sealed class EddnSessionPublisherTests
     [Fact]
     public async Task DisablingSessionCancelsAnActiveCompanionRead()
     {
-        var started = new TaskCompletionSource(
-            TaskCreationOptions.RunContinuationsAsynchronously);
-        var cancelled = new TaskCompletionSource(
-            TaskCreationOptions.RunContinuationsAsynchronously);
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cancelled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var sink = new RecordingSink();
         using var session = CreateSession(
             sink,
@@ -31,13 +29,15 @@ public sealed class EddnSessionPublisherTests
 
                 return new EddnCompanionReadResult(null, "unreachable");
             },
-            journalDirectory: Path.GetTempPath());
+            journalDirectory: Path.GetTempPath()
+        );
         session.SetEnabled(true);
         session.SetEnabled(true);
 
-        session.Apply(Request(Event(
-            """{"timestamp":"2026-08-22T12:00:00Z","event":"Market","MarketID":42}""")),
-            CancellationToken.None);
+        session.Apply(
+            Request(Event("""{"timestamp":"2026-08-22T12:00:00Z","event":"Market","MarketID":42}""")),
+            CancellationToken.None
+        );
         await started.Task.WaitAsync(TimeSpan.FromSeconds(2));
 
         session.SetEnabled(false);
@@ -54,27 +54,24 @@ public sealed class EddnSessionPublisherTests
         var sink = new RecordingSink();
         using var session = CreateSession(
             sink,
-            (_, _, _) => Task.FromResult(
-                new EddnCompanionReadResult(null, "file unavailable")),
-            logs.Add);
+            (_, _, _) => Task.FromResult(new EddnCompanionReadResult(null, "file unavailable")),
+            logs.Add
+        );
         session.SetEnabled(true);
         session.SetSuspended(false);
 
         var invalid = session.Apply(
-            Request(new JournalEventEnvelope(
-                "Broken",
-                null,
-                "{not-json",
-                default)),
-            CancellationToken.None);
+            Request(new JournalEventEnvelope("Broken", null, "{not-json", default)),
+            CancellationToken.None
+        );
         var missingDirectory = session.Apply(
-            Request(Event(
-                """{"timestamp":"2026-08-22T12:00:00Z","event":"Market","MarketID":42}""")),
-            CancellationToken.None);
+            Request(Event("""{"timestamp":"2026-08-22T12:00:00Z","event":"Market","MarketID":42}""")),
+            CancellationToken.None
+        );
         var mismatch = session.Apply(
-            Request(Event(
-                """{"timestamp":"2026-08-22T12:00:01Z","event":"LoadGame","Commander":"Other Cmdr"}""")),
-            CancellationToken.None);
+            Request(Event("""{"timestamp":"2026-08-22T12:00:01Z","event":"LoadGame","Commander":"Other Cmdr"}""")),
+            CancellationToken.None
+        );
 
         Assert.Contains("Broken", Assert.Single(invalid.Warnings));
         Assert.Contains("directory", Assert.Single(missingDirectory.Warnings));
@@ -85,19 +82,17 @@ public sealed class EddnSessionPublisherTests
 
         using var readFailure = CreateSession(
             sink,
-            (_, _, _) => Task.FromResult(
-                new EddnCompanionReadResult(null, "file unavailable")),
+            (_, _, _) => Task.FromResult(new EddnCompanionReadResult(null, "file unavailable")),
             logs.Add,
-            Path.GetTempPath());
+            Path.GetTempPath()
+        );
         readFailure.SetEnabled(true);
         readFailure.Apply(
-            Request(Event(
-                """{"timestamp":"2026-08-22T12:01:00Z","event":"Market","MarketID":42}""")),
-            CancellationToken.None);
+            Request(Event("""{"timestamp":"2026-08-22T12:01:00Z","event":"Market","MarketID":42}""")),
+            CancellationToken.None
+        );
         await readFailure.WaitForCompanionReadsAsync();
-        Assert.Contains(
-            logs,
-            line => line.Contains("file unavailable", StringComparison.Ordinal));
+        Assert.Contains(logs, line => line.Contains("file unavailable", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -109,43 +104,44 @@ public sealed class EddnSessionPublisherTests
         session.SetSuspended(true);
         session.SetSuspended(true);
         session.SetSuspended(false);
-        session.Apply(Request(
-            Event(
-                """{"timestamp":"2026-08-22T12:00:00Z","event":"Location","StarSystem":"Origin","SystemAddress":123,"StarPos":[1,2,3]}"""),
-            Event(
-                """{"timestamp":"2026-08-22T12:00:01Z","event":"FSSSignalDiscovered","SystemAddress":123,"SignalName":"High Grade Emissions","SignalType":"USS","USSType":"$USS_Type_VeryValuableSalvage;","ThreatLevel":0}""")),
-            CancellationToken.None);
+        session.Apply(
+            Request(
+                Event(
+                    """{"timestamp":"2026-08-22T12:00:00Z","event":"Location","StarSystem":"Origin","SystemAddress":123,"StarPos":[1,2,3]}"""
+                ),
+                Event(
+                    """{"timestamp":"2026-08-22T12:00:01Z","event":"FSSSignalDiscovered","SystemAddress":123,"SignalName":"High Grade Emissions","SignalType":"USS","USSType":"$USS_Type_VeryValuableSalvage;","ThreatLevel":0}"""
+                )
+            ),
+            CancellationToken.None
+        );
 
         session.Dispose();
         session.Dispose();
 
-        var queued = Assert.Single(
-            sink.Messages,
-            message => message.Prepared.eventName == "FSSSignalDiscovered");
+        var queued = Assert.Single(sink.Messages, message => message.Prepared.eventName == "FSSSignalDiscovered");
         Assert.Equal("FSSSignalDiscovered", queued.Prepared.eventName);
         Assert.Equal("Test Cmdr", queued.Header.uploaderID);
-        Assert.Equal(
-            "Origin",
-            queued.Prepared.message.Value<string>("StarSystem"));
+        Assert.Equal("Origin", queued.Prepared.message.Value<string>("StarSystem"));
     }
 
     private static EddnSessionPublisher CreateSession(
         RecordingSink sink,
-        Func<string, JObject, CancellationToken,
-            Task<EddnCompanionReadResult>>? companionReader = null,
+        Func<string, JObject, CancellationToken, Task<EddnCompanionReadResult>>? companionReader = null,
         Action<string>? log = null,
-        string? journalDirectory = null)
+        string? journalDirectory = null
+    )
     {
         return new EddnSessionPublisher(
             sink,
             new UploadPayloadHeader("Test Cmdr", "4.1", "r1", "2.0.95"),
             journalDirectory,
             log,
-            companionReader);
+            companionReader
+        );
     }
 
-    private static EddnApplyRequest Request(
-        params JournalEventEnvelope[] events)
+    private static EddnApplyRequest Request(params JournalEventEnvelope[] events)
     {
         return new EddnApplyRequest
         {
@@ -161,9 +157,7 @@ public sealed class EddnSessionPublisherTests
 
     private static JournalEventEnvelope Event(string json)
     {
-        Assert.True(
-            JournalEventEnvelope.TryParse(json, out var result, out var error),
-            error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out var result, out var error), error);
         return result!;
     }
 
@@ -182,14 +176,13 @@ public sealed class EddnSessionPublisherTests
             UploadPayloadHeader header,
             long expectedGeneration,
             string eventName,
-            Action? rejected = null)
+            Action? rejected = null
+        )
         {
             Messages.Add(new RecordedMessage(prepared, header.clone()));
             return true;
         }
     }
 
-    private sealed record RecordedMessage(
-        EddnPreparedMessage Prepared,
-        UploadPayloadHeader Header);
+    private sealed record RecordedMessage(EddnPreparedMessage Prepared, UploadPayloadHeader Header);
 }

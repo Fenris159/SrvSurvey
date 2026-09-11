@@ -10,7 +10,8 @@ public sealed record GuardianSurveyEditorLoadContext(
     string? FrontierId,
     bool IsOdyssey,
     GuardianCommanderSiteSurvey? Survey,
-    GuardianSiteTemplate? Template)
+    GuardianSiteTemplate? Template
+)
 {
     public bool ShowComponentMaterials { get; init; }
 
@@ -32,10 +33,7 @@ public sealed record GuardianSurveyEditorLoadContext(
 public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 {
     private readonly GuardianCommanderSurveyStore store;
-    private readonly Func<
-        GuardianCommanderSiteSurvey,
-        GuardianCommanderSiteSurvey,
-        Task> surveySaved;
+    private readonly Func<GuardianCommanderSiteSurvey, GuardianCommanderSiteSurvey, Task> surveySaved;
     private readonly AsyncCommand saveCommand;
     private readonly AsyncCommand resetCoordinatesCommand;
     private readonly AsyncCommand addRawPointCommand;
@@ -45,8 +43,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
     private string? frontierId;
     private bool isOdyssey = true;
     private bool showComponentMaterials;
-    private GuardianSiteTemplateCatalog templates =
-        new GuardianSiteTemplateCatalog([]);
+    private GuardianSiteTemplateCatalog templates = new GuardianSiteTemplateCatalog([]);
     private GuardianSiteSelectionKey? selectionContext;
     private GuardianSiteMapProjection? referenceProjection;
     private GuardianCommanderSiteSurvey? originalSurvey;
@@ -79,37 +76,33 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
     private GuardianActiveObeliskViewModel? selectedActiveObelisk;
     private GuardianPoiType newRawPointType = GuardianPoiType.Unknown;
     private GuardianSurveyMeasurement? liveMeasurement;
-    private string statusMessage =
-        "Visit the selected site before editing its commander survey.";
+    private string statusMessage = "Visit the selected site before editing its commander survey.";
 
     public GuardianSurveyEditorViewModel(
         GuardianCommanderSurveyStore store,
-        Func<
-            GuardianCommanderSiteSurvey,
-            GuardianCommanderSiteSurvey,
-            Task> surveySaved)
+        Func<GuardianCommanderSiteSurvey, GuardianCommanderSiteSurvey, Task> surveySaved
+    )
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
-        this.surveySaved = surveySaved
-            ?? throw new ArgumentNullException(nameof(surveySaved));
+        this.surveySaved = surveySaved ?? throw new ArgumentNullException(nameof(surveySaved));
         saveCommand = new AsyncCommand(SaveAsync, () => IsAvailable && !IsBusy);
         resetCoordinatesCommand = new AsyncCommand(
             ResetCoordinatesAsync,
-            () => IsAvailable && !IsBusy && CoordinatesDifferFromSaved);
+            () => IsAvailable && !IsBusy && CoordinatesDifferFromSaved
+        );
         addRawPointCommand = new AsyncCommand(
             AddRawPointAsync,
-            () => IsAvailable && !IsBusy && liveMeasurement is not null);
+            () => IsAvailable && !IsBusy && liveMeasurement is not null
+        );
         removeRawPointCommand = new AsyncCommand(
             RemoveSelectedRawPointAsync,
-            () => IsAvailable
-                && !IsBusy
-                && SelectedPoint is { IsRaw: true, IsReferenceOnly: false });
-        addActiveObeliskCommand = new AsyncCommand(
-            AddActiveObeliskAsync,
-            () => IsAvailable && !IsBusy);
+            () => IsAvailable && !IsBusy && SelectedPoint is { IsRaw: true, IsReferenceOnly: false }
+        );
+        addActiveObeliskCommand = new AsyncCommand(AddActiveObeliskAsync, () => IsAvailable && !IsBusy);
         removeActiveObeliskCommand = new AsyncCommand(
             RemoveSelectedActiveObeliskAsync,
-            () => IsAvailable && !IsBusy && SelectedActiveObelisk is not null);
+            () => IsAvailable && !IsBusy && SelectedActiveObelisk is not null
+        );
         SaveCommand = saveCommand;
         ResetCoordinatesCommand = resetCoordinatesCommand;
         AddRawPointCommand = addRawPointCommand;
@@ -133,9 +126,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
     public ICommand RemoveActiveObeliskCommand { get; }
 
     public IReadOnlyList<GuardianPoiType> RawPointTypes { get; } =
-        Enum.GetValues<GuardianPoiType>()
-            .Where(type => type != GuardianPoiType.EmptyPuddle)
-            .ToArray();
+        Enum.GetValues<GuardianPoiType>().Where(type => type != GuardianPoiType.EmptyPuddle).ToArray();
 
     public IReadOnlyList<string> SiteTypeOptions { get; private set; } = [];
 
@@ -216,10 +207,8 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         }
     }
 
-    public bool IsRuinsSite => string.Equals(
-            SiteType,
-            "Alpha",
-            StringComparison.OrdinalIgnoreCase)
+    public bool IsRuinsSite =>
+        string.Equals(SiteType, "Alpha", StringComparison.OrdinalIgnoreCase)
         || string.Equals(SiteType, "Beta", StringComparison.OrdinalIgnoreCase)
         || string.Equals(SiteType, "Gamma", StringComparison.OrdinalIgnoreCase);
 
@@ -306,9 +295,11 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             }
 
             catalogMetadataDirty = true;
-            if (value is not { } requested
+            if (
+                value is not { } requested
                 || distanceOrigin is not { } origin
-                || !TryGetGalacticPosition(out var position))
+                || !TryGetGalacticPosition(out var position)
+            )
             {
                 UpdateDistanceFromGalacticCoordinates();
                 return;
@@ -317,7 +308,8 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             var existingDistance = origin.DistanceTo(position);
             if (existingDistance <= double.Epsilon)
             {
-                StatusMessage = "Distance LY cannot establish a direction from the origin. Enter galactic X, Y, and Z first.";
+                StatusMessage =
+                    "Distance LY cannot establish a direction from the origin. Enter galactic X, Y, and Z first.";
                 UpdateDistanceFromGalacticCoordinates();
                 return;
             }
@@ -327,8 +319,10 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
                 new GalacticCoordinate(
                     origin.X + ((position.X - origin.X) * scale),
                     origin.Y + ((position.Y - origin.Y) * scale),
-                    origin.Z + ((position.Z - origin.Z) * scale)),
-                updateDistance: false);
+                    origin.Z + ((position.Z - origin.Z) * scale)
+                ),
+                updateDistance: false
+            );
         }
     }
 
@@ -346,13 +340,15 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
     public bool HasDistanceOrigin => distanceOrigin is not null;
 
-    public bool CanEditDistanceLy => distanceOrigin is { } origin
+    public bool CanEditDistanceLy =>
+        distanceOrigin is { } origin
         && TryGetGalacticPosition(out var position)
         && origin.DistanceTo(position) > double.Epsilon;
 
-    public string DistanceOriginText => distanceOrigin is null
-        ? "Distance LY is unavailable until the journal or a custom origin supplies galactic coordinates."
-        : $"Distance LY is measured from {distanceOriginName ?? "the selected origin"}. Editing it preserves the journal-derived galactic bearing while correcting the stored distance.";
+    public string DistanceOriginText =>
+        distanceOrigin is null
+            ? "Distance LY is unavailable until the journal or a custom origin supplies galactic coordinates."
+            : $"Distance LY is measured from {distanceOriginName ?? "the selected origin"}. Editing it preserves the journal-derived galactic bearing while correcting the stored distance.";
 
     private void SetGalacticCoordinate(ref decimal? field, decimal? value)
     {
@@ -366,9 +362,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(CanEditDistanceLy));
     }
 
-    private void SetGalacticCoordinates(
-        GalacticCoordinate? position,
-        bool updateDistance)
+    private void SetGalacticCoordinates(GalacticCoordinate? position, bool updateDistance)
     {
         var wasLoading = isLoading;
         isLoading = true;
@@ -386,8 +380,8 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
     private void UpdateDistanceFromGalacticCoordinates()
     {
-        var nextDistance = distanceOrigin is { } origin
-            && TryGetGalacticPosition(out var position)
+        var nextDistance =
+            distanceOrigin is { } origin && TryGetGalacticPosition(out var position)
                 ? (decimal?)origin.DistanceTo(position)
                 : null;
         var wasLoading = isLoading;
@@ -398,14 +392,9 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
     private bool TryGetGalacticPosition(out GalacticCoordinate position)
     {
-        if (GalacticX is { } x
-            && GalacticY is { } y
-            && GalacticZ is { } z)
+        if (GalacticX is { } x && GalacticY is { } y && GalacticZ is { } z)
         {
-            position = new GalacticCoordinate(
-                decimal.ToDouble(x),
-                decimal.ToDouble(y),
-                decimal.ToDouble(z));
+            position = new GalacticCoordinate(decimal.ToDouble(x), decimal.ToDouble(y), decimal.ToDouble(z));
             return true;
         }
 
@@ -418,14 +407,9 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         get
         {
             var savedLocation = originalSurvey?.Survey.Location;
-            var savedLatitude = savedLocation is { } latitude
-                ? (decimal?)latitude.Latitude
-                : null;
-            var savedLongitude = savedLocation is { } longitude
-                ? (decimal?)longitude.Longitude
-                : null;
-            return SurfaceLatitude != savedLatitude
-                || SurfaceLongitude != savedLongitude;
+            var savedLatitude = savedLocation is { } latitude ? (decimal?)latitude.Latitude : null;
+            var savedLongitude = savedLocation is { } longitude ? (decimal?)longitude.Longitude : null;
+            return SurfaceLatitude != savedLatitude || SurfaceLongitude != savedLongitude;
         }
     }
 
@@ -472,29 +456,22 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
     public bool HasSelectedPoint => SelectedPoint is not null;
 
-    public bool HasSelectedRawPoint => SelectedPoint is
-    { IsRaw: true, IsReferenceOnly: false };
+    public bool HasSelectedRawPoint => SelectedPoint is { IsRaw: true, IsReferenceOnly: false };
 
-    public bool HasSelectedMapMarker =>
-        !string.IsNullOrWhiteSpace(SelectedPointName);
+    public bool HasSelectedMapMarker => !string.IsNullOrWhiteSpace(SelectedPointName);
 
     public bool IsMapSummaryVisible => !HasSelectedMapMarker;
 
-    public bool CanEditSelectedPoint => IsAvailable
-        && SelectedPoint is { IsReferenceOnly: false };
+    public bool CanEditSelectedPoint => IsAvailable && SelectedPoint is { IsReferenceOnly: false };
 
-    public bool IsSelectedPointReadOnly => HasSelectedMapMarker
-        && !CanEditSelectedPoint;
+    public bool IsSelectedPointReadOnly => HasSelectedMapMarker && !CanEditSelectedPoint;
 
     public string? SelectedPointName
     {
         get => selectedPointName;
         set
         {
-            if (string.Equals(
-                    selectedPointName,
-                    value,
-                    StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(selectedPointName, value, StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
@@ -503,10 +480,9 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             NotifySelectedPointStateChanged(selectionNameChanged: true);
             var point = value is null
                 ? null
-                : selectableMapPoints.FirstOrDefault(candidate => string.Equals(
-                    candidate.Name,
-                    value,
-                    StringComparison.OrdinalIgnoreCase));
+                : selectableMapPoints.FirstOrDefault(candidate =>
+                    string.Equals(candidate.Name, value, StringComparison.OrdinalIgnoreCase)
+                );
             if (!ReferenceEquals(selectedPoint, point))
             {
                 selectedPoint = point;
@@ -515,10 +491,9 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             }
 
             SelectedActiveObelisk = value is not null
-                ? ActiveObelisks.FirstOrDefault(candidate => string.Equals(
-                    candidate.Name,
-                    value,
-                    StringComparison.OrdinalIgnoreCase))
+                ? ActiveObelisks.FirstOrDefault(candidate =>
+                    string.Equals(candidate.Name, value, StringComparison.OrdinalIgnoreCase)
+                )
                 : null;
         }
     }
@@ -530,11 +505,10 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         {
             if (SetField(ref selectedActiveObelisk, value))
             {
-                if (value is not null
-                    && !string.Equals(
-                        selectedPointName,
-                        value.Name,
-                        StringComparison.OrdinalIgnoreCase))
+                if (
+                    value is not null
+                    && !string.Equals(selectedPointName, value.Name, StringComparison.OrdinalIgnoreCase)
+                )
                 {
                     selectedPointName = value.Name;
                     NotifySelectedPointStateChanged(selectionNameChanged: true);
@@ -555,11 +529,12 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
     public bool HasLiveMeasurement => liveMeasurement is not null;
 
-    public string LiveMeasurementText => liveMeasurement is { } measurement
-        ? $"{measurement.Distance:N1} m from origin · "
-            + $"angle {measurement.Angle:N1}° · "
-            + $"rotation {measurement.Rotation:N0}°"
-        : "Stand at the new point in the active selected site with valid surface coordinates.";
+    public string LiveMeasurementText =>
+        liveMeasurement is { } measurement
+            ? $"{measurement.Distance:N1} m from origin · "
+                + $"angle {measurement.Angle:N1}° · "
+                + $"rotation {measurement.Rotation:N0}°"
+            : "Stand at the new point in the active selected site with valid surface coordinates.";
 
     public string StatusMessage
     {
@@ -581,20 +556,17 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
                 siteReference.SystemAddress,
                 siteReference.BodyId,
                 siteReference.Index,
-                siteReference.SiteId);
-        var previousSelectionName = selectionContext == nextSelectionContext
-            ? SelectedPointName
-            : null;
-        var preserveCatalogDraft = selectionContext == nextSelectionContext
-            && catalogMetadataDirty;
+                siteReference.SiteId
+            );
+        var previousSelectionName = selectionContext == nextSelectionContext ? SelectedPointName : null;
+        var preserveCatalogDraft = selectionContext == nextSelectionContext && catalogMetadataDirty;
         selectionContext = nextSelectionContext;
         frontierId = context.FrontierId;
         isOdyssey = context.IsOdyssey;
         showComponentMaterials = context.ShowComponentMaterials;
-        templates = templateCatalog
-            ?? (template is null
-                ? new GuardianSiteTemplateCatalog([])
-                : new GuardianSiteTemplateCatalog([template]));
+        templates =
+            templateCatalog
+            ?? (template is null ? new GuardianSiteTemplateCatalog([]) : new GuardianSiteTemplateCatalog([template]));
         referenceProjection = context.ReferenceProjection;
         originalSurvey = survey;
         distanceOrigin = context.DistanceOrigin;
@@ -605,13 +577,12 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(CanEditDistanceLy));
         OnPropertyChanged(nameof(DistanceOriginText));
         SelectedPointName = null;
-        IsAvailable = frontierId is not null
-            && survey is not null;
+        IsAvailable = frontierId is not null && survey is not null;
         if (!IsAvailable || survey is null)
         {
             isLoading = true;
-            SiteTypeOptions = templates.Templates
-                .Select(candidate => candidate.SiteType)
+            SiteTypeOptions = templates
+                .Templates.Select(candidate => candidate.SiteType)
                 .Order(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
             OnPropertyChanged(nameof(SiteTypeOptions));
@@ -626,10 +597,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             catalogMetadataDirty = false;
             Notes = string.Empty;
             Points = [];
-            selectableMapPoints = BuildSelectableMapPoints(
-                template,
-                referenceProjection,
-                Points);
+            selectableMapPoints = BuildSelectableMapPoints(template, referenceProjection, Points);
             ObeliskGroups = [];
             ActiveObelisks = [];
             SelectedPointName = previousSelectionName;
@@ -644,8 +612,8 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         var resolvedSiteType = !string.IsNullOrWhiteSpace(survey.SiteType)
             ? survey.SiteType
             : template?.SiteType ?? "Unknown";
-        SiteTypeOptions = templates.Templates
-            .Select(candidate => candidate.SiteType)
+        SiteTypeOptions = templates
+            .Templates.Select(candidate => candidate.SiteType)
             .Append(resolvedSiteType)
             .Where(candidate => !string.IsNullOrWhiteSpace(candidate))
             .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -655,164 +623,126 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         SiteType = resolvedSiteType;
         SiteHeading = survey.Survey.SiteHeading;
         RelicTowerHeading = survey.Survey.RelicTowerHeading;
-        SurfaceLatitude = survey.Survey.Location is { } location
-            ? (decimal)location.Latitude
-            : null;
-        SurfaceLongitude = survey.Survey.Location is { } longitude
-            ? (decimal)longitude.Longitude
-            : null;
+        SurfaceLatitude = survey.Survey.Location is { } location ? (decimal)location.Latitude : null;
+        SurfaceLongitude = survey.Survey.Location is { } longitude ? (decimal)longitude.Longitude : null;
         if (!preserveCatalogDraft)
         {
-            CatalogBodyName = survey.CatalogBodyName
-                ?? siteReference?.BodyName
-                ?? survey.BodyName;
-            SetGalacticCoordinates(
-                survey.StarPosition ?? siteReference?.Position,
-                updateDistance: true);
-            ArrivalDistanceLs = (decimal?)(survey.DistanceToArrivalLs
-                ?? siteReference?.DistanceToArrival);
+            CatalogBodyName = survey.CatalogBodyName ?? siteReference?.BodyName ?? survey.BodyName;
+            SetGalacticCoordinates(survey.StarPosition ?? siteReference?.Position, updateDistance: true);
+            ArrivalDistanceLs = (decimal?)(survey.DistanceToArrivalLs ?? siteReference?.DistanceToArrival);
             catalogMetadataDirty = false;
         }
         Notes = survey.Notes;
-        ActiveObelisks = survey.ActiveObelisks
-            .Select(obelisk => new GuardianActiveObeliskViewModel(obelisk))
+        ActiveObelisks = survey
+            .ActiveObelisks.Select(obelisk => new GuardianActiveObeliskViewModel(obelisk))
             .OrderBy(obelisk => obelisk.Name, StringComparer.OrdinalIgnoreCase)
             .ToArray();
         SelectedActiveObelisk = null;
-        LoadPointRows(
-            templates.Find(SiteType) ?? template,
-            survey.Survey,
-            previousSelectionName,
-            referenceProjection);
+        LoadPointRows(templates.Find(SiteType) ?? template, survey.Survey, previousSelectionName, referenceProjection);
         isLoading = false;
         StatusMessage = templates.Find(SiteType) is null
             ? AvailabilityMessage
-            : $"Loaded {Points.Count:N0} surveyable point(s) from "
-                + $"{Path.GetFileName(survey.Path)}.";
+            : $"Loaded {Points.Count:N0} surveyable point(s) from " + $"{Path.GetFileName(survey.Path)}.";
     }
 
     private void LoadPointRows(
         GuardianSiteTemplate? template,
         GuardianSurveyData survey,
         string? selectedPointName,
-        GuardianSiteMapProjection? referenceProjection = null)
+        GuardianSiteMapProjection? referenceProjection = null
+    )
     {
         if (template is null)
         {
             Points = [];
-            selectableMapPoints = BuildSelectableMapPoints(
-                template,
-                referenceProjection,
-                Points);
+            selectableMapPoints = BuildSelectableMapPoints(template, referenceProjection, Points);
             ObeliskGroups = [];
             SelectedPoint = null;
             return;
         }
 
         var rawPoints = survey.RawPointsOfInterest ?? [];
-        Points = template.SurveyPoints
-            .Concat(showComponentMaterials
-                ? template.DestructiblePanels
-                : [])
+        Points = template
+            .SurveyPoints.Concat(showComponentMaterials ? template.DestructiblePanels : [])
             .Select(point => new GuardianSurveyPoiViewModel(
                 point,
                 survey.PoiStatuses.GetValueOrDefault(point.Name),
-                survey.RelicHeadings.GetValueOrDefault(
-                    point.Name,
-                    -1),
+                survey.RelicHeadings.GetValueOrDefault(point.Name, -1),
                 isRaw: false,
-                survey.ComponentMaterials.GetValueOrDefault(
-                    point.Name),
-                showComponentMaterials))
-            .Concat(rawPoints.Select(point => new GuardianSurveyPoiViewModel(
-                point,
-                survey.PoiStatuses.GetValueOrDefault(
-                    point.Name,
-                    GuardianPoiStatus.Present),
-                point.Type == GuardianPoiType.Relic
-                    ? (int)point.Rotation
-                    : -1,
-                isRaw: true,
-                survey.ComponentMaterials.GetValueOrDefault(
-                    point.Name),
-                showComponentMaterials)))
+                survey.ComponentMaterials.GetValueOrDefault(point.Name),
+                showComponentMaterials
+            ))
+            .Concat(
+                rawPoints.Select(point => new GuardianSurveyPoiViewModel(
+                    point,
+                    survey.PoiStatuses.GetValueOrDefault(point.Name, GuardianPoiStatus.Present),
+                    point.Type == GuardianPoiType.Relic ? (int)point.Rotation : -1,
+                    isRaw: true,
+                    survey.ComponentMaterials.GetValueOrDefault(point.Name),
+                    showComponentMaterials
+                ))
+            )
             .OrderBy(point => point.Name, StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        selectableMapPoints = BuildSelectableMapPoints(
-            template,
-            referenceProjection,
-            Points);
-        ObeliskGroups = template.ObeliskGroupNameLocations.Keys
-            .Where(name => !string.IsNullOrEmpty(name))
+        selectableMapPoints = BuildSelectableMapPoints(template, referenceProjection, Points);
+        ObeliskGroups = template
+            .ObeliskGroupNameLocations.Keys.Where(name => !string.IsNullOrEmpty(name))
             .Select(name => name[0])
             .Distinct()
             .Order()
             .Select(group => new GuardianObeliskGroupViewModel(
                 group,
-                originalSurvey?.ObeliskGroups.Contains(group) == true))
+                originalSurvey?.ObeliskGroups.Contains(group) == true
+            ))
             .ToArray();
         SelectedPoint = selectedPointName is null
             ? null
-            : selectableMapPoints.FirstOrDefault(point => string.Equals(
-                point.Name,
-                selectedPointName,
-                StringComparison.OrdinalIgnoreCase));
+            : selectableMapPoints.FirstOrDefault(point =>
+                string.Equals(point.Name, selectedPointName, StringComparison.OrdinalIgnoreCase)
+            );
     }
 
     private IReadOnlyList<GuardianSurveyPoiViewModel> BuildSelectableMapPoints(
         GuardianSiteTemplate? template,
         GuardianSiteMapProjection? referenceProjection,
-        IReadOnlyList<GuardianSurveyPoiViewModel> editablePoints)
+        IReadOnlyList<GuardianSurveyPoiViewModel> editablePoints
+    )
     {
         if (referenceProjection is null)
         {
             return editablePoints;
         }
 
-        var editableByName = editablePoints.ToDictionary(
-            point => point.Name,
-            StringComparer.OrdinalIgnoreCase);
+        var editableByName = editablePoints.ToDictionary(point => point.Name, StringComparer.OrdinalIgnoreCase);
         var templatePointNames = (template?.PointsOfInterest ?? [])
             .Concat(template?.DestructiblePanels ?? [])
             .Select(point => point.Name)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var projectedRows = referenceProjection.Points
-            .Select(point => editableByName.GetValueOrDefault(point.Name)
-                ?? CreateReferencePointRow(
-                    point,
-                    isRaw: !templatePointNames.Contains(point.Name)))
+        var projectedRows = referenceProjection
+            .Points.Select(point =>
+                editableByName.GetValueOrDefault(point.Name)
+                ?? CreateReferencePointRow(point, isRaw: !templatePointNames.Contains(point.Name))
+            )
             .ToArray();
-        var projectedNames = projectedRows
-            .Select(point => point.Name)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        return projectedRows
-            .Concat(editablePoints.Where(point => !projectedNames.Contains(
-                point.Name)))
-            .ToArray();
+        var projectedNames = projectedRows.Select(point => point.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        return projectedRows.Concat(editablePoints.Where(point => !projectedNames.Contains(point.Name))).ToArray();
     }
 
-    private GuardianSurveyPoiViewModel CreateReferencePointRow(
-        GuardianProjectedPoint point,
-        bool isRaw)
+    private GuardianSurveyPoiViewModel CreateReferencePointRow(GuardianProjectedPoint point, bool isRaw)
     {
-        var componentMaterials = point.ComponentMaterials.Count == 0
-            ? null
-            : new GuardianComponentLoadout(
-                point.Name,
-                point.ComponentMaterials);
+        var componentMaterials =
+            point.ComponentMaterials.Count == 0
+                ? null
+                : new GuardianComponentLoadout(point.Name, point.ComponentMaterials);
         return new GuardianSurveyPoiViewModel(
-            new GuardianPointOfInterest(
-                point.Name,
-                point.Type,
-                point.Angle,
-                point.Distance,
-                point.Rotation),
+            new GuardianPointOfInterest(point.Name, point.Type, point.Angle, point.Distance, point.Rotation),
             point.Status,
             point.RelicHeading,
             isRaw,
             componentMaterials,
             showComponentMaterials,
-            isReferenceOnly: true);
+            isReferenceOnly: true
+        );
     }
 
     public void UpdateLiveMeasurement(GuardianSurveyMeasurement? measurement)
@@ -843,10 +773,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         if (preserveDraft && Points.Count > 0)
         {
             var maps = BuildSurveyMutationMaps();
-            var rawPoints = Points
-                .Where(point => point.IsRaw)
-                .Select(BuildRawPointForSave)
-                .ToArray();
+            var rawPoints = Points.Where(point => point.IsRaw).Select(BuildRawPointForSave).ToArray();
             source = new GuardianSurveyData
             {
                 SiteType = SiteType,
@@ -860,11 +787,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             };
         }
 
-        LoadPointRows(
-            templates.Find(SiteType),
-            source,
-            previousSelectionName,
-            referenceProjection);
+        LoadPointRows(templates.Find(SiteType), source, previousSelectionName, referenceProjection);
     }
 
     public Task AddActiveObeliskAsync()
@@ -880,7 +803,9 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
                 NextActiveObeliskName(ActiveObelisks.Select(item => item.Name)),
                 string.Empty,
                 false,
-                []));
+                []
+            )
+        );
         ActiveObelisks = ActiveObelisks
             .Append(obelisk)
             .OrderBy(item => item.Name, StringComparer.OrdinalIgnoreCase)
@@ -897,13 +822,8 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             return Task.CompletedTask;
         }
 
-        ActiveObelisks = ActiveObelisks
-            .Where(obelisk => !ReferenceEquals(obelisk, selected))
-            .ToArray();
-        if (string.Equals(
-                SelectedPointName,
-                selected.Name,
-                StringComparison.OrdinalIgnoreCase))
+        ActiveObelisks = ActiveObelisks.Where(obelisk => !ReferenceEquals(obelisk, selected)).ToArray();
+        if (string.Equals(SelectedPointName, selected.Name, StringComparison.OrdinalIgnoreCase))
         {
             SelectedPointName = null;
         }
@@ -923,11 +843,9 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             return Task.CompletedTask;
         }
 
-        var duplicate = Points.FirstOrDefault(point => IsTooClose(
-            point.Point,
-            NewRawPointType,
-            measurement.Angle,
-            measurement.Distance));
+        var duplicate = Points.FirstOrDefault(point =>
+            IsTooClose(point.Point, NewRawPointType, measurement.Angle, measurement.Distance)
+        );
         if (duplicate is not null)
         {
             StatusMessage = $"The measured point is too close to {duplicate.Name}; no raw point was added.";
@@ -940,24 +858,18 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             NewRawPointType,
             measurement.Angle,
             measurement.Distance,
-            NewRawPointType == GuardianPoiType.Relic
-                ? -1
-                : measurement.Rotation);
+            NewRawPointType == GuardianPoiType.Relic ? -1 : measurement.Rotation
+        );
         var row = new GuardianSurveyPoiViewModel(
             point,
             GuardianPoiStatus.Present,
             point.Type == GuardianPoiType.Relic ? (int)point.Rotation : -1,
             isRaw: true,
-            componentModeEnabled: showComponentMaterials);
-        Points = Points
-            .Append(row)
-            .OrderBy(item => item.Name, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
+            componentModeEnabled: showComponentMaterials
+        );
+        Points = Points.Append(row).OrderBy(item => item.Name, StringComparer.OrdinalIgnoreCase).ToArray();
         selectableMapPoints = selectableMapPoints
-            .Where(item => !string.Equals(
-                item.Name,
-                row.Name,
-                StringComparison.OrdinalIgnoreCase))
+            .Where(item => !string.Equals(item.Name, row.Name, StringComparison.OrdinalIgnoreCase))
             .Append(row)
             .OrderBy(item => item.Name, StringComparer.OrdinalIgnoreCase)
             .ToArray();
@@ -968,17 +880,14 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
     public Task RemoveSelectedRawPointAsync()
     {
-        if (SelectedPoint is not
-            { IsRaw: true, IsReferenceOnly: false } selected)
+        if (SelectedPoint is not { IsRaw: true, IsReferenceOnly: false } selected)
         {
             StatusMessage = "Only commander-specific raw points can be removed.";
             return Task.CompletedTask;
         }
 
         Points = Points.Where(point => !ReferenceEquals(point, selected)).ToArray();
-        selectableMapPoints = selectableMapPoints
-            .Where(point => !ReferenceEquals(point, selected))
-            .ToArray();
+        selectableMapPoints = selectableMapPoints.Where(point => !ReferenceEquals(point, selected)).ToArray();
         SelectedPoint = Points.Count > 0 ? Points[0] : null;
         StatusMessage = $"Removed local raw point {selected.Name}. Save the survey to persist the removal.";
         return Task.CompletedTask;
@@ -986,10 +895,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
     public async Task SaveAsync()
     {
-        if (!TryBeginSave(
-                out var normalizedSiteHeading,
-                out var normalizedRelicTowerHeading,
-                out var surfaceLocation))
+        if (!TryBeginSave(out var normalizedSiteHeading, out var normalizedRelicTowerHeading, out var surfaceLocation))
         {
             return;
         }
@@ -997,10 +903,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         IsBusy = true;
         try
         {
-            var updated = BuildSurveyForSave(
-                normalizedSiteHeading,
-                normalizedRelicTowerHeading,
-                surfaceLocation);
+            var updated = BuildSurveyForSave(normalizedSiteHeading, normalizedRelicTowerHeading, surfaceLocation);
             var path = await store.SaveAsync(frontierId!, isOdyssey, updated);
             var saved = updated with { Path = path };
             var previous = originalSurvey!;
@@ -1010,13 +913,10 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             await surveySaved(previous, saved);
             StatusMessage = $"Saved Guardian survey to {Path.GetFileName(path)}.";
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
-            StatusMessage = "The Guardian survey could not be saved: "
-                + exception.Message;
+            StatusMessage = "The Guardian survey could not be saved: " + exception.Message;
         }
         finally
         {
@@ -1027,23 +927,22 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
     private bool TryBeginSave(
         out int normalizedSiteHeading,
         out int normalizedRelicTowerHeading,
-        out GuardianSurfaceLocation? surfaceLocation)
+        out GuardianSurfaceLocation? surfaceLocation
+    )
     {
         normalizedSiteHeading = -1;
         normalizedRelicTowerHeading = -1;
         surfaceLocation = null;
-        if (!IsAvailable
-            || frontierId is null
-            || originalSurvey is null)
+        if (!IsAvailable || frontierId is null || originalSurvey is null)
         {
             StatusMessage = AvailabilityMessage;
             return false;
         }
 
-        if (!TryGetHeading(SiteHeading, out normalizedSiteHeading)
-            || !TryGetHeading(
-                RelicTowerHeading,
-                out normalizedRelicTowerHeading))
+        if (
+            !TryGetHeading(SiteHeading, out normalizedSiteHeading)
+            || !TryGetHeading(RelicTowerHeading, out normalizedRelicTowerHeading)
+        )
         {
             StatusMessage = "Headings must be -1 for unknown or a whole number from 0 through 359.";
             return false;
@@ -1060,37 +959,25 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             return false;
         }
 
-        return TryValidateCatalogMetadata()
-            && TryValidatePointsForSave()
-            && TryValidateActiveObelisksForSave();
+        return TryValidateCatalogMetadata() && TryValidatePointsForSave() && TryValidateActiveObelisksForSave();
     }
 
     private GuardianCommanderSiteSurvey BuildSurveyForSave(
         int normalizedSiteHeading,
         int normalizedRelicTowerHeading,
-        GuardianSurfaceLocation? surfaceLocation)
+        GuardianSurfaceLocation? surfaceLocation
+    )
     {
         var maps = BuildSurveyMutationMaps();
-        var rawPoints = Points
-            .Where(point => point.IsRaw)
-            .Select(BuildRawPointForSave)
-            .ToArray();
+        var rawPoints = Points.Where(point => point.IsRaw).Select(BuildRawPointForSave).ToArray();
         return originalSurvey! with
         {
             SiteType = SiteType,
             Notes = Notes,
-            CatalogBodyName = string.IsNullOrWhiteSpace(CatalogBodyName)
-                ? null
-                : CatalogBodyName.Trim(),
-            StarPosition = TryGetGalacticPosition(out var position)
-                ? position
-                : null,
-            DistanceToArrivalLs = ArrivalDistanceLs is { } arrival
-                ? decimal.ToDouble(arrival)
-                : null,
-            MapMarkerOffset = ResolveMapMarkerOffset(
-                surfaceLocation,
-                normalizedSiteHeading),
+            CatalogBodyName = string.IsNullOrWhiteSpace(CatalogBodyName) ? null : CatalogBodyName.Trim(),
+            StarPosition = TryGetGalacticPosition(out var position) ? position : null,
+            DistanceToArrivalLs = ArrivalDistanceLs is { } arrival ? decimal.ToDouble(arrival) : null,
+            MapMarkerOffset = ResolveMapMarkerOffset(surfaceLocation, normalizedSiteHeading),
             Survey = new GuardianSurveyData
             {
                 SiteType = SiteType,
@@ -1100,14 +987,9 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
                 PoiStatuses = maps.Statuses,
                 RelicHeadings = maps.RelicHeadings,
                 ComponentMaterials = maps.ComponentMaterials,
-                RawPointsOfInterest = rawPoints.Length == 0
-                    ? null
-                    : rawPoints,
+                RawPointsOfInterest = rawPoints.Length == 0 ? null : rawPoints,
             },
-            ObeliskGroups = ObeliskGroups
-                .Where(group => group.IsSelected)
-                .Select(group => group.Name)
-                .ToHashSet(),
+            ObeliskGroups = ObeliskGroups.Where(group => group.IsSelected).Select(group => group.Name).ToHashSet(),
             ActiveObelisks = ActiveObelisks
                 .Select(obelisk => obelisk.ToModel())
                 .OrderBy(obelisk => obelisk.Name, StringComparer.OrdinalIgnoreCase)
@@ -1123,8 +1005,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             return false;
         }
 
-        var coordinateCount = new[] { GalacticX, GalacticY, GalacticZ }
-            .Count(value => value is not null);
+        var coordinateCount = new[] { GalacticX, GalacticY, GalacticZ }.Count(value => value is not null);
         if (coordinateCount is > 0 and < 3)
         {
             StatusMessage = "Enter galactic X, Y, and Z together, or leave all three blank.";
@@ -1146,21 +1027,21 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         return true;
     }
 
-    private static GuardianPointOfInterest BuildRawPointForSave(
-        GuardianSurveyPoiViewModel point)
+    private static GuardianPointOfInterest BuildRawPointForSave(GuardianSurveyPoiViewModel point)
     {
-        return point.SupportsRelicHeading
-            && TryGetHeading(point.RelicHeading, out var heading)
-                ? point.Point with { Rotation = heading }
-                : point.Point;
+        return point.SupportsRelicHeading && TryGetHeading(point.RelicHeading, out var heading)
+            ? point.Point with
+            {
+                Rotation = heading,
+            }
+            : point.Point;
     }
 
     private bool TryValidatePointsForSave()
     {
         foreach (var point in Points)
         {
-            if (point.Status == GuardianPoiStatus.Empty
-                && !point.SupportsEmptyStatus)
+            if (point.Status == GuardianPoiStatus.Empty && !point.SupportsEmptyStatus)
             {
                 StatusMessage = $"{point.Name} ({point.Type}) cannot be marked empty.";
                 return false;
@@ -1168,15 +1049,15 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
             if (!TryGetHeading(point.RelicHeading, out _))
             {
-                StatusMessage = $"The relic heading for {point.Name} must be -1 "
-                    + "or a whole number from 0 through 359.";
+                StatusMessage =
+                    $"The relic heading for {point.Name} must be -1 " + "or a whole number from 0 through 359.";
                 return false;
             }
 
-
             if (point.IsRaw && !point.HasValidRawGeometry)
             {
-                StatusMessage = $"The raw geometry for {point.Name} must use an angle from 0 through 359.999, a non-negative distance, and a rotation from -1 through 359.999.";
+                StatusMessage =
+                    $"The raw geometry for {point.Name} must use an angle from 0 through 359.999, a non-negative distance, and a rotation from -1 through 359.999.";
                 return false;
             }
         }
@@ -1184,8 +1065,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         return true;
     }
 
-    private bool TryBuildSurfaceLocation(
-        out GuardianSurfaceLocation? location)
+    private bool TryBuildSurfaceLocation(out GuardianSurfaceLocation? location)
     {
         location = null;
         if (SurfaceLatitude is null && SurfaceLongitude is null)
@@ -1193,8 +1073,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             return true;
         }
 
-        if (SurfaceLatitude is not { } latitude
-            || SurfaceLongitude is not { } longitude)
+        if (SurfaceLatitude is not { } latitude || SurfaceLongitude is not { } longitude)
         {
             StatusMessage = "Enter both latitude and longitude, or leave both blank for an unknown surface origin.";
             return false;
@@ -1206,41 +1085,35 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             return false;
         }
 
-        location = new GuardianSurfaceLocation(
-            decimal.ToDouble(latitude),
-            decimal.ToDouble(longitude));
+        location = new GuardianSurfaceLocation(decimal.ToDouble(latitude), decimal.ToDouble(longitude));
         return true;
     }
 
-    public bool TryGetPreviewSurfaceLocation(
-        out GuardianSurfaceLocation location)
+    public bool TryGetPreviewSurfaceLocation(out GuardianSurfaceLocation location)
     {
         location = default;
-        if (SurfaceLatitude is not { } latitude
+        if (
+            SurfaceLatitude is not { } latitude
             || SurfaceLongitude is not { } longitude
             || latitude is < -90 or > 90
-            || longitude is < -180 or > 180)
+            || longitude is < -180 or > 180
+        )
         {
             return false;
         }
 
-        location = new GuardianSurfaceLocation(
-            decimal.ToDouble(latitude),
-            decimal.ToDouble(longitude));
+        location = new GuardianSurfaceLocation(decimal.ToDouble(latitude), decimal.ToDouble(longitude));
         return true;
     }
 
     public GuardianMapPoint GetPreviewMapMarkerOffset()
     {
-        return TryGetPreviewSurfaceLocation(out var location)
-            && TryGetHeading(SiteHeading, out var heading)
+        return TryGetPreviewSurfaceLocation(out var location) && TryGetHeading(SiteHeading, out var heading)
             ? ResolveMapMarkerOffset(location, heading)
             : originalSurvey?.MapMarkerOffset ?? default;
     }
 
-    public bool TryGetPreviewMapMarkerOffset(
-        GuardianSiteReference reference,
-        out GuardianMapPoint markerOffset)
+    public bool TryGetPreviewMapMarkerOffset(GuardianSiteReference reference, out GuardianMapPoint markerOffset)
     {
         ArgumentNullException.ThrowIfNull(reference);
         var requestedContext = new GuardianSiteSelectionKey(
@@ -1248,7 +1121,8 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             reference.SystemAddress,
             reference.BodyId,
             reference.Index,
-            reference.SiteId);
+            reference.SiteId
+        );
         if (selectionContext != requestedContext)
         {
             markerOffset = default;
@@ -1259,38 +1133,34 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         return true;
     }
 
-    private GuardianMapPoint ResolveMapMarkerOffset(
-        GuardianSurfaceLocation? correctedOrigin,
-        int siteHeading)
+    private GuardianMapPoint ResolveMapMarkerOffset(GuardianSurfaceLocation? correctedOrigin, int siteHeading)
     {
         var savedOffset = originalSurvey?.MapMarkerOffset ?? default;
-        if (correctedOrigin is not { } corrected
+        if (
+            correctedOrigin is not { } corrected
             || alignmentOrigin is not { } original
             || planetRadiusMeters is not { } radius
             || !double.IsFinite(radius)
             || radius <= 0
-            || siteHeading is < 0 or > 359)
+            || siteHeading is < 0 or > 359
+        )
         {
             return savedOffset;
         }
 
-        if (savedOffset != default
+        if (
+            savedOffset != default
             && originalSurvey?.Survey.Location is { } savedLocation
-            && AreSameLocation(corrected, savedLocation))
+            && AreSameLocation(corrected, savedLocation)
+        )
         {
             return savedOffset;
         }
 
-        return GuardianMapMarkerOffsetCalculator.Calculate(
-            original,
-            corrected,
-            siteHeading,
-            radius);
+        return GuardianMapMarkerOffsetCalculator.Calculate(original, corrected, siteHeading, radius);
     }
 
-    private static bool AreSameLocation(
-        GuardianSurfaceLocation left,
-        GuardianSurfaceLocation right)
+    private static bool AreSameLocation(GuardianSurfaceLocation left, GuardianSurfaceLocation right)
     {
         const double tolerance = 1e-10;
         return Math.Abs(left.Latitude - right.Latitude) <= tolerance
@@ -1300,21 +1170,15 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
     private Task ResetCoordinatesAsync()
     {
         var savedLocation = originalSurvey?.Survey.Location;
-        SurfaceLatitude = savedLocation is { } latitude
-            ? (decimal)latitude.Latitude
-            : null;
-        SurfaceLongitude = savedLocation is { } longitude
-            ? (decimal)longitude.Longitude
-            : null;
+        SurfaceLatitude = savedLocation is { } latitude ? (decimal)latitude.Latitude : null;
+        SurfaceLongitude = savedLocation is { } longitude ? (decimal)longitude.Longitude : null;
         StatusMessage = "Restored the last saved surface coordinates.";
         return Task.CompletedTask;
     }
 
     private GuardianSurfaceLocation? BuildSurfaceLocation()
     {
-        return TryBuildSurfaceLocation(out var location)
-            ? location
-            : originalSurvey?.Survey.Location;
+        return TryBuildSurfaceLocation(out var location) ? location : originalSurvey?.Survey.Location;
     }
 
     private bool TryValidateActiveObelisksForSave()
@@ -1324,7 +1188,8 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         {
             if (!obelisk.IsLegacyEncodable)
             {
-                StatusMessage = "Active-obelisk names, log codes, and artifact codes cannot be blank where required or contain legacy delimiters (-, !, or commas inside a code).";
+                StatusMessage =
+                    "Active-obelisk names, log codes, and artifact codes cannot be blank where required or contain legacy delimiters (-, !, or commas inside a code).";
                 return false;
             }
 
@@ -1340,35 +1205,33 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
     private SurveyMutationMaps BuildSurveyMutationMaps()
     {
-        var siteTypeChanged = !string.Equals(
-            SiteType,
-            originalSurvey!.SiteType,
-            StringComparison.OrdinalIgnoreCase);
+        var siteTypeChanged = !string.Equals(SiteType, originalSurvey!.SiteType, StringComparison.OrdinalIgnoreCase);
         var originalRawNames = (originalSurvey.Survey.RawPointsOfInterest ?? [])
             .Select(point => point.Name)
             .ToHashSet(StringComparer.Ordinal);
         var statuses = new Dictionary<string, GuardianPoiStatus>(
-            originalSurvey.Survey.PoiStatuses
-                .Where(pair => !siteTypeChanged
-                    || originalRawNames.Contains(pair.Key)),
-            StringComparer.Ordinal);
+            originalSurvey.Survey.PoiStatuses.Where(pair => !siteTypeChanged || originalRawNames.Contains(pair.Key)),
+            StringComparer.Ordinal
+        );
         var relicHeadings = new Dictionary<string, int>(
-            originalSurvey.Survey.RelicHeadings
-                .Where(pair => !siteTypeChanged
-                    || originalRawNames.Contains(pair.Key)),
-            StringComparer.Ordinal);
+            originalSurvey.Survey.RelicHeadings.Where(pair => !siteTypeChanged || originalRawNames.Contains(pair.Key)),
+            StringComparer.Ordinal
+        );
         var componentMaterials = new Dictionary<string, GuardianComponentLoadout>(
-            originalSurvey.Survey.ComponentMaterials
-                .Where(pair => !siteTypeChanged
-                    || originalRawNames.Contains(pair.Key)),
-            StringComparer.Ordinal);
+            originalSurvey.Survey.ComponentMaterials.Where(pair =>
+                !siteTypeChanged || originalRawNames.Contains(pair.Key)
+            ),
+            StringComparer.Ordinal
+        );
         var retainedRawNames = Points
             .Where(point => point.IsRaw)
             .Select(point => point.Name)
             .ToHashSet(StringComparer.Ordinal);
-        foreach (var removedName in (originalSurvey.Survey.RawPointsOfInterest ?? [])
-                     .Select(point => point.Name)
-                     .Where(name => !retainedRawNames.Contains(name)))
+        foreach (
+            var removedName in (originalSurvey.Survey.RawPointsOfInterest ?? [])
+                .Select(point => point.Name)
+                .Where(name => !retainedRawNames.Contains(name))
+        )
         {
             statuses.Remove(removedName);
             relicHeadings.Remove(removedName);
@@ -1387,7 +1250,8 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         GuardianSurveyPoiViewModel point,
         Dictionary<string, GuardianPoiStatus> statuses,
         Dictionary<string, int> relicHeadings,
-        Dictionary<string, GuardianComponentLoadout> componentMaterials)
+        Dictionary<string, GuardianComponentLoadout> componentMaterials
+    )
     {
         if (point.HasComponentRecord)
         {
@@ -1412,9 +1276,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         ApplyRelicHeading(point, relicHeadings);
     }
 
-    private static void ApplyRelicHeading(
-        GuardianSurveyPoiViewModel point,
-        Dictionary<string, int> relicHeadings)
+    private static void ApplyRelicHeading(GuardianSurveyPoiViewModel point, Dictionary<string, int> relicHeadings)
     {
         if (!point.SupportsRelicHeading)
         {
@@ -1434,14 +1296,16 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
     private sealed record SurveyMutationMaps(
         Dictionary<string, GuardianPoiStatus> Statuses,
         Dictionary<string, int> RelicHeadings,
-        Dictionary<string, GuardianComponentLoadout> ComponentMaterials);
+        Dictionary<string, GuardianComponentLoadout> ComponentMaterials
+    );
 
     private readonly record struct GuardianSiteSelectionKey(
         GuardianSiteKind Kind,
         long SystemAddress,
         int BodyId,
         int Index,
-        int SiteId);
+        int SiteId
+    );
 
     private static bool TryGetHeading(decimal value, out int heading)
     {
@@ -1455,17 +1319,12 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         return true;
     }
 
-    private static bool IsTooClose(
-        GuardianPointOfInterest point,
-        GuardianPoiType type,
-        double angle,
-        double distance)
+    private static bool IsTooClose(GuardianPointOfInterest point, GuardianPoiType type, double angle, double distance)
     {
         var angleDelta = Math.Abs(point.Angle - angle);
         angleDelta = Math.Min(angleDelta, 360 - angleDelta);
         var distanceDelta = Math.Abs(point.Distance - distance);
-        return point.Type == type && angleDelta <= 3 && distanceDelta <= 10
-            || angleDelta <= 1 && distanceDelta <= 3;
+        return point.Type == type && angleDelta <= 3 && distanceDelta <= 10 || angleDelta <= 1 && distanceDelta <= 3;
     }
 
     private static string NextRawPointName(IEnumerable<string> names)
@@ -1499,10 +1358,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         return "NEW";
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -1535,9 +1391,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         removeRawPointCommand.RaiseCanExecuteChanged();
     }
 
-    private sealed class AsyncCommand(
-        Func<Task> execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class AsyncCommand(Func<Task> execute, Func<bool> canExecute) : ICommand
     {
         public event EventHandler? CanExecuteChanged;
 
@@ -1561,15 +1415,11 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
     }
 }
 
-public sealed record GuardianSurveyMeasurement(
-    double Distance,
-    double Angle,
-    double Rotation);
+public sealed record GuardianSurveyMeasurement(double Distance, double Angle, double Rotation);
 
 public sealed class GuardianSurveyPoiViewModel : INotifyPropertyChanged
 {
-    private static readonly GuardianPoiStatus[] BasicStatuses =
-        Enum.GetValues<GuardianPoiStatus>();
+    private static readonly GuardianPoiStatus[] BasicStatuses = Enum.GetValues<GuardianPoiStatus>();
     private static readonly GuardianPoiStatus[] StandardStatuses =
     [
         GuardianPoiStatus.Unknown,
@@ -1596,7 +1446,8 @@ public sealed class GuardianSurveyPoiViewModel : INotifyPropertyChanged
         bool isRaw = false,
         GuardianComponentLoadout? componentMaterials = null,
         bool componentModeEnabled = false,
-        bool isReferenceOnly = false)
+        bool isReferenceOnly = false
+    )
     {
         sourcePoint = point;
         type = point.Type;
@@ -1609,25 +1460,23 @@ public sealed class GuardianSurveyPoiViewModel : INotifyPropertyChanged
         IsReferenceOnly = isReferenceOnly;
         this.componentModeEnabled = componentModeEnabled;
         hasComponentRecord = componentMaterials is not null;
-        topComponentMaterial = componentMaterials?.GetItem(0)
-            ?? GuardianComponentMaterial.Unknown;
-        middleComponentMaterial = componentMaterials?.GetItem(1)
-            ?? GuardianComponentMaterial.Unknown;
-        bottomComponentMaterial = componentMaterials?.GetItem(2)
-            ?? GuardianComponentMaterial.Unknown;
+        topComponentMaterial = componentMaterials?.GetItem(0) ?? GuardianComponentMaterial.Unknown;
+        middleComponentMaterial = componentMaterials?.GetItem(1) ?? GuardianComponentMaterial.Unknown;
+        bottomComponentMaterial = componentMaterials?.GetItem(2) ?? GuardianComponentMaterial.Unknown;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public GuardianPointOfInterest Point => IsRaw
-        ? sourcePoint with
-        {
-            Type = Type,
-            Angle = decimal.ToDouble(RawAngle),
-            Distance = decimal.ToDouble(RawDistance),
-            Rotation = decimal.ToDouble(RawRotation),
-        }
-        : sourcePoint;
+    public GuardianPointOfInterest Point =>
+        IsRaw
+            ? sourcePoint with
+            {
+                Type = Type,
+                Angle = decimal.ToDouble(RawAngle),
+                Distance = decimal.ToDouble(RawDistance),
+                Rotation = decimal.ToDouble(RawRotation),
+            }
+            : sourcePoint;
 
     public bool IsRaw { get; }
 
@@ -1705,87 +1554,71 @@ public sealed class GuardianSurveyPoiViewModel : INotifyPropertyChanged
             if (SupportsRelicHeading)
             {
                 relicHeading = value;
-                PropertyChanged?.Invoke(
-                    this,
-                    new PropertyChangedEventArgs(nameof(RelicHeading)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RelicHeading)));
             }
 
             NotifyPositionChanged(nameof(RawRotation));
         }
     }
 
-    public bool HasValidRawGeometry => !IsRaw
-        || RawAngle is >= 0 and < 360
-            && RawDistance >= 0
-            && RawRotation is >= -1 and < 360;
+    public bool HasValidRawGeometry =>
+        !IsRaw || RawAngle is >= 0 and < 360 && RawDistance >= 0 && RawRotation is >= -1 and < 360;
 
     public bool SupportsRelicHeading => Type == GuardianPoiType.Relic;
 
-    public bool SupportsComponentMaterials => Type is GuardianPoiType.Component
-        or GuardianPoiType.DestructiblePanel;
+    public bool SupportsComponentMaterials => Type is GuardianPoiType.Component or GuardianPoiType.DestructiblePanel;
 
-    public bool SupportsMultipleComponentMaterials =>
-        Type == GuardianPoiType.Component;
+    public bool SupportsMultipleComponentMaterials => Type == GuardianPoiType.Component;
 
-    public bool CanEditComponentMaterials => componentModeEnabled
-        && SupportsComponentMaterials;
+    public bool CanEditComponentMaterials => componentModeEnabled && SupportsComponentMaterials;
 
-    public IReadOnlyList<GuardianComponentMaterial> ComponentMaterialOptions { get; }
-        = Enum.GetValues<GuardianComponentMaterial>();
+    public IReadOnlyList<GuardianComponentMaterial> ComponentMaterialOptions { get; } =
+        Enum.GetValues<GuardianComponentMaterial>();
 
-    public IReadOnlyList<GuardianPoiType> EditableRawPointTypes { get; }
-        = Enum.GetValues<GuardianPoiType>()
-            .Where(type => type != GuardianPoiType.EmptyPuddle)
-            .ToArray();
+    public IReadOnlyList<GuardianPoiType> EditableRawPointTypes { get; } =
+        Enum.GetValues<GuardianPoiType>().Where(type => type != GuardianPoiType.EmptyPuddle).ToArray();
 
     public bool HasComponentRecord => hasComponentRecord;
 
     public GuardianComponentMaterial TopComponentMaterial
     {
         get => topComponentMaterial;
-        set => SetComponentMaterial(
-            ref topComponentMaterial,
-            value,
-            nameof(TopComponentMaterial));
+        set => SetComponentMaterial(ref topComponentMaterial, value, nameof(TopComponentMaterial));
     }
 
     public GuardianComponentMaterial MiddleComponentMaterial
     {
         get => middleComponentMaterial;
-        set => SetComponentMaterial(
-            ref middleComponentMaterial,
-            value,
-            nameof(MiddleComponentMaterial));
+        set => SetComponentMaterial(ref middleComponentMaterial, value, nameof(MiddleComponentMaterial));
     }
 
     public GuardianComponentMaterial BottomComponentMaterial
     {
         get => bottomComponentMaterial;
-        set => SetComponentMaterial(
-            ref bottomComponentMaterial,
-            value,
-            nameof(BottomComponentMaterial));
+        set => SetComponentMaterial(ref bottomComponentMaterial, value, nameof(BottomComponentMaterial));
     }
 
-    public string ComponentMaterialSummary => !SupportsComponentMaterials
-        ? string.Empty
-        : (SupportsMultipleComponentMaterials) switch
-        {
-            true => $"Top {GetMaterialName(TopComponentMaterial)} / "
-                + $"middle {GetMaterialName(MiddleComponentMaterial)} / "
-                + $"bottom {GetMaterialName(BottomComponentMaterial)}",
-            false => GetMaterialName(TopComponentMaterial)
-        };
+    public string ComponentMaterialSummary =>
+        !SupportsComponentMaterials
+            ? string.Empty
+            : (SupportsMultipleComponentMaterials) switch
+            {
+                true => $"Top {GetMaterialName(TopComponentMaterial)} / "
+                    + $"middle {GetMaterialName(MiddleComponentMaterial)} / "
+                    + $"bottom {GetMaterialName(BottomComponentMaterial)}",
+                false => GetMaterialName(TopComponentMaterial),
+            };
 
-    public bool SupportsEmptyStatus => Type is GuardianPoiType.Unknown
-        or GuardianPoiType.Orb
-        or GuardianPoiType.Casket
-        or GuardianPoiType.Tablet
-        or GuardianPoiType.Totem
-        or GuardianPoiType.Urn;
+    public bool SupportsEmptyStatus =>
+        Type
+            is GuardianPoiType.Unknown
+                or GuardianPoiType.Orb
+                or GuardianPoiType.Casket
+                or GuardianPoiType.Tablet
+                or GuardianPoiType.Totem
+                or GuardianPoiType.Urn;
 
-    public IReadOnlyList<GuardianPoiStatus> AllowedStatuses =>
-        SupportsEmptyStatus ? BasicStatuses : StandardStatuses;
+    public IReadOnlyList<GuardianPoiStatus> AllowedStatuses => SupportsEmptyStatus ? BasicStatuses : StandardStatuses;
 
     public GuardianPoiStatus Status
     {
@@ -1798,9 +1631,7 @@ public sealed class GuardianSurveyPoiViewModel : INotifyPropertyChanged
             }
 
             status = value;
-            PropertyChanged?.Invoke(
-                this,
-                new PropertyChangedEventArgs(nameof(Status)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Status)));
         }
     }
 
@@ -1818,13 +1649,9 @@ public sealed class GuardianSurveyPoiViewModel : INotifyPropertyChanged
             if (IsRaw && SupportsRelicHeading)
             {
                 rawRotation = value;
-                PropertyChanged?.Invoke(
-                    this,
-                    new PropertyChangedEventArgs(nameof(RawRotation)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RawRotation)));
             }
-            PropertyChanged?.Invoke(
-                this,
-                new PropertyChangedEventArgs(nameof(RelicHeading)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RelicHeading)));
         }
     }
 
@@ -1832,26 +1659,22 @@ public sealed class GuardianSurveyPoiViewModel : INotifyPropertyChanged
     {
         if (!SupportsComponentMaterials)
         {
-            throw new InvalidOperationException(
-                $"{Name} does not support Guardian component materials.");
+            throw new InvalidOperationException($"{Name} does not support Guardian component materials.");
         }
 
         return new GuardianComponentLoadout(
             Name,
             SupportsMultipleComponentMaterials
-                ?
-                [
-                    TopComponentMaterial,
-                    MiddleComponentMaterial,
-                    BottomComponentMaterial,
-                ]
-                : [TopComponentMaterial]);
+                ? [TopComponentMaterial, MiddleComponentMaterial, BottomComponentMaterial]
+                : [TopComponentMaterial]
+        );
     }
 
     private void SetComponentMaterial(
         ref GuardianComponentMaterial field,
         GuardianComponentMaterial value,
-        string propertyName)
+        string propertyName
+    )
     {
         if (field == value)
         {
@@ -1860,51 +1683,29 @@ public sealed class GuardianSurveyPoiViewModel : INotifyPropertyChanged
 
         field = value;
         hasComponentRecord = true;
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(propertyName));
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(nameof(HasComponentRecord)));
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(nameof(ComponentMaterialSummary)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasComponentRecord)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ComponentMaterialSummary)));
     }
 
     private void NotifyPointShapeChanged()
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Type)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TypeText)));
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(nameof(SupportsRelicHeading)));
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(nameof(SupportsComponentMaterials)));
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(nameof(SupportsMultipleComponentMaterials)));
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(nameof(CanEditComponentMaterials)));
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(nameof(SupportsEmptyStatus)));
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(nameof(AllowedStatuses)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SupportsRelicHeading)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SupportsComponentMaterials)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SupportsMultipleComponentMaterials)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanEditComponentMaterials)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SupportsEmptyStatus)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AllowedStatuses)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Point)));
     }
 
     private void NotifyPositionChanged(string propertyName)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(nameof(PositionText)));
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(nameof(HasValidRawGeometry)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PositionText)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasValidRawGeometry)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Point)));
     }
 
@@ -1921,9 +1722,7 @@ public sealed class GuardianSurveyPoiViewModel : INotifyPropertyChanged
     }
 }
 
-public sealed class GuardianObeliskGroupViewModel(
-    char name,
-    bool isSelected) : INotifyPropertyChanged
+public sealed class GuardianObeliskGroupViewModel(char name, bool isSelected) : INotifyPropertyChanged
 {
     private bool isSelected = isSelected;
 
@@ -1942,9 +1741,7 @@ public sealed class GuardianObeliskGroupViewModel(
             }
 
             isSelected = value;
-            PropertyChanged?.Invoke(
-                this,
-                new PropertyChangedEventArgs(nameof(IsSelected)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected)));
         }
     }
 }
@@ -2000,32 +1797,21 @@ public sealed class GuardianActiveObeliskViewModel : INotifyPropertyChanged
             return trimmedName.Length > 0
                 && trimmedName.IndexOfAny(['-', '!', ',']) < 0
                 && trimmedLog.IndexOfAny(['-', '!', ',']) < 0
-                && ParseArtifactCodes().All(code =>
-                    code.IndexOfAny(['-', '!', ',']) < 0);
+                && ParseArtifactCodes().All(code => code.IndexOfAny(['-', '!', ',']) < 0);
         }
     }
 
     public GuardianObelisk ToModel()
     {
-        return new GuardianObelisk(
-            Name.Trim(),
-            LogCode.Trim(),
-            Scanned,
-            ParseArtifactCodes());
+        return new GuardianObelisk(Name.Trim(), LogCode.Trim(), Scanned, ParseArtifactCodes());
     }
 
     private string[] ParseArtifactCodes()
     {
-        return ArtifactCodes.Split(
-            ',',
-            StringSplitOptions.TrimEntries
-                | StringSplitOptions.RemoveEmptyEntries);
+        return ArtifactCodes.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
     }
 
-    private void SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private void SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -2034,8 +1820,6 @@ public sealed class GuardianActiveObeliskViewModel : INotifyPropertyChanged
 
         field = value;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(nameof(IsLegacyEncodable)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsLegacyEncodable)));
     }
 }

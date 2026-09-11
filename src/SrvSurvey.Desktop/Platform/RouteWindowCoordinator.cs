@@ -10,12 +10,9 @@ public sealed class RouteWindowCoordinator : IDisposable
     private RouteWindow? window;
     private bool disposed;
 
-    public RouteWindowCoordinator(
-        RouteWorkspaceViewModel viewModel,
-        Window owner)
+    public RouteWindowCoordinator(RouteWorkspaceViewModel viewModel, Window owner)
     {
-        this.viewModel = viewModel
-            ?? throw new ArgumentNullException(nameof(viewModel));
+        this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         this.owner = owner ?? throw new ArgumentNullException(nameof(owner));
         viewModel.SetWindowOpener(ShowOrActivateAsync);
     }

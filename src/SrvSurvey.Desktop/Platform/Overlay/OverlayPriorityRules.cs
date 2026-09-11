@@ -12,7 +12,8 @@ internal sealed record OverlayPriorityRule(
     OverlayId Target,
     IReadOnlyList<OverlayId> PresentedBlockers,
     OverlayPriorityFacts FactBlockers = OverlayPriorityFacts.None,
-    OverlayPriorityFacts UnlessFacts = OverlayPriorityFacts.None);
+    OverlayPriorityFacts UnlessFacts = OverlayPriorityFacts.None
+);
 
 internal static class OverlayPriorityRules
 {
@@ -21,28 +22,18 @@ internal static class OverlayPriorityRules
 
     private static readonly IReadOnlyList<OverlayPriorityRule> rules =
     [
-        Rule(
-            "PlotFSSInfo",
-            ["PlotGuardianSystem"],
-            unlessFacts: OverlayPriorityFacts.FssInfoForced),
-        Rule(
-            "PlotBodyInfo",
-            ["PlotGuardianSystem"],
-            unlessFacts: OverlayPriorityFacts.BodyInfoForced),
+        Rule("PlotFSSInfo", ["PlotGuardianSystem"], unlessFacts: OverlayPriorityFacts.FssInfoForced),
+        Rule("PlotBodyInfo", ["PlotGuardianSystem"], unlessFacts: OverlayPriorityFacts.BodyInfoForced),
         Rule("PlotBioSystem", [Guardians, HumanSite]),
-        Rule(
-            "PlotBioStatus",
-            [Guardians, HumanSite, "PlotJumpInfo"]),
-        Rule(
-            "PlotPriorScans",
-            [Guardians, HumanSite, "PlotStationInfo"]),
+        Rule("PlotBioStatus", [Guardians, HumanSite, "PlotJumpInfo"]),
+        Rule("PlotPriorScans", [Guardians, HumanSite, "PlotStationInfo"]),
         Rule("PlotGrounded", [Guardians, HumanSite]),
         Rule("PlotGuardianStatus", ["PlotJumpInfo"]),
         Rule(
             "PlotGuardianSystem",
             [],
-            factBlockers: OverlayPriorityFacts.FssInfoForced
-                | OverlayPriorityFacts.BodyInfoForced),
+            factBlockers: OverlayPriorityFacts.FssInfoForced | OverlayPriorityFacts.BodyInfoForced
+        ),
     ];
 
     static OverlayPriorityRules()
@@ -50,10 +41,7 @@ internal static class OverlayPriorityRules
         ValidateAcyclic();
     }
 
-    internal static bool IsObscured(
-        OverlayId target,
-        Func<OverlayId, bool> isPresented,
-        OverlayPriorityFacts facts)
+    internal static bool IsObscured(OverlayId target, Func<OverlayId, bool> isPresented, OverlayPriorityFacts facts)
     {
         ArgumentNullException.ThrowIfNull(isPresented);
         var rule = rules.SingleOrDefault(candidate => candidate.Target == target);
@@ -67,24 +55,23 @@ internal static class OverlayPriorityRules
             return true;
         }
 
-        return (rule.UnlessFacts & facts) == 0
-            && rule.PresentedBlockers.Any(isPresented);
+        return (rule.UnlessFacts & facts) == 0 && rule.PresentedBlockers.Any(isPresented);
     }
 
     internal static void ValidateAcyclic()
     {
         var edges = rules
-            .SelectMany(rule => rule.PresentedBlockers.Select(source =>
-                (Source: source, rule.Target)))
+            .SelectMany(rule => rule.PresentedBlockers.Select(source => (Source: source, rule.Target)))
             .GroupBy(edge => edge.Source)
-            .ToDictionary(
-                group => group.Key,
-                group => group.Select(edge => edge.Target).ToArray());
+            .ToDictionary(group => group.Key, group => group.Select(edge => edge.Target).ToArray());
         var visited = new HashSet<OverlayId>();
         var visiting = new HashSet<OverlayId>();
-        foreach (var overlay in rules.Select(rule => rule.Target)
-                     .Concat(rules.SelectMany(rule => rule.PresentedBlockers))
-                     .Distinct())
+        foreach (
+            var overlay in rules
+                .Select(rule => rule.Target)
+                .Concat(rules.SelectMany(rule => rule.PresentedBlockers))
+                .Distinct()
+        )
         {
             Visit(overlay, edges, visiting, visited);
         }
@@ -94,7 +81,8 @@ internal static class OverlayPriorityRules
         OverlayId overlay,
         IReadOnlyDictionary<OverlayId, OverlayId[]> edges,
         HashSet<OverlayId> visiting,
-        HashSet<OverlayId> visited)
+        HashSet<OverlayId> visited
+    )
     {
         if (visited.Contains(overlay))
         {
@@ -103,8 +91,7 @@ internal static class OverlayPriorityRules
 
         if (!visiting.Add(overlay))
         {
-            throw new InvalidOperationException(
-                $"Overlay priority rules contain a cycle at '{overlay}'.");
+            throw new InvalidOperationException($"Overlay priority rules contain a cycle at '{overlay}'.");
         }
 
         if (edges.TryGetValue(overlay, out var targets))
@@ -123,15 +110,16 @@ internal static class OverlayPriorityRules
         string target,
         IReadOnlyList<string> presentedBlockers,
         OverlayPriorityFacts factBlockers = OverlayPriorityFacts.None,
-        OverlayPriorityFacts unlessFacts = OverlayPriorityFacts.None)
+        OverlayPriorityFacts unlessFacts = OverlayPriorityFacts.None
+    )
     {
         return new OverlayPriorityRule(
             GetId(target),
             presentedBlockers.Select(GetId).ToArray(),
             factBlockers,
-            unlessFacts);
+            unlessFacts
+        );
     }
 
-    private static OverlayId GetId(string plotterName) =>
-        OverlayLayoutCatalog.GetRequired(plotterName).Id;
+    private static OverlayId GetId(string plotterName) => OverlayLayoutCatalog.GetRequired(plotterName).Id;
 }

@@ -7,14 +7,26 @@ public sealed record MiningDetectionPoint(double X, double Y);
 public sealed record MiningDetectionSettings
 {
     public const double ReferenceRotationDegrees = -8;
+
     // Calibration identity is exact: even a small explicit user adjustment invalidates the old pixel analysis.
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "S1244", Justification = "Stored calibration identity must invalidate cached pixel analysis for every explicit adjustment, even one representable step; this is not a numerical tolerance test.")]
-    public bool HasSameCalibration(MiningDetectionSettings other) => X.Equals(other.X) && Y.Equals(other.Y)
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Reliability",
+        "S1244",
+        Justification = "Stored calibration identity must invalidate cached pixel analysis for every explicit adjustment, even one representable step; this is not a numerical tolerance test."
+    )]
+    public bool HasSameCalibration(MiningDetectionSettings other) =>
+        X.Equals(other.X)
+        && Y.Equals(other.Y)
         && BarColor.Equals(other.BarColor)
-        && Width.Equals(other.Width) && Height.Equals(other.Height) && CircleWidth.Equals(other.CircleWidth)
-        && RotationDegrees.Equals(other.RotationDegrees) && CircleAspectRatio.Equals(other.CircleAspectRatio)
+        && Width.Equals(other.Width)
+        && Height.Equals(other.Height)
+        && CircleWidth.Equals(other.CircleWidth)
+        && RotationDegrees.Equals(other.RotationDegrees)
+        && CircleAspectRatio.Equals(other.CircleAspectRatio)
         && BarGap.Equals(other.BarGap)
-        && MotionMargin.Equals(other.MotionMargin) && Markers.SequenceEqual(other.Markers);
+        && MotionMargin.Equals(other.MotionMargin)
+        && Markers.SequenceEqual(other.Markers);
+
     public bool Enabled { get; init; }
     public uint BarColor { get; init; } = 0x00FF00;
     public double X { get; init; } = 0.15;
@@ -27,8 +39,7 @@ public sealed record MiningDetectionSettings
     public double BarGap { get; init; } = .14;
     public double MotionMargin { get; init; } = 0.12;
     public MiningDetectionPoint[] Markers { get; init; } =
-    [new(.30, .40), new(.48, .36), new(.66, .32),
-     new(.30, .62), new(.48, .58), new(.66, .54)];
+    [new(.30, .40), new(.48, .36), new(.66, .32), new(.30, .62), new(.48, .58), new(.66, .54)];
 
     public MiningDetectionSettings Normalize()
     {
@@ -51,9 +62,17 @@ public sealed record MiningDetectionSettings
             BarGap = Safe(BarGap, defaults.BarGap, 0, .6),
             MotionMargin = Safe(MotionMargin, defaults.MotionMargin, 0, 120d / GetWorkingWidth(circleWidth)),
             Markers = Markers is { Length: 6 }
-                ? Markers.Select((p, i) => p is null ? defaults.Markers[i] : new MiningDetectionPoint(
-                    Safe(p.X, defaults.Markers[i].X, 0, 1),
-                    Safe(p.Y, defaults.Markers[i].Y, 0, 1))).ToArray()
+                ? Markers
+                    .Select(
+                        (p, i) =>
+                            p is null
+                                ? defaults.Markers[i]
+                                : new MiningDetectionPoint(
+                                    Safe(p.X, defaults.Markers[i].X, 0, 1),
+                                    Safe(p.Y, defaults.Markers[i].Y, 0, 1)
+                                )
+                    )
+                    .ToArray()
                 : defaults.Markers,
         };
     }
@@ -61,15 +80,18 @@ public sealed record MiningDetectionSettings
     public PixelRect GetBounds(PixelRect viewport)
     {
         var value = Normalize();
-        return new PixelRect(viewport.X + (int)Math.Round(value.X * viewport.Width),
+        return new PixelRect(
+            viewport.X + (int)Math.Round(value.X * viewport.Width),
             viewport.Y + (int)Math.Round(value.Y * viewport.Height),
             Math.Max(1, (int)Math.Round(value.Width * viewport.Width)),
-            Math.Max(1, (int)Math.Round(value.Height * viewport.Height)));
+            Math.Max(1, (int)Math.Round(value.Height * viewport.Height))
+        );
     }
 
     public static int GetWorkingWidth(double circleWidth) => Math.Clamp((int)Math.Round(44 / circleWidth), 128, 800);
 
-    public double GetMovementAllowance(double frameWidth) => frameWidth * Math.Min(MotionMargin, 120d / GetWorkingWidth(CircleWidth));
+    public double GetMovementAllowance(double frameWidth) =>
+        frameWidth * Math.Min(MotionMargin, 120d / GetWorkingWidth(CircleWidth));
 
     public MiningDetectionSettings WithBounds(PixelRect bounds, PixelRect viewport)
     {
@@ -78,20 +100,28 @@ public sealed record MiningDetectionSettings
         var radius = current.CircleWidth * old.Width / 2;
         var minimumWidth = current.Markers.Max(p => p.X) * old.Width + radius * 1.5;
         var minimumHeight = current.Markers.Max(p => p.Y) * old.Height + radius * 1.5 + 24;
-        var resized = (current with
-        {
-            X = (bounds.X - viewport.X) / (double)viewport.Width,
-            Y = (bounds.Y - viewport.Y) / (double)viewport.Height,
-            Width = Math.Max(minimumWidth, bounds.Width) / viewport.Width,
-            Height = Math.Max(minimumHeight, bounds.Height) / viewport.Height,
-        }).Normalize();
+        var resized = (
+            current with
+            {
+                X = (bounds.X - viewport.X) / (double)viewport.Width,
+                Y = (bounds.Y - viewport.Y) / (double)viewport.Height,
+                Width = Math.Max(minimumWidth, bounds.Width) / viewport.Width,
+                Height = Math.Max(minimumHeight, bounds.Height) / viewport.Height,
+            }
+        ).Normalize();
         var next = resized.GetBounds(viewport);
-        return (resized with
-        {
-            CircleWidth = current.CircleWidth * old.Width / next.Width,
-            MotionMargin = current.MotionMargin * old.Width / next.Width,
-            Markers = current.Markers.Select(p => new MiningDetectionPoint(
-                p.X * old.Width / next.Width, p.Y * old.Height / next.Height)).ToArray(),
-        }).Normalize();
+        return (
+            resized with
+            {
+                CircleWidth = current.CircleWidth * old.Width / next.Width,
+                MotionMargin = current.MotionMargin * old.Width / next.Width,
+                Markers = current
+                    .Markers.Select(p => new MiningDetectionPoint(
+                        p.X * old.Width / next.Width,
+                        p.Y * old.Height / next.Height
+                    ))
+                    .ToArray(),
+            }
+        ).Normalize();
     }
 }

@@ -26,27 +26,24 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
     public CombinedOverlayPresentationController(
         IOverlayPlatformService nativePlatform,
         IGameWindowTracker gameWindowTracker,
-        OverlayWindowRegistry? registry = null)
+        OverlayWindowRegistry? registry = null
+    )
     {
-        this.nativePlatform = nativePlatform
-            ?? throw new ArgumentNullException(nameof(nativePlatform));
-        nativeCombined = nativePlatform as ICombinedOverlayNativeService
+        this.nativePlatform = nativePlatform ?? throw new ArgumentNullException(nameof(nativePlatform));
+        nativeCombined =
+            nativePlatform as ICombinedOverlayNativeService
             ?? throw new ArgumentException(
                 "The native platform cannot host combined overlays.",
-                nameof(nativePlatform));
-        this.gameWindowTracker = gameWindowTracker
-            ?? throw new ArgumentNullException(nameof(gameWindowTracker));
+                nameof(nativePlatform)
+            );
+        this.gameWindowTracker = gameWindowTracker ?? throw new ArgumentNullException(nameof(gameWindowTracker));
         this.registry = registry ?? OverlayWindowRegistry.Shared;
-        timer = new OverlayDispatcherTimer
-        {
-            Interval = TimeSpan.FromMilliseconds(100),
-        };
+        timer = new OverlayDispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
         timer.Tick += OnTimerTick;
         timer.Start();
     }
 
-    public OverlayPlatformCapabilities Capabilities =>
-        nativePlatform.Capabilities;
+    public OverlayPlatformCapabilities Capabilities => nativePlatform.Capabilities;
 
     public OverlayPreparationResult PreparePassiveWindow(Window window)
     {
@@ -63,7 +60,8 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
                 return new OverlayPreparationResult(
                     IsPrepared: false,
                     IsClickThrough: false,
-                    $"{plotterName} does not expose reusable overlay content.");
+                    $"{plotterName} does not expose reusable overlay content."
+                );
             }
 
             if (!nativeCombined.SuppressNativeWindow(window))
@@ -71,17 +69,14 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
                 return new OverlayPreparationResult(
                     IsPrepared: false,
                     IsClickThrough: false,
-                    $"The native {plotterName} source window could not be suppressed.");
+                    $"The native {plotterName} source window could not be suppressed."
+                );
             }
 
             var placeholder = new Border
             {
-                Width = GetInitialPlaceholderLength(
-                    window.Bounds.Width,
-                    window.Width),
-                Height = GetInitialPlaceholderLength(
-                    window.Bounds.Height,
-                    window.Height),
+                Width = GetInitialPlaceholderLength(window.Bounds.Width, window.Width),
+                Height = GetInitialPlaceholderLength(window.Bounds.Height, window.Height),
                 IsHitTestVisible = false,
             };
             window.Content = placeholder;
@@ -93,11 +88,7 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
                 VerticalContentAlignment = VerticalAlignment.Stretch,
                 IsHitTestVisible = false,
             };
-            entry = new Entry(
-                window,
-                plotterName,
-                presenter,
-                placeholder);
+            entry = new Entry(window, plotterName, presenter, placeholder);
             entries.Add(window, entry);
             window.PositionChanged += OnSourcePositionChanged;
             window.PropertyChanged += OnSourcePropertyChanged;
@@ -127,12 +118,11 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
         return new OverlayPreparationResult(
             IsPrepared: true,
             IsClickThrough: true,
-            "This overlay panel is sharing the combined native overlay window.");
+            "This overlay panel is sharing the combined native overlay window."
+        );
     }
 
-    public OverlayInteractionResult SetInteractive(
-        Window window,
-        bool interactive)
+    public OverlayInteractionResult SetInteractive(Window window, bool interactive)
     {
         ArgumentNullException.ThrowIfNull(window);
         if (!entries.TryGetValue(window, out var entry))
@@ -153,13 +143,9 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
             }
         }
 
-        entry.Presenter.IsHitTestVisible = interactive
-            && registry.ShouldPresent(window);
+        entry.Presenter.IsHitTestVisible = interactive && registry.ShouldPresent(window);
         var result = ApplyHostInputRegion();
-        return new OverlayInteractionResult(
-            result.IsPrepared,
-            interactive && result.IsInteractive,
-            result.Status);
+        return new OverlayInteractionResult(result.IsPrepared, interactive && result.IsInteractive, result.Status);
     }
 
     public IDisposable? BeginVisibleCursorSession(Window window)
@@ -168,9 +154,7 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
         return nativePlatform.BeginVisibleCursorSession(host ?? window);
     }
 
-    public void BeginMoveDrag(
-        Window window,
-        PointerPressedEventArgs eventArgs)
+    public void BeginMoveDrag(Window window, PointerPressedEventArgs eventArgs)
     {
         ArgumentNullException.ThrowIfNull(window);
         ArgumentNullException.ThrowIfNull(eventArgs);
@@ -273,8 +257,7 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
             return;
         }
 
-        var screen = window.Screens.ScreenFromBounds(gameWindow.ClientBounds)
-            ?? window.Screens.Primary;
+        var screen = window.Screens.ScreenFromBounds(gameWindow.ClientBounds) ?? window.Screens.Primary;
         if (screen is null)
         {
             window.Hide();
@@ -311,12 +294,8 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
         presenter.MinHeight = NormalizeMinimum(window.MinHeight);
         presenter.MaxWidth = NormalizeMaximum(window.MaxWidth);
         presenter.MaxHeight = NormalizeMaximum(window.MaxHeight);
-        presenter.Width = UsesContentWidth(window)
-            ? double.NaN
-            : NormalizeLength(window.Width);
-        presenter.Height = UsesContentHeight(window)
-            ? double.NaN
-            : NormalizeLength(window.Height);
+        presenter.Width = UsesContentWidth(window) ? double.NaN : NormalizeLength(window.Width);
+        presenter.Height = UsesContentHeight(window) ? double.NaN : NormalizeLength(window.Height);
 
         if (host is null || hostBounds.Width <= 0)
         {
@@ -324,16 +303,11 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
         }
 
         var size = GetLogicalSize(entry);
-        var projection = CombinedOverlayProjection.Create(
-            hostBounds,
-            window.Position,
-            size,
-            host.RenderScaling);
+        var projection = CombinedOverlayProjection.Create(hostBounds, window.Position, size, host.RenderScaling);
         entry.Projection = projection;
         var shouldPresent = registry.ShouldPresent(window);
         presenter.IsVisible = projection is not null && shouldPresent;
-        presenter.IsHitTestVisible = shouldPresent
-            && interactiveWindows.Contains(window);
+        presenter.IsHitTestVisible = shouldPresent && interactiveWindows.Contains(window);
         if (projection is null)
         {
             return;
@@ -351,20 +325,20 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
             return new OverlayInteractionResult(
                 IsPrepared: entries.Count > 0,
                 IsInteractive: interactiveWindows.Count > 0,
-                "The combined overlay host is waiting for the Elite window.");
+                "The combined overlay host is waiting for the Elite window."
+            );
         }
 
         var regions = interactiveWindows
-            .Select(source => entries.TryGetValue(source, out var entry)
-                && registry.ShouldPresent(source)
+            .Select(source =>
+                entries.TryGetValue(source, out var entry) && registry.ShouldPresent(source)
                     ? entry.Projection?.InputRegion
-                : null)
+                    : null
+            )
             .Where(region => region is not null)
             .Select(region => region!.Value)
             .ToArray();
-        if (!force
-            && appliedInputResult is not null
-            && regions.SequenceEqual(appliedInputRegions))
+        if (!force && appliedInputResult is not null && regions.SequenceEqual(appliedInputRegions))
         {
             return appliedInputResult;
         }
@@ -377,8 +351,7 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
 
     private void OnSourceOpened(object? sender, EventArgs eventArgs)
     {
-        if (sender is not Window window
-            || !entries.TryGetValue(window, out var entry))
+        if (sender is not Window window || !entries.TryGetValue(window, out var entry))
         {
             return;
         }
@@ -396,24 +369,18 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
         }
     }
 
-    private void OnSourcePositionChanged(
-        object? sender,
-        PixelPointEventArgs eventArgs)
+    private void OnSourcePositionChanged(object? sender, PixelPointEventArgs eventArgs)
     {
-        if (sender is Window window
-            && entries.TryGetValue(window, out var entry))
+        if (sender is Window window && entries.TryGetValue(window, out var entry))
         {
             UpdateEntry(entry);
             ApplyHostInputRegion();
         }
     }
 
-    private void OnSourcePropertyChanged(
-        object? sender,
-        AvaloniaPropertyChangedEventArgs eventArgs)
+    private void OnSourcePropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs eventArgs)
     {
-        if (sender is Window window
-            && entries.TryGetValue(window, out var entry))
+        if (sender is Window window && entries.TryGetValue(window, out var entry))
         {
             UpdateEntry(entry);
         }
@@ -426,15 +393,13 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
             return;
         }
 
-        var entry = entries.Values.FirstOrDefault(candidate =>
-            ReferenceEquals(candidate.Presenter, presenter));
+        var entry = entries.Values.FirstOrDefault(candidate => ReferenceEquals(candidate.Presenter, presenter));
         if (entry is null)
         {
             return;
         }
 
-        if (presenter.Bounds.Width > 0
-            && presenter.Bounds.Height > 0)
+        if (presenter.Bounds.Width > 0 && presenter.Bounds.Height > 0)
         {
             entry.Placeholder.Width = presenter.Bounds.Width;
             entry.Placeholder.Height = presenter.Bounds.Height;
@@ -447,20 +412,18 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
         }
     }
 
-    private void OnPresenterPointerPressed(
-        object? sender,
-        PointerPressedEventArgs eventArgs)
+    private void OnPresenterPointerPressed(object? sender, PointerPressedEventArgs eventArgs)
     {
-        if (sender is not ContentControl presenter
+        if (
+            sender is not ContentControl presenter
             || host is null
-            || !eventArgs.GetCurrentPoint(presenter).Properties
-                .IsLeftButtonPressed)
+            || !eventArgs.GetCurrentPoint(presenter).Properties.IsLeftButtonPressed
+        )
         {
             return;
         }
 
-        var entry = entries.Values.FirstOrDefault(candidate =>
-            ReferenceEquals(candidate.Presenter, presenter));
+        var entry = entries.Values.FirstOrDefault(candidate => ReferenceEquals(candidate.Presenter, presenter));
         if (entry is null || !interactiveWindows.Contains(entry.Window))
         {
             return;
@@ -471,37 +434,29 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
             entry,
             eventArgs.Pointer,
             entry.Window.Position,
-            host.PointToScreen(eventArgs.GetPosition(host)));
+            host.PointToScreen(eventArgs.GetPosition(host))
+        );
         eventArgs.Pointer.Capture(presenter);
         eventArgs.Handled = true;
     }
 
-    private void OnPresenterPointerMoved(
-        object? sender,
-        PointerEventArgs eventArgs)
+    private void OnPresenterPointerMoved(object? sender, PointerEventArgs eventArgs)
     {
         var current = drag;
-        if (current is null
-            || host is null
-            || !ReferenceEquals(current.Pointer, eventArgs.Pointer))
+        if (current is null || host is null || !ReferenceEquals(current.Pointer, eventArgs.Pointer))
         {
             return;
         }
 
         var pointerPosition = host.PointToScreen(eventArgs.GetPosition(host));
         current.Entry.Window.Position = new PixelPoint(
-            current.InitialWindowPosition.X
-                + pointerPosition.X
-                - current.InitialPointerPosition.X,
-            current.InitialWindowPosition.Y
-                + pointerPosition.Y
-                - current.InitialPointerPosition.Y);
+            current.InitialWindowPosition.X + pointerPosition.X - current.InitialPointerPosition.X,
+            current.InitialWindowPosition.Y + pointerPosition.Y - current.InitialPointerPosition.Y
+        );
         eventArgs.Handled = true;
     }
 
-    private void OnPresenterPointerReleased(
-        object? sender,
-        PointerReleasedEventArgs eventArgs)
+    private void OnPresenterPointerReleased(object? sender, PointerReleasedEventArgs eventArgs)
     {
         if (drag is not null && ReferenceEquals(drag.Pointer, eventArgs.Pointer))
         {
@@ -510,9 +465,7 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
         }
     }
 
-    private void OnPresenterPointerCaptureLost(
-        object? sender,
-        PointerCaptureLostEventArgs eventArgs)
+    private void OnPresenterPointerCaptureLost(object? sender, PointerCaptureLostEventArgs eventArgs)
     {
         StopDrag(releasePointer: false);
     }
@@ -558,42 +511,35 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
 
     private static Size GetLogicalSize(Entry entry)
     {
-        if (entry.Presenter.Bounds.Width > 0
-            && entry.Presenter.Bounds.Height > 0)
+        if (entry.Presenter.Bounds.Width > 0 && entry.Presenter.Bounds.Height > 0)
         {
             return entry.Presenter.Bounds.Size;
         }
 
-        if (entry.Window.Bounds.Width > 0
-            && entry.Window.Bounds.Height > 0)
+        if (entry.Window.Bounds.Width > 0 && entry.Window.Bounds.Height > 0)
         {
             return entry.Window.Bounds.Size;
         }
 
         var definition = OverlayLayoutCatalog.Supported.FirstOrDefault(item =>
-            string.Equals(
-                item.Name,
-                entry.PlotterName,
-                StringComparison.Ordinal));
+            string.Equals(item.Name, entry.PlotterName, StringComparison.Ordinal)
+        );
         return definition is null
             ? new Size(1, 1)
             : new Size(
-                definition.PreviewSize.Width
-                    / Math.Max(0.1, entry.Window.RenderScaling),
-                definition.PreviewSize.Height
-                    / Math.Max(0.1, entry.Window.RenderScaling));
+                definition.PreviewSize.Width / Math.Max(0.1, entry.Window.RenderScaling),
+                definition.PreviewSize.Height / Math.Max(0.1, entry.Window.RenderScaling)
+            );
     }
 
     private static bool UsesContentWidth(Window window)
     {
-        return window.SizeToContent is SizeToContent.Width
-            or SizeToContent.WidthAndHeight;
+        return window.SizeToContent is SizeToContent.Width or SizeToContent.WidthAndHeight;
     }
 
     private static bool UsesContentHeight(Window window)
     {
-        return window.SizeToContent is SizeToContent.Height
-            or SizeToContent.WidthAndHeight;
+        return window.SizeToContent is SizeToContent.Height or SizeToContent.WidthAndHeight;
     }
 
     private static double NormalizeLength(double value)
@@ -608,30 +554,20 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
 
     private static double NormalizeMaximum(double value)
     {
-        return double.IsFinite(value) && value > 0
-            ? value
-            : double.PositiveInfinity;
+        return double.IsFinite(value) && value > 0 ? value : double.PositiveInfinity;
     }
 
-    private static double GetInitialPlaceholderLength(
-        double boundsLength,
-        double configuredLength)
+    private static double GetInitialPlaceholderLength(double boundsLength, double configuredLength)
     {
         if (double.IsFinite(boundsLength) && boundsLength > 0)
         {
             return boundsLength;
         }
 
-        return double.IsFinite(configuredLength) && configuredLength > 0
-            ? configuredLength
-            : 1;
+        return double.IsFinite(configuredLength) && configuredLength > 0 ? configuredLength : 1;
     }
 
-    private sealed class Entry(
-        Window window,
-        string plotterName,
-        ContentControl presenter,
-        Border placeholder)
+    private sealed class Entry(Window window, string plotterName, ContentControl presenter, Border placeholder)
     {
         public Window Window { get; } = window;
 
@@ -648,5 +584,6 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
         Entry Entry,
         IPointer Pointer,
         PixelPoint InitialWindowPosition,
-        PixelPoint InitialPointerPosition);
+        PixelPoint InitialPointerPosition
+    );
 }

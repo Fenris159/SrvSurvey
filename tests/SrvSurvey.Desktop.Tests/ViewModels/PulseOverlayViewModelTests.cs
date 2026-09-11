@@ -8,13 +8,13 @@ public sealed class PulseOverlayViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-pulse-vm-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-pulse-vm-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void LiveFileActivityPulsesForTenSecondsButBootstrapDoesNot()
     {
-        var time = new MutableTimeProvider(
-            new DateTimeOffset(2026, 7, 25, 12, 0, 0, TimeSpan.Zero));
+        var time = new MutableTimeProvider(new DateTimeOffset(2026, 7, 25, 12, 0, 0, TimeSpan.Zero));
         var viewModel = CreateViewModel(time);
         var journalEvent = Parse("{\"event\":\"FSDJump\"}");
 
@@ -39,35 +39,23 @@ public sealed class PulseOverlayViewModelTests : IDisposable
         var time = new MutableTimeProvider(DateTimeOffset.UtcNow);
         var viewModel = CreateViewModel(time);
 
-        viewModel.ApplyUpdate(
-            [],
-            new EliteStatus { GuiFocus = GuiFocus.GalaxyMap },
-            false);
+        viewModel.ApplyUpdate([], new EliteStatus { GuiFocus = GuiFocus.GalaxyMap }, false);
 
         Assert.False(viewModel.ShouldShow);
         Assert.Equal(20, viewModel.PulseHeight);
 
         viewModel.ApplyUpdate(
             [],
-            new EliteStatus
-            {
-                Flags = StatusFlags.InMainShip,
-                GuiFocus = GuiFocus.NoFocus,
-            },
-            false);
+            new EliteStatus { Flags = StatusFlags.InMainShip, GuiFocus = GuiFocus.NoFocus },
+            false
+        );
 
         Assert.True(viewModel.ShouldShow);
 
-        viewModel.ApplyUpdate(
-            [Parse("""{"event":"Music","MusicTrack":"SystemMap"}""")],
-            null,
-            false);
+        viewModel.ApplyUpdate([Parse("""{"event":"Music","MusicTrack":"SystemMap"}""")], null, false);
         Assert.False(viewModel.ShouldShow);
 
-        viewModel.ApplyUpdate(
-            [Parse("""{"event":"Music","MusicTrack":"Exploration"}""")],
-            null,
-            false);
+        viewModel.ApplyUpdate([Parse("""{"event":"Music","MusicTrack":"Exploration"}""")], null, false);
         Assert.True(viewModel.ShouldShow);
     }
 
@@ -76,10 +64,7 @@ public sealed class PulseOverlayViewModelTests : IDisposable
     {
         var time = new MutableTimeProvider(DateTimeOffset.UtcNow);
         var viewModel = CreateViewModel(time);
-        var active = new EliteStatus
-        {
-            Flags2 = StatusFlags2.SupercruiseOverdrive,
-        };
+        var active = new EliteStatus { Flags2 = StatusFlags2.SupercruiseOverdrive };
 
         viewModel.ApplyUpdate([], active, false);
         Assert.True(viewModel.IsScoActive);
@@ -130,9 +115,9 @@ public sealed class PulseOverlayViewModelTests : IDisposable
         viewModel.Enabled = false;
 
         Assert.False(viewModel.ShouldShow);
-        Assert.False(new PulseOverlaySettingsStore(
-            Path.Combine(temporaryDirectory, "ui-settings.json"))
-            .Load().Enabled);
+        Assert.False(
+            new PulseOverlaySettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json")).Load().Enabled
+        );
     }
 
     [Fact]
@@ -147,9 +132,9 @@ public sealed class PulseOverlayViewModelTests : IDisposable
         Assert.True(viewModel.HideJournalWriteTimer);
         Assert.False(viewModel.Enabled);
         Assert.False(viewModel.ShouldShow);
-        Assert.False(new PulseOverlaySettingsStore(
-            Path.Combine(temporaryDirectory, "ui-settings.json"))
-            .Load().Enabled);
+        Assert.False(
+            new PulseOverlaySettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json")).Load().Enabled
+        );
 
         viewModel.HideJournalWriteTimer = false;
 
@@ -169,18 +154,14 @@ public sealed class PulseOverlayViewModelTests : IDisposable
     {
         Directory.CreateDirectory(temporaryDirectory);
         return new PulseOverlayViewModel(
-            new PulseOverlaySettingsStore(Path.Combine(
-                temporaryDirectory,
-                "ui-settings.json")),
-            timeProvider);
+            new PulseOverlaySettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json")),
+            timeProvider
+        );
     }
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(
-            json,
-            out var journalEvent,
-            out var error), error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
         return journalEvent!;
     }
 

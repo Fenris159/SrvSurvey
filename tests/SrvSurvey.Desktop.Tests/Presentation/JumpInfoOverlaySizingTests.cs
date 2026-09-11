@@ -17,10 +17,26 @@ public sealed class JumpInfoOverlaySizingTests
         var model = Assert.IsType<JumpInfoOverlayViewModel>(window.DataContext);
         model.JumpInfo.InstallEditorPreview(
             new JumpInfoRoutePlan(new JumpTarget("Beta", 3), JumpInfoRouteSource.Direct, 0, [], null),
-            new SystemSummary("Beta", 3, null, null, null, 0, 0, null, null, null,
-                null, new SystemPoiSummary(0, 0, 0, 0, 0, 0, 0), []), [],
+            new SystemSummary(
+                "Beta",
+                3,
+                null,
+                null,
+                null,
+                0,
+                0,
+                null,
+                null,
+                null,
+                null,
+                new SystemPoiSummary(0, 0, 0, 0, 0, 0, 0),
+                []
+            ),
+            [],
             dataStatusText: string.Concat(
-            Enumerable.Repeat("EDSM data is unavailable: a very long network error. ", 20)));
+                Enumerable.Repeat("EDSM data is unavailable: a very long network error. ", 20)
+            )
+        );
         var preview = new JumpInfoOverlayPresentation { DataContext = model };
         preview.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
         Assert.Equal(600, preview.DesiredSize.Width);

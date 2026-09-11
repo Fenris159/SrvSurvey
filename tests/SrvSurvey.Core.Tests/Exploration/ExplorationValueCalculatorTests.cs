@@ -16,8 +16,9 @@ public sealed class ExplorationValueCalculatorTests
                 IsFirstDiscoverer = true,
                 IsMapped = false,
                 IsFirstMapped = true,
-                IsOdyssey = true
-            });
+                IsOdyssey = true,
+            }
+        );
 
         Assert.Equal(23106, value);
     }
@@ -34,8 +35,9 @@ public sealed class ExplorationValueCalculatorTests
                 IsFirstDiscoverer = true,
                 IsMapped = false,
                 IsFirstMapped = true,
-                IsOdyssey = true
-            });
+                IsOdyssey = true,
+            }
+        );
         var efficientMapping = ExplorationValueCalculator.Calculate(
             new ExplorationValueRequest
             {
@@ -45,8 +47,9 @@ public sealed class ExplorationValueCalculatorTests
                 IsFirstDiscoverer = true,
                 IsMapped = true,
                 IsFirstMapped = true,
-                IsOdyssey = true
-            });
+                IsOdyssey = true,
+            }
+        );
         var inefficientMapping = ExplorationValueCalculator.Calculate(
             new ExplorationValueRequest
             {
@@ -57,8 +60,9 @@ public sealed class ExplorationValueCalculatorTests
                 IsMapped = true,
                 IsFirstMapped = true,
                 IsOdyssey = true,
-                WithEfficiencyBonus = false
-            });
+                WithEfficiencyBonus = false,
+            }
+        );
 
         Assert.Equal(449200, scan);
         Assert.Equal(2700541, efficientMapping);
@@ -68,15 +72,12 @@ public sealed class ExplorationValueCalculatorTests
     [Fact]
     public void MetalRichTerraformableUsesDedicatedBonusNotGenericFallback()
     {
-        Assert.Equal(21790, ExplorationValueCalculator.GetPlanetBaseValue(
-            "Metal rich body",
-            isTerraformable: false));
-        Assert.Equal(127468, ExplorationValueCalculator.GetPlanetBaseValue(
-            "Metal rich body",
-            isTerraformable: true));
+        Assert.Equal(21790, ExplorationValueCalculator.GetPlanetBaseValue("Metal rich body", isTerraformable: false));
+        Assert.Equal(127468, ExplorationValueCalculator.GetPlanetBaseValue("Metal rich body", isTerraformable: true));
         Assert.NotEqual(
             ExplorationValueCalculator.GetPlanetBaseValue("Rocky body", true),
-            ExplorationValueCalculator.GetPlanetBaseValue("Metal rich body", true));
+            ExplorationValueCalculator.GetPlanetBaseValue("Metal rich body", true)
+        );
     }
 
     [Fact]
@@ -91,8 +92,9 @@ public sealed class ExplorationValueCalculatorTests
                 IsFirstDiscoverer = true,
                 IsMapped = false,
                 IsFirstMapped = true,
-                IsOdyssey = true
-            });
+                IsOdyssey = true,
+            }
+        );
 
         Assert.Equal(518972, value);
     }

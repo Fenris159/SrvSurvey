@@ -67,10 +67,8 @@ public sealed class HumanSiteTemplateCatalogTests
         Assert.Equal([1, 2, 3, 4, 5], subtypes);
         Assert.NotNull(picumnus);
         Assert.Equal("Picumnus", picumnus.Name);
-        Assert.Equal(HumanSiteLandingPadSize.Small,
-            picumnus.LandingPads[0].Size);
-        Assert.Equal(new HumanSiteMapPoint(149.1648, -122.47405),
-            picumnus.LandingPads[0].Offset);
+        Assert.Equal(HumanSiteLandingPadSize.Small, picumnus.LandingPads[0].Size);
+        Assert.Equal(new HumanSiteMapPoint(149.1648, -122.47405), picumnus.LandingPads[0].Offset);
         var hasAlarm = false;
         foreach (var point in picumnus.NamedPoints)
         {
@@ -119,16 +117,16 @@ public sealed class HumanSiteTemplateCatalogTests
         using var unknownEconomy = Json(
             """
             [{"economy":"Mystery","subType":1,"name":"X","landingPads":[{"size":"Small","offset":{"X":0,"Y":0}}],"buildings":[{"name":"HAB","paths":[{"PathPoints":[{"X":0,"Y":0}],"PathTypes":"AA==","FillMode":0}]}]}]
-            """);
+            """
+        );
         using var mismatchedPath = Json(
             """
             [{"economy":"Agriculture","subType":1,"name":"X","landingPads":[{"size":"Small","offset":{"X":0,"Y":0}}],"buildings":[{"name":"HAB","paths":[{"PathPoints":[{"X":0,"Y":0},{"X":1,"Y":1}],"PathTypes":"AA==","FillMode":0}]}]}]
-            """);
+            """
+        );
 
-        Assert.Throws<InvalidDataException>(
-            () => LoadTemplateCatalog(unknownEconomy));
-        Assert.Throws<InvalidDataException>(
-            () => LoadTemplateCatalog(mismatchedPath));
+        Assert.Throws<InvalidDataException>(() => LoadTemplateCatalog(unknownEconomy));
+        Assert.Throws<InvalidDataException>(() => LoadTemplateCatalog(mismatchedPath));
     }
 
     private static MemoryStream Json(string json)

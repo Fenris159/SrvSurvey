@@ -17,28 +17,27 @@ public sealed class SurfaceMiningOverlayCoordinator : IDisposable
 
     public SurfaceMiningOverlayCoordinator(
         SurfaceMiningViewModel surfaceMining,
-        OverlayPresentationSession presentationSession)
+        OverlayPresentationSession presentationSession
+    )
     {
-        this.surfaceMining = surfaceMining
-            ?? throw new ArgumentNullException(nameof(surfaceMining));
+        this.surfaceMining = surfaceMining ?? throw new ArgumentNullException(nameof(surfaceMining));
         ArgumentNullException.ThrowIfNull(presentationSession);
         hostedWindow = presentationSession.HostPassiveWindow(
             new PassiveOverlayWindowDefinition(
                 PlotterName,
-                capabilities => new SurfaceMiningOverlayWindow(
-                    GetOrCreateOverlayViewModel(capabilities)),
-                (gameBounds, windowSize) =>
-                    OverlayWindowPlacement.BottomCenter(
-                        gameBounds,
-                        windowSize),
-                preparation => overlayViewModel?.ApplyPreparation(
-                    preparation)));
+                capabilities => new SurfaceMiningOverlayWindow(GetOrCreateOverlayViewModel(capabilities)),
+                (gameBounds, windowSize) => OverlayWindowPlacement.BottomCenter(gameBounds, windowSize),
+                preparation => overlayViewModel?.ApplyPreparation(preparation)
+            )
+        );
         warningWindow = presentationSession.HostPassiveWindow(
             new PassiveOverlayWindowDefinition(
                 "PlotMiningWarning",
                 capabilities => new MiningWarningOverlayWindow(GetOrCreateOverlayViewModel(capabilities)),
                 (gameBounds, windowSize) => OverlayWindowPlacement.TopCenter(gameBounds, windowSize),
-                preparation => overlayViewModel?.ApplyPreparation(preparation)));
+                preparation => overlayViewModel?.ApplyPreparation(preparation)
+            )
+        );
         warningWindow.VisibilityChanged += OnHostedVisibilityChanged;
         hostedWindow.VisibilityChanged += OnHostedVisibilityChanged;
         surfaceMining.PropertyChanged += OnSurfaceMiningPropertyChanged;
@@ -79,23 +78,22 @@ public sealed class SurfaceMiningOverlayCoordinator : IDisposable
         warningWindow.Dispose();
     }
 
-    private void OnSurfaceMiningPropertyChanged(
-        object? sender,
-        PropertyChangedEventArgs eventArgs)
+    private void OnSurfaceMiningPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
-        if (eventArgs.PropertyName is null or nameof(SurfaceMiningViewModel.ShouldShow)
-            or nameof(SurfaceMiningViewModel.ShouldShowRigWarning))
+        if (
+            eventArgs.PropertyName
+            is null
+                or nameof(SurfaceMiningViewModel.ShouldShow)
+                or nameof(SurfaceMiningViewModel.ShouldShowRigWarning)
+        )
         {
             SynchronizeIntent();
         }
     }
 
-    private SurfaceMiningOverlayViewModel GetOrCreateOverlayViewModel(
-        OverlayPlatformCapabilities capabilities)
+    private SurfaceMiningOverlayViewModel GetOrCreateOverlayViewModel(OverlayPlatformCapabilities capabilities)
     {
-        return overlayViewModel ??= new SurfaceMiningOverlayViewModel(
-            surfaceMining,
-            capabilities);
+        return overlayViewModel ??= new SurfaceMiningOverlayViewModel(surfaceMining, capabilities);
     }
 
     private void SynchronizeIntent()

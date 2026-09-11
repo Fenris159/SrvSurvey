@@ -26,21 +26,16 @@ public sealed class NotificationOverlayCoordinator : IDisposable
         IOverlayPlatformService platform,
         IGameWindowTracker gameWindowTracker,
         LegacyOverlayLayout? overlayLayout = null,
-        OverlayWindowRegistry? registry = null)
+        OverlayWindowRegistry? registry = null
+    )
     {
-        this.viewModel = viewModel
-            ?? throw new ArgumentNullException(nameof(viewModel));
-        this.platform = platform
-            ?? throw new ArgumentNullException(nameof(platform));
-        this.gameWindowTracker = gameWindowTracker
-            ?? throw new ArgumentNullException(nameof(gameWindowTracker));
+        this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
+        this.platform = platform ?? throw new ArgumentNullException(nameof(platform));
+        this.gameWindowTracker = gameWindowTracker ?? throw new ArgumentNullException(nameof(gameWindowTracker));
         this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
         this.registry = registry ?? OverlayWindowRegistry.Shared;
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
-        timer = new OverlayDispatcherTimer
-        {
-            Interval = TimeSpan.FromMilliseconds(50),
-        };
+        timer = new OverlayDispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
         timer.Tick += OnTimerTick;
         timer.Start();
         SynchronizeWindow();
@@ -83,12 +78,11 @@ public sealed class NotificationOverlayCoordinator : IDisposable
         SynchronizeWindow();
     }
 
-    private void OnViewModelPropertyChanged(
-        object? sender,
-        PropertyChangedEventArgs eventArgs)
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
-        if (eventArgs.PropertyName is nameof(NotificationViewModel.ShouldShow)
-            or nameof(NotificationViewModel.Messages))
+        if (
+            eventArgs.PropertyName is nameof(NotificationViewModel.ShouldShow) or nameof(NotificationViewModel.Messages)
+        )
         {
             SynchronizeWindow();
         }
@@ -102,7 +96,8 @@ public sealed class NotificationOverlayCoordinator : IDisposable
         }
 
         gameWindow = gameWindowTracker.GetSnapshot();
-        var shouldShow = !isSuppressed
+        var shouldShow =
+            !isSuppressed
             && viewModel.ShouldShow
             && platform.Capabilities.SupportsPassiveOverlay
             && platform.Capabilities.SupportsClickThrough
@@ -123,11 +118,7 @@ public sealed class NotificationOverlayCoordinator : IDisposable
         }
 
         var overlay = new NotificationOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(
-            overlay,
-            overlayLayout,
-            PlotterName,
-            registry);
+        OverlayThemeResources.Apply(overlay, overlayLayout, PlotterName, registry);
         overlay.Opened += (_, _) => PrepareWindow(overlay);
         overlay.Closed += (_, _) =>
         {
@@ -153,27 +144,17 @@ public sealed class NotificationOverlayCoordinator : IDisposable
 
     private void PositionWindow(Window overlay)
     {
-        OverlayThemeResources.ApplyOpacity(
-            overlay,
-            overlayLayout,
-            PlotterName);
-        var screen = overlay.Screens.ScreenFromBounds(gameWindow.ClientBounds)
-            ?? overlay.Screens.Primary;
+        OverlayThemeResources.ApplyOpacity(overlay, overlayLayout, PlotterName);
+        var screen = overlay.Screens.ScreenFromBounds(gameWindow.ClientBounds) ?? overlay.Screens.Primary;
         if (screen is null)
         {
             return;
         }
 
-        var size = OverlayWindowMetrics.PrepareForPlacement(
-            overlay, overlayLayout, PlotterName, screen.Scaling);
-        var position = overlayLayout.GetPosition(
-                PlotterName,
-                gameWindow.ClientBounds,
-                size)
-            ?? OverlayWindowPlacement.BottomCenter(
-                gameWindow.ClientBounds,
-                size,
-                margin: 24);
+        var size = OverlayWindowMetrics.PrepareForPlacement(overlay, overlayLayout, PlotterName, screen.Scaling);
+        var position =
+            overlayLayout.GetPosition(PlotterName, gameWindow.ClientBounds, size)
+            ?? OverlayWindowPlacement.BottomCenter(gameWindow.ClientBounds, size, margin: 24);
         if (overlay.Position != position)
         {
             overlay.Position = position;

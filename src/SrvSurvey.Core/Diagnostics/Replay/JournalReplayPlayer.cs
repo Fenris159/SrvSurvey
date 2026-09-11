@@ -10,19 +10,12 @@ public interface IReplayDelay
 
 internal interface IReplayJournalWriter
 {
-    Task AppendLineAsync(
-        string path,
-        string line,
-        CancellationToken cancellationToken);
+    Task AppendLineAsync(string path, string line, CancellationToken cancellationToken);
 }
 
-internal sealed class AtomicReplayJournalWriter(
-    Action? emissionStarting = null) : IReplayJournalWriter
+internal sealed class AtomicReplayJournalWriter(Action? emissionStarting = null) : IReplayJournalWriter
 {
-    public async Task AppendLineAsync(
-        string path,
-        string line,
-        CancellationToken cancellationToken)
+    public async Task AppendLineAsync(string path, string line, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         var payload = Encoding.UTF8.GetBytes(line + "\n");
@@ -33,7 +26,8 @@ internal sealed class AtomicReplayJournalWriter(
             FileAccess.Write,
             FileShare.ReadWrite,
             bufferSize: 16 * 1024,
-            useAsync: true);
+            useAsync: true
+        );
         await stream.WriteAsync(payload, CancellationToken.None);
         await stream.FlushAsync(CancellationToken.None);
     }
@@ -47,26 +41,17 @@ public sealed class JournalReplayPlayer : IDisposable
     private readonly SemaphoreSlim gate = new(1, 1);
     private int position;
 
-    public JournalReplayPlayer(
-        DiagnosticReplaySession session,
-        IReplayDelay? delay = null)
-        : this(session, delay, new AtomicReplayJournalWriter())
-    {
-    }
+    public JournalReplayPlayer(DiagnosticReplaySession session, IReplayDelay? delay = null)
+        : this(session, delay, new AtomicReplayJournalWriter()) { }
 
-    internal JournalReplayPlayer(
-        DiagnosticReplaySession session,
-        IReplayDelay? delay,
-        IReplayJournalWriter writer)
+    internal JournalReplayPlayer(DiagnosticReplaySession session, IReplayDelay? delay, IReplayJournalWriter writer)
     {
-        this.session = session
-            ?? throw new ArgumentNullException(nameof(session));
+        this.session = session ?? throw new ArgumentNullException(nameof(session));
         this.delay = delay ?? new SystemReplayDelay();
         this.writer = writer ?? throw new ArgumentNullException(nameof(writer));
     }
 
-    public event EventHandler<JournalReplayPositionChangedEventArgs>?
-        PositionChanged;
+    public event EventHandler<JournalReplayPositionChangedEventArgs>? PositionChanged;
 
     public int Position => Volatile.Read(ref position);
 
@@ -85,17 +70,13 @@ public sealed class JournalReplayPlayer : IDisposable
         }
     }
 
-    public Task PlayAsync(
-        double speed,
-        CancellationToken cancellationToken)
+    public Task PlayAsync(double speed, CancellationToken cancellationToken)
     {
         ValidateSpeed(speed, nameof(speed));
         return PlayAsync(() => speed, cancellationToken);
     }
 
-    public async Task PlayAsync(
-        Func<double> speedProvider,
-        CancellationToken cancellationToken)
+    public async Task PlayAsync(Func<double> speedProvider, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(speedProvider);
 
@@ -140,15 +121,14 @@ public sealed class JournalReplayPlayer : IDisposable
                 session.PlaybackJournalPath,
                 string.Empty,
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
-                cancellationToken);
+                cancellationToken
+            );
             ClearCompanionFiles();
             position = 0;
             PositionChanged?.Invoke(
                 this,
-                new JournalReplayPositionChangedEventArgs(
-                    Position,
-                    session.Events.Count,
-                    currentEvent: null));
+                new JournalReplayPositionChangedEventArgs(Position, session.Events.Count, currentEvent: null)
+            );
         }
         finally
         {
@@ -156,9 +136,7 @@ public sealed class JournalReplayPlayer : IDisposable
         }
     }
 
-    public async Task SeekAsync(
-        int position,
-        CancellationToken cancellationToken)
+    public async Task SeekAsync(int position, CancellationToken cancellationToken)
     {
         if (position < 0 || position > session.Events.Count)
         {
@@ -172,8 +150,7 @@ public sealed class JournalReplayPlayer : IDisposable
         }
     }
 
-    private async Task<bool> AppendNextCoreAsync(
-        CancellationToken cancellationToken)
+    private async Task<bool> AppendNextCoreAsync(CancellationToken cancellationToken)
     {
         if (position >= session.Events.Count)
         {
@@ -184,10 +161,7 @@ public sealed class JournalReplayPlayer : IDisposable
         cancellationToken.ThrowIfCancellationRequested();
         if (replayEvent.Kind == ReplayInputKind.Journal)
         {
-            await writer.AppendLineAsync(
-                session.PlaybackJournalPath,
-                replayEvent.RawJson,
-                cancellationToken);
+            await writer.AppendLineAsync(session.PlaybackJournalPath, replayEvent.RawJson, cancellationToken);
         }
         else
         {
@@ -197,23 +171,17 @@ public sealed class JournalReplayPlayer : IDisposable
         position++;
         PositionChanged?.Invoke(
             this,
-            new JournalReplayPositionChangedEventArgs(
-                position,
-                session.Events.Count,
-                replayEvent));
+            new JournalReplayPositionChangedEventArgs(position, session.Events.Count, replayEvent)
+        );
         return true;
     }
 
-    private async Task WriteCompanionAsync(
-        JournalReplayEvent replayEvent,
-        CancellationToken cancellationToken)
+    private async Task WriteCompanionAsync(JournalReplayEvent replayEvent, CancellationToken cancellationToken)
     {
-        var directory = Path.GetDirectoryName(session.PlaybackJournalPath)
-            ?? throw new InvalidDataException(
-                "The diagnostic playback journal has no containing directory.");
-        var path = Path.Combine(
-            directory,
-            CompanionTimelineFileNames.Resolve(replayEvent.Kind));
+        var directory =
+            Path.GetDirectoryName(session.PlaybackJournalPath)
+            ?? throw new InvalidDataException("The diagnostic playback journal has no containing directory.");
+        var path = Path.Combine(directory, CompanionTimelineFileNames.Resolve(replayEvent.Kind));
         var temporaryPath = path + $".{Guid.NewGuid():N}.tmp";
         try
         {
@@ -221,7 +189,8 @@ public sealed class JournalReplayPlayer : IDisposable
                 temporaryPath,
                 replayEvent.RawJson,
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
-                cancellationToken);
+                cancellationToken
+            );
             File.Move(temporaryPath, path, overwrite: true);
         }
         finally
@@ -242,19 +211,19 @@ public sealed class JournalReplayPlayer : IDisposable
         {
             if (kind != ReplayInputKind.Journal)
             {
-                File.Delete(Path.Combine(
-                    directory,
-                    CompanionTimelineFileNames.Resolve(kind)));
+                File.Delete(Path.Combine(directory, CompanionTimelineFileNames.Resolve(kind)));
             }
         }
     }
 
     private TimeSpan ResolveDelay(int nextPosition, double speed)
     {
-        if (nextPosition == 0
+        if (
+            nextPosition == 0
             || session.Events[nextPosition - 1].Timestamp is not { } previous
             || session.Events[nextPosition].Timestamp is not { } next
-            || next <= previous)
+            || next <= previous
+        )
         {
             return TimeSpan.Zero;
         }
@@ -266,9 +235,7 @@ public sealed class JournalReplayPlayer : IDisposable
     {
         if (!double.IsFinite(speed) || speed <= 0)
         {
-            throw new ArgumentOutOfRangeException(
-                parameterName,
-                "Replay speed must be a finite positive number.");
+            throw new ArgumentOutOfRangeException(parameterName, "Replay speed must be a finite positive number.");
         }
     }
 
@@ -278,18 +245,13 @@ public sealed class JournalReplayPlayer : IDisposable
     }
 }
 
-internal sealed class SystemReplayDelay(
-    Func<TimeSpan, CancellationToken, Task>? wait = null) : IReplayDelay
+internal sealed class SystemReplayDelay(Func<TimeSpan, CancellationToken, Task>? wait = null) : IReplayDelay
 {
-    internal static readonly TimeSpan MaximumSegment =
-        TimeSpan.FromMilliseconds(int.MaxValue - 1d);
+    internal static readonly TimeSpan MaximumSegment = TimeSpan.FromMilliseconds(int.MaxValue - 1d);
 
-    private readonly Func<TimeSpan, CancellationToken, Task> wait =
-        wait ?? Task.Delay;
+    private readonly Func<TimeSpan, CancellationToken, Task> wait = wait ?? Task.Delay;
 
-    public async Task WaitAsync(
-        TimeSpan delay,
-        CancellationToken cancellationToken)
+    public async Task WaitAsync(TimeSpan delay, CancellationToken cancellationToken)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(delay, TimeSpan.Zero);
 
@@ -297,19 +259,15 @@ internal sealed class SystemReplayDelay(
         while (remaining > TimeSpan.Zero)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var segment = remaining > MaximumSegment
-                ? MaximumSegment
-                : remaining;
+            var segment = remaining > MaximumSegment ? MaximumSegment : remaining;
             await wait(segment, cancellationToken);
             remaining -= segment;
         }
     }
 }
 
-public sealed class JournalReplayPositionChangedEventArgs(
-    int position,
-    int total,
-    JournalReplayEvent? currentEvent) : EventArgs
+public sealed class JournalReplayPositionChangedEventArgs(int position, int total, JournalReplayEvent? currentEvent)
+    : EventArgs
 {
     public int Position { get; } = position;
 

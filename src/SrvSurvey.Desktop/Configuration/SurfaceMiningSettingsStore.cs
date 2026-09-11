@@ -1,5 +1,5 @@
-using System.Text.Json.Nodes;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace SrvSurvey.Desktop.Configuration;
 
@@ -14,8 +14,7 @@ public sealed class SurfaceMiningSettingsStore(string path)
         try
         {
             var mining = documentStore.Load()[SettingsKey] as JsonObject;
-            return (mining?["Detection"]
-                ?.Deserialize<MiningDetectionSettings>() ?? new()).Normalize();
+            return (mining?["Detection"]?.Deserialize<MiningDetectionSettings>() ?? new()).Normalize();
         }
         catch (JsonException)
         {
@@ -23,16 +22,17 @@ public sealed class SurfaceMiningSettingsStore(string path)
         }
     }
 
-    public void SaveDetection(MiningDetectionSettings value) => documentStore.Update(root =>
-    {
-        var mining = root[SettingsKey] as JsonObject;
-        if (mining is null)
+    public void SaveDetection(MiningDetectionSettings value) =>
+        documentStore.Update(root =>
         {
-            mining = new JsonObject();
-            root[SettingsKey] = mining;
-        }
-        mining["Detection"] = JsonSerializer.SerializeToNode(value.Normalize());
-    });
+            var mining = root[SettingsKey] as JsonObject;
+            if (mining is null)
+            {
+                mining = new JsonObject();
+                root[SettingsKey] = mining;
+            }
+            mining["Detection"] = JsonSerializer.SerializeToNode(value.Normalize());
+        });
 
     public bool LoadAutoClearRigsOnShipBoarding()
     {

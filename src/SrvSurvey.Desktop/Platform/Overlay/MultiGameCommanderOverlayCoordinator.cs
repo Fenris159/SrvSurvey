@@ -30,27 +30,19 @@ public sealed class MultiGameCommanderOverlayCoordinator : IDisposable
         IGameWindowTracker gameWindowTracker,
         Func<bool> isApplicationActive,
         LegacyOverlayLayout overlayLayout,
-        TimeProvider? timeProvider = null)
+        TimeProvider? timeProvider = null
+    )
     {
-        this.commanderInstances = commanderInstances
-            ?? throw new ArgumentNullException(nameof(commanderInstances));
-        this.overlayBehavior = overlayBehavior
-            ?? throw new ArgumentNullException(nameof(overlayBehavior));
-        this.platform = platform
-            ?? throw new ArgumentNullException(nameof(platform));
-        this.gameWindowTracker = gameWindowTracker
-            ?? throw new ArgumentNullException(nameof(gameWindowTracker));
-        this.isApplicationActive = isApplicationActive
-            ?? throw new ArgumentNullException(nameof(isApplicationActive));
-        this.overlayLayout = overlayLayout
-            ?? throw new ArgumentNullException(nameof(overlayLayout));
+        this.commanderInstances = commanderInstances ?? throw new ArgumentNullException(nameof(commanderInstances));
+        this.overlayBehavior = overlayBehavior ?? throw new ArgumentNullException(nameof(overlayBehavior));
+        this.platform = platform ?? throw new ArgumentNullException(nameof(platform));
+        this.gameWindowTracker = gameWindowTracker ?? throw new ArgumentNullException(nameof(gameWindowTracker));
+        this.isApplicationActive = isApplicationActive ?? throw new ArgumentNullException(nameof(isApplicationActive));
+        this.overlayLayout = overlayLayout ?? throw new ArgumentNullException(nameof(overlayLayout));
         this.timeProvider = timeProvider ?? TimeProvider.System;
         commanderInstances.PropertyChanged += OnStateChanged;
         overlayBehavior.PropertyChanged += OnStateChanged;
-        timer = new OverlayDispatcherTimer
-        {
-            Interval = TimeSpan.FromMilliseconds(250),
-        };
+        timer = new OverlayDispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
         timer.Tick += OnTimerTick;
         timer.Start();
         RefreshInventory();
@@ -112,14 +104,14 @@ public sealed class MultiGameCommanderOverlayCoordinator : IDisposable
         SynchronizeWindow();
     }
 
-    private void OnStateChanged(
-        object? sender,
-        PropertyChangedEventArgs eventArgs)
+    private void OnStateChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
-        if (eventArgs.PropertyName is
-            nameof(CommanderInstancesViewModel.HasMultipleGameWindows)
-            or nameof(CommanderInstancesViewModel.MultiGameOverlayLabel)
-            or nameof(OverlayBehaviorViewModel.HideMultiGameCommanderOverlay))
+        if (
+            eventArgs.PropertyName
+            is nameof(CommanderInstancesViewModel.HasMultipleGameWindows)
+                or nameof(CommanderInstancesViewModel.MultiGameOverlayLabel)
+                or nameof(OverlayBehaviorViewModel.HideMultiGameCommanderOverlay)
+        )
         {
             SynchronizeWindow();
         }
@@ -150,8 +142,9 @@ public sealed class MultiGameCommanderOverlayCoordinator : IDisposable
                 SupportsClickThrough = capabilities.SupportsClickThrough,
                 SupportsGameWindowTracking = capabilities.SupportsGameWindowTracking,
                 GameWindow = gameWindow,
-                IsApplicationActive = isApplicationActive()
-            });
+                IsApplicationActive = isApplicationActive(),
+            }
+        );
         if (!shouldShow)
         {
             CloseWindow();
@@ -164,14 +157,8 @@ public sealed class MultiGameCommanderOverlayCoordinator : IDisposable
             return;
         }
 
-        var overlay = new MultiGameCommanderOverlayWindow(commanderInstances)
-        {
-            Opacity = 0.82,
-        };
-        OverlayThemeResources.Apply(
-            overlay,
-            overlayLayout,
-            "PlotMultiGameCommander");
+        var overlay = new MultiGameCommanderOverlayWindow(commanderInstances) { Opacity = 0.82 };
+        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotMultiGameCommander");
         overlay.Opened += (_, _) => PrepareWindow(overlay);
         overlay.Closed += (_, _) =>
         {
@@ -197,42 +184,24 @@ public sealed class MultiGameCommanderOverlayCoordinator : IDisposable
 
     private void PositionWindow(Window overlay)
     {
-        OverlayThemeResources.ApplyOpacity(
-            overlay,
-            overlayLayout,
-            "PlotMultiGameCommander");
-        var screen = overlay.Screens.ScreenFromBounds(gameWindow.ClientBounds)
-            ?? overlay.Screens.Primary;
+        OverlayThemeResources.ApplyOpacity(overlay, overlayLayout, "PlotMultiGameCommander");
+        var screen = overlay.Screens.ScreenFromBounds(gameWindow.ClientBounds) ?? overlay.Screens.Primary;
         if (screen is null)
         {
             return;
         }
 
-        var logicalWidth = overlay.Bounds.Width > 0
-            ? overlay.Bounds.Width
-            : overlay.MinWidth;
-        var logicalHeight = overlay.Bounds.Height > 0
-            ? overlay.Bounds.Height
-            : 32;
-        var width = Math.Max(
-            1,
-            (int)Math.Ceiling(logicalWidth * screen.Scaling));
-        var height = Math.Max(
-            1,
-            (int)Math.Ceiling(logicalHeight * screen.Scaling));
+        var logicalWidth = overlay.Bounds.Width > 0 ? overlay.Bounds.Width : overlay.MinWidth;
+        var logicalHeight = overlay.Bounds.Height > 0 ? overlay.Bounds.Height : 32;
+        var width = Math.Max(1, (int)Math.Ceiling(logicalWidth * screen.Scaling));
+        var height = Math.Max(1, (int)Math.Ceiling(logicalHeight * screen.Scaling));
         var size = new PixelSize(width, height);
-        var position = overlayLayout.GetPosition(
-            "PlotMultiGameCommander",
-            gameWindow.ClientBounds,
-            size);
+        var position = overlayLayout.GetPosition("PlotMultiGameCommander", gameWindow.ClientBounds, size);
         if (position is null)
         {
-            var x = gameWindow.ClientBounds.X
-                + ((gameWindow.ClientBounds.Width - width) / 2);
+            var x = gameWindow.ClientBounds.X + ((gameWindow.ClientBounds.Width - width) / 2);
             var aboveClient = gameWindow.ClientBounds.Y - height - 2;
-            var y = aboveClient >= screen.WorkingArea.Y
-                ? aboveClient
-                : gameWindow.ClientBounds.Y;
+            var y = aboveClient >= screen.WorkingArea.Y ? aboveClient : gameWindow.ClientBounds.Y;
             position = new PixelPoint(x, y);
         }
 

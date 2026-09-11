@@ -8,7 +8,8 @@ public sealed class GroundTargetSettingsStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = System.IO.Path.Combine(
         System.IO.Path.GetTempPath(),
-        $"SrvSurvey-ground-target-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-ground-target-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void MissingSettingsReturnsInactiveTargetWithoutCreatingFile()
@@ -36,7 +37,8 @@ public sealed class GroundTargetSettingsStoreTests : IDisposable
               "targetLatLongActive": true,
               "unknownSetting": { "enabled": true }
             }
-            """);
+            """
+        );
         var store = new GroundTargetSettingsStore(temporaryDirectory);
 
         var result = store.Load();
@@ -45,8 +47,7 @@ public sealed class GroundTargetSettingsStoreTests : IDisposable
         Assert.True(result.Snapshot!.IsActive);
         Assert.Equal(new SurfaceCoordinate(12.5, -45.25), result.Snapshot.Target);
 
-        await store.SaveAsync(
-            new GroundTargetSnapshot(false, new SurfaceCoordinate(-1.5, 2.25)));
+        await store.SaveAsync(new GroundTargetSnapshot(false, new SurfaceCoordinate(-1.5, 2.25)));
 
         var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.True(root["unknownSetting"]!["enabled"]!.GetValue<bool>());
@@ -64,8 +65,7 @@ public sealed class GroundTargetSettingsStoreTests : IDisposable
         await File.WriteAllTextAsync(path, malformed);
         var store = new GroundTargetSettingsStore(temporaryDirectory);
 
-        await Assert.ThrowsAsync<InvalidDataException>(
-            () => store.SaveAsync(GroundTargetSnapshot.Empty));
+        await Assert.ThrowsAsync<InvalidDataException>(() => store.SaveAsync(GroundTargetSnapshot.Empty));
 
         Assert.Equal(malformed, await File.ReadAllTextAsync(path));
     }
@@ -76,7 +76,8 @@ public sealed class GroundTargetSettingsStoreTests : IDisposable
         Directory.CreateDirectory(temporaryDirectory);
         File.WriteAllText(
             System.IO.Path.Combine(temporaryDirectory, "settings.json"),
-            "{\"targetLatLong\":{\"lat\":91,\"long\":0},\"targetLatLongActive\":true}");
+            "{\"targetLatLong\":{\"lat\":91,\"long\":0},\"targetLatLongActive\":true}"
+        );
         var store = new GroundTargetSettingsStore(temporaryDirectory);
 
         var result = store.Load();

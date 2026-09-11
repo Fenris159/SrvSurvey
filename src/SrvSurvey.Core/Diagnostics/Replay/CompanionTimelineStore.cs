@@ -18,26 +18,23 @@ public enum ReplayInputKind
     Market,
 }
 
-public sealed record CompanionTimelineEntry(
-    DateTimeOffset Timestamp,
-    ReplayInputKind Kind,
-    string RawJson)
+public sealed record CompanionTimelineEntry(DateTimeOffset Timestamp, ReplayInputKind Kind, string RawJson)
 {
     public string FileName => CompanionTimelineFileNames.Resolve(Kind);
 }
 
 internal static class CompanionTimelineFileNames
 {
-    public static string Resolve(ReplayInputKind kind) => kind switch
-    {
-        ReplayInputKind.Status => StatusFileReader.FileName,
-        ReplayInputKind.Cargo => CargoFileReader.FileName,
-        ReplayInputKind.ShipLocker => ShipLockerFileReader.FileName,
-        ReplayInputKind.NavRoute => NavRouteFileReader.FileName,
-        ReplayInputKind.Market => MarketFileReader.FileName,
-        _ => throw new InvalidOperationException(
-            $"{kind} is not a companion-file input."),
-    };
+    public static string Resolve(ReplayInputKind kind) =>
+        kind switch
+        {
+            ReplayInputKind.Status => StatusFileReader.FileName,
+            ReplayInputKind.Cargo => CargoFileReader.FileName,
+            ReplayInputKind.ShipLocker => ShipLockerFileReader.FileName,
+            ReplayInputKind.NavRoute => NavRouteFileReader.FileName,
+            ReplayInputKind.Market => MarketFileReader.FileName,
+            _ => throw new InvalidOperationException($"{kind} is not a companion-file input."),
+        };
 }
 
 public sealed class CompanionTimelineStore : IDisposable
@@ -51,9 +48,7 @@ public sealed class CompanionTimelineStore : IDisposable
     private DateTimeOffset lastCleanup = DateTimeOffset.MinValue;
     private bool disposed;
 
-    public CompanionTimelineStore(
-        string directory,
-        TimeProvider? timeProvider = null)
+    public CompanionTimelineStore(string directory, TimeProvider? timeProvider = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(directory);
         this.directory = Path.GetFullPath(directory);
@@ -70,14 +65,13 @@ public sealed class CompanionTimelineStore : IDisposable
         return Path.Combine(Path.GetFullPath(dataDirectory), DirectoryName);
     }
 
-    public async Task AppendAsync(
-        JournalMonitorUpdate update,
-        CancellationToken cancellationToken = default)
+    public async Task AppendAsync(JournalMonitorUpdate update, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(update);
         ObjectDisposedException.ThrowIf(disposed, this);
         var observedAt = timeProvider.GetUtcNow();
-        var entries = CompanionTimelineCodec.Encode(update, observedAt)
+        var entries = CompanionTimelineCodec
+            .Encode(update, observedAt)
             .OrderBy(entry => entry.Timestamp)
             .ThenBy(entry => entry.Kind)
             .ToArray();
@@ -101,10 +95,10 @@ public sealed class CompanionTimelineStore : IDisposable
                     FileAccess.Write,
                     FileShare.Read,
                     bufferSize: 16 * 1024,
-                    useAsync: true);
+                    useAsync: true
+                );
                 var bytes = Encoding.UTF8.GetBytes(line + "\n");
-                await stream.WriteAsync(bytes, cancellationToken)
-                    .ConfigureAwait(false);
+                await stream.WriteAsync(bytes, cancellationToken).ConfigureAwait(false);
                 await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
             }
 
@@ -132,8 +126,7 @@ public sealed class CompanionTimelineStore : IDisposable
             }
 
             var now = timeProvider.GetUtcNow();
-            await PruneAsync(now - Retention, cancellationToken)
-                .ConfigureAwait(false);
+            await PruneAsync(now - Retention, cancellationToken).ConfigureAwait(false);
             lastCleanup = now;
         }
         finally
@@ -145,8 +138,10 @@ public sealed class CompanionTimelineStore : IDisposable
     private bool IsDuplicate(CompanionTimelineEntry entry)
     {
         var hash = CompanionTimelineCodec.ComputePayloadStateHash(entry.RawJson);
-        if (lastPayloadHashes.TryGetValue(entry.Kind, out var previous)
-            && string.Equals(previous, hash, StringComparison.Ordinal))
+        if (
+            lastPayloadHashes.TryGetValue(entry.Kind, out var previous)
+            && string.Equals(previous, hash, StringComparison.Ordinal)
+        )
         {
             return true;
         }
@@ -157,30 +152,25 @@ public sealed class CompanionTimelineStore : IDisposable
 
     private string ResolveSegmentPath(DateTimeOffset timestamp)
     {
-        var name = timestamp.UtcDateTime.ToString(
-            "yyyyMMddHH'.jsonl'",
-            CultureInfo.InvariantCulture);
+        var name = timestamp.UtcDateTime.ToString("yyyyMMddHH'.jsonl'", CultureInfo.InvariantCulture);
         return Path.Combine(directory, name);
     }
 
-    private async Task PruneAsync(
-        DateTimeOffset cutoff,
-        CancellationToken cancellationToken)
+    private async Task PruneAsync(DateTimeOffset cutoff, CancellationToken cancellationToken)
     {
-        foreach (var path in Directory.EnumerateFiles(
-                     directory,
-                     "*.jsonl",
-                     SearchOption.TopDirectoryOnly))
+        foreach (var path in Directory.EnumerateFiles(directory, "*.jsonl", SearchOption.TopDirectoryOnly))
         {
             cancellationToken.ThrowIfCancellationRequested();
             var name = Path.GetFileNameWithoutExtension(path);
-            if (!DateTimeOffset.TryParseExact(
+            if (
+                !DateTimeOffset.TryParseExact(
                     name,
                     "yyyyMMddHH",
                     CultureInfo.InvariantCulture,
-                    DateTimeStyles.AssumeUniversal
-                        | DateTimeStyles.AdjustToUniversal,
-                    out var segmentStart))
+                    DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+                    out var segmentStart
+                )
+            )
             {
                 continue;
             }
@@ -193,10 +183,7 @@ public sealed class CompanionTimelineStore : IDisposable
 
             if (segmentStart <= cutoff && cutoff < segmentStart.AddHours(1))
             {
-                await RewriteBoundarySegmentAsync(
-                    path,
-                    cutoff,
-                    cancellationToken).ConfigureAwait(false);
+                await RewriteBoundarySegmentAsync(path, cutoff, cancellationToken).ConfigureAwait(false);
             }
         }
     }
@@ -204,32 +191,32 @@ public sealed class CompanionTimelineStore : IDisposable
     private static async Task RewriteBoundarySegmentAsync(
         string path,
         DateTimeOffset cutoff,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var temporaryPath = path + $".{Guid.NewGuid():N}.tmp";
         try
         {
-            await using (var output = new FileStream(
-                             temporaryPath,
-                             FileMode.CreateNew,
-                             FileAccess.Write,
-                             FileShare.None,
-                             bufferSize: 16 * 1024,
-                             useAsync: true))
+            await using (
+                var output = new FileStream(
+                    temporaryPath,
+                    FileMode.CreateNew,
+                    FileAccess.Write,
+                    FileShare.None,
+                    bufferSize: 16 * 1024,
+                    useAsync: true
+                )
+            )
             {
-                await foreach (var entry in StreamFileAsync(
-                                   path,
-                                   cancellationToken))
+                await foreach (var entry in StreamFileAsync(path, cancellationToken))
                 {
                     if (entry.Timestamp < cutoff)
                     {
                         continue;
                     }
 
-                    var bytes = Encoding.UTF8.GetBytes(
-                        CompanionTimelineCodec.SerializeEntry(entry) + "\n");
-                    await output.WriteAsync(bytes, cancellationToken)
-                        .ConfigureAwait(false);
+                    var bytes = Encoding.UTF8.GetBytes(CompanionTimelineCodec.SerializeEntry(entry) + "\n");
+                    await output.WriteAsync(bytes, cancellationToken).ConfigureAwait(false);
                 }
 
                 await output.FlushAsync(cancellationToken).ConfigureAwait(false);
@@ -247,8 +234,8 @@ public sealed class CompanionTimelineStore : IDisposable
         string directory,
         DateTimeOffset? from,
         DateTimeOffset? to,
-        [System.Runtime.CompilerServices.EnumeratorCancellation]
-        CancellationToken cancellationToken)
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(directory);
         var fullDirectory = Path.GetFullPath(directory);
@@ -257,16 +244,15 @@ public sealed class CompanionTimelineStore : IDisposable
             yield break;
         }
 
-        foreach (var path in Directory.EnumerateFiles(
-                     fullDirectory,
-                     "*.jsonl",
-                     SearchOption.TopDirectoryOnly)
-                 .OrderBy(path => Path.GetFileName(path), StringComparer.Ordinal))
+        foreach (
+            var path in Directory
+                .EnumerateFiles(fullDirectory, "*.jsonl", SearchOption.TopDirectoryOnly)
+                .OrderBy(path => Path.GetFileName(path), StringComparer.Ordinal)
+        )
         {
             await foreach (var entry in StreamFileAsync(path, cancellationToken))
             {
-                if ((from is null || entry.Timestamp >= from)
-                    && (to is null || entry.Timestamp <= to))
+                if ((from is null || entry.Timestamp >= from) && (to is null || entry.Timestamp <= to))
                 {
                     yield return entry;
                 }
@@ -276,8 +262,8 @@ public sealed class CompanionTimelineStore : IDisposable
 
     internal static async IAsyncEnumerable<CompanionTimelineEntry> StreamFileAsync(
         string path,
-        [System.Runtime.CompilerServices.EnumeratorCancellation]
-        CancellationToken cancellationToken)
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken
+    )
     {
         await using var stream = new FileStream(
             path,
@@ -285,14 +271,13 @@ public sealed class CompanionTimelineStore : IDisposable
             FileAccess.Read,
             FileShare.ReadWrite | FileShare.Delete,
             bufferSize: 64 * 1024,
-            useAsync: true);
+            useAsync: true
+        );
         using var reader = new StreamReader(stream, Encoding.UTF8);
-        var line = await reader.ReadLineAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var line = await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false);
         while (line is not null)
         {
-            var nextLine = await reader.ReadLineAsync(cancellationToken)
-                .ConfigureAwait(false);
+            var nextLine = await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false);
             if (string.IsNullOrWhiteSpace(line))
             {
                 line = nextLine;
@@ -335,20 +320,14 @@ internal static class CompanionTimelineCodec
     private static readonly JsonSerializerOptions Json = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        Converters =
-        {
-            new JsonStringEnumConverter(JsonNamingPolicy.CamelCase),
-            new JournalTimestampConverter(),
-        },
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase), new JournalTimestampConverter() },
     };
     private static readonly JsonSerializerOptions PayloadJson = new()
     {
         Converters = { new JournalTimestampConverter() },
     };
 
-    public static IReadOnlyList<CompanionTimelineEntry> Encode(
-        JournalMonitorUpdate update,
-        DateTimeOffset observedAt)
+    public static IReadOnlyList<CompanionTimelineEntry> Encode(JournalMonitorUpdate update, DateTimeOffset observedAt)
     {
         var entries = new List<CompanionTimelineEntry>(5);
         Add(entries, ReplayInputKind.Status, update.Status, observedAt);
@@ -363,7 +342,8 @@ internal static class CompanionTimelineCodec
         List<CompanionTimelineEntry> entries,
         ReplayInputKind kind,
         T? snapshot,
-        DateTimeOffset observedAt)
+        DateTimeOffset observedAt
+    )
         where T : class
     {
         if (snapshot is null)
@@ -377,45 +357,35 @@ internal static class CompanionTimelineCodec
             timestamp = observedAt;
         }
 
-        entries.Add(new CompanionTimelineEntry(
-            timestamp.ToUniversalTime(),
-            kind,
-            EncodePayload(kind, snapshot, timestamp)));
+        entries.Add(
+            new CompanionTimelineEntry(timestamp.ToUniversalTime(), kind, EncodePayload(kind, snapshot, timestamp))
+        );
     }
 
-    private static DateTimeOffset GetTimestamp(object snapshot) => snapshot switch
-    {
-        EliteStatus status => status.Timestamp,
-        CargoSnapshot cargo => cargo.Timestamp,
-        ShipLockerSnapshot locker => locker.Timestamp,
-        NavRouteSnapshot route => route.Timestamp,
-        MarketSnapshot market => market.Timestamp,
-        _ => default,
-    };
+    private static DateTimeOffset GetTimestamp(object snapshot) =>
+        snapshot switch
+        {
+            EliteStatus status => status.Timestamp,
+            CargoSnapshot cargo => cargo.Timestamp,
+            ShipLockerSnapshot locker => locker.Timestamp,
+            NavRouteSnapshot route => route.Timestamp,
+            MarketSnapshot market => market.Timestamp,
+            _ => default,
+        };
 
-    private static string EncodePayload<T>(
-        ReplayInputKind kind,
-        T snapshot,
-        DateTimeOffset timestamp)
+    private static string EncodePayload<T>(ReplayInputKind kind, T snapshot, DateTimeOffset timestamp)
         where T : class
     {
         JsonObject payload = kind switch
         {
-            ReplayInputKind.Status => JsonSerializer.SerializeToNode(
-                    ((EliteStatus)(object)snapshot) with { Timestamp = timestamp },
-                    PayloadJson)!.AsObject(),
+            ReplayInputKind.Status => JsonSerializer
+                .SerializeToNode(((EliteStatus)(object)snapshot) with { Timestamp = timestamp }, PayloadJson)!
+                .AsObject(),
             ReplayInputKind.Cargo => EncodeCargo((CargoSnapshot)(object)snapshot, timestamp),
-            ReplayInputKind.ShipLocker => EncodeShipLocker(
-                (ShipLockerSnapshot)(object)snapshot,
-                timestamp),
-            ReplayInputKind.NavRoute => EncodeNavRoute(
-                (NavRouteSnapshot)(object)snapshot,
-                timestamp),
-            ReplayInputKind.Market => EncodeMarket(
-                (MarketSnapshot)(object)snapshot,
-                timestamp),
-            _ => throw new InvalidOperationException(
-                $"{kind} is not a companion-file input."),
+            ReplayInputKind.ShipLocker => EncodeShipLocker((ShipLockerSnapshot)(object)snapshot, timestamp),
+            ReplayInputKind.NavRoute => EncodeNavRoute((NavRouteSnapshot)(object)snapshot, timestamp),
+            ReplayInputKind.Market => EncodeMarket((MarketSnapshot)(object)snapshot, timestamp),
+            _ => throw new InvalidOperationException($"{kind} is not a companion-file input."),
         };
         return payload.ToJsonString(Json);
     }
@@ -433,13 +403,9 @@ internal static class CompanionTimelineCodec
 
     public static CompanionTimelineEntry DeserializeEntry(string line)
     {
-        using var document = JsonDocument.Parse(line, new JsonDocumentOptions
-        {
-            MaxDepth = 64,
-        });
+        using var document = JsonDocument.Parse(line, new JsonDocumentOptions { MaxDepth = 64 });
         var root = document.RootElement;
-        var timestamp = root.GetProperty(TimestampProperty)
-            .Deserialize<DateTimeOffset>(Json);
+        var timestamp = root.GetProperty(TimestampProperty).Deserialize<DateTimeOffset>(Json);
         var kind = root.GetProperty("kind").Deserialize<ReplayInputKind>(Json);
         if (kind == ReplayInputKind.Journal)
         {
@@ -457,16 +423,16 @@ internal static class CompanionTimelineCodec
 
     public static string ComputePayloadStateHash(string rawJson)
     {
-        var root = JsonNode.Parse(rawJson)?.AsObject()
-            ?? throw new JsonException("A companion payload must be an object.");
+        var root =
+            JsonNode.Parse(rawJson)?.AsObject() ?? throw new JsonException("A companion payload must be an object.");
         _ = root.Remove(TimestampProperty);
-        return Convert.ToHexStringLower(
-            SHA256.HashData(Encoding.UTF8.GetBytes(root.ToJsonString(Json))));
+        return Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(root.ToJsonString(Json))));
     }
 
     public static CompanionTimelineEntry Redact(CompanionTimelineEntry entry)
     {
-        var payload = JsonNode.Parse(entry.RawJson)?.AsObject()
+        var payload =
+            JsonNode.Parse(entry.RawJson)?.AsObject()
             ?? throw new JsonException("A companion payload must be an object.");
         switch (entry.Kind)
         {
@@ -479,10 +445,7 @@ internal static class CompanionTimelineCodec
                     Zero(destination, "System");
                     Zero(destination, "Body");
                     Replace(destination, "Name", "Replay Destination");
-                    Replace(
-                        destination,
-                        LocalizedNameProperty,
-                        "Replay Destination");
+                    Replace(destination, LocalizedNameProperty, "Replay Destination");
                 }
                 break;
             case ReplayInputKind.NavRoute:
@@ -497,8 +460,8 @@ internal static class CompanionTimelineCodec
                         if (item["StarPos"] is JsonArray position)
                         {
                             item["StarPos"] = new JsonArray(
-                                position.Select(_ => (JsonNode?)JsonValue.Create(0d))
-                                    .ToArray());
+                                position.Select(_ => (JsonNode?)JsonValue.Create(0d)).ToArray()
+                            );
                         }
                     }
                 }
@@ -512,11 +475,13 @@ internal static class CompanionTimelineCodec
             case ReplayInputKind.ShipLocker:
                 break;
             default:
-                throw new InvalidOperationException(
-                    $"{entry.Kind} is not a companion-file input.");
+                throw new InvalidOperationException($"{entry.Kind} is not a companion-file input.");
         }
 
-        return entry with { RawJson = payload.ToJsonString(Json) };
+        return entry with
+        {
+            RawJson = payload.ToJsonString(Json),
+        };
     }
 
     private static void Zero(JsonObject payload, string propertyName)
@@ -527,10 +492,7 @@ internal static class CompanionTimelineCodec
         }
     }
 
-    private static void Replace(
-        JsonObject payload,
-        string propertyName,
-        string replacement)
+    private static void Replace(JsonObject payload, string propertyName, string replacement)
     {
         if (payload[propertyName] is not null)
         {
@@ -538,77 +500,81 @@ internal static class CompanionTimelineCodec
         }
     }
 
-    private static JsonObject EncodeCargo(
-        CargoSnapshot snapshot,
-        DateTimeOffset timestamp) => new()
+    private static JsonObject EncodeCargo(CargoSnapshot snapshot, DateTimeOffset timestamp) =>
+        new()
         {
             [TimestampProperty] = JsonSerializer.SerializeToNode(timestamp, Json),
             [EventProperty] = snapshot.EventName,
             ["Vessel"] = snapshot.Vessel,
-            ["Inventory"] = new JsonArray(snapshot.Inventory.Select(item =>
-                (JsonNode)new JsonObject
-                {
-                    ["Name"] = item.Name,
-                    [LocalizedNameProperty] = item.LocalizedName,
-                    ["Count"] = item.Count,
-                    ["Stolen"] = item.Stolen,
-                }).ToArray()),
+            ["Inventory"] = new JsonArray(
+                snapshot
+                    .Inventory.Select(item =>
+                        (JsonNode)
+                            new JsonObject
+                            {
+                                ["Name"] = item.Name,
+                                [LocalizedNameProperty] = item.LocalizedName,
+                                ["Count"] = item.Count,
+                                ["Stolen"] = item.Stolen,
+                            }
+                    )
+                    .ToArray()
+            ),
         };
 
-    private static JsonObject EncodeShipLocker(
-        ShipLockerSnapshot snapshot,
-        DateTimeOffset timestamp)
+    private static JsonObject EncodeShipLocker(ShipLockerSnapshot snapshot, DateTimeOffset timestamp)
     {
         var payload = new JsonObject
         {
             [TimestampProperty] = JsonSerializer.SerializeToNode(timestamp, Json),
             [EventProperty] = snapshot.EventName,
         };
-        foreach (var category in new[]
-                 {
-                     "Items", "Components", "Consumables", "Data",
-                 })
+        foreach (var category in new[] { "Items", "Components", "Consumables", "Data" })
         {
-            payload[category] = new JsonArray(snapshot.Items
-                .Where(item => string.Equals(
-                    item.Category,
-                    category,
-                    StringComparison.OrdinalIgnoreCase))
-                .Select(item => (JsonNode)new JsonObject
-                {
-                    ["Name"] = item.Name,
-                    [LocalizedNameProperty] = item.LocalizedName,
-                    ["Count"] = item.Count,
-                }).ToArray());
+            payload[category] = new JsonArray(
+                snapshot
+                    .Items.Where(item => string.Equals(item.Category, category, StringComparison.OrdinalIgnoreCase))
+                    .Select(item =>
+                        (JsonNode)
+                            new JsonObject
+                            {
+                                ["Name"] = item.Name,
+                                [LocalizedNameProperty] = item.LocalizedName,
+                                ["Count"] = item.Count,
+                            }
+                    )
+                    .ToArray()
+            );
         }
 
         return payload;
     }
 
-    private static JsonObject EncodeNavRoute(
-        NavRouteSnapshot snapshot,
-        DateTimeOffset timestamp) => new()
+    private static JsonObject EncodeNavRoute(NavRouteSnapshot snapshot, DateTimeOffset timestamp) =>
+        new()
         {
             [TimestampProperty] = JsonSerializer.SerializeToNode(timestamp, Json),
             [EventProperty] = snapshot.EventName,
-            ["Route"] = new JsonArray(snapshot.Route.Select(item =>
-                (JsonNode)new JsonObject
-                {
-                    [StarSystemProperty] = item.StarSystem,
-                    ["SystemAddress"] = item.SystemAddress,
-                    ["StarPos"] = item.Position is not { } position
-                        ? null
-                        : new JsonArray(
-                            position.X,
-                            position.Y,
-                            position.Z),
-                    ["StarClass"] = item.StarClass,
-                }).ToArray()),
+            ["Route"] = new JsonArray(
+                snapshot
+                    .Route.Select(item =>
+                        (JsonNode)
+                            new JsonObject
+                            {
+                                [StarSystemProperty] = item.StarSystem,
+                                ["SystemAddress"] = item.SystemAddress,
+                                ["StarPos"] = item.Position is not { } position
+                                    ? null
+                                    : new JsonArray(position.X, position.Y, position.Z),
+                                ["StarClass"] = item.StarClass,
+                            }
+                    )
+                    .ToArray()
+            ),
         };
 
-    private static JsonObject EncodeMarket(
-        MarketSnapshot snapshot,
-        DateTimeOffset timestamp) => new()
+    private static JsonObject EncodeMarket(MarketSnapshot snapshot, DateTimeOffset timestamp) =>
+        new()
         {
             [TimestampProperty] = JsonSerializer.SerializeToNode(timestamp, Json),
             [EventProperty] = snapshot.EventName,
@@ -617,25 +583,31 @@ internal static class CompanionTimelineCodec
             ["StationType"] = snapshot.StationType,
             ["CarrierDockingAccess"] = snapshot.CarrierDockingAccess,
             [StarSystemProperty] = snapshot.StarSystem,
-            ["Items"] = new JsonArray(snapshot.Items.Select(item =>
-                (JsonNode)new JsonObject
-                {
-                    ["id"] = item.Id,
-                    ["Name"] = item.Name,
-                    [LocalizedNameProperty] = item.LocalizedName,
-                    ["Category"] = item.Category,
-                    ["Category_Localised"] = item.LocalizedCategory,
-                    ["BuyPrice"] = item.BuyPrice,
-                    ["SellPrice"] = item.SellPrice,
-                    ["MeanPrice"] = item.MeanPrice,
-                    ["StockBracket"] = item.StockBracket,
-                    ["DemandBracket"] = item.DemandBracket,
-                    ["Stock"] = item.Stock,
-                    ["Demand"] = item.Demand,
-                    ["Producer"] = item.Producer,
-                    ["Consumer"] = item.Consumer,
-                    ["Rare"] = item.Rare,
-                }).ToArray()),
+            ["Items"] = new JsonArray(
+                snapshot
+                    .Items.Select(item =>
+                        (JsonNode)
+                            new JsonObject
+                            {
+                                ["id"] = item.Id,
+                                ["Name"] = item.Name,
+                                [LocalizedNameProperty] = item.LocalizedName,
+                                ["Category"] = item.Category,
+                                ["Category_Localised"] = item.LocalizedCategory,
+                                ["BuyPrice"] = item.BuyPrice,
+                                ["SellPrice"] = item.SellPrice,
+                                ["MeanPrice"] = item.MeanPrice,
+                                ["StockBracket"] = item.StockBracket,
+                                ["DemandBracket"] = item.DemandBracket,
+                                ["Stock"] = item.Stock,
+                                ["Demand"] = item.Demand,
+                                ["Producer"] = item.Producer,
+                                ["Consumer"] = item.Consumer,
+                                ["Rare"] = item.Rare,
+                            }
+                    )
+                    .ToArray()
+            ),
         };
 
     private sealed class JournalTimestampConverter : JsonConverter<DateTimeOffset>
@@ -645,23 +617,19 @@ internal static class CompanionTimelineCodec
         public override DateTimeOffset Read(
             ref Utf8JsonReader reader,
             Type typeToConvert,
-            JsonSerializerOptions options)
+            JsonSerializerOptions options
+        )
         {
             return DateTimeOffset.Parse(
-                reader.GetString()
-                    ?? throw new JsonException("A replay timestamp is empty."),
+                reader.GetString() ?? throw new JsonException("A replay timestamp is empty."),
                 CultureInfo.InvariantCulture,
-                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal
+            );
         }
 
-        public override void Write(
-            Utf8JsonWriter writer,
-            DateTimeOffset value,
-            JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, DateTimeOffset value, JsonSerializerOptions options)
         {
-            writer.WriteStringValue(value.UtcDateTime.ToString(
-                Format,
-                CultureInfo.InvariantCulture));
+            writer.WriteStringValue(value.UtcDateTime.ToString(Format, CultureInfo.InvariantCulture));
         }
     }
 }

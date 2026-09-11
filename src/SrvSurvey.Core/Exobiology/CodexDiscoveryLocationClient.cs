@@ -11,7 +11,8 @@ public interface ICodexDiscoveryLocationClient
     Task<CodexDiscoveryLocationLoadResult> GetAsync(
         long systemAddress,
         int bodyId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }
 
 public sealed record CodexDiscoveryLocation(
@@ -21,11 +22,10 @@ public sealed record CodexDiscoveryLocation(
     string BodyName,
     GalacticRegion? Region,
     GalacticCoordinate? Position,
-    Uri SpanshUri);
+    Uri SpanshUri
+);
 
-public sealed record CodexDiscoveryLocationLoadResult(
-    CodexDiscoveryLocation? Location,
-    string? Error)
+public sealed record CodexDiscoveryLocationLoadResult(CodexDiscoveryLocation? Location, string? Error)
 {
     public bool IsSuccess => Location is not null;
 
@@ -39,19 +39,13 @@ public sealed class CodexDiscoveryLocationClient : ICodexDiscoveryLocationClient
 {
     private const int MaximumResponseBytes = 32 * 1024 * 1024;
 
-    private static readonly HttpClient SharedClient = new()
-    {
-        Timeout = TimeSpan.FromSeconds(20),
-    };
+    private static readonly HttpClient SharedClient = new() { Timeout = TimeSpan.FromSeconds(20) };
 
     private readonly HttpClient client;
     private readonly Uri baseUri;
     private readonly TimeSpan requestTimeout;
 
-    public CodexDiscoveryLocationClient(
-        HttpClient? client = null,
-        Uri? baseUri = null,
-        TimeSpan? requestTimeout = null)
+    public CodexDiscoveryLocationClient(HttpClient? client = null, Uri? baseUri = null, TimeSpan? requestTimeout = null)
     {
         this.client = client ?? SharedClient;
         this.baseUri = baseUri ?? WellKnownUris.SpanshApiBase;
@@ -60,32 +54,32 @@ public sealed class CodexDiscoveryLocationClient : ICodexDiscoveryLocationClient
         {
             throw new ArgumentOutOfRangeException(
                 nameof(requestTimeout),
-                "The Codex location timeout must be positive.");
+                "The Codex location timeout must be positive."
+            );
         }
     }
 
     public async Task<CodexDiscoveryLocationLoadResult> GetAsync(
         long systemAddress,
         int bodyId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         if (systemAddress <= 0)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(systemAddress),
-                "A positive system address is required.");
+            throw new ArgumentOutOfRangeException(nameof(systemAddress), "A positive system address is required.");
         }
 
         var requestUri = CreateRequestUri(systemAddress);
-        using var timeoutCancellation = CancellationTokenSource
-            .CreateLinkedTokenSource(cancellationToken);
+        using var timeoutCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeoutCancellation.CancelAfter(requestTimeout);
         return await LoadLocationSafelyAsync(
                 requestUri,
                 systemAddress,
                 bodyId,
                 timeoutCancellation.Token,
-                cancellationToken)
+                cancellationToken
+            )
             .ConfigureAwait(false);
     }
 
@@ -93,9 +87,8 @@ public sealed class CodexDiscoveryLocationClient : ICodexDiscoveryLocationClient
     {
         return new Uri(
             baseUri,
-            UriPath.CombineWithTrailingSeparator(
-                "dump",
-                systemAddress.ToString(CultureInfo.InvariantCulture)));
+            UriPath.CombineWithTrailingSeparator("dump", systemAddress.ToString(CultureInfo.InvariantCulture))
+        );
     }
 
     private async Task<CodexDiscoveryLocationLoadResult> LoadLocationSafelyAsync(
@@ -103,16 +96,12 @@ public sealed class CodexDiscoveryLocationClient : ICodexDiscoveryLocationClient
         long systemAddress,
         int bodyId,
         CancellationToken operationToken,
-        CancellationToken callerToken)
+        CancellationToken callerToken
+    )
     {
         try
         {
-            return await LoadLocationAsync(
-                    requestUri,
-                    systemAddress,
-                    bodyId,
-                    operationToken)
-                .ConfigureAwait(false);
+            return await LoadLocationAsync(requestUri, systemAddress, bodyId, operationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (callerToken.IsCancellationRequested)
         {
@@ -120,13 +109,9 @@ public sealed class CodexDiscoveryLocationClient : ICodexDiscoveryLocationClient
         }
         catch (OperationCanceledException)
         {
-            return CodexDiscoveryLocationLoadResult.Failed(
-                "The Spansh location request timed out.");
+            return CodexDiscoveryLocationLoadResult.Failed("The Spansh location request timed out.");
         }
-        catch (Exception exception) when (
-            exception is HttpRequestException
-                or JsonException
-                or InvalidDataException)
+        catch (Exception exception) when (exception is HttpRequestException or JsonException or InvalidDataException)
         {
             return CodexDiscoveryLocationLoadResult.Failed(exception.Message);
         }
@@ -136,29 +121,27 @@ public sealed class CodexDiscoveryLocationClient : ICodexDiscoveryLocationClient
         Uri requestUri,
         long systemAddress,
         int bodyId,
-        CancellationToken operationToken)
+        CancellationToken operationToken
+    )
     {
-        using var response = await client.GetAsync(
-                requestUri,
-                HttpCompletionOption.ResponseHeadersRead,
-                operationToken)
+        using var response = await client
+            .GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead, operationToken)
             .ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
-        using var document = await BoundedHttpContent.ReadJsonDocumentAsync(
+        using var document = await BoundedHttpContent
+            .ReadJsonDocumentAsync(
                 response.Content,
                 MaximumResponseBytes,
                 "The Spansh system-dump response",
-                operationToken)
+                operationToken
+            )
             .ConfigureAwait(false);
-        if (!document.RootElement.TryGetProperty("system", out var system)
-            || system.ValueKind != JsonValueKind.Object)
+        if (!document.RootElement.TryGetProperty("system", out var system) || system.ValueKind != JsonValueKind.Object)
         {
-            throw new InvalidDataException(
-                "The Spansh dump has no system object.");
+            throw new InvalidDataException("The Spansh dump has no system object.");
         }
 
-        var systemName = GetString(system, "name")
-            ?? systemAddress.ToString(CultureInfo.InvariantCulture);
+        var systemName = GetString(system, "name") ?? systemAddress.ToString(CultureInfo.InvariantCulture);
         var position = TryReadPosition(system);
         var (bodyName, bodyAddress) = FindBody(system, bodyId);
         var spanshUri = CreateSpanshUri(systemAddress, bodyAddress);
@@ -170,17 +153,21 @@ public sealed class CodexDiscoveryLocationClient : ICodexDiscoveryLocationClient
                 bodyName ?? $"{systemName} #{bodyId}",
                 position is null ? null : GalacticRegionMap.Find(position.Value),
                 position,
-                spanshUri),
-            null);
+                spanshUri
+            ),
+            null
+        );
     }
 
     private static GalacticCoordinate? TryReadPosition(JsonElement system)
     {
-        if (system.TryGetProperty("coords", out var coords)
+        if (
+            system.TryGetProperty("coords", out var coords)
             && coords.ValueKind == JsonValueKind.Object
             && GetDouble(coords, "x") is { } x
             && GetDouble(coords, "y") is { } y
-            && GetDouble(coords, "z") is { } z)
+            && GetDouble(coords, "z") is { } z
+        )
         {
             return new GalacticCoordinate(x, y, z);
         }
@@ -188,20 +175,16 @@ public sealed class CodexDiscoveryLocationClient : ICodexDiscoveryLocationClient
         return null;
     }
 
-    private static (string? BodyName, long? BodyAddress) FindBody(
-        JsonElement system,
-        int bodyId)
+    private static (string? BodyName, long? BodyAddress) FindBody(JsonElement system, int bodyId)
     {
-        if (!system.TryGetProperty("bodies", out var bodies)
-            || bodies.ValueKind != JsonValueKind.Array)
+        if (!system.TryGetProperty("bodies", out var bodies) || bodies.ValueKind != JsonValueKind.Array)
         {
             return (null, null);
         }
 
         foreach (var body in bodies.EnumerateArray())
         {
-            if (body.ValueKind != JsonValueKind.Object
-                || GetInt32(body, "bodyId") != bodyId)
+            if (body.ValueKind != JsonValueKind.Object || GetInt32(body, "bodyId") != bodyId)
             {
                 continue;
             }
@@ -216,40 +199,37 @@ public sealed class CodexDiscoveryLocationClient : ICodexDiscoveryLocationClient
     {
         if (bodyAddress is > 0)
         {
-            return new Uri(
-                WellKnownUris.SpanshBodyPrefix
-                    + bodyAddress.Value.ToString(CultureInfo.InvariantCulture));
+            return new Uri(WellKnownUris.SpanshBodyPrefix + bodyAddress.Value.ToString(CultureInfo.InvariantCulture));
         }
 
-        return new Uri(
-            WellKnownUris.SpanshSystemPrefix
-                + systemAddress.ToString(CultureInfo.InvariantCulture));
+        return new Uri(WellKnownUris.SpanshSystemPrefix + systemAddress.ToString(CultureInfo.InvariantCulture));
     }
 
     private static string? GetString(JsonElement root, string name)
     {
-        return root.TryGetProperty(name, out var value)
-            && value.ValueKind == JsonValueKind.String
-                ? value.GetString()
-                : null;
+        return root.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String
+            ? value.GetString()
+            : null;
     }
 
     private static double? GetDouble(JsonElement root, string name)
     {
-        return root.TryGetProperty(name, out var value)
+        return
+            root.TryGetProperty(name, out var value)
             && value.ValueKind == JsonValueKind.Number
             && value.TryGetDouble(out var result)
-                ? result
-                : null;
+            ? result
+            : null;
     }
 
     private static int? GetInt32(JsonElement root, string name)
     {
-        return root.TryGetProperty(name, out var value)
+        return
+            root.TryGetProperty(name, out var value)
             && value.ValueKind == JsonValueKind.Number
             && value.TryGetInt32(out var result)
-                ? result
-                : null;
+            ? result
+            : null;
     }
 
     private static long? GetInt64(JsonElement root, string name)
@@ -259,19 +239,15 @@ public sealed class CodexDiscoveryLocationClient : ICodexDiscoveryLocationClient
             return null;
         }
 
-        if (value.ValueKind == JsonValueKind.Number
-            && value.TryGetInt64(out var result))
+        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out var result))
         {
             return result;
         }
 
-        return value.ValueKind == JsonValueKind.String
-            && long.TryParse(
-                value.GetString(),
-                NumberStyles.Integer,
-                CultureInfo.InvariantCulture,
-                out result)
-                    ? result
-                    : null;
+        return
+            value.ValueKind == JsonValueKind.String
+            && long.TryParse(value.GetString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out result)
+            ? result
+            : null;
     }
 }

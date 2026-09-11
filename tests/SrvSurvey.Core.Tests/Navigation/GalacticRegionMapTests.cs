@@ -9,10 +9,8 @@ public sealed class GalacticRegionMapTests
     public void ExposesAllCodexRegionsInFrontierOrder()
     {
         Assert.Equal(42, GalacticRegionMap.Regions.Count);
-        Assert.Equal(new GalacticRegion(1, "Galactic Centre"),
-            GalacticRegionMap.Regions[0]);
-        Assert.Equal(new GalacticRegion(42, "The Void"),
-            GalacticRegionMap.Regions[^1]);
+        Assert.Equal(new GalacticRegion(1, "Galactic Centre"), GalacticRegionMap.Regions[0]);
+        Assert.Equal(new GalacticRegion(42, "The Void"), GalacticRegionMap.Regions[^1]);
     }
 
     [Theory]
@@ -24,7 +22,8 @@ public sealed class GalacticRegionMapTests
         double y,
         double z,
         int expectedId,
-        string expectedName)
+        string expectedName
+    )
     {
         var region = GalacticRegionMap.Find(new GalacticCoordinate(x, y, z));
 
@@ -34,7 +33,6 @@ public sealed class GalacticRegionMapTests
     [Fact]
     public void ReturnsNullOutsideRegionGrid()
     {
-        Assert.Null(GalacticRegionMap.Find(
-            new GalacticCoordinate(-100_000, 0, -100_000)));
+        Assert.Null(GalacticRegionMap.Find(new GalacticCoordinate(-100_000, 0, -100_000)));
     }
 }

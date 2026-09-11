@@ -7,30 +7,22 @@ internal sealed class JournalMonitorSession
     private Task? runningTask;
     private Task? stopTask;
 
-    public Task Start(
-        Func<CancellationToken, Task> runAsync,
-        Action<Exception> reportFailure)
+    public Task Start(Func<CancellationToken, Task> runAsync, Action<Exception> reportFailure)
     {
         ArgumentNullException.ThrowIfNull(runAsync);
         ArgumentNullException.ThrowIfNull(reportFailure);
 
         lock (sync)
         {
-            if (cancellation is not null
-                || runningTask is not null
-                || stopTask is not null)
+            if (cancellation is not null || runningTask is not null || stopTask is not null)
             {
-                throw new InvalidOperationException(
-                    "The journal monitor session has already been started.");
+                throw new InvalidOperationException("The journal monitor session has already been started.");
             }
 
             var source = new CancellationTokenSource();
             try
             {
-                runningTask = RunObservedAsync(
-                    runAsync,
-                    reportFailure,
-                    source.Token);
+                runningTask = RunObservedAsync(runAsync, reportFailure, source.Token);
                 cancellation = source;
                 return runningTask;
             }
@@ -45,14 +37,14 @@ internal sealed class JournalMonitorSession
     private static async Task RunObservedAsync(
         Func<CancellationToken, Task> runAsync,
         Action<Exception> reportFailure,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         try
         {
             await runAsync(cancellationToken);
         }
-        catch (OperationCanceledException)
-            when (cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             // Normal session shutdown.
         }
@@ -75,16 +67,12 @@ internal sealed class JournalMonitorSession
             var task = runningTask;
             cancellation = null;
             runningTask = null;
-            stopTask = source is null
-                ? Task.CompletedTask
-                : CancelWaitAndDisposeAsync(source, task!);
+            stopTask = source is null ? Task.CompletedTask : CancelWaitAndDisposeAsync(source, task!);
             return stopTask;
         }
     }
 
-    private static async Task CancelWaitAndDisposeAsync(
-        CancellationTokenSource cancellation,
-        Task runningTask)
+    private static async Task CancelWaitAndDisposeAsync(CancellationTokenSource cancellation, Task runningTask)
     {
         try
         {

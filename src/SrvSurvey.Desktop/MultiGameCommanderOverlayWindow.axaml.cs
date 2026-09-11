@@ -12,11 +12,9 @@ public sealed partial class MultiGameCommanderOverlayWindow : Window
         OverlayThemeResources.Apply(this);
     }
 
-    public MultiGameCommanderOverlayWindow(
-        CommanderInstancesViewModel viewModel)
+    public MultiGameCommanderOverlayWindow(CommanderInstancesViewModel viewModel)
         : this()
     {
-        DataContext = viewModel
-            ?? throw new ArgumentNullException(nameof(viewModel));
+        DataContext = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
     }
 }

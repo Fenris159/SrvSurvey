@@ -6,7 +6,8 @@ public sealed class BoxelSurveyRebuildServiceTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        "SrvSurvey-BoxelSurveyRebuild-" + Guid.NewGuid().ToString("N"));
+        "SrvSurvey-BoxelSurveyRebuild-" + Guid.NewGuid().ToString("N")
+    );
 
     [Fact]
     public async Task PassAIngestsSystemFilesAndIgnoresReward()
@@ -39,7 +40,8 @@ public sealed class BoxelSurveyRebuildServiceTests : IDisposable
                 }
               ]
             }
-            """);
+            """
+        );
         await File.WriteAllTextAsync(
             Path.Combine(systemDirectory, "Sol_10477373803.json"),
             """
@@ -48,7 +50,8 @@ public sealed class BoxelSurveyRebuildServiceTests : IDisposable
               "address": 10477373803,
               "bodies": []
             }
-            """);
+            """
+        );
 
         var state = new BoxelSurveyStatsState();
         var service = new BoxelSurveyRebuildService(temporaryDirectory, temporaryDirectory);
@@ -83,7 +86,8 @@ public sealed class BoxelSurveyRebuildServiceTests : IDisposable
             {"timestamp":"2026-07-10T12:04:00Z","event":"FSDJump","StarSystem":"Praea Euq IL-P c5-9","SystemAddress":2099}
             {"timestamp":"2026-07-10T12:05:00Z","event":"Commander","FID":"F123","Name":"Drew"}
 
-            """);
+            """
+        );
         await File.WriteAllTextAsync(
             horizons,
             """
@@ -92,21 +96,24 @@ public sealed class BoxelSurveyRebuildServiceTests : IDisposable
             {"timestamp":"2026-07-09T12:01:00Z","event":"FSDJump","StarSystem":"Wregoe BU-Y b2-0","SystemAddress":2002}
             {"timestamp":"2026-07-09T12:02:00Z","event":"Scan","SystemAddress":2002,"BodyID":1,"PlanetClass":"Icy body","MassEM":0.3}
 
-            """);
+            """
+        );
         await File.WriteAllTextAsync(
             other,
             """
             {"timestamp":"2026-07-08T12:00:00Z","event":"Commander","FID":"F-OTHER","Name":"Other"}
             {"timestamp":"2026-07-08T12:01:00Z","event":"FSDJump","StarSystem":"Praea Euq IL-P c5-1","SystemAddress":2011}
 
-            """);
+            """
+        );
         await File.WriteAllTextAsync(
             current,
             """
             {"timestamp":"2026-07-11T12:00:00Z","event":"Commander","FID":"F123","Name":"Drew"}
             {"timestamp":"2026-07-11T12:01:00Z","event":"FSDJump","StarSystem":"Praea Euq IL-P c5-4","SystemAddress":2014}
 
-            """);
+            """
+        );
 
         var state = new BoxelSurveyStatsState();
         var service = new BoxelSurveyRebuildService(temporaryDirectory, journalDirectory);

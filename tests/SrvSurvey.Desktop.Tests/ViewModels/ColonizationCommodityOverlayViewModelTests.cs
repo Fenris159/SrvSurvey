@@ -13,10 +13,7 @@ public sealed class ColonizationCommodityOverlayViewModelTests
         var viewModel = new ColonizationCommodityOverlayViewModel();
         var plan = Plan();
 
-        viewModel.Apply(
-            plan,
-            Status(GuiFocus.StationServices),
-            updatedHasMarketSinceDocking: true);
+        viewModel.Apply(plan, Status(GuiFocus.StationServices), updatedHasMarketSinceDocking: true);
         Assert.True(viewModel.ShouldAutoShow);
         Assert.Equal("TEST BUILD (NO_TRUSS)", viewModel.HeaderTitle);
         Assert.Same(viewModel.ProjectNames, viewModel.ProjectNames);
@@ -33,7 +30,8 @@ public sealed class ColonizationCommodityOverlayViewModelTests
             Status(GuiFocus.StationServices) with
             {
                 Flags = StatusFlags.Docked | StatusFlags.FsdJump,
-            });
+            }
+        );
         Assert.False(viewModel.ShouldAutoShow);
     }
 
@@ -46,10 +44,7 @@ public sealed class ColonizationCommodityOverlayViewModelTests
 
         Assert.False(viewModel.ShouldAutoShow);
 
-        viewModel.Apply(
-            Plan(),
-            Status(GuiFocus.StationServices),
-            updatedHasMarketSinceDocking: true);
+        viewModel.Apply(Plan(), Status(GuiFocus.StationServices), updatedHasMarketSinceDocking: true);
 
         Assert.True(viewModel.ShouldAutoShow);
     }
@@ -59,10 +54,7 @@ public sealed class ColonizationCommodityOverlayViewModelTests
     {
         var viewModel = new ColonizationCommodityOverlayViewModel();
 
-        viewModel.Apply(
-            Plan(),
-            Status(GuiFocus.NoFocus),
-            updatedIsSquadronBankOpen: true);
+        viewModel.Apply(Plan(), Status(GuiFocus.NoFocus), updatedIsSquadronBankOpen: true);
 
         Assert.True(viewModel.ShouldAutoShow);
     }
@@ -87,25 +79,18 @@ public sealed class ColonizationCommodityOverlayViewModelTests
             Rows =
             [
                 new ColonizationCommodityPlanRow
-    {
-        Commodity = "steel",
-        DisplayName = "Steel",
-        Category = "Metals",
-        Needed = 100,
-        InShip = 0,
-        OnFleetCarriers = 100,
-        IsAssignedToCommander = false,
-        IsAssignedToOther = false
-    },
-            ],
-            FleetCarriers =
-            [
-                new ColonizationFleetCarrier
                 {
-                    MarketId = 1,
-                    Name = "ABC-123",
+                    Commodity = "steel",
+                    DisplayName = "Steel",
+                    Category = "Metals",
+                    Needed = 100,
+                    InShip = 0,
+                    OnFleetCarriers = 100,
+                    IsAssignedToCommander = false,
+                    IsAssignedToOther = false,
                 },
             ],
+            FleetCarriers = [new ColonizationFleetCarrier { MarketId = 1, Name = "ABC-123" }],
         };
         viewModel.Apply(covered, Status(GuiFocus.InternalPanel));
 
@@ -144,7 +129,8 @@ public sealed class ColonizationCommodityOverlayViewModelTests
             {
                 AutoShow = false,
                 ShowFleetCarrierDelta = true,
-            });
+            }
+        );
 
         Assert.False(viewModel.ShouldAutoShow);
         Assert.False(viewModel.CanShowManually);
@@ -152,11 +138,7 @@ public sealed class ColonizationCommodityOverlayViewModelTests
         Assert.Equal("-80", deltaRow.OnFleetCarriersText);
         Assert.Equal("FC Δ", viewModel.FleetCarrierColumnHeader);
 
-        viewModel.ApplyPreferences(
-            ColonizationOverlayPreferences.Default with
-            {
-                InlineFleetCarrierCargo = true,
-            });
+        viewModel.ApplyPreferences(ColonizationOverlayPreferences.Default with { InlineFleetCarrierCargo = true });
 
         var inlineRow = Assert.Single(Assert.Single(viewModel.Groups).Rows);
         Assert.Equal("20", inlineRow.OnFleetCarriersText);
@@ -174,33 +156,33 @@ public sealed class ColonizationCommodityOverlayViewModelTests
             Rows =
             [
                 new ColonizationCommodityPlanRow
-    {
-        Commodity = "steel",
-        DisplayName = "Steel",
-        Category = "Metals",
-        Needed = 100,
-        InShip = 20,
-        OnFleetCarriers = 80,
-        IsAssignedToCommander = false,
-        IsAssignedToOther = false,
-        IsAvailableAtCurrentMarket = true,
-        IsUnavailableAtCurrentMarket = false,
-        CanCompleteFleetCarrierLoad = true
-    },
+                {
+                    Commodity = "steel",
+                    DisplayName = "Steel",
+                    Category = "Metals",
+                    Needed = 100,
+                    InShip = 20,
+                    OnFleetCarriers = 80,
+                    IsAssignedToCommander = false,
+                    IsAssignedToOther = false,
+                    IsAvailableAtCurrentMarket = true,
+                    IsUnavailableAtCurrentMarket = false,
+                    CanCompleteFleetCarrierLoad = true,
+                },
                 new ColonizationCommodityPlanRow
-    {
-        Commodity = "water",
-        DisplayName = "Water",
-        Category = "Metals",
-        Needed = 50,
-        InShip = 0,
-        OnFleetCarriers = 0,
-        IsAssignedToCommander = false,
-        IsAssignedToOther = false,
-        IsAvailableAtCurrentMarket = false,
-        IsUnavailableAtCurrentMarket = true,
-        CanCompleteFleetCarrierLoad = false
-    },
+                {
+                    Commodity = "water",
+                    DisplayName = "Water",
+                    Category = "Metals",
+                    Needed = 50,
+                    InShip = 0,
+                    OnFleetCarriers = 0,
+                    IsAssignedToCommander = false,
+                    IsAssignedToOther = false,
+                    IsAvailableAtCurrentMarket = false,
+                    IsUnavailableAtCurrentMarket = true,
+                    CanCompleteFleetCarrierLoad = false,
+                },
             ],
         };
         viewModel.Apply(plan, Status(GuiFocus.StationServices));
@@ -208,7 +190,8 @@ public sealed class ColonizationCommodityOverlayViewModelTests
             ColonizationOverlayPreferences.Default with
             {
                 HighlightAlmostCoveredFleetCarrierLoads = true,
-            });
+            }
+        );
 
         var rows = viewModel.Groups.SelectMany(group => group.Rows).ToArray();
         var steel = rows.Single(row => row.Commodity == "steel");
@@ -251,15 +234,20 @@ public sealed class ColonizationCommodityOverlayViewModelTests
         var viewModel = new ColonizationCommodityOverlayViewModel();
 
         viewModel.Apply(
-            Plan() with { IsDockedAtUntrackedFleetCarrier = true },
+            Plan() with
+            {
+                IsDockedAtUntrackedFleetCarrier = true,
+            },
             Status(GuiFocus.NoFocus),
-            updatedIsSquadronBankOpen: true);
+            updatedIsSquadronBankOpen: true
+        );
 
         Assert.True(viewModel.HasWarning);
         Assert.True(viewModel.ShouldAutoShow);
         Assert.Equal(
             "The current Fleet Carrier is not linked to this commander in Raven Colonial.",
-            viewModel.WarningText);
+            viewModel.WarningText
+        );
     }
 
     private static ColonizationCommodityPlan Plan()
@@ -268,20 +256,22 @@ public sealed class ColonizationCommodityOverlayViewModelTests
         {
             Title = "Test build (no_truss)",
             ProjectNames = ["Test build (no_truss)"],
-            Rows = [
+            Rows =
+            [
                 new ColonizationCommodityPlanRow
-    {
-        Commodity = "steel",
-        DisplayName = "Steel",
-        Category = "Metals",
-        Needed = 100,
-        InShip = 20,
-        OnFleetCarriers = 20,
-        IsAssignedToCommander = true,
-        IsAssignedToOther = false
-    },
+                {
+                    Commodity = "steel",
+                    DisplayName = "Steel",
+                    Category = "Metals",
+                    Needed = 100,
+                    InShip = 20,
+                    OnFleetCarriers = 20,
+                    IsAssignedToCommander = true,
+                    IsAssignedToOther = false,
+                },
             ],
-            FleetCarriers = [
+            FleetCarriers =
+            [
                 new ColonizationFleetCarrier
                 {
                     MarketId = 1,
@@ -297,16 +287,12 @@ public sealed class ColonizationCommodityOverlayViewModelTests
             IsLocalProjectUntracked = false,
             IsDockedAtUntrackedFleetCarrier = false,
             IsConstructionComplete = false,
-            IsConstructionFailed = false
+            IsConstructionFailed = false,
         };
     }
 
     private static EliteStatus Status(GuiFocus focus)
     {
-        return new EliteStatus
-        {
-            GuiFocus = focus,
-            Flags = StatusFlags.Docked,
-        };
+        return new EliteStatus { GuiFocus = focus, Flags = StatusFlags.Docked };
     }
 }

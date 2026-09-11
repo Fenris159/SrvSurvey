@@ -6,16 +6,15 @@ public sealed class DockToDockSettingsStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        "SrvSurvey-DockToDockSettings-" + Guid.NewGuid().ToString("N"));
+        "SrvSurvey-DockToDockSettings-" + Guid.NewGuid().ToString("N")
+    );
 
     [Fact]
     public void MissingSettingIsOffAndSavePreservesUnknownValues()
     {
         Directory.CreateDirectory(temporaryDirectory);
         var path = Path.Combine(temporaryDirectory, "ui-settings.json");
-        File.WriteAllText(
-            path,
-            "{\"Future\":true,\"Travel\":{\"FutureTravel\":42}}");
+        File.WriteAllText(path, "{\"Future\":true,\"Travel\":{\"FutureTravel\":42}}");
         var store = new DockToDockSettingsStore(path);
 
         Assert.False(store.LoadEnabled());

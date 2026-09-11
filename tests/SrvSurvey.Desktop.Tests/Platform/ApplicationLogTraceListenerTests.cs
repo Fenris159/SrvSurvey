@@ -9,7 +9,8 @@ public sealed class ApplicationLogTraceListenerTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-trace-{Guid.NewGuid():N}");
+        $"SrvSurvey-trace-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void ListenerCombinesFragmentsAndSeparatesCompleteLines()
@@ -26,7 +27,8 @@ public sealed class ApplicationLogTraceListenerTests : IDisposable
             log.Entries,
             line => Assert.EndsWith(": Avalonia started", line),
             line => Assert.EndsWith(": first", line),
-            line => Assert.EndsWith(": second", line));
+            line => Assert.EndsWith(": second", line)
+        );
     }
 
     [Fact]
@@ -35,25 +37,16 @@ public sealed class ApplicationLogTraceListenerTests : IDisposable
         var log = new ApplicationLogService(temporaryDirectory);
         var listener = new ApplicationLogTraceListener(log);
 
-        listener.WriteLine(
-            "[Control] PlatformImpl is null, couldn't handle input. "
-            + "(PresentationSource #12345)");
-        listener.Write(
-            "[Control] PlatformImpl is null, couldn't handle input. "
-            + "(PresentationSource #67890)");
+        listener.WriteLine("[Control] PlatformImpl is null, couldn't handle input. " + "(PresentationSource #12345)");
+        listener.Write("[Control] PlatformImpl is null, couldn't handle input. " + "(PresentationSource #67890)");
         listener.Flush();
         listener.WriteLine("[Control] A different warning");
 
-        Assert.DoesNotContain(
-            log.Entries,
-            line => line.Contains(
-                "PlatformImpl is null",
-                StringComparison.Ordinal));
+        Assert.DoesNotContain(log.Entries, line => line.Contains("PlatformImpl is null", StringComparison.Ordinal));
         Assert.Contains(
             log.Entries,
-            line => line.EndsWith(
-                ": [Control] A different warning",
-                StringComparison.Ordinal));
+            line => line.EndsWith(": [Control] A different warning", StringComparison.Ordinal)
+        );
     }
 
     [Fact]
@@ -65,10 +58,7 @@ public sealed class ApplicationLogTraceListenerTests : IDisposable
 
         try
         {
-            Assert.True(BoxelAddress.TryFromSystemAddress(
-                684107179361,
-                "Col 359 Sector JX-K b24-0",
-                out _));
+            Assert.True(BoxelAddress.TryFromSystemAddress(684107179361, "Col 359 Sector JX-K b24-0", out _));
             Trace.Flush();
             listener.Flush();
         }
@@ -79,9 +69,8 @@ public sealed class ApplicationLogTraceListenerTests : IDisposable
 
         Assert.DoesNotContain(
             log.Entries,
-            line => line.Contains(
-                "Sector fragment not matched",
-                StringComparison.Ordinal));
+            line => line.Contains("Sector fragment not matched", StringComparison.Ordinal)
+        );
     }
 
     public void Dispose()

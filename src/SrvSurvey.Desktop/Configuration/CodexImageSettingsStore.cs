@@ -7,17 +7,17 @@ public sealed class CodexImageSettingsStore
     private readonly UiSettingsDocumentStore documentStore;
     private readonly string defaultCacheDirectory;
 
-    public CodexImageSettingsStore(
-        string path,
-        string defaultCacheDirectory)
+    public CodexImageSettingsStore(string path, string defaultCacheDirectory)
     {
         documentStore = new UiSettingsDocumentStore(path);
         this.defaultCacheDirectory = Path.GetFullPath(
             string.IsNullOrWhiteSpace(defaultCacheDirectory)
                 ? throw new ArgumentException(
                     "A default Codex image cache directory is required.",
-                    nameof(defaultCacheDirectory))
-                : defaultCacheDirectory);
+                    nameof(defaultCacheDirectory)
+                )
+                : defaultCacheDirectory
+        );
     }
 
     public CodexImagePreferences Load()
@@ -26,7 +26,8 @@ public sealed class CodexImageSettingsStore
         return new CodexImagePreferences(
             GetString(settings, "CacheDirectory") ?? defaultCacheDirectory,
             GetString(settings, "LocalFloraDirectory"),
-            GetBoolean(settings, "PreDownload") ?? false);
+            GetBoolean(settings, "PreDownload") ?? false
+        );
     }
 
     public void Save(CodexImagePreferences preferences)
@@ -50,23 +51,18 @@ public sealed class CodexImageSettingsStore
 
     private static bool? GetBoolean(JsonObject? root, string name)
     {
-        return root?[name] is JsonValue value
-            && value.TryGetValue<bool>(out var result)
-                ? result
-                : null;
+        return root?[name] is JsonValue value && value.TryGetValue<bool>(out var result) ? result : null;
     }
 
     private static string? GetString(JsonObject? root, string name)
     {
-        return root?[name] is JsonValue value
+        return
+            root?[name] is JsonValue value
             && value.TryGetValue<string>(out var result)
             && !string.IsNullOrWhiteSpace(result)
-                ? result.Trim()
-                : null;
+            ? result.Trim()
+            : null;
     }
 }
 
-public sealed record CodexImagePreferences(
-    string CacheDirectory,
-    string? LocalFloraDirectory,
-    bool PreDownload);
+public sealed record CodexImagePreferences(string CacheDirectory, string? LocalFloraDirectory, bool PreDownload);

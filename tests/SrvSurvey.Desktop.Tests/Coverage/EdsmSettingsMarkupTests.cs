@@ -8,19 +8,17 @@ public sealed class EdsmSettingsMarkupTests
     public void EdsmCardFollowsInaraAndUsesCommanderScopedCredentialOptIn()
     {
         var document = LoadSettingsView();
-        var nameAttribute = XName.Get(
-            "Name",
-            "http://schemas.microsoft.com/winfx/2006/xaml");
+        var nameAttribute = XName.Get("Name", "http://schemas.microsoft.com/winfx/2006/xaml");
         var inara = Assert.Single(
             document.Descendants(),
-            element => (string?)element.Attribute(nameAttribute) == "InaraCard");
+            element => (string?)element.Attribute(nameAttribute) == "InaraCard"
+        );
         var edsm = Assert.Single(
             document.Descendants(),
-            element => (string?)element.Attribute(nameAttribute) == "EdsmCard");
+            element => (string?)element.Attribute(nameAttribute) == "EdsmCard"
+        );
 
-        Assert.Equal(
-            edsm,
-            inara.ElementsAfterSelf().First(element => element.Name.LocalName == "Border"));
+        Assert.Equal(edsm, inara.ElementsAfterSelf().First(element => element.Name.LocalName == "Border"));
 
         var values = edsm.DescendantsAndSelf()
             .SelectMany(element => element.Attributes())
@@ -34,24 +32,25 @@ public sealed class EdsmSettingsMarkupTests
         Assert.Contains("{Binding Edsm.ConfirmClearCredentialsCommand}", values);
         Assert.Contains(
             "Enable direct EDSM synchronization in only one application at a time to avoid duplicate requests.",
-            values);
+            values
+        );
         Assert.Contains(
             values,
-            value => value.Contains("current Commander name", StringComparison.Ordinal)
-                && value.Contains("must match", StringComparison.Ordinal));
+            value =>
+                value.Contains("current Commander name", StringComparison.Ordinal)
+                && value.Contains("must match", StringComparison.Ordinal)
+        );
         Assert.Contains(
             values,
-            value => value.Contains("Startup history", StringComparison.Ordinal)
+            value =>
+                value.Contains("Startup history", StringComparison.Ordinal)
                 && value.Contains("diagnostic replay", StringComparison.Ordinal)
-                && value.Contains("multiple Elite windows", StringComparison.Ordinal));
+                && value.Contains("multiple Elite windows", StringComparison.Ordinal)
+        );
     }
 
-    private static XDocument LoadSettingsView() => XDocument.Load(Path.Combine(
-        FindRepositoryRoot(),
-        "src",
-        "SrvSurvey.Desktop",
-        "Views",
-        "SettingsView.axaml"));
+    private static XDocument LoadSettingsView() =>
+        XDocument.Load(Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "Views", "SettingsView.axaml"));
 
     private static string FindRepositoryRoot()
     {
@@ -66,7 +65,6 @@ public sealed class EdsmSettingsMarkupTests
             current = current.Parent;
         }
 
-        throw new DirectoryNotFoundException(
-            "Could not locate the repository root.");
+        throw new DirectoryNotFoundException("Could not locate the repository root.");
     }
 }

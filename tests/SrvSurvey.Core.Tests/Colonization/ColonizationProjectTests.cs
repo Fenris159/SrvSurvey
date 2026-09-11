@@ -27,7 +27,8 @@ public sealed class ColonizationProjectTests
               "ready":["water"],
               "linkedFC":[{"marketId":1,"name":"ABC-123","displayName":"Carrier","assign":["steel"]}]
             }
-            """);
+            """
+        );
 
         Assert.NotNull(project);
         Assert.Equal("build-1", project.BuildId);
@@ -43,27 +44,12 @@ public sealed class ColonizationProjectTests
     {
         ColonizationProject[] projects =
         [
-            new()
-            {
-                BuildId = "shown-1",
-                RemainingRequired = 101,
-            },
-            new()
-            {
-                BuildId = "hidden",
-                RemainingRequired = 500,
-            },
-            new()
-            {
-                BuildId = "shown-2",
-                RemainingRequired = 199,
-            },
+            new() { BuildId = "shown-1", RemainingRequired = 101 },
+            new() { BuildId = "hidden", RemainingRequired = 500 },
+            new() { BuildId = "shown-2", RemainingRequired = 199 },
         ];
 
-        var totals = ColonizationProjectCalculator.CalculateTotals(
-            projects,
-            ["HIDDEN"],
-            shipCargoCapacity: 128);
+        var totals = ColonizationProjectCalculator.CalculateTotals(projects, ["HIDDEN"], shipCargoCapacity: 128);
 
         Assert.Equal(2, totals.SelectedProjectCount);
         Assert.Equal(300, totals.RemainingCargo);
@@ -73,16 +59,13 @@ public sealed class ColonizationProjectTests
     [Fact]
     public void ProgressAndTotalsAreSafeForInvalidServerNumbers()
     {
-        var project = new ColonizationProject
-        {
-            MaximumRequired = 0,
-            RemainingRequired = -10,
-        };
+        var project = new ColonizationProject { MaximumRequired = 0, RemainingRequired = -10 };
 
         var totals = ColonizationProjectCalculator.CalculateTotals(
             [project],
             hiddenBuildIds: null,
-            shipCargoCapacity: 0);
+            shipCargoCapacity: 0
+        );
 
         Assert.Null(project.Progress);
         Assert.Equal(0, project.Delivered);

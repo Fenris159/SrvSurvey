@@ -10,8 +10,7 @@ public sealed class FrontierProfileCacheStore(string path)
         WriteIndented = true,
     };
 
-    public async Task<FrontierAccountSnapshot?> LoadAsync(
-        CancellationToken cancellationToken = default)
+    public async Task<FrontierAccountSnapshot?> LoadAsync(CancellationToken cancellationToken = default)
     {
         if (!File.Exists(path))
         {
@@ -24,39 +23,36 @@ public sealed class FrontierProfileCacheStore(string path)
             FileAccess.Read,
             FileShare.Read,
             bufferSize: 4096,
-            useAsync: true);
-        return await JsonSerializer.DeserializeAsync<FrontierAccountSnapshot>(
-                stream,
-                JsonOptions,
-                cancellationToken)
+            useAsync: true
+        );
+        return await JsonSerializer
+            .DeserializeAsync<FrontierAccountSnapshot>(stream, JsonOptions, cancellationToken)
             .ConfigureAwait(false);
     }
 
-    public async Task SaveAsync(
-        FrontierAccountSnapshot snapshot,
-        CancellationToken cancellationToken = default)
+    public async Task SaveAsync(FrontierAccountSnapshot snapshot, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
-        var directory = Path.GetDirectoryName(path)
-            ?? throw new InvalidOperationException(
-                "Frontier profile cache has no parent directory.");
+        var directory =
+            Path.GetDirectoryName(path)
+            ?? throw new InvalidOperationException("Frontier profile cache has no parent directory.");
         Directory.CreateDirectory(directory);
         var temporaryPath = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try
         {
-            await using (var stream = new FileStream(
-                temporaryPath,
-                FileMode.CreateNew,
-                FileAccess.Write,
-                FileShare.None,
-                bufferSize: 4096,
-                useAsync: true))
+            await using (
+                var stream = new FileStream(
+                    temporaryPath,
+                    FileMode.CreateNew,
+                    FileAccess.Write,
+                    FileShare.None,
+                    bufferSize: 4096,
+                    useAsync: true
+                )
+            )
             {
-                await JsonSerializer.SerializeAsync(
-                        stream,
-                        snapshot,
-                        JsonOptions,
-                        cancellationToken)
+                await JsonSerializer
+                    .SerializeAsync(stream, snapshot, JsonOptions, cancellationToken)
                     .ConfigureAwait(false);
             }
 
@@ -82,12 +78,11 @@ public sealed class FrontierProfileCacheStore(string path)
         return Task.CompletedTask;
     }
 
-    public async Task<IAsyncDisposable> AcquireRefreshLeaseAsync(
-        CancellationToken cancellationToken = default)
+    public async Task<IAsyncDisposable> AcquireRefreshLeaseAsync(CancellationToken cancellationToken = default)
     {
-        var directory = Path.GetDirectoryName(path)
-            ?? throw new InvalidOperationException(
-                "Frontier profile cache has no parent directory.");
+        var directory =
+            Path.GetDirectoryName(path)
+            ?? throw new InvalidOperationException("Frontier profile cache has no parent directory.");
         Directory.CreateDirectory(directory);
         var leasePath = path + ".refresh.lock";
         while (true)
@@ -95,20 +90,20 @@ public sealed class FrontierProfileCacheStore(string path)
             cancellationToken.ThrowIfCancellationRequested();
             try
             {
-                return new RefreshLease(new FileStream(
-                    leasePath,
-                    FileMode.OpenOrCreate,
-                    FileAccess.ReadWrite,
-                    FileShare.None,
-                    bufferSize: 1,
-                    useAsync: true));
+                return new RefreshLease(
+                    new FileStream(
+                        leasePath,
+                        FileMode.OpenOrCreate,
+                        FileAccess.ReadWrite,
+                        FileShare.None,
+                        bufferSize: 1,
+                        useAsync: true
+                    )
+                );
             }
             catch (IOException)
             {
-                await Task.Delay(
-                        TimeSpan.FromMilliseconds(250),
-                        cancellationToken)
-                    .ConfigureAwait(false);
+                await Task.Delay(TimeSpan.FromMilliseconds(250), cancellationToken).ConfigureAwait(false);
             }
         }
     }

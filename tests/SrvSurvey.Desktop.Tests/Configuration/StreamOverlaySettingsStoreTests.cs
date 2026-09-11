@@ -6,7 +6,8 @@ public sealed class StreamOverlaySettingsStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-stream-settings-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-stream-settings-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void MissingSettingsDefaultToDisabled()
@@ -42,7 +43,6 @@ public sealed class StreamOverlaySettingsStoreTests : IDisposable
 
     private StreamOverlaySettingsStore CreateStore()
     {
-        return new StreamOverlaySettingsStore(
-            Path.Combine(temporaryDirectory, "ui-settings.json"));
+        return new StreamOverlaySettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json"));
     }
 }

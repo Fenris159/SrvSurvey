@@ -6,15 +6,9 @@ public sealed class JournalHistoryAnalyzerTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-journal-history-tests-{Guid.NewGuid():N}");
-    private readonly DateTimeOffset now = new(
-        2026,
-        7,
-        25,
-        12,
-        0,
-        0,
-        TimeSpan.Zero);
+        $"SrvSurvey-journal-history-tests-{Guid.NewGuid():N}"
+    );
+    private readonly DateTimeOffset now = new(2026, 7, 25, 12, 0, 0, TimeSpan.Zero);
 
     [Fact]
     public async Task CalculatesLegacyStatisticsForSelectedCommander()
@@ -28,7 +22,8 @@ public sealed class JournalHistoryAnalyzerTests : IDisposable
             {"timestamp":"2025-02-20T12:03:00Z","event":"MarketSell","Count":2}
             {"timestamp":"2025-02-20T12:04:00Z","event":"CargoTransfer","Transfers":[{"Count":3},{"Count":-1}]}
             {"timestamp":"2025-02-20T12:05:00Z","event":"Shutdown"}
-            """);
+            """
+        );
         WriteJournal(
             "Journal.2026-07-20T120000.01.log",
             """
@@ -45,21 +40,19 @@ public sealed class JournalHistoryAnalyzerTests : IDisposable
             {"timestamp":"2026-07-20T12:10:00Z","event":"Touchdown"}
             {"timestamp":"2026-07-20T12:11:00Z","event":"Died"}
             {"timestamp":"2026-07-20T12:12:00Z","event":"Shutdown"}
-            """);
+            """
+        );
         WriteJournal(
             "Journal.2026-07-21T120000.01.log",
             """
             {"timestamp":"2026-07-21T12:00:00Z","event":"Commander","Name":"Other","FID":"F999"}
             {"timestamp":"2026-07-21T12:01:00Z","event":"FSDJump","JumpDist":999}
             {"timestamp":"2026-07-21T12:02:00Z","event":"Shutdown"}
-            """);
-        var analyzer = new JournalHistoryAnalyzer(
-            temporaryDirectory,
-            () => now);
+            """
+        );
+        var analyzer = new JournalHistoryAnalyzer(temporaryDirectory, () => now);
 
-        var result = await analyzer.AnalyzeAsync(
-            "F123",
-            JournalHistoryAnalyzer.EliteReleaseDate);
+        var result = await analyzer.AnalyzeAsync("F123", JournalHistoryAnalyzer.EliteReleaseDate);
 
         Assert.Equal(3, result.CandidateFileCount);
         Assert.Equal(2, result.ProcessedFileCount);
@@ -92,20 +85,18 @@ public sealed class JournalHistoryAnalyzerTests : IDisposable
             """
             {"event":"Commander","FID":"F123"}
             {"event":"FSDJump","JumpDist":50}
-            """);
+            """
+        );
         WriteJournal(
             "Journal.260720120000.01.log",
             """
             {"event":"Commander","FID":"F123"}
             {"event":"FSDJump","JumpDist":25}
-            """);
-        var analyzer = new JournalHistoryAnalyzer(
-            temporaryDirectory,
-            () => now);
+            """
+        );
+        var analyzer = new JournalHistoryAnalyzer(temporaryDirectory, () => now);
 
-        var result = await analyzer.AnalyzeAsync(
-            "F123",
-            JournalHistoryAnalyzer.EliteReleaseDate);
+        var result = await analyzer.AnalyzeAsync("F123", JournalHistoryAnalyzer.EliteReleaseDate);
 
         Assert.Equal(1, result.SkippedRecentActiveFileCount);
         Assert.Equal(1, result.ProcessedFileCount);
@@ -122,7 +113,8 @@ public sealed class JournalHistoryAnalyzerTests : IDisposable
             {"event":"Commander","FID":"F123"}
             {"event":"FSDJump","JumpDist":100}
             {"event":"Shutdown"}
-            """);
+            """
+        );
         WriteJournal(
             "Journal.2026-07-20T120000.01.log",
             """
@@ -130,19 +122,17 @@ public sealed class JournalHistoryAnalyzerTests : IDisposable
             {not-json
             {"event":"FSDJump","JumpDist":5}
             {"event":"Shutdown"}
-            """);
-        File.WriteAllText(
-            Path.Combine(temporaryDirectory, "Journal.invalid.01.log"),
-            "{\"event\":\"Shutdown\"}\n");
+            """
+        );
+        File.WriteAllText(Path.Combine(temporaryDirectory, "Journal.invalid.01.log"), "{\"event\":\"Shutdown\"}\n");
         var progress = new List<JournalHistoryAnalysisProgress>();
-        var analyzer = new JournalHistoryAnalyzer(
-            temporaryDirectory,
-            () => now);
+        var analyzer = new JournalHistoryAnalyzer(temporaryDirectory, () => now);
 
         var result = await analyzer.AnalyzeAsync(
             "F123",
             new DateTimeOffset(2026, 7, 1, 0, 0, 0, TimeSpan.Zero),
-            new Progress<JournalHistoryAnalysisProgress>(progress.Add));
+            new Progress<JournalHistoryAnalysisProgress>(progress.Add)
+        );
 
         Assert.Equal(1, result.CandidateFileCount);
         Assert.Equal(1, result.ProcessedFileCount);
@@ -163,23 +153,18 @@ public sealed class JournalHistoryAnalyzerTests : IDisposable
             {"event":"Location","StarPos":[1.5,-2,3]}
             {"timestamp":"2026-07-20T12:01:00Z","event":"Scan","PlanetClass":"Sudarsky class III gas giant","SurfaceTemperature":310}
             {"event":"Shutdown"}
-            """);
-        var analyzer = new JournalHistoryAnalyzer(
-            temporaryDirectory,
-            () => now);
+            """
+        );
+        var analyzer = new JournalHistoryAnalyzer(temporaryDirectory, () => now);
 
-        var result = await analyzer.AnalyzeAsync(
-            "F123",
-            JournalHistoryAnalyzer.EliteReleaseDate);
+        var result = await analyzer.AnalyzeAsync("F123", JournalHistoryAnalyzer.EliteReleaseDate);
 
         var match = Assert.Single(result.GreenGasGiantMatches);
         Assert.Equal("potential", match.Tag);
         Assert.Equal(1.5, match.StarPosition.X);
         Assert.Equal(-2, match.StarPosition.Y);
         Assert.Equal(3, match.StarPosition.Z);
-        Assert.Equal(
-            DateTimeOffset.Parse("2026-07-20T12:01:00Z"),
-            match.Timestamp);
+        Assert.Equal(DateTimeOffset.Parse("2026-07-20T12:01:00Z"), match.Timestamp);
         Assert.Contains("\"event\":\"Scan\"", match.RawJournalJson);
     }
 
@@ -194,34 +179,23 @@ public sealed class JournalHistoryAnalyzerTests : IDisposable
             {"event":"FSDJump","StarSystem":"Position unavailable"}
             {"event":"Scan","PlanetClass":"Sudarsky class III gas giant","SurfaceTemperature":310}
             {"event":"Shutdown"}
-            """);
-        var analyzer = new JournalHistoryAnalyzer(
-            temporaryDirectory,
-            () => now);
+            """
+        );
+        var analyzer = new JournalHistoryAnalyzer(temporaryDirectory, () => now);
 
-        var result = await analyzer.AnalyzeAsync(
-            "F123",
-            JournalHistoryAnalyzer.EliteReleaseDate);
+        var result = await analyzer.AnalyzeAsync("F123", JournalHistoryAnalyzer.EliteReleaseDate);
 
         Assert.Empty(result.GreenGasGiantMatches);
-        Assert.Contains(
-            result.Warnings,
-            warning => warning.Contains(
-                "no journal StarPos",
-                StringComparison.Ordinal));
+        Assert.Contains(result.Warnings, warning => warning.Contains("no journal StarPos", StringComparison.Ordinal));
     }
 
     [Theory]
     [InlineData("Journal.2026-07-25T123456.01.log", 2026)]
     [InlineData("Journal.260725123456.01.log", 2026)]
     [InlineData("Journal.invalid.01.log", 0)]
-    public void ParsesBothJournalFileNameGenerations(
-        string fileName,
-        int expectedYear)
+    public void ParsesBothJournalFileNameGenerations(string fileName, int expectedYear)
     {
-        var parsed = JournalHistoryAnalyzer.TryGetJournalTimestamp(
-            fileName,
-            out var timestamp);
+        var parsed = JournalHistoryAnalyzer.TryGetJournalTimestamp(fileName, out var timestamp);
 
         Assert.Equal(expectedYear != 0, parsed);
         if (parsed)

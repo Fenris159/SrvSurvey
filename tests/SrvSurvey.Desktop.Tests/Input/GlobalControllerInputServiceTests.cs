@@ -16,7 +16,8 @@ public sealed class GlobalControllerInputServiceTests
             OverlayHostKind.Windows,
             new StubGameWindowTracker(),
             isApplicationActive: () => true,
-            backend);
+            backend
+        );
         GlobalInputActionTriggeredEventArgs? triggered = null;
         service.ActionTriggered += (_, eventArgs) => triggered = eventArgs;
 
@@ -27,9 +28,7 @@ public sealed class GlobalControllerInputServiceTests
         backend.Emit("B2", isPressed: false);
 
         Assert.NotNull(triggered);
-        Assert.Equal(
-            GlobalInputAction.ToggleAllVisibility,
-            triggered.Action);
+        Assert.Equal(GlobalInputAction.ToggleAllVisibility, triggered.Action);
         Assert.Equal("B1 B2", triggered.Chord);
     }
 
@@ -42,7 +41,8 @@ public sealed class GlobalControllerInputServiceTests
             OverlayHostKind.LinuxX11,
             new StubGameWindowTracker(),
             isApplicationActive: () => false,
-            backend);
+            backend
+        );
         var triggerCount = 0;
         service.ActionTriggered += (_, _) => triggerCount++;
 
@@ -63,7 +63,8 @@ public sealed class GlobalControllerInputServiceTests
             OverlayHostKind.Windows,
             new StubGameWindowTracker(isForeground: true),
             isApplicationActive: () => false,
-            backend);
+            backend
+        );
         var triggerCount = 0;
         service.ActionTriggered += (_, _) => triggerCount++;
 
@@ -84,7 +85,8 @@ public sealed class GlobalControllerInputServiceTests
             OverlayHostKind.LinuxX11,
             new StubGameWindowTracker(isForeground: true),
             isApplicationActive: () => false,
-            backend);
+            backend
+        );
         var owner = new object();
         List<ControllerInputChange> captured = [];
         var triggerCount = 0;
@@ -115,7 +117,8 @@ public sealed class GlobalControllerInputServiceTests
             OverlayHostKind.LinuxX11,
             new StubGameWindowTracker(isForeground: true),
             isApplicationActive: () => false,
-            backend);
+            backend
+        );
         var owner = new object();
         var triggerCount = 0;
         service.ActionTriggered += (_, _) => triggerCount++;
@@ -147,7 +150,8 @@ public sealed class GlobalControllerInputServiceTests
             OverlayHostKind.Windows,
             new StubGameWindowTracker(),
             isApplicationActive: () => true,
-            backend);
+            backend
+        );
         var triggerCount = 0;
         service.ActionTriggered += (_, _) => triggerCount++;
 
@@ -157,9 +161,7 @@ public sealed class GlobalControllerInputServiceTests
         backend.Emit("B1", isPressed: false);
 
         Assert.Equal(0, triggerCount);
-        Assert.Equal(
-            "Controller disconnected for testing.",
-            service.Status);
+        Assert.Equal("Controller disconnected for testing.", service.Status);
     }
 
     [Fact]
@@ -171,18 +173,14 @@ public sealed class GlobalControllerInputServiceTests
             OverlayHostKind.Windows,
             new StubGameWindowTracker(),
             isApplicationActive: () => true,
-            backend);
+            backend
+        );
 
         service.Start();
-        service.Update(EnabledSettings() with
-        {
-            ControllerDeviceId = "controller-2",
-        });
+        service.Update(EnabledSettings() with { ControllerDeviceId = "controller-2" });
         await backend.WaitForStartCountAsync(2);
 
-        Assert.Equal(
-            ["controller-1", "controller-2"],
-            backend.StartedDeviceIds);
+        Assert.Equal(["controller-1", "controller-2"], backend.StartedDeviceIds);
     }
 
     [Fact]
@@ -194,24 +192,25 @@ public sealed class GlobalControllerInputServiceTests
             OverlayHostKind.Other,
             new StubGameWindowTracker(),
             isApplicationActive: () => true,
-            backend);
+            backend
+        );
         await using var unselected = new GlobalControllerInputService(
-            EnabledSettings() with { ControllerDeviceId = null },
+            EnabledSettings() with
+            {
+                ControllerDeviceId = null,
+            },
             OverlayHostKind.Windows,
             new StubGameWindowTracker(),
             isApplicationActive: () => true,
-            backend);
+            backend
+        );
 
         unsupported.Start();
         unselected.Start();
 
         Assert.Empty(backend.StartedDeviceIds);
-        Assert.Equal(
-            "Controller input is unavailable on this platform.",
-            unsupported.Status);
-        Assert.Equal(
-            "Select a controller before enabling controller input.",
-            unselected.Status);
+        Assert.Equal("Controller input is unavailable on this platform.", unsupported.Status);
+        Assert.Equal("Select a controller before enabling controller input.", unselected.Status);
     }
 
     [Fact]
@@ -223,22 +222,18 @@ public sealed class GlobalControllerInputServiceTests
             OverlayHostKind.LinuxX11,
             new StubGameWindowTracker(),
             isApplicationActive: () => true,
-            backend);
+            backend
+        );
 
         service.Start();
-        service.Update(EnabledSettings() with
-        {
-            ControllerDeviceId = "controller-2",
-        });
+        service.Update(EnabledSettings() with { ControllerDeviceId = "controller-2" });
 
         await backend.CancellationObserved.WaitAsync(TimeSpan.FromSeconds(2));
         Assert.Equal(["controller-1"], backend.StartedDeviceIds);
 
         backend.AllowStop();
         await backend.SecondRunStarted.WaitAsync(TimeSpan.FromSeconds(2));
-        Assert.Equal(
-            ["controller-1", "controller-2"],
-            backend.StartedDeviceIds);
+        Assert.Equal(["controller-1", "controller-2"], backend.StartedDeviceIds);
     }
 
     [Fact]
@@ -251,7 +246,8 @@ public sealed class GlobalControllerInputServiceTests
             OverlayHostKind.LinuxX11,
             tracker,
             isApplicationActive: () => true,
-            backend);
+            backend
+        );
 
         service.Start();
         var firstDisposal = service.DisposeAsync().AsTask();
@@ -263,8 +259,7 @@ public sealed class GlobalControllerInputServiceTests
         Assert.Equal(0, tracker.DisposeCount);
 
         backend.AllowStop();
-        await Task.WhenAll(firstDisposal, secondDisposal)
-            .WaitAsync(TimeSpan.FromSeconds(2));
+        await Task.WhenAll(firstDisposal, secondDisposal).WaitAsync(TimeSpan.FromSeconds(2));
         Assert.Equal(1, tracker.DisposeCount);
     }
 
@@ -277,13 +272,11 @@ public sealed class GlobalControllerInputServiceTests
             OverlayHostKind.LinuxX11,
             new StubGameWindowTracker(),
             isApplicationActive: () => true,
-            backend);
+            backend
+        );
 
         service.Start();
-        service.Update(EnabledSettings() with
-        {
-            ControllerDeviceId = "controller-2",
-        });
+        service.Update(EnabledSettings() with { ControllerDeviceId = "controller-2" });
         await backend.CancellationObserved.WaitAsync(TimeSpan.FromSeconds(2));
 
         var disposal = service.DisposeAsync().AsTask();
@@ -305,13 +298,11 @@ public sealed class GlobalControllerInputServiceTests
         };
     }
 
-    private sealed class StubControllerInputBackend
-        : IControllerInputBackend
+    private sealed class StubControllerInputBackend : IControllerInputBackend
     {
         private Action<ControllerInputChange>? onInputChanged;
         private Action<ControllerBackendStatus>? onStatusChanged;
-        private TaskCompletionSource startChanged = new(
-            TaskCreationOptions.RunContinuationsAsynchronously);
+        private TaskCompletionSource startChanged = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public List<string> StartedDeviceIds { get; } = [];
 
@@ -319,20 +310,18 @@ public sealed class GlobalControllerInputServiceTests
             string deviceId,
             Action<ControllerInputChange> inputChanged,
             Action<ControllerBackendStatus> statusChanged,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
             lock (StartedDeviceIds)
             {
                 StartedDeviceIds.Add(deviceId);
                 startChanged.TrySetResult();
-                startChanged = new TaskCompletionSource(
-                    TaskCreationOptions.RunContinuationsAsynchronously);
+                startChanged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             }
             onInputChanged = inputChanged;
             onStatusChanged = statusChanged;
-            statusChanged(new ControllerBackendStatus(
-                IsConnected: true,
-                "Controller connected for testing."));
+            statusChanged(new ControllerBackendStatus(IsConnected: true, "Controller connected for testing."));
             return Task.Delay(Timeout.Infinite, cancellationToken);
         }
 
@@ -357,30 +346,28 @@ public sealed class GlobalControllerInputServiceTests
 
         public void Emit(string token, bool isPressed)
         {
-            onInputChanged?.Invoke(new ControllerInputChange(
-                token,
-                isPressed));
+            onInputChanged?.Invoke(new ControllerInputChange(token, isPressed));
         }
 
         public void ReportDisconnected()
         {
-            onStatusChanged?.Invoke(new ControllerBackendStatus(
-                IsConnected: false,
-                "Controller disconnected for testing."));
+            onStatusChanged?.Invoke(
+                new ControllerBackendStatus(IsConnected: false, "Controller disconnected for testing.")
+            );
         }
     }
 
-    private sealed class BlockingStopControllerInputBackend
-        : IControllerInputBackend
+    private sealed class BlockingStopControllerInputBackend : IControllerInputBackend
     {
         private readonly object startedDeviceIdsLock = new();
         private readonly List<string> startedDeviceIds = [];
         private readonly TaskCompletionSource cancellationObserved = new(
-            TaskCreationOptions.RunContinuationsAsynchronously);
-        private readonly TaskCompletionSource allowStop = new(
-            TaskCreationOptions.RunContinuationsAsynchronously);
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        private readonly TaskCompletionSource allowStop = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly TaskCompletionSource secondRunStarted = new(
-            TaskCreationOptions.RunContinuationsAsynchronously);
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
         private int runCount;
 
         public IReadOnlyList<string> StartedDeviceIds
@@ -402,7 +389,8 @@ public sealed class GlobalControllerInputServiceTests
             string deviceId,
             Action<ControllerInputChange> onInputChanged,
             Action<ControllerBackendStatus> onStatusChanged,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
             lock (startedDeviceIdsLock)
             {
@@ -418,8 +406,7 @@ public sealed class GlobalControllerInputServiceTests
             {
                 await Task.Delay(Timeout.Infinite, cancellationToken);
             }
-            catch (OperationCanceledException)
-                when (cancellationToken.IsCancellationRequested)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
                 if (currentRun == 1)
                 {
@@ -435,8 +422,7 @@ public sealed class GlobalControllerInputServiceTests
         }
     }
 
-    private sealed class StubGameWindowTracker(bool isForeground = false)
-        : IGameWindowTracker
+    private sealed class StubGameWindowTracker(bool isForeground = false) : IGameWindowTracker
     {
         public GameWindowSnapshot GetSnapshot()
         {
@@ -446,13 +432,12 @@ public sealed class GlobalControllerInputServiceTests
                     ProcessId: 1,
                     ClientBounds: new PixelRect(0, 0, 1, 1),
                     IsVisible: true,
-                    IsForeground: true)
+                    IsForeground: true
+                )
                 : GameWindowSnapshot.Unavailable;
         }
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
     }
 
     private sealed class CountingGameWindowTracker : IGameWindowTracker

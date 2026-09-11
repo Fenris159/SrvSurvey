@@ -8,7 +8,8 @@ public sealed class ErrorReportViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-error-report-{Guid.NewGuid():N}");
+        $"SrvSurvey-error-report-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void CapturesErrorRecentLogsAndExistingJournalAtCreationTime()
@@ -24,11 +25,7 @@ public sealed class ErrorReportViewModelTests : IDisposable
         File.WriteAllText(journalPath, "journal");
         var exception = CaptureException();
 
-        var viewModel = new ErrorReportViewModel(
-            exception,
-            "2.0.0",
-            log,
-            journalPath);
+        var viewModel = new ErrorReportViewModel(exception, "2.0.0", log, journalPath);
 
         Assert.Equal("InvalidOperationException: Test failure", viewModel.ErrorTitle);
         Assert.Contains(nameof(CaptureException), viewModel.ErrorDetails);
@@ -44,20 +41,17 @@ public sealed class ErrorReportViewModelTests : IDisposable
     public void BuildsLegacyCrashReportTemplateUrlWithCurrentSteps()
     {
         var exception = CaptureException();
-        var viewModel = new ErrorReportViewModel(exception, "2.0.0")
-        {
-            Steps = "Jumped to Sol & opened the map",
-        };
+        var viewModel = new ErrorReportViewModel(exception, "2.0.0") { Steps = "Jumped to Sol & opened the map" };
 
-        var uri = viewModel.BuildIssueUri(
-            DateTimeOffset.Parse("2026-07-25T13:14:15-05:00"));
+        var uri = viewModel.BuildIssueUri(DateTimeOffset.Parse("2026-07-25T13:14:15-05:00"));
         var decodedQuery = WebUtility.UrlDecode(uri.Query);
 
         Assert.Equal("github.com", uri.Host);
         Assert.Equal("/Fenris159/SrvSurvey/issues/new", uri.AbsolutePath);
         Assert.Equal(
             "https://github.com/Fenris159/SrvSurvey/issues",
-            ErrorReportViewModel.IssuesUri.AbsoluteUri.TrimEnd('/'));
+            ErrorReportViewModel.IssuesUri.AbsoluteUri.TrimEnd('/')
+        );
         Assert.Contains("template=crash-report.yml", decodedQuery);
         Assert.Contains("what-happened=Jumped to Sol & opened the map", decodedQuery);
         Assert.Contains("version=2.0.0", decodedQuery);
@@ -71,10 +65,7 @@ public sealed class ErrorReportViewModelTests : IDisposable
         var journalPath = Path.Combine(temporaryDirectory, "Journal.test.log");
         Directory.CreateDirectory(temporaryDirectory);
         File.WriteAllText(journalPath, "journal");
-        var viewModel = new ErrorReportViewModel(
-            CaptureException(),
-            "2.0.0",
-            journalPath: journalPath);
+        var viewModel = new ErrorReportViewModel(CaptureException(), "2.0.0", journalPath: journalPath);
         string? copied = null;
         Uri? launchedUri = null;
         FileInfo? launchedFile = null;
@@ -109,7 +100,8 @@ public sealed class ErrorReportViewModelTests : IDisposable
         var viewModel = new ErrorReportViewModel(
             CaptureException(),
             "2.0.0",
-            journalPath: Path.Combine(temporaryDirectory, "missing.log"));
+            journalPath: Path.Combine(temporaryDirectory, "missing.log")
+        );
         var launcherCalled = false;
 
         var launched = await viewModel.OpenJournalAsync(_ =>
@@ -121,9 +113,7 @@ public sealed class ErrorReportViewModelTests : IDisposable
         Assert.False(viewModel.HasJournal);
         Assert.False(launched);
         Assert.False(launcherCalled);
-        Assert.Equal(
-            "No current journal file is available.",
-            viewModel.StatusMessage);
+        Assert.Equal("No current journal file is available.", viewModel.StatusMessage);
     }
 
     public void Dispose()

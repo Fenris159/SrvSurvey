@@ -10,15 +10,13 @@ public interface ISystemSummaryClient
     Task<SystemSummaryLoadResult> GetAsync(
         string systemName,
         long systemAddress,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }
 
 public sealed record SystemTrafficSummary(int Day, int Week, int Total);
 
-public sealed record SystemFactionSummary(
-    string Name,
-    double Influence,
-    string? State);
+public sealed record SystemFactionSummary(string Name, double Influence, string? State);
 
 public sealed record SystemPoiSummary(
     int Bodies,
@@ -27,16 +25,12 @@ public sealed record SystemPoiSummary(
     int Outposts,
     int Settlements,
     int FleetCarriers,
-    int Wars);
+    int Wars
+);
 
-public sealed record SystemSpecialSummary(
-    string Location,
-    IReadOnlyList<string> Details);
+public sealed record SystemSpecialSummary(string Location, IReadOnlyList<string> Details);
 
-public sealed record StationLandingPadSummary(
-    int Small,
-    int Medium,
-    int Large)
+public sealed record StationLandingPadSummary(int Small, int Medium, int Large)
 {
     public string? Largest
     {
@@ -52,9 +46,7 @@ public sealed record StationLandingPadSummary(
                 return "Medium";
             }
 
-            return Small > 0
-                ? "Small"
-                : null;
+            return Small > 0 ? "Small" : null;
         }
     }
 }
@@ -70,7 +62,8 @@ public sealed record SystemStationSummary(
     IReadOnlyList<string> Services,
     StationLandingPadSummary? LandingPads,
     IReadOnlyList<string> ProhibitedCommodities,
-    DateTimeOffset? UpdatedAt);
+    DateTimeOffset? UpdatedAt
+);
 
 public sealed record SystemSummary(
     string SystemName,
@@ -85,25 +78,22 @@ public sealed record SystemSummary(
     DateTimeOffset? LastUpdatedAt,
     SystemTrafficSummary? Traffic,
     SystemPoiSummary PointsOfInterest,
-    IReadOnlyList<SystemSpecialSummary> Specials)
+    IReadOnlyList<SystemSpecialSummary> Specials
+)
 {
     public IReadOnlyList<SystemStationSummary> Stations { get; init; } = [];
 
     public IReadOnlyList<SystemFactionSummary> Factions { get; init; } = [];
 }
 
-public sealed record SystemSummaryLoadResult(
-    SystemSummary Summary,
-    IReadOnlyList<string> Warnings);
+public sealed record SystemSummaryLoadResult(SystemSummary Summary, IReadOnlyList<string> Warnings);
 
 public sealed class SystemSummaryClient : ISystemSummaryClient
 {
     private const int MaximumResponseBytes = 32 * 1024 * 1024;
 
-    private static readonly Uri DefaultEdsmBaseUri = new(
-        "https://www.edsm.net/");
-    private static readonly Uri DefaultSpanshBaseUri = new(
-        "https://spansh.co.uk/api/");
+    private static readonly Uri DefaultEdsmBaseUri = new("https://www.edsm.net/");
+    private static readonly Uri DefaultSpanshBaseUri = new("https://spansh.co.uk/api/");
     private static readonly HttpClient SharedClient = CreateSharedClient();
     private static readonly HashSet<string> StarportTypes = new(
         [
@@ -114,7 +104,8 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
             "Planetary Port",
             "Planetary Outpost",
         ],
-        StringComparer.OrdinalIgnoreCase);
+        StringComparer.OrdinalIgnoreCase
+    );
 
     private readonly HttpClient client;
     private readonly Uri edsmBaseUri;
@@ -125,7 +116,8 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         HttpClient? client = null,
         Uri? edsmBaseUri = null,
         Uri? spanshBaseUri = null,
-        Func<bool>? useSpanshLastUpdated = null)
+        Func<bool>? useSpanshLastUpdated = null
+    )
     {
         this.client = client ?? SharedClient;
         this.edsmBaseUri = edsmBaseUri ?? DefaultEdsmBaseUri;
@@ -136,40 +128,40 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
     public async Task<SystemSummaryLoadResult> GetAsync(
         string systemName,
         long systemAddress,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(systemName);
         var normalizedName = systemName.Trim();
         var bodiesTask = FetchAsync(
             "EDSM bodies",
-            new Uri(
-                edsmBaseUri,
-                "api-system-v1/bodies?systemName="
-                    + Uri.EscapeDataString(normalizedName)),
+            new Uri(edsmBaseUri, "api-system-v1/bodies?systemName=" + Uri.EscapeDataString(normalizedName)),
             ParseEdsmBodies,
-            cancellationToken);
+            cancellationToken
+        );
         var trafficTask = FetchAsync(
             "EDSM traffic",
-            new Uri(
-                edsmBaseUri,
-                "api-system-v1/traffic?systemName="
-                    + Uri.EscapeDataString(normalizedName)),
+            new Uri(edsmBaseUri, "api-system-v1/traffic?systemName=" + Uri.EscapeDataString(normalizedName)),
             ParseEdsmTraffic,
-            cancellationToken);
-        var spanshTask = systemAddress > 0
-            ? FetchAsync(
-                "Spansh system dump",
-                new Uri(
-                    spanshBaseUri,
-                    UriPath.CombineWithTrailingSeparator(
-                        "dump",
-                        systemAddress.ToString(CultureInfo.InvariantCulture))),
-                ParseSpanshDump,
-                cancellationToken)
-            : Task.FromResult(FetchResult<SpanshFragment>.Empty);
+            cancellationToken
+        );
+        var spanshTask =
+            systemAddress > 0
+                ? FetchAsync(
+                    "Spansh system dump",
+                    new Uri(
+                        spanshBaseUri,
+                        UriPath.CombineWithTrailingSeparator(
+                            "dump",
+                            systemAddress.ToString(CultureInfo.InvariantCulture)
+                        )
+                    ),
+                    ParseSpanshDump,
+                    cancellationToken
+                )
+                : Task.FromResult(FetchResult<SpanshFragment>.Empty);
 
-        await Task.WhenAll(bodiesTask, trafficTask, spanshTask)
-            .ConfigureAwait(false);
+        await Task.WhenAll(bodiesTask, trafficTask, spanshTask).ConfigureAwait(false);
         var bodies = await bodiesTask.ConfigureAwait(false);
         var traffic = await trafficTask.ConfigureAwait(false);
         var spansh = await spanshTask.ConfigureAwait(false);
@@ -178,17 +170,10 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
             .Cast<string>()
             .ToArray();
 
-        var resolvedAddress = systemAddress > 0
-            ? systemAddress
-            : bodies.Value?.SystemAddress
-                ?? traffic.Value?.SystemAddress
-                ?? 0;
-        var scannedBodyCount = Math.Max(
-            bodies.Value?.ScannedBodyCount ?? 0,
-            spansh.Value?.ScannedBodyCount ?? 0);
-        var totalBodyCount = Math.Max(
-            bodies.Value?.TotalBodyCount ?? 0,
-            spansh.Value?.TotalBodyCount ?? 0);
+        var resolvedAddress =
+            systemAddress > 0 ? systemAddress : bodies.Value?.SystemAddress ?? traffic.Value?.SystemAddress ?? 0;
+        var scannedBodyCount = Math.Max(bodies.Value?.ScannedBodyCount ?? 0, spansh.Value?.ScannedBodyCount ?? 0);
+        var totalBodyCount = Math.Max(bodies.Value?.TotalBodyCount ?? 0, spansh.Value?.TotalBodyCount ?? 0);
         var attemptedProviders = systemAddress > 0 ? 3 : 2;
         bool? isKnown;
         if (bodies.Value?.SystemAddress > 0 || traffic.Value?.SystemAddress > 0 || spansh.Value is not null)
@@ -203,8 +188,7 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         {
             isKnown = false;
         }
-        var points = spansh.Value?.PointsOfInterest
-            ?? new SystemPoiSummary(totalBodyCount, 0, 0, 0, 0, 0, 0);
+        var points = spansh.Value?.PointsOfInterest ?? new SystemPoiSummary(totalBodyCount, 0, 0, 0, 0, 0, 0);
         points = points with { Bodies = totalBodyCount };
         var summary = new SystemSummary(
             normalizedName,
@@ -216,12 +200,11 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
             totalBodyCount,
             bodies.Value?.DiscoveredBy ?? traffic.Value?.DiscoveredBy,
             bodies.Value?.DiscoveredAt ?? traffic.Value?.DiscoveredAt,
-            useSpanshLastUpdated()
-                ? spansh.Value?.LastUpdatedAt
-                : bodies.Value?.LastUpdatedAt,
+            useSpanshLastUpdated() ? spansh.Value?.LastUpdatedAt : bodies.Value?.LastUpdatedAt,
             traffic.Value?.Traffic,
             points,
-            spansh.Value?.Specials ?? [])
+            spansh.Value?.Specials ?? []
+        )
         {
             Stations = spansh.Value?.Stations ?? [],
             Factions = spansh.Value?.Factions ?? [],
@@ -233,22 +216,23 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         string provider,
         Uri requestUri,
         Func<JsonElement, T> parser,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
         where T : class
     {
         try
         {
-            using var response = await client.GetAsync(
-                    requestUri,
-                    HttpCompletionOption.ResponseHeadersRead,
-                    cancellationToken)
+            using var response = await client
+                .GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                 .ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-            using var document = await BoundedHttpContent.ReadJsonDocumentAsync(
+            using var document = await BoundedHttpContent
+                .ReadJsonDocumentAsync(
                     response.Content,
                     MaximumResponseBytes,
                     $"The {provider} response",
-                    cancellationToken)
+                    cancellationToken
+                )
                 .ConfigureAwait(false);
             return new FetchResult<T>(parser(document.RootElement), null);
         }
@@ -256,15 +240,10 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         {
             throw;
         }
-        catch (Exception exception) when (
-            exception is HttpRequestException
-                or TaskCanceledException
-                or JsonException
-                or InvalidDataException)
+        catch (Exception exception)
+            when (exception is HttpRequestException or TaskCanceledException or JsonException or InvalidDataException)
         {
-            return new FetchResult<T>(
-                null,
-                $"{provider} data is unavailable: {exception.Message}");
+            return new FetchResult<T>(null, $"{provider} data is unavailable: {exception.Message}");
         }
     }
 
@@ -283,23 +262,23 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
                 continue;
             }
 
-            if (starClass is null
+            if (
+                starClass is null
                 && GetBoolean(body, "isMainStar") == true
-                && GetString(body, "spectralClass") is { Length: > 0 } spectral)
+                && GetString(body, "spectralClass") is { Length: > 0 } spectral
+            )
             {
                 starClass = spectral[..1];
             }
 
-            if (discoveredBy is null
-                && TryGetObject(body, "discovery", out var discovery))
+            if (discoveredBy is null && TryGetObject(body, "discovery", out var discovery))
             {
                 discoveredBy = GetString(discovery, "commander");
                 discoveredAt = GetDateTimeOffset(discovery, "date");
             }
 
             var updated = GetDateTimeOffset(body, "updateTime");
-            if (updated is not null
-                && (lastUpdatedAt is null || updated > lastUpdatedAt))
+            if (updated is not null && (lastUpdatedAt is null || updated > lastUpdatedAt))
             {
                 lastUpdatedAt = updated;
             }
@@ -312,7 +291,8 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
             starClass,
             discoveredBy,
             discoveredAt,
-            lastUpdatedAt);
+            lastUpdatedAt
+        );
     }
 
     private static EdsmTrafficFragment ParseEdsmTraffic(JsonElement root)
@@ -324,7 +304,8 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
             traffic = new SystemTrafficSummary(
                 GetInt32(trafficElement, "day") ?? 0,
                 GetInt32(trafficElement, "week") ?? 0,
-                GetInt32(trafficElement, "total") ?? 0);
+                GetInt32(trafficElement, "total") ?? 0
+            );
         }
 
         string? discoveredBy = null;
@@ -335,11 +316,7 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
             discoveredAt = GetDateTimeOffset(discovery, "date");
         }
 
-        return new EdsmTrafficFragment(
-            GetInt64(root, "id64") ?? 0,
-            discoveredBy,
-            discoveredAt,
-            traffic);
+        return new EdsmTrafficFragment(GetInt64(root, "id64") ?? 0, discoveredBy, discoveredAt, traffic);
     }
 
     private static SpanshFragment ParseSpanshDump(JsonElement root)
@@ -347,16 +324,14 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         RequireObject(root, "Spansh system dump response");
         if (!TryGetObject(root, "system", out var system))
         {
-            throw new InvalidDataException(
-                "The Spansh system dump has no system object.");
+            throw new InvalidDataException("The Spansh system dump has no system object.");
         }
 
         var position = ReadSpanshPosition(system);
         var bodies = GetArray(system, "bodies");
         var (scannedBodies, genus, starClass) = SummarizeSpanshBodies(bodies);
         var stationElements = EnumerateStations(system, bodies).ToArray();
-        var (specials, starports, outposts, settlements, fleetCarriers) =
-            SummarizeSpanshStations(stationElements);
+        var (specials, starports, outposts, settlements, fleetCarriers) = SummarizeSpanshStations(stationElements);
         var factions = ParseSpanshFactions(system, out var warPresences);
         var totalBodies = GetInt32(system, "bodyCount") ?? 0;
         return new SpanshFragment(
@@ -365,31 +340,25 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
             scannedBodies,
             totalBodies,
             GetDateTimeOffset(system, "updated_at"),
-            new SystemPoiSummary(
-                totalBodies,
-                genus,
-                starports,
-                outposts,
-                settlements,
-                fleetCarriers,
-                warPresences / 2),
-            specials.Select(pair => new SystemSpecialSummary(
-                pair.Key,
-                pair.Value.ToArray())).ToArray(),
+            new SystemPoiSummary(totalBodies, genus, starports, outposts, settlements, fleetCarriers, warPresences / 2),
+            specials.Select(pair => new SystemSpecialSummary(pair.Key, pair.Value.ToArray())).ToArray(),
             stationElements
                 .Select(ParseStation)
                 .Where(station => !string.IsNullOrWhiteSpace(station.Name))
                 .OrderBy(station => station.Name)
                 .ToArray(),
-            factions);
+            factions
+        );
     }
 
     private static GalacticCoordinate? ReadSpanshPosition(JsonElement system)
     {
-        if (TryGetObject(system, "coords", out var coords)
+        if (
+            TryGetObject(system, "coords", out var coords)
             && GetDouble(coords, "x") is { } x
             && GetDouble(coords, "y") is { } y
-            && GetDouble(coords, "z") is { } z)
+            && GetDouble(coords, "z") is { } z
+        )
         {
             return new GalacticCoordinate(x, y, z);
         }
@@ -397,8 +366,9 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         return null;
     }
 
-    private static (int ScannedBodies, int Genus, string? StarClass)
-        SummarizeSpanshBodies(IReadOnlyList<JsonElement> bodies)
+    private static (int ScannedBodies, int Genus, string? StarClass) SummarizeSpanshBodies(
+        IReadOnlyList<JsonElement> bodies
+    )
     {
         var scannedBodies = 0;
         var genus = 0;
@@ -420,29 +390,26 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         JsonElement body,
         ref int scannedBodies,
         ref int genus,
-        ref string? starClass)
+        ref string? starClass
+    )
     {
-        if (!string.Equals(
-            GetString(body, "type"),
-            "Barycentre",
-            StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(GetString(body, "type"), "Barycentre", StringComparison.OrdinalIgnoreCase))
         {
             scannedBodies++;
         }
 
-        if (starClass is null
+        if (
+            starClass is null
             && GetBoolean(body, "mainStar") == true
-            && GetString(body, "spectralClass") is { Length: > 0 } spectral)
+            && GetString(body, "spectralClass") is { Length: > 0 } spectral
+        )
         {
             starClass = spectral[..1];
         }
 
-        if (TryGetObject(body, "signals", out var signals)
-            && TryGetObject(signals, "signals", out var signalCounts))
+        if (TryGetObject(body, "signals", out var signals) && TryGetObject(signals, "signals", out var signalCounts))
         {
-            genus += GetInt32(
-                signalCounts,
-                "$SAA_SignalType_Biological;") ?? 0;
+            genus += GetInt32(signalCounts, "$SAA_SignalType_Biological;") ?? 0;
         }
     }
 
@@ -451,23 +418,17 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         int Starports,
         int Outposts,
         int Settlements,
-        int FleetCarriers)
-        SummarizeSpanshStations(IReadOnlyList<JsonElement> stationElements)
+        int FleetCarriers
+    ) SummarizeSpanshStations(IReadOnlyList<JsonElement> stationElements)
     {
-        var specials = new Dictionary<string, List<string>>(
-            StringComparer.OrdinalIgnoreCase);
+        var specials = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
         var starports = 0;
         var outposts = 0;
         var settlements = 0;
         var fleetCarriers = 0;
         foreach (var station in stationElements)
         {
-            CountStationType(
-                station,
-                ref starports,
-                ref outposts,
-                ref settlements,
-                ref fleetCarriers);
+            CountStationType(station, ref starports, ref outposts, ref settlements, ref fleetCarriers);
             AddStationSpecials(station, specials);
         }
 
@@ -479,13 +440,11 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         ref int starports,
         ref int outposts,
         ref int settlements,
-        ref int fleetCarriers)
+        ref int fleetCarriers
+    )
     {
         var type = GetString(station, "type") ?? string.Empty;
-        if (string.Equals(
-            type,
-            "Drake-Class Carrier",
-            StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(type, "Drake-Class Carrier", StringComparison.OrdinalIgnoreCase))
         {
             fleetCarriers++;
         }
@@ -515,24 +474,22 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
 
         return string.Equals(type, "Mega ship", StringComparison.OrdinalIgnoreCase)
             && station.TryGetProperty("landingPads", out var landingPads)
-            && landingPads.ValueKind is not JsonValueKind.Null
-                and not JsonValueKind.Undefined;
+            && landingPads.ValueKind is not JsonValueKind.Null and not JsonValueKind.Undefined;
     }
 
-    private static SystemFactionSummary[] ParseSpanshFactions(
-        JsonElement system,
-        out int warPresences)
+    private static SystemFactionSummary[] ParseSpanshFactions(JsonElement system, out int warPresences)
     {
         var factionElements = GetArray(system, "factions");
-        warPresences = factionElements
-            .Count(faction => faction.ValueKind == JsonValueKind.Object
-                && GetString(faction, "state") is "War" or "Civil War");
+        warPresences = factionElements.Count(faction =>
+            faction.ValueKind == JsonValueKind.Object && GetString(faction, "state") is "War" or "Civil War"
+        );
         return factionElements
             .Where(faction => faction.ValueKind == JsonValueKind.Object)
             .Select(faction => new SystemFactionSummary(
                 GetString(faction, "name") ?? string.Empty,
                 GetDouble(faction, "influence") ?? 0,
-                GetString(faction, "state")))
+                GetString(faction, "state")
+            ))
             .Where(faction => !string.IsNullOrWhiteSpace(faction.Name))
             .OrderByDescending(faction => faction.Influence)
             .ThenBy(faction => faction.Name, StringComparer.OrdinalIgnoreCase)
@@ -542,13 +499,16 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
     private static SystemStationSummary ParseStation(JsonElement station)
     {
         var economies = TryGetObject(station, "economies", out var values)
-            ? values.EnumerateObject()
-                .Where(property => property.Value.ValueKind == JsonValueKind.Number
-                    && property.Value.TryGetDouble(out _))
+            ? values
+                .EnumerateObject()
+                .Where(property =>
+                    property.Value.ValueKind == JsonValueKind.Number && property.Value.TryGetDouble(out _)
+                )
                 .ToDictionary(
                     property => property.Name,
                     property => property.Value.GetDouble(),
-                    StringComparer.OrdinalIgnoreCase)
+                    StringComparer.OrdinalIgnoreCase
+                )
             : new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
         var services = GetArray(station, "services")
             .Where(service => service.ValueKind == JsonValueKind.String)
@@ -564,7 +524,8 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
             landingPads = new StationLandingPadSummary(
                 GetInt32(pads, "small") ?? GetInt32(pads, "Small") ?? 0,
                 GetInt32(pads, "medium") ?? GetInt32(pads, "Medium") ?? 0,
-                GetInt32(pads, "large") ?? GetInt32(pads, "Large") ?? 0);
+                GetInt32(pads, "large") ?? GetInt32(pads, "Large") ?? 0
+            );
         }
 
         IReadOnlyList<string> prohibited = [];
@@ -590,12 +551,11 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
             services,
             landingPads,
             prohibited,
-            GetDateTimeOffset(station, "updateTime"));
+            GetDateTimeOffset(station, "updateTime")
+        );
     }
 
-    private static IEnumerable<JsonElement> EnumerateStations(
-        JsonElement system,
-        IReadOnlyList<JsonElement> bodies)
+    private static IEnumerable<JsonElement> EnumerateStations(JsonElement system, IReadOnlyList<JsonElement> bodies)
     {
         foreach (var station in GetArray(system, "stations"))
         {
@@ -622,46 +582,28 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         }
     }
 
-    private static void AddStationSpecials(
-        JsonElement station,
-        Dictionary<string, List<string>> specials)
+    private static void AddStationSpecials(JsonElement station, Dictionary<string, List<string>> specials)
     {
         var stationName = GetString(station, "name") ?? "Station";
         var services = GetArray(station, "services")
-            .Select(service => service.ValueKind == JsonValueKind.String
-                ? service.GetString()
-                : null)
+            .Select(service => service.ValueKind == JsonValueKind.String ? service.GetString() : null)
             .Where(service => service is not null)
             .Cast<string>()
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
         if (services.Contains("Material Trader"))
         {
-            AddSpecial(
-                specials,
-                stationName,
-                "Material Trader" + FormatType(GetMaterialTraderType(station)));
+            AddSpecial(specials, stationName, "Material Trader" + FormatType(GetMaterialTraderType(station)));
         }
 
         if (services.Contains("Technology Broker"))
         {
-            AddSpecial(
-                specials,
-                stationName,
-                "Technology Broker" + FormatType(GetTechnologyBrokerType(station)));
+            AddSpecial(specials, stationName, "Technology Broker" + FormatType(GetTechnologyBrokerType(station)));
         }
 
-        if (string.Equals(
-            GetString(station, "government"),
-            "Engineer",
-            StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(GetString(station, "government"), "Engineer", StringComparison.OrdinalIgnoreCase))
         {
             var faction = GetString(station, "controllingFaction");
-            AddSpecial(
-                specials,
-                stationName,
-                string.IsNullOrWhiteSpace(faction)
-                    ? "Engineer"
-                    : faction + " Engineer");
+            AddSpecial(specials, stationName, string.IsNullOrWhiteSpace(faction) ? "Engineer" : faction + " Engineer");
         }
     }
 
@@ -690,11 +632,10 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
 
     private static string? GetTechnologyBrokerType(JsonElement station)
     {
-        if (GetInt64(station, "id") is > 4_200_000_000
-            || string.Equals(
-                GetString(station, "type"),
-                "Dodec Starport",
-                StringComparison.OrdinalIgnoreCase))
+        if (
+            GetInt64(station, "id") is > 4_200_000_000
+            || string.Equals(GetString(station, "type"), "Dodec Starport", StringComparison.OrdinalIgnoreCase)
+        )
         {
             return "Human";
         }
@@ -727,14 +668,14 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
             yield break;
         }
 
-        var secondary = economies.EnumerateObject()
+        var secondary = economies
+            .EnumerateObject()
             .Select(property => new
             {
                 property.Name,
-                Share = property.Value.ValueKind == JsonValueKind.Number
-                    && property.Value.TryGetDouble(out var share)
-                        ? share
-                        : double.MaxValue,
+                Share = property.Value.ValueKind == JsonValueKind.Number && property.Value.TryGetDouble(out var share)
+                    ? share
+                    : double.MaxValue,
             })
             .OrderBy(economy => economy.Share)
             .Skip(1)
@@ -751,10 +692,7 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         return string.IsNullOrWhiteSpace(type) ? string.Empty : " - " + type;
     }
 
-    private static void AddSpecial(
-        Dictionary<string, List<string>> specials,
-        string location,
-        string detail)
+    private static void AddSpecial(Dictionary<string, List<string>> specials, string location, string detail)
     {
         if (!specials.TryGetValue(location, out var details))
         {
@@ -776,98 +714,79 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         }
     }
 
-    private static JsonElement[] GetArray(
-        JsonElement element,
-        string propertyName)
+    private static JsonElement[] GetArray(JsonElement element, string propertyName)
     {
-        return element.TryGetProperty(propertyName, out var value)
-            && value.ValueKind == JsonValueKind.Array
-                ? value.EnumerateArray().ToArray()
-                : [];
+        return element.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.Array
+            ? value.EnumerateArray().ToArray()
+            : [];
     }
 
-    private static bool TryGetObject(
-        JsonElement element,
-        string propertyName,
-        out JsonElement value)
+    private static bool TryGetObject(JsonElement element, string propertyName, out JsonElement value)
     {
-        return element.TryGetProperty(propertyName, out value)
-            && value.ValueKind == JsonValueKind.Object;
+        return element.TryGetProperty(propertyName, out value) && value.ValueKind == JsonValueKind.Object;
     }
 
-    private static string? GetString(
-        JsonElement element,
-        string propertyName)
+    private static string? GetString(JsonElement element, string propertyName)
     {
-        return element.TryGetProperty(propertyName, out var value)
-            && value.ValueKind == JsonValueKind.String
-                ? value.GetString()
-                : null;
+        return element.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+            ? value.GetString()
+            : null;
     }
 
-    private static bool? GetBoolean(
-        JsonElement element,
-        string propertyName)
+    private static bool? GetBoolean(JsonElement element, string propertyName)
     {
-        return element.TryGetProperty(propertyName, out var value)
+        return
+            element.TryGetProperty(propertyName, out var value)
             && value.ValueKind is JsonValueKind.True or JsonValueKind.False
-                ? value.GetBoolean()
-                : null;
+            ? value.GetBoolean()
+            : null;
     }
 
-    private static int? GetInt32(
-        JsonElement element,
-        string propertyName)
+    private static int? GetInt32(JsonElement element, string propertyName)
     {
-        return element.TryGetProperty(propertyName, out var value)
+        return
+            element.TryGetProperty(propertyName, out var value)
             && value.ValueKind == JsonValueKind.Number
             && value.TryGetInt32(out var result)
-                ? result
-                : null;
+            ? result
+            : null;
     }
 
-    private static long? GetInt64(
-        JsonElement element,
-        string propertyName)
+    private static long? GetInt64(JsonElement element, string propertyName)
     {
-        return element.TryGetProperty(propertyName, out var value)
+        return
+            element.TryGetProperty(propertyName, out var value)
             && value.ValueKind == JsonValueKind.Number
             && value.TryGetInt64(out var result)
-                ? result
-                : null;
+            ? result
+            : null;
     }
 
-    private static double? GetDouble(
-        JsonElement element,
-        string propertyName)
+    private static double? GetDouble(JsonElement element, string propertyName)
     {
-        return element.TryGetProperty(propertyName, out var value)
+        return
+            element.TryGetProperty(propertyName, out var value)
             && value.ValueKind == JsonValueKind.Number
             && value.TryGetDouble(out var result)
             && double.IsFinite(result)
-                ? result
-                : null;
+            ? result
+            : null;
     }
 
-    private static DateTimeOffset? GetDateTimeOffset(
-        JsonElement element,
-        string propertyName)
+    private static DateTimeOffset? GetDateTimeOffset(JsonElement element, string propertyName)
     {
-        return element.TryGetProperty(propertyName, out var value)
+        return
+            element.TryGetProperty(propertyName, out var value)
             && value.ValueKind == JsonValueKind.String
             && value.TryGetDateTimeOffset(out var result)
-                ? result
-                : null;
+            ? result
+            : null;
     }
 
     private static HttpClient CreateSharedClient()
     {
-        var client = new HttpClient
-        {
-            Timeout = TimeSpan.FromSeconds(20),
-        };
-        client.DefaultRequestHeaders.UserAgent.ParseAdd(
-            "SrvSurvey-Avalonia/1.0");
+        var client = new HttpClient { Timeout = TimeSpan.FromSeconds(20) };
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("SrvSurvey-Avalonia/1.0");
         return client;
     }
 
@@ -884,13 +803,15 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         string? StarClass,
         string? DiscoveredBy,
         DateTimeOffset? DiscoveredAt,
-        DateTimeOffset? LastUpdatedAt);
+        DateTimeOffset? LastUpdatedAt
+    );
 
     private sealed record EdsmTrafficFragment(
         long SystemAddress,
         string? DiscoveredBy,
         DateTimeOffset? DiscoveredAt,
-        SystemTrafficSummary? Traffic);
+        SystemTrafficSummary? Traffic
+    );
 
     private sealed record SpanshFragment(
         GalacticCoordinate? Position,
@@ -901,5 +822,6 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         SystemPoiSummary PointsOfInterest,
         IReadOnlyList<SystemSpecialSummary> Specials,
         IReadOnlyList<SystemStationSummary> Stations,
-        IReadOnlyList<SystemFactionSummary> Factions);
+        IReadOnlyList<SystemFactionSummary> Factions
+    );
 }

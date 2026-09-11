@@ -1,6 +1,6 @@
-using SrvSurvey.Desktop.Platform.Overlay;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.Tests.Coverage;
 
@@ -8,184 +8,500 @@ public sealed class OverlayPresentationContractTests
 {
     private const string KdeOverlayTitlePattern = "^SrvSurvey.*overlay$";
 
-    private static readonly IReadOnlyDictionary<string, string> FixedHeaders =
-        new Dictionary<string, string>(StringComparer.Ordinal)
-        {
-            ["BodyInformationOverlayPresentation.axaml"] = "BODY INFORMATION",
-            ["FleetCarrierRouteOverlayPresentation.axaml"] = "FLEET CARRIER ROUTE",
-            ["FssInfoOverlayPresentation.axaml"] = "FSS SURVEY",
-            ["GalaxyMapOverlayPresentation.axaml"] = "GALAXY MAP",
-            ["GroundTargetOverlayPresentation.axaml"] = "SURFACE TARGET",
-            ["HumanSiteOverlayPresentation.axaml"] = "HUMAN SETTLEMENT",
-            ["JumpInfoOverlayPresentation.axaml"] = "NEXT JUMP",
-            ["LastFssBodyOverlayPresentation.axaml"] = "LAST FSS SCAN",
-            ["MassacreMissionsOverlayPresentation.axaml"] = "MASSACRE MISSIONS",
-            ["PriorScansOverlayPresentation.axaml"] = "CANONN PRIOR SCANS",
-            ["RouteBioOverlayPresentation.axaml"] = "ROUTE BODIES",
-            ["SphericalSearchOverlayPresentation.axaml"] = "SEARCH GUIDANCE",
-            ["StationInfoOverlayPresentation.axaml"] = "STATION INFORMATION",
-            ["SurfaceSurveyOverlayPresentation.axaml"] = "SURFACE SURVEY",
-        };
+    private static readonly IReadOnlyDictionary<string, string> FixedHeaders = new Dictionary<string, string>(
+        StringComparer.Ordinal
+    )
+    {
+        ["BodyInformationOverlayPresentation.axaml"] = "BODY INFORMATION",
+        ["FleetCarrierRouteOverlayPresentation.axaml"] = "FLEET CARRIER ROUTE",
+        ["FssInfoOverlayPresentation.axaml"] = "FSS SURVEY",
+        ["GalaxyMapOverlayPresentation.axaml"] = "GALAXY MAP",
+        ["GroundTargetOverlayPresentation.axaml"] = "SURFACE TARGET",
+        ["HumanSiteOverlayPresentation.axaml"] = "HUMAN SETTLEMENT",
+        ["JumpInfoOverlayPresentation.axaml"] = "NEXT JUMP",
+        ["LastFssBodyOverlayPresentation.axaml"] = "LAST FSS SCAN",
+        ["MassacreMissionsOverlayPresentation.axaml"] = "MASSACRE MISSIONS",
+        ["PriorScansOverlayPresentation.axaml"] = "CANONN PRIOR SCANS",
+        ["RouteBioOverlayPresentation.axaml"] = "ROUTE BODIES",
+        ["SphericalSearchOverlayPresentation.axaml"] = "SEARCH GUIDANCE",
+        ["StationInfoOverlayPresentation.axaml"] = "STATION INFORMATION",
+        ["SurfaceSurveyOverlayPresentation.axaml"] = "SURFACE SURVEY",
+    };
 
     private static readonly PresentationContract[] Contracts =
     [
-        Contract("PlotBase", [
-            "src/SrvSurvey.Desktop/Platform/Overlay/CombinedOverlayPresentationController.cs",
-            "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPresentationMode.cs",
-            "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPlatformService.cs",
-            "src/SrvSurvey.Desktop/Platform/Overlay/OverlayWindowRegistry.cs",
-        ], [
-            "SupportsClickThrough",
-            "SupportsGameWindowTracking",
-            "Register",
-            "MultipleWindows",
-            "CombinedWindow",
-            "SetInteractiveRegions",
-        ]),
-        Contract("PlotBioStatus", [
-            "src/SrvSurvey.Desktop/BiologyStatusOverlayWindow.axaml",
-            "src/SrvSurvey.Desktop/BiologyStatusOverlayPresentation.axaml",
-        ], [
-            "ProgressText", "CompletionPercent", "MinWidth=\"0\"", "ClipToBounds=\"True\"", "ActiveSample", "Signals", "Warning", "Footer",
-            "BiologyStatusOverlayPresentation",
-        ]),
-        Contract("PlotBioSystem", [
-            "src/SrvSurvey.Desktop/BiologySurveyOverlayWindow.axaml",
-            "src/SrvSurvey.Desktop/BiologySurveyOverlayPresentation.axaml",
-        ], [
-            "Bodies", "BodyIconAssetPath", "BundledAssetImageConverter", "RewardBands", "HasCanonnSignals", "CanonnLogoControl", "OrganismGroups", "Species", "VariantName", "PredictionMarkerToolTip", "RewardSummary", "FirstFootfallRewardSummary",
-            "GeologicalSignals", "RadicoidaUnicaCountText",
-            "BiologySurveyOverlayPresentation", "RavenBioConfirmedBrush",
-            "RavenBioConfirmedDimBrush", "RavenBioPotentialBrush",
-            "RavenBioConfirmedDimPotentialBrush",
-            "RavenBioPredictionBrush", "RavenBioPredictionPotentialBrush",
-            "RavenBioUnknownGlyphBrush", "RavenBioEmptyBrush",
-            "RavenBioConfirmedEdgeBrush", "RavenBioPredictionEdgeBrush",
-            "RavenBioGoldEdgeBrush", "RavenBioGalacticRegionEdgeBrush",
-            "RavenBioGoldPotentialBrush", "RavenBioGoldDimPotentialBrush",
-            "RavenBioConfirmedSegmentEdgeBrush",
-            "RavenBioPredictionSegmentEdgeBrush",
-            "RavenBioGoldSegmentEdgeBrush",
-            "RavenBioGalacticRegionSegmentEdgeBrush",
-        ]),
-        Contract("PlotBodyInfo", [
-            "src/SrvSurvey.Desktop/BodyInformationOverlayWindow.axaml",
-            "src/SrvSurvey.Desktop/BodyInformationOverlayPresentation.axaml",
-        ], [
-            "BodyClass", "Distance", "ScanValue", "MappedValue", "Temperature", "Gravity", "Pressure",
-            "BiologicalSignals", "GeologicalSignals", "Volcanism", "AtmosphereComposition", "Materials", "Rings",
-            "BodyInformationOverlayPresentation",
-        ]),
-        Contract("PlotMiningNotifications", ["src/SrvSurvey.Desktop/MiningActivityOverlayWindow.axaml", "src/SrvSurvey.Desktop/MiningActivityOverlayPresentation.axaml"], ["Refined", "RavenWindowBrush"]),
-        Contract("PlotMiningReference", ["src/SrvSurvey.Desktop/MiningReferenceOverlayWindow.axaml", "src/SrvSurvey.Desktop/MiningReferenceOverlayPresentation.axaml"], ["MINING REF", "MiningReferenceRows", "BodyTypes", "AverageSellPrice", "RavenWindowBrush"]),
-        Contract("PlotMiningFiregroups", ["src/SrvSurvey.Desktop/MiningActivityOverlayWindow.axaml", "src/SrvSurvey.Desktop/MiningActivityOverlayPresentation.axaml"], ["Firegroup", "RavenWindowBrush"]),
-        Contract("PlotMiningWarning", ["src/SrvSurvey.Desktop/MiningWarningOverlayWindow.axaml", "src/SrvSurvey.Desktop/MiningWarningOverlayPresentation.axaml"], [
-            "WARNING", "TOO FAR FROM RIGS", "Moving beyond 4.5Km will Destroy Rigs", "#FF4500", "#4CFF4500",
-        ]),
-        Contract("PlotFlightWarning", ["src/SrvSurvey.Desktop/FlightWarningOverlayWindow.axaml", "src/SrvSurvey.Desktop/FlightWarningOverlayPresentation.axaml"], [
-            "FlightWarningText", "FlightWarningBrush", "FlightWarningDimBrush", "FlightWarningNote", "IsExtremeFlightWarning", "MinHeight=\"1\"", "SizeToContent=\"WidthAndHeight\"",
-        ]),
-        Contract("PlotFootCombat", ["src/SrvSurvey.Desktop/FootCombatOverlayWindow.axaml", "src/SrvSurvey.Desktop/FootCombatOverlayPresentation.axaml"], [
-            "SettlementHeader", "FootCombatKills",
-        ]),
-        Contract("PlotFSS", ["src/SrvSurvey.Desktop/LastFssBodyOverlayWindow.axaml", "src/SrvSurvey.Desktop/LastFssBodyOverlayPresentation.axaml"], [
-            "LastFssBodyName", "LastFssBodyDistance", "LastFssScanValue", "LastFssMappedValue",
-            "LastFssSignalsText", "LastFssBiologyRewardBands", "LastFssBiologyRewardText", "FssTuningIndicator",
-            "RavenBioConfirmedBrush", "RavenBioPredictionBrush",
-            "RavenBioConfirmedDimPotentialBrush",
-            "RavenBioUnknownGlyphBrush", "RavenBioEmptyBrush",
-            "RavenBioConfirmedEdgeBrush", "RavenBioPredictionEdgeBrush",
-            "RavenBioConfirmedSegmentEdgeBrush",
-            "RavenBioPredictionSegmentEdgeBrush",
-        ]),
-        Contract("PlotFSSInfo", ["src/SrvSurvey.Desktop/FssInfoOverlayWindow.axaml", "src/SrvSurvey.Desktop/FssInfoOverlayPresentation.axaml"], [
-            "SystemTitle", "ScanSummary", "FssFilterDescription", "FssBodies", "FssBodyListMaxHeight", "IsLandable",
-            "ScanValue", "DssValue", "ShowSeparatorBeforeGeologicalSignals", "ShowSeparatorBeforeBiologicalSignals",
-            "BiologicalSignalsText", "GeologicalSignalsText", "IsSurfaceScanned", "SCANNED",
-            "TextDecorations=\"Strikethrough\"",
-        ]),
-        Contract("PlotGalMap", ["src/SrvSurvey.Desktop/GalaxyMapOverlayWindow.axaml", "src/SrvSurvey.Desktop/GalaxyMapOverlayPresentation.axaml"], [
-            "PrimarySystemDisplay.DiscoveryText", "PrimarySystemDisplay.DiscoveredByText",
-            "SecondarySystemDisplay.DiscoveryText", "SecondarySystemDisplay.DiscoveredByText",
-            "RouteFooter", "Factions", "IsQuestTagged",
-        ]),
-        Contract("PlotGrounded", ["src/SrvSurvey.Desktop/SurfaceSurveyOverlayWindow.axaml", "src/SrvSurvey.Desktop/SurfaceSurveyOverlayPresentation.axaml"], [
-            "BodyName", "HistoryText", "HeadingText", "RadarScaleText", "NavigationMarkers", "TrackerGroups",
-        ]),
-        Contract("PlotGuardians", ["src/SrvSurvey.Desktop/GuardianOverlayWindow.axaml", "src/SrvSurvey.Desktop/GuardianSiteOverlayPresentation.axaml"], [
-            "ActiveMapSummary", "ActiveMapScaleText", "LiveMapPromptText", "TargetObeliskText",
-            "guardian-panel", "ShowLegend=\"False\"", "RavenGuardian",
-        ]),
-        Contract("PlotGuardianStatus", ["src/SrvSurvey.Desktop/GuardianStatusOverlayWindow.axaml", "src/SrvSurvey.Desktop/GuardianStatusOverlayPresentation.axaml"], [
-            "GuardianStatusTitle", "GuardianStatusDetail", "GuardianOriginFooter", "GuardianOnFootFooter",
-            "GuardianStatusObeliskTitle", "GuardianStatusObeliskArtifacts",
-            "GuardianStatusObeliskMissionStatus", "GuardianChoiceOneText",
-            "GlideApproachText", "guardian-panel", "RavenGuardian",
-        ]),
-        Contract("PlotGuardianSystem", ["src/SrvSurvey.Desktop/GuardianSystemOverlayWindow.axaml", "src/SrvSurvey.Desktop/GuardianSystemOverlayPresentation.axaml"], [
-            "CurrentSystemGuardianTitle", "CurrentSystemSites", "LegacyDisplayText", "LegacySurveyLine",
-            "LegacyBlueprintLine", "LegacyExtraLine", "guardian-panel", "RavenGuardian",
-        ]),
-        Contract("PlotHumanSite", ["src/SrvSurvey.Desktop/HumanSiteOverlayWindow.axaml", "src/SrvSurvey.Desktop/HumanSiteOverlayPresentation.axaml"], [
-            "SiteName", "TemplateText", "FactionText", "DockingStatusText", "ApproachDistanceText",
-            "CommanderPositionText", "MapProjection", "QuestMarkers", "QuestRoutes", "IsQuestTagged",
-        ]),
-        Contract("PlotJumpInfo", ["src/SrvSurvey.Desktop/JumpInfoOverlayWindow.axaml", "src/SrvSurvey.Desktop/JumpInfoOverlayPresentation.axaml"], [
-            "TargetName", "StarClass", "IsScoopableStarClass", "SCOOPABLE", "JumpProgress", "RouteLegs", "TotalDistance", "DiscoveryText",
-            "TrafficText", "PointsOfInterestText", "DetailLines", "IsQuestTagged",
-            "HasRouteGuidanceBadges", "HasRefuelGuidance", "HasNeutronGuidance",
-            "Assets/Routes/refuel-star.png",
-            "Assets/Routes/neutron-star.png",
-        ]),
-        Contract("PlotFleetCarrierRoute", ["src/SrvSurvey.Desktop/FleetCarrierRouteOverlayWindow.axaml", "src/SrvSurvey.Desktop/FleetCarrierRouteOverlayPresentation.axaml"], [
-            "HopProgress", "SystemName", "JumpSummary", "JumpsLeft",
-            "FuelLeft", "TritiumInMarket", "JumpFuel", "IcyRingLabel",
-            "HasRestockWarning", "RestockAmount", "CountdownTitle",
-            "Countdown", "CountdownPhase", "CountdownPhaseTime",
-        ]),
-        Contract("PlotRouteBio", [
-            "src/SrvSurvey.Desktop/RouteBioOverlayWindow.axaml",
-            "src/SrvSurvey.Desktop/RouteBioOverlayPresentation.axaml",
-            "src/SrvSurvey.Desktop/Controls/RouteBioTargetRow.axaml",
-            "src/SrvSurvey.Desktop/Controls/RouteBioTargetList.axaml",
-            "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs",
-        ], [
-            "SystemName", "Targets", "IsCompleted", "CompletionLabel", "Species",
-            "Subtype", "DistanceToArrival", "EstimatedScanValue", "EstimatedMappingValue",
-            "EstimatedBiologyValue", "IsTerraformable", "BodyIconAssetPath",
-            "CompactDetailSegments", "InlineSegments", "BundledAssetImageConverter",
-        ]),
-        Contract("PlotMassacre", ["src/SrvSurvey.Desktop/MassacreMissionsOverlayWindow.axaml", "src/SrvSurvey.Desktop/MassacreMissionsOverlayPresentation.axaml"], [
-            "TargetFaction", "MissionGiver", "RemainingText", "TextDecorations=\"Strikethrough\"",
-        ]),
-        Contract("PlotPriorScans", ["src/SrvSurvey.Desktop/PriorScansOverlayWindow.axaml", "src/SrvSurvey.Desktop/PriorScansOverlayPresentation.axaml"], [
-            "DisplayName", "RewardText", "BearingText", "DistanceText", "ApproachText", "Targets", "ShowRadar",
-        ]),
-        Contract("PlotRamTah", ["src/SrvSurvey.Desktop/RamTahOverlayWindow.axaml", "src/SrvSurvey.Desktop/RamTahOverlayPresentation.axaml"], [
-            "CurrentRamTahTitle", "CurrentRamTahLogs", "LogName", "Artifacts", "GuardianArtifactGlyphControl",
-            "ObeliskNamesText", "Target obelisk A01: type .to A01 in chat",
-            "guardian-panel", "RavenGuardian",
-        ]),
-        Contract("PlotSphericalSearch", ["src/SrvSurvey.Desktop/SphericalSearchOverlayWindow.axaml", "src/SrvSurvey.Desktop/SphericalSearchOverlayPresentation.axaml"], [
-            "SphereCenterSystemName", "SphereDestinationSystemName", "DestinationDistance", "DestinationResult",
-            "CurrentBoxelName", "SystemProgress", "BoxelNextSystem", "BoxelClipboardStatus", "RouteNextHopName", "NextHopGuidance",
-        ]),
-        Contract("PlotSysStatus", [
-            "src/SrvSurvey.Desktop/SystemStatusOverlayWindow.axaml",
-            "src/SrvSurvey.Desktop/SystemStatusOverlayPresentation.axaml",
-        ], [
-            "SystemStatusText", "DssHeading", "DssBodies", "BiologicalHeading", "BiologicalBodies", "NonBodySignalsText",
-            "SystemStatusOverlayPresentation",
-        ]),
-        Contract("PlotTrackers", [
-            "src/SrvSurvey.Desktop/SurfaceSurveyOverlayWindow.axaml",
-            "src/SrvSurvey.Desktop/SurfaceSurveyOverlayPresentation.axaml",
-            "src/SrvSurvey.Desktop/MiniTrackOverlayWindow.axaml",
-            "src/SrvSurvey.Desktop/MiniTrackOverlayPresentation.axaml",
-        ], ["TrackerGroups", "QuickTrackerGroups", "BearingText", "DistanceText", "Targets"]),
-        Contract("PlotTrackTarget", ["src/SrvSurvey.Desktop/GroundTargetOverlayWindow.axaml", "src/SrvSurvey.Desktop/GroundTargetOverlayPresentation.axaml"], [
-            "TargetCoordinates", "TargetBearing", "RelativeHeading", "DistanceToTarget", "DescentAngle", "ApproachStatus",
-        ]),
+        Contract(
+            "PlotBase",
+            [
+                "src/SrvSurvey.Desktop/Platform/Overlay/CombinedOverlayPresentationController.cs",
+                "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPresentationMode.cs",
+                "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPlatformService.cs",
+                "src/SrvSurvey.Desktop/Platform/Overlay/OverlayWindowRegistry.cs",
+            ],
+            [
+                "SupportsClickThrough",
+                "SupportsGameWindowTracking",
+                "Register",
+                "MultipleWindows",
+                "CombinedWindow",
+                "SetInteractiveRegions",
+            ]
+        ),
+        Contract(
+            "PlotBioStatus",
+            [
+                "src/SrvSurvey.Desktop/BiologyStatusOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/BiologyStatusOverlayPresentation.axaml",
+            ],
+            [
+                "ProgressText",
+                "CompletionPercent",
+                "MinWidth=\"0\"",
+                "ClipToBounds=\"True\"",
+                "ActiveSample",
+                "Signals",
+                "Warning",
+                "Footer",
+                "BiologyStatusOverlayPresentation",
+            ]
+        ),
+        Contract(
+            "PlotBioSystem",
+            [
+                "src/SrvSurvey.Desktop/BiologySurveyOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/BiologySurveyOverlayPresentation.axaml",
+            ],
+            [
+                "Bodies",
+                "BodyIconAssetPath",
+                "BundledAssetImageConverter",
+                "RewardBands",
+                "HasCanonnSignals",
+                "CanonnLogoControl",
+                "OrganismGroups",
+                "Species",
+                "VariantName",
+                "PredictionMarkerToolTip",
+                "RewardSummary",
+                "FirstFootfallRewardSummary",
+                "GeologicalSignals",
+                "RadicoidaUnicaCountText",
+                "BiologySurveyOverlayPresentation",
+                "RavenBioConfirmedBrush",
+                "RavenBioConfirmedDimBrush",
+                "RavenBioPotentialBrush",
+                "RavenBioConfirmedDimPotentialBrush",
+                "RavenBioPredictionBrush",
+                "RavenBioPredictionPotentialBrush",
+                "RavenBioUnknownGlyphBrush",
+                "RavenBioEmptyBrush",
+                "RavenBioConfirmedEdgeBrush",
+                "RavenBioPredictionEdgeBrush",
+                "RavenBioGoldEdgeBrush",
+                "RavenBioGalacticRegionEdgeBrush",
+                "RavenBioGoldPotentialBrush",
+                "RavenBioGoldDimPotentialBrush",
+                "RavenBioConfirmedSegmentEdgeBrush",
+                "RavenBioPredictionSegmentEdgeBrush",
+                "RavenBioGoldSegmentEdgeBrush",
+                "RavenBioGalacticRegionSegmentEdgeBrush",
+            ]
+        ),
+        Contract(
+            "PlotBodyInfo",
+            [
+                "src/SrvSurvey.Desktop/BodyInformationOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/BodyInformationOverlayPresentation.axaml",
+            ],
+            [
+                "BodyClass",
+                "Distance",
+                "ScanValue",
+                "MappedValue",
+                "Temperature",
+                "Gravity",
+                "Pressure",
+                "BiologicalSignals",
+                "GeologicalSignals",
+                "Volcanism",
+                "AtmosphereComposition",
+                "Materials",
+                "Rings",
+                "BodyInformationOverlayPresentation",
+            ]
+        ),
+        Contract(
+            "PlotMiningNotifications",
+            [
+                "src/SrvSurvey.Desktop/MiningActivityOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/MiningActivityOverlayPresentation.axaml",
+            ],
+            ["Refined", "RavenWindowBrush"]
+        ),
+        Contract(
+            "PlotMiningReference",
+            [
+                "src/SrvSurvey.Desktop/MiningReferenceOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/MiningReferenceOverlayPresentation.axaml",
+            ],
+            ["MINING REF", "MiningReferenceRows", "BodyTypes", "AverageSellPrice", "RavenWindowBrush"]
+        ),
+        Contract(
+            "PlotMiningFiregroups",
+            [
+                "src/SrvSurvey.Desktop/MiningActivityOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/MiningActivityOverlayPresentation.axaml",
+            ],
+            ["Firegroup", "RavenWindowBrush"]
+        ),
+        Contract(
+            "PlotMiningWarning",
+            [
+                "src/SrvSurvey.Desktop/MiningWarningOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/MiningWarningOverlayPresentation.axaml",
+            ],
+            ["WARNING", "TOO FAR FROM RIGS", "Moving beyond 4.5Km will Destroy Rigs", "#FF4500", "#4CFF4500"]
+        ),
+        Contract(
+            "PlotFlightWarning",
+            [
+                "src/SrvSurvey.Desktop/FlightWarningOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/FlightWarningOverlayPresentation.axaml",
+            ],
+            [
+                "FlightWarningText",
+                "FlightWarningBrush",
+                "FlightWarningDimBrush",
+                "FlightWarningNote",
+                "IsExtremeFlightWarning",
+                "MinHeight=\"1\"",
+                "SizeToContent=\"WidthAndHeight\"",
+            ]
+        ),
+        Contract(
+            "PlotFootCombat",
+            [
+                "src/SrvSurvey.Desktop/FootCombatOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/FootCombatOverlayPresentation.axaml",
+            ],
+            ["SettlementHeader", "FootCombatKills"]
+        ),
+        Contract(
+            "PlotFSS",
+            [
+                "src/SrvSurvey.Desktop/LastFssBodyOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/LastFssBodyOverlayPresentation.axaml",
+            ],
+            [
+                "LastFssBodyName",
+                "LastFssBodyDistance",
+                "LastFssScanValue",
+                "LastFssMappedValue",
+                "LastFssSignalsText",
+                "LastFssBiologyRewardBands",
+                "LastFssBiologyRewardText",
+                "FssTuningIndicator",
+                "RavenBioConfirmedBrush",
+                "RavenBioPredictionBrush",
+                "RavenBioConfirmedDimPotentialBrush",
+                "RavenBioUnknownGlyphBrush",
+                "RavenBioEmptyBrush",
+                "RavenBioConfirmedEdgeBrush",
+                "RavenBioPredictionEdgeBrush",
+                "RavenBioConfirmedSegmentEdgeBrush",
+                "RavenBioPredictionSegmentEdgeBrush",
+            ]
+        ),
+        Contract(
+            "PlotFSSInfo",
+            [
+                "src/SrvSurvey.Desktop/FssInfoOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/FssInfoOverlayPresentation.axaml",
+            ],
+            [
+                "SystemTitle",
+                "ScanSummary",
+                "FssFilterDescription",
+                "FssBodies",
+                "FssBodyListMaxHeight",
+                "IsLandable",
+                "ScanValue",
+                "DssValue",
+                "ShowSeparatorBeforeGeologicalSignals",
+                "ShowSeparatorBeforeBiologicalSignals",
+                "BiologicalSignalsText",
+                "GeologicalSignalsText",
+                "IsSurfaceScanned",
+                "SCANNED",
+                "TextDecorations=\"Strikethrough\"",
+            ]
+        ),
+        Contract(
+            "PlotGalMap",
+            [
+                "src/SrvSurvey.Desktop/GalaxyMapOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/GalaxyMapOverlayPresentation.axaml",
+            ],
+            [
+                "PrimarySystemDisplay.DiscoveryText",
+                "PrimarySystemDisplay.DiscoveredByText",
+                "SecondarySystemDisplay.DiscoveryText",
+                "SecondarySystemDisplay.DiscoveredByText",
+                "RouteFooter",
+                "Factions",
+                "IsQuestTagged",
+            ]
+        ),
+        Contract(
+            "PlotGrounded",
+            [
+                "src/SrvSurvey.Desktop/SurfaceSurveyOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/SurfaceSurveyOverlayPresentation.axaml",
+            ],
+            ["BodyName", "HistoryText", "HeadingText", "RadarScaleText", "NavigationMarkers", "TrackerGroups"]
+        ),
+        Contract(
+            "PlotGuardians",
+            [
+                "src/SrvSurvey.Desktop/GuardianOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/GuardianSiteOverlayPresentation.axaml",
+            ],
+            [
+                "ActiveMapSummary",
+                "ActiveMapScaleText",
+                "LiveMapPromptText",
+                "TargetObeliskText",
+                "guardian-panel",
+                "ShowLegend=\"False\"",
+                "RavenGuardian",
+            ]
+        ),
+        Contract(
+            "PlotGuardianStatus",
+            [
+                "src/SrvSurvey.Desktop/GuardianStatusOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/GuardianStatusOverlayPresentation.axaml",
+            ],
+            [
+                "GuardianStatusTitle",
+                "GuardianStatusDetail",
+                "GuardianOriginFooter",
+                "GuardianOnFootFooter",
+                "GuardianStatusObeliskTitle",
+                "GuardianStatusObeliskArtifacts",
+                "GuardianStatusObeliskMissionStatus",
+                "GuardianChoiceOneText",
+                "GlideApproachText",
+                "guardian-panel",
+                "RavenGuardian",
+            ]
+        ),
+        Contract(
+            "PlotGuardianSystem",
+            [
+                "src/SrvSurvey.Desktop/GuardianSystemOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/GuardianSystemOverlayPresentation.axaml",
+            ],
+            [
+                "CurrentSystemGuardianTitle",
+                "CurrentSystemSites",
+                "LegacyDisplayText",
+                "LegacySurveyLine",
+                "LegacyBlueprintLine",
+                "LegacyExtraLine",
+                "guardian-panel",
+                "RavenGuardian",
+            ]
+        ),
+        Contract(
+            "PlotHumanSite",
+            [
+                "src/SrvSurvey.Desktop/HumanSiteOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/HumanSiteOverlayPresentation.axaml",
+            ],
+            [
+                "SiteName",
+                "TemplateText",
+                "FactionText",
+                "DockingStatusText",
+                "ApproachDistanceText",
+                "CommanderPositionText",
+                "MapProjection",
+                "QuestMarkers",
+                "QuestRoutes",
+                "IsQuestTagged",
+            ]
+        ),
+        Contract(
+            "PlotJumpInfo",
+            [
+                "src/SrvSurvey.Desktop/JumpInfoOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/JumpInfoOverlayPresentation.axaml",
+            ],
+            [
+                "TargetName",
+                "StarClass",
+                "IsScoopableStarClass",
+                "SCOOPABLE",
+                "JumpProgress",
+                "RouteLegs",
+                "TotalDistance",
+                "DiscoveryText",
+                "TrafficText",
+                "PointsOfInterestText",
+                "DetailLines",
+                "IsQuestTagged",
+                "HasRouteGuidanceBadges",
+                "HasRefuelGuidance",
+                "HasNeutronGuidance",
+                "Assets/Routes/refuel-star.png",
+                "Assets/Routes/neutron-star.png",
+            ]
+        ),
+        Contract(
+            "PlotFleetCarrierRoute",
+            [
+                "src/SrvSurvey.Desktop/FleetCarrierRouteOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/FleetCarrierRouteOverlayPresentation.axaml",
+            ],
+            [
+                "HopProgress",
+                "SystemName",
+                "JumpSummary",
+                "JumpsLeft",
+                "FuelLeft",
+                "TritiumInMarket",
+                "JumpFuel",
+                "IcyRingLabel",
+                "HasRestockWarning",
+                "RestockAmount",
+                "CountdownTitle",
+                "Countdown",
+                "CountdownPhase",
+                "CountdownPhaseTime",
+            ]
+        ),
+        Contract(
+            "PlotRouteBio",
+            [
+                "src/SrvSurvey.Desktop/RouteBioOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/RouteBioOverlayPresentation.axaml",
+                "src/SrvSurvey.Desktop/Controls/RouteBioTargetRow.axaml",
+                "src/SrvSurvey.Desktop/Controls/RouteBioTargetList.axaml",
+                "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs",
+            ],
+            [
+                "SystemName",
+                "Targets",
+                "IsCompleted",
+                "CompletionLabel",
+                "Species",
+                "Subtype",
+                "DistanceToArrival",
+                "EstimatedScanValue",
+                "EstimatedMappingValue",
+                "EstimatedBiologyValue",
+                "IsTerraformable",
+                "BodyIconAssetPath",
+                "CompactDetailSegments",
+                "InlineSegments",
+                "BundledAssetImageConverter",
+            ]
+        ),
+        Contract(
+            "PlotMassacre",
+            [
+                "src/SrvSurvey.Desktop/MassacreMissionsOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/MassacreMissionsOverlayPresentation.axaml",
+            ],
+            ["TargetFaction", "MissionGiver", "RemainingText", "TextDecorations=\"Strikethrough\""]
+        ),
+        Contract(
+            "PlotPriorScans",
+            [
+                "src/SrvSurvey.Desktop/PriorScansOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/PriorScansOverlayPresentation.axaml",
+            ],
+            ["DisplayName", "RewardText", "BearingText", "DistanceText", "ApproachText", "Targets", "ShowRadar"]
+        ),
+        Contract(
+            "PlotRamTah",
+            [
+                "src/SrvSurvey.Desktop/RamTahOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/RamTahOverlayPresentation.axaml",
+            ],
+            [
+                "CurrentRamTahTitle",
+                "CurrentRamTahLogs",
+                "LogName",
+                "Artifacts",
+                "GuardianArtifactGlyphControl",
+                "ObeliskNamesText",
+                "Target obelisk A01: type .to A01 in chat",
+                "guardian-panel",
+                "RavenGuardian",
+            ]
+        ),
+        Contract(
+            "PlotSphericalSearch",
+            [
+                "src/SrvSurvey.Desktop/SphericalSearchOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/SphericalSearchOverlayPresentation.axaml",
+            ],
+            [
+                "SphereCenterSystemName",
+                "SphereDestinationSystemName",
+                "DestinationDistance",
+                "DestinationResult",
+                "CurrentBoxelName",
+                "SystemProgress",
+                "BoxelNextSystem",
+                "BoxelClipboardStatus",
+                "RouteNextHopName",
+                "NextHopGuidance",
+            ]
+        ),
+        Contract(
+            "PlotSysStatus",
+            [
+                "src/SrvSurvey.Desktop/SystemStatusOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/SystemStatusOverlayPresentation.axaml",
+            ],
+            [
+                "SystemStatusText",
+                "DssHeading",
+                "DssBodies",
+                "BiologicalHeading",
+                "BiologicalBodies",
+                "NonBodySignalsText",
+                "SystemStatusOverlayPresentation",
+            ]
+        ),
+        Contract(
+            "PlotTrackers",
+            [
+                "src/SrvSurvey.Desktop/SurfaceSurveyOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/SurfaceSurveyOverlayPresentation.axaml",
+                "src/SrvSurvey.Desktop/MiniTrackOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/MiniTrackOverlayPresentation.axaml",
+            ],
+            ["TrackerGroups", "QuickTrackerGroups", "BearingText", "DistanceText", "Targets"]
+        ),
+        Contract(
+            "PlotTrackTarget",
+            [
+                "src/SrvSurvey.Desktop/GroundTargetOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/GroundTargetOverlayPresentation.axaml",
+            ],
+            [
+                "TargetCoordinates",
+                "TargetBearing",
+                "RelativeHeading",
+                "DistanceToTarget",
+                "DescentAngle",
+                "ApproachStatus",
+            ]
+        ),
     ];
 
     [Fact]
@@ -197,8 +513,8 @@ public sealed class OverlayPresentationContractTests
         {
             var production = string.Join(
                 Environment.NewLine,
-                contract.ProductionFiles.Select(path => File.ReadAllText(
-                    Path.Combine(root, Native(path)))));
+                contract.ProductionFiles.Select(path => File.ReadAllText(Path.Combine(root, Native(path))))
+            );
             foreach (var token in contract.RequiredTokens)
             {
                 Assert.Contains(token, production, StringComparison.Ordinal);
@@ -211,10 +527,7 @@ public sealed class OverlayPresentationContractTests
     {
         var root = FindRepositoryRoot();
         var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
-        var overlayFiles = Directory.GetFiles(
-            desktop,
-            "*OverlayWindow.axaml",
-            SearchOption.TopDirectoryOnly);
+        var overlayFiles = Directory.GetFiles(desktop, "*OverlayWindow.axaml", SearchOption.TopDirectoryOnly);
 
         Assert.NotEmpty(overlayFiles);
         var titles = new List<string>();
@@ -226,49 +539,31 @@ public sealed class OverlayPresentationContractTests
             titles.Add(title);
         }
 
-        Assert.Equal(
-            titles.Count,
-            titles.Distinct(StringComparer.Ordinal).Count());
+        Assert.Equal(titles.Count, titles.Distinct(StringComparer.Ordinal).Count());
 
-        var troubleshooting = File.ReadAllText(Path.Combine(
-            root,
-            "docs",
-            "Overlay_Troubleshooting.md"));
-        Assert.Contains(
-            $"`{KdeOverlayTitlePattern}`",
-            troubleshooting,
-            StringComparison.Ordinal);
+        var troubleshooting = File.ReadAllText(Path.Combine(root, "docs", "Overlay_Troubleshooting.md"));
+        Assert.Contains($"`{KdeOverlayTitlePattern}`", troubleshooting, StringComparison.Ordinal);
     }
 
     [Fact]
     public void DirectionalTrackersUseSharedVectorChevronsInsteadOfFontGlyphs()
     {
         var root = FindRepositoryRoot();
-        var miniTrack = File.ReadAllText(Path.Combine(
-            root,
-            "src",
-            "SrvSurvey.Desktop",
-            "MiniTrackOverlayPresentation.axaml"));
-        var surfaceSurvey = File.ReadAllText(Path.Combine(
-            root,
-            "src",
-            "SrvSurvey.Desktop",
-            "SurfaceSurveyOverlayPresentation.axaml"));
-        var priorScans = File.ReadAllText(Path.Combine(
-            root,
-            "src",
-            "SrvSurvey.Desktop",
-            "PriorScansOverlayPresentation.axaml"));
+        var miniTrack = File.ReadAllText(
+            Path.Combine(root, "src", "SrvSurvey.Desktop", "MiniTrackOverlayPresentation.axaml")
+        );
+        var surfaceSurvey = File.ReadAllText(
+            Path.Combine(root, "src", "SrvSurvey.Desktop", "SurfaceSurveyOverlayPresentation.axaml")
+        );
+        var priorScans = File.ReadAllText(
+            Path.Combine(root, "src", "SrvSurvey.Desktop", "PriorScansOverlayPresentation.axaml")
+        );
 
         Assert.Contains("DirectionalChevronControl", miniTrack);
         Assert.Contains("IsFar=\"{Binding IsFarTarget}\"", miniTrack);
         Assert.DoesNotContain("&#x25B2;", miniTrack);
 
-        Assert.Equal(
-            2,
-            surfaceSurvey.Split(
-                "DirectionalChevronControl",
-                StringSplitOptions.None).Length - 1);
+        Assert.Equal(2, surfaceSurvey.Split("DirectionalChevronControl", StringSplitOptions.None).Length - 1);
         Assert.Contains("IsFar=\"{Binding IsFarTarget}\"", surfaceSurvey);
         Assert.DoesNotContain("&#x25B2;", surfaceSurvey);
 
@@ -281,18 +576,12 @@ public sealed class OverlayPresentationContractTests
     public void GroundTargetUsesTheSharedRingedPointerDrawing()
     {
         var root = FindRepositoryRoot();
-        var guidance = File.ReadAllText(Path.Combine(
-            root,
-            "src",
-            "SrvSurvey.Desktop",
-            "Controls",
-            "GroundTargetGuidanceControl.cs"));
-        var guidePreview = File.ReadAllText(Path.Combine(
-            root,
-            "src",
-            "SrvSurvey.Desktop",
-            "Controls",
-            "GuideIconPreviewControl.cs"));
+        var guidance = File.ReadAllText(
+            Path.Combine(root, "src", "SrvSurvey.Desktop", "Controls", "GroundTargetGuidanceControl.cs")
+        );
+        var guidePreview = File.ReadAllText(
+            Path.Combine(root, "src", "SrvSurvey.Desktop", "Controls", "GuideIconPreviewControl.cs")
+        );
 
         Assert.Contains("RingedPointerDrawing.Draw", guidance);
         Assert.DoesNotContain("DrawVehicle", guidance);
@@ -313,11 +602,7 @@ public sealed class OverlayPresentationContractTests
 
         foreach (var presentation in presentations)
         {
-            var markup = File.ReadAllText(Path.Combine(
-                root,
-                "src",
-                "SrvSurvey.Desktop",
-                presentation));
+            var markup = File.ReadAllText(Path.Combine(root, "src", "SrvSurvey.Desktop", presentation));
             Assert.Contains("guardian-panel", markup);
             Assert.Contains("RavenGuardian", markup);
             Assert.DoesNotContain("LegacyOverlayBackgroundControl", markup);
@@ -328,12 +613,9 @@ public sealed class OverlayPresentationContractTests
             Assert.DoesNotContain("Classes=\"badge", markup);
         }
 
-        var styles = File.ReadAllText(Path.Combine(
-            root,
-            "src",
-            "SrvSurvey.Desktop",
-            "Styles",
-            "GuardianLegacyOverlayStyles.axaml"));
+        var styles = File.ReadAllText(
+            Path.Combine(root, "src", "SrvSurvey.Desktop", "Styles", "GuardianLegacyOverlayStyles.axaml")
+        );
         Assert.Contains("Assets/Fonts/Oxanium#Oxanium", styles);
         Assert.Contains("Assets/Fonts/Rajdhani#Rajdhani", styles);
         Assert.Contains("RavenGuardianHeaderBrush", styles);
@@ -343,11 +625,9 @@ public sealed class OverlayPresentationContractTests
         Assert.Contains("guardian-panel", styles);
         Assert.Contains("guardian-title", styles);
 
-        var ramTah = File.ReadAllText(Path.Combine(
-            root,
-            "src",
-            "SrvSurvey.Desktop",
-            "RamTahOverlayPresentation.axaml"));
+        var ramTah = File.ReadAllText(
+            Path.Combine(root, "src", "SrvSurvey.Desktop", "RamTahOverlayPresentation.axaml")
+        );
         Assert.DoesNotContain("&lt;A01&gt;", ramTah);
     }
 
@@ -355,28 +635,57 @@ public sealed class OverlayPresentationContractTests
     public void GuardianSiteOverlayTracksWorkspacePointSelection()
     {
         var root = FindRepositoryRoot();
-        var markup = File.ReadAllText(Path.Combine(
-            root,
-            "src",
-            "SrvSurvey.Desktop",
-            "GuardianSiteOverlayPresentation.axaml"));
+        var markup = File.ReadAllText(
+            Path.Combine(root, "src", "SrvSurvey.Desktop", "GuardianSiteOverlayPresentation.axaml")
+        );
 
         Assert.Contains(
             "HighlightedPointName=\"{Binding Guardian.ActiveMapSelectedPointName}\"",
             markup,
-            StringComparison.Ordinal);
+            StringComparison.Ordinal
+        );
     }
 
     [Theory]
     [InlineData("PlotFSSInfo", "FssInfoOverlayPresentation.axaml", "FssInfoOverlayWindow.axaml", 270, true)]
     [InlineData("PlotFSS", "LastFssBodyOverlayPresentation.axaml", "LastFssBodyOverlayWindow.axaml", 240, true)]
-    [InlineData("PlotBodyInfo", "BodyInformationOverlayPresentation.axaml", "BodyInformationOverlayWindow.axaml", 260, true)]
-    [InlineData("PlotFleetCarrierRoute", "FleetCarrierRouteOverlayPresentation.axaml", "FleetCarrierRouteOverlayWindow.axaml", 260, true)]
+    [InlineData(
+        "PlotBodyInfo",
+        "BodyInformationOverlayPresentation.axaml",
+        "BodyInformationOverlayWindow.axaml",
+        260,
+        true
+    )]
+    [InlineData(
+        "PlotFleetCarrierRoute",
+        "FleetCarrierRouteOverlayPresentation.axaml",
+        "FleetCarrierRouteOverlayWindow.axaml",
+        260,
+        true
+    )]
     [InlineData("PlotGalMap", "GalaxyMapOverlayPresentation.axaml", "GalaxyMapOverlayWindow.axaml", 240, true)]
-    [InlineData("PlotGuardianStatus", "GuardianStatusOverlayPresentation.axaml", "GuardianStatusOverlayWindow.axaml", 260, true)]
-    [InlineData("PlotGuardianSystem", "GuardianSystemOverlayPresentation.axaml", "GuardianSystemOverlayWindow.axaml", 190, true)]
+    [InlineData(
+        "PlotGuardianStatus",
+        "GuardianStatusOverlayPresentation.axaml",
+        "GuardianStatusOverlayWindow.axaml",
+        260,
+        true
+    )]
+    [InlineData(
+        "PlotGuardianSystem",
+        "GuardianSystemOverlayPresentation.axaml",
+        "GuardianSystemOverlayWindow.axaml",
+        190,
+        true
+    )]
     [InlineData("PlotHumanSite", "HumanSiteOverlayPresentation.axaml", "HumanSiteOverlayWindow.axaml", 260, true)]
-    [InlineData("PlotQuestMini", "QuestIndicatorOverlayPresentation.axaml", "QuestIndicatorOverlayWindow.axaml", 220, true)]
+    [InlineData(
+        "PlotQuestMini",
+        "QuestIndicatorOverlayPresentation.axaml",
+        "QuestIndicatorOverlayWindow.axaml",
+        220,
+        true
+    )]
     [InlineData("PlotRamTah", "RamTahOverlayPresentation.axaml", "RamTahOverlayWindow.axaml", 190, true)]
     [InlineData("PlotStationInfo", "StationInfoOverlayPresentation.axaml", "StationInfoOverlayWindow.axaml", 220, true)]
     [InlineData("PlotRouteBio", "RouteBioOverlayPresentation.axaml", "RouteBioOverlayWindow.axaml", 260, false)]
@@ -385,13 +694,12 @@ public sealed class OverlayPresentationContractTests
         string presentationName,
         string windowName,
         int expectedWidth,
-        bool isContentSized)
+        bool isContentSized
+    )
     {
         var root = FindRepositoryRoot();
         var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
-        var presentation = File.ReadAllText(Path.Combine(
-            desktop,
-            presentationName));
+        var presentation = File.ReadAllText(Path.Combine(desktop, presentationName));
         var window = File.ReadAllText(Path.Combine(desktop, windowName));
 
         if (isContentSized)
@@ -406,9 +714,7 @@ public sealed class OverlayPresentationContractTests
             Assert.Contains($"Width=\"{expectedWidth}\"", presentation);
             Assert.Contains($"MinWidth=\"{expectedWidth}\"", window);
         }
-        Assert.Equal(
-            expectedWidth,
-            OverlayLayoutCatalog.GetRequired(plotterName).PreviewSize.Width);
+        Assert.Equal(expectedWidth, OverlayLayoutCatalog.GetRequired(plotterName).PreviewSize.Width);
     }
 
     [Fact]
@@ -416,35 +722,25 @@ public sealed class OverlayPresentationContractTests
     {
         var root = FindRepositoryRoot();
         var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
-        var fss = File.ReadAllText(Path.Combine(
-            desktop,
-            "FssInfoOverlayPresentation.axaml"));
-        var routeRow = File.ReadAllText(Path.Combine(
-            desktop,
-            "Controls",
-            "RouteBioTargetRow.axaml"));
+        var fss = File.ReadAllText(Path.Combine(desktop, "FssInfoOverlayPresentation.axaml"));
+        var routeRow = File.ReadAllText(Path.Combine(desktop, "Controls", "RouteBioTargetRow.axaml"));
 
         Assert.Contains("FssFilterDescription", fss);
         Assert.Contains("TextWrapping=\"Wrap\"", fss);
-        Assert.Contains(
-            "MaxHeight=\"{Binding Survey.FssBodyListMaxHeight}\"",
-            fss);
+        Assert.Contains("MaxHeight=\"{Binding Survey.FssBodyListMaxHeight}\"", fss);
         Assert.Contains("Padding=\"3\"", fss);
         Assert.Contains("RowSpacing=\"0\"", fss);
-        Assert.Equal(
-            2,
-            fss.Split("Classes=\"overlay-divider\"", StringSplitOptions.None).Length - 1);
-        var lowerDivider = XDocument.Parse(fss)
+        Assert.Equal(2, fss.Split("Classes=\"overlay-divider\"", StringSplitOptions.None).Length - 1);
+        var lowerDivider = XDocument
+            .Parse(fss)
             .Descendants()
             .Where(element =>
-                element.Name.LocalName == "Border"
-                && element.Attribute("Classes")?.Value == "overlay-divider")
+                element.Name.LocalName == "Border" && element.Attribute("Classes")?.Value == "overlay-divider"
+            )
             .Last();
         Assert.Equal("StackPanel", lowerDivider.Parent?.Name.LocalName);
         Assert.Equal("0", lowerDivider.Parent?.Attribute("Spacing")?.Value);
-        Assert.Equal(
-            "ScrollViewer",
-            lowerDivider.Parent?.Elements().First().Name.LocalName);
+        Assert.Equal("ScrollViewer", lowerDivider.Parent?.Elements().First().Name.LocalName);
         Assert.DoesNotContain("<Border Height=\"48\"", fss);
         Assert.Contains("ItemsSource=\"{Binding InlineSegments}\"", routeRow);
         Assert.Contains("<WrapPanel Orientation=\"Horizontal\"", routeRow);
@@ -456,16 +752,9 @@ public sealed class OverlayPresentationContractTests
     {
         var root = FindRepositoryRoot();
         var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
-        var lastFss = File.ReadAllText(Path.Combine(
-            desktop,
-            "LastFssBodyOverlayPresentation.axaml"));
-        var bodyInfo = File.ReadAllText(Path.Combine(
-            desktop,
-            "BodyInformationOverlayPresentation.axaml"));
-        var typography = File.ReadAllText(Path.Combine(
-            desktop,
-            "Styles",
-            "OverlayTypographyStyles.axaml"));
+        var lastFss = File.ReadAllText(Path.Combine(desktop, "LastFssBodyOverlayPresentation.axaml"));
+        var bodyInfo = File.ReadAllText(Path.Combine(desktop, "BodyInformationOverlayPresentation.axaml"));
+        var typography = File.ReadAllText(Path.Combine(desktop, "Styles", "OverlayTypographyStyles.axaml"));
 
         Assert.Contains("ColumnDefinitions=\"Auto,Auto\"", lastFss);
         Assert.Contains("ColumnDefinitions=\"Auto,Auto\"", bodyInfo);
@@ -481,38 +770,34 @@ public sealed class OverlayPresentationContractTests
     public void LastFssBiologyPipsUseTheirStateFramesWithoutAGroupBorder()
     {
         var root = FindRepositoryRoot();
-        var lastFss = XDocument.Load(Path.Combine(
-            root,
-            "src",
-            "SrvSurvey.Desktop",
-            "LastFssBodyOverlayPresentation.axaml"));
+        var lastFss = XDocument.Load(
+            Path.Combine(root, "src", "SrvSurvey.Desktop", "LastFssBodyOverlayPresentation.axaml")
+        );
         var rewardBands = lastFss
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "ItemsControl"
-                && element.Attribute("ItemsSource")?.Value
-                    == "{Binding Survey.LastFssBiologyRewardBands}");
+                && element.Attribute("ItemsSource")?.Value == "{Binding Survey.LastFssBiologyRewardBands}"
+            );
         var rewardBand = rewardBands
             .Descendants()
-            .Single(element =>
-                element.Name.LocalName == "BiologyRewardBandControl");
+            .Single(element => element.Name.LocalName == "BiologyRewardBandControl");
 
         Assert.Equal("Grid", rewardBands.Parent?.Name.LocalName);
-        Assert.Equal("{Binding IsPrediction}",
-            rewardBand.Attribute("IsPrediction")?.Value);
-        Assert.Equal("{DynamicResource RavenBioPredictionEdgeBrush}",
-            rewardBand.Attribute("PredictionEdgeBrush")?.Value);
+        Assert.Equal("{Binding IsPrediction}", rewardBand.Attribute("IsPrediction")?.Value);
+        Assert.Equal(
+            "{DynamicResource RavenBioPredictionEdgeBrush}",
+            rewardBand.Attribute("PredictionEdgeBrush")?.Value
+        );
     }
 
     [Fact]
     public void BodyInformationBindingsUseTheNonNullDisplayProjection()
     {
         var root = FindRepositoryRoot();
-        var bodyInfo = File.ReadAllText(Path.Combine(
-            root,
-            "src",
-            "SrvSurvey.Desktop",
-            "BodyInformationOverlayPresentation.axaml"));
+        var bodyInfo = File.ReadAllText(
+            Path.Combine(root, "src", "SrvSurvey.Desktop", "BodyInformationOverlayPresentation.axaml")
+        );
 
         Assert.Contains("Survey.BodyInformationDisplay.", bodyInfo);
         Assert.DoesNotContain("Survey.BodyInformation.", bodyInfo);
@@ -522,31 +807,26 @@ public sealed class OverlayPresentationContractTests
     public void BodyInformationHeaderAndCompositionRowsRemainCompact()
     {
         var root = FindRepositoryRoot();
-        var bodyInfo = File.ReadAllText(Path.Combine(
-            root,
-            "src",
-            "SrvSurvey.Desktop",
-            "BodyInformationOverlayPresentation.axaml"));
+        var bodyInfo = File.ReadAllText(
+            Path.Combine(root, "src", "SrvSurvey.Desktop", "BodyInformationOverlayPresentation.axaml")
+        );
 
         Assert.Contains("Classes=\"badge overlay-state-pill\"", bodyInfo);
         Assert.Contains("Padding=\"7,1\"", bodyInfo);
         Assert.True(
-            bodyInfo.IndexOf("BodyInformationDisplay.BodyClass", StringComparison.Ordinal) <
-            bodyInfo.IndexOf("BodyInformationDisplay.Distance", StringComparison.Ordinal));
-        Assert.Equal(
-            2,
-            bodyInfo.Split("MaxWidth=\"210\"", StringSplitOptions.None).Length - 1);
+            bodyInfo.IndexOf("BodyInformationDisplay.BodyClass", StringComparison.Ordinal)
+                < bodyInfo.IndexOf("BodyInformationDisplay.Distance", StringComparison.Ordinal)
+        );
+        Assert.Equal(2, bodyInfo.Split("MaxWidth=\"210\"", StringSplitOptions.None).Length - 1);
     }
 
     [Fact]
     public void BiologyStatusBindingsUseTheNonNullActiveSampleProjection()
     {
         var root = FindRepositoryRoot();
-        var biologyStatus = File.ReadAllText(Path.Combine(
-            root,
-            "src",
-            "SrvSurvey.Desktop",
-            "BiologyStatusOverlayPresentation.axaml"));
+        var biologyStatus = File.ReadAllText(
+            Path.Combine(root, "src", "SrvSurvey.Desktop", "BiologyStatusOverlayPresentation.axaml")
+        );
 
         Assert.Contains("ActiveSampleDisplay.", biologyStatus);
         Assert.DoesNotContain("ActiveSample.", biologyStatus);
@@ -557,24 +837,12 @@ public sealed class OverlayPresentationContractTests
     {
         var root = FindRepositoryRoot();
         var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
-        var bodyInfo = File.ReadAllText(Path.Combine(
-            desktop,
-            "BodyInformationOverlayPresentation.axaml"));
-        var lastFss = File.ReadAllText(Path.Combine(
-            desktop,
-            "LastFssBodyOverlayPresentation.axaml"));
-        var quest = File.ReadAllText(Path.Combine(
-            desktop,
-            "QuestIndicatorOverlayPresentation.axaml"));
-        var station = File.ReadAllText(Path.Combine(
-            desktop,
-            "StationInfoOverlayPresentation.axaml"));
-        var carrier = File.ReadAllText(Path.Combine(
-            desktop,
-            "FleetCarrierRouteOverlayPresentation.axaml"));
-        var humanSite = File.ReadAllText(Path.Combine(
-            desktop,
-            "HumanSiteOverlayPresentation.axaml"));
+        var bodyInfo = File.ReadAllText(Path.Combine(desktop, "BodyInformationOverlayPresentation.axaml"));
+        var lastFss = File.ReadAllText(Path.Combine(desktop, "LastFssBodyOverlayPresentation.axaml"));
+        var quest = File.ReadAllText(Path.Combine(desktop, "QuestIndicatorOverlayPresentation.axaml"));
+        var station = File.ReadAllText(Path.Combine(desktop, "StationInfoOverlayPresentation.axaml"));
+        var carrier = File.ReadAllText(Path.Combine(desktop, "FleetCarrierRouteOverlayPresentation.axaml"));
+        var humanSite = File.ReadAllText(Path.Combine(desktop, "HumanSiteOverlayPresentation.axaml"));
 
         Assert.Contains("ColumnDefinitions=\"Auto,Auto,Auto\"", bodyInfo);
         Assert.DoesNotContain("Width=\"132\"", bodyInfo);
@@ -595,17 +863,10 @@ public sealed class OverlayPresentationContractTests
     {
         var root = FindRepositoryRoot();
         var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
-        var priorScans = File.ReadAllText(Path.Combine(
-            desktop,
-            "PriorScansOverlayPresentation.axaml"));
-        var ravenStyles = File.ReadAllText(Path.Combine(
-            desktop,
-            "Styles",
-            "RavenStyles.axaml"));
+        var priorScans = File.ReadAllText(Path.Combine(desktop, "PriorScansOverlayPresentation.axaml"));
+        var ravenStyles = File.ReadAllText(Path.Combine(desktop, "Styles", "RavenStyles.axaml"));
 
-        Assert.Equal(
-            3,
-            priorScans.Split("Classes=\"badge overlay-state-pill\"").Length - 1);
+        Assert.Equal(3, priorScans.Split("Classes=\"badge overlay-state-pill\"").Length - 1);
         Assert.Contains("Border.badge.overlay-state-pill", ravenStyles);
         Assert.Contains("Property=\"Width\" Value=\"66\"", ravenStyles);
         Assert.Contains("Property=\"Padding\" Value=\"8,3\"", ravenStyles);
@@ -616,23 +877,14 @@ public sealed class OverlayPresentationContractTests
     {
         var root = FindRepositoryRoot();
         var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
-        var biologySurvey = File.ReadAllText(Path.Combine(
-            desktop,
-            "BiologySurveyOverlayPresentation.axaml"));
-        var ravenStyles = File.ReadAllText(Path.Combine(
-            desktop,
-            "Styles",
-            "RavenStyles.axaml"));
+        var biologySurvey = File.ReadAllText(Path.Combine(desktop, "BiologySurveyOverlayPresentation.axaml"));
+        var ravenStyles = File.ReadAllText(Path.Combine(desktop, "Styles", "RavenStyles.axaml"));
 
-        Assert.Contains(
-            "Classes=\"badge overlay-state-pill overlay-state-pill-compact\"",
-            biologySurvey);
+        Assert.Contains("Classes=\"badge overlay-state-pill overlay-state-pill-compact\"", biologySurvey);
         Assert.Contains("IsVisible=\"{Binding IsAnalyzed}\"", biologySurvey);
         Assert.Contains("HorizontalAlignment=\"Left\"", biologySurvey);
         Assert.DoesNotContain("Opacity=\"{Binding RowOpacity}\"", biologySurvey);
-        Assert.Contains(
-            "Border.badge.overlay-state-pill.overlay-state-pill-compact",
-            ravenStyles);
+        Assert.Contains("Border.badge.overlay-state-pill.overlay-state-pill-compact", ravenStyles);
         Assert.Contains("Property=\"Width\" Value=\"42\"", ravenStyles);
     }
 
@@ -641,12 +893,8 @@ public sealed class OverlayPresentationContractTests
     {
         var root = FindRepositoryRoot();
         var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
-        var biologySurvey = File.ReadAllText(Path.Combine(
-            desktop,
-            "BiologySurveyOverlayPresentation.axaml"));
-        var biologyWindow = File.ReadAllText(Path.Combine(
-            desktop,
-            "BiologySurveyOverlayWindow.axaml"));
+        var biologySurvey = File.ReadAllText(Path.Combine(desktop, "BiologySurveyOverlayPresentation.axaml"));
+        var biologyWindow = File.ReadAllText(Path.Combine(desktop, "BiologySurveyOverlayWindow.axaml"));
 
         Assert.Contains("Grid.IsSharedSizeScope=\"True\"", biologySurvey);
         Assert.Contains("SharedSizeGroup=\"SystemBiologyBodyName\"", biologySurvey);
@@ -656,9 +904,7 @@ public sealed class OverlayPresentationContractTests
         Assert.Contains("<controls:BiologyRewardBandGroupControl", biologySurvey);
         Assert.Contains("ItemsSource=\"{Binding SignalRewardBands}\"", biologySurvey);
         Assert.Contains("ItemsSource=\"{Binding AlternativeRewardBands}\"", biologySurvey);
-        Assert.Contains(
-            "Classes.highlight=\"{Binding IsRewardBandGroupHighlighted}\"",
-            biologySurvey);
+        Assert.Contains("Classes.highlight=\"{Binding IsRewardBandGroupHighlighted}\"", biologySurvey);
         Assert.Contains("Grid.Column=\"3\"", biologySurvey);
         Assert.Contains("TextAlignment=\"Left\"", biologySurvey);
         Assert.DoesNotContain("MaxWidth=\"76\"", biologySurvey);
@@ -671,131 +917,91 @@ public sealed class OverlayPresentationContractTests
     public void OverlaySettingsDisableInactiveDssAndCanonnDependencies()
     {
         var root = FindRepositoryRoot();
-        var document = XDocument.Load(Path.Combine(
-            root,
-            "src",
-            "SrvSurvey.Desktop",
-            "Views",
-            "OverlaySettingsView.axaml"));
+        var document = XDocument.Load(
+            Path.Combine(root, "src", "SrvSurvey.Desktop", "Views", "OverlaySettingsView.axaml")
+        );
         var controls = document.Descendants().ToArray();
         XElement BoundControl(string name, string property, string binding) =>
             controls.Single(element =>
                 element.Name.LocalName == name
-                && element.Attribute(property)?.Value.Contains(
-                    binding,
-                    StringComparison.Ordinal) == true);
+                && element.Attribute(property)?.Value.Contains(binding, StringComparison.Ordinal) == true
+            );
 
-        var distance = BoundControl(
-            "NumericUpDown",
-            "Value",
-            "SystemSurvey.DssDistanceLimitLs");
-        Assert.Equal(
-            "{Binding SystemSurvey.SkipDistantDssCandidates}",
-            distance.Parent?.Attribute("IsEnabled")?.Value);
+        var distance = BoundControl("NumericUpDown", "Value", "SystemSurvey.DssDistanceLimitLs");
+        Assert.Equal("{Binding SystemSurvey.SkipDistantDssCandidates}", distance.Parent?.Attribute("IsEnabled")?.Value);
 
-        var priorScans = BoundControl(
-            "CheckBox",
-            "IsChecked",
-            "SystemSurvey.AutoShowPriorScans");
-        Assert.Equal(
-            "{Binding SystemSurvey.UseExternalData}",
-            priorScans.Parent?.Attribute("IsEnabled")?.Value);
+        var priorScans = BoundControl("CheckBox", "IsChecked", "SystemSurvey.AutoShowPriorScans");
+        Assert.Equal("{Binding SystemSurvey.UseExternalData}", priorScans.Parent?.Attribute("IsEnabled")?.Value);
 
-        var radar = BoundControl(
-            "CheckBox",
-            "IsChecked",
-            "SystemSurvey.ShowCanonnSignalsOnRadar");
-        Assert.Equal(
-            "{Binding SystemSurvey.AutoShowPriorScans}",
-            radar.Parent?.Attribute("IsEnabled")?.Value);
-        Assert.Equal(
-            "{Binding SystemSurvey.UseExternalData}",
-            radar.Parent?.Parent?.Attribute("IsEnabled")?.Value);
+        var radar = BoundControl("CheckBox", "IsChecked", "SystemSurvey.ShowCanonnSignalsOnRadar");
+        Assert.Equal("{Binding SystemSurvey.AutoShowPriorScans}", radar.Parent?.Attribute("IsEnabled")?.Value);
+        Assert.Equal("{Binding SystemSurvey.UseExternalData}", radar.Parent?.Parent?.Attribute("IsEnabled")?.Value);
 
-        var miniTrack = BoundControl(
-            "CheckBox",
-            "IsChecked",
-            "SystemSurvey.AutoShowMiniTrack");
+        var miniTrack = BoundControl("CheckBox", "IsChecked", "SystemSurvey.AutoShowMiniTrack");
         var samplerGate = BoundControl(
             "CheckBox",
             "IsChecked",
-            "SystemSurvey.ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn");
+            "SystemSurvey.ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn"
+        );
         Assert.Same(miniTrack, samplerGate.ElementsBeforeSelf().Last());
-        Assert.Equal(
-            "{Binding SystemSurvey.AutoShowSurfaceRadar}",
-            samplerGate.Attribute("IsEnabled")?.Value);
+        Assert.Equal("{Binding SystemSurvey.AutoShowSurfaceRadar}", samplerGate.Attribute("IsEnabled")?.Value);
         var samplerGateLabel = Assert.Single(samplerGate.Elements());
         Assert.Equal("TextBlock", samplerGateLabel.Name.LocalName);
         Assert.Equal("Wrap", samplerGateLabel.Attribute("TextWrapping")?.Value);
-        Assert.Equal(
-            "Onfoot: Show only when Genetic Sampler is drawn.",
-            samplerGateLabel.Attribute("Text")?.Value);
+        Assert.Equal("Onfoot: Show only when Genetic Sampler is drawn.", samplerGateLabel.Attribute("Text")?.Value);
     }
 
     [Fact]
     public void ExobiologySettingsUseBalancedSeparatedSections()
     {
         var root = FindRepositoryRoot();
-        var document = XDocument.Load(Path.Combine(
-            root,
-            "src",
-            "SrvSurvey.Desktop",
-            "Views",
-            "OverlaySettingsView.axaml"));
+        var document = XDocument.Load(
+            Path.Combine(root, "src", "SrvSurvey.Desktop", "Views", "OverlaySettingsView.axaml")
+        );
         var controls = document.Descendants().ToArray();
-        XElement Named(string name) => controls.Single(element =>
-            element.Attributes().Any(attribute =>
-                attribute.Name.LocalName == "Name"
-                && attribute.Value == name));
-        XElement BoundCheckBox(string binding) => controls.Single(element =>
-            element.Name.LocalName == "CheckBox"
-            && element.Attribute("IsChecked")?.Value.Contains(
-                binding,
-                StringComparison.Ordinal) == true);
+        XElement Named(string name) =>
+            controls.Single(element =>
+                element.Attributes().Any(attribute => attribute.Name.LocalName == "Name" && attribute.Value == name)
+            );
+        XElement BoundCheckBox(string binding) =>
+            controls.Single(element =>
+                element.Name.LocalName == "CheckBox"
+                && element.Attribute("IsChecked")?.Value.Contains(binding, StringComparison.Ordinal) == true
+            );
 
         var canonnGrid = Named("ExobiologyExternalDataGrid");
-        var canonnRadar = BoundCheckBox(
-            "SystemSurvey.ShowCanonnSignalsOnRadar");
+        var canonnRadar = BoundCheckBox("SystemSurvey.ShowCanonnSignalsOnRadar");
         Assert.Same(canonnGrid.Elements().ElementAt(1), canonnRadar.Parent?.Parent);
 
         var surfaceRadarSeparator = Named("SurfaceRadarSeparator");
         var surfaceRadarPanel = Named("SurfaceRadarPanel");
         Assert.Same(surfaceRadarSeparator, surfaceRadarPanel.PreviousNode);
-        Assert.Contains(
-            BoundCheckBox("SystemSurvey.AutoShowSurfaceRadar"),
-            surfaceRadarPanel.Descendants());
+        Assert.Contains(BoundCheckBox("SystemSurvey.AutoShowSurfaceRadar"), surfaceRadarPanel.Descendants());
         Assert.Equal(
             2,
-            surfaceRadarPanel.Elements()
-                .Single(element => element.Name.LocalName == "Grid")
-                .Elements()
-                .Count());
+            surfaceRadarPanel.Elements().Single(element => element.Name.LocalName == "Grid").Elements().Count()
+        );
 
         var rewardSeparator = Named("BiologyRewardSeparator");
         var rewardPanel = Named("BiologyRewardPanel");
         Assert.Same(rewardSeparator, rewardPanel.PreviousNode);
         var rewardHeading = rewardPanel.Elements().First();
         Assert.Equal("eyebrow", rewardHeading.Attribute("Classes")?.Value);
-        Assert.Equal(
-            "SPECIES REWARD GROUPS",
-            rewardHeading.Attribute("Text")?.Value);
+        Assert.Equal("SPECIES REWARD GROUPS", rewardHeading.Attribute("Text")?.Value);
     }
 
     [Fact]
     public void GuardianSettingsUseBalancedWrappingColumns()
     {
         var root = FindRepositoryRoot();
-        var document = XDocument.Load(Path.Combine(
-            root,
-            "src",
-            "SrvSurvey.Desktop",
-            "Views",
-            "OverlaySettingsView.axaml"));
+        var document = XDocument.Load(
+            Path.Combine(root, "src", "SrvSurvey.Desktop", "Views", "OverlaySettingsView.axaml")
+        );
         var controls = document.Descendants().ToArray();
-        XElement Named(string name) => controls.Single(element =>
-            element.Attributes().Any(attribute =>
-                attribute.Name.LocalName == "Name"
-                && attribute.Value == name));
+        XElement Named(string name) =>
+            controls.Single(element =>
+                element.Attributes().Any(attribute => attribute.Name.LocalName == "Name" && attribute.Value == name)
+            );
 
         var primaryColumns = Named("GuardianPrimaryColumns");
         var settingsColumns = Named("GuardianSettingsColumns");
@@ -806,185 +1012,168 @@ public sealed class OverlayPresentationContractTests
         var rightColumn = Named("GuardianRightColumn");
         Assert.Equal(
             ["MAP ZOOM", "ALIGNMENT GUIDES"],
-            leftColumn.Descendants()
+            leftColumn
+                .Descendants()
                 .Where(element => element.Attribute("Classes")?.Value == "eyebrow")
-                .Select(element => element.Attribute("Text")?.Value));
+                .Select(element => element.Attribute("Text")?.Value)
+        );
         Assert.Equal(
             ["OVERLAY SIZE", "RUINS AERIAL ALTITUDES"],
-            rightColumn.Descendants()
+            rightColumn
+                .Descendants()
                 .Where(element => element.Attribute("Classes")?.Value == "eyebrow")
-                .Select(element => element.Attribute("Text")?.Value));
+                .Select(element => element.Attribute("Text")?.Value)
+        );
 
         var sizeSection = Named("GuardianOverlaySizeSection");
-        var sizeSelector = Assert.Single(
-            sizeSection.Elements(),
-            element => element.Name.LocalName == "ComboBox");
+        var sizeSelector = Assert.Single(sizeSection.Elements(), element => element.Name.LocalName == "ComboBox");
         Assert.Equal(
             "{Binding Guardian.SelectedOverlaySize, Mode=TwoWay}",
-            sizeSelector.Attribute("SelectedItem")?.Value);
+            sizeSelector.Attribute("SelectedItem")?.Value
+        );
         Assert.Equal("200", sizeSelector.Attribute("Width")?.Value);
 
         var guardianCard = Named("GuardianOverlayCard");
-        var guardianCheckBoxes = guardianCard.Descendants().Where(element =>
-            element.Name.LocalName == "CheckBox");
-        Assert.All(guardianCheckBoxes, checkBox =>
-        {
-            var label = Assert.Single(checkBox.Elements());
-            Assert.Equal("TextBlock", label.Name.LocalName);
-            Assert.Equal("Wrap", label.Attribute("TextWrapping")?.Value);
-        });
+        var guardianCheckBoxes = guardianCard.Descendants().Where(element => element.Name.LocalName == "CheckBox");
+        Assert.All(
+            guardianCheckBoxes,
+            checkBox =>
+            {
+                var label = Assert.Single(checkBox.Elements());
+                Assert.Equal("TextBlock", label.Name.LocalName);
+                Assert.Equal("Wrap", label.Attribute("TextWrapping")?.Value);
+            }
+        );
     }
 
     [Fact]
     public void CurrentCommanderValueIsVerticallyAlignedWithItsLabel()
     {
         var root = FindRepositoryRoot();
-        var document = XDocument.Load(Path.Combine(
-            root,
-            "src",
-            "SrvSurvey.Desktop",
-            "Views",
-            "OverviewView.axaml"));
-        var currentCommander = document.Descendants().Single(element =>
-            element.Name.LocalName == "TextBlock"
-            && element.Attribute("Text")?.Value.Contains(
-                "CommanderInstances.CurrentCommander",
-                StringComparison.Ordinal) == true);
+        var document = XDocument.Load(Path.Combine(root, "src", "SrvSurvey.Desktop", "Views", "OverviewView.axaml"));
+        var currentCommander = document
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "TextBlock"
+                && element
+                    .Attribute("Text")
+                    ?.Value.Contains("CommanderInstances.CurrentCommander", StringComparison.Ordinal) == true
+            );
 
-        Assert.Equal(
-            "Center",
-            currentCommander.Attribute("VerticalAlignment")?.Value);
-        Assert.Equal(
-            "Center",
-            currentCommander.ElementsBeforeSelf()
-                .Single()
-                .Attribute("VerticalAlignment")?.Value);
+        Assert.Equal("Center", currentCommander.Attribute("VerticalAlignment")?.Value);
+        Assert.Equal("Center", currentCommander.ElementsBeforeSelf().Single().Attribute("VerticalAlignment")?.Value);
     }
 
     [Fact]
     public void ExplorationTripMetricsUseLeftAlignedTwentyFortyFortyColumns()
     {
-        var document = XDocument.Load(Path.Combine(
-            FindRepositoryRoot(),
-            "src",
-            "SrvSurvey.Desktop",
-            "Views",
-            "OverviewView.axaml"));
-        var metrics = document.Descendants().Single(element =>
-            element.Attributes().Any(attribute =>
-                attribute.Name.LocalName == "Name"
-                && attribute.Value == "ExplorationTripMetrics"));
-        var columns = metrics.Elements()
-            .Where(element => element.Name.LocalName == "StackPanel")
-            .ToArray();
+        var document = XDocument.Load(
+            Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "Views", "OverviewView.axaml")
+        );
+        var metrics = document
+            .Descendants()
+            .Single(element =>
+                element
+                    .Attributes()
+                    .Any(attribute => attribute.Name.LocalName == "Name" && attribute.Value == "ExplorationTripMetrics")
+            );
+        var columns = metrics.Elements().Where(element => element.Name.LocalName == "StackPanel").ToArray();
 
         Assert.Equal("1*,2*,2*", metrics.Attribute("ColumnDefinitions")?.Value);
         Assert.Equal(3, columns.Length);
-        Assert.All(columns, column =>
-            Assert.Equal(
-                "Stretch",
-                column.Attribute("HorizontalAlignment")?.Value));
+        Assert.All(columns, column => Assert.Equal("Stretch", column.Attribute("HorizontalAlignment")?.Value));
         Assert.All(
             columns.SelectMany(column => column.Elements()),
-            text => Assert.Equal("Left", text.Attribute("TextAlignment")?.Value));
+            text => Assert.Equal("Left", text.Attribute("TextAlignment")?.Value)
+        );
         Assert.All(
-            columns.SelectMany(column => column.Elements())
-                .Where(text => text.Attribute("Classes")?.Value == "metric"),
-            metric => Assert.Equal(
-                "CharacterEllipsis",
-                metric.Attribute("TextTrimming")?.Value));
+            columns.SelectMany(column => column.Elements()).Where(text => text.Attribute("Classes")?.Value == "metric"),
+            metric => Assert.Equal("CharacterEllipsis", metric.Attribute("TextTrimming")?.Value)
+        );
     }
 
     [Fact]
     public void OverlaySettingsPlaceLongNumericEditorsBelowTheirLabels()
     {
         var root = FindRepositoryRoot();
-        var document = XDocument.Load(Path.Combine(
-            root,
-            "src",
-            "SrvSurvey.Desktop",
-            "Views",
-            "OverlaySettingsView.axaml"));
+        var document = XDocument.Load(
+            Path.Combine(root, "src", "SrvSurvey.Desktop", "Views", "OverlaySettingsView.axaml")
+        );
         var controls = document.Descendants().ToArray();
-        XElement NumericEditor(string binding) => controls.Single(element =>
-            element.Name.LocalName == "NumericUpDown"
-            && element.Attribute("Value")?.Value.Contains(
-                binding,
-                StringComparison.Ordinal) == true);
+        XElement NumericEditor(string binding) =>
+            controls.Single(element =>
+                element.Name.LocalName == "NumericUpDown"
+                && element.Attribute("Value")?.Value.Contains(binding, StringComparison.Ordinal) == true
+            );
 
-        foreach (var binding in new[]
-                 {
-                     "SystemSurvey.FssBodyValueFloor",
-                     "SystemSurvey.DssValueFloor",
-                     "SystemSurvey.DssDistanceLimitLs",
-                 })
+        foreach (
+            var binding in new[]
+            {
+                "SystemSurvey.FssBodyValueFloor",
+                "SystemSurvey.DssValueFloor",
+                "SystemSurvey.DssDistanceLimitLs",
+            }
+        )
         {
             var editor = NumericEditor(binding);
             Assert.Equal("150", editor.Attribute("Width")?.Value);
             Assert.Equal("Left", editor.Attribute("HorizontalAlignment")?.Value);
             Assert.Equal("StackPanel", editor.Parent?.Name.LocalName);
             Assert.Null(editor.Parent?.Attribute("Orientation"));
-            Assert.Equal("TextBlock", editor.PreviousNode is XElement label
-                ? label.Name.LocalName
-                : null);
+            Assert.Equal("TextBlock", editor.PreviousNode is XElement label ? label.Name.LocalName : null);
         }
 
-        var bodyInformationExtension = NumericEditor(
-            "SystemSurvey.BodyInformationPreviewExtensionSeconds");
-        Assert.Equal(
-            "150",
-            bodyInformationExtension.Attribute("Width")?.Value);
-        Assert.Equal(
-            "Horizontal",
-            bodyInformationExtension.Parent?.Attribute("Orientation")?.Value);
-        Assert.Equal(
-            "24,0,0,0",
-            bodyInformationExtension.Parent?.Parent?.Attribute("Margin")?.Value);
+        var bodyInformationExtension = NumericEditor("SystemSurvey.BodyInformationPreviewExtensionSeconds");
+        Assert.Equal("150", bodyInformationExtension.Attribute("Width")?.Value);
+        Assert.Equal("Horizontal", bodyInformationExtension.Parent?.Attribute("Orientation")?.Value);
+        Assert.Equal("24,0,0,0", bodyInformationExtension.Parent?.Parent?.Attribute("Margin")?.Value);
         Assert.Equal(
             "Extend Body Information Preview by:",
-            bodyInformationExtension.Parent?.Parent?.Elements().First()
-                .Attribute("Text")?.Value);
+            bodyInformationExtension.Parent?.Parent?.Elements().First().Attribute("Text")?.Value
+        );
 
-        var extension = NumericEditor(
-            "SystemSurvey.BodyPredictionPreviewExtensionSeconds");
+        var extension = NumericEditor("SystemSurvey.BodyPredictionPreviewExtensionSeconds");
         Assert.Equal("150", extension.Attribute("Width")?.Value);
         Assert.Equal("Horizontal", extension.Parent?.Attribute("Orientation")?.Value);
         Assert.Equal("24,0,0,0", extension.Parent?.Parent?.Attribute("Margin")?.Value);
         Assert.Equal(
             "Extend Body Predictions preview by:",
-            extension.Parent?.Parent?.Elements().First().Attribute("Text")?.Value);
+            extension.Parent?.Parent?.Elements().First().Attribute("Text")?.Value
+        );
 
-        var fssBodyCount = NumericEditor(
-            "SystemSurvey.FssBodiesBeforeScrolling");
+        var fssBodyCount = NumericEditor("SystemSurvey.FssBodiesBeforeScrolling");
         Assert.Equal("150", fssBodyCount.Attribute("Width")?.Value);
         Assert.Equal("StackPanel", fssBodyCount.Parent?.Name.LocalName);
         Assert.Equal("28,0,0,0", fssBodyCount.Parent?.Attribute("Margin")?.Value);
-        Assert.Equal(
-            "# of bodies before scrolling:",
-            fssBodyCount.Parent?.Elements().First().Attribute("Text")?.Value);
+        Assert.Equal("# of bodies before scrolling:", fssBodyCount.Parent?.Elements().First().Attribute("Text")?.Value);
 
         var skipDistant = controls.Single(element =>
             element.Name.LocalName == "CheckBox"
-            && element.Attribute("IsChecked")?.Value.Contains(
-                "SystemSurvey.SkipDistantDssCandidates",
-                StringComparison.Ordinal) == true);
+            && element
+                .Attribute("IsChecked")
+                ?.Value.Contains("SystemSurvey.SkipDistantDssCandidates", StringComparison.Ordinal) == true
+        );
         var showNonBodySignals = controls.Single(element =>
             element.Name.LocalName == "CheckBox"
-            && element.Attribute("IsChecked")?.Value.Contains(
-                "SystemSurvey.ShowNonBodySignals",
-                StringComparison.Ordinal) == true);
+            && element
+                .Attribute("IsChecked")
+                ?.Value.Contains("SystemSurvey.ShowNonBodySignals", StringComparison.Ordinal) == true
+        );
         var distance = NumericEditor("SystemSurvey.DssDistanceLimitLs");
         var minimumValue = NumericEditor("SystemSurvey.DssValueFloor");
         var surveyStatusControls = skipDistant.Parent?.Elements().ToArray();
         Assert.NotNull(surveyStatusControls);
-        Assert.True(Array.IndexOf(surveyStatusControls, skipDistant)
-            < Array.IndexOf(surveyStatusControls, distance.Parent));
-        Assert.True(Array.IndexOf(surveyStatusControls, distance.Parent)
-            < Array.IndexOf(surveyStatusControls, minimumValue.Parent));
-        Assert.True(Array.IndexOf(
-            surveyStatusControls,
-            minimumValue.Parent)
-            < Array.IndexOf(surveyStatusControls, showNonBodySignals));
+        Assert.True(
+            Array.IndexOf(surveyStatusControls, skipDistant) < Array.IndexOf(surveyStatusControls, distance.Parent)
+        );
+        Assert.True(
+            Array.IndexOf(surveyStatusControls, distance.Parent)
+                < Array.IndexOf(surveyStatusControls, minimumValue.Parent)
+        );
+        Assert.True(
+            Array.IndexOf(surveyStatusControls, minimumValue.Parent)
+                < Array.IndexOf(surveyStatusControls, showNonBodySignals)
+        );
     }
 
     [Fact]
@@ -992,20 +1181,10 @@ public sealed class OverlayPresentationContractTests
     {
         var root = FindRepositoryRoot();
         var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
-        var mainWindow = File.ReadAllText(Path.Combine(
-            desktop,
-            "MainWindow.axaml"));
-        var settings = File.ReadAllText(Path.Combine(
-            desktop,
-            "Views",
-            "OverlaySettingsView.axaml"));
-        var categoryWindow = File.ReadAllText(Path.Combine(
-            desktop,
-            "OverlayCategorySettingsWindow.axaml"));
-        var colonization = File.ReadAllText(Path.Combine(
-            desktop,
-            "Views",
-            "ColonizationView.axaml"));
+        var mainWindow = File.ReadAllText(Path.Combine(desktop, "MainWindow.axaml"));
+        var settings = File.ReadAllText(Path.Combine(desktop, "Views", "OverlaySettingsView.axaml"));
+        var categoryWindow = File.ReadAllText(Path.Combine(desktop, "OverlayCategorySettingsWindow.axaml"));
+        var colonization = File.ReadAllText(Path.Combine(desktop, "Views", "ColonizationView.axaml"));
 
         Assert.Contains("window_multiple_regular", mainWindow);
         Assert.Contains("HasOverlaySettings", mainWindow);
@@ -1013,9 +1192,7 @@ public sealed class OverlayPresentationContractTests
         Assert.Contains("Margin=\"32,16,32,32\"", categoryWindow);
         Assert.Contains("x:Name=\"ColonizationShoppingCard\"", settings);
         Assert.Contains("Colonization.AutoShowCommodityOverlay", settings);
-        Assert.DoesNotContain(
-            "Colonization.AutoShowCommodityOverlay",
-            colonization);
+        Assert.DoesNotContain("Colonization.AutoShowCommodityOverlay", colonization);
         Assert.DoesNotContain("Colonisation projects", colonization);
     }
 
@@ -1024,29 +1201,13 @@ public sealed class OverlayPresentationContractTests
     {
         var root = FindRepositoryRoot();
         var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
-        var notification = File.ReadAllText(Path.Combine(
-            desktop,
-            "NotificationOverlayPresentation.axaml"));
-        var guardianSite = File.ReadAllText(Path.Combine(
-            desktop,
-            "GuardianSiteOverlayPresentation.axaml"));
-        var commodities = File.ReadAllText(Path.Combine(
-            desktop,
-            "ColonizationCommodityOverlayPresentation.axaml"));
-        var ravenStyles = File.ReadAllText(Path.Combine(
-            desktop,
-            "Styles",
-            "RavenStyles.axaml"));
-        var guardianStyles = File.ReadAllText(Path.Combine(
-            desktop,
-            "Styles",
-            "GuardianLegacyOverlayStyles.axaml"));
-        var pulseWindow = File.ReadAllText(Path.Combine(
-            desktop,
-            "PulseOverlayWindow.axaml"));
-        var pulsePresentation = File.ReadAllText(Path.Combine(
-            desktop,
-            "PulseOverlayPresentation.axaml"));
+        var notification = File.ReadAllText(Path.Combine(desktop, "NotificationOverlayPresentation.axaml"));
+        var guardianSite = File.ReadAllText(Path.Combine(desktop, "GuardianSiteOverlayPresentation.axaml"));
+        var commodities = File.ReadAllText(Path.Combine(desktop, "ColonizationCommodityOverlayPresentation.axaml"));
+        var ravenStyles = File.ReadAllText(Path.Combine(desktop, "Styles", "RavenStyles.axaml"));
+        var guardianStyles = File.ReadAllText(Path.Combine(desktop, "Styles", "GuardianLegacyOverlayStyles.axaml"));
+        var pulseWindow = File.ReadAllText(Path.Combine(desktop, "PulseOverlayWindow.axaml"));
+        var pulsePresentation = File.ReadAllText(Path.Combine(desktop, "PulseOverlayPresentation.axaml"));
 
         Assert.Contains("RowDefinitions=\"Auto,Auto\"", notification);
         Assert.Contains("Value=\"{Binding ProgressPercent}\"", notification);
@@ -1066,10 +1227,8 @@ public sealed class OverlayPresentationContractTests
     private static PresentationContract Contract(
         string contractName,
         IReadOnlyList<string> productionFiles,
-        IReadOnlyList<string> requiredTokens) => new(
-            contractName,
-            productionFiles,
-        requiredTokens);
+        IReadOnlyList<string> requiredTokens
+    ) => new(contractName, productionFiles, requiredTokens);
 
     [Fact]
     public void FixedNonGuardianHeadersUseTheSharedHeaderRole()
@@ -1079,13 +1238,12 @@ public sealed class OverlayPresentationContractTests
         foreach (var expected in FixedHeaders)
         {
             var document = XDocument.Load(Path.Combine(desktop, expected.Key));
-            var header = document.Descendants()
+            var header = document
+                .Descendants()
                 .Single(element =>
                     element.Name.LocalName == "TextBlock"
-                    && string.Equals(
-                        element.Attribute("Text")?.Value,
-                        expected.Value,
-                        StringComparison.Ordinal));
+                    && string.Equals(element.Attribute("Text")?.Value, expected.Value, StringComparison.Ordinal)
+                );
 
             Assert.Equal("overlay-header", header.Attribute("Classes")?.Value);
             Assert.Null(header.Attribute("Foreground"));
@@ -1096,54 +1254,48 @@ public sealed class OverlayPresentationContractTests
     [Fact]
     public void SystemBiologyHeadingUsesThePrimaryAccentRole()
     {
-        var document = XDocument.Load(Path.Combine(
-            FindRepositoryRoot(),
-            "src",
-            "SrvSurvey.Desktop",
-            "BiologySurveyOverlayPresentation.axaml"));
-        var heading = document.Descendants().Single(element =>
-            element.Name.LocalName == "TextBlock"
-            && element.Attribute("Text")?.Value
-                == "{Binding Survey.BiologySurveyDisplay.Heading}");
+        var document = XDocument.Load(
+            Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "BiologySurveyOverlayPresentation.axaml")
+        );
+        var heading = document
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "TextBlock"
+                && element.Attribute("Text")?.Value == "{Binding Survey.BiologySurveyDisplay.Heading}"
+            );
 
-        Assert.Equal(
-            "{DynamicResource RavenPrimaryBrush}",
-            heading.Attribute("Foreground")?.Value);
+        Assert.Equal("{DynamicResource RavenPrimaryBrush}", heading.Attribute("Foreground")?.Value);
     }
 
     [Fact]
     public void RouteBodiesSystemNameUsesThePrimaryAccentRole()
     {
-        var document = XDocument.Load(Path.Combine(
-            FindRepositoryRoot(),
-            "src",
-            "SrvSurvey.Desktop",
-            "RouteBioOverlayPresentation.axaml"));
-        var systemName = document.Descendants().Single(element =>
-            element.Name.LocalName == "TextBlock"
-            && element.Attribute("Text")?.Value == "{Binding SystemName}");
+        var document = XDocument.Load(
+            Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "RouteBioOverlayPresentation.axaml")
+        );
+        var systemName = document
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "TextBlock" && element.Attribute("Text")?.Value == "{Binding SystemName}"
+            );
 
-        Assert.Equal(
-            "{DynamicResource RavenPrimaryBrush}",
-            systemName.Attribute("Foreground")?.Value);
+        Assert.Equal("{DynamicResource RavenPrimaryBrush}", systemName.Attribute("Foreground")?.Value);
     }
 
     [Fact]
     public void FlightWarningHeaderUsesTheDynamicSeverityColor()
     {
-        var document = XDocument.Load(Path.Combine(
-            FindRepositoryRoot(),
-            "src",
-            "SrvSurvey.Desktop",
-            "FlightWarningOverlayPresentation.axaml"));
-        var header = document.Descendants().Single(element =>
-            element.Name.LocalName == "TextBlock"
-            && element.Attribute("Text")?.Value == "FLIGHT WARNING");
+        var document = XDocument.Load(
+            Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "FlightWarningOverlayPresentation.axaml")
+        );
+        var header = document
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "TextBlock" && element.Attribute("Text")?.Value == "FLIGHT WARNING"
+            );
 
         Assert.Equal("overlay-header", header.Attribute("Classes")?.Value);
-        Assert.Equal(
-            "{Binding Survey.FlightWarningBrush}",
-            header.Attribute("Foreground")?.Value);
+        Assert.Equal("{Binding Survey.FlightWarningBrush}", header.Attribute("Foreground")?.Value);
         Assert.Null(header.Attribute("FontSize"));
         Assert.Null(header.Attribute("FontWeight"));
     }
@@ -1163,47 +1315,47 @@ public sealed class OverlayPresentationContractTests
         foreach (var expected in expectedBindings)
         {
             var document = XDocument.Load(Path.Combine(desktop, expected.Key));
-            var header = document.Descendants()
+            var header = document
+                .Descendants()
                 .Single(element =>
                     element.Name.LocalName == "TextBlock"
                     && string.Equals(
                         element.Attribute("Text")?.Value,
                         $"{{Binding {expected.Value}}}",
-                        StringComparison.Ordinal));
+                        StringComparison.Ordinal
+                    )
+                );
 
             Assert.Equal("overlay-header", header.Attribute("Classes")?.Value);
             Assert.Null(header.Attribute("Foreground"));
             Assert.Null(header.Attribute("FontSize"));
         }
 
-        var guardianStatus = XDocument.Load(Path.Combine(
-            desktop,
-            "GuardianStatusOverlayPresentation.axaml"));
-        var statusHeaders = guardianStatus.Descendants()
+        var guardianStatus = XDocument.Load(Path.Combine(desktop, "GuardianStatusOverlayPresentation.axaml"));
+        var statusHeaders = guardianStatus
+            .Descendants()
             .Where(element =>
                 element.Name.LocalName == "TextBlock"
-                && element.Attribute("Text")?.Value.Contains(
-                    "Title",
-                    StringComparison.Ordinal) == true)
+                && element.Attribute("Text")?.Value.Contains("Title", StringComparison.Ordinal) == true
+            )
             .ToArray();
         Assert.NotEmpty(statusHeaders);
-        Assert.All(statusHeaders, header =>
-            Assert.Equal("overlay-header", header.Attribute("Classes")?.Value));
+        Assert.All(statusHeaders, header => Assert.Equal("overlay-header", header.Attribute("Classes")?.Value));
 
-        foreach (var fileName in new[]
-        {
-            "GuardianSystemOverlayPresentation.axaml",
-            "GuardianStatusOverlayPresentation.axaml",
-            "RamTahOverlayPresentation.axaml",
-        })
+        foreach (
+            var fileName in new[]
+            {
+                "GuardianSystemOverlayPresentation.axaml",
+                "GuardianStatusOverlayPresentation.axaml",
+                "RamTahOverlayPresentation.axaml",
+            }
+        )
         {
             var markup = File.ReadAllText(Path.Combine(desktop, fileName));
             Assert.Contains("general-header-rule", markup);
         }
 
-        var guardianSite = File.ReadAllText(Path.Combine(
-            desktop,
-            "GuardianSiteOverlayPresentation.axaml"));
+        var guardianSite = File.ReadAllText(Path.Combine(desktop, "GuardianSiteOverlayPresentation.axaml"));
         Assert.Contains("Classes=\"guardian-title\"", guardianSite);
         Assert.DoesNotContain("Classes=\"overlay-header\"", guardianSite);
     }
@@ -1213,9 +1365,7 @@ public sealed class OverlayPresentationContractTests
         var current = new DirectoryInfo(AppContext.BaseDirectory);
         while (current is not null)
         {
-            if (File.Exists(Path.Combine(
-                    current.FullName,
-                    "SrvSurvey.slnx")))
+            if (File.Exists(Path.Combine(current.FullName, "SrvSurvey.slnx")))
             {
                 return current.FullName;
             }
@@ -1223,15 +1373,14 @@ public sealed class OverlayPresentationContractTests
             current = current.Parent;
         }
 
-        throw new DirectoryNotFoundException(
-            "Could not locate the repository root.");
+        throw new DirectoryNotFoundException("Could not locate the repository root.");
     }
 
-    private static string Native(string relativePath) =>
-        relativePath.Replace('/', Path.DirectorySeparatorChar);
+    private static string Native(string relativePath) => relativePath.Replace('/', Path.DirectorySeparatorChar);
 
     private sealed record PresentationContract(
         string ContractName,
         IReadOnlyList<string> ProductionFiles,
-        IReadOnlyList<string> RequiredTokens);
+        IReadOnlyList<string> RequiredTokens
+    );
 }

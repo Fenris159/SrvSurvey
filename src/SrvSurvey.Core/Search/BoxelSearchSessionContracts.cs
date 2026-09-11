@@ -10,22 +10,19 @@ public interface IBoxelSearchSession : IAsyncDisposable
 
     Task<BoxelSearchOutcome> SwitchProfileAsync(
         BoxelSearchProfile profile,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     Task<BoxelSearchOutcome> ClearProfileAsync(
         BoxelSearchMessageCode reason = BoxelSearchMessageCode.ProfileUnavailable,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
-    Task<BoxelSearchOutcome> ApplyAsync(
-        BoxelSearchUpdate update,
-        CancellationToken cancellationToken = default);
+    Task<BoxelSearchOutcome> ApplyAsync(BoxelSearchUpdate update, CancellationToken cancellationToken = default);
 
-    Task<BoxelSearchOutcome> ExecuteAsync(
-        IBoxelSearchAction action,
-        CancellationToken cancellationToken = default);
+    Task<BoxelSearchOutcome> ExecuteAsync(IBoxelSearchAction action, CancellationToken cancellationToken = default);
 
-    Task<BoxelSearchLibrarySnapshot> GetLibraryAsync(
-        CancellationToken cancellationToken = default);
+    Task<BoxelSearchLibrarySnapshot> GetLibraryAsync(CancellationToken cancellationToken = default);
 }
 
 public interface IBoxelSearchProfileStore
@@ -35,60 +32,62 @@ public interface IBoxelSearchProfileStore
         string? commanderName,
         bool isOdyssey,
         BoxelSearchSnapshot boxelSearch,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }
 
 public interface IBoxelSearchLibraryStore
 {
     Task<IReadOnlyList<SavedBoxelSearchCatalogEntry>> ListAsync(
         string frontierId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     Task<SavedBoxelSearchDocument> CreateAsync(
         string frontierId,
         string name,
         string? notes,
         BoxelSearchSnapshot search,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     Task<SavedBoxelSearchDocument> LoadAsync(
         string frontierId,
         string fileName,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     Task<SavedBoxelSearchDocument> SaveProgressAsync(
         string frontierId,
         string fileName,
         BoxelSearchSnapshot search,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     Task<SavedBoxelSearchDocument> RenameAsync(
         string frontierId,
         string fileName,
         string name,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     Task<SavedBoxelSearchDocument> SaveNotesAsync(
         string frontierId,
         string fileName,
         string? notes,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     Task<SavedBoxelSearchDocument> SetFavoriteAsync(
         string frontierId,
         string fileName,
         bool isFavorite,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
-    Task<string> DeleteAsync(
-        string frontierId,
-        string fileName,
-        CancellationToken cancellationToken = default);
+    Task<string> DeleteAsync(string frontierId, string fileName, CancellationToken cancellationToken = default);
 
-    Task<bool> ExistsAsync(
-        string frontierId,
-        string fileName,
-        CancellationToken cancellationToken = default);
+    Task<bool> ExistsAsync(string frontierId, string fileName, CancellationToken cancellationToken = default);
 }
 
 public interface IBoxelLocalSystemReader
@@ -96,18 +95,15 @@ public interface IBoxelLocalSystemReader
     Task<LegacySystemDataReadResult> ReadAsync(
         string frontierId,
         BoxelAddress boxel,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
-    Task<LegacySystemDataReadResult> ReadAllAsync(
-        string frontierId,
-        CancellationToken cancellationToken = default);
+    Task<LegacySystemDataReadResult> ReadAllAsync(string frontierId, CancellationToken cancellationToken = default);
 }
 
 public interface IBoxelEmptyStore
 {
-    Task<IReadOnlySet<string>> LoadGroupAsync(
-        BoxelAddress boxel,
-        CancellationToken cancellationToken = default);
+    Task<IReadOnlySet<string>> LoadGroupAsync(BoxelAddress boxel, CancellationToken cancellationToken = default);
 }
 
 public interface IBoxelClipboard
@@ -126,7 +122,8 @@ public sealed record BoxelSearchProfile(
     string FrontierId,
     string? CommanderName,
     bool IsOdyssey,
-    BoxelSearchSnapshot Search);
+    BoxelSearchSnapshot Search
+);
 
 public sealed record BoxelSearchUpdate
 {
@@ -157,16 +154,13 @@ public sealed record BoxelSearchUpdate
 
 public interface IBoxelSearchAction;
 
-public sealed record ActivateBoxelSearch(BoxelSearchActivationRequest Request)
-    : IBoxelSearchAction;
+public sealed record ActivateBoxelSearch(BoxelSearchActivationRequest Request) : IBoxelSearchAction;
 
 public sealed record StopBoxelSearch : IBoxelSearchAction
 {
     public static StopBoxelSearch Instance { get; } = new();
 
-    private StopBoxelSearch()
-    {
-    }
+    private StopBoxelSearch() { }
 }
 
 public sealed record SetBoxelAutoCopy(bool Enabled) : IBoxelSearchAction;
@@ -195,19 +189,15 @@ public sealed record CancelBoxelAudit : IBoxelSearchAction;
 
 public sealed record CopyNextBoxelSystem(bool Automatic = false) : IBoxelSearchAction;
 
-public sealed record SaveBoxelSearchToLibrary(string? Name, string? Notes)
-    : IBoxelSearchAction;
+public sealed record SaveBoxelSearchToLibrary(string? Name, string? Notes) : IBoxelSearchAction;
 
 public sealed record ResumeSavedBoxelSearch(string FileName) : IBoxelSearchAction;
 
-public sealed record RenameSavedBoxelSearch(string FileName, string Name)
-    : IBoxelSearchAction;
+public sealed record RenameSavedBoxelSearch(string FileName, string Name) : IBoxelSearchAction;
 
-public sealed record UpdateSavedBoxelSearchNotes(string FileName, string? Notes)
-    : IBoxelSearchAction;
+public sealed record UpdateSavedBoxelSearchNotes(string FileName, string? Notes) : IBoxelSearchAction;
 
-public sealed record SetSavedBoxelSearchFavorite(string FileName, bool IsFavorite)
-    : IBoxelSearchAction;
+public sealed record SetSavedBoxelSearchFavorite(string FileName, bool IsFavorite) : IBoxelSearchAction;
 
 public sealed record DeleteSavedBoxelSearch(string FileName) : IBoxelSearchAction;
 
@@ -267,7 +257,8 @@ public enum BoxelSearchMessageCode
 public sealed record BoxelSearchWarning(
     BoxelSearchHealthSubsystem Subsystem,
     BoxelSearchMessageCode Code,
-    string? Detail = null);
+    string? Detail = null
+);
 
 public sealed record BoxelSearchOutcome(
     BoxelSearchOutcomeKind Kind,
@@ -283,11 +274,13 @@ public sealed record BoxelSearchOutcome(
     int Count = 0,
     int Total = 0,
     SavedBoxelSearchDocument? SavedSearch = null,
-    IReadOnlyList<BoxelSearchWarning>? Warnings = null);
+    IReadOnlyList<BoxelSearchWarning>? Warnings = null
+);
 
 public sealed record BoxelSearchSessionChangedEventArgs(
     BoxelSearchSessionSnapshot Previous,
-    BoxelSearchSessionSnapshot Current);
+    BoxelSearchSessionSnapshot Current
+);
 
 public sealed record BoxelSearchSessionSnapshot(
     long Version,
@@ -295,15 +288,18 @@ public sealed record BoxelSearchSessionSnapshot(
     BoxelSearchContextSnapshot Context,
     BoxelSearchActivitySnapshot Activity,
     BoxelSearchHealthSnapshot Health,
-    long LibraryRevision)
+    long LibraryRevision
+)
 {
-    public static BoxelSearchSessionSnapshot Empty { get; } = new(
-        0,
-        BoxelSearchSessionSearchSnapshot.Empty,
-        BoxelSearchContextSnapshot.Empty,
-        BoxelSearchActivitySnapshot.Empty,
-        BoxelSearchHealthSnapshot.Empty,
-        0);
+    public static BoxelSearchSessionSnapshot Empty { get; } =
+        new(
+            0,
+            BoxelSearchSessionSearchSnapshot.Empty,
+            BoxelSearchContextSnapshot.Empty,
+            BoxelSearchActivitySnapshot.Empty,
+            BoxelSearchHealthSnapshot.Empty,
+            0
+        );
 }
 
 public sealed record BoxelSearchSessionSearchSnapshot
@@ -365,26 +361,18 @@ public sealed record BoxelSearchSessionSearchSnapshot
     public BoxelProgress GetProgress(BoxelAddress boxel)
     {
         ArgumentNullException.ThrowIfNull(boxel);
-        if (!Persistence.ProgressByPrefix.TryGetValue(
-                boxel.Prefix,
-                out var expectedSystemCount))
+        if (!Persistence.ProgressByPrefix.TryGetValue(boxel.Prefix, out var expectedSystemCount))
         {
             return BoxelProgress.Unknown;
         }
 
         var expected = Math.Max(0, expectedSystemCount);
-        var complete = Persistence.CompletedPrefixes.Contains(
-            boxel.Prefix,
-            StringComparer.Ordinal);
+        var complete = Persistence.CompletedPrefixes.Contains(boxel.Prefix, StringComparer.Ordinal);
         var completed = complete
             ? expected
             : Persistence.CompletedSystems.Count(name => IsInBoxel(name, boxel.Prefix))
                 + Persistence.EmptySystems.Count(name => IsInBoxel(name, boxel.Prefix));
-        return new BoxelProgress(
-            expected,
-            Math.Min(completed, expected),
-            complete,
-            expectedSystemCount < 0);
+        return new BoxelProgress(expected, Math.Min(completed, expected), complete, expectedSystemCount < 0);
     }
 
     public bool IsSystemDeferred(string prefix, int systemNumber)
@@ -396,29 +384,30 @@ public sealed record BoxelSearchSessionSearchSnapshot
         }
 
         return Persistence.DeferredRanges.Any(range =>
-            string.Equals(range.Prefix, prefix, StringComparison.Ordinal)
-            && range.Contains(systemNumber));
+            string.Equals(range.Prefix, prefix, StringComparison.Ordinal) && range.Contains(systemNumber)
+        );
     }
 
-    public static BoxelSearchSessionSearchSnapshot Empty { get; } = new()
-    {
-        Version = 0,
-        Persistence = BoxelSearchSnapshot.Empty,
-        NextSystem = null,
-        NextSystemAscending = null,
-        NextSystemDescending = null,
-        CurrentIsEmpty = false,
-        CurrentMinimumSystemNumber = -1,
-        CurrentMaximumSystemNumber = 0,
-        CompletedSystemCount = 0,
-        TotalCompletedSystemCount = 0,
-        CompletedBoxelCount = 0,
-        TotalBoxelCount = 0,
-        CurrentSystemsComplete = false,
-        Systems = [],
-        Boxels = [],
-        EmptyBoxelPrefixes = new HashSet<string>(StringComparer.Ordinal),
-    };
+    public static BoxelSearchSessionSearchSnapshot Empty { get; } =
+        new()
+        {
+            Version = 0,
+            Persistence = BoxelSearchSnapshot.Empty,
+            NextSystem = null,
+            NextSystemAscending = null,
+            NextSystemDescending = null,
+            CurrentIsEmpty = false,
+            CurrentMinimumSystemNumber = -1,
+            CurrentMaximumSystemNumber = 0,
+            CompletedSystemCount = 0,
+            TotalCompletedSystemCount = 0,
+            CompletedBoxelCount = 0,
+            TotalBoxelCount = 0,
+            CurrentSystemsComplete = false,
+            Systems = [],
+            Boxels = [],
+            EmptyBoxelPrefixes = new HashSet<string>(StringComparer.Ordinal),
+        };
 
     private static bool IsInBoxel(string systemName, string prefix)
     {
@@ -438,26 +427,19 @@ public sealed record BoxelSearchContextSnapshot(
     EliteStatus? Status,
     string? MusicTrack,
     bool IsGalaxyMapOpen,
-    string? LastCopiedSystemName)
+    string? LastCopiedSystemName
+)
 {
-    public static BoxelSearchContextSnapshot Empty { get; } = new(
-        0,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        false,
-        null);
+    public static BoxelSearchContextSnapshot Empty { get; } =
+        new(0, null, null, null, null, null, null, null, false, null);
 }
 
 public sealed record BoxelSearchProfileIdentity(
     long Generation,
     string FrontierId,
     string? CommanderName,
-    bool IsOdyssey);
+    bool IsOdyssey
+);
 
 public enum BoxelSearchActivityKind
 {
@@ -472,14 +454,10 @@ public sealed record BoxelSearchActivitySnapshot(
     BoxelSearchActivityKind Kind,
     int Processed,
     int Total,
-    string? Prefix)
+    string? Prefix
+)
 {
-    public static BoxelSearchActivitySnapshot Empty { get; } = new(
-        0,
-        BoxelSearchActivityKind.Idle,
-        0,
-        0,
-        null);
+    public static BoxelSearchActivitySnapshot Empty { get; } = new(0, BoxelSearchActivityKind.Idle, 0, 0, null);
 }
 
 public enum BoxelSearchHealthSubsystem
@@ -503,33 +481,32 @@ public sealed record BoxelSearchHealthIssue(
     BoxelSearchHealthSeverity Severity,
     BoxelSearchMessageCode Code,
     DateTimeOffset OccurredAt,
-    string? SafeDetail = null);
+    string? SafeDetail = null
+);
 
 public sealed record BoxelSearchHealthSnapshot(
     long Version,
-    IReadOnlyDictionary<BoxelSearchHealthSubsystem, BoxelSearchHealthIssue> Issues)
+    IReadOnlyDictionary<BoxelSearchHealthSubsystem, BoxelSearchHealthIssue> Issues
+)
 {
     public bool IsHealthy => Issues.Count == 0;
 
-    public BoxelSearchHealthSeverity Severity => Issues.Count == 0
-        ? BoxelSearchHealthSeverity.Healthy
-        : Issues.Values.Max(issue => issue.Severity);
+    public BoxelSearchHealthSeverity Severity =>
+        Issues.Count == 0 ? BoxelSearchHealthSeverity.Healthy : Issues.Values.Max(issue => issue.Severity);
 
-    public static BoxelSearchHealthSnapshot Empty { get; } = new(
-        0,
-        new Dictionary<BoxelSearchHealthSubsystem, BoxelSearchHealthIssue>());
+    public static BoxelSearchHealthSnapshot Empty { get; } =
+        new(0, new Dictionary<BoxelSearchHealthSubsystem, BoxelSearchHealthIssue>());
 }
 
-public sealed record BoxelSearchLibrarySnapshot(
-    long Revision,
-    IReadOnlyList<SavedBoxelSearchCatalogEntry> Entries);
+public sealed record BoxelSearchLibrarySnapshot(long Revision, IReadOnlyList<SavedBoxelSearchCatalogEntry> Entries);
 
 public sealed record BoxelSearchDiagnostic(
     BoxelSearchHealthSubsystem Subsystem,
     BoxelSearchMessageCode Code,
     Exception? Exception,
     DateTimeOffset OccurredAt,
-    string? Context = null);
+    string? Context = null
+);
 
 public sealed record BoxelSearchSessionOptions
 {
@@ -553,9 +530,7 @@ public sealed class NullBoxelSearchDiagnosticSink : IBoxelSearchDiagnosticSink
 {
     public static NullBoxelSearchDiagnosticSink Instance { get; } = new();
 
-    private NullBoxelSearchDiagnosticSink()
-    {
-    }
+    private NullBoxelSearchDiagnosticSink() { }
 
     public void Report(BoxelSearchDiagnostic diagnostic)
     {

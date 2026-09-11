@@ -1,290 +1,262 @@
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.IO.Compression;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
-namespace SrvSurvey.Core.Network
+namespace SrvSurvey.Core.Network;
+
+internal sealed class EddnTransport
 {
-    internal sealed class EddnTransport
+    internal const int MaximumPayloadBytes = 1024 * 1024;
+    internal const int MaximumUncompressedPayloadBytes = 10 * 1024 * 1024;
+    internal const int MaximumResponseDetailBytes = 2048;
+    internal const bool TestSchemasEnabled = false;
+
+    private static readonly Uri defaultEndpoint = new("https://eddn.edcd.io:4430/upload/");
+
+    private readonly HttpClient client;
+    private readonly Uri endpoint;
+
+    internal EddnTransport(HttpClient? client = null, Uri? endpoint = null, string? userAgent = null)
     {
-        internal const int MaximumPayloadBytes = 1024 * 1024;
-        internal const int MaximumUncompressedPayloadBytes = 10 * 1024 * 1024;
-        internal const int MaximumResponseDetailBytes = 2048;
-        internal const bool TestSchemasEnabled = false;
+        this.client = client ?? createClient(userAgent ?? "SrvSurvey");
+        this.endpoint = endpoint ?? defaultEndpoint;
+        validateEndpoint(this.endpoint);
+    }
 
-        private static readonly Uri defaultEndpoint =
-            new("https://eddn.edcd.io:4430/upload/");
+    internal static EddnQueuedMessage prepare(JObject message, string schemaRef, UploadPayloadHeader header)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        ArgumentException.ThrowIfNullOrWhiteSpace(schemaRef);
+        ArgumentNullException.ThrowIfNull(header);
 
-        private readonly HttpClient client;
-        private readonly Uri endpoint;
+        schemaRef = NormalizeSchemaReference(schemaRef);
 
-        internal EddnTransport(
-            HttpClient? client = null,
-            Uri? endpoint = null,
-            string? userAgent = null)
+        return new EddnQueuedMessage
         {
-            this.client = client ?? createClient(userAgent ?? "SrvSurvey");
-            this.endpoint = endpoint ?? defaultEndpoint;
-            validateEndpoint(this.endpoint);
+            id = Guid.NewGuid(),
+            created = DateTimeOffset.UtcNow,
+            nextAttempt = DateTimeOffset.UtcNow,
+            useTestSchemas = TestSchemasEnabled,
+            schemaRef = schemaRef,
+            header = header.clone(),
+            message = new JObject(message),
+        };
+    }
+
+    internal static string NormalizeSchemaReference(string schemaRef)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(schemaRef);
+        while (schemaRef.EndsWith("/test", StringComparison.Ordinal))
+        {
+            schemaRef = schemaRef[..^"/test".Length];
         }
 
-        internal static EddnQueuedMessage prepare(
-            JObject message,
-            string schemaRef,
-            UploadPayloadHeader header)
+        return TestSchemasEnabled ? schemaRef + "/test" : schemaRef;
+    }
+
+    internal async Task<EddnUploadResult> upload(
+        JObject message,
+        string schemaRef,
+        UploadPayloadHeader header,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return await upload(prepare(message, schemaRef, header), cancellationToken).ConfigureAwait(false);
+    }
+
+    internal async Task<EddnUploadResult> upload(
+        EddnQueuedMessage queued,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ArgumentNullException.ThrowIfNull(queued);
+        queued.normalizeSchemaMode();
+
+        var payload = JsonConvert.SerializeObject(queued.toPayload(), Formatting.None);
+        var payloadBytes = Encoding.UTF8.GetBytes(payload);
+        if (payloadBytes.Length > MaximumUncompressedPayloadBytes)
         {
-            ArgumentNullException.ThrowIfNull(message);
-            ArgumentException.ThrowIfNullOrWhiteSpace(schemaRef);
-            ArgumentNullException.ThrowIfNull(header);
-
-            schemaRef = NormalizeSchemaReference(schemaRef);
-
-            return new EddnQueuedMessage
-            {
-                id = Guid.NewGuid(),
-                created = DateTimeOffset.UtcNow,
-                nextAttempt = DateTimeOffset.UtcNow,
-                useTestSchemas = TestSchemasEnabled,
-                schemaRef = schemaRef,
-                header = header.clone(),
-                message = new JObject(message),
-            };
-        }
-
-        internal static string NormalizeSchemaReference(string schemaRef)
-        {
-            ArgumentException.ThrowIfNullOrWhiteSpace(schemaRef);
-            while (schemaRef.EndsWith("/test", StringComparison.Ordinal))
-            {
-                schemaRef = schemaRef[..^"/test".Length];
-            }
-
-            return TestSchemasEnabled ? schemaRef + "/test" : schemaRef;
-        }
-
-        internal async Task<EddnUploadResult> upload(
-            JObject message,
-            string schemaRef,
-            UploadPayloadHeader header,
-            CancellationToken cancellationToken = default)
-        {
-            return await upload(
-                prepare(message, schemaRef, header),
-                cancellationToken).ConfigureAwait(false);
-        }
-
-        internal async Task<EddnUploadResult> upload(
-            EddnQueuedMessage queued,
-            CancellationToken cancellationToken = default)
-        {
-            ArgumentNullException.ThrowIfNull(queued);
-            queued.normalizeSchemaMode();
-
-            var payload = JsonConvert.SerializeObject(
-                queued.toPayload(),
-                Formatting.None);
-            var payloadBytes = Encoding.UTF8.GetBytes(payload);
-            if (payloadBytes.Length > MaximumUncompressedPayloadBytes)
-            {
-                return EddnUploadResult.skipped(
-                    queued.useTestSchemas,
-                    queued.schemaRef,
-                    $"the encoded message exceeded {MaximumUncompressedPayloadBytes:N0} uncompressed bytes");
-            }
-
-            var compressed = compress(payloadBytes);
-            if (compressed.Length > MaximumPayloadBytes)
-            {
-                return EddnUploadResult.skipped(
-                    queued.useTestSchemas,
-                    queued.schemaRef,
-                    $"the compressed message exceeded {MaximumPayloadBytes:N0} bytes");
-            }
-
-            using var request = new HttpRequestMessage(
-                HttpMethod.Post,
-                endpoint)
-            {
-                Version = HttpVersion.Version11,
-                VersionPolicy = HttpVersionPolicy.RequestVersionExact,
-                Content = new ByteArrayContent(compressed),
-            };
-            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json")
-            {
-                CharSet = "utf-8",
-            };
-            request.Content.Headers.ContentEncoding.Add("gzip");
-
-            using var response = await client.SendAsync(
-                request,
-                HttpCompletionOption.ResponseHeadersRead,
-                cancellationToken).ConfigureAwait(false);
-            var detail = response.IsSuccessStatusCode
-                ? string.Empty
-                : await readBoundedResponse(response.Content, cancellationToken).ConfigureAwait(false);
-
-            return new EddnUploadResult(
+            return EddnUploadResult.skipped(
                 queued.useTestSchemas,
                 queued.schemaRef,
-                response.StatusCode,
-                response.ReasonPhrase ?? string.Empty,
-                detail,
-                null);
+                $"the encoded message exceeded {MaximumUncompressedPayloadBytes:N0} uncompressed bytes"
+            );
         }
 
-        private static byte[] compress(byte[] payload)
+        var compressed = compress(payloadBytes);
+        if (compressed.Length > MaximumPayloadBytes)
         {
-            using var output = new MemoryStream();
-            using (var gzip = new GZipStream(output, CompressionLevel.Fastest, leaveOpen: true))
-                gzip.Write(payload);
-            return output.ToArray();
+            return EddnUploadResult.skipped(
+                queued.useTestSchemas,
+                queued.schemaRef,
+                $"the compressed message exceeded {MaximumPayloadBytes:N0} bytes"
+            );
         }
 
-        private static HttpClient createClient(string userAgent)
+        using var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
         {
-            var client = new HttpClient
-            {
-                Timeout = TimeSpan.FromSeconds(20),
-            };
-            client.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent);
-            return client;
-        }
+            Version = HttpVersion.Version11,
+            VersionPolicy = HttpVersionPolicy.RequestVersionExact,
+            Content = new ByteArrayContent(compressed),
+        };
+        request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" };
+        request.Content.Headers.ContentEncoding.Add("gzip");
 
-        private static async Task<string> readBoundedResponse(
-            HttpContent content,
-            CancellationToken cancellationToken)
-        {
-            using var stream = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var buffer = new byte[MaximumResponseDetailBytes];
-            var total = 0;
-            while (total < buffer.Length)
-            {
-                var read = await stream.ReadAsync(
-                    buffer.AsMemory(total, buffer.Length - total),
-                    cancellationToken).ConfigureAwait(false);
-                if (read == 0) break;
-                total += read;
-            }
+        using var response = await client
+            .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+            .ConfigureAwait(false);
+        var detail = response.IsSuccessStatusCode
+            ? string.Empty
+            : await readBoundedResponse(response.Content, cancellationToken).ConfigureAwait(false);
 
-            return Encoding.UTF8.GetString(buffer, 0, total);
-        }
-
-        private static void validateEndpoint(Uri endpoint)
-        {
-            ArgumentNullException.ThrowIfNull(endpoint);
-            if (!endpoint.IsAbsoluteUri
-                || endpoint.Scheme != Uri.UriSchemeHttps)
-            {
-                throw new ArgumentException(
-                    "The EDDN endpoint must be an absolute HTTPS URI.",
-                    nameof(endpoint));
-            }
-        }
+        return new EddnUploadResult(
+            queued.useTestSchemas,
+            queued.schemaRef,
+            response.StatusCode,
+            response.ReasonPhrase ?? string.Empty,
+            detail,
+            null
+        );
     }
 
-    internal sealed record EddnUploadResult(
-        bool useTestSchemas,
-        string schemaRef,
-        HttpStatusCode? statusCode,
-        string reasonPhrase,
-        string responseDetail,
-        string? skipReason)
+    private static byte[] compress(byte[] payload)
     {
-        internal bool isSuccess => statusCode is >= HttpStatusCode.OK and < HttpStatusCode.MultipleChoices;
-
-        internal bool isRetryable => skipReason == null
-            && !isSuccess
-            && statusCode is not (
-                HttpStatusCode.BadRequest
-                or HttpStatusCode.RequestEntityTooLarge
-                or HttpStatusCode.UpgradeRequired);
-
-        internal static EddnUploadResult skipped(
-            bool useTestSchemas,
-            string schemaRef,
-            string reason)
+        using var output = new MemoryStream();
+        using (var gzip = new GZipStream(output, CompressionLevel.Fastest, leaveOpen: true))
         {
-            return new EddnUploadResult(
-                useTestSchemas,
-                schemaRef,
-                null,
-                string.Empty,
-                string.Empty,
-                reason);
+            gzip.Write(payload);
         }
+
+        return output.ToArray();
     }
 
-    internal sealed class EddnQueuedMessage
+    private static HttpClient createClient(string userAgent)
     {
-        public Guid id;
-        public DateTimeOffset created;
-        public DateTimeOffset nextAttempt;
-        public int attempts;
-        public bool useTestSchemas;
-        [JsonProperty("environment", NullValueHandling = NullValueHandling.Ignore)]
-        public string? legacyEnvironment;
-        public string schemaRef = string.Empty;
-        public UploadPayloadHeader header = new();
-        public JObject message = new();
+        var client = new HttpClient { Timeout = TimeSpan.FromSeconds(20) };
+        client.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent);
+        return client;
+    }
 
-        internal void normalizeSchemaMode()
+    private static async Task<string> readBoundedResponse(HttpContent content, CancellationToken cancellationToken)
+    {
+        using var stream = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        var buffer = new byte[MaximumResponseDetailBytes];
+        var total = 0;
+        while (total < buffer.Length)
         {
-            if (!string.IsNullOrWhiteSpace(schemaRef))
+            var read = await stream
+                .ReadAsync(buffer.AsMemory(total, buffer.Length - total), cancellationToken)
+                .ConfigureAwait(false);
+            if (read == 0)
             {
-                schemaRef = EddnTransport.NormalizeSchemaReference(schemaRef);
+                break;
             }
 
-            useTestSchemas = EddnTransport.TestSchemasEnabled;
-            legacyEnvironment = null;
+            total += read;
         }
 
-        internal JObject toPayload()
-        {
-            return new JObject
-            {
-                ["$schemaRef"] = schemaRef,
-                ["header"] = JObject.FromObject(header),
-                ["message"] = new JObject(message),
-            };
-        }
+        return Encoding.UTF8.GetString(buffer, 0, total);
     }
 
-    internal sealed class UploadPayloadHeader
+    private static void validateEndpoint(Uri endpoint)
     {
-        public string uploaderID = string.Empty;
-        public string softwareName = "SrvSurvey-XP";
-        public string softwareVersion = string.Empty;
-        public string gameversion = string.Empty;
-        public string gamebuild = string.Empty;
-
-        public UploadPayloadHeader() { }
-
-        internal UploadPayloadHeader(
-            string uploaderID,
-            string? gameVersion,
-            string? gameBuild,
-            string softwareVersion)
+        ArgumentNullException.ThrowIfNull(endpoint);
+        if (!endpoint.IsAbsoluteUri || endpoint.Scheme != Uri.UriSchemeHttps)
         {
-            this.uploaderID = uploaderID;
-            this.gameversion = gameVersion ?? string.Empty;
-            this.gamebuild = gameBuild ?? string.Empty;
-            this.softwareVersion = softwareVersion;
-        }
-
-        internal UploadPayloadHeader clone()
-        {
-            return new UploadPayloadHeader(
-                uploaderID,
-                gameversion,
-                gamebuild,
-                softwareVersion)
-            {
-                softwareName = softwareName,
-            };
+            throw new ArgumentException("The EDDN endpoint must be an absolute HTTPS URI.", nameof(endpoint));
         }
     }
 }
 
+internal sealed record EddnUploadResult(
+    bool useTestSchemas,
+    string schemaRef,
+    HttpStatusCode? statusCode,
+    string reasonPhrase,
+    string responseDetail,
+    string? skipReason
+)
+{
+    internal bool isSuccess => statusCode is >= HttpStatusCode.OK and < HttpStatusCode.MultipleChoices;
 
+    internal bool isRetryable =>
+        skipReason == null
+        && !isSuccess
+        && statusCode
+            is not (
+                HttpStatusCode.BadRequest
+                or HttpStatusCode.RequestEntityTooLarge
+                or HttpStatusCode.UpgradeRequired
+            );
+
+    internal static EddnUploadResult skipped(bool useTestSchemas, string schemaRef, string reason)
+    {
+        return new EddnUploadResult(useTestSchemas, schemaRef, null, string.Empty, string.Empty, reason);
+    }
+}
+
+internal sealed class EddnQueuedMessage
+{
+    public Guid id;
+    public DateTimeOffset created;
+    public DateTimeOffset nextAttempt;
+    public int attempts;
+    public bool useTestSchemas;
+
+    [JsonProperty("environment", NullValueHandling = NullValueHandling.Ignore)]
+    public string? legacyEnvironment;
+    public string schemaRef = string.Empty;
+    public UploadPayloadHeader header = new();
+    public JObject message = new();
+
+    internal void normalizeSchemaMode()
+    {
+        if (!string.IsNullOrWhiteSpace(schemaRef))
+        {
+            schemaRef = EddnTransport.NormalizeSchemaReference(schemaRef);
+        }
+
+        useTestSchemas = EddnTransport.TestSchemasEnabled;
+        legacyEnvironment = null;
+    }
+
+    internal JObject toPayload()
+    {
+        return new JObject
+        {
+            ["$schemaRef"] = schemaRef,
+            ["header"] = JObject.FromObject(header),
+            ["message"] = new JObject(message),
+        };
+    }
+}
+
+internal sealed class UploadPayloadHeader
+{
+    public string uploaderID = string.Empty;
+    public string softwareName = "SrvSurvey-XP";
+    public string softwareVersion = string.Empty;
+    public string gameversion = string.Empty;
+    public string gamebuild = string.Empty;
+
+    public UploadPayloadHeader() { }
+
+    internal UploadPayloadHeader(string uploaderID, string? gameVersion, string? gameBuild, string softwareVersion)
+    {
+        this.uploaderID = uploaderID;
+        this.gameversion = gameVersion ?? string.Empty;
+        this.gamebuild = gameBuild ?? string.Empty;
+        this.softwareVersion = softwareVersion;
+    }
+
+    internal UploadPayloadHeader clone()
+    {
+        return new UploadPayloadHeader(uploaderID, gameversion, gamebuild, softwareVersion)
+        {
+            softwareName = softwareName,
+        };
+    }
+}

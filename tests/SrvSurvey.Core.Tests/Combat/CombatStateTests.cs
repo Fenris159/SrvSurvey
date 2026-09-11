@@ -10,14 +10,20 @@ public sealed class CombatStateTests
     {
         var state = new CombatState();
 
-        var approach = state.Apply(Parse(
-            """
-            {"timestamp":"2026-07-25T01:00:00Z","event":"ApproachSettlement","Name":"Test Base","StationFaction":{"Name":"Test Faction","FactionState":"CivilWar"}}
-            """));
-        var kill = state.Apply(Parse(
-            """
-            {"timestamp":"2026-07-25T01:01:00Z","event":"FactionKillBond","Reward":17361,"AwardingFaction":"Test Faction","VictimFaction":"Enemy"}
-            """));
+        var approach = state.Apply(
+            Parse(
+                """
+                {"timestamp":"2026-07-25T01:00:00Z","event":"ApproachSettlement","Name":"Test Base","StationFaction":{"Name":"Test Faction","FactionState":"CivilWar"}}
+                """
+            )
+        );
+        var kill = state.Apply(
+            Parse(
+                """
+                {"timestamp":"2026-07-25T01:01:00Z","event":"FactionKillBond","Reward":17361,"AwardingFaction":"Test Faction","VictimFaction":"Enemy"}
+                """
+            )
+        );
 
         Assert.True(approach.StateChanged);
         Assert.False(approach.PersistenceChanged);
@@ -38,8 +44,10 @@ public sealed class CombatStateTests
             Parse(
                 """
                 {"timestamp":"2026-07-25T01:01:00Z","event":"FactionKillBond","Reward":17361}
-                """),
-            countProgress: false);
+                """
+            ),
+            countProgress: false
+        );
 
         Assert.False(result.StateChanged);
         Assert.Equal(0, state.FootCombatKills);
@@ -53,20 +61,20 @@ public sealed class CombatStateTests
     [InlineData("Resurrect", "")]
     [InlineData("Shutdown", "")]
     [InlineData("Music", ",\"MusicTrack\":\"MainMenu\"")]
-    public void SessionExitClearsFootCombatButRetainsMissions(
-        string eventName,
-        string properties)
+    public void SessionExitClearsFootCombatButRetainsMissions(string eventName, string properties)
     {
         var state = new CombatState();
-        state.Apply(Parse(
-            """{"event":"ApproachSettlement","Name":"Test Base","StationFaction":{"FactionState":"War"}}"""));
-        state.Apply(Parse(
-            """{"event":"FactionKillBond","Reward":100}"""));
-        state.Apply(Parse(
-            """{"event":"MissionAccepted","Faction":"Giver","Name":"Mission_Massacre","TargetFaction":"Enemy","KillCount":2,"MissionID":456}"""));
+        state.Apply(
+            Parse("""{"event":"ApproachSettlement","Name":"Test Base","StationFaction":{"FactionState":"War"}}""")
+        );
+        state.Apply(Parse("""{"event":"FactionKillBond","Reward":100}"""));
+        state.Apply(
+            Parse(
+                """{"event":"MissionAccepted","Faction":"Giver","Name":"Mission_Massacre","TargetFaction":"Enemy","KillCount":2,"MissionID":456}"""
+            )
+        );
 
-        var result = state.Apply(Parse(
-            $$"""{"event":"{{eventName}}"{{properties}}}"""));
+        var result = state.Apply(Parse($$"""{"event":"{{eventName}}"{{properties}}}"""));
 
         Assert.True(result.StateChanged);
         Assert.False(result.PersistenceChanged);
@@ -80,10 +88,13 @@ public sealed class CombatStateTests
     {
         var state = new CombatState();
 
-        var accepted = state.Apply(Parse(
-            """
-            {"timestamp":"2026-07-25T01:00:00Z","event":"MissionAccepted","Faction":"Mission Giver","Name":"Mission_MassacreWing","TargetFaction":"Enemy Faction","KillCount":7,"Expiry":"2026-07-26T01:00:00Z","MissionID":123}
-            """));
+        var accepted = state.Apply(
+            Parse(
+                """
+                {"timestamp":"2026-07-25T01:00:00Z","event":"MissionAccepted","Faction":"Mission Giver","Name":"Mission_MassacreWing","TargetFaction":"Enemy Faction","KillCount":7,"Expiry":"2026-07-26T01:00:00Z","MissionID":123}
+                """
+            )
+        );
 
         Assert.True(accepted.PersistenceChanged);
         Assert.Equal(
@@ -93,13 +104,18 @@ public sealed class CombatStateTests
                 "Enemy Faction",
                 DateTimeOffset.Parse("2026-07-26T01:00:00Z"),
                 7,
-                7),
-            Assert.Single(state.MassacreMissions));
+                7
+            ),
+            Assert.Single(state.MassacreMissions)
+        );
 
-        var removed = state.Apply(Parse(
-            """
-            {"timestamp":"2026-07-25T02:00:00Z","event":"MissionCompleted","Name":"Mission_MassacreWing","MissionID":123}
-            """));
+        var removed = state.Apply(
+            Parse(
+                """
+                {"timestamp":"2026-07-25T02:00:00Z","event":"MissionCompleted","Name":"Mission_MassacreWing","MissionID":123}
+                """
+            )
+        );
 
         Assert.True(removed.PersistenceChanged);
         Assert.Empty(state.MassacreMissions);
@@ -109,42 +125,44 @@ public sealed class CombatStateTests
     public void BountyCreditsOnlyOneMissionPerMissionGiver()
     {
         var state = new CombatState();
-        state.Reset(new CombatSnapshot(
-        [
-            Mission(1, "Giver A", "Enemy", remaining: 5),
-            Mission(2, "Giver A", "Enemy", remaining: 4),
-            Mission(3, "Giver B", "Enemy", remaining: 3),
-            Mission(4, "Giver C", "Other", remaining: 2),
-        ]));
+        state.Reset(
+            new CombatSnapshot([
+                Mission(1, "Giver A", "Enemy", remaining: 5),
+                Mission(2, "Giver A", "Enemy", remaining: 4),
+                Mission(3, "Giver B", "Enemy", remaining: 3),
+                Mission(4, "Giver C", "Other", remaining: 2),
+            ])
+        );
 
-        var result = state.Apply(Parse(
-            """
-            {"timestamp":"2026-07-25T02:00:00Z","event":"Bounty","VictimFaction":"Enemy","TotalReward":1000}
-            """));
+        var result = state.Apply(
+            Parse(
+                """
+                {"timestamp":"2026-07-25T02:00:00Z","event":"Bounty","VictimFaction":"Enemy","TotalReward":1000}
+                """
+            )
+        );
 
         Assert.True(result.PersistenceChanged);
-        Assert.Equal([4, 4, 2, 2], state.MassacreMissions
-            .Select(mission => mission.Remaining));
+        Assert.Equal([4, 4, 2, 2], state.MassacreMissions.Select(mission => mission.Remaining));
     }
 
     [Fact]
     public void ExpiredMissionDoesNotReceiveBountyCredit()
     {
         var state = new CombatState();
-        state.Reset(new CombatSnapshot(
-        [
-            Mission(
-                1,
-                "Giver",
-                "Enemy",
-                remaining: 5,
-                expires: DateTimeOffset.Parse("2026-07-25T01:00:00Z")),
-        ]));
+        state.Reset(
+            new CombatSnapshot([
+                Mission(1, "Giver", "Enemy", remaining: 5, expires: DateTimeOffset.Parse("2026-07-25T01:00:00Z")),
+            ])
+        );
 
-        var result = state.Apply(Parse(
-            """
-            {"timestamp":"2026-07-25T02:00:00Z","event":"Bounty","VictimFaction":"Enemy"}
-            """));
+        var result = state.Apply(
+            Parse(
+                """
+                {"timestamp":"2026-07-25T02:00:00Z","event":"Bounty","VictimFaction":"Enemy"}
+                """
+            )
+        );
 
         Assert.False(result.StateChanged);
         Assert.Equal(5, Assert.Single(state.MassacreMissions).Remaining);
@@ -154,21 +172,20 @@ public sealed class CombatStateTests
     public void MissionsSnapshotPrunesEntriesNoLongerActiveOrComplete()
     {
         var state = new CombatState();
-        state.Reset(new CombatSnapshot(
-        [
-            Mission(1, "A", "Enemy", 2),
-            Mission(2, "B", "Enemy", 2),
-            Mission(3, "C", "Enemy", 2),
-        ]));
+        state.Reset(
+            new CombatSnapshot([Mission(1, "A", "Enemy", 2), Mission(2, "B", "Enemy", 2), Mission(3, "C", "Enemy", 2)])
+        );
 
-        var result = state.Apply(Parse(
-            """
-            {"timestamp":"2026-07-25T02:00:00Z","event":"Missions","Active":[{"MissionID":1}],"Complete":[{"MissionID":3}],"Failed":[]}
-            """));
+        var result = state.Apply(
+            Parse(
+                """
+                {"timestamp":"2026-07-25T02:00:00Z","event":"Missions","Active":[{"MissionID":1}],"Complete":[{"MissionID":3}],"Failed":[]}
+                """
+            )
+        );
 
         Assert.True(result.PersistenceChanged);
-        Assert.Equal([1L, 3L], state.MassacreMissions
-            .Select(mission => mission.MissionId));
+        Assert.Equal([1L, 3L], state.MassacreMissions.Select(mission => mission.MissionId));
     }
 
     [Fact]
@@ -178,11 +195,13 @@ public sealed class CombatStateTests
         var unrelated = Parse(
             """
             {"timestamp":"2026-07-25T01:00:00Z","event":"MissionAccepted","Faction":"Giver","Name":"Mission_Delivery","TargetFaction":"Enemy","KillCount":2,"MissionID":123}
-            """);
+            """
+        );
         var massacre = Parse(
             """
             {"timestamp":"2026-07-25T01:00:00Z","event":"MissionAccepted","Faction":"Giver","Name":"Mission_Massacre","TargetFaction":"Enemy","KillCount":2,"MissionID":456}
-            """);
+            """
+        );
 
         Assert.False(state.Apply(unrelated).StateChanged);
         Assert.True(state.Apply(massacre).StateChanged);
@@ -195,22 +214,15 @@ public sealed class CombatStateTests
         string giver,
         string target,
         int remaining,
-        DateTimeOffset? expires = null)
+        DateTimeOffset? expires = null
+    )
     {
-        return new MassacreMissionSnapshot(
-            missionId,
-            giver,
-            target,
-            expires,
-            remaining,
-            remaining);
+        return new MassacreMissionSnapshot(missionId, giver, target, expires, remaining, remaining);
     }
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(
-            JournalEventEnvelope.TryParse(json, out var value, out var error),
-            error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out var value, out var error), error);
         return value!;
     }
 }

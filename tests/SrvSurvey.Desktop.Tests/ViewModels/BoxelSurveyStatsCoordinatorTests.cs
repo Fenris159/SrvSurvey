@@ -12,45 +12,40 @@ public sealed class BoxelSurveyStatsCoordinatorTests : IAsyncLifetime
     private BoxelSearchSession? session;
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        "SrvSurvey-BoxelSurveyStatsCoordinatorTests-" + Guid.NewGuid().ToString("N"));
+        "SrvSurvey-BoxelSurveyStatsCoordinatorTests-" + Guid.NewGuid().ToString("N")
+    );
 
     [Fact]
     public async Task CommanderSwitchIsolatesWritesAndReloadsBodies()
     {
         var store = new BoxelSurveyStatsStore(temporaryDirectory);
-        using var coordinator = new BoxelSurveyStatsCoordinator(
-            store,
-            flushDelay: TimeSpan.FromHours(1));
+        using var coordinator = new BoxelSurveyStatsCoordinator(store, flushDelay: TimeSpan.FromHours(1));
         await coordinator.SwitchCommanderAsync("F-A");
-        await coordinator.ApplyJournalEventsAsync(
-        [
+        await coordinator.ApplyJournalEventsAsync([
             Parse(
-                """{"timestamp":"2026-07-10T12:00:00Z","event":"FSDJump","StarSystem":"Praea Euq IL-P c5-0","SystemAddress":2001}"""),
+                """{"timestamp":"2026-07-10T12:00:00Z","event":"FSDJump","StarSystem":"Praea Euq IL-P c5-0","SystemAddress":2001}"""
+            ),
         ]);
         await coordinator.IngestSnapshotAsync(
             Snapshot(
                 "Praea Euq IL-P c5-0",
                 2001,
-                Enumerable.Range(1, 5)
-                    .Select(id => Planet(id, "Icy body", 100 * id, 200 * id))
-                    .ToArray()));
+                Enumerable.Range(1, 5).Select(id => Planet(id, "Icy body", 100 * id, 200 * id)).ToArray()
+            )
+        );
         await coordinator.FlushAsync();
 
-        var commanderA = Path.Combine(
-            temporaryDirectory,
-            BoxelSurveyStatsStore.StoreDirectoryName,
-            "F-A");
+        var commanderA = Path.Combine(temporaryDirectory, BoxelSurveyStatsStore.StoreDirectoryName, "F-A");
         var filesA = Directory.GetFiles(commanderA, "*.json");
         Assert.Contains(filesA, path => Path.GetFileName(path) == "index.json");
 
         await coordinator.SwitchCommanderAsync("F-B");
-        await coordinator.ApplyJournalEventsAsync(
-        [
+        await coordinator.ApplyJournalEventsAsync([
             Parse(
-                """{"timestamp":"2026-07-10T12:20:00Z","event":"FSDJump","StarSystem":"Praea Euq IL-P c5-0","SystemAddress":2001}"""),
+                """{"timestamp":"2026-07-10T12:20:00Z","event":"FSDJump","StarSystem":"Praea Euq IL-P c5-0","SystemAddress":2001}"""
+            ),
         ]);
-        await coordinator.IngestSnapshotAsync(
-            Snapshot("Praea Euq IL-P c5-0", 2001, [Planet(1, "Rocky body", 10, 20)]));
+        await coordinator.IngestSnapshotAsync(Snapshot("Praea Euq IL-P c5-0", 2001, [Planet(1, "Rocky body", 10, 20)]));
         await coordinator.FlushAsync();
 
         var reloadedA = await store.LoadBoxelAsync("F-A", "Praea Euq IL-P c5-");
@@ -64,8 +59,7 @@ public sealed class BoxelSurveyStatsCoordinatorTests : IAsyncLifetime
         var restored = await coordinator.GetAsync("Praea Euq IL-P c5-");
         Assert.NotNull(restored);
         Assert.Equal(5, restored.CountsOf(BoxelPlanetClass.Icy).Count);
-        await coordinator.IngestSnapshotAsync(
-            Snapshot("Praea Euq IL-P c5-0", 2001, []));
+        await coordinator.IngestSnapshotAsync(Snapshot("Praea Euq IL-P c5-0", 2001, []));
         restored = await coordinator.GetAsync("Praea Euq IL-P c5-");
         Assert.Equal(5, restored!.CountsOf(BoxelPlanetClass.Icy).Count);
         Assert.Equal(1500, restored.CurrentValue);
@@ -74,23 +68,18 @@ public sealed class BoxelSurveyStatsCoordinatorTests : IAsyncLifetime
     [Fact]
     public async Task BootstrapAppliesOnlyFileheaderAndLoadGame()
     {
-        using var coordinator = new BoxelSurveyStatsCoordinator(
-            new BoxelSurveyStatsStore(temporaryDirectory));
+        using var coordinator = new BoxelSurveyStatsCoordinator(new BoxelSurveyStatsStore(temporaryDirectory));
         await coordinator.SwitchCommanderAsync("F123");
-        await coordinator.ApplyBootstrapContextAsync(
-        [
+        await coordinator.ApplyBootstrapContextAsync([
             Parse("""{"event":"Fileheader","Odyssey":false}"""),
             Parse(
-                """{"timestamp":"2026-07-10T12:00:00Z","event":"FSDJump","StarSystem":"Praea Euq IL-P c5-0","SystemAddress":2001}"""),
+                """{"timestamp":"2026-07-10T12:00:00Z","event":"FSDJump","StarSystem":"Praea Euq IL-P c5-0","SystemAddress":2001}"""
+            ),
         ]);
 
         Assert.Empty(coordinator.Index);
-        await coordinator.IngestSnapshotAsync(
-            Snapshot("Praea Euq IL-P c5-0", 2001, []));
-        await coordinator.ApplyJournalEventsAsync(
-        [
-            Parse("""{"event":"NavBeaconScan","SystemAddress":2001}"""),
-        ]);
+        await coordinator.IngestSnapshotAsync(Snapshot("Praea Euq IL-P c5-0", 2001, []));
+        await coordinator.ApplyJournalEventsAsync([Parse("""{"event":"NavBeaconScan","SystemAddress":2001}""")]);
         var snapshot = await coordinator.GetAsync("Praea Euq IL-P c5-");
         Assert.NotNull(snapshot);
         Assert.Equal(1, snapshot.Visited);
@@ -101,15 +90,15 @@ public sealed class BoxelSurveyStatsCoordinatorTests : IAsyncLifetime
     [Fact]
     public async Task SearchViewModelReceivesTheSameCoordinator()
     {
-        using var coordinator = new BoxelSurveyStatsCoordinator(
-            new BoxelSurveyStatsStore(temporaryDirectory));
+        using var coordinator = new BoxelSurveyStatsCoordinator(new BoxelSurveyStatsStore(temporaryDirectory));
         var viewModel = BoxelSearchViewModelTestFactory.Create(
             new CommanderProfileStore(temporaryDirectory),
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
             new NullResolver(),
             out session,
-            surveyStats: coordinator);
+            surveyStats: coordinator
+        );
         Assert.Same(coordinator, viewModel.SurveyStats);
     }
 
@@ -128,10 +117,7 @@ public sealed class BoxelSurveyStatsCoordinatorTests : IAsyncLifetime
         }
     }
 
-    private static SystemScanSnapshot Snapshot(
-        string name,
-        long address,
-        SystemScanBodySnapshot[] bodies)
+    private static SystemScanSnapshot Snapshot(string name, long address, SystemScanBodySnapshot[] bodies)
     {
         return new SystemScanSnapshot(
             name,
@@ -149,14 +135,11 @@ public sealed class BoxelSurveyStatsCoordinatorTests : IAsyncLifetime
             0,
             null,
             null,
-            bodies);
+            bodies
+        );
     }
 
-    private static SystemScanBodySnapshot Planet(
-        int bodyId,
-        string planetClass,
-        int currentValue,
-        int mappedValue)
+    private static SystemScanBodySnapshot Planet(int bodyId, string planetClass, int currentValue, int mappedValue)
     {
         return new SystemScanBodySnapshot(
             bodyId,
@@ -199,14 +182,16 @@ public sealed class BoxelSurveyStatsCoordinatorTests : IAsyncLifetime
             [],
             [],
             [],
-            []);
+            []
+        );
     }
 
     private sealed class NullResolver : IBoxelSystemResolver
     {
         public Task<IReadOnlyList<BoxelSystemObservation>> SearchAsync(
             BoxelAddress boxel,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             return Task.FromResult<IReadOnlyList<BoxelSystemObservation>>([]);
         }

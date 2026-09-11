@@ -17,7 +17,8 @@ public sealed record ReleaseInstallationPreparation(
     string ManifestSha256,
     string InstallationFingerprint,
     bool RequiresElevation,
-    IReadOnlyList<string> StartupArguments);
+    IReadOnlyList<string> StartupArguments
+);
 
 public enum ReleaseInstallationStatus
 {
@@ -30,7 +31,8 @@ public sealed record ReleaseInstallationResult(
     string InstallationDirectory,
     string? BackupDirectory,
     string? FailedDirectory,
-    string? Error);
+    string? Error
+);
 
 public interface IReleaseInstallationPreparer
 {
@@ -41,11 +43,10 @@ public interface IReleaseInstallationPreparer
         string manifestSha256,
         string installationDirectory,
         IReadOnlyList<string> startupArguments,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
-    Task AbortAsync(
-        ReleaseInstallationPreparation preparation,
-        CancellationToken cancellationToken = default);
+    Task AbortAsync(ReleaseInstallationPreparation preparation, CancellationToken cancellationToken = default);
 }
 
 internal enum ReleaseInstallationCheckpoint
@@ -65,21 +66,19 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
 
     public ReleaseInstallationPreparer(
         ReleasePackageStagingService? stagingService = null,
-        ReleaseUpdateHistoryCleanupCoordinator? historyCleanup = null)
-        : this(stagingService, CopyDirectoryAsync, historyCleanup)
-    {
-    }
+        ReleaseUpdateHistoryCleanupCoordinator? historyCleanup = null
+    )
+        : this(stagingService, CopyDirectoryAsync, historyCleanup) { }
 
     internal ReleaseInstallationPreparer(
         ReleasePackageStagingService? stagingService,
         Func<string, string, CancellationToken, Task> copyDirectory,
-        ReleaseUpdateHistoryCleanupCoordinator? historyCleanup = null)
+        ReleaseUpdateHistoryCleanupCoordinator? historyCleanup = null
+    )
     {
         this.stagingService = stagingService ?? new ReleasePackageStagingService();
-        this.copyDirectory = copyDirectory
-            ?? throw new ArgumentNullException(nameof(copyDirectory));
-        this.historyCleanup = historyCleanup
-            ?? new ReleaseUpdateHistoryCleanupCoordinator();
+        this.copyDirectory = copyDirectory ?? throw new ArgumentNullException(nameof(copyDirectory));
+        this.historyCleanup = historyCleanup ?? new ReleaseUpdateHistoryCleanupCoordinator();
     }
 
     public async Task<ReleaseInstallationPreparation> PrepareAsync(
@@ -89,39 +88,38 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
         string manifestSha256,
         string installationDirectory,
         IReadOnlyList<string> startupArguments,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(runtimeIdentifier);
         ArgumentException.ThrowIfNullOrWhiteSpace(readyDirectory);
         ArgumentException.ThrowIfNullOrWhiteSpace(manifestSha256);
         ArgumentException.ThrowIfNullOrWhiteSpace(installationDirectory);
         ArgumentNullException.ThrowIfNull(startupArguments);
-        var installationRoot = Path.TrimEndingDirectorySeparator(
-            Path.GetFullPath(installationDirectory));
-        var readyRoot = Path.TrimEndingDirectorySeparator(
-            Path.GetFullPath(readyDirectory));
+        var installationRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(installationDirectory));
+        var readyRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(readyDirectory));
         ValidateDistinctRoots(installationRoot, readyRoot);
         if (!Directory.Exists(installationRoot))
         {
-            throw new DirectoryNotFoundException(
-                $"The SrvSurvey installation was not found: {installationRoot}");
+            throw new DirectoryNotFoundException($"The SrvSurvey installation was not found: {installationRoot}");
         }
 
-        var parent = Directory.GetParent(installationRoot)?.FullName
-            ?? throw new InvalidDataException(
-                "The SrvSurvey installation cannot be a file-system root.");
+        var parent =
+            Directory.GetParent(installationRoot)?.FullName
+            ?? throw new InvalidDataException("The SrvSurvey installation cannot be a file-system root.");
         var installationName = Path.GetFileName(installationRoot);
         if (string.IsNullOrWhiteSpace(installationName))
         {
-            throw new InvalidDataException(
-                "The SrvSurvey installation directory name is invalid.");
+            throw new InvalidDataException("The SrvSurvey installation directory name is invalid.");
         }
 
-        _ = await historyCleanup.CleanInstallationAsync(
+        _ = await historyCleanup
+            .CleanInstallationAsync(
                 new ReleaseInstallationHistoryCleaner(),
                 installationRoot,
                 [readyRoot],
-                cancellationToken)
+                cancellationToken
+            )
             .ConfigureAwait(false);
 
         var entryPoint = runtimeIdentifier switch
@@ -129,53 +127,34 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
             "win-x64" => "SrvSurvey.Desktop.exe",
             "linux-x64" => "SrvSurvey.Desktop",
             _ => throw new PlatformNotSupportedException(
-                $"The runtime '{runtimeIdentifier}' has no install transaction."),
+                $"The runtime '{runtimeIdentifier}' has no install transaction."
+            ),
         };
         if (!File.Exists(Path.Combine(installationRoot, entryPoint)))
         {
-            throw new InvalidDataException(
-                "Automatic update requires a self-contained SrvSurvey installation.");
+            throw new InvalidDataException("Automatic update requires a self-contained SrvSurvey installation.");
         }
 
-        await stagingService.VerifyReadyAsync(
-                version,
-                runtimeIdentifier,
-                readyRoot,
-                manifestSha256,
-                cancellationToken)
+        await stagingService
+            .VerifyReadyAsync(version, runtimeIdentifier, readyRoot, manifestSha256, cancellationToken)
             .ConfigureAwait(false);
         var requestId = Guid.NewGuid();
-        var candidateDirectory = Path.Combine(
-            parent,
-            $".{installationName}-update-{requestId:N}");
-        var backupDirectory = Path.Combine(
-            parent,
-            $".{installationName}-backup-{requestId:N}");
-        var failedDirectory = Path.Combine(
-            parent,
-            $".{installationName}-failed-{requestId:N}");
+        var candidateDirectory = Path.Combine(parent, $".{installationName}-update-{requestId:N}");
+        var backupDirectory = Path.Combine(parent, $".{installationName}-backup-{requestId:N}");
+        var failedDirectory = Path.Combine(parent, $".{installationName}-failed-{requestId:N}");
         EnsureMissing(candidateDirectory, backupDirectory, failedDirectory);
         var requiresElevation = false;
         try
         {
-            await copyDirectory(
-                    readyRoot,
-                    candidateDirectory,
-                    cancellationToken)
-                .ConfigureAwait(false);
-            await stagingService.VerifyReadyAsync(
-                    version,
-                    runtimeIdentifier,
-                    candidateDirectory,
-                    manifestSha256,
-                    cancellationToken)
+            await copyDirectory(readyRoot, candidateDirectory, cancellationToken).ConfigureAwait(false);
+            await stagingService
+                .VerifyReadyAsync(version, runtimeIdentifier, candidateDirectory, manifestSha256, cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (UnauthorizedAccessException) when (OperatingSystem.IsWindows())
         {
             TryDeleteDirectory(candidateDirectory);
-            if (Directory.Exists(candidateDirectory)
-                || File.Exists(candidateDirectory))
+            if (Directory.Exists(candidateDirectory) || File.Exists(candidateDirectory))
             {
                 throw;
             }
@@ -190,9 +169,7 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
 
         try
         {
-            var fingerprint = await ComputeDirectoryFingerprintAsync(
-                    installationRoot,
-                    cancellationToken)
+            var fingerprint = await ComputeDirectoryFingerprintAsync(installationRoot, cancellationToken)
                 .ConfigureAwait(false);
             return new ReleaseInstallationPreparation(
                 requestId,
@@ -207,7 +184,8 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
                 manifestSha256.ToLowerInvariant(),
                 fingerprint,
                 requiresElevation,
-                startupArguments.ToArray());
+                startupArguments.ToArray()
+            );
         }
         catch
         {
@@ -218,18 +196,18 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
 
     public async Task AbortAsync(
         ReleaseInstallationPreparation preparation,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentNullException.ThrowIfNull(preparation);
-        await Task.Run(
-                () => TryDeleteDirectory(preparation.CandidateDirectory),
-                cancellationToken)
+        await Task.Run(() => TryDeleteDirectory(preparation.CandidateDirectory), cancellationToken)
             .ConfigureAwait(false);
     }
 
     internal static async Task<string> ComputeDirectoryFingerprintAsync(
         string directory,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory));
         if (!Directory.Exists(root))
@@ -240,8 +218,7 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
         var files = EnumerateFilesWithoutLinks(root);
         if (files.Length > MaximumInstallationFileCount)
         {
-            throw new InvalidDataException(
-                "The installation contains too many files to update safely.");
+            throw new InvalidDataException("The installation contains too many files to update safely.");
         }
 
         long totalBytes = 0;
@@ -253,18 +230,17 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
             totalBytes = checked(totalBytes + before.Length);
             if (totalBytes > MaximumInstallationBytes)
             {
-                throw new InvalidDataException(
-                    "The installation is too large to update safely.");
+                throw new InvalidDataException("The installation is too large to update safely.");
             }
 
             await using var stream = OpenRead(file.FullPath);
-            var fileHash = await SHA256.HashDataAsync(stream, cancellationToken)
-                .ConfigureAwait(false);
+            var fileHash = await SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false);
             var after = file.RefreshSnapshot();
             if (before != after)
             {
                 throw new InvalidDataException(
-                    $"Installation file changed while it was being checked: {file.RelativePath}");
+                    $"Installation file changed while it was being checked: {file.RelativePath}"
+                );
             }
 
             AppendInt32(fingerprint, Encoding.UTF8.GetByteCount(file.RelativePath));
@@ -281,7 +257,8 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
     internal static async Task CopyDirectoryAsync(
         string source,
         string destination,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var files = EnumerateFilesWithoutLinks(source);
         Directory.CreateDirectory(destination);
@@ -297,29 +274,25 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
                 FileAccess.Write,
                 FileShare.None,
                 128 * 1024,
-                FileOptions.Asynchronous | FileOptions.SequentialScan);
-            await input.CopyToAsync(output, 128 * 1024, cancellationToken)
-                .ConfigureAwait(false);
+                FileOptions.Asynchronous | FileOptions.SequentialScan
+            );
+            await input.CopyToAsync(output, 128 * 1024, cancellationToken).ConfigureAwait(false);
             await output.FlushAsync(cancellationToken).ConfigureAwait(false);
             output.Flush(flushToDisk: true);
             output.Close();
             if (!OperatingSystem.IsWindows())
             {
-                File.SetUnixFileMode(
-                    target,
-                    File.GetUnixFileMode(file.FullPath));
+                File.SetUnixFileMode(target, File.GetUnixFileMode(file.FullPath));
             }
         }
     }
 
-    private static FingerprintFile[] EnumerateFilesWithoutLinks(
-        string root)
+    private static FingerprintFile[] EnumerateFilesWithoutLinks(string root)
     {
         var rootInfo = new DirectoryInfo(root);
         if ((rootInfo.Attributes & FileAttributes.ReparsePoint) != 0)
         {
-            throw new InvalidDataException(
-                "The update directory cannot be a symbolic link.");
+            throw new InvalidDataException("The update directory cannot be a symbolic link.");
         }
 
         var files = new List<FingerprintFile>();
@@ -331,8 +304,7 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
             {
                 if ((child.Attributes & FileAttributes.ReparsePoint) != 0)
                 {
-                    throw new InvalidDataException(
-                        $"The update directory contains link '{child.FullName}'.");
+                    throw new InvalidDataException($"The update directory contains link '{child.FullName}'.");
                 }
 
                 pending.Push(child);
@@ -342,64 +314,54 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
             {
                 if ((file.Attributes & FileAttributes.ReparsePoint) != 0)
                 {
-                    throw new InvalidDataException(
-                        $"The update directory contains link '{file.FullName}'.");
+                    throw new InvalidDataException($"The update directory contains link '{file.FullName}'.");
                 }
 
-                files.Add(new FingerprintFile(
-                    file.FullName,
-                    Path.GetRelativePath(root, file.FullName)
-                        .Replace(Path.DirectorySeparatorChar, '/')));
+                files.Add(
+                    new FingerprintFile(
+                        file.FullName,
+                        Path.GetRelativePath(root, file.FullName).Replace(Path.DirectorySeparatorChar, '/')
+                    )
+                );
             }
         }
 
-        return files
-            .OrderBy(file => file.RelativePath, StringComparer.Ordinal)
-            .ToArray();
+        return files.OrderBy(file => file.RelativePath, StringComparer.Ordinal).ToArray();
     }
 
     internal static void ValidateDistinctRoots(string installation, string ready)
     {
-        var comparison = OperatingSystem.IsWindows()
-            ? StringComparison.OrdinalIgnoreCase
-            : StringComparison.Ordinal;
+        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
         var installationPrefix = installation + Path.DirectorySeparatorChar;
         var readyPrefix = ready + Path.DirectorySeparatorChar;
-        if (string.Equals(installation, ready, comparison)
+        if (
+            string.Equals(installation, ready, comparison)
             || installation.StartsWith(readyPrefix, comparison)
-            || ready.StartsWith(installationPrefix, comparison))
+            || ready.StartsWith(installationPrefix, comparison)
+        )
         {
-            throw new InvalidDataException(
-                "The staged update and current installation must be separate directories.");
+            throw new InvalidDataException("The staged update and current installation must be separate directories.");
         }
     }
 
     private static void EnsureMissing(params string[] paths)
     {
-        var existing = paths.FirstOrDefault(path =>
-            Directory.Exists(path) || File.Exists(path));
+        var existing = paths.FirstOrDefault(path => Directory.Exists(path) || File.Exists(path));
         if (existing is not null)
         {
-            throw new IOException(
-                $"The update transaction path already exists: {existing}");
+            throw new IOException($"The update transaction path already exists: {existing}");
         }
     }
 
     private static string ResolveChild(string root, string relativePath)
     {
         var fullRoot = Path.GetFullPath(root);
-        var child = Path.GetFullPath(Path.Combine(
-            fullRoot,
-            relativePath.Replace('/', Path.DirectorySeparatorChar)));
-        var prefix = Path.TrimEndingDirectorySeparator(fullRoot)
-            + Path.DirectorySeparatorChar;
-        var comparison = OperatingSystem.IsWindows()
-            ? StringComparison.OrdinalIgnoreCase
-            : StringComparison.Ordinal;
+        var child = Path.GetFullPath(Path.Combine(fullRoot, relativePath.Replace('/', Path.DirectorySeparatorChar)));
+        var prefix = Path.TrimEndingDirectorySeparator(fullRoot) + Path.DirectorySeparatorChar;
+        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
         if (!child.StartsWith(prefix, comparison))
         {
-            throw new InvalidDataException(
-                $"Update file escaped its directory: {relativePath}");
+            throw new InvalidDataException($"Update file escaped its directory: {relativePath}");
         }
 
         return child;
@@ -413,7 +375,8 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
             FileAccess.Read,
             FileShare.Read,
             128 * 1024,
-            FileOptions.Asynchronous | FileOptions.SequentialScan);
+            FileOptions.Asynchronous | FileOptions.SequentialScan
+        );
     }
 
     private static void AppendInt32(IncrementalHash hash, int value)
@@ -439,8 +402,7 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
                 Directory.Delete(path, recursive: true);
             }
         }
-        catch (Exception exception) when (
-            exception is IOException or UnauthorizedAccessException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
             // Cleanup is best effort; retained files support recovery diagnostics.
         }
@@ -454,13 +416,10 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
             info.Refresh();
             if (!info.Exists)
             {
-                throw new InvalidDataException(
-                    $"Update file disappeared while being checked: {RelativePath}");
+                throw new InvalidDataException($"Update file disappeared while being checked: {RelativePath}");
             }
 
-            var mode = OperatingSystem.IsWindows()
-                ? 0
-                : (int)File.GetUnixFileMode(FullPath);
+            var mode = OperatingSystem.IsWindows() ? 0 : (int)File.GetUnixFileMode(FullPath);
             return new FileSnapshot(info.Length, info.LastWriteTimeUtc.Ticks, mode);
         }
     }
@@ -473,15 +432,13 @@ public sealed class ReleaseInstallationTransaction
     private readonly ReleasePackageStagingService stagingService;
     private readonly Action<ReleaseInstallationCheckpoint>? checkpoint;
 
-    public ReleaseInstallationTransaction(
-        ReleasePackageStagingService? stagingService = null)
-        : this(stagingService, null)
-    {
-    }
+    public ReleaseInstallationTransaction(ReleasePackageStagingService? stagingService = null)
+        : this(stagingService, null) { }
 
     internal ReleaseInstallationTransaction(
         ReleasePackageStagingService? stagingService,
-        Action<ReleaseInstallationCheckpoint>? checkpoint)
+        Action<ReleaseInstallationCheckpoint>? checkpoint
+    )
     {
         this.stagingService = stagingService ?? new ReleasePackageStagingService();
         this.checkpoint = checkpoint;
@@ -489,40 +446,31 @@ public sealed class ReleaseInstallationTransaction
 
     public async Task<ReleaseInstallationResult> ApplyAsync(
         ReleaseInstallationPreparation preparation,
-        Func<string, IReadOnlyList<string>, CancellationToken, Task<bool>>
-            launchAndConfirm,
-        CancellationToken cancellationToken = default)
+        Func<string, IReadOnlyList<string>, CancellationToken, Task<bool>> launchAndConfirm,
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentNullException.ThrowIfNull(preparation);
         ArgumentNullException.ThrowIfNull(launchAndConfirm);
         ValidatePreparationPaths(preparation);
-        await EnsureCandidateReadyAsync(preparation, cancellationToken)
-            .ConfigureAwait(false);
+        await EnsureCandidateReadyAsync(preparation, cancellationToken).ConfigureAwait(false);
         var fingerprint = await ReleaseInstallationPreparer
-            .ComputeDirectoryFingerprintAsync(
-                preparation.InstallationDirectory,
-                cancellationToken)
+            .ComputeDirectoryFingerprintAsync(preparation.InstallationDirectory, cancellationToken)
             .ConfigureAwait(false);
-        if (!string.Equals(
-                fingerprint,
-                preparation.InstallationFingerprint,
-                StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(fingerprint, preparation.InstallationFingerprint, StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidDataException(
-                "The installation changed after update preparation; no files were replaced.");
+                "The installation changed after update preparation; no files were replaced."
+            );
         }
 
         checkpoint?.Invoke(ReleaseInstallationCheckpoint.BeforeBackup);
-        Directory.Move(
-            preparation.InstallationDirectory,
-            preparation.BackupDirectory);
+        Directory.Move(preparation.InstallationDirectory, preparation.BackupDirectory);
         var candidateActivated = false;
         try
         {
             checkpoint?.Invoke(ReleaseInstallationCheckpoint.BackupMoved);
-            Directory.Move(
-                preparation.CandidateDirectory,
-                preparation.InstallationDirectory);
+            Directory.Move(preparation.CandidateDirectory, preparation.InstallationDirectory);
             candidateActivated = true;
             checkpoint?.Invoke(ReleaseInstallationCheckpoint.CandidateActivated);
         }
@@ -537,18 +485,19 @@ public sealed class ReleaseInstallationTransaction
         try
         {
             healthy = await launchAndConfirm(
-                    Path.Combine(
-                        preparation.InstallationDirectory,
-                        preparation.EntryPoint),
+                    Path.Combine(preparation.InstallationDirectory, preparation.EntryPoint),
                     preparation.StartupArguments,
-                    cancellationToken)
+                    cancellationToken
+                )
                 .ConfigureAwait(false);
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidOperationException
-                or TaskCanceledException)
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or UnauthorizedAccessException
+                        or InvalidOperationException
+                        or TaskCanceledException
+            )
         {
             launchError = exception.Message;
         }
@@ -560,7 +509,8 @@ public sealed class ReleaseInstallationTransaction
                 preparation.InstallationDirectory,
                 preparation.BackupDirectory,
                 null,
-                null);
+                null
+            );
         }
 
         RestoreBackup(preparation, candidateActivated: true);
@@ -569,139 +519,114 @@ public sealed class ReleaseInstallationTransaction
             preparation.InstallationDirectory,
             null,
             preparation.FailedDirectory,
-            launchError ?? "The replacement process did not confirm healthy startup.");
+            launchError ?? "The replacement process did not confirm healthy startup."
+        );
     }
 
     private async Task EnsureCandidateReadyAsync(
         ReleaseInstallationPreparation preparation,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         if (preparation.RequiresElevation)
         {
-            await stagingService.VerifyReadyAsync(
+            await stagingService
+                .VerifyReadyAsync(
                     preparation.Version,
                     preparation.RuntimeIdentifier,
                     preparation.ReadyDirectory,
                     preparation.ManifestSha256,
-                    cancellationToken)
+                    cancellationToken
+                )
                 .ConfigureAwait(false);
             try
             {
-                await ReleaseInstallationPreparer.CopyDirectoryAsync(
-                        preparation.ReadyDirectory,
-                        preparation.CandidateDirectory,
-                        cancellationToken)
+                await ReleaseInstallationPreparer
+                    .CopyDirectoryAsync(preparation.ReadyDirectory, preparation.CandidateDirectory, cancellationToken)
                     .ConfigureAwait(false);
             }
             catch
             {
-                ReleaseInstallationPreparer.TryDeleteDirectory(
-                    preparation.CandidateDirectory);
+                ReleaseInstallationPreparer.TryDeleteDirectory(preparation.CandidateDirectory);
                 throw;
             }
         }
 
-        await stagingService.VerifyReadyAsync(
+        await stagingService
+            .VerifyReadyAsync(
                 preparation.Version,
                 preparation.RuntimeIdentifier,
                 preparation.CandidateDirectory,
                 preparation.ManifestSha256,
-                cancellationToken)
+                cancellationToken
+            )
             .ConfigureAwait(false);
     }
 
-    private static void RestoreBackup(
-        ReleaseInstallationPreparation preparation,
-        bool candidateActivated)
+    private static void RestoreBackup(ReleaseInstallationPreparation preparation, bool candidateActivated)
     {
         if (candidateActivated && Directory.Exists(preparation.InstallationDirectory))
         {
-            if (Directory.Exists(preparation.FailedDirectory)
-                || File.Exists(preparation.FailedDirectory))
+            if (Directory.Exists(preparation.FailedDirectory) || File.Exists(preparation.FailedDirectory))
             {
-                throw new IOException(
-                    "The failed-update preservation directory already exists.");
+                throw new IOException("The failed-update preservation directory already exists.");
             }
 
-            Directory.Move(
-                preparation.InstallationDirectory,
-                preparation.FailedDirectory);
+            Directory.Move(preparation.InstallationDirectory, preparation.FailedDirectory);
         }
 
-        if (!Directory.Exists(preparation.InstallationDirectory)
-            && Directory.Exists(preparation.BackupDirectory))
+        if (!Directory.Exists(preparation.InstallationDirectory) && Directory.Exists(preparation.BackupDirectory))
         {
-            Directory.Move(
-                preparation.BackupDirectory,
-                preparation.InstallationDirectory);
+            Directory.Move(preparation.BackupDirectory, preparation.InstallationDirectory);
         }
     }
 
-    private static void ValidatePreparationPaths(
-        ReleaseInstallationPreparation preparation)
+    private static void ValidatePreparationPaths(ReleaseInstallationPreparation preparation)
     {
-        var expectedEntryPoint = preparation.RuntimeIdentifier == "win-x64"
-            ? "SrvSurvey.Desktop.exe"
-            : "SrvSurvey.Desktop";
-        if (preparation.RequestId == Guid.Empty
+        var expectedEntryPoint =
+            preparation.RuntimeIdentifier == "win-x64" ? "SrvSurvey.Desktop.exe" : "SrvSurvey.Desktop";
+        if (
+            preparation.RequestId == Guid.Empty
             || preparation.Version.Build < 0
             || preparation.RuntimeIdentifier is not ("win-x64" or "linux-x64")
-            || (preparation.RequiresElevation
-                && preparation.RuntimeIdentifier != "win-x64")
+            || (preparation.RequiresElevation && preparation.RuntimeIdentifier != "win-x64")
             || preparation.ManifestSha256.Length != 64
             || preparation.ManifestSha256.Any(character => !Uri.IsHexDigit(character))
             || preparation.InstallationFingerprint.Length != 64
-            || preparation.InstallationFingerprint.Any(character =>
-                !Uri.IsHexDigit(character))
-            || !string.Equals(
-                preparation.EntryPoint,
-                expectedEntryPoint,
-                StringComparison.Ordinal))
+            || preparation.InstallationFingerprint.Any(character => !Uri.IsHexDigit(character))
+            || !string.Equals(preparation.EntryPoint, expectedEntryPoint, StringComparison.Ordinal)
+        )
         {
-            throw new InvalidDataException(
-                "The update installation preparation is invalid.");
+            throw new InvalidDataException("The update installation preparation is invalid.");
         }
 
-        var installation = Path.TrimEndingDirectorySeparator(
-            Path.GetFullPath(preparation.InstallationDirectory));
-        var ready = Path.TrimEndingDirectorySeparator(
-            Path.GetFullPath(preparation.ReadyDirectory));
+        var installation = Path.TrimEndingDirectorySeparator(Path.GetFullPath(preparation.InstallationDirectory));
+        var ready = Path.TrimEndingDirectorySeparator(Path.GetFullPath(preparation.ReadyDirectory));
         ReleaseInstallationPreparer.ValidateDistinctRoots(installation, ready);
-        var parent = Directory.GetParent(installation)?.FullName
-            ?? throw new InvalidDataException(
-                "The installation cannot be a file-system root.");
+        var parent =
+            Directory.GetParent(installation)?.FullName
+            ?? throw new InvalidDataException("The installation cannot be a file-system root.");
         var name = Path.GetFileName(installation);
         var id = preparation.RequestId.ToString("N");
         var expectedCandidate = Path.Combine(parent, $".{name}-update-{id}");
         var expectedBackup = Path.Combine(parent, $".{name}-backup-{id}");
         var expectedFailed = Path.Combine(parent, $".{name}-failed-{id}");
-        var comparison = OperatingSystem.IsWindows()
-            ? StringComparison.OrdinalIgnoreCase
-            : StringComparison.Ordinal;
-        if (!string.Equals(
-                Path.GetFullPath(preparation.CandidateDirectory),
-                expectedCandidate,
-                comparison)
-            || !string.Equals(
-                Path.GetFullPath(preparation.BackupDirectory),
-                expectedBackup,
-                comparison)
-            || !string.Equals(
-                Path.GetFullPath(preparation.FailedDirectory),
-                expectedFailed,
-                comparison)
-            || (preparation.RequiresElevation
-                && (Directory.Exists(expectedCandidate)
-                    || File.Exists(expectedCandidate)))
-            || (!preparation.RequiresElevation
-                && !Directory.Exists(expectedCandidate))
+        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        if (
+            !string.Equals(Path.GetFullPath(preparation.CandidateDirectory), expectedCandidate, comparison)
+            || !string.Equals(Path.GetFullPath(preparation.BackupDirectory), expectedBackup, comparison)
+            || !string.Equals(Path.GetFullPath(preparation.FailedDirectory), expectedFailed, comparison)
+            || (
+                preparation.RequiresElevation && (Directory.Exists(expectedCandidate) || File.Exists(expectedCandidate))
+            )
+            || (!preparation.RequiresElevation && !Directory.Exists(expectedCandidate))
             || Directory.Exists(expectedBackup)
             || File.Exists(expectedBackup)
             || Directory.Exists(expectedFailed)
-            || File.Exists(expectedFailed))
+            || File.Exists(expectedFailed)
+        )
         {
-            throw new InvalidDataException(
-                "The update transaction paths are invalid or already occupied.");
+            throw new InvalidDataException("The update transaction paths are invalid or already occupied.");
         }
     }
 }

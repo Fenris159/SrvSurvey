@@ -12,7 +12,8 @@ namespace SrvSurvey.Desktop.ViewModels;
 [System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Design",
     "CA1001:Types that own disposable fields should be disposable",
-    Justification = "The operation owns and disposes each cancellation source when it completes.")]
+    Justification = "The operation owns and disposes each cancellation source when it completes."
+)]
 public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
 {
     private readonly CommanderProfileCatalog commanderCatalog;
@@ -34,8 +35,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
     private JournalPostProcessorCommanderViewModel? selectedCommander;
     private IReadOnlyList<JournalPostProcessorStatisticViewModel> statistics = [];
     private IReadOnlyList<JournalPostProcessorSpeciesViewModel> systemSpecies = [];
-    private IReadOnlyList<HistoricalGreenGasGiantMatch>
-        historicalGreenGasGiantMatches = [];
+    private IReadOnlyList<HistoricalGreenGasGiantMatch> historicalGreenGasGiantMatches = [];
     private DateTimeOffset startDate;
     private string statusMessage = "Refresh commanders to prepare historical journal analysis.";
     private string trailblazersSummary = string.Empty;
@@ -55,43 +55,31 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         HistoricalSystemRebuildService systemRebuildService,
         CommanderCodexJournalImporter codexImporter,
         IGreenGasGiantClient? greenGasGiantClient = null,
-        Func<bool>? isGreenGasGiantPublicationEnabled = null)
+        Func<bool>? isGreenGasGiantPublicationEnabled = null
+    )
     {
-        this.commanderCatalog = commanderCatalog
-            ?? throw new ArgumentNullException(nameof(commanderCatalog));
+        this.commanderCatalog = commanderCatalog ?? throw new ArgumentNullException(nameof(commanderCatalog));
         this.analyzer = analyzer ?? throw new ArgumentNullException(nameof(analyzer));
-        this.systemBiologyAnalyzer = systemBiologyAnalyzer
-            ?? throw new ArgumentNullException(nameof(systemBiologyAnalyzer));
-        this.systemRebuildService = systemRebuildService
-            ?? throw new ArgumentNullException(nameof(systemRebuildService));
-        this.codexImporter = codexImporter
-            ?? throw new ArgumentNullException(nameof(codexImporter));
-        this.greenGasGiantClient = greenGasGiantClient
-            ?? new GreenGasGiantClient();
-        this.isGreenGasGiantPublicationEnabled =
-            isGreenGasGiantPublicationEnabled ?? (() => false);
+        this.systemBiologyAnalyzer =
+            systemBiologyAnalyzer ?? throw new ArgumentNullException(nameof(systemBiologyAnalyzer));
+        this.systemRebuildService =
+            systemRebuildService ?? throw new ArgumentNullException(nameof(systemRebuildService));
+        this.codexImporter = codexImporter ?? throw new ArgumentNullException(nameof(codexImporter));
+        this.greenGasGiantClient = greenGasGiantClient ?? new GreenGasGiantClient();
+        this.isGreenGasGiantPublicationEnabled = isGreenGasGiantPublicationEnabled ?? (() => false);
         var localNow = DateTimeOffset.Now;
-        startDate = new DateTimeOffset(
-            localNow.Date.AddDays(-7),
-            localNow.Offset);
+        startDate = new DateTimeOffset(localNow.Date.AddDays(-7), localNow.Offset);
         analyzeCommand = new AsyncCommand(AnalyzeAsync, CanRun);
         analyzeSystemsCommand = new AsyncCommand(AnalyzeSystemsAsync, CanRun);
-        rebuildSystemsCommand = new AsyncCommand(
-            RebuildSystemsAsync,
-            CanRebuildSystems);
-        rebuildCodexCommand = new AsyncCommand(
-            RebuildCodexAsync,
-            CanRebuildCodex);
+        rebuildSystemsCommand = new AsyncCommand(RebuildSystemsAsync, CanRebuildSystems);
+        rebuildCodexCommand = new AsyncCommand(RebuildCodexAsync, CanRebuildCodex);
         publishGreenGasGiantsCommand = new AsyncCommand(
             PublishHistoricalGreenGasGiantsAsync,
-            CanPublishHistoricalGreenGasGiants);
-        refreshCommandersCommand = new AsyncCommand(
-            RefreshCommandersAsync,
-            () => !IsBusy);
+            CanPublishHistoricalGreenGasGiants
+        );
+        refreshCommandersCommand = new AsyncCommand(RefreshCommandersAsync, () => !IsBusy);
         cancelCommand = new DelegateCommand(Cancel, () => IsBusy);
-        setBeginningCommand = new DelegateCommand(
-            SetBeginningOfTime,
-            () => !IsBusy);
+        setBeginningCommand = new DelegateCommand(SetBeginningOfTime, () => !IsBusy);
         AnalyzeCommand = analyzeCommand;
         AnalyzeSystemsCommand = analyzeSystemsCommand;
         RebuildSystemsCommand = rebuildSystemsCommand;
@@ -146,13 +134,14 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         get => startDate;
         set
         {
-            var normalized = value < JournalHistoryAnalyzer.EliteReleaseDate
-                ? JournalHistoryAnalyzer.EliteReleaseDate
-                : (value > DateTimeOffset.Now) switch
-                {
-                    true => DateTimeOffset.Now,
-                    false => value
-                };
+            var normalized =
+                value < JournalHistoryAnalyzer.EliteReleaseDate
+                    ? JournalHistoryAnalyzer.EliteReleaseDate
+                    : (value > DateTimeOffset.Now) switch
+                    {
+                        true => DateTimeOffset.Now,
+                        false => value,
+                    };
             if (SetField(ref startDate, normalized))
             {
                 CodexRebuildConfirmed = false;
@@ -186,11 +175,9 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         private set => SetField(ref systemAnalysisSummary, value);
     }
 
-    public int HistoricalGreenGasGiantCandidateCount =>
-        historicalGreenGasGiantMatches.Count;
+    public int HistoricalGreenGasGiantCandidateCount => historicalGreenGasGiantMatches.Count;
 
-    public bool HasHistoricalGreenGasGiantCandidates =>
-        HistoricalGreenGasGiantCandidateCount > 0;
+    public bool HasHistoricalGreenGasGiantCandidates => HistoricalGreenGasGiantCandidateCount > 0;
 
     public string HistoricalGreenGasGiantSummary =>
         HasHistoricalGreenGasGiantCandidates
@@ -274,33 +261,29 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         {
             IsBusy = true;
             var currentId = SelectedCommander?.FrontierId;
-            var result = await commanderCatalog.LoadAsync(
-                CancellationToken.None);
-            Commanders = result.Profiles
-                .Select(profile => new JournalPostProcessorCommanderViewModel(
+            var result = await commanderCatalog.LoadAsync(CancellationToken.None);
+            Commanders = result
+                .Profiles.Select(profile => new JournalPostProcessorCommanderViewModel(
                     profile.FrontierId,
-                    profile.CommanderName))
+                    profile.CommanderName
+                ))
                 .ToArray();
-            SelectedCommander = Commanders.FirstOrDefault(commander =>
-                    string.Equals(
-                        commander.FrontierId,
-                        currentId,
-                        StringComparison.OrdinalIgnoreCase))
-                ?? (Commanders.Count > 0 ? Commanders[0] : null);
-            StatusMessage = result.Warnings.Count > 0
-                ? $"Found {Commanders.Count:N0} commander profile(s). "
-                    + string.Join(" ", result.Warnings)
-                : (Commanders.Count == 0) switch
-                {
-                    true => "No commander profiles were found. Import the original profile first.",
-                    false => $"Choose one of {Commanders.Count:N0} commander profile(s) and a start date."
-                };
+            SelectedCommander =
+                Commanders.FirstOrDefault(commander =>
+                    string.Equals(commander.FrontierId, currentId, StringComparison.OrdinalIgnoreCase)
+                ) ?? (Commanders.Count > 0 ? Commanders[0] : null);
+            StatusMessage =
+                result.Warnings.Count > 0
+                    ? $"Found {Commanders.Count:N0} commander profile(s). " + string.Join(" ", result.Warnings)
+                    : (Commanders.Count == 0) switch
+                    {
+                        true => "No commander profiles were found. Import the original profile first.",
+                        false => $"Choose one of {Commanders.Count:N0} commander profile(s) and a start date.",
+                    };
         }
-        catch (Exception exception) when (
-            exception is IOException or UnauthorizedAccessException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            StatusMessage = "Commander profiles could not be loaded: "
-                + exception.Message;
+            StatusMessage = "Commander profiles could not be loaded: " + exception.Message;
         }
         finally
         {
@@ -315,10 +298,9 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
             return;
         }
 
-        var match = Commanders.FirstOrDefault(commander => string.Equals(
-            commander.FrontierId,
-            frontierId,
-            StringComparison.OrdinalIgnoreCase));
+        var match = Commanders.FirstOrDefault(commander =>
+            string.Equals(commander.FrontierId, frontierId, StringComparison.OrdinalIgnoreCase)
+        );
         if (match is not null)
         {
             SelectedCommander = match;
@@ -347,14 +329,16 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
             {
                 ProgressMaximum = value.TotalFileCount;
                 ProgressValue = value.ProcessedFileCount;
-                StatusMessage = $"Analyzing journal {value.ProcessedFileCount:N0} of "
+                StatusMessage =
+                    $"Analyzing journal {value.ProcessedFileCount:N0} of "
                     + $"{value.TotalFileCount:N0}: {value.CurrentFile}";
             });
             var result = await analyzer.AnalyzeAsync(
                 SelectedCommander.FrontierId,
                 StartDate,
                 progress,
-                operationCancellation.Token);
+                operationCancellation.Token
+            );
             progress.Close();
             ApplyResult(result);
         }
@@ -363,14 +347,11 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
             progress?.Close();
             StatusMessage = "Historical journal analysis was cancelled; no profile data changed.";
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
             progress?.Close();
-            StatusMessage = "Historical journals could not be analyzed: "
-                + exception.Message;
+            StatusMessage = "Historical journals could not be analyzed: " + exception.Message;
         }
         finally
         {
@@ -383,18 +364,15 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
 
     public async Task PublishHistoricalGreenGasGiantsAsync()
     {
-        if (!CanPublishHistoricalGreenGasGiants()
-            || SelectedCommander is null)
+        if (!CanPublishHistoricalGreenGasGiants() || SelectedCommander is null)
         {
-            StatusMessage =
-                "Analyze journals, review the candidate count, and confirm historical publication first.";
+            StatusMessage = "Analyze journals, review the candidate count, and confirm historical publication first.";
             return;
         }
 
         if (!isGreenGasGiantPublicationEnabled())
         {
-            StatusMessage =
-                "Enable Green Gas Giant uploads in Settings before publishing historical candidates.";
+            StatusMessage = "Enable Green Gas Giant uploads in Settings before publishing historical candidates.";
             return;
         }
 
@@ -421,27 +399,27 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
                             SelectedCommander.CommanderName,
                             match.Tag,
                             match.StarPosition,
-                            match.RawJournalJson),
-                        operationCancellation.Token);
+                            match.RawJournalJson
+                        ),
+                        operationCancellation.Token
+                    );
                     remaining.Remove(match);
                     published++;
                 }
-                catch (Exception exception) when (
-                    exception is HttpRequestException
-                        or InvalidDataException
-                        or TaskCanceledException
-                        or ArgumentException)
+                catch (Exception exception)
+                    when (exception
+                            is HttpRequestException
+                                or InvalidDataException
+                                or TaskCanceledException
+                                or ArgumentException
+                    )
                 {
-                    if (exception is TaskCanceledException
-                        && operationCancellation.IsCancellationRequested)
+                    if (exception is TaskCanceledException && operationCancellation.IsCancellationRequested)
                     {
-                        throw new OperationCanceledException(
-                            operationCancellation.Token);
+                        throw new OperationCanceledException(operationCancellation.Token);
                     }
 
-                    warnings.Add(
-                        $"Candidate {index + 1:N0} was not uploaded: "
-                            + exception.Message);
+                    warnings.Add($"Candidate {index + 1:N0} was not uploaded: " + exception.Message);
                 }
 
                 ProgressValue = index + 1;
@@ -450,12 +428,12 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
             SetHistoricalGreenGasGiantMatches(remaining);
             StatusMessage =
                 $"Published {published:N0} historical Green Gas Giant candidate(s)."
-                + (remaining.Count > 0
-                    ? $" {remaining.Count:N0} failed candidate(s) remain available for a confirmed retry."
-                    : string.Empty)
-                + (warnings.Count > 0
-                    ? " " + string.Join(" ", warnings)
-                    : string.Empty);
+                + (
+                    remaining.Count > 0
+                        ? $" {remaining.Count:N0} failed candidate(s) remain available for a confirmed retry."
+                        : string.Empty
+                )
+                + (warnings.Count > 0 ? " " + string.Join(" ", warnings) : string.Empty);
         }
         catch (OperationCanceledException)
         {
@@ -476,8 +454,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
     {
         if (!CanRebuildCodex() || SelectedCommander is null)
         {
-            StatusMessage =
-                "Select a commander and confirm the all-history Codex merge first.";
+            StatusMessage = "Select a commander and confirm the all-history Codex merge first.";
             return;
         }
 
@@ -493,41 +470,44 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
             {
                 ProgressMaximum = value.TotalFileCount;
                 ProgressValue = value.ProcessedFileCount;
-                StatusMessage = $"Merging Codex journal {value.ProcessedFileCount:N0} of "
+                StatusMessage =
+                    $"Merging Codex journal {value.ProcessedFileCount:N0} of "
                     + $"{value.TotalFileCount:N0}: {value.CurrentFile}";
             });
             var result = await codexImporter.ImportAsync(
                 SelectedCommander.FrontierId,
                 progress,
-                operationCancellation.Token);
+                operationCancellation.Token
+            );
             progress.Close();
             ProgressMaximum = Math.Max(1, result.JournalFileCount);
             ProgressValue = result.JournalFileCount;
-            StatusMessage = $"Scanned {result.JournalFileCount:N0} journal(s) and "
+            StatusMessage =
+                $"Scanned {result.JournalFileCount:N0} journal(s) and "
                 + $"{result.DiscoveryEventCount:N0} Codex event(s); merged "
                 + $"{result.ChangedEntryCount:N0} earlier global/regional first(s)."
-                + (result.MalformedLineCount > 0
-                    ? $" Ignored {result.MalformedLineCount:N0} malformed line(s)."
-                    : string.Empty)
-                + (result.Warnings.Count > 0
-                    ? " " + string.Join(" ", result.Warnings)
-                    : string.Empty);
+                + (
+                    result.MalformedLineCount > 0
+                        ? $" Ignored {result.MalformedLineCount:N0} malformed line(s)."
+                        : string.Empty
+                )
+                + (result.Warnings.Count > 0 ? " " + string.Join(" ", result.Warnings) : string.Empty);
         }
         catch (OperationCanceledException)
         {
             progress?.Close();
-            StatusMessage =
-                "Commander Codex rebuilding was cancelled. Completed atomic merges remain valid.";
+            StatusMessage = "Commander Codex rebuilding was cancelled. Completed atomic merges remain valid.";
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException
-                or InvalidOperationException)
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or UnauthorizedAccessException
+                        or InvalidDataException
+                        or InvalidOperationException
+            )
         {
             progress?.Close();
-            StatusMessage = "Commander Codex rebuilding could not finish: "
-                + exception.Message;
+            StatusMessage = "Commander Codex rebuilding could not finish: " + exception.Message;
         }
         finally
         {
@@ -555,54 +535,54 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
             SystemAnalysisSummary = string.Empty;
             ProgressValue = 0;
             ProgressMaximum = 1;
-            StatusMessage =
-                "Reading copied system files without changing them...";
+            StatusMessage = "Reading copied system files without changing them...";
             progress = new GuardedProgress<LegacySystemBiologyAnalysisProgress>(value =>
             {
                 ProgressMaximum = value.TotalFileCount;
                 ProgressValue = value.ProcessedFileCount;
-                StatusMessage = $"Reading system file {value.ProcessedFileCount:N0} of "
+                StatusMessage =
+                    $"Reading system file {value.ProcessedFileCount:N0} of "
                     + $"{value.TotalFileCount:N0}: {value.CurrentFile}";
             });
             var result = await systemBiologyAnalyzer.AnalyzeAsync(
                 SelectedCommander.FrontierId,
                 progress,
-                operationCancellation.Token);
+                operationCancellation.Token
+            );
             progress.Close();
-            SystemSpecies = result.Species
-                .Select(species => new JournalPostProcessorSpeciesViewModel(
+            SystemSpecies = result
+                .Species.Select(species => new JournalPostProcessorSpeciesViewModel(
                     species.Name,
                     species.Count,
-                    FormatAtmospheres(species.AtmosphereCompositions)))
+                    FormatAtmospheres(species.AtmosphereCompositions)
+                ))
                 .ToArray();
             ProgressMaximum = Math.Max(1, result.CandidateFileCount);
             ProgressValue = result.CandidateFileCount;
-            SystemAnalysisSummary = $"Read {result.ProcessedFileCount:N0} of "
+            SystemAnalysisSummary =
+                $"Read {result.ProcessedFileCount:N0} of "
                 + $"{result.CandidateFileCount:N0} system file(s), "
                 + $"{result.BodyCount:N0} bodies, and {result.OrganismCount:N0} organisms; "
                 + $"found {result.Species.Count:N0} localized species."
-                + (result.Warnings.Count > 0
-                    ? $" {result.Warnings.Count:N0} file warning(s) are shown in the status."
-                    : string.Empty);
-            StatusMessage = SystemAnalysisSummary
-                + (result.Warnings.Count > 0
-                    ? " " + string.Join(" ", result.Warnings)
-                    : string.Empty);
+                + (
+                    result.Warnings.Count > 0
+                        ? $" {result.Warnings.Count:N0} file warning(s) are shown in the status."
+                        : string.Empty
+                );
+            StatusMessage =
+                SystemAnalysisSummary
+                + (result.Warnings.Count > 0 ? " " + string.Join(" ", result.Warnings) : string.Empty);
         }
         catch (OperationCanceledException)
         {
             progress?.Close();
-            StatusMessage =
-                "System-file analysis was cancelled; no system or profile data changed.";
+            StatusMessage = "System-file analysis was cancelled; no system or profile data changed.";
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
             progress?.Close();
-            StatusMessage = "System files could not be analyzed: "
-                + exception.Message;
+            StatusMessage = "System files could not be analyzed: " + exception.Message;
         }
         finally
         {
@@ -617,8 +597,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
     {
         if (!CanRebuildSystems() || SelectedCommander is null)
         {
-            StatusMessage =
-                "Select a commander and confirm the verified historical system rebuild first.";
+            StatusMessage = "Select a commander and confirm the verified historical system rebuild first.";
             return;
         }
 
@@ -629,43 +608,47 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
             IsBusy = true;
             ProgressValue = 0;
             ProgressMaximum = 1;
-            StatusMessage =
-                "Reconstructing exploration history before creating verified backups...";
+            StatusMessage = "Reconstructing exploration history before creating verified backups...";
             progress = new GuardedProgress<HistoricalSystemRebuildProgress>(value =>
             {
                 ProgressMaximum = value.TotalCount;
                 ProgressValue = value.ProcessedCount;
-                StatusMessage = $"{value.Stage}: {value.ProcessedCount:N0} of "
+                StatusMessage =
+                    $"{value.Stage}: {value.ProcessedCount:N0} of "
                     + $"{value.TotalCount:N0}"
-                    + (string.IsNullOrWhiteSpace(value.CurrentFile)
-                        ? string.Empty
-                        : $" - {value.CurrentFile}");
+                    + (string.IsNullOrWhiteSpace(value.CurrentFile) ? string.Empty : $" - {value.CurrentFile}");
             });
             var result = await systemRebuildService.RebuildAsync(
                 SelectedCommander.FrontierId,
                 SelectedCommander.CommanderName,
                 StartDate,
                 progress,
-                operationCancellation.Token);
+                operationCancellation.Token
+            );
             progress.Close();
             ProgressMaximum = Math.Max(1, result.CandidateJournalFileCount);
             ProgressValue = result.CandidateJournalFileCount;
-            StatusMessage = $"Replayed {result.AppliedExplorationEventCount:N0} exploration "
+            StatusMessage =
+                $"Replayed {result.AppliedExplorationEventCount:N0} exploration "
                 + $"event(s) into {result.ReconstructedSystemCount:N0} system(s); updated "
                 + $"{result.UpdatedSystemFileCount:N0} and created "
                 + $"{result.CreatedSystemFileCount:N0} system file(s)."
-                + (string.IsNullOrWhiteSpace(result.BackupDirectory)
-                    ? " No system files required activation."
-                    : $" Verified backup: {result.BackupDirectory}")
-                + (result.SkippedRecentFileCount > 0
-                    ? $" Skipped {result.SkippedRecentFileCount:N0} recent active journal(s)."
-                    : string.Empty)
-                + (result.SkippedLegacyFileCount > 0
-                    ? $" Skipped {result.SkippedLegacyFileCount:N0} pre-Odyssey journal(s); their Codex firsts remain available through the separate Codex merge."
-                    : string.Empty)
-                + (result.Warnings.Count > 0
-                    ? " " + string.Join(" ", result.Warnings)
-                    : string.Empty);
+                + (
+                    string.IsNullOrWhiteSpace(result.BackupDirectory)
+                        ? " No system files required activation."
+                        : $" Verified backup: {result.BackupDirectory}"
+                )
+                + (
+                    result.SkippedRecentFileCount > 0
+                        ? $" Skipped {result.SkippedRecentFileCount:N0} recent active journal(s)."
+                        : string.Empty
+                )
+                + (
+                    result.SkippedLegacyFileCount > 0
+                        ? $" Skipped {result.SkippedLegacyFileCount:N0} pre-Odyssey journal(s); their Codex firsts remain available through the separate Codex merge."
+                        : string.Empty
+                )
+                + (result.Warnings.Count > 0 ? " " + string.Join(" ", result.Warnings) : string.Empty);
         }
         catch (OperationCanceledException)
         {
@@ -673,15 +656,16 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
             StatusMessage =
                 "Historical system reconstruction was cancelled before activation; active system files did not change.";
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException
-                or InvalidOperationException)
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or UnauthorizedAccessException
+                        or InvalidDataException
+                        or InvalidOperationException
+            )
         {
             progress?.Close();
-            StatusMessage = "Historical system reconstruction could not finish: "
-                + exception.Message;
+            StatusMessage = "Historical system reconstruction could not finish: " + exception.Message;
         }
         finally
         {
@@ -710,19 +694,19 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
 
     private bool CanRebuildSystems() => CanRun() && SystemRebuildConfirmed;
 
-    private bool CanPublishHistoricalGreenGasGiants() => CanRun()
-        && HistoricalGreenGasGiantPublishConfirmed
-        && HasHistoricalGreenGasGiantCandidates;
+    private bool CanPublishHistoricalGreenGasGiants() =>
+        CanRun() && HistoricalGreenGasGiantPublishConfirmed && HasHistoricalGreenGasGiantCandidates;
 
-    private static string FormatAtmospheres(
-        IReadOnlyList<LegacyAtmosphereCompositionSummary> atmospheres)
+    private static string FormatAtmospheres(IReadOnlyList<LegacyAtmosphereCompositionSummary> atmospheres)
     {
         return atmospheres.Count == 0
             ? "No atmosphere composition recorded"
             : string.Join(
                 "; ",
                 atmospheres.Select(atmosphere =>
-                    $"{(string.IsNullOrEmpty(atmosphere.Components) ? "Empty composition" : atmosphere.Components)} x{atmosphere.Count:N0}"));
+                    $"{(string.IsNullOrEmpty(atmosphere.Components) ? "Empty composition" : atmosphere.Components)} x{atmosphere.Count:N0}"
+                )
+            );
     }
 
     private void ApplyResult(JournalHistoryAnalysisResult result)
@@ -754,26 +738,34 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
             before.Transferred,
             after.Bought,
             after.Sold,
-            after.Transferred);
+            after.Transferred
+        );
         ProgressMaximum = Math.Max(1, result.CandidateFileCount);
         ProgressValue = result.CandidateFileCount;
-        StatusMessage = $"Analyzed {result.ProcessedFileCount:N0} matching journal(s) "
+        StatusMessage =
+            $"Analyzed {result.ProcessedFileCount:N0} matching journal(s) "
             + $"and {result.ParsedEventCount:N0} event(s)."
-            + (result.SkippedCommanderFileCount > 0
-                ? $" Skipped {result.SkippedCommanderFileCount:N0} other-commander journal(s)."
-                : string.Empty)
-            + (result.SkippedRecentActiveFileCount > 0
-                ? $" Skipped {result.SkippedRecentActiveFileCount:N0} recent active journal(s)."
-                : string.Empty)
-            + (result.MalformedLineCount > 0
-                ? $" Ignored {result.MalformedLineCount:N0} malformed line(s)."
-                : string.Empty)
-            + (result.GreenGasGiantMatches.Count > 0
-                ? $" Found {result.GreenGasGiantMatches.Count:N0} Green Gas Giant candidate(s); no candidate was published."
-                : string.Empty)
-            + (result.Warnings.Count > 0
-                ? " " + string.Join(" ", result.Warnings)
-                : string.Empty);
+            + (
+                result.SkippedCommanderFileCount > 0
+                    ? $" Skipped {result.SkippedCommanderFileCount:N0} other-commander journal(s)."
+                    : string.Empty
+            )
+            + (
+                result.SkippedRecentActiveFileCount > 0
+                    ? $" Skipped {result.SkippedRecentActiveFileCount:N0} recent active journal(s)."
+                    : string.Empty
+            )
+            + (
+                result.MalformedLineCount > 0
+                    ? $" Ignored {result.MalformedLineCount:N0} malformed line(s)."
+                    : string.Empty
+            )
+            + (
+                result.GreenGasGiantMatches.Count > 0
+                    ? $" Found {result.GreenGasGiantMatches.Count:N0} Green Gas Giant candidate(s); no candidate was published."
+                    : string.Empty
+            )
+            + (result.Warnings.Count > 0 ? " " + string.Join(" ", result.Warnings) : string.Empty);
     }
 
     private void RaiseCommandStates()
@@ -793,8 +785,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         SetHistoricalGreenGasGiantMatches([]);
     }
 
-    private void SetHistoricalGreenGasGiantMatches(
-        IReadOnlyList<HistoricalGreenGasGiantMatch> matches)
+    private void SetHistoricalGreenGasGiantMatches(IReadOnlyList<HistoricalGreenGasGiantMatch> matches)
     {
         historicalGreenGasGiantMatches = matches;
         HistoricalGreenGasGiantPublishConfirmed = false;
@@ -804,10 +795,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         publishGreenGasGiantsCommand.RaiseCanExecuteChanged();
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -819,15 +807,12 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         return true;
     }
 
-    private void OnPropertyChanged(
-        [CallerMemberName] string? propertyName = null)
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private sealed class DelegateCommand(
-        Action execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class DelegateCommand(Action execute, Func<bool> canExecute) : ICommand
     {
         public event EventHandler? CanExecuteChanged;
 
@@ -887,9 +872,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         }
     }
 
-    private sealed class AsyncCommand(
-        Func<Task> execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class AsyncCommand(Func<Task> execute, Func<bool> canExecute) : ICommand
     {
         private bool running;
 
@@ -924,21 +907,14 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
     }
 }
 
-public sealed record JournalPostProcessorCommanderViewModel(
-    string FrontierId,
-    string CommanderName)
+public sealed record JournalPostProcessorCommanderViewModel(string FrontierId, string CommanderName)
 {
     public string DisplayName => $"{CommanderName} ({FrontierId})";
 }
 
-public sealed record JournalPostProcessorStatisticViewModel(
-    string Name,
-    string Value);
+public sealed record JournalPostProcessorStatisticViewModel(string Name, string Value);
 
-public sealed record JournalPostProcessorSpeciesViewModel(
-    string Name,
-    int Count,
-    string AtmosphereSummary)
+public sealed record JournalPostProcessorSpeciesViewModel(string Name, int Count, string AtmosphereSummary)
 {
     public string CountText => $"{Count:N0} observation(s)";
 }

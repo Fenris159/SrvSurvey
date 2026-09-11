@@ -19,8 +19,7 @@ public sealed partial class OverlayPositionEditorWindow : Window
 
     protected override void OnKeyDown(KeyEventArgs e)
     {
-        if (e.Key == Key.Escape
-            && DataContext is OverlayInteractionViewModel viewModel)
+        if (e.Key == Key.Escape && DataContext is OverlayInteractionViewModel viewModel)
         {
             viewModel.Cancel();
             e.Handled = true;

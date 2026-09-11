@@ -8,9 +8,7 @@ namespace SrvSurvey.Desktop;
 public sealed partial class BodyInformationOverlayWindow : Window
 {
     public BodyInformationOverlayWindow()
-        : this(CreateDesignViewModel())
-    {
-    }
+        : this(CreateDesignViewModel()) { }
 
     public BodyInformationOverlayWindow(SystemSurveyOverlayViewModel viewModel)
     {
@@ -24,10 +22,11 @@ public sealed partial class BodyInformationOverlayWindow : Window
         var settingsPath = Path.Combine(
             Path.GetTempPath(),
             "SrvSurvey-SystemSurvey-Overlay-Design",
-            "ui-settings.json");
+            "ui-settings.json"
+        );
         return new SystemSurveyOverlayViewModel(
-            new SystemSurveyViewModel(
-                new SystemSurveySettingsStore(settingsPath)),
-            OverlayPlatformCapabilities.DetectCurrent());
+            new SystemSurveyViewModel(new SystemSurveySettingsStore(settingsPath)),
+            OverlayPlatformCapabilities.DetectCurrent()
+        );
     }
 }

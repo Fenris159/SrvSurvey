@@ -7,23 +7,22 @@ namespace SrvSurvey.Desktop.Controls;
 
 public sealed class GuardianAlignmentControl : Control
 {
-    public static readonly StyledProperty<GuardianAlignmentMode?> ModeProperty =
-        AvaloniaProperty.Register<
-            GuardianAlignmentControl,
-            GuardianAlignmentMode?>(nameof(Mode));
-    public static readonly StyledProperty<IBrush?> GuideBrushProperty =
-        AvaloniaProperty.Register<GuardianAlignmentControl, IBrush?>(
-            nameof(GuideBrush));
-    public static readonly StyledProperty<IBrush?> ShadowBrushProperty =
-        AvaloniaProperty.Register<GuardianAlignmentControl, IBrush?>(
-            nameof(ShadowBrush));
+    public static readonly StyledProperty<GuardianAlignmentMode?> ModeProperty = AvaloniaProperty.Register<
+        GuardianAlignmentControl,
+        GuardianAlignmentMode?
+    >(nameof(Mode));
+    public static readonly StyledProperty<IBrush?> GuideBrushProperty = AvaloniaProperty.Register<
+        GuardianAlignmentControl,
+        IBrush?
+    >(nameof(GuideBrush));
+    public static readonly StyledProperty<IBrush?> ShadowBrushProperty = AvaloniaProperty.Register<
+        GuardianAlignmentControl,
+        IBrush?
+    >(nameof(ShadowBrush));
 
     static GuardianAlignmentControl()
     {
-        AffectsRender<GuardianAlignmentControl>(
-            ModeProperty,
-            GuideBrushProperty,
-            ShadowBrushProperty);
+        AffectsRender<GuardianAlignmentControl>(ModeProperty, GuideBrushProperty, ShadowBrushProperty);
     }
 
     public GuardianAlignmentMode? Mode
@@ -62,12 +61,7 @@ public sealed class GuardianAlignmentControl : Control
         DrawMode(context, mode, bounds, center, guidePen);
     }
 
-    private static void DrawMode(
-        DrawingContext context,
-        GuardianAlignmentMode mode,
-        Rect bounds,
-        Point center,
-        Pen pen)
+    private static void DrawMode(DrawingContext context, GuardianAlignmentMode mode, Rect bounds, Point center, Pen pen)
     {
         switch (mode)
         {
@@ -121,56 +115,39 @@ public sealed class GuardianAlignmentControl : Control
         }
     }
 
-    private static void DrawButtress(
-        DrawingContext context,
-        Rect bounds,
-        Point center,
-        Pen pen)
+    private static void DrawButtress(DrawingContext context, Rect bounds, Point center, Pen pen)
     {
-        context.DrawLine(
-            pen,
-            center,
-            new Point(center.X, bounds.Bottom - 8));
-        context.DrawLine(
-            pen,
-            new Point(center.X - 40, center.Y + 35),
-            new Point(center.X - 40, bounds.Bottom - 45));
-        context.DrawLine(
-            pen,
-            new Point(center.X + 40, center.Y + 35),
-            new Point(center.X + 40, bounds.Bottom - 45));
+        context.DrawLine(pen, center, new Point(center.X, bounds.Bottom - 8));
+        context.DrawLine(pen, new Point(center.X - 40, center.Y + 35), new Point(center.X - 40, bounds.Bottom - 45));
+        context.DrawLine(pen, new Point(center.X + 40, center.Y + 35), new Point(center.X + 40, bounds.Bottom - 45));
     }
 
-    private static void DrawRelicTower(
-        DrawingContext context,
-        Rect bounds,
-        Point center,
-        Pen pen)
+    private static void DrawRelicTower(DrawingContext context, Rect bounds, Point center, Pen pen)
     {
         var spacing = Math.Min(42, bounds.Width * 0.08);
         context.DrawLine(
             pen,
             new Point(center.X - spacing, center.Y - 80),
-            new Point(center.X - spacing, bounds.Bottom - 20));
+            new Point(center.X - spacing, bounds.Bottom - 20)
+        );
         context.DrawLine(
             pen,
             new Point(center.X + spacing, center.Y - 80),
-            new Point(center.X + spacing, bounds.Bottom - 20));
+            new Point(center.X + spacing, bounds.Bottom - 20)
+        );
         context.DrawLine(
             pen,
             new Point(center.X - spacing - 25, center.Y - 80),
-            new Point(center.X - spacing, center.Y - 80));
+            new Point(center.X - spacing, center.Y - 80)
+        );
         context.DrawLine(
             pen,
             new Point(center.X + spacing, center.Y - 80),
-            new Point(center.X + spacing + 25, center.Y - 80));
+            new Point(center.X + spacing + 25, center.Y - 80)
+        );
     }
 
-    private static void DrawAlpha(
-        DrawingContext context,
-        Rect bounds,
-        Point center,
-        Pen pen)
+    private static void DrawAlpha(DrawingContext context, Rect bounds, Point center, Pen pen)
     {
         var y = bounds.Bottom - Math.Max(70, bounds.Height * 0.18);
         var target = new Point(center.X, y);
@@ -179,193 +156,116 @@ public sealed class GuardianAlignmentControl : Control
             context.DrawEllipse(null, pen, target, radius, radius);
         }
 
-        context.DrawLine(
-            pen,
-            new Point(center.X + 68, y + 35),
-            new Point(bounds.Right - 10, y + 35));
+        context.DrawLine(pen, new Point(center.X + 68, y + 35), new Point(bounds.Right - 10, y + 35));
     }
 
-    private static void DrawBeta(
-        DrawingContext context,
-        Rect bounds,
-        Point center,
-        Pen pen)
+    private static void DrawBeta(DrawingContext context, Rect bounds, Point center, Pen pen)
     {
         var target = new Point(center.X, bounds.Top + bounds.Height * 0.32);
         context.DrawEllipse(null, pen, target, 48, 48);
-        context.DrawLine(
-            pen,
-            new Point(bounds.Left + 10, target.Y + 25),
-            new Point(center.X - 105, target.Y + 25));
-        context.DrawLine(
-            pen,
-            new Point(center.X + 105, target.Y + 25),
-            new Point(bounds.Right - 10, target.Y + 25));
-        context.DrawLine(
-            pen,
-            new Point(center.X, target.Y + 48),
-            new Point(center.X, bounds.Bottom - 20));
+        context.DrawLine(pen, new Point(bounds.Left + 10, target.Y + 25), new Point(center.X - 105, target.Y + 25));
+        context.DrawLine(pen, new Point(center.X + 105, target.Y + 25), new Point(bounds.Right - 10, target.Y + 25));
+        context.DrawLine(pen, new Point(center.X, target.Y + 48), new Point(center.X, bounds.Bottom - 20));
     }
 
-    private static void DrawGamma(
-        DrawingContext context,
-        Rect bounds,
-        Point center,
-        Pen pen)
+    private static void DrawGamma(DrawingContext context, Rect bounds, Point center, Pen pen)
     {
-        var target = new Point(
-            bounds.Left + bounds.Width * 0.7,
-            bounds.Top + bounds.Height * 0.52);
+        var target = new Point(bounds.Left + bounds.Width * 0.7, bounds.Top + bounds.Height * 0.52);
         context.DrawEllipse(null, pen, target, 30, 30);
-        context.DrawLine(
-            pen,
-            new Point(center.X, target.Y),
-            new Point(target.X - 30, target.Y));
-        context.DrawLine(
-            pen,
-            new Point(target.X, target.Y + 30),
-            new Point(target.X, target.Y + 80));
+        context.DrawLine(pen, new Point(center.X, target.Y), new Point(target.X - 30, target.Y));
+        context.DrawLine(pen, new Point(target.X, target.Y + 30), new Point(target.X, target.Y + 80));
     }
 
-    private static void DrawBear(
-        DrawingContext context,
-        Rect bounds,
-        Point center,
-        Pen pen)
+    private static void DrawBear(DrawingContext context, Rect bounds, Point center, Pen pen)
     {
         var unit = Math.Min(bounds.Width, bounds.Height) / 24;
         var y = center.Y + (bounds.Height * 0.05);
-        context.DrawLine(
-            pen,
-            new Point(bounds.Left + 30, y),
-            new Point(bounds.Right - 30, y));
+        context.DrawLine(pen, new Point(bounds.Left + 30, y), new Point(bounds.Right - 30, y));
         context.DrawLine(
             pen,
             new Point(center.X - (unit * 2), center.Y - unit),
-            new Point(center.X - (unit * 2), center.Y - (unit * 7)));
+            new Point(center.X - (unit * 2), center.Y - (unit * 7))
+        );
         context.DrawLine(
             pen,
             new Point(center.X + (unit * 2), center.Y - unit),
-            new Point(center.X + (unit * 2), center.Y - (unit * 7)));
-        context.DrawLine(
-            pen,
-            new Point(center.X, center.Y - (unit * 10)),
-            new Point(center.X, center.Y - (unit * 16)));
+            new Point(center.X + (unit * 2), center.Y - (unit * 7))
+        );
+        context.DrawLine(pen, new Point(center.X, center.Y - (unit * 10)), new Point(center.X, center.Y - (unit * 16)));
     }
 
-    private static void DrawBowl(
-        DrawingContext context,
-        Rect bounds,
-        Point center,
-        Pen pen)
+    private static void DrawBowl(DrawingContext context, Rect bounds, Point center, Pen pen)
     {
         var y = center.Y - (bounds.Height * 0.1);
-        context.DrawLine(
-            pen,
-            new Point(bounds.Left + 30, y),
-            new Point(bounds.Right - 30, y));
-        context.DrawLine(
-            pen,
-            new Point(center.X, bounds.Top + 25),
-            new Point(center.X, bounds.Bottom - 25));
+        context.DrawLine(pen, new Point(bounds.Left + 30, y), new Point(bounds.Right - 30, y));
+        context.DrawLine(pen, new Point(center.X, bounds.Top + 25), new Point(center.X, bounds.Bottom - 25));
         var radius = bounds.Height / 7;
         var circleCenter = new Point(center.X, center.Y + radius);
-        context.DrawEllipse(
-            null,
-            pen,
-            circleCenter,
-            radius,
-            radius);
-        context.DrawEllipse(
-            null,
-            pen,
-            circleCenter,
-            radius * 1.3,
-            radius * 1.3);
+        context.DrawEllipse(null, pen, circleCenter, radius, radius);
+        context.DrawEllipse(null, pen, circleCenter, radius * 1.3, radius * 1.3);
     }
 
-    private static void DrawFistbump(
-        DrawingContext context,
-        Rect bounds,
-        Point center,
-        Pen pen)
+    private static void DrawFistbump(DrawingContext context, Rect bounds, Point center, Pen pen)
     {
         var size = Math.Min(bounds.Width, bounds.Height) * 0.12;
         var crossCenter = new Point(center.X, center.Y - bounds.Height * 0.1);
         context.DrawLine(
             pen,
             new Point(crossCenter.X - size, crossCenter.Y - size),
-            new Point(crossCenter.X + size, crossCenter.Y + size));
+            new Point(crossCenter.X + size, crossCenter.Y + size)
+        );
         context.DrawLine(
             pen,
             new Point(crossCenter.X + size, crossCenter.Y - size),
-            new Point(crossCenter.X - size, crossCenter.Y + size));
+            new Point(crossCenter.X - size, crossCenter.Y + size)
+        );
         context.DrawLine(
             pen,
             new Point(center.X, crossCenter.Y - (size * 2)),
-            new Point(center.X, crossCenter.Y - (size * 4)));
+            new Point(center.X, crossCenter.Y - (size * 4))
+        );
     }
 
-    private static void DrawHammerbot(
-        DrawingContext context,
-        Rect bounds,
-        Point center,
-        Pen pen)
+    private static void DrawHammerbot(DrawingContext context, Rect bounds, Point center, Pen pen)
     {
         var xUnit = bounds.Width * 0.035;
         var yUnit = bounds.Height * 0.06;
-        context.DrawLine(
-            pen,
-            new Point(center.X - xUnit, center.Y - 10),
-            new Point(center.X + xUnit, center.Y - 10));
+        context.DrawLine(pen, new Point(center.X - xUnit, center.Y - 10), new Point(center.X + xUnit, center.Y - 10));
         context.DrawLine(
             pen,
             new Point(center.X - (xUnit * 6), center.Y + 10),
-            new Point(center.X - (xUnit * 4), center.Y + 10));
+            new Point(center.X - (xUnit * 4), center.Y + 10)
+        );
         context.DrawLine(
             pen,
             new Point(center.X + (xUnit * 4), center.Y + 10),
-            new Point(center.X + (xUnit * 6), center.Y + 10));
-        context.DrawLine(
-            pen,
-            new Point(center.X, center.Y + yUnit),
-            new Point(center.X, bounds.Bottom - 20));
+            new Point(center.X + (xUnit * 6), center.Y + 10)
+        );
+        context.DrawLine(pen, new Point(center.X, center.Y + yUnit), new Point(center.X, bounds.Bottom - 20));
         context.DrawLine(
             pen,
             new Point(center.X - (xUnit * 1.7), center.Y + yUnit),
-            new Point(center.X - xUnit, center.Y + (yUnit * 2)));
+            new Point(center.X - xUnit, center.Y + (yUnit * 2))
+        );
         context.DrawLine(
             pen,
             new Point(center.X + (xUnit * 1.7), center.Y + yUnit),
-            new Point(center.X + xUnit, center.Y + (yUnit * 2)));
+            new Point(center.X + xUnit, center.Y + (yUnit * 2))
+        );
     }
 
-    private static void DrawRobolobster(
-        DrawingContext context,
-        Rect bounds,
-        Point center,
-        Pen pen)
+    private static void DrawRobolobster(DrawingContext context, Rect bounds, Point center, Pen pen)
     {
         var target = new Point(center.X, center.Y - (bounds.Height * 0.04));
         var radius = Math.Min(bounds.Width, bounds.Height) * 0.12;
         context.DrawEllipse(null, pen, target, radius, radius);
         context.DrawEllipse(null, pen, target, radius * 1.5, radius * 1.5);
-        context.DrawLine(
-            pen,
-            new Point(center.X, bounds.Top + 25),
-            new Point(center.X, target.Y + (radius * 2.5)));
+        context.DrawLine(pen, new Point(center.X, bounds.Top + 25), new Point(center.X, target.Y + (radius * 2.5)));
     }
 
-    private static void DrawVerticalTarget(
-        DrawingContext context,
-        Rect bounds,
-        Point center,
-        Pen pen)
+    private static void DrawVerticalTarget(DrawingContext context, Rect bounds, Point center, Pen pen)
     {
         var half = Math.Min(100, bounds.Height * 0.22);
-        context.DrawLine(
-            pen,
-            new Point(center.X, center.Y - half),
-            new Point(center.X, center.Y - (half * 2)));
+        context.DrawLine(pen, new Point(center.X, center.Y - half), new Point(center.X, center.Y - (half * 2)));
     }
 }

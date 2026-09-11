@@ -9,9 +9,7 @@ namespace SrvSurvey.Desktop;
 public sealed partial class MiniTrackOverlayWindow : Window
 {
     public MiniTrackOverlayWindow()
-        : this(CreateDesignViewModel())
-    {
-    }
+        : this(CreateDesignViewModel()) { }
 
     public MiniTrackOverlayWindow(SurfaceSurveyOverlayViewModel viewModel)
     {
@@ -25,17 +23,17 @@ public sealed partial class MiniTrackOverlayWindow : Window
         var root = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "SrvSurvey",
-            "DesignTime");
-        var survey = new SystemSurveyViewModel(
-            new SystemSurveySettingsStore(Path.Combine(root, "ui-settings.json")));
+            "DesignTime"
+        );
+        var survey = new SystemSurveyViewModel(new SystemSurveySettingsStore(Path.Combine(root, "ui-settings.json")));
         var store = new SystemSurfaceStore(root);
         return new SurfaceSurveyOverlayViewModel(
             new SurfaceSurveyViewModel(
                 survey,
                 store,
-                new SurfaceSurveyJournalTracker(
-                    store,
-                    ExobiologyReferenceCatalog.LoadEmbedded())),
-            Platform.Overlay.OverlayPlatformCapabilities.DetectCurrent());
+                new SurfaceSurveyJournalTracker(store, ExobiologyReferenceCatalog.LoadEmbedded())
+            ),
+            Platform.Overlay.OverlayPlatformCapabilities.DetectCurrent()
+        );
     }
 }

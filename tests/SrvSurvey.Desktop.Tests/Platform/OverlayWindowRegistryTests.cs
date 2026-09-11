@@ -24,37 +24,29 @@ public sealed class OverlayWindowRegistryTests
         registry.SetPresentationVisual(galaxyMapWindow, galaxyMapContent);
         registry.SetPresentationVisual(biologyWindow, biologyContent);
 
-        Assert.True(registry.TryGetPlotterName(
-            galaxyMapWindow,
-            out var plotterName));
+        Assert.True(registry.TryGetPlotterName(galaxyMapWindow, out var plotterName));
         Assert.Equal("PlotGalMap", plotterName);
         Assert.Equal(4, changes);
-        Assert.Equal(
-            ["PlotGalMap", "PlotBioSystem"],
-            registry.Snapshot().Select(entry => entry.PlotterName).ToArray());
+        Assert.Equal(["PlotGalMap", "PlotBioSystem"], registry.Snapshot().Select(entry => entry.PlotterName).ToArray());
         Assert.All(registry.Snapshot(), entry => Assert.True(entry.IsVisible));
 
         registry.SetGalaxyMapContextActive(active: true);
 
         Assert.True(registry.IsGalaxyMapContextActive);
-        Assert.True(registry.Snapshot().Single(entry =>
-            entry.PlotterName == "PlotGalMap").IsVisible);
-        Assert.False(registry.Snapshot().Single(entry =>
-            entry.PlotterName == "PlotBioSystem").IsVisible);
+        Assert.True(registry.Snapshot().Single(entry => entry.PlotterName == "PlotGalMap").IsVisible);
+        Assert.False(registry.Snapshot().Single(entry => entry.PlotterName == "PlotBioSystem").IsVisible);
         Assert.Same(
             biologyContent,
-            registry.Snapshot().Single(entry =>
-                entry.PlotterName == "PlotBioSystem").RenderSource);
+            registry.Snapshot().Single(entry => entry.PlotterName == "PlotBioSystem").RenderSource
+        );
 
         registry.SetPresentationVisible(galaxyMapWindow, visible: false);
         registry.SetPresentationVisible(galaxyMapWindow, visible: false);
         registry.SetGalaxyMapContextActive(active: false);
 
         Assert.False(registry.IsGalaxyMapContextActive);
-        Assert.False(registry.Snapshot().Single(entry =>
-            entry.PlotterName == "PlotGalMap").IsVisible);
-        Assert.True(registry.Snapshot().Single(entry =>
-            entry.PlotterName == "PlotBioSystem").IsVisible);
+        Assert.False(registry.Snapshot().Single(entry => entry.PlotterName == "PlotGalMap").IsVisible);
+        Assert.True(registry.Snapshot().Single(entry => entry.PlotterName == "PlotBioSystem").IsVisible);
     }
 
     [AvaloniaFact]
@@ -65,11 +57,9 @@ public sealed class OverlayWindowRegistryTests
         var unknown = new Window();
         registry.Register(registered, "PlotJumpInfo");
 
-        var exception = Assert.Throws<InvalidOperationException>(() =>
-            registry.Register(registered, "PlotBioSystem"));
+        var exception = Assert.Throws<InvalidOperationException>(() => registry.Register(registered, "PlotBioSystem"));
         Assert.Contains("PlotJumpInfo", exception.Message);
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
-            registry.Register(unknown, "PlotUnknown"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => registry.Register(unknown, "PlotUnknown"));
         Assert.False(registry.TryGetPlotterName(unknown, out var plotterName));
         Assert.Empty(plotterName);
 
@@ -115,44 +105,39 @@ public sealed class OverlayWindowRegistryTests
     [Fact]
     public void GalaxyMapContextKeepsOnlyMapGuidancePresentationsVisible()
     {
-        Assert.True(OverlayWindowRegistry.ShouldPresentInContext(
-            "PlotGalMap",
-            galaxyMapActive: true));
-        Assert.True(OverlayWindowRegistry.ShouldPresentInContext(
-            "PlotSphericalSearch",
-            galaxyMapActive: true));
-        Assert.True(OverlayWindowRegistry.ShouldPresentInContext(
-            "PlotJumpInfo",
-            galaxyMapActive: true));
-        Assert.False(OverlayWindowRegistry.ShouldPresentInContext(
-            "PlotBioSystem",
-            galaxyMapActive: true));
-        Assert.False(OverlayWindowRegistry.ShouldPresentInContext(
-            "PlotRouteBio",
-            galaxyMapActive: true));
-        Assert.False(OverlayWindowRegistry.ShouldPresentInContext(
-            "PlotPulse",
-            galaxyMapActive: true));
-        Assert.True(OverlayWindowRegistry.ShouldPresentInContext(
-            "PlotBioSystem",
-            galaxyMapActive: false));
+        Assert.True(OverlayWindowRegistry.ShouldPresentInContext("PlotGalMap", galaxyMapActive: true));
+        Assert.True(OverlayWindowRegistry.ShouldPresentInContext("PlotSphericalSearch", galaxyMapActive: true));
+        Assert.True(OverlayWindowRegistry.ShouldPresentInContext("PlotJumpInfo", galaxyMapActive: true));
+        Assert.False(OverlayWindowRegistry.ShouldPresentInContext("PlotBioSystem", galaxyMapActive: true));
+        Assert.False(OverlayWindowRegistry.ShouldPresentInContext("PlotRouteBio", galaxyMapActive: true));
+        Assert.False(OverlayWindowRegistry.ShouldPresentInContext("PlotPulse", galaxyMapActive: true));
+        Assert.True(OverlayWindowRegistry.ShouldPresentInContext("PlotBioSystem", galaxyMapActive: false));
     }
 
     [Fact]
     public void GlobalSuppressionRemainsInForceAfterLeavingGalaxyMap()
     {
-        Assert.False(OverlayWindowRegistry.ResolvePresentationVisibility(
-            "PlotBioSystem",
-            requestedVisibility: false,
-            galaxyMapActive: false));
-        Assert.False(OverlayWindowRegistry.ResolvePresentationVisibility(
-            "PlotBioSystem",
-            requestedVisibility: true,
-            galaxyMapActive: true));
-        Assert.True(OverlayWindowRegistry.ResolvePresentationVisibility(
-            "PlotBioSystem",
-            requestedVisibility: true,
-            galaxyMapActive: false));
+        Assert.False(
+            OverlayWindowRegistry.ResolvePresentationVisibility(
+                "PlotBioSystem",
+                requestedVisibility: false,
+                galaxyMapActive: false
+            )
+        );
+        Assert.False(
+            OverlayWindowRegistry.ResolvePresentationVisibility(
+                "PlotBioSystem",
+                requestedVisibility: true,
+                galaxyMapActive: true
+            )
+        );
+        Assert.True(
+            OverlayWindowRegistry.ResolvePresentationVisibility(
+                "PlotBioSystem",
+                requestedVisibility: true,
+                galaxyMapActive: false
+            )
+        );
     }
 
     [AvaloniaFact]
@@ -171,16 +156,14 @@ public sealed class OverlayWindowRegistryTests
 
         Assert.False(registry.ShouldPresent("PlotBioSystem"));
         Assert.False(registry.ShouldPresent("PlotRouteBio"));
-        Assert.False(registry.Snapshot().Single(entry =>
-            entry.PlotterName == "PlotBioSystem").IsVisible);
+        Assert.False(registry.Snapshot().Single(entry => entry.PlotterName == "PlotBioSystem").IsVisible);
         Assert.False(separateWindow.IsVisible);
 
         registry.SetUserVisibility("PlotBioSystem", visible: true);
         registry.SetUserVisibility("PlotRouteBio", visible: true);
 
         Assert.True(registry.ShouldPresent("PlotBioSystem"));
-        Assert.True(registry.Snapshot().Single(entry =>
-            entry.PlotterName == "PlotBioSystem").IsVisible);
+        Assert.True(registry.Snapshot().Single(entry => entry.PlotterName == "PlotBioSystem").IsVisible);
         Assert.True(separateWindow.IsVisible);
         presentationWindow.Close();
         separateWindow.Close();
@@ -206,10 +189,9 @@ public sealed class OverlayWindowRegistryTests
                 var decision = registry.GetDecision(window);
                 Assert.True(decision.ShouldHost);
                 Assert.False(decision.ShouldPresent);
-                Assert.Equal(
-                    OverlayVisibilityReasons.EditorSuppressed,
-                    decision.Reasons);
-            });
+                Assert.Equal(OverlayVisibilityReasons.EditorSuppressed, decision.Reasons);
+            }
+        );
         Assert.All(registry.Snapshot(), entry => Assert.False(entry.IsVisible));
 
         registry.SetEditorSuppressed(suppressed: false);
@@ -227,10 +209,7 @@ public sealed class OverlayWindowRegistryTests
         registry.Register(window, "PlotJumpInfo");
         window.Show();
 
-        registry.SetGlobalSuppression(
-            manualSuppressed: true,
-            suitSuppressed: true,
-            sessionSuppressed: true);
+        registry.SetGlobalSuppression(manualSuppressed: true, suitSuppressed: true, sessionSuppressed: true);
 
         var decision = registry.GetDecision(window);
         Assert.False(decision.Permitted);
@@ -238,15 +217,13 @@ public sealed class OverlayWindowRegistryTests
         Assert.False(decision.ShouldPresent);
         Assert.Equal(
             OverlayVisibilityReasons.ManualSuppressed
-            | OverlayVisibilityReasons.SuitSuppressed
-            | OverlayVisibilityReasons.SessionSuppressed,
-            decision.Reasons);
+                | OverlayVisibilityReasons.SuitSuppressed
+                | OverlayVisibilityReasons.SessionSuppressed,
+            decision.Reasons
+        );
         Assert.False(window.IsVisible);
 
-        registry.SetGlobalSuppression(
-            manualSuppressed: false,
-            suitSuppressed: false,
-            sessionSuppressed: false);
+        registry.SetGlobalSuppression(manualSuppressed: false, suitSuppressed: false, sessionSuppressed: false);
 
         Assert.True(window.IsVisible);
         window.Close();
@@ -263,9 +240,7 @@ public sealed class OverlayWindowRegistryTests
         registry.SetEditorSuppressed(suppressed: false);
 
         Assert.False(window.IsVisible);
-        Assert.Equal(
-            OverlayVisibilityReasons.DomainNotRequested,
-            registry.GetDecision(window).Reasons);
+        Assert.Equal(OverlayVisibilityReasons.DomainNotRequested, registry.GetDecision(window).Reasons);
         window.Close();
     }
 
@@ -282,9 +257,7 @@ public sealed class OverlayWindowRegistryTests
         registry.SetEditorSuppressed(suppressed: false);
 
         Assert.False(Assert.Single(registry.Snapshot()).IsVisible);
-        Assert.Equal(
-            OverlayVisibilityReasons.DomainNotRequested,
-            registry.GetDecision(window).Reasons);
+        Assert.Equal(OverlayVisibilityReasons.DomainNotRequested, registry.GetDecision(window).Reasons);
         window.Close();
     }
 
@@ -301,17 +274,13 @@ public sealed class OverlayWindowRegistryTests
 
         Assert.True(guardianWindow.IsVisible);
         Assert.False(biologyWindow.IsVisible);
-        Assert.Equal(
-            OverlayVisibilityReasons.PriorityObscured,
-            registry.GetDecision(biologyWindow).Reasons);
+        Assert.Equal(OverlayVisibilityReasons.PriorityObscured, registry.GetDecision(biologyWindow).Reasons);
 
         registry.SetUserVisibility("PlotGuardians", visible: false);
 
         Assert.False(guardianWindow.IsVisible);
         Assert.True(biologyWindow.IsVisible);
-        Assert.Equal(
-            OverlayVisibilityReasons.None,
-            registry.GetDecision(biologyWindow).Reasons);
+        Assert.Equal(OverlayVisibilityReasons.None, registry.GetDecision(biologyWindow).Reasons);
         guardianWindow.Close();
         biologyWindow.Close();
     }
@@ -333,9 +302,7 @@ public sealed class OverlayWindowRegistryTests
         firstGuardianWindow.Close();
 
         Assert.False(surfaceWindow.IsVisible);
-        Assert.Equal(
-            OverlayVisibilityReasons.PriorityObscured,
-            registry.GetDecision(surfaceWindow).Reasons);
+        Assert.Equal(OverlayVisibilityReasons.PriorityObscured, registry.GetDecision(surfaceWindow).Reasons);
 
         secondGuardianWindow.Close();
 
@@ -361,9 +328,7 @@ public sealed class OverlayWindowRegistryTests
 
         Assert.True(fssWindow.IsVisible);
         Assert.False(guardianSummaryWindow.IsVisible);
-        Assert.Equal(
-            OverlayVisibilityReasons.PriorityObscured,
-            registry.GetDecision(guardianSummaryWindow).Reasons);
+        Assert.Equal(OverlayVisibilityReasons.PriorityObscured, registry.GetDecision(guardianSummaryWindow).Reasons);
         guardianSummaryWindow.Close();
         fssWindow.Close();
     }
@@ -377,11 +342,14 @@ public sealed class OverlayWindowRegistryTests
     [Fact]
     public void UserVisibilityParticipatesInPresentationResolution()
     {
-        Assert.False(OverlayWindowRegistry.ResolvePresentationVisibility(
-            "PlotGalMap",
-            requestedVisibility: true,
-            galaxyMapActive: false,
-            userVisible: false));
+        Assert.False(
+            OverlayWindowRegistry.ResolvePresentationVisibility(
+                "PlotGalMap",
+                requestedVisibility: true,
+                galaxyMapActive: false,
+                userVisible: false
+            )
+        );
     }
 
     [Fact]
@@ -398,10 +366,11 @@ public sealed class OverlayWindowRegistryTests
                 "PlotSphericalSearch",
                 "PlotStationInfo",
             ],
-            OverlayLayoutCatalog.Supported
-                .Where(definition => definition.ShowInGalaxyMap)
+            OverlayLayoutCatalog
+                .Supported.Where(definition => definition.ShowInGalaxyMap)
                 .Select(definition => definition.Name)
                 .Order(StringComparer.Ordinal)
-                .ToArray());
+                .ToArray()
+        );
     }
 }

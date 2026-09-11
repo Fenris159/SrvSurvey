@@ -21,12 +21,11 @@ public sealed class DesktopBehaviorSettingsStore
             GetBoolean(settings, "MinimizeToTray", false),
             GetString(settings, "PreferredMonitor"),
             ApplicationWindowScaleCatalog.Normalize(
-                GetInt32(
-                    settings,
-                    "ApplicationWindowScalePercent",
-                    ApplicationWindowScaleCatalog.DefaultPercent)),
+                GetInt32(settings, "ApplicationWindowScalePercent", ApplicationWindowScaleCatalog.DefaultPercent)
+            ),
             GetApplicationWindowPosition(settings),
-            GetBoolean(settings, "ReduceMotion", false));
+            GetBoolean(settings, "ReduceMotion", false)
+        );
     }
 
     public void Save(DesktopBehaviorPreferences preferences)
@@ -44,8 +43,7 @@ public sealed class DesktopBehaviorSettingsStore
 
             settings["FocusGameOnStart"] = preferences.FocusGameOnStart;
             settings["FocusGameOnMinimize"] = preferences.FocusGameOnMinimize;
-            settings["FocusGameAfterFsdJump"] =
-                preferences.FocusGameAfterFsdJump;
+            settings["FocusGameAfterFsdJump"] = preferences.FocusGameAfterFsdJump;
             settings["MinimizeToTray"] = preferences.MinimizeToTray;
             if (string.IsNullOrWhiteSpace(preferences.PreferredMonitorId))
             {
@@ -56,9 +54,9 @@ public sealed class DesktopBehaviorSettingsStore
                 settings["PreferredMonitor"] = preferences.PreferredMonitorId;
             }
 
-            settings["ApplicationWindowScalePercent"] =
-                ApplicationWindowScaleCatalog.Normalize(
-                    preferences.ApplicationWindowScalePercent);
+            settings["ApplicationWindowScalePercent"] = ApplicationWindowScaleCatalog.Normalize(
+                preferences.ApplicationWindowScalePercent
+            );
             settings["ReduceMotion"] = preferences.ReduceMotion;
             if (preferences.LastApplicationWindowPosition is not { } position)
             {
@@ -76,35 +74,25 @@ public sealed class DesktopBehaviorSettingsStore
         });
     }
 
-    private static bool GetBoolean(
-        JsonObject? settings,
-        string propertyName,
-        bool fallback)
+    private static bool GetBoolean(JsonObject? settings, string propertyName, bool fallback)
     {
-        return settings?[propertyName] is JsonValue value
-            && value.TryGetValue<bool>(out var result)
-                ? result
-                : fallback;
+        return settings?[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result)
+            ? result
+            : fallback;
     }
 
-    private static int GetInt32(
-        JsonObject? settings,
-        string propertyName,
-        int fallback)
+    private static int GetInt32(JsonObject? settings, string propertyName, int fallback)
     {
-        return settings?[propertyName] is JsonValue value
-            && value.TryGetValue<int>(out var result)
-                ? result
-                : fallback;
+        return settings?[propertyName] is JsonValue value && value.TryGetValue<int>(out var result) ? result : fallback;
     }
 
-    private static string? GetString(
-        JsonObject? settings,
-        string propertyName)
+    private static string? GetString(JsonObject? settings, string propertyName)
     {
-        if (settings?[propertyName] is not JsonValue value
+        if (
+            settings?[propertyName] is not JsonValue value
             || !value.TryGetValue<string>(out var result)
-            || string.IsNullOrWhiteSpace(result))
+            || string.IsNullOrWhiteSpace(result)
+        )
         {
             return null;
         }
@@ -112,22 +100,20 @@ public sealed class DesktopBehaviorSettingsStore
         return result.Trim();
     }
 
-    private static ApplicationWindowPosition? GetApplicationWindowPosition(
-        JsonObject? settings)
+    private static ApplicationWindowPosition? GetApplicationWindowPosition(JsonObject? settings)
     {
-        if (settings?["ApplicationWindowPosition"] is not JsonObject position
+        if (
+            settings?["ApplicationWindowPosition"] is not JsonObject position
             || position["X"] is not JsonValue xValue
             || !xValue.TryGetValue<int>(out var x)
             || position["Y"] is not JsonValue yValue
-            || !yValue.TryGetValue<int>(out var y))
+            || !yValue.TryGetValue<int>(out var y)
+        )
         {
             return null;
         }
 
-        return new ApplicationWindowPosition(
-            x,
-            y,
-            GetString(position, "Monitor"));
+        return new ApplicationWindowPosition(x, y, GetString(position, "Monitor"));
     }
 }
 
@@ -137,12 +123,9 @@ public sealed record DesktopBehaviorPreferences(
     bool FocusGameAfterFsdJump,
     bool MinimizeToTray,
     string? PreferredMonitorId = null,
-    int ApplicationWindowScalePercent =
-        ApplicationWindowScaleCatalog.DefaultPercent,
+    int ApplicationWindowScalePercent = ApplicationWindowScaleCatalog.DefaultPercent,
     ApplicationWindowPosition? LastApplicationWindowPosition = null,
-    bool ReduceMotion = false);
+    bool ReduceMotion = false
+);
 
-public sealed record ApplicationWindowPosition(
-    int X,
-    int Y,
-    string? MonitorId);
+public sealed record ApplicationWindowPosition(int X, int Y, string? MonitorId);

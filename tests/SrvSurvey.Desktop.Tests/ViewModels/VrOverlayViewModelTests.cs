@@ -8,7 +8,8 @@ public sealed class VrOverlayViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-vr-view-model-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-vr-view-model-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void AdjustmentCanCreateAndReloadCurrentModeOverride()
@@ -24,9 +25,7 @@ public sealed class VrOverlayViewModelTests : IDisposable
         viewModel.SaveCommand.Execute(null);
 
         Assert.Contains("testbuggy", viewModel.AvailableModes);
-        Assert.Equal(
-            24,
-            viewModel.GetCalibration("PlotJumpInfo", "testbuggy")!.Scale);
+        Assert.Equal(24, viewModel.GetCalibration("PlotJumpInfo", "testbuggy")!.Scale);
         Assert.Contains("Saved PlotJumpInfo (testbuggy)", viewModel.StatusMessage);
     }
 
@@ -43,9 +42,7 @@ public sealed class VrOverlayViewModelTests : IDisposable
 
         Assert.False(viewModel.IsAdjusting);
         Assert.Equal(savedScale, viewModel.Scale);
-        Assert.Equal(
-            savedScale,
-            viewModel.GetCalibration("PlotJumpInfo")!.Scale);
+        Assert.Equal(savedScale, viewModel.GetCalibration("PlotJumpInfo")!.Scale);
     }
 
     [Fact]
@@ -56,9 +53,7 @@ public sealed class VrOverlayViewModelTests : IDisposable
         viewModel.Enabled = true;
         viewModel.RuntimeProcessName = "vrcompositor";
 
-        Assert.Equal(
-            new VrOverlayPreferences(true, "vrcompositor"),
-            new VrOverlaySettingsStore(SettingsPath).Load());
+        Assert.Equal(new VrOverlayPreferences(true, "vrcompositor"), new VrOverlaySettingsStore(SettingsPath).Load());
     }
 
     public void Dispose()
@@ -69,9 +64,7 @@ public sealed class VrOverlayViewModelTests : IDisposable
         }
     }
 
-    private string SettingsPath => Path.Combine(
-        temporaryDirectory,
-        "ui-settings.json");
+    private string SettingsPath => Path.Combine(temporaryDirectory, "ui-settings.json");
 
     private VrOverlayViewModel CreateViewModel()
     {
@@ -80,12 +73,10 @@ public sealed class VrOverlayViewModelTests : IDisposable
         Directory.CreateDirectory(data);
         Directory.CreateDirectory(factoryDirectory);
         var factory = Path.Combine(factoryDirectory, "plotters.json");
-        File.WriteAllText(
-            factory,
-            "{\"PlotJumpInfo\":\"center:0, top:8 "
-            + "{ s: 20, p: <1, 2, 3>, r: <4, 5, 6>}\"}");
+        File.WriteAllText(factory, "{\"PlotJumpInfo\":\"center:0, top:8 " + "{ s: 20, p: <1, 2, 3>, r: <4, 5, 6>}\"}");
         return new VrOverlayViewModel(
             new VrOverlaySettingsStore(SettingsPath),
-            new VrOverlayCalibrationStore(data, factory));
+            new VrOverlayCalibrationStore(data, factory)
+        );
     }
 }

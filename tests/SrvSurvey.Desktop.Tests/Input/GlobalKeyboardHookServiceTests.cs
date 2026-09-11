@@ -10,16 +10,14 @@ public sealed class GlobalKeyboardHookServiceTests
     [Fact]
     public async Task DispatchesConfiguredChordWhileApplicationIsActive()
     {
-        using var testHook = new TestGlobalHook(TestThreadingMode.Simple)
-        {
-            EventMask = _ => EventMask.LeftAlt,
-        };
+        using var testHook = new TestGlobalHook(TestThreadingMode.Simple) { EventMask = _ => EventMask.LeftAlt };
         await using var service = new GlobalKeyboardHookService(
             EnabledSettings(),
             OverlayHostKind.Windows,
             new StubGameWindowTracker(),
             isApplicationActive: () => true,
-            hookFactory: () => testHook);
+            hookFactory: () => testHook
+        );
         GlobalInputActionTriggeredEventArgs? triggered = null;
         service.ActionTriggered += (_, eventArgs) => triggered = eventArgs;
 
@@ -28,25 +26,21 @@ public sealed class GlobalKeyboardHookServiceTests
 
         Assert.Equal("Global keyboard input is active.", service.Status);
         Assert.NotNull(triggered);
-        Assert.Equal(
-            GlobalInputAction.ToggleAllVisibility,
-            triggered.Action);
+        Assert.Equal(GlobalInputAction.ToggleAllVisibility, triggered.Action);
         Assert.Equal("ALT X", triggered.Chord);
     }
 
     [Fact]
     public async Task IgnoresChordOutsideApplicationAndGameContext()
     {
-        using var testHook = new TestGlobalHook(TestThreadingMode.Simple)
-        {
-            EventMask = _ => EventMask.LeftAlt,
-        };
+        using var testHook = new TestGlobalHook(TestThreadingMode.Simple) { EventMask = _ => EventMask.LeftAlt };
         await using var service = new GlobalKeyboardHookService(
             EnabledSettings(),
             OverlayHostKind.LinuxX11,
             new StubGameWindowTracker(),
             isApplicationActive: () => false,
-            hookFactory: () => testHook);
+            hookFactory: () => testHook
+        );
         var triggerCount = 0;
         service.ActionTriggered += (_, _) => triggerCount++;
 
@@ -69,14 +63,13 @@ public sealed class GlobalKeyboardHookServiceTests
             {
                 factoryCalls++;
                 return new TestGlobalHook();
-            });
+            }
+        );
 
         service.Start();
 
         Assert.Equal(0, factoryCalls);
-        Assert.Equal(
-            "Global keyboard input is unavailable on this platform.",
-            service.Status);
+        Assert.Equal("Global keyboard input is unavailable on this platform.", service.Status);
     }
 
     [Fact]
@@ -88,7 +81,8 @@ public sealed class GlobalKeyboardHookServiceTests
             OverlayHostKind.LinuxXWayland,
             new StubGameWindowTracker(),
             isApplicationActive: () => true,
-            hookFactory: () => testHook);
+            hookFactory: () => testHook
+        );
 
         service.Start();
 
@@ -104,30 +98,27 @@ public sealed class GlobalKeyboardHookServiceTests
             OverlayHostKind.LinuxX11,
             new StubGameWindowTracker(),
             isApplicationActive: () => true,
-            hookFactory: () => throw new InvalidOperationException("test failure"));
+            hookFactory: () => throw new InvalidOperationException("test failure")
+        );
 
         service.Start();
 
         Assert.False(service.IsRunning);
-        Assert.Equal(
-            "Global keyboard input could not start: test failure",
-            service.Status);
+        Assert.Equal("Global keyboard input could not start: test failure", service.Status);
     }
 
     [Fact]
     public async Task DisposalWaitsForInFlightEventBeforeDisposingTracker()
     {
-        using var testHook = new TestGlobalHook(TestThreadingMode.EventLoop)
-        {
-            EventMask = _ => EventMask.LeftAlt,
-        };
+        using var testHook = new TestGlobalHook(TestThreadingMode.EventLoop) { EventMask = _ => EventMask.LeftAlt };
         var tracker = new BlockingGameWindowTracker();
         await using var service = new GlobalKeyboardHookService(
             EnabledSettings(),
             OverlayHostKind.LinuxX11,
             tracker,
             isApplicationActive: () => false,
-            hookFactory: () => testHook);
+            hookFactory: () => testHook
+        );
         service.Start();
 
         testHook.SimulateKeyRelease(KeyCode.VcX);
@@ -145,14 +136,10 @@ public sealed class GlobalKeyboardHookServiceTests
     [Fact]
     public async Task RestartWaitsForPreviousEventLoopToStop()
     {
-        using var firstHook = new TestGlobalHook(TestThreadingMode.EventLoop)
-        {
-            EventMask = _ => EventMask.LeftAlt,
-        };
+        using var firstHook = new TestGlobalHook(TestThreadingMode.EventLoop) { EventMask = _ => EventMask.LeftAlt };
         using var secondHook = new TestGlobalHook(TestThreadingMode.Simple);
         var tracker = new BlockingGameWindowTracker();
-        var secondHookCreated = new TaskCompletionSource(
-            TaskCreationOptions.RunContinuationsAsynchronously);
+        var secondHookCreated = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var factoryCalls = 0;
         await using var service = new GlobalKeyboardHookService(
             EnabledSettings(),
@@ -168,7 +155,8 @@ public sealed class GlobalKeyboardHookServiceTests
 
                 secondHookCreated.TrySetResult();
                 return secondHook;
-            });
+            }
+        );
 
         service.Start();
         firstHook.SimulateKeyRelease(KeyCode.VcX);
@@ -187,11 +175,7 @@ public sealed class GlobalKeyboardHookServiceTests
     {
         var bindings = GlobalInputSettings.Default.Bindings.ToDictionary();
         bindings[GlobalInputAction.ToggleAllVisibility] = "ALT X";
-        return GlobalInputSettings.Default with
-        {
-            KeyboardEnabled = true,
-            Bindings = bindings,
-        };
+        return GlobalInputSettings.Default with { KeyboardEnabled = true, Bindings = bindings };
     }
 
     private sealed class StubGameWindowTracker : IGameWindowTracker
@@ -201,16 +185,13 @@ public sealed class GlobalKeyboardHookServiceTests
             return GameWindowSnapshot.Unavailable;
         }
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
     }
 
     private sealed class BlockingGameWindowTracker : IGameWindowTracker
     {
         private readonly ManualResetEventSlim allowSnapshot = new();
-        private readonly TaskCompletionSource snapshotEntered = new(
-            TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource snapshotEntered = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private int disposed;
 
         public Task SnapshotEntered => snapshotEntered.Task;
@@ -222,8 +203,7 @@ public sealed class GlobalKeyboardHookServiceTests
             snapshotEntered.TrySetResult();
             if (!allowSnapshot.Wait(TimeSpan.FromSeconds(5)))
             {
-                throw new TimeoutException(
-                    "The test did not release the blocked tracker snapshot.");
+                throw new TimeoutException("The test did not release the blocked tracker snapshot.");
             }
 
             return GameWindowSnapshot.Unavailable;

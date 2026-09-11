@@ -15,10 +15,10 @@ public sealed class StationInfoSettingsStore
     {
         var settings = documentStore.Load()["StationInfo"] as JsonObject;
         return new StationInfoPreferences(
-            settings?["AutoShow"] is JsonValue value
-            && value.TryGetValue<bool>(out var autoShow)
+            settings?["AutoShow"] is JsonValue value && value.TryGetValue<bool>(out var autoShow)
                 ? autoShow
-                : StationInfoPreferences.Default.AutoShow);
+                : StationInfoPreferences.Default.AutoShow
+        );
     }
 
     public void Save(StationInfoPreferences preferences)
@@ -41,6 +41,5 @@ public sealed class StationInfoSettingsStore
 
 public sealed record StationInfoPreferences(bool AutoShow)
 {
-    public static StationInfoPreferences Default { get; } = new(
-        AutoShow: true);
+    public static StationInfoPreferences Default { get; } = new(AutoShow: true);
 }

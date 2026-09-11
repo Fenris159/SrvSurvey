@@ -7,16 +7,15 @@ public sealed class KnownSystemAddressCatalogTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-known-systems-{Guid.NewGuid():N}");
+        $"SrvSurvey-known-systems-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void ImportedCatalogResolvesScalarAndArrayEntriesWithoutMutation()
     {
         var published = Path.Combine(temporaryDirectory, "pub");
         Directory.CreateDirectory(published);
-        var path = Path.Combine(
-            published,
-            KnownSystemAddressCatalog.LegacyFileName);
+        var path = Path.Combine(published, KnownSystemAddressCatalog.LegacyFileName);
         const string source = """
             # source comment
             known_systems = {
@@ -52,9 +51,7 @@ public sealed class KnownSystemAddressCatalogTests : IDisposable
     {
         var published = Path.Combine(temporaryDirectory, "pub");
         Directory.CreateDirectory(published);
-        var path = Path.Combine(
-            published,
-            KnownSystemAddressCatalog.LegacyFileName);
+        var path = Path.Combine(published, KnownSystemAddressCatalog.LegacyFileName);
         File.WriteAllText(path, source);
 
         var catalog = KnownSystemAddressCatalog.Load(temporaryDirectory);

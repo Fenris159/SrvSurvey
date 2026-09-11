@@ -34,15 +34,18 @@ public static class KeyboardChordFormatter
 
     public static string? GetKeyName(KeyCode keyCode)
     {
-        if (keyCode is KeyCode.VcLeftAlt
-            or KeyCode.VcRightAlt
-            or KeyCode.VcLeftControl
-            or KeyCode.VcRightControl
-            or KeyCode.VcLeftShift
-            or KeyCode.VcRightShift
-            or KeyCode.VcLeftMeta
-            or KeyCode.VcRightMeta
-            or KeyCode.VcUndefined)
+        if (
+            keyCode
+            is KeyCode.VcLeftAlt
+                or KeyCode.VcRightAlt
+                or KeyCode.VcLeftControl
+                or KeyCode.VcRightControl
+                or KeyCode.VcLeftShift
+                or KeyCode.VcRightShift
+                or KeyCode.VcLeftMeta
+                or KeyCode.VcRightMeta
+                or KeyCode.VcUndefined
+        )
         {
             return null;
         }

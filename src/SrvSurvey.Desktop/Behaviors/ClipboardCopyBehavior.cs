@@ -13,9 +13,11 @@ public static class ClipboardCopyBehavior
 {
     private static readonly ConditionalWeakTable<Control, object> Attached = new();
 
-    public static readonly AttachedProperty<object?> TextProperty =
-        AvaloniaProperty.RegisterAttached<Control, Control, object?>(
-            "Text");
+    public static readonly AttachedProperty<object?> TextProperty = AvaloniaProperty.RegisterAttached<
+        Control,
+        Control,
+        object?
+    >("Text");
 
     static ClipboardCopyBehavior()
     {
@@ -32,9 +34,7 @@ public static class ClipboardCopyBehavior
         return target.GetValue(TextProperty);
     }
 
-    private static void OnTextChanged(
-        Control control,
-        AvaloniaPropertyChangedEventArgs eventArgs)
+    private static void OnTextChanged(Control control, AvaloniaPropertyChangedEventArgs eventArgs)
     {
         if (string.IsNullOrWhiteSpace(eventArgs.NewValue?.ToString()))
         {
@@ -68,12 +68,9 @@ public static class ClipboardCopyBehavior
         }
     }
 
-    private static void CopyText_PointerPressed(
-        object? sender,
-        PointerPressedEventArgs eventArgs)
+    private static void CopyText_PointerPressed(object? sender, PointerPressedEventArgs eventArgs)
     {
-        if (sender is Control control
-            && eventArgs.GetCurrentPoint(control).Properties.IsLeftButtonPressed)
+        if (sender is Control control && eventArgs.GetCurrentPoint(control).Properties.IsLeftButtonPressed)
         {
             eventArgs.Handled = true;
             _ = CopyTextAsync(control);
@@ -88,8 +85,7 @@ public static class ClipboardCopyBehavior
         }
 
         var text = GetText(control)?.ToString()?.Trim();
-        if (string.IsNullOrWhiteSpace(text)
-            || TopLevel.GetTopLevel(control)?.Clipboard is not { } clipboard)
+        if (string.IsNullOrWhiteSpace(text) || TopLevel.GetTopLevel(control)?.Clipboard is not { } clipboard)
         {
             return;
         }
@@ -98,11 +94,13 @@ public static class ClipboardCopyBehavior
         {
             await clipboard.SetTextAsync(text);
         }
-        catch (Exception exception) when (
-            exception is InvalidOperationException
-                or NotSupportedException
-                or COMException
-                or UnauthorizedAccessException)
+        catch (Exception exception)
+            when (exception
+                    is InvalidOperationException
+                        or NotSupportedException
+                        or COMException
+                        or UnauthorizedAccessException
+            )
         {
             // Clipboard availability is platform-owned; copying is best effort.
         }

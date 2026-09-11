@@ -10,11 +10,7 @@ public sealed class GuardianSiteTemplateAuthoringSession
 
     public GuardianSiteTemplate Template { get; private set; }
 
-    public void UpdateMetadata(
-        string name,
-        string backgroundImage,
-        GuardianMapPoint imageOffset,
-        double scaleFactor)
+    public void UpdateMetadata(string name, string backgroundImage, GuardianMapPoint imageOffset, double scaleFactor)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -27,7 +23,8 @@ public sealed class GuardianSiteTemplateAuthoringSession
         {
             throw new ArgumentOutOfRangeException(
                 nameof(scaleFactor),
-                "The Guardian template scale factor must be positive.");
+                "The Guardian template scale factor must be positive."
+            );
         }
 
         Template = Template with
@@ -42,21 +39,17 @@ public sealed class GuardianSiteTemplateAuthoringSession
     public void AddPoint(GuardianPointOfInterest point)
     {
         ValidatePoint(point);
-        if (AllPoints().Any(candidate => string.Equals(
-                candidate.Name,
-                point.Name,
-                StringComparison.OrdinalIgnoreCase)))
+        if (AllPoints().Any(candidate => string.Equals(candidate.Name, point.Name, StringComparison.OrdinalIgnoreCase)))
         {
-            throw new InvalidOperationException(
-                $"Guardian template point '{point.Name}' already exists.");
+            throw new InvalidOperationException($"Guardian template point '{point.Name}' already exists.");
         }
 
         if (point.Type == GuardianPoiType.DestructiblePanel)
         {
             Template = Template with
             {
-                DestructiblePanels = Template.DestructiblePanels
-                    .Append(point)
+                DestructiblePanels = Template
+                    .DestructiblePanels.Append(point)
                     .OrderBy(candidate => candidate.Name, StringComparer.OrdinalIgnoreCase)
                     .ToArray(),
             };
@@ -65,36 +58,27 @@ public sealed class GuardianSiteTemplateAuthoringSession
 
         Template = Template with
         {
-            PointsOfInterest = Template.PointsOfInterest
-                .Append(point)
+            PointsOfInterest = Template
+                .PointsOfInterest.Append(point)
                 .OrderBy(candidate => candidate.Name, StringComparer.OrdinalIgnoreCase)
                 .ToArray(),
         };
     }
 
-    public void UpdatePoint(
-        string originalName,
-        GuardianPointOfInterest replacement)
+    public void UpdatePoint(string originalName, GuardianPointOfInterest replacement)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(originalName);
         ValidatePoint(replacement);
-        var existing = AllPoints().FirstOrDefault(point => string.Equals(
-            point.Name,
-            originalName,
-            StringComparison.OrdinalIgnoreCase))
-            ?? throw new InvalidOperationException(
-                $"Guardian template point '{originalName}' was not found.");
-        if (!string.Equals(
-                originalName,
-                replacement.Name,
-                StringComparison.OrdinalIgnoreCase)
-            && AllPoints().Any(point => string.Equals(
-                point.Name,
-                replacement.Name,
-                StringComparison.OrdinalIgnoreCase)))
+        var existing =
+            AllPoints()
+                .FirstOrDefault(point => string.Equals(point.Name, originalName, StringComparison.OrdinalIgnoreCase))
+            ?? throw new InvalidOperationException($"Guardian template point '{originalName}' was not found.");
+        if (
+            !string.Equals(originalName, replacement.Name, StringComparison.OrdinalIgnoreCase)
+            && AllPoints().Any(point => string.Equals(point.Name, replacement.Name, StringComparison.OrdinalIgnoreCase))
+        )
         {
-            throw new InvalidOperationException(
-                $"Guardian template point '{replacement.Name}' already exists.");
+            throw new InvalidOperationException($"Guardian template point '{replacement.Name}' already exists.");
         }
 
         RemovePoint(existing.Name);
@@ -104,35 +88,21 @@ public sealed class GuardianSiteTemplateAuthoringSession
     public void RemovePoint(string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        var points = Template.PointsOfInterest
-            .Where(point => !string.Equals(
-                point.Name,
-                name,
-                StringComparison.OrdinalIgnoreCase))
+        var points = Template
+            .PointsOfInterest.Where(point => !string.Equals(point.Name, name, StringComparison.OrdinalIgnoreCase))
             .ToArray();
-        var panels = Template.DestructiblePanels
-            .Where(point => !string.Equals(
-                point.Name,
-                name,
-                StringComparison.OrdinalIgnoreCase))
+        var panels = Template
+            .DestructiblePanels.Where(point => !string.Equals(point.Name, name, StringComparison.OrdinalIgnoreCase))
             .ToArray();
-        if (points.Length == Template.PointsOfInterest.Count
-            && panels.Length == Template.DestructiblePanels.Count)
+        if (points.Length == Template.PointsOfInterest.Count && panels.Length == Template.DestructiblePanels.Count)
         {
-            throw new InvalidOperationException(
-                $"Guardian template point '{name}' was not found.");
+            throw new InvalidOperationException($"Guardian template point '{name}' was not found.");
         }
 
-        Template = Template with
-        {
-            PointsOfInterest = points,
-            DestructiblePanels = panels,
-        };
+        Template = Template with { PointsOfInterest = points, DestructiblePanels = panels };
     }
 
-    public void SetObeliskGroupLabel(
-        string name,
-        GuardianMapPoint location)
+    public void SetObeliskGroupLabel(string name, GuardianMapPoint location)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -143,7 +113,8 @@ public sealed class GuardianSiteTemplateAuthoringSession
         ValidateFinite(location.Y, nameof(location));
         var labels = new Dictionary<string, GuardianMapPoint>(
             Template.ObeliskGroupNameLocations,
-            StringComparer.OrdinalIgnoreCase)
+            StringComparer.OrdinalIgnoreCase
+        )
         {
             [name.Trim()] = location,
         };
@@ -155,11 +126,11 @@ public sealed class GuardianSiteTemplateAuthoringSession
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         var labels = new Dictionary<string, GuardianMapPoint>(
             Template.ObeliskGroupNameLocations,
-            StringComparer.OrdinalIgnoreCase);
+            StringComparer.OrdinalIgnoreCase
+        );
         if (!labels.Remove(name))
         {
-            throw new InvalidOperationException(
-                $"Guardian obelisk group label '{name}' was not found.");
+            throw new InvalidOperationException($"Guardian obelisk group label '{name}' was not found.");
         }
 
         Template = Template with { ObeliskGroupNameLocations = labels };
@@ -176,10 +147,10 @@ public sealed class GuardianSiteTemplateAuthoringSession
         {
             PointsOfInterest = source.PointsOfInterest.ToArray(),
             DestructiblePanels = source.DestructiblePanels.ToArray(),
-            ObeliskGroupNameLocations =
-                new Dictionary<string, GuardianMapPoint>(
-                    source.ObeliskGroupNameLocations,
-                    StringComparer.OrdinalIgnoreCase),
+            ObeliskGroupNameLocations = new Dictionary<string, GuardianMapPoint>(
+                source.ObeliskGroupNameLocations,
+                StringComparer.OrdinalIgnoreCase
+            ),
         };
     }
 
@@ -198,21 +169,21 @@ public sealed class GuardianSiteTemplateAuthoringSession
         {
             throw new ArgumentOutOfRangeException(
                 nameof(point),
-                "Guardian point angles must be from 0 up to but not including 360 degrees.");
+                "Guardian point angles must be from 0 up to but not including 360 degrees."
+            );
         }
 
         if (point.Distance < 0)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(point),
-                "Guardian point distances cannot be negative.");
+            throw new ArgumentOutOfRangeException(nameof(point), "Guardian point distances cannot be negative.");
         }
 
         if (point.Rotation is < -1 or >= 360)
         {
             throw new ArgumentOutOfRangeException(
                 nameof(point),
-                "Guardian point rotations must be -1 or from 0 up to but not including 360 degrees.");
+                "Guardian point rotations must be -1 or from 0 up to but not including 360 degrees."
+            );
         }
     }
 
@@ -220,9 +191,7 @@ public sealed class GuardianSiteTemplateAuthoringSession
     {
         if (!double.IsFinite(value))
         {
-            throw new ArgumentOutOfRangeException(
-                parameterName,
-                "Guardian template geometry must use finite values.");
+            throw new ArgumentOutOfRangeException(parameterName, "Guardian template geometry must use finite values.");
         }
     }
 }

@@ -16,43 +16,30 @@ public sealed class SystemNoteStore
         string frontierId,
         string systemName,
         long systemAddress,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        var result = await fileStore.LoadAsync(
-                new LegacySystemDataFileContext(
-                    frontierId,
-                    null,
-                    systemName,
-                    systemAddress,
-                    null),
-                cancellationToken)
+        var result = await fileStore
+            .LoadAsync(
+                new LegacySystemDataFileContext(frontierId, null, systemName, systemAddress, null),
+                cancellationToken
+            )
             .ConfigureAwait(false);
         if (result.Root is null)
         {
             return result.Exists
-                ? new SystemNoteLoadResult(
-                    result.Path,
-                    true,
-                    null,
-                    result.Error)
-                : new SystemNoteLoadResult(
-                    result.Path,
-                    false,
-                    string.Empty,
-                    null);
+                ? new SystemNoteLoadResult(result.Path, true, null, result.Error)
+                : new SystemNoteLoadResult(result.Path, false, string.Empty, null);
         }
 
-        return new SystemNoteLoadResult(
-            result.Path,
-            true,
-            GetString(result.Root, "notes") ?? string.Empty,
-            null);
+        return new SystemNoteLoadResult(result.Path, true, GetString(result.Root, "notes") ?? string.Empty, null);
     }
 
     public Task<string> SaveAsync(
         SystemNoteContext context,
         string? notes,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentNullException.ThrowIfNull(context);
         return fileStore.UpdateAsync(
@@ -61,9 +48,11 @@ public sealed class SystemNoteStore
                 context.CommanderName,
                 context.SystemName,
                 context.SystemAddress,
-                context.StarPosition),
+                context.StarPosition
+            ),
             root => root["notes"] = notes ?? string.Empty,
-            cancellationToken);
+            cancellationToken
+        );
     }
 
     public static string MakeSafeFileName(string value)
@@ -73,10 +62,7 @@ public sealed class SystemNoteStore
 
     private static string? GetString(JsonObject root, string propertyName)
     {
-        return root[propertyName] is JsonValue value
-            && value.TryGetValue<string>(out var result)
-                ? result
-                : null;
+        return root[propertyName] is JsonValue value && value.TryGetValue<string>(out var result) ? result : null;
     }
 }
 
@@ -85,13 +71,10 @@ public sealed record SystemNoteContext(
     string? CommanderName,
     string SystemName,
     long SystemAddress,
-    GalacticCoordinate? StarPosition);
+    GalacticCoordinate? StarPosition
+);
 
-public sealed record SystemNoteLoadResult(
-    string Path,
-    bool Exists,
-    string? Notes,
-    string? Error)
+public sealed record SystemNoteLoadResult(string Path, bool Exists, string? Notes, string? Error)
 {
     public bool IsSuccess => Notes is not null;
 }

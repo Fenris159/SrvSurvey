@@ -5,20 +5,11 @@ public static class ApplicationWindowScaleCatalog
     public const int DefaultPercent = 100;
 
     public static IReadOnlyList<ApplicationWindowScaleOption> All { get; } =
-    [
-        new(80),
-        new(90),
-        new(DefaultPercent),
-        new(110),
-        new(125),
-        new(150),
-    ];
+    [new(80), new(90), new(DefaultPercent), new(110), new(125), new(150)];
 
     public static int Normalize(int percent)
     {
-        return All.Any(option => option.Percent == percent)
-            ? percent
-            : DefaultPercent;
+        return All.Any(option => option.Percent == percent) ? percent : DefaultPercent;
     }
 }
 

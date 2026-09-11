@@ -9,14 +9,14 @@ public sealed class RavenThemeServiceTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-theme-service-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-theme-service-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void MonochromeThemeAppliesLayeredLowGlareRolesAndRemovesDepthShadows()
     {
         var application = new Application();
-        var store = new ThemePreferenceStore(
-            Path.Combine(temporaryDirectory, "ui.json"));
+        var store = new ThemePreferenceStore(Path.Combine(temporaryDirectory, "ui.json"));
         var service = new RavenThemeService(application, store);
         service.ApplyCurrent();
 
@@ -47,55 +47,45 @@ public sealed class RavenThemeServiceTests : IDisposable
 
         foreach (var entry in expected)
         {
-            var brush = Assert.IsType<SolidColorBrush>(
-                application.Resources[entry.Key]);
+            var brush = Assert.IsType<SolidColorBrush>(application.Resources[entry.Key]);
             Assert.Equal(Color.Parse(entry.Value), brush.Color);
         }
 
-        foreach (var resourceKey in new[]
-                 {
-                     "RavenSuccessBrush",
-                     "RavenWarningBrush",
-                 })
+        foreach (var resourceKey in new[] { "RavenSuccessBrush", "RavenWarningBrush" })
         {
-            var color = Assert.IsType<SolidColorBrush>(
-                application.Resources[resourceKey]).Color;
+            var color = Assert.IsType<SolidColorBrush>(application.Resources[resourceKey]).Color;
             Assert.Equal(color.R, color.G);
             Assert.Equal(color.G, color.B);
         }
 
         Assert.Equal(
             Color.Parse("#FF7B72"),
-            Assert.IsType<SolidColorBrush>(
-                application.Resources["RavenDangerBrush"]).Color);
+            Assert.IsType<SolidColorBrush>(application.Resources["RavenDangerBrush"]).Color
+        );
 
-        Assert.Equal(
-            Color.Parse("#F5F5F5"),
-            Assert.IsType<Color>(application.Resources["SystemAccentColor"]));
-        foreach (var resourceKey in new[]
-                 {
-                     "CheckBoxCheckGlyphForegroundChecked",
-                     "CheckBoxCheckGlyphForegroundCheckedPointerOver",
-                     "CheckBoxCheckGlyphForegroundCheckedPressed",
-                 })
+        Assert.Equal(Color.Parse("#F5F5F5"), Assert.IsType<Color>(application.Resources["SystemAccentColor"]));
+        foreach (
+            var resourceKey in new[]
+            {
+                "CheckBoxCheckGlyphForegroundChecked",
+                "CheckBoxCheckGlyphForegroundCheckedPointerOver",
+                "CheckBoxCheckGlyphForegroundCheckedPressed",
+            }
+        )
         {
-            var brush = Assert.IsType<SolidColorBrush>(
-                application.Resources[resourceKey]);
+            var brush = Assert.IsType<SolidColorBrush>(application.Resources[resourceKey]);
             Assert.Equal(Color.Parse("#0A0A0A"), brush.Color);
         }
 
-        Assert.Equal(0, Assert.IsType<BoxShadows>(
-            application.Resources["RavenWarningInsetShadow"]).Count);
-        Assert.Equal(0, Assert.IsType<BoxShadows>(
-            application.Resources["RavenFloatingPanelShadow"]).Count);
+        Assert.Equal(0, Assert.IsType<BoxShadows>(application.Resources["RavenWarningInsetShadow"]).Count);
+        Assert.Equal(0, Assert.IsType<BoxShadows>(application.Resources["RavenFloatingPanelShadow"]).Count);
     }
 
     [Fact]
     public void EveryThemeUpdatesAvaloniaResourcesAndNativeMode()
     {
         var application = new Application();
-        var store = new ThemePreferenceStore(
-            Path.Combine(temporaryDirectory, "ui.json"));
+        var store = new ThemePreferenceStore(Path.Combine(temporaryDirectory, "ui.json"));
         var service = new RavenThemeService(application, store);
         service.ApplyCurrent();
 
@@ -104,28 +94,21 @@ public sealed class RavenThemeServiceTests : IDisposable
             service.Select(theme.Key);
 
             Assert.Equal(theme, service.Current);
-            Assert.Equal(
-                theme.IsDark ? ThemeVariant.Dark : ThemeVariant.Light,
-                application.RequestedThemeVariant);
-            var accent = Assert.IsType<SolidColorBrush>(
-                application.Resources["RavenAccentBrush"]);
+            Assert.Equal(theme.IsDark ? ThemeVariant.Dark : ThemeVariant.Light, application.RequestedThemeVariant);
+            var accent = Assert.IsType<SolidColorBrush>(application.Resources["RavenAccentBrush"]);
             Assert.Equal(Color.Parse(theme.AccentColor), accent.Color);
             var selectedMutedText = Assert.IsType<SolidColorBrush>(
-                application.Resources["RavenSelectedMutedTextBrush"]);
+                application.Resources["RavenSelectedMutedTextBrush"]
+            );
             Assert.Equal(
-                Color.Parse(theme.Key == "monochrome-dark"
-                    ? theme.AccentForegroundColor
-                    : theme.MutedTextColor),
-                selectedMutedText.Color);
-            var mapGrid = Assert.IsType<SolidColorBrush>(
-                application.Resources["RavenMapGridBrush"]);
+                Color.Parse(theme.Key == "monochrome-dark" ? theme.AccentForegroundColor : theme.MutedTextColor),
+                selectedMutedText.Color
+            );
+            var mapGrid = Assert.IsType<SolidColorBrush>(application.Resources["RavenMapGridBrush"]);
             Assert.Equal(Color.Parse(theme.MapGridColor), mapGrid.Color);
-            var warning = Assert.IsType<SolidColorBrush>(
-                application.Resources["RavenWarningBrush"]);
-            var warningShadow = Assert.IsType<BoxShadows>(
-                application.Resources["RavenWarningInsetShadow"]);
-            var floatingShadow = Assert.IsType<BoxShadows>(
-                application.Resources["RavenFloatingPanelShadow"]);
+            var warning = Assert.IsType<SolidColorBrush>(application.Resources["RavenWarningBrush"]);
+            var warningShadow = Assert.IsType<BoxShadows>(application.Resources["RavenWarningInsetShadow"]);
+            var floatingShadow = Assert.IsType<BoxShadows>(application.Resources["RavenFloatingPanelShadow"]);
             if (theme.UseSurfaceOnlyDepth)
             {
                 Assert.Equal(0, warningShadow.Count);
@@ -136,12 +119,9 @@ public sealed class RavenThemeServiceTests : IDisposable
                 Assert.Equal(1, warningShadow.Count);
                 Assert.True(warningShadow[0].IsInset);
                 Assert.Equal(
-                    Color.FromArgb(
-                        153,
-                        warning.Color.R,
-                        warning.Color.G,
-                        warning.Color.B),
-                    warningShadow[0].Color);
+                    Color.FromArgb(153, warning.Color.R, warning.Color.G, warning.Color.B),
+                    warningShadow[0].Color
+                );
                 Assert.Equal(1, floatingShadow.Count);
             }
         }
@@ -153,8 +133,7 @@ public sealed class RavenThemeServiceTests : IDisposable
     public void CustomLegacyPaletteCreatesOverlayAndNamedResources()
     {
         var application = new Application();
-        var store = new ThemePreferenceStore(
-            Path.Combine(temporaryDirectory, "ui.json"));
+        var store = new ThemePreferenceStore(Path.Combine(temporaryDirectory, "ui.json"));
         var colors = LegacyOverlayThemeStore.CreateDefault().Colors.ToDictionary();
         colors["header"] = Color.FromArgb(255, 210, 180, 30);
         colors["orange"] = Color.FromArgb(255, 12, 34, 56);
@@ -169,168 +148,162 @@ public sealed class RavenThemeServiceTests : IDisposable
         colors["bio.galacticRegionPotential"] = Color.FromArgb(255, 91, 92, 93);
         colors["bio.unknownGlyph"] = Color.FromArgb(255, 98, 76, 54);
         colors["guardian.primary"] = Color.FromArgb(255, 21, 42, 63);
-        var typography = OverlayTypographySettings.Default with
-        {
-            Header = 11.5,
-            Detail = 10.5,
-        };
-        var service = new RavenThemeService(
-            application,
-            store,
-            new LegacyOverlayTheme(colors, true, null, typography));
+        var typography = OverlayTypographySettings.Default with { Header = 11.5, Detail = 10.5 };
+        var service = new RavenThemeService(application, store, new LegacyOverlayTheme(colors, true, null, typography));
 
         service.ApplyCurrent();
 
         Assert.Equal(
             Color.FromArgb(255, 210, 180, 30),
-            Assert.IsType<SolidColorBrush>(
-                application.Resources["RavenOverlayHeaderBrush"]).Color);
+            Assert.IsType<SolidColorBrush>(application.Resources["RavenOverlayHeaderBrush"]).Color
+        );
         Assert.Equal(11.5, application.Resources["RavenOverlayHeaderFontSize"]);
         Assert.Equal(10.5, application.Resources["RavenOverlayDetailFontSize"]);
         Assert.Equal(
             Color.FromArgb(255, 12, 34, 56),
-            Assert.IsType<SolidColorBrush>(
-                application.Resources["RavenOverlayAccentBrush"]).Color);
+            Assert.IsType<SolidColorBrush>(application.Resources["RavenOverlayAccentBrush"]).Color
+        );
         Assert.Equal(
             Color.FromArgb(255, 65, 43, 21),
-            Assert.IsType<SolidColorBrush>(
-                application.Resources["RavenOverlayAccentMutedBrush"]).Color);
+            Assert.IsType<SolidColorBrush>(application.Resources["RavenOverlayAccentMutedBrush"]).Color
+        );
         Assert.Equal(
             Color.Parse(RavenThemeCatalog.Get(null).AccentMutedColor),
-            Assert.IsType<SolidColorBrush>(
-                application.Resources["RavenRouteGuidanceBadgeBrush"]).Color);
+            Assert.IsType<SolidColorBrush>(application.Resources["RavenRouteGuidanceBadgeBrush"]).Color
+        );
         Assert.Equal(
             Color.FromArgb(255, 78, 90, 12),
-            Assert.IsType<SolidColorBrush>(
-                application.Resources["LegacyTheme.bio.gold"]).Color);
+            Assert.IsType<SolidColorBrush>(application.Resources["LegacyTheme.bio.gold"]).Color
+        );
         Assert.Equal(
             Color.FromArgb(255, 78, 90, 12),
-            Assert.IsType<SolidColorBrush>(
-                application.Resources["RavenOverlayBioGoldBrush"]).Color);
+            Assert.IsType<SolidColorBrush>(application.Resources["RavenOverlayBioGoldBrush"]).Color
+        );
         Assert.Equal(
             Color.FromArgb(255, 44, 55, 66),
-            Assert.IsType<SolidColorBrush>(
-                application.Resources["RavenOverlayBioGoldFillBrush"]).Color);
+            Assert.IsType<SolidColorBrush>(application.Resources["RavenOverlayBioGoldFillBrush"]).Color
+        );
         Assert.Equal(
             Color.FromArgb(72, 12, 98, 123),
-            Assert.IsType<SolidColorBrush>(
-                application.Resources["RavenOverlayBioPredictionEdgeBrush"]).Color);
+            Assert.IsType<SolidColorBrush>(application.Resources["RavenOverlayBioPredictionEdgeBrush"]).Color
+        );
         Assert.Equal(
             Color.FromArgb(91, 45, 67, 89),
-            Assert.IsType<SolidColorBrush>(
-                application.Resources["RavenOverlayBioGoldDimEdgeBrush"]).Color);
+            Assert.IsType<SolidColorBrush>(application.Resources["RavenOverlayBioGoldDimEdgeBrush"]).Color
+        );
         Assert.Equal(
             Color.FromArgb(255, 9, 87, 65),
-            Assert.IsType<SolidColorBrush>(application.Resources[
-                "RavenOverlayBioPredictionSegmentEdgeBrush"]).Color);
+            Assert.IsType<SolidColorBrush>(application.Resources["RavenOverlayBioPredictionSegmentEdgeBrush"]).Color
+        );
         Assert.Equal(
             Color.FromArgb(255, 23, 45, 67),
-            Assert.IsType<SolidColorBrush>(
-                application.Resources["RavenOverlayBioConfirmedBrush"]).Color);
+            Assert.IsType<SolidColorBrush>(application.Resources["RavenOverlayBioConfirmedBrush"]).Color
+        );
         Assert.Equal(
             Color.FromArgb(255, 240, 241, 242),
-            Assert.IsType<SolidColorBrush>(
-                application.Resources["RavenOverlayBioGalacticRegionBrush"]).Color);
+            Assert.IsType<SolidColorBrush>(application.Resources["RavenOverlayBioGalacticRegionBrush"]).Color
+        );
         Assert.Equal(
             Color.FromArgb(255, 91, 92, 93),
-            Assert.IsType<SolidColorBrush>(application.Resources[
-                "RavenOverlayBioGalacticRegionPotentialBrush"]).Color);
+            Assert.IsType<SolidColorBrush>(application.Resources["RavenOverlayBioGalacticRegionPotentialBrush"]).Color
+        );
         Assert.Equal(
             Color.FromArgb(255, 98, 76, 54),
-            Assert.IsType<SolidColorBrush>(
-                application.Resources["RavenOverlayBioUnknownGlyphBrush"]).Color);
+            Assert.IsType<SolidColorBrush>(application.Resources["RavenOverlayBioUnknownGlyphBrush"]).Color
+        );
         Assert.Equal(
             Color.FromArgb(255, 21, 42, 63),
-            Assert.IsType<SolidColorBrush>(
-                application.Resources["LegacyTheme.guardian.primary"]).Color);
+            Assert.IsType<SolidColorBrush>(application.Resources["LegacyTheme.guardian.primary"]).Color
+        );
         Assert.Equal(
             Color.FromArgb(255, 21, 42, 63),
-            Assert.IsType<SolidColorBrush>(
-                application.Resources["RavenOverlayGuardianPrimaryBrush"]).Color);
-        foreach (var resource in new[]
-                 {
-                     "RavenOverlayPrimaryBrush",
-                     "RavenOverlayPrimaryDimBrush",
-                     "RavenOverlaySecondaryBrush",
-                     "RavenOverlaySecondaryDimBrush",
-                     "RavenOverlayDangerDimBrush",
-                     "RavenOverlaySuccessDimBrush",
-                     "RavenOverlayMenuGoldBrush",
-                     "RavenOverlayBioConfirmedBrush",
-                     "RavenOverlayBioConfirmedDimBrush",
-                     "RavenOverlayBioPotentialBrush",
-                     "RavenOverlayBioConfirmedDimPotentialBrush",
-                     "RavenOverlayBioPredictionPotentialBrush",
-                     "RavenOverlayBioGoldDimBrush",
-                     "RavenOverlayBioGoldFillBrush",
-                     "RavenOverlayBioGoldDimFillBrush",
-                     "RavenOverlayBioGoldPotentialBrush",
-                     "RavenOverlayBioGoldDimPotentialBrush",
-                     "RavenOverlayBioGalacticRegionBrush",
-                     "RavenOverlayBioGalacticRegionPotentialBrush",
-                     "RavenOverlayBioUnknownBrush",
-                     "RavenOverlayBioUnknownGlyphBrush",
-                     "RavenOverlayBioHatchBrush",
-                     "RavenOverlayBioEmptyBrush",
-                     "RavenOverlayBioWhiteBrush",
-                     "RavenOverlayBioPredictionBrush",
-                     "RavenOverlayBioConfirmedEdgeBrush",
-                     "RavenOverlayBioConfirmedDimEdgeBrush",
-                     "RavenOverlayBioPredictionEdgeBrush",
-                     "RavenOverlayBioGoldEdgeBrush",
-                     "RavenOverlayBioGoldDimEdgeBrush",
-                     "RavenOverlayBioGalacticRegionEdgeBrush",
-                     "RavenOverlayBioUnknownEdgeBrush",
-                     "RavenOverlayBioConfirmedSegmentEdgeBrush",
-                     "RavenOverlayBioConfirmedPotentialSegmentEdgeBrush",
-                     "RavenOverlayBioConfirmedDimSegmentEdgeBrush",
-                     "RavenOverlayBioConfirmedDimPotentialSegmentEdgeBrush",
-                     "RavenOverlayBioPredictionSegmentEdgeBrush",
-                     "RavenOverlayBioPredictionPotentialSegmentEdgeBrush",
-                     "RavenOverlayBioGoldSegmentEdgeBrush",
-                     "RavenOverlayBioGoldPotentialSegmentEdgeBrush",
-                     "RavenOverlayBioGoldDimSegmentEdgeBrush",
-                     "RavenOverlayBioGoldDimPotentialSegmentEdgeBrush",
-                     "RavenOverlayBioGalacticRegionSegmentEdgeBrush",
-                     "RavenOverlayBioGalacticRegionPotentialSegmentEdgeBrush",
-                     "RavenOverlayColoniseSurplusBrush",
-                     "RavenOverlayColoniseSurplusDimBrush",
-                     "RavenOverlayColoniseDeficitBrush",
-                     "RavenOverlayColoniseDeficitDimBrush",
-                     "RavenOverlayColoniseHighlightBrush",
-                     "RavenOverlayColoniseItemBrush",
-                     "RavenOverlayColoniseItemDimBrush",
-                     "RavenOverlayFczCheckpointBrush",
-                     "RavenOverlayFczCheckpointLocalBrush",
-                     "RavenOverlayFczPowerPostBrush",
-                     "RavenOverlayGuardianBackgroundBrush",
-                     "RavenOverlayGuardianHeaderBrush",
-                     "RavenOverlayGuardianPrimaryBrush",
-                     "RavenOverlayGuardianPrimaryDimBrush",
-                     "RavenOverlayGuardianSecondaryBrush",
-                     "RavenOverlayGuardianSecondaryDimBrush",
-                     "RavenOverlayGuardianTextBrush",
-                     "RavenOverlayGuardianMutedBrush",
-                     "RavenOverlayGuardianDangerBrush",
-                     "RavenOverlayGuardianSuccessBrush",
-                     "RavenOverlayGuardianWarningBrush",
-                     "RavenOverlayGuardianSurfaceBrush",
-                 })
+            Assert.IsType<SolidColorBrush>(application.Resources["RavenOverlayGuardianPrimaryBrush"]).Color
+        );
+        foreach (
+            var resource in new[]
+            {
+                "RavenOverlayPrimaryBrush",
+                "RavenOverlayPrimaryDimBrush",
+                "RavenOverlaySecondaryBrush",
+                "RavenOverlaySecondaryDimBrush",
+                "RavenOverlayDangerDimBrush",
+                "RavenOverlaySuccessDimBrush",
+                "RavenOverlayMenuGoldBrush",
+                "RavenOverlayBioConfirmedBrush",
+                "RavenOverlayBioConfirmedDimBrush",
+                "RavenOverlayBioPotentialBrush",
+                "RavenOverlayBioConfirmedDimPotentialBrush",
+                "RavenOverlayBioPredictionPotentialBrush",
+                "RavenOverlayBioGoldDimBrush",
+                "RavenOverlayBioGoldFillBrush",
+                "RavenOverlayBioGoldDimFillBrush",
+                "RavenOverlayBioGoldPotentialBrush",
+                "RavenOverlayBioGoldDimPotentialBrush",
+                "RavenOverlayBioGalacticRegionBrush",
+                "RavenOverlayBioGalacticRegionPotentialBrush",
+                "RavenOverlayBioUnknownBrush",
+                "RavenOverlayBioUnknownGlyphBrush",
+                "RavenOverlayBioHatchBrush",
+                "RavenOverlayBioEmptyBrush",
+                "RavenOverlayBioWhiteBrush",
+                "RavenOverlayBioPredictionBrush",
+                "RavenOverlayBioConfirmedEdgeBrush",
+                "RavenOverlayBioConfirmedDimEdgeBrush",
+                "RavenOverlayBioPredictionEdgeBrush",
+                "RavenOverlayBioGoldEdgeBrush",
+                "RavenOverlayBioGoldDimEdgeBrush",
+                "RavenOverlayBioGalacticRegionEdgeBrush",
+                "RavenOverlayBioUnknownEdgeBrush",
+                "RavenOverlayBioConfirmedSegmentEdgeBrush",
+                "RavenOverlayBioConfirmedPotentialSegmentEdgeBrush",
+                "RavenOverlayBioConfirmedDimSegmentEdgeBrush",
+                "RavenOverlayBioConfirmedDimPotentialSegmentEdgeBrush",
+                "RavenOverlayBioPredictionSegmentEdgeBrush",
+                "RavenOverlayBioPredictionPotentialSegmentEdgeBrush",
+                "RavenOverlayBioGoldSegmentEdgeBrush",
+                "RavenOverlayBioGoldPotentialSegmentEdgeBrush",
+                "RavenOverlayBioGoldDimSegmentEdgeBrush",
+                "RavenOverlayBioGoldDimPotentialSegmentEdgeBrush",
+                "RavenOverlayBioGalacticRegionSegmentEdgeBrush",
+                "RavenOverlayBioGalacticRegionPotentialSegmentEdgeBrush",
+                "RavenOverlayColoniseSurplusBrush",
+                "RavenOverlayColoniseSurplusDimBrush",
+                "RavenOverlayColoniseDeficitBrush",
+                "RavenOverlayColoniseDeficitDimBrush",
+                "RavenOverlayColoniseHighlightBrush",
+                "RavenOverlayColoniseItemBrush",
+                "RavenOverlayColoniseItemDimBrush",
+                "RavenOverlayFczCheckpointBrush",
+                "RavenOverlayFczCheckpointLocalBrush",
+                "RavenOverlayFczPowerPostBrush",
+                "RavenOverlayGuardianBackgroundBrush",
+                "RavenOverlayGuardianHeaderBrush",
+                "RavenOverlayGuardianPrimaryBrush",
+                "RavenOverlayGuardianPrimaryDimBrush",
+                "RavenOverlayGuardianSecondaryBrush",
+                "RavenOverlayGuardianSecondaryDimBrush",
+                "RavenOverlayGuardianTextBrush",
+                "RavenOverlayGuardianMutedBrush",
+                "RavenOverlayGuardianDangerBrush",
+                "RavenOverlayGuardianSuccessBrush",
+                "RavenOverlayGuardianWarningBrush",
+                "RavenOverlayGuardianSurfaceBrush",
+            }
+        )
         {
             Assert.IsType<SolidColorBrush>(application.Resources[resource]);
         }
         Assert.Equal(
             Color.Parse(RavenThemeCatalog.Get(null).AccentColor),
-            Assert.IsType<SolidColorBrush>(
-                application.Resources["RavenAccentBrush"]).Color);
+            Assert.IsType<SolidColorBrush>(application.Resources["RavenAccentBrush"]).Color
+        );
     }
 
     [Fact]
     public void SelectingApplicationThemeDoesNotReapplyOrChangeOverlayTheme()
     {
         var application = new Application();
-        var store = new ThemePreferenceStore(
-            Path.Combine(temporaryDirectory, "ui.json"));
+        var store = new ThemePreferenceStore(Path.Combine(temporaryDirectory, "ui.json"));
         var colors = LegacyOverlayThemeStore.CreateDefault().Colors.ToDictionary();
         colors["orange"] = Color.FromArgb(255, 11, 22, 33);
         var overlay = new LegacyOverlayTheme(colors, true, null);
@@ -345,12 +318,12 @@ public sealed class RavenThemeServiceTests : IDisposable
         Assert.Equal(0, overlayChanges);
         Assert.Equal(
             Color.FromArgb(255, 11, 22, 33),
-            Assert.IsType<SolidColorBrush>(
-                application.Resources["RavenOverlayAccentBrush"]).Color);
+            Assert.IsType<SolidColorBrush>(application.Resources["RavenOverlayAccentBrush"]).Color
+        );
         Assert.Equal(
             Color.Parse("#E6D59A"),
-            Assert.IsType<SolidColorBrush>(
-                application.Resources["RavenAccentBrush"]).Color);
+            Assert.IsType<SolidColorBrush>(application.Resources["RavenAccentBrush"]).Color
+        );
     }
 
     public void Dispose()

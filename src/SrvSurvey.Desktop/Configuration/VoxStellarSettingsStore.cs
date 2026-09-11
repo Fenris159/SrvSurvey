@@ -15,10 +15,8 @@ public sealed class VoxStellarSettingsStore
     {
         var settings = documentStore.Load()["VoxStellar"] as JsonObject;
         return new VoxStellarPreferences(
-            JournalUploadEnabled: GetBoolean(
-                settings,
-                "JournalUploadEnabled",
-                fallback: false));
+            JournalUploadEnabled: GetBoolean(settings, "JournalUploadEnabled", fallback: false)
+        );
     }
 
     public void Save(VoxStellarPreferences preferences)
@@ -34,20 +32,13 @@ public sealed class VoxStellarSettingsStore
             }
 
             root["Version"] = 1;
-            settings["JournalUploadEnabled"] =
-                preferences.JournalUploadEnabled;
+            settings["JournalUploadEnabled"] = preferences.JournalUploadEnabled;
         });
     }
 
-    private static bool GetBoolean(
-        JsonObject? source,
-        string propertyName,
-        bool fallback)
+    private static bool GetBoolean(JsonObject? source, string propertyName, bool fallback)
     {
-        return source?[propertyName] is JsonValue value
-            && value.TryGetValue<bool>(out var result)
-                ? result
-                : fallback;
+        return source?[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result) ? result : fallback;
     }
 }
 

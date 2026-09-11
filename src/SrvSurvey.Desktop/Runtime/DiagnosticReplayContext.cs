@@ -10,11 +10,7 @@ internal sealed class DiagnosticReplayContext
     private DiagnosticReplayContext(DiagnosticReplaySession session)
     {
         Session = session;
-        AppDataPaths = new AppDataPaths(
-            session.ConfigDirectory,
-            session.DataDirectory,
-            session.CacheDirectory,
-            []);
+        AppDataPaths = new AppDataPaths(session.ConfigDirectory, session.DataDirectory, session.CacheDirectory, []);
     }
 
     public DiagnosticReplaySession Session { get; }
@@ -23,8 +19,7 @@ internal sealed class DiagnosticReplayContext
 
     public string JournalDirectory =>
         Path.GetDirectoryName(Session.PlaybackJournalPath)
-        ?? throw new InvalidDataException(
-            "The diagnostic playback journal has no containing directory.");
+        ?? throw new InvalidDataException("The diagnostic playback journal has no containing directory.");
 
     public string LogsDirectory => Session.LogsDirectory;
 
@@ -34,11 +29,10 @@ internal sealed class DiagnosticReplayContext
 
     public static async Task<DiagnosticReplayContext> LoadAsync(
         string manifestPath,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
-        var session = await DiagnosticReplaySession.LoadAsync(
-            manifestPath,
-            cancellationToken);
+        var session = await DiagnosticReplaySession.LoadAsync(manifestPath, cancellationToken);
         ReplayPresentationSnapshotStore.Apply(session);
         return new DiagnosticReplayContext(session);
     }
@@ -46,81 +40,71 @@ internal sealed class DiagnosticReplayContext
     public IGameWindowTracker CreateGameWindowTracker()
     {
         var bounds = Session.PresentationSnapshot is { } presentation
-            ? new PixelRect(
-                0,
-                0,
-                presentation.ViewportWidth,
-                presentation.ViewportHeight)
+            ? new PixelRect(0, 0, presentation.ViewportWidth, presentation.ViewportHeight)
             : new PixelRect(0, 0, 1920, 1080);
-        return new DiagnosticGameWindowTracker(
-            bounds);
+        return new DiagnosticGameWindowTracker(bounds);
     }
 
     public static HttpClient CreateNetworkClient()
     {
-        return new HttpClient(new DiagnosticReplayNetworkHandler())
-        {
-            Timeout = TimeSpan.FromSeconds(1),
-        };
+        return new HttpClient(new DiagnosticReplayNetworkHandler()) { Timeout = TimeSpan.FromSeconds(1) };
     }
 
-    public static HttpClient? CreateNetworkClient(
-        DiagnosticReplayContext? context)
+    public static HttpClient? CreateNetworkClient(DiagnosticReplayContext? context)
     {
         return context is null ? null : CreateNetworkClient();
     }
 
-    private sealed class DiagnosticGameWindowTracker(PixelRect bounds)
-        : IGameWindowTracker
+    private sealed class DiagnosticGameWindowTracker(PixelRect bounds) : IGameWindowTracker
     {
         private readonly GameWindowSnapshot snapshot = new(
             new nint(1),
             null,
             bounds,
             IsVisible: true,
-            IsForeground: true);
+            IsForeground: true
+        );
 
         public GameWindowSnapshot GetSnapshot() => snapshot;
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
     }
 
     private sealed class DiagnosticReplayNetworkHandler : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
             cancellationToken.ThrowIfCancellationRequested();
             throw new HttpRequestException(
                 "Network access is disabled during diagnostic replay. "
-                + $"Blocked {request.Method} request to {request.RequestUri?.Host ?? "an external service"}.");
+                    + $"Blocked {request.Method} request to {request.RequestUri?.Host ?? "an external service"}."
+            );
         }
     }
 }
 
-internal sealed record DesktopStartupContext(
-    AppDataPaths AppDataPaths,
-    DiagnosticReplayContext? DiagnosticReplay)
+internal sealed record DesktopStartupContext(AppDataPaths AppDataPaths, DiagnosticReplayContext? DiagnosticReplay)
 {
     public bool IsDiagnosticReplay => DiagnosticReplay is not null;
 
     public static async Task<DesktopStartupContext> ResolveAsync(
         IReadOnlyList<string> arguments,
         Func<AppDataPaths> normalPathsFactory,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         ArgumentNullException.ThrowIfNull(arguments);
         ArgumentNullException.ThrowIfNull(normalPathsFactory);
         var replayManifest = StartupOptions.GetDiagnosticReplayManifest(arguments);
-        if (replayManifest is null
-            && StartupOptions.HasDiagnosticReplayOption(arguments))
+        if (replayManifest is null && StartupOptions.HasDiagnosticReplayOption(arguments))
         {
             throw new ArgumentException(
                 "The --diagnostic-replay option requires a replay-session manifest path.",
-                nameof(arguments));
+                nameof(arguments)
+            );
         }
 
         if (replayManifest is null)
@@ -128,11 +112,7 @@ internal sealed record DesktopStartupContext(
             return new DesktopStartupContext(normalPathsFactory(), null);
         }
 
-        var diagnosticReplay = await DiagnosticReplayContext.LoadAsync(
-            replayManifest,
-            cancellationToken);
-        return new DesktopStartupContext(
-            diagnosticReplay.AppDataPaths,
-            diagnosticReplay);
+        var diagnosticReplay = await DiagnosticReplayContext.LoadAsync(replayManifest, cancellationToken);
+        return new DesktopStartupContext(diagnosticReplay.AppDataPaths, diagnosticReplay);
     }
 }

@@ -12,18 +12,15 @@ public sealed class SystemNicknameViewModel : INotifyPropertyChanged
     private bool enabled;
     private string statusMessage;
 
-    public SystemNicknameViewModel(
-        SystemNicknameCatalog catalog,
-        SystemNicknameSettingsStore settingsStore)
+    public SystemNicknameViewModel(SystemNicknameCatalog catalog, SystemNicknameSettingsStore settingsStore)
     {
         this.catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
-        this.settingsStore = settingsStore
-            ?? throw new ArgumentNullException(nameof(settingsStore));
+        this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         enabled = settingsStore.LoadEnabled();
-        statusMessage = catalog.Warnings.Count == 0
-            ? $"Loaded {catalog.LocalCount:N0} personal and "
-                + $"{catalog.RavenCount:N0} Raven system nickname(s)."
-            : string.Join(" ", catalog.Warnings);
+        statusMessage =
+            catalog.Warnings.Count == 0
+                ? $"Loaded {catalog.LocalCount:N0} personal and " + $"{catalog.RavenCount:N0} Raven system nickname(s)."
+                : string.Join(" ", catalog.Warnings);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -52,13 +49,10 @@ public sealed class SystemNicknameViewModel : INotifyPropertyChanged
                     : "System nicknames are off; canonical names are shown.";
                 NamesChanged?.Invoke(this, EventArgs.Empty);
             }
-            catch (Exception exception) when (
-                exception is IOException
-                    or UnauthorizedAccessException
-                    or InvalidOperationException)
+            catch (Exception exception)
+                when (exception is IOException or UnauthorizedAccessException or InvalidOperationException)
             {
-                StatusMessage = "The system nickname preference could not be saved: "
-                    + exception.Message;
+                StatusMessage = "The system nickname preference could not be saved: " + exception.Message;
             }
         }
     }
@@ -74,10 +68,7 @@ public sealed class SystemNicknameViewModel : INotifyPropertyChanged
         return catalog.Resolve(systemName, Enabled);
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {

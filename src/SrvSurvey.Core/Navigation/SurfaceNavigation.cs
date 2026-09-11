@@ -4,16 +4,11 @@ namespace SrvSurvey.Core.Navigation;
 
 public static class SurfaceNavigation
 {
-    public static double GetDistance(
-        SurfaceCoordinate first,
-        SurfaceCoordinate second,
-        double radius)
+    public static double GetDistance(SurfaceCoordinate first, SurfaceCoordinate second, double radius)
     {
         if (!double.IsFinite(radius) || radius <= 0)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(radius),
-                "The body radius must be positive.");
+            throw new ArgumentOutOfRangeException(nameof(radius), "The body radius must be positive.");
         }
 
         if (first == second)
@@ -23,18 +18,14 @@ public static class SurfaceNavigation
 
         var firstLatitude = DegreesToRadians(first.Latitude);
         var secondLatitude = DegreesToRadians(second.Latitude);
-        var longitudeDelta = DegreesToRadians(
-            second.Longitude - first.Longitude);
-        var cosine = (Math.Sin(firstLatitude) * Math.Sin(secondLatitude))
-            + (Math.Cos(firstLatitude)
-                * Math.Cos(secondLatitude)
-                * Math.Cos(longitudeDelta));
+        var longitudeDelta = DegreesToRadians(second.Longitude - first.Longitude);
+        var cosine =
+            (Math.Sin(firstLatitude) * Math.Sin(secondLatitude))
+            + (Math.Cos(firstLatitude) * Math.Cos(secondLatitude) * Math.Cos(longitudeDelta));
         return Math.Acos(Math.Clamp(cosine, -1, 1)) * radius;
     }
 
-    public static double GetBearing(
-        SurfaceCoordinate origin,
-        SurfaceCoordinate target)
+    public static double GetBearing(SurfaceCoordinate origin, SurfaceCoordinate target)
     {
         if (origin == target)
         {
@@ -43,13 +34,11 @@ public static class SurfaceNavigation
 
         var originLatitude = DegreesToRadians(origin.Latitude);
         var targetLatitude = DegreesToRadians(target.Latitude);
-        var longitudeDelta = DegreesToRadians(
-            target.Longitude - origin.Longitude);
+        var longitudeDelta = DegreesToRadians(target.Longitude - origin.Longitude);
         var y = Math.Sin(longitudeDelta) * Math.Cos(targetLatitude);
-        var x = (Math.Cos(originLatitude) * Math.Sin(targetLatitude))
-            - (Math.Sin(originLatitude)
-                * Math.Cos(targetLatitude)
-                * Math.Cos(longitudeDelta));
+        var x =
+            (Math.Cos(originLatitude) * Math.Sin(targetLatitude))
+            - (Math.Sin(originLatitude) * Math.Cos(targetLatitude) * Math.Cos(longitudeDelta));
         return NormalizeDegrees(RadiansToDegrees(Math.Atan2(y, x)));
     }
 
@@ -76,16 +65,12 @@ public readonly record struct SurfaceCoordinate
     {
         if (!double.IsFinite(latitude) || latitude is < -90 or > 90)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(latitude),
-                "Latitude must be between -90 and 90 degrees.");
+            throw new ArgumentOutOfRangeException(nameof(latitude), "Latitude must be between -90 and 90 degrees.");
         }
 
         if (!double.IsFinite(longitude) || longitude is < -180 or > 180)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(longitude),
-                "Longitude must be between -180 and 180 degrees.");
+            throw new ArgumentOutOfRangeException(nameof(longitude), "Longitude must be between -180 and 180 degrees.");
         }
 
         Latitude = latitude;

@@ -72,22 +72,52 @@ public static class OverlayVehicleCatalog
         new(UnknownKey, "Other / unknown", VehicleGroup),
     ];
 
-    public static IReadOnlyList<OverlayVehicleDefinition> ForCategory(
-        OverlaySettingsCategory category) => category == OverlaySettingsCategory.MineMap
-        ? All.Where(vehicle => vehicle.Group is MediumGroup or LargeGroup
-            || vehicle.Id is "mev_rhino" or "on-foot" or UnknownKey).ToArray()
-        : All;
+    public static IReadOnlyList<OverlayVehicleDefinition> ForCategory(OverlaySettingsCategory category) =>
+        category == OverlaySettingsCategory.MineMap
+            ? All.Where(vehicle =>
+                    vehicle.Group is MediumGroup or LargeGroup || vehicle.Id is "mev_rhino" or "on-foot" or UnknownKey
+                )
+                .ToArray()
+            : All;
 
     public static string Resolve(JournalSessionState journal, EliteStatus? status)
     {
-        if (journal.IsShutdown || status is null) return UnknownKey;
-        if (status.OnFoot) return "on-foot";
-        if (status.InFighter) return "fighters";
+        if (journal.IsShutdown || status is null)
+        {
+            return UnknownKey;
+        }
+
+        if (status.OnFoot)
+        {
+            return "on-foot";
+        }
+
+        if (status.InFighter)
+        {
+            return "fighters";
+        }
         // The journal can retain our own ship while we ride in another vessel.
-        if (status.InTaxi || (status.Flags2 & (StatusFlags2.InMulticrew
-            | StatusFlags2.TelepresenceMulticrew | StatusFlags2.PhysicalMulticrew)) != 0) return UnknownKey;
-        if (status.InSrv) return Normalize(journal.ActiveSrvType);
-        if (status.InMainShip) return Normalize(journal.ShipType);
+        if (
+            status.InTaxi
+            || (
+                status.Flags2
+                & (StatusFlags2.InMulticrew | StatusFlags2.TelepresenceMulticrew | StatusFlags2.PhysicalMulticrew)
+            ) != 0
+        )
+        {
+            return UnknownKey;
+        }
+
+        if (status.InSrv)
+        {
+            return Normalize(journal.ActiveSrvType);
+        }
+
+        if (status.InMainShip)
+        {
+            return Normalize(journal.ShipType);
+        }
+
         return UnknownKey;
     }
 

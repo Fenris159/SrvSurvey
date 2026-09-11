@@ -19,13 +19,11 @@ public sealed class HumanSiteViewModelTests
 
         Assert.True(viewModel.ShouldShow);
         Assert.Equal("Haberlandt Survey", viewModel.SiteName);
-        Assert.Equal("Agriculture · type not identified",
-            viewModel.TemplateText);
+        Assert.Equal("Agriculture · type not identified", viewModel.TemplateText);
         Assert.False(viewModel.HasKnownGeometry);
 
         var notifications = new List<string?>();
-        viewModel.PropertyChanged += (_, eventArgs) =>
-            notifications.Add(eventArgs.PropertyName);
+        viewModel.PropertyChanged += (_, eventArgs) => notifications.Add(eventArgs.PropertyName);
         await viewModel.ApplyUpdateAsync([], null, "foot");
         Assert.Empty(notifications);
 
@@ -51,46 +49,37 @@ public sealed class HumanSiteViewModelTests
         var template = catalog.Find(HumanSiteEconomy.Extraction, 5)!;
         var origin = new SurfaceCoordinate(-12.5, 44.25);
         var pad = Assert.Single(template.LandingPads);
-        var observerHeading = SurfaceNavigation.NormalizeDegrees(
-            siteHeading + pad.Rotation);
-        var location = HumanSiteNavigation.GetSurfaceLocation(
-            origin,
-            pad.Offset,
-            radius,
-            siteHeading);
-        var viewModel = new HumanSiteViewModel(new HumanSiteViewModelOptions
-        {
-            TemplateCatalog = catalog,
-        });
-        var status = OnFootStatus(
-            location.Latitude,
-            location.Longitude,
-            (int)Math.Round(observerHeading)) with
+        var observerHeading = SurfaceNavigation.NormalizeDegrees(siteHeading + pad.Rotation);
+        var location = HumanSiteNavigation.GetSurfaceLocation(origin, pad.Offset, radius, siteHeading);
+        var viewModel = new HumanSiteViewModel(new HumanSiteViewModelOptions { TemplateCatalog = catalog });
+        var status = OnFootStatus(location.Latitude, location.Longitude, (int)Math.Round(observerHeading)) with
         {
             PlanetRadius = (decimal)radius,
         };
 
         await viewModel.ApplyUpdateAsync(
             [
-                Parse(Approach(
-                    economy: "$economy_Extraction;",
-                    economyLocalized: "Extraction",
-                    latitude: origin.Latitude,
-                    longitude: origin.Longitude)),
+                Parse(
+                    Approach(
+                        economy: "$economy_Extraction;",
+                        economyLocalized: "Extraction",
+                        latitude: origin.Latitude,
+                        longitude: origin.Longitude
+                    )
+                ),
                 Parse(
                     """
                     {"event":"DockingRequested","MarketID":12345,"StationType":"OnFootSettlement","LandingPads":{"Small":1,"Medium":0,"Large":0}}
-                    """),
+                    """
+                ),
             ],
             status,
-            "foot");
+            "foot"
+        );
 
         Assert.False(viewModel.HasKnownGeometry);
 
-        await viewModel.ApplyUpdateAsync(
-            [Parse("""{"event":"SendText","Message":".settlement"}""")],
-            status,
-            "foot");
+        await viewModel.ApplyUpdateAsync([Parse("""{"event":"SendText","Message":".settlement"}""")], status, "foot");
 
         Assert.True(viewModel.HasKnownGeometry);
         Assert.Equal(5, viewModel.ActiveSite!.SubType);
@@ -111,41 +100,36 @@ public sealed class HumanSiteViewModelTests
         var template = catalog.Find(HumanSiteEconomy.Extraction, 5)!;
         var origin = new SurfaceCoordinate(-12.5, 44.25);
         var pad = Assert.Single(template.LandingPads);
-        var observerHeading = SurfaceNavigation.NormalizeDegrees(
-            siteHeading + pad.Rotation);
-        var cockpitLocation = HumanSiteNavigation.GetSurfaceLocation(
-            origin,
-            pad.Offset,
-            radius,
-            siteHeading);
+        var observerHeading = SurfaceNavigation.NormalizeDegrees(siteHeading + pad.Rotation);
+        var cockpitLocation = HumanSiteNavigation.GetSurfaceLocation(origin, pad.Offset, radius, siteHeading);
         var status = new EliteStatus
         {
-            Flags = StatusFlags.HasLatLong
-                | StatusFlags.Docked
-                | StatusFlags.InMainShip,
+            Flags = StatusFlags.HasLatLong | StatusFlags.Docked | StatusFlags.InMainShip,
             Latitude = cockpitLocation.Latitude,
             Longitude = cockpitLocation.Longitude,
             Heading = (int)Math.Round(observerHeading),
             PlanetRadius = (decimal)radius,
         };
-        var viewModel = new HumanSiteViewModel(new HumanSiteViewModelOptions
-        {
-            TemplateCatalog = catalog,
-        });
+        var viewModel = new HumanSiteViewModel(new HumanSiteViewModelOptions { TemplateCatalog = catalog });
 
         await viewModel.ApplyUpdateAsync(
             [
-                Parse(Approach(
-                    economy: "$economy_Extraction;",
-                    economyLocalized: "Extraction",
-                    latitude: origin.Latitude,
-                    longitude: origin.Longitude)),
+                Parse(
+                    Approach(
+                        economy: "$economy_Extraction;",
+                        economyLocalized: "Extraction",
+                        latitude: origin.Latitude,
+                        longitude: origin.Longitude
+                    )
+                ),
                 Parse(
                     """
                     {"event":"DockingRequested","MarketID":12345,"StationType":"OnFootSettlement","LandingPads":{"Small":1,"Medium":0,"Large":0}}
-                    """),
+                    """
+                ),
             ],
-            status);
+            status
+        );
 
         Assert.True(viewModel.HasKnownGeometry);
         Assert.Equal(siteHeading, viewModel.ActiveSite!.Heading!.Value, 0);
@@ -160,52 +144,45 @@ public sealed class HumanSiteViewModelTests
         var template = catalog.Find(HumanSiteEconomy.Extraction, 5)!;
         var origin = new SurfaceCoordinate(-12.5, 44.25);
         var pad = Assert.Single(template.LandingPads);
-        var observerHeading = SurfaceNavigation.NormalizeDegrees(
-            siteHeading + pad.Rotation);
-        var current = HumanSiteNavigation.GetSurfaceLocation(
-            origin,
-            pad.Offset,
-            radius,
-            siteHeading);
+        var observerHeading = SurfaceNavigation.NormalizeDegrees(siteHeading + pad.Rotation);
+        var current = HumanSiteNavigation.GetSurfaceLocation(origin, pad.Offset, radius, siteHeading);
         var routeEnd = HumanSiteNavigation.GetSurfaceLocation(
             origin,
             new HumanSiteMapPoint(40, 75),
             radius,
-            siteHeading);
-        var status = OnFootStatus(
-            current.Latitude,
-            current.Longitude,
-            (int)Math.Round(observerHeading)) with
+            siteHeading
+        );
+        var status = OnFootStatus(current.Latitude, current.Longitude, (int)Math.Round(observerHeading)) with
         {
             PlanetRadius = (decimal)radius,
         };
-        var viewModel = new HumanSiteViewModel(new HumanSiteViewModelOptions
-        {
-            TemplateCatalog = catalog,
-        });
+        var viewModel = new HumanSiteViewModel(new HumanSiteViewModelOptions { TemplateCatalog = catalog });
         await viewModel.ApplyUpdateAsync(
             [
-                Parse(Approach(
-                    economy: "$economy_Extraction;",
-                    economyLocalized: "Extraction",
-                    latitude: origin.Latitude,
-                    longitude: origin.Longitude)),
+                Parse(
+                    Approach(
+                        economy: "$economy_Extraction;",
+                        economyLocalized: "Extraction",
+                        latitude: origin.Latitude,
+                        longitude: origin.Longitude
+                    )
+                ),
                 Parse(
                     """
                     {"event":"DockingRequested","MarketID":12345,"StationType":"OnFootSettlement","LandingPads":{"Small":1,"Medium":0,"Large":0}}
-                    """),
+                    """
+                ),
                 Parse("""{"event":"SendText","Message":".settlement"}"""),
             ],
             status,
-            "foot");
+            "foot"
+        );
 
-        viewModel.UpdateQuests(
-        [
+        viewModel.UpdateQuests([
             CreateQuestSnapshot(
                 new Dictionary<string, string>
                 {
-                    ["Target"] = FormattableString.Invariant(
-                        $"{origin.Latitude:R},{origin.Longitude:R},500"),
+                    ["Target"] = FormattableString.Invariant($"{origin.Latitude:R},{origin.Longitude:R},500"),
                     ["Invalid"] = "not-a-location",
                 },
                 [
@@ -223,10 +200,15 @@ public sealed class HumanSiteViewModelTests
                     {
                         Id = "invalid",
                         Width = double.NaN,
-                        Waypoints = [[999, 999], [998, 998]],
+                        Waypoints =
+                        [
+                            [999, 999],
+                            [998, 998],
+                        ],
                     },
                 ],
-                new HashSet<string>(["Haberlandt Survey"]))
+                new HashSet<string>(["Haberlandt Survey"])
+            ),
         ]);
 
         Assert.True(viewModel.IsQuestTagged);
@@ -251,15 +233,9 @@ public sealed class HumanSiteViewModelTests
 
         viewModel.UpdateStatus(exterior);
         Assert.Equal(2, viewModel.Zoom);
-        viewModel.UpdateStatus(exterior with
-        {
-            Flags2 = StatusFlags2.OnFoot | StatusFlags2.OnFootOnPlanet,
-        });
+        viewModel.UpdateStatus(exterior with { Flags2 = StatusFlags2.OnFoot | StatusFlags2.OnFootOnPlanet });
         Assert.Equal(4, viewModel.Zoom);
-        viewModel.UpdateStatus(exterior with
-        {
-            SelectedWeapon = "$humanoid_companalyser_name;",
-        });
+        viewModel.UpdateStatus(exterior with { SelectedWeapon = "$humanoid_companalyser_name;" });
         Assert.Equal(6, viewModel.Zoom);
 
         viewModel.AdjustZoom(zoomIn: false);
@@ -276,13 +252,10 @@ public sealed class HumanSiteViewModelTests
         var viewModel = new HumanSiteViewModel();
         var status = OnFootStatus(0, 0, 0);
         await viewModel.ApplyUpdateAsync(
-            [
-                Parse(Approach()),
-                Parse(
-                    """{"event":"DockingDenied","MarketID":12345,"Reason":"NoSpace"}"""),
-            ],
+            [Parse(Approach()), Parse("""{"event":"DockingDenied","MarketID":12345,"Reason":"NoSpace"}""")],
             status,
-            "foot");
+            "foot"
+        );
 
         Assert.True(viewModel.HasDockingStatus);
         Assert.Equal("Docking denied · NoSpace", viewModel.DockingStatusText);
@@ -304,42 +277,42 @@ public sealed class HumanSiteViewModelTests
         var template = catalog.Find(HumanSiteEconomy.Extraction, 5)!;
         var origin = new SurfaceCoordinate(-12.5, 44.25);
         var pad = Assert.Single(template.LandingPads);
-        var observerHeading = SurfaceNavigation.NormalizeDegrees(
-            siteHeading + pad.Rotation);
-        var shipLocation = HumanSiteNavigation.GetSurfaceLocation(
-            origin,
-            pad.Offset,
-            radius,
-            siteHeading);
+        var observerHeading = SurfaceNavigation.NormalizeDegrees(siteHeading + pad.Rotation);
+        var shipLocation = HumanSiteNavigation.GetSurfaceLocation(origin, pad.Offset, radius, siteHeading);
         var landedStatus = OnFootStatus(
             shipLocation.Latitude,
             shipLocation.Longitude,
-            (int)Math.Round(observerHeading)) with
+            (int)Math.Round(observerHeading)
+        ) with
         {
             PlanetRadius = (decimal)radius,
         };
-        var viewModel = new HumanSiteViewModel(new HumanSiteViewModelOptions
-        {
-            TemplateCatalog = catalog,
-        });
+        var viewModel = new HumanSiteViewModel(new HumanSiteViewModelOptions { TemplateCatalog = catalog });
         await viewModel.ApplyUpdateAsync(
             [
-                Parse(Approach(
-                    economy: "$economy_Extraction;",
-                    economyLocalized: "Extraction",
-                    latitude: origin.Latitude,
-                    longitude: origin.Longitude)),
+                Parse(
+                    Approach(
+                        economy: "$economy_Extraction;",
+                        economyLocalized: "Extraction",
+                        latitude: origin.Latitude,
+                        longitude: origin.Longitude
+                    )
+                ),
                 Parse(
                     """
                     {"event":"DockingRequested","MarketID":12345,"StationType":"OnFootSettlement","LandingPads":{"Small":1,"Medium":0,"Large":0}}
-                    """),
-                Parse($$"""
+                    """
+                ),
+                Parse(
+                    $$"""
                     {"event":"Touchdown","Latitude":{{shipLocation.Latitude}},"Longitude":{{shipLocation.Longitude}}}
-                    """),
+                    """
+                ),
                 Parse("""{"event":"SendText","Message":".settlement"}"""),
             ],
             landedStatus,
-            "sidewinder");
+            "sidewinder"
+        );
 
         Assert.NotNull(viewModel.ShipOffset);
         Assert.False(viewModel.HasShipDeparted);
@@ -349,12 +322,15 @@ public sealed class HumanSiteViewModelTests
             shipLocation,
             new HumanSiteMapPoint(0, 1_900),
             radius,
-            siteHeading: 0);
-        viewModel.UpdateStatus(landedStatus with
-        {
-            Latitude = distantLocation.Latitude,
-            Longitude = distantLocation.Longitude,
-        });
+            siteHeading: 0
+        );
+        viewModel.UpdateStatus(
+            landedStatus with
+            {
+                Latitude = distantLocation.Latitude,
+                Longitude = distantLocation.Longitude,
+            }
+        );
         Assert.InRange(viewModel.DistanceToShipMeters, 1_899, 1_901);
         Assert.True(viewModel.ShowShipDismissalWarning);
 
@@ -365,13 +341,11 @@ public sealed class HumanSiteViewModelTests
                 Flags = StatusFlags.HasLatLong | StatusFlags.InSrv,
                 Flags2 = StatusFlags2.None,
             },
-            "sidewinder");
+            "sidewinder"
+        );
         Assert.NotNull(viewModel.SrvOffset);
 
-        await viewModel.ApplyUpdateAsync(
-            [Parse("""{"event":"Liftoff"}""")],
-            landedStatus,
-            "sidewinder");
+        await viewModel.ApplyUpdateAsync([Parse("""{"event":"Liftoff"}""")], landedStatus, "sidewinder");
         Assert.True(viewModel.HasShipDeparted);
         Assert.False(viewModel.ShowShipDismissalBoundary);
         Assert.False(viewModel.ShowShipDismissalWarning);
@@ -380,9 +354,7 @@ public sealed class HumanSiteViewModelTests
     [Fact]
     public async Task SettlementActivityProcessesTerminalPersistsDotsAndCompletesSurvey()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-human-activity-view-model-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-human-activity-view-model-{Guid.NewGuid():N}");
         try
         {
             const double radius = 6_000_000;
@@ -391,90 +363,71 @@ public sealed class HumanSiteViewModelTests
             var template = catalog.Find(HumanSiteEconomy.Extraction, 5)!;
             var origin = new SurfaceCoordinate(-12.5, 44.25);
             var pad = Assert.Single(template.LandingPads);
-            var padHeading = SurfaceNavigation.NormalizeDegrees(
-                siteHeading + pad.Rotation);
-            var padLocation = HumanSiteNavigation.GetSurfaceLocation(
-                origin,
-                pad.Offset,
-                radius,
-                siteHeading);
-            var viewModel = new HumanSiteViewModel(new HumanSiteViewModelOptions
-            {
-                MaterialStore = new HumanSiteMaterialStore(root),
-                TemplateCatalog = catalog,
-            });
-            viewModel.UpdateContext(
-                "F123",
-                "Drew",
-                "Test",
-                42,
-                null);
+            var padHeading = SurfaceNavigation.NormalizeDegrees(siteHeading + pad.Rotation);
+            var padLocation = HumanSiteNavigation.GetSurfaceLocation(origin, pad.Offset, radius, siteHeading);
+            var viewModel = new HumanSiteViewModel(
+                new HumanSiteViewModelOptions
+                {
+                    MaterialStore = new HumanSiteMaterialStore(root),
+                    TemplateCatalog = catalog,
+                }
+            );
+            viewModel.UpdateContext("F123", "Drew", "Test", 42, null);
             viewModel.TrackMaterialCollection = true;
             await viewModel.ApplyUpdateAsync(
                 [
-                    Parse(Approach(
-                        economy: "$economy_Extraction;",
-                        economyLocalized: "Extraction",
-                        latitude: origin.Latitude,
-                        longitude: origin.Longitude)),
+                    Parse(
+                        Approach(
+                            economy: "$economy_Extraction;",
+                            economyLocalized: "Extraction",
+                            latitude: origin.Latitude,
+                            longitude: origin.Longitude
+                        )
+                    ),
                     Parse(
                         """
                         {"event":"DockingRequested","MarketID":12345,"StationType":"OnFootSettlement","LandingPads":{"Small":1,"Medium":0,"Large":0}}
-                        """),
+                        """
+                    ),
                     Parse("""{"event":"SendText","Message":".settlement"}"""),
                 ],
-                OnFootStatus(
-                    padLocation.Latitude,
-                    padLocation.Longitude,
-                    (int)Math.Round(padHeading)) with
+                OnFootStatus(padLocation.Latitude, padLocation.Longitude, (int)Math.Round(padHeading)) with
                 {
                     PlanetRadius = (decimal)radius,
                 },
-                "foot");
+                "foot"
+            );
             var terminal = template.DataTerminals[0];
-            var terminalLocation = HumanSiteNavigation.GetSurfaceLocation(
-                origin,
-                terminal.Offset,
-                radius,
-                siteHeading);
+            var terminalLocation = HumanSiteNavigation.GetSurfaceLocation(origin, terminal.Offset, radius, siteHeading);
 
             await viewModel.ApplyUpdateAsync(
                 [
                     Parse(
                         """
                         {"event":"BackpackChange","Added":[{"Name":"opinionpolls","Name_Localised":"Opinion Polls","Count":1,"Type":"Data"}]}
-                        """),
+                        """
+                    ),
                 ],
-                OnFootStatus(
-                    terminalLocation.Latitude,
-                    terminalLocation.Longitude,
-                    (int)siteHeading) with
+                OnFootStatus(terminalLocation.Latitude, terminalLocation.Longitude, (int)siteHeading) with
                 {
                     PlanetRadius = (decimal)radius,
                 },
-                "foot");
+                "foot"
+            );
 
             Assert.Contains(terminal.Offset, viewModel.ProcessedTerminalOffsets);
-            Assert.Same(
-                viewModel.ProcessedTerminalOffsets,
-                viewModel.ProcessedTerminalOffsets);
+            Assert.Same(viewModel.ProcessedTerminalOffsets, viewModel.ProcessedTerminalOffsets);
             Assert.Single(viewModel.CollectedMaterials);
             Assert.Equal(1, viewModel.CollectedMaterialLocationCount);
-            var context = new HumanSiteMaterialContext(
-                "F123",
-                viewModel.ActiveSite!);
+            var context = new HumanSiteMaterialContext("F123", viewModel.ActiveSite!);
             var store = new HumanSiteMaterialStore(root);
             var saved = await store.LoadActiveAsync(context);
             Assert.True(saved.IsActive);
             Assert.Single(saved.Survey!.Materials);
 
-            await viewModel.ApplyUpdateAsync(
-                [Parse("""{"event":"SendText","Message":".stop"}""")],
-                null,
-                "foot");
+            await viewModel.ApplyUpdateAsync([Parse("""{"event":"SendText","Message":".stop"}""")], null, "foot");
 
-            Assert.Equal("Settlement material survey completed.",
-                viewModel.StatusMessage);
+            Assert.Equal("Settlement material survey completed.", viewModel.StatusMessage);
             Assert.False((await store.LoadActiveAsync(context)).Exists);
         }
         finally
@@ -489,33 +442,21 @@ public sealed class HumanSiteViewModelTests
     [Fact]
     public async Task ThreatCommandPersistsWithoutEnablingMaterialTracking()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-human-threat-view-model-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-human-threat-view-model-{Guid.NewGuid():N}");
         try
         {
             var store = new HumanSiteMaterialStore(root);
-            var viewModel = new HumanSiteViewModel(new HumanSiteViewModelOptions
-            {
-                MaterialStore = store,
-            });
+            var viewModel = new HumanSiteViewModel(new HumanSiteViewModelOptions { MaterialStore = store });
             viewModel.UpdateContext("F123", "Drew", "Test", 42, null);
-            await viewModel.ApplyUpdateAsync(
-                [Parse(Approach())],
-                OnFootStatus(0, 0, 0),
-                "foot");
+            await viewModel.ApplyUpdateAsync([Parse(Approach())], OnFootStatus(0, 0, 0), "foot");
 
-            await viewModel.ApplyUpdateAsync(
-                [Parse("""{"event":"SendText","Message":".threat 2"}""")],
-                null,
-                "foot");
+            await viewModel.ApplyUpdateAsync([Parse("""{"event":"SendText","Message":".threat 2"}""")], null, "foot");
 
             Assert.False(viewModel.TrackMaterialCollection);
             Assert.True(viewModel.HasThreatLevel);
             Assert.Equal(2, viewModel.ThreatLevel);
             Assert.Equal("Threat level 2 · full shield", viewModel.ThreatLevelText);
-            var loaded = await store.LoadActiveAsync(
-                new HumanSiteMaterialContext("F123", viewModel.ActiveSite!));
+            var loaded = await store.LoadActiveAsync(new HumanSiteMaterialContext("F123", viewModel.ActiveSite!));
             Assert.Equal(2, loaded.Survey!.ThreatLevel);
         }
         finally
@@ -530,23 +471,20 @@ public sealed class HumanSiteViewModelTests
     [Fact]
     public async Task CanonnGeometryLoadsForALiveApproachWithoutReplacingJournalIdentity()
     {
-        var client = new StubCanonnClient(new CanonnHumanSiteLookupResult(
-            [CreateCanonnKnowledge()],
-            []));
+        var client = new StubCanonnClient(new CanonnHumanSiteLookupResult([CreateCanonnKnowledge()], []));
         var publisher = new StubCanonnPublisher();
-        var viewModel = new HumanSiteViewModel(new HumanSiteViewModelOptions
-        {
-            TemplateCatalog = HumanSiteTemplateCatalog.LoadEmbedded(),
-            CanonnClient = client,
-            UseExternalData = () => true,
-            CanonnPublisher = publisher,
-            PublishCanonnGeometry = () => true,
-        });
+        var viewModel = new HumanSiteViewModel(
+            new HumanSiteViewModelOptions
+            {
+                TemplateCatalog = HumanSiteTemplateCatalog.LoadEmbedded(),
+                CanonnClient = client,
+                UseExternalData = () => true,
+                CanonnPublisher = publisher,
+                PublishCanonnGeometry = () => true,
+            }
+        );
 
-        await viewModel.ApplyUpdateAsync(
-            [Parse(Approach())],
-            OnFootStatus(0, 0, 0),
-            "foot");
+        await viewModel.ApplyUpdateAsync([Parse(Approach())], OnFootStatus(0, 0, 0), "foot");
 
         Assert.Equal(1, client.RequestCount);
         Assert.Equal(42, client.SystemAddress);
@@ -561,24 +499,14 @@ public sealed class HumanSiteViewModelTests
     [Theory]
     [InlineData(false, true)]
     [InlineData(true, false)]
-    public async Task CanonnGeometryRespectsPrivacyAndBootstrapGates(
-        bool externalDataEnabled,
-        bool allowExternalData)
+    public async Task CanonnGeometryRespectsPrivacyAndBootstrapGates(bool externalDataEnabled, bool allowExternalData)
     {
-        var client = new StubCanonnClient(new CanonnHumanSiteLookupResult(
-            [CreateCanonnKnowledge()],
-            []));
-        var viewModel = new HumanSiteViewModel(new HumanSiteViewModelOptions
-        {
-            CanonnClient = client,
-            UseExternalData = () => externalDataEnabled,
-        });
+        var client = new StubCanonnClient(new CanonnHumanSiteLookupResult([CreateCanonnKnowledge()], []));
+        var viewModel = new HumanSiteViewModel(
+            new HumanSiteViewModelOptions { CanonnClient = client, UseExternalData = () => externalDataEnabled }
+        );
 
-        await viewModel.ApplyUpdateAsync(
-            [Parse(Approach())],
-            OnFootStatus(0, 0, 0),
-            "foot",
-            allowExternalData);
+        await viewModel.ApplyUpdateAsync([Parse(Approach())], OnFootStatus(0, 0, 0), "foot", allowExternalData);
 
         Assert.Equal(0, client.RequestCount);
         Assert.False(viewModel.HasKnownGeometry);
@@ -588,16 +516,11 @@ public sealed class HumanSiteViewModelTests
     public async Task CanonnFailureDoesNotInterruptJournalProcessing()
     {
         var client = new StubCanonnClient(new HttpRequestException("offline"));
-        var viewModel = new HumanSiteViewModel(new HumanSiteViewModelOptions
-        {
-            CanonnClient = client,
-            UseExternalData = () => true,
-        });
+        var viewModel = new HumanSiteViewModel(
+            new HumanSiteViewModelOptions { CanonnClient = client, UseExternalData = () => true }
+        );
 
-        await viewModel.ApplyUpdateAsync(
-            [Parse(Approach())],
-            OnFootStatus(0, 0, 0),
-            "foot");
+        await viewModel.ApplyUpdateAsync([Parse(Approach())], OnFootStatus(0, 0, 0), "foot");
 
         Assert.NotNull(viewModel.ActiveSite);
         Assert.Contains("unavailable", viewModel.StatusMessage);
@@ -606,9 +529,7 @@ public sealed class HumanSiteViewModelTests
     [Fact]
     public async Task LoadedGeometryRetainsItsProvenanceAfterApproachSave()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-human-provenance-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-human-provenance-{Guid.NewGuid():N}");
         try
         {
             var catalog = HumanSiteTemplateCatalog.LoadEmbedded();
@@ -620,34 +541,18 @@ public sealed class HumanSiteViewModelTests
                 Template = catalog.Find(HumanSiteEconomy.Agriculture, 4),
                 Heading = 275,
             };
-            var context = new HumanSiteKnowledgeContext(
-                "F123",
-                "Drew",
-                "Test",
-                42,
-                null,
-                6_000_000);
+            var context = new HumanSiteKnowledgeContext("F123", "Drew", "Test", 42, null, 6_000_000);
             var store = new HumanSiteKnowledgeStore(root);
-            await store.SaveAsync(
-                context,
-                site,
-                HumanSiteGeometrySource.AutoDock);
-            var viewModel = new HumanSiteViewModel(new HumanSiteViewModelOptions
-            {
-                KnowledgeStore = store,
-                TemplateCatalog = catalog,
-            });
+            await store.SaveAsync(context, site, HumanSiteGeometrySource.AutoDock);
+            var viewModel = new HumanSiteViewModel(
+                new HumanSiteViewModelOptions { KnowledgeStore = store, TemplateCatalog = catalog }
+            );
             viewModel.UpdateContext("F123", "Drew", "Test", 42, null);
 
-            await viewModel.ApplyUpdateAsync(
-                [Parse(Approach())],
-                OnFootStatus(0, 0, 0),
-                "foot");
+            await viewModel.ApplyUpdateAsync([Parse(Approach())], OnFootStatus(0, 0, 0), "foot");
 
             var reloaded = await store.LoadAsync(context, 12345);
-            Assert.Equal(
-                HumanSiteGeometrySource.AutoDock,
-                reloaded.Knowledge!.GeometrySource);
+            Assert.Equal(HumanSiteGeometrySource.AutoDock, reloaded.Knowledge!.GeometrySource);
         }
         finally
         {
@@ -667,19 +572,12 @@ public sealed class HumanSiteViewModelTests
         var template = catalog.Find(HumanSiteEconomy.Extraction, 5)!;
         var origin = new SurfaceCoordinate(-12.5, 44.25);
         var pad = Assert.Single(template.LandingPads);
-        var observerHeading = SurfaceNavigation.NormalizeDegrees(
-            siteHeading + pad.Rotation);
-        var cockpitLocation = HumanSiteNavigation.GetSurfaceLocation(
-            origin,
-            pad.Offset,
-            radius,
-            siteHeading);
+        var observerHeading = SurfaceNavigation.NormalizeDegrees(siteHeading + pad.Rotation);
+        var cockpitLocation = HumanSiteNavigation.GetSurfaceLocation(origin, pad.Offset, radius, siteHeading);
         var status = new EliteStatus
         {
             Timestamp = DateTimeOffset.Parse("2026-07-25T12:00:00Z"),
-            Flags = StatusFlags.HasLatLong
-                | StatusFlags.Docked
-                | StatusFlags.InMainShip,
+            Flags = StatusFlags.HasLatLong | StatusFlags.Docked | StatusFlags.InMainShip,
             Latitude = cockpitLocation.Latitude,
             Longitude = cockpitLocation.Longitude,
             Heading = (int)Math.Round(observerHeading),
@@ -687,34 +585,40 @@ public sealed class HumanSiteViewModelTests
         };
         var publisher = new StubCanonnPublisher();
         CanonnHumanSitePublicationResult? reported = null;
-        var viewModel = new HumanSiteViewModel(new HumanSiteViewModelOptions
-        {
-            TemplateCatalog = catalog,
-            CanonnPublisher = publisher,
-            PublishCanonnGeometry = () => true,
-            ReportCanonnPublication = result => reported = result,
-            ClientVersion = new Version(2, 0, 95, 0),
-        });
+        var viewModel = new HumanSiteViewModel(
+            new HumanSiteViewModelOptions
+            {
+                TemplateCatalog = catalog,
+                CanonnPublisher = publisher,
+                PublishCanonnGeometry = () => true,
+                ReportCanonnPublication = result => reported = result,
+                ClientVersion = new Version(2, 0, 95, 0),
+            }
+        );
 
         await viewModel.ApplyUpdateAsync(
             [
-                Parse(Approach(
-                    economy: "$economy_Extraction;",
-                    economyLocalized: "Extraction",
-                    latitude: origin.Latitude,
-                    longitude: origin.Longitude)),
+                Parse(
+                    Approach(
+                        economy: "$economy_Extraction;",
+                        economyLocalized: "Extraction",
+                        latitude: origin.Latitude,
+                        longitude: origin.Longitude
+                    )
+                ),
                 Parse(
                     """
                     {"event":"DockingRequested","MarketID":12345,"StationType":"OnFootSettlement","LandingPads":{"Small":1,"Medium":0,"Large":0}}
-                    """),
+                    """
+                ),
             ],
             status,
-            "sidewinder");
+            "sidewinder"
+        );
 
         var submission = Assert.Single(publisher.Submissions);
         Assert.Equal(new Version(2, 0, 95, 0), submission.ClientVersion);
-        Assert.Equal(HumanSiteGeometrySource.AutoDock,
-            submission.GeometrySource);
+        Assert.Equal(HumanSiteGeometrySource.AutoDock, submission.GeometrySource);
         Assert.Equal("sidewinder", submission.CommanderVehicle);
         Assert.Equal(siteHeading, submission.Heading, 0);
         Assert.Same(submission, reported!.Published);
@@ -723,16 +627,15 @@ public sealed class HumanSiteViewModelTests
         await viewModel.ApplyUpdateAsync(
             [Parse("""{"event":"DockingGranted","MarketID":12345,"LandingPad":1}""")],
             status,
-            "sidewinder");
+            "sidewinder"
+        );
         Assert.Single(publisher.Submissions);
     }
 
     [Theory]
     [InlineData(false, true)]
     [InlineData(true, false)]
-    public async Task SettlementPublicationRespectsConsentAndBootstrapGates(
-        bool consent,
-        bool allowPublishing)
+    public async Task SettlementPublicationRespectsConsentAndBootstrapGates(bool consent, bool allowPublishing)
     {
         const double radius = 6_000_000;
         const double siteHeading = 231;
@@ -740,60 +643,55 @@ public sealed class HumanSiteViewModelTests
         var template = catalog.Find(HumanSiteEconomy.Extraction, 5)!;
         var origin = new SurfaceCoordinate(-12.5, 44.25);
         var pad = Assert.Single(template.LandingPads);
-        var heading = SurfaceNavigation.NormalizeDegrees(
-            siteHeading + pad.Rotation);
-        var location = HumanSiteNavigation.GetSurfaceLocation(
-            origin,
-            pad.Offset,
-            radius,
-            siteHeading);
+        var heading = SurfaceNavigation.NormalizeDegrees(siteHeading + pad.Rotation);
+        var location = HumanSiteNavigation.GetSurfaceLocation(origin, pad.Offset, radius, siteHeading);
         var publisher = new StubCanonnPublisher();
-        var viewModel = new HumanSiteViewModel(new HumanSiteViewModelOptions
-        {
-            TemplateCatalog = catalog,
-            CanonnPublisher = publisher,
-            PublishCanonnGeometry = () => consent,
-        });
+        var viewModel = new HumanSiteViewModel(
+            new HumanSiteViewModelOptions
+            {
+                TemplateCatalog = catalog,
+                CanonnPublisher = publisher,
+                PublishCanonnGeometry = () => consent,
+            }
+        );
 
         await viewModel.ApplyUpdateAsync(
             [
-                Parse(Approach(
-                    economy: "$economy_Extraction;",
-                    economyLocalized: "Extraction",
-                    latitude: origin.Latitude,
-                    longitude: origin.Longitude)),
+                Parse(
+                    Approach(
+                        economy: "$economy_Extraction;",
+                        economyLocalized: "Extraction",
+                        latitude: origin.Latitude,
+                        longitude: origin.Longitude
+                    )
+                ),
                 Parse(
                     """
                     {"event":"DockingRequested","MarketID":12345,"StationType":"OnFootSettlement","LandingPads":{"Small":1,"Medium":0,"Large":0}}
-                    """),
+                    """
+                ),
             ],
             new EliteStatus
             {
-                Flags = StatusFlags.HasLatLong
-                    | StatusFlags.Docked
-                    | StatusFlags.InMainShip,
+                Flags = StatusFlags.HasLatLong | StatusFlags.Docked | StatusFlags.InMainShip,
                 Latitude = location.Latitude,
                 Longitude = location.Longitude,
                 Heading = (int)Math.Round(heading),
                 PlanetRadius = (decimal)radius,
             },
             "sidewinder",
-            allowPublishing);
+            allowPublishing
+        );
 
         Assert.Empty(publisher.Submissions);
     }
 
-    private static EliteStatus OnFootStatus(
-        double latitude,
-        double longitude,
-        int heading)
+    private static EliteStatus OnFootStatus(double latitude, double longitude, int heading)
     {
         return new EliteStatus
         {
             Flags = StatusFlags.HasLatLong,
-            Flags2 = StatusFlags2.OnFoot
-                | StatusFlags2.OnFootOnPlanet
-                | StatusFlags2.OnFootExterior,
+            Flags2 = StatusFlags2.OnFoot | StatusFlags2.OnFootOnPlanet | StatusFlags2.OnFootExterior,
             GuiFocus = GuiFocus.NoFocus,
             Latitude = latitude,
             Longitude = longitude,
@@ -806,7 +704,8 @@ public sealed class HumanSiteViewModelTests
         string economy = "$economy_Agri;",
         string economyLocalized = "Agriculture",
         double latitude = 0,
-        double longitude = 0)
+        double longitude = 0
+    )
     {
         return $$"""
             {"timestamp":"2026-07-25T03:00:00Z","event":"ApproachSettlement","Name":"Haberlandt Survey","Name_Localised":"Haberlandt Survey","MarketID":12345,"SystemAddress":42,"BodyID":3,"BodyName":"Test 1","Latitude":{{latitude}},"Longitude":{{longitude}},"StationEconomy":"{{economy}}","StationEconomy_Localised":"{{economyLocalized}}","StationFaction":{"Name":"Raven Colonial","FactionState":"War"},"StationGovernment":"$government_Democracy;","StationGovernment_Localised":"Democracy","StationServices":["dock","refuel"]}
@@ -815,9 +714,7 @@ public sealed class HumanSiteViewModelTests
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(
-            JournalEventEnvelope.TryParse(json, out var value, out var error),
-            error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out var value, out var error), error);
         return Assert.IsType<JournalEventEnvelope>(value);
     }
 
@@ -834,13 +731,15 @@ public sealed class HumanSiteViewModelTests
             4,
             275,
             new HumanSiteLandingPads(2, 0, 1),
-            HumanSiteGeometrySource.AutoDock);
+            HumanSiteGeometrySource.AutoDock
+        );
     }
 
     private static QuestRuntimeSnapshot CreateQuestSnapshot(
         IReadOnlyDictionary<string, string> locations,
         IReadOnlyList<RavenQuestRoute> routes,
-        IReadOnlySet<string>? tags = null)
+        IReadOnlySet<string>? tags = null
+    )
     {
         return new QuestRuntimeSnapshot(
             new RavenQuestReference("Raven", "settlement-map", 1),
@@ -855,7 +754,8 @@ public sealed class HumanSiteViewModelTests
             [],
             tags ?? new HashSet<string>(),
             locations,
-            routes);
+            routes
+        );
     }
 
     private sealed class StubCanonnClient : ICanonnHumanSiteClient
@@ -879,7 +779,8 @@ public sealed class HumanSiteViewModelTests
 
         public Task<CanonnHumanSiteLookupResult> GetStationsAsync(
             long systemAddress,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             RequestCount++;
             SystemAddress = systemAddress;
@@ -895,7 +796,8 @@ public sealed class HumanSiteViewModelTests
 
         public Task<string> PublishStationAsync(
             CanonnHumanSiteSubmission submission,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             Submissions.Add(submission);
             return Task.FromResult("accepted");

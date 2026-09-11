@@ -15,29 +15,27 @@ public sealed class OverlayPanelVisibilityViewModel : INotifyPropertyChanged
     public OverlayPanelVisibilityViewModel(
         OverlayPanelVisibilitySettingsStore store,
         GlobalInputSettingsViewModel inputSettings,
-        OverlayWindowRegistry? registry = null)
+        OverlayWindowRegistry? registry = null
+    )
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
         ArgumentNullException.ThrowIfNull(inputSettings);
         this.registry = registry ?? OverlayWindowRegistry.Shared;
 
         var stored = store.Load();
-        Panels = OverlayLayoutCatalog.Supported
-            .Select(definition =>
+        Panels = OverlayLayoutCatalog
+            .Supported.Select(definition =>
             {
                 var shortcut = inputSettings.Bindings.Single(binding =>
-                    string.Equals(
-                        binding.Definition.OverlayPlotterName,
-                        definition.Name,
-                        StringComparison.Ordinal));
+                    string.Equals(binding.Definition.OverlayPlotterName, definition.Name, StringComparison.Ordinal)
+                );
                 var panel = new OverlayPanelVisibilityEntryViewModel(
                     definition,
                     stored.GetValueOrDefault(definition.Name, true),
                     shortcut,
-                    Save);
-                this.registry.SetUserVisibility(
-                    definition.Name,
-                    panel.IsEnabled);
+                    Save
+                );
+                this.registry.SetUserVisibility(definition.Name, panel.IsEnabled);
                 return panel;
             })
             .ToArray();
@@ -58,30 +56,23 @@ public sealed class OverlayPanelVisibilityViewModel : INotifyPropertyChanged
             }
 
             persistenceStatus = value;
-            PropertyChanged?.Invoke(
-                this,
-                new PropertyChangedEventArgs(nameof(PersistenceStatus)));
-            PropertyChanged?.Invoke(
-                this,
-                new PropertyChangedEventArgs(nameof(HasPersistenceStatus)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PersistenceStatus)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasPersistenceStatus)));
         }
     }
 
     public bool HasPersistenceStatus => PersistenceStatus.Length > 0;
 
-    public IReadOnlyList<OverlayPanelVisibilityEntryViewModel> ForCategory(
-        OverlaySettingsCategory category)
+    public IReadOnlyList<OverlayPanelVisibilityEntryViewModel> ForCategory(OverlaySettingsCategory category)
     {
-        return Panels.Where(panel =>
-            panel.SettingsCategories.Contains(category)).ToArray();
+        return Panels.Where(panel => panel.SettingsCategories.Contains(category)).ToArray();
     }
 
     public bool Toggle(string plotterName)
     {
-        var panel = Panels.FirstOrDefault(candidate => string.Equals(
-            candidate.PlotterName,
-            plotterName,
-            StringComparison.Ordinal));
+        var panel = Panels.FirstOrDefault(candidate =>
+            string.Equals(candidate.PlotterName, plotterName, StringComparison.Ordinal)
+        );
         if (panel is null)
         {
             return false;
@@ -96,27 +87,21 @@ public sealed class OverlayPanelVisibilityViewModel : INotifyPropertyChanged
         registry.SetUserVisibility(changed.PlotterName, changed.IsEnabled);
         try
         {
-            store.Save(Panels.ToDictionary(
-                panel => panel.PlotterName,
-                panel => panel.IsEnabled,
-                StringComparer.Ordinal));
+            store.Save(
+                Panels.ToDictionary(panel => panel.PlotterName, panel => panel.IsEnabled, StringComparer.Ordinal)
+            );
             PersistenceStatus = string.Empty;
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidOperationException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidOperationException)
         {
             PersistenceStatus =
-                "Panel availability changed for this session but could not be saved: "
-                + exception.Message;
+                "Panel availability changed for this session but could not be saved: " + exception.Message;
         }
     }
-
 }
 
-public sealed class OverlayPanelVisibilityEntryViewModel
-    : INotifyPropertyChanged
+public sealed class OverlayPanelVisibilityEntryViewModel : INotifyPropertyChanged
 {
     private readonly Action<OverlayPanelVisibilityEntryViewModel> save;
     private bool isEnabled;
@@ -125,7 +110,8 @@ public sealed class OverlayPanelVisibilityEntryViewModel
         OverlayLayoutDefinition definition,
         bool isEnabled,
         InputBindingViewModel shortcut,
-        Action<OverlayPanelVisibilityEntryViewModel> save)
+        Action<OverlayPanelVisibilityEntryViewModel> save
+    )
     {
         ArgumentNullException.ThrowIfNull(definition);
         Definition = definition;
@@ -145,8 +131,7 @@ public sealed class OverlayPanelVisibilityEntryViewModel
     public string Description =>
         $"When off, the {DisplayName} panel is rendered inactive and is not visible until toggled on.";
 
-    public IReadOnlyList<OverlaySettingsCategory> SettingsCategories =>
-        Definition.SettingsCategories;
+    public IReadOnlyList<OverlaySettingsCategory> SettingsCategories => Definition.SettingsCategories;
 
     public OverlaySettingsCategory Category => SettingsCategories[0];
 
@@ -168,8 +153,7 @@ public sealed class OverlayPanelVisibilityEntryViewModel
         }
     }
 
-    private void OnPropertyChanged(
-        [CallerMemberName] string? propertyName = null)
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }

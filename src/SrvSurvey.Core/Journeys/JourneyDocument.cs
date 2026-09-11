@@ -13,12 +13,12 @@ public sealed record JourneyDocument(
     DateTimeOffset StartTime,
     DateTimeOffset? EndTime,
     DateTimeOffset Watermark,
-    IReadOnlyList<JourneySystemVisit> VisitedSystems)
+    IReadOnlyList<JourneySystemVisit> VisitedSystems
+)
 {
     public bool IsActive => EndTime is null;
 
-    public JourneySystemVisit? CurrentSystem => VisitedSystems
-        .LastOrDefault(visit => visit.Departed is null);
+    public JourneySystemVisit? CurrentSystem => VisitedSystems.LastOrDefault(visit => visit.Departed is null);
 }
 
 public sealed record JourneySystemVisit(
@@ -32,16 +32,13 @@ public sealed record JourneySystemVisit(
     IReadOnlySet<string>? CodexNew,
     IReadOnlyDictionary<string, int>? SubCategories,
     IReadOnlyDictionary<string, int>? SurfaceSignals,
-    IReadOnlyDictionary<string, int>? FssSignals)
+    IReadOnlyDictionary<string, int>? FssSignals
+)
 {
-    public bool HasCompletedFss => Counts.BodyCount > 0
-        && Counts.BodyScans >= Counts.BodyCount;
+    public bool HasCompletedFss => Counts.BodyCount > 0 && Counts.BodyScans >= Counts.BodyCount;
 }
 
-public sealed record JourneySystemReference(
-    string Name,
-    long SystemAddress,
-    GalacticCoordinate Position)
+public sealed record JourneySystemReference(string Name, long SystemAddress, GalacticCoordinate Position)
 {
     public double DistanceTo(JourneySystemReference other)
     {
@@ -61,24 +58,12 @@ public sealed record JourneyCounts(
     int Notes,
     int ExobiologyRewards,
     int ExplorationRewards,
-    int Stars)
+    int Stars
+)
 {
-    public static JourneyCounts Empty { get; } = new(
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0);
+    public static JourneyCounts Empty { get; } = new(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
-    public static JourneyCounts operator +(
-        JourneyCounts left,
-        JourneyCounts right)
+    public static JourneyCounts operator +(JourneyCounts left, JourneyCounts right)
     {
         ArgumentNullException.ThrowIfNull(left);
         ArgumentNullException.ThrowIfNull(right);
@@ -93,7 +78,8 @@ public sealed record JourneyCounts(
             left.Notes + right.Notes,
             left.ExobiologyRewards + right.ExobiologyRewards,
             left.ExplorationRewards + right.ExplorationRewards,
-            left.Stars + right.Stars);
+            left.Stars + right.Stars
+        );
     }
 }
 
@@ -103,17 +89,12 @@ public sealed record JourneyCreationRequest(
     string Name,
     string Description,
     string StartingJournal,
-    DateTimeOffset StartingEventTimestamp);
+    DateTimeOffset StartingEventTimestamp
+);
 
-public sealed record JourneyLoadResult(
-    string Path,
-    bool Exists,
-    JourneyDocument? Journey,
-    string? Error)
+public sealed record JourneyLoadResult(string Path, bool Exists, JourneyDocument? Journey, string? Error)
 {
     public bool IsSuccess => Journey is not null;
 }
 
-public sealed record JourneyCatalogResult(
-    IReadOnlyList<JourneyDocument> Journeys,
-    IReadOnlyList<string> Errors);
+public sealed record JourneyCatalogResult(IReadOnlyList<JourneyDocument> Journeys, IReadOnlyList<string> Errors);

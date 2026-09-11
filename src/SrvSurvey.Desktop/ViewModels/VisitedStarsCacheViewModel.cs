@@ -33,7 +33,8 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
         IVisitedStarsCacheService cacheService,
         Func<string, string?> targetResolver,
         Func<bool> isGameRunning,
-        bool externalEffectsAllowed = true)
+        bool externalEffectsAllowed = true
+    )
     {
         this.commanderCatalog = commanderCatalog;
         this.cacheService = cacheService;
@@ -42,8 +43,7 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
         this.externalEffectsAllowed = externalEffectsAllowed;
         if (!externalEffectsAllowed)
         {
-            statusMessage =
-                "Visited-stars cache replacement is unavailable during diagnostic replay.";
+            statusMessage = "Visited-stars cache replacement is unavailable during diagnostic replay.";
         }
         swapCommand = new AsyncCommand(SwapAsync, CanSwap);
         restoreCommand = new AsyncCommand(RestoreAsync, CanRestore);
@@ -98,10 +98,7 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
             var normalized = value?.Trim() ?? string.Empty;
             if (SetField(ref targetPath, normalized))
             {
-                if (!string.Equals(
-                        normalized,
-                        lastResolvedTarget,
-                        PathComparison))
+                if (!string.Equals(normalized, lastResolvedTarget, PathComparison))
                 {
                     lastResolvedTarget = null;
                 }
@@ -127,18 +124,15 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
             {
                 return VisitedStarsCacheService.GetBackupPath(TargetPath);
             }
-            catch (Exception exception) when (
-                exception is ArgumentException
-                    or NotSupportedException
-                    or PathTooLongException)
+            catch (Exception exception)
+                when (exception is ArgumentException or NotSupportedException or PathTooLongException)
             {
                 return string.Empty;
             }
         }
     }
 
-    public bool HasBackup => !string.IsNullOrWhiteSpace(BackupPath)
-        && File.Exists(BackupPath);
+    public bool HasBackup => !string.IsNullOrWhiteSpace(BackupPath) && File.Exists(BackupPath);
 
     public bool GameIsRunning
     {
@@ -153,9 +147,10 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
         }
     }
 
-    public string GameStateMessage => GameIsRunning
-        ? "Close Elite Dangerous before swapping or restoring this file."
-        : "Elite Dangerous is not running; file operations are available.";
+    public string GameStateMessage =>
+        GameIsRunning
+            ? "Close Elite Dangerous before swapping or restoring this file."
+            : "Elite Dangerous is not running; file operations are available.";
 
     public bool IsBusy
     {
@@ -178,9 +173,7 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
 
     public string SwapButtonText => swapPending ? "Confirm swap" : "Back up and swap";
 
-    public string RestoreButtonText => restorePending
-        ? "Confirm restore"
-        : "Restore original";
+    public string RestoreButtonText => restorePending ? "Confirm restore" : "Restore original";
 
     public ICommand SwapCommand { get; }
 
@@ -188,10 +181,7 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
 
     public ICommand RefreshCommand { get; }
 
-    public void UpdateContext(
-        string? frontierId,
-        string? commanderName,
-        string? currentSystemName)
+    public void UpdateContext(string? frontierId, string? commanderName, string? currentSystemName)
     {
         if (!string.IsNullOrWhiteSpace(frontierId))
         {
@@ -219,25 +209,20 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
             GameIsRunning = externalEffectsAllowed && isGameRunning();
             var result = await commanderCatalog.LoadAsync();
             var previous = SelectedCommander?.FrontierId;
-            Commanders = result.Profiles
-                .Select(profile => new VisitedStarsCommanderOptionViewModel(profile))
-                .ToArray();
-            SelectedCommander = Commanders.FirstOrDefault(option => string.Equals(
-                    option.FrontierId,
-                    previous,
-                    StringComparison.OrdinalIgnoreCase))
-                ?? Commanders.FirstOrDefault(option => string.Equals(
-                    option.FrontierId,
-                    currentFrontierId,
-                    StringComparison.OrdinalIgnoreCase))
+            Commanders = result.Profiles.Select(profile => new VisitedStarsCommanderOptionViewModel(profile)).ToArray();
+            SelectedCommander =
+                Commanders.FirstOrDefault(option =>
+                    string.Equals(option.FrontierId, previous, StringComparison.OrdinalIgnoreCase)
+                )
+                ?? Commanders.FirstOrDefault(option =>
+                    string.Equals(option.FrontierId, currentFrontierId, StringComparison.OrdinalIgnoreCase)
+                )
                 ?? (Commanders.Count > 0 ? Commanders[0] : null);
             StatusMessage = ResolveRefreshStatus(result.Warnings);
         }
-        catch (Exception exception) when (
-            exception is IOException or UnauthorizedAccessException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            StatusMessage = "Visited-stars setup could not be refreshed: "
-                + exception.Message;
+            StatusMessage = "Visited-stars setup could not be refreshed: " + exception.Message;
         }
         finally
         {
@@ -285,14 +270,13 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
             IsBusy = true;
             ResetConfirmations();
             var result = await cacheService.SwapAsync(SystemName, TargetPath);
-            StatusMessage = "Swap complete. Restart Elite Dangerous when ready. "
-                + $"Original backup: {result.BackupPath}";
+            StatusMessage =
+                "Swap complete. Restart Elite Dangerous when ready. " + $"Original backup: {result.BackupPath}";
             OnPropertyChanged(nameof(HasBackup));
         }
         catch (Exception exception) when (IsRecoverable(exception))
         {
-            StatusMessage = "Visited-stars swap failed without replacing the original cache: "
-                + exception.Message;
+            StatusMessage = "Visited-stars swap failed without replacing the original cache: " + exception.Message;
         }
         finally
         {
@@ -323,13 +307,11 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
             IsBusy = true;
             ResetConfirmations();
             var result = await cacheService.RestoreAsync(TargetPath);
-            StatusMessage = "Original cache restored and verified. Backup retained at "
-                + result.BackupPath;
+            StatusMessage = "Original cache restored and verified. Backup retained at " + result.BackupPath;
         }
         catch (Exception exception) when (IsRecoverable(exception))
         {
-            StatusMessage = "Visited-stars restore failed without discarding the current cache: "
-                + exception.Message;
+            StatusMessage = "Visited-stars restore failed without discarding the current cache: " + exception.Message;
         }
         finally
         {
@@ -351,11 +333,7 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
 
     private bool CanRestore()
     {
-        return externalEffectsAllowed
-            && !IsBusy
-            && !GameIsRunning
-            && IsValidCachePath(TargetPath)
-            && HasBackup;
+        return externalEffectsAllowed && !IsBusy && !GameIsRunning && IsValidCachePath(TargetPath) && HasBackup;
     }
 
     private void SelectCurrentCommander()
@@ -365,11 +343,10 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
             return;
         }
 
-        SelectedCommander = Commanders.FirstOrDefault(option => string.Equals(
-                option.FrontierId,
-                currentFrontierId,
-                StringComparison.OrdinalIgnoreCase))
-            ?? SelectedCommander;
+        SelectedCommander =
+            Commanders.FirstOrDefault(option =>
+                string.Equals(option.FrontierId, currentFrontierId, StringComparison.OrdinalIgnoreCase)
+            ) ?? SelectedCommander;
     }
 
     private void ResolveSelectedTarget()
@@ -385,8 +362,7 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(TargetPath)
-            || string.Equals(TargetPath, lastResolvedTarget, PathComparison))
+        if (string.IsNullOrWhiteSpace(TargetPath) || string.Equals(TargetPath, lastResolvedTarget, PathComparison))
         {
             lastResolvedTarget = Path.GetFullPath(resolved);
             TargetPath = lastResolvedTarget;
@@ -417,28 +393,26 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
             && string.Equals(
                 Path.GetFileName(path),
                 VisitedStarsCacheService.CacheFileName,
-                StringComparison.OrdinalIgnoreCase);
+                StringComparison.OrdinalIgnoreCase
+            );
     }
 
     private static bool IsRecoverable(Exception exception)
     {
-        return exception is IOException
-            or UnauthorizedAccessException
-            or InvalidDataException
-            or InvalidOperationException
-            or ArgumentException
-            or HttpRequestException
-            or WebException;
+        return exception
+            is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException
+                or InvalidOperationException
+                or ArgumentException
+                or HttpRequestException
+                or WebException;
     }
 
-    private static StringComparison PathComparison => OperatingSystem.IsWindows()
-        ? StringComparison.OrdinalIgnoreCase
-        : StringComparison.Ordinal;
+    private static StringComparison PathComparison =>
+        OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -455,9 +429,7 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private sealed class AsyncCommand(
-        Func<Task> execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class AsyncCommand(Func<Task> execute, Func<bool> canExecute) : ICommand
     {
         public event EventHandler? CanExecuteChanged;
 
@@ -478,8 +450,7 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
     }
 }
 
-public sealed class VisitedStarsCommanderOptionViewModel(
-    CommanderProfileIdentity identity)
+public sealed class VisitedStarsCommanderOptionViewModel(CommanderProfileIdentity identity)
 {
     public string FrontierId { get; } = identity.FrontierId;
 

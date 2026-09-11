@@ -7,7 +7,8 @@ public static class GalaxyMapTextResolver
         string? routeNextHop,
         string? boxelNextSystem,
         bool useBoxelNextSystem,
-        string? clipboardText)
+        string? clipboardText
+    )
     {
         if (!isGalaxyMapOpen)
         {
@@ -19,14 +20,11 @@ public static class GalaxyMapTextResolver
             return routeNextHop.Trim();
         }
 
-        if (useBoxelNextSystem
-            && !string.IsNullOrWhiteSpace(boxelNextSystem))
+        if (useBoxelNextSystem && !string.IsNullOrWhiteSpace(boxelNextSystem))
         {
             return boxelNextSystem.Trim();
         }
 
-        return string.IsNullOrWhiteSpace(clipboardText)
-            ? null
-            : clipboardText.Trim();
+        return string.IsNullOrWhiteSpace(clipboardText) ? null : clipboardText.Trim();
     }
 }

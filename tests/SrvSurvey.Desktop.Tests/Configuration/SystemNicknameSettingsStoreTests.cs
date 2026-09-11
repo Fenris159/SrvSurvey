@@ -6,7 +6,8 @@ public sealed class SystemNicknameSettingsStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-nickname-settings-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-nickname-settings-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void PreferenceRoundTripsWithoutRemovingOtherSettings()

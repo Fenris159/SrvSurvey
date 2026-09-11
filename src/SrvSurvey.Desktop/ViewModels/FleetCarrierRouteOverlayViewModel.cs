@@ -6,8 +6,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed class FleetCarrierRouteOverlayViewModel : IDisposable
 {
-    private static readonly TimeSpan FinishedLingerDuration =
-        TimeSpan.FromSeconds(3);
+    private static readonly TimeSpan FinishedLingerDuration = TimeSpan.FromSeconds(3);
 
     private readonly RouteWorkspaceViewModel route;
     private readonly TimeProvider timeProvider;
@@ -20,7 +19,8 @@ public sealed class FleetCarrierRouteOverlayViewModel : IDisposable
     public FleetCarrierRouteOverlayViewModel(
         RouteWorkspaceViewModel route,
         OverlayPlatformCapabilities capabilities,
-        TimeProvider? timeProvider = null)
+        TimeProvider? timeProvider = null
+    )
     {
         this.route = route ?? throw new ArgumentNullException(nameof(route));
         ArgumentNullException.ThrowIfNull(capabilities);
@@ -57,12 +57,9 @@ public sealed class FleetCarrierRouteOverlayViewModel : IDisposable
         }
     }
 
-    public string SystemName => editorPreview?.SystemName
-        ?? DisplayedHop?.Name
-        ?? route.NextHopName;
+    public string SystemName => editorPreview?.SystemName ?? DisplayedHop?.Name ?? route.NextHopName;
 
-    public bool ShouldShow => route.ShouldShowFleetCarrierRouteOverlay
-        || IsFinished;
+    public bool ShouldShow => route.ShouldShowFleetCarrierRouteOverlay || IsFinished;
 
     public string JumpSummary
     {
@@ -88,57 +85,40 @@ public sealed class FleetCarrierRouteOverlayViewModel : IDisposable
                 return editorPreview.JumpsLeft;
             }
 
-            var count = Math.Max(
-                0,
-                route.RouteCount - route.ReachedCount - 1);
+            var count = Math.Max(0, route.RouteCount - route.ReachedCount - 1);
             return $"{count:N0} {(count == 1 ? "JUMP" : "JUMPS")} LEFT";
         }
     }
 
-    public string FuelLeft => editorPreview?.FuelLeft
-        ?? FormatTonnes(DisplayedHop?.Carrier?.FuelRemainingTonnes);
+    public string FuelLeft => editorPreview?.FuelLeft ?? FormatTonnes(DisplayedHop?.Carrier?.FuelRemainingTonnes);
 
-    public string TritiumInMarket => editorPreview?.TritiumInMarket
-        ?? FormatTonnes(DisplayedHop?.Carrier?.TritiumInMarketTonnes);
+    public string TritiumInMarket =>
+        editorPreview?.TritiumInMarket ?? FormatTonnes(DisplayedHop?.Carrier?.TritiumInMarketTonnes);
 
-    public string JumpFuel => editorPreview?.JumpFuel
-        ?? FormatTonnes(DisplayedHop?.Carrier?.FuelUsedTonnes);
+    public string JumpFuel => editorPreview?.JumpFuel ?? FormatTonnes(DisplayedHop?.Carrier?.FuelUsedTonnes);
 
-    public bool HasIcyRing => editorPreview?.HasIcyRing
-        ?? DisplayedHop?.Carrier?.HasIcyRing == true;
+    public bool HasIcyRing => editorPreview?.HasIcyRing ?? DisplayedHop?.Carrier?.HasIcyRing == true;
 
-    public string IcyRingLabel => editorPreview?.IcyRingLabel
-        ?? (DisplayedHop?.Carrier is
-        {
-            HasIcyRing: true,
-            IsSystemPristine: true,
-        }
-                ? "PRISTINE ICY RING"
-                : "ICY RING");
+    public string IcyRingLabel =>
+        editorPreview?.IcyRingLabel
+        ?? (DisplayedHop?.Carrier is { HasIcyRing: true, IsSystemPristine: true } ? "PRISTINE ICY RING" : "ICY RING");
 
-    public bool HasRestockWarning => editorPreview?.HasRestockWarning
-        ?? DisplayedHop?.Carrier?.MustRestock == true;
+    public bool HasRestockWarning => editorPreview?.HasRestockWarning ?? DisplayedHop?.Carrier?.MustRestock == true;
 
-    public string RestockAmount => editorPreview?.RestockAmount
-        ?? FormatTonnes(DisplayedHop?.Carrier?.RestockAmountTonnes);
+    public string RestockAmount =>
+        editorPreview?.RestockAmount ?? FormatTonnes(DisplayedHop?.Carrier?.RestockAmountTonnes);
 
-    public bool HasCountdown => editorPreview?.HasCountdown
-        ?? route.HasCarrierJumpCountdown;
+    public bool HasCountdown => editorPreview?.HasCountdown ?? route.HasCarrierJumpCountdown;
 
-    public string CountdownTitle => editorPreview?.CountdownTitle
-        ?? route.CarrierJumpCountdownTitle;
+    public string CountdownTitle => editorPreview?.CountdownTitle ?? route.CarrierJumpCountdownTitle;
 
-    public string Countdown => editorPreview?.Countdown
-        ?? route.CarrierJumpCountdownValue;
+    public string Countdown => editorPreview?.Countdown ?? route.CarrierJumpCountdownValue;
 
-    public string CountdownPhase => editorPreview?.CountdownPhase
-        ?? route.CarrierJumpPhaseLabel;
+    public string CountdownPhase => editorPreview?.CountdownPhase ?? route.CarrierJumpPhaseLabel;
 
-    public string CountdownPhaseTime => editorPreview?.CountdownPhaseTime
-        ?? route.CarrierJumpPhaseCountdown;
+    public string CountdownPhaseTime => editorPreview?.CountdownPhaseTime ?? route.CarrierJumpPhaseCountdown;
 
-    public bool HasCountdownPhaseTime => editorPreview?.HasCountdownPhaseTime
-        ?? route.HasCarrierJumpPhaseCountdown;
+    public bool HasCountdownPhaseTime => editorPreview?.HasCountdownPhaseTime ?? route.HasCarrierJumpPhaseCountdown;
 
     /// <summary>
     /// Installs representative fleet-carrier route content for the position editor.
@@ -153,8 +133,7 @@ public sealed class FleetCarrierRouteOverlayViewModel : IDisposable
 
     internal void AdvanceTimedTransitions()
     {
-        if (finishedUntil is not { } expiry
-            || expiry > timeProvider.GetUtcNow())
+        if (finishedUntil is not { } expiry || expiry > timeProvider.GetUtcNow())
         {
             return;
         }
@@ -169,28 +148,30 @@ public sealed class FleetCarrierRouteOverlayViewModel : IDisposable
         route.PropertyChanged -= OnRoutePropertyChanged;
     }
 
-    private void OnRoutePropertyChanged(
-        object? sender,
-        PropertyChangedEventArgs eventArgs)
+    private void OnRoutePropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
         UpdateCompletionTransition();
-        if (eventArgs.PropertyName is
-            nameof(RouteWorkspaceViewModel.NextHop)
-            or nameof(RouteWorkspaceViewModel.NextHopName)
-            or nameof(RouteWorkspaceViewModel.RouteCount)
-            or nameof(RouteWorkspaceViewModel.ReachedCount)
-            or nameof(RouteWorkspaceViewModel.IsComplete)
-            or nameof(RouteWorkspaceViewModel.ShouldShowFleetCarrierRouteOverlay))
+        if (
+            eventArgs.PropertyName
+            is nameof(RouteWorkspaceViewModel.NextHop)
+                or nameof(RouteWorkspaceViewModel.NextHopName)
+                or nameof(RouteWorkspaceViewModel.RouteCount)
+                or nameof(RouteWorkspaceViewModel.ReachedCount)
+                or nameof(RouteWorkspaceViewModel.IsComplete)
+                or nameof(RouteWorkspaceViewModel.ShouldShowFleetCarrierRouteOverlay)
+        )
         {
             RaiseRouteProperties();
         }
-        else if (eventArgs.PropertyName is
-            nameof(RouteWorkspaceViewModel.HasCarrierJumpCountdown)
-            or nameof(RouteWorkspaceViewModel.CarrierJumpCountdownTitle)
-            or nameof(RouteWorkspaceViewModel.CarrierJumpCountdownValue)
-            or nameof(RouteWorkspaceViewModel.CarrierJumpPhaseLabel)
-            or nameof(RouteWorkspaceViewModel.CarrierJumpPhaseCountdown)
-            or nameof(RouteWorkspaceViewModel.HasCarrierJumpPhaseCountdown))
+        else if (
+            eventArgs.PropertyName
+            is nameof(RouteWorkspaceViewModel.HasCarrierJumpCountdown)
+                or nameof(RouteWorkspaceViewModel.CarrierJumpCountdownTitle)
+                or nameof(RouteWorkspaceViewModel.CarrierJumpCountdownValue)
+                or nameof(RouteWorkspaceViewModel.CarrierJumpPhaseLabel)
+                or nameof(RouteWorkspaceViewModel.CarrierJumpPhaseCountdown)
+                or nameof(RouteWorkspaceViewModel.HasCarrierJumpPhaseCountdown)
+        )
         {
             RaiseCountdownProperties();
         }
@@ -212,12 +193,9 @@ public sealed class FleetCarrierRouteOverlayViewModel : IDisposable
         Raise(nameof(RestockAmount));
     }
 
-    private FollowRouteHop? DisplayedHop => IsFinished
-        ? finishedHop
-        : route.NextHop;
+    private FollowRouteHop? DisplayedHop => IsFinished ? finishedHop : route.NextHop;
 
-    private bool IsFinished => finishedUntil > timeProvider.GetUtcNow()
-        && finishedHop is not null;
+    private bool IsFinished => finishedUntil > timeProvider.GetUtcNow() && finishedHop is not null;
 
     private int TotalHops => Math.Max(0, route.RouteCount - 1);
 
@@ -263,9 +241,7 @@ public sealed class FleetCarrierRouteOverlayViewModel : IDisposable
 
     private static string FormatNumber(double? value, int decimals)
     {
-        return value is null
-            ? "\u2014"
-            : value.Value.ToString($"N{decimals}");
+        return value is null ? "\u2014" : value.Value.ToString($"N{decimals}");
     }
 }
 
@@ -286,7 +262,8 @@ internal sealed record FleetCarrierRouteEditorPreview(
     string Countdown,
     string CountdownPhase,
     string CountdownPhaseTime,
-    bool HasCountdownPhaseTime);
+    bool HasCountdownPhaseTime
+);
 
 internal enum FleetCarrierRouteEditorPreviewState
 {

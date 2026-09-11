@@ -8,7 +8,8 @@ public sealed class SystemNicknameViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-nickname-view-model-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-nickname-view-model-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void EnablingNamesPersistsAndNotifiesOpenOverlays()
@@ -16,11 +17,13 @@ public sealed class SystemNicknameViewModelTests : IDisposable
         Directory.CreateDirectory(temporaryDirectory);
         File.WriteAllText(
             Path.Combine(temporaryDirectory, "system-nick-names.json"),
-            "{\"map\":{\"Sol\":\"Birthplace of Humanity\"}}");
+            "{\"map\":{\"Sol\":\"Birthplace of Humanity\"}}"
+        );
         var path = Path.Combine(temporaryDirectory, "ui.json");
         var viewModel = new SystemNicknameViewModel(
             SystemNicknameCatalog.Load(temporaryDirectory),
-            new SystemNicknameSettingsStore(path));
+            new SystemNicknameSettingsStore(path)
+        );
         var changed = 0;
         viewModel.NamesChanged += (_, _) => changed++;
 

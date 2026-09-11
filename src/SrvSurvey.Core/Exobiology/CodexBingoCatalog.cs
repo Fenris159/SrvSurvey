@@ -18,7 +18,8 @@ public sealed record CodexBingoNode(
     string? Genus,
     string? Species,
     long Reward,
-    IReadOnlyList<CodexBingoNode> Children)
+    IReadOnlyList<CodexBingoNode> Children
+)
 {
     public bool IsLeaf => Children.Count == 0;
 }
@@ -27,28 +28,23 @@ public sealed record CodexBingoProgress(
     CodexBingoNode Node,
     int DiscoveredCount,
     int TotalCount,
-    IReadOnlyList<CodexBingoProgress> Children)
+    IReadOnlyList<CodexBingoProgress> Children
+)
 {
-    public double Completion => TotalCount == 0
-        ? 0
-        : (double)DiscoveredCount / TotalCount;
+    public double Completion => TotalCount == 0 ? 0 : (double)DiscoveredCount / TotalCount;
 
     public bool IsComplete => TotalCount > 0 && DiscoveredCount == TotalCount;
 }
 
 public static class CodexBingoCatalog
 {
-    public static CodexBingoNode Build(
-        IEnumerable<ExobiologyReference> entries)
+    public static CodexBingoNode Build(IEnumerable<ExobiologyReference> entries)
     {
         ArgumentNullException.ThrowIfNull(entries);
-        var root = new MutableNode(
-            "root",
-            "The Codex",
-            CodexBingoNodeKind.Root);
-        foreach (var entry in entries.OrderBy(
-                     item => item.DisplayName ?? item.VariantName,
-                     StringComparer.OrdinalIgnoreCase))
+        var root = new MutableNode("root", "The Codex", CodexBingoNodeKind.Root);
+        foreach (
+            var entry in entries.OrderBy(item => item.DisplayName ?? item.VariantName, StringComparer.OrdinalIgnoreCase)
+        )
         {
             AddEntry(root, entry);
         }
@@ -56,9 +52,7 @@ public static class CodexBingoCatalog
         return Freeze(root);
     }
 
-    public static CodexBingoProgress CalculateProgress(
-        CodexBingoNode root,
-        IReadOnlySet<long> discoveredEntryIds)
+    public static CodexBingoProgress CalculateProgress(CodexBingoNode root, IReadOnlySet<long> discoveredEntryIds)
     {
         ArgumentNullException.ThrowIfNull(root);
         ArgumentNullException.ThrowIfNull(discoveredEntryIds);
@@ -73,43 +67,28 @@ public static class CodexBingoCatalog
             return new CodexBingoProgress(root, discovered ? 1 : 0, 1, []);
         }
 
-        var children = root.Children
-            .Select(child => CalculateProgress(child, discoveredEntryIds))
-            .ToArray();
+        var children = root.Children.Select(child => CalculateProgress(child, discoveredEntryIds)).ToArray();
         return new CodexBingoProgress(
             root,
             children.Sum(child => child.DiscoveredCount),
             children.Sum(child => child.TotalCount),
-            children);
+            children
+        );
     }
 
-    private static void AddEntry(
-        MutableNode root,
-        ExobiologyReference entry)
+    private static void AddEntry(MutableNode root, ExobiologyReference entry)
     {
         var hudCategoryName = ValueOrOther(entry.HudCategory);
-        var hudCategoryDisplay = string.Equals(
-                hudCategoryName,
-                "None",
-                StringComparison.OrdinalIgnoreCase)
+        var hudCategoryDisplay = string.Equals(hudCategoryName, "None", StringComparison.OrdinalIgnoreCase)
             ? "None (More Thargoid)"
             : hudCategoryName;
-        var category = root.GetOrAdd(
-            "category:" + hudCategoryName,
-            hudCategoryDisplay,
-            CodexBingoNodeKind.HudCategory);
+        var category = root.GetOrAdd("category:" + hudCategoryName, hudCategoryDisplay, CodexBingoNodeKind.HudCategory);
 
         var subClassName = ValueOrOther(entry.SubClass);
-        var subClassDisplay = string.Equals(
-                subClassName,
-                "Shrubs",
-                StringComparison.OrdinalIgnoreCase)
+        var subClassDisplay = string.Equals(subClassName, "Shrubs", StringComparison.OrdinalIgnoreCase)
             ? "Frutexa (Shrubs)"
             : subClassName;
-        var subClass = category.GetOrAdd(
-            "subclass:" + subClassName,
-            subClassDisplay,
-            CodexBingoNodeKind.SubClass);
+        var subClass = category.GetOrAdd("subclass:" + subClassName, subClassDisplay, CodexBingoNodeKind.SubClass);
 
         if (IsOdysseyBiologyVariant(entry))
         {
@@ -119,24 +98,29 @@ public static class CodexBingoCatalog
 
         var leafParent = subClass;
         var displayName = GetDisplayName(entry);
-        if (displayName.Contains("Mollusc", StringComparison.OrdinalIgnoreCase)
+        if (
+            displayName.Contains("Mollusc", StringComparison.OrdinalIgnoreCase)
             && displayName.IndexOf(' ') is var separator
             && separator >= 0
-            && separator < displayName.Length - 1)
+            && separator < displayName.Length - 1
+        )
         {
             var groupName = displayName[(separator + 1)..];
             leafParent = subClass.GetOrAdd(
                 "group:" + groupName,
                 groupName,
                 CodexBingoNodeKind.Group,
-                species: groupName);
+                species: groupName
+            );
         }
 
         var leafName = displayName;
         var suffix = " " + leafParent.Name;
-        if (leafName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)
+        if (
+            leafName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)
             && !string.Equals(leafName, leafParent.Name, StringComparison.OrdinalIgnoreCase)
-            && !string.Equals(leafParent.Name, "Tubers", StringComparison.OrdinalIgnoreCase))
+            && !string.Equals(leafParent.Name, "Tubers", StringComparison.OrdinalIgnoreCase)
+        )
         {
             leafName = leafName[..^suffix.Length];
         }
@@ -150,30 +134,22 @@ public static class CodexBingoCatalog
 
     private static bool IsOdysseyBiologyVariant(ExobiologyReference entry)
     {
-        return string.Equals(
-                entry.Platform,
-                "odyssey",
-                StringComparison.OrdinalIgnoreCase)
+        return string.Equals(entry.Platform, "odyssey", StringComparison.OrdinalIgnoreCase)
             && entry.IsBiology
-            && !entry.VariantName.Contains(
-                "Ingensradices",
-                StringComparison.OrdinalIgnoreCase)
+            && !entry.VariantName.Contains("Ingensradices", StringComparison.OrdinalIgnoreCase)
             && GetDisplayName(entry).Contains(" - ", StringComparison.Ordinal);
     }
 
-    private static void AddOdysseyBiologyVariant(
-        MutableNode subClass,
-        ExobiologyReference entry)
+    private static void AddOdysseyBiologyVariant(MutableNode subClass, ExobiologyReference entry)
     {
         var displayName = GetDisplayName(entry);
-        var variantSeparator = displayName.LastIndexOf(
-            " - ",
-            StringComparison.Ordinal);
+        var variantSeparator = displayName.LastIndexOf(" - ", StringComparison.Ordinal);
         var speciesName = displayName[..variantSeparator].Trim();
-        var speciesLabel = speciesName.Split(
-            ' ',
-            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .LastOrDefault() ?? speciesName;
+        var speciesLabel =
+            speciesName
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .LastOrDefault()
+            ?? speciesName;
         var variantLabel = displayName[(variantSeparator + 3)..].Trim();
         var genus = GetFirstWord(speciesName);
         subClass.Genus ??= genus;
@@ -183,7 +159,8 @@ public static class CodexBingoCatalog
             CodexBingoNodeKind.Species,
             genus,
             speciesName,
-            entry.Reward);
+            entry.Reward
+        );
         species.AddChildEntry(entry, variantLabel, genus, speciesName);
     }
 
@@ -194,9 +171,7 @@ public static class CodexBingoCatalog
 
     private static string GetDisplayName(ExobiologyReference entry)
     {
-        return string.IsNullOrWhiteSpace(entry.DisplayName)
-            ? entry.VariantName
-            : entry.DisplayName.Trim();
+        return string.IsNullOrWhiteSpace(entry.DisplayName) ? entry.VariantName : entry.DisplayName.Trim();
     }
 
     private static string GetFirstWord(string value)
@@ -215,11 +190,11 @@ public static class CodexBingoCatalog
             node.Genus,
             node.Species,
             node.Reward,
-            node.Children.Values
-                .OrderBy(child => child.Name, StringComparer.OrdinalIgnoreCase)
+            node.Children.Values.OrderBy(child => child.Name, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(child => child.Key, StringComparer.Ordinal)
                 .Select(Freeze)
-                .ToArray());
+                .ToArray()
+        );
     }
 
     private sealed class MutableNode(
@@ -228,7 +203,8 @@ public static class CodexBingoCatalog
         CodexBingoNodeKind kind,
         string? genus = null,
         string? species = null,
-        long reward = 0)
+        long reward = 0
+    )
     {
         public string Key { get; } = key;
 
@@ -244,8 +220,7 @@ public static class CodexBingoCatalog
 
         public long Reward { get; } = reward;
 
-        public Dictionary<string, MutableNode> Children { get; } =
-            new(StringComparer.Ordinal);
+        public Dictionary<string, MutableNode> Children { get; } = new(StringComparer.Ordinal);
 
         public MutableNode GetOrAdd(
             string childKey,
@@ -253,28 +228,19 @@ public static class CodexBingoCatalog
             CodexBingoNodeKind childKind,
             string? genus = null,
             string? species = null,
-            long reward = 0)
+            long reward = 0
+        )
         {
             if (!Children.TryGetValue(childKey, out var child))
             {
-                child = new MutableNode(
-                    childKey,
-                    childName,
-                    childKind,
-                    genus,
-                    species,
-                    reward);
+                child = new MutableNode(childKey, childName, childKind, genus, species, reward);
                 Children.Add(childKey, child);
             }
 
             return child;
         }
 
-        public void AddChildEntry(
-            ExobiologyReference entry,
-            string name,
-            string? genus = null,
-            string? species = null)
+        public void AddChildEntry(ExobiologyReference entry, string name, string? genus = null, string? species = null)
         {
             var child = new MutableNode(
                 "entry:" + entry.EntryId,
@@ -282,7 +248,8 @@ public static class CodexBingoCatalog
                 CodexBingoNodeKind.Entry,
                 genus,
                 species,
-                entry.Reward)
+                entry.Reward
+            )
             {
                 Entry = entry,
             };

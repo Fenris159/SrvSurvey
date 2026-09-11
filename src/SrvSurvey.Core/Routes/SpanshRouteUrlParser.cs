@@ -2,9 +2,7 @@ namespace SrvSurvey.Core.Routes;
 
 public static class SpanshRouteUrlParser
 {
-    public static bool TryParse(
-        string? text,
-        out SpanshRouteReference? route)
+    public static bool TryParse(string? text, out SpanshRouteReference? route)
     {
         route = null;
         if (string.IsNullOrWhiteSpace(text))
@@ -15,30 +13,25 @@ public static class SpanshRouteUrlParser
         var candidate = text.Trim();
         if (Guid.TryParse(candidate, out var directId))
         {
-            route = new SpanshRouteReference(
-                directId,
-                SpanshRouteKind.Generic);
+            route = new SpanshRouteReference(directId, SpanshRouteKind.Generic);
             return true;
         }
 
-        if (!Uri.TryCreate(candidate, UriKind.Absolute, out var uri)
-            || !IsSpanshHost(uri.Host))
+        if (!Uri.TryCreate(candidate, UriKind.Absolute, out var uri) || !IsSpanshHost(uri.Host))
         {
             return false;
         }
 
-        var parts = uri.AbsolutePath.Split(
-            '/',
-            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var parts = uri.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         var resultsIndex = Array.FindLastIndex(
             parts,
-            part => string.Equals(
-                part,
-                "results",
-                StringComparison.OrdinalIgnoreCase));
-        if (resultsIndex < 0
+            part => string.Equals(part, "results", StringComparison.OrdinalIgnoreCase)
+        );
+        if (
+            resultsIndex < 0
             || resultsIndex + 1 >= parts.Length
-            || !Guid.TryParse(parts[resultsIndex + 1], out var routeId))
+            || !Guid.TryParse(parts[resultsIndex + 1], out var routeId)
+        )
         {
             return false;
         }
@@ -86,10 +79,12 @@ public static class SpanshRouteUrlParser
             return SpanshRouteKind.Neutron;
         }
 
-        if (Contains(parts, "riches")
+        if (
+            Contains(parts, "riches")
             || Contains(parts, "ammonia")
             || Contains(parts, "earth")
-            || Contains(parts, "rocky-metal"))
+            || Contains(parts, "rocky-metal")
+        )
         {
             return SpanshRouteKind.Riches;
         }
@@ -97,14 +92,9 @@ public static class SpanshRouteUrlParser
         return SpanshRouteKind.Generic;
     }
 
-    private static bool Contains(
-        IEnumerable<string> parts,
-        string expected)
+    private static bool Contains(IEnumerable<string> parts, string expected)
     {
-        return parts.Any(part => string.Equals(
-            part,
-            expected,
-            StringComparison.OrdinalIgnoreCase));
+        return parts.Any(part => string.Equals(part, expected, StringComparison.OrdinalIgnoreCase));
     }
 
     private static bool IsSpanshHost(string host)
@@ -127,6 +117,4 @@ public enum SpanshRouteKind
     Trade,
 }
 
-public sealed record SpanshRouteReference(
-    Guid JobId,
-    SpanshRouteKind Kind);
+public sealed record SpanshRouteReference(Guid JobId, SpanshRouteKind Kind);

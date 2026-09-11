@@ -9,36 +9,42 @@ public sealed class SurfaceSurveyRadarControl : Control
 {
     private const double MetersPerPixel = 4;
 
-    public static readonly StyledProperty<
-        IReadOnlyList<SurfaceRadarMarkerViewModel>?> MarkersProperty =
-        AvaloniaProperty.Register<
-            SurfaceSurveyRadarControl,
-            IReadOnlyList<SurfaceRadarMarkerViewModel>?>(nameof(Markers));
-    public static readonly StyledProperty<IBrush?> BackgroundBrushProperty =
-        AvaloniaProperty.Register<SurfaceSurveyRadarControl, IBrush?>(
-            nameof(BackgroundBrush));
-    public static readonly StyledProperty<IBrush?> GridBrushProperty =
-        AvaloniaProperty.Register<SurfaceSurveyRadarControl, IBrush?>(
-            nameof(GridBrush));
-    public static readonly StyledProperty<IBrush?> AccentBrushProperty =
-        AvaloniaProperty.Register<SurfaceSurveyRadarControl, IBrush?>(
-            nameof(AccentBrush));
-    public static readonly StyledProperty<IBrush?> MutedBrushProperty =
-        AvaloniaProperty.Register<SurfaceSurveyRadarControl, IBrush?>(
-            nameof(MutedBrush));
-    public static readonly StyledProperty<IBrush?> SuccessBrushProperty =
-        AvaloniaProperty.Register<SurfaceSurveyRadarControl, IBrush?>(
-            nameof(SuccessBrush));
-    public static readonly StyledProperty<IBrush?> WarningBrushProperty =
-        AvaloniaProperty.Register<SurfaceSurveyRadarControl, IBrush?>(
-            nameof(WarningBrush));
-    public static readonly StyledProperty<IBrush?> DangerBrushProperty =
-        AvaloniaProperty.Register<SurfaceSurveyRadarControl, IBrush?>(
-            nameof(DangerBrush));
-    public static readonly StyledProperty<double> ScaleMultiplierProperty =
-        AvaloniaProperty.Register<SurfaceSurveyRadarControl, double>(
-            nameof(ScaleMultiplier),
-            1);
+    public static readonly StyledProperty<IReadOnlyList<SurfaceRadarMarkerViewModel>?> MarkersProperty =
+        AvaloniaProperty.Register<SurfaceSurveyRadarControl, IReadOnlyList<SurfaceRadarMarkerViewModel>?>(
+            nameof(Markers)
+        );
+    public static readonly StyledProperty<IBrush?> BackgroundBrushProperty = AvaloniaProperty.Register<
+        SurfaceSurveyRadarControl,
+        IBrush?
+    >(nameof(BackgroundBrush));
+    public static readonly StyledProperty<IBrush?> GridBrushProperty = AvaloniaProperty.Register<
+        SurfaceSurveyRadarControl,
+        IBrush?
+    >(nameof(GridBrush));
+    public static readonly StyledProperty<IBrush?> AccentBrushProperty = AvaloniaProperty.Register<
+        SurfaceSurveyRadarControl,
+        IBrush?
+    >(nameof(AccentBrush));
+    public static readonly StyledProperty<IBrush?> MutedBrushProperty = AvaloniaProperty.Register<
+        SurfaceSurveyRadarControl,
+        IBrush?
+    >(nameof(MutedBrush));
+    public static readonly StyledProperty<IBrush?> SuccessBrushProperty = AvaloniaProperty.Register<
+        SurfaceSurveyRadarControl,
+        IBrush?
+    >(nameof(SuccessBrush));
+    public static readonly StyledProperty<IBrush?> WarningBrushProperty = AvaloniaProperty.Register<
+        SurfaceSurveyRadarControl,
+        IBrush?
+    >(nameof(WarningBrush));
+    public static readonly StyledProperty<IBrush?> DangerBrushProperty = AvaloniaProperty.Register<
+        SurfaceSurveyRadarControl,
+        IBrush?
+    >(nameof(DangerBrush));
+    public static readonly StyledProperty<double> ScaleMultiplierProperty = AvaloniaProperty.Register<
+        SurfaceSurveyRadarControl,
+        double
+    >(nameof(ScaleMultiplier), 1);
 
     static SurfaceSurveyRadarControl()
     {
@@ -51,7 +57,8 @@ public sealed class SurfaceSurveyRadarControl : Control
             SuccessBrushProperty,
             WarningBrushProperty,
             DangerBrushProperty,
-            ScaleMultiplierProperty);
+            ScaleMultiplierProperty
+        );
     }
 
     public SurfaceSurveyRadarControl()
@@ -120,12 +127,7 @@ public sealed class SurfaceSurveyRadarControl : Control
         var background = BackgroundBrush ?? Brushes.Transparent;
         var grid = GridBrush ?? Brushes.DimGray;
         var accent = AccentBrush ?? Brushes.Cyan;
-        context.DrawRectangle(
-            background,
-            new Pen(grid, 1),
-            bounds,
-            8,
-            8);
+        context.DrawRectangle(background, new Pen(grid, 1), bounds, 8, 8);
         if (bounds.Width <= 0 || bounds.Height <= 0)
         {
             return;
@@ -146,61 +148,38 @@ public sealed class SurfaceSurveyRadarControl : Control
         }
     }
 
-    private static void DrawGrid(
-        DrawingContext context,
-        Rect bounds,
-        Point center,
-        IBrush brush)
+    private static void DrawGrid(DrawingContext context, Rect bounds, Point center, IBrush brush)
     {
         var pen = new Pen(brush, 1);
-        context.DrawLine(
-            pen,
-            new Point(center.X, bounds.Top + 8),
-            new Point(center.X, bounds.Bottom - 8));
-        context.DrawLine(
-            pen,
-            new Point(bounds.Left + 8, center.Y),
-            new Point(bounds.Right - 8, center.Y));
+        context.DrawLine(pen, new Point(center.X, bounds.Top + 8), new Point(center.X, bounds.Bottom - 8));
+        context.DrawLine(pen, new Point(bounds.Left + 8, center.Y), new Point(bounds.Right - 8, center.Y));
         foreach (var radius in new[] { 50d, 100d })
         {
             context.DrawEllipse(null, pen, center, radius, radius);
         }
 
-        context.DrawLine(
-            new Pen(brush, 2),
-            new Point(center.X, bounds.Top + 7),
-            new Point(center.X, bounds.Top + 16));
+        context.DrawLine(new Pen(brush, 2), new Point(center.X, bounds.Top + 7), new Point(center.X, bounds.Top + 16));
     }
 
-    private void DrawMarker(
-        DrawingContext context,
-        Rect bounds,
-        Point center,
-        SurfaceRadarMarkerViewModel marker)
+    private void DrawMarker(DrawingContext context, Rect bounds, Point center, SurfaceRadarMarkerViewModel marker)
     {
         var radians = marker.RelativeBearingDegrees * Math.PI / 180d;
-        var scale = double.IsFinite(ScaleMultiplier)
-            ? Math.Clamp(ScaleMultiplier, 0.25, 10)
-            : 1;
+        var scale = double.IsFinite(ScaleMultiplier) ? Math.Clamp(ScaleMultiplier, 0.25, 10) : 1;
         var point = new Point(
-            center.X + Math.Sin(radians)
-                * marker.DistanceMeters / MetersPerPixel * scale,
-            center.Y - Math.Cos(radians)
-                * marker.DistanceMeters / MetersPerPixel * scale);
+            center.X + Math.Sin(radians) * marker.DistanceMeters / MetersPerPixel * scale,
+            center.Y - Math.Cos(radians) * marker.DistanceMeters / MetersPerPixel * scale
+        );
         var radius = marker.RadiusMeters / MetersPerPixel * scale;
-        if (radius > 0
+        if (
+            radius > 0
             && point.X + radius >= bounds.Left
             && point.X - radius <= bounds.Right
             && point.Y + radius >= bounds.Top
-            && point.Y - radius <= bounds.Bottom)
+            && point.Y - radius <= bounds.Bottom
+        )
         {
             var circleBrush = GetCircleBrush(marker);
-            context.DrawEllipse(
-                null,
-                new Pen(circleBrush, marker.IsInsideRadius ? 2.5 : 1.25),
-                point,
-                radius,
-                radius);
+            context.DrawEllipse(null, new Pen(circleBrush, marker.IsInsideRadius ? 2.5 : 1.25), point, radius, radius);
         }
 
         if (!bounds.Inflate(8).Contains(point))
@@ -209,8 +188,7 @@ public sealed class SurfaceSurveyRadarControl : Control
         }
 
         var markerBrush = GetMarkerBrush(marker);
-        if (marker.Kind is SurfaceRadarMarkerKind.Ship
-            or SurfaceRadarMarkerKind.FormerShip)
+        if (marker.Kind is SurfaceRadarMarkerKind.Ship or SurfaceRadarMarkerKind.FormerShip)
         {
             DrawTriangle(context, point, markerBrush, 7);
         }
@@ -221,7 +199,8 @@ public sealed class SurfaceSurveyRadarControl : Control
                 new Pen(markerBrush, 1),
                 new Rect(point.X - 5, point.Y - 4, 10, 8),
                 2,
-                2);
+                2
+            );
         }
         else
         {
@@ -245,14 +224,16 @@ public sealed class SurfaceSurveyRadarControl : Control
         {
             SurfaceRadarMarkerKind.MiningRig when marker.Status == "COLLECT" => accent,
             SurfaceRadarMarkerKind.MiningRig => marker.IsInsideRadius ? danger : warning,
-            SurfaceRadarMarkerKind.HistoricalScan =>
-                marker.IsInsideRadius ? danger : muted,
+            SurfaceRadarMarkerKind.HistoricalScan => marker.IsInsideRadius ? danger : muted,
             // Bookmarks and Canonn prior rings: muted when inactive, green when
             // inside the drawn radius (genus sample distance for priors), else cyan.
-            SurfaceRadarMarkerKind.Bookmark or SurfaceRadarMarkerKind.CanonnPrior =>
-                GetActiveInsideRadiusCircleBrush(marker, muted, success, accent),
-            SurfaceRadarMarkerKind.ActiveSample =>
-                marker.IsInsideRadius ? warning : success,
+            SurfaceRadarMarkerKind.Bookmark or SurfaceRadarMarkerKind.CanonnPrior => GetActiveInsideRadiusCircleBrush(
+                marker,
+                muted,
+                success,
+                accent
+            ),
+            SurfaceRadarMarkerKind.ActiveSample => marker.IsInsideRadius ? warning : success,
             _ => accent,
         };
     }
@@ -261,7 +242,8 @@ public sealed class SurfaceSurveyRadarControl : Control
         SurfaceRadarMarkerViewModel marker,
         IBrush muted,
         IBrush success,
-        IBrush accent)
+        IBrush accent
+    )
     {
         if (!marker.IsActive)
         {
@@ -282,36 +264,21 @@ public sealed class SurfaceSurveyRadarControl : Control
         };
     }
 
-    private static void DrawCommander(
-        DrawingContext context,
-        Point center,
-        IBrush brush)
+    private static void DrawCommander(DrawingContext context, Point center, IBrush brush)
     {
         DrawTriangle(context, center, brush, 9);
         context.DrawEllipse(null, new Pen(brush, 1), center, 13, 13);
     }
 
-    private static void DrawTriangle(
-        DrawingContext context,
-        Point center,
-        IBrush brush,
-        double radius)
+    private static void DrawTriangle(DrawingContext context, Point center, IBrush brush, double radius)
     {
         var geometry = new StreamGeometry();
         using (var geometryContext = geometry.Open())
         {
-            geometryContext.BeginFigure(
-                new Point(center.X, center.Y - radius),
-                isFilled: true);
-            geometryContext.LineTo(new Point(
-                center.X + radius * 0.7,
-                center.Y + radius * 0.75));
-            geometryContext.LineTo(new Point(
-                center.X,
-                center.Y + radius * 0.45));
-            geometryContext.LineTo(new Point(
-                center.X - radius * 0.7,
-                center.Y + radius * 0.75));
+            geometryContext.BeginFigure(new Point(center.X, center.Y - radius), isFilled: true);
+            geometryContext.LineTo(new Point(center.X + radius * 0.7, center.Y + radius * 0.75));
+            geometryContext.LineTo(new Point(center.X, center.Y + radius * 0.45));
+            geometryContext.LineTo(new Point(center.X - radius * 0.7, center.Y + radius * 0.75));
             geometryContext.EndFigure(isClosed: true);
         }
 

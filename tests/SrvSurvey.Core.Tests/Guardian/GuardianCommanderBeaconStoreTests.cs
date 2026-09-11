@@ -7,7 +7,8 @@ public sealed class GuardianCommanderBeaconStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-guardian-beacon-store-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-guardian-beacon-store-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public async Task SavePreservesUnknownFieldsAndRoundTripsWithCommanderReader()
@@ -30,20 +31,18 @@ public sealed class GuardianCommanderBeaconStoreTests : IDisposable
             new Dictionary<DateTimeOffset, GuardianSurfaceLocation>
             {
                 [scannedAt] = new GuardianSurfaceLocation(1.25, -2.5),
-            });
+            }
+        );
 
         Assert.Equal(path, await store.SaveAsync("F123", true, beacon));
         var json = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.Equal(42, json["futureOption"]!.GetValue<int>());
         Assert.NotNull(json["scannedLocations"]);
 
-        var result = await new GuardianCommanderDataReader(temporaryDirectory)
-            .ReadAsync("F123", isOdyssey: true);
+        var result = await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync("F123", isOdyssey: true);
         var saved = Assert.Single(result.Beacons);
         Assert.Equal("Test System", saved.SystemName);
-        Assert.Equal(
-            new GuardianSurfaceLocation(1.25, -2.5),
-            Assert.Single(saved.ScannedLocations).Value);
+        Assert.Equal(new GuardianSurfaceLocation(1.25, -2.5), Assert.Single(saved.ScannedLocations).Value);
     }
 
     [Fact]
@@ -63,19 +62,16 @@ public sealed class GuardianCommanderBeaconStoreTests : IDisposable
             7,
             string.Empty,
             false,
-            new Dictionary<DateTimeOffset, GuardianSurfaceLocation>());
+            new Dictionary<DateTimeOffset, GuardianSurfaceLocation>()
+        );
 
         Assert.Equal(path, await store.SaveAsync("F123", true, beacon));
         Assert.NotEqual("{bad-json", await File.ReadAllTextAsync(path));
         var loaded = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
-        Assert.Equal(
-            beacon.SystemName,
-            loaded["systemName"]!.GetValue<string>());
+        Assert.Equal(beacon.SystemName, loaded["systemName"]!.GetValue<string>());
         Assert.True(
-            Directory.EnumerateFiles(
-                    Path.GetDirectoryName(path)!,
-                    "Test System-beacon.json.*.corrupt.json")
-                .Any());
+            Directory.EnumerateFiles(Path.GetDirectoryName(path)!, "Test System-beacon.json.*.corrupt.json").Any()
+        );
     }
 
     [Theory]
@@ -86,10 +82,8 @@ public sealed class GuardianCommanderBeaconStoreTests : IDisposable
     public void InvalidFileNamesAreRejected(string value)
     {
         using var store = new GuardianCommanderBeaconStore(temporaryDirectory);
-        Assert.Throws<ArgumentException>(
-            () => store.GetBeaconPath(value, true, "System"));
-        Assert.Throws<ArgumentException>(
-            () => store.GetBeaconPath("F123", true, value));
+        Assert.Throws<ArgumentException>(() => store.GetBeaconPath(value, true, "System"));
+        Assert.Throws<ArgumentException>(() => store.GetBeaconPath("F123", true, value));
     }
 
     [Fact]
@@ -98,8 +92,7 @@ public sealed class GuardianCommanderBeaconStoreTests : IDisposable
         var store = new GuardianCommanderBeaconStore(temporaryDirectory);
         store.Dispose();
         store.Dispose();
-        Assert.Throws<ObjectDisposedException>(
-            () => store.GetBeaconPath("F123", true, "System"));
+        Assert.Throws<ObjectDisposedException>(() => store.GetBeaconPath("F123", true, "System"));
     }
 
     public void Dispose()

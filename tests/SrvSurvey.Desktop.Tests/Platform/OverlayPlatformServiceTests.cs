@@ -20,7 +20,8 @@ public sealed class OverlayPlatformServiceTests
                 restored.Add(window);
                 return true;
             },
-            isInteractionWindow: window => window == (nint)30);
+            isInteractionWindow: window => window == (nint)30
+        );
 
         session.Dispose();
         session.Dispose();
@@ -44,7 +45,8 @@ public sealed class OverlayPlatformServiceTests
                 restored.Add(window);
                 return true;
             },
-            isInteractionWindow: _ => false);
+            isInteractionWindow: _ => false
+        );
 
         session.Dispose();
 
@@ -79,14 +81,14 @@ public sealed class OverlayPlatformServiceTests
                 {
                     freed.Add(cursor);
                     return 0;
-                }));
+                }
+            )
+        );
 
         session.Dispose();
         session.Dispose();
 
-        Assert.Equal(
-            [(nuint)20, (nuint)30],
-            undefined.Order().ToArray());
+        Assert.Equal([(nuint)20, (nuint)30], undefined.Order().ToArray());
         Assert.Equal([(nuint)40], freed);
         Assert.Equal([(nuint)10], restored);
     }
@@ -108,7 +110,9 @@ public sealed class OverlayPlatformServiceTests
                     return true;
                 },
                 undefineCursor: _ => throw new InvalidOperationException(),
-                freeCursor: _ => throw new InvalidOperationException()));
+                freeCursor: _ => throw new InvalidOperationException()
+            )
+        );
 
         session.Dispose();
 
@@ -132,7 +136,9 @@ public sealed class OverlayPlatformServiceTests
                     return true;
                 },
                 undefineCursor: _ => throw new InvalidOperationException(),
-                freeCursor: _ => throw new InvalidOperationException()));
+                freeCursor: _ => throw new InvalidOperationException()
+            )
+        );
 
         session.Dispose();
 
@@ -143,32 +149,17 @@ public sealed class OverlayPlatformServiceTests
     public void X11ErrorHandlerSupportsACompatibleDelegateType()
     {
         var invoked = false;
-        var errorEvent = new X11Native.XErrorEvent
-        {
-            ErrorCode = 3,
-        };
-        CompatibleX11ErrorHandler handler = (
-            nint display,
-            ref X11Native.XErrorEvent receivedEvent) =>
+        var errorEvent = new X11Native.XErrorEvent { ErrorCode = 3 };
+        CompatibleX11ErrorHandler handler = (nint display, ref X11Native.XErrorEvent receivedEvent) =>
         {
             invoked = display == (nint)42 && receivedEvent.ErrorCode == 3;
             return 17;
         };
         var handlerPointer = Marshal.GetFunctionPointerForDelegate(handler);
 
-        Assert.Equal(
-            17,
-            X11Native.InvokeErrorHandler(
-                handlerPointer,
-                (nint)42,
-                ref errorEvent));
+        Assert.Equal(17, X11Native.InvokeErrorHandler(handlerPointer, (nint)42, ref errorEvent));
         Assert.True(invoked);
-        Assert.Equal(
-            0,
-            X11Native.InvokeErrorHandler(
-                nint.Zero,
-                (nint)42,
-                ref errorEvent));
+        Assert.Equal(0, X11Native.InvokeErrorHandler(nint.Zero, (nint)42, ref errorEvent));
         GC.KeepAlive(handler);
     }
 
@@ -179,44 +170,43 @@ public sealed class OverlayPlatformServiceTests
         X11OverlayPlatformService.RegisterErrorHandledDisplay(ownedDisplay);
         try
         {
-            Assert.True(X11OverlayPlatformService.ShouldSuppressXError(
-                ownedDisplay,
-                X11Native.BadWindow));
-            Assert.True(X11OverlayPlatformService.ShouldSuppressXError(
-                ownedDisplay,
-                X11Native.BadMatch,
-                X11Native.SetInputFocusRequest));
-            Assert.True(X11OverlayPlatformService.ShouldSuppressXError(
-                ownedDisplay,
-                X11Native.BadDrawable,
-                X11Native.GetImageRequest));
-            Assert.False(X11OverlayPlatformService.ShouldSuppressXError(
-                ownedDisplay,
-                errorCode: X11Native.BadValue));
-            Assert.False(X11OverlayPlatformService.ShouldSuppressXError(
-                ownedDisplay,
-                X11Native.BadMatch,
-                requestCode: 12));
-            Assert.False(X11OverlayPlatformService.ShouldSuppressXError(
-                errorDisplay: 43,
-                errorCode: X11Native.BadMatch,
-                requestCode: X11Native.SetInputFocusRequest));
+            Assert.True(X11OverlayPlatformService.ShouldSuppressXError(ownedDisplay, X11Native.BadWindow));
+            Assert.True(
+                X11OverlayPlatformService.ShouldSuppressXError(
+                    ownedDisplay,
+                    X11Native.BadMatch,
+                    X11Native.SetInputFocusRequest
+                )
+            );
+            Assert.True(
+                X11OverlayPlatformService.ShouldSuppressXError(
+                    ownedDisplay,
+                    X11Native.BadDrawable,
+                    X11Native.GetImageRequest
+                )
+            );
+            Assert.False(X11OverlayPlatformService.ShouldSuppressXError(ownedDisplay, errorCode: X11Native.BadValue));
+            Assert.False(
+                X11OverlayPlatformService.ShouldSuppressXError(ownedDisplay, X11Native.BadMatch, requestCode: 12)
+            );
+            Assert.False(
+                X11OverlayPlatformService.ShouldSuppressXError(
+                    errorDisplay: 43,
+                    errorCode: X11Native.BadMatch,
+                    requestCode: X11Native.SetInputFocusRequest
+                )
+            );
         }
         finally
         {
-            X11OverlayPlatformService.UnregisterErrorHandledDisplay(
-                ownedDisplay);
+            X11OverlayPlatformService.UnregisterErrorHandledDisplay(ownedDisplay);
         }
 
-        Assert.False(X11OverlayPlatformService.ShouldSuppressXError(
-            ownedDisplay,
-            X11Native.BadWindow));
+        Assert.False(X11OverlayPlatformService.ShouldSuppressXError(ownedDisplay, X11Native.BadWindow));
     }
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    private delegate int CompatibleX11ErrorHandler(
-        nint display,
-        ref X11Native.XErrorEvent errorEvent);
+    private delegate int CompatibleX11ErrorHandler(nint display, ref X11Native.XErrorEvent errorEvent);
 
     private sealed class TrackingDisposable : IDisposable
     {

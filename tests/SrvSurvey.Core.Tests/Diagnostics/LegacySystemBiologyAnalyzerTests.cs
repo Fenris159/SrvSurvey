@@ -6,15 +6,13 @@ public sealed class LegacySystemBiologyAnalyzerTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-system-biology-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-system-biology-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public async Task AggregatesSpeciesWithoutChangingOriginalSystemFiles()
     {
-        var systemDirectory = Path.Combine(
-            temporaryDirectory,
-            "systems",
-            "F123");
+        var systemDirectory = Path.Combine(temporaryDirectory, "systems", "F123");
         Directory.CreateDirectory(systemDirectory);
         var firstPath = Path.Combine(systemDirectory, "First_1.json");
         await File.WriteAllTextAsync(
@@ -42,7 +40,8 @@ public sealed class LegacySystemBiologyAnalyzerTests : IDisposable
                 }
               ]
             }
-            """);
+            """
+        );
         await File.WriteAllTextAsync(
             Path.Combine(systemDirectory, "Second_2.json"),
             """
@@ -58,10 +57,9 @@ public sealed class LegacySystemBiologyAnalyzerTests : IDisposable
                 }
               ]
             }
-            """);
-        await File.WriteAllTextAsync(
-            Path.Combine(systemDirectory, "malformed.json"),
-            "{\"bodies\":");
+            """
+        );
+        await File.WriteAllTextAsync(Path.Combine(systemDirectory, "malformed.json"), "{\"bodies\":");
         var original = await File.ReadAllBytesAsync(firstPath);
         var analyzer = new LegacySystemBiologyAnalyzer(temporaryDirectory);
 
@@ -71,27 +69,22 @@ public sealed class LegacySystemBiologyAnalyzerTests : IDisposable
         Assert.Equal(2, result.ProcessedFileCount);
         Assert.Equal(3, result.BodyCount);
         Assert.Equal(5, result.OrganismCount);
-        var aleoida = Assert.Single(
-            result.Species,
-            species => species.Name == "Aleoida Arcus");
+        var aleoida = Assert.Single(result.Species, species => species.Name == "Aleoida Arcus");
         Assert.Equal(3, aleoida.Count);
         Assert.Collection(
             aleoida.AtmosphereCompositions,
             atmosphere =>
             {
-                Assert.Equal(
-                    "CarbonDioxide,SulphurDioxide",
-                    atmosphere.Components);
+                Assert.Equal("CarbonDioxide,SulphurDioxide", atmosphere.Components);
                 Assert.Equal(2, atmosphere.Count);
             },
             atmosphere =>
             {
                 Assert.Equal("CarbonDioxide", atmosphere.Components);
                 Assert.Equal(1, atmosphere.Count);
-            });
-        var bacterium = Assert.Single(
-            result.Species,
-            species => species.Name == "Bacterium Cerbrus");
+            }
+        );
+        var bacterium = Assert.Single(result.Species, species => species.Name == "Bacterium Cerbrus");
         var emptyAtmosphere = Assert.Single(bacterium.AtmosphereCompositions);
         Assert.Equal(string.Empty, emptyAtmosphere.Components);
         Assert.Single(result.Warnings);
@@ -115,8 +108,7 @@ public sealed class LegacySystemBiologyAnalyzerTests : IDisposable
     {
         var analyzer = new LegacySystemBiologyAnalyzer(temporaryDirectory);
 
-        await Assert.ThrowsAsync<ArgumentException>(
-            () => analyzer.AnalyzeAsync(".."));
+        await Assert.ThrowsAsync<ArgumentException>(() => analyzer.AnalyzeAsync(".."));
     }
 
     public void Dispose()

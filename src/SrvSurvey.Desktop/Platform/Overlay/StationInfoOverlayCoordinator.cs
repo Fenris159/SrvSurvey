@@ -15,23 +15,19 @@ public sealed class StationInfoOverlayCoordinator : IDisposable
 
     public StationInfoOverlayCoordinator(
         StationInfoViewModel stationInfo,
-        OverlayPresentationSession presentationSession)
+        OverlayPresentationSession presentationSession
+    )
     {
-        this.stationInfo = stationInfo
-            ?? throw new ArgumentNullException(nameof(stationInfo));
+        this.stationInfo = stationInfo ?? throw new ArgumentNullException(nameof(stationInfo));
         ArgumentNullException.ThrowIfNull(presentationSession);
         hostedWindow = presentationSession.HostPassiveWindow(
             new PassiveOverlayWindowDefinition(
                 PlotterName,
-                capabilities => new StationInfoOverlayWindow(
-                    GetOrCreateOverlayViewModel(capabilities)),
-                (gameBounds, windowSize) =>
-                    OverlayWindowPlacement.MiddleLeft(
-                        gameBounds,
-                        windowSize,
-                        margin: 8),
-                preparation => overlayViewModel?.ApplyPreparation(
-                    preparation)));
+                capabilities => new StationInfoOverlayWindow(GetOrCreateOverlayViewModel(capabilities)),
+                (gameBounds, windowSize) => OverlayWindowPlacement.MiddleLeft(gameBounds, windowSize, margin: 8),
+                preparation => overlayViewModel?.ApplyPreparation(preparation)
+            )
+        );
         hostedWindow.VisibilityChanged += OnHostedVisibilityChanged;
         stationInfo.PropertyChanged += OnStationInfoPropertyChanged;
         SynchronizeIntent();
@@ -67,9 +63,7 @@ public sealed class StationInfoOverlayCoordinator : IDisposable
         hostedWindow.Dispose();
     }
 
-    private void OnStationInfoPropertyChanged(
-        object? sender,
-        PropertyChangedEventArgs eventArgs)
+    private void OnStationInfoPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
         if (eventArgs.PropertyName == nameof(StationInfoViewModel.ShouldShow))
         {
@@ -77,12 +71,9 @@ public sealed class StationInfoOverlayCoordinator : IDisposable
         }
     }
 
-    private StationInfoOverlayViewModel GetOrCreateOverlayViewModel(
-        OverlayPlatformCapabilities capabilities)
+    private StationInfoOverlayViewModel GetOrCreateOverlayViewModel(OverlayPlatformCapabilities capabilities)
     {
-        return overlayViewModel ??= new StationInfoOverlayViewModel(
-            stationInfo,
-            capabilities);
+        return overlayViewModel ??= new StationInfoOverlayViewModel(stationInfo, capabilities);
     }
 
     private void SynchronizeIntent()

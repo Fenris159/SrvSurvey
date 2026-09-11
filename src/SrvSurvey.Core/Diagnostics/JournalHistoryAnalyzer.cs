@@ -9,11 +9,9 @@ namespace SrvSurvey.Core.Diagnostics;
 
 public sealed class JournalHistoryAnalyzer
 {
-    public static DateTimeOffset EliteReleaseDate { get; } =
-        new(2014, 12, 15, 0, 0, 0, TimeSpan.Zero);
+    public static DateTimeOffset EliteReleaseDate { get; } = new(2014, 12, 15, 0, 0, 0, TimeSpan.Zero);
 
-    public static DateTimeOffset TrailblazersReleaseDate { get; } =
-        new(2025, 2, 26, 0, 0, 0, TimeSpan.Zero);
+    public static DateTimeOffset TrailblazersReleaseDate { get; } = new(2025, 2, 26, 0, 0, 0, TimeSpan.Zero);
 
     private readonly string journalDirectory;
     private readonly Func<DateTimeOffset> currentTime;
@@ -22,26 +20,26 @@ public sealed class JournalHistoryAnalyzer
     public JournalHistoryAnalyzer(
         string journalDirectory,
         Func<DateTimeOffset>? currentTime = null,
-        GreenGasGiantCriteriaCatalog? greenGasGiantCriteria = null)
+        GreenGasGiantCriteriaCatalog? greenGasGiantCriteria = null
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(journalDirectory);
         this.journalDirectory = Path.GetFullPath(journalDirectory);
         this.currentTime = currentTime ?? (() => DateTimeOffset.Now);
-        this.greenGasGiantCriteria = greenGasGiantCriteria
-            ?? GreenGasGiantCriteriaCatalog.LoadEmbedded();
+        this.greenGasGiantCriteria = greenGasGiantCriteria ?? GreenGasGiantCriteriaCatalog.LoadEmbedded();
     }
 
     public async Task<JournalHistoryAnalysisResult> AnalyzeAsync(
         string frontierId,
         DateTimeOffset startTime,
         IProgress<JournalHistoryAnalysisProgress>? progress = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(frontierId);
         if (!Directory.Exists(journalDirectory))
         {
-            throw new DirectoryNotFoundException(
-                $"The journal folder does not exist: {journalDirectory}");
+            throw new DirectoryNotFoundException($"The journal folder does not exist: {journalDirectory}");
         }
 
         var warnings = new List<string>();
@@ -52,13 +50,7 @@ public sealed class JournalHistoryAnalyzer
         {
             cancellationToken.ThrowIfCancellationRequested();
             var candidate = files[index];
-            await ProcessCandidateAsync(
-                    candidate,
-                    frontierId,
-                    totals,
-                    counters,
-                    warnings,
-                    cancellationToken)
+            await ProcessCandidateAsync(candidate, frontierId, totals, counters, warnings, cancellationToken)
                 .ConfigureAwait(false);
             Report(progress, index, files, candidate, totals);
         }
@@ -66,7 +58,8 @@ public sealed class JournalHistoryAnalyzer
         if (totals.GreenGasGiantMatchesWithoutPosition > 0)
         {
             warnings.Add(
-                $"Skipped {totals.GreenGasGiantMatchesWithoutPosition:N0} Green Gas Giant candidate(s) because no journal StarPos was available.");
+                $"Skipped {totals.GreenGasGiantMatchesWithoutPosition:N0} Green Gas Giant candidate(s) because no journal StarPos was available."
+            );
         }
 
         return new JournalHistoryAnalysisResult(
@@ -79,7 +72,8 @@ public sealed class JournalHistoryAnalyzer
             totals.CreateStatistics(),
             totals.CreateTrailblazersComparison(),
             totals.GreenGasGiantMatches.ToArray(),
-            warnings);
+            warnings
+        );
     }
 
     private async Task ProcessCandidateAsync(
@@ -88,17 +82,14 @@ public sealed class JournalHistoryAnalyzer
         MutableTotals totals,
         AnalysisCounters counters,
         List<string> warnings,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         try
         {
-            var read = await ReadFileAsync(candidate.File, cancellationToken)
-                .ConfigureAwait(false);
+            var read = await ReadFileAsync(candidate.File, cancellationToken).ConfigureAwait(false);
             counters.MalformedLines += read.MalformedLineCount;
-            if (!string.Equals(
-                    read.FrontierId,
-                    frontierId,
-                    StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(read.FrontierId, frontierId, StringComparison.OrdinalIgnoreCase))
             {
                 counters.SkippedCommanderFiles++;
                 return;
@@ -117,75 +108,61 @@ public sealed class JournalHistoryAnalyzer
                 totals.Apply(journalEvent);
             }
         }
-        catch (Exception exception) when (
-            exception is IOException or UnauthorizedAccessException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
             warnings.Add($"{candidate.File.Name}: {exception.Message}");
         }
     }
 
-    private bool ShouldSkipRecentActiveFile(
-        JournalFileCandidate candidate,
-        JournalHistoryFileRead read)
+    private bool ShouldSkipRecentActiveFile(JournalFileCandidate candidate, JournalHistoryFileRead read)
     {
         var recentCutoff = currentTime().AddDays(-2);
         return !read.IsShutdown && candidate.OpenedAt > recentCutoff;
     }
 
-    public static bool TryGetJournalTimestamp(
-        string fileName,
-        out DateTimeOffset timestamp)
+    public static bool TryGetJournalTimestamp(string fileName, out DateTimeOffset timestamp)
     {
         timestamp = default;
         var parts = fileName.Split('.');
-        if (parts.Length < 3
-            || !string.Equals(parts[0], "Journal", StringComparison.OrdinalIgnoreCase))
+        if (parts.Length < 3 || !string.Equals(parts[0], "Journal", StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }
 
-        var format = parts[1].Contains('-', StringComparison.Ordinal)
-            ? "yyyy-MM-ddTHHmmss"
-            : "yyMMddHHmmss";
+        var format = parts[1].Contains('-', StringComparison.Ordinal) ? "yyyy-MM-ddTHHmmss" : "yyMMddHHmmss";
         return DateTimeOffset.TryParseExact(
             parts[1],
             format,
             CultureInfo.InvariantCulture,
             DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
-            out timestamp);
+            out timestamp
+        );
     }
 
-    private JournalFileCandidate[] EnumerateJournalCandidates(
-        DateTimeOffset startTime,
-        List<string> warnings)
+    private JournalFileCandidate[] EnumerateJournalCandidates(DateTimeOffset startTime, List<string> warnings)
     {
         return new DirectoryInfo(journalDirectory)
             .EnumerateFiles("Journal.*.log", SearchOption.TopDirectoryOnly)
             .Select(file => new JournalFileCandidate(
                 file,
-                TryGetJournalTimestamp(file.Name, out var timestamp)
-                    ? timestamp
-                    : null))
+                TryGetJournalTimestamp(file.Name, out var timestamp) ? timestamp : null
+            ))
             .Where(candidate =>
             {
                 if (candidate.OpenedAt is null)
                 {
-                    warnings.Add(
-                        $"Ignored {candidate.File.Name} because its journal timestamp is invalid.");
+                    warnings.Add($"Ignored {candidate.File.Name} because its journal timestamp is invalid.");
                     return false;
                 }
 
-                return candidate.OpenedAt > startTime
-                    && candidate.File.LastWriteTimeUtc >= startTime.UtcDateTime;
+                return candidate.OpenedAt > startTime && candidate.File.LastWriteTimeUtc >= startTime.UtcDateTime;
             })
             .OrderBy(candidate => candidate.OpenedAt)
             .ThenBy(candidate => candidate.File.Name, StringComparer.Ordinal)
             .ToArray();
     }
 
-    private static async Task<JournalHistoryFileRead> ReadFileAsync(
-        FileInfo file,
-        CancellationToken cancellationToken)
+    private static async Task<JournalHistoryFileRead> ReadFileAsync(FileInfo file, CancellationToken cancellationToken)
     {
         var events = new List<JournalEventEnvelope>();
         var malformed = 0;
@@ -197,24 +174,17 @@ public sealed class JournalHistoryAnalyzer
             FileAccess.Read,
             FileShare.ReadWrite | FileShare.Delete,
             16 * 1024,
-            FileOptions.Asynchronous | FileOptions.SequentialScan);
-        using var reader = new StreamReader(
-            stream,
-            Encoding.UTF8,
-            detectEncodingFromByteOrderMarks: true);
-        while (await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false)
-               is { } line)
+            FileOptions.Asynchronous | FileOptions.SequentialScan
+        );
+        using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+        while (await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false) is { } line)
         {
             if (string.IsNullOrWhiteSpace(line))
             {
                 continue;
             }
 
-            if (!JournalEventEnvelope.TryParse(
-                    line,
-                    out var journalEvent,
-                    out _)
-                || journalEvent is null)
+            if (!JournalEventEnvelope.TryParse(line, out var journalEvent, out _) || journalEvent is null)
             {
                 malformed++;
                 continue;
@@ -223,8 +193,7 @@ public sealed class JournalHistoryAnalyzer
             events.Add(journalEvent);
             if (journalEvent.EventName is "Commander" or "LoadGame")
             {
-                frontierId = GetString(journalEvent.Payload, "FID")
-                    ?? frontierId;
+                frontierId = GetString(journalEvent.Payload, "FID") ?? frontierId;
             }
             else if (journalEvent.EventName == "Shutdown")
             {
@@ -232,11 +201,7 @@ public sealed class JournalHistoryAnalyzer
             }
         }
 
-        return new JournalHistoryFileRead(
-            frontierId,
-            isShutdown,
-            events,
-            malformed);
+        return new JournalHistoryFileRead(frontierId, isShutdown, events, malformed);
     }
 
     private static void Report(
@@ -244,33 +209,35 @@ public sealed class JournalHistoryAnalyzer
         int index,
         IReadOnlyList<JournalFileCandidate> files,
         JournalFileCandidate candidate,
-        MutableTotals totals)
+        MutableTotals totals
+    )
     {
-        progress?.Report(new JournalHistoryAnalysisProgress(
-            index + 1,
-            files.Count,
-            candidate.File.Name,
-            totals.JumpCount,
-            totals.OrganismCount));
+        progress?.Report(
+            new JournalHistoryAnalysisProgress(
+                index + 1,
+                files.Count,
+                candidate.File.Name,
+                totals.JumpCount,
+                totals.OrganismCount
+            )
+        );
     }
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
-            && value.ValueKind == JsonValueKind.String
-                ? value.GetString()
-                : null;
+        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+            ? value.GetString()
+            : null;
     }
 
-    private sealed record JournalFileCandidate(
-        FileInfo File,
-        DateTimeOffset? OpenedAt);
+    private sealed record JournalFileCandidate(FileInfo File, DateTimeOffset? OpenedAt);
 
     private sealed record JournalHistoryFileRead(
         string? FrontierId,
         bool IsShutdown,
         IReadOnlyList<JournalEventEnvelope> Events,
-        int MalformedLineCount);
+        int MalformedLineCount
+    );
 
     private sealed class AnalysisCounters
     {
@@ -285,8 +252,7 @@ public sealed class JournalHistoryAnalyzer
         public int ParsedEvents { get; set; }
     }
 
-    private sealed class MutableTotals(
-        GreenGasGiantCriteriaCatalog greenGasGiantCriteria)
+    private sealed class MutableTotals(GreenGasGiantCriteriaCatalog greenGasGiantCriteria)
     {
         private DateTimeOffset? firstEvent;
         private DateTimeOffset? lastEvent;
@@ -301,8 +267,7 @@ public sealed class JournalHistoryAnalyzer
         private long bodyCount;
         private double jumpDistance;
         private GalacticCoordinate? currentStarPosition;
-        private readonly List<HistoricalGreenGasGiantMatch>
-            greenGasGiantMatches = [];
+        private readonly List<HistoricalGreenGasGiantMatch> greenGasGiantMatches = [];
         private readonly MutableCargoTransactions beforeTrailblazers = new();
         private readonly MutableCargoTransactions afterTrailblazers = new();
 
@@ -310,8 +275,7 @@ public sealed class JournalHistoryAnalyzer
 
         public long OrganismCount { get; private set; }
 
-        public IReadOnlyList<HistoricalGreenGasGiantMatch>
-            GreenGasGiantMatches => greenGasGiantMatches;
+        public IReadOnlyList<HistoricalGreenGasGiantMatch> GreenGasGiantMatches => greenGasGiantMatches;
 
         public int GreenGasGiantMatchesWithoutPosition { get; private set; }
 
@@ -320,26 +284,17 @@ public sealed class JournalHistoryAnalyzer
             var timestamp = journalEvent.Timestamp;
             if (timestamp is not null)
             {
-                firstEvent = firstEvent is null || timestamp < firstEvent
-                    ? timestamp
-                    : firstEvent;
-                lastEvent = lastEvent is null || timestamp > lastEvent
-                    ? timestamp
-                    : lastEvent;
+                firstEvent = firstEvent is null || timestamp < firstEvent ? timestamp : firstEvent;
+                lastEvent = lastEvent is null || timestamp > lastEvent ? timestamp : lastEvent;
             }
 
             var root = journalEvent.Payload;
-            if (journalEvent.EventName is "LoadGame"
-                or "Location"
-                or "FSDJump"
-                or "CarrierJump")
+            if (journalEvent.EventName is "LoadGame" or "Location" or "FSDJump" or "CarrierJump")
             {
                 currentStarPosition = TryGetCoordinate(root, "StarPos");
             }
 
-            var trailblazers = timestamp < TrailblazersReleaseDate
-                ? beforeTrailblazers
-                : afterTrailblazers;
+            var trailblazers = timestamp < TrailblazersReleaseDate ? beforeTrailblazers : afterTrailblazers;
             switch (journalEvent.EventName)
             {
                 case "FSDJump":
@@ -349,8 +304,8 @@ public sealed class JournalHistoryAnalyzer
                 case "Scan":
                     var tag = greenGasGiantCriteria.Match(
                         GetString(root, "PlanetClass"),
-                        GetDouble(root, "SurfaceTemperature")
-                            ?? double.NaN);
+                        GetDouble(root, "SurfaceTemperature") ?? double.NaN
+                    );
                     if (tag is null)
                     {
                         break;
@@ -367,15 +322,15 @@ public sealed class JournalHistoryAnalyzer
                             tag,
                             starPosition,
                             journalEvent.RawJson,
-                            journalEvent.Timestamp));
+                            journalEvent.Timestamp
+                        )
+                    );
                     break;
                 case "ApproachBody":
                     bodyCount++;
                     break;
-                case "ScanOrganic" when string.Equals(
-                    GetString(root, "ScanType"),
-                    "Analyse",
-                    StringComparison.OrdinalIgnoreCase):
+                case "ScanOrganic"
+                    when string.Equals(GetString(root, "ScanType"), "Analyse", StringComparison.OrdinalIgnoreCase):
                     OrganismCount++;
                     break;
                 case "MarketBuy":
@@ -397,10 +352,7 @@ public sealed class JournalHistoryAnalyzer
                     cargoCollected++;
                     break;
                 case "ColonisationContribution":
-                    cargoContributed += SumArray(
-                        root,
-                        "Contributions",
-                        "Amount");
+                    cargoContributed += SumArray(root, "Contributions", "Amount");
                     break;
                 case "Docked":
                     docked++;
@@ -430,70 +382,62 @@ public sealed class JournalHistoryAnalyzer
                 cargoContributed,
                 docked,
                 touchdown,
-                died);
+                died
+            );
         }
 
         public TrailblazersCargoComparison CreateTrailblazersComparison()
         {
-            return new TrailblazersCargoComparison(
-                beforeTrailblazers.Create(),
-                afterTrailblazers.Create());
+            return new TrailblazersCargoComparison(beforeTrailblazers.Create(), afterTrailblazers.Create());
         }
 
-        private static long SumArray(
-            JsonElement root,
-            string arrayName,
-            string valueName)
+        private static long SumArray(JsonElement root, string arrayName, string valueName)
         {
-            if (!root.TryGetProperty(arrayName, out var array)
-                || array.ValueKind != JsonValueKind.Array)
+            if (!root.TryGetProperty(arrayName, out var array) || array.ValueKind != JsonValueKind.Array)
             {
                 return 0;
             }
 
-            return array.EnumerateArray()
-                .Sum(item => GetInt64(item, valueName) ?? 0);
+            return array.EnumerateArray().Sum(item => GetInt64(item, valueName) ?? 0);
         }
 
         private static long? GetInt64(JsonElement root, string propertyName)
         {
-            return root.TryGetProperty(propertyName, out var value)
-                && value.TryGetInt64(out var result)
-                    ? result
-                    : null;
+            return root.TryGetProperty(propertyName, out var value) && value.TryGetInt64(out var result)
+                ? result
+                : null;
         }
 
-        private static double? GetDouble(
-            JsonElement root,
-            string propertyName)
+        private static double? GetDouble(JsonElement root, string propertyName)
         {
-            return root.TryGetProperty(propertyName, out var value)
+            return
+                root.TryGetProperty(propertyName, out var value)
                 && value.TryGetDouble(out var result)
                 && double.IsFinite(result)
-                    ? result
-                    : null;
+                ? result
+                : null;
         }
 
-        private static GalacticCoordinate? TryGetCoordinate(
-            JsonElement root,
-            string propertyName)
+        private static GalacticCoordinate? TryGetCoordinate(JsonElement root, string propertyName)
         {
-            if (!root.TryGetProperty(propertyName, out var value)
-                || value.ValueKind != JsonValueKind.Array)
+            if (!root.TryGetProperty(propertyName, out var value) || value.ValueKind != JsonValueKind.Array)
             {
                 return null;
             }
 
             var components = value.EnumerateArray().ToArray();
-            return components.Length == 3
+            return
+                components.Length == 3
                 && components.All(component =>
                     component.ValueKind == JsonValueKind.Number
                     && component.TryGetDouble(out var number)
-                    && double.IsFinite(number))
+                    && double.IsFinite(number)
+                )
                 ? new GalacticCoordinate(
                     components[0].GetDouble(),
                     components[1].GetDouble(),
-                    components[2].GetDouble())
+                    components[2].GetDouble()
+                )
                 : null;
         }
     }
@@ -506,8 +450,7 @@ public sealed class JournalHistoryAnalyzer
 
         public long Transferred { get; set; }
 
-        public CargoTransactionStatistics Create() =>
-            new(Bought, Sold, Transferred);
+        public CargoTransactionStatistics Create() => new(Bought, Sold, Transferred);
     }
 }
 
@@ -516,7 +459,8 @@ public sealed record JournalHistoryAnalysisProgress(
     int TotalFileCount,
     string CurrentFile,
     long JumpCount,
-    long OrganismCount);
+    long OrganismCount
+);
 
 public sealed record JournalHistoryAnalysisResult(
     int CandidateFileCount,
@@ -528,13 +472,15 @@ public sealed record JournalHistoryAnalysisResult(
     JournalHistoryStatistics Statistics,
     TrailblazersCargoComparison Trailblazers,
     IReadOnlyList<HistoricalGreenGasGiantMatch> GreenGasGiantMatches,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings
+);
 
 public sealed record HistoricalGreenGasGiantMatch(
     string Tag,
     GalacticCoordinate StarPosition,
     string RawJournalJson,
-    DateTimeOffset? Timestamp);
+    DateTimeOffset? Timestamp
+);
 
 public sealed record JournalHistoryStatistics(
     DateTimeOffset? FirstEvent,
@@ -550,13 +496,9 @@ public sealed record JournalHistoryStatistics(
     long CargoContributed,
     long DockedCount,
     long TouchdownCount,
-    long DeathCount);
+    long DeathCount
+);
 
-public sealed record TrailblazersCargoComparison(
-    CargoTransactionStatistics Before,
-    CargoTransactionStatistics After);
+public sealed record TrailblazersCargoComparison(CargoTransactionStatistics Before, CargoTransactionStatistics After);
 
-public sealed record CargoTransactionStatistics(
-    long Bought,
-    long Sold,
-    long Transferred);
+public sealed record CargoTransactionStatistics(long Bought, long Sold, long Transferred);

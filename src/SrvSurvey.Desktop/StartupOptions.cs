@@ -32,13 +32,12 @@ internal static class StartupOptions
         for (var index = 0; index < args.Count; index++)
         {
             var argument = args[index];
-            if (argument.Equals(FrontierIdOption, StringComparison.OrdinalIgnoreCase)
-                || argument.Equals(
-                    LegacyFrontierIdOption,
-                    StringComparison.OrdinalIgnoreCase))
+            if (
+                argument.Equals(FrontierIdOption, StringComparison.OrdinalIgnoreCase)
+                || argument.Equals(LegacyFrontierIdOption, StringComparison.OrdinalIgnoreCase)
+            )
             {
-                return NormalizeFrontierId(
-                    index + 1 < args.Count ? args[index + 1] : null);
+                return NormalizeFrontierId(index + 1 < args.Count ? args[index + 1] : null);
             }
 
             var prefix = $"{FrontierIdOption}=";
@@ -51,19 +50,14 @@ internal static class StartupOptions
         return null;
     }
 
-    public static string? GetDiagnosticReplayManifest(
-        IReadOnlyList<string> args)
+    public static string? GetDiagnosticReplayManifest(IReadOnlyList<string> args)
     {
         for (var index = 0; index < args.Count; index++)
         {
             var argument = args[index];
-            if (argument.Equals(
-                    DiagnosticReplayOption,
-                    StringComparison.OrdinalIgnoreCase))
+            if (argument.Equals(DiagnosticReplayOption, StringComparison.OrdinalIgnoreCase))
             {
-                return index + 1 < args.Count
-                    ? NormalizePath(args[index + 1])
-                    : null;
+                return index + 1 < args.Count ? NormalizePath(args[index + 1]) : null;
             }
 
             var prefix = $"{DiagnosticReplayOption}=";
@@ -76,27 +70,24 @@ internal static class StartupOptions
         return null;
     }
 
-    public static bool HasDiagnosticReplayOption(
-        IReadOnlyList<string> args)
+    public static bool HasDiagnosticReplayOption(IReadOnlyList<string> args)
     {
         return args.Any(argument =>
-            argument.Equals(
-                DiagnosticReplayOption,
-                StringComparison.OrdinalIgnoreCase)
-            || argument.StartsWith(
-                $"{DiagnosticReplayOption}=",
-                StringComparison.OrdinalIgnoreCase));
+            argument.Equals(DiagnosticReplayOption, StringComparison.OrdinalIgnoreCase)
+            || argument.StartsWith($"{DiagnosticReplayOption}=", StringComparison.OrdinalIgnoreCase)
+        );
     }
 
     private static string? NormalizeFrontierId(string? value)
     {
         var normalized = value?.Trim();
-        return normalized is not null
+        return
+            normalized is not null
             && normalized.Length > 1
             && (normalized[0] is 'F' or 'f')
             && normalized[1..].All(char.IsAsciiDigit)
-                ? normalized.ToUpperInvariant()
-                : null;
+            ? normalized.ToUpperInvariant()
+            : null;
     }
 
     private static string? NormalizePath(string? value)

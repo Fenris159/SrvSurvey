@@ -5,7 +5,9 @@ namespace SrvSurvey.Desktop;
 
 public sealed partial class MiningActivityOverlayWindow : Window
 {
-    public MiningActivityOverlayWindow() : this(new MiningActivityOverlayViewModel(null, false)) { }
+    public MiningActivityOverlayWindow()
+        : this(new MiningActivityOverlayViewModel(null, false)) { }
+
     public MiningActivityOverlayWindow(MiningActivityOverlayViewModel viewModel)
     {
         InitializeComponent();

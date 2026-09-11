@@ -10,16 +10,15 @@ public sealed class LocalizationViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-localization-view-model-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-localization-view-model-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public async Task SelectingLanguagePersistsAndUsesControlledRestart()
     {
         LocalizationCatalog.Initialize("en");
         var settingsPath = Path.Combine(temporaryDirectory, "ui-settings.json");
-        var store = new LocalizationSettingsStore(
-            settingsPath,
-            Path.Combine(temporaryDirectory, "profile"));
+        var store = new LocalizationSettingsStore(settingsPath, Path.Combine(temporaryDirectory, "profile"));
         var viewModel = new LocalizationViewModel(store);
         var restarted = false;
         viewModel.SetRestartHandler(() =>
@@ -28,8 +27,7 @@ public sealed class LocalizationViewModelTests : IDisposable
             return Task.CompletedTask;
         });
 
-        viewModel.SelectedLanguage = viewModel.Languages.Single(
-            language => language.Code == "es");
+        viewModel.SelectedLanguage = viewModel.Languages.Single(language => language.Code == "es");
 
         Assert.True(viewModel.IsRestartRequired);
         Assert.True(viewModel.RestartCommand.CanExecute(null));

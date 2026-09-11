@@ -87,9 +87,7 @@ public sealed class JournalSessionState
                 ResetVehicleSessionState();
                 GameVersion = GetString(root, "gameversion") ?? GameVersion;
                 GameBuild = GetString(root, "build") ?? GameBuild;
-                IsLegacy = GetBoolean(root, "Odyssey") is { } isLive
-                    ? !isLive
-                    : null;
+                IsLegacy = GetBoolean(root, "Odyssey") is { } isLive ? !isLive : null;
                 IsOdyssey = null;
                 IsHorizons = null;
                 IsShutdown = false;
@@ -122,9 +120,7 @@ public sealed class JournalSessionState
                 ShipType = GetString(root, "Ship") ?? ShipType;
                 ShipId = GetInt64(root, ShipIdProperty) ?? ShipId;
                 ShipName = GetString(root, nameof(ShipName)) ?? ShipName;
-                ShipIdent = GetString(root, nameof(ShipIdent))
-                    ?? GetString(root, "ShipIDent")
-                    ?? ShipIdent;
+                ShipIdent = GetString(root, nameof(ShipIdent)) ?? GetString(root, "ShipIDent") ?? ShipIdent;
                 break;
 
             case "ShipyardSwap":
@@ -135,9 +131,7 @@ public sealed class JournalSessionState
             case "ShipyardBuy":
             case "ShipyardNew":
                 ShipType = GetString(root, nameof(ShipType)) ?? ShipType;
-                ShipId = GetInt64(root, "NewShipID")
-                    ?? GetInt64(root, ShipIdProperty)
-                    ?? ShipId;
+                ShipId = GetInt64(root, "NewShipID") ?? GetInt64(root, ShipIdProperty) ?? ShipId;
                 break;
 
             case "SetUserShipName":
@@ -153,8 +147,7 @@ public sealed class JournalSessionState
                 ActiveSrvType = launchedSrvType ?? ActiveSrvType;
                 RememberSrvType(root, launchedSrvType);
                 pendingPlayerControlledFighterId = null;
-                isNomadStatusConfirmationPending =
-                    EliteSrvTypes.IsNomad(launchedSrvType);
+                isNomadStatusConfirmationPending = EliteSrvTypes.IsNomad(launchedSrvType);
                 break;
 
             case "DockSRV":
@@ -189,9 +182,11 @@ public sealed class JournalSessionState
                 break;
 
             case "Disembark" when GetBoolean(root, "SRV") == true:
-                ParkedSrvType = GetInt64(root, "ID") is { } disembarkedId
+                ParkedSrvType =
+                    GetInt64(root, "ID") is { } disembarkedId
                     && srvTypesById.TryGetValue(disembarkedId, out var disembarkedType)
-                        ? disembarkedType : ActiveSrvType;
+                        ? disembarkedType
+                        : ActiveSrvType;
                 ActiveSrvType = null;
                 pendingPlayerControlledFighterId = null;
                 isNomadStatusConfirmationPending = false;
@@ -205,12 +200,10 @@ public sealed class JournalSessionState
             case "Location":
                 SystemName = GetString(root, "StarSystem") ?? SystemName;
                 SystemAddress = GetInt64(root, nameof(SystemAddress)) ?? SystemAddress;
-                StarPosition = GetGalacticCoordinate(root, "StarPos")
-                    ?? StarPosition;
+                StarPosition = GetGalacticCoordinate(root, "StarPos") ?? StarPosition;
                 BodyName = GetCurrentPlanetName(root);
-                StationName = GetBoolean(root, "Docked") == true
-                    ? GetString(root, nameof(StationName)) ?? StationName
-                    : null;
+                StationName =
+                    GetBoolean(root, "Docked") == true ? GetString(root, nameof(StationName)) ?? StationName : null;
                 IsShutdown = false;
                 IsAtMainMenu = false;
                 break;
@@ -234,8 +227,7 @@ public sealed class JournalSessionState
                 ParkedSrvType = null;
                 SystemName = GetString(root, "StarSystem") ?? SystemName;
                 SystemAddress = GetInt64(root, nameof(SystemAddress)) ?? SystemAddress;
-                StarPosition = GetGalacticCoordinate(root, "StarPos")
-                    ?? StarPosition;
+                StarPosition = GetGalacticCoordinate(root, "StarPos") ?? StarPosition;
                 BodyName = GetCurrentPlanetName(root);
                 StationName = null;
                 IsShutdown = false;
@@ -252,10 +244,7 @@ public sealed class JournalSessionState
                 // retains the current planet until another location event.
                 break;
 
-            case "StartJump" when string.Equals(
-                GetString(root, "JumpType"),
-                "Hyperspace",
-                StringComparison.Ordinal):
+            case "StartJump" when string.Equals(GetString(root, "JumpType"), "Hyperspace", StringComparison.Ordinal):
                 // The departure event arrives before FSDJump. Drop only the
                 // live body/vehicle context while retaining the durable
                 // commander, ship, and origin-system identity.
@@ -271,14 +260,8 @@ public sealed class JournalSessionState
             case "Music":
                 var musicTrack = GetString(root, nameof(MusicTrack));
                 MusicTrack = musicTrack;
-                IsAtMainMenu = string.Equals(
-                    musicTrack,
-                    "MainMenu",
-                    StringComparison.Ordinal);
-                IsAtCarrierManagement = string.Equals(
-                    musicTrack,
-                    "FleetCarrier_Managment",
-                    StringComparison.Ordinal);
+                IsAtMainMenu = string.Equals(musicTrack, "MainMenu", StringComparison.Ordinal);
+                IsAtCarrierManagement = string.Equals(musicTrack, "FleetCarrier_Managment", StringComparison.Ordinal);
                 if (IsAtMainMenu)
                 {
                     ClearLiveLocationContext();
@@ -306,8 +289,7 @@ public sealed class JournalSessionState
     {
         ParkedSrvType = null;
         var embarkedVehicleId = GetInt64(root, "ID");
-        if (embarkedVehicleId is { } embarkedId
-            && srvTypesById.TryGetValue(embarkedId, out var embarkedSrvType))
+        if (embarkedVehicleId is { } embarkedId && srvTypesById.TryGetValue(embarkedId, out var embarkedSrvType))
         {
             ActiveSrvType = embarkedSrvType;
             isNomadStatusConfirmationPending = EliteSrvTypes.IsNomad(embarkedSrvType);
@@ -377,9 +359,11 @@ public sealed class JournalSessionState
         }
 
         pendingPlayerControlledFighterId = GetInt64(root, "ID");
-        if (pendingPlayerControlledFighterId is { } vehicleId
+        if (
+            pendingPlayerControlledFighterId is { } vehicleId
             && srvTypesById.TryGetValue(vehicleId, out var srvType)
-            && EliteSrvTypes.IsNomad(srvType))
+            && EliteSrvTypes.IsNomad(srvType)
+        )
         {
             ActiveSrvType = srvType;
             IsFighterLaunched = false;
@@ -422,10 +406,7 @@ public sealed class JournalSessionState
             ActiveSrvType = null;
         }
 
-        return !string.Equals(
-                previousSrvType,
-                ActiveSrvType,
-                StringComparison.OrdinalIgnoreCase)
+        return !string.Equals(previousSrvType, ActiveSrvType, StringComparison.OrdinalIgnoreCase)
             || previousFighterState != IsFighterLaunched;
     }
 
@@ -468,22 +449,16 @@ public sealed class JournalSessionState
         }
     }
 
-    private bool HasCommanderChanged(
-        string? nextCommanderName,
-        string? nextFrontierId)
+    private bool HasCommanderChanged(string? nextCommanderName, string? nextFrontierId)
     {
-        var frontierIdChanged = !string.IsNullOrWhiteSpace(nextFrontierId)
+        var frontierIdChanged =
+            !string.IsNullOrWhiteSpace(nextFrontierId)
             && !string.IsNullOrWhiteSpace(FrontierId)
-            && !string.Equals(
-                nextFrontierId,
-                FrontierId,
-                StringComparison.OrdinalIgnoreCase);
-        var commanderNameChanged = !string.IsNullOrWhiteSpace(nextCommanderName)
+            && !string.Equals(nextFrontierId, FrontierId, StringComparison.OrdinalIgnoreCase);
+        var commanderNameChanged =
+            !string.IsNullOrWhiteSpace(nextCommanderName)
             && !string.IsNullOrWhiteSpace(CommanderName)
-            && !string.Equals(
-                nextCommanderName,
-                CommanderName,
-                StringComparison.OrdinalIgnoreCase);
+            && !string.Equals(nextCommanderName, CommanderName, StringComparison.OrdinalIgnoreCase);
         return frontierIdChanged || commanderNameChanged;
     }
 
@@ -503,9 +478,7 @@ public sealed class JournalSessionState
         KnownNomadVehicleId = null;
     }
 
-    public JournalSnapshot CreateSnapshot(
-        string? sourcePath,
-        int malformedLineCount = 0)
+    public JournalSnapshot CreateSnapshot(string? sourcePath, int malformedLineCount = 0)
     {
         return new JournalSnapshot(
             sourcePath,
@@ -523,7 +496,8 @@ public sealed class JournalSessionState
             LastEventTimestamp,
             ValidEventCount,
             RecognizedEventCount,
-            malformedLineCount)
+            malformedLineCount
+        )
         {
             IsLegacy = IsLegacy,
             IsHorizons = IsHorizons,
@@ -532,26 +506,23 @@ public sealed class JournalSessionState
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
-            && value.ValueKind == JsonValueKind.String
-                ? value.GetString()
-                : null;
+        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+            ? value.GetString()
+            : null;
     }
 
     private static bool? GetBoolean(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
-            && (value.ValueKind == JsonValueKind.True
-                || value.ValueKind == JsonValueKind.False)
-                ? value.GetBoolean()
-                : null;
+        return
+            root.TryGetProperty(propertyName, out var value)
+            && (value.ValueKind == JsonValueKind.True || value.ValueKind == JsonValueKind.False)
+            ? value.GetBoolean()
+            : null;
     }
 
     private static string? GetCurrentPlanetName(JsonElement root)
     {
-        return GetString(root, "BodyType") == "Planet"
-            ? GetString(root, "Body")
-            : null;
+        return GetString(root, "BodyType") == "Planet" ? GetString(root, "Body") : null;
     }
 
     private static long? GetInt64(JsonElement root, string propertyName)
@@ -566,28 +537,28 @@ public sealed class JournalSessionState
             return number;
         }
 
-        return value.ValueKind == JsonValueKind.String
-            && long.TryParse(value.GetString(), out number)
-                ? number
-                : null;
+        return value.ValueKind == JsonValueKind.String && long.TryParse(value.GetString(), out number) ? number : null;
     }
 
-    private static GalacticCoordinate? GetGalacticCoordinate(
-        JsonElement root,
-        string propertyName)
+    private static GalacticCoordinate? GetGalacticCoordinate(JsonElement root, string propertyName)
     {
-        if (!root.TryGetProperty(propertyName, out var value)
+        if (
+            !root.TryGetProperty(propertyName, out var value)
             || value.ValueKind != JsonValueKind.Array
-            || value.GetArrayLength() < 3)
+            || value.GetArrayLength() < 3
+        )
         {
             return null;
         }
 
         var coordinates = value.EnumerateArray().Take(3).ToArray();
-        if (coordinates.Any(coordinate =>
+        if (
+            coordinates.Any(coordinate =>
                 coordinate.ValueKind != JsonValueKind.Number
                 || !coordinate.TryGetDouble(out var number)
-                || !double.IsFinite(number)))
+                || !double.IsFinite(number)
+            )
+        )
         {
             return null;
         }
@@ -595,7 +566,8 @@ public sealed class JournalSessionState
         return new GalacticCoordinate(
             coordinates[0].GetDouble(),
             coordinates[1].GetDouble(),
-            coordinates[2].GetDouble());
+            coordinates[2].GetDouble()
+        );
     }
 
     private static OdysseySuitType ParseSuitType(string? suitName)
@@ -607,18 +579,11 @@ public sealed class JournalSessionState
 
         return suitName switch
         {
-            _ when suitName.StartsWith(
-                "flightsuit",
-                StringComparison.OrdinalIgnoreCase) => OdysseySuitType.Flight,
-            _ when suitName.StartsWith(
-                "explorationsuit",
-                StringComparison.OrdinalIgnoreCase) => OdysseySuitType.Artemis,
-            _ when suitName.StartsWith(
-                "utilitysuit",
-                StringComparison.OrdinalIgnoreCase) => OdysseySuitType.Maverick,
-            _ when suitName.StartsWith(
-                "tacticalsuit",
-                StringComparison.OrdinalIgnoreCase) => OdysseySuitType.Dominator,
+            _ when suitName.StartsWith("flightsuit", StringComparison.OrdinalIgnoreCase) => OdysseySuitType.Flight,
+            _ when suitName.StartsWith("explorationsuit", StringComparison.OrdinalIgnoreCase) =>
+                OdysseySuitType.Artemis,
+            _ when suitName.StartsWith("utilitysuit", StringComparison.OrdinalIgnoreCase) => OdysseySuitType.Maverick,
+            _ when suitName.StartsWith("tacticalsuit", StringComparison.OrdinalIgnoreCase) => OdysseySuitType.Dominator,
             _ => OdysseySuitType.Unknown,
         };
     }

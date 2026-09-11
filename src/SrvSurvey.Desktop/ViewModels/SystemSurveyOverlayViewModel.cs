@@ -9,16 +9,12 @@ public sealed class SystemSurveyOverlayViewModel : INotifyPropertyChanged
     private string platformStatus;
     private string inputMode;
 
-    public SystemSurveyOverlayViewModel(
-        SystemSurveyViewModel survey,
-        OverlayPlatformCapabilities capabilities)
+    public SystemSurveyOverlayViewModel(SystemSurveyViewModel survey, OverlayPlatformCapabilities capabilities)
     {
         Survey = survey ?? throw new ArgumentNullException(nameof(survey));
         ArgumentNullException.ThrowIfNull(capabilities);
         platformStatus = capabilities.StatusText;
-        inputMode = capabilities.SupportsClickThrough
-            ? "PASSIVE"
-            : "UNAVAILABLE";
+        inputMode = capabilities.SupportsClickThrough ? "PASSIVE" : "UNAVAILABLE";
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -44,10 +40,7 @@ public sealed class SystemSurveyOverlayViewModel : INotifyPropertyChanged
         InputMode = result.IsClickThrough ? "PASSIVE" : "BLOCKED";
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {

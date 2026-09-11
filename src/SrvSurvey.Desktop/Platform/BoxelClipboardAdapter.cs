@@ -26,9 +26,7 @@ public sealed class BoxelClipboardAdapter : IBoxelClipboard
         }
     }
 
-    public Task WriteTextAsync(
-        string text,
-        CancellationToken cancellationToken = default)
+    public Task WriteTextAsync(string text, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(text);
         cancellationToken.ThrowIfCancellationRequested();
@@ -39,8 +37,7 @@ public sealed class BoxelClipboardAdapter : IBoxelClipboard
         }
 
         return currentWriter is null
-            ? Task.FromException(new InvalidOperationException(
-                "The desktop clipboard is not available."))
+            ? Task.FromException(new InvalidOperationException("The desktop clipboard is not available."))
             : currentWriter(text);
     }
 }

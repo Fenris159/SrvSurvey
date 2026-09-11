@@ -7,24 +7,29 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-legacy-layout-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-legacy-layout-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void MiningWarningInitiallyCopiesFlightPlacementButKeepsIndependentSavedChanges()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        File.WriteAllText(Path.Combine(temporaryDirectory, "plotters.json"),
-            """{"PlotFlightWarning":"center:9, top:176, 0.7 { s: 13 }"}""");
+        File.WriteAllText(
+            Path.Combine(temporaryDirectory, "plotters.json"),
+            """{"PlotFlightWarning":"center:9, top:176, 0.7 { s: 13 }"}"""
+        );
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
         var layout = store.Load();
         var original = layout.Placements["PlotFlightWarning"];
         Assert.Equal(original, layout.Placements["PlotMiningWarning"]);
         var custom = original with { HorizontalOffset = 75, VerticalOffset = 200 };
         store.Save(new Dictionary<string, LegacyOverlayPlacement> { ["PlotMiningWarning"] = custom });
-        store.Save(new Dictionary<string, LegacyOverlayPlacement>
-        {
-            ["PlotFlightWarning"] = original with { HorizontalOffset = 99 },
-        });
+        store.Save(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                ["PlotFlightWarning"] = original with { HorizontalOffset = 99 },
+            }
+        );
         Assert.Equal(custom, store.Load().Placements["PlotMiningWarning"]);
     }
 
@@ -41,10 +46,9 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
               "PlotSysStatus": "right:18, bottom:44",
               "PlotAdjustVR": "screen:-100, os:25",
             }
-            """);
-        File.WriteAllText(
-            Path.Combine(temporaryDirectory, "settings.json"),
-            "{\"plotterOpacity\":55}");
+            """
+        );
+        File.WriteAllText(Path.Combine(temporaryDirectory, "settings.json"), "{\"plotterOpacity\":55}");
 
         var layout = new LegacyOverlayLayoutStore(temporaryDirectory).Load();
 
@@ -54,22 +58,16 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
         Assert.Equal(0.55, layout.GetOpacity("PlotSysStatus"));
         Assert.Equal(
             new PixelPoint(108, 212),
-            layout.GetPosition(
-                "PlotBodyInfo",
-                new PixelRect(100, 200, 1000, 800),
-                new PixelSize(300, 120)));
+            layout.GetPosition("PlotBodyInfo", new PixelRect(100, 200, 1000, 800), new PixelSize(300, 120))
+        );
         Assert.Equal(
             new PixelPoint(782, 836),
-            layout.GetPosition(
-                "PlotSysStatus",
-                new PixelRect(100, 200, 1000, 800),
-                new PixelSize(300, 120)));
+            layout.GetPosition("PlotSysStatus", new PixelRect(100, 200, 1000, 800), new PixelSize(300, 120))
+        );
         Assert.Equal(
             new PixelPoint(-100, 25),
-            layout.GetPosition(
-                "PlotAdjustVR",
-                new PixelRect(100, 200, 1000, 800),
-                new PixelSize(300, 120)));
+            layout.GetPosition("PlotAdjustVR", new PixelRect(100, 200, 1000, 800), new PixelSize(300, 120))
+        );
     }
 
     [Fact]
@@ -96,10 +94,7 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
         Assert.Empty(layout.Placements);
         Assert.Null(layout.DefaultOpacity);
         Assert.Null(layout.Error);
-        Assert.Null(layout.GetPosition(
-            "PlotJumpInfo",
-            new PixelRect(0, 0, 100, 100),
-            new PixelSize(20, 20)));
+        Assert.Null(layout.GetPosition("PlotJumpInfo", new PixelRect(0, 0, 100, 100), new PixelSize(20, 20)));
         Assert.Null(layout.GetOpacity("PlotJumpInfo"));
     }
 
@@ -118,13 +113,9 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
         var result = store.Save(
             new Dictionary<string, LegacyOverlayPlacement>
             {
-                ["PlotBodyInfo"] = new(
-                    LegacyHorizontalAnchor.Screen,
-                    -120,
-                    LegacyVerticalAnchor.Middle,
-                    45,
-                    0),
-            });
+                ["PlotBodyInfo"] = new(LegacyHorizontalAnchor.Screen, -120, LegacyVerticalAnchor.Middle, 45, 0),
+            }
+        );
 
         Assert.Equal(path, result.Path);
         Assert.Equal(1, result.UpdatedPlacementCount);
@@ -132,28 +123,18 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
         Assert.Equal(original, File.ReadAllText(result.BackupPath!));
         var savedText = File.ReadAllText(path);
         Assert.Contains("os:-120, middle:45, 0", savedText);
-        Assert.Contains(
-            "{ s: 10, p: <1, 2, 3>, r: <4, 5, 6>}",
-            savedText);
+        Assert.Contains("{ s: 10, p: <1, 2, 3>, r: <4, 5, 6>}", savedText);
 
         var layout = store.Load();
         Assert.Null(layout.Error);
         Assert.Equal(
-            new LegacyOverlayPlacement(
-                LegacyHorizontalAnchor.Right,
-                99,
-                LegacyVerticalAnchor.Bottom,
-                77,
-                null),
-            layout.Placements["FutureOverlay"]);
+            new LegacyOverlayPlacement(LegacyHorizontalAnchor.Right, 99, LegacyVerticalAnchor.Bottom, 77, null),
+            layout.Placements["FutureOverlay"]
+        );
         Assert.Equal(
-            new LegacyOverlayPlacement(
-                LegacyHorizontalAnchor.Screen,
-                -120,
-                LegacyVerticalAnchor.Middle,
-                45,
-                0),
-            layout.Placements["PlotBodyInfo"]);
+            new LegacyOverlayPlacement(LegacyHorizontalAnchor.Screen, -120, LegacyVerticalAnchor.Middle, 45, 0),
+            layout.Placements["PlotBodyInfo"]
+        );
     }
 
     [Fact]
@@ -165,22 +146,18 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
         File.WriteAllText(path, original);
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
 
-        var exception = Assert.Throws<InvalidDataException>(() => store.Save(
-            new Dictionary<string, LegacyOverlayPlacement>
-            {
-                ["PlotBodyInfo"] = new(
-                    LegacyHorizontalAnchor.Left,
-                    8,
-                    LegacyVerticalAnchor.Top,
-                    8,
-                    null),
-            }));
+        var exception = Assert.Throws<InvalidDataException>(() =>
+            store.Save(
+                new Dictionary<string, LegacyOverlayPlacement>
+                {
+                    ["PlotBodyInfo"] = new(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Top, 8, null),
+                }
+            )
+        );
 
         Assert.Contains("unknown horizontal anchor", exception.Message);
         Assert.Equal(original, File.ReadAllText(path));
-        Assert.False(Directory.Exists(Path.Combine(
-            temporaryDirectory,
-            "overlay-layout-backups")));
+        Assert.False(Directory.Exists(Path.Combine(temporaryDirectory, "overlay-layout-backups")));
     }
 
     [Fact]
@@ -191,23 +168,15 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
         var result = store.Save(
             new Dictionary<string, LegacyOverlayPlacement>
             {
-                ["PlotJumpInfo"] = new(
-                    LegacyHorizontalAnchor.Center,
-                    0,
-                    LegacyVerticalAnchor.Top,
-                    8,
-                    null),
-            });
+                ["PlotJumpInfo"] = new(LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Top, 8, null),
+            }
+        );
 
         Assert.Null(result.BackupPath);
         Assert.Equal(
-            new LegacyOverlayPlacement(
-                LegacyHorizontalAnchor.Center,
-                0,
-                LegacyVerticalAnchor.Top,
-                8,
-                null),
-            store.Load().Placements["PlotJumpInfo"]);
+            new LegacyOverlayPlacement(LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Top, 8, null),
+            store.Load().Placements["PlotJumpInfo"]
+        );
     }
 
     [Fact]
@@ -219,10 +188,7 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
         File.WriteAllText(settingsPath, original);
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
 
-        var result = store.Save(
-            new Dictionary<string, LegacyOverlayPlacement>(),
-            0.42,
-            updateDefaultOpacity: true);
+        var result = store.Save(new Dictionary<string, LegacyOverlayPlacement>(), 0.42, updateDefaultOpacity: true);
 
         Assert.True(result.UpdatedDefaultOpacity);
         Assert.Equal(0, result.UpdatedPlacementCount);
@@ -246,44 +212,36 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
                     LegacyVerticalAnchor.Top,
                     8,
                     null,
-                    ScaleIndex: 15),
-            });
+                    ScaleIndex: 15
+                ),
+            }
+        );
         var layout = store.Load();
         layout.SetScaleIndex(24);
 
         Assert.Equal(1, result.UpdatedScaleOverrideCount);
         Assert.Equal(15, layout.GetScaleIndex("PlotRouteBio"));
         Assert.Equal(24, layout.GetScaleIndex("PlotJumpInfo"));
-        Assert.DoesNotContain(
-            "15",
-            File.ReadAllText(Path.Combine(temporaryDirectory, "plotters.json")));
+        Assert.DoesNotContain("15", File.ReadAllText(Path.Combine(temporaryDirectory, "plotters.json")));
         Assert.Contains(
             "\"PlotRouteBio\": 15",
-            File.ReadAllText(Path.Combine(
-                temporaryDirectory,
-                "overlay-scale-overrides.json")));
+            File.ReadAllText(Path.Combine(temporaryDirectory, "overlay-scale-overrides.json"))
+        );
     }
 
     [Fact]
     public void ReplacingPositionsPreservesIndependentGlobalScale()
     {
-        var active = new LegacyOverlayLayout(
-            new Dictionary<string, LegacyOverlayPlacement>(),
-            null,
-            null);
+        var active = new LegacyOverlayLayout(new Dictionary<string, LegacyOverlayPlacement>(), null, null);
         active.SetScaleIndex(19);
         var updated = new LegacyOverlayLayout(
             new Dictionary<string, LegacyOverlayPlacement>
             {
-                ["PlotJumpInfo"] = new(
-                    LegacyHorizontalAnchor.Center,
-                    0,
-                    LegacyVerticalAnchor.Top,
-                    8,
-                    null),
+                ["PlotJumpInfo"] = new(LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Top, 8, null),
             },
             0.5,
-            null);
+            null
+        );
 
         active.ReplaceWith(updated);
 
@@ -295,19 +253,12 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
     [Fact]
     public void UpdatingOneRuntimePlacementPreservesOtherLayoutState()
     {
-        var original = new LegacyOverlayPlacement(
-            LegacyHorizontalAnchor.Center,
-            0,
-            LegacyVerticalAnchor.Top,
-            8,
-            0.75);
+        var original = new LegacyOverlayPlacement(LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Top, 8, 0.75);
         var active = new LegacyOverlayLayout(
-            new Dictionary<string, LegacyOverlayPlacement>
-            {
-                ["PlotJumpInfo"] = original,
-            },
+            new Dictionary<string, LegacyOverlayPlacement> { ["PlotJumpInfo"] = original },
             0.5,
-            null);
+            null
+        );
         active.SetScaleIndex(20);
         var updated = original with { HorizontalOffset = 42 };
 
@@ -325,45 +276,29 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
         var opacity = Math.BitIncrement(0.43d);
 
-        store.Save(new Dictionary<string, LegacyOverlayPlacement>
-        {
-            ["PlotBioSystem"] = new(
-                LegacyHorizontalAnchor.Left,
-                8,
-                LegacyVerticalAnchor.Bottom,
-                144,
-                opacity),
-        });
+        store.Save(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                ["PlotBioSystem"] = new(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Bottom, 144, opacity),
+            }
+        );
 
-        Assert.Equal(
-            0.43d,
-            store.Load().Placements["PlotBioSystem"].Opacity);
+        Assert.Equal(0.43d, store.Load().Placements["PlotBioSystem"].Opacity);
     }
 
     [Fact]
     public void EveryRuntimeLayoutMutationPublishesASettingsChange()
     {
-        var layout = new LegacyOverlayLayout(
-            new Dictionary<string, LegacyOverlayPlacement>(),
-            null,
-            null);
+        var layout = new LegacyOverlayLayout(new Dictionary<string, LegacyOverlayPlacement>(), null, null);
         var changes = 0;
         layout.Changed += (_, _) => changes++;
 
         layout.SetScaleIndex(18);
         layout.SetPlacement(
             "PlotBioSystem",
-            new LegacyOverlayPlacement(
-                LegacyHorizontalAnchor.Left,
-                8,
-                LegacyVerticalAnchor.Bottom,
-                144,
-                0.45,
-                17));
-        layout.ReplaceWith(new LegacyOverlayLayout(
-            new Dictionary<string, LegacyOverlayPlacement>(),
-            0.7,
-            null));
+            new LegacyOverlayPlacement(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Bottom, 144, 0.45, 17)
+        );
+        layout.ReplaceWith(new LegacyOverlayLayout(new Dictionary<string, LegacyOverlayPlacement>(), 0.7, null));
 
         Assert.Equal(3, changes);
     }
@@ -377,14 +312,13 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
             LegacyVerticalAnchor.Bottom,
             144,
             0.45,
-            17);
+            17
+        );
         var layout = new LegacyOverlayLayout(
-            new Dictionary<string, LegacyOverlayPlacement>
-            {
-                ["PlotBioSystem"] = placement,
-            },
+            new Dictionary<string, LegacyOverlayPlacement> { ["PlotBioSystem"] = placement },
             null,
-            null);
+            null
+        );
         var changes = 0;
         layout.Changed += (_, _) => changes++;
 

@@ -1,5 +1,5 @@
-using System.Text.Json;
 using System.Security.Cryptography;
+using System.Text.Json;
 
 namespace SrvSurvey.Core.Journal;
 
@@ -7,16 +7,14 @@ public static class StatusFileReader
 {
     public const string FileName = "Status.json";
 
-    private static readonly JsonSerializerOptions SerializerOptions = new()
-    {
-        PropertyNameCaseInsensitive = true,
-    };
+    private static readonly JsonSerializerOptions SerializerOptions = new() { PropertyNameCaseInsensitive = true };
 
     public static async Task<StatusReadResult> ReadAsync(
         string path,
         int maximumAttempts = 3,
         TimeSpan? retryDelay = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         ArgumentOutOfRangeException.ThrowIfLessThan(maximumAttempts, 1);
@@ -34,13 +32,12 @@ public static class StatusFileReader
                     FileAccess.Read,
                     FileShare.ReadWrite | FileShare.Delete,
                     16 * 1024,
-                    FileOptions.Asynchronous | FileOptions.SequentialScan);
+                    FileOptions.Asynchronous | FileOptions.SequentialScan
+                );
                 using var content = new MemoryStream();
                 await stream.CopyToAsync(content, cancellationToken).ConfigureAwait(false);
                 var bytes = content.ToArray();
-                var status = JsonSerializer.Deserialize<EliteStatus>(
-                    bytes,
-                    SerializerOptions);
+                var status = JsonSerializer.Deserialize<EliteStatus>(bytes, SerializerOptions);
                 if (status is null)
                 {
                     throw new JsonException("Status.json contained no JSON value.");
@@ -49,10 +46,7 @@ public static class StatusFileReader
                 var hash = Convert.ToHexStringLower(SHA256.HashData(bytes));
                 return new StatusReadResult(status, hash, null, attempt);
             }
-            catch (Exception exception) when (
-                exception is IOException
-                    or UnauthorizedAccessException
-                    or JsonException)
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)
             {
                 lastException = exception;
                 if (attempt < maximumAttempts)
@@ -65,17 +59,13 @@ public static class StatusFileReader
         return new StatusReadResult(
             null,
             null,
-            $"Could not read {path} after {maximumAttempts} attempts: "
-                + lastException?.Message,
-            maximumAttempts);
+            $"Could not read {path} after {maximumAttempts} attempts: " + lastException?.Message,
+            maximumAttempts
+        );
     }
 }
 
-public sealed record StatusReadResult(
-    EliteStatus? Status,
-    string? ContentHash,
-    string? Error,
-    int Attempts)
+public sealed record StatusReadResult(EliteStatus? Status, string? ContentHash, string? Error, int Attempts)
 {
     public bool IsSuccess => Status is not null;
 }

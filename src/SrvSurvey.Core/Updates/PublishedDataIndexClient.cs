@@ -6,8 +6,7 @@ namespace SrvSurvey.Core.Updates;
 
 public interface IPublishedDataIndexClient
 {
-    Task<PublishedDataIndex> GetAsync(
-        CancellationToken cancellationToken = default);
+    Task<PublishedDataIndex> GetAsync(CancellationToken cancellationToken = default);
 }
 
 public sealed record PublishedDataIndex(
@@ -20,53 +19,41 @@ public sealed record PublishedDataIndex(
     int GuardianVersion,
     int SettlementsVersion,
     int NicknamesVersion,
-    int GreenGasGiantsVersion);
+    int GreenGasGiantsVersion
+);
 
 public sealed class PublishedDataIndexClient : IPublishedDataIndexClient
 {
     private const int MaximumIndexBytes = 64 * 1024;
 
-    public static readonly Uri DefaultIndexUri = new(
-        "https://njthomson.github.io/SrvSurvey/data.json");
+    public static readonly Uri DefaultIndexUri = new("https://njthomson.github.io/SrvSurvey/data.json");
 
     private static readonly HttpClient SharedClient = CreateSharedClient();
 
     private readonly HttpClient client;
     private readonly Uri indexUri;
 
-    public PublishedDataIndexClient(
-        HttpClient? client = null,
-        Uri? indexUri = null)
+    public PublishedDataIndexClient(HttpClient? client = null, Uri? indexUri = null)
     {
         this.client = client ?? SharedClient;
         this.indexUri = indexUri ?? DefaultIndexUri;
     }
 
-    public async Task<PublishedDataIndex> GetAsync(
-        CancellationToken cancellationToken = default)
+    public async Task<PublishedDataIndex> GetAsync(CancellationToken cancellationToken = default)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, indexUri);
-        request.Headers.CacheControl = new CacheControlHeaderValue
-        {
-            NoCache = true,
-        };
-        using var response = await client.SendAsync(
-                request,
-                HttpCompletionOption.ResponseHeadersRead,
-                cancellationToken)
+        request.Headers.CacheControl = new CacheControlHeaderValue { NoCache = true };
+        using var response = await client
+            .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
-        using var document = await BoundedHttpContent.ReadJsonDocumentAsync(
-                response.Content,
-                MaximumIndexBytes,
-                "The published-data index",
-                cancellationToken)
+        using var document = await BoundedHttpContent
+            .ReadJsonDocumentAsync(response.Content, MaximumIndexBytes, "The published-data index", cancellationToken)
             .ConfigureAwait(false);
         var root = document.RootElement;
         if (root.ValueKind != JsonValueKind.Object)
         {
-            throw new InvalidDataException(
-                "The published-data index must contain a JSON object.");
+            throw new InvalidDataException("The published-data index must contain a JSON object.");
         }
 
         return new PublishedDataIndex(
@@ -79,34 +66,31 @@ public sealed class PublishedDataIndexClient : IPublishedDataIndexClient
             ReadNonNegativeInt(root, "guardian"),
             ReadNonNegativeInt(root, "settlements"),
             ReadNonNegativeInt(root, "nicknames"),
-            ReadNonNegativeInt(root, "ggg"));
+            ReadNonNegativeInt(root, "ggg")
+        );
     }
 
     private static Version ReadVersion(JsonElement root, string propertyName)
     {
-        if (!root.TryGetProperty(propertyName, out var property)
+        if (
+            !root.TryGetProperty(propertyName, out var property)
             || property.ValueKind != JsonValueKind.String
             || !Version.TryParse(property.GetString(), out var version)
             || version.Major < 0
-            || version.Minor < 0)
+            || version.Minor < 0
+        )
         {
-            throw new InvalidDataException(
-                $"The published-data index has an invalid '{propertyName}' value.");
+            throw new InvalidDataException($"The published-data index has an invalid '{propertyName}' value.");
         }
 
         return version;
     }
 
-    private static int ReadNonNegativeInt(
-        JsonElement root,
-        string propertyName)
+    private static int ReadNonNegativeInt(JsonElement root, string propertyName)
     {
-        if (!root.TryGetProperty(propertyName, out var property)
-            || !property.TryGetInt32(out var value)
-            || value < 0)
+        if (!root.TryGetProperty(propertyName, out var property) || !property.TryGetInt32(out var value) || value < 0)
         {
-            throw new InvalidDataException(
-                $"The published-data index has an invalid '{propertyName}' value.");
+            throw new InvalidDataException($"The published-data index has an invalid '{propertyName}' value.");
         }
 
         return value;
@@ -114,10 +98,7 @@ public sealed class PublishedDataIndexClient : IPublishedDataIndexClient
 
     private static HttpClient CreateSharedClient()
     {
-        var client = new HttpClient
-        {
-            Timeout = TimeSpan.FromSeconds(15),
-        };
+        var client = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
         client.DefaultRequestHeaders.UserAgent.ParseAdd("SrvSurvey-Avalonia/1.0");
         return client;
     }

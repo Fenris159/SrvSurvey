@@ -16,8 +16,7 @@ public sealed class EliteGameProcessDetector : IEliteGameProcessDetector
     {
         try
         {
-            var processes = Process.GetProcessesByName(
-                EliteGameWindowIdentity.WindowsProcessName);
+            var processes = Process.GetProcessesByName(EliteGameWindowIdentity.WindowsProcessName);
             try
             {
                 return processes.Length > 0;
@@ -30,10 +29,8 @@ public sealed class EliteGameProcessDetector : IEliteGameProcessDetector
                 }
             }
         }
-        catch (Exception exception) when (
-            exception is InvalidOperationException
-                or NotSupportedException
-                or Win32Exception)
+        catch (Exception exception)
+            when (exception is InvalidOperationException or NotSupportedException or Win32Exception)
         {
             return false;
         }
@@ -49,20 +46,17 @@ public static class VisitedStarsCacheTargetLocator
             return null;
         }
 
-        return ResolveWindows(
-            Environment.GetFolderPath(
-                Environment.SpecialFolder.LocalApplicationData),
-            frontierId);
+        return ResolveWindows(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), frontierId);
     }
 
-    public static string? ResolveWindows(
-        string localApplicationData,
-        string frontierId)
+    public static string? ResolveWindows(string localApplicationData, string frontierId)
     {
-        if (string.IsNullOrWhiteSpace(localApplicationData)
+        if (
+            string.IsNullOrWhiteSpace(localApplicationData)
             || frontierId.Length < 2
             || frontierId[0] is not ('F' or 'f')
-            || !frontierId[1..].All(char.IsAsciiDigit))
+            || !frontierId[1..].All(char.IsAsciiDigit)
+        )
         {
             return null;
         }
@@ -72,6 +66,7 @@ public static class VisitedStarsCacheTargetLocator
             "Frontier Developments",
             "Elite Dangerous",
             frontierId[1..],
-            VisitedStarsCacheService.CacheFileName);
+            VisitedStarsCacheService.CacheFileName
+        );
     }
 }

@@ -11,12 +11,19 @@ internal readonly struct MiningHudGeometry
     private readonly double yx;
     private readonly double yy;
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "S1244", Justification = "Only the exact recorded calibration can use the identity transform; any explicit user adjustment must use the calculated transform.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Reliability",
+        "S1244",
+        Justification = "Only the exact recorded calibration can use the identity transform; any explicit user adjustment must use the calculated transform."
+    )]
     internal MiningHudGeometry(MiningDetectionSettings settings)
     {
         // The recorded mask already has this perspective tilt. Undo its basis before
         // applying the requested oval height and absolute rotation, preserving old calibrations.
-        if (settings.RotationDegrees.Equals(MiningDetectionSettings.ReferenceRotationDegrees) && settings.CircleAspectRatio.Equals(.65))
+        if (
+            settings.RotationDegrees.Equals(MiningDetectionSettings.ReferenceRotationDegrees)
+            && settings.CircleAspectRatio.Equals(.65)
+        )
         {
             xx = yy = 1;
             xy = yx = 0;
@@ -45,8 +52,11 @@ internal readonly struct MiningHudGeometry
         var reference = MiningDetectionSettings.ReferenceRotationDegrees * Math.PI / 180;
         var x = Math.Cos(angle);
         var y = .65 * Math.Sin(angle);
-        return Transform(x * Math.Cos(reference) - y * Math.Sin(reference),
-            x * Math.Sin(reference) + y * Math.Cos(reference), radius);
+        return Transform(
+            x * Math.Cos(reference) - y * Math.Sin(reference),
+            x * Math.Sin(reference) + y * Math.Cos(reference),
+            radius
+        );
     }
 
     internal double RingDistance(double x, double y, double radius)

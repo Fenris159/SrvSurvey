@@ -15,17 +15,16 @@ public sealed partial class KnownSystemAddressCatalog
     private KnownSystemAddressCatalog(
         IReadOnlyDictionary<string, long> addresses,
         string? sourcePath,
-        IReadOnlyList<string> warnings)
+        IReadOnlyList<string> warnings
+    )
     {
         this.addresses = addresses;
         SourcePath = sourcePath;
         Warnings = warnings;
     }
 
-    public static KnownSystemAddressCatalog Empty { get; } = new(
-        new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase),
-        null,
-        []);
+    public static KnownSystemAddressCatalog Empty { get; } =
+        new(new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase), null, []);
 
     public string? SourcePath { get; }
 
@@ -38,17 +37,13 @@ public sealed partial class KnownSystemAddressCatalog
     public bool TryResolve(string? systemName, out long systemAddress)
     {
         systemAddress = 0;
-        return !string.IsNullOrWhiteSpace(systemName)
-            && addresses.TryGetValue(systemName.Trim(), out systemAddress);
+        return !string.IsNullOrWhiteSpace(systemName) && addresses.TryGetValue(systemName.Trim(), out systemAddress);
     }
 
     public static KnownSystemAddressCatalog Load(string dataDirectory)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
-        var path = Path.Combine(
-            Path.GetFullPath(dataDirectory),
-            "pub",
-            LegacyFileName);
+        var path = Path.Combine(Path.GetFullPath(dataDirectory), "pub", LegacyFileName);
         if (!File.Exists(path))
         {
             return Empty;
@@ -60,45 +55,47 @@ public sealed partial class KnownSystemAddressCatalog
             if (info.Length is <= 0 or > MaximumFileBytes)
             {
                 throw new InvalidDataException(
-                    $"The known-system address catalog size is invalid: {info.Length:N0} bytes.");
+                    $"The known-system address catalog size is invalid: {info.Length:N0} bytes."
+                );
             }
 
             using var stream = new FileStream(
                 path,
                 FileMode.Open,
                 FileAccess.Read,
-                FileShare.ReadWrite | FileShare.Delete);
+                FileShare.ReadWrite | FileShare.Delete
+            );
             return Load(stream, path);
         }
-        catch (Exception exception) when (exception is IOException
-            or UnauthorizedAccessException
-            or InvalidDataException
-            or DecoderFallbackException
-            or FormatException
-            or OverflowException)
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or UnauthorizedAccessException
+                        or InvalidDataException
+                        or DecoderFallbackException
+                        or FormatException
+                        or OverflowException
+            )
         {
             return new KnownSystemAddressCatalog(
                 new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase),
                 path,
-                [$"Imported pub/{LegacyFileName} was preserved but ignored safely: {exception.Message}"]);
+                [$"Imported pub/{LegacyFileName} was preserved but ignored safely: {exception.Message}"]
+            );
         }
     }
 
-    internal static KnownSystemAddressCatalog Load(
-        Stream stream,
-        string? sourcePath)
+    internal static KnownSystemAddressCatalog Load(Stream stream, string? sourcePath)
     {
         ArgumentNullException.ThrowIfNull(stream);
         using var reader = new StreamReader(
             stream,
-            new UTF8Encoding(
-                encoderShouldEmitUTF8Identifier: false,
-                throwOnInvalidBytes: true),
+            new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true),
             detectEncodingFromByteOrderMarks: true,
             bufferSize: 64 * 1024,
-            leaveOpen: true);
-        var result = new Dictionary<string, long>(
-            StringComparer.OrdinalIgnoreCase);
+            leaveOpen: true
+        );
+        var result = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
         var state = new CatalogParseState();
         string? line;
         while ((line = reader.ReadLine()) is not null)
@@ -110,8 +107,7 @@ public sealed partial class KnownSystemAddressCatalog
             }
         }
 
-        throw new InvalidDataException(
-            "The known-system address catalog is incomplete.");
+        throw new InvalidDataException("The known-system address catalog is incomplete.");
     }
 
     private sealed class CatalogParseState
@@ -125,21 +121,18 @@ public sealed partial class KnownSystemAddressCatalog
         string line,
         Dictionary<string, long> result,
         CatalogParseState state,
-        string? sourcePath)
+        string? sourcePath
+    )
     {
         if (line.Length > MaximumLineCharacters)
         {
-            throw new InvalidDataException(
-                "The known-system address catalog contains an oversized line.");
+            throw new InvalidDataException("The known-system address catalog contains an oversized line.");
         }
 
         var trimmed = line.Trim();
         if (!state.FoundStart)
         {
-            state.FoundStart = string.Equals(
-                trimmed,
-                "known_systems = {",
-                StringComparison.Ordinal);
+            state.FoundStart = string.Equals(trimmed, "known_systems = {", StringComparison.Ordinal);
             return null;
         }
 
@@ -161,10 +154,13 @@ public sealed partial class KnownSystemAddressCatalog
     private static KnownSystemAddressCatalog? TryFinishMissingSection(
         string trimmed,
         Dictionary<string, long> result,
-        string? sourcePath)
+        string? sourcePath
+    )
     {
-        if (string.Equals(trimmed, "]", StringComparison.Ordinal)
-            || string.Equals(trimmed, "],", StringComparison.Ordinal))
+        if (
+            string.Equals(trimmed, "]", StringComparison.Ordinal)
+            || string.Equals(trimmed, "],", StringComparison.Ordinal)
+        )
         {
             ThrowIfNoEntries(result);
             return new KnownSystemAddressCatalog(result, sourcePath, []);
@@ -173,9 +169,7 @@ public sealed partial class KnownSystemAddressCatalog
         return null;
     }
 
-    private static void ParseCatalogEntry(
-        string line,
-        Dictionary<string, long> result)
+    private static void ParseCatalogEntry(string line, Dictionary<string, long> result)
     {
         var match = EntryPattern().Match(line);
         if (!match.Success)
@@ -184,22 +178,23 @@ public sealed partial class KnownSystemAddressCatalog
         }
 
         var name = match.Groups["name"].Value.Trim();
-        if (name.Length == 0
+        if (
+            name.Length == 0
             || !long.TryParse(
                 match.Groups["address"].Value,
                 NumberStyles.None,
                 CultureInfo.InvariantCulture,
-                out var address)
-            || address <= 0)
+                out var address
+            )
+            || address <= 0
+        )
         {
-            throw new InvalidDataException(
-                "The known-system address catalog contains an invalid entry.");
+            throw new InvalidDataException("The known-system address catalog contains an invalid entry.");
         }
 
         if (!result.TryAdd(name, address))
         {
-            throw new InvalidDataException(
-                "The known-system address catalog contains duplicated entries.");
+            throw new InvalidDataException("The known-system address catalog contains duplicated entries.");
         }
     }
 
@@ -207,13 +202,13 @@ public sealed partial class KnownSystemAddressCatalog
     {
         if (result.Count is 0)
         {
-            throw new InvalidDataException(
-                "The known-system address catalog is incomplete.");
+            throw new InvalidDataException("The known-system address catalog is incomplete.");
         }
     }
 
     [GeneratedRegex(
         "^\\s*\"(?<name>[^\"]+)\"\\s*:\\s*(?:\\[\\s*)?(?<address>\\d+)\\s*,",
-        RegexOptions.CultureInvariant)]
+        RegexOptions.CultureInvariant
+    )]
     private static partial Regex EntryPattern();
 }

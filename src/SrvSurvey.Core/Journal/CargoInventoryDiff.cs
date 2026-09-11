@@ -15,9 +15,7 @@ public static class CargoInventoryDiff
     public static Dictionary<string, int> CreateCountMap() => new(NameComparer);
 
     /// <summary>Copy commodity counts from inventory items into a destination dictionary (cleared first).</summary>
-    public static void CopyFromInventory(
-        Dictionary<string, int> destination,
-        IEnumerable<CargoItem>? inventory)
+    public static void CopyFromInventory(Dictionary<string, int> destination, IEnumerable<CargoItem>? inventory)
     {
         ArgumentNullException.ThrowIfNull(destination);
         destination.Clear();
@@ -38,9 +36,7 @@ public static class CargoInventoryDiff
     }
 
     /// <summary>Copy name→count pairs into a destination dictionary (cleared first).</summary>
-    public static void CopyFromCounts(
-        Dictionary<string, int> destination,
-        IReadOnlyDictionary<string, int> source)
+    public static void CopyFromCounts(Dictionary<string, int> destination, IReadOnlyDictionary<string, int> source)
     {
         ArgumentNullException.ThrowIfNull(destination);
         ArgumentNullException.ThrowIfNull(source);
@@ -58,7 +54,8 @@ public static class CargoInventoryDiff
     /// </summary>
     public static Dictionary<string, int> Compute(
         IReadOnlyDictionary<string, int> before,
-        IReadOnlyDictionary<string, int> after)
+        IReadOnlyDictionary<string, int> after
+    )
     {
         ArgumentNullException.ThrowIfNull(before);
         ArgumentNullException.ThrowIfNull(after);
@@ -96,7 +93,8 @@ public static class CargoInventoryDiff
     /// </summary>
     public static Dictionary<string, int> Compute(
         IReadOnlyDictionary<string, int> before,
-        IReadOnlyList<CargoItem>? after)
+        IReadOnlyList<CargoItem>? after
+    )
     {
         ArgumentNullException.ThrowIfNull(before);
         var afterMap = ToCountMap(after);
@@ -104,14 +102,10 @@ public static class CargoInventoryDiff
     }
 
     /// <summary>Invert a ship cargo delta into a fleet-carrier cargo delta (multiply by -1).</summary>
-    public static Dictionary<string, int> InvertForFleetCarrier(
-        IReadOnlyDictionary<string, int> shipDiff)
+    public static Dictionary<string, int> InvertForFleetCarrier(IReadOnlyDictionary<string, int> shipDiff)
     {
         ArgumentNullException.ThrowIfNull(shipDiff);
-        return shipDiff.ToDictionary(
-            pair => pair.Key,
-            pair => -pair.Value,
-            NameComparer);
+        return shipDiff.ToDictionary(pair => pair.Key, pair => -pair.Value, NameComparer);
     }
 
     /// <summary>Map inventory items to name → count for logging/debug dumps.</summary>

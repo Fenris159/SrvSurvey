@@ -1,5 +1,5 @@
-using SrvSurvey.Desktop.Theming;
 using System.Text.Json.Nodes;
+using SrvSurvey.Desktop.Theming;
 
 namespace SrvSurvey.Desktop.Tests.Theming;
 
@@ -7,7 +7,8 @@ public sealed class ThemePreferenceStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-theme-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-theme-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void SaveAndLoadRoundTrip()
@@ -37,9 +38,7 @@ public sealed class ThemePreferenceStoreTests : IDisposable
     {
         Directory.CreateDirectory(temporaryDirectory);
         var settingsPath = Path.Combine(temporaryDirectory, "ui.json");
-        File.WriteAllText(
-            settingsPath,
-            """{"Version":"one","Theme":42}""");
+        File.WriteAllText(settingsPath, """{"Version":"one","Theme":42}""");
 
         Assert.Null(new ThemePreferenceStore(settingsPath).LoadThemeKey());
     }
@@ -58,7 +57,8 @@ public sealed class ThemePreferenceStoreTests : IDisposable
                 "KeyboardEnabled": true
               }
             }
-            """);
+            """
+        );
 
         new ThemePreferenceStore(settingsPath).SaveThemeKey("blue-dark");
 

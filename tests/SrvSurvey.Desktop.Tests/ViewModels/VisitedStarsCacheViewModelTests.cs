@@ -7,7 +7,8 @@ public sealed class VisitedStarsCacheViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-visited-stars-vm-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-visited-stars-vm-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public async Task RefreshSelectsCurrentCommanderAndSwapRequiresConfirmation()
@@ -15,17 +16,17 @@ public sealed class VisitedStarsCacheViewModelTests : IDisposable
         Directory.CreateDirectory(temporaryDirectory);
         await File.WriteAllTextAsync(
             Path.Combine(temporaryDirectory, "F123-live.json"),
-            "{\"fid\":\"F123\",\"commander\":\"Drew\"}");
-        var target = Path.Combine(
-            temporaryDirectory,
-            VisitedStarsCacheService.CacheFileName);
+            "{\"fid\":\"F123\",\"commander\":\"Drew\"}"
+        );
+        var target = Path.Combine(temporaryDirectory, VisitedStarsCacheService.CacheFileName);
         await File.WriteAllBytesAsync(target, [1, 2, 3]);
         var service = new RecordingService();
         var viewModel = new VisitedStarsCacheViewModel(
             new CommanderProfileCatalog(temporaryDirectory),
             service,
             _ => target,
-            () => false);
+            () => false
+        );
         viewModel.UpdateContext("F123", "Drew", "Sol");
 
         await viewModel.RefreshAsync();
@@ -52,20 +53,18 @@ public sealed class VisitedStarsCacheViewModelTests : IDisposable
         Directory.CreateDirectory(temporaryDirectory);
         await File.WriteAllTextAsync(
             Path.Combine(temporaryDirectory, "F123-live.json"),
-            "{\"fid\":\"F123\",\"commander\":\"Drew\"}");
-        var target = Path.Combine(
-            temporaryDirectory,
-            VisitedStarsCacheService.CacheFileName);
+            "{\"fid\":\"F123\",\"commander\":\"Drew\"}"
+        );
+        var target = Path.Combine(temporaryDirectory, VisitedStarsCacheService.CacheFileName);
         await File.WriteAllBytesAsync(target, [1, 2, 3]);
-        await File.WriteAllBytesAsync(
-            VisitedStarsCacheService.GetBackupPath(target),
-            [9, 8, 7]);
+        await File.WriteAllBytesAsync(VisitedStarsCacheService.GetBackupPath(target), [9, 8, 7]);
         var service = new RecordingService();
         var viewModel = new VisitedStarsCacheViewModel(
             new CommanderProfileCatalog(temporaryDirectory),
             service,
             _ => target,
-            () => false);
+            () => false
+        );
 
         await viewModel.RefreshAsync();
         await viewModel.RestoreAsync();
@@ -82,17 +81,17 @@ public sealed class VisitedStarsCacheViewModelTests : IDisposable
         Directory.CreateDirectory(temporaryDirectory);
         await File.WriteAllTextAsync(
             Path.Combine(temporaryDirectory, "F123-live.json"),
-            "{\"fid\":\"F123\",\"commander\":\"Drew\"}");
-        var target = Path.Combine(
-            temporaryDirectory,
-            VisitedStarsCacheService.CacheFileName);
+            "{\"fid\":\"F123\",\"commander\":\"Drew\"}"
+        );
+        var target = Path.Combine(temporaryDirectory, VisitedStarsCacheService.CacheFileName);
         await File.WriteAllBytesAsync(target, [1]);
         var service = new RecordingService();
         var viewModel = new VisitedStarsCacheViewModel(
             new CommanderProfileCatalog(temporaryDirectory),
             service,
             _ => target,
-            () => true);
+            () => true
+        );
         viewModel.SystemName = "Sol";
 
         await viewModel.RefreshAsync();
@@ -108,7 +107,8 @@ public sealed class VisitedStarsCacheViewModelTests : IDisposable
         Directory.CreateDirectory(temporaryDirectory);
         await File.WriteAllTextAsync(
             Path.Combine(temporaryDirectory, "F123-replay.json"),
-            "{\"fid\":\"F123\",\"commander\":\"Imported\"}");
+            "{\"fid\":\"F123\",\"commander\":\"Imported\"}"
+        );
         var service = new RecordingService();
         var targetResolverCalls = 0;
         var viewModel = new VisitedStarsCacheViewModel(
@@ -117,12 +117,11 @@ public sealed class VisitedStarsCacheViewModelTests : IDisposable
             _ =>
             {
                 targetResolverCalls++;
-                return Path.Combine(
-                    temporaryDirectory,
-                    VisitedStarsCacheService.CacheFileName);
+                return Path.Combine(temporaryDirectory, VisitedStarsCacheService.CacheFileName);
             },
             () => true,
-            externalEffectsAllowed: false);
+            externalEffectsAllowed: false
+        );
 
         await viewModel.RefreshAsync();
         await viewModel.SwapAsync();
@@ -158,31 +157,37 @@ public sealed class VisitedStarsCacheViewModelTests : IDisposable
         public Task<VisitedStarsCacheSwapResult> SwapAsync(
             string systemName,
             string targetPath,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             SwapCount++;
             SystemName = systemName;
             TargetPath = targetPath;
-            return Task.FromResult(new VisitedStarsCacheSwapResult(
-                targetPath,
-                VisitedStarsCacheService.GetBackupPath(targetPath),
-                Path.Combine(
-                    Path.GetDirectoryName(targetPath)!,
-                    "download.dat"),
-                new string('1', 64),
-                new string('2', 64)));
+            return Task.FromResult(
+                new VisitedStarsCacheSwapResult(
+                    targetPath,
+                    VisitedStarsCacheService.GetBackupPath(targetPath),
+                    Path.Combine(Path.GetDirectoryName(targetPath)!, "download.dat"),
+                    new string('1', 64),
+                    new string('2', 64)
+                )
+            );
         }
 
         public Task<VisitedStarsCacheRestoreResult> RestoreAsync(
             string targetPath,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             RestoreCount++;
             TargetPath = targetPath;
-            return Task.FromResult(new VisitedStarsCacheRestoreResult(
-                targetPath,
-                VisitedStarsCacheService.GetBackupPath(targetPath),
-                new string('1', 64)));
+            return Task.FromResult(
+                new VisitedStarsCacheRestoreResult(
+                    targetPath,
+                    VisitedStarsCacheService.GetBackupPath(targetPath),
+                    new string('1', 64)
+                )
+            );
         }
     }
 }

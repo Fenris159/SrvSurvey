@@ -10,21 +10,25 @@ namespace SrvSurvey.Desktop.Controls;
 /// </summary>
 public sealed class LegacyOverlayBackgroundControl : Control
 {
-    public static readonly StyledProperty<IBrush?> BackgroundBrushProperty =
-        AvaloniaProperty.Register<LegacyOverlayBackgroundControl, IBrush?>(
-            nameof(BackgroundBrush));
+    public static readonly StyledProperty<IBrush?> BackgroundBrushProperty = AvaloniaProperty.Register<
+        LegacyOverlayBackgroundControl,
+        IBrush?
+    >(nameof(BackgroundBrush));
 
-    public static readonly StyledProperty<IBrush?> StripeBrushProperty =
-        AvaloniaProperty.Register<LegacyOverlayBackgroundControl, IBrush?>(
-            nameof(StripeBrush));
+    public static readonly StyledProperty<IBrush?> StripeBrushProperty = AvaloniaProperty.Register<
+        LegacyOverlayBackgroundControl,
+        IBrush?
+    >(nameof(StripeBrush));
 
-    public static readonly StyledProperty<IBrush?> EdgeBrushProperty =
-        AvaloniaProperty.Register<LegacyOverlayBackgroundControl, IBrush?>(
-            nameof(EdgeBrush));
+    public static readonly StyledProperty<IBrush?> EdgeBrushProperty = AvaloniaProperty.Register<
+        LegacyOverlayBackgroundControl,
+        IBrush?
+    >(nameof(EdgeBrush));
 
-    public static readonly StyledProperty<IBrush?> EdgeDimBrushProperty =
-        AvaloniaProperty.Register<LegacyOverlayBackgroundControl, IBrush?>(
-            nameof(EdgeDimBrush));
+    public static readonly StyledProperty<IBrush?> EdgeDimBrushProperty = AvaloniaProperty.Register<
+        LegacyOverlayBackgroundControl,
+        IBrush?
+    >(nameof(EdgeDimBrush));
 
     static LegacyOverlayBackgroundControl()
     {
@@ -32,7 +36,8 @@ public sealed class LegacyOverlayBackgroundControl : Control
             BackgroundBrushProperty,
             StripeBrushProperty,
             EdgeBrushProperty,
-            EdgeDimBrushProperty);
+            EdgeDimBrushProperty
+        );
     }
 
     public IBrush? BackgroundBrush
@@ -65,9 +70,7 @@ public sealed class LegacyOverlayBackgroundControl : Control
         var bounds = new Rect(Bounds.Size);
         context.DrawRectangle(BackgroundBrush ?? Brushes.Black, null, bounds);
 
-        var stripePen = new Pen(
-            StripeBrush ?? new SolidColorBrush(Color.FromRgb(12, 12, 12)),
-            1);
+        var stripePen = new Pen(StripeBrush ?? new SolidColorBrush(Color.FromRgb(12, 12, 12)), 1);
         for (var y = 0.5; y < bounds.Height; y += 3)
         {
             context.DrawLine(stripePen, new Point(0, y), new Point(bounds.Width, y));
@@ -81,22 +84,10 @@ public sealed class LegacyOverlayBackgroundControl : Control
         var edge = new Pen(EdgeBrush ?? Brushes.Orange, 1);
         var edgeDim = new Pen(EdgeDimBrush ?? Brushes.DarkOrange, 1);
         DrawBand(context, bounds.Width, 3.5, edgeDim, edge, edgeDim);
-        DrawBand(
-            context,
-            bounds.Width,
-            bounds.Height - 5.5,
-            edgeDim,
-            edge,
-            edgeDim);
+        DrawBand(context, bounds.Width, bounds.Height - 5.5, edgeDim, edge, edgeDim);
     }
 
-    private static void DrawBand(
-        DrawingContext context,
-        double width,
-        double y,
-        Pen first,
-        Pen second,
-        Pen third)
+    private static void DrawBand(DrawingContext context, double width, double y, Pen first, Pen second, Pen third)
     {
         context.DrawLine(first, new Point(0, y), new Point(width, y));
         context.DrawLine(second, new Point(0, y + 1), new Point(width, y + 1));

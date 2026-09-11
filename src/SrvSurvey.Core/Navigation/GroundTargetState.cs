@@ -50,9 +50,7 @@ public sealed partial class GroundTargetState
         }
 
         var statusRadius = (double)status.PlanetRadius;
-        planetRadius = double.IsFinite(statusRadius) && statusRadius > 0
-            ? statusRadius
-            : 0;
+        planetRadius = double.IsFinite(statusRadius) && statusRadius > 0 ? statusRadius : 0;
         altitude = status.Altitude;
         heading = status.NormalizedHeading;
         Calculate();
@@ -79,21 +77,15 @@ public sealed partial class GroundTargetState
         return true;
     }
 
-    public bool TrySetTarget(
-        string latitude,
-        string longitude,
-        out string? error)
+    public bool TrySetTarget(string latitude, string longitude, out string? error)
     {
-        if (!TryParseNumber(latitude, out var parsedLatitude)
-            || !TryParseNumber(longitude, out var parsedLongitude))
+        if (!TryParseNumber(latitude, out var parsedLatitude) || !TryParseNumber(longitude, out var parsedLongitude))
         {
             error = "Enter valid decimal latitude and longitude values.";
             return false;
         }
 
-        return TrySetTarget(
-            new ParsedCoordinate(parsedLatitude, parsedLongitude),
-            out error);
+        return TrySetTarget(new ParsedCoordinate(parsedLatitude, parsedLongitude), out error);
     }
 
     public bool TrySetTarget(string text, out string? error)
@@ -142,13 +134,13 @@ public sealed partial class GroundTargetState
         }
 
         var cardinal = CardinalPairRegex().Match(text);
-        if (cardinal.Success
+        if (
+            cardinal.Success
             && TryParseNumber(cardinal.Groups["latitude"].Value, out var latitude)
-            && TryParseNumber(cardinal.Groups["longitude"].Value, out var longitude))
+            && TryParseNumber(cardinal.Groups["longitude"].Value, out var longitude)
+        )
         {
-            if (cardinal.Groups["northSouth"].Value.Equals(
-                    "S",
-                    StringComparison.OrdinalIgnoreCase))
+            if (cardinal.Groups["northSouth"].Value.Equals("S", StringComparison.OrdinalIgnoreCase))
             {
                 latitude = -Math.Abs(latitude);
             }
@@ -157,9 +149,7 @@ public sealed partial class GroundTargetState
                 latitude = Math.Abs(latitude);
             }
 
-            if (cardinal.Groups["eastWest"].Value.Equals(
-                    "W",
-                    StringComparison.OrdinalIgnoreCase))
+            if (cardinal.Groups["eastWest"].Value.Equals("W", StringComparison.OrdinalIgnoreCase))
             {
                 longitude = -Math.Abs(longitude);
             }
@@ -173,9 +163,11 @@ public sealed partial class GroundTargetState
         }
 
         var legacy = LegacyPairRegex().Match(text);
-        if (!legacy.Success
+        if (
+            !legacy.Success
             || !TryParseNumber(legacy.Groups[1].Value, out latitude)
-            || !TryParseNumber(legacy.Groups[2].Value, out longitude))
+            || !TryParseNumber(legacy.Groups[2].Value, out longitude)
+        )
         {
             return false;
         }
@@ -207,21 +199,17 @@ public sealed partial class GroundTargetState
             return;
         }
 
-        var distance = SurfaceNavigation.GetDistance(
-            currentLocation.Value,
-            Target,
-            planetRadius);
+        var distance = SurfaceNavigation.GetDistance(currentLocation.Value, Target, planetRadius);
         var bearing = SurfaceNavigation.GetBearing(currentLocation.Value, Target);
         var relativeBearing = SurfaceNavigation.NormalizeDegrees(bearing - heading);
-        var attackAngle = distance == 0
-            ? 0
-            : Math.Atan(altitude / distance) * 180d / Math.PI;
+        var attackAngle = distance == 0 ? 0 : Math.Atan(altitude / distance) * 180d / Math.PI;
         Solution = new GroundTargetSolution(
             distance,
             bearing,
             relativeBearing,
             attackAngle,
-            GetApproachKind(attackAngle));
+            GetApproachKind(attackAngle)
+        );
     }
 
     private static GroundTargetApproach GetApproachKind(double attackAngle)
@@ -243,14 +231,13 @@ public sealed partial class GroundTargetState
             || double.TryParse(value, styles, CultureInfo.InvariantCulture, out number);
     }
 
-    [GeneratedRegex(
-        @"([+\-.0-9]+)\s*[ ,|`/]\s*([+\-.0-9]+)",
-        RegexOptions.Singleline)]
+    [GeneratedRegex(@"([+\-.0-9]+)\s*[ ,|`/]\s*([+\-.0-9]+)", RegexOptions.Singleline)]
     private static partial Regex LegacyPairRegex();
 
     [GeneratedRegex(
         @"(?<latitude>[+\-.0-9]+)\s*°?\s*(?<northSouth>[NS])\s*[,|`/ ]*\s*(?<longitude>[+\-.0-9]+)\s*°?\s*(?<eastWest>[EW])",
-        RegexOptions.IgnoreCase | RegexOptions.Singleline)]
+        RegexOptions.IgnoreCase | RegexOptions.Singleline
+    )]
     private static partial Regex CardinalPairRegex();
 }
 
@@ -266,7 +253,8 @@ public sealed record GroundTargetSolution(
     double Bearing,
     double RelativeBearing,
     double AttackAngle,
-    GroundTargetApproach Approach);
+    GroundTargetApproach Approach
+);
 
 public enum GroundTargetApproach
 {

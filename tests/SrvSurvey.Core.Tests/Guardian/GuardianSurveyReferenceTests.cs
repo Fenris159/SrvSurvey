@@ -16,9 +16,7 @@ public sealed class GuardianSurveyReferenceTests
         Assert.Equal(390, beta.PointsOfInterest.Count);
         Assert.Equal(50, beta.SurveyPoints.Count);
         Assert.Equal(8, beta.RelicTowers.Count);
-        Assert.Contains(
-            beta.PointsOfInterest,
-            point => point.Type == GuardianPoiType.BrokenObelisk);
+        Assert.Contains(beta.PointsOfInterest, point => point.Type == GuardianPoiType.BrokenObelisk);
     }
 
     [Fact]
@@ -30,22 +28,20 @@ public sealed class GuardianSurveyReferenceTests
         Assert.Equal(729, published.Count);
         Assert.All(
             sites.Sites.Where(site => site.Kind != GuardianSiteKind.Beacon),
-            site => Assert.NotNull(published.Find(site)));
+            site => Assert.NotNull(published.Find(site))
+        );
 
         var gr1 = published.Find(GuardianSiteKind.Ruins, 1);
         Assert.NotNull(gr1);
         Assert.Equal("Beta", gr1.SiteType);
         Assert.Equal(332, gr1.SiteHeading);
         Assert.Equal(93, gr1.RelicTowerHeading);
-        Assert.Equal(
-            new GuardianSurfaceLocation(-46.576923, 133.985107),
-            gr1.Location);
+        Assert.Equal(new GuardianSurfaceLocation(-46.576923, 133.985107), gr1.Location);
         Assert.Equal(10, gr1.ActiveObelisks.Count);
         Assert.Contains(
             gr1.ActiveObelisks,
-            obelisk => obelisk.Name == "A08"
-                && obelisk.LogCode == "H9"
-                && obelisk.ItemCodes.SequenceEqual(["ca", "ca"]));
+            obelisk => obelisk.Name == "A08" && obelisk.LogCode == "H9" && obelisk.ItemCodes.SequenceEqual(["ca", "ca"])
+        );
     }
 
     [Fact]
@@ -54,17 +50,15 @@ public sealed class GuardianSurveyReferenceTests
         var sites = GuardianSiteCatalog.LoadEmbedded();
         var templates = GuardianSiteTemplateCatalog.LoadEmbedded();
 
-        var structure = Assert.Single(sites.Sites, site =>
-            site.Kind == GuardianSiteKind.Structure
-            && site.SiteId == 91);
+        var structure = Assert.Single(
+            sites.Sites,
+            site => site.Kind == GuardianSiteKind.Structure && site.SiteId == 91
+        );
         Assert.Equal(66, structure.SurveyProgress);
         Assert.False(structure.IsSurveyComplete);
 
-        var gamma = Assert.IsType<GuardianSiteTemplate>(
-            templates.Find("Gamma"));
-        var tower = Assert.Single(
-            gamma.PointsOfInterest,
-            point => point.Name == "t9");
+        var gamma = Assert.IsType<GuardianSiteTemplate>(templates.Find("Gamma"));
+        var tower = Assert.Single(gamma.PointsOfInterest, point => point.Name == "t9");
         Assert.Equal(44.2413149429353, tower.Angle, precision: 12);
     }
 
@@ -73,27 +67,19 @@ public sealed class GuardianSurveyReferenceTests
     {
         var sites = GuardianSiteCatalog.LoadEmbedded();
         var published = GuardianPublishedSiteCatalog.LoadEmbedded();
-        var calculator = new GuardianSurveyCompletionCalculator(
-            GuardianSiteTemplateCatalog.LoadEmbedded());
+        var calculator = new GuardianSurveyCompletionCalculator(GuardianSiteTemplateCatalog.LoadEmbedded());
 
         var differences = new List<string>();
-        foreach (var reference in sites.Sites.Where(
-            site => site.Kind != GuardianSiteKind.Beacon))
+        foreach (var reference in sites.Sites.Where(site => site.Kind != GuardianSiteKind.Beacon))
         {
-            var publicSurvey = Assert.IsType<GuardianPublishedSite>(
-                published.Find(reference));
+            var publicSurvey = Assert.IsType<GuardianPublishedSite>(published.Find(reference));
             var completion = calculator.Calculate(
-                new GuardianSurveyData
-                {
-                    SiteType = reference.SiteType,
-                    Location = publicSurvey.Location,
-                },
-                publicSurvey);
+                new GuardianSurveyData { SiteType = reference.SiteType, Location = publicSurvey.Location },
+                publicSurvey
+            );
             if (completion.Progress != reference.SurveyProgress)
             {
-                differences.Add(
-                    $"{reference.DisplayId}: {completion.Progress} != "
-                        + reference.SurveyProgress);
+                differences.Add($"{reference.DisplayId}: {completion.Progress} != " + reference.SurveyProgress);
             }
         }
 
@@ -104,8 +90,7 @@ public sealed class GuardianSurveyReferenceTests
     public void LocalSurveyValuesOverridePublishedFallbacks()
     {
         var templates = GuardianSiteTemplateCatalog.LoadEmbedded();
-        var published = GuardianPublishedSiteCatalog.LoadEmbedded()
-            .Find(GuardianSiteKind.Ruins, 1);
+        var published = GuardianPublishedSiteCatalog.LoadEmbedded().Find(GuardianSiteKind.Ruins, 1);
         var calculator = new GuardianSurveyCompletionCalculator(templates);
         var firstKnownPoint = published!.PoiStatuses.Keys.First();
         var survey = new GuardianSurveyData
@@ -114,10 +99,7 @@ public sealed class GuardianSurveyReferenceTests
             SiteHeading = 332,
             RelicTowerHeading = 93,
             Location = published.Location,
-            PoiStatuses = new Dictionary<string, GuardianPoiStatus>
-            {
-                [firstKnownPoint] = GuardianPoiStatus.Unknown,
-            },
+            PoiStatuses = new Dictionary<string, GuardianPoiStatus> { [firstKnownPoint] = GuardianPoiStatus.Unknown },
         };
 
         var completion = calculator.Calculate(survey, published);
@@ -138,24 +120,16 @@ public sealed class GuardianSurveyReferenceTests
             1,
             [],
             [],
-            new Dictionary<string, GuardianMapPoint>());
+            new Dictionary<string, GuardianMapPoint>()
+        );
         var survey = new GuardianSurveyData
         {
             SiteType = "Test",
             SiteHeading = 0,
             Location = new GuardianSurfaceLocation(0, 0),
-            RawPointsOfInterest =
-            [
-                new GuardianPointOfInterest(
-                    "x1",
-                    GuardianPoiType.Orb,
-                    10,
-                    20,
-                    0),
-            ],
+            RawPointsOfInterest = [new GuardianPointOfInterest("x1", GuardianPoiType.Orb, 10, 20, 0)],
         };
-        var calculator = new GuardianSurveyCompletionCalculator(
-            new GuardianSiteTemplateCatalog([template]));
+        var calculator = new GuardianSurveyCompletionCalculator(new GuardianSiteTemplateCatalog([template]));
 
         var completion = calculator.Calculate(survey);
 
@@ -169,10 +143,9 @@ public sealed class GuardianSurveyReferenceTests
     public void TemplateLoadRejectsUnknownPointType()
     {
         using var stream = new MemoryStream(
-            "{\"Alpha\":{\"poi\":[{\"name\":\"x\",\"type\":\"mystery\"}]}}"u8
-                .ToArray());
+            "{\"Alpha\":{\"poi\":[{\"name\":\"x\",\"type\":\"mystery\"}]}}"u8.ToArray()
+        );
 
-        Assert.Throws<InvalidDataException>(
-            () => GuardianSiteTemplateCatalog.Load(stream));
+        Assert.Throws<InvalidDataException>(() => GuardianSiteTemplateCatalog.Load(stream));
     }
 }

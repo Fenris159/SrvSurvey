@@ -7,13 +7,13 @@ public sealed class FirstFootfallInferenceSettingsStoreTests : IDisposable
 {
     private readonly string directory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-first-footfall-settings-{Guid.NewGuid():N}");
+        $"SrvSurvey-first-footfall-settings-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void LoadUsesLegacyCompatibleDefaults()
     {
-        var preferences = new FirstFootfallInferenceSettingsStore(
-            Path.Combine(directory, "ui-settings.json")).Load();
+        var preferences = new FirstFootfallInferenceSettingsStore(Path.Combine(directory, "ui-settings.json")).Load();
 
         Assert.Equal(FirstFootfallInferencePreferences.Default, preferences);
     }
@@ -33,18 +33,11 @@ public sealed class FirstFootfallInferenceSettingsStoreTests : IDisposable
                 "Color": { "FutureColor": 7 }
               }
             }
-            """);
+            """
+        );
         var store = new FirstFootfallInferenceSettingsStore(path);
 
-        store.Save(new FirstFootfallInferencePreferences(
-            false,
-            -1,
-            500,
-            64,
-            500,
-            double.NaN,
-            0,
-            100));
+        store.Save(new FirstFootfallInferencePreferences(false, -1, 500, 64, 500, double.NaN, 0, 100));
 
         var preferences = store.Load();
         Assert.False(preferences.Enabled);
@@ -57,14 +50,8 @@ public sealed class FirstFootfallInferenceSettingsStoreTests : IDisposable
         Assert.Equal(60, preferences.SamplesPerSecond);
         var root = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
         Assert.True(root["FutureRoot"]!.GetValue<bool>());
-        Assert.Equal(
-            "keep",
-            root["FirstFootfallInference"]!["FutureSetting"]!
-                .GetValue<string>());
-        Assert.Equal(
-            7,
-            root["FirstFootfallInference"]!["Color"]!["FutureColor"]!
-                .GetValue<int>());
+        Assert.Equal("keep", root["FirstFootfallInference"]!["FutureSetting"]!.GetValue<string>());
+        Assert.Equal(7, root["FirstFootfallInference"]!["Color"]!["FutureColor"]!.GetValue<int>());
     }
 
     public void Dispose()

@@ -6,16 +6,15 @@ public sealed class VrOverlaySettingsStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-vr-settings-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-vr-settings-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void MissingSettingsUseSafeDisabledDefaults()
     {
         var store = CreateStore();
 
-        Assert.Equal(
-            new VrOverlayPreferences(false, "vrserver"),
-            store.Load());
+        Assert.Equal(new VrOverlayPreferences(false, "vrserver"), store.Load());
     }
 
     [Fact]
@@ -28,9 +27,7 @@ public sealed class VrOverlaySettingsStoreTests : IDisposable
 
         store.Save(new VrOverlayPreferences(true, "vrcompositor"));
 
-        Assert.Equal(
-            new VrOverlayPreferences(true, "vrcompositor"),
-            store.Load());
+        Assert.Equal(new VrOverlayPreferences(true, "vrcompositor"), store.Load());
         Assert.Contains("\"Keep\": 42", File.ReadAllText(path));
     }
 
@@ -44,7 +41,6 @@ public sealed class VrOverlaySettingsStoreTests : IDisposable
 
     private VrOverlaySettingsStore CreateStore()
     {
-        return new VrOverlaySettingsStore(
-            Path.Combine(temporaryDirectory, "ui-settings.json"));
+        return new VrOverlaySettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json"));
     }
 }

@@ -8,14 +8,17 @@ public static class StreamOverlayProjection
         PixelRect gameClientBounds,
         PixelPoint overlayPosition,
         PixelSize overlaySize,
-        double streamScaling)
+        double streamScaling
+    )
     {
-        if (gameClientBounds.Width <= 0
+        if (
+            gameClientBounds.Width <= 0
             || gameClientBounds.Height <= 0
             || overlaySize.Width <= 0
             || overlaySize.Height <= 0
             || !double.IsFinite(streamScaling)
-            || streamScaling <= 0)
+            || streamScaling <= 0
+        )
         {
             return null;
         }
@@ -31,12 +34,9 @@ public static class StreamOverlayProjection
             relativeX / streamScaling,
             relativeY / streamScaling,
             overlaySize.Width / streamScaling,
-            overlaySize.Height / streamScaling);
+            overlaySize.Height / streamScaling
+        );
     }
 }
 
-public sealed record StreamOverlayFrame(
-    double Left,
-    double Top,
-    double Width,
-    double Height);
+public sealed record StreamOverlayFrame(double Left, double Top, double Width, double Height);

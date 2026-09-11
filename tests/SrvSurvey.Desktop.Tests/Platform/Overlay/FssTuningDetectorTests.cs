@@ -14,7 +14,8 @@ public sealed class FssTuningDetectorTests
         var result = FssTuningDetector.Analyze(
             source,
             FssTuningDetectorSettings.Default,
-            FssTuningDetectionState.Waiting);
+            FssTuningDetectionState.Waiting
+        );
 
         Assert.Equal(FssTuningDetectionState.White, result.State);
         Assert.Equal(new FssPixelRegion(110, 86, 51, 16), result.WatchArea);
@@ -28,16 +29,13 @@ public sealed class FssTuningDetectorTests
     {
         var source = CreateFssPanel();
         FillDetectedText(source, new FssRgbPixel(255, 255, 255), 30);
-        FillDetectedText(
-            source,
-            new FssRgbPixel(233, 197, 24),
-            8,
-            offset: 30);
+        FillDetectedText(source, new FssRgbPixel(233, 197, 24), 8, offset: 30);
 
         var result = FssTuningDetector.Analyze(
             source,
             FssTuningDetectorSettings.Default,
-            FssTuningDetectionState.Skipped);
+            FssTuningDetectionState.Skipped
+        );
 
         Assert.Equal(FssTuningDetectionState.Yellow, result.State);
         Assert.Equal(30, result.WhitePixelCount);
@@ -52,7 +50,8 @@ public sealed class FssTuningDetectorTests
         var result = FssTuningDetector.Analyze(
             source,
             FssTuningDetectorSettings.Default,
-            FssTuningDetectionState.Skipped);
+            FssTuningDetectionState.Skipped
+        );
 
         Assert.Equal(FssTuningDetectionState.Skipped, result.State);
         Assert.Null(result.WatchArea);
@@ -67,7 +66,8 @@ public sealed class FssTuningDetectorTests
         var result = FssTuningDetector.Analyze(
             source,
             FssTuningDetectorSettings.Default,
-            FssTuningDetectionState.Waiting);
+            FssTuningDetectionState.Waiting
+        );
 
         Assert.Equal(FssTuningDetectionState.Waiting, result.State);
         Assert.Contains("too small", result.Failure);
@@ -75,10 +75,7 @@ public sealed class FssTuningDetectorTests
 
     private static MemoryPixelSource CreateFssPanel()
     {
-        var source = new MemoryPixelSource(
-            200,
-            120,
-            new FssRgbPixel(100, 0, 100));
+        var source = new MemoryPixelSource(200, 120, new FssRgbPixel(100, 0, 100));
         var yellowBar = new FssRgbPixel(193, 156, 65);
         for (var x = 60; x <= 160; x++)
         {
@@ -89,11 +86,7 @@ public sealed class FssTuningDetectorTests
         return source;
     }
 
-    private static void FillDetectedText(
-        MemoryPixelSource source,
-        FssRgbPixel color,
-        int count,
-        int offset = 0)
+    private static void FillDetectedText(MemoryPixelSource source, FssRgbPixel color, int count, int offset = 0)
     {
         const int areaX = 110;
         const int areaY = 86;
@@ -101,10 +94,7 @@ public sealed class FssTuningDetectorTests
         for (var index = 0; index < count; index++)
         {
             var position = offset + index;
-            source.SetPixel(
-                areaX + position % areaWidth,
-                areaY + position / areaWidth,
-                color);
+            source.SetPixel(areaX + position % areaWidth, areaY + position / areaWidth, color);
         }
     }
 
@@ -112,10 +102,7 @@ public sealed class FssTuningDetectorTests
     {
         private readonly FssRgbPixel[] pixels;
 
-        public MemoryPixelSource(
-            int width,
-            int height,
-            FssRgbPixel background = default)
+        public MemoryPixelSource(int width, int height, FssRgbPixel background = default)
         {
             Width = width;
             Height = height;

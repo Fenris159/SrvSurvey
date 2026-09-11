@@ -6,7 +6,8 @@ public sealed class PulseOverlaySettingsStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-pulse-settings-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-pulse-settings-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void MissingSettingsKeepTheLegacyOverlayEnabled()
@@ -38,7 +39,6 @@ public sealed class PulseOverlaySettingsStoreTests : IDisposable
 
     private PulseOverlaySettingsStore CreateStore()
     {
-        return new PulseOverlaySettingsStore(
-            Path.Combine(temporaryDirectory, "ui-settings.json"));
+        return new PulseOverlaySettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json"));
     }
 }

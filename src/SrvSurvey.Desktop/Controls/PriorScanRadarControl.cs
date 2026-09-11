@@ -9,30 +9,34 @@ public sealed class PriorScanRadarControl : Control
 {
     private const double MetersPerPixel = 4;
 
-    public static readonly StyledProperty<
-        IReadOnlyList<PriorScanRadarTargetViewModel>?> TargetsProperty =
-        AvaloniaProperty.Register<
-            PriorScanRadarControl,
-            IReadOnlyList<PriorScanRadarTargetViewModel>?>(nameof(Targets));
-    public static readonly StyledProperty<bool> UseSmallCirclesProperty =
-        AvaloniaProperty.Register<PriorScanRadarControl, bool>(
-            nameof(UseSmallCircles),
-            true);
-    public static readonly StyledProperty<IBrush?> BackgroundBrushProperty =
-        AvaloniaProperty.Register<PriorScanRadarControl, IBrush?>(
-            nameof(BackgroundBrush));
-    public static readonly StyledProperty<IBrush?> GridBrushProperty =
-        AvaloniaProperty.Register<PriorScanRadarControl, IBrush?>(
-            nameof(GridBrush));
-    public static readonly StyledProperty<IBrush?> AccentBrushProperty =
-        AvaloniaProperty.Register<PriorScanRadarControl, IBrush?>(
-            nameof(AccentBrush));
-    public static readonly StyledProperty<IBrush?> MutedBrushProperty =
-        AvaloniaProperty.Register<PriorScanRadarControl, IBrush?>(
-            nameof(MutedBrush));
-    public static readonly StyledProperty<IBrush?> CloseBrushProperty =
-        AvaloniaProperty.Register<PriorScanRadarControl, IBrush?>(
-            nameof(CloseBrush));
+    public static readonly StyledProperty<IReadOnlyList<PriorScanRadarTargetViewModel>?> TargetsProperty =
+        AvaloniaProperty.Register<PriorScanRadarControl, IReadOnlyList<PriorScanRadarTargetViewModel>?>(
+            nameof(Targets)
+        );
+    public static readonly StyledProperty<bool> UseSmallCirclesProperty = AvaloniaProperty.Register<
+        PriorScanRadarControl,
+        bool
+    >(nameof(UseSmallCircles), true);
+    public static readonly StyledProperty<IBrush?> BackgroundBrushProperty = AvaloniaProperty.Register<
+        PriorScanRadarControl,
+        IBrush?
+    >(nameof(BackgroundBrush));
+    public static readonly StyledProperty<IBrush?> GridBrushProperty = AvaloniaProperty.Register<
+        PriorScanRadarControl,
+        IBrush?
+    >(nameof(GridBrush));
+    public static readonly StyledProperty<IBrush?> AccentBrushProperty = AvaloniaProperty.Register<
+        PriorScanRadarControl,
+        IBrush?
+    >(nameof(AccentBrush));
+    public static readonly StyledProperty<IBrush?> MutedBrushProperty = AvaloniaProperty.Register<
+        PriorScanRadarControl,
+        IBrush?
+    >(nameof(MutedBrush));
+    public static readonly StyledProperty<IBrush?> CloseBrushProperty = AvaloniaProperty.Register<
+        PriorScanRadarControl,
+        IBrush?
+    >(nameof(CloseBrush));
 
     static PriorScanRadarControl()
     {
@@ -43,7 +47,8 @@ public sealed class PriorScanRadarControl : Control
             GridBrushProperty,
             AccentBrushProperty,
             MutedBrushProperty,
-            CloseBrushProperty);
+            CloseBrushProperty
+        );
     }
 
     public PriorScanRadarControl()
@@ -102,12 +107,7 @@ public sealed class PriorScanRadarControl : Control
         var accent = AccentBrush ?? Brushes.Cyan;
         var muted = MutedBrush ?? Brushes.Gray;
         var close = CloseBrush ?? Brushes.LimeGreen;
-        context.DrawRectangle(
-            background,
-            new Pen(grid, 1),
-            bounds,
-            8,
-            8);
+        context.DrawRectangle(background, new Pen(grid, 1), bounds, 8, 8);
         if (bounds.Width <= 0 || bounds.Height <= 0)
         {
             return;
@@ -119,34 +119,19 @@ public sealed class PriorScanRadarControl : Control
             context.DrawLine(
                 new Pen(grid, 1),
                 new Point(center.X, bounds.Top + 8),
-                new Point(center.X, bounds.Bottom - 8));
+                new Point(center.X, bounds.Bottom - 8)
+            );
             context.DrawLine(
                 new Pen(grid, 1),
                 new Point(bounds.Left + 8, center.Y),
-                new Point(bounds.Right - 8, center.Y));
-            context.DrawEllipse(
-                null,
-                new Pen(grid, 1),
-                center,
-                50,
-                50);
-            context.DrawEllipse(
-                null,
-                new Pen(grid, 1),
-                center,
-                100,
-                100);
+                new Point(bounds.Right - 8, center.Y)
+            );
+            context.DrawEllipse(null, new Pen(grid, 1), center, 50, 50);
+            context.DrawEllipse(null, new Pen(grid, 1), center, 100, 100);
 
             foreach (var target in Targets ?? [])
             {
-                DrawTarget(
-                    context,
-                    target,
-                    center,
-                    bounds,
-                    accent,
-                    muted,
-                    close);
+                DrawTarget(context, target, center, bounds, accent, muted, close);
             }
 
             DrawCommander(context, center, accent);
@@ -160,7 +145,8 @@ public sealed class PriorScanRadarControl : Control
         Rect bounds,
         IBrush accent,
         IBrush muted,
-        IBrush close)
+        IBrush close
+    )
     {
         var point = ResolveTargetPoint(target, center);
         var signalRadius = ResolveSignalRadius(target);
@@ -170,45 +156,27 @@ public sealed class PriorScanRadarControl : Control
         }
 
         var brush = ResolveTargetBrush(target, accent, muted, close);
-        context.DrawEllipse(
-            null,
-            new Pen(brush, target.IsClose ? 2.5 : 1.5),
-            point,
-            signalRadius,
-            signalRadius);
+        context.DrawEllipse(null, new Pen(brush, target.IsClose ? 2.5 : 1.5), point, signalRadius, signalRadius);
         context.DrawEllipse(brush, null, point, 3, 3);
         if (target.IsClose)
         {
-            context.DrawEllipse(
-                null,
-                new Pen(brush, 1),
-                point,
-                12.5,
-                12.5);
+            context.DrawEllipse(null, new Pen(brush, 1), point, 12.5, 12.5);
         }
     }
 
-    private static Point ResolveTargetPoint(
-        PriorScanRadarTargetViewModel target,
-        Point center)
+    private static Point ResolveTargetPoint(PriorScanRadarTargetViewModel target, Point center)
     {
         var radians = target.RelativeBearingDegrees * Math.PI / 180d;
         return new Point(
-            center.X + Math.Sin(radians)
-                * target.DistanceMeters / MetersPerPixel,
-            center.Y - Math.Cos(radians)
-                * target.DistanceMeters / MetersPerPixel);
+            center.X + Math.Sin(radians) * target.DistanceMeters / MetersPerPixel,
+            center.Y - Math.Cos(radians) * target.DistanceMeters / MetersPerPixel
+        );
     }
 
     private double ResolveSignalRadius(PriorScanRadarTargetViewModel target)
     {
-        var signalRadiusMeters = UseSmallCircles
-            ? 100
-            : target.SampleRadiusMeters;
-        return Math.Clamp(
-            signalRadiusMeters / MetersPerPixel,
-            5,
-            100);
+        var signalRadiusMeters = UseSmallCircles ? 100 : target.SampleRadiusMeters;
+        return Math.Clamp(signalRadiusMeters / MetersPerPixel, 5, 100);
     }
 
     private static bool IsTargetVisible(Point point, double signalRadius, Rect bounds)
@@ -223,7 +191,8 @@ public sealed class PriorScanRadarControl : Control
         PriorScanRadarTargetViewModel target,
         IBrush accent,
         IBrush muted,
-        IBrush close)
+        IBrush close
+    )
     {
         if (target.IsClose)
         {
@@ -233,17 +202,12 @@ public sealed class PriorScanRadarControl : Control
         return target.IsActive ? accent : muted;
     }
 
-    private static void DrawCommander(
-        DrawingContext context,
-        Point center,
-        IBrush brush)
+    private static void DrawCommander(DrawingContext context, Point center, IBrush brush)
     {
         var geometry = new StreamGeometry();
         using (var geometryContext = geometry.Open())
         {
-            geometryContext.BeginFigure(
-                new Point(center.X, center.Y - 9),
-                isFilled: true);
+            geometryContext.BeginFigure(new Point(center.X, center.Y - 9), isFilled: true);
             geometryContext.LineTo(new Point(center.X + 6, center.Y + 7));
             geometryContext.LineTo(new Point(center.X, center.Y + 4));
             geometryContext.LineTo(new Point(center.X - 6, center.Y + 7));

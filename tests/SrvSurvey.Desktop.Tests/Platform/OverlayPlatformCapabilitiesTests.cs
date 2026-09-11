@@ -7,8 +7,7 @@ public sealed class OverlayPlatformCapabilitiesTests
     [Fact]
     public void WindowsAdvertisesOnlyImplementedPassiveCapabilities()
     {
-        var capabilities = OverlayPlatformCapabilities.ForHost(
-            OverlayHostKind.Windows);
+        var capabilities = OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows);
 
         Assert.True(capabilities.SupportsPassiveOverlay);
         Assert.True(capabilities.SupportsClickThrough);
@@ -20,8 +19,7 @@ public sealed class OverlayPlatformCapabilitiesTests
     [Fact]
     public void X11AdvertisesImplementedPassiveCapabilities()
     {
-        var capabilities = OverlayPlatformCapabilities.ForHost(
-            OverlayHostKind.LinuxX11);
+        var capabilities = OverlayPlatformCapabilities.ForHost(OverlayHostKind.LinuxX11);
 
         Assert.True(capabilities.SupportsPassiveOverlay);
         Assert.True(capabilities.SupportsClickThrough);
@@ -33,8 +31,7 @@ public sealed class OverlayPlatformCapabilitiesTests
     [Fact]
     public void XWaylandAdvertisesTheX11CompatibilityCapabilities()
     {
-        var capabilities = OverlayPlatformCapabilities.ForHost(
-            OverlayHostKind.LinuxXWayland);
+        var capabilities = OverlayPlatformCapabilities.ForHost(OverlayHostKind.LinuxXWayland);
 
         Assert.True(capabilities.UsesX11Compatibility);
         Assert.True(capabilities.SupportsPassiveOverlay);
@@ -55,21 +52,16 @@ public sealed class OverlayPlatformCapabilitiesTests
         string? sessionType,
         string? display,
         string? waylandDisplay,
-        OverlayHostKind expected)
+        OverlayHostKind expected
+    )
     {
-        Assert.Equal(
-            expected,
-            OverlayPlatformCapabilities.DetectLinuxHost(
-                sessionType,
-                display,
-                waylandDisplay));
+        Assert.Equal(expected, OverlayPlatformCapabilities.DetectLinuxHost(sessionType, display, waylandDisplay));
     }
 
     [Fact]
     public void WaylandDoesNotClaimUnverifiedCompositorBehavior()
     {
-        var capabilities = OverlayPlatformCapabilities.ForHost(
-            OverlayHostKind.LinuxWayland);
+        var capabilities = OverlayPlatformCapabilities.ForHost(OverlayHostKind.LinuxWayland);
 
         Assert.False(capabilities.SupportsPassiveOverlay);
         Assert.False(capabilities.UsesX11Compatibility);
@@ -81,8 +73,7 @@ public sealed class OverlayPlatformCapabilitiesTests
     [Fact]
     public void UnknownPlatformsDisableDetachedOverlays()
     {
-        var capabilities = OverlayPlatformCapabilities.ForHost(
-            OverlayHostKind.Other);
+        var capabilities = OverlayPlatformCapabilities.ForHost(OverlayHostKind.Other);
 
         Assert.False(capabilities.SupportsPassiveOverlay);
         Assert.Contains("unavailable", capabilities.StatusText);

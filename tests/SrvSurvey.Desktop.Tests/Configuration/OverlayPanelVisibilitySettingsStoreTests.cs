@@ -7,7 +7,8 @@ public sealed class OverlayPanelVisibilitySettingsStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-overlay-visibility-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-overlay-visibility-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void MissingSettingsDefaultEveryCatalogPanelToVisible()
@@ -47,7 +48,6 @@ public sealed class OverlayPanelVisibilitySettingsStoreTests : IDisposable
     private OverlayPanelVisibilitySettingsStore CreateStore()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        return new OverlayPanelVisibilitySettingsStore(
-            Path.Combine(temporaryDirectory, "ui.json"));
+        return new OverlayPanelVisibilitySettingsStore(Path.Combine(temporaryDirectory, "ui.json"));
     }
 }

@@ -21,21 +21,16 @@ public sealed class StreamOverlayCoordinator : IDisposable
         StreamOverlayViewModel viewModel,
         IOverlayPlatformService platform,
         IGameWindowTracker gameWindowTracker,
-        OverlayWindowRegistry? registry = null)
+        OverlayWindowRegistry? registry = null
+    )
     {
-        this.viewModel = viewModel
-            ?? throw new ArgumentNullException(nameof(viewModel));
-        this.platform = platform
-            ?? throw new ArgumentNullException(nameof(platform));
-        this.gameWindowTracker = gameWindowTracker
-            ?? throw new ArgumentNullException(nameof(gameWindowTracker));
+        this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
+        this.platform = platform ?? throw new ArgumentNullException(nameof(platform));
+        this.gameWindowTracker = gameWindowTracker ?? throw new ArgumentNullException(nameof(gameWindowTracker));
         this.registry = registry ?? OverlayWindowRegistry.Shared;
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
         this.registry.Changed += OnRegistryChanged;
-        timer = new OverlayDispatcherTimer
-        {
-            Interval = TimeSpan.FromMilliseconds(250),
-        };
+        timer = new OverlayDispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
         timer.Tick += OnTimerTick;
         timer.Start();
         Synchronize();
@@ -80,9 +75,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
         Synchronize();
     }
 
-    private void OnViewModelPropertyChanged(
-        object? sender,
-        PropertyChangedEventArgs eventArgs)
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
         if (eventArgs.PropertyName == nameof(StreamOverlayViewModel.Enabled))
         {
@@ -98,9 +91,11 @@ public sealed class StreamOverlayCoordinator : IDisposable
             return;
         }
 
-        if (!platform.Capabilities.SupportsPassiveOverlay
+        if (
+            !platform.Capabilities.SupportsPassiveOverlay
             || !platform.Capabilities.SupportsClickThrough
-            || !platform.Capabilities.SupportsGameWindowTracking)
+            || !platform.Capabilities.SupportsGameWindowTracking
+        )
         {
             CloseWindow();
             viewModel.StatusMessage = platform.Capabilities.StatusText;
@@ -111,8 +106,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
         if (!gameWindow.IsAvailable || !gameWindow.IsVisible || !gameWindow.IsForeground)
         {
             CloseWindow();
-            viewModel.StatusMessage =
-                "Waiting for the Elite window before composing overlays.";
+            viewModel.StatusMessage = "Waiting for the Elite window before composing overlays.";
             return;
         }
 
@@ -157,8 +151,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
 
     private static void PositionWindow(Window target, PixelRect gameBounds)
     {
-        var screen = target.Screens.ScreenFromBounds(gameBounds)
-            ?? target.Screens.Primary;
+        var screen = target.Screens.ScreenFromBounds(gameBounds) ?? target.Screens.Primary;
         if (screen is null)
         {
             return;
@@ -171,8 +164,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
 
     private void RenderFrames(StreamOverlayWindow target, PixelRect gameBounds)
     {
-        var screen = target.Screens.ScreenFromBounds(gameBounds)
-            ?? target.Screens.Primary;
+        var screen = target.Screens.ScreenFromBounds(gameBounds) ?? target.Screens.Primary;
         if (screen is null)
         {
             return;
@@ -186,22 +178,14 @@ public sealed class StreamOverlayCoordinator : IDisposable
                 var source = registered.Window;
                 var renderSource = registered.RenderSource;
                 var renderBounds = renderSource.Bounds;
-                if (!registered.IsVisible
-                    || renderBounds.Width <= 0
-                    || renderBounds.Height <= 0)
+                if (!registered.IsVisible || renderBounds.Width <= 0 || renderBounds.Height <= 0)
                 {
                     continue;
                 }
 
                 var sourceScaling = source.RenderScaling;
-                var pixelSize = PixelSize.FromSize(
-                    renderBounds.Size,
-                    sourceScaling);
-                var projection = StreamOverlayProjection.Create(
-                    gameBounds,
-                    source.Position,
-                    pixelSize,
-                    screen.Scaling);
+                var pixelSize = PixelSize.FromSize(renderBounds.Size, sourceScaling);
+                var projection = StreamOverlayProjection.Create(gameBounds, source.Position, pixelSize, screen.Scaling);
                 if (projection is null)
                 {
                     continue;
@@ -210,16 +194,15 @@ public sealed class StreamOverlayCoordinator : IDisposable
                 RenderTargetBitmap? bitmap = null;
                 try
                 {
-                    bitmap = new RenderTargetBitmap(
-                        pixelSize,
-                        new Vector(96 * sourceScaling, 96 * sourceScaling));
+                    bitmap = new RenderTargetBitmap(pixelSize, new Vector(96 * sourceScaling, 96 * sourceScaling));
                     bitmap.Render(renderSource);
-                    rendered.Add(new StreamOverlayRenderedFrame(
-                        bitmap,
-                        projection,
-                        registered.PresentationVisual is null
-                            ? 1d
-                            : source.Opacity));
+                    rendered.Add(
+                        new StreamOverlayRenderedFrame(
+                            bitmap,
+                            projection,
+                            registered.PresentationVisual is null ? 1d : source.Opacity
+                        )
+                    );
                     bitmap = null;
                 }
                 catch
@@ -229,8 +212,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
             }
 
             target.ReplaceFrames(rendered);
-            viewModel.StatusMessage =
-                $"Compositing {rendered.Count:N0} live overlays into SrvSurveyWindowOne.";
+            viewModel.StatusMessage = $"Compositing {rendered.Count:N0} live overlays into SrvSurveyWindowOne.";
         }
         catch (Exception exception)
         {
@@ -239,8 +221,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
                 frame.Bitmap.Dispose();
             }
 
-            viewModel.StatusMessage =
-                $"The joined stream overlay could not update: {exception.Message}";
+            viewModel.StatusMessage = $"The joined stream overlay could not update: {exception.Message}";
         }
     }
 

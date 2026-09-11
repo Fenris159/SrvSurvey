@@ -6,7 +6,8 @@ public sealed class VoxStellarSettingsStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        "SrvSurvey-VoxStellarSettings-" + Guid.NewGuid().ToString("N"));
+        "SrvSurvey-VoxStellarSettings-" + Guid.NewGuid().ToString("N")
+    );
 
     [Fact]
     public void MissingDocumentKeepsJournalSharingOptedOut()
@@ -39,6 +40,5 @@ public sealed class VoxStellarSettingsStoreTests : IDisposable
         }
     }
 
-    private VoxStellarSettingsStore CreateStore() => new(
-        Path.Combine(temporaryDirectory, "ui-settings.json"));
+    private VoxStellarSettingsStore CreateStore() => new(Path.Combine(temporaryDirectory, "ui-settings.json"));
 }

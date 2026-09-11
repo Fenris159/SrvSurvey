@@ -24,8 +24,7 @@ public sealed class GameTextInputServiceTests
     [Fact]
     public void SharpHookFailureIsReturnedWithoutClaimingSuccess()
     {
-        var service = new SharpHookGameTextInputService(
-            _ => UioHookResult.ErrorXOpenDisplay);
+        var service = new SharpHookGameTextInputService(_ => UioHookResult.ErrorXOpenDisplay);
 
         var result = service.EnterText("Sol");
 
@@ -36,8 +35,7 @@ public sealed class GameTextInputServiceTests
     [Fact]
     public void UnavailableServiceExplainsThePlatformLimitation()
     {
-        var service = new UnavailableGameTextInputService(
-            "Wayland synthetic input unavailable.");
+        var service = new UnavailableGameTextInputService("Wayland synthetic input unavailable.");
 
         var result = service.EnterText("Sol");
 
@@ -57,15 +55,9 @@ public sealed class GameTextInputServiceTests
         string? boxel,
         bool useBoxel,
         string? clipboard,
-        string? expected)
+        string? expected
+    )
     {
-        Assert.Equal(
-            expected,
-            GalaxyMapTextResolver.Resolve(
-                isGalaxyMapOpen,
-                route,
-                boxel,
-                useBoxel,
-                clipboard));
+        Assert.Equal(expected, GalaxyMapTextResolver.Resolve(isGalaxyMapOpen, route, boxel, useBoxel, clipboard));
     }
 }

@@ -6,7 +6,8 @@ public sealed class DesktopBehaviorSettingsStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-desktop-behavior-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-desktop-behavior-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void MissingSettingsUseLegacyDefaults()
@@ -20,8 +21,10 @@ public sealed class DesktopBehaviorSettingsStoreTests : IDisposable
                 PreferredMonitorId: null,
                 ApplicationWindowScalePercent: 100,
                 LastApplicationWindowPosition: null,
-                ReduceMotion: false),
-            CreateStore().Load());
+                ReduceMotion: false
+            ),
+            CreateStore().Load()
+        );
     }
 
     [Fact]
@@ -39,7 +42,8 @@ public sealed class DesktopBehaviorSettingsStoreTests : IDisposable
             "\\\\.\\DISPLAY2",
             125,
             new ApplicationWindowPosition(2140, 86, "\\\\.\\DISPLAY2"),
-            ReduceMotion: true);
+            ReduceMotion: true
+        );
 
         store.Save(expected);
 
@@ -63,10 +67,10 @@ public sealed class DesktopBehaviorSettingsStoreTests : IDisposable
                 "ApplicationWindowScalePercent": {{scalePercent}}
               }
             }
-            """);
+            """
+        );
 
-        Assert.Equal(100, new DesktopBehaviorSettingsStore(path).Load()
-            .ApplicationWindowScalePercent);
+        Assert.Equal(100, new DesktopBehaviorSettingsStore(path).Load().ApplicationWindowScalePercent);
     }
 
     public void Dispose()
@@ -79,7 +83,6 @@ public sealed class DesktopBehaviorSettingsStoreTests : IDisposable
 
     private DesktopBehaviorSettingsStore CreateStore()
     {
-        return new DesktopBehaviorSettingsStore(
-            Path.Combine(temporaryDirectory, "ui-settings.json"));
+        return new DesktopBehaviorSettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json"));
     }
 }

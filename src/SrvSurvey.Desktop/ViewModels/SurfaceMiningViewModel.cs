@@ -30,8 +30,11 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
     private double detectionHeading;
     private long? detectionStillSince;
 
-    public SurfaceMiningViewModel(SystemSurfaceStore store, SurfaceMiningSettingsStore? settingsStore = null,
-        TimeProvider? detectionTimeProvider = null)
+    public SurfaceMiningViewModel(
+        SystemSurfaceStore store,
+        SurfaceMiningSettingsStore? settingsStore = null,
+        TimeProvider? detectionTimeProvider = null
+    )
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
         this.settingsStore = settingsStore;
@@ -44,17 +47,22 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
 
     public MiningDetectionViewModel Detection { get; }
     internal SystemSurfaceContext? DetectionContext => context;
-    internal bool IsDetectionPositionSteady => CanDetectRigs && detectionStillSince is { } since
+    internal bool IsDetectionPositionSteady =>
+        CanDetectRigs
+        && detectionStillSince is { } since
         && detectionTime.GetElapsedTime(since, detectionTime.GetTimestamp()) >= TimeSpan.FromSeconds(1);
-    internal const string DetectionMovementMessage = "Rhino moving — tracker changes paused until position and heading are steady for one second.";
-    public bool ShouldShowRigWarning => ShouldShow && isRhino && status?.InSrv == true
+    internal const string DetectionMovementMessage =
+        "Rhino moving — tracker changes paused until position and heading are steady for one second.";
+    public bool ShouldShowRigWarning =>
+        ShouldShow
+        && isRhino
+        && status?.InSrv == true
         && !status.OnFoot
         && Rigs.Any(rig => rig.Marker is { DistanceMeters: > SurfaceMiningGeometry.RigWarningDistanceMeters });
 
     // NoFocus also includes free head-look. This only permits analysis; the image detector
     // must independently locate the HUD before reporting a present or absent bar.
-    public bool CanDetectRigs => ShouldShow && isRhino && status?.InSrv == true
-        && status.GuiFocus == GuiFocus.NoFocus;
+    public bool CanDetectRigs => ShouldShow && isRhino && status?.InSrv == true && status.GuiFocus == GuiFocus.NoFocus;
 
     public bool AutoClearRigsOnShipBoarding
     {
@@ -71,8 +79,8 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
                 settingsStore?.SaveAutoClearRigsOnShipBoarding(value);
                 autoClearRigsOnShipBoarding = value;
             }
-            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException
-                or InvalidOperationException)
+            catch (Exception exception)
+                when (exception is IOException or UnauthorizedAccessException or InvalidOperationException)
             {
                 StatusText = "Mining settings could not be saved: " + exception.Message;
             }
@@ -99,36 +107,59 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
     public double CargoUsed => cargoUsed;
     public string CargoText => $"Cargo capacity: {CargoUsed:N0} of 72";
     public string StatusText { get; private set; } = "Waiting for a Rhino on a planetary surface.";
-    public bool ShouldShow => !disposed && context is not null
-        && (isRhino && status?.InSrv == true
-            || isRhinoParked && status?.OnFoot == true
-                && navigation.Any(marker => marker.Kind == SurfaceRadarMarkerKind.Srv))
+    public bool ShouldShow =>
+        !disposed
+        && context is not null
+        && (
+            isRhino && status?.InSrv == true
+            || isRhinoParked
+                && status?.OnFoot == true
+                && navigation.Any(marker => marker.Kind == SurfaceRadarMarkerKind.Srv)
+        )
         && status is { HasLatitudeLongitude: true, PlanetRadius: > 0 }
-        && !status.Docked && !status.InTaxi && !status.FsdChargingJump && TryGetPosition(out _);
+        && !status.Docked
+        && !status.InTaxi
+        && !status.FsdChargingJump
+        && TryGetPosition(out _);
 
-    public async Task ApplyUpdateAsync(SurfaceSurveySessionContext? session,
-        SystemScanSnapshot snapshot, EliteStatus? currentStatus, string? srvType,
+    public async Task ApplyUpdateAsync(
+        SurfaceSurveySessionContext? session,
+        SystemScanSnapshot snapshot,
+        EliteStatus? currentStatus,
+        string? srvType,
         IReadOnlyList<SurfaceRadarMarkerViewModel>? surfaceMarkers = null,
         CargoSnapshot? cargo = null,
-        string? parkedSrvType = null)
+        string? parkedSrvType = null
+    )
     {
         await updateLock.WaitAsync().ConfigureAwait(true);
         try
         {
             status = currentStatus;
-            var count = cargo is not null && string.Equals(cargo.Vessel, "SRV", StringComparison.OrdinalIgnoreCase)
-                ? cargo.Count : status?.Cargo ?? 0;
+            var count =
+                cargo is not null && string.Equals(cargo.Vessel, "SRV", StringComparison.OrdinalIgnoreCase)
+                    ? cargo.Count
+                    : status?.Cargo ?? 0;
             cargoUsed = double.IsFinite(count) ? Math.Max(0, count) : 0;
             navigation = surfaceMarkers ?? [];
             isRhino = EliteSrvTypes.IsRhino(srvType);
             isRhinoParked = EliteSrvTypes.IsRhino(parkedSrvType);
-            var body = snapshot.Bodies.FirstOrDefault(candidate => string.Equals(
-                candidate.Name, status?.BodyName, StringComparison.OrdinalIgnoreCase));
-            var next = session is not null && body is not null && status?.PlanetRadius is > 0
-                ? new SystemSurfaceContext(session.FrontierId, session.CommanderName,
-                    session.SystemName, session.SystemAddress, session.StarPosition,
-                    body.BodyId, body.Name, (double)status.PlanetRadius)
-                : null;
+            var body = snapshot.Bodies.FirstOrDefault(candidate =>
+                string.Equals(candidate.Name, status?.BodyName, StringComparison.OrdinalIgnoreCase)
+            );
+            var next =
+                session is not null && body is not null && status?.PlanetRadius is > 0
+                    ? new SystemSurfaceContext(
+                        session.FrontierId,
+                        session.CommanderName,
+                        session.SystemName,
+                        session.SystemAddress,
+                        session.StarPosition,
+                        body.BodyId,
+                        body.Name,
+                        (double)status.PlanetRadius
+                    )
+                    : null;
             if (context != next)
             {
                 context = next;
@@ -170,12 +201,22 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         turn = Math.Min(turn, 360 - turn);
         // Ignore sub-decimetre coordinate noise, but compare with the stationary origin
         // so a sequence of small steps still counts as driving.
-        if (detectionPosition is { } origin
-            && SurfaceNavigation.GetDistance(origin, position, context!.RadiusMeters) <= .1 && turn <= .5) return;
+        if (
+            detectionPosition is { } origin
+            && SurfaceNavigation.GetDistance(origin, position, context!.RadiusMeters) <= .1
+            && turn <= .5
+        )
+        {
+            return;
+        }
+
         detectionPosition = position;
         detectionHeading = heading;
         detectionStillSince = detectionTime.GetTimestamp();
-        if (Detection.Enabled && !Detection.IsCalibrating) Detection.Pause(DetectionMovementMessage);
+        if (Detection.Enabled && !Detection.IsCalibrating)
+        {
+            Detection.Pause(DetectionMovementMessage);
+        }
     }
 
     public async Task<bool> ToggleRigAsync(int number)
@@ -190,18 +231,23 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
                 return false;
             }
 
-            var location = SurfaceMiningGeometry.DeployedRig(cockpit,
-                status.NormalizedHeading, context!.RadiusMeters);
-            var result = await store.ToggleBookmarkGroupAsync(context, $"#{number}", location)
-                .ConfigureAwait(true);
+            var location = SurfaceMiningGeometry.DeployedRig(cockpit, status.NormalizedHeading, context!.RadiusMeters);
+            var result = await store.ToggleBookmarkGroupAsync(context, $"#{number}", location).ConfigureAwait(true);
             surface = (await store.LoadBodyAsync(context).ConfigureAwait(true)).Snapshot;
-            StatusText = result.Mutation == SurfaceBookmarkMutation.Added
-                ? $"Rig {number} location saved." : $"Rig {number} location cleared.";
+            StatusText =
+                result.Mutation == SurfaceBookmarkMutation.Added
+                    ? $"Rig {number} location saved."
+                    : $"Rig {number} location cleared.";
             Recalculate();
             return true;
         }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException
-            or InvalidDataException or InvalidOperationException)
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or UnauthorizedAccessException
+                        or InvalidDataException
+                        or InvalidOperationException
+            )
         {
             StatusText = "Rig location could not be saved: " + exception.Message;
             Notify();
@@ -213,16 +259,38 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
-    internal async Task ApplyDetectedRigsAsync(IReadOnlyList<MiningBarState> states,
-        SystemSurfaceContext expectedContext, MiningDetectionSettings expectedSettings)
+    internal async Task ApplyDetectedRigsAsync(
+        IReadOnlyList<MiningBarState> states,
+        SystemSurfaceContext expectedContext,
+        MiningDetectionSettings expectedSettings
+    )
     {
         await updateLock.WaitAsync().ConfigureAwait(true);
         try
         {
-            if (context != expectedContext || !ReferenceEquals(Detection.Settings, expectedSettings)
-                || !Detection.Enabled || Detection.IsCalibrating || !IsDetectionPositionSteady || !TryGetPosition(out var cockpit)) return;
-            if (!Enumerable.Range(0, 6).Any(i => states[i] == MiningBarState.Present && !Rigs[i].IsSet
-                || states[i] == MiningBarState.Absent && Rigs[i].IsSet)) return;
+            if (
+                context != expectedContext
+                || !ReferenceEquals(Detection.Settings, expectedSettings)
+                || !Detection.Enabled
+                || Detection.IsCalibrating
+                || !IsDetectionPositionSteady
+                || !TryGetPosition(out var cockpit)
+            )
+            {
+                return;
+            }
+
+            if (
+                !Enumerable
+                    .Range(0, 6)
+                    .Any(i =>
+                        states[i] == MiningBarState.Present && !Rigs[i].IsSet
+                        || states[i] == MiningBarState.Absent && Rigs[i].IsSet
+                    )
+            )
+            {
+                return;
+            }
             // Refresh before mutations, including retries after a partially successful write.
             surface = (await store.LoadBodyAsync(context).ConfigureAwait(true)).Snapshot;
             var location = SurfaceMiningGeometry.DeployedRig(cockpit, status!.NormalizedHeading, context.RadiusMeters);
@@ -234,16 +302,28 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
             }
             Recalculate();
         }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException
-            or InvalidDataException or InvalidOperationException)
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or UnauthorizedAccessException
+                        or InvalidDataException
+                        or InvalidOperationException
+            )
         {
             StatusText = "Rig trackers could not be updated: " + exception.Message;
             Notify();
         }
-        finally { updateLock.Release(); }
+        finally
+        {
+            updateLock.Release();
+        }
     }
 
-    private async Task<bool> UpdateDetectedBookmarksAsync(IReadOnlyList<MiningBarState> states, SurfaceCoordinate location, SystemSurfaceContext miningContext)
+    private async Task<bool> UpdateDetectedBookmarksAsync(
+        IReadOnlyList<MiningBarState> states,
+        SurfaceCoordinate location,
+        SystemSurfaceContext miningContext
+    )
     {
         var changed = false;
         for (var i = 0; i < 6; i++)
@@ -266,21 +346,22 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
 
     public Task<bool> ClearRigsOnShipBoardingAsync(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
-        string? frontierId)
+        string? frontierId
+    )
     {
         return AutoClearRigsOnShipBoarding && journalEvents.Any(IsOwnShipBoarding)
             ? ClearRigsAsync(frontierId, shipBoarding: true)
             : Task.FromResult(false);
     }
 
-    public Task<bool> ClearRigsFromChatAsync(
-        IReadOnlyList<JournalEventEnvelope> journalEvents,
-        string? frontierId)
+    public Task<bool> ClearRigsFromChatAsync(IReadOnlyList<JournalEventEnvelope> journalEvents, string? frontierId)
     {
-        return journalEvents.Any(entry => entry.EventName == "SendText"
-                && entry.Payload.TryGetProperty("Message", out var message)
-                && message.ValueKind == JsonValueKind.String
-                && message.GetString()?.Trim() == "---")
+        return journalEvents.Any(entry =>
+            entry.EventName == "SendText"
+            && entry.Payload.TryGetProperty("Message", out var message)
+            && message.ValueKind == JsonValueKind.String
+            && message.GetString()?.Trim() == "---"
+        )
             ? ClearRigsAsync(frontierId, shipBoarding: false)
             : Task.FromResult(false);
     }
@@ -291,7 +372,10 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         try
         {
             var miningContext = shipBoarding ? lastMiningContext ?? context : context;
-            if (miningContext is null || !string.Equals(miningContext.FrontierId, frontierId, StringComparison.OrdinalIgnoreCase))
+            if (
+                miningContext is null
+                || !string.Equals(miningContext.FrontierId, frontierId, StringComparison.OrdinalIgnoreCase)
+            )
             {
                 return false;
             }
@@ -313,8 +397,13 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
             Recalculate();
             return true;
         }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException
-            or InvalidDataException or InvalidOperationException)
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or UnauthorizedAccessException
+                        or InvalidDataException
+                        or InvalidOperationException
+            )
         {
             StatusText = "Rig locations could not be cleared: " + exception.Message;
             Notify();
@@ -329,15 +418,18 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
     private static bool IsOwnShipBoarding(JournalEventEnvelope journalEvent)
     {
         var entry = journalEvent.Payload;
-        if (entry.TryGetProperty("Taxi", out var taxi) && taxi.ValueKind != JsonValueKind.False
-            || entry.TryGetProperty("Multicrew", out var multicrew) && multicrew.ValueKind != JsonValueKind.False)
+        if (
+            entry.TryGetProperty("Taxi", out var taxi) && taxi.ValueKind != JsonValueKind.False
+            || entry.TryGetProperty("Multicrew", out var multicrew) && multicrew.ValueKind != JsonValueKind.False
+        )
         {
             return false;
         }
 
         return journalEvent.EventName == "DockSRV"
             || journalEvent.EventName == "Embark"
-                && entry.TryGetProperty("SRV", out var srv) && srv.ValueKind == JsonValueKind.False;
+                && entry.TryGetProperty("SRV", out var srv)
+                && srv.ValueKind == JsonValueKind.False;
     }
 
     private void Recalculate()
@@ -363,17 +455,21 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         }
         markers.AddRange(Resources.Select(resource => resource.Marker));
 
-        var ships = validPosition ? navigation.Where(marker => marker.Kind is
-            SurfaceRadarMarkerKind.Ship or SurfaceRadarMarkerKind.FormerShip).ToArray() : [];
+        var ships = validPosition
+            ? navigation
+                .Where(marker => marker.Kind is SurfaceRadarMarkerKind.Ship or SurfaceRadarMarkerKind.FormerShip)
+                .ToArray()
+            : [];
         if (!SameMarkers(ShipMarkers, ships))
         {
             ShipMarkers = ships;
         }
 
         markers.AddRange(ShipMarkers);
-        RhinoMarker = validPosition && status?.OnFoot == true && isRhinoParked
-            ? navigation.FirstOrDefault(marker => marker.Kind == SurfaceRadarMarkerKind.Srv)
-            : null;
+        RhinoMarker =
+            validPosition && status?.OnFoot == true && isRhinoParked
+                ? navigation.FirstOrDefault(marker => marker.Kind == SurfaceRadarMarkerKind.Srv)
+                : null;
         if (RhinoMarker is not null)
         {
             markers.Add(RhinoMarker);
@@ -389,8 +485,12 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
 
     private SurfaceRadarMarkerViewModel? CreateRigMarker(int number)
     {
-        if (surface is null || !surface.Bookmarks.TryGetValue($"#{number}", out var locations)
-            || locations.Count == 0 || !TryGetPosition(out var cockpit))
+        if (
+            surface is null
+            || !surface.Bookmarks.TryGetValue($"#{number}", out var locations)
+            || locations.Count == 0
+            || !TryGetPosition(out var cockpit)
+        )
         {
             return null;
         }
@@ -421,10 +521,14 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         };
     }
 
-    private SurfaceRadarMarkerViewModel[] CreateResourceMarkers() => navigation
-            .Where(marker => marker.IsBookmark && !marker.Name.StartsWith('#')
+    private SurfaceRadarMarkerViewModel[] CreateResourceMarkers() =>
+        navigation
+            .Where(marker =>
+                marker.IsBookmark
+                && !marker.Name.StartsWith('#')
                 // Legacy treats named bookmarks without a biology sample range as ground resources.
-                && ExobiologyReferenceCatalog.GetSampleDistanceMeters(marker.Name) == 50)
+                && ExobiologyReferenceCatalog.GetSampleDistanceMeters(marker.Name) == 50
+            )
             .OrderBy(marker => marker.Name, StringComparer.OrdinalIgnoreCase)
             .ThenBy(marker => marker.DistanceMeters)
             .Select(marker => new SurfaceRadarMarkerViewModel
@@ -437,32 +541,59 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
                 RelativeBearingDegrees = marker.RelativeBearingDegrees,
                 RadiusMeters = SurfaceMiningGeometry.ResourceRadiusMeters,
                 IsInsideRadius = marker.DistanceMeters < SurfaceMiningGeometry.ResourceRadiusMeters,
-            }).ToArray();
+            })
+            .ToArray();
 
-    private static bool SameMarkers(IReadOnlyList<SurfaceRadarMarkerViewModel> first,
-        IReadOnlyList<SurfaceRadarMarkerViewModel> second) => first.Count == second.Count
-        && first.Zip(second).All(pair => pair.First.Name == pair.Second.Name
-            && pair.First.Kind == pair.Second.Kind && pair.First.Status == pair.Second.Status
-            && pair.First.Location == pair.Second.Location
-            && Math.Abs(pair.First.DistanceMeters - pair.Second.DistanceMeters) < 0.000001
-            && Math.Abs(pair.First.RelativeBearingDegrees - pair.Second.RelativeBearingDegrees) < 0.000001);
+    private static bool SameMarkers(
+        IReadOnlyList<SurfaceRadarMarkerViewModel> first,
+        IReadOnlyList<SurfaceRadarMarkerViewModel> second
+    ) =>
+        first.Count == second.Count
+        && first
+            .Zip(second)
+            .All(pair =>
+                pair.First.Name == pair.Second.Name
+                && pair.First.Kind == pair.Second.Kind
+                && pair.First.Status == pair.Second.Status
+                && pair.First.Location == pair.Second.Location
+                && Math.Abs(pair.First.DistanceMeters - pair.Second.DistanceMeters) < 0.000001
+                && Math.Abs(pair.First.RelativeBearingDegrees - pair.Second.RelativeBearingDegrees) < 0.000001
+            );
 
-    internal void InstallEditorPreview(IReadOnlyList<SurfaceRadarMarkerViewModel> markers,
-        IReadOnlyList<SurfaceRadarMarkerViewModel>? resources = null)
+    internal void InstallEditorPreview(
+        IReadOnlyList<SurfaceRadarMarkerViewModel> markers,
+        IReadOnlyList<SurfaceRadarMarkerViewModel>? resources = null
+    )
     {
-        context = new SystemSurfaceContext("preview", null, "Synuefe NL-N c23-4", 42, null,
-            3, "Synuefe NL-N c23-4 B 3", 1_000_000);
+        context = new SystemSurfaceContext(
+            "preview",
+            null,
+            "Synuefe NL-N c23-4",
+            42,
+            null,
+            3,
+            "Synuefe NL-N c23-4 B 3",
+            1_000_000
+        );
         status = new EliteStatus { Heading = 74 };
         cargoUsed = 36;
-        ShipMarkers = [new SurfaceRadarMarkerViewModel
-        {
-            Name = "Ship", Kind = SurfaceRadarMarkerKind.Ship, DistanceMeters = 250,
-            RelativeBearingDegrees = 110, Location = new SurfaceCoordinate(0, 0),
-        }];
+        ShipMarkers =
+        [
+            new SurfaceRadarMarkerViewModel
+            {
+                Name = "Ship",
+                Kind = SurfaceRadarMarkerKind.Ship,
+                DistanceMeters = 250,
+                RelativeBearingDegrees = 110,
+                Location = new SurfaceCoordinate(0, 0),
+            },
+        ];
         Resources = (resources ?? []).Select(marker => new MiningResourceViewModel(marker)).ToArray();
         RadarMarkers = [.. markers, .. ShipMarkers, .. Resources.Select(resource => resource.Marker)];
-        Rigs = Enumerable.Range(1, 6).Select(number => new MiningRigViewModel(number,
-            markers.ElementAtOrDefault(number - 1))).ToArray();
+        Rigs = Enumerable
+            .Range(1, 6)
+            .Select(number => new MiningRigViewModel(number, markers.ElementAtOrDefault(number - 1)))
+            .ToArray();
         StatusText = "Rig locations · cyan: collect · red: too close to deploy";
         Notify();
     }
@@ -470,9 +601,13 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
     private bool TryGetPosition(out SurfaceCoordinate location)
     {
         location = default;
-        if (status is not { HasLatitudeLongitude: true } || !double.IsFinite(status.Latitude)
+        if (
+            status is not { HasLatitudeLongitude: true }
+            || !double.IsFinite(status.Latitude)
             || !double.IsFinite(status.Longitude)
-            || status.Latitude is < -90 or > 90 || status.Longitude is < -180 or > 180)
+            || status.Latitude is < -90 or > 90
+            || status.Longitude is < -180 or > 180
+        )
         {
             return false;
         }
@@ -481,8 +616,8 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         return true;
     }
 
-    private static MiningRigViewModel[] EmptyRigs() => Enumerable.Range(1, 6)
-        .Select(number => new MiningRigViewModel(number, null)).ToArray();
+    private static MiningRigViewModel[] EmptyRigs() =>
+        Enumerable.Range(1, 6).Select(number => new MiningRigViewModel(number, null)).ToArray();
 
     private void Notify() => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
 

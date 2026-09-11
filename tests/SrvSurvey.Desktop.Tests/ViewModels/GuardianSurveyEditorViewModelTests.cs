@@ -8,7 +8,8 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-guardian-editor-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-guardian-editor-tests-{Guid.NewGuid():N}"
+    );
 
     public GuardianSurveyEditorViewModelTests()
     {
@@ -30,25 +31,19 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
                 callbackPrevious = previous;
                 callbackSaved = saved;
                 return Task.CompletedTask;
-            });
-        editor.Load(new GuardianSurveyEditorLoadContext(
-            "F123",
-            true,
-            initial with { Path = path },
-            CreateTemplate()));
+            }
+        );
+        editor.Load(new GuardianSurveyEditorLoadContext("F123", true, initial with { Path = path }, CreateTemplate()));
 
         Assert.True(editor.IsAvailable);
         Assert.Equal(3, editor.Points.Count);
-        Assert.False(editor.Points.Single(point => point.Name == "c1")
-            .CanEditComponentMaterials);
+        Assert.False(editor.Points.Single(point => point.Name == "c1").CanEditComponentMaterials);
         Assert.Equal(2, editor.ObeliskGroups.Count);
         editor.SiteHeading = 123;
         editor.RelicTowerHeading = 45;
         editor.Notes = "updated note";
-        editor.Points.Single(point => point.Name == "p1").Status =
-            GuardianPoiStatus.Empty;
-        editor.Points.Single(point => point.Name == "c1").Status =
-            GuardianPoiStatus.Absent;
+        editor.Points.Single(point => point.Name == "p1").Status = GuardianPoiStatus.Empty;
+        editor.Points.Single(point => point.Name == "c1").Status = GuardianPoiStatus.Absent;
         var relic = editor.Points.Single(point => point.Name == "t1");
         relic.Status = GuardianPoiStatus.Present;
         relic.RelicHeading = 222;
@@ -60,8 +55,7 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         Assert.NotNull(callbackPrevious);
         Assert.NotNull(callbackSaved);
         Assert.Contains("Saved Guardian survey", editor.StatusMessage);
-        var data = await new GuardianCommanderDataReader(temporaryDirectory)
-            .ReadAsync("F123", isOdyssey: true);
+        var data = await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync("F123", isOdyssey: true);
         var saved = Assert.Single(data.Surveys);
         Assert.Equal(123, saved.Survey.SiteHeading);
         Assert.Equal(45, saved.Survey.RelicTowerHeading);
@@ -97,29 +91,26 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
                 RawPointsOfInterest = source.Survey.RawPointsOfInterest,
             },
         };
-        var editor = new GuardianSurveyEditorViewModel(
-            store,
-            (_, _) => Task.CompletedTask);
-        editor.Load(new GuardianSurveyEditorLoadContext(
-            "F123",
-            true,
-            initial,
-            CreateTemplate())
-        {
-            AlignmentOrigin = new GuardianSurfaceLocation(0, 0),
-            PlanetRadiusMeters = radius,
-        });
+        var editor = new GuardianSurveyEditorViewModel(store, (_, _) => Task.CompletedTask);
+        editor.Load(
+            new GuardianSurveyEditorLoadContext("F123", true, initial, CreateTemplate())
+            {
+                AlignmentOrigin = new GuardianSurfaceLocation(0, 0),
+                PlanetRadiusMeters = radius,
+            }
+        );
 
         await editor.SaveAsync();
 
         var saved = Assert.Single(
-            (await new GuardianCommanderDataReader(temporaryDirectory)
-                .ReadAsync("F123", isOdyssey: true)).Surveys);
+            (await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync("F123", isOdyssey: true)).Surveys
+        );
         var expected = GuardianMapMarkerOffsetCalculator.Calculate(
             new GuardianSurfaceLocation(0, 0),
             correctedLocation,
             siteHeading: 0,
-            radius);
+            radius
+        );
         Assert.Equal(expected.X, saved.MapMarkerOffset.X, precision: 6);
         Assert.Equal(expected.Y, saved.MapMarkerOffset.Y, precision: 6);
     }
@@ -137,21 +128,16 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
             {
                 callbackCount++;
                 return Task.CompletedTask;
-            });
-        editor.Load(new GuardianSurveyEditorLoadContext(
-            "F123",
-            true,
-            initial with { Path = path },
-            CreateTemplate()));
-        editor.Points.Single(point => point.Name == "c1").Status =
-            GuardianPoiStatus.Empty;
+            }
+        );
+        editor.Load(new GuardianSurveyEditorLoadContext("F123", true, initial with { Path = path }, CreateTemplate()));
+        editor.Points.Single(point => point.Name == "c1").Status = GuardianPoiStatus.Empty;
 
         await editor.SaveAsync();
 
         Assert.Equal(0, callbackCount);
         Assert.Contains("cannot be marked empty", editor.StatusMessage);
-        var data = await new GuardianCommanderDataReader(temporaryDirectory)
-            .ReadAsync("F123", isOdyssey: true);
+        var data = await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync("F123", isOdyssey: true);
         var saved = Assert.Single(data.Surveys);
         Assert.Equal(GuardianPoiStatus.Present, saved.Survey.PoiStatuses["c1"]);
     }
@@ -164,23 +150,20 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         var projection = new GuardianSiteMapProjector().Project(
             template,
             CreateSurvey().Survey,
-            [new GuardianObelisk("A01", "H1", true, ["ca"])]);
+            [new GuardianObelisk("A01", "H1", true, ["ca"])]
+        );
         var editor = new GuardianSurveyEditorViewModel(
             new GuardianCommanderSurveyStore(temporaryDirectory),
             (_, _) =>
             {
                 callbackCount++;
                 return Task.CompletedTask;
-            });
+            }
+        );
 
-        editor.Load(new GuardianSurveyEditorLoadContext(
-            "F123",
-            true,
-            null,
-            template)
-        {
-            ReferenceProjection = projection,
-        });
+        editor.Load(
+            new GuardianSurveyEditorLoadContext("F123", true, null, template) { ReferenceProjection = projection }
+        );
         editor.SelectedPointName = "c1";
 
         Assert.True(editor.HasSelectedMapMarker);
@@ -209,31 +192,19 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
     {
         var template = CreateTemplate();
         var survey = CreateSurvey();
-        var projection = new GuardianSiteMapProjector().Project(
-            template,
-            survey.Survey,
-            survey.ActiveObelisks);
+        var projection = new GuardianSiteMapProjector().Project(template, survey.Survey, survey.ActiveObelisks);
         var editor = new GuardianSurveyEditorViewModel(
             new GuardianCommanderSurveyStore(temporaryDirectory),
-            (_, _) => Task.CompletedTask);
-        editor.Load(new GuardianSurveyEditorLoadContext(
-            "F123",
-            true,
-            null,
-            template)
-        {
-            ReferenceProjection = projection,
-        });
+            (_, _) => Task.CompletedTask
+        );
+        editor.Load(
+            new GuardianSurveyEditorLoadContext("F123", true, null, template) { ReferenceProjection = projection }
+        );
         editor.SelectedPointName = "c1";
 
-        editor.Load(new GuardianSurveyEditorLoadContext(
-            "F123",
-            true,
-            survey,
-            template)
-        {
-            ReferenceProjection = projection,
-        });
+        editor.Load(
+            new GuardianSurveyEditorLoadContext("F123", true, survey, template) { ReferenceProjection = projection }
+        );
 
         Assert.Equal("c1", editor.SelectedPointName);
         Assert.True(editor.HasSelectedMapMarker);
@@ -248,24 +219,18 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         var store = new GuardianCommanderSurveyStore(temporaryDirectory);
         var initial = CreateSurvey();
         var path = await store.SaveAsync("F123", isOdyssey: true, initial);
-        var editor = new GuardianSurveyEditorViewModel(
-            store,
-            (_, _) => Task.CompletedTask);
-        editor.Load(new GuardianSurveyEditorLoadContext(
-            "F123",
-            true,
-            initial with { Path = path },
-            CreateTemplate())
-        {
-            ShowComponentMaterials = true,
-        });
+        var editor = new GuardianSurveyEditorViewModel(store, (_, _) => Task.CompletedTask);
+        editor.Load(
+            new GuardianSurveyEditorLoadContext("F123", true, initial with { Path = path }, CreateTemplate())
+            {
+                ShowComponentMaterials = true,
+            }
+        );
 
         var tower = editor.Points.Single(point => point.Name == "c1");
         Assert.True(tower.CanEditComponentMaterials);
         Assert.True(tower.SupportsMultipleComponentMaterials);
-        Assert.Equal(
-            GuardianComponentMaterial.Cell,
-            tower.TopComponentMaterial);
+        Assert.Equal(GuardianComponentMaterial.Cell, tower.TopComponentMaterial);
         tower.MiddleComponentMaterial = GuardianComponentMaterial.Conduit;
         var panel = editor.Points.Single(point => point.Name == "d1");
         Assert.True(panel.SupportsComponentMaterials);
@@ -275,14 +240,10 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         await editor.SaveAsync();
 
         var saved = Assert.Single(
-            (await new GuardianCommanderDataReader(temporaryDirectory)
-                .ReadAsync("F123", isOdyssey: true)).Surveys);
-        Assert.Equal(
-            GuardianComponentMaterial.Conduit,
-            saved.Survey.ComponentMaterials["c1"].GetItem(1));
-        Assert.Equal(
-            GuardianComponentMaterial.Tech,
-            saved.Survey.ComponentMaterials["d1"].GetItem(0));
+            (await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync("F123", isOdyssey: true)).Surveys
+        );
+        Assert.Equal(GuardianComponentMaterial.Conduit, saved.Survey.ComponentMaterials["c1"].GetItem(1));
+        Assert.Equal(GuardianComponentMaterial.Tech, saved.Survey.ComponentMaterials["d1"].GetItem(0));
     }
 
     [Fact]
@@ -291,19 +252,10 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         var store = new GuardianCommanderSurveyStore(temporaryDirectory);
         var initial = CreateSurvey();
         var path = await store.SaveAsync("F123", isOdyssey: true, initial);
-        var editor = new GuardianSurveyEditorViewModel(
-            store,
-            (_, _) => Task.CompletedTask);
-        editor.Load(new GuardianSurveyEditorLoadContext(
-            "F123",
-            true,
-            initial with { Path = path },
-            CreateTemplate()));
+        var editor = new GuardianSurveyEditorViewModel(store, (_, _) => Task.CompletedTask);
+        editor.Load(new GuardianSurveyEditorLoadContext("F123", true, initial with { Path = path }, CreateTemplate()));
         editor.NewRawPointType = GuardianPoiType.Orb;
-        editor.UpdateLiveMeasurement(new GuardianSurveyMeasurement(
-            123.4,
-            45.6,
-            78));
+        editor.UpdateLiveMeasurement(new GuardianSurveyMeasurement(123.4, 45.6, 78));
 
         await editor.AddRawPointAsync();
 
@@ -329,8 +281,8 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         await editor.SaveAsync();
 
         var saved = Assert.Single(
-            (await new GuardianCommanderDataReader(temporaryDirectory)
-                .ReadAsync("F123", isOdyssey: true)).Surveys);
+            (await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync("F123", isOdyssey: true)).Surveys
+        );
         var savedRaw = Assert.Single(saved.Survey.RawPointsOfInterest!);
         Assert.Equal("x1", savedRaw.Name);
         Assert.Equal(GuardianPoiType.Tablet, savedRaw.Type);
@@ -339,18 +291,14 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         Assert.Equal(210.5, savedRaw.Rotation, 3);
         Assert.DoesNotContain("x1", saved.Survey.PoiStatuses.Keys);
 
-        editor.Load(new GuardianSurveyEditorLoadContext(
-            "F123",
-            true,
-            saved,
-            CreateTemplate()));
+        editor.Load(new GuardianSurveyEditorLoadContext("F123", true, saved, CreateTemplate()));
         editor.SelectedPoint = editor.Points.Single(point => point.IsRaw);
         await editor.RemoveSelectedRawPointAsync();
         await editor.SaveAsync();
 
         var afterRemoval = Assert.Single(
-            (await new GuardianCommanderDataReader(temporaryDirectory)
-                .ReadAsync("F123", isOdyssey: true)).Surveys);
+            (await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync("F123", isOdyssey: true)).Surveys
+        );
         Assert.Null(afterRemoval.Survey.RawPointsOfInterest);
     }
 
@@ -362,17 +310,13 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         var path = await store.SaveAsync("F123", isOdyssey: true, initial);
         var beta = CreateTemplate();
         var gamma = CreateTemplate("Gamma");
-        var editor = new GuardianSurveyEditorViewModel(
-            store,
-            (_, _) => Task.CompletedTask);
-        editor.Load(new GuardianSurveyEditorLoadContext(
-            "F123",
-            true,
-            initial with { Path = path },
-            beta)
-        {
-            TemplateCatalog = new GuardianSiteTemplateCatalog([beta, gamma]),
-        });
+        var editor = new GuardianSurveyEditorViewModel(store, (_, _) => Task.CompletedTask);
+        editor.Load(
+            new GuardianSurveyEditorLoadContext("F123", true, initial with { Path = path }, beta)
+            {
+                TemplateCatalog = new GuardianSiteTemplateCatalog([beta, gamma]),
+            }
+        );
 
         editor.SiteType = "Gamma";
         editor.SurfaceLatitude = -12.345678m;
@@ -381,11 +325,9 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         Assert.Null(editor.SelectedPoint);
         Assert.Equal("A01", editor.SelectedActiveObelisk?.Name);
         var selectionNotifications = new List<string?>();
-        editor.PropertyChanged += (_, args) =>
-            selectionNotifications.Add(args.PropertyName);
+        editor.PropertyChanged += (_, args) => selectionNotifications.Add(args.PropertyName);
         await editor.AddActiveObeliskAsync();
-        var added = Assert.IsType<GuardianActiveObeliskViewModel>(
-            editor.SelectedActiveObelisk);
+        var added = Assert.IsType<GuardianActiveObeliskViewModel>(editor.SelectedActiveObelisk);
         Assert.Contains(nameof(editor.HasSelectedMapMarker), selectionNotifications);
         Assert.Contains(nameof(editor.IsMapSummaryVisible), selectionNotifications);
         Assert.Contains(nameof(editor.CanEditSelectedPoint), selectionNotifications);
@@ -398,15 +340,13 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         await editor.SaveAsync();
 
         var saved = Assert.Single(
-            (await new GuardianCommanderDataReader(temporaryDirectory)
-                .ReadAsync("F123", isOdyssey: true)).Surveys);
+            (await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync("F123", isOdyssey: true)).Surveys
+        );
         Assert.Equal("Gamma", saved.SiteType);
         Assert.Equal("Gamma", saved.Survey.SiteType);
         Assert.Equal(-12.345678, saved.Survey.Location!.Value.Latitude, 6);
         Assert.Equal(98.765432, saved.Survey.Location.Value.Longitude, 6);
-        var obelisk = Assert.Single(
-            saved.ActiveObelisks,
-            item => item.Name == "B03");
+        var obelisk = Assert.Single(saved.ActiveObelisks, item => item.Name == "B03");
         Assert.Equal("H12", obelisk.LogCode);
         Assert.Equal(["ca", "or"], obelisk.ItemCodes);
         Assert.True(obelisk.Scanned);
@@ -418,14 +358,8 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         var store = new GuardianCommanderSurveyStore(temporaryDirectory);
         var initial = CreateSurvey();
         var path = await store.SaveAsync("F123", isOdyssey: true, initial);
-        var editor = new GuardianSurveyEditorViewModel(
-            store,
-            (_, _) => Task.CompletedTask);
-        editor.Load(new GuardianSurveyEditorLoadContext(
-            "F123",
-            true,
-            initial with { Path = path },
-            CreateTemplate()));
+        var editor = new GuardianSurveyEditorViewModel(store, (_, _) => Task.CompletedTask);
+        editor.Load(new GuardianSurveyEditorLoadContext("F123", true, initial with { Path = path }, CreateTemplate()));
 
         editor.SurfaceLatitude = 12.345678m;
         editor.SurfaceLongitude = -98.765432m;
@@ -461,12 +395,9 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
             {
                 callbackCount++;
                 return Task.CompletedTask;
-            });
-        editor.Load(new GuardianSurveyEditorLoadContext(
-            "F123",
-            true,
-            initial with { Path = path },
-            CreateTemplate()));
+            }
+        );
+        editor.Load(new GuardianSurveyEditorLoadContext("F123", true, initial with { Path = path }, CreateTemplate()));
         editor.SurfaceLatitude = 10;
         editor.SurfaceLongitude = null;
 
@@ -482,8 +413,8 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         Assert.Equal(0, callbackCount);
         Assert.Contains("duplicated", editor.StatusMessage);
         var saved = Assert.Single(
-            (await new GuardianCommanderDataReader(temporaryDirectory)
-                .ReadAsync("F123", isOdyssey: true)).Surveys);
+            (await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync("F123", isOdyssey: true)).Surveys
+        );
         Assert.Equal(1, saved.Survey.Location!.Value.Latitude);
         Assert.Single(saved.ActiveObelisks);
     }
@@ -502,44 +433,25 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
                 SiteHeading = initialSurvey.SiteHeading,
                 RelicTowerHeading = initialSurvey.RelicTowerHeading,
                 Location = initialSurvey.Location,
-                PoiStatuses = new Dictionary<string, GuardianPoiStatus>(
-                    initialSurvey.PoiStatuses)
+                PoiStatuses = new Dictionary<string, GuardianPoiStatus>(initialSurvey.PoiStatuses)
                 {
                     ["x7"] = GuardianPoiStatus.Absent,
                 },
-                RelicHeadings = new Dictionary<string, int>(
-                    initialSurvey.RelicHeadings)
-                {
-                    ["x7"] = 55,
-                },
-                RawPointsOfInterest =
-                [
-                    new GuardianPointOfInterest(
-                        "x7",
-                        GuardianPoiType.Relic,
-                        10,
-                        20,
-                        30),
-                ],
+                RelicHeadings = new Dictionary<string, int>(initialSurvey.RelicHeadings) { ["x7"] = 55 },
+                RawPointsOfInterest = [new GuardianPointOfInterest("x7", GuardianPoiType.Relic, 10, 20, 30)],
             },
         };
         var path = await store.SaveAsync("F123", isOdyssey: true, initial);
-        var editor = new GuardianSurveyEditorViewModel(
-            store,
-            (_, _) => Task.CompletedTask);
-        editor.Load(new GuardianSurveyEditorLoadContext(
-            "F123",
-            true,
-            initial with { Path = path },
-            CreateTemplate()));
+        var editor = new GuardianSurveyEditorViewModel(store, (_, _) => Task.CompletedTask);
+        editor.Load(new GuardianSurveyEditorLoadContext("F123", true, initial with { Path = path }, CreateTemplate()));
         editor.SelectedPoint = editor.Points.Single(point => point.IsRaw);
         editor.SelectedPoint.RelicHeading = 123;
 
         await editor.SaveAsync();
 
         var saved = Assert.Single(
-            (await new GuardianCommanderDataReader(temporaryDirectory)
-                .ReadAsync("F123", isOdyssey: true)).Surveys);
+            (await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync("F123", isOdyssey: true)).Surveys
+        );
         Assert.Equal(GuardianPoiStatus.Absent, saved.Survey.PoiStatuses["x7"]);
         Assert.Equal(123, saved.Survey.RelicHeadings["x7"]);
         Assert.Equal(123, Assert.Single(saved.Survey.RawPointsOfInterest!).Rotation);
@@ -564,18 +476,14 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
             DistanceToArrivalLs = 100,
         };
         var path = await store.SaveAsync("F123", isOdyssey: true, initial);
-        var editor = new GuardianSurveyEditorViewModel(
-            store,
-            (_, _) => Task.CompletedTask);
-        editor.Load(new GuardianSurveyEditorLoadContext(
-            "F123",
-            true,
-            initial with { Path = path },
-            CreateTemplate())
-        {
-            DistanceOrigin = new GalacticCoordinate(0, 0, 0),
-            DistanceOriginName = "Sol",
-        });
+        var editor = new GuardianSurveyEditorViewModel(store, (_, _) => Task.CompletedTask);
+        editor.Load(
+            new GuardianSurveyEditorLoadContext("F123", true, initial with { Path = path }, CreateTemplate())
+            {
+                DistanceOrigin = new GalacticCoordinate(0, 0, 0),
+                DistanceOriginName = "Sol",
+            }
+        );
 
         Assert.Equal(10m, editor.DistanceLy);
         editor.CatalogBodyName = "B 2";
@@ -585,8 +493,8 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         await editor.SaveAsync();
 
         var saved = Assert.Single(
-            (await new GuardianCommanderDataReader(temporaryDirectory)
-                .ReadAsync("F123", isOdyssey: true)).Surveys);
+            (await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync("F123", isOdyssey: true)).Surveys
+        );
         Assert.Equal("B 2", saved.CatalogBodyName);
         Assert.Equal(new GalacticCoordinate(20, 0, 0), saved.StarPosition);
         Assert.Equal(222.5, saved.DistanceToArrivalLs);
@@ -596,23 +504,15 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
     public async Task NegativeDistanceDoesNotMirrorStoredStarPosition()
     {
         var store = new GuardianCommanderSurveyStore(temporaryDirectory);
-        var initial = CreateSurvey() with
-        {
-            CatalogBodyName = "A 1",
-            StarPosition = new GalacticCoordinate(10, 0, 0),
-        };
-        var editor = new GuardianSurveyEditorViewModel(
-            store,
-            (_, _) => Task.CompletedTask);
-        editor.Load(new GuardianSurveyEditorLoadContext(
-            "F123",
-            true,
-            initial,
-            CreateTemplate())
-        {
-            DistanceOrigin = new GalacticCoordinate(0, 0, 0),
-            DistanceOriginName = "Sol",
-        });
+        var initial = CreateSurvey() with { CatalogBodyName = "A 1", StarPosition = new GalacticCoordinate(10, 0, 0) };
+        var editor = new GuardianSurveyEditorViewModel(store, (_, _) => Task.CompletedTask);
+        editor.Load(
+            new GuardianSurveyEditorLoadContext("F123", true, initial, CreateTemplate())
+            {
+                DistanceOrigin = new GalacticCoordinate(0, 0, 0),
+                DistanceOriginName = "Sol",
+            }
+        );
 
         editor.DistanceLy = -20;
         Assert.Equal(10m, editor.DistanceLy);
@@ -621,8 +521,8 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         await editor.SaveAsync();
 
         var saved = Assert.Single(
-            (await new GuardianCommanderDataReader(temporaryDirectory)
-                .ReadAsync("F123", isOdyssey: true)).Surveys);
+            (await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync("F123", isOdyssey: true)).Surveys
+        );
         Assert.Equal(new GalacticCoordinate(10, 0, 0), saved.StarPosition);
     }
 
@@ -649,14 +549,9 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
                 SiteHeading = 10,
                 RelicTowerHeading = 20,
                 Location = new GuardianSurfaceLocation(1, 2),
-                PoiStatuses = new Dictionary<string, GuardianPoiStatus>
-                {
-                    ["c1"] = GuardianPoiStatus.Present,
-                },
+                PoiStatuses = new Dictionary<string, GuardianPoiStatus> { ["c1"] = GuardianPoiStatus.Present },
                 RelicHeadings = new Dictionary<string, int>(),
-                ComponentMaterials = new Dictionary<
-                    string,
-                    GuardianComponentLoadout>
+                ComponentMaterials = new Dictionary<string, GuardianComponentLoadout>
                 {
                     ["c1"] = new GuardianComponentLoadout(
                         "c1",
@@ -664,11 +559,13 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
                             GuardianComponentMaterial.Cell,
                             GuardianComponentMaterial.Unknown,
                             GuardianComponentMaterial.Tech,
-                        ]),
+                        ]
+                    ),
                 },
             },
             [new GuardianObelisk("A01", "H1", true, ["ca"])],
-            new HashSet<char> { 'A' });
+            new HashSet<char> { 'A' }
+        );
     }
 
     private static GuardianSiteTemplate CreateTemplate(string siteType = "Beta")
@@ -680,43 +577,17 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
             new GuardianMapPoint(0, 0),
             1,
             [
-                new GuardianPointOfInterest(
-                    "p1",
-                    GuardianPoiType.Orb,
-                    0,
-                    10,
-                    0),
-                new GuardianPointOfInterest(
-                    "t1",
-                    GuardianPoiType.Relic,
-                    90,
-                    20,
-                    0),
-                new GuardianPointOfInterest(
-                    "c1",
-                    GuardianPoiType.Component,
-                    180,
-                    30,
-                    0),
-                new GuardianPointOfInterest(
-                    "A01",
-                    GuardianPoiType.Obelisk,
-                    270,
-                    40,
-                    0),
+                new GuardianPointOfInterest("p1", GuardianPoiType.Orb, 0, 10, 0),
+                new GuardianPointOfInterest("t1", GuardianPoiType.Relic, 90, 20, 0),
+                new GuardianPointOfInterest("c1", GuardianPoiType.Component, 180, 30, 0),
+                new GuardianPointOfInterest("A01", GuardianPoiType.Obelisk, 270, 40, 0),
             ],
-            [
-                new GuardianPointOfInterest(
-                    "d1",
-                    GuardianPoiType.DestructiblePanel,
-                    45,
-                    35,
-                    0),
-            ],
+            [new GuardianPointOfInterest("d1", GuardianPoiType.DestructiblePanel, 45, 35, 0)],
             new Dictionary<string, GuardianMapPoint>
             {
                 ["A"] = new GuardianMapPoint(0, 20),
                 ["B"] = new GuardianMapPoint(180, 20),
-            });
+            }
+        );
     }
 }

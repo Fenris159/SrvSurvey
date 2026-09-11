@@ -16,37 +16,32 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
     private string controllerRuntimeStatus;
     private string controllerDiscoveryStatus = string.Empty;
     private string lastActionStatus = string.Empty;
-    private IReadOnlyList<ControllerDeviceOptionViewModel> controllerDevices =
-        [];
+    private IReadOnlyList<ControllerDeviceOptionViewModel> controllerDevices = [];
     private ControllerDeviceOptionViewModel? selectedController;
 
     public GlobalInputSettingsViewModel(
         GlobalInputSettingsStore store,
         OverlayPlatformCapabilities capabilities,
-        IControllerDeviceProvider? controllerDeviceProvider = null)
+        IControllerDeviceProvider? controllerDeviceProvider = null
+    )
     {
-        this.store = store
-            ?? throw new ArgumentNullException(nameof(store));
-        this.controllerDeviceProvider = controllerDeviceProvider
-            ?? new SdlControllerDeviceProvider();
-        Capabilities = capabilities
-            ?? throw new ArgumentNullException(nameof(capabilities));
+        this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.controllerDeviceProvider = controllerDeviceProvider ?? new SdlControllerDeviceProvider();
+        Capabilities = capabilities ?? throw new ArgumentNullException(nameof(capabilities));
         settings = store.Load();
-        Bindings = GlobalInputActionCatalog.All
-            .Select(definition => new InputBindingViewModel(
+        Bindings = GlobalInputActionCatalog
+            .All.Select(definition => new InputBindingViewModel(
                 definition,
-                settings.Bindings.GetValueOrDefault(definition.Action)
-                    ?? definition.DefaultChord,
-                SaveBinding))
+                settings.Bindings.GetValueOrDefault(definition.Action) ?? definition.DefaultChord,
+                SaveBinding
+            ))
             .ToArray();
         ResetBindingsCommand = new DelegateCommand(ResetBindings);
-        MiningBindings = Bindings.Where(binding => binding.Definition.Action is
-            >= GlobalInputAction.Track1 and <= GlobalInputAction.Track6).ToArray();
-        RefreshControllersCommand = new DelegateCommand(
-            RefreshControllerDevices);
-        runtimeStatus = IsKeyboardAvailable
-            ? "Global keyboard input is ready to start."
-            : Capabilities.StatusText;
+        MiningBindings = Bindings
+            .Where(binding => binding.Definition.Action is >= GlobalInputAction.Track1 and <= GlobalInputAction.Track6)
+            .ToArray();
+        RefreshControllersCommand = new DelegateCommand(RefreshControllerDevices);
+        runtimeStatus = IsKeyboardAvailable ? "Global keyboard input is ready to start." : Capabilities.StatusText;
         controllerRuntimeStatus = IsControllerAvailable
             ? "Controller input is ready to start."
             : "Controller input is unavailable on this platform.";
@@ -55,8 +50,7 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public event EventHandler<GlobalInputSettingsChangedEventArgs>?
-        SettingsChanged;
+    public event EventHandler<GlobalInputSettingsChangedEventArgs>? SettingsChanged;
 
     public OverlayPlatformCapabilities Capabilities { get; }
 
@@ -70,11 +64,12 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
 
     public bool IsKeyboardAvailable => Capabilities.SupportsGlobalInput;
 
-    public bool IsControllerAvailable => Capabilities.Host is
-        OverlayHostKind.Windows
-        or OverlayHostKind.LinuxX11
-        or OverlayHostKind.LinuxXWayland
-        or OverlayHostKind.LinuxWayland;
+    public bool IsControllerAvailable =>
+        Capabilities.Host
+            is OverlayHostKind.Windows
+                or OverlayHostKind.LinuxX11
+                or OverlayHostKind.LinuxXWayland
+                or OverlayHostKind.LinuxWayland;
 
     public IReadOnlyList<ControllerDeviceOptionViewModel> ControllerDevices
     {
@@ -94,29 +89,26 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
 
     public bool HasControllerDevices => ControllerDevices.Count > 0;
 
-    public bool CanEnableControllerInput => IsControllerAvailable
-        && selectedController is not null;
+    public bool CanEnableControllerInput => IsControllerAvailable && selectedController is not null;
 
     public ControllerDeviceOptionViewModel? SelectedController
     {
         get => selectedController;
         set
         {
-            if (string.Equals(
-                    selectedController?.Id,
-                    value?.Id,
-                    StringComparison.Ordinal))
+            if (string.Equals(selectedController?.Id, value?.Id, StringComparison.Ordinal))
             {
                 return;
             }
 
             selectedController = value;
-            Apply(settings with
-            {
-                ControllerDeviceId = value?.Id,
-                ControllerEnabled = value is not null
-                    && settings.ControllerEnabled,
-            });
+            Apply(
+                settings with
+                {
+                    ControllerDeviceId = value?.Id,
+                    ControllerEnabled = value is not null && settings.ControllerEnabled,
+                }
+            );
             OnPropertyChanged();
             OnPropertyChanged(nameof(ControllerEnabled));
             OnPropertyChanged(nameof(CanEnableControllerInput));
@@ -128,8 +120,7 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
         get => settings.KeyboardEnabled;
         set
         {
-            if (value == settings.KeyboardEnabled
-                || (value && !IsKeyboardAvailable))
+            if (value == settings.KeyboardEnabled || (value && !IsKeyboardAvailable))
             {
                 return;
             }
@@ -144,11 +135,10 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
         get => settings.ControllerEnabled;
         set
         {
-            if (value == settings.ControllerEnabled
-                || (value
-                    && (!IsControllerAvailable
-                        || string.IsNullOrWhiteSpace(
-                            settings.ControllerDeviceId))))
+            if (
+                value == settings.ControllerEnabled
+                || (value && (!IsControllerAvailable || string.IsNullOrWhiteSpace(settings.ControllerDeviceId)))
+            )
             {
                 return;
             }
@@ -235,7 +225,8 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
     {
         var bindings = GlobalInputActionCatalog.All.ToDictionary(
             definition => definition.Action,
-            definition => definition.DefaultChord);
+            definition => definition.DefaultChord
+        );
         foreach (var binding in Bindings)
         {
             binding.Reset(bindings[binding.Definition.Action]);
@@ -252,31 +243,31 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
             selectedController = null;
             OnPropertyChanged(nameof(SelectedController));
             OnPropertyChanged(nameof(CanEnableControllerInput));
-            ControllerDiscoveryStatus =
-                "SDL controller discovery is unavailable on this platform.";
+            ControllerDiscoveryStatus = "SDL controller discovery is unavailable on this platform.";
             return;
         }
 
         var result = controllerDeviceProvider.Discover();
-        var devices = result.Devices
-            .Select(device => new ControllerDeviceOptionViewModel(
+        var devices = result
+            .Devices.Select(device => new ControllerDeviceOptionViewModel(
                 device.Id,
                 device.Name,
                 device.Description,
-                IsConnected: true))
+                IsConnected: true
+            ))
             .ToList();
         var configuredId = settings.ControllerDeviceId;
-        var configured = devices.FirstOrDefault(device => string.Equals(
-            device.Id,
-            configuredId,
-            StringComparison.Ordinal));
+        var configured = devices.FirstOrDefault(device =>
+            string.Equals(device.Id, configuredId, StringComparison.Ordinal)
+        );
         if (configured is null && !string.IsNullOrWhiteSpace(configuredId))
         {
             configured = new ControllerDeviceOptionViewModel(
                 configuredId,
                 "Previously selected controller",
                 "Not currently connected; input will resume when it returns.",
-                IsConnected: false);
+                IsConnected: false
+            );
             devices.Add(configured);
         }
 
@@ -284,13 +275,16 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
         selectedController = configured;
         OnPropertyChanged(nameof(SelectedController));
         OnPropertyChanged(nameof(CanEnableControllerInput));
-        ControllerDiscoveryStatus = result.ErrorMessage
-            ?? (result.Devices.Count switch
-            {
-                0 => "No controllers are currently connected.",
-                1 => "Found 1 connected controller.",
-                _ => $"Found {result.Devices.Count} connected controllers.",
-            });
+        ControllerDiscoveryStatus =
+            result.ErrorMessage
+            ?? (
+                result.Devices.Count switch
+                {
+                    0 => "No controllers are currently connected.",
+                    1 => "Found 1 connected controller.",
+                    _ => $"Found {result.Devices.Count} connected controllers.",
+                }
+            );
     }
 
     private void Apply(GlobalInputSettings updatedSettings)
@@ -301,25 +295,16 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
             store.Save(settings);
             PersistenceStatus = string.Empty;
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidOperationException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidOperationException)
         {
-            PersistenceStatus =
-                "Input settings changed for this session but could not be saved: "
-                + exception.Message;
+            PersistenceStatus = "Input settings changed for this session but could not be saved: " + exception.Message;
         }
 
-        SettingsChanged?.Invoke(
-            this,
-            new GlobalInputSettingsChangedEventArgs(settings));
+        SettingsChanged?.Invoke(this, new GlobalInputSettingsChangedEventArgs(settings));
     }
 
-    private bool SetField(
-        ref string field,
-        string value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField(ref string field, string value, [CallerMemberName] string? propertyName = null)
     {
         if (string.Equals(field, value, StringComparison.Ordinal))
         {
@@ -331,20 +316,21 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
         return true;
     }
 
-    private void OnPropertyChanged(
-        [CallerMemberName] string? propertyName = null)
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(propertyName));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     private sealed class DelegateCommand(Action execute) : ICommand
     {
         public event EventHandler? CanExecuteChanged
         {
-            add { /* This command is always executable. */ }
-            remove { /* This command is always executable. */ }
+            add
+            { /* This command is always executable. */
+            }
+            remove
+            { /* This command is always executable. */
+            }
         }
 
         public bool CanExecute(object? parameter) => true;
@@ -353,11 +339,11 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
     }
 }
 
-public sealed record GlobalInputSettingsChangedEventArgs(
-    GlobalInputSettings Settings);
+public sealed record GlobalInputSettingsChangedEventArgs(GlobalInputSettings Settings);
 
 public sealed record ControllerDeviceOptionViewModel(
     string Id,
     string DisplayName,
     string Description,
-    bool IsConnected);
+    bool IsConnected
+);

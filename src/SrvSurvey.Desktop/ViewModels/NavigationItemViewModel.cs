@@ -7,7 +7,8 @@ public sealed record NavigationItemViewModel(
     string Key,
     string Label,
     string Description,
-    bool HasOverlaySettings = false) : INotifyPropertyChanged
+    bool HasOverlaySettings = false
+) : INotifyPropertyChanged
 {
     private bool isSelected;
 
@@ -24,9 +25,7 @@ public sealed record NavigationItemViewModel(
             }
 
             isSelected = value;
-            PropertyChanged?.Invoke(
-                this,
-                new PropertyChangedEventArgs(nameof(IsSelected)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected)));
         }
     }
 }

@@ -78,16 +78,25 @@ public sealed class StreamOverlayCoordinatorTests
         public TestContext(bool isForeground, bool keepVisible = false)
         {
             KeepVisible = keepVisible;
-            Tracker = new StubTracker(new GameWindowSnapshot(
-                (nint)42, 123, new PixelRect(0, 0, 1920, 1080),
-                IsVisible: true, IsForeground: isForeground));
+            Tracker = new StubTracker(
+                new GameWindowSnapshot(
+                    (nint)42,
+                    123,
+                    new PixelRect(0, 0, 1920, 1080),
+                    IsVisible: true,
+                    IsForeground: isForeground
+                )
+            );
             ViewModel = new StreamOverlayViewModel(new StreamOverlaySettingsStore(Path.Combine(root, "settings.json")))
             {
                 Enabled = true,
             };
             coordinator = new StreamOverlayCoordinator(
-                ViewModel, Platform,
-                new OverlayGameWindowTracker(Tracker, () => KeepVisible), registry);
+                ViewModel,
+                Platform,
+                new OverlayGameWindowTracker(Tracker, () => KeepVisible),
+                registry
+            );
         }
 
         public bool KeepVisible { get; set; }
@@ -111,7 +120,9 @@ public sealed class StreamOverlayCoordinatorTests
     private sealed class StubTracker(GameWindowSnapshot snapshot) : IGameWindowTracker
     {
         public GameWindowSnapshot Snapshot { get; set; } = snapshot;
+
         public GameWindowSnapshot GetSnapshot() => Snapshot;
+
         public void Dispose() { }
     }
 

@@ -7,7 +7,8 @@ public sealed class StationInfoSettingsStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-station-info-settings-{Guid.NewGuid():N}");
+        $"SrvSurvey-station-info-settings-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void DefaultsToLegacyAutomaticBehavior()
@@ -31,9 +32,7 @@ public sealed class StationInfoSettingsStoreTests : IDisposable
         Assert.Equal("raven-dark", root["Theme"]!["Key"]!.GetValue<string>());
     }
 
-    private string SettingsPath => Path.Combine(
-        temporaryDirectory,
-        "ui-settings.json");
+    private string SettingsPath => Path.Combine(temporaryDirectory, "ui-settings.json");
 
     public void Dispose()
     {

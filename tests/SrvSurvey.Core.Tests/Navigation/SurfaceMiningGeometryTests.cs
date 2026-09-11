@@ -9,7 +9,10 @@ public sealed class SurfaceMiningGeometryTests
     [InlineData(85, 179.99999, 270)]
     [InlineData(-85, -179.99999, 90)]
     public void CockpitOffsetsRemainBehindVehicleAcrossLongitudeBoundary(
-        double latitude, double longitude, double heading)
+        double latitude,
+        double longitude,
+        double heading
+    )
     {
         const double radius = 1_000_000;
         var cockpit = new SurfaceCoordinate(latitude, longitude);
@@ -18,8 +21,7 @@ public sealed class SurfaceMiningGeometryTests
 
         Assert.Equal(4, SurfaceNavigation.GetDistance(cockpit, center, radius), 4);
         Assert.Equal(7, SurfaceNavigation.GetDistance(cockpit, rig, radius), 4);
-        Assert.Equal(SurfaceNavigation.NormalizeDegrees(heading + 180),
-            SurfaceNavigation.GetBearing(cockpit, rig), 4);
+        Assert.Equal(SurfaceNavigation.NormalizeDegrees(heading + 180), SurfaceNavigation.GetBearing(cockpit, rig), 4);
         Assert.InRange(rig.Longitude, -180, 180);
         Assert.InRange(center.Longitude, -180, 180);
     }

@@ -21,14 +21,12 @@ internal static class OverlayEditorPreviewFactories
 {
     private const string UiSettingsFileName = "ui-settings.json";
 
-    private static readonly OverlayPreviewSimulationState State =
-        OverlayPreviewSimulationState.Default;
+    private static readonly OverlayPreviewSimulationState State = OverlayPreviewSimulationState.Default;
 
     private static string SettingsDir(string leaf) =>
         Path.Combine(Path.GetTempPath(), "SrvSurvey-OverlayEditorPreview", leaf);
 
-    private static OverlayPlatformCapabilities Caps() =>
-        OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows);
+    private static OverlayPlatformCapabilities Caps() => OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows);
 
     public static RouteBioOverlayViewModel CreateRouteBio()
     {
@@ -37,15 +35,15 @@ internal static class OverlayEditorPreviewFactories
             new RouteWorkspaceViewModel(
                 new FollowRouteService(new FollowRouteStore(temporaryDirectory)),
                 new RouteNameImporter(new EmptySystemResolver()),
-                new EmptySpanshRouteClient()),
-            Caps());
+                new EmptySpanshRouteClient()
+            ),
+            Caps()
+        );
         var content = OverlayPreviewSimulationProjector.Project(
             OverlayLayoutCatalog.GetRequired("PlotRouteBio"),
-            State);
-        var targets = content.Rows
-            .Select(row => row.RouteBody)
-            .OfType<RouteBioTargetItemViewModel>()
-            .ToArray();
+            State
+        );
+        var targets = content.Rows.Select(row => row.RouteBody).OfType<RouteBioTargetItemViewModel>().ToArray();
         vm.InstallEditorPreview(State.CurrentSystem, targets);
         return vm;
     }
@@ -88,11 +86,9 @@ internal static class OverlayEditorPreviewFactories
                 IsAtConstructionSite = true,
             },
             updatedStatus: null,
-            updatedHasMarketSinceDocking: true);
-        vm.ApplyPreferences(ColonizationOverlayPreferences.Default with
-        {
-            ShowFleetCarrierCargo = true,
-        });
+            updatedHasMarketSinceDocking: true
+        );
+        vm.ApplyPreferences(ColonizationOverlayPreferences.Default with { ShowFleetCarrierCargo = true });
         return vm;
 
         static ColonizationCommodityPlanRow Row(
@@ -101,7 +97,8 @@ internal static class OverlayEditorPreviewFactories
             string category,
             int needed,
             int ship,
-            int fc) =>
+            int fc
+        ) =>
             new()
             {
                 Commodity = commodity,
@@ -117,8 +114,8 @@ internal static class OverlayEditorPreviewFactories
     public static NotificationViewModel CreateNotification()
     {
         var vm = new NotificationViewModel(
-            new NotificationSettingsStore(
-                Path.Combine(SettingsDir("notification"), UiSettingsFileName)));
+            new NotificationSettingsStore(Path.Combine(SettingsDir("notification"), UiSettingsFileName))
+        );
         vm.Enabled = true;
         vm.ShowMessage("First footfall confirmed on Synuefe NL-N C23-4 B 3");
         vm.ShowMessage("Codex: Bacterium Acies recorded");
@@ -128,9 +125,9 @@ internal static class OverlayEditorPreviewFactories
     public static CombatOverlayViewModel CreateCombat()
     {
         var combat = new CombatViewModel(
-            new CombatSettingsStore(
-                Path.Combine(SettingsDir("combat"), UiSettingsFileName)),
-            new CommanderProfileStore(SettingsDir("combat-profile")));
+            new CombatSettingsStore(Path.Combine(SettingsDir("combat"), UiSettingsFileName)),
+            new CommanderProfileStore(SettingsDir("combat-profile"))
+        );
         combat.InstallEditorPreview();
         return new CombatOverlayViewModel(combat, Caps());
     }
@@ -140,12 +137,12 @@ internal static class OverlayEditorPreviewFactories
         var nicknameDir = SettingsDir("nicknames");
         var vm = new GalaxyMapOverlayViewModel(
             new EmptySystemSummaryClient(),
-            new GalaxyMapSettingsStore(
-                Path.Combine(SettingsDir("galmap"), UiSettingsFileName)),
+            new GalaxyMapSettingsStore(Path.Combine(SettingsDir("galmap"), UiSettingsFileName)),
             new SystemNicknameViewModel(
                 SystemNicknameCatalog.Load(nicknameDir),
-                new SystemNicknameSettingsStore(
-                    Path.Combine(nicknameDir, UiSettingsFileName))));
+                new SystemNicknameSettingsStore(Path.Combine(nicknameDir, UiSettingsFileName))
+            )
+        );
         vm.InstallEditorPreview(State);
         return vm;
     }
@@ -153,100 +150,105 @@ internal static class OverlayEditorPreviewFactories
     public static SurfaceMiningOverlayViewModel CreateSurfaceMining()
     {
         var mining = new SurfaceMiningViewModel(new SystemSurfaceStore(SettingsDir("mining")));
-        mining.InstallEditorPreview([
-            new SurfaceRadarMarkerViewModel
-            {
-                Name = "Rig 1", Kind = SurfaceRadarMarkerKind.MiningRig, Status = "COLLECT",
-                DistanceMeters = 3, RelativeBearingDegrees = 180, RadiusMeters = SurfaceMiningGeometry.RigRadiusMeters,
-                IsInsideRadius = true, Location = new SurfaceCoordinate(0, 0),
-            },
-            new SurfaceRadarMarkerViewModel
-            {
-                Name = "Rig 2", Kind = SurfaceRadarMarkerKind.MiningRig, Status = "TOO CLOSE",
-                DistanceMeters = 65, RelativeBearingDegrees = 55, RadiusMeters = SurfaceMiningGeometry.RigRadiusMeters,
-                IsInsideRadius = true, Location = new SurfaceCoordinate(0, 0),
-            },
-            new SurfaceRadarMarkerViewModel
-            {
-                Name = "Rig 3", Kind = SurfaceRadarMarkerKind.MiningRig, Status = "TRACKED",
-                DistanceMeters = 170, RelativeBearingDegrees = 300, RadiusMeters = SurfaceMiningGeometry.RigRadiusMeters,
-                Location = new SurfaceCoordinate(0, 0),
-            },
-        ], [
-            new SurfaceRadarMarkerViewModel
-            {
-                Name = "helium", Kind = SurfaceRadarMarkerKind.Bookmark,
-                DistanceMeters = 2_350, RelativeBearingDegrees = 180, RadiusMeters = SurfaceMiningGeometry.ResourceRadiusMeters,
-                Location = new SurfaceCoordinate(0, 0),
-            },
-            new SurfaceRadarMarkerViewModel
-            {
-                Name = "thortveitite", Kind = SurfaceRadarMarkerKind.Bookmark,
-                DistanceMeters = 138, RelativeBearingDegrees = 205, RadiusMeters = SurfaceMiningGeometry.ResourceRadiusMeters,
-                Location = new SurfaceCoordinate(0, 0),
-            },
-            new SurfaceRadarMarkerViewModel
-            {
-                Name = "uraninite", Kind = SurfaceRadarMarkerKind.Bookmark,
-                DistanceMeters = 580, RelativeBearingDegrees = 40, RadiusMeters = SurfaceMiningGeometry.ResourceRadiusMeters,
-                Location = new SurfaceCoordinate(0, 0),
-            },
-        ]);
+        mining.InstallEditorPreview(
+            [
+                new SurfaceRadarMarkerViewModel
+                {
+                    Name = "Rig 1",
+                    Kind = SurfaceRadarMarkerKind.MiningRig,
+                    Status = "COLLECT",
+                    DistanceMeters = 3,
+                    RelativeBearingDegrees = 180,
+                    RadiusMeters = SurfaceMiningGeometry.RigRadiusMeters,
+                    IsInsideRadius = true,
+                    Location = new SurfaceCoordinate(0, 0),
+                },
+                new SurfaceRadarMarkerViewModel
+                {
+                    Name = "Rig 2",
+                    Kind = SurfaceRadarMarkerKind.MiningRig,
+                    Status = "TOO CLOSE",
+                    DistanceMeters = 65,
+                    RelativeBearingDegrees = 55,
+                    RadiusMeters = SurfaceMiningGeometry.RigRadiusMeters,
+                    IsInsideRadius = true,
+                    Location = new SurfaceCoordinate(0, 0),
+                },
+                new SurfaceRadarMarkerViewModel
+                {
+                    Name = "Rig 3",
+                    Kind = SurfaceRadarMarkerKind.MiningRig,
+                    Status = "TRACKED",
+                    DistanceMeters = 170,
+                    RelativeBearingDegrees = 300,
+                    RadiusMeters = SurfaceMiningGeometry.RigRadiusMeters,
+                    Location = new SurfaceCoordinate(0, 0),
+                },
+            ],
+            [
+                new SurfaceRadarMarkerViewModel
+                {
+                    Name = "helium",
+                    Kind = SurfaceRadarMarkerKind.Bookmark,
+                    DistanceMeters = 2_350,
+                    RelativeBearingDegrees = 180,
+                    RadiusMeters = SurfaceMiningGeometry.ResourceRadiusMeters,
+                    Location = new SurfaceCoordinate(0, 0),
+                },
+                new SurfaceRadarMarkerViewModel
+                {
+                    Name = "thortveitite",
+                    Kind = SurfaceRadarMarkerKind.Bookmark,
+                    DistanceMeters = 138,
+                    RelativeBearingDegrees = 205,
+                    RadiusMeters = SurfaceMiningGeometry.ResourceRadiusMeters,
+                    Location = new SurfaceCoordinate(0, 0),
+                },
+                new SurfaceRadarMarkerViewModel
+                {
+                    Name = "uraninite",
+                    Kind = SurfaceRadarMarkerKind.Bookmark,
+                    DistanceMeters = 580,
+                    RelativeBearingDegrees = 40,
+                    RadiusMeters = SurfaceMiningGeometry.ResourceRadiusMeters,
+                    Location = new SurfaceCoordinate(0, 0),
+                },
+            ]
+        );
         return new SurfaceMiningOverlayViewModel(mining, Caps());
     }
 
     public static SurfaceSurveyOverlayViewModel CreateSurfaceSurvey()
     {
         var root = SettingsDir("surface");
-        var survey = new SystemSurveyViewModel(
-            new SystemSurveySettingsStore(Path.Combine(root, UiSettingsFileName)));
+        var survey = new SystemSurveyViewModel(new SystemSurveySettingsStore(Path.Combine(root, UiSettingsFileName)));
         var store = new SystemSurfaceStore(root);
         var surface = new SurfaceSurveyViewModel(
             survey,
             store,
-            new SurfaceTracker(
-                store,
-                ExobiologyReferenceCatalog.LoadEmbedded()));
-        var acies = Marker(
-            "Bacterium Acies",
-            SurfaceRadarMarkerKind.ActiveSample,
-            146,
-            68,
-            -6,
-            500);
+            new SurfaceTracker(store, ExobiologyReferenceCatalog.LoadEmbedded())
+        );
+        var acies = Marker("Bacterium Acies", SurfaceRadarMarkerKind.ActiveSample, 146, 68, -6, 500);
         var tussock = Marker(
             "Tussock Capillum",
             SurfaceRadarMarkerKind.Bookmark,
             412,
             91,
             17,
-            ExobiologyReferenceCatalog.GetSampleDistanceMeters("Tussock"));
-        var ship = Marker(
-            "Ship",
-            SurfaceRadarMarkerKind.Ship,
-            860,
-            184,
-            110,
-            0);
+            ExobiologyReferenceCatalog.GetSampleDistanceMeters("Tussock")
+        );
+        var ship = Marker("Ship", SurfaceRadarMarkerKind.Ship, 860, 184, 110, 0);
         surface.InstallEditorPreview(
             State.CurrentBody,
             "HEADING 074°",
             "12 scan circles · 4 trackers",
             [acies, tussock, ship],
             [
-                new SurfaceTrackerGroupViewModel(
-                    "#1 Bacterium",
-                    IsActive: true,
-                    [acies]),
-                new SurfaceTrackerGroupViewModel(
-                    "#2 Tussock",
-                    IsActive: true,
-                    [tussock]),
-                new SurfaceTrackerGroupViewModel(
-                    "Ship",
-                    IsActive: false,
-                    [ship]),
-            ]);
+                new SurfaceTrackerGroupViewModel("#1 Bacterium", IsActive: true, [acies]),
+                new SurfaceTrackerGroupViewModel("#2 Tussock", IsActive: true, [tussock]),
+                new SurfaceTrackerGroupViewModel("Ship", IsActive: false, [ship]),
+            ]
+        );
         return new SurfaceSurveyOverlayViewModel(surface, Caps());
 
         static SurfaceRadarMarkerViewModel Marker(
@@ -255,7 +257,8 @@ internal static class OverlayEditorPreviewFactories
             double distance,
             double bearing,
             double relative,
-            double radius) =>
+            double radius
+        ) =>
             new()
             {
                 Name = name,
@@ -272,19 +275,21 @@ internal static class OverlayEditorPreviewFactories
     public static HumanSiteOverlayViewModel CreateHumanSite()
     {
         var humanSite = new HumanSiteViewModel();
-        humanSite.InstallEditorPreview(new HumanSiteEditorPreview
-        {
-            SiteName = State.SettlementName,
-            TemplateText = "Military M2 · threat 2",
-            GeometryStatus = "Settlement map aligned",
-            FactionText = "Blue Fortune Corp · Anarchy",
-            DockingStatusText = "Docking granted · pad 02",
-            DistanceText = "186 m from origin",
-            ApproachDistanceText = "1.8 km approach distance",
-            CommanderPositionText = "x +42.0 m · y -18.0 m · 164°",
-            ThreatLevelText = "Threat level 2 · full shield",
-            IsQuestTagged = true,
-        });
+        humanSite.InstallEditorPreview(
+            new HumanSiteEditorPreview
+            {
+                SiteName = State.SettlementName,
+                TemplateText = "Military M2 · threat 2",
+                GeometryStatus = "Settlement map aligned",
+                FactionText = "Blue Fortune Corp · Anarchy",
+                DockingStatusText = "Docking granted · pad 02",
+                DistanceText = "186 m from origin",
+                ApproachDistanceText = "1.8 km approach distance",
+                CommanderPositionText = "x +42.0 m · y -18.0 m · 164°",
+                ThreatLevelText = "Threat level 2 · full shield",
+                IsQuestTagged = true,
+            }
+        );
         return new HumanSiteOverlayViewModel(humanSite, Caps());
     }
 
@@ -292,8 +297,8 @@ internal static class OverlayEditorPreviewFactories
     {
         var jump = new JumpInfoViewModel(
             new EmptySystemSummaryClient(),
-            new JumpInfoSettingsStore(
-                Path.Combine(SettingsDir("jump-info"), UiSettingsFileName)));
+            new JumpInfoSettingsStore(Path.Combine(SettingsDir("jump-info"), UiSettingsFileName))
+        );
         var plan = new JumpInfoRoutePlan(
             new JumpTarget(State.DestinationSystem, 99, "K"),
             JumpInfoRouteSource.FollowedRoute,
@@ -305,7 +310,8 @@ internal static class OverlayEditorPreviewFactories
                 new JumpInfoRouteLeg("Waypoint B", "Waypoint C", 29.7, false, true),
                 new JumpInfoRouteLeg("Waypoint C", State.DestinationSystem, 28.5, true, false),
             ],
-            TargetPosition: new GalacticCoordinate(100, 20, -40));
+            TargetPosition: new GalacticCoordinate(100, 20, -40)
+        );
         var summary = new SystemSummary(
             State.DestinationSystem,
             99,
@@ -319,7 +325,8 @@ internal static class OverlayEditorPreviewFactories
             LastUpdatedAt: DateTimeOffset.UtcNow.AddMinutes(-2),
             Traffic: new SystemTrafficSummary(12, 84, 1200),
             PointsOfInterest: new SystemPoiSummary(18, 6, 2, 1, 1, 0, 0),
-            Specials: []);
+            Specials: []
+        );
         jump.InstallEditorPreview(
             plan,
             summary,
@@ -327,24 +334,25 @@ internal static class OverlayEditorPreviewFactories
                 new JumpInfoDetailLineViewModel("Next hop", "Waypoint C", Refuel: true),
                 new JumpInfoDetailLineViewModel("Neutron", "Use boost on B → C", Neutron: true),
                 new JumpInfoDetailLineViewModel("Scoopable", "K-class star"),
-            ]);
+            ]
+        );
         return new JumpInfoOverlayViewModel(jump, Caps());
     }
 
     public static FleetCarrierRouteOverlayViewModel CreateFleetCarrierRoute(
-        FleetCarrierRouteEditorPreviewState state =
-            FleetCarrierRouteEditorPreviewState.Cooldown)
+        FleetCarrierRouteEditorPreviewState state = FleetCarrierRouteEditorPreviewState.Cooldown
+    )
     {
         var temporaryDirectory = SettingsDir("fc-route");
         var vm = new FleetCarrierRouteOverlayViewModel(
             new RouteWorkspaceViewModel(
-                new FollowRouteService(new FollowRouteStore(
-                    temporaryDirectory,
-                    FollowRouteKind.FleetCarrier)),
+                new FollowRouteService(new FollowRouteStore(temporaryDirectory, FollowRouteKind.FleetCarrier)),
                 new RouteNameImporter(new EmptySystemResolver()),
                 new EmptySpanshRouteClient(),
-                FollowRouteKind.FleetCarrier),
-            Caps());
+                FollowRouteKind.FleetCarrier
+            ),
+            Caps()
+        );
         var preview = new FleetCarrierRouteEditorPreview(
             HopProgress: "HOP 2 / 46",
             SystemName: "Col 359 Sector EE-X b16-1",
@@ -358,20 +366,12 @@ internal static class OverlayEditorPreviewFactories
             HasRestockWarning: true,
             RestockAmount: "3,892 t",
             HasCountdown: state is not FleetCarrierRouteEditorPreviewState.RouteOnly,
-            CountdownTitle: state == FleetCarrierRouteEditorPreviewState.Scheduled
-                ? "JUMP DEPARTURE"
-                : "JUMP COOLDOWN",
-            Countdown: state == FleetCarrierRouteEditorPreviewState.Scheduled
-                ? "12:45"
-                : "4:32",
-            CountdownPhase: state == FleetCarrierRouteEditorPreviewState.Scheduled
-                ? "LOCKED"
-                : "LOCKING",
-            CountdownPhaseTime: state == FleetCarrierRouteEditorPreviewState.Scheduled
-                ? "0:45"
-                : "0:18",
-            HasCountdownPhaseTime:
-                state is not FleetCarrierRouteEditorPreviewState.RouteOnly);
+            CountdownTitle: state == FleetCarrierRouteEditorPreviewState.Scheduled ? "JUMP DEPARTURE" : "JUMP COOLDOWN",
+            Countdown: state == FleetCarrierRouteEditorPreviewState.Scheduled ? "12:45" : "4:32",
+            CountdownPhase: state == FleetCarrierRouteEditorPreviewState.Scheduled ? "LOCKED" : "LOCKING",
+            CountdownPhaseTime: state == FleetCarrierRouteEditorPreviewState.Scheduled ? "0:45" : "0:18",
+            HasCountdownPhaseTime: state is not FleetCarrierRouteEditorPreviewState.RouteOnly
+        );
         vm.InstallEditorPreview(preview);
         return vm;
     }
@@ -382,7 +382,8 @@ internal static class OverlayEditorPreviewFactories
             new CommanderProfileCatalog(SettingsDir("cmdr")),
             new NoopLauncher(),
             Path.GetTempPath(),
-            currentFrontierId: "FDEV-RAVEN");
+            currentFrontierId: "FDEV-RAVEN"
+        );
         vm.UpdateCurrent("FDEV-RAVEN", State.CommanderName.Replace("CMDR ", "", StringComparison.Ordinal));
         return vm;
     }
@@ -390,14 +391,15 @@ internal static class OverlayEditorPreviewFactories
     public static PriorScansOverlayViewModel CreatePriorScans()
     {
         var survey = new SystemSurveyViewModel(
-            new SystemSurveySettingsStore(
-                Path.Combine(SettingsDir("prior-scans"), UiSettingsFileName)));
+            new SystemSurveySettingsStore(Path.Combine(SettingsDir("prior-scans"), UiSettingsFileName))
+        );
         var vm = new PriorScansOverlayViewModel(
             survey,
             new EmptyCanonnClient(),
             ExobiologyReferenceCatalog.LoadEmbedded(),
             () => State.CommanderName,
-            Caps());
+            Caps()
+        );
         var targetClose = new PriorScanTargetViewModel(
             DistanceMeters: 412,
             RelativeBearingDegrees: 12,
@@ -405,7 +407,8 @@ internal static class OverlayEditorPreviewFactories
             BearingText: "074°",
             IsClose: true,
             IsFar: false,
-            IsAnalyzed: false);
+            IsAnalyzed: false
+        );
         var targetFar = new PriorScanTargetViewModel(
             DistanceMeters: 1240,
             RelativeBearingDegrees: -48,
@@ -413,7 +416,8 @@ internal static class OverlayEditorPreviewFactories
             BearingText: "312°",
             IsClose: false,
             IsFar: true,
-            IsAnalyzed: false);
+            IsAnalyzed: false
+        );
         vm.InstallEditorPreview(
             State.CurrentBody,
             "HEADING 074°",
@@ -430,7 +434,8 @@ internal static class OverlayEditorPreviewFactories
                     HasIdealApproach: false,
                     HasSteepApproach: false,
                     HasTooSteepApproach: false,
-                    Targets: [targetClose]),
+                    Targets: [targetClose]
+                ),
                 new PriorScanSpeciesViewModel(
                     DisplayName: "Tussock Capillum",
                     RewardText: "19.01 M CR",
@@ -443,7 +448,8 @@ internal static class OverlayEditorPreviewFactories
                     HasIdealApproach: false,
                     HasSteepApproach: false,
                     HasTooSteepApproach: false,
-                    Targets: [targetFar]),
+                    Targets: [targetFar]
+                ),
                 new PriorScanSpeciesViewModel(
                     DisplayName: "Stratum Tectonicas",
                     RewardText: "95.19 M CR",
@@ -456,24 +462,24 @@ internal static class OverlayEditorPreviewFactories
                     HasIdealApproach: false,
                     HasSteepApproach: true,
                     HasTooSteepApproach: false,
-                    Targets: [targetFar]),
+                    Targets: [targetFar]
+                ),
             ],
             [
                 new PriorScanRadarTargetViewModel(412, 12, 500, true, true),
                 new PriorScanRadarTargetViewModel(1240, -48, 150, false, false),
-            ]);
+            ]
+        );
         return vm;
     }
 
-    public static PulseOverlayViewModel CreatePulse(
-        PulseEditorPreviewState state = PulseEditorPreviewState.ScoCooling)
+    public static PulseOverlayViewModel CreatePulse(PulseEditorPreviewState state = PulseEditorPreviewState.ScoCooling)
     {
-        var previewTime = new FrozenTimeProvider(
-            new DateTimeOffset(2026, 8, 8, 12, 0, 0, TimeSpan.Zero));
+        var previewTime = new FrozenTimeProvider(new DateTimeOffset(2026, 8, 8, 12, 0, 0, TimeSpan.Zero));
         var vm = new PulseOverlayViewModel(
-            new PulseOverlaySettingsStore(
-                Path.Combine(SettingsDir("pulse"), UiSettingsFileName)),
-            previewTime);
+            new PulseOverlaySettingsStore(Path.Combine(SettingsDir("pulse"), UiSettingsFileName)),
+            previewTime
+        );
         vm.Enabled = true;
         vm.InstallEditorPreview(state);
         return vm;
@@ -510,18 +516,17 @@ internal static class OverlayEditorPreviewFactories
                         ["language"] = "Language logs",
                     },
                     Messages: [],
-                    Tags: new HashSet<string>(StringComparer.Ordinal)
-                    {
-                        State.GuardianSiteName,
-                    },
+                    Tags: new HashSet<string>(StringComparer.Ordinal) { State.GuardianSiteName },
                     BodyLocations: new Dictionary<string, string>(StringComparer.Ordinal)
                     {
                         ["next"] = "-18.4,74.1,500",
                     },
-                    Routes: []),
+                    Routes: []
+                ),
             ],
             status: null,
-            enabled: true);
+            enabled: true
+        );
         return vm;
     }
 
@@ -533,69 +538,65 @@ internal static class OverlayEditorPreviewFactories
         var route = new RouteWorkspaceViewModel(
             new FollowRouteService(new FollowRouteStore(temporaryDirectory)),
             new RouteNameImporter(resolver),
-            new EmptySpanshRouteClient());
+            new EmptySpanshRouteClient()
+        );
         var vm = new SphericalSearchOverlayViewModel(
             new SphereLimitViewModel(profileStore, resolver),
             new BoxelSearchViewModel(PreviewBoxelSearchSession.Instance),
             route,
-            Caps());
+            Caps()
+        );
         vm.InstallEditorPreview(
             sphereCenter: State.CurrentSystem,
             sphereDestination: State.DestinationSystem,
             boxelNext: "Eol Prou AA-A h23",
-            routeNext: State.DestinationSystem);
+            routeNext: State.DestinationSystem
+        );
         return vm;
     }
 
     public static StationInfoOverlayViewModel CreateStationInfo()
     {
         var stationInfo = new StationInfoViewModel(new EmptySystemSummaryClient());
-        stationInfo.InstallEditorPreview(new StationInfoEditorPreview
-        {
-            StationName = State.StationName,
-            StationType = "Coriolis starport",
-            LargestPad = "Largest pad: Large",
-            PrimaryEconomy = "Primary economy: High Tech",
-            Faction = "Raven Colonial Initiative · Confederacy",
-            Updated = "Spansh data updated just now",
-            IsQuestTagged = true,
-            Economies =
-            [
-                new StationInfoLineViewModel("High Tech", "62%"),
-                new StationInfoLineViewModel("Industrial", "38%"),
-            ],
-            Services =
-            [
-                "Shipyard",
-                "Outfitting",
-                "Vista Genomics",
-                "Universal Cartographics",
-            ],
-            Prohibited =
-            [
-                "Narcotics",
-                "Slaves",
-            ],
-        });
+        stationInfo.InstallEditorPreview(
+            new StationInfoEditorPreview
+            {
+                StationName = State.StationName,
+                StationType = "Coriolis starport",
+                LargestPad = "Largest pad: Large",
+                PrimaryEconomy = "Primary economy: High Tech",
+                Faction = "Raven Colonial Initiative · Confederacy",
+                Updated = "Spansh data updated just now",
+                IsQuestTagged = true,
+                Economies =
+                [
+                    new StationInfoLineViewModel("High Tech", "62%"),
+                    new StationInfoLineViewModel("Industrial", "38%"),
+                ],
+                Services = ["Shipyard", "Outfitting", "Vista Genomics", "Universal Cartographics"],
+                Prohibited = ["Narcotics", "Slaves"],
+            }
+        );
         return new StationInfoOverlayViewModel(stationInfo, Caps());
     }
 
     public static GroundTargetOverlayViewModel CreateGroundTarget()
     {
-        var ground = new GroundTargetViewModel(
-            new GroundTargetSettingsStore(SettingsDir("ground-target")));
-        ground.InstallEditorPreview(new GroundTargetEditorPreview
-        {
-            Coordinates = "18.4216°S  74.0921°E",
-            Distance = "146 m",
-            Bearing = "068°",
-            RelativeHeadingText = "+6°",
-            Descent = "28°",
-            ApproachStatusText = "Ideal approach corridor",
-            RelativeBearing = 6,
-            AttackAngle = 28,
-            ApproachKind = GroundTargetApproach.Ideal,
-        });
+        var ground = new GroundTargetViewModel(new GroundTargetSettingsStore(SettingsDir("ground-target")));
+        ground.InstallEditorPreview(
+            new GroundTargetEditorPreview
+            {
+                Coordinates = "18.4216°S  74.0921°E",
+                Distance = "146 m",
+                Bearing = "068°",
+                RelativeHeadingText = "+6°",
+                Descent = "28°",
+                ApproachStatusText = "Ideal approach corridor",
+                RelativeBearing = 6,
+                AttackAngle = 28,
+                ApproachKind = GroundTargetApproach.Ideal,
+            }
+        );
         return new GroundTargetOverlayViewModel(ground, Caps());
     }
 
@@ -604,23 +605,28 @@ internal static class OverlayEditorPreviewFactories
         public Task<SystemSummaryLoadResult> GetAsync(
             string systemName,
             long systemAddress,
-            CancellationToken cancellationToken = default) =>
-            Task.FromResult(new SystemSummaryLoadResult(
-                new SystemSummary(
-                    systemName,
-                    systemAddress,
-                    Position: null,
-                    StarClass: null,
-                    IsKnown: null,
-                    ScannedBodyCount: 0,
-                    TotalBodyCount: 0,
-                    DiscoveredBy: null,
-                    DiscoveredAt: null,
-                    LastUpdatedAt: null,
-                    Traffic: null,
-                    PointsOfInterest: new SystemPoiSummary(0, 0, 0, 0, 0, 0, 0),
-                    Specials: []),
-                []));
+            CancellationToken cancellationToken = default
+        ) =>
+            Task.FromResult(
+                new SystemSummaryLoadResult(
+                    new SystemSummary(
+                        systemName,
+                        systemAddress,
+                        Position: null,
+                        StarClass: null,
+                        IsKnown: null,
+                        ScannedBodyCount: 0,
+                        TotalBodyCount: 0,
+                        DiscoveredBy: null,
+                        DiscoveredAt: null,
+                        LastUpdatedAt: null,
+                        Traffic: null,
+                        PointsOfInterest: new SystemPoiSummary(0, 0, 0, 0, 0, 0, 0),
+                        Specials: []
+                    ),
+                    []
+                )
+            );
     }
 
     private sealed class EmptyCanonnClient : ICanonnSystemPoiClient
@@ -628,24 +634,24 @@ internal static class OverlayEditorPreviewFactories
         public Task<CanonnSystemPoiResult> GetAsync(
             string systemName,
             string commanderName,
-            CancellationToken cancellationToken = default) =>
-            Task.FromResult(new CanonnSystemPoiResult(systemName, []));
+            CancellationToken cancellationToken = default
+        ) => Task.FromResult(new CanonnSystemPoiResult(systemName, []));
     }
 
     private sealed class EmptySystemResolver : IStarSystemResolver
     {
         public Task<IReadOnlyList<StarSystemReference>> SearchAsync(
             string query,
-            CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<StarSystemReference>>([]);
+            CancellationToken cancellationToken = default
+        ) => Task.FromResult<IReadOnlyList<StarSystemReference>>([]);
     }
 
     private sealed class EmptySpanshRouteClient : ISpanshRouteClient
     {
         public Task<IReadOnlyList<FollowRouteHop>> GetRouteAsync(
             SpanshRouteReference route,
-            CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<FollowRouteHop>>([]);
+            CancellationToken cancellationToken = default
+        ) => Task.FromResult<IReadOnlyList<FollowRouteHop>>([]);
     }
 
     private sealed class NoopLauncher : ICommanderInstanceLauncher
@@ -653,16 +659,15 @@ internal static class OverlayEditorPreviewFactories
         public Task LaunchAsync(
             string frontierId,
             string journalDirectory,
-            CancellationToken cancellationToken = default) =>
-            Task.CompletedTask;
+            CancellationToken cancellationToken = default
+        ) => Task.CompletedTask;
     }
 
     private sealed class PreviewBoxelSearchSession : IBoxelSearchSession
     {
         public static PreviewBoxelSearchSession Instance { get; } = new();
 
-        public BoxelSearchSessionSnapshot Current =>
-            BoxelSearchSessionSnapshot.Empty;
+        public BoxelSearchSessionSnapshot Current => BoxelSearchSessionSnapshot.Empty;
 
         public event EventHandler<BoxelSearchSessionChangedEventArgs>? Changed
         {
@@ -672,35 +677,30 @@ internal static class OverlayEditorPreviewFactories
 
         public Task<BoxelSearchOutcome> SwitchProfileAsync(
             BoxelSearchProfile profile,
-            CancellationToken cancellationToken = default) =>
-            Task.FromResult(CreateRejectedOutcome(
-                BoxelSearchMessageCode.SearchNotConfigured));
+            CancellationToken cancellationToken = default
+        ) => Task.FromResult(CreateRejectedOutcome(BoxelSearchMessageCode.SearchNotConfigured));
 
         public Task<BoxelSearchOutcome> ClearProfileAsync(
             BoxelSearchMessageCode reason = BoxelSearchMessageCode.ProfileUnavailable,
-            CancellationToken cancellationToken = default) =>
-            Task.FromResult(CreateRejectedOutcome(reason));
+            CancellationToken cancellationToken = default
+        ) => Task.FromResult(CreateRejectedOutcome(reason));
 
         public Task<BoxelSearchOutcome> ApplyAsync(
             BoxelSearchUpdate update,
-            CancellationToken cancellationToken = default) =>
-            Task.FromResult(CreateRejectedOutcome(
-                BoxelSearchMessageCode.SearchNotConfigured));
+            CancellationToken cancellationToken = default
+        ) => Task.FromResult(CreateRejectedOutcome(BoxelSearchMessageCode.SearchNotConfigured));
 
         public Task<BoxelSearchOutcome> ExecuteAsync(
             IBoxelSearchAction action,
-            CancellationToken cancellationToken = default) =>
-            Task.FromResult(CreateRejectedOutcome(
-                BoxelSearchMessageCode.SearchNotConfigured));
+            CancellationToken cancellationToken = default
+        ) => Task.FromResult(CreateRejectedOutcome(BoxelSearchMessageCode.SearchNotConfigured));
 
-        public Task<BoxelSearchLibrarySnapshot> GetLibraryAsync(
-            CancellationToken cancellationToken = default) =>
+        public Task<BoxelSearchLibrarySnapshot> GetLibraryAsync(CancellationToken cancellationToken = default) =>
             Task.FromResult(new BoxelSearchLibrarySnapshot(0, []));
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
-        private BoxelSearchOutcome CreateRejectedOutcome(
-            BoxelSearchMessageCode code)
+        private BoxelSearchOutcome CreateRejectedOutcome(BoxelSearchMessageCode code)
         {
             var snapshot = Current;
             return new BoxelSearchOutcome(
@@ -711,7 +711,8 @@ internal static class OverlayEditorPreviewFactories
                 snapshot.Context.Version,
                 snapshot.Activity.Version,
                 snapshot.Health.Version,
-                snapshot.LibraryRevision);
+                snapshot.LibraryRevision
+            );
         }
     }
 }

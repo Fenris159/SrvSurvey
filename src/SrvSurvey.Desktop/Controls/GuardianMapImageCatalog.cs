@@ -7,10 +7,8 @@ namespace SrvSurvey.Desktop.Controls;
 
 internal static class GuardianMapImageCatalog
 {
-    private const string ResourceRoot =
-        "avares://SrvSurvey.Desktop/Assets/GuardianMaps/";
-    private static readonly Dictionary<string, Bitmap?> Images =
-        new(StringComparer.OrdinalIgnoreCase);
+    private const string ResourceRoot = "avares://SrvSurvey.Desktop/Assets/GuardianMaps/";
+    private static readonly Dictionary<string, Bitmap?> Images = new(StringComparer.OrdinalIgnoreCase);
     private static readonly object SyncRoot = new();
 
     public static IImage? Find(GuardianSiteMapProjection projection)
@@ -18,18 +16,14 @@ internal static class GuardianMapImageCatalog
         ArgumentNullException.ThrowIfNull(projection);
         if (TryResolveLocalFile(projection.BackgroundImage) is { } localPath)
         {
-            return FindCached(
-                "file:" + localPath,
-                () => LoadFile(localPath));
+            return FindCached("file:" + localPath, () => LoadFile(localPath));
         }
 
         var fileName = ResolveFileName(projection);
         return FindCached("asset:" + fileName, () => LoadAsset(fileName));
     }
 
-    private static Bitmap? FindCached(
-        string key,
-        Func<Bitmap?> load)
+    private static Bitmap? FindCached(string key, Func<Bitmap?> load)
     {
         lock (SyncRoot)
         {
@@ -43,8 +37,7 @@ internal static class GuardianMapImageCatalog
         }
     }
 
-    internal static string ResolveFileName(
-        GuardianSiteMapProjection projection)
+    internal static string ResolveFileName(GuardianSiteMapProjection projection)
     {
         ArgumentNullException.ThrowIfNull(projection);
         var configuredName = Path.GetFileName(projection.BackgroundImage);
@@ -55,8 +48,7 @@ internal static class GuardianMapImageCatalog
 
     private static string? TryResolveLocalFile(string configuredPath)
     {
-        if (string.IsNullOrWhiteSpace(configuredPath)
-            || !Path.IsPathRooted(configuredPath))
+        if (string.IsNullOrWhiteSpace(configuredPath) || !Path.IsPathRooted(configuredPath))
         {
             return null;
         }
@@ -66,10 +58,8 @@ internal static class GuardianMapImageCatalog
             var path = Path.GetFullPath(configuredPath);
             return File.Exists(path) ? path : null;
         }
-        catch (Exception exception) when (
-            exception is ArgumentException
-                or NotSupportedException
-                or PathTooLongException)
+        catch (Exception exception)
+            when (exception is ArgumentException or NotSupportedException or PathTooLongException)
         {
             return null;
         }
@@ -105,11 +95,8 @@ internal static class GuardianMapImageCatalog
             using var stream = File.OpenRead(path);
             return new Bitmap(stream);
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or ArgumentException
-                or NotSupportedException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
         {
             return null;
         }

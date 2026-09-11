@@ -9,7 +9,8 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-overlay-editor-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-overlay-editor-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void BuiltInPresetsAreAlwaysAvailableAndLoadWhenSelected()
@@ -18,7 +19,8 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
 
         Assert.Equal(
             OverlayThemePresetCatalog.Presets.Select(preset => preset.Name),
-            viewModel.SavedStates.Take(OverlayThemePresetCatalog.Presets.Count));
+            viewModel.SavedStates.Take(OverlayThemePresetCatalog.Presets.Count)
+        );
         Assert.Equal(OverlayThemePresetCatalog.DefaultName, viewModel.SelectedSavedState);
 
         viewModel.SelectedSavedState = "Nebula Cyan";
@@ -37,8 +39,7 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
     [Fact]
     public void GeneralHeaderEditorPrecedesPrimaryAccent()
     {
-        var general = CreateViewModel().Categories.Single(
-            candidate => candidate.Name == "General");
+        var general = CreateViewModel().Categories.Single(candidate => candidate.Name == "General");
 
         Assert.Equal("header", general.Colors[0].Key);
         Assert.Equal("Header", general.Colors[0].DisplayName);
@@ -68,16 +69,9 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
         var viewModel = CreateViewModel();
 
         Assert.Equal(
-            [
-                ("header", 10d),
-                ("title", 15d),
-                ("value", 12d),
-                ("body", 11d),
-                ("detail", 10d),
-                ("caption", 9d),
-            ],
-            viewModel.Typography.Select(editor =>
-                (editor.Key, editor.FontSize)));
+            [("header", 10d), ("title", 15d), ("value", 12d), ("body", 11d), ("detail", 10d), ("caption", 9d)],
+            viewModel.Typography.Select(editor => (editor.Key, editor.FontSize))
+        );
 
         var header = GetTypographyEditor(viewModel, "header");
         header.FontSize = 10.26;
@@ -90,8 +84,7 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
     [Fact]
     public void ExobiologyEditorsNameEveryRewardPipStatePrecisely()
     {
-        var category = CreateViewModel().Categories.Single(
-            candidate => candidate.Name == "Exobiology");
+        var category = CreateViewModel().Categories.Single(candidate => candidate.Name == "Exobiology");
 
         Assert.Equal(
             [
@@ -134,8 +127,8 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
                 ("bio.galacticRegionSegmentEdge", "Galactic-region filled-segment border"),
                 ("bio.galacticRegionPotentialSegmentEdge", "Galactic-region possible-segment border"),
             ],
-            category.Colors.Select(color =>
-                (color.Key, color.DisplayName)));
+            category.Colors.Select(color => (color.Key, color.DisplayName))
+        );
     }
 
     [Fact]
@@ -150,22 +143,16 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
 
         var defaults = LegacyOverlayThemeStore.CreateDefault().Colors;
         Assert.Equal(OverlayThemePresetCatalog.DefaultName, viewModel.SelectedSavedState);
-        Assert.All(defaults, entry =>
-            Assert.Equal(entry.Value, GetColor(viewModel, entry.Key)));
-        Assert.Equal(
-            OverlayTypographySettings.Default.Header,
-            GetTypographyEditor(viewModel, "header").FontSize);
+        Assert.All(defaults, entry => Assert.Equal(entry.Value, GetColor(viewModel, entry.Key)));
+        Assert.Equal(OverlayTypographySettings.Default.Header, GetTypographyEditor(viewModel, "header").FontSize);
         Assert.Contains("'Default'", viewModel.StatusMessage);
     }
 
     [Fact]
     public void UserSavedStatesFollowBuiltInsAndRemainLoadableAndDeletable()
     {
-        var stateStore = new OverlayThemeStateStore(
-            Path.Combine(temporaryDirectory, "states.json"));
-        _ = stateStore.SaveState(
-            "My custom theme",
-            LegacyOverlayThemeStore.CreateDefault().Colors);
+        var stateStore = new OverlayThemeStateStore(Path.Combine(temporaryDirectory, "states.json"));
+        _ = stateStore.SaveState("My custom theme", LegacyOverlayThemeStore.CreateDefault().Colors);
         var viewModel = CreateViewModel(stateStore);
 
         Assert.Equal("My custom theme", viewModel.SavedStates[^1]);
@@ -203,20 +190,17 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
             activeStore,
             new OverlayThemeStateStore(Path.Combine(temporaryDirectory, "states.json")),
             service,
-            activeTheme);
+            activeTheme
+        );
 
         viewModel.SelectedSavedState = "Nebula Cyan";
 
-        Assert.Equal(
-            activeTheme.GetColor("orange"),
-            service.CurrentOverlayTheme.GetColor("orange"));
+        Assert.Equal(activeTheme.GetColor("orange"), service.CurrentOverlayTheme.GetColor("orange"));
 
         viewModel.LoadStateCommand.Execute(null);
 
         Assert.Equal(originalBytes, File.ReadAllBytes(themePath));
-        Assert.Equal(
-            Color.Parse("#5EC8F2"),
-            service.CurrentOverlayTheme.GetColor("orange"));
+        Assert.Equal(Color.Parse("#5EC8F2"), service.CurrentOverlayTheme.GetColor("orange"));
         Assert.Contains("Refreshed all open overlays", viewModel.StatusMessage);
     }
 
@@ -231,35 +215,21 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
         var customColors = activeTheme.Colors.ToDictionary(
             entry => entry.Key,
             entry => entry.Value,
-            StringComparer.Ordinal);
+            StringComparer.Ordinal
+        );
         customColors["orange"] = Color.Parse("#010203");
-        var customTypography = OverlayTypographySettings.Default with
-        {
-            Value = 13.5,
-        };
-        var stateStore = new OverlayThemeStateStore(
-            Path.Combine(temporaryDirectory, "states.json"));
-        _ = stateStore.SaveState(
-            "My custom theme",
-            customColors,
-            customTypography);
+        var customTypography = OverlayTypographySettings.Default with { Value = 13.5 };
+        var stateStore = new OverlayThemeStateStore(Path.Combine(temporaryDirectory, "states.json"));
+        _ = stateStore.SaveState("My custom theme", customColors, customTypography);
         var service = CreateThemeService(activeTheme);
-        var viewModel = new OverlayThemeSettingsViewModel(
-            activeStore,
-            stateStore,
-            service,
-            activeTheme);
+        var viewModel = new OverlayThemeSettingsViewModel(activeStore, stateStore, service, activeTheme);
         viewModel.SelectedSavedState = "My custom theme";
 
         viewModel.LoadStateCommand.Execute(null);
 
         Assert.Equal(originalBytes, File.ReadAllBytes(themePath));
-        Assert.Equal(
-            Color.Parse("#010203"),
-            service.CurrentOverlayTheme.GetColor("orange"));
-        Assert.Equal(
-            customTypography,
-            service.CurrentOverlayTheme.EffectiveTypography);
+        Assert.Equal(Color.Parse("#010203"), service.CurrentOverlayTheme.GetColor("orange"));
+        Assert.Equal(customTypography, service.CurrentOverlayTheme.EffectiveTypography);
         Assert.Contains("Refreshed all open overlays", viewModel.StatusMessage);
     }
 
@@ -275,15 +245,17 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
         var service = new RavenThemeService(
             application,
             new ThemePreferenceStore(Path.Combine(temporaryDirectory, "ui.json")),
-            activeTheme);
+            activeTheme
+        );
         service.ApplyCurrent();
         var viewModel = new OverlayThemeSettingsViewModel(
             activeStore,
             new OverlayThemeStateStore(Path.Combine(temporaryDirectory, "states.json")),
             service,
-            activeTheme);
-        var primary = viewModel.Categories
-            .SelectMany(category => category.Colors)
+            activeTheme
+        );
+        var primary = viewModel
+            .Categories.SelectMany(category => category.Colors)
             .Single(color => color.Key == "orange");
         var header = GetTypographyEditor(viewModel, "header");
 
@@ -293,9 +265,7 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
 
         Assert.True(viewModel.IsDirty);
         Assert.Equal(originalBytes, File.ReadAllBytes(themePath));
-        Assert.Equal(
-            Color.Parse("#010203"),
-            service.CurrentOverlayTheme.GetColor("orange"));
+        Assert.Equal(Color.Parse("#010203"), service.CurrentOverlayTheme.GetColor("orange"));
         Assert.Equal(11.5, service.CurrentOverlayTheme.EffectiveTypography.Header);
         Assert.Equal(11.5, application.Resources["RavenOverlayHeaderFontSize"]);
         Assert.Contains("unsaved colours", viewModel.StatusMessage);
@@ -303,11 +273,8 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
         viewModel.ReloadActiveCommand.Execute(null);
 
         Assert.False(viewModel.IsDirty);
-        Assert.Equal(activeTheme.GetColor("orange"),
-            service.CurrentOverlayTheme.GetColor("orange"));
-        Assert.Equal(
-            activeTheme.EffectiveTypography,
-            service.CurrentOverlayTheme.EffectiveTypography);
+        Assert.Equal(activeTheme.GetColor("orange"), service.CurrentOverlayTheme.GetColor("orange"));
+        Assert.Equal(activeTheme.EffectiveTypography, service.CurrentOverlayTheme.EffectiveTypography);
     }
 
     public void Dispose()
@@ -318,15 +285,13 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
         }
     }
 
-    private OverlayThemeSettingsViewModel CreateViewModel(
-        OverlayThemeStateStore? stateStore = null)
+    private OverlayThemeSettingsViewModel CreateViewModel(OverlayThemeStateStore? stateStore = null)
     {
         return new OverlayThemeSettingsViewModel(
-            new LegacyOverlayThemeStore(
-                Path.Combine(temporaryDirectory, "theme.json")),
-            stateStore ?? new OverlayThemeStateStore(
-                Path.Combine(temporaryDirectory, "states.json")),
-            initialTheme: LegacyOverlayThemeStore.CreateDefault());
+            new LegacyOverlayThemeStore(Path.Combine(temporaryDirectory, "theme.json")),
+            stateStore ?? new OverlayThemeStateStore(Path.Combine(temporaryDirectory, "states.json")),
+            initialTheme: LegacyOverlayThemeStore.CreateDefault()
+        );
     }
 
     private RavenThemeService CreateThemeService(LegacyOverlayTheme activeTheme)
@@ -334,28 +299,24 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
         var service = new RavenThemeService(
             new Application(),
             new ThemePreferenceStore(Path.Combine(temporaryDirectory, "ui.json")),
-            activeTheme);
+            activeTheme
+        );
         service.ApplyCurrent();
         return service;
     }
 
-    private static OverlayThemeColorEditorViewModel GetEditor(
-        OverlayThemeSettingsViewModel viewModel,
-        string key)
+    private static OverlayThemeColorEditorViewModel GetEditor(OverlayThemeSettingsViewModel viewModel, string key)
     {
-        return viewModel.Categories
-            .SelectMany(category => category.Colors)
-            .Single(editor => editor.Key == key);
+        return viewModel.Categories.SelectMany(category => category.Colors).Single(editor => editor.Key == key);
     }
 
-    private static Color GetColor(
-        OverlayThemeSettingsViewModel viewModel,
-        string key)
+    private static Color GetColor(OverlayThemeSettingsViewModel viewModel, string key)
     {
         return GetEditor(viewModel, key).Color;
     }
 
     private static OverlayTypographyEditorViewModel GetTypographyEditor(
         OverlayThemeSettingsViewModel viewModel,
-        string key) => viewModel.Typography.Single(editor => editor.Key == key);
+        string key
+    ) => viewModel.Typography.Single(editor => editor.Key == key);
 }

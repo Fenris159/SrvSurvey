@@ -35,43 +35,25 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
         SystemSurveyViewModel survey,
         ExobiologyReferenceCatalog catalog,
         BiologyCriteriaCatalog criteriaCatalog,
-        Func<string?>? commanderNameProvider = null)
+        Func<string?>? commanderNameProvider = null
+    )
     {
         this.survey = survey ?? throw new ArgumentNullException(nameof(survey));
         this.catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
         evaluator = new BiologyPredictionEvaluator(
-            criteriaCatalog ?? throw new ArgumentNullException(nameof(criteriaCatalog)));
+            criteriaCatalog ?? throw new ArgumentNullException(nameof(criteriaCatalog))
+        );
         this.commanderNameProvider = commanderNameProvider ?? (() => null);
-        previousBodyCommand = new DelegateCommand(
-            () => MoveBody(-1),
-            () => Bodies.Count > 1);
-        nextBodyCommand = new DelegateCommand(
-            () => MoveBody(1),
-            () => Bodies.Count > 1);
-        previousOrganismCommand = new DelegateCommand(
-            () => MoveOrganism(-1),
-            () => SelectedBody?.Organisms.Count > 1);
-        nextOrganismCommand = new DelegateCommand(
-            () => MoveOrganism(1),
-            () => SelectedBody?.Organisms.Count > 1);
-        openWindowCommand = new AsyncCommand(
-            OpenWindowAsync,
-            () => windowOpener is not null && HasSystem);
-        openSubmitImageCommand = new AsyncCommand(
-            OpenSubmitImageAsync,
-            CanOpenOrganismLink);
-        openCanonnRegionsCommand = new AsyncCommand(
-            OpenCanonnRegionsAsync,
-            CanOpenOrganismLink);
-        openBioforgeCommand = new AsyncCommand(
-            OpenBioforgeAsync,
-            CanOpenOrganismLink);
-        openCanonnSignalsCommand = new AsyncCommand(
-            OpenCanonnSignalsAsync,
-            CanOpenSystemLink);
-        openSpanshCommand = new AsyncCommand(
-            OpenSpanshAsync,
-            CanOpenSystemLink);
+        previousBodyCommand = new DelegateCommand(() => MoveBody(-1), () => Bodies.Count > 1);
+        nextBodyCommand = new DelegateCommand(() => MoveBody(1), () => Bodies.Count > 1);
+        previousOrganismCommand = new DelegateCommand(() => MoveOrganism(-1), () => SelectedBody?.Organisms.Count > 1);
+        nextOrganismCommand = new DelegateCommand(() => MoveOrganism(1), () => SelectedBody?.Organisms.Count > 1);
+        openWindowCommand = new AsyncCommand(OpenWindowAsync, () => windowOpener is not null && HasSystem);
+        openSubmitImageCommand = new AsyncCommand(OpenSubmitImageAsync, CanOpenOrganismLink);
+        openCanonnRegionsCommand = new AsyncCommand(OpenCanonnRegionsAsync, CanOpenOrganismLink);
+        openBioforgeCommand = new AsyncCommand(OpenBioforgeAsync, CanOpenOrganismLink);
+        openCanonnSignalsCommand = new AsyncCommand(OpenCanonnSignalsAsync, CanOpenSystemLink);
+        openSpanshCommand = new AsyncCommand(OpenSpanshAsync, CanOpenSystemLink);
         survey.PropertyChanged += OnSurveyPropertyChanged;
         Refresh();
     }
@@ -101,13 +83,14 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
 
     public bool HasSystem => SystemAddress is not null && Bodies.Count > 0;
 
-    public string EmptyStateText => SystemAddress is null
-        ? "Enter a system to browse biological Codex entries."
-        : (Bodies.Count == 0) switch
-        {
-            true => "No biological signals have been reported in this system.",
-            false => "No confirmed or predicted organisms are available for this body."
-        };
+    public string EmptyStateText =>
+        SystemAddress is null
+            ? "Enter a system to browse biological Codex entries."
+            : (Bodies.Count == 0) switch
+            {
+                true => "No biological signals have been reported in this system.",
+                false => "No confirmed or predicted organisms are available for this body.",
+            };
 
     public BiologyCodexBodyViewModel? SelectedBody
     {
@@ -132,47 +115,38 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
 
     public bool HasSelectedOrganism => SelectedOrganism is not null;
 
-    public string BodyPositionText => SelectedBody is null
-        ? "No biological body selected"
-        : $"Body {Bodies.IndexOf(SelectedBody) + 1:N0} of {Bodies.Count:N0}";
+    public string BodyPositionText =>
+        SelectedBody is null
+            ? "No biological body selected"
+            : $"Body {Bodies.IndexOf(SelectedBody) + 1:N0} of {Bodies.Count:N0}";
 
-    public string OrganismPositionText => SelectedBody is null
-        || SelectedOrganism is null
+    public string OrganismPositionText =>
+        SelectedBody is null || SelectedOrganism is null
             ? "No organism selected"
             : $"Entry {SelectedBody.Organisms.IndexOf(SelectedOrganism) + 1:N0} "
                 + $"of {SelectedBody.Organisms.Count:N0}";
 
-    public string SelectedTitle => SelectedOrganism?.DisplayName
-        ?? "No organism available";
+    public string SelectedTitle => SelectedOrganism?.DisplayName ?? "No organism available";
 
-    public string SelectedEntryId => SelectedOrganism is null
-        ? string.Empty
-        : $"Entry ID {SelectedOrganism.EntryId}";
+    public string SelectedEntryId => SelectedOrganism is null ? string.Empty : $"Entry ID {SelectedOrganism.EntryId}";
 
-    public string SelectedDiscoveryStatus => SelectedOrganism?.StatusText
-        ?? string.Empty;
+    public string SelectedDiscoveryStatus => SelectedOrganism?.StatusText ?? string.Empty;
 
-    public string SelectedSampleDistance => SelectedOrganism?.SampleDistanceText
-        ?? string.Empty;
+    public string SelectedSampleDistance => SelectedOrganism?.SampleDistanceText ?? string.Empty;
 
-    public string SelectedReward => SelectedOrganism?.RewardText
-        ?? string.Empty;
+    public string SelectedReward => SelectedOrganism?.RewardText ?? string.Empty;
 
-    public string SelectedTemperatureRange =>
-        SelectedOrganism?.TemperatureRangeText ?? string.Empty;
+    public string SelectedTemperatureRange => SelectedOrganism?.TemperatureRangeText ?? string.Empty;
 
-    public string SelectedTemperatureWarning =>
-        SelectedOrganism?.TemperatureWarningText ?? string.Empty;
+    public string SelectedTemperatureWarning => SelectedOrganism?.TemperatureWarningText ?? string.Empty;
 
-    public bool HasTemperatureWarning => !string.IsNullOrWhiteSpace(
-        SelectedTemperatureWarning);
+    public bool HasTemperatureWarning => !string.IsNullOrWhiteSpace(SelectedTemperatureWarning);
 
     public bool HasSelectedImage => SelectedOrganism?.HasImage == true;
 
     public string SelectedImageUrl => SelectedOrganism?.ImageUrl ?? string.Empty;
 
-    public string SelectedImageCredit => SelectedOrganism?.ImageCreditText
-        ?? string.Empty;
+    public string SelectedImageCredit => SelectedOrganism?.ImageCreditText ?? string.Empty;
 
     public string LaunchStatus
     {
@@ -222,8 +196,7 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
 
     public Task<bool> OpenEntryAsync(long entryId)
     {
-        var body = Bodies.FirstOrDefault(candidate =>
-            candidate.Organisms.Any(organism => organism.EntryId == entryId));
+        var body = Bodies.FirstOrDefault(candidate => candidate.Organisms.Any(organism => organism.EntryId == entryId));
         if (body is not null)
         {
             SelectBody(body, entryId);
@@ -242,10 +215,13 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
         var commander = commanderNameProvider() ?? string.Empty;
         var uri = new Uri(
             WellKnownUris.CodexMissingForm.AbsoluteUri
-                + "?entry.987977054=" + Uri.EscapeDataString(commander)
+                + "?entry.987977054="
+                + Uri.EscapeDataString(commander)
                 + "&entry.1282362439="
                 + Uri.EscapeDataString(organism.DisplayName)
-                + "&entry.468337930=" + organism.EntryId);
+                + "&entry.468337930="
+                + organism.EntryId
+        );
         return LaunchUriAsync(uri, "image submission form");
     }
 
@@ -253,11 +229,9 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
     {
         return SelectedOrganism is { } organism
             ? LaunchUriAsync(
-                new Uri(
-                    WellKnownUris.CanonnCodexRegionsEntryPrefix
-                        + organism.EntryId
-                        + "&hud_category=Biology"),
-                "Canonn Codex Regions")
+                new Uri(WellKnownUris.CanonnCodexRegionsEntryPrefix + organism.EntryId + "&hud_category=Biology"),
+                "Canonn Codex Regions"
+            )
             : Task.FromResult(false);
     }
 
@@ -265,27 +239,23 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
     {
         return SelectedOrganism is { } organism
             ? LaunchUriAsync(
-                new Uri(
-                    WellKnownUris.CanonnBioforgeEntryPrefix
-                        + Uri.EscapeDataString(organism.DisplayName)),
-                "Bioforge")
+                new Uri(WellKnownUris.CanonnBioforgeEntryPrefix + Uri.EscapeDataString(organism.DisplayName)),
+                "Bioforge"
+            )
             : Task.FromResult(false);
     }
 
     public Task<bool> OpenCanonnSignalsAsync()
     {
         return LaunchUriAsync(
-            new Uri(
-                WellKnownUris.CanonnSignalsSystemPrefix
-                    + Uri.EscapeDataString(SystemName)),
-            "Canonn Signals");
+            new Uri(WellKnownUris.CanonnSignalsSystemPrefix + Uri.EscapeDataString(SystemName)),
+            "Canonn Signals"
+        );
     }
 
     public Task<bool> OpenSpanshAsync()
     {
-        return LaunchUriAsync(
-            new Uri(WellKnownUris.SpanshSystemPrefix + SystemAddress),
-            "Spansh");
+        return LaunchUriAsync(new Uri(WellKnownUris.SpanshSystemPrefix + SystemAddress), "Spansh");
     }
 
     public void Dispose()
@@ -301,13 +271,14 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
         uriLauncher = null;
     }
 
-    private void OnSurveyPropertyChanged(
-        object? sender,
-        PropertyChangedEventArgs eventArgs)
+    private void OnSurveyPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
-        if (eventArgs.PropertyName is nameof(SystemSurveyViewModel.Snapshot)
-            or nameof(SystemSurveyViewModel.CurrentStatus)
-            or nameof(SystemSurveyViewModel.DisableBioPredictions))
+        if (
+            eventArgs.PropertyName
+            is nameof(SystemSurveyViewModel.Snapshot)
+                or nameof(SystemSurveyViewModel.CurrentStatus)
+                or nameof(SystemSurveyViewModel.DisableBioPredictions)
+        )
         {
             Refresh();
         }
@@ -318,8 +289,8 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
         var previousBodyId = SelectedBody?.BodyId;
         var previousEntryId = SelectedOrganism?.EntryId;
         var snapshot = survey.Snapshot;
-        var nextBodies = snapshot.Bodies
-            .Where(body => body.BiologicalSignalCount > 0)
+        var nextBodies = snapshot
+            .Bodies.Where(body => body.BiologicalSignalCount > 0)
             .OrderBy(body => body.BodyId)
             .Select(CreateBody)
             .ToArray();
@@ -330,9 +301,7 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(SystemAddressText));
 
         var preferredBodyId = previousBodyId ?? ResolveCurrentBodyId(snapshot);
-        var nextBody = nextBodies.FirstOrDefault(body =>
-                body.BodyId == preferredBodyId)
-            ?? nextBodies.FirstOrDefault();
+        var nextBody = nextBodies.FirstOrDefault(body => body.BodyId == preferredBodyId) ?? nextBodies.FirstOrDefault();
         SelectBody(nextBody, previousEntryId);
         RaiseCommands();
     }
@@ -340,9 +309,7 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
     private BiologyCodexBodyViewModel CreateBody(SystemScanBodySnapshot body)
     {
         var entries = new Dictionary<long, BiologyCodexOrganismViewModel>();
-        var inputs = BiologyPredictionContextBuilder.Build(
-            survey.Snapshot,
-            body.BodyId);
+        var inputs = BiologyPredictionContextBuilder.Build(survey.Snapshot, body.BodyId);
         AddObservedOrganisms(body, inputs, entries);
         AddPredictedOrganisms(body, inputs, entries);
         return new BiologyCodexBodyViewModel(
@@ -350,13 +317,15 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
             body.Name,
             body.ShortName,
             body.BiologicalSignalCount,
-            entries.Values.ToArray());
+            entries.Values.ToArray()
+        );
     }
 
     private void AddObservedOrganisms(
         SystemScanBodySnapshot body,
         BiologyPredictionInputs? inputs,
-        Dictionary<long, BiologyCodexOrganismViewModel> entries)
+        Dictionary<long, BiologyCodexOrganismViewModel> entries
+    )
     {
         foreach (var organism in body.Organisms)
         {
@@ -370,36 +339,33 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
                 body,
                 reference,
                 ResolveObservedDiscoveryStatus(organism),
-                inputs);
+                inputs
+            );
         }
     }
 
-    private ExobiologyReference? ResolveOrganismReference(
-        SystemOrganismSnapshot organism)
+    private ExobiologyReference? ResolveOrganismReference(SystemOrganismSnapshot organism)
     {
         return organism.EntryId is { } entryId
             ? catalog.FindByEntryId(entryId)
-            : catalog.FindByVariant(organism.Variant)
-                ?? catalog.FindBySpecies(organism.Species);
+            : catalog.FindByVariant(organism.Variant) ?? catalog.FindBySpecies(organism.Species);
     }
 
-    private static BiologyCodexDiscoveryStatus ResolveObservedDiscoveryStatus(
-        SystemOrganismSnapshot organism)
+    private static BiologyCodexDiscoveryStatus ResolveObservedDiscoveryStatus(SystemOrganismSnapshot organism)
     {
         if (organism.IsAnalyzed)
         {
             return BiologyCodexDiscoveryStatus.Analyzed;
         }
 
-        return organism.IsScanned
-            ? BiologyCodexDiscoveryStatus.Confirmed
-            : BiologyCodexDiscoveryStatus.Reported;
+        return organism.IsScanned ? BiologyCodexDiscoveryStatus.Confirmed : BiologyCodexDiscoveryStatus.Reported;
     }
 
     private void AddPredictedOrganisms(
         SystemScanBodySnapshot body,
         BiologyPredictionInputs? inputs,
-        Dictionary<long, BiologyCodexOrganismViewModel> entries)
+        Dictionary<long, BiologyCodexOrganismViewModel> entries
+    )
     {
         if (survey.DisableBioPredictions || inputs is null)
         {
@@ -417,11 +383,8 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
 
             entries.Add(
                 reference.EntryId,
-                CreateOrganism(
-                    body,
-                    reference,
-                    BiologyCodexDiscoveryStatus.Predicted,
-                    inputs));
+                CreateOrganism(body, reference, BiologyCodexDiscoveryStatus.Predicted, inputs)
+            );
         }
     }
 
@@ -429,24 +392,21 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
         SystemScanBodySnapshot body,
         ExobiologyReference reference,
         BiologyCodexDiscoveryStatus status,
-        BiologyPredictionInputs? inputs)
+        BiologyPredictionInputs? inputs
+    )
     {
         BiologyCriteriaClause? temperatureClause = null;
         if (inputs is not null && !string.IsNullOrWhiteSpace(reference.DisplayName))
         {
-            temperatureClause = evaluator.Evaluate(
-                    inputs.Context,
-                    inputs.Knowledge,
-                    reference.DisplayName)
+            temperatureClause = evaluator
+                .Evaluate(inputs.Context, inputs.Knowledge, reference.DisplayName)
                 .TargetClauses.FirstOrDefault(clause =>
-                    clause.Property == "temp"
-                    && clause.Operator == BiologyCriteriaOperator.Range);
+                    clause.Property == "temp" && clause.Operator == BiologyCriteriaOperator.Range
+                );
         }
 
         var temperatureRange = FormatTemperatureRange(temperatureClause);
-        var temperatureWarning = FormatTemperatureWarning(
-            body,
-            temperatureClause);
+        var temperatureWarning = FormatTemperatureWarning(body, temperatureClause);
         var genusName = ExobiologyReferenceCatalog.GetGenusName(reference);
         return new BiologyCodexOrganismViewModel(
             reference.EntryId,
@@ -458,18 +418,14 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
             temperatureWarning,
             reference.ImageUrl,
             reference.ImageCommander,
-            reference.GetLegacyLocalImageName());
+            reference.GetLegacyLocalImageName()
+        );
     }
 
-    private string FormatTemperatureWarning(
-        SystemScanBodySnapshot body,
-        BiologyCriteriaClause? clause)
+    private string FormatTemperatureWarning(SystemScanBodySnapshot body, BiologyCriteriaClause? clause)
     {
         var status = survey.CurrentStatus;
-        if (status?.OnFoot != true
-            || status.Temperature <= 0
-            || clause is null
-            || !IsCurrentBody(body, status))
+        if (status?.OnFoot != true || status.Temperature <= 0 || clause is null || !IsCurrentBody(body, status))
         {
             return string.Empty;
         }
@@ -488,23 +444,17 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
     {
         var status = survey.CurrentStatus;
         var body = !string.IsNullOrWhiteSpace(status?.BodyName)
-            ? snapshot.Bodies.FirstOrDefault(candidate => string.Equals(
-                candidate.Name,
-                status.BodyName,
-                StringComparison.OrdinalIgnoreCase))
+            ? snapshot.Bodies.FirstOrDefault(candidate =>
+                string.Equals(candidate.Name, status.BodyName, StringComparison.OrdinalIgnoreCase)
+            )
             : null;
         return body?.BodyId ?? snapshot.CurrentBodyId ?? snapshot.LastDetailedBodyId;
     }
 
-    private static bool IsCurrentBody(
-        SystemScanBodySnapshot body,
-        Core.Journal.EliteStatus status)
+    private static bool IsCurrentBody(SystemScanBodySnapshot body, Core.Journal.EliteStatus status)
     {
         return !string.IsNullOrWhiteSpace(status.BodyName)
-            && string.Equals(
-                body.Name,
-                status.BodyName,
-                StringComparison.OrdinalIgnoreCase);
+            && string.Equals(body.Name, status.BodyName, StringComparison.OrdinalIgnoreCase);
     }
 
     private static string FormatTemperatureRange(BiologyCriteriaClause? clause)
@@ -516,26 +466,20 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
 
         return (clause.Minimum, clause.Maximum) switch
         {
-            ({ } minimum, { } maximum) =>
-                $"{minimum:N0}–{maximum:N0} K temperature range",
+            ({ } minimum, { } maximum) => $"{minimum:N0}–{maximum:N0} K temperature range",
             ({ } minimum, null) => $"At least {minimum:N0} K",
             (null, { } maximum) => $"At most {maximum:N0} K",
             _ => "Temperature criteria unavailable",
         };
     }
 
-    private void SelectBody(
-        BiologyCodexBodyViewModel? value,
-        long? preferredEntryId)
+    private void SelectBody(BiologyCodexBodyViewModel? value, long? preferredEntryId)
     {
         var bodyChanged = SetField(ref selectedBody, value, nameof(SelectedBody));
         var organism = preferredEntryId is { } entryId
-            ? value?.Organisms.FirstOrDefault(candidate =>
-                candidate.EntryId == entryId)
+            ? value?.Organisms.FirstOrDefault(candidate => candidate.EntryId == entryId)
             : null;
-        organism ??= value?.Organisms is { Count: > 0 } organisms
-            ? organisms[0]
-            : null;
+        organism ??= value?.Organisms is { Count: > 0 } organisms ? organisms[0] : null;
         SelectedOrganism = organism;
         if (bodyChanged)
         {
@@ -560,15 +504,13 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
 
     private void MoveOrganism(int delta)
     {
-        if (SelectedBody is not { Organisms.Count: > 0 } body
-            || SelectedOrganism is null)
+        if (SelectedBody is not { Organisms.Count: > 0 } body || SelectedOrganism is null)
         {
             return;
         }
 
         var index = body.Organisms.IndexOf(SelectedOrganism);
-        SelectedOrganism = body.Organisms[
-            (index + delta + body.Organisms.Count) % body.Organisms.Count];
+        SelectedOrganism = body.Organisms[(index + delta + body.Organisms.Count) % body.Organisms.Count];
     }
 
     private Task<bool> OpenWindowAsync()
@@ -597,14 +539,10 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
         try
         {
             var launched = await uriLauncher(uri);
-            LaunchStatus = launched
-                ? $"Opened {label}."
-                : $"The platform could not open {label}.";
+            LaunchStatus = launched ? $"Opened {label}." : $"The platform could not open {label}.";
             return launched;
         }
-        catch (Exception exception) when (
-            exception is InvalidOperationException
-                or NotSupportedException)
+        catch (Exception exception) when (exception is InvalidOperationException or NotSupportedException)
         {
             LaunchStatus = $"{label} could not be opened: {exception.Message}";
             return false;
@@ -642,10 +580,7 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
         openSpanshCommand.RaiseCanExecuteChanged();
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -662,8 +597,7 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private sealed class DelegateCommand(Action execute, Func<bool> canExecute)
-        : ICommand
+    private sealed class DelegateCommand(Action execute, Func<bool> canExecute) : ICommand
     {
         public event EventHandler? CanExecuteChanged;
 
@@ -683,9 +617,7 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
-    private sealed class AsyncCommand(
-        Func<Task<bool>> execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class AsyncCommand(Func<Task<bool>> execute, Func<bool> canExecute) : ICommand
     {
         private bool isExecuting;
 
@@ -728,15 +660,14 @@ public sealed record BiologyCodexBodyViewModel(
     string Name,
     string ShortName,
     int BiologicalSignalCount,
-    IReadOnlyList<BiologyCodexOrganismViewModel> Organisms)
+    IReadOnlyList<BiologyCodexOrganismViewModel> Organisms
+)
 {
-    public string SignalCountText => BiologicalSignalCount == 1
-        ? "1 biological signal"
-        : $"{BiologicalSignalCount:N0} biological signals";
+    public string SignalCountText =>
+        BiologicalSignalCount == 1 ? "1 biological signal" : $"{BiologicalSignalCount:N0} biological signals";
 
-    public string DisplayName => Organisms.Count == 0
-        ? $"{Name} · no entries"
-        : $"{Name} · {Organisms.Count:N0} entries";
+    public string DisplayName =>
+        Organisms.Count == 0 ? $"{Name} · no entries" : $"{Name} · {Organisms.Count:N0} entries";
 }
 
 public sealed record BiologyCodexOrganismViewModel(
@@ -749,22 +680,21 @@ public sealed record BiologyCodexOrganismViewModel(
     string TemperatureWarningText,
     string? ImageUrl,
     string? ImageCommander,
-    string? LocalImageName)
+    string? LocalImageName
+)
 {
     public string StatusText => Status.ToString();
 
-    public string SampleDistanceText =>
-        $"{SampleDistanceMeters:N0} m minimum sample separation";
+    public string SampleDistanceText => $"{SampleDistanceMeters:N0} m minimum sample separation";
 
-    public string RewardText => Reward > 0
-        ? $"{Reward:N0} CR base reward"
-        : "Reward unavailable";
+    public string RewardText => Reward > 0 ? $"{Reward:N0} CR base reward" : "Reward unavailable";
 
     public bool HasImage => !string.IsNullOrWhiteSpace(ImageUrl);
 
-    public string ImageCreditText => string.IsNullOrWhiteSpace(ImageCommander)
-        ? "Canonn Codex reference image"
-        : $"Reference image by CMDR {ImageCommander}";
+    public string ImageCreditText =>
+        string.IsNullOrWhiteSpace(ImageCommander)
+            ? "Canonn Codex reference image"
+            : $"Reference image by CMDR {ImageCommander}";
 }
 
 public enum BiologyCodexDiscoveryStatus

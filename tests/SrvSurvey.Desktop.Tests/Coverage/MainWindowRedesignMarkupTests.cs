@@ -12,9 +12,7 @@ public sealed class MainWindowRedesignMarkupTests
 
         Assert.Contains("SrvSurvey-XP", values);
         Assert.Contains("CMDR'S COMPANION", values);
-        Assert.Contains(
-            "/Assets/logo-remastered-linux-windows-split.png",
-            values);
+        Assert.Contains("/Assets/logo-remastered-linux-windows-split.png", values);
         Assert.Contains("Survey", values);
         Assert.Contains("Navigation", values);
         Assert.Contains("Activities", values);
@@ -22,47 +20,53 @@ public sealed class MainWindowRedesignMarkupTests
         Assert.Contains("OpenDiscord_Click", values);
         Assert.Contains("OpenCategoryOverlaySettings_Click", values);
         Assert.Contains("{StaticResource window_multiple_regular}", values);
-        Assert.DoesNotContain(values, value => value.Contains(
-            "chevron",
-            StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(values, value => value.Contains("chevron", StringComparison.OrdinalIgnoreCase));
 
-        var notification = mainWindow.Descendants().Single(element =>
-            element.Name.LocalName == "Border"
-            && element.Attribute("IsVisible")?.Value
-                == "{Binding ReleaseUpdates.ShouldShowUpdateNotification}");
+        var notification = mainWindow
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "Border"
+                && element.Attribute("IsVisible")?.Value == "{Binding ReleaseUpdates.ShouldShowUpdateNotification}"
+            );
         Assert.Equal("Bottom", notification.Attribute("VerticalAlignment")?.Value);
         Assert.Contains(
             notification.Descendants(),
-            element => element.Attribute("Command")?.Value
-                == "{Binding ReleaseUpdates.OpenUpdateDiagnosticsCommand}");
+            element => element.Attribute("Command")?.Value == "{Binding ReleaseUpdates.OpenUpdateDiagnosticsCommand}"
+        );
     }
 
     [Fact]
     public void DiagnosticReplayUsesOnlyAnAlteredApplicationBorder()
     {
         var mainWindow = LoadDesktopFile("MainWindow.axaml");
-        var diagnosticBorder = mainWindow.Descendants().Single(element =>
-            element.Name.LocalName == "Border"
-            && element.Attribute("Classes")?.Value == "diagnostic-shell");
+        var diagnosticBorder = mainWindow
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "Border" && element.Attribute("Classes")?.Value == "diagnostic-shell"
+            );
 
-        Assert.Equal(
-            "{Binding IsDiagnosticReplay}",
-            diagnosticBorder.Attribute("Classes.active")?.Value);
+        Assert.Equal("{Binding IsDiagnosticReplay}", diagnosticBorder.Attribute("Classes.active")?.Value);
         Assert.DoesNotContain(
             mainWindow.Descendants(),
-            element => element.Attributes().Any(attribute =>
-                attribute.Value.Contains("watermark", StringComparison.OrdinalIgnoreCase)
-                || attribute.Value.Contains("replay bar", StringComparison.OrdinalIgnoreCase)));
+            element =>
+                element
+                    .Attributes()
+                    .Any(attribute =>
+                        attribute.Value.Contains("watermark", StringComparison.OrdinalIgnoreCase)
+                        || attribute.Value.Contains("replay bar", StringComparison.OrdinalIgnoreCase)
+                    )
+        );
     }
 
     [Fact]
     public void NavigationGroupHeadingsMatchDestinationTypography()
     {
         var styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
-        var headingStyle = styles.Descendants().Single(element =>
-            element.Name.LocalName == "Style"
-            && element.Attribute("Selector")?.Value
-                == "Button.nav-group-heading");
+        var headingStyle = styles
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "Style" && element.Attribute("Selector")?.Value == "Button.nav-group-heading"
+            );
 
         AssertStyleSetter(headingStyle, "FontSize", "14");
         AssertStyleSetter(headingStyle, "FontWeight", "SemiBold");
@@ -72,36 +76,48 @@ public sealed class MainWindowRedesignMarkupTests
     public void NavigationGroupsAnimateHeightAndOpacityUnlessMotionIsReduced()
     {
         var mainWindow = LoadDesktopFile("MainWindow.axaml");
-        var containers = mainWindow.Descendants()
-            .Where(element => element.Name.LocalName == "Border"
-                && element.Attribute("Classes")?.Value
-                    == "nav-group-container")
+        var containers = mainWindow
+            .Descendants()
+            .Where(element =>
+                element.Name.LocalName == "Border" && element.Attribute("Classes")?.Value == "nav-group-container"
+            )
             .ToArray();
 
         Assert.Equal(3, containers.Length);
-        Assert.All(containers, container => Assert.Equal(
-            "{Binding DesktopBehavior.ReduceMotion}",
-            container.Attribute("Classes.reduced-motion")?.Value));
+        Assert.All(
+            containers,
+            container =>
+                Assert.Equal(
+                    "{Binding DesktopBehavior.ReduceMotion}",
+                    container.Attribute("Classes.reduced-motion")?.Value
+                )
+        );
         Assert.DoesNotContain(
             containers.SelectMany(container => container.Descendants()),
-            element => element.Attribute("IsVisible")?.Value is not null);
+            element => element.Attribute("IsVisible")?.Value is not null
+        );
 
         var styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
-        var containerStyle = styles.Descendants().Single(element =>
-            element.Name.LocalName == "Style"
-            && element.Attribute("Selector")?.Value
-                == "Border.nav-group-container");
-        var transitionedProperties = containerStyle.Descendants()
+        var containerStyle = styles
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "Style"
+                && element.Attribute("Selector")?.Value == "Border.nav-group-container"
+            );
+        var transitionedProperties = containerStyle
+            .Descendants()
             .Where(element => element.Name.LocalName == "DoubleTransition")
             .Select(element => element.Attribute("Property")?.Value)
             .ToArray();
         Assert.Contains("MaxHeight", transitionedProperties);
         Assert.Contains("Opacity", transitionedProperties);
 
-        var reducedMotionStyle = styles.Descendants().Single(element =>
-            element.Name.LocalName == "Style"
-            && element.Attribute("Selector")?.Value
-                == "Border.nav-group-container.reduced-motion");
+        var reducedMotionStyle = styles
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "Style"
+                && element.Attribute("Selector")?.Value == "Border.nav-group-container.reduced-motion"
+            );
         AssertStyleSetter(reducedMotionStyle, "Transitions", "{x:Null}");
     }
 
@@ -109,28 +125,40 @@ public sealed class MainWindowRedesignMarkupTests
     public void OnlyAccordionNavigationLivesInsideTheSidebarScroller()
     {
         var mainWindow = LoadDesktopFile("MainWindow.axaml");
-        var scroller = mainWindow.Descendants().Single(element =>
-            element.Name.LocalName == "ScrollViewer"
-            && element.Attributes().Any(attribute =>
-                attribute.Name.LocalName == "Name"
-                && attribute.Value == "NavigationAccordionScroller"));
-        var overview = mainWindow.Descendants().Single(element =>
-            element.Name.LocalName == "ItemsControl"
-            && element.Attribute("ItemsSource")?.Value
-                == "{Binding OverviewNavigationItems}");
-        var utilities = mainWindow.Descendants().Single(element =>
-            element.Name.LocalName == "ItemsControl"
-            && element.Attribute("ItemsSource")?.Value
-                == "{Binding UtilityNavigationItems}");
+        var scroller = mainWindow
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "ScrollViewer"
+                && element
+                    .Attributes()
+                    .Any(attribute =>
+                        attribute.Name.LocalName == "Name" && attribute.Value == "NavigationAccordionScroller"
+                    )
+            );
+        var overview = mainWindow
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "ItemsControl"
+                && element.Attribute("ItemsSource")?.Value == "{Binding OverviewNavigationItems}"
+            );
+        var utilities = mainWindow
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "ItemsControl"
+                && element.Attribute("ItemsSource")?.Value == "{Binding UtilityNavigationItems}"
+            );
 
         Assert.DoesNotContain(scroller, overview.Ancestors());
         Assert.DoesNotContain(scroller, utilities.Ancestors());
         Assert.Equal(
             ["Survey", "Navigation", "Activities"],
-            scroller.Descendants()
-                .Where(element => element.Name.LocalName == "Button"
-                    && element.Attribute("Classes")?.Value == "nav-group-heading")
-                .Select(element => element.Attribute("Content")?.Value));
+            scroller
+                .Descendants()
+                .Where(element =>
+                    element.Name.LocalName == "Button" && element.Attribute("Classes")?.Value == "nav-group-heading"
+                )
+                .Select(element => element.Attribute("Content")?.Value)
+        );
     }
 
     [Fact]
@@ -176,20 +204,20 @@ public sealed class MainWindowRedesignMarkupTests
         Assert.Contains("{Binding Search.DisableCommand}", values);
         Assert.Contains("{Binding Search.CenterSystemName}", values);
         Assert.Contains("{Binding Search.CenterPosition}", values);
-        Assert.Contains(values, value => value.Contains(
-            "suggestions come from EDSM with an Ardent fallback",
-            StringComparison.Ordinal));
+        Assert.Contains(
+            values,
+            value => value.Contains("suggestions come from EDSM with an Ardent fallback", StringComparison.Ordinal)
+        );
     }
 
     [Fact]
     public void CopyLinksStayClickableWithoutUnderlines()
     {
         var styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
-        var styleMap = styles.Descendants()
+        var styleMap = styles
+            .Descendants()
             .Where(element => element.Name.LocalName == "Style")
-            .ToDictionary(
-                element => element.Attribute("Selector")?.Value ?? string.Empty,
-                StringComparer.Ordinal);
+            .ToDictionary(element => element.Attribute("Selector")?.Value ?? string.Empty, StringComparer.Ordinal);
 
         AssertNoUnderlineSetter(styleMap["Button.link TextBlock"]);
         AssertNoUnderlineSetter(styleMap["TextBlock.system-copy-link"]);
@@ -198,11 +226,13 @@ public sealed class MainWindowRedesignMarkupTests
             .EnumerateFiles(
                 Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop"),
                 "*.axaml",
-                SearchOption.AllDirectories)
+                SearchOption.AllDirectories
+            )
             .Select(XDocument.Load)
             .SelectMany(document => document.Descendants())
-            .Count(element => element.Attributes().Any(attribute =>
-                attribute.Name.LocalName == "ClipboardCopyBehavior.Text"));
+            .Count(element =>
+                element.Attributes().Any(attribute => attribute.Name.LocalName == "ClipboardCopyBehavior.Text")
+            );
         Assert.True(copyTargets >= 41, $"Expected at least 41 copy targets, found {copyTargets}.");
     }
 
@@ -210,102 +240,98 @@ public sealed class MainWindowRedesignMarkupTests
     public void GlobalScrollbarsKeepAReservedVisibleGutter()
     {
         var styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
-        var styleMap = styles.Descendants()
+        var styleMap = styles
+            .Descendants()
             .Where(element => element.Name.LocalName == "Style")
-            .ToDictionary(
-                element => element.Attribute("Selector")?.Value ?? string.Empty,
-                StringComparer.Ordinal);
+            .ToDictionary(element => element.Attribute("Selector")?.Value ?? string.Empty, StringComparer.Ordinal);
 
         AssertStyleSetter(styleMap["ScrollViewer"], "AllowAutoHide", "False");
         AssertStyleSetter(styleMap["ScrollBar"], "AllowAutoHide", "False");
         AssertStyleSetter(styleMap["ScrollBar:vertical"], "Width", "16");
         AssertStyleSetter(styleMap["ScrollBar:horizontal"], "Height", "16");
-        AssertStyleSetter(
-            styleMap["ScrollBar:vertical /template/ Thumb"],
-            "MinHeight",
-            "32");
-        AssertStyleSetter(
-            styleMap["ScrollBar:horizontal /template/ Thumb"],
-            "MinWidth",
-            "32");
+        AssertStyleSetter(styleMap["ScrollBar:vertical /template/ Thumb"], "MinHeight", "32");
+        AssertStyleSetter(styleMap["ScrollBar:horizontal /template/ Thumb"], "MinWidth", "32");
     }
 
     [Fact]
     public void OverlayShortcutColorDoesNotDependOnRemovedListBoxItemAncestor()
     {
         var styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
-        var overlayShortcutStyle = styles.Descendants().Single(element =>
-            element.Name.LocalName == "Style"
-            && element.Attribute("Selector")?.Value
-                == "Button.nav-overlay-settings");
-        var foreground = overlayShortcutStyle.Elements().Single(element =>
-            element.Name.LocalName == "Setter"
-            && element.Attribute("Property")?.Value == "Foreground");
+        var overlayShortcutStyle = styles
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "Style"
+                && element.Attribute("Selector")?.Value == "Button.nav-overlay-settings"
+            );
+        var foreground = overlayShortcutStyle
+            .Elements()
+            .Single(element =>
+                element.Name.LocalName == "Setter" && element.Attribute("Property")?.Value == "Foreground"
+            );
 
-        Assert.Equal(
-            "{DynamicResource RavenMutedTextBrush}",
-            foreground.Attribute("Value")?.Value);
-        Assert.DoesNotContain(
-            "$parent[ListBoxItem]",
-            foreground.Attribute("Value")?.Value,
-            StringComparison.Ordinal);
+        Assert.Equal("{DynamicResource RavenMutedTextBrush}", foreground.Attribute("Value")?.Value);
+        Assert.DoesNotContain("$parent[ListBoxItem]", foreground.Attribute("Value")?.Value, StringComparison.Ordinal);
     }
 
     [Fact]
     public void SelectedMutedListTextUsesTheThemeSpecificContrastResource()
     {
         var styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
-        var styleMap = styles.Descendants()
+        var styleMap = styles
+            .Descendants()
             .Where(element => element.Name.LocalName == "Style")
-            .ToDictionary(
-                element => element.Attribute("Selector")?.Value ?? string.Empty,
-                StringComparer.Ordinal);
+            .ToDictionary(element => element.Attribute("Selector")?.Value ?? string.Empty, StringComparer.Ordinal);
 
         AssertStyleSetter(
             styleMap["ListBoxItem:selected TextBlock.muted"],
             "Foreground",
-            "{DynamicResource RavenSelectedMutedTextBrush}");
+            "{DynamicResource RavenSelectedMutedTextBrush}"
+        );
         Assert.DoesNotContain("ListBoxItem:selected", styleMap.Keys);
         Assert.DoesNotContain("ListBoxItem:selected TextBlock", styleMap.Keys);
         AssertStyleSetter(
             styleMap["ListBox.nav ListBoxItem:selected"],
             "Foreground",
-            "{DynamicResource RavenTextBrush}");
+            "{DynamicResource RavenTextBrush}"
+        );
         AssertStyleSetter(
             styleMap["ListBox.guide-categories ListBoxItem:selected"],
             "Foreground",
-            "{DynamicResource RavenTextBrush}");
+            "{DynamicResource RavenTextBrush}"
+        );
     }
 
     [Fact]
     public void GlobalScrollbarTemplateUsesRoundedTrackWithoutLineButtons()
     {
         var styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
-        var styleMap = styles.Descendants()
+        var styleMap = styles
+            .Descendants()
             .Where(element => element.Name.LocalName == "Style")
-            .ToDictionary(
-                element => element.Attribute("Selector")?.Value ?? string.Empty,
-                StringComparer.Ordinal);
+            .ToDictionary(element => element.Attribute("Selector")?.Value ?? string.Empty, StringComparer.Ordinal);
 
         foreach (var selector in new[] { "ScrollBar:vertical", "ScrollBar:horizontal" })
         {
             var style = styleMap[selector];
-            Assert.Contains(style.Elements(), element =>
-                element.Name.LocalName == "Setter"
-                && element.Attribute("Property")?.Value == "Template");
-            Assert.DoesNotContain(style.Descendants(), element =>
-                element.Attribute("Name")?.Value
-                    is "PART_LineUpButton" or "PART_LineDownButton");
+            Assert.Contains(
+                style.Elements(),
+                element => element.Name.LocalName == "Setter" && element.Attribute("Property")?.Value == "Template"
+            );
+            Assert.DoesNotContain(
+                style.Descendants(),
+                element => element.Attribute("Name")?.Value is "PART_LineUpButton" or "PART_LineDownButton"
+            );
         }
 
         Assert.Contains(
             styles.Descendants(),
-            element => element.Name.LocalName == "Border"
+            element =>
+                element.Name.LocalName == "Border"
                 && element.Attribute("Classes")?.Value == "scrollbar-thumb"
-                && element.Attribute("CornerRadius")?.Value == "999");
+                && element.Attribute("CornerRadius")?.Value == "999"
+        );
 
-        var separatorStyle = styleMap[
-            "ScrollViewer[IsExpanded=true] /template/ Panel#PART_ScrollBarsSeparator"];
+        var separatorStyle = styleMap["ScrollViewer[IsExpanded=true] /template/ Panel#PART_ScrollBarsSeparator"];
         AssertStyleSetter(separatorStyle, "Background", "Transparent");
         AssertStyleSetter(separatorStyle, "Opacity", "0");
     }
@@ -321,56 +347,59 @@ public sealed class MainWindowRedesignMarkupTests
             "Expander.section-pill /template/ ToggleButton",
         };
 
-        var pillToggleStyles = styles.Descendants().Where(element =>
-            element.Name.LocalName == "Style"
-            && expectedSelectors.Contains(element.Attribute("Selector")?.Value ?? string.Empty))
+        var pillToggleStyles = styles
+            .Descendants()
+            .Where(element =>
+                element.Name.LocalName == "Style"
+                && expectedSelectors.Contains(element.Attribute("Selector")?.Value ?? string.Empty)
+            )
             .ToArray();
 
         Assert.Equal(3, pillToggleStyles.Length);
-        Assert.All(pillToggleStyles, style =>
-            AssertStyleSetter(style, "CornerRadius", "999"));
+        Assert.All(pillToggleStyles, style => AssertStyleSetter(style, "CornerRadius", "999"));
 
         var boxelStats = LoadDesktopFile("BoxelStatsWindow.axaml");
-        Assert.Contains(boxelStats.Descendants(), element =>
-            element.Name.LocalName == "Expander"
-            && element.Attribute("Classes")?.Value == "section-pill");
+        Assert.Contains(
+            boxelStats.Descendants(),
+            element => element.Name.LocalName == "Expander" && element.Attribute("Classes")?.Value == "section-pill"
+        );
     }
 
-    private static void AssertStyleSetter(
-        XElement style,
-        string property,
-        string value)
+    private static void AssertStyleSetter(XElement style, string property, string value)
     {
-        Assert.Contains(style.Elements(), element =>
-            element.Name.LocalName == "Setter"
-            && element.Attribute("Property")?.Value == property
-            && element.Attribute("Value")?.Value == value);
+        Assert.Contains(
+            style.Elements(),
+            element =>
+                element.Name.LocalName == "Setter"
+                && element.Attribute("Property")?.Value == property
+                && element.Attribute("Value")?.Value == value
+        );
     }
 
     private static void AssertNoUnderlineSetter(XElement style)
     {
-        Assert.DoesNotContain(style.Elements(), element =>
-            element.Name.LocalName == "Setter"
-            && element.Attribute("Property")?.Value == "TextDecorations"
-            && element.Attribute("Value")?.Value == "Underline");
+        Assert.DoesNotContain(
+            style.Elements(),
+            element =>
+                element.Name.LocalName == "Setter"
+                && element.Attribute("Property")?.Value == "TextDecorations"
+                && element.Attribute("Value")?.Value == "Underline"
+        );
     }
 
-    private static XDocument LoadView(string fileName) =>
-        LoadDesktopFile("Views", fileName);
+    private static XDocument LoadView(string fileName) => LoadDesktopFile("Views", fileName);
 
     private static XDocument LoadDesktopFile(params string[] segments) =>
-        XDocument.Load(Path.Combine(
-            new[]
-            {
-                FindRepositoryRoot(),
-                "src",
-                "SrvSurvey.Desktop",
-            }.Concat(segments).ToArray()));
+        XDocument.Load(
+            Path.Combine(new[] { FindRepositoryRoot(), "src", "SrvSurvey.Desktop" }.Concat(segments).ToArray())
+        );
 
-    private static string[] Values(XDocument document) => document.Descendants()
-        .SelectMany(element => element.Attributes())
-        .Select(attribute => attribute.Value)
-        .ToArray();
+    private static string[] Values(XDocument document) =>
+        document
+            .Descendants()
+            .SelectMany(element => element.Attributes())
+            .Select(attribute => attribute.Value)
+            .ToArray();
 
     private static string FindRepositoryRoot()
     {
@@ -385,7 +414,6 @@ public sealed class MainWindowRedesignMarkupTests
             current = current.Parent;
         }
 
-        throw new DirectoryNotFoundException(
-            "Could not locate the repository root.");
+        throw new DirectoryNotFoundException("Could not locate the repository root.");
     }
 }

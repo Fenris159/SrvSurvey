@@ -12,7 +12,8 @@ public sealed class GuardianOverlayViewModel : INotifyPropertyChanged
     public GuardianOverlayViewModel(
         IGuardianOverlayPresentationState guardian,
         OverlayPlatformCapabilities capabilities,
-        bool showEmbeddedZoomPreview = false)
+        bool showEmbeddedZoomPreview = false
+    )
     {
         Guardian = guardian ?? throw new ArgumentNullException(nameof(guardian));
         ArgumentNullException.ThrowIfNull(capabilities);
@@ -30,19 +31,23 @@ public sealed class GuardianOverlayViewModel : INotifyPropertyChanged
     public bool ShowEmbeddedZoomPreview { get; }
 
     internal static GuardianOverlayViewModel CreateEditorPreview(
-        GuardianStatusPreviewState statusState =
-            GuardianStatusPreviewState.ObeliskTarget)
+        GuardianStatusPreviewState statusState = GuardianStatusPreviewState.ObeliskTarget
+    )
     {
         var viewModel = new GuardianOverlayViewModel(
             statusState == GuardianStatusPreviewState.ObeliskTarget
                 ? GuardianOverlayPreviewState.Instance
                 : GuardianOverlayPreviewState.Create(statusState),
             OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows),
-            showEmbeddedZoomPreview: true);
-        viewModel.ApplyPreparation(new OverlayPreparationResult(
-            IsPrepared: true,
-            IsClickThrough: true,
-            "EDITOR PREVIEW - REPRESENTATIVE GUARDIAN STATE"));
+            showEmbeddedZoomPreview: true
+        );
+        viewModel.ApplyPreparation(
+            new OverlayPreparationResult(
+                IsPrepared: true,
+                IsClickThrough: true,
+                "EDITOR PREVIEW - REPRESENTATIVE GUARDIAN STATE"
+            )
+        );
         return viewModel;
     }
 
@@ -58,9 +63,7 @@ public sealed class GuardianOverlayViewModel : INotifyPropertyChanged
         private set => SetField(ref isClickThrough, value);
     }
 
-    public string InputMode => IsClickThrough
-        ? "CLICK-THROUGH"
-        : "PASS-THROUGH UNAVAILABLE";
+    public string InputMode => IsClickThrough ? "CLICK-THROUGH" : "PASS-THROUGH UNAVAILABLE";
 
     public void ApplyPreparation(OverlayPreparationResult result)
     {
@@ -70,10 +73,7 @@ public sealed class GuardianOverlayViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(InputMode));
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {

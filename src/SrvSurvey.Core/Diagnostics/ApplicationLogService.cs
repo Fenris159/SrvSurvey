@@ -15,7 +15,8 @@ public sealed class ApplicationLogService
     public ApplicationLogService(
         string dataDirectory,
         TimeProvider? timeProvider = null,
-        int retainedFileCount = DefaultRetainedFileCount)
+        int retainedFileCount = DefaultRetainedFileCount
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(retainedFileCount);
@@ -67,9 +68,7 @@ public sealed class ApplicationLogService
 
     public string Append(object? value)
     {
-        var line = string.Create(
-            CultureInfo.InvariantCulture,
-            $"{timeProvider.GetLocalNow():HH:mm:ss}: {value}");
+        var line = string.Create(CultureInfo.InvariantCulture, $"{timeProvider.GetLocalNow():HH:mm:ss}: {value}");
         lock (syncRoot)
         {
             entries.Add(line);
@@ -92,8 +91,7 @@ public sealed class ApplicationLogService
 
     private string CreateSessionFile()
     {
-        var timestamp = timeProvider.GetLocalNow()
-            .ToString("yyyyMMdd_HHmmss", CultureInfo.InvariantCulture);
+        var timestamp = timeProvider.GetLocalNow().ToString("yyyyMMdd_HHmmss", CultureInfo.InvariantCulture);
         var stem = $"srvs-{timestamp}";
         var path = Path.Combine(LogDirectory, stem + ".txt");
         try
@@ -106,11 +104,7 @@ public sealed class ApplicationLogService
                 suffix++;
             }
 
-            using var stream = new FileStream(
-                path,
-                FileMode.CreateNew,
-                FileAccess.Write,
-                FileShare.ReadWrite);
+            using var stream = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.ReadWrite);
         }
         catch (Exception exception) when (IsFileSystemException(exception))
         {
@@ -128,10 +122,7 @@ public sealed class ApplicationLogService
             try
             {
                 Directory.CreateDirectory(LogDirectory);
-                File.AppendAllText(
-                    CurrentLogPath,
-                    line + Environment.NewLine,
-                    Encoding.UTF8);
+                File.AppendAllText(CurrentLogPath, line + Environment.NewLine, Encoding.UTF8);
                 lastWriteError = null;
                 return;
             }
@@ -148,7 +139,8 @@ public sealed class ApplicationLogService
     {
         try
         {
-            var obsolete = Directory.EnumerateFiles(LogDirectory, "*.txt")
+            var obsolete = Directory
+                .EnumerateFiles(LogDirectory, "*.txt")
                 .Select(path => new FileInfo(path))
                 .OrderByDescending(file => file.LastWriteTimeUtc)
                 .ThenByDescending(file => file.Name, StringComparer.OrdinalIgnoreCase)
@@ -167,8 +159,6 @@ public sealed class ApplicationLogService
 
     private static bool IsFileSystemException(Exception exception)
     {
-        return exception is IOException
-            or UnauthorizedAccessException
-            or NotSupportedException;
+        return exception is IOException or UnauthorizedAccessException or NotSupportedException;
     }
 }

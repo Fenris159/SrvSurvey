@@ -19,18 +19,11 @@ public sealed class MineMapControlTests
     [Fact]
     public void ViewportPanResetsAtFitAndClampsAtHigherZoom()
     {
-        Assert.Equal(
-            default,
-            MineMapControl.ClampViewportOffset(
-                new Vector(100, -100),
-                new Size(400, 300),
-                1));
+        Assert.Equal(default, MineMapControl.ClampViewportOffset(new Vector(100, -100), new Size(400, 300), 1));
         Assert.Equal(
             new Vector(200, -150),
-            MineMapControl.ClampViewportOffset(
-                new Vector(500, -500),
-                new Size(400, 300),
-                2));
+            MineMapControl.ClampViewportOffset(new Vector(500, -500), new Size(400, 300), 2)
+        );
     }
 
     [Theory]
@@ -44,7 +37,8 @@ public sealed class MineMapControlTests
 
         Assert.Equal(
             GuardianSiteMapControl.GetCommanderHeadingEnd(location, radius, heading),
-            MineMapControl.GetCommanderHeadingEnd(location, radius, heading));
+            MineMapControl.GetCommanderHeadingEnd(location, radius, heading)
+        );
     }
 
     [Theory]
@@ -54,7 +48,8 @@ public sealed class MineMapControlTests
     public void DistanceRingsRetainFixedKilometerLabelsAndGrowWithZoom(
         double zoom,
         double expectedFirstRadius,
-        double expectedLastRadius)
+        double expectedLastRadius
+    )
     {
         var rings = MineMapControl.CreateDistanceRings(250, zoom);
 

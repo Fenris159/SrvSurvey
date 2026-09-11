@@ -4,11 +4,11 @@ namespace SrvSurvey.Core.Tests.Updates;
 
 public sealed class ReleaseInstallationHistoryCleanerTests : IDisposable
 {
-    private static readonly DateTimeOffset Now =
-        new(2026, 8, 17, 12, 0, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset Now = new(2026, 8, 17, 12, 0, 0, TimeSpan.Zero);
     private readonly string root = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-update-cleaner-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-update-cleaner-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void CleanupRetainsNewestRecentProtectedAndUnrecognizedDirectories()
@@ -23,16 +23,15 @@ public sealed class ReleaseInstallationHistoryCleanerTests : IDisposable
         var recentUpdate = CreateGenerated("update", 6, Now.AddHours(-2));
         var newestUpdate = CreateGenerated("update", 7, Now.AddHours(-1));
         var malformed = Path.Combine(root, ".SrvSurvey-XP-backup-not-a-guid");
-        var otherInstall = Path.Combine(
-            root,
-            $".OtherProduct-backup-{Guid.NewGuid():N}");
+        var otherInstall = Path.Combine(root, $".OtherProduct-backup-{Guid.NewGuid():N}");
         Directory.CreateDirectory(malformed);
         Directory.CreateDirectory(otherInstall);
 
         var cleaner = new ReleaseInstallationHistoryCleaner(
             new FixedTimeProvider(Now),
             retainedDirectoriesPerKind: 1,
-            minimumAge: TimeSpan.FromHours(24));
+            minimumAge: TimeSpan.FromHours(24)
+        );
         var result = cleaner.Clean(installation, [protectedBackup]);
 
         Assert.False(Directory.Exists(oldBackup));
@@ -56,17 +55,15 @@ public sealed class ReleaseInstallationHistoryCleanerTests : IDisposable
         var parent = Path.Combine(root, "parent");
         var installation = Path.Combine(parent, "SrvSurvey-XP");
         Directory.CreateDirectory(installation);
-        var outside = Path.Combine(
-            root,
-            $".SrvSurvey-XP-backup-{Guid.NewGuid():N}");
+        var outside = Path.Combine(root, $".SrvSurvey-XP-backup-{Guid.NewGuid():N}");
         Directory.CreateDirectory(outside);
         Directory.SetLastWriteTimeUtc(outside, Now.AddYears(-1).UtcDateTime);
 
         var result = new ReleaseInstallationHistoryCleaner(
             new FixedTimeProvider(Now),
             retainedDirectoriesPerKind: 0,
-            minimumAge: TimeSpan.Zero)
-            .Clean(installation);
+            minimumAge: TimeSpan.Zero
+        ).Clean(installation);
 
         Assert.True(Directory.Exists(outside));
         Assert.Equal(0, result.DeletedDirectories);
@@ -78,36 +75,18 @@ public sealed class ReleaseInstallationHistoryCleanerTests : IDisposable
         var dataDirectory = Path.Combine(root, "data");
         var packages = Path.Combine(dataDirectory, "updates", "packages");
         var staged = Path.Combine(dataDirectory, "updates", "staged");
-        var oldPackage = CreateVersionDirectory(
-            packages,
-            "2.1.3.0-rc.20",
-            Now.AddDays(-8));
-        var recentPackage = CreateVersionDirectory(
-            packages,
-            "2.1.3.0-rc.21",
-            Now.AddHours(-2));
-        var newestPackage = CreateVersionDirectory(
-            packages,
-            "2.1.3.0-rc.22",
-            Now.AddHours(-1));
-        var oldStaged = CreateVersionDirectory(
-            staged,
-            "2.1.3.0-rc.20",
-            Now.AddDays(-8));
-        var newestStaged = CreateVersionDirectory(
-            staged,
-            "2.1.3.0-rc.22",
-            Now.AddDays(-2));
-        var malformed = CreateVersionDirectory(
-            packages,
-            "not-a-version",
-            Now.AddYears(-1));
+        var oldPackage = CreateVersionDirectory(packages, "2.1.3.0-rc.20", Now.AddDays(-8));
+        var recentPackage = CreateVersionDirectory(packages, "2.1.3.0-rc.21", Now.AddHours(-2));
+        var newestPackage = CreateVersionDirectory(packages, "2.1.3.0-rc.22", Now.AddHours(-1));
+        var oldStaged = CreateVersionDirectory(staged, "2.1.3.0-rc.20", Now.AddDays(-8));
+        var newestStaged = CreateVersionDirectory(staged, "2.1.3.0-rc.22", Now.AddDays(-2));
+        var malformed = CreateVersionDirectory(packages, "not-a-version", Now.AddYears(-1));
 
         var result = new ReleasePackageCacheCleaner(
             new FixedTimeProvider(Now),
             retainedVersions: 1,
-            minimumAge: TimeSpan.FromHours(24))
-            .Clean(dataDirectory);
+            minimumAge: TimeSpan.FromHours(24)
+        ).Clean(dataDirectory);
 
         Assert.False(Directory.Exists(oldPackage));
         Assert.True(Directory.Exists(recentPackage));
@@ -130,7 +109,8 @@ public sealed class ReleaseInstallationHistoryCleanerTests : IDisposable
             new FixedTimeProvider(Now),
             retainedDirectoriesPerKind: 0,
             minimumAge: TimeSpan.Zero,
-            _ => throw new IOException("in use"));
+            _ => throw new IOException("in use")
+        );
 
         var result = cleaner.Clean(installation);
 
@@ -148,16 +128,19 @@ public sealed class ReleaseInstallationHistoryCleanerTests : IDisposable
         var package = CreateVersionDirectory(
             Path.Combine(dataDirectory, "updates", "packages"),
             "2.1.3.0-rc.20",
-            Now.AddDays(-8));
+            Now.AddDays(-8)
+        );
         var staged = CreateVersionDirectory(
             Path.Combine(dataDirectory, "updates", "staged"),
             "2.1.3.0-rc.20",
-            Now.AddDays(-8));
+            Now.AddDays(-8)
+        );
         var cleaner = new ReleasePackageCacheCleaner(
             new FixedTimeProvider(Now),
             retainedVersions: 0,
             minimumAge: TimeSpan.Zero,
-            _ => throw new UnauthorizedAccessException("locked"));
+            _ => throw new UnauthorizedAccessException("locked")
+        );
 
         var result = cleaner.Clean(dataDirectory);
 
@@ -171,8 +154,7 @@ public sealed class ReleaseInstallationHistoryCleanerTests : IDisposable
     [Fact]
     public void MissingPackageRootsAreNotReportedAsFailures()
     {
-        var result = new ReleasePackageCacheCleaner().Clean(
-            Path.Combine(root, "missing-data"));
+        var result = new ReleasePackageCacheCleaner().Clean(Path.Combine(root, "missing-data"));
 
         Assert.Equal(0, result.DeletedVersions);
         Assert.Equal(0, result.RetainedVersions);
@@ -192,8 +174,9 @@ public sealed class ReleaseInstallationHistoryCleanerTests : IDisposable
             new ReleaseInstallationHistoryCleaner(
                 new FixedTimeProvider(Now),
                 retainedDirectoriesPerKind: 0,
-                minimumAge: TimeSpan.Zero)
-                .CleanAsync(installation, cancellationToken: cancellation.Token));
+                minimumAge: TimeSpan.Zero
+            ).CleanAsync(installation, cancellationToken: cancellation.Token)
+        );
 
         Assert.True(Directory.Exists(candidate));
     }
@@ -208,7 +191,8 @@ public sealed class ReleaseInstallationHistoryCleanerTests : IDisposable
         _ = CreateVersionDirectory(
             Path.Combine(dataDirectory, "updates", "packages"),
             "2.1.3.0-rc.20",
-            Now.AddDays(-8));
+            Now.AddDays(-8)
+        );
         using var entered = new ManualResetEventSlim();
         using var release = new ManualResetEventSlim();
         var coordinator = new ReleaseUpdateHistoryCleanupCoordinator();
@@ -222,16 +206,16 @@ public sealed class ReleaseInstallationHistoryCleanerTests : IDisposable
                     entered.Set();
                     release.Wait(TimeSpan.FromSeconds(2));
                     Directory.Delete(path, recursive: true);
-                }),
-            installation);
+                }
+            ),
+            installation
+        );
         Assert.True(entered.Wait(TimeSpan.FromSeconds(2)));
 
         var second = coordinator.CleanPackageCacheAsync(
-            new ReleasePackageCacheCleaner(
-                new FixedTimeProvider(Now),
-                retainedVersions: 0,
-                minimumAge: TimeSpan.Zero),
-            dataDirectory);
+            new ReleasePackageCacheCleaner(new FixedTimeProvider(Now), retainedVersions: 0, minimumAge: TimeSpan.Zero),
+            dataDirectory
+        );
         Assert.False(second.IsCompleted);
 
         release.Set();
@@ -247,10 +231,7 @@ public sealed class ReleaseInstallationHistoryCleanerTests : IDisposable
         }
     }
 
-    private string CreateGenerated(
-        string kind,
-        int seed,
-        DateTimeOffset lastWriteTime)
+    private string CreateGenerated(string kind, int seed, DateTimeOffset lastWriteTime)
     {
         var suffix = seed.ToString("x32", System.Globalization.CultureInfo.InvariantCulture);
         var path = Path.Combine(root, $".SrvSurvey-XP-{kind}-{suffix}");
@@ -259,10 +240,7 @@ public sealed class ReleaseInstallationHistoryCleanerTests : IDisposable
         return path;
     }
 
-    private static string CreateVersionDirectory(
-        string root,
-        string version,
-        DateTimeOffset lastWriteTime)
+    private static string CreateVersionDirectory(string root, string version, DateTimeOffset lastWriteTime)
     {
         var path = Path.Combine(root, version);
         Directory.CreateDirectory(path);

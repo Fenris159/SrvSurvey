@@ -9,13 +9,8 @@ public sealed class FrontierAssetImageConverterTests
     [InlineData("Assets/Frontier/Factions/federation.png")]
     public void BundledFrontierAssetIsAValidImage(string relativePath)
     {
-        var desktopRoot = Path.Combine(
-            FindRepositoryRoot(),
-            "src",
-            "SrvSurvey.Desktop");
-        var path = Path.Combine(
-            desktopRoot,
-            relativePath.Replace('/', Path.DirectorySeparatorChar));
+        var desktopRoot = Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop");
+        var path = Path.Combine(desktopRoot, relativePath.Replace('/', Path.DirectorySeparatorChar));
 
         using var image = SKBitmap.Decode(path);
 
@@ -27,17 +22,10 @@ public sealed class FrontierAssetImageConverterTests
     [Fact]
     public void DynamicFrontierImagesUseTheRuntimeAssetConverter()
     {
-        var views = Path.Combine(
-            FindRepositoryRoot(),
-            "src",
-            "SrvSurvey.Desktop",
-            "Views");
-        var commander = File.ReadAllText(
-            Path.Combine(views, "FrontierCommanderTabView.axaml"));
+        var views = Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "Views");
+        var commander = File.ReadAllText(Path.Combine(views, "FrontierCommanderTabView.axaml"));
 
-        Assert.Equal(3, CountOccurrences(
-            commander,
-            "Converter={StaticResource FrontierAssetImageConverter}"));
+        Assert.Equal(3, CountOccurrences(commander, "Converter={StaticResource FrontierAssetImageConverter}"));
     }
 
     private static int CountOccurrences(string value, string search)

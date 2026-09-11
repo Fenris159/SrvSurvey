@@ -15,19 +15,17 @@ public sealed class SystemBodyDataClientTests
             new HttpClient(handler),
             new Uri("https://edsm.test/"),
             new Uri("https://spansh.test/api/"),
-            utcNow: () => DateTimeOffset.FromUnixTimeSeconds(120));
+            utcNow: () => DateTimeOffset.FromUnixTimeSeconds(120)
+        );
 
         var result = await client.GetAsync("Test System", 42);
 
         Assert.Empty(result.Warnings);
-        Assert.Equal(["EDSM", "Spansh"], result.Providers
-            .Select(provider => provider.Provider));
+        Assert.Equal(["EDSM", "Spansh"], result.Providers.Select(provider => provider.Provider));
         Assert.Equal(
-            [
-                "https://edsm.test/api-system-v1/bodies?systemId64=42&cacheEpoch=4",
-                "https://spansh.test/api/dump/42/",
-            ],
-            handler.Requests.Order(StringComparer.Ordinal));
+            ["https://edsm.test/api-system-v1/bodies?systemId64=42&cacheEpoch=4", "https://spansh.test/api/dump/42/"],
+            handler.Requests.Order(StringComparer.Ordinal)
+        );
         var edsm = result.Providers[0].Snapshot;
         Assert.Equal(3, edsm.ExpectedBodyCount);
         var edsmPlanet = edsm.Bodies.Single(body => body.BodyId == 1);
@@ -39,13 +37,9 @@ public sealed class SystemBodyDataClientTests
         Assert.Equal(1_000, edsmPlanet.SurfacePressure);
         Assert.Equal(599_584_916, edsmPlanet.SemiMajorAxis);
         Assert.Equal("CarbonDioxide", edsmPlanet.AtmosphereType);
-        Assert.Equal(
-            99,
-            edsmPlanet.AtmosphereComposition["CarbonDioxideRich"]);
+        Assert.Equal(99, edsmPlanet.AtmosphereComposition["CarbonDioxideRich"]);
         Assert.Equal(20, edsmPlanet.Materials["iron"]);
-        Assert.Equal(
-            new SystemBodyParentSnapshot(SystemBodyParentKind.Star, 0),
-            Assert.Single(edsmPlanet.Parents));
+        Assert.Equal(new SystemBodyParentSnapshot(SystemBodyParentKind.Star, 0), Assert.Single(edsmPlanet.Parents));
         Assert.Equal(10, Assert.Single(edsmPlanet.Rings).InnerRadius);
 
         var spansh = result.Providers[1].Snapshot;
@@ -68,17 +62,18 @@ public sealed class SystemBodyDataClientTests
             SpanshJson = ProviderHandler.SpanshJsonTemplate.Replace(
                 "2024-01-02T03:04:05Z",
                 "2022-11-28T23:59:59Z",
-                StringComparison.Ordinal),
+                StringComparison.Ordinal
+            ),
         };
         var client = new SystemBodyDataClient(
             new HttpClient(handler),
             new Uri("https://edsm.test/"),
-            new Uri("https://spansh.test/api/"));
+            new Uri("https://spansh.test/api/")
+        );
 
         var result = await client.GetAsync("Test System", 42);
 
-        var planet = result.Providers[1].Snapshot.Bodies.Single(
-            body => body.BodyId == 1);
+        var planet = result.Providers[1].Snapshot.Bodies.Single(body => body.BodyId == 1);
         Assert.Equal(0, planet.BiologicalSignalCount);
         Assert.Single(planet.Organisms);
     }
@@ -91,20 +86,19 @@ public sealed class SystemBodyDataClientTests
             SpanshJson = ProviderHandler.SpanshJsonTemplate.Replace(
                 "\"id64\": 42",
                 "\"id64\": 99",
-                StringComparison.Ordinal),
+                StringComparison.Ordinal
+            ),
         };
         var client = new SystemBodyDataClient(
             new HttpClient(handler),
             new Uri("https://edsm.test/"),
-            new Uri("https://spansh.test/api/"));
+            new Uri("https://spansh.test/api/")
+        );
 
         var result = await client.GetAsync("Test System", 42);
 
         Assert.Equal("EDSM", Assert.Single(result.Providers).Provider);
-        Assert.Contains(
-            "address 99, not 42",
-            Assert.Single(result.Warnings),
-            StringComparison.Ordinal);
+        Assert.Contains("address 99, not 42", Assert.Single(result.Warnings), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -114,29 +108,25 @@ public sealed class SystemBodyDataClientTests
         var client = new SystemBodyDataClient(
             new HttpClient(handler),
             new Uri("https://edsm.test/"),
-            new Uri("https://spansh.test/api/"));
+            new Uri("https://spansh.test/api/")
+        );
 
         var result = await client.GetAsync("Test System", 42);
 
         Assert.Equal("Spansh", Assert.Single(result.Providers).Provider);
-        Assert.Contains(
-            result.Warnings,
-            warning => warning.Contains("16 MiB", StringComparison.Ordinal));
+        Assert.Contains(result.Warnings, warning => warning.Contains("16 MiB", StringComparison.Ordinal));
     }
 
     [Fact]
     public async Task ProvidersNotIndexedYetAreReportedWithoutWarnings()
     {
-        var handler = new ProviderHandler
-        {
-            EdsmJson = "{}",
-            SpanshStatus = HttpStatusCode.NotFound,
-        };
+        var handler = new ProviderHandler { EdsmJson = "{}", SpanshStatus = HttpStatusCode.NotFound };
         var client = new SystemBodyDataClient(
             new HttpClient(handler),
             new Uri("https://edsm.test/"),
             new Uri("https://spansh.test/api/"),
-            utcNow: () => DateTimeOffset.FromUnixTimeSeconds(120));
+            utcNow: () => DateTimeOffset.FromUnixTimeSeconds(120)
+        );
 
         var result = await client.GetAsync("Test System", 42);
 
@@ -154,18 +144,15 @@ public sealed class SystemBodyDataClientTests
             new HttpClient(handler),
             new Uri("https://edsm.test/"),
             new Uri("https://spansh.test/api/"),
-            utcNow: () => now);
+            utcNow: () => now
+        );
 
         await client.GetAsync("Test System", 42);
         now = now.AddSeconds(30);
         await client.GetAsync("Test System", 42);
 
-        Assert.Contains(
-            "https://edsm.test/api-system-v1/bodies?systemId64=42&cacheEpoch=4",
-            handler.Requests);
-        Assert.Contains(
-            "https://edsm.test/api-system-v1/bodies?systemId64=42&cacheEpoch=5",
-            handler.Requests);
+        Assert.Contains("https://edsm.test/api-system-v1/bodies?systemId64=42&cacheEpoch=4", handler.Requests);
+        Assert.Contains("https://edsm.test/api-system-v1/bodies?systemId64=42&cacheEpoch=5", handler.Requests);
     }
 
     private sealed class ProviderHandler : HttpMessageHandler
@@ -182,7 +169,8 @@ public sealed class SystemBodyDataClientTests
 
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
             Requests.Add(request.RequestUri!.AbsoluteUri);
             if (request.RequestUri.Host == "spansh.test")
@@ -199,21 +187,15 @@ public sealed class SystemBodyDataClientTests
             return Task.FromResult(response);
         }
 
-        private static HttpResponseMessage Response(
-            string content,
-            HttpStatusCode statusCode = HttpStatusCode.OK)
+        private static HttpResponseMessage Response(string content, HttpStatusCode statusCode = HttpStatusCode.OK)
         {
             return new HttpResponseMessage(statusCode)
             {
-                Content = new StringContent(
-                    content,
-                    Encoding.UTF8,
-                    "application/json"),
+                Content = new StringContent(content, Encoding.UTF8, "application/json"),
             };
         }
 
-        private const string EdsmJsonTemplate =
-            """
+        private const string EdsmJsonTemplate = """
             {
               "id64": 42,
               "name": "Test System",
@@ -254,8 +236,7 @@ public sealed class SystemBodyDataClientTests
             }
             """;
 
-        public const string SpanshJsonTemplate =
-            """
+        public const string SpanshJsonTemplate = """
             {
               "system": {
                 "id64": 42,

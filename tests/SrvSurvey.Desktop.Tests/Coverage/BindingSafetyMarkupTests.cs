@@ -7,14 +7,8 @@ public sealed class BindingSafetyMarkupTests
     {
         var markup = ReadDesktopMarkup("OverlayPositionPreviewWindow.axaml");
 
-        Assert.Contains(
-            "Value=\"{Binding ProgressValue}\"",
-            markup,
-            StringComparison.Ordinal);
-        Assert.DoesNotContain(
-            "Value=\"{Binding Progress}\"",
-            markup,
-            StringComparison.Ordinal);
+        Assert.Contains("Value=\"{Binding ProgressValue}\"", markup, StringComparison.Ordinal);
+        Assert.DoesNotContain("Value=\"{Binding Progress}\"", markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -28,8 +22,8 @@ public sealed class BindingSafetyMarkupTests
         Assert.DoesNotContain("{Binding SelectedSystem.Address", markup);
     }
 
-    private static string ReadDesktopMarkup(string fileName) => File.ReadAllText(
-        Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", fileName));
+    private static string ReadDesktopMarkup(string fileName) =>
+        File.ReadAllText(Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", fileName));
 
     private static string FindRepositoryRoot()
     {
@@ -44,7 +38,6 @@ public sealed class BindingSafetyMarkupTests
             current = current.Parent;
         }
 
-        throw new DirectoryNotFoundException(
-            "Could not locate the repository root.");
+        throw new DirectoryNotFoundException("Could not locate the repository root.");
     }
 }

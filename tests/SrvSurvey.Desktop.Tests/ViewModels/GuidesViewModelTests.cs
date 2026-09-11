@@ -1,5 +1,5 @@
-using SrvSurvey.Desktop.ViewModels;
 using SrvSurvey.Desktop.Presentation;
+using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
@@ -12,54 +12,51 @@ public sealed class GuidesViewModelTests
 
         Assert.Equal(16, categories.Count);
         Assert.Equal(
-            Enumerable.Range(1, 16)
-                .Select(number => number.ToString("00"))
-                .ToArray(),
-            categories.Select(category => category.Number).ToArray());
-        Assert.Equal(
-            categories.Count,
-            categories.Select(category => category.Key).Distinct().Count());
-        Assert.Equal(
-            categories.Count,
-            categories.Select(category => category.Number).Distinct().Count());
-        Assert.All(categories, category =>
-            Assert.True(category.HasSections || category.HasIcons));
+            Enumerable.Range(1, 16).Select(number => number.ToString("00")).ToArray(),
+            categories.Select(category => category.Number).ToArray()
+        );
+        Assert.Equal(categories.Count, categories.Select(category => category.Key).Distinct().Count());
+        Assert.Equal(categories.Count, categories.Select(category => category.Number).Distinct().Count());
+        Assert.All(categories, category => Assert.True(category.HasSections || category.HasIcons));
         Assert.True(categories.Sum(category => category.Sections.Count) >= 35);
 
         var icons = categories.SelectMany(category => category.Icons).ToArray();
         Assert.True(icons.Length >= 35);
-        Assert.All(Enum.GetValues<GuideIconKind>(), kind =>
-            Assert.Contains(icons, icon => icon.Kind == kind));
+        Assert.All(Enum.GetValues<GuideIconKind>(), kind => Assert.Contains(icons, icon => icon.Kind == kind));
     }
 
     [Fact]
     public void GlossaryDocumentsEveryBundledRouteAndBodyIcon()
     {
-        var icons = GuideCatalog.Create()
-            .SelectMany(category => category.Icons)
-            .Where(icon => icon.HasAsset)
-            .ToArray();
+        var icons = GuideCatalog.Create().SelectMany(category => category.Icons).Where(icon => icon.HasAsset).ToArray();
 
-        Assert.All(RouteBodyAssetResolver.SupportedVisuals, visual =>
-            Assert.Contains(icons, icon =>
-                icon.AssetPath == visual.AssetPath
-                && icon.Name == visual.AccessibleName
-                && !string.IsNullOrWhiteSpace(icon.Meaning)));
-        Assert.Contains(icons, icon => icon.AssetPath.EndsWith(
-            "/Assets/Routes/refuel-star.png",
-            StringComparison.Ordinal));
-        Assert.Contains(icons, icon => icon.AssetPath.EndsWith(
-            "/Assets/Routes/neutron-star.png",
-            StringComparison.Ordinal));
-        Assert.Equal(
-            RouteBodyAssetResolver.SupportedVisuals.Count + 2,
-            icons.Length);
+        Assert.All(
+            RouteBodyAssetResolver.SupportedVisuals,
+            visual =>
+                Assert.Contains(
+                    icons,
+                    icon =>
+                        icon.AssetPath == visual.AssetPath
+                        && icon.Name == visual.AccessibleName
+                        && !string.IsNullOrWhiteSpace(icon.Meaning)
+                )
+        );
+        Assert.Contains(
+            icons,
+            icon => icon.AssetPath.EndsWith("/Assets/Routes/refuel-star.png", StringComparison.Ordinal)
+        );
+        Assert.Contains(
+            icons,
+            icon => icon.AssetPath.EndsWith("/Assets/Routes/neutron-star.png", StringComparison.Ordinal)
+        );
+        Assert.Equal(RouteBodyAssetResolver.SupportedVisuals.Count + 2, icons.Length);
     }
 
     [Fact]
     public void GlossaryDocumentsCanonnSignalIndicatorBesideBiologyPips()
     {
-        var icon = GuideCatalog.Create()
+        var icon = GuideCatalog
+            .Create()
             .SelectMany(category => category.Icons)
             .Single(icon => icon.Kind == GuideIconKind.CanonnSignals);
 
@@ -72,54 +69,61 @@ public sealed class GuidesViewModelTests
     [Fact]
     public void GlossaryDocumentsEveryBiologyRewardPipStateAndModifier()
     {
-        var icons = GuideCatalog.Create()
-            .SelectMany(category => category.Icons)
-            .ToArray();
-        GuideIconViewModel Icon(GuideIconKind kind) =>
-            icons.Single(icon => icon.Kind == kind);
+        var icons = GuideCatalog.Create().SelectMany(category => category.Icons).ToArray();
+        GuideIconViewModel Icon(GuideIconKind kind) => icons.Single(icon => icon.Kind == kind);
 
         Assert.Contains(
             "confirmed",
             Icon(GuideIconKind.BiologyRewardKnown).Meaning,
-            StringComparison.OrdinalIgnoreCase);
+            StringComparison.OrdinalIgnoreCase
+        );
         Assert.Contains(
             "hatching",
             Icon(GuideIconKind.BiologyRewardPredicted).Meaning,
-            StringComparison.OrdinalIgnoreCase);
+            StringComparison.OrdinalIgnoreCase
+        );
         Assert.Contains(
             "alternative genus candidates",
             Icon(GuideIconKind.BiologyRewardPredicted).Meaning,
-            StringComparison.OrdinalIgnoreCase);
+            StringComparison.OrdinalIgnoreCase
+        );
         Assert.Contains(
             "dotted group frame",
             Icon(GuideIconKind.BiologyRewardPredicted).Meaning,
-            StringComparison.OrdinalIgnoreCase);
+            StringComparison.OrdinalIgnoreCase
+        );
         Assert.Contains(
             "current Commander",
             Icon(GuideIconKind.BiologyRewardHighlighted).Meaning,
-            StringComparison.OrdinalIgnoreCase);
+            StringComparison.OrdinalIgnoreCase
+        );
         Assert.Contains(
             "external candidate data",
             Icon(GuideIconKind.BiologyRewardGlobalRegional).Meaning,
-            StringComparison.OrdinalIgnoreCase);
+            StringComparison.OrdinalIgnoreCase
+        );
         Assert.Contains(
             "advisory",
             Icon(GuideIconKind.BiologyRewardGlobalRegional).Meaning,
-            StringComparison.OrdinalIgnoreCase);
+            StringComparison.OrdinalIgnoreCase
+        );
         Assert.Contains(
             "already been analyzed",
             Icon(GuideIconKind.BiologyRewardDimmed).Meaning,
-            StringComparison.OrdinalIgnoreCase);
+            StringComparison.OrdinalIgnoreCase
+        );
         Assert.Contains(
             "question mark",
             Icon(GuideIconKind.BiologyRewardUnknown).Meaning,
-            StringComparison.OrdinalIgnoreCase);
+            StringComparison.OrdinalIgnoreCase
+        );
     }
 
     [Fact]
     public void GlossaryDocumentsDynamicNearAndFarBearingChevrons()
     {
-        var icon = GuideCatalog.Create()
+        var icon = GuideCatalog
+            .Create()
             .SelectMany(category => category.Icons)
             .Single(icon => icon.Kind == GuideIconKind.DirectionalChevron);
 
@@ -131,32 +135,30 @@ public sealed class GuidesViewModelTests
     [Fact]
     public void GlossaryDocumentsLegacyGuardianRendererStates()
     {
-        var icons = GuideCatalog.Create()
-            .SelectMany(category => category.Icons)
-            .ToArray();
-        GuideIconViewModel Icon(GuideIconKind kind) =>
-            icons.Single(icon => icon.Kind == kind);
+        var icons = GuideCatalog.Create().SelectMany(category => category.Icons).ToArray();
+        GuideIconViewModel Icon(GuideIconKind kind) => icons.Single(icon => icon.Kind == kind);
 
         Assert.Contains(
             "90-degree radial glow",
             Icon(GuideIconKind.GuardianActiveObelisk).Meaning,
-            StringComparison.OrdinalIgnoreCase);
+            StringComparison.OrdinalIgnoreCase
+        );
         Assert.Contains(
             "individual heading",
             Icon(GuideIconKind.GuardianRelic).Meaning,
-            StringComparison.OrdinalIgnoreCase);
-        Assert.Contains(
-            "orange Orb",
-            Icon(GuideIconKind.GuardianArtifact).Meaning,
-            StringComparison.Ordinal);
+            StringComparison.OrdinalIgnoreCase
+        );
+        Assert.Contains("orange Orb", Icon(GuideIconKind.GuardianArtifact).Meaning, StringComparison.Ordinal);
         Assert.Contains(
             "translucent gray",
             Icon(GuideIconKind.GuardianPoiStates).Meaning,
-            StringComparison.OrdinalIgnoreCase);
+            StringComparison.OrdinalIgnoreCase
+        );
         Assert.Contains(
             "not a generic X",
             Icon(GuideIconKind.GuardianBrokenObelisk).Meaning,
-            StringComparison.OrdinalIgnoreCase);
+            StringComparison.OrdinalIgnoreCase
+        );
     }
 
     [Theory]
@@ -177,45 +179,35 @@ public sealed class GuidesViewModelTests
     [InlineData("@@", "Settlement mapping — measurements and calibration")]
     [InlineData("Clear rigs automatically", "Rig tracking with key chords")]
     [InlineData("Rhino cargo", "Ship, Rhino, and cargo")]
-    public void SearchFindsWorkflowAndGlossaryContent(
-        string query,
-        string expectedTitle)
+    public void SearchFindsWorkflowAndGlossaryContent(string query, string expectedTitle)
     {
-        var viewModel = new GuidesViewModel(GuideCatalog.Create())
-        {
-            SearchText = query,
-        };
+        var viewModel = new GuidesViewModel(GuideCatalog.Create()) { SearchText = query };
 
         Assert.True(viewModel.IsSearching);
         Assert.True(viewModel.HasSearchResults);
-        Assert.Contains(
-            viewModel.SearchResults,
-            result => result.Title == expectedTitle);
+        Assert.Contains(viewModel.SearchResults, result => result.Title == expectedTitle);
     }
 
     [Fact]
     public void BoxelGuideMatchesTheImplementedProjectWorkflow()
     {
         var categories = GuideCatalog.Create();
-        var travel = categories.Single(
-            category => category.Key == "travel-search");
+        var travel = categories.Single(category => category.Key == "travel-search");
         var boxel = categories.Single(category => category.Key == "boxel");
         var guardian = categories.Single(category => category.Key == "guardian");
         var boxelSections = boxel.Sections.ToArray();
         var instructions = string.Join(
             ' ',
-            boxelSections.SelectMany(section =>
-                new[] { section.Summary }
-                    .Concat(section.Steps)
-                    .Concat(section.Details)));
+            boxelSections.SelectMany(section => new[] { section.Summary }.Concat(section.Steps).Concat(section.Details))
+        );
 
         Assert.Equal("Boxel", boxel.Title);
         Assert.Equal("07", boxel.Number);
-        Assert.Equal(
-            categories.ToList().IndexOf(boxel) + 1,
-            categories.ToList().IndexOf(guardian));
-        Assert.DoesNotContain(travel.Sections, section =>
-            section.Title.Contains("boxel", StringComparison.OrdinalIgnoreCase));
+        Assert.Equal(categories.ToList().IndexOf(boxel) + 1, categories.ToList().IndexOf(guardian));
+        Assert.DoesNotContain(
+            travel.Sections,
+            section => section.Title.Contains("boxel", StringComparison.OrdinalIgnoreCase)
+        );
         Assert.True(boxelSections.Length >= 5);
         Assert.Contains("Lowest mass code", instructions, StringComparison.Ordinal);
         Assert.Contains("lowest incomplete suffix", instructions, StringComparison.OrdinalIgnoreCase);
@@ -254,13 +246,9 @@ public sealed class GuidesViewModelTests
     [Fact]
     public void SelectingCategoryReturnsToBrowsingMode()
     {
-        var viewModel = new GuidesViewModel(GuideCatalog.Create())
-        {
-            SearchText = "Guardian obelisk",
-        };
+        var viewModel = new GuidesViewModel(GuideCatalog.Create()) { SearchText = "Guardian obelisk" };
 
-        viewModel.SelectedCategory = viewModel.Categories.Single(
-            category => category.Key == "guardian");
+        viewModel.SelectedCategory = viewModel.Categories.Single(category => category.Key == "guardian");
 
         Assert.Equal(string.Empty, viewModel.SearchText);
         Assert.True(viewModel.IsBrowsing);
@@ -270,12 +258,11 @@ public sealed class GuidesViewModelTests
     [Fact]
     public void GuardianGuideExplainsSelectionConfirmationAndOriginControls()
     {
-        var guardian = GuideCatalog.Create().Single(
-            category => category.Key == "guardian");
+        var guardian = GuideCatalog.Create().Single(category => category.Key == "guardian");
         var instructions = string.Join(
             ' ',
-            guardian.Sections.SelectMany(section =>
-                section.Steps.Concat(section.Details)));
+            guardian.Sections.SelectMany(section => section.Steps.Concat(section.Details))
+        );
 
         Assert.Contains("fire group", instructions, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("confirmation control twice", instructions, StringComparison.OrdinalIgnoreCase);
@@ -307,10 +294,10 @@ public sealed class GuidesViewModelTests
             (diagnostics, "stale plans"),
         };
 
-        Assert.All(expectedCoverage, expected => Assert.Contains(
-            expected.Item2,
-            expected.Item1,
-            StringComparison.OrdinalIgnoreCase));
+        Assert.All(
+            expectedCoverage,
+            expected => Assert.Contains(expected.Item2, expected.Item1, StringComparison.OrdinalIgnoreCase)
+        );
         Assert.DoesNotContain("Replay Controller", string.Join(' ', categories), StringComparison.Ordinal);
     }
 
@@ -320,13 +307,13 @@ public sealed class GuidesViewModelTests
         Assert.Throws<ArgumentException>(() => new GuidesViewModel([]));
     }
 
-    private static string Instructions(
-        IReadOnlyList<GuideCategoryViewModel> categories,
-        string key) => string.Join(
+    private static string Instructions(IReadOnlyList<GuideCategoryViewModel> categories, string key) =>
+        string.Join(
             ' ',
-            categories.Single(category => category.Key == key)
+            categories
+                .Single(category => category.Key == key)
                 .Sections.SelectMany(section =>
-                    new[] { section.Title, section.Summary }
-                        .Concat(section.Steps)
-                        .Concat(section.Details)));
+                    new[] { section.Title, section.Summary }.Concat(section.Steps).Concat(section.Details)
+                )
+        );
 }

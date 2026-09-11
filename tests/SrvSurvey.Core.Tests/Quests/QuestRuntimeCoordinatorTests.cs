@@ -8,7 +8,8 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-quest-coordinator-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-quest-coordinator-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public async Task IdenticalEmptyUpdateRetainsSnapshotAndDoesNotNotify()
@@ -19,19 +20,11 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
             Definition = CreateDefinition("function noop() end"),
         };
         await using var coordinator = CreateCoordinator(client);
-        var initial = await coordinator.ApplyUpdateAsync(
-            Configuration(),
-            temporaryDirectory,
-            [],
-            isBootstrap: true);
+        var initial = await coordinator.ApplyUpdateAsync(Configuration(), temporaryDirectory, [], isBootstrap: true);
         var notifications = 0;
         coordinator.Changed += (_, _) => notifications++;
 
-        var repeated = await coordinator.ApplyUpdateAsync(
-            Configuration(),
-            temporaryDirectory,
-            [],
-            isBootstrap: false);
+        var repeated = await coordinator.ApplyUpdateAsync(Configuration(), temporaryDirectory, [], isBootstrap: false);
 
         Assert.Same(initial.Quests, repeated.Quests);
         Assert.Equal(0, notifications);
@@ -44,20 +37,17 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
         var client = new FakeRavenQuestClient
         {
             ActiveQuests = [CreateRemoteProgress(quest: null)],
-            Definition = CreateDefinition(
-                "function on_Scan(entry) quest:set('body', entry.BodyName); return true end"),
+            Definition = CreateDefinition("function on_Scan(entry) quest:set('body', entry.BodyName); return true end"),
         };
         await using var coordinator = CreateCoordinator(client);
-        var events = new[]
-        {
-            Parse("""{"event":"Scan","BodyName":"Bootstrap body"}"""),
-        };
+        var events = new[] { Parse("""{"event":"Scan","BodyName":"Bootstrap body"}""") };
 
         var bootstrap = await coordinator.ApplyUpdateAsync(
             Configuration(),
             temporaryDirectory,
             events,
-            isBootstrap: true);
+            isBootstrap: true
+        );
 
         var quest = Assert.Single(bootstrap.Quests);
         Assert.Equal("Remote Quest", quest.Title);
@@ -70,13 +60,12 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
             Configuration(),
             temporaryDirectory,
             [Parse("""{"event":"Scan","BodyName":"Live body"}""")],
-            isBootstrap: false);
+            isBootstrap: false
+        );
 
         Assert.Equal(1, live.ProcessedEventCount);
         Assert.Equal(1, client.SaveCount);
-        Assert.Equal(
-            "Live body",
-            client.LastSaved!.Variables["body"].GetString());
+        Assert.Equal("Live body", client.LastSaved!.Variables["body"].GetString());
         Assert.Equal(1, client.LoadCount);
     }
 
@@ -86,43 +75,34 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
         var client = new FakeRavenQuestClient
         {
             ActiveQuests = [CreateRemoteProgress(quest: null)],
-            Definition = CreateDefinition(
-                "function on_Scan(entry) quest:set('body', entry.BodyName); return true end"),
+            Definition = CreateDefinition("function on_Scan(entry) quest:set('body', entry.BodyName); return true end"),
         };
         await using var coordinator = CreateCoordinator(client);
-        await coordinator.ApplyUpdateAsync(
-            Configuration(),
-            temporaryDirectory,
-            [],
-            isBootstrap: true);
+        await coordinator.ApplyUpdateAsync(Configuration(), temporaryDirectory, [], isBootstrap: true);
 
         var replay = await coordinator.ReplayEventAsync(
             temporaryDirectory,
-            Parse("""{"event":"Scan","BodyName":"Replay body"}"""));
+            Parse("""{"event":"Scan","BodyName":"Replay body"}""")
+        );
 
         Assert.Equal(1, replay.ProcessedEventCount);
         Assert.Equal(1, client.SaveCount);
-        Assert.Equal(
-            "Replay body",
-            client.LastSaved!.Variables["body"].GetString());
+        Assert.Equal("Replay body", client.LastSaved!.Variables["body"].GetString());
     }
 
     [Fact]
     public async Task ReplayRequiresEnabledCommanderSession()
     {
-        await using var coordinator = CreateCoordinator(
-            new FakeRavenQuestClient());
+        await using var coordinator = CreateCoordinator(new FakeRavenQuestClient());
         var journalEvent = Parse("""{"event":"Scan"}""");
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            coordinator.ReplayEventAsync(temporaryDirectory, journalEvent));
-        await coordinator.ApplyUpdateAsync(
-            Configuration(enabled: false),
-            temporaryDirectory,
-            [],
-            isBootstrap: true);
+            coordinator.ReplayEventAsync(temporaryDirectory, journalEvent)
+        );
+        await coordinator.ApplyUpdateAsync(Configuration(enabled: false), temporaryDirectory, [], isBootstrap: true);
         var disabled = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            coordinator.ReplayEventAsync(temporaryDirectory, journalEvent));
+            coordinator.ReplayEventAsync(temporaryDirectory, journalEvent)
+        );
 
         Assert.Contains("enabled", disabled.Message);
     }
@@ -133,17 +113,10 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
         WriteDevelopmentQuest();
         var statePath = Path.Combine(temporaryDirectory, "quests", "F123.json");
         var originalBytes = await File.ReadAllBytesAsync(statePath);
-        var client = new FakeRavenQuestClient
-        {
-            ActiveQuests = [CreateRemoteProgress(CreateDefinition(""))],
-        };
+        var client = new FakeRavenQuestClient { ActiveQuests = [CreateRemoteProgress(CreateDefinition(""))] };
         await using var coordinator = CreateCoordinator(client);
 
-        var bootstrap = await coordinator.ApplyUpdateAsync(
-            Configuration(),
-            temporaryDirectory,
-            [],
-            isBootstrap: true);
+        var bootstrap = await coordinator.ApplyUpdateAsync(Configuration(), temporaryDirectory, [], isBootstrap: true);
 
         var development = Assert.Single(bootstrap.Quests);
         Assert.True(development.IsDevelopment);
@@ -154,19 +127,15 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
             Configuration(),
             temporaryDirectory,
             [Parse("""{"event":"Scan","BodyName":"A 1"}""")],
-            isBootstrap: false);
+            isBootstrap: false
+        );
 
         Assert.Equal(0, client.SaveCount);
-        var backup = Assert.Single(Directory.GetFiles(
-            Path.Combine(
-                temporaryDirectory,
-                "quests",
-                "quest-state-backups")));
+        var backup = Assert.Single(
+            Directory.GetFiles(Path.Combine(temporaryDirectory, "quests", "quest-state-backups"))
+        );
         Assert.Equal(originalBytes, await File.ReadAllBytesAsync(backup));
-        Assert.Contains(
-            "A 1",
-            await File.ReadAllTextAsync(statePath),
-            StringComparison.Ordinal);
+        Assert.Contains("A 1", await File.ReadAllTextAsync(statePath), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -183,7 +152,8 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
             Configuration(enabled: false),
             temporaryDirectory,
             [Parse("""{"event":"Scan"}""")],
-            isBootstrap: false);
+            isBootstrap: false
+        );
 
         Assert.Empty(result.Quests);
         Assert.Empty(result.Warnings);
@@ -195,35 +165,21 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
     [Fact]
     public async Task BrokenQuestIsIsolatedFromOtherRuntime()
     {
-        var broken = CreateRemoteProgress(CreateDefinition("this is not lua"))
-            with
+        var broken = CreateRemoteProgress(CreateDefinition("this is not lua")) with
         {
             Id = "broken",
-            Quest = CreateDefinition("this is not lua") with
-            {
-                Id = "broken",
-            },
+            Quest = CreateDefinition("this is not lua") with { Id = "broken" },
         };
         var client = new FakeRavenQuestClient
         {
-            ActiveQuests =
-            [
-                broken,
-                CreateRemoteProgress(CreateDefinition("function noop() end")),
-            ],
+            ActiveQuests = [broken, CreateRemoteProgress(CreateDefinition("function noop() end"))],
         };
         await using var coordinator = CreateCoordinator(client);
 
-        var result = await coordinator.ApplyUpdateAsync(
-            Configuration(),
-            temporaryDirectory,
-            [],
-            isBootstrap: true);
+        var result = await coordinator.ApplyUpdateAsync(Configuration(), temporaryDirectory, [], isBootstrap: true);
 
         Assert.Single(result.Quests);
-        Assert.Contains(
-            result.Warnings,
-            warning => warning.Contains("broken", StringComparison.Ordinal));
+        Assert.Contains(result.Warnings, warning => warning.Contains("broken", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -231,22 +187,20 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
     {
         var cargoPath = Path.Combine(temporaryDirectory, "Cargo.json");
         Directory.CreateDirectory(temporaryDirectory);
-        var cargoBytes = Encoding.UTF8.GetBytes(
-            """{"event":"Cargo","Inventory":[{"Name":"gold"}]}""");
+        var cargoBytes = Encoding.UTF8.GetBytes("""{"event":"Cargo","Inventory":[{"Name":"gold"}]}""");
         await File.WriteAllBytesAsync(cargoPath, cargoBytes);
         var definition = CreateDefinition(
-            "function on_Cargo(entry) quest:set('cargo', entry.Inventory[1].Name); return true end");
-        var client = new FakeRavenQuestClient
-        {
-            ActiveQuests = [CreateRemoteProgress(definition)],
-        };
+            "function on_Cargo(entry) quest:set('cargo', entry.Inventory[1].Name); return true end"
+        );
+        var client = new FakeRavenQuestClient { ActiveQuests = [CreateRemoteProgress(definition)] };
         await using var coordinator = CreateCoordinator(client);
 
         await coordinator.ApplyUpdateAsync(
             Configuration(),
             temporaryDirectory,
             [Parse("""{"event":"Cargo"}""")],
-            isBootstrap: false);
+            isBootstrap: false
+        );
 
         Assert.Equal("gold", client.LastSaved?.Variables["cargo"].GetString());
         Assert.Equal(cargoBytes, await File.ReadAllBytesAsync(cargoPath));
@@ -255,8 +209,7 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
     [Fact]
     public async Task CatalogActivationAndCommanderLifecycleUseLiveCoordinator()
     {
-        var definition = CreateDefinition(
-            "function onStart() quest:set('started', true); return true end");
+        var definition = CreateDefinition("function onStart() quest:set('started', true); return true end");
         var client = new FakeRavenQuestClient
         {
             PublishedQuests = [definition],
@@ -273,11 +226,7 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
             ActivatedDefinition = definition,
         };
         await using var coordinator = CreateCoordinator(client);
-        await coordinator.ApplyUpdateAsync(
-            Configuration(),
-            temporaryDirectory,
-            [],
-            isBootstrap: true);
+        await coordinator.ApplyUpdateAsync(Configuration(), temporaryDirectory, [], isBootstrap: true);
 
         Assert.Single(await coordinator.GetPublishedQuestsAsync());
         Assert.Single(await coordinator.GetCommanderQuestStatusesAsync());
@@ -312,13 +261,8 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
         WriteDevelopmentQuest();
         var statePath = Path.Combine(temporaryDirectory, "quests", "F123.json");
         var sourceBytes = await File.ReadAllBytesAsync(statePath);
-        await using var coordinator = CreateCoordinator(
-            new FakeRavenQuestClient());
-        await coordinator.ApplyUpdateAsync(
-            Configuration(),
-            temporaryDirectory,
-            [],
-            isBootstrap: true);
+        await using var coordinator = CreateCoordinator(new FakeRavenQuestClient());
+        await coordinator.ApplyUpdateAsync(Configuration(), temporaryDirectory, [], isBootstrap: true);
         var reference = Assert.Single(coordinator.Snapshot).Reference;
 
         await coordinator.RemoveQuestAsync(reference);
@@ -328,10 +272,9 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
         Assert.DoesNotContain("devRef", saved, StringComparison.Ordinal);
         Assert.DoesNotContain("devQuest", saved, StringComparison.Ordinal);
         Assert.Contains("futureRoot", saved, StringComparison.Ordinal);
-        var backup = Assert.Single(Directory.GetFiles(Path.Combine(
-            temporaryDirectory,
-            "quests",
-            "quest-state-backups")));
+        var backup = Assert.Single(
+            Directory.GetFiles(Path.Combine(temporaryDirectory, "quests", "quest-state-backups"))
+        );
         Assert.Equal(sourceBytes, await File.ReadAllBytesAsync(backup));
     }
 
@@ -339,48 +282,28 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
     public async Task DevelopmentControlsRunLocallyAndRejectRemoteQuests()
     {
         WriteDevelopmentQuest();
-        var remoteDefinition = CreateDefinition("counter = 10") with
-        {
-            Id = "remote",
-        };
-        var client = new FakeRavenQuestClient
-        {
-            ActiveQuests = [CreateRemoteProgress(remoteDefinition)],
-        };
+        var remoteDefinition = CreateDefinition("counter = 10") with { Id = "remote" };
+        var client = new FakeRavenQuestClient { ActiveQuests = [CreateRemoteProgress(remoteDefinition)] };
         await using var coordinator = CreateCoordinator(client);
-        await coordinator.ApplyUpdateAsync(
-            Configuration(),
-            temporaryDirectory,
-            [],
-            isBootstrap: true);
+        await coordinator.ApplyUpdateAsync(Configuration(), temporaryDirectory, [], isBootstrap: true);
         var development = coordinator.Snapshot.Single(item => item.IsDevelopment);
         var remote = coordinator.Snapshot.Single(item => !item.IsDevelopment);
 
-        await coordinator.SetDevelopmentChapterActiveAsync(
-            development.Reference,
-            "second",
-            active: true);
+        await coordinator.SetDevelopmentChapterActiveAsync(development.Reference, "second", active: true);
         var result = await coordinator.RunDevelopmentDebugAsync(
             development.Reference,
             "second",
-            "counter = counter + 4; return counter");
-        await coordinator.SetDevelopmentChapterActiveAsync(
-            development.Reference,
-            "second",
-            active: false);
+            "counter = counter + 4; return counter"
+        );
+        await coordinator.SetDevelopmentChapterActiveAsync(development.Reference, "second", active: false);
         var rejected = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            coordinator.RunDevelopmentDebugAsync(
-                remote.Reference,
-                "start",
-                "return counter"));
+            coordinator.RunDevelopmentDebugAsync(remote.Reference, "start", "return counter")
+        );
 
         Assert.Equal(6, result.GetDouble());
         Assert.Contains("not a development quest", rejected.Message);
         Assert.Equal(0, client.SaveCount);
-        var saved = await File.ReadAllTextAsync(Path.Combine(
-            temporaryDirectory,
-            "quests",
-            "F123.json"));
+        var saved = await File.ReadAllTextAsync(Path.Combine(temporaryDirectory, "quests", "F123.json"));
         Assert.Contains("\"counter\": 6", saved, StringComparison.Ordinal);
     }
 
@@ -390,20 +313,13 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
         WriteDevelopmentQuest();
         var client = new FakeRavenQuestClient();
         await using var coordinator = CreateCoordinator(client);
-        await coordinator.ApplyUpdateAsync(
-            Configuration(),
-            temporaryDirectory,
-            [],
-            isBootstrap: true);
+        await coordinator.ApplyUpdateAsync(Configuration(), temporaryDirectory, [], isBootstrap: true);
         var development = Assert.Single(coordinator.Snapshot);
 
         var confirmation = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            coordinator.PublishDevelopmentQuestAsync(
-                development.Reference,
-                overwriteConfirmed: false));
-        var status = await coordinator.PublishDevelopmentQuestAsync(
-            development.Reference,
-            overwriteConfirmed: true);
+            coordinator.PublishDevelopmentQuestAsync(development.Reference, overwriteConfirmed: false)
+        );
+        var status = await coordinator.PublishDevelopmentQuestAsync(development.Reference, overwriteConfirmed: true);
 
         Assert.Contains("confirmation", confirmation.Message);
         Assert.Equal("Published", status);
@@ -417,41 +333,27 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
         WriteDevelopmentQuest();
         var statePath = Path.Combine(temporaryDirectory, "quests", "F123.json");
         var originalState = await File.ReadAllBytesAsync(statePath);
-        var sourceDirectory = await WriteDevelopmentSourceAsync(
-            id: "sample",
-            version: 2,
-            title: "Imported Quest");
-        var sourceBytes = Directory.GetFiles(sourceDirectory)
-            .ToDictionary(path => path, File.ReadAllBytes);
-        await using var coordinator = CreateCoordinator(
-            new FakeRavenQuestClient());
-        await coordinator.ApplyUpdateAsync(
-            Configuration(),
-            temporaryDirectory,
-            [],
-            isBootstrap: true);
+        var sourceDirectory = await WriteDevelopmentSourceAsync(id: "sample", version: 2, title: "Imported Quest");
+        var sourceBytes = Directory.GetFiles(sourceDirectory).ToDictionary(path => path, File.ReadAllBytes);
+        await using var coordinator = CreateCoordinator(new FakeRavenQuestClient());
+        await coordinator.ApplyUpdateAsync(Configuration(), temporaryDirectory, [], isBootstrap: true);
 
-        var imported = await coordinator.ImportDevelopmentQuestAsync(
-            sourceDirectory);
+        var imported = await coordinator.ImportDevelopmentQuestAsync(sourceDirectory);
 
         var snapshot = Assert.Single(coordinator.Snapshot);
         Assert.True(snapshot.IsDevelopment);
         Assert.Equal("Imported Quest", snapshot.Title);
         Assert.Equal(2, snapshot.Reference.Version);
-        Assert.Equal(originalState, await File.ReadAllBytesAsync(
-            Assert.IsType<string>(imported.BackupPath)));
+        Assert.Equal(originalState, await File.ReadAllBytesAsync(Assert.IsType<string>(imported.BackupPath)));
         Assert.Equal(2, imported.SourceFiles.Count);
         var loaded = new LegacyQuestStateStore(temporaryDirectory).Load("F123");
         var progress = QuestProgressMapper.FromLegacy(
-            Assert.IsType<LegacyQuestProgress>(loaded.Data?.DevelopmentQuest));
+            Assert.IsType<LegacyQuestProgress>(loaded.Data?.DevelopmentQuest)
+        );
         Assert.Equal(42, progress.Variables["prior"].GetInt32());
         Assert.Equal("Imported Quest", progress.Quest?.Title);
-        Assert.True(progress.Quest?.ExtensionData["futureDefinition"]
-            .GetBoolean());
-        Assert.Contains(
-            "\"future\": \"preserve\"",
-            await File.ReadAllTextAsync(statePath),
-            StringComparison.Ordinal);
+        Assert.True(progress.Quest?.ExtensionData["futureDefinition"].GetBoolean());
+        Assert.Contains("\"future\": \"preserve\"", await File.ReadAllTextAsync(statePath), StringComparison.Ordinal);
         foreach (var pair in sourceBytes)
         {
             Assert.Equal(pair.Value, await File.ReadAllBytesAsync(pair.Key));
@@ -467,27 +369,18 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
         var sourceDirectory = await WriteDevelopmentSourceAsync(
             id: "replacement",
             version: 1,
-            title: "Replacement Quest");
-        await using var coordinator = CreateCoordinator(
-            new FakeRavenQuestClient());
-        await coordinator.ApplyUpdateAsync(
-            Configuration(),
-            temporaryDirectory,
-            [],
-            isBootstrap: true);
+            title: "Replacement Quest"
+        );
+        await using var coordinator = CreateCoordinator(new FakeRavenQuestClient());
+        await coordinator.ApplyUpdateAsync(Configuration(), temporaryDirectory, [], isBootstrap: true);
 
-        var imported = await coordinator.ImportDevelopmentQuestAsync(
-            sourceDirectory);
+        var imported = await coordinator.ImportDevelopmentQuestAsync(sourceDirectory);
 
-        Assert.Equal(originalState, await File.ReadAllBytesAsync(
-            Assert.IsType<string>(imported.BackupPath)));
+        Assert.Equal(originalState, await File.ReadAllBytesAsync(Assert.IsType<string>(imported.BackupPath)));
         var state = await File.ReadAllTextAsync(statePath);
         Assert.Contains("\"futureRoot\": true", state, StringComparison.Ordinal);
         Assert.DoesNotContain("\"prior\": 42", state, StringComparison.Ordinal);
-        Assert.DoesNotContain(
-            "\"future\": \"preserve\"",
-            state,
-            StringComparison.Ordinal);
+        Assert.DoesNotContain("\"future\": \"preserve\"", state, StringComparison.Ordinal);
         var snapshot = Assert.Single(coordinator.Snapshot);
         Assert.Equal("replacement", snapshot.Reference.Id);
         Assert.True(snapshot.IsDevelopment);
@@ -499,24 +392,13 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
         WriteDevelopmentQuest();
         var statePath = Path.Combine(temporaryDirectory, "quests", "F123.json");
         var originalState = await File.ReadAllBytesAsync(statePath);
-        var sourceDirectory = await WriteDevelopmentSourceAsync(
-            id: "replacement",
-            version: 1,
-            title: "Broken Quest");
-        await File.WriteAllTextAsync(
-            Path.Combine(sourceDirectory, "broken.lua"),
-            "this is not valid lua");
-        await using var coordinator = CreateCoordinator(
-            new FakeRavenQuestClient());
-        await coordinator.ApplyUpdateAsync(
-            Configuration(),
-            temporaryDirectory,
-            [],
-            isBootstrap: true);
+        var sourceDirectory = await WriteDevelopmentSourceAsync(id: "replacement", version: 1, title: "Broken Quest");
+        await File.WriteAllTextAsync(Path.Combine(sourceDirectory, "broken.lua"), "this is not valid lua");
+        await using var coordinator = CreateCoordinator(new FakeRavenQuestClient());
+        await coordinator.ApplyUpdateAsync(Configuration(), temporaryDirectory, [], isBootstrap: true);
         var prior = Assert.Single(coordinator.Snapshot);
 
-        await Assert.ThrowsAsync<QuestScriptException>(() =>
-            coordinator.ImportDevelopmentQuestAsync(sourceDirectory));
+        await Assert.ThrowsAsync<QuestScriptException>(() => coordinator.ImportDevelopmentQuestAsync(sourceDirectory));
 
         Assert.Equal(originalState, await File.ReadAllBytesAsync(statePath));
         Assert.Equal(prior, Assert.Single(coordinator.Snapshot));
@@ -527,14 +409,8 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
     {
         var definition = CreateDefinition("function noop() end") with
         {
-            Objectives = new Dictionary<string, string>
-            {
-                ["scan"] = "Scan the target",
-            },
-            Strings = new Dictionary<string, string>
-            {
-                ["scan"] = "Scan the ancient beacon",
-            },
+            Objectives = new Dictionary<string, string> { ["scan"] = "Scan the target" },
+            Strings = new Dictionary<string, string> { ["scan"] = "Scan the ancient beacon" },
             Messages =
             [
                 new RavenQuestMessageDefinition
@@ -543,20 +419,14 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
                     From = "Raven",
                     Subject = "Welcome",
                     Body = "Proceed to the target.",
-                    Actions = new Dictionary<string, string>
-                    {
-                        ["go"] = "Proceed",
-                    },
+                    Actions = new Dictionary<string, string> { ["go"] = "Proceed" },
                     Tags = ["Sol"],
                 },
             ],
         };
         var progress = CreateRemoteProgress(definition) with
         {
-            Objectives = new Dictionary<string, string>
-            {
-                ["scan"] = "visible,1,3",
-            },
+            Objectives = new Dictionary<string, string> { ["scan"] = "visible,1,3" },
             Messages =
             [
                 new RavenQuestMessage
@@ -567,28 +437,24 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
                     Actions = ["go"],
                 },
             ],
-            BodyLocations = new Dictionary<string, string>
-            {
-                ["beacon"] = "12.5,-42.25,50",
-            },
+            BodyLocations = new Dictionary<string, string> { ["beacon"] = "12.5,-42.25,50" },
             Routes =
             [
                 new RavenQuestRoute
                 {
                     Id = "approach",
                     Width = 2.5,
-                    Waypoints = [[12.5, -42.25], [12.501, -42.251]],
+                    Waypoints =
+                    [
+                        [12.5, -42.25],
+                        [12.501, -42.251],
+                    ],
                 },
             ],
         };
-        await using var coordinator = CreateCoordinator(
-            new FakeRavenQuestClient { ActiveQuests = [progress] });
+        await using var coordinator = CreateCoordinator(new FakeRavenQuestClient { ActiveQuests = [progress] });
 
-        var result = await coordinator.ApplyUpdateAsync(
-            Configuration(),
-            temporaryDirectory,
-            [],
-            isBootstrap: true);
+        var result = await coordinator.ApplyUpdateAsync(Configuration(), temporaryDirectory, [], isBootstrap: true);
 
         var snapshot = Assert.Single(result.Quests);
         Assert.Equal("Scan the ancient beacon", snapshot.ObjectiveLabels["scan"]);
@@ -610,18 +476,10 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
     {
         var client = new FakeRavenQuestClient
         {
-            ActiveQuests =
-            [
-                CreateRemoteProgress(
-                    CreateDefinition("function noop() end")),
-            ],
+            ActiveQuests = [CreateRemoteProgress(CreateDefinition("function noop() end"))],
         };
         await using var coordinator = CreateCoordinator(client);
-        await coordinator.ApplyUpdateAsync(
-            Configuration(),
-            temporaryDirectory,
-            [],
-            isBootstrap: true);
+        await coordinator.ApplyUpdateAsync(Configuration(), temporaryDirectory, [], isBootstrap: true);
 
         var disabled = await coordinator.SetEnabledAsync(false);
         Assert.Empty(disabled.Quests);
@@ -639,22 +497,14 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
         }
     }
 
-    private QuestRuntimeCoordinator CreateCoordinator(
-        FakeRavenQuestClient client)
+    private QuestRuntimeCoordinator CreateCoordinator(FakeRavenQuestClient client)
     {
-        return new QuestRuntimeCoordinator(
-            new LegacyQuestStateStore(temporaryDirectory),
-            client);
+        return new QuestRuntimeCoordinator(new LegacyQuestStateStore(temporaryDirectory), client);
     }
 
     private static QuestRuntimeConfiguration Configuration(bool enabled = true)
     {
-        return new QuestRuntimeConfiguration(
-            enabled,
-            "F123",
-            "Test Cmdr",
-            "secret",
-            null);
+        return new QuestRuntimeConfiguration(enabled, "F123", "Test Cmdr", "secret", null);
     }
 
     private void WriteDevelopmentQuest()
@@ -676,7 +526,8 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
               },
               "futureRoot":true
             }
-            """);
+            """
+        );
         File.WriteAllText(
             Path.Combine(directory, "dev-sample.json"),
             """
@@ -694,14 +545,16 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
                 "second":"counter = 2"
               }
             }
-            """);
+            """
+        );
     }
 
     private async Task<string> WriteDevelopmentSourceAsync(
         string id,
         double version,
         string title,
-        string script = "function noop() end")
+        string script = "function noop() end"
+    )
     {
         var directory = Path.Combine(temporaryDirectory, "development-source");
         Directory.CreateDirectory(directory);
@@ -720,15 +573,13 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
               "chapters":{},
               "futureDefinition":true
             }
-            """);
-        await File.WriteAllTextAsync(
-            Path.Combine(directory, "start.lua"),
-            script);
+            """
+        );
+        await File.WriteAllTextAsync(Path.Combine(directory, "start.lua"), script);
         return directory;
     }
 
-    private static RavenCommanderQuest CreateRemoteProgress(
-        RavenQuestDefinition? quest)
+    private static RavenCommanderQuest CreateRemoteProgress(RavenQuestDefinition? quest)
     {
         return new RavenCommanderQuest
         {
@@ -739,11 +590,7 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
             StartTime = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
             Chapters =
             [
-                new RavenQuestChapterState
-                {
-                    Id = "start",
-                    StartTime = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
-                },
+                new RavenQuestChapterState { Id = "start", StartTime = DateTimeOffset.Parse("2026-07-01T00:00:00Z") },
             ],
         };
     }
@@ -757,10 +604,7 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
             Version = 1,
             Title = "Remote Quest",
             FirstChapter = "start",
-            Chapters = new Dictionary<string, string>(StringComparer.Ordinal)
-            {
-                ["start"] = source,
-            },
+            Chapters = new Dictionary<string, string>(StringComparer.Ordinal) { ["start"] = source },
         };
     }
 
@@ -776,11 +620,7 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
 
         public IReadOnlyList<RavenQuestDefinition> PublishedQuests { get; init; } = [];
 
-        public IReadOnlyList<RavenCommanderQuestStatus> CommanderStatuses
-        {
-            get;
-            init;
-        } = [];
+        public IReadOnlyList<RavenCommanderQuestStatus> CommanderStatuses { get; init; } = [];
 
         public RavenQuestDefinition? Definition { get; init; }
 
@@ -806,13 +646,14 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
 
         public Task<IReadOnlyList<RavenQuestDefinition>> GetPublishedQuestsAsync(
             string? apiKey = null,
-            CancellationToken cancellationToken = default) =>
-            Task.FromResult(PublishedQuests);
+            CancellationToken cancellationToken = default
+        ) => Task.FromResult(PublishedQuests);
 
         public Task<RavenQuestDefinition?> GetQuestAsync(
             RavenQuestReference reference,
             string? apiKey = null,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             DefinitionCount++;
             return Task.FromResult(Definition);
@@ -821,7 +662,8 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
         public Task<string> PublishQuestAsync(
             RavenQuestDefinition quest,
             string apiKey,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             PublishCount++;
             LastPublished = quest;
@@ -831,7 +673,8 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
         public Task SaveCommanderQuestAsync(
             RavenCommanderQuest quest,
             string apiKey,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             SaveCount++;
             LastSaved = quest;
@@ -841,36 +684,37 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
         public Task<IReadOnlyList<RavenCommanderQuest>> LoadCommanderQuestsAsync(
             RavenQuestState state,
             string apiKey,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             LoadCount++;
             return Task.FromResult(ActiveQuests);
         }
 
-        public Task<IReadOnlyList<RavenCommanderQuestStatus>>
-            GetCommanderQuestStatusesAsync(
-                string apiKey,
-                CancellationToken cancellationToken = default) =>
-            Task.FromResult(CommanderStatuses);
+        public Task<IReadOnlyList<RavenCommanderQuestStatus>> GetCommanderQuestStatusesAsync(
+            string apiKey,
+            CancellationToken cancellationToken = default
+        ) => Task.FromResult(CommanderStatuses);
 
         public Task<RavenQuestDefinition> ActivateQuestAsync(
             string publisher,
             string id,
             string apiKey,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             ActivateCount++;
             return Task.FromResult(
-                ActivatedDefinition
-                    ?? throw new InvalidOperationException(
-                        "No activation definition was configured."));
+                ActivatedDefinition ?? throw new InvalidOperationException("No activation definition was configured.")
+            );
         }
 
         public Task<bool> DeleteQuestAsync(
             string publisher,
             string id,
             string apiKey,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             DeleteCount++;
             return Task.FromResult(true);
@@ -881,7 +725,8 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
             string id,
             RavenQuestState state,
             string apiKey,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             StateChanges.Add(state);
             return Task.FromResult(true);
@@ -891,7 +736,7 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
             RavenQuestReference reference,
             string chapterId,
             string? apiKey = null,
-            CancellationToken cancellationToken = default) =>
-            Task.FromResult<string?>(null);
+            CancellationToken cancellationToken = default
+        ) => Task.FromResult<string?>(null);
     }
 }

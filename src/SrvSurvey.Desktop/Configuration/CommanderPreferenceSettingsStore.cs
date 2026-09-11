@@ -17,7 +17,8 @@ public sealed class CommanderPreferenceSettingsStore
         var settings = documentStore.Load()["CommanderPreference"] as JsonObject;
         return new CommanderPreferencePreferences(
             NormalizeName(GetString(settings, "PreferredCommanderName")),
-            NormalizeFrontierId(GetString(settings, "PreferredFrontierId")));
+            NormalizeFrontierId(GetString(settings, "PreferredFrontierId"))
+        );
     }
 
     public void Save(CommanderPreferencePreferences preferences)
@@ -27,9 +28,7 @@ public sealed class CommanderPreferenceSettingsStore
         var frontierId = NormalizeFrontierId(preferences.PreferredFrontierId);
         if (preferences.PreferredFrontierId is not null && frontierId is null)
         {
-            throw new ArgumentException(
-                "The preferred Frontier ID is invalid.",
-                nameof(preferences));
+            throw new ArgumentException("The preferred Frontier ID is invalid.", nameof(preferences));
         }
 
         documentStore.Update(root =>
@@ -49,10 +48,7 @@ public sealed class CommanderPreferenceSettingsStore
 
     private static string? GetString(JsonObject? settings, string propertyName)
     {
-        return settings?[propertyName] is JsonValue value
-            && value.TryGetValue<string>(out var result)
-                ? result
-                : null;
+        return settings?[propertyName] is JsonValue value && value.TryGetValue<string>(out var result) ? result : null;
     }
 
     private static string? NormalizeName(string? value)
@@ -64,33 +60,35 @@ public sealed class CommanderPreferenceSettingsStore
     private static string? NormalizeFrontierId(string? value)
     {
         var normalized = value?.Trim();
-        return normalized is not null
+        return
+            normalized is not null
             && normalized.Length > 1
             && normalized[0] is 'F' or 'f'
             && normalized[1..].All(char.IsAsciiDigit)
-                ? normalized.ToUpperInvariant()
-                : null;
+            ? normalized.ToUpperInvariant()
+            : null;
     }
 }
 
-public sealed record CommanderPreferencePreferences(
-    string? PreferredCommanderName,
-    string? PreferredFrontierId);
+public sealed record CommanderPreferencePreferences(string? PreferredCommanderName, string? PreferredFrontierId);
 
 public sealed class CommanderPreferenceResolver(
     CommanderPreferenceSettingsStore settingsStore,
-    CommanderProfileCatalog profileCatalog)
+    CommanderProfileCatalog profileCatalog
+)
 {
     public async Task<CommanderPreferenceResolution> ResolveAsync(
         string? commandLineFrontierId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         if (!string.IsNullOrWhiteSpace(commandLineFrontierId))
         {
             return new CommanderPreferenceResolution(
                 commandLineFrontierId.Trim().ToUpperInvariant(),
                 true,
-                "The command-line Frontier ID overrides the saved commander preference for this instance.");
+                "The command-line Frontier ID overrides the saved commander preference for this instance."
+            );
         }
 
         var preference = settingsStore.Load();
@@ -101,7 +99,8 @@ public sealed class CommanderPreferenceResolver(
                 false,
                 preference.PreferredCommanderName is null
                     ? $"Startup is pinned to {preference.PreferredFrontierId}."
-                    : $"Startup is pinned to {preference.PreferredCommanderName} ({preference.PreferredFrontierId}).");
+                    : $"Startup is pinned to {preference.PreferredCommanderName} ({preference.PreferredFrontierId})."
+            );
         }
 
         if (string.IsNullOrWhiteSpace(preference.PreferredCommanderName))
@@ -112,69 +111,76 @@ public sealed class CommanderPreferenceResolver(
         CommanderProfileCatalogResult catalog;
         try
         {
-            catalog = await profileCatalog.LoadAsync(cancellationToken)
-                .ConfigureAwait(false);
+            catalog = await profileCatalog.LoadAsync(cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception exception) when (
-            exception is IOException or UnauthorizedAccessException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
             return new CommanderPreferenceResolution(
                 null,
                 false,
-                $"The imported commander preference '{preference.PreferredCommanderName}' could not be resolved because profiles could not be read: {exception.Message}");
+                $"The imported commander preference '{preference.PreferredCommanderName}' could not be resolved because profiles could not be read: {exception.Message}"
+            );
         }
 
-        var matches = catalog.Profiles
-            .Where(profile => string.Equals(
-                profile.CommanderName,
-                preference.PreferredCommanderName,
-                StringComparison.OrdinalIgnoreCase))
+        var matches = catalog
+            .Profiles.Where(profile =>
+                string.Equals(
+                    profile.CommanderName,
+                    preference.PreferredCommanderName,
+                    StringComparison.OrdinalIgnoreCase
+                )
+            )
             .ToArray();
         if (matches.Length != 1)
         {
-            var reason = matches.Length == 0
-                ? "no imported profile has that exact name"
-                : "more than one imported profile has that name";
+            var reason =
+                matches.Length == 0
+                    ? "no imported profile has that exact name"
+                    : "more than one imported profile has that name";
             return new CommanderPreferenceResolution(
                 null,
                 false,
-                $"The imported commander preference '{preference.PreferredCommanderName}' was not applied because {reason}. Automatic newest-journal selection remains active.");
+                $"The imported commander preference '{preference.PreferredCommanderName}' was not applied because {reason}. Automatic newest-journal selection remains active."
+            );
         }
 
         var match = matches[0];
         try
         {
-            settingsStore.Save(new CommanderPreferencePreferences(
-                match.CommanderName,
-                match.FrontierId));
+            settingsStore.Save(new CommanderPreferencePreferences(match.CommanderName, match.FrontierId));
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidOperationException
-                or ArgumentException)
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or UnauthorizedAccessException
+                        or InvalidOperationException
+                        or ArgumentException
+            )
         {
             return new CommanderPreferenceResolution(
                 match.FrontierId,
                 false,
-                $"Resolved the imported commander preference to {match.CommanderName} ({match.FrontierId}), but could not persist the stable identity: {exception.Message}");
+                $"Resolved the imported commander preference to {match.CommanderName} ({match.FrontierId}), but could not persist the stable identity: {exception.Message}"
+            );
         }
 
-        var warningSuffix = catalog.Warnings.Count == 0
-            ? string.Empty
-            : $" {catalog.Warnings.Count:N0} unrelated malformed profile file(s) were ignored.";
+        var warningSuffix =
+            catalog.Warnings.Count == 0
+                ? string.Empty
+                : $" {catalog.Warnings.Count:N0} unrelated malformed profile file(s) were ignored.";
         return new CommanderPreferenceResolution(
             match.FrontierId,
             false,
-            $"Resolved the imported commander preference to {match.CommanderName} ({match.FrontierId}) and saved its stable identity.{warningSuffix}");
+            $"Resolved the imported commander preference to {match.CommanderName} ({match.FrontierId}) and saved its stable identity.{warningSuffix}"
+        );
     }
 }
 
 public sealed record CommanderPreferenceResolution(
     string? TargetFrontierId,
     bool IsCommandLineOverride,
-    string? StatusMessage)
+    string? StatusMessage
+)
 {
-    public static CommanderPreferenceResolution Automatic { get; } =
-        new(null, false, null);
+    public static CommanderPreferenceResolution Automatic { get; } = new(null, false, null);
 }

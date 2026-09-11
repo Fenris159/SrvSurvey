@@ -8,15 +8,15 @@ public static class JournalSnapshotReader
 
     public static async Task<JournalSnapshot> ReadLatestAsync(
         string journalFolder,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(journalFolder);
 
         var directory = new DirectoryInfo(journalFolder);
         if (!directory.Exists)
         {
-            throw new DirectoryNotFoundException(
-                $"The journal folder does not exist: {journalFolder}");
+            throw new DirectoryNotFoundException($"The journal folder does not exist: {journalFolder}");
         }
 
         var journals = directory
@@ -28,14 +28,10 @@ public static class JournalSnapshotReader
 
         if (journals.Length == 0)
         {
-            throw new FileNotFoundException(
-                $"No Journal.*.log files were found in: {journalFolder}");
+            throw new FileNotFoundException($"No Journal.*.log files were found in: {journalFolder}");
         }
 
-        var latestOnly = await ReadFileAsync(
-                journals[0],
-                cancellationToken)
-            .ConfigureAwait(false);
+        var latestOnly = await ReadFileAsync(journals[0], cancellationToken).ConfigureAwait(false);
         if (HasBootstrapIdentity(latestOnly))
         {
             return latestOnly;
@@ -51,36 +47,25 @@ public static class JournalSnapshotReader
                 FileAccess.Read,
                 FileShare.ReadWrite | FileShare.Delete,
                 bufferSize: 16 * 1024,
-                FileOptions.Asynchronous | FileOptions.SequentialScan);
-            using var reader = new StreamReader(
-                stream,
-                Encoding.UTF8,
-                detectEncodingFromByteOrderMarks: true);
-            malformedLineCount += await ApplyAsync(
-                    reader,
-                    state,
-                    cancellationToken)
-                .ConfigureAwait(false);
+                FileOptions.Asynchronous | FileOptions.SequentialScan
+            );
+            using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+            malformedLineCount += await ApplyAsync(reader, state, cancellationToken).ConfigureAwait(false);
         }
 
-        return state.CreateSnapshot(
-            journals[0].FullName,
-            malformedLineCount);
+        return state.CreateSnapshot(journals[0].FullName, malformedLineCount);
     }
 
     public static async Task<JournalSnapshot> ReadAsync(
         TextReader reader,
         string? sourcePath = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentNullException.ThrowIfNull(reader);
 
         var state = new JournalSessionState();
-        var malformedLineCount = await ApplyAsync(
-                reader,
-                state,
-                cancellationToken)
-            .ConfigureAwait(false);
+        var malformedLineCount = await ApplyAsync(reader, state, cancellationToken).ConfigureAwait(false);
 
         return state.CreateSnapshot(sourcePath, malformedLineCount);
     }
@@ -88,7 +73,8 @@ public static class JournalSnapshotReader
     private static async Task<int> ApplyAsync(
         TextReader reader,
         JournalSessionState state,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var malformedLineCount = 0;
 
@@ -99,11 +85,7 @@ public static class JournalSnapshotReader
                 continue;
             }
 
-            if (!JournalEventEnvelope.TryParse(
-                    line,
-                    out var journalEvent,
-                    out _)
-                || journalEvent is null)
+            if (!JournalEventEnvelope.TryParse(line, out var journalEvent, out _) || journalEvent is null)
             {
                 malformedLineCount++;
                 continue;
@@ -115,9 +97,7 @@ public static class JournalSnapshotReader
         return malformedLineCount;
     }
 
-    private static async Task<JournalSnapshot> ReadFileAsync(
-        FileInfo journal,
-        CancellationToken cancellationToken)
+    private static async Task<JournalSnapshot> ReadFileAsync(FileInfo journal, CancellationToken cancellationToken)
     {
         await using var stream = new FileStream(
             journal.FullName,
@@ -125,16 +105,10 @@ public static class JournalSnapshotReader
             FileAccess.Read,
             FileShare.ReadWrite | FileShare.Delete,
             bufferSize: 16 * 1024,
-            FileOptions.Asynchronous | FileOptions.SequentialScan);
-        using var reader = new StreamReader(
-            stream,
-            Encoding.UTF8,
-            detectEncodingFromByteOrderMarks: true);
-        return await ReadAsync(
-                reader,
-                journal.FullName,
-                cancellationToken)
-            .ConfigureAwait(false);
+            FileOptions.Asynchronous | FileOptions.SequentialScan
+        );
+        using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+        return await ReadAsync(reader, journal.FullName, cancellationToken).ConfigureAwait(false);
     }
 
     private static bool HasBootstrapIdentity(JournalSnapshot snapshot)

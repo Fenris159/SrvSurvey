@@ -16,10 +16,14 @@ public sealed class ExplorationStateTests
         state.Apply(Parse("""{"event":"StartJump","JumpType":"Supercruise"}"""));
         state.Apply(Parse("""{"event":"StartJump","JumpType":"Hyperspace"}"""));
         state.Apply(Parse("""{"event":"FSDJump","JumpDist":12.345}"""));
-        var scan = Parse("""{"event":"Scan","StarSystem":"Test","SystemAddress":1,"BodyID":4,"BodyName":"Test 4","PlanetClass":"High metal content body","TerraformState":"Terraformable","MassEM":1.0,"WasDiscovered":false,"WasMapped":false}""");
+        var scan = Parse(
+            """{"event":"Scan","StarSystem":"Test","SystemAddress":1,"BodyID":4,"BodyName":"Test 4","PlanetClass":"High metal content body","TerraformState":"Terraformable","MassEM":1.0,"WasDiscovered":false,"WasMapped":false}"""
+        );
         state.Apply(scan);
         state.Apply(scan);
-        state.Apply(Parse("""{"event":"SAAScanComplete","SystemAddress":1,"BodyID":4,"ProbesUsed":6,"EfficiencyTarget":6}"""));
+        state.Apply(
+            Parse("""{"event":"SAAScanComplete","SystemAddress":1,"BodyID":4,"ProbesUsed":6,"EfficiencyTarget":6}""")
+        );
         var touchdown = Parse("""{"event":"Touchdown","SystemAddress":1,"BodyID":4,"OnPlanet":true}""");
         state.Apply(touchdown);
         state.Apply(touchdown);
@@ -41,10 +45,24 @@ public sealed class ExplorationStateTests
     public void SellExplorationDataRemovesOnlyMatchedSystemsOnce()
     {
         var state = new ExplorationState();
-        state.Apply(Parse("""{"event":"Scan","StarSystem":"Alpha","SystemAddress":1,"BodyID":4,"PlanetClass":"High metal content body","TerraformState":"Terraformable","MassEM":1.0,"WasDiscovered":false,"WasMapped":false}"""));
-        state.Apply(Parse("""{"event":"Scan","StarSystem":"Beta","SystemAddress":2,"BodyID":4,"PlanetClass":"High metal content body","TerraformState":"Terraformable","MassEM":1.0,"WasDiscovered":false,"WasMapped":false}"""));
+        state.Apply(
+            Parse(
+                """{"event":"Scan","StarSystem":"Alpha","SystemAddress":1,"BodyID":4,"PlanetClass":"High metal content body","TerraformState":"Terraformable","MassEM":1.0,"WasDiscovered":false,"WasMapped":false}"""
+            )
+        );
+        state.Apply(
+            Parse(
+                """{"event":"Scan","StarSystem":"Beta","SystemAddress":2,"BodyID":4,"PlanetClass":"High metal content body","TerraformState":"Terraformable","MassEM":1.0,"WasDiscovered":false,"WasMapped":false}"""
+            )
+        );
 
-        Assert.True(state.Apply(Parse("""{"event":"SellExplorationData","Systems":[" alpha "],"Discovered":["ALPHA","Unknown"],"TotalEarnings":123}""")));
+        Assert.True(
+            state.Apply(
+                Parse(
+                    """{"event":"SellExplorationData","Systems":[" alpha "],"Discovered":["ALPHA","Unknown"],"TotalEarnings":123}"""
+                )
+            )
+        );
 
         var afterSale = state.CreateSnapshot();
         Assert.Equal(449200, afterSale.EstimatedRewards);
@@ -61,20 +79,25 @@ public sealed class ExplorationStateTests
     [Fact]
     public void MultiSellExplorationDataKeepsUnattributedHistoricalRewards()
     {
-        var state = new ExplorationState(new ExplorationSnapshot(
-            1_000,
-            0,
-            0,
-            0,
-            0,
-            0,
-            new Dictionary<string, long>
-            {
-                ["Alpha"] = 400,
-                ["Beta"] = 300,
-            }));
+        var state = new ExplorationState(
+            new ExplorationSnapshot(
+                1_000,
+                0,
+                0,
+                0,
+                0,
+                0,
+                new Dictionary<string, long> { ["Alpha"] = 400, ["Beta"] = 300 }
+            )
+        );
 
-        Assert.True(state.Apply(Parse("""{"event":"MultiSellExplorationData","Discovered":[{"SystemName":"ALPHA","NumBodies":2},{"SystemName":"Beta","NumBodies":1}] }""")));
+        Assert.True(
+            state.Apply(
+                Parse(
+                    """{"event":"MultiSellExplorationData","Discovered":[{"SystemName":"ALPHA","NumBodies":2},{"SystemName":"Beta","NumBodies":1}] }"""
+                )
+            )
+        );
 
         var snapshot = state.CreateSnapshot();
         Assert.Equal(300, snapshot.EstimatedRewards);

@@ -8,24 +8,16 @@ public sealed class BoxelSurveyAverageFormatterTests
     [Fact]
     public void NullOrZeroCountIsEmDash()
     {
-        Assert.Equal(
-            BoxelSurveyAverageFormatter.Placeholder,
-            BoxelSurveyAverageFormatter.Format(null, 20));
-        Assert.Equal(
-            BoxelSurveyAverageFormatter.Placeholder,
-            BoxelSurveyAverageFormatter.Format(0, 20));
+        Assert.Equal(BoxelSurveyAverageFormatter.Placeholder, BoxelSurveyAverageFormatter.Format(null, 20));
+        Assert.Equal(BoxelSurveyAverageFormatter.Placeholder, BoxelSurveyAverageFormatter.Format(0, 20));
         Assert.Equal("\u2014", BoxelSurveyAverageFormatter.Placeholder);
     }
 
     [Fact]
     public void HidesAverageUntilMinimumVisitedSystems()
     {
-        Assert.Equal(
-            BoxelSurveyAverageFormatter.Placeholder,
-            BoxelSurveyAverageFormatter.Format(1, 9));
-        Assert.Equal(
-            "1 in 10",
-            BoxelSurveyAverageFormatter.Format(1, 10));
+        Assert.Equal(BoxelSurveyAverageFormatter.Placeholder, BoxelSurveyAverageFormatter.Format(1, 9));
+        Assert.Equal("1 in 10", BoxelSurveyAverageFormatter.Format(1, 10));
     }
 
     [Fact]
@@ -50,16 +42,9 @@ public sealed class BoxelSurveyAverageFormatterTests
         using var _ = new CultureScope("de-DE");
         Assert.Equal(
             BoxelSurveyAverageFormatter.Placeholder,
-            BoxelSurveyAverageFormatter.Format(
-                1,
-                4,
-                new BoxelSurveyAverageFormat(5)));
-        Assert.Equal(
-            "2,5",
-            BoxelSurveyAverageFormatter.Format(
-                25,
-                10,
-                new BoxelSurveyAverageFormat(5)));
+            BoxelSurveyAverageFormatter.Format(1, 4, new BoxelSurveyAverageFormat(5))
+        );
+        Assert.Equal("2,5", BoxelSurveyAverageFormatter.Format(25, 10, new BoxelSurveyAverageFormat(5)));
     }
 
     private sealed class CultureScope : IDisposable

@@ -8,19 +8,15 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-guardian-survey-store-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-guardian-survey-store-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public async Task SaveRoundTripsCompactLegacyContractAndUnknownFields()
     {
         var store = new GuardianCommanderSurveyStore(temporaryDirectory);
         var survey = CreateSurvey();
-        var path = store.GetSurveyPath(
-            "F123",
-            true,
-            survey.BodyName,
-            survey.Index,
-            isRuins: true);
+        var path = store.GetSurveyPath("F123", true, survey.BodyName, survey.Index, isRuins: true);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         await File.WriteAllTextAsync(
             path,
@@ -36,7 +32,8 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
                 "future,quantum"
               ]
             }
-            """);
+            """
+        );
 
         var savedPath = await store.SaveAsync("F123", true, survey);
 
@@ -50,25 +47,14 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
         Assert.Equal("p2", root["poiAbsent"]!.GetValue<string>());
         Assert.Equal("p3", root["poiEmpty"]!.GetValue<string>());
         Assert.Equal("ACD", root["obeliskGroups"]!.GetValue<string>());
+        Assert.Equal("A08!-ca,ca-H9-", root["activeObelisks"]![0]!.GetValue<string>());
+        Assert.Equal("brokeObelisk", root["rawPoi"]![0]!["type"]!.GetValue<string>());
         Assert.Equal(
-            "A08!-ca,ca-H9-",
-            root["activeObelisks"]![0]!.GetValue<string>());
-        Assert.Equal(
-            "brokeObelisk",
-            root["rawPoi"]![0]!["type"]!.GetValue<string>());
-        Assert.Equal(
-            [
-                "future-format",
-                "c1,cell,conduit,tech",
-                "future,quantum",
-                "d1,tech",
-            ],
-            root["components"]!.AsArray()
-                .Select(item => item!.GetValue<string>())
-                .ToArray());
+            ["future-format", "c1,cell,conduit,tech", "future,quantum", "d1,tech"],
+            root["components"]!.AsArray().Select(item => item!.GetValue<string>()).ToArray()
+        );
 
-        var loaded = await new GuardianCommanderDataReader(temporaryDirectory)
-            .ReadAsync("F123", true);
+        var loaded = await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync("F123", true);
         var roundTrip = Assert.Single(loaded.Surveys);
         Assert.Empty(loaded.Errors);
         Assert.Equal(survey.Name, roundTrip.Name);
@@ -78,21 +64,13 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
         Assert.Equal(1234.5, roundTrip.DistanceToArrivalLs);
         Assert.Equal(new GuardianMapPoint(12.5, -7.25), roundTrip.MapMarkerOffset);
         Assert.Equal(survey.Survey.Location, roundTrip.Survey.Location);
-        Assert.Equal(
-            GuardianPoiStatus.Present,
-            roundTrip.Survey.PoiStatuses["p1"]);
+        Assert.Equal(GuardianPoiStatus.Present, roundTrip.Survey.PoiStatuses["p1"]);
         Assert.Equal(45, roundTrip.Survey.RelicHeadings["t1"]);
-        Assert.Equal(
-            GuardianComponentMaterial.Conduit,
-            roundTrip.Survey.ComponentMaterials["c1"].GetItem(1));
-        Assert.Equal(
-            GuardianComponentMaterial.Tech,
-            roundTrip.Survey.ComponentMaterials["d1"].GetItem(0));
+        Assert.Equal(GuardianComponentMaterial.Conduit, roundTrip.Survey.ComponentMaterials["c1"].GetItem(1));
+        Assert.Equal(GuardianComponentMaterial.Tech, roundTrip.Survey.ComponentMaterials["d1"].GetItem(0));
         Assert.Equal(['A', 'C', 'D'], roundTrip.ObeliskGroups.Order());
         Assert.True(Assert.Single(roundTrip.ActiveObelisks).Scanned);
-        Assert.Equal(
-            GuardianPoiType.BrokenObelisk,
-            Assert.Single(roundTrip.Survey.RawPointsOfInterest!).Type);
+        Assert.Equal(GuardianPoiType.BrokenObelisk, Assert.Single(roundTrip.Survey.RawPointsOfInterest!).Type);
     }
 
     [Fact]
@@ -100,12 +78,7 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
     {
         var store = new GuardianCommanderSurveyStore(temporaryDirectory);
         var source = CreateSurvey();
-        var path = store.GetSurveyPath(
-            "F123",
-            true,
-            source.BodyName,
-            source.Index,
-            isRuins: true);
+        var path = store.GetSurveyPath("F123", true, source.BodyName, source.Index, isRuins: true);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         await File.WriteAllTextAsync(
             path,
@@ -117,7 +90,8 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
                 "future-format"
               ]
             }
-            """);
+            """
+        );
         var survey = source with
         {
             Survey = new GuardianSurveyData
@@ -128,13 +102,9 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
                 Location = source.Survey.Location,
                 PoiStatuses = source.Survey.PoiStatuses,
                 RelicHeadings = source.Survey.RelicHeadings,
-                ComponentMaterials = new Dictionary<
-                    string,
-                    GuardianComponentLoadout>
+                ComponentMaterials = new Dictionary<string, GuardianComponentLoadout>
                 {
-                    ["c1"] = new GuardianComponentLoadout(
-                        "c1",
-                        [GuardianComponentMaterial.Tech]),
+                    ["c1"] = new GuardianComponentLoadout("c1", [GuardianComponentMaterial.Tech]),
                 },
                 RawPointsOfInterest = source.Survey.RawPointsOfInterest,
             },
@@ -143,12 +113,9 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
         await store.SaveAsync("F123", true, survey);
 
         var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
-        var components = root["components"]!.AsArray()
-            .Select(item => item!.GetValue<string>())
-            .ToArray();
+        var components = root["components"]!.AsArray().Select(item => item!.GetValue<string>()).ToArray();
         Assert.Equal(3, components.Length);
-        Assert.All(components.Take(2), component =>
-            Assert.StartsWith("c1,", component, StringComparison.Ordinal));
+        Assert.All(components.Take(2), component => Assert.StartsWith("c1,", component, StringComparison.Ordinal));
         Assert.Equal("future-format", components[2]);
     }
 
@@ -177,15 +144,11 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
         var path = await store.SaveAsync("F123", false, survey);
 
         Assert.EndsWith(
-            Path.Combine(
-                "guardian",
-                "F123",
-                "legacy",
-                $"{survey.BodyName}-structure-1.json"),
+            Path.Combine("guardian", "F123", "legacy", $"{survey.BodyName}-structure-1.json"),
             path,
-            StringComparison.Ordinal);
-        var loaded = await new GuardianCommanderDataReader(temporaryDirectory)
-            .ReadAsync("F123", false);
+            StringComparison.Ordinal
+        );
+        var loaded = await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync("F123", false);
         Assert.True(Assert.Single(loaded.Surveys).Legacy);
     }
 
@@ -194,12 +157,7 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
     {
         var store = new GuardianCommanderSurveyStore(temporaryDirectory);
         var source = CreateSurvey();
-        var path = store.GetSurveyPath(
-            "F123",
-            true,
-            source.BodyName,
-            source.Index,
-            isRuins: true);
+        var path = store.GetSurveyPath("F123", true, source.BodyName, source.Index, isRuins: true);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         await File.WriteAllTextAsync(
             path,
@@ -211,7 +169,8 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
                 "future,quantum"
               ]
             }
-            """);
+            """
+        );
         var survey = source with
         {
             Survey = new GuardianSurveyData
@@ -222,9 +181,7 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
                 Location = source.Survey.Location,
                 PoiStatuses = source.Survey.PoiStatuses,
                 RelicHeadings = source.Survey.RelicHeadings,
-                ComponentMaterials = new Dictionary<
-                    string,
-                    GuardianComponentLoadout>(),
+                ComponentMaterials = new Dictionary<string, GuardianComponentLoadout>(),
                 RawPointsOfInterest = source.Survey.RawPointsOfInterest,
             },
         };
@@ -234,23 +191,15 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
         var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.Equal(
             ["c1,cell,conduit,tech", "future-format", "future,quantum"],
-            root["components"]!.AsArray()
-                .Select(item => item!.GetValue<string>())
-                .ToArray());
-        var loaded = await new GuardianCommanderDataReader(temporaryDirectory)
-            .ReadAsync("F123", true);
+            root["components"]!.AsArray().Select(item => item!.GetValue<string>()).ToArray()
+        );
+        var loaded = await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync("F123", true);
         var loadedSurvey = Assert.Single(loaded.Surveys);
         var saved = Assert.Single(loadedSurvey.Survey.ComponentMaterials);
         Assert.Equal("c1", saved.Key);
-        Assert.Equal(
-            GuardianComponentMaterial.Cell,
-            saved.Value.GetItem(0));
-        Assert.Equal(
-            GuardianComponentMaterial.Conduit,
-            saved.Value.GetItem(1));
-        Assert.Equal(
-            GuardianComponentMaterial.Tech,
-            saved.Value.GetItem(2));
+        Assert.Equal(GuardianComponentMaterial.Cell, saved.Value.GetItem(0));
+        Assert.Equal(GuardianComponentMaterial.Conduit, saved.Value.GetItem(1));
+        Assert.Equal(GuardianComponentMaterial.Tech, saved.Value.GetItem(2));
     }
 
     [Fact]
@@ -258,34 +207,16 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
     {
         var store = new GuardianCommanderSurveyStore(temporaryDirectory);
         var survey = CreateSurvey();
-        var path = store.GetSurveyPath(
-            "F123",
-            true,
-            survey.BodyName,
-            survey.Index,
-            isRuins: true);
+        var path = store.GetSurveyPath("F123", true, survey.BodyName, survey.Index, isRuins: true);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         const string malformed = "{\"name\":";
         await File.WriteAllTextAsync(path, malformed);
 
-        await Assert.ThrowsAsync<InvalidDataException>(
-            () => store.SaveAsync("F123", true, survey));
+        await Assert.ThrowsAsync<InvalidDataException>(() => store.SaveAsync("F123", true, survey));
 
         Assert.Equal(malformed, await File.ReadAllTextAsync(path));
-        Assert.Throws<ArgumentException>(
-            () => store.GetSurveyPath(
-                "../F123",
-                true,
-                survey.BodyName,
-                1,
-                true));
-        Assert.Throws<ArgumentException>(
-            () => store.GetSurveyPath(
-                "F123",
-                true,
-                "Body/escape",
-                1,
-                true));
+        Assert.Throws<ArgumentException>(() => store.GetSurveyPath("../F123", true, survey.BodyName, 1, true));
+        Assert.Throws<ArgumentException>(() => store.GetSurveyPath("F123", true, "Body/escape", 1, true));
     }
 
     public void Dispose()
@@ -327,13 +258,8 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
                     ["p2"] = GuardianPoiStatus.Absent,
                     ["unknown"] = GuardianPoiStatus.Unknown,
                 },
-                RelicHeadings = new Dictionary<string, int>
-                {
-                    ["t1"] = 45,
-                },
-                ComponentMaterials = new Dictionary<
-                    string,
-                    GuardianComponentLoadout>
+                RelicHeadings = new Dictionary<string, int> { ["t1"] = 45 },
+                ComponentMaterials = new Dictionary<string, GuardianComponentLoadout>
                 {
                     ["c1"] = new GuardianComponentLoadout(
                         "c1",
@@ -341,23 +267,15 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
                             GuardianComponentMaterial.Cell,
                             GuardianComponentMaterial.Conduit,
                             GuardianComponentMaterial.Tech,
-                        ]),
-                    ["d1"] = new GuardianComponentLoadout(
-                        "d1",
-                        [GuardianComponentMaterial.Tech]),
+                        ]
+                    ),
+                    ["d1"] = new GuardianComponentLoadout("d1", [GuardianComponentMaterial.Tech]),
                 },
-                RawPointsOfInterest =
-                [
-                    new GuardianPointOfInterest(
-                        "x1",
-                        GuardianPoiType.BrokenObelisk,
-                        12.5,
-                        30,
-                        180),
-                ],
+                RawPointsOfInterest = [new GuardianPointOfInterest("x1", GuardianPoiType.BrokenObelisk, 12.5, 30, 180)],
             },
             [new GuardianObelisk("A08", "H9", true, ["ca", "ca"])],
-            new HashSet<char>(['D', 'A', 'C']))
+            new HashSet<char>(['D', 'A', 'C'])
+        )
         {
             LocalSiteId = 7,
             CatalogBodyName = "1 b",
