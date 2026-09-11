@@ -44,9 +44,6 @@ public static class SurfaceMiningCommodityCatalog
     private const string MetalsCategory = "Metals";
     private const string MineralsCategory = "Minerals";
 
-    public const string SourceUrl =
-        "https://forums.frontier.co.uk/threads/rhino-surface-hotspot-list.649504/";
-
     public static IReadOnlyList<SurfaceMiningHuntReference> HuntReferences { get; } =
     [
         new("Volcanic gemstones", "Diamond", MetalRichBodyType, "High-metal-content, Rocky, or Rocky ice", SilicateOrIronMagma, "—", 134_784, 720_648),
