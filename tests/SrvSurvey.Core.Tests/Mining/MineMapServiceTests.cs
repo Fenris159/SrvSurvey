@@ -41,6 +41,31 @@ public sealed class MineMapServiceTests
     }
 
     [Fact]
+    public void LegacyMigrationSkipsInvalidSurveyAndFinishesRemainingImports()
+    {
+        using var directory = new TemporaryDirectory();
+        var legacyDirectory = Path.Combine(directory.Path, "mine-maps");
+        Directory.CreateDirectory(legacyDirectory);
+        var invalid = LegacySurvey(Guid.NewGuid(), signal: 4) with
+        {
+            SystemAddress = 0,
+        };
+        var valid = LegacySurvey(Guid.NewGuid(), signal: 5);
+        File.WriteAllText(
+            Path.Combine(legacyDirectory, "invalid.json"),
+            JsonSerializer.Serialize(invalid));
+        File.WriteAllText(
+            Path.Combine(legacyDirectory, "valid.json"),
+            JsonSerializer.Serialize(valid));
+
+        using var service = new MineMapService(directory.Path);
+
+        Assert.DoesNotContain(service.Surveys, survey => survey.Id == invalid.Id);
+        Assert.Contains(service.Surveys, survey => survey.Id == valid.Id);
+        Assert.True(File.Exists(Path.Combine(legacyDirectory, ".bookmarks-migrated")));
+    }
+
+    [Fact]
     public async Task MiningCommandCreatesPersistentSurveyAtKnownRadiusAndBearing()
     {
         using var directory = new TemporaryDirectory();

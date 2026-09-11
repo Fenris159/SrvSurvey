@@ -39,6 +39,7 @@ public sealed class MiningWorkspacePresentationTests
             foreach (var theme in RavenThemeCatalog.All)
             {
                 themes.Select(theme.Key);
+                themes.ApplyCurrent();
                 using var frame = window.CaptureRenderedFrame();
                 var text = ColorOf(application.Resources["RavenTextBrush"] as IBrush);
                 var grid = ColorOf(application.Resources["RavenMapGridBrush"] as IBrush);
@@ -146,8 +147,9 @@ public sealed class MiningWorkspacePresentationTests
                 ScrollBarVisibility.Auto,
                 results.VerticalScrollBarVisibility);
 
-            var resultsContent = Assert.IsAssignableFrom<Control>(
-                results.Content);
+            var resultsContent = Assert.IsType<Control>(
+                results.Content,
+                exactMatch: false);
             resultsContent.RaiseEvent(new ScrollGestureEventArgs(
                 id: 1,
                 new Vector(12.5, 0))
@@ -243,7 +245,19 @@ public sealed class MiningWorkspacePresentationTests
                     Assert.Single(row.RowDefinitions);
                     Assert.InRange(row.Bounds.Height, 20, 48);
                 });
-                Assert.Same(page, Assert.Single(results.GetVisualAncestors().OfType<ScrollViewer>()));
+                var resultScrollers = results.GetVisualAncestors()
+                    .OfType<ScrollViewer>()
+                    .ToArray();
+                Assert.Contains(page, resultScrollers);
+                var horizontal = Assert.Single(
+                    resultScrollers,
+                    scroller => !ReferenceEquals(scroller, page));
+                Assert.Equal(
+                    ScrollBarVisibility.Auto,
+                    horizontal.HorizontalScrollBarVisibility);
+                Assert.Equal(
+                    ScrollBarVisibility.Disabled,
+                    horizontal.VerticalScrollBarVisibility);
                 var inner = Assert.Single(results.GetVisualDescendants().OfType<ScrollViewer>());
                 Assert.True(inner.Extent.Height <= inner.Viewport.Height + 1);
                 Assert.True(inner.Extent.Width <= inner.Viewport.Width + 1);
@@ -441,6 +455,13 @@ public sealed class MiningWorkspacePresentationTests
         var header = view.FindControl<Grid>(headerName)!;
         var rows = view.FindControl<ListBox>(rowsName);
         Assert.DoesNotContain(header.GetVisualAncestors(), ancestor => ReferenceEquals(ancestor, rows));
+        var horizontal = Assert.Single(
+            header.GetVisualAncestors().OfType<ScrollViewer>(),
+            scroller => scroller.HorizontalScrollBarVisibility == ScrollBarVisibility.Auto
+                && scroller.VerticalScrollBarVisibility == ScrollBarVisibility.Disabled);
+        Assert.Contains(
+            horizontal,
+            rows!.GetVisualAncestors().OfType<ScrollViewer>());
         AssertSingleLineRows(rows);
     }
 

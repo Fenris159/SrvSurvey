@@ -193,13 +193,16 @@ public sealed class MineMapService : IDisposable
 
     public void UpdateContext(MineMapCommandContext? context)
     {
-        var next = context is null
-            ? null
-            : ActiveSurvey is { } active && MatchesContext(active, context)
-                ? surveys.FirstOrDefault(survey => survey.Id == active.Id) ?? active
+        MineMapSurvey? next = null;
+        if (context is not null)
+        {
+            next = ActiveSurvey is { } active && MatchesContext(active, context)
+                ? surveys.FirstOrDefault(survey => survey.Id == active.Id)
+                    ?? active
                 : surveys.Where(survey => MatchesContext(survey, context))
                 .OrderByDescending(survey => survey.UpdatedAt)
                 .FirstOrDefault();
+        }
         if (ReferenceEquals(ActiveSurvey, next))
         {
             return;
@@ -530,14 +533,14 @@ public sealed class MineMapService : IDisposable
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
-    private IReadOnlyList<MineMapSurvey> ReadSurveys() => bookmarks.Items
+    private MineMapSurvey[] ReadSurveys() => bookmarks.Items
         .Where(bookmark => bookmark.SurfaceMiningMap is not null
             && bookmark.HasCategory(BookmarkCategoryCatalog.SurfaceMining))
         .Select(bookmark => bookmark.SurfaceMiningMap! with
         {
             SystemName = bookmark.System,
             BodyName = bookmark.Body,
-            SystemPosition = bookmark.Position ?? bookmark.SurfaceMiningMap!.SystemPosition,
+            SystemPosition = bookmark.Position ?? bookmark.SurfaceMiningMap.SystemPosition,
             Notes = bookmark.Notes,
         })
         .OrderByDescending(survey => survey.UpdatedAt)
@@ -556,29 +559,37 @@ public sealed class MineMapService : IDisposable
         foreach (var survey in LoadLegacySurveys(legacyDirectory)
             .Where(survey => !importedIds.Contains(survey.Id)))
         {
-            bookmarks.Save(new GalacticBookmark
+            try
             {
-                Id = survey.Id,
-                System = survey.SystemName,
-                Body = survey.BodyName,
-                Position = survey.SystemPosition,
-                Category = "Surface Mining",
-                CategoryAssignments = [BookmarkCategoryCatalog.SurfaceMining],
-                Minerals = string.Join(", ", survey.Markers
-                    .Select(marker => marker.Material)
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)),
-                Hotspot = survey.Name,
-                SurfaceMiningMap = survey,
-                Updated = survey.UpdatedAt,
-            });
-            importedIds.Add(survey.Id);
+                bookmarks.Save(new GalacticBookmark
+                {
+                    Id = survey.Id,
+                    System = survey.SystemName,
+                    Body = survey.BodyName,
+                    Position = survey.SystemPosition,
+                    Category = "Surface Mining",
+                    CategoryAssignments = [BookmarkCategoryCatalog.SurfaceMining],
+                    Minerals = string.Join(", ", (survey.Markers ?? [])
+                        .Where(marker => marker is not null)
+                        .Select(marker => marker.Material)
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)),
+                    Hotspot = survey.Name,
+                    SurfaceMiningMap = survey,
+                    Updated = survey.UpdatedAt,
+                });
+                importedIds.Add(survey.Id);
+            }
+            catch (JsonException)
+            {
+                // Skip invalid legacy records without preventing later imports.
+            }
         }
 
         File.WriteAllText(markerPath, "Surface mining maps now use bookmarks.json.");
     }
 
-    private static IReadOnlyList<MineMapSurvey> LoadLegacySurveys(string directory)
+    private static MineMapSurvey[] LoadLegacySurveys(string directory)
     {
         if (!Directory.Exists(directory))
         {

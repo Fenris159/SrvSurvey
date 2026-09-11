@@ -75,7 +75,7 @@ public static class OverlayVehicleCatalog
     public static IReadOnlyList<OverlayVehicleDefinition> ForCategory(
         OverlaySettingsCategory category) => category == OverlaySettingsCategory.MineMap
         ? All.Where(vehicle => vehicle.Group is MediumGroup or LargeGroup
-            || vehicle.Id is "mev_rhino" or "on-foot").ToArray()
+            || vehicle.Id is "mev_rhino" or "on-foot" or UnknownKey).ToArray()
         : All;
 
     public static string Resolve(JournalSessionState journal, EliteStatus? status)

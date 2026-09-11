@@ -51,6 +51,18 @@ public sealed class MineMapViewMarkupTests
             item.Attribute("Header")?.Value?.Contains("Delete", StringComparison.OrdinalIgnoreCase) == true);
         Assert.Contains(document.Descendants(avalonia + "ListBox"), list =>
             list.Attribute("SelectedItem")?.Value?.Contains("SelectedSurveyRow", StringComparison.Ordinal) == true);
+        var surfaceMapsScroller = Assert.Single(
+            document.Descendants(avalonia + "ScrollViewer"),
+            scroller => scroller.Attribute(XName.Get(
+                "Name",
+                "http://schemas.microsoft.com/winfx/2006/xaml"))?.Value
+                == "SurfaceMapsHorizontalScroller");
+        Assert.Equal(
+            "Auto",
+            surfaceMapsScroller.Attribute("HorizontalScrollBarVisibility")?.Value);
+        Assert.Equal(
+            "Disabled",
+            surfaceMapsScroller.Attribute("VerticalScrollBarVisibility")?.Value);
         Assert.Contains(document.Descendants(avalonia + "Grid"), row =>
             row.Attribute("Tapped")?.Value == "OnSurveyRowTapped");
         Assert.Contains(document.Descendants(avalonia + "MenuItem"), item =>
@@ -306,6 +318,12 @@ public sealed class MineMapViewMarkupTests
         Assert.Equal(expectedTables, headers.Length);
         Assert.All(headers, header =>
         {
+            _ = Assert.Single(
+                header.Ancestors(avalonia + "ScrollViewer"),
+                scroller => scroller.Attribute("HorizontalScrollBarVisibility")?.Value
+                    == "Auto"
+                    && scroller.Attribute("VerticalScrollBarVisibility")?.Value
+                    == "Disabled");
             var columns = header.Descendants(avalonia + "ColumnDefinition").ToArray();
             var buttons = header.Elements(avalonia + "Button").ToArray();
             Assert.NotEmpty(buttons);

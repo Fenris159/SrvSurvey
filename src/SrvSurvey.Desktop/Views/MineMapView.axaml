@@ -79,7 +79,12 @@
 
           <Border Classes="card" Padding="0">
               <Grid RowDefinitions="Auto,*">
-                <Grid x:Name="SurfaceMapsHeader" Margin="12,9" ColumnSpacing="8"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps0" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps1" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps2" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps3" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps4" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps5" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps6" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps7" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps8" /></Grid.ColumnDefinitions>
+                <ScrollViewer x:Name="SurfaceMapsHorizontalScroller"
+                  HorizontalScrollBarVisibility="Auto"
+                  VerticalScrollBarVisibility="Disabled"
+                  IsScrollChainingEnabled="True">
+                  <Grid RowDefinitions="Auto,*">
+                    <Grid x:Name="SurfaceMapsHeader" Margin="12,9" ColumnSpacing="8"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps0" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps1" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps2" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps3" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps4" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps5" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps6" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps7" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps8" /></Grid.ColumnDefinitions>
                   <Button Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortSurveysCommand}" CommandParameter="SystemName"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="SYSTEM" /><TextBlock Classes="table-heading" Text="{Binding SurveySortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=SystemName}" /></StackPanel></Button>
                   <Button Grid.Column="1" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortSurveysCommand}" CommandParameter="DisplayBodyName"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="BODY" /><TextBlock Classes="table-heading" Text="{Binding SurveySortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=DisplayBodyName}" /></StackPanel></Button>
                   <Button Grid.Column="2" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortSurveysCommand}" CommandParameter="SignalValue"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="SIGNAL #" /><TextBlock Classes="table-heading" Text="{Binding SurveySortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=SignalValue}" /></StackPanel></Button>
@@ -90,7 +95,7 @@
                   <Button Grid.Column="7" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortSurveysCommand}" CommandParameter="Density"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="DENSITY" /><TextBlock Classes="table-heading" Text="{Binding SurveySortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Density}" /></StackPanel></Button>
                   <Button Grid.Column="8" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortSurveysCommand}" CommandParameter="UpdatedValue"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="UPDATED" /><TextBlock Classes="table-heading" Text="{Binding SurveySortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=UpdatedValue}" /></StackPanel></Button>
                 </Grid>
-                <ListBox Grid.Row="1" Classes="table-rows" Height="390"
+                    <ListBox Grid.Row="1" x:Name="SurfaceMapsResults" Classes="table-rows" Height="390"
                          ItemsSource="{Binding FilteredSurveys}"
                          SelectedItem="{Binding SelectedSurveyRow, Mode=TwoWay}"
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled">
@@ -121,6 +126,8 @@
                       </DataTemplate>
                     </ListBox.ItemTemplate>
                   </ListBox>
+                  </Grid>
+                </ScrollViewer>
               </Grid>
           </Border>
         </StackPanel>
@@ -246,7 +253,8 @@
           <Border Classes="card" Padding="0">
             <ScrollViewer x:Name="HotspotListHorizontalScroller"
                           HorizontalScrollBarVisibility="Auto"
-                          VerticalScrollBarVisibility="Disabled">
+                          VerticalScrollBarVisibility="Disabled"
+                          IsScrollChainingEnabled="True">
               <Grid RowDefinitions="Auto,*">
                 <Grid x:Name="HotspotListHeader" Margin="12,9" ColumnSpacing="8"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="HotspotList0" /><ColumnDefinition Width="Auto" SharedSizeGroup="HotspotList1" /><ColumnDefinition Width="Auto" SharedSizeGroup="HotspotList2" /><ColumnDefinition Width="Auto" SharedSizeGroup="HotspotList3" /><ColumnDefinition Width="Auto" SharedSizeGroup="HotspotList4" /><ColumnDefinition Width="Auto" SharedSizeGroup="HotspotList5" /><ColumnDefinition Width="Auto" SharedSizeGroup="HotspotList6" /><ColumnDefinition Width="Auto" SharedSizeGroup="HotspotList7" /><ColumnDefinition Width="Auto" SharedSizeGroup="HotspotList8" /><ColumnDefinition Width="Auto" SharedSizeGroup="HotspotList9" /></Grid.ColumnDefinitions>
                   <Button Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortHotspotsCommand}" CommandParameter="Category"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="CATEGORY" /><TextBlock Classes="table-heading" Text="{Binding HotspotSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Category}" /></StackPanel></Button>
@@ -306,7 +314,8 @@
           <Border Classes="card" Padding="0">
             <ScrollViewer x:Name="SurfaceHuntHorizontalScroller"
                           HorizontalScrollBarVisibility="Auto"
-                          VerticalScrollBarVisibility="Disabled">
+                          VerticalScrollBarVisibility="Disabled"
+                          IsScrollChainingEnabled="True">
             <Grid RowDefinitions="Auto,*">
               <Grid x:Name="SurfaceHuntHeader" Margin="12,9" ColumnSpacing="8">
                 <Grid.ColumnDefinitions>

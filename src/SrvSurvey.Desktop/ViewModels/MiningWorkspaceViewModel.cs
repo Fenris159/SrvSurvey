@@ -155,7 +155,7 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     public MiningRing? SelectedRing { get => selectedRing; set => Set(ref selectedRing, value); }
     public MiningMission? SelectedMission { get => selectedMission; set => Set(ref selectedMission, value); }
 
-    private ICommand CreateSortCommand(
+    private WorkspaceParameterCommand CreateSortCommand(
         WorkspaceTableSorter tableSorter,
         string rowsProperty,
         string indicatorsProperty) => new WorkspaceParameterCommand(parameter =>
@@ -395,42 +395,101 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         if (commander != targetCommander) { Status = "Commander changed; backup was not applied."; return; }
 
         var originalMining = Backup();
-        var originalFiregroups = firegroups?.Backup(targetCommander);
-        var firegroupsRestored = false;
-        if (contents.Firegroups is not null && firegroups is not null)
+        if (!TryRestoreFiregroups(
+                targetCommander,
+                contents,
+                out var originalFiregroups,
+                out var firegroupsRestored))
         {
-            if (!firegroups.Restore(targetCommander, contents.Firegroups))
-            {
-                Status = firegroups.Status;
-                return;
-            }
-            firegroupsRestored = true;
+            return;
         }
+
         if (!Restore(MiningStore.Export(contents.Data)))
         {
-            var failure = Status;
-            var rolledBack = !firegroupsRestored
-                || originalFiregroups is not null
-                && firegroups!.Restore(targetCommander, originalFiregroups);
-            Status = failure + (rolledBack
-                ? " Previous Firegroups were restored."
-                : " Firegroups rollback also failed; use the before-restore file to recover them.");
+            ReportMiningRestoreFailure(
+                targetCommander,
+                originalFiregroups,
+                firegroupsRestored);
             return;
         }
+
         if (!bookmarks.Restore(contents.Bookmarks))
         {
-            var failure = bookmarks.Status;
-            var miningRolledBack = Restore(originalMining);
-            var firegroupsRolledBack = !firegroupsRestored
-                || originalFiregroups is not null
-                && firegroups!.Restore(targetCommander, originalFiregroups);
-            Status = failure + (miningRolledBack && firegroupsRolledBack
-                ? " Previous Mining and Firegroups data were restored."
-                : " Automatic rollback was incomplete; use the before-restore files to recover the previous data.");
+            ReportBookmarkRestoreFailure(
+                targetCommander,
+                originalMining,
+                originalFiregroups,
+                firegroupsRestored);
             return;
         }
+
         Status += " " + bookmarks.Status;
         if (contents.Firegroups is not null && firegroups is not null) Status += " " + firegroups.Status;
+    }
+
+    private bool TryRestoreFiregroups(
+        string targetCommander,
+        MiningBackupContents contents,
+        out string? originalFiregroups,
+        out bool firegroupsRestored)
+    {
+        originalFiregroups = firegroups?.Backup(targetCommander);
+        firegroupsRestored = false;
+        if (contents.Firegroups is null || firegroups is null)
+        {
+            return true;
+        }
+
+        if (!firegroups.Restore(targetCommander, contents.Firegroups))
+        {
+            Status = firegroups.Status;
+            return false;
+        }
+
+        firegroupsRestored = true;
+        return true;
+    }
+
+    private void ReportMiningRestoreFailure(
+        string targetCommander,
+        string? originalFiregroups,
+        bool firegroupsRestored)
+    {
+        var failure = Status;
+        var rolledBack = RestorePreviousFiregroups(
+            targetCommander,
+            originalFiregroups,
+            firegroupsRestored);
+        Status = failure + (rolledBack
+            ? " Previous Firegroups were restored."
+            : " Firegroups rollback also failed; use the before-restore file to recover them.");
+    }
+
+    private void ReportBookmarkRestoreFailure(
+        string targetCommander,
+        string originalMining,
+        string? originalFiregroups,
+        bool firegroupsRestored)
+    {
+        var failure = bookmarks.Status;
+        var miningRolledBack = Restore(originalMining);
+        var firegroupsRolledBack = RestorePreviousFiregroups(
+            targetCommander,
+            originalFiregroups,
+            firegroupsRestored);
+        Status = failure + (miningRolledBack && firegroupsRolledBack
+            ? " Previous Mining and Firegroups data were restored."
+            : " Automatic rollback was incomplete; use the before-restore files to recover the previous data.");
+    }
+
+    private bool RestorePreviousFiregroups(
+        string targetCommander,
+        string? originalFiregroups,
+        bool firegroupsRestored)
+    {
+        return !firegroupsRestored
+            || originalFiregroups is not null
+                && firegroups!.Restore(targetCommander, originalFiregroups);
     }
     public string Backup() { state.Synchronize(); return MiningStore.Export(state.Data); }
     public bool Restore(string json)

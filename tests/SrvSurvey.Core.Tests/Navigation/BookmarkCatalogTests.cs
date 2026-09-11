@@ -117,6 +117,31 @@ public sealed class BookmarkCatalogTests
             if (Directory.Exists(directory)) Directory.Delete(directory, true);
         }
     }
+
+    [Fact]
+    public void ParseReportsInvalidSurfaceCoordinatesAsJsonErrors()
+    {
+        var bookmark = SurfaceBookmark(
+            Guid.NewGuid(),
+            4,
+            new SurfaceCoordinate(1, 2));
+        var json = JsonSerializer.Serialize(new[] { bookmark })
+            .Replace("\"Latitude\":1", "\"Latitude\":91", StringComparison.Ordinal);
+
+        var exception = Assert.Throws<JsonException>(() => BookmarkCatalog.Parse(json));
+
+        Assert.IsType<ArgumentOutOfRangeException>(exception.InnerException);
+    }
+
+    [Fact]
+    public void ValidationMessageDescribesCurrentRequirements()
+    {
+        var exception = Assert.Throws<JsonException>(() =>
+            BookmarkCatalog.Parse("[{\"Rating\":6}]"));
+
+        Assert.Contains("system and rating between 0 and 5", exception.Message);
+        Assert.DoesNotContain("category", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
     [Fact]
     public void RestoreRecoversBackedUpEditsAndRetainsPreviousCatalogOnDisk()
     {

@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace SrvSurvey.Core.Mining;
 
 public sealed record SurfaceMiningHuntReference(
@@ -24,51 +26,71 @@ public sealed record SurfaceMiningCommodity(
 
 public static class SurfaceMiningCommodityCatalog
 {
+    private const string MetalRichBodyType = "Metal-rich";
+    private const string HighMetalContentBodyType = "High-metal-content";
+    private const string RockyBodyType = "Rocky";
+    private const string RockyIceBodyType = "Rocky ice";
+    private const string NoGeologyRequired = "None required";
+    private const string SilicateOrIronMagma = "Silicate magma or Iron magma";
+    private const string IronMagma = "Iron magma";
+    private const string MetalBearingGround = "Metal-bearing ground";
+    private const string RockyVolcanicGround = "Rocky / volcanic ground";
+    private const string RockyGround = "Rocky ground";
+    private const string IcyGround = "Icy ground";
+    private const string LowTemperatureDiamonds = "Low Temperature Diamonds";
+    private const string MethanolMonohydrateCrystals =
+        "Methanol Monohydrate Crystals";
+    private const string ChemicalsCategory = "Chemicals";
+    private const string MetalsCategory = "Metals";
+    private const string MineralsCategory = "Minerals";
+
     public const string SourceUrl =
         "https://forums.frontier.co.uk/threads/rhino-surface-hotspot-list.649504/";
 
     public static IReadOnlyList<SurfaceMiningHuntReference> HuntReferences { get; } =
     [
-        new("Volcanic gemstones", "Diamond", "Metal-rich", "High-metal-content, Rocky, or Rocky ice", "Silicate magma or Iron magma", "—", 134_784, 720_648),
-        new("Volcanic gemstones", "Sapphire", "Metal-rich", "High-metal-content or Rocky", "Iron magma", "—", 128_050, 648_352),
-        new("Volcanic gemstones", "Ruby", "Metal-rich", "High-metal-content or Rocky", "Iron magma", "—", 110_381, 589_240),
-        new("Metal-bearing ground", "Iridium", "Metal-rich", "High-metal-content", "None required", "—", 208_463, 1_038_104),
-        new("Metal-bearing ground", "Rhodplumsite", "Metal-rich", "High-metal-content", "None required", "Do not expect alongside Platinum", 187_921, 826_249),
-        new("Metal-bearing ground", "Helium", "High-metal-content", "Metal-rich, Rocky, or Rocky ice", "CO₂ geysers, Ammonia geysers, Methane geysers, Nitrogen geysers, Helium geysers, or Silicate-vapour geysers", "—", 102_861, 591_360),
-        new("Metal-bearing ground", "Platinum", "Metal-rich", "High-metal-content", "None required", "—", 70_998, 333_030),
-        new("Metal-bearing ground", "Osmium", "High-metal-content", "Metal-rich", "Iron magma", "—", 56_471, 273_000),
-        new("Metal-bearing ground", "Gold", "Metal-rich or High-metal-content", "Rocky", "None required", "—", 48_005, 282_678),
-        new("Metal-bearing ground", "Silver", "High-metal-content", "Metal-rich or Rocky", "None required", "—", 37_743, 219_318),
-        new("Metal-bearing ground", "Samarium", "Metal-rich or High-metal-content", "Rocky", "None required", "—", 28_362, 154_266),
-        new("Metal-bearing ground", "Tantalum", "High-metal-content", "Metal-rich", "None required", "—", 14_360, 15_582),
-        new("Metal-bearing ground", "Thorium", "High-metal-content", "Metal-rich or Rocky", "None required", "—", 12_297, 12_917),
-        new("Metal-bearing ground", "Uranium", "High-metal-content", "Metal-rich", "None required", "—", 7_599, 8_587),
-        new("Metal-bearing ground", "Titanium", "High-metal-content", "Metal-rich", "None required", "—", 4_800, 5_865),
-        new("Metal-bearing ground", "Haematite", "High-metal-content", "Metal-rich, Rocky, or Rocky ice", "None required", "—", 2_800, 10_044),
-        new("Metal-bearing ground", "Lithium", "High-metal-content", "Metal-rich", "None required", "—", 2_099, 2_892),
-        new("Metal-bearing ground", "Copper", "High-metal-content", "Metal-rich, Rocky, or Rocky ice", "None required", "—", 774, 1_931),
-        new("Rocky / volcanic ground", "Monazite", "Rocky", "—", "Silicate magma or Iron magma", "—", 268_661, 865_908),
-        new("Rocky / volcanic ground", "Alexandrite", "Rocky", "—", "Silicate magma or Iron magma", "—", 229_207, 714_088),
-        new("Rocky / volcanic ground", "Periclase Dunite", "Rocky", "—", "Iron magma", "White-dwarf primary (D–DX)", 204_168, 1_038_104),
-        new("Rocky / volcanic ground", "Serendibite", "Rocky", "—", "Silicate magma or Iron magma", "—", 188_438, 570_948),
-        new("Rocky / volcanic ground", "Bastnasite", "Rocky", "—", "Silicate magma or Iron magma", "—", 78_583, 531_208),
-        new("Rocky / volcanic ground", "Quartz Pyroxenite", "Rocky", "Rocky ice", "Iron magma", "—", 46_469, 312_072),
-        new("Rocky / volcanic ground", "Jadeite", "Rocky", "—", "Silicate-vapour geysers", "—", 42_770, 179_421),
-        new("Rocky / volcanic ground", "Olivine", "Rocky or Rocky ice", "—", "Silicate magma or Iron magma", "—", 31_417, 209_936),
-        new("Rocky ground", "Grandidierite", "Rocky", "—", "None required", "Trace iron in body composition", 213_547, 571_800),
-        new("Rocky ground", "Thortveitite", "Rocky", "—", "None required", "Trace yttrium in body composition", 203_892, 1_038_104),
-        new("Rocky ground", "Palladium", "Rocky", "Metal-rich, High-metal-content, or Rocky ice", "None required", "—", 52_167, 302_136),
-        new("Rocky ground", "Magnesite", "Rocky", "—", "None required", "—", 38_198, 255_880),
-        new("Rocky ground", "Uraninite", "Rocky", "—", "None required", "—", 3_006, 17_166),
-        new("Icy ground", "Low Temperature Diamonds", "Icy", "Rocky or Rocky ice", "None required", "—", 130_184, 384_562),
-        new("Icy ground", "Helium-3", "Icy", "—", "None required", "White-dwarf primary (D–DX)", 96_223, 553_040),
-        new("Icy ground", "Tritium", "Icy", "—", "None required", "—", 53_311, 61_894),
-        new("Icy ground", "Deuterium", "Icy", "Rocky or Rocky ice", "None required", "—", 40_762, 273_368),
-        new("Icy ground", "Methanol Monohydrate Crystals", "Rocky ice", "Icy", "None required", "—", 2_525, 3_794),
-        new("Icy ground", "Water", "Icy", "Rocky ice", "None required", "—", 496, 2_964),
+        new("Volcanic gemstones", "Diamond", MetalRichBodyType, "High-metal-content, Rocky, or Rocky ice", SilicateOrIronMagma, "—", 134_784, 720_648),
+        new("Volcanic gemstones", "Sapphire", MetalRichBodyType, "High-metal-content or Rocky", IronMagma, "—", 128_050, 648_352),
+        new("Volcanic gemstones", "Ruby", MetalRichBodyType, "High-metal-content or Rocky", IronMagma, "—", 110_381, 589_240),
+        new(MetalBearingGround, "Iridium", MetalRichBodyType, HighMetalContentBodyType, NoGeologyRequired, "—", 208_463, 1_038_104),
+        new(MetalBearingGround, "Rhodplumsite", MetalRichBodyType, HighMetalContentBodyType, NoGeologyRequired, "Do not expect alongside Platinum", 187_921, 826_249),
+        new(MetalBearingGround, "Helium", HighMetalContentBodyType, "Metal-rich, Rocky, or Rocky ice", "CO₂ geysers, Ammonia geysers, Methane geysers, Nitrogen geysers, Helium geysers, or Silicate-vapour geysers", "—", 102_861, 591_360),
+        new(MetalBearingGround, "Platinum", MetalRichBodyType, HighMetalContentBodyType, NoGeologyRequired, "—", 70_998, 333_030),
+        new(MetalBearingGround, "Osmium", HighMetalContentBodyType, MetalRichBodyType, IronMagma, "—", 56_471, 273_000),
+        new(MetalBearingGround, "Gold", "Metal-rich or High-metal-content", RockyBodyType, NoGeologyRequired, "—", 48_005, 282_678),
+        new(MetalBearingGround, "Silver", HighMetalContentBodyType, "Metal-rich or Rocky", NoGeologyRequired, "—", 37_743, 219_318),
+        new(MetalBearingGround, "Samarium", "Metal-rich or High-metal-content", RockyBodyType, NoGeologyRequired, "—", 28_362, 154_266),
+        new(MetalBearingGround, "Tantalum", HighMetalContentBodyType, MetalRichBodyType, NoGeologyRequired, "—", 14_360, 15_582),
+        new(MetalBearingGround, "Thorium", HighMetalContentBodyType, "Metal-rich or Rocky", NoGeologyRequired, "—", 12_297, 12_917),
+        new(MetalBearingGround, "Uranium", HighMetalContentBodyType, MetalRichBodyType, NoGeologyRequired, "—", 7_599, 8_587),
+        new(MetalBearingGround, "Titanium", HighMetalContentBodyType, MetalRichBodyType, NoGeologyRequired, "—", 4_800, 5_865),
+        new(MetalBearingGround, "Haematite", HighMetalContentBodyType, "Metal-rich, Rocky, or Rocky ice", NoGeologyRequired, "—", 2_800, 10_044),
+        new(MetalBearingGround, "Lithium", HighMetalContentBodyType, MetalRichBodyType, NoGeologyRequired, "—", 2_099, 2_892),
+        new(MetalBearingGround, "Copper", HighMetalContentBodyType, "Metal-rich, Rocky, or Rocky ice", NoGeologyRequired, "—", 774, 1_931),
+        new(RockyVolcanicGround, "Monazite", RockyBodyType, "—", SilicateOrIronMagma, "—", 268_661, 865_908),
+        new(RockyVolcanicGround, "Alexandrite", RockyBodyType, "—", SilicateOrIronMagma, "—", 229_207, 714_088),
+        new(RockyVolcanicGround, "Periclase Dunite", RockyBodyType, "—", IronMagma, "White-dwarf primary (D–DX)", 204_168, 1_038_104),
+        new(RockyVolcanicGround, "Serendibite", RockyBodyType, "—", SilicateOrIronMagma, "—", 188_438, 570_948),
+        new(RockyVolcanicGround, "Bastnasite", RockyBodyType, "—", SilicateOrIronMagma, "—", 78_583, 531_208),
+        new(RockyVolcanicGround, "Quartz Pyroxenite", RockyBodyType, RockyIceBodyType, IronMagma, "—", 46_469, 312_072),
+        new(RockyVolcanicGround, "Jadeite", RockyBodyType, "—", "Silicate-vapour geysers", "—", 42_770, 179_421),
+        new(RockyVolcanicGround, "Olivine", "Rocky or Rocky ice", "—", SilicateOrIronMagma, "—", 31_417, 209_936),
+        new(RockyGround, "Grandidierite", RockyBodyType, "—", NoGeologyRequired, "Trace iron in body composition", 213_547, 571_800),
+        new(RockyGround, "Thortveitite", RockyBodyType, "—", NoGeologyRequired, "Trace yttrium in body composition", 203_892, 1_038_104),
+        new(RockyGround, "Palladium", RockyBodyType, "Metal-rich, High-metal-content, or Rocky ice", NoGeologyRequired, "—", 52_167, 302_136),
+        new(RockyGround, "Magnesite", RockyBodyType, "—", NoGeologyRequired, "—", 38_198, 255_880),
+        new(RockyGround, "Uraninite", RockyBodyType, "—", NoGeologyRequired, "—", 3_006, 17_166),
+        new(IcyGround, LowTemperatureDiamonds, "Icy", "Rocky or Rocky ice", NoGeologyRequired, "—", 130_184, 384_562),
+        new(IcyGround, "Helium-3", "Icy", "—", NoGeologyRequired, "White-dwarf primary (D–DX)", 96_223, 553_040),
+        new(IcyGround, "Tritium", "Icy", "—", NoGeologyRequired, "—", 53_311, 61_894),
+        new(IcyGround, "Deuterium", "Icy", "Rocky or Rocky ice", NoGeologyRequired, "—", 40_762, 273_368),
+        new(IcyGround, MethanolMonohydrateCrystals, RockyIceBodyType, "Icy", NoGeologyRequired, "—", 2_525, 3_794),
+        new(IcyGround, "Water", "Icy", RockyIceBodyType, NoGeologyRequired, "—", 496, 2_964),
     ];
 
-    public static bool TryResolve(string value, out SurfaceMiningCommodity commodity)
+    public static bool TryResolve(
+        string value,
+        [MaybeNullWhen(false)] out SurfaceMiningCommodity commodity)
     {
         var normalized = value.Trim();
         if (Aliases.TryGetValue(normalized, out var canonical))
@@ -90,10 +112,10 @@ public static class SurfaceMiningCommodityCatalog
         return new SurfaceMiningCommodity(
             Categories[reference.Material],
             reference.Material,
-            bodyTypes.Contains("High-metal-content", StringComparison.OrdinalIgnoreCase),
-            bodyTypes.Contains("Metal-rich", StringComparison.OrdinalIgnoreCase),
-            ContainsBodyType(bodyTypes, "Rocky"),
-            bodyTypes.Contains("Rocky ice", StringComparison.OrdinalIgnoreCase),
+            bodyTypes.Contains(HighMetalContentBodyType, StringComparison.OrdinalIgnoreCase),
+            bodyTypes.Contains(MetalRichBodyType, StringComparison.OrdinalIgnoreCase),
+            ContainsBodyType(bodyTypes, RockyBodyType),
+            bodyTypes.Contains(RockyIceBodyType, StringComparison.OrdinalIgnoreCase),
             ContainsBodyType(bodyTypes, "Icy"),
             reference.AverageGalacticPrice,
             reference.PeakSellPrice,
@@ -102,63 +124,63 @@ public static class SurfaceMiningCommodityCatalog
 
     private static bool ContainsBodyType(string value, string bodyType)
     {
-        var searchable = bodyType.Equals("Rocky", StringComparison.OrdinalIgnoreCase)
-            ? value.Replace("Rocky ice", string.Empty, StringComparison.OrdinalIgnoreCase)
+        var searchable = bodyType.Equals(RockyBodyType, StringComparison.OrdinalIgnoreCase)
+            ? value.Replace(RockyIceBodyType, string.Empty, StringComparison.OrdinalIgnoreCase)
             : value;
         return searchable.Split([',', ' '], StringSplitOptions.RemoveEmptyEntries)
             .Any(token => token.Equals(bodyType, StringComparison.OrdinalIgnoreCase));
     }
 
-    private static readonly IReadOnlyDictionary<string, string> Aliases =
+    private static readonly Dictionary<string, string> Aliases =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            ["Low Temp Diamonds"] = "Low Temperature Diamonds",
-            ["Methanol Crystals"] = "Methanol Monohydrate Crystals",
+            ["Low Temp Diamonds"] = LowTemperatureDiamonds,
+            ["Methanol Crystals"] = MethanolMonohydrateCrystals,
         };
 
-    private static readonly IReadOnlyDictionary<string, string> Categories =
+    private static readonly Dictionary<string, string> Categories =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            ["Helium"] = "Chemicals",
-            ["Helium-3"] = "Chemicals",
-            ["Tritium"] = "Chemicals",
-            ["Water"] = "Chemicals",
-            ["Iridium"] = "Metals",
-            ["Platinum"] = "Metals",
-            ["Palladium"] = "Metals",
-            ["Gold"] = "Metals",
-            ["Osmium"] = "Metals",
-            ["Silver"] = "Metals",
-            ["Samarium"] = "Metals",
-            ["Tantalum"] = "Metals",
-            ["Thorium"] = "Metals",
-            ["Uranium"] = "Metals",
-            ["Titanium"] = "Metals",
-            ["Lithium"] = "Metals",
-            ["Copper"] = "Metals",
-            ["Diamond"] = "Minerals",
-            ["Sapphire"] = "Minerals",
-            ["Ruby"] = "Minerals",
-            ["Rhodplumsite"] = "Minerals",
-            ["Monazite"] = "Minerals",
-            ["Alexandrite"] = "Minerals",
-            ["Periclase Dunite"] = "Minerals",
-            ["Serendibite"] = "Minerals",
-            ["Bastnasite"] = "Minerals",
-            ["Quartz Pyroxenite"] = "Minerals",
-            ["Jadeite"] = "Minerals",
-            ["Olivine"] = "Minerals",
-            ["Grandidierite"] = "Minerals",
-            ["Thortveitite"] = "Minerals",
-            ["Low Temperature Diamonds"] = "Minerals",
-            ["Deuterium"] = "Minerals",
-            ["Magnesite"] = "Minerals",
-            ["Uraninite"] = "Minerals",
-            ["Haematite"] = "Minerals",
-            ["Methanol Monohydrate Crystals"] = "Minerals",
+            ["Helium"] = ChemicalsCategory,
+            ["Helium-3"] = ChemicalsCategory,
+            ["Tritium"] = ChemicalsCategory,
+            ["Water"] = ChemicalsCategory,
+            ["Iridium"] = MetalsCategory,
+            ["Platinum"] = MetalsCategory,
+            ["Palladium"] = MetalsCategory,
+            ["Gold"] = MetalsCategory,
+            ["Osmium"] = MetalsCategory,
+            ["Silver"] = MetalsCategory,
+            ["Samarium"] = MetalsCategory,
+            ["Tantalum"] = MetalsCategory,
+            ["Thorium"] = MetalsCategory,
+            ["Uranium"] = MetalsCategory,
+            ["Titanium"] = MetalsCategory,
+            ["Lithium"] = MetalsCategory,
+            ["Copper"] = MetalsCategory,
+            ["Diamond"] = MineralsCategory,
+            ["Sapphire"] = MineralsCategory,
+            ["Ruby"] = MineralsCategory,
+            ["Rhodplumsite"] = MineralsCategory,
+            ["Monazite"] = MineralsCategory,
+            ["Alexandrite"] = MineralsCategory,
+            ["Periclase Dunite"] = MineralsCategory,
+            ["Serendibite"] = MineralsCategory,
+            ["Bastnasite"] = MineralsCategory,
+            ["Quartz Pyroxenite"] = MineralsCategory,
+            ["Jadeite"] = MineralsCategory,
+            ["Olivine"] = MineralsCategory,
+            ["Grandidierite"] = MineralsCategory,
+            ["Thortveitite"] = MineralsCategory,
+            [LowTemperatureDiamonds] = MineralsCategory,
+            ["Deuterium"] = MineralsCategory,
+            ["Magnesite"] = MineralsCategory,
+            ["Uraninite"] = MineralsCategory,
+            ["Haematite"] = MineralsCategory,
+            [MethanolMonohydrateCrystals] = MineralsCategory,
         };
 
-    private static readonly IReadOnlyDictionary<string, string> Colors =
+    private static readonly Dictionary<string, string> Colors =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["Helium"] = "#8EEBFF",
@@ -189,7 +211,7 @@ public static class SurfaceMiningCommodityCatalog
             ["Grandidierite"] = "#00A7A7",
             ["Serendibite"] = "#5E35B1",
             ["Bastnasite"] = "#F57C00",
-            ["Low Temperature Diamonds"] = "#80DEEA",
+            [LowTemperatureDiamonds] = "#80DEEA",
             ["Quartz Pyroxenite"] = "#CE93D8",
             ["Deuterium"] = "#42A5F5",
             ["Magnesite"] = "#F5F5DC",
@@ -197,15 +219,15 @@ public static class SurfaceMiningCommodityCatalog
             ["Jadeite"] = "#00C853",
             ["Uraninite"] = "#607D8B",
             ["Haematite"] = "#A44A3F",
-            ["Methanol Monohydrate Crystals"] = "#B2EBF2",
+            [MethanolMonohydrateCrystals] = "#B2EBF2",
         };
 
     public static IReadOnlyList<SurfaceMiningCommodity> All { get; } =
         HuntReferences.Select(CreateCommodity)
             .OrderBy(commodity => commodity.Category switch
             {
-                "Chemicals" => 0,
-                "Metals" => 1,
+                ChemicalsCategory => 0,
+                MetalsCategory => 1,
                 _ => 2,
             })
             .ThenByDescending(commodity => commodity.MaximumSellPrice)

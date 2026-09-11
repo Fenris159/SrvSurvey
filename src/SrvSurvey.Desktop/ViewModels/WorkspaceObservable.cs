@@ -29,7 +29,11 @@ internal sealed class WorkspaceCommand(Action execute, Func<bool>? enabled = nul
 
 internal sealed class WorkspaceParameterCommand(Action<object?> execute) : ICommand
 {
-    public event EventHandler? CanExecuteChanged { add { } remove { } }
+    public event EventHandler? CanExecuteChanged
+    {
+        add { /* This command is always enabled. */ }
+        remove { /* This command is always enabled. */ }
+    }
     public bool CanExecute(object? parameter) => true;
     public void Execute(object? parameter) => execute(parameter);
 }
@@ -76,10 +80,15 @@ internal sealed class WorkspaceTableSorter
         return ordered.ToArray();
     }
 
-    public string Indicator(string requested) =>
-        propertyName.Equals(requested, StringComparison.Ordinal)
-            ? descending ? "↓" : "↑"
-            : string.Empty;
+    public string Indicator(string requested)
+    {
+        if (!propertyName.Equals(requested, StringComparison.Ordinal))
+        {
+            return string.Empty;
+        }
+
+        return descending ? "↓" : "↑";
+    }
 
     private sealed class SortValueComparer : IComparer<object?>
     {

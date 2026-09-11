@@ -4124,6 +4124,60 @@ public sealed class MainWindowViewModelTests
         }
     }
 
+    [Fact]
+    public async Task MineMapContextRejectsInvalidSurfaceCoordinates()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "SrvSurvey-invalid-mine-map-position-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            Directory.CreateDirectory(root);
+            await File.WriteAllTextAsync(
+                Path.Combine(root, "Journal.2026-09-11T010000.01.log"),
+                "{\"timestamp\":\"2026-09-11T01:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + "{\"timestamp\":\"2026-09-11T01:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Test System\",\"SystemAddress\":42,\"StarPos\":[1,2,3],\"Body\":\"Test System 1\",\"BodyID\":7,\"BodyType\":\"Planet\"}\n"
+                    + "{\"timestamp\":\"2026-09-11T01:00:02Z\",\"event\":\"Scan\",\"ScanType\":\"Detailed\",\"SystemAddress\":42,\"BodyName\":\"Test System 1\",\"BodyID\":7,\"PlanetClass\":\"Rocky body\",\"Landable\":true,\"Radius\":1000}\n");
+            await File.WriteAllTextAsync(
+                Path.Combine(root, StatusFileReader.FileName),
+                "{\"event\":\"Status\",\"Flags\":69206016,\"Flags2\":0,\"Latitude\":1,\"Longitude\":2,\"Heading\":0,\"Altitude\":0,\"BodyName\":\"Test System 1\",\"PlanetRadius\":1000}");
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "profile"),
+                Path.Combine(root, "cache"),
+                []);
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                root,
+                builder => builder.WithAppDataPaths(paths));
+
+            await viewModel.RefreshAsync();
+            var statusField = typeof(MainWindowViewModel).GetField(
+                "latestStatus",
+                System.Reflection.BindingFlags.Instance
+                    | System.Reflection.BindingFlags.NonPublic);
+            Assert.NotNull(statusField);
+            statusField.SetValue(viewModel, new EliteStatus
+            {
+                Flags = (StatusFlags)69206016,
+                Latitude = 91,
+                Longitude = 2,
+                BodyName = "Test System 1",
+                PlanetRadius = 1000,
+            });
+            var createContext = typeof(MainWindowViewModel).GetMethod(
+                "CreateMineMapCommandContext",
+                System.Reflection.BindingFlags.Instance
+                    | System.Reflection.BindingFlags.NonPublic);
+            Assert.NotNull(createContext);
+
+            Assert.Null(createContext.Invoke(viewModel, null));
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+    }
+
     private static Task WriteSurfaceStatusAsync(
         string path,
         double latitude,

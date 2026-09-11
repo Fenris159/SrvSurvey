@@ -131,7 +131,7 @@ public sealed class BookmarkCatalog
     public event EventHandler? Changed;
     private IReadOnlyList<string>? categories;
     public IReadOnlyList<string> Categories => categories ??= ReadCategories();
-    private string[] ReadCategories() => [.. BookmarkCategoryCatalog.All];
+    private static string[] ReadCategories() => [.. BookmarkCategoryCatalog.All];
     public IReadOnlyList<GalacticBookmark> Filter(string? category, string? query) => items
         .Where(b => (string.IsNullOrEmpty(category) || category == "All" || b.HasCategory(category))
             && (string.IsNullOrWhiteSpace(query) || $"{b.System} {b.DisplayBody} {b.DisplayRing} {b.Notes} {b.Minerals} {b.DisplayDetails}".Contains(query, StringComparison.OrdinalIgnoreCase)))
@@ -140,7 +140,7 @@ public sealed class BookmarkCatalog
     public void Save(GalacticBookmark bookmark)
     {
         Validate(bookmark);
-        var categories = BookmarkCategoryCatalog.Normalize(
+        var normalizedCategories = BookmarkCategoryCatalog.Normalize(
             bookmark.CategoryAssignments,
             bookmark.Category);
         var location = GalacticBookmark.SplitBodyAndRing(bookmark.Body, bookmark.Ring);
@@ -149,8 +149,8 @@ public sealed class BookmarkCatalog
             System = bookmark.System.Trim(),
             Body = location.Body,
             Ring = location.Ring,
-            Category = categories[0],
-            CategoryAssignments = categories,
+            Category = normalizedCategories[0],
+            CategoryAssignments = normalizedCategories,
         }).ToList();
         Persist(next);
     }
@@ -195,21 +195,30 @@ public sealed class BookmarkCatalog
     };
     public static List<GalacticBookmark> Parse(string json)
     {
-        using var document = JsonDocument.Parse(json);
-        if (document.RootElement.ValueKind != JsonValueKind.Array) throw new JsonException("Expected a bookmark list.");
-        var parsed = new List<GalacticBookmark>();
-        foreach (var row in document.RootElement.EnumerateArray())
+        try
         {
-            if (row.ValueKind != JsonValueKind.Object) throw new JsonException("Expected a bookmark object.");
-            if (row.TryGetProperty("system", out _))
+            using var document = JsonDocument.Parse(json);
+            if (document.RootElement.ValueKind != JsonValueKind.Array) throw new JsonException("Expected a bookmark list.");
+            var parsed = new List<GalacticBookmark>();
+            foreach (var row in document.RootElement.EnumerateArray())
             {
-                parsed.Add(ReadLegacyBookmark(row));
+                if (row.ValueKind != JsonValueKind.Object) throw new JsonException("Expected a bookmark object.");
+                if (row.TryGetProperty("system", out _))
+                {
+                    parsed.Add(ReadLegacyBookmark(row));
+                }
+                else parsed.Add(row.Deserialize<GalacticBookmark>(JsonOptions)
+                    ?? throw new JsonException("Empty bookmark."));
             }
-            else parsed.Add(row.Deserialize<GalacticBookmark>(JsonOptions)
-                ?? throw new JsonException("Empty bookmark."));
+            foreach (var bookmark in parsed) Validate(bookmark);
+            return parsed;
         }
-        foreach (var bookmark in parsed) Validate(bookmark);
-        return parsed;
+        catch (ArgumentOutOfRangeException exception)
+        {
+            throw new JsonException(
+                "A bookmark contains invalid surface coordinates.",
+                exception);
+        }
     }
     private static GalacticBookmark ReadLegacyBookmark(JsonElement row)
     {
@@ -236,7 +245,7 @@ public sealed class BookmarkCatalog
     {
         if (bookmark is null || string.IsNullOrWhiteSpace(bookmark.System)
             || bookmark.Rating is < 0 or > 5 || bookmark.Body is null || bookmark.Ring is null || bookmark.Notes is null || bookmark.Minerals is null || bookmark.Overlaps is null || bookmark.ResourceExtractionSites is null || bookmark.Screenshots is null || bookmark.Screenshots.Any(string.IsNullOrWhiteSpace) || bookmark.LastMined is null || bookmark.Hotspot is null || bookmark.AverageYield is null)
-            throw new JsonException("Each bookmark needs a system, category and rating between 0 and 5.");
+            throw new JsonException("Each bookmark needs a system and rating between 0 and 5.");
         _ = BookmarkCategoryCatalog.Normalize(
             bookmark.CategoryAssignments,
             bookmark.Category);

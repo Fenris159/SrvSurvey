@@ -171,8 +171,8 @@ public sealed class MineMapOverlayCoordinator : IDisposable
         var scale = screen.Scaling;
         var mapWidth = Math.Max(1, (int)Math.Ceiling(mapWindow.Bounds.Width * scale));
         var mapHeight = Math.Max(1, (int)Math.Ceiling(mapWindow.Bounds.Height * scale));
-        var width = Math.Max(1, (int)Math.Ceiling(controls.Width * scale));
-        var height = Math.Max(1, (int)Math.Ceiling(controls.Height * scale));
+        var width = Math.Max(1, (int)Math.Ceiling(controls.Bounds.Width * scale));
+        var height = Math.Max(1, (int)Math.Ceiling(controls.Bounds.Height * scale));
         var position = new PixelPoint(
             mapWindow.Position.X + mapWidth - width - (int)Math.Ceiling(inset * scale),
             mapWindow.Position.Y + mapHeight - height - (int)Math.Ceiling(inset * scale));

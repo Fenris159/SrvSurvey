@@ -85,7 +85,7 @@ public sealed class MineMapViewModelTests
         Assert.Equal("↑", viewModel.SurfaceHuntSortIndicators["PeakSellPriceValue"]);
         Assert.Equal(
             1_931,
-            viewModel.SurfaceHuntRows.First().PeakSellPriceValue);
+            viewModel.SurfaceHuntRows[0].PeakSellPriceValue);
         viewModel.SortHotspotsCommand.Execute("Name");
         Assert.Equal("↓", viewModel.HotspotSortIndicators["Name"]);
     }
@@ -284,9 +284,35 @@ public sealed class MineMapViewModelTests
         Assert.Contains(entries, entry => entry.Id == "on-foot");
         Assert.Contains(entries, entry => entry.Name == "Python");
         Assert.Contains(entries, entry => entry.Name == "Anaconda");
+        Assert.Contains(entries, entry => entry.Id == "unknown");
         Assert.DoesNotContain(entries, entry => entry.Id == "testbuggy");
         Assert.DoesNotContain(entries, entry => entry.Id == "lander01");
         Assert.DoesNotContain(entries, entry => entry.Group == "Small");
+    }
+
+    [Fact]
+    public void RemovingLastMatchingSurveyNotifiesFilterFallbacks()
+    {
+        using var directory = new TemporaryDirectory();
+        SeedSurvey(directory.Path);
+        var catalog = new BookmarkCatalog(directory.Path);
+        using var viewModel = new MineMapViewModel(
+            directory.Path,
+            new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
+            _ => { },
+            bookmarkCatalog: catalog);
+        var survey = Assert.Single(viewModel.FilteredSurveys);
+        viewModel.SelectedContains = "Ruby";
+        viewModel.SelectedBodyType = "Rocky body";
+        var changed = new List<string?>();
+        viewModel.PropertyChanged += (_, eventArgs) => changed.Add(eventArgs.PropertyName);
+
+        catalog.Delete(survey.Id);
+
+        Assert.Equal("All", viewModel.SelectedContains);
+        Assert.Equal("All", viewModel.SelectedBodyType);
+        Assert.Contains(nameof(viewModel.SelectedContains), changed);
+        Assert.Contains(nameof(viewModel.SelectedBodyType), changed);
     }
 
     [Fact]

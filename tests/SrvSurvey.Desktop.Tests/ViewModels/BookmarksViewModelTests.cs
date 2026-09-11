@@ -84,4 +84,32 @@ public sealed class BookmarksViewModelTests
         }
         finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
     }
+
+    [Fact]
+    public void CatalogChangesRehydrateEverySelectedEditorField()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        try
+        {
+            var vm = new BookmarksViewModel(directory);
+            vm.System = "Wille";
+            vm.Minerals = "Ruby";
+            vm.Hotspot = "Signal 4";
+            vm.SaveCommand.Execute(null);
+            var original = Assert.Single(vm.Items);
+            vm.Selected = original;
+
+            vm.Catalog!.Save(original with
+            {
+                Minerals = "Gold",
+                Hotspot = "Signal 5",
+                Notes = "Updated externally",
+            });
+
+            Assert.Equal("Gold", vm.Minerals);
+            Assert.Equal("Signal 5", vm.Hotspot);
+            Assert.Equal("Updated externally", vm.Notes);
+        }
+        finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+    }
 }

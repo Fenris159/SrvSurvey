@@ -109,32 +109,16 @@ public sealed class MineMapControl : Control
         var zone = ZoneBrush ?? Brushes.Gold;
         var gridPen = new Pen(grid, 1.15);
 
-        using (context.PushClip(Bounds))
+        var localBounds = new Rect(Bounds.Size);
+        using (context.PushClip(localBounds))
         {
-            foreach (var ring in CreateDistanceRings(radiusPixels, zoom))
-            {
-                context.DrawEllipse(null, gridPen, center, ring.RadiusPixels, ring.RadiusPixels);
-                DrawText(
-                    context,
-                    ring.Kilometers.ToString("0.##", CultureInfo.InvariantCulture),
-                    new Point(center.X + 5, center.Y - ring.RadiusPixels + 3),
-                    text,
-                    10);
-            }
-
-            foreach (var heading in Enumerable.Range(0, 8).Select(index => index * 45))
-            {
-                var radians = heading * Math.PI / 180d;
-                var edge = new Point(
-                    center.X + Math.Sin(radians) * radiusPixels,
-                    center.Y - Math.Cos(radians) * radiusPixels);
-                context.DrawLine(gridPen, center, edge);
-                var label = heading.ToString(CultureInfo.InvariantCulture) + "°";
-                var labelPoint = new Point(
-                    center.X + Math.Sin(radians) * (radiusPixels + 14) - (heading is 0 or 180 ? 8 : heading > 180 ? 22 : 0),
-                    center.Y - Math.Cos(radians) * (radiusPixels + 14) - 6);
-                DrawText(context, label, labelPoint, text, 10);
-            }
+            DrawDistanceGrid(
+                context,
+                center,
+                radiusPixels,
+                zoom,
+                gridPen,
+                text);
 
             var locationRadius = MineMapService.LocationRadiusMeters * scale;
             context.DrawEllipse(null, new Pen(zone, 2), center, locationRadius, locationRadius);
@@ -142,41 +126,131 @@ public sealed class MineMapControl : Control
             context.DrawEllipse(accent, null, center, 2.5, 2.5);
 
             var markerScale = GetMarkerScale(zoom);
-            var markerLabelScale = GetMarkerLabelScale(zoom);
-            foreach (var marker in survey.Markers)
+            DrawMarkers(
+                context,
+                survey,
+                center,
+                scale,
+                markerScale,
+                localBounds,
+                text);
+            DrawPlayer(context, survey, center, scale, markerScale, localBounds);
+        }
+    }
+
+    private static void DrawDistanceGrid(
+        DrawingContext context,
+        Point center,
+        double radiusPixels,
+        double zoom,
+        Pen gridPen,
+        IBrush text)
+    {
+        foreach (var ring in CreateDistanceRings(radiusPixels, zoom))
+        {
+            context.DrawEllipse(
+                null,
+                gridPen,
+                center,
+                ring.RadiusPixels,
+                ring.RadiusPixels);
+            DrawText(
+                context,
+                ring.Kilometers.ToString("0.##", CultureInfo.InvariantCulture),
+                new Point(center.X + 5, center.Y - ring.RadiusPixels + 3),
+                text,
+                10);
+        }
+
+        foreach (var heading in Enumerable.Range(0, 8).Select(index => index * 45))
+        {
+            var radians = heading * Math.PI / 180d;
+            var edge = new Point(
+                center.X + Math.Sin(radians) * radiusPixels,
+                center.Y - Math.Cos(radians) * radiusPixels);
+            context.DrawLine(gridPen, center, edge);
+            var label = heading.ToString(CultureInfo.InvariantCulture) + "°";
+            var horizontalOffset = heading switch
             {
-                if (VisibleMaterials is { } visible && !visible.Contains(marker.Material)) continue;
-                var point = ToPoint(survey, marker.Location, center, scale);
-                if (!new Rect(Bounds.Size).Inflate(12 * markerScale).Contains(point)) continue;
-                var brush = new SolidColorBrush(ColorFor(marker.Material));
-                context.DrawEllipse(
-                    brush,
-                    new Pen(text, 0.75 * markerScale),
-                    point,
-                    5 * markerScale,
-                    5 * markerScale);
-                DrawText(
-                    context,
-                    marker.Material,
-                    new Point(point.X + 8 * markerScale, point.Y - 8 * markerScale),
-                    text,
-                    10 * markerLabelScale);
+                0 or 180 => 8,
+                > 180 => 22,
+                _ => 0,
+            };
+            var labelPoint = new Point(
+                center.X + Math.Sin(radians) * (radiusPixels + 14)
+                    - horizontalOffset,
+                center.Y - Math.Cos(radians) * (radiusPixels + 14) - 6);
+            DrawText(context, label, labelPoint, text, 10);
+        }
+    }
+
+    private void DrawMarkers(
+        DrawingContext context,
+        MineMapSurvey survey,
+        Point center,
+        double scale,
+        double markerScale,
+        Rect localBounds,
+        IBrush text)
+    {
+        var markerLabelScale = GetMarkerLabelScale(ViewportZoom);
+        foreach (var marker in survey.Markers)
+        {
+            if (VisibleMaterials is { } visible
+                && !visible.Contains(marker.Material))
+            {
+                continue;
             }
 
-            if (PlayerLocation is { } player)
+            var point = ToPoint(survey, marker.Location, center, scale);
+            if (!localBounds.Inflate(12 * markerScale).Contains(point))
             {
-                var point = ToPoint(survey, player, center, scale);
-                if (new Rect(Bounds.Size).Inflate(12).Contains(point))
-                {
-                    DrawCommander(
-                        context,
-                        point,
-                        PlayerHeading,
-                        PlayerBrush ?? Brushes.LimeGreen,
-                        markerScale);
-                }
+                continue;
             }
+
+            var brush = new SolidColorBrush(ColorFor(marker.Material));
+            context.DrawEllipse(
+                brush,
+                new Pen(text, 0.75 * markerScale),
+                point,
+                5 * markerScale,
+                5 * markerScale);
+            DrawText(
+                context,
+                marker.Material,
+                new Point(
+                    point.X + 8 * markerScale,
+                    point.Y - 8 * markerScale),
+                text,
+                10 * markerLabelScale);
         }
+    }
+
+    private void DrawPlayer(
+        DrawingContext context,
+        MineMapSurvey survey,
+        Point center,
+        double scale,
+        double markerScale,
+        Rect localBounds)
+    {
+        if (PlayerLocation is not { } player)
+        {
+            return;
+        }
+
+        var point = ToPoint(survey, player, center, scale);
+        if (!localBounds.Inflate(12).Contains(point))
+        {
+            return;
+        }
+
+        DrawCommander(
+            context,
+            point,
+            PlayerHeading,
+            PlayerBrush ?? Brushes.LimeGreen,
+            markerScale);
     }
 
     public static Color ColorFor(string material)

@@ -232,14 +232,17 @@ public sealed class BookmarksViewModel : WorkspaceObservable
         var selectedId = selected?.Id;
         if (selectedId is { } id)
         {
-            selected = catalog?.Items.FirstOrDefault(candidate => candidate.Id == id);
+            Selected = catalog?.Items.FirstOrDefault(candidate => candidate.Id == id);
         }
         Changed(nameof(All));
         Changed(nameof(Items));
         Changed(nameof(Categories));
-        Changed(nameof(Selected));
-        Changed(nameof(SelectedScreenshots));
-        Changed(nameof(IsSurfaceMiningMap));
+        if (selectedId is null)
+        {
+            Changed(nameof(Selected));
+            Changed(nameof(SelectedScreenshots));
+            Changed(nameof(IsSurfaceMiningMap));
+        }
     }
 
     private static MineMapRating ParseSurfaceRating(string value) =>

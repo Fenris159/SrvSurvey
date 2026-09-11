@@ -20,6 +20,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     private readonly WorkspaceTableSorter surfaceHuntSorter = new();
     private readonly IReadOnlyList<SurfaceMiningCommodityRowViewModel> hotspotRows;
     private readonly IReadOnlyList<SurfaceMiningHuntRowViewModel> surfaceHuntRows;
+    private IReadOnlyList<SurfaceMiningCommodityRowViewModel> miningReferenceRows = [];
     private MineMapCommandContext? context;
     private EliteStatus? status;
     private IReadOnlyList<MineMapSurveyRowViewModel> filteredSurveys = [];
@@ -60,6 +61,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
                 selectedReferenceCommodities.Contains(commodity.Name),
                 OnMiningReferenceSelectionChanged))
             .ToArray();
+        miningReferenceRows = ReadMiningReferenceRows();
         surfaceHuntRows = SurfaceMiningCommodityCatalog.HuntReferences
             .Select(reference => new SurfaceMiningHuntRowViewModel(reference))
             .ToArray();
@@ -141,9 +143,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         surfaceHuntSorter.Apply(surfaceHuntRows);
 
     public IReadOnlyList<SurfaceMiningCommodityRowViewModel> MiningReferenceRows =>
-        hotspotRows.Where(row => row.IsInOverlay)
-            .OrderBy(row => row.Name, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
+        miningReferenceRows;
 
     public bool ShouldShowMiningReference => MiningReferenceRows.Count > 0;
 
@@ -169,7 +169,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         ? $"{survey.SystemName} · {survey.BodyName} · {survey.MineralAmount} mineral amount · {survey.Density} density"
         : "Stand on a mining-location border, face its center, and send .mining <heading> <number> <amount>/<density>, i.e. .mining 120 4 high/low.";
 
-    public string LiveMapCommandHelp =>
+    public static string LiveMapCommandHelp =>
         "Stand on the mining-location border and face its center, then use .mining <heading> <number> <amount>/<density>, i.e. .mining 120 4 high/low.";
 
     public string LiveMapLocation => ActiveSurvey is { } survey
@@ -189,9 +189,19 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
 
     public string SelectedMapDensity => ActiveSurvey?.Density.ToString() ?? "—";
 
-    public string MarkerCountText => ActiveSurvey is { } survey
-        ? $"{survey.Markers.Count:N0} mapped deposit{(survey.Markers.Count == 1 ? string.Empty : "s")}"
-        : "No survey selected";
+    public string MarkerCountText
+    {
+        get
+        {
+            if (ActiveSurvey is not { } survey)
+            {
+                return "No survey selected";
+            }
+
+            var suffix = survey.Markers.Count == 1 ? string.Empty : "s";
+            return $"{survey.Markers.Count:N0} mapped deposit{suffix}";
+        }
+    }
 
     public SurfaceCoordinate? PlayerLocation => IsActiveSurveyCurrentContext
         ? context?.PlayerLocation
@@ -262,10 +272,16 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
                 + exception.Message;
         }
 
+        miningReferenceRows = ReadMiningReferenceRows();
         Changed(nameof(HotspotRows));
         Changed(nameof(MiningReferenceRows));
         Changed(nameof(ShouldShowMiningReference));
     }
+
+    private SurfaceMiningCommodityRowViewModel[] ReadMiningReferenceRows() =>
+        hotspotRows.Where(row => row.IsInOverlay)
+            .OrderBy(row => row.Name, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
 
     private void SavePreferences() => settingsStore.Save(new MineMapPreferences(
         OnlyShowWhileOnGround,
@@ -330,10 +346,10 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
             nextContext,
             allowCommands,
             CancellationToken.None);
-        foreach (var result in results)
+        foreach (var message in results.Select(result => result.Message))
         {
-            StatusText = result.Message;
-            notify(result.Message);
+            StatusText = message;
+            notify(message);
         }
         if (results.Any(result => result.Succeeded && result.Survey is not null))
         {
@@ -438,8 +454,8 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
             .Where(value => !string.IsNullOrWhiteSpace(value))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)];
-        if (!ContainsOptions.Contains(SelectedContains, StringComparer.OrdinalIgnoreCase)) selectedContains = "All";
-        if (!BodyTypeOptions.Contains(SelectedBodyType, StringComparer.OrdinalIgnoreCase)) selectedBodyType = "All";
+        if (!ContainsOptions.Contains(SelectedContains, StringComparer.OrdinalIgnoreCase)) SelectedContains = "All";
+        if (!BodyTypeOptions.Contains(SelectedBodyType, StringComparer.OrdinalIgnoreCase)) SelectedBodyType = "All";
         Changed(nameof(ContainsOptions));
         Changed(nameof(BodyTypeOptions));
         RefreshMarkerFilters();

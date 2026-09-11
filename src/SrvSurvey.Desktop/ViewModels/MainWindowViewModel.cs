@@ -59,6 +59,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private const string ColonisationNavigationKey = "colonisation";
     private const string DiagnosticsNavigationKey = "diagnostics";
     private const string SettingsNavigationKey = "settings";
+    private const string GuidesNavigationKey = "guides";
     private const string SurveyNavigationGroup = "survey";
     private const string NavigationNavigationGroup = "navigation";
     private const string ActivitiesNavigationGroup = "activities";
@@ -942,7 +943,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                     "Journal source and parsed state"),
                 new(SettingsNavigationKey, "Settings", "Application and integration options"),
                 new("theme", "Theme", "Application and in-game appearance"),
-                new("guides", "Guides", "Help documentation and overlay icon glossary"),
+                new(GuidesNavigationKey, "Guides", "Help documentation and overlay icon glossary"),
             ];
             selectedNavigation = NavigationItems[0];
             selectedNavigation.IsSelected = true;
@@ -968,7 +969,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             {
                 SettingsNavigationKey,
                 "theme",
-                "guides",
+                GuidesNavigationKey,
                 DiagnosticsNavigationKey,
             }
                 .Select(key => NavigationItems.Single(item => item.Key == key))
@@ -1515,7 +1516,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     public bool IsThemeSelected => SelectedNavigation?.Key == "theme"
         && !IsProfileSelected;
 
-    public bool IsGuidesSelected => SelectedNavigation?.Key == "guides"
+    public bool IsGuidesSelected => SelectedNavigation?.Key == GuidesNavigationKey
         && !IsProfileSelected;
 
     public async Task ShowProfileAsync()
@@ -1624,7 +1625,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         Guides.SelectedCategory = Guides.Categories.Single(
             category => category.Key == "surface-mining");
         SelectedNavigation = NavigationItems.Single(
-            item => item.Key == "guides");
+            item => item.Key == GuidesNavigationKey);
     }
 
     private void ShowBookmarkEditor(Guid bookmarkId)
@@ -3326,8 +3327,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
 
     private MineMapCommandContext? CreateMineMapCommandContext()
     {
-        var frontierId = activeProfileFrontierId ?? journalState.FrontierId;
-        if (string.IsNullOrWhiteSpace(frontierId)
+        var currentFrontierId = activeProfileFrontierId ?? journalState.FrontierId;
+        if (string.IsNullOrWhiteSpace(currentFrontierId)
             || string.IsNullOrWhiteSpace(journalState.SystemName)
             || journalState.SystemAddress is not > 0
             || journalState.StarPosition is not { } systemPosition
@@ -3340,10 +3341,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         var body = SystemSurvey.Snapshot.CurrentBodyId is { } bodyId
             ? SystemSurvey.Snapshot.Bodies.FirstOrDefault(candidate => candidate.BodyId == bodyId)
             : null;
-        body ??= currentStatus.BodyName is { Length: > 0 } bodyName
+        body ??= currentStatus.BodyName is { Length: > 0 } statusBodyName
             ? SystemSurvey.Snapshot.Bodies.FirstOrDefault(candidate => string.Equals(
                 candidate.Name,
-                bodyName,
+                statusBodyName,
                 StringComparison.OrdinalIgnoreCase))
             : null;
         if (body is null)
@@ -3351,18 +3352,25 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             return null;
         }
 
-        return new MineMapCommandContext(
-            frontierId,
-            activeProfileCommanderName ?? journalState.CommanderName ?? string.Empty,
-            journalState.SystemName,
-            journalState.SystemAddress.Value,
-            systemPosition,
-            body.BodyId,
-            body.Name,
-            NormalizeMineMapBodyType(body.PlanetClass),
-            body.DistanceFromArrivalLs,
-            (double)currentStatus.PlanetRadius,
-            new SurfaceCoordinate(currentStatus.Latitude, currentStatus.Longitude));
+        try
+        {
+            return new MineMapCommandContext(
+                currentFrontierId,
+                activeProfileCommanderName ?? journalState.CommanderName ?? string.Empty,
+                journalState.SystemName,
+                journalState.SystemAddress.Value,
+                systemPosition,
+                body.BodyId,
+                body.Name,
+                NormalizeMineMapBodyType(body.PlanetClass),
+                body.DistanceFromArrivalLs,
+                (double)currentStatus.PlanetRadius,
+                new SurfaceCoordinate(currentStatus.Latitude, currentStatus.Longitude));
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return null;
+        }
     }
 
     private static string NormalizeMineMapBodyType(string? planetClass) => planetClass switch

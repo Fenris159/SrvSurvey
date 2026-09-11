@@ -100,6 +100,15 @@ public static class HorizontalScrollInputBehavior
                 || (!eventArgs.KeyModifiers.HasFlag(KeyModifiers.Shift)
                     && Math.Abs(horizontalDelta) < Math.Abs(eventArgs.Delta.Y)))
             {
+                if (!eventArgs.KeyModifiers.HasFlag(KeyModifiers.Shift)
+                    && Math.Abs(eventArgs.Delta.Y) >= double.Epsilon)
+                {
+                    ForwardVerticalInputToAncestor(
+                        eventArgs.Source,
+                        -eventArgs.Delta.Y,
+                        isWheel: true,
+                        eventArgs);
+                }
                 return;
             }
 
@@ -125,6 +134,14 @@ public static class HorizontalScrollInputBehavior
             if (Math.Abs(eventArgs.Delta.X) < double.Epsilon
                 || Math.Abs(eventArgs.Delta.X) < Math.Abs(eventArgs.Delta.Y))
             {
+                if (Math.Abs(eventArgs.Delta.Y) >= double.Epsilon)
+                {
+                    ForwardVerticalInputToAncestor(
+                        eventArgs.Source,
+                        eventArgs.Delta.Y,
+                        isWheel: false,
+                        eventArgs);
+                }
                 return;
             }
 
@@ -182,9 +199,70 @@ public static class HorizontalScrollInputBehavior
             }
         }
 
+        private void ForwardVerticalInputToAncestor(
+            object? eventSource,
+            double verticalDelta,
+            bool isWheel,
+            RoutedEventArgs eventArgs)
+        {
+            if (scrollViewer.VerticalScrollBarVisibility
+                    != ScrollBarVisibility.Disabled
+                || eventSource is not Visual source)
+            {
+                return;
+            }
+
+            var viewers = (source is ScrollViewer sourceScroller
+                    ? new[] { sourceScroller }.Concat(
+                        source.GetVisualAncestors().OfType<ScrollViewer>())
+                    : source.GetVisualAncestors().OfType<ScrollViewer>())
+                .ToArray();
+            var currentIndex = Array.IndexOf(viewers, scrollViewer);
+            if (currentIndex < 0
+                || viewers.Take(currentIndex).Any(CanScrollVertically))
+            {
+                return;
+            }
+
+            var target = viewers.Skip(currentIndex + 1)
+                .FirstOrDefault(CanScrollVertically);
+            if (target is null)
+            {
+                return;
+            }
+
+            var step = 1d;
+            if (isWheel)
+            {
+                step = target.SmallChange.Height > 0
+                    ? target.SmallChange.Height
+                    : FallbackWheelStep;
+            }
+            var maximumOffset = Math.Max(
+                0,
+                target.Extent.Height - target.Viewport.Height);
+            var requestedOffset = Math.Clamp(
+                target.Offset.Y + (verticalDelta * step),
+                0,
+                maximumOffset);
+            var moved = Math.Abs(requestedOffset - target.Offset.Y)
+                >= double.Epsilon;
+            target.Offset = new Vector(target.Offset.X, requestedOffset);
+            eventArgs.Handled = moved;
+            if (eventArgs is ScrollGestureEventArgs scrollGestureEventArgs)
+            {
+                scrollGestureEventArgs.ShouldEndScrollGesture = !moved;
+            }
+        }
+
         private static bool CanScrollHorizontally(ScrollViewer candidate) =>
             candidate.HorizontalScrollBarVisibility
                 != ScrollBarVisibility.Disabled
             && candidate.Extent.Width > candidate.Viewport.Width;
+
+        private static bool CanScrollVertically(ScrollViewer candidate) =>
+            candidate.VerticalScrollBarVisibility
+                != ScrollBarVisibility.Disabled
+            && candidate.Extent.Height > candidate.Viewport.Height;
     }
 }
