@@ -38,7 +38,7 @@
         <CheckBox IsChecked="{Binding MineMap.OnlyShowWhileOnGround, Mode=TwoWay}"
                   Content="Only show while on the ground" />
         <TextBlock Classes="muted" TextWrapping="Wrap"
-                   Text="Overlay Exceptions for Mine Map are limited to medium and large ships, Rhino, and on foot. Uncheck every ship there to keep the map out of airborne gameplay." />
+                   Text="Overlay Exceptions for Surface Mining are limited to medium and large ships, Rhino, and on foot. Uncheck every ship there to keep the map out of airborne gameplay." />
         <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                    Text="{Binding MineMap.StatusText}" TextWrapping="Wrap" />
       </StackPanel>

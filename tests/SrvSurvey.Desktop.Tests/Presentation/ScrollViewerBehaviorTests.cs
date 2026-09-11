@@ -1,7 +1,9 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Input;
 using Avalonia.VisualTree;
 using SrvSurvey.Desktop.Behaviors;
 
@@ -10,6 +12,317 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class ScrollViewerBehaviorTests
 {
+    [AvaloniaFact]
+    public void HorizontalWheelOverNestedVerticalScrollerMovesHorizontalAncestor()
+    {
+        var inner = new ScrollViewer
+        {
+            Height = 120,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            Content = new Border { Width = 800, Height = 600 },
+        };
+        var horizontal = new ScrollViewer
+        {
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            Content = inner,
+        };
+        var window = new Window
+        {
+            Width = 320,
+            Height = 200,
+            Content = horizontal,
+        };
+
+        try
+        {
+            window.Show();
+            Assert.NotNull(window.CaptureRenderedFrame());
+            Assert.True(horizontal.Extent.Width > horizontal.Viewport.Width);
+
+            window.MouseWheel(
+                new Point(80, 90),
+                new Vector(-1, 0));
+            Assert.NotNull(window.CaptureRenderedFrame());
+
+            Assert.True(horizontal.Offset.X > 0);
+            Assert.Equal(0, inner.Offset.Y);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void ShiftWheelOverNestedVerticalScrollerMovesHorizontalAncestor()
+    {
+        var inner = new ScrollViewer
+        {
+            Height = 120,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            Content = new Border { Width = 800, Height = 600 },
+        };
+        var horizontal = new ScrollViewer
+        {
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            Content = inner,
+        };
+        var window = new Window
+        {
+            Width = 320,
+            Height = 200,
+            Content = horizontal,
+        };
+
+        try
+        {
+            window.Show();
+            Assert.NotNull(window.CaptureRenderedFrame());
+
+            window.MouseWheel(
+                new Point(80, 90),
+                new Vector(0, -1),
+                RawInputModifiers.Shift);
+            Assert.NotNull(window.CaptureRenderedFrame());
+
+            Assert.True(horizontal.Offset.X > 0);
+            Assert.Equal(0, inner.Offset.Y);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void DirectHorizontalScrollerRetainsNativeWheelHandling()
+    {
+        var horizontal = new ScrollViewer
+        {
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            Content = new Border { Width = 800, Height = 120 },
+        };
+        var window = new Window
+        {
+            Width = 320,
+            Height = 200,
+            Content = horizontal,
+        };
+
+        try
+        {
+            window.Show();
+            Assert.NotNull(window.CaptureRenderedFrame());
+
+            window.MouseWheel(
+                new Point(80, 90),
+                new Vector(-1, 0));
+            Assert.NotNull(window.CaptureRenderedFrame());
+
+            Assert.True(horizontal.Offset.X > 0);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void DirectHorizontalScrollerRetainsNativeScrollGestureHandling()
+    {
+        var content = new Border { Width = 800, Height = 120 };
+        var horizontal = new ScrollViewer
+        {
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            Content = content,
+        };
+        var window = new Window
+        {
+            Width = 320,
+            Height = 200,
+            Content = horizontal,
+        };
+
+        try
+        {
+            window.Show();
+            Assert.NotNull(window.CaptureRenderedFrame());
+
+            var eventArgs = new ScrollGestureEventArgs(
+                id: 1,
+                new Vector(2.5, 0))
+            {
+                RoutedEvent = InputElement.ScrollGestureEvent,
+            };
+            content.RaiseEvent(eventArgs);
+            Assert.NotNull(window.CaptureRenderedFrame());
+
+            Assert.Equal(2.5, horizontal.Offset.X);
+            Assert.False(eventArgs.ShouldEndScrollGesture);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void PrecisionTrackpadGestureOverNestedVerticalScrollerMovesHorizontalAncestor()
+    {
+        var content = new Border { Width = 800, Height = 600 };
+        var inner = new ScrollViewer
+        {
+            Height = 120,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            Content = content,
+        };
+        var horizontal = new ScrollViewer
+        {
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            Content = inner,
+        };
+        var window = new Window
+        {
+            Width = 320,
+            Height = 200,
+            Content = horizontal,
+        };
+
+        try
+        {
+            window.Show();
+            Assert.NotNull(window.CaptureRenderedFrame());
+
+            var eventArgs = new ScrollGestureEventArgs(
+                id: 1,
+                new Vector(2.5, 0))
+            {
+                RoutedEvent = InputElement.ScrollGestureEvent,
+            };
+            content.RaiseEvent(eventArgs);
+            Assert.NotNull(window.CaptureRenderedFrame());
+
+            Assert.Equal(2.5, horizontal.Offset.X);
+            Assert.Equal(0, inner.Offset.Y);
+            Assert.False(eventArgs.ShouldEndScrollGesture);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void HorizontalWheelAtNestedEndpointDoesNotScrollOuterContainer()
+    {
+        var content = new Border { Width = 1_200, Height = 120 };
+        var inner = new ScrollViewer
+        {
+            Width = 800,
+            Height = 120,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            Content = content,
+        };
+        var outer = new ScrollViewer
+        {
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            Content = inner,
+        };
+        var window = new Window
+        {
+            Width = 320,
+            Height = 200,
+            Content = outer,
+        };
+
+        try
+        {
+            window.Show();
+            Assert.NotNull(window.CaptureRenderedFrame());
+            inner.Offset = new Vector(
+                inner.Extent.Width - inner.Viewport.Width,
+                0);
+
+            window.MouseWheel(
+                new Point(80, 90),
+                new Vector(-1, 0));
+            Assert.NotNull(window.CaptureRenderedFrame());
+
+            Assert.Equal(0, outer.Offset.X);
+            Assert.Equal(
+                inner.Extent.Width - inner.Viewport.Width,
+                inner.Offset.X);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void HorizontalScrollGestureAtNestedEndpointDoesNotScrollOuterContainer()
+    {
+        var content = new Border { Width = 1_200, Height = 120 };
+        var inner = new ScrollViewer
+        {
+            Width = 800,
+            Height = 120,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            Content = content,
+        };
+        var outer = new ScrollViewer
+        {
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            Content = inner,
+        };
+        var window = new Window
+        {
+            Width = 320,
+            Height = 200,
+            Content = outer,
+        };
+
+        try
+        {
+            window.Show();
+            Assert.NotNull(window.CaptureRenderedFrame());
+            inner.Offset = new Vector(
+                inner.Extent.Width - inner.Viewport.Width,
+                0);
+
+            var eventArgs = new ScrollGestureEventArgs(
+                id: 1,
+                new Vector(2.5, 0))
+            {
+                RoutedEvent = InputElement.ScrollGestureEvent,
+            };
+            content.RaiseEvent(eventArgs);
+            Assert.NotNull(window.CaptureRenderedFrame());
+
+            Assert.Equal(0, outer.Offset.X);
+            Assert.Equal(
+                inner.Extent.Width - inner.Viewport.Width,
+                inner.Offset.X);
+            Assert.True(eventArgs.ShouldEndScrollGesture);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     [AvaloniaFact]
     public void WheelAtNestedEndpointsDoesNotScrollOuterPage()
     {

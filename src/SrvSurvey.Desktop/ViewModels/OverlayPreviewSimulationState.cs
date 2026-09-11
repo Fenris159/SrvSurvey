@@ -152,6 +152,13 @@ internal static class OverlayPreviewSimulationProjector
                 Row("ruby", "015 degrees | 1.24 km", glyph: "●", glyphTone: OverlayPreviewGlyphTone.Danger),
                 Row("gold", "090 degrees | 2.10 km", glyph: "●", glyphTone: OverlayPreviewGlyphTone.Gold),
                 Row("thorveitite", "225 degrees | 3.40 km", glyph: "●", glyphTone: OverlayPreviewGlyphTone.Information)),
+            "PlotMiningReference" => Content(
+                "Mining Ref",
+                "Selected surface commodities",
+                "COMMODITY | BODIES | AVG CR/T",
+                Row("Gold", "HMC, MR, Rocky | 48,005 CR/t", glyph: "●", glyphTone: OverlayPreviewGlyphTone.Gold),
+                Row("Monazite", "Rocky | 268,661 CR/t", glyph: "●", glyphTone: OverlayPreviewGlyphTone.Success),
+                Row("Ruby", "HMC, MR, Rocky | 110,381 CR/t", glyph: "●", glyphTone: OverlayPreviewGlyphTone.Danger)),
             "PlotGrounded" => Content(
                 state.CurrentBody,
                 "Surface survey - heading 074 degrees",

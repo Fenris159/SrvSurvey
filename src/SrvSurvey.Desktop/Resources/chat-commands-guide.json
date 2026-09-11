@@ -53,12 +53,12 @@
     ],
     "Details": [
       "Set or unset individual rigs with their configured Tracker/Mining Rig (1–6) chords, defaulting to Ctrl+Alt+F1–F6 while aboard the Rhino. These are key chords, not chat commands.",
-      "Mining overlay settings has Clear rigs automatically when boarding your ship, enabled by default. Turning it off keeps rig markers after boarding; --- remains available for deliberate cleanup.",
+      "Surface Mining overlay settings has Clear rigs automatically when boarding your ship, enabled by default. Turning it off keeps rig markers after boarding; --- remains available for deliberate cleanup.",
       "Automatic boarding cleanup affects rigs only. The --- command also clears regular trackers, resource bookmarks, and biology bookmarks."
     ]
   },
   {
-    "Title": "Mine Map — locations and deposits",
+    "Title": "Surface Mining — locations and deposits",
     "Summary": "Create a saved surface mining-location map from its known 2.47 km border, then mark mineral or metal deposits from the center or your live position.",
     "Steps": [
       ".mining <heading> <location number> <amount>/<density> — While standing on the yellow border and facing the location marker at its center, save the center and location details. Example: .mining 120 4 high/low.",
@@ -69,7 +69,8 @@
     "Details": [
       "The .mining command uses the current body's exact journal radius and your latitude/longitude to project the center 2.47 km along the heading. The first rating is Mineral Amount and the second is Density; each must be high or low.",
       "A surface map JSON stores Commander, system, body, body type, arrival distance, signal number, ratings, center coordinates, and deposit markers. Commands require the current body and live surface coordinates.",
-      "Recognized commands report their result through the status notification overlay. Open Activities > Mine Map to search saved locations, filter by contained material or body type, and review the fixed-upright survey map."
+      "Commodity names are case insensitive but must match an entry in Activities > Surface Mining > Hotspot List. Invalid headings, ratings, distances, or commodity names are declined with an explanation in the status notification overlay.",
+      "Recognized commands report their result through the status notification overlay. Open Activities > Surface Mining to search saved locations, filter by contained material or body type, and review the fixed-upright survey map. Surface maps are managed with the shared Navigation > Bookmarks catalog; Contains and Body Type choices populate from those saved maps."
     ]
   },
   {

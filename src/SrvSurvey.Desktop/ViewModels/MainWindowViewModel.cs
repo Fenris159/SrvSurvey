@@ -172,7 +172,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private string? activeProfileCommanderName;
     private bool activeProfileIsOdyssey = true;
     private NavigationItemViewModel? selectedNavigation;
-    private string? expandedNavigationGroup = SurveyNavigationGroup;
+    private string? expandedNavigationGroup;
     private DiagnosticsWorkspaceTab selectedDiagnosticsTab =
         DiagnosticsWorkspaceTab.Source;
     private bool isProfileSelected;
@@ -542,7 +542,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             rollback.Add(FleetCarrierWorkspace.Dispose);
             var sharedSystemResolver = new SpanshStarSystemResolver(
                 externalNetworkClient);
-            Bookmarks = new BookmarksViewModel(AppDataPaths.DataDirectory);
+            Bookmarks = new BookmarksViewModel(
+                AppDataPaths.DataDirectory,
+                ShowSurfaceMiningMap);
             Firegroups = new FiregroupsWorkspaceViewModel(AppDataPaths.DataDirectory);
             MiningWorkspace = new MiningWorkspaceViewModel(AppDataPaths.DataDirectory, sharedSystemResolver, Bookmarks, externalNetworkClient, firegroups: Firegroups);
             rollback.Add(MiningWorkspace.Dispose);
@@ -727,7 +729,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             MineMap = new MineMapViewModel(
                 AppDataPaths.DataDirectory,
                 new MineMapSettingsStore(AppDataPaths.UiSettingsPath),
-                Notifications.ShowMessage);
+                Notifications.ShowMessage,
+                ShowSurfaceMiningGuide,
+                ShowBookmarkEditor,
+                Bookmarks.Catalog);
             rollback.Add(MineMap.Dispose);
             OverlayInteraction.MiningDetection = Mining.Detection;
             BiologyPredictions = new BiologyPredictionsViewModel(
@@ -913,9 +918,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                     SearchNavigationKey,
                     "Search",
                     "Spherical limits and nearby biology"),
-                new(BookmarksNavigationKey, "Bookmarks", "Categorized systems and mining locations"),
+                new(BookmarksNavigationKey, "Bookmarks", "Systems, mining rings, and surface mining maps"),
                 new(MiningNavigationKey, "Mining", "Mining sessions, locations, missions and reports", true),
-                new(MineMapNavigationKey, "Mine Map", "Saved surface mining locations and deposit maps", true),
+                new(MineMapNavigationKey, "Surface Mining", "Saved surface mining locations and deposit maps", true),
                 new(
                     GuardianNavigationKey,
                     "Guardian",
@@ -1612,6 +1617,32 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     {
         SelectedNavigation = NavigationItems.Single(
             item => item.Key == SettingsNavigationKey);
+    }
+
+    private void ShowSurfaceMiningGuide()
+    {
+        Guides.SelectedCategory = Guides.Categories.Single(
+            category => category.Key == "surface-mining");
+        SelectedNavigation = NavigationItems.Single(
+            item => item.Key == "guides");
+    }
+
+    private void ShowBookmarkEditor(Guid bookmarkId)
+    {
+        SelectedNavigation = NavigationItems.Single(
+            item => item.Key == BookmarksNavigationKey);
+        Bookmarks.SelectBookmark(bookmarkId);
+    }
+
+    private void ShowSurfaceMiningMap(Guid bookmarkId)
+    {
+        if (!MineMap.SelectSurvey(bookmarkId))
+        {
+            return;
+        }
+
+        SelectedNavigation = NavigationItems.Single(
+            item => item.Key == MineMapNavigationKey);
     }
 
     public bool BeginVrAdjustment()

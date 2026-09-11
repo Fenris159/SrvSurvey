@@ -1,7 +1,11 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Input;
+using Avalonia.LogicalTree;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
 using SrvSurvey.Desktop.Theming;
@@ -15,6 +19,174 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class MiningWorkspacePresentationTests
 {
+    [AvaloniaFact]
+    public void SurfaceMiningMapPaletteStaysReadableAcrossAllApplicationThemes()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        using var model = MainWindowViewModelTestBuilder.Create(null, _ => { });
+        model.MineMap.SelectedTab = 1;
+        var themes = new RavenThemeService(
+            Application.Current!,
+            new ThemePreferenceStore(Path.Combine(directory, "theme.json")));
+        var original = themes.Current.Key;
+        var view = new Views.MineMapView { DataContext = model };
+        var window = new Window { Content = view, Width = 900, Height = 900 };
+        try
+        {
+            window.Show();
+            var application = Application.Current!;
+
+            foreach (var theme in RavenThemeCatalog.All)
+            {
+                themes.Select(theme.Key);
+                using var frame = window.CaptureRenderedFrame();
+                var text = ColorOf(application.Resources["RavenTextBrush"] as IBrush);
+                var grid = ColorOf(application.Resources["RavenMapGridBrush"] as IBrush);
+                foreach (var background in new[]
+                         {
+                             Color.Parse(theme.RaisedSurfaceColor),
+                             Color.Parse(theme.WindowColor),
+                         })
+                {
+                    Assert.True(
+                        Contrast(background, text) >= 4.5,
+                        $"{theme.Key} map text contrast is too low.");
+                    Assert.True(
+                        Contrast(background, grid) >= 3,
+                        $"{theme.Key} map grid contrast is too low.");
+                }
+                var output = Environment.GetEnvironmentVariable(
+                    "SRVSURVEY_MINE_MAP_THEME_RENDER_OUTPUT");
+                if (!string.IsNullOrWhiteSpace(output))
+                {
+                    Directory.CreateDirectory(output);
+                    using var stream = File.Create(Path.Combine(
+                        output,
+                        $"surface-map-{theme.Key}.png"));
+                    frame!.Save(stream, PngBitmapEncoderOptions.Default);
+                }
+            }
+        }
+        finally
+        {
+            window.Close();
+            themes.Select(original);
+            if (Directory.Exists(directory)) Directory.Delete(directory, true);
+        }
+    }
+
+    [AvaloniaFact]
+    public void SurfaceHuntRendersEightSortableColumnsWithoutHorizontalOverflow()
+    {
+        using var model = MainWindowViewModelTestBuilder.Create(null, _ => { });
+        model.MineMap.SelectedTab = 3;
+        var view = new Views.MineMapView { DataContext = model };
+        var window = new Window { Content = view, Width = 1200, Height = 900 };
+        try
+        {
+            window.Show();
+            using var frame = window.CaptureRenderedFrame();
+            var header = view.FindControl<Grid>("SurfaceHuntHeader");
+            var results = view.FindControl<ScrollViewer>("SurfaceHuntResults");
+
+            Assert.NotNull(header);
+            Assert.NotNull(results);
+            Assert.Equal(8, header.Children.OfType<Button>().Count());
+            Assert.True(results.Extent.Width <= results.Viewport.Width + 1);
+            Assert.Equal(37, model.MineMap.SurfaceHuntRows.Count);
+
+            var output = Environment.GetEnvironmentVariable("SRVSURVEY_SURFACE_HUNT_RENDER_OUTPUT");
+            if (!string.IsNullOrWhiteSpace(output))
+            {
+                using var stream = File.Create(output);
+                frame!.Save(stream, PngBitmapEncoderOptions.Default);
+            }
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaTheory]
+    [InlineData(2, "HotspotListHorizontalScroller", "HotspotListResults")]
+    [InlineData(3, "SurfaceHuntHorizontalScroller", "SurfaceHuntResults")]
+    public void SurfaceReferenceTablesScrollHorizontallyAtNarrowWorkspaceWidths(
+        int selectedTab,
+        string horizontalScrollerName,
+        string resultsName)
+    {
+        using var model = MainWindowViewModelTestBuilder.Create(null, _ => { });
+        model.MineMap.SelectedTab = selectedTab;
+        var view = new Views.MineMapView { DataContext = model };
+        var window = new Window { Content = view, Width = 620, Height = 900 };
+        try
+        {
+            window.Show();
+            using var frame = window.CaptureRenderedFrame();
+            var horizontalScroller = view.FindControl<ScrollViewer>(
+                horizontalScrollerName);
+            var results = view.FindControl<ScrollViewer>(resultsName);
+
+            Assert.NotNull(horizontalScroller);
+            Assert.NotNull(results);
+            Assert.Equal(
+                ScrollBarVisibility.Auto,
+                horizontalScroller.HorizontalScrollBarVisibility);
+            Assert.Equal(
+                ScrollBarVisibility.Disabled,
+                horizontalScroller.VerticalScrollBarVisibility);
+            Assert.True(
+                horizontalScroller.Extent.Width
+                > horizontalScroller.Viewport.Width + 1);
+            Assert.Equal(
+                ScrollBarVisibility.Disabled,
+                results.HorizontalScrollBarVisibility);
+            Assert.Equal(
+                ScrollBarVisibility.Auto,
+                results.VerticalScrollBarVisibility);
+
+            var resultsContent = Assert.IsAssignableFrom<Control>(
+                results.Content);
+            resultsContent.RaiseEvent(new ScrollGestureEventArgs(
+                id: 1,
+                new Vector(12.5, 0))
+            {
+                RoutedEvent = InputElement.ScrollGestureEvent,
+            });
+            using var scrolledFrame = window.CaptureRenderedFrame();
+
+            Assert.Equal(12.5, horizontalScroller.Offset.X);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void SurfaceMiningMapUsesASquareViewportAtNarrowWorkspaceWidths()
+    {
+        using var model = MainWindowViewModelTestBuilder.Create(null, _ => { });
+        model.MineMap.SelectedTab = 1;
+        var view = new Views.MineMapView { DataContext = model };
+        var window = new Window { Content = view, Width = 900, Height = 900 };
+        try
+        {
+            window.Show();
+            using var frame = window.CaptureRenderedFrame();
+            var viewport = view.FindControl<Viewbox>("MineSurveyMapViewport");
+
+            Assert.NotNull(viewport);
+            Assert.InRange(Math.Abs(viewport.Bounds.Width - viewport.Bounds.Height), 0, 1);
+            Assert.InRange(viewport.Bounds.Height, 350, 640);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     [AvaloniaFact]
     public async Task SearchContentExpandsAndWheelScrollsTheWorkspace()
     {
@@ -47,7 +219,19 @@ public sealed class MiningWorkspacePresentationTests
                 }[destination];
                 var header = search.FindControl<Grid>($"{prefix}ResultsHeader");
                 Assert.NotNull(header);
-                Assert.Equal(expectedHeaders, header.Children.OfType<TextBlock>().Select(text => text.Text));
+                Assert.Equal(
+                    expectedHeaders,
+                    header.GetLogicalDescendants().OfType<TextBlock>()
+                        .Select(text => text.Text)
+                        .Where(text => !string.IsNullOrEmpty(text)
+                            && text is not "↑" and not "↓"));
+                Assert.All(header.Children.OfType<Button>(), button => Assert.NotNull(button.CommandParameter));
+                var firstSort = header.Children.OfType<Button>().First();
+                model.MiningWorkspace.Search.SortCommand.Execute(firstSort.CommandParameter);
+                using var sortedFrame = window.CaptureRenderedFrame();
+                Assert.Contains(
+                    firstSort.GetLogicalDescendants().OfType<TextBlock>(),
+                    text => text.Text is "↑" or "↓");
                 var page = Assert.Single(search.GetVisualAncestors().OfType<ScrollViewer>());
                 var results = Assert.Single(search.GetVisualDescendants().OfType<ListBox>(), l => l.IsEffectivelyVisible);
                 Assert.NotEmpty(results.Items);
@@ -231,7 +415,7 @@ public sealed class MiningWorkspacePresentationTests
             using var bookmarksFrame = window.CaptureRenderedFrame();
             var bookmarkView = Assert.Single(window.GetVisualDescendants().OfType<Views.BookmarksView>(), view => view.IsEffectivelyVisible);
             Assert.Same(model.Bookmarks, bookmarkView.DataContext);
-            AssertTableHeader(bookmarkView, "BookmarksHeader", ["SYSTEM", "BODY / RING", "CATEGORY", "MINERALS"]);
+            AssertTableHeader(bookmarkView, "BookmarksHeader", ["SYSTEM", "BODY", "RING", "CATEGORY", "DETAILS", "NOTES"]);
             AssertSingleLineRows(bookmarkView.FindControl<ListBox>("BookmarkRows"));
             Assert.True(model.IsNavigationNavigationExpanded);
             var buttons = bookmarkView.GetVisualDescendants().OfType<Button>().ToArray();
@@ -260,12 +444,42 @@ public sealed class MiningWorkspacePresentationTests
         AssertSingleLineRows(rows);
     }
 
+    private static Color ColorOf(IBrush? brush) =>
+        Assert.IsType<SolidColorBrush>(brush).Color;
+
+    private static double Contrast(Color left, Color right)
+    {
+        var leftLuminance = Luminance(left);
+        var rightLuminance = Luminance(right);
+        return (Math.Max(leftLuminance, rightLuminance) + 0.05)
+            / (Math.Min(leftLuminance, rightLuminance) + 0.05);
+    }
+
+    private static double Luminance(Color color) =>
+        0.2126 * Linear(color.R)
+        + 0.7152 * Linear(color.G)
+        + 0.0722 * Linear(color.B);
+
+    private static double Linear(byte channel)
+    {
+        var value = channel / 255d;
+        return value <= 0.04045
+            ? value / 12.92
+            : Math.Pow((value + 0.055) / 1.055, 2.4);
+    }
+
     private static void AssertTableHeader(Control view, string headerName, string[] expectedHeaders)
     {
         var header = view.FindControl<Grid>(headerName);
         Assert.NotNull(header);
         Assert.Contains("table-header", header.Classes);
-        Assert.Equal(expectedHeaders, header.Children.OfType<TextBlock>().Select(text => text.Text));
+        Assert.Equal(
+            expectedHeaders,
+            header.GetLogicalDescendants().OfType<TextBlock>()
+                .Select(text => text.Text)
+                .Where(text => !string.IsNullOrEmpty(text)
+                    && text is not "↑" and not "↓"));
+        Assert.All(header.Children.OfType<Button>(), button => Assert.NotNull(button.CommandParameter));
     }
 
     private static void AssertSingleLineRows(ListBox? rows)

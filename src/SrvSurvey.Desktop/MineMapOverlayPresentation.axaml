@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="using:SrvSurvey.Desktop.Controls"
+             xmlns:local="using:SrvSurvey.Desktop"
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:Class="SrvSurvey.Desktop.MineMapOverlayPresentation"
              x:DataType="vm:MineMapViewModel"
@@ -21,12 +22,18 @@
                                Survey="{Binding ActiveSurvey}"
                                PlayerLocation="{Binding PlayerLocation}"
                                PlayerHeading="{Binding PlayerHeading}"
-                               ViewRadiusMeters="{Binding ViewRadiusMeters}"
+                               ViewportZoom="{Binding ViewportZoom, Mode=TwoWay}"
                                VisibleMaterials="{Binding VisibleMaterials}"
-                               GridBrush="{DynamicResource RavenBorderBrush}"
+                               GridBrush="{DynamicResource RavenMapGridBrush}"
                                AccentBrush="{DynamicResource RavenAccentBrush}"
-                               TextBrush="{DynamicResource RavenForegroundBrush}"
+                               PlayerBrush="{DynamicResource RavenSuccessBrush}"
+                               TextBrush="{DynamicResource RavenTextBrush}"
                                ZoneBrush="{DynamicResource RavenWarningBrush}" />
+      <Border Grid.RowSpan="3" Margin="0,0,4,4"
+              HorizontalAlignment="Right" VerticalAlignment="Bottom"
+              IsHitTestVisible="False">
+        <local:MineMapZoomOverlayPresentation />
+      </Border>
       <TextBlock Grid.Row="2" Classes="muted" FontSize="9" TextAlignment="Center"
                  Text="{Binding MarkerCountText}" />
     </Grid>

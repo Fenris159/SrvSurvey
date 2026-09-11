@@ -10,6 +10,10 @@ public sealed record MiningBackupContents(MiningCommanderData Data, string Bookm
 public static class MiningBackup
 {
     private const int MaximumBytes = 256 * 1024 * 1024;
+    private static readonly StringComparer FileSystemPathComparer =
+        OperatingSystem.IsWindows()
+            ? StringComparer.OrdinalIgnoreCase
+            : StringComparer.Ordinal;
     public static byte[] Create(MiningCommanderData data, string bookmarks, string? firegroups = null)
     {
         if (firegroups is not null) _ = FiregroupStore.Parse(firegroups);
@@ -28,7 +32,7 @@ public static class MiningBackup
     }
     private static void AddScreenshots(ZipArchive archive, IEnumerable<List<string>> screenshotsByRecord)
     {
-        var imageNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var imageNames = new Dictionary<string, string>(FileSystemPathComparer);
         foreach (var screenshots in screenshotsByRecord)
         {
             for (var index = 0; index < screenshots.Count; index++)

@@ -1,21 +1,21 @@
 # Surface mining
 
-Available in **SrvSurvey-XP 2.1.3.0-rc.45.7**. The Surface mining overlay provides
-Rhino rig locations, vehicle guidance, and cargo capacity during surface mining.
-The same workflow is covered inside the application under **Guides > Surface mining**.
+Available in **SrvSurvey-XP 2.1.3.0-rc.46**. Surface Mining combines Rhino rig
+guidance with reusable maps of planetary mining-location signals and their
+deposits. The same workflow is covered inside the application under
+**Guides > Surface mining**.
 
 ## Setup
 
-1. Expand **Activities** in the main window and select **Mining**.
-2. Use its overlay settings shortcut to enable **Surface mining** and assign
-   a show/hide shortcut if desired. The Mining workspace is reserved for future
-   tools; current mining guidance appears in the overlay.
+1. Expand **Activities** in the main window and select **Surface Mining**.
+2. Use its overlay settings shortcut to enable the Surface Mining guidance and
+   Overview Map overlays and assign show/hide shortcuts if desired.
 3. Set the six rig shortcuts in that settings window or in **Input** settings.
    Both locations edit the same bindings. Defaults are **Ctrl+Alt+F1** through **Ctrl+Alt+F6**.
    Input names the first six **Tracker/Mining Rig (1)** through **Tracker/Mining Rig (6)**,
    followed by regular **Tracker (7)** and **Tracker (8)** entries.
    Outside Rhino mining, all eight shortcuts toggle surface trackers; slots 7 and 8
-   do not place rigs. Mining settings retain the six **Mining rig** labels.
+   do not place rigs. Surface Mining settings retain the six **Mining rig** labels.
    Existing custom tracker bindings are preserved. A customized RC43 rig chord is
    retained when its matching tracker still uses the default.
 4. Operate a Rhino on a planetary surface with journal/status tracking active.
@@ -24,6 +24,66 @@ The same workflow is covered inside the application under **Guides > Surface min
 The panel can be moved and resized through the existing overlay position editor.
 It follows the selected overlay theme, including **Monochrome Companion**, which
 pairs with the main application's dark **Monochrome** theme.
+
+## Map a mining location
+
+The **Surface Maps** tab lists saved surface-mining bookmarks. Select any row to
+open it in **Survey Map**. The Contains and Body Type filters are populated from
+the saved maps, and the table can be sorted from its column headings.
+
+Stand on the yellow border of a mining-location signal and face the marker at its
+center. Send this case-insensitive chat command, using your current heading and
+the signal's number:
+
+```text
+.mining <heading 0-359> <signal number> <high|low>/<high|low>
+```
+
+For example, `.mining 120 4 high/low` saves **Mining Location Signal 4** with
+High Mineral Amount and Low Density. SrvSurvey uses the body's journal radius,
+your latitude and longitude, and the known 2.47 km location radius to calculate
+the center. The command requires live surface coordinates and reports acceptance
+or a validation error through Status notifications.
+
+From the saved center, add a deposit by heading and distance:
+
+```text
+.mine 15 ruby 1.24
+```
+
+At a deposit, save your current position directly or remove the nearest marker
+within 0.5 km:
+
+```text
+.mine ruby here
+.mine delete here
+```
+
+Commodity names must match **Hotspot List** and may contain spaces. The command
+parser rejects unknown commodities, headings outside 0–359, non-positive
+distances, invalid signal numbers, and amount or density values other than High
+or Low.
+
+The **Survey Map** and Overview Map overlay share the selected bookmark, live
+player position, fixed 1–4 km rings, the 2.47 km location boundary and saved
+deposit markers. Use the mouse wheel, slider, or minus and plus controls to zoom;
+drag the map to pan after zooming in. Marker visibility can be filtered by
+commodity without changing the saved map.
+
+Surface maps use the shared **Navigation > Bookmarks** catalog. They are assigned
+the Surface Mining category automatically and store the Commander, system, body,
+body type, distance from Sol, arrival distance, signal number, ratings, center
+coordinates, notes and deposit metadata. Editing or deleting the shared bookmark
+updates the Surface Mining workspace.
+
+## Reference tabs
+
+**Hotspot List** shows the supported surface commodities, compatible body types
+and community price snapshot. Select commodities in its Overlay column to keep a
+compact three-column **Mining Ref** overlay on screen. **Surface Hunt** provides
+sortable body, geology, stellar-clue and price guidance for finding promising
+surface-mining locations. Both tables support horizontal scrolling at narrow
+window sizes.
 
 ## Rig locations
 
@@ -60,7 +120,7 @@ uses 78-meter-radius rig circles and the legacy mining zoom as its default.
 
 ## Experimental automatic rig tracking (Windows)
 
-In Mining overlay settings, enable rig bar detection and select the deployment
+In Surface Mining overlay settings, enable rig bar detection and select the deployment
 bar color. Bright green is the default; update it if your HUD mod changes the
 bars. Gray, white, and black are ignored. Manual rig shortcuts remain available.
 
@@ -96,7 +156,7 @@ bookmarked, as described below.
 
 ## Rig range warning
 
-Mining overlay settings includes **Mining rig range warning**, with its own
+Surface Mining overlay settings includes **Mining rig range warning**, with its own
 show/hide toggle and optional shortcut. Its initial placement copies your saved
 Flight Warning placement; move it independently in the overlay editor afterward.
 

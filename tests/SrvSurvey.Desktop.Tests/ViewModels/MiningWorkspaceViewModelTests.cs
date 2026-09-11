@@ -7,6 +7,31 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class MiningWorkspaceViewModelTests
 {
     [Fact]
+    public void MiningTablesExposeIndependentSortIndicators()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        try
+        {
+            using var viewModel = new MiningWorkspaceViewModel(
+                directory,
+                new Resolver(),
+                new BookmarksViewModel(directory));
+
+            viewModel.CargoSortCommand.Execute("Name");
+            viewModel.MaterialsSortCommand.Execute("Name");
+            viewModel.MaterialsSortCommand.Execute("Name");
+
+            Assert.Equal("↑", viewModel.CargoSortIndicators["Name"]);
+            Assert.Equal("↓", viewModel.MaterialsSortIndicators["Name"]);
+            Assert.Equal(string.Empty, viewModel.ProspectsSortIndicators["Name"]);
+        }
+        finally
+        {
+            if (Directory.Exists(directory)) Directory.Delete(directory, true);
+        }
+    }
+
+    [Fact]
     public void MiningNotificationsRemainShipOnlyAndRecoveryIsPaused()
     {
         var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
@@ -232,7 +257,7 @@ public sealed class MiningWorkspaceViewModelTests
             var ring = Assert.Single(vm.Rings);
             Assert.Equal("Wille A Ring", ring.Body); Assert.Equal(2, ring.Hotspots["Platinum"]);
             vm.SelectedRing = ring; vm.BookmarkRingCommand.Execute(null);
-            Assert.Equal(ring.Body, Assert.Single(bookmarks.All).Body);
+            Assert.Equal(ring.Body, Assert.Single(bookmarks.All).CombinedBodyAndRing);
             vm.Filter = "no match"; Assert.Empty(vm.Rings);
             vm.Filter = "Platinum"; Assert.Single(vm.Rings);
             await vm.ImportJournalsAsync([journalPath]); Assert.Single(vm.Rings);

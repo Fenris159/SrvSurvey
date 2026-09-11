@@ -31,6 +31,7 @@
     <SolidColorBrush x:Key="RavenTertiaryTextBrush" Color="#C8C8C8" />
     <SolidColorBrush x:Key="RavenBorderBrush" Color="#195494" />
     <SolidColorBrush x:Key="RavenStrongBorderBrush" Color="#195494" />
+    <SolidColorBrush x:Key="RavenMapGridBrush" Color="#68808D" />
     <SolidColorBrush x:Key="RavenFocusRingBrush" Color="#3F87D4" />
     <SolidColorBrush x:Key="RavenModalScrimBrush" Color="#8C000000" />
     <SolidColorBrush x:Key="RavenSuccessBrush" Color="#6CCB72" />
@@ -175,6 +176,7 @@
     </Style>
     <Style Selector="ScrollViewer">
       <Setter Property="IsScrollChainingEnabled" Value="False" />
+      <Setter Property="behaviors:HorizontalScrollInputBehavior.Enabled" Value="True" />
     </Style>
   </Application.Styles>
 </Application>

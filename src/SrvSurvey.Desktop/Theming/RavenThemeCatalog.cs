@@ -22,7 +22,10 @@ public static class RavenThemeCatalog
             White,
             "#323130",
             "#605E5C",
-            "#E5E5E5"),
+            "#E5E5E5")
+        {
+            MapGridColor = "#858382",
+        },
         new(
             "blue-dark",
             "Blue (dark)",
@@ -37,7 +40,10 @@ public static class RavenThemeCatalog
             "#000012",
             "#E5E5E5",
             "#C8C8C8",
-            "#195494"),
+            "#195494")
+        {
+            MapGridColor = "#68808D",
+        },
         new(
             "orange-dark",
             "Orange (dark)",
@@ -52,7 +58,10 @@ public static class RavenThemeCatalog
             "#000000",
             "#F4E1C8",
             "#D8C7B0",
-            "#824500"),
+            "#824500")
+        {
+            MapGridColor = "#98825F",
+        },
         new(
             "green-light",
             "Green (light)",
@@ -67,7 +76,10 @@ public static class RavenThemeCatalog
             White,
             "#163D08",
             "#4D6745",
-            "#B7DAAA"),
+            "#B7DAAA")
+        {
+            MapGridColor = "#738A6C",
+        },
         new(
             "green-dark",
             "Green (dark)",
@@ -82,7 +94,10 @@ public static class RavenThemeCatalog
             "#1E3533",
             White,
             "#D0D0D0",
-            "#83A377"),
+            "#83A377")
+        {
+            MapGridColor = "#9AA7A5",
+        },
         new(
             "monochrome-dark",
             "Monochrome (dark)",
@@ -101,6 +116,7 @@ public static class RavenThemeCatalog
         {
             HighestSurfaceColor = "#242424",
             StrongBorderColor = "#3A3A3A",
+            MapGridColor = "#6C6C6C",
             TertiaryTextColor = "#737373",
             SecondaryFillColor = "#262626",
             InteractiveHoverColor = "#3A3A3A",

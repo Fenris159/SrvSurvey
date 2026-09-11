@@ -63,6 +63,8 @@ public sealed record MineMapSurvey
     public DateTimeOffset UpdatedAt { get; init; }
 
     public IReadOnlyList<MineMapMarker> Markers { get; init; } = [];
+
+    public string Notes { get; init; } = string.Empty;
 }
 
 public sealed record MineMapCommandContext(
@@ -84,11 +86,11 @@ public sealed record MineMapCommandResult(
     MineMapSurvey? Survey = null);
 
 /// <summary>
-/// Owns surface-mine survey command handling, spherical placement, and durable
-/// JSON storage. Callers only provide live journal context and present the
-/// returned feedback.
+/// Owns surface-mine survey command handling, spherical placement, and shared
+/// bookmark persistence. Callers only provide live journal context and present
+/// the returned feedback.
 /// </summary>
-public sealed class MineMapService
+public sealed class MineMapService : IDisposable
 {
     public const double LocationRadiusMeters = 2_470;
     public const double MarkerDeleteRadiusMeters = 500;
@@ -100,15 +102,21 @@ public sealed class MineMapService
         Converters = { new JsonStringEnumConverter() },
     };
 
-    private readonly string directory;
+    private readonly BookmarkCatalog bookmarks;
+    private readonly string legacyDirectory;
     private readonly SemaphoreSlim gate = new(1, 1);
     private IReadOnlyList<MineMapSurvey> surveys;
 
-    public MineMapService(string dataDirectory)
+    public MineMapService(
+        string dataDirectory,
+        BookmarkCatalog? bookmarkCatalog = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
-        directory = Path.Combine(dataDirectory, "mine-maps");
-        surveys = LoadAll(directory);
+        bookmarks = bookmarkCatalog ?? new BookmarkCatalog(dataDirectory);
+        legacyDirectory = Path.Combine(dataDirectory, "mine-maps");
+        MigrateLegacySurveys();
+        surveys = ReadSurveys();
+        bookmarks.Changed += OnBookmarksChanged;
     }
 
     public event EventHandler? Changed;
@@ -116,6 +124,12 @@ public sealed class MineMapService
     public IReadOnlyList<MineMapSurvey> Surveys => surveys;
 
     public MineMapSurvey? ActiveSurvey { get; private set; }
+
+    public void Dispose()
+    {
+        bookmarks.Changed -= OnBookmarksChanged;
+        gate.Dispose();
+    }
 
     public async Task<IReadOnlyList<MineMapCommandResult>> ApplyJournalEventsAsync(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
@@ -142,7 +156,7 @@ public sealed class MineMapService
             }
 
             results.Add(context is null
-                ? Failure("A current Commander, body, and surface position are required for Mine Map commands.")
+                ? Failure("A current Commander, body, and surface position are required for Surface Mining map commands.")
                 : await ExecuteAsync(message, context, cancellationToken)
                     .ConfigureAwait(false));
         }
@@ -161,17 +175,15 @@ public sealed class MineMapService
         try
         {
             return command.Trim().StartsWith(".mining", StringComparison.OrdinalIgnoreCase)
-                ? await CreateSurveyAsync(command, context, cancellationToken)
-                    .ConfigureAwait(false)
-                : await ApplyMarkerAsync(command, context, cancellationToken)
-                    .ConfigureAwait(false);
+                ? CreateSurvey(command, context, cancellationToken)
+                : ApplyMarker(command, context, cancellationToken);
         }
         catch (Exception exception) when (exception is IOException
             or UnauthorizedAccessException
             or JsonException
             or InvalidOperationException)
         {
-            return Failure("Mine Map data could not be saved: " + exception.Message);
+            return Failure("Surface Mining map data could not be saved: " + exception.Message);
         }
         finally
         {
@@ -223,19 +235,11 @@ public sealed class MineMapService
                 return false;
             }
 
-            var path = GetPath(surveyId);
-            if (File.Exists(path))
-            {
-                File.Delete(path);
-            }
-
-            surveys = surveys.Where(candidate => candidate.Id != surveyId).ToArray();
+            bookmarks.Delete(surveyId);
             if (ActiveSurvey?.Id == surveyId)
             {
                 ActiveSurvey = null;
             }
-
-            Changed?.Invoke(this, EventArgs.Empty);
             return true;
         }
         finally
@@ -244,7 +248,7 @@ public sealed class MineMapService
         }
     }
 
-    private async Task<MineMapCommandResult> CreateSurveyAsync(
+    private MineMapCommandResult CreateSurvey(
         string command,
         MineMapCommandContext context,
         CancellationToken cancellationToken)
@@ -294,14 +298,14 @@ public sealed class MineMapService
             Center = center,
             UpdatedAt = now,
         };
-        await SaveAndReplaceAsync(survey, cancellationToken).ConfigureAwait(false);
+        SaveAndReplace(survey, cancellationToken);
         ActiveSurvey = survey;
         Changed?.Invoke(this, EventArgs.Empty);
         return Success($"{survey.Name} center saved at heading {heading:0}°. "
             + $"Mineral amount {mineralAmount}; density {density}.", survey);
     }
 
-    private async Task<MineMapCommandResult> ApplyMarkerAsync(
+    private MineMapCommandResult ApplyMarker(
         string command,
         MineMapCommandContext context,
         CancellationToken cancellationToken)
@@ -323,8 +327,7 @@ public sealed class MineMapService
             && parts[1].Equals("delete", StringComparison.OrdinalIgnoreCase)
             && parts[2].Equals("here", StringComparison.OrdinalIgnoreCase))
         {
-            return await DeleteMarkerHereAsync(active, context, cancellationToken)
-                .ConfigureAwait(false);
+            return DeleteMarkerHere(active, context, cancellationToken);
         }
 
         SurfaceCoordinate location;
@@ -337,7 +340,7 @@ public sealed class MineMapService
                 return Failure("A live surface position is required for .mine <material> here.");
             }
 
-            material = NormalizeMaterial(string.Join(' ', parts[1..^1]));
+            material = string.Join(' ', parts[1..^1]).Trim();
             location = current;
         }
         else if (parts.Length >= 4
@@ -346,7 +349,7 @@ public sealed class MineMapService
             && double.IsFinite(distanceKm)
             && distanceKm >= 0)
         {
-            material = NormalizeMaterial(string.Join(' ', parts[2..^1]));
+            material = string.Join(' ', parts[2..^1]).Trim();
             location = GetDestination(
                 active.Center,
                 heading,
@@ -362,6 +365,12 @@ public sealed class MineMapService
         {
             return Failure("Enter a mineral or metal name for the map marker.");
         }
+        if (!SurfaceMiningCommodityCatalog.TryResolve(material, out var commodity))
+        {
+            return Failure($"'{material}' is not a supported surface-mining commodity. See Surface Mining > Hotspot List for accepted names.");
+        }
+
+        material = commodity.Name;
 
         var marker = new MineMapMarker
         {
@@ -374,7 +383,7 @@ public sealed class MineMapService
             Markers = [.. active.Markers, marker],
             UpdatedAt = DateTimeOffset.UtcNow,
         };
-        await SaveAndReplaceAsync(updated, cancellationToken).ConfigureAwait(false);
+        SaveAndReplace(updated, cancellationToken);
         ActiveSurvey = updated;
         Changed?.Invoke(this, EventArgs.Empty);
         var distance = SurfaceNavigation.GetDistance(
@@ -385,7 +394,7 @@ public sealed class MineMapService
         return Success($"Added {material} to {updated.Name} at {bearing:0}°, {distance / 1000:0.00} km.", updated);
     }
 
-    private async Task<MineMapCommandResult> DeleteMarkerHereAsync(
+    private MineMapCommandResult DeleteMarkerHere(
         MineMapSurvey active,
         MineMapCommandContext context,
         CancellationToken cancellationToken)
@@ -416,7 +425,7 @@ public sealed class MineMapService
             Markers = active.Markers.Where(marker => marker.Id != nearest.Marker.Id).ToArray(),
             UpdatedAt = DateTimeOffset.UtcNow,
         };
-        await SaveAndReplaceAsync(updated, cancellationToken).ConfigureAwait(false);
+        SaveAndReplace(updated, cancellationToken);
         ActiveSurvey = updated;
         Changed?.Invoke(this, EventArgs.Empty);
         return Success($"Removed the nearest {nearest.Marker.Material} marker ({nearest.Distance:0} m away).", updated);
@@ -435,33 +444,44 @@ public sealed class MineMapService
         return ActiveSurvey;
     }
 
-    private async Task SaveAndReplaceAsync(
+    private void SaveAndReplace(
         MineMapSurvey survey,
         CancellationToken cancellationToken)
     {
-        Directory.CreateDirectory(directory);
-        var path = GetPath(survey.Id);
-        var temporary = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
-        try
-        {
-            await File.WriteAllTextAsync(
-                temporary,
-                JsonSerializer.Serialize(survey, JsonOptions),
-                cancellationToken).ConfigureAwait(false);
-            File.Move(temporary, path, overwrite: true);
-        }
-        finally
-        {
-            if (File.Exists(temporary))
-            {
-                File.Delete(temporary);
-            }
-        }
+        cancellationToken.ThrowIfCancellationRequested();
+        var existing = bookmarks.Items.FirstOrDefault(item => item.Id == survey.Id);
+        SaveBookmark(survey, existing);
+    }
 
-        surveys = surveys.Where(candidate => candidate.Id != survey.Id)
-            .Append(survey)
-            .OrderByDescending(candidate => candidate.UpdatedAt)
-            .ToArray();
+    private void SaveBookmark(MineMapSurvey survey, GalacticBookmark? existing)
+    {
+        bookmarks.Save(new GalacticBookmark
+        {
+            Id = survey.Id,
+            System = survey.SystemName,
+            Body = survey.BodyName,
+            Ring = existing?.Ring ?? string.Empty,
+            Position = survey.SystemPosition,
+            Category = existing?.Category ?? "Surface Mining",
+            CategoryAssignments = existing?.EffectiveCategoryAssignments
+                ?? [BookmarkCategoryCatalog.SurfaceMining],
+            Notes = existing?.Notes ?? survey.Notes,
+            Minerals = string.Join(", ", survey.Markers
+                .Select(marker => marker.Material)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)),
+            LastMined = existing?.LastMined ?? string.Empty,
+            Hotspot = survey.Name,
+            AverageYield = existing?.AverageYield ?? string.Empty,
+            Screenshots = existing?.Screenshots ?? [],
+            Rating = existing?.Rating ?? 0,
+            RingType = existing?.RingType ?? string.Empty,
+            Reserve = existing?.Reserve ?? string.Empty,
+            Overlaps = existing?.Overlaps ?? string.Empty,
+            ResourceExtractionSites = existing?.ResourceExtractionSites ?? string.Empty,
+            SurfaceMiningMap = survey with { Notes = existing?.Notes ?? survey.Notes },
+            Updated = survey.UpdatedAt,
+        });
     }
 
     public static SurfaceCoordinate GetDestination(
@@ -500,7 +520,65 @@ public sealed class MineMapService
             longitudeDegrees);
     }
 
-    private static IReadOnlyList<MineMapSurvey> LoadAll(string directory)
+    private void OnBookmarksChanged(object? sender, EventArgs eventArgs)
+    {
+        var activeId = ActiveSurvey?.Id;
+        surveys = ReadSurveys();
+        ActiveSurvey = activeId is { } id
+            ? surveys.FirstOrDefault(survey => survey.Id == id)
+            : ActiveSurvey;
+        Changed?.Invoke(this, EventArgs.Empty);
+    }
+
+    private IReadOnlyList<MineMapSurvey> ReadSurveys() => bookmarks.Items
+        .Where(bookmark => bookmark.SurfaceMiningMap is not null
+            && bookmark.HasCategory(BookmarkCategoryCatalog.SurfaceMining))
+        .Select(bookmark => bookmark.SurfaceMiningMap! with
+        {
+            SystemName = bookmark.System,
+            BodyName = bookmark.Body,
+            SystemPosition = bookmark.Position ?? bookmark.SurfaceMiningMap!.SystemPosition,
+            Notes = bookmark.Notes,
+        })
+        .OrderByDescending(survey => survey.UpdatedAt)
+        .ToArray();
+
+    private void MigrateLegacySurveys()
+    {
+        var markerPath = Path.Combine(legacyDirectory, ".bookmarks-migrated");
+        if (File.Exists(markerPath)
+            || !Directory.Exists(legacyDirectory))
+        {
+            return;
+        }
+
+        var importedIds = bookmarks.Items.Select(bookmark => bookmark.Id).ToHashSet();
+        foreach (var survey in LoadLegacySurveys(legacyDirectory)
+            .Where(survey => !importedIds.Contains(survey.Id)))
+        {
+            bookmarks.Save(new GalacticBookmark
+            {
+                Id = survey.Id,
+                System = survey.SystemName,
+                Body = survey.BodyName,
+                Position = survey.SystemPosition,
+                Category = "Surface Mining",
+                CategoryAssignments = [BookmarkCategoryCatalog.SurfaceMining],
+                Minerals = string.Join(", ", survey.Markers
+                    .Select(marker => marker.Material)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)),
+                Hotspot = survey.Name,
+                SurfaceMiningMap = survey,
+                Updated = survey.UpdatedAt,
+            });
+            importedIds.Add(survey.Id);
+        }
+
+        File.WriteAllText(markerPath, "Surface mining maps now use bookmarks.json.");
+    }
+
+    private static IReadOnlyList<MineMapSurvey> LoadLegacySurveys(string directory)
     {
         if (!Directory.Exists(directory))
         {
@@ -530,8 +608,6 @@ public sealed class MineMapService
 
         return loaded.OrderByDescending(survey => survey.UpdatedAt).ToArray();
     }
-
-    private string GetPath(Guid id) => Path.Combine(directory, id.ToString("N") + ".json");
 
     private static bool IsMineMapCommand(string command)
     {
@@ -580,8 +656,6 @@ public sealed class MineMapService
         rating = default;
         return false;
     }
-
-    private static string NormalizeMaterial(string value) => value.Trim().ToLowerInvariant();
 
     private static bool HasSurfaceContext(MineMapCommandContext context) =>
         !string.IsNullOrWhiteSpace(context.FrontierId)

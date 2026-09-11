@@ -1,6 +1,7 @@
 using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Media;
 using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Navigation;
@@ -15,20 +16,26 @@ public sealed class MineMapControl : Control
         AvaloniaProperty.Register<MineMapControl, SurfaceCoordinate?>(nameof(PlayerLocation));
     public static readonly StyledProperty<double> PlayerHeadingProperty =
         AvaloniaProperty.Register<MineMapControl, double>(nameof(PlayerHeading));
-    public static readonly StyledProperty<double> ViewRadiusMetersProperty =
-        AvaloniaProperty.Register<MineMapControl, double>(nameof(ViewRadiusMeters), 5_000);
+    public static readonly StyledProperty<double> ViewportZoomProperty =
+        AvaloniaProperty.Register<MineMapControl, double>(nameof(ViewportZoom), 1);
+    public static readonly StyledProperty<bool> AllowViewportInteractionProperty =
+        AvaloniaProperty.Register<MineMapControl, bool>(nameof(AllowViewportInteraction));
     public static readonly StyledProperty<IReadOnlySet<string>?> VisibleMaterialsProperty =
         AvaloniaProperty.Register<MineMapControl, IReadOnlySet<string>?>(nameof(VisibleMaterials));
+    public static readonly StyledProperty<IBrush?> MapBackgroundProperty =
+        AvaloniaProperty.Register<MineMapControl, IBrush?>(nameof(MapBackground));
     public static readonly StyledProperty<IBrush?> GridBrushProperty =
         AvaloniaProperty.Register<MineMapControl, IBrush?>(nameof(GridBrush));
     public static readonly StyledProperty<IBrush?> AccentBrushProperty =
         AvaloniaProperty.Register<MineMapControl, IBrush?>(nameof(AccentBrush));
+    public static readonly StyledProperty<IBrush?> PlayerBrushProperty =
+        AvaloniaProperty.Register<MineMapControl, IBrush?>(nameof(PlayerBrush));
     public static readonly StyledProperty<IBrush?> TextBrushProperty =
         AvaloniaProperty.Register<MineMapControl, IBrush?>(nameof(TextBrush));
     public static readonly StyledProperty<IBrush?> ZoneBrushProperty =
         AvaloniaProperty.Register<MineMapControl, IBrush?>(nameof(ZoneBrush));
 
-    private static readonly Color[] MarkerColors =
+    private static readonly Color[] FallbackMarkerColors =
     [
         Color.Parse("#2E9CCA"),
         Color.Parse("#E67E22"),
@@ -46,27 +53,44 @@ public sealed class MineMapControl : Control
             SurveyProperty,
             PlayerLocationProperty,
             PlayerHeadingProperty,
-            ViewRadiusMetersProperty,
+            ViewportZoomProperty,
+            AllowViewportInteractionProperty,
             VisibleMaterialsProperty,
+            MapBackgroundProperty,
             GridBrushProperty,
             AccentBrushProperty,
+            PlayerBrushProperty,
             TextBrushProperty,
             ZoneBrushProperty);
+        ViewportZoomProperty.Changed.AddClassHandler<MineMapControl>(
+            (control, _) => control.OnViewportZoomChanged());
     }
+
+    private Point? dragOrigin;
+    private Vector dragStartOffset;
+    private Vector viewportOffset;
+    private IPointer? capturedPointer;
 
     public MineMapSurvey? Survey { get => GetValue(SurveyProperty); set => SetValue(SurveyProperty, value); }
     public SurfaceCoordinate? PlayerLocation { get => GetValue(PlayerLocationProperty); set => SetValue(PlayerLocationProperty, value); }
     public double PlayerHeading { get => GetValue(PlayerHeadingProperty); set => SetValue(PlayerHeadingProperty, value); }
-    public double ViewRadiusMeters { get => GetValue(ViewRadiusMetersProperty); set => SetValue(ViewRadiusMetersProperty, value); }
+    public double ViewportZoom { get => GetValue(ViewportZoomProperty); set => SetValue(ViewportZoomProperty, value); }
+    public bool AllowViewportInteraction { get => GetValue(AllowViewportInteractionProperty); set => SetValue(AllowViewportInteractionProperty, value); }
     public IReadOnlySet<string>? VisibleMaterials { get => GetValue(VisibleMaterialsProperty); set => SetValue(VisibleMaterialsProperty, value); }
+    public IBrush? MapBackground { get => GetValue(MapBackgroundProperty); set => SetValue(MapBackgroundProperty, value); }
     public IBrush? GridBrush { get => GetValue(GridBrushProperty); set => SetValue(GridBrushProperty, value); }
     public IBrush? AccentBrush { get => GetValue(AccentBrushProperty); set => SetValue(AccentBrushProperty, value); }
+    public IBrush? PlayerBrush { get => GetValue(PlayerBrushProperty); set => SetValue(PlayerBrushProperty, value); }
     public IBrush? TextBrush { get => GetValue(TextBrushProperty); set => SetValue(TextBrushProperty, value); }
     public IBrush? ZoneBrush { get => GetValue(ZoneBrushProperty); set => SetValue(ZoneBrushProperty, value); }
 
     public override void Render(DrawingContext context)
     {
         base.Render(context);
+        context.DrawRectangle(
+            MapBackground ?? Brushes.Transparent,
+            null,
+            new Rect(Bounds.Size));
         var survey = Survey;
         var text = TextBrush ?? Brushes.White;
         if (survey is null)
@@ -76,27 +100,24 @@ public sealed class MineMapControl : Control
         }
 
         var radiusPixels = Math.Max(1, Math.Min(Bounds.Width, Bounds.Height) / 2 - 28);
-        var center = new Point(Bounds.Width / 2, Bounds.Height / 2);
-        var viewRadius = double.IsFinite(ViewRadiusMeters) && ViewRadiusMeters > 0
-            ? ViewRadiusMeters
-            : 5_000;
-        var scale = radiusPixels / viewRadius;
+        var viewportCenter = new Point(Bounds.Width / 2, Bounds.Height / 2);
+        var center = viewportCenter + viewportOffset;
+        var zoom = NormalizeViewportZoom(ViewportZoom);
+        var scale = radiusPixels / 5_000 * zoom;
         var grid = GridBrush ?? Brushes.Gray;
         var accent = AccentBrush ?? Brushes.Cyan;
         var zone = ZoneBrush ?? Brushes.Gold;
-        var gridPen = new Pen(grid, 1);
+        var gridPen = new Pen(grid, 1.15);
 
         using (context.PushClip(Bounds))
         {
-            for (var kilometers = 1; kilometers <= 4; kilometers++)
+            foreach (var ring in CreateDistanceRings(radiusPixels, zoom))
             {
-                var ringRadius = kilometers * 1000 * scale;
-                if (ringRadius > radiusPixels) continue;
-                context.DrawEllipse(null, gridPen, center, ringRadius, ringRadius);
+                context.DrawEllipse(null, gridPen, center, ring.RadiusPixels, ring.RadiusPixels);
                 DrawText(
                     context,
-                    kilometers.ToString(CultureInfo.InvariantCulture),
-                    new Point(center.X + 5, center.Y - ringRadius + 3),
+                    ring.Kilometers.ToString("0.##", CultureInfo.InvariantCulture),
+                    new Point(center.X + 5, center.Y - ring.RadiusPixels + 3),
                     text,
                     10);
             }
@@ -120,22 +141,39 @@ public sealed class MineMapControl : Control
             context.DrawEllipse(null, new Pen(accent, 2), center, 7, 7);
             context.DrawEllipse(accent, null, center, 2.5, 2.5);
 
+            var markerScale = GetMarkerScale(zoom);
+            var markerLabelScale = GetMarkerLabelScale(zoom);
             foreach (var marker in survey.Markers)
             {
                 if (VisibleMaterials is { } visible && !visible.Contains(marker.Material)) continue;
                 var point = ToPoint(survey, marker.Location, center, scale);
-                if (Distance(center, point) > radiusPixels + 5) continue;
+                if (!new Rect(Bounds.Size).Inflate(12 * markerScale).Contains(point)) continue;
                 var brush = new SolidColorBrush(ColorFor(marker.Material));
-                context.DrawEllipse(brush, new Pen(Brushes.White, 0.75), point, 5, 5);
-                DrawText(context, marker.Material, new Point(point.X + 8, point.Y - 8), text, 10);
+                context.DrawEllipse(
+                    brush,
+                    new Pen(text, 0.75 * markerScale),
+                    point,
+                    5 * markerScale,
+                    5 * markerScale);
+                DrawText(
+                    context,
+                    marker.Material,
+                    new Point(point.X + 8 * markerScale, point.Y - 8 * markerScale),
+                    text,
+                    10 * markerLabelScale);
             }
 
             if (PlayerLocation is { } player)
             {
                 var point = ToPoint(survey, player, center, scale);
-                if (Distance(center, point) <= radiusPixels + 8)
+                if (new Rect(Bounds.Size).Inflate(12).Contains(point))
                 {
-                    DrawCommander(context, point, PlayerHeading, accent);
+                    DrawCommander(
+                        context,
+                        point,
+                        PlayerHeading,
+                        PlayerBrush ?? Brushes.LimeGreen,
+                        markerScale);
                 }
             }
         }
@@ -143,9 +181,160 @@ public sealed class MineMapControl : Control
 
     public static Color ColorFor(string material)
     {
+        if (SurfaceMiningCommodityCatalog.TryResolve(material, out var commodity))
+        {
+            return Color.Parse(commodity.ColorHex);
+        }
+
         var hash = 17;
         foreach (var character in material.ToUpperInvariant()) hash = unchecked(hash * 31 + character);
-        return MarkerColors[(hash & int.MaxValue) % MarkerColors.Length];
+        return FallbackMarkerColors[(hash & int.MaxValue) % FallbackMarkerColors.Length];
+    }
+
+    public void ResetViewport()
+    {
+        viewportOffset = default;
+        SetCurrentValue(ViewportZoomProperty, 1);
+        StopDragging(null);
+        InvalidateVisual();
+    }
+
+    protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
+    {
+        base.OnPointerWheelChanged(e);
+        if (!CanInteractWithViewport || e.Delta.Y == 0)
+        {
+            return;
+        }
+
+        var currentZoom = NormalizeViewportZoom(ViewportZoom);
+        var nextZoom = NormalizeViewportZoom(
+            currentZoom * (e.Delta.Y > 0 ? 1.1 : 0.9));
+        var pointer = e.GetPosition(this);
+        var center = new Rect(Bounds.Size).Center;
+        var ratio = nextZoom / currentZoom;
+        var relative = pointer - center - viewportOffset;
+        viewportOffset = new Vector(
+            pointer.X - center.X - relative.X * ratio,
+            pointer.Y - center.Y - relative.Y * ratio);
+        viewportOffset = ClampViewportOffset(viewportOffset, Bounds.Size, nextZoom);
+        SetCurrentValue(ViewportZoomProperty, nextZoom);
+        e.Handled = true;
+    }
+
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
+    {
+        base.OnPointerPressed(e);
+        if (!CanInteractWithViewport
+            || NormalizeViewportZoom(ViewportZoom) <= 1
+            || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        {
+            return;
+        }
+
+        dragOrigin = e.GetPosition(this);
+        dragStartOffset = viewportOffset;
+        capturedPointer = e.Pointer;
+        e.Pointer.Capture(this);
+        Cursor = new Cursor(StandardCursorType.SizeAll);
+        e.Handled = true;
+    }
+
+    protected override void OnPointerMoved(PointerEventArgs e)
+    {
+        base.OnPointerMoved(e);
+        if (dragOrigin is not { } origin)
+        {
+            return;
+        }
+
+        viewportOffset = ClampViewportOffset(
+            dragStartOffset + (e.GetPosition(this) - origin),
+            Bounds.Size,
+            ViewportZoom);
+        InvalidateVisual();
+        e.Handled = true;
+    }
+
+    protected override void OnPointerReleased(PointerReleasedEventArgs e)
+    {
+        base.OnPointerReleased(e);
+        StopDragging(e.Pointer);
+    }
+
+    protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
+    {
+        base.OnPointerCaptureLost(e);
+        StopDragging(null);
+    }
+
+    internal static double NormalizeViewportZoom(double zoom) =>
+        double.IsFinite(zoom) ? Math.Clamp(zoom, 1, 15) : 1;
+
+    internal static IReadOnlyList<DistanceRing> CreateDistanceRings(
+        double radiusPixels,
+        double zoom) =>
+        Enumerable.Range(1, 4)
+            .Select(kilometers => new DistanceRing(
+                kilometers,
+                kilometers * radiusPixels / 5 * NormalizeViewportZoom(zoom)))
+            .ToArray();
+
+    internal static double GetMarkerScale(double zoom) =>
+        Math.Clamp(Math.Sqrt(NormalizeViewportZoom(zoom)), 1, 3);
+
+    internal static double GetMarkerLabelScale(double zoom) =>
+        Math.Clamp(Math.Pow(NormalizeViewportZoom(zoom), 0.25), 1, 1.8);
+
+    internal static Vector ClampViewportOffset(
+        Vector requested,
+        Size viewportSize,
+        double zoom)
+    {
+        var normalizedZoom = NormalizeViewportZoom(zoom);
+        if (normalizedZoom <= 1
+            || viewportSize.Width <= 0
+            || viewportSize.Height <= 0)
+        {
+            return default;
+        }
+
+        return new Vector(
+            Math.Clamp(requested.X, -viewportSize.Width * (normalizedZoom - 1) / 2,
+                viewportSize.Width * (normalizedZoom - 1) / 2),
+            Math.Clamp(requested.Y, -viewportSize.Height * (normalizedZoom - 1) / 2,
+                viewportSize.Height * (normalizedZoom - 1) / 2));
+    }
+
+    private bool CanInteractWithViewport => AllowViewportInteraction && Survey is not null;
+
+    private void OnViewportZoomChanged()
+    {
+        viewportOffset = ClampViewportOffset(viewportOffset, Bounds.Size, ViewportZoom);
+        if (NormalizeViewportZoom(ViewportZoom) <= 1)
+        {
+            StopDragging(null);
+        }
+
+        InvalidateVisual();
+    }
+
+    private void StopDragging(IPointer? pointer)
+    {
+        if (dragOrigin is null)
+        {
+            return;
+        }
+
+        dragOrigin = null;
+        if (capturedPointer is { } captured
+            && (pointer is null || ReferenceEquals(pointer, captured)))
+        {
+            captured.Capture(null);
+        }
+
+        capturedPointer = null;
+        Cursor = new Cursor(StandardCursorType.Hand);
     }
 
     private static Point ToPoint(
@@ -164,26 +353,39 @@ public sealed class MineMapControl : Control
             center.Y - Math.Cos(bearing) * distance * scale);
     }
 
-    private static void DrawCommander(
+    private void DrawCommander(
         DrawingContext context,
         Point position,
         double heading,
-        IBrush brush)
+        IBrush brush,
+        double markerScale)
     {
-        var radians = heading * Math.PI / 180d;
-        Point At(double angle, double distance) => new(
-            position.X + Math.Sin(radians + angle) * distance,
-            position.Y - Math.Cos(radians + angle) * distance);
-        var geometry = new StreamGeometry();
-        using (var path = geometry.Open())
-        {
-            path.BeginFigure(At(0, 9), isFilled: true);
-            path.LineTo(At(2.45, 7));
-            path.LineTo(At(-2.45, 7));
-            path.EndFigure(isClosed: true);
-        }
-        context.DrawGeometry(brush, new Pen(Brushes.White, 1), geometry);
+        var radius = 6 * markerScale;
+        var pen = new Pen(brush, 2 * markerScale);
+        context.DrawEllipse(
+            MapBackground ?? Brushes.Transparent,
+            pen,
+            position,
+            radius,
+            radius);
+        context.DrawLine(
+            pen,
+            position,
+            GetCommanderHeadingEnd(position, radius, heading));
     }
+
+    internal static Point GetCommanderHeadingEnd(
+        Point location,
+        double radius,
+        double heading = 0) =>
+        GuardianSiteMapControl.GetCommanderHeadingEnd(
+            location,
+            radius,
+            heading);
+
+    internal readonly record struct DistanceRing(
+        double Kilometers,
+        double RadiusPixels);
 
     private static void DrawText(
         DrawingContext context,
@@ -202,6 +404,4 @@ public sealed class MineMapControl : Control
         context.DrawText(formatted, origin);
     }
 
-    private static double Distance(Point first, Point second) => Math.Sqrt(
-        Math.Pow(first.X - second.X, 2) + Math.Pow(first.Y - second.Y, 2));
 }

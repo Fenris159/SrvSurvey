@@ -7,6 +7,27 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class MiningSearchViewModelTests
 {
     [Fact]
+    public void EachSearchTableRetainsIndependentSortState()
+    {
+        using var model = new MiningSearchViewModel(
+            new MiningSearchClient(),
+            new BookmarksViewModel(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString())),
+            _ => { },
+            () => [],
+            new Resolver());
+
+        model.Destination = 0;
+        model.SortCommand.Execute("System");
+        Assert.Equal("↑", model.SortIndicators["System"]);
+        model.Destination = 1;
+        Assert.Equal(string.Empty, model.SortIndicators["System"]);
+        model.SortCommand.Execute("Price");
+        Assert.Equal("↑", model.SortIndicators["Price"]);
+        model.Destination = 0;
+        Assert.Equal("↑", model.SortIndicators["System"]);
+    }
+
+    [Fact]
     public async Task PlainBookmarkDoesNotEraseKnownOverlapOrResAnnotations()
     {
         var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());

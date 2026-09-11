@@ -2,7 +2,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              xmlns:controls="using:SrvSurvey.Desktop.Controls"
-             x:Class="SrvSurvey.Desktop.Views.MineMapView"
+             xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors"
+             Grid.IsSharedSizeScope="True" x:Class="SrvSurvey.Desktop.Views.MineMapView"
              x:DataType="vm:MainWindowViewModel">
   <UserControl.Styles>
     <Style Selector="Expander.mine-map-legend /template/ ToggleButton /template/ Border#ToggleButtonBackground">
@@ -13,21 +14,28 @@
     </Style>
     <Style Selector="Expander.mine-map-legend /template/ Border#ExpanderContent">
       <Setter Property="BackgroundSizing" Value="OuterBorderEdge" />
+      <Setter Property="BorderThickness" Value="1,0,1,1" />
+      <Setter Property="CornerRadius" Value="0,0,12,12" />
+      <Setter Property="BoxShadow" Value="none" />
+      <Setter Property="Margin" Value="0" />
+      <Setter Property="Padding" Value="10" />
+      <Setter Property="MinWidth" Value="290" />
+    </Style>
+    <Style Selector="Expander.mine-map-legend:expanded /template/ Border#ExpanderContent">
       <Setter Property="BorderThickness" Value="1" />
       <Setter Property="CornerRadius" Value="12" />
-      <Setter Property="BoxShadow" Value="none" />
-      <Setter Property="Padding" Value="12" />
     </Style>
   </UserControl.Styles>
-  <Grid DataContext="{Binding MineMap}" x:DataType="vm:MineMapViewModel" RowDefinitions="Auto,*,Auto" Margin="32">
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+  <StackPanel DataContext="{Binding MineMap}" x:DataType="vm:MineMapViewModel" Margin="32" Spacing="20" MaxWidth="1050">
     <StackPanel Spacing="5">
       <TextBlock Classes="eyebrow" Text="ACTIVITIES" />
-      <TextBlock Classes="page-title" Text="Mine Map" />
+      <TextBlock Classes="page-title" Text="Surface Mining" />
       <TextBlock Classes="muted" TextWrapping="Wrap"
                  Text="Survey surface mining locations, save their centers, and map mineral deposits from Elite chat commands." />
     </StackPanel>
 
-    <TabControl Grid.Row="1" SelectedIndex="{Binding SelectedTab, Mode=TwoWay}" Margin="0,14,0,0">
+    <TabControl SelectedIndex="{Binding SelectedTab, Mode=TwoWay}">
       <TabItem Header="Surface Maps">
         <StackPanel Margin="0,16,0,0" Spacing="18">
           <Border Classes="card raised">
@@ -38,6 +46,8 @@
                 <TextBlock Classes="card-title" Text="{Binding LiveMapTitle}" />
                 <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding LiveMapDescription}" />
                 <TextBlock Classes="monospace" FontSize="11" Text="{Binding LiveMapLocation}" />
+                <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap"
+                           Text="{Binding LiveMapCommandHelp}" />
               </StackPanel>
               <Border Grid.Column="2" Classes="badge" VerticalAlignment="Top">
                 <TextBlock Foreground="{DynamicResource RavenAccentBrush}" FontWeight="SemiBold" Text="{Binding MarkerCountText}" />
@@ -46,103 +56,160 @@
           </Border>
 
           <Border Classes="card raised">
-            <Grid ColumnDefinitions="2*,*,*" ColumnSpacing="18">
-              <StackPanel Spacing="6">
-                <TextBlock Classes="muted" Text="SEARCH" />
-                <TextBox Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                         PlaceholderText="System, body, signal, rating, or address" />
-              </StackPanel>
-              <StackPanel Grid.Column="1" Spacing="6">
-                <TextBlock Classes="muted" Text="CONTAINS" />
-                <ComboBox ItemsSource="{Binding ContainsOptions}" SelectedItem="{Binding SelectedContains, Mode=TwoWay}" />
-              </StackPanel>
-              <StackPanel Grid.Column="2" Spacing="6">
-                <TextBlock Classes="muted" Text="BODY TYPE" />
-                <ComboBox ItemsSource="{Binding BodyTypeOptions}" SelectedItem="{Binding SelectedBodyType, Mode=TwoWay}" />
-              </StackPanel>
-            </Grid>
+            <StackPanel Spacing="10">
+              <Grid ColumnDefinitions="2*,*,*" ColumnSpacing="18">
+                <StackPanel Spacing="6">
+                  <TextBlock Classes="muted" Text="SEARCH" />
+                  <TextBox Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                           PlaceholderText="System, body, signal, rating, or address" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="6">
+                  <TextBlock Classes="muted" Text="CONTAINS" />
+                  <ComboBox ItemsSource="{Binding ContainsOptions}" SelectedItem="{Binding SelectedContains, Mode=TwoWay}" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" Spacing="6">
+                  <TextBlock Classes="muted" Text="BODY TYPE" />
+                  <ComboBox ItemsSource="{Binding BodyTypeOptions}" SelectedItem="{Binding SelectedBodyType, Mode=TwoWay}" />
+                </StackPanel>
+              </Grid>
+              <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap"
+                         Text="Contains and Body Type are built automatically from your saved surface mining bookmarks." />
+            </StackPanel>
           </Border>
 
           <Border Classes="card" Padding="0">
-            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-              <Grid MinWidth="1180" RowDefinitions="Auto,*">
-                <Grid Margin="14,10" ColumnDefinitions="180,150,140,125,85,85,90,90,120,70" ColumnSpacing="10">
-                  <TextBlock Classes="table-heading" Text="SYSTEM" />
-                  <TextBlock Grid.Column="1" Classes="table-heading" Text="BODY" />
-                  <TextBlock Grid.Column="2" Classes="table-heading" Text="SIGNAL" />
-                  <TextBlock Grid.Column="3" Classes="table-heading" Text="BODY TYPE" />
-                  <TextBlock Grid.Column="4" Classes="table-heading" Text="DISTANCE" />
-                  <TextBlock Grid.Column="5" Classes="table-heading" Text="ARRIVAL" />
-                  <TextBlock Grid.Column="6" Classes="table-heading" Text="AMOUNT" />
-                  <TextBlock Grid.Column="7" Classes="table-heading" Text="DENSITY" />
-                  <TextBlock Grid.Column="8" Classes="table-heading" Text="UPDATED" />
-                  <TextBlock Grid.Column="9" Classes="table-heading" Text="ACTIONS" />
+              <Grid RowDefinitions="Auto,*">
+                <Grid x:Name="SurfaceMapsHeader" Margin="12,9" ColumnSpacing="8"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps0" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps1" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps2" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps3" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps4" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps5" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps6" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps7" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps8" /></Grid.ColumnDefinitions>
+                  <Button Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortSurveysCommand}" CommandParameter="SystemName"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="SYSTEM" /><TextBlock Classes="table-heading" Text="{Binding SurveySortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=SystemName}" /></StackPanel></Button>
+                  <Button Grid.Column="1" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortSurveysCommand}" CommandParameter="DisplayBodyName"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="BODY" /><TextBlock Classes="table-heading" Text="{Binding SurveySortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=DisplayBodyName}" /></StackPanel></Button>
+                  <Button Grid.Column="2" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortSurveysCommand}" CommandParameter="SignalValue"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="SIGNAL #" /><TextBlock Classes="table-heading" Text="{Binding SurveySortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=SignalValue}" /></StackPanel></Button>
+                  <Button Grid.Column="3" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortSurveysCommand}" CommandParameter="BodyType"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="BODY TYPE" /><TextBlock Classes="table-heading" Text="{Binding SurveySortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=BodyType}" /></StackPanel></Button>
+                  <Button Grid.Column="4" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortSurveysCommand}" CommandParameter="DistanceValue"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="FROM SOL" /><TextBlock Classes="table-heading" Text="{Binding SurveySortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=DistanceValue}" /></StackPanel></Button>
+                  <Button Grid.Column="5" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortSurveysCommand}" CommandParameter="ArrivalValue"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="ARRIVAL" /><TextBlock Classes="table-heading" Text="{Binding SurveySortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=ArrivalValue}" /></StackPanel></Button>
+                  <Button Grid.Column="6" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortSurveysCommand}" CommandParameter="MineralAmount"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="AMOUNT" /><TextBlock Classes="table-heading" Text="{Binding SurveySortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=MineralAmount}" /></StackPanel></Button>
+                  <Button Grid.Column="7" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortSurveysCommand}" CommandParameter="Density"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="DENSITY" /><TextBlock Classes="table-heading" Text="{Binding SurveySortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Density}" /></StackPanel></Button>
+                  <Button Grid.Column="8" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortSurveysCommand}" CommandParameter="UpdatedValue"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="UPDATED" /><TextBlock Classes="table-heading" Text="{Binding SurveySortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=UpdatedValue}" /></StackPanel></Button>
                 </Grid>
-                <ScrollViewer Grid.Row="1" Height="390" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                  <ItemsControl ItemsSource="{Binding FilteredSurveys}">
-                    <ItemsControl.ItemTemplate>
+                <ListBox Grid.Row="1" Classes="table-rows" Height="390"
+                         ItemsSource="{Binding FilteredSurveys}"
+                         SelectedItem="{Binding SelectedSurveyRow, Mode=TwoWay}"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                  <ListBox.ContextMenu>
+                    <ContextMenu>
+                      <MenuItem Header="Copy system name"
+                                behaviors:ClipboardCopyBehavior.Text="{Binding SelectedSurveyRow.SystemName}" />
+                      <MenuItem Header="Edit bookmark"
+                                Command="{Binding EditSelectedBookmarkCommand}" />
+                    </ContextMenu>
+                  </ListBox.ContextMenu>
+                    <ListBox.ItemTemplate>
                       <DataTemplate x:DataType="vm:MineMapSurveyRowViewModel">
-                        <Border Classes="table-row" Padding="14,10">
-                          <Grid ColumnDefinitions="180,150,140,125,85,85,90,90,120,70" ColumnSpacing="10">
+                    <Grid Classes="table-row" Margin="12,8" Tapped="OnSurveyRowTapped"
+
+                                ColumnSpacing="8"
+                                ToolTip.Tip="Select to open this survey map"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps0" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps1" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps2" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps3" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps4" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps5" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps6" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps7" /><ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceMaps8" /></Grid.ColumnDefinitions>
                             <TextBlock Text="{Binding SystemName}" TextTrimming="CharacterEllipsis" />
-                            <TextBlock Grid.Column="1" Text="{Binding BodyName}" TextTrimming="CharacterEllipsis" />
-                            <Button Grid.Column="2" Classes="link" Padding="0" HorizontalContentAlignment="Left"
-                                    Tag="{Binding}" Click="OpenMap_Click" Content="{Binding Name}" />
+                            <TextBlock Grid.Column="1" Text="{Binding DisplayBodyName}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding BodyName}" />
+                            <TextBlock Grid.Column="2" Text="{Binding SignalNumber}" />
                             <TextBlock Grid.Column="3" Text="{Binding BodyType}" TextTrimming="CharacterEllipsis" />
                             <TextBlock Grid.Column="4" Text="{Binding DistanceText}" />
                             <TextBlock Grid.Column="5" Text="{Binding ArrivalText}" />
                             <TextBlock Grid.Column="6" Text="{Binding MineralAmount}" />
                             <TextBlock Grid.Column="7" Text="{Binding Density}" />
-                            <TextBlock Grid.Column="8" Text="{Binding UpdatedText}" />
-                            <Button Grid.Column="9" Classes="icon" Tag="{Binding}" Click="RequestDelete_Click"
-                                    ToolTip.Tip="Delete surface map">
-                              <TextBlock Text="🗑" />
-                            </Button>
+                            <TextBlock Grid.Column="8" Text="{Binding UpdatedText}" TextTrimming="CharacterEllipsis" />
                           </Grid>
-                        </Border>
                       </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                  </ItemsControl>
-                </ScrollViewer>
+                    </ListBox.ItemTemplate>
+                  </ListBox>
               </Grid>
-            </ScrollViewer>
           </Border>
         </StackPanel>
       </TabItem>
 
       <TabItem Header="Survey map">
-        <Grid Margin="0,16,0,0" ColumnDefinitions="*,300" ColumnSpacing="20">
-          <Border Classes="card" MinHeight="560">
-            <controls:MineMapControl Survey="{Binding ActiveSurvey}"
-                                     PlayerLocation="{Binding PlayerLocation}"
-                                     PlayerHeading="{Binding PlayerHeading}"
-                                     ViewRadiusMeters="{Binding ViewRadiusMeters}"
-                                     VisibleMaterials="{Binding VisibleMaterials}"
-                                     GridBrush="{DynamicResource RavenBorderBrush}"
-                                     AccentBrush="{DynamicResource RavenAccentBrush}"
-                                     TextBrush="{DynamicResource RavenForegroundBrush}"
-                                     ZoneBrush="{DynamicResource RavenWarningBrush}" />
-          </Border>
-          <StackPanel Grid.Column="1" Spacing="14">
-            <Border Classes="card raised">
-              <StackPanel Spacing="10">
-                <TextBlock Classes="card-title" Text="Zoom" />
-                <TextBlock Classes="monospace" Text="{Binding ZoomText}" />
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                  <Button Classes="secondary" Command="{Binding ZoomInCommand}" Content="+" />
-                  <Button Classes="secondary" Command="{Binding ZoomOutCommand}" Content="−" />
-                  <Button Classes="secondary" Command="{Binding ResetZoomCommand}" Content="Reset" />
+        <StackPanel Margin="0,16,0,0" Spacing="18">
+        <Grid x:Name="MineSurveyMapTop" ColumnDefinitions="3*,2*" ColumnSpacing="18">
+          <Border Classes="card" Padding="12" VerticalAlignment="Top">
+            <Grid RowDefinitions="Auto,Auto" RowSpacing="10">
+              <Viewbox x:Name="MineSurveyMapViewport"
+                       MaxHeight="640"
+                       HorizontalAlignment="Stretch"
+                       Stretch="Uniform"
+                       StretchDirection="DownOnly">
+              <controls:MineMapControl x:Name="MineSurveyMap"
+                                       Width="640"
+                                       Height="640"
+                                       ClipToBounds="True"
+                                       Cursor="Hand"
+                                       AllowViewportInteraction="True"
+                                       Survey="{Binding ActiveSurvey}"
+                                       PlayerLocation="{Binding PlayerLocation}"
+                                       PlayerHeading="{Binding PlayerHeading}"
+                                       ViewportZoom="{Binding ViewportZoom, Mode=TwoWay}"
+                                       VisibleMaterials="{Binding VisibleMaterials}"
+                                       MapBackground="{DynamicResource RavenRaisedSurfaceBrush}"
+                                       GridBrush="{DynamicResource RavenMapGridBrush}"
+                                       AccentBrush="{DynamicResource RavenAccentBrush}"
+                                       PlayerBrush="{DynamicResource RavenSuccessBrush}"
+                                       TextBrush="{DynamicResource RavenTextBrush}"
+                                       ZoneBrush="{DynamicResource RavenWarningBrush}" />
+              </Viewbox>
+              <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10">
+                <TextBlock Classes="eyebrow" VerticalAlignment="Center" Text="ZOOM" />
+                <Slider Grid.Column="1" Minimum="1" Maximum="15" TickFrequency="0.1"
+                        Value="{Binding ViewportZoom, ElementName=MineSurveyMap, Mode=TwoWay}"
+                        ToolTip.Tip="1x fits the full 5 km map. Zoom in, then drag the map to pan." />
+                <TextBlock Grid.Column="2" MinWidth="52" VerticalAlignment="Center"
+                           FontWeight="SemiBold"
+                           Text="{Binding ViewportZoom, ElementName=MineSurveyMap, StringFormat='{}{0:N2}x'}" />
+                <StackPanel Grid.Column="3" Margin="8,0,0,0" HorizontalAlignment="Right" Orientation="Horizontal" Spacing="4">
+                  <TextBlock Classes="muted" VerticalAlignment="Center" Text="Orientation" />
+                  <Button Classes="link" Width="18" Height="18" Padding="2" VerticalAlignment="Center"
+                          AutomationProperties.Name="Surface Mining map orientation information"
+                          ToolTip.Tip="The surface map is fixed north-up. Heading lines, deposits, the survey center, and the live player position share the stored planetary coordinates.">
+                    <PathIcon Width="14" Height="14" Data="{StaticResource question_circle_regular}" />
+                  </Button>
                 </StackPanel>
-              </StackPanel>
-            </Border>
-            <Expander Classes="mine-map-legend" Header="Map Legend" IsExpanded="True">
+              </Grid>
+            </Grid>
+          </Border>
+          <StackPanel Grid.Column="1" Spacing="18">
+            <Border Margin="0" Padding="0">
+            <Expander Classes="mine-map-legend" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" IsExpanded="False">
+              <Expander.Header>
+                <TextBlock Margin="20,16" Classes="card-title" Text="Map legend" />
+              </Expander.Header>
               <StackPanel Spacing="8">
                 <TextBlock Text="◎ Mining location border (2.47 km radius)" TextWrapping="Wrap" />
                 <TextBlock Text="◉ Survey center" />
-                <TextBlock Text="▲ Live player position" />
+                <TextBlock Text="○ Live player position and heading" />
                 <TextBlock Text="● Saved mineral or metal deposit" TextWrapping="Wrap" />
               </StackPanel>
             </Expander>
+            </Border>
+            <Border Classes="card raised">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="card-title" Text="Selected map" />
+                <TextBlock FontWeight="SemiBold" Text="{Binding SelectedMapSystem}" TextWrapping="Wrap" />
+                <TextBlock Classes="muted" Text="{Binding SelectedMapBody}" TextWrapping="Wrap" />
+                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
+                  <StackPanel Spacing="2">
+                    <TextBlock Classes="eyebrow" Text="SIGNAL" />
+                    <TextBlock Text="{Binding SelectedMapSignal}" />
+                  </StackPanel>
+                  <StackPanel Grid.Column="1" Spacing="2">
+                    <TextBlock Classes="eyebrow" Text="AMOUNT" />
+                    <TextBlock Text="{Binding SelectedMapAmount}" />
+                  </StackPanel>
+                  <StackPanel Grid.Column="2" Spacing="2">
+                    <TextBlock Classes="eyebrow" Text="DENSITY" />
+                    <TextBlock Text="{Binding SelectedMapDensity}" />
+                  </StackPanel>
+                </Grid>
+                <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap"
+                           Text="Use the mouse wheel or − / + controls to zoom. Drag the map to pan after zooming in." />
+              </StackPanel>
+            </Border>
             <Border Classes="card">
               <StackPanel Spacing="8">
                 <TextBlock Classes="card-title" Text="Marker visibility" />
@@ -162,18 +229,204 @@
             </Border>
           </StackPanel>
         </Grid>
+        </StackPanel>
+      </TabItem>
+
+      <TabItem Header="Hotspot List">
+        <StackPanel Margin="0,16,0,0" Spacing="14">
+          <Border Classes="card raised">
+            <StackPanel Spacing="6">
+              <TextBlock Classes="card-title" Text="Rhino surface hotspot list" />
+              <TextBlock Classes="muted" TextWrapping="Wrap"
+                         Text="Body availability follows the Surface Hunt location reference. Sell prices retain the community snapshot and can change." />
+              <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap"
+                         Text="The color beside each commodity is the marker color used in surface mining surveys." />
+            </StackPanel>
+          </Border>
+          <Border Classes="card" Padding="0">
+            <ScrollViewer x:Name="HotspotListHorizontalScroller"
+                          HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Disabled">
+              <Grid RowDefinitions="Auto,*">
+                <Grid x:Name="HotspotListHeader" Margin="12,9" ColumnSpacing="8"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="HotspotList0" /><ColumnDefinition Width="Auto" SharedSizeGroup="HotspotList1" /><ColumnDefinition Width="Auto" SharedSizeGroup="HotspotList2" /><ColumnDefinition Width="Auto" SharedSizeGroup="HotspotList3" /><ColumnDefinition Width="Auto" SharedSizeGroup="HotspotList4" /><ColumnDefinition Width="Auto" SharedSizeGroup="HotspotList5" /><ColumnDefinition Width="Auto" SharedSizeGroup="HotspotList6" /><ColumnDefinition Width="Auto" SharedSizeGroup="HotspotList7" /><ColumnDefinition Width="Auto" SharedSizeGroup="HotspotList8" /><ColumnDefinition Width="Auto" SharedSizeGroup="HotspotList9" /></Grid.ColumnDefinitions>
+                  <Button Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortHotspotsCommand}" CommandParameter="Category"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="CATEGORY" /><TextBlock Classes="table-heading" Text="{Binding HotspotSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Category}" /></StackPanel></Button>
+                  <Button Grid.Column="1" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortHotspotsCommand}" CommandParameter="Name"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="COMMODITY" /><TextBlock Classes="table-heading" Text="{Binding HotspotSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Name}" /></StackPanel></Button>
+                  <Button Grid.Column="2" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortHotspotsCommand}" CommandParameter="HighMetalContent" ToolTip.Tip="High metal content world"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="HMC" /><TextBlock Classes="table-heading" Text="{Binding HotspotSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=HighMetalContent}" /></StackPanel></Button>
+                  <Button Grid.Column="3" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortHotspotsCommand}" CommandParameter="MetalRich"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="METAL RICH" /><TextBlock Classes="table-heading" Text="{Binding HotspotSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=MetalRich}" /></StackPanel></Button>
+                  <Button Grid.Column="4" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortHotspotsCommand}" CommandParameter="Rocky"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="ROCKY" /><TextBlock Classes="table-heading" Text="{Binding HotspotSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Rocky}" /></StackPanel></Button>
+                  <Button Grid.Column="5" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortHotspotsCommand}" CommandParameter="RockyIce"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="ROCKY ICE" /><TextBlock Classes="table-heading" Text="{Binding HotspotSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=RockyIce}" /></StackPanel></Button>
+                  <Button Grid.Column="6" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortHotspotsCommand}" CommandParameter="Icy"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="ICY" /><TextBlock Classes="table-heading" Text="{Binding HotspotSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Icy}" /></StackPanel></Button>
+                  <Button Grid.Column="7" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortHotspotsCommand}" CommandParameter="AverageSellPriceValue"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="AVG CR/T" /><TextBlock Classes="table-heading" Text="{Binding HotspotSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=AverageSellPriceValue}" /></StackPanel></Button>
+                  <Button Grid.Column="8" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortHotspotsCommand}" CommandParameter="MaximumSellPriceValue"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="MAX CR/T" /><TextBlock Classes="table-heading" Text="{Binding HotspotSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=MaximumSellPriceValue}" /></StackPanel></Button>
+                  <Button Grid.Column="9" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortHotspotsCommand}" CommandParameter="IsInOverlay"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="OVERLAY" /><TextBlock Classes="table-heading" Text="{Binding HotspotSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=IsInOverlay}" /></StackPanel></Button>
+                </Grid>
+                <ScrollViewer x:Name="HotspotListResults" Grid.Row="1" Height="560" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                  <ItemsControl ItemsSource="{Binding HotspotRows}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:SurfaceMiningCommodityRowViewModel">
+                        <Border Classes="table-row" Padding="12,7">
+                          <Grid ColumnSpacing="8"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="HotspotList0" /><ColumnDefinition Width="Auto" SharedSizeGroup="HotspotList1" /><ColumnDefinition Width="Auto" SharedSizeGroup="HotspotList2" /><ColumnDefinition Width="Auto" SharedSizeGroup="HotspotList3" /><ColumnDefinition Width="Auto" SharedSizeGroup="HotspotList4" /><ColumnDefinition Width="Auto" SharedSizeGroup="HotspotList5" /><ColumnDefinition Width="Auto" SharedSizeGroup="HotspotList6" /><ColumnDefinition Width="Auto" SharedSizeGroup="HotspotList7" /><ColumnDefinition Width="Auto" SharedSizeGroup="HotspotList8" /><ColumnDefinition Width="Auto" SharedSizeGroup="HotspotList9" /></Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding Category}" TextTrimming="CharacterEllipsis" />
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                              <TextBlock Foreground="{Binding ColorHex}" Text="●" />
+                              <TextBlock FontWeight="SemiBold" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                            <TextBlock Grid.Column="2" TextAlignment="Center" Text="{Binding HighMetalContent}" />
+                            <TextBlock Grid.Column="3" TextAlignment="Center" Text="{Binding MetalRich}" />
+                            <TextBlock Grid.Column="4" TextAlignment="Center" Text="{Binding Rocky}" />
+                            <TextBlock Grid.Column="5" TextAlignment="Center" Text="{Binding RockyIce}" />
+                            <TextBlock Grid.Column="6" TextAlignment="Center" Text="{Binding Icy}" />
+                            <TextBlock Grid.Column="7" Text="{Binding AverageSellPrice}" />
+                            <TextBlock Grid.Column="8" Text="{Binding MaximumSellPrice}" />
+                            <CheckBox Grid.Column="9" HorizontalAlignment="Center"
+                                      VerticalAlignment="Center" Margin="0,-4,0,4"
+                                      IsChecked="{Binding IsInOverlay, Mode=TwoWay}"
+                                      ToolTip.Tip="Show this commodity in the Mining Ref overlay" />
+                          </Grid>
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </ScrollViewer>
+              </Grid>
+            </ScrollViewer>
+          </Border>
+        </StackPanel>
+      </TabItem>
+
+      <TabItem Header="Surface Hunt">
+        <StackPanel Margin="0,16,0,0" Spacing="14">
+          <Border Classes="card raised">
+            <StackPanel Spacing="6">
+              <TextBlock Classes="card-title" Text="Surface mining location reference" />
+              <TextBlock Classes="muted" TextWrapping="Wrap"
+                         Text="Use body type, geology, and stellar clues to narrow the search for a surface-mining commodity. Prices are a community snapshot and can change." />
+            </StackPanel>
+          </Border>
+          <Border Classes="card" Padding="0">
+            <ScrollViewer x:Name="SurfaceHuntHorizontalScroller"
+                          HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Disabled">
+            <Grid RowDefinitions="Auto,*">
+              <Grid x:Name="SurfaceHuntHeader" Margin="12,9" ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceHunt0" />
+                  <ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceHunt1" />
+                  <ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceHunt2" />
+                  <ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceHunt3" />
+                  <ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceHunt4" />
+                  <ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceHunt5" />
+                  <ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceHunt6" />
+                  <ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceHunt7" />
+                </Grid.ColumnDefinitions>
+                <Button Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortSurfaceHuntCommand}" CommandParameter="SearchGroup"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" MaxWidth="105" TextWrapping="Wrap" Text="SEARCH GROUP" /><TextBlock Classes="table-heading" Text="{Binding SurfaceHuntSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=SearchGroup}" /></StackPanel></Button>
+                <Button Grid.Column="1" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortSurfaceHuntCommand}" CommandParameter="Material"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" MaxWidth="120" TextWrapping="Wrap" Text="MATERIAL" /><TextBlock Classes="table-heading" Text="{Binding SurfaceHuntSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Material}" /></StackPanel></Button>
+                <Button Grid.Column="2" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortSurfaceHuntCommand}" CommandParameter="StartWith"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" MaxWidth="105" TextWrapping="Wrap" Text="START WITH" /><TextBlock Classes="table-heading" Text="{Binding SurfaceHuntSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=StartWith}" /></StackPanel></Button>
+                <Button Grid.Column="3" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortSurfaceHuntCommand}" CommandParameter="AlsoPossibleOn"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" MaxWidth="130" TextWrapping="Wrap" Text="ALSO POSSIBLE ON" /><TextBlock Classes="table-heading" Text="{Binding SurfaceHuntSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=AlsoPossibleOn}" /></StackPanel></Button>
+                <Button Grid.Column="4" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortSurfaceHuntCommand}" CommandParameter="Geology"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" MaxWidth="145" TextWrapping="Wrap" Text="GEOLOGY TO LOOK FOR" /><TextBlock Classes="table-heading" Text="{Binding SurfaceHuntSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Geology}" /></StackPanel></Button>
+                <Button Grid.Column="5" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortSurfaceHuntCommand}" CommandParameter="SpecialClue"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" MaxWidth="135" TextWrapping="Wrap" Text="SPECIAL CLUE" /><TextBlock Classes="table-heading" Text="{Binding SurfaceHuntSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=SpecialClue}" /></StackPanel></Button>
+                <Button Grid.Column="6" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortSurfaceHuntCommand}" CommandParameter="AverageGalacticPriceValue"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" MaxWidth="100" TextWrapping="Wrap" Text="AVG GALACTIC PRICE" /><TextBlock Classes="table-heading" Text="{Binding SurfaceHuntSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=AverageGalacticPriceValue}" /></StackPanel></Button>
+                <Button Grid.Column="7" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding SortSurfaceHuntCommand}" CommandParameter="PeakSellPriceValue"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" MaxWidth="100" TextWrapping="Wrap" Text="PEAK SELL SNAPSHOT" /><TextBlock Classes="table-heading" Text="{Binding SurfaceHuntSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=PeakSellPriceValue}" /></StackPanel></Button>
+              </Grid>
+              <ScrollViewer x:Name="SurfaceHuntResults" Grid.Row="1" Height="560" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding SurfaceHuntRows}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:SurfaceMiningHuntRowViewModel">
+                      <Border Classes="table-row" Padding="12,7">
+                        <Grid ColumnSpacing="8">
+                          <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceHunt0" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceHunt1" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceHunt2" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceHunt3" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceHunt4" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceHunt5" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceHunt6" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="SurfaceHunt7" />
+                          </Grid.ColumnDefinitions>
+                          <TextBlock MaxWidth="105" TextWrapping="Wrap" Text="{Binding SearchGroup}" />
+                          <TextBlock Grid.Column="1" MaxWidth="120" TextWrapping="Wrap" FontWeight="SemiBold" Text="{Binding Material}" />
+                          <TextBlock Grid.Column="2" MaxWidth="105" TextWrapping="Wrap" Text="{Binding StartWith}" />
+                          <TextBlock Grid.Column="3" MaxWidth="130" TextWrapping="Wrap" Text="{Binding AlsoPossibleOn}" />
+                          <TextBlock Grid.Column="4" MaxWidth="145" TextWrapping="Wrap" Text="{Binding Geology}" />
+                          <TextBlock Grid.Column="5" MaxWidth="135" TextWrapping="Wrap" Text="{Binding SpecialClue}" />
+                          <TextBlock Grid.Column="6" MaxWidth="100" TextWrapping="Wrap" Text="{Binding AverageGalacticPrice}" />
+                          <TextBlock Grid.Column="7" MaxWidth="100" TextWrapping="Wrap" Text="{Binding PeakSellPrice}" />
+                        </Grid>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </ScrollViewer>
+            </Grid>
+            </ScrollViewer>
+          </Border>
+        </StackPanel>
+      </TabItem>
+
+      <TabItem Header="Instructions">
+        <ScrollViewer Margin="0,16,0,0" HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Spacing="16" MaxWidth="900">
+            <Button Classes="link" HorizontalAlignment="Left" Padding="0"
+                    Command="{Binding OpenSurfaceMiningGuideCommand}"
+                    Content="For Rig tracking and full command details click here" />
+            <Border Classes="card raised">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="card-title" Text="Map a surface mining location" />
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                  <TextBlock FontWeight="Bold" Text="1." />
+                  <TextBlock Grid.Column="1" TextWrapping="Wrap"
+                             Text="Stand on the yellow mining-location border and face the center marker." />
+                </Grid>
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                  <TextBlock FontWeight="Bold" Text="2." />
+                  <TextBlock Grid.Column="1" TextWrapping="Wrap"
+                             Text="Record the location with the .mining command." />
+                </Grid>
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                  <TextBlock FontWeight="Bold" Text="3." />
+                  <TextBlock Grid.Column="1" TextWrapping="Wrap"
+                             Text="Move to the saved center, face each deposit, and add its marker with .mine." />
+                </Grid>
+                <TextBlock Margin="0,6,0,0" FontWeight="SemiBold" Text="Examples" />
+                <Border Background="{DynamicResource RavenSurfaceBrush}"
+                        BorderBrush="{DynamicResource RavenBorderBrush}"
+                        BorderThickness="1" CornerRadius="8" Padding="12,9">
+                  <StackPanel Spacing="5">
+                    <TextBlock Classes="monospace" Text=".mining 120 4 high/low" />
+                    <TextBlock Classes="monospace" Text=".mine 15 ruby 1.24" />
+                    <TextBlock Classes="monospace" Text=".mine ruby here" />
+                  </StackPanel>
+                </Border>
+              </StackPanel>
+            </Border>
+            <Border Classes="card">
+              <StackPanel Spacing="12">
+                <TextBlock Classes="card-title" Text="Surface Mining map commands" />
+                <TextBlock FontWeight="SemiBold" Text=".mining &lt;heading&gt; &lt;location number&gt; &lt;high|low&gt;/&lt;high|low&gt;" />
+                <TextBlock Classes="muted" TextWrapping="Wrap"
+                           Text="Creates or updates the current Mining Location Signal. Heading must be 0–359, the location number must be positive, and mineral amount and density each accept only high or low." />
+                <TextBlock FontWeight="SemiBold" Text=".mine &lt;heading&gt; &lt;commodity&gt; &lt;distance km&gt;" />
+                <TextBlock Classes="muted" TextWrapping="Wrap"
+                           Text="Adds a listed Hotspot List commodity at a bearing and distance from the saved center. Example: .mine 15 ruby 1.24" />
+                <TextBlock FontWeight="SemiBold" Text=".mine &lt;commodity&gt; here" />
+                <TextBlock Classes="muted" TextWrapping="Wrap"
+                           Text="Adds a listed commodity at your current surface coordinates. Example: .mine monazite here" />
+                <TextBlock FontWeight="SemiBold" Text=".mine delete here" />
+                <TextBlock Classes="muted" TextWrapping="Wrap"
+                           Text="Removes the nearest mapped deposit within 0.5 km of your current position." />
+                <TextBlock Classes="muted" TextWrapping="Wrap"
+                           Text="Commands and commodity names are case insensitive. Accepted commodity names are listed in Hotspot List. Every accepted or declined command reports its result through Status notifications." />
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
       </TabItem>
     </TabControl>
 
-    <StackPanel Grid.Row="2" Spacing="8">
-      <Border Classes="card raised" IsVisible="{Binding HasPendingDelete}">
-        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
-          <TextBlock VerticalAlignment="Center" Text="{Binding DeletePrompt}" TextWrapping="Wrap" />
-          <Button Grid.Column="1" Classes="danger" Command="{Binding ConfirmDeleteCommand}" Content="Yes, delete" />
-          <Button Grid.Column="2" Classes="secondary" Command="{Binding CancelDeleteCommand}" Content="No" />
-        </Grid>
-      </Border>
+    <StackPanel Spacing="8">
       <TextBlock Foreground="{DynamicResource RavenWarningBrush}" Text="{Binding StatusText}" TextWrapping="Wrap" />
     </StackPanel>
-  </Grid>
+  </StackPanel>
+  </ScrollViewer>
 </UserControl>

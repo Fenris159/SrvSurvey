@@ -132,6 +132,23 @@ public sealed class OverlayPresentationSession : IDisposable
         return hosted;
     }
 
+    internal void ConfigureAuxiliaryWindow(
+        Window window,
+        string plotterName)
+    {
+        ObjectDisposedException.ThrowIf(disposed, this);
+        ArgumentNullException.ThrowIfNull(window);
+        ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
+        OverlayThemeResources.ApplyOpacity(
+            window,
+            hostDependencies.OverlayLayout,
+            plotterName);
+        (hostDependencies.WindowRegistry ?? OverlayWindowRegistry.Shared).Register(
+            window,
+            plotterName,
+            participatesInPlacement: false);
+    }
+
     public void Dispose()
     {
         if (disposed)

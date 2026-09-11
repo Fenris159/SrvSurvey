@@ -117,6 +117,9 @@ public sealed class RavenThemeServiceTests : IDisposable
                     ? theme.AccentForegroundColor
                     : theme.MutedTextColor),
                 selectedMutedText.Color);
+            var mapGrid = Assert.IsType<SolidColorBrush>(
+                application.Resources["RavenMapGridBrush"]);
+            Assert.Equal(Color.Parse(theme.MapGridColor), mapGrid.Color);
             var warning = Assert.IsType<SolidColorBrush>(
                 application.Resources["RavenWarningBrush"]);
             var warningShadow = Assert.IsType<BoxShadows>(

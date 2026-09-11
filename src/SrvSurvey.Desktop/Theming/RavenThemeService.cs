@@ -195,6 +195,7 @@ public sealed class RavenThemeService
         SetBrush("RavenTertiaryTextBrush", theme.TertiaryTextColor);
         SetBrush("RavenBorderBrush", theme.BorderColor);
         SetBrush("RavenStrongBorderBrush", theme.StrongBorderColor);
+        SetBrush("RavenMapGridBrush", theme.MapGridColor);
         SetBrush("RavenFocusRingBrush", theme.FocusRingColor);
         SetBrush("RavenModalScrimBrush", theme.ModalScrimColor);
         SetBrush("RavenSuccessBrush", theme.SuccessColor);

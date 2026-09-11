@@ -14,6 +14,36 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class MainSidebarPresentationTests
 {
+    [AvaloniaFact]
+    public void FixedDestinationsRemainOutsideTheInitiallyCollapsedAccordionScroller()
+    {
+        using var viewModel = MainWindowViewModelTestBuilder.Create(null, _ => { });
+        var window = new MainWindow(viewModel) { Height = 600 };
+        try
+        {
+            window.Show();
+            var overview = Assert.IsType<ItemsControl>(
+                window.FindControl<ItemsControl>("OverviewNavigationShortcuts"));
+            var scroller = Assert.IsType<ScrollViewer>(
+                window.FindControl<ScrollViewer>("NavigationAccordionScroller"));
+            var utilities = Assert.IsType<ItemsControl>(
+                window.FindControl<ItemsControl>("UtilityNavigationShortcuts"));
+            using var frame = window.CaptureRenderedFrame();
+
+            Assert.False(viewModel.IsSurveyNavigationExpanded);
+            Assert.False(viewModel.IsNavigationNavigationExpanded);
+            Assert.False(viewModel.IsActivitiesNavigationExpanded);
+            Assert.DoesNotContain(scroller, overview.GetVisualAncestors());
+            Assert.DoesNotContain(scroller, utilities.GetVisualAncestors());
+            Assert.True(BottomOf(overview, window) <= TopOf(scroller, window));
+            Assert.True(BottomOf(scroller, window) <= TopOf(utilities, window));
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     [AvaloniaTheory]
     [InlineData("monochrome-dark", 100)]
     [InlineData("blue-light", 125)]
@@ -90,4 +120,10 @@ public sealed class MainSidebarPresentationTests
             frame.Save(stream, PngBitmapEncoderOptions.Default);
         }
     }
+
+    private static double TopOf(Control control, Visual relativeTo) =>
+        control.TranslatePoint(default, relativeTo)!.Value.Y;
+
+    private static double BottomOf(Control control, Visual relativeTo) =>
+        TopOf(control, relativeTo) + control.Bounds.Height;
 }

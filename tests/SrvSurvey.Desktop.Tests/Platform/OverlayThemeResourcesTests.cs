@@ -29,6 +29,7 @@ public sealed class OverlayThemeResourcesTests
             ["PlotFSSInfo"] = "SystemSurvey.AutoShowFssInfo",
             ["PlotGalMap"] = "GalaxyMap.AutoShow",
             ["PlotMiningNotifications"] = "MiningWorkspace.ShouldShowNotifications",
+            ["PlotMiningReference"] = "MineMap.ShouldShowMiningReference",
             ["PlotMiningFiregroups"] = "Firegroups.ShouldShow",
             ["PlotMiningWarning"] = "Mining.ShouldShowRigWarning",
             ["PlotSurfaceMining"] = "Mining.ShouldShow",
@@ -471,7 +472,7 @@ public sealed class OverlayThemeResourcesTests
     [Fact]
     public void EveryRuntimeOverlayUsesItsEditorCatalogWidth()
     {
-        Assert.Equal(34, OverlayLayoutCatalog.Supported.Count);
+        Assert.Equal(35, OverlayLayoutCatalog.Supported.Count);
         Assert.All(OverlayLayoutCatalog.Supported, definition =>
             Assert.Equal(
                 definition.PreviewSize.Width,

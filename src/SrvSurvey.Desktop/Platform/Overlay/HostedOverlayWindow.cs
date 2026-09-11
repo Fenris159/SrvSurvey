@@ -173,6 +173,8 @@ internal sealed class HostedOverlayWindow : IDisposable
 
     public bool IsVisible => isVisible;
 
+    internal Window? CurrentWindow => window;
+
     public OverlayHostHealth Health { get; private set; } =
         OverlayHostHealth.Healthy;
 

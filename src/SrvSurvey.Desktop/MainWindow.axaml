@@ -68,7 +68,7 @@
       <Grid x:Name="SidebarContent"
             IsVisible="{Binding !IsSidebarCollapsed}"
             Margin="16"
-            RowDefinitions="Auto,Auto,*,Auto"
+            RowDefinitions="Auto,Auto,Auto,*,Auto"
             RowSpacing="14">
         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" Margin="0,0,28,0">
           <Image Width="42"
@@ -99,15 +99,18 @@
           </StackPanel>
         </Button>
 
-        <ScrollViewer Grid.Row="2"
+        <StackPanel Grid.Row="2" Spacing="4">
+          <ItemsControl x:Name="OverviewNavigationShortcuts"
+                        ItemsSource="{Binding OverviewNavigationItems}"
+                        ItemTemplate="{StaticResource NavigationRowTemplate}" />
+          <Separator Margin="0,6" />
+        </StackPanel>
+
+        <ScrollViewer x:Name="NavigationAccordionScroller"
+                      Grid.Row="3"
                       HorizontalScrollBarVisibility="Disabled"
                       VerticalScrollBarVisibility="Auto">
           <StackPanel Spacing="4">
-            <ItemsControl ItemsSource="{Binding OverviewNavigationItems}"
-                          ItemTemplate="{StaticResource NavigationRowTemplate}" />
-
-            <Separator Margin="0,6" />
-
             <Button Classes="nav-group-heading"
                     Classes.expanded="{Binding IsSurveyNavigationExpanded}"
                     CommandParameter="survey"
@@ -152,9 +155,10 @@
           </StackPanel>
         </ScrollViewer>
 
-        <StackPanel Grid.Row="3" Spacing="8">
+        <StackPanel Grid.Row="4" Spacing="8">
           <Separator />
-          <ItemsControl ItemsSource="{Binding UtilityNavigationItems}"
+          <ItemsControl x:Name="UtilityNavigationShortcuts"
+                        ItemsSource="{Binding UtilityNavigationItems}"
                         ItemTemplate="{StaticResource NavigationRowTemplate}" />
           <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
             <TextBlock Classes="muted"

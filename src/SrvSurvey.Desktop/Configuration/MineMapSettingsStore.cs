@@ -14,7 +14,16 @@ public sealed class MineMapSettingsStore(string path)
             OnlyShowWhileOnGround: settings?["OnlyShowWhileOnGround"]
                 is JsonValue value
                 && value.TryGetValue<bool>(out var enabled)
-                && enabled);
+                && enabled,
+            MiningReferenceCommodities: settings?["MiningReferenceCommodities"]
+                is JsonArray commodities
+                    ? commodities
+                        .Select(item => item?.GetValue<string>())
+                        .Where(item => !string.IsNullOrWhiteSpace(item))
+                        .Cast<string>()
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToArray()
+                    : []);
     }
 
     public void Save(MineMapPreferences preferences) => document.Update(root =>
@@ -26,7 +35,17 @@ public sealed class MineMapSettingsStore(string path)
         }
 
         settings["OnlyShowWhileOnGround"] = preferences.OnlyShowWhileOnGround;
+        settings["MiningReferenceCommodities"] = new JsonArray(
+            preferences.EffectiveMiningReferenceCommodities
+                .Select(item => (JsonNode?)JsonValue.Create(item))
+                .ToArray());
     });
 }
 
-public sealed record MineMapPreferences(bool OnlyShowWhileOnGround);
+public sealed record MineMapPreferences(
+    bool OnlyShowWhileOnGround,
+    IReadOnlyList<string>? MiningReferenceCommodities = null)
+{
+    public IReadOnlyList<string> EffectiveMiningReferenceCommodities =>
+        MiningReferenceCommodities ?? [];
+}

@@ -5,6 +5,7 @@ using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Inara;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Network;
 using SrvSurvey.Core.Routes;
@@ -24,7 +25,7 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class MainWindowViewModelTests
 {
     [Fact]
-    public async Task MiningNavigationAndSettingsShareInputBindings()
+    public async Task SurfaceMiningSettingsOwnRhinoOverlayAndShareInputBindings()
     {
         using var viewModel = new MainWindowViewModel(
             Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
@@ -32,9 +33,16 @@ public sealed class MainWindowViewModelTests
         Assert.True(viewModel.IsMiningSelected);
         Assert.True(viewModel.IsActivitiesNavigationExpanded);
         var panels = viewModel.OverlayPanelVisibility.ForCategory(OverlaySettingsCategory.Mining);
-        Assert.Equal(3, panels.Count);
-        Assert.Contains(panels, item => item.PlotterName == "PlotMiningWarning");
-        var panel = Assert.Single(panels, item => item.PlotterName == "PlotSurfaceMining");
+        Assert.Equal(2, panels.Count);
+        Assert.Contains(panels, item => item.PlotterName == "PlotMiningNotifications");
+        Assert.Contains(panels, item => item.PlotterName == "PlotMiningReference");
+        Assert.DoesNotContain(panels, item => item.PlotterName == "PlotMiningWarning");
+        Assert.DoesNotContain(panels, item => item.PlotterName == "PlotSurfaceMining");
+        var surfacePanels = viewModel.OverlayPanelVisibility.ForCategory(
+            OverlaySettingsCategory.MineMap);
+        Assert.Equal(3, surfacePanels.Count);
+        Assert.Contains(surfacePanels, item => item.PlotterName == "PlotMiningWarning");
+        var panel = Assert.Single(surfacePanels, item => item.PlotterName == "PlotSurfaceMining");
         Assert.Equal("PlotSurfaceMining", panel.PlotterName);
         Assert.Same(viewModel.InputSettings.Bindings.Single(binding =>
             binding.Definition.OverlayPlotterName == "PlotSurfaceMining"), panel.Shortcut);
@@ -68,7 +76,7 @@ public sealed class MainWindowViewModelTests
                 "Search",
                 "Bookmarks",
                 "Mining",
-                "Mine Map",
+                "Surface Mining",
                 "Guardian",
                 "Quests",
                 "Colonization",
@@ -111,12 +119,12 @@ public sealed class MainWindowViewModelTests
             ["Travel", "Search", "Bookmarks"],
             viewModel.NavigationWorkspaceItems.Select(item => item.Label));
         Assert.Equal(
-            ["Mining", "Mine Map", "Guardian", "Quests", "Colonization"],
+            ["Mining", "Surface Mining", "Guardian", "Quests", "Colonization"],
             viewModel.ActivityNavigationItems.Select(item => item.Label));
         Assert.Equal(
             ["Settings", "Theme", "Guides", "Diagnostics"],
             viewModel.UtilityNavigationItems.Select(item => item.Label));
-        Assert.True(viewModel.IsSurveyNavigationExpanded);
+        Assert.False(viewModel.IsSurveyNavigationExpanded);
         Assert.False(viewModel.IsNavigationNavigationExpanded);
         Assert.False(viewModel.IsActivitiesNavigationExpanded);
 
@@ -171,6 +179,72 @@ public sealed class MainWindowViewModelTests
 
         Assert.True(viewModel.IsGuidesSelected);
         Assert.True(viewModel.IsActivitiesNavigationExpanded);
+    }
+
+    [Fact]
+    public void OpeningSharedSurfaceMiningBookmarkLoadsItsSurveyWorkspace()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-surface-bookmark-{Guid.NewGuid():N}");
+        try
+        {
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "data"),
+                Path.Combine(root, "cache"),
+                []);
+            var id = Guid.NewGuid();
+            var map = new MineMapSurvey
+            {
+                Id = id,
+                FrontierId = "F123",
+                SystemName = "Wille",
+                SystemAddress = 42,
+                SystemPosition = new GalacticCoordinate(1, 2, 3),
+                BodyId = 2,
+                BodyName = "Wille 2 d",
+                BodyType = "Rocky body",
+                LocationSignal = 4,
+                PlanetRadiusMeters = 855_573,
+                Center = new SurfaceCoordinate(1, 2),
+            };
+            new BookmarkCatalog(paths.DataDirectory).Save(new GalacticBookmark
+            {
+                Id = id,
+                System = map.SystemName,
+                Body = map.BodyName,
+                Position = map.SystemPosition,
+                CategoryAssignments = [BookmarkCategoryCatalog.SurfaceMining],
+                SurfaceMiningMap = map,
+            });
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                null,
+                builder => builder.WithAppDataPaths(paths));
+            viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
+                item => item.Key == "bookmarks");
+            viewModel.Bookmarks.Selected = Assert.Single(
+                viewModel.Bookmarks.Items,
+                bookmark => bookmark.IsSurfaceMiningMap);
+
+            Assert.True(viewModel.Bookmarks.OpenSelectedSurfaceMiningMap());
+
+            Assert.True(viewModel.IsMineMapSelected);
+            Assert.Equal(1, viewModel.MineMap.SelectedTab);
+            Assert.Equal(
+                viewModel.Bookmarks.Selected.Id,
+                viewModel.MineMap.ActiveSurvey?.Id);
+
+            viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
+                item => item.Key == "bookmarks");
+            Assert.True(viewModel.Bookmarks.OpenSelectedSurfaceMiningMap());
+            Assert.True(viewModel.IsMineMapSelected);
+            Assert.Equal(1, viewModel.MineMap.SelectedTab);
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
     }
 
     [Fact]
@@ -1069,7 +1143,7 @@ public sealed class MainWindowViewModelTests
             Assert.True(File.Exists(Path.Combine(data, "settings.json")));
             Assert.True(File.Exists(Path.Combine(data, "logs", "startup.txt")));
             Assert.Contains("Imported 1 legacy files", viewModel.ProfileStatusMessage);
-            Assert.Contains("retained 1 current-only files", viewModel.ProfileStatusMessage);
+            Assert.Contains("current-only files", viewModel.ProfileStatusMessage);
             Assert.Contains("Translated 2 legacy UI preferences", viewModel.ProfileStatusMessage);
             Assert.Contains("Restart SrvSurvey", viewModel.ProfileStatusMessage);
             Assert.Equal(

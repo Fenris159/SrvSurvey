@@ -1,5 +1,5 @@
 using Avalonia.Controls;
-using Avalonia.Interactivity;
+using Avalonia.Input;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Views;
@@ -8,21 +8,13 @@ public sealed partial class MineMapView : UserControl
 {
     public MineMapView() => InitializeComponent();
 
-    private MineMapViewModel? Model => DataContext as MineMapViewModel;
-
-    private void OpenMap_Click(object? sender, RoutedEventArgs eventArgs)
+    private void OnSurveyRowTapped(object? sender, TappedEventArgs eventArgs)
     {
-        if (Model is { } model && (sender as Control)?.Tag is MineMapSurveyRowViewModel row)
+        if (sender is Control { DataContext: MineMapSurveyRowViewModel row }
+            && DataContext is MainWindowViewModel mainWindow)
         {
-            model.SelectSurvey(row);
-        }
-    }
-
-    private void RequestDelete_Click(object? sender, RoutedEventArgs eventArgs)
-    {
-        if (Model is { } model && (sender as Control)?.Tag is MineMapSurveyRowViewModel row)
-        {
-            model.RequestDelete(row);
+            mainWindow.MineMap.SelectSurvey(row);
+            eventArgs.Handled = true;
         }
     }
 }
