@@ -15,17 +15,12 @@ public sealed class OverlayLayoutSettingsViewModel : INotifyPropertyChanged
     private string statusMessage = string.Empty;
     private bool hasLoadError;
 
-    public OverlayLayoutSettingsViewModel(
-        LegacyOverlayLayoutStore store,
-        LegacyOverlayLayout activeLayout)
+    public OverlayLayoutSettingsViewModel(LegacyOverlayLayoutStore store, LegacyOverlayLayout activeLayout)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
-        this.activeLayout = activeLayout
-            ?? throw new ArgumentNullException(nameof(activeLayout));
+        this.activeLayout = activeLayout ?? throw new ArgumentNullException(nameof(activeLayout));
         saveCommand = new DelegateCommand(Save, () => IsDirty && !hasLoadError);
-        resetSelectedCommand = new DelegateCommand(
-            ResetSelected,
-            () => SelectedOverlay is not null);
+        resetSelectedCommand = new DelegateCommand(ResetSelected, () => SelectedOverlay is not null);
         ReloadCommand = new DelegateCommand(Reload);
         SaveCommand = saveCommand;
         ResetSelectedCommand = resetSelectedCommand;
@@ -75,27 +70,23 @@ public sealed class OverlayLayoutSettingsViewModel : INotifyPropertyChanged
         var layout = store.Load();
         hasLoadError = layout.Error is not null;
         var inheritedOpacity = (layout.DefaultOpacity ?? 1d) * 100d;
-        Overlays = OverlayLayoutCatalog.Supported
-            .Select(definition => new OverlayPlacementEditorViewModel(
+        Overlays = OverlayLayoutCatalog
+            .Supported.Select(definition => new OverlayPlacementEditorViewModel(
                 definition,
-                layout.Placements.GetValueOrDefault(
-                    definition.Name,
-                    definition.DefaultPlacement),
+                layout.Placements.GetValueOrDefault(definition.Name, definition.DefaultPlacement),
                 inheritedOpacity,
-                OnEditorChanged))
+                OnEditorChanged
+            ))
             .ToArray();
         SelectedOverlay = Overlays.Count > 0 ? Overlays[0] : null;
-        StatusMessage = layout.Error
-            ?? "Opacity overrides are ready. Changes apply to visible overlays after Save.";
+        StatusMessage = layout.Error ?? "Opacity overrides are ready. Changes apply to visible overlays after Save.";
         OnPropertyChanged(nameof(Overlays));
         OnEditorChanged();
     }
 
     private void Save()
     {
-        var dirty = Overlays
-            .Where(overlay => overlay.IsDirty)
-            .ToArray();
+        var dirty = Overlays.Where(overlay => overlay.IsDirty).ToArray();
         if (dirty.Length == 0 || hasLoadError)
         {
             return;
@@ -111,13 +102,12 @@ public sealed class OverlayLayoutSettingsViewModel : INotifyPropertyChanged
 
             var changed = dirty.ToDictionary(
                 overlay => overlay.Name,
-                overlay => overlay.HasPositionChanges
-                    ? overlay.Placement
-                    : overlay.ApplyOpacityTo(
-                        latest.Placements.GetValueOrDefault(
-                            overlay.Name,
-                            overlay.Placement)),
-                StringComparer.Ordinal);
+                overlay =>
+                    overlay.HasPositionChanges
+                        ? overlay.Placement
+                        : overlay.ApplyOpacityTo(latest.Placements.GetValueOrDefault(overlay.Name, overlay.Placement)),
+                StringComparer.Ordinal
+            );
             var result = store.Save(changed);
             var updated = store.Load();
             if (updated.Error is not null)
@@ -131,17 +121,13 @@ public sealed class OverlayLayoutSettingsViewModel : INotifyPropertyChanged
                 overlay.AcceptChanges();
             }
 
-            StatusMessage = $"Saved {result.UpdatedPlacementCount:N0} overlay setting(s). "
+            StatusMessage =
+                $"Saved {result.UpdatedPlacementCount:N0} overlay setting(s). "
                 + "Visible overlays update immediately."
-                + (result.BackupPath is null
-                    ? string.Empty
-                    : $" Previous layout backup: {result.BackupPath}");
+                + (result.BackupPath is null ? string.Empty : $" Previous layout backup: {result.BackupPath}");
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException
-                or ArgumentException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidDataException or ArgumentException)
         {
             StatusMessage = "The overlay layout was not changed: " + exception.Message;
         }
@@ -160,10 +146,7 @@ public sealed class OverlayLayoutSettingsViewModel : INotifyPropertyChanged
         saveCommand.RaiseCanExecuteChanged();
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -177,13 +160,10 @@ public sealed class OverlayLayoutSettingsViewModel : INotifyPropertyChanged
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(propertyName));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private sealed class DelegateCommand(Action execute, Func<bool>? canExecute = null)
-        : ICommand
+    private sealed class DelegateCommand(Action execute, Func<bool>? canExecute = null) : ICommand
     {
         public event EventHandler? CanExecuteChanged;
 
@@ -214,20 +194,18 @@ public sealed class OverlayPlacementEditorViewModel : INotifyPropertyChanged
         OverlayLayoutDefinition definition,
         LegacyOverlayPlacement placement,
         double inheritedOpacityPercent,
-        Action changed)
+        Action changed
+    )
     {
-        this.definition = definition
-            ?? throw new ArgumentNullException(nameof(definition));
+        this.definition = definition ?? throw new ArgumentNullException(nameof(definition));
         this.changed = changed ?? throw new ArgumentNullException(nameof(changed));
-        acceptedPlacement = placement
-            ?? throw new ArgumentNullException(nameof(placement));
+        acceptedPlacement = placement ?? throw new ArgumentNullException(nameof(placement));
         horizontalAnchor = placement.Horizontal;
         horizontalOffset = placement.HorizontalOffset;
         verticalAnchor = placement.Vertical;
         verticalOffset = placement.VerticalOffset;
         useCustomOpacity = placement.Opacity is not null;
-        customOpacityPercent = (placement.Opacity * 100d)
-            ?? Math.Clamp(inheritedOpacityPercent, 0, 100);
+        customOpacityPercent = (placement.Opacity * 100d) ?? Math.Clamp(inheritedOpacityPercent, 0, 100);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -235,14 +213,11 @@ public sealed class OverlayPlacementEditorViewModel : INotifyPropertyChanged
     public static IReadOnlyList<LegacyHorizontalAnchor> HorizontalAnchors { get; } =
         Enum.GetValues<LegacyHorizontalAnchor>();
 
-    public static IReadOnlyList<LegacyVerticalAnchor> VerticalAnchors { get; } =
-        Enum.GetValues<LegacyVerticalAnchor>();
+    public static IReadOnlyList<LegacyVerticalAnchor> VerticalAnchors { get; } = Enum.GetValues<LegacyVerticalAnchor>();
 
-    public IReadOnlyList<LegacyHorizontalAnchor> HorizontalAnchorOptions { get; } =
-        HorizontalAnchors;
+    public IReadOnlyList<LegacyHorizontalAnchor> HorizontalAnchorOptions { get; } = HorizontalAnchors;
 
-    public IReadOnlyList<LegacyVerticalAnchor> VerticalAnchorOptions { get; } =
-        VerticalAnchors;
+    public IReadOnlyList<LegacyVerticalAnchor> VerticalAnchorOptions { get; } = VerticalAnchors;
 
     public string Name => definition.Name;
 
@@ -294,12 +269,14 @@ public sealed class OverlayPlacementEditorViewModel : INotifyPropertyChanged
         set => SetField(ref customOpacityPercent, Math.Clamp(value, 0, 100));
     }
 
-    public LegacyOverlayPlacement Placement => new(
-        HorizontalAnchor,
-        HorizontalOffset,
-        VerticalAnchor,
-        VerticalOffset,
-        UseCustomOpacity ? CustomOpacityPercent / 100d : null);
+    public LegacyOverlayPlacement Placement =>
+        new(
+            HorizontalAnchor,
+            HorizontalOffset,
+            VerticalAnchor,
+            VerticalOffset,
+            UseCustomOpacity ? CustomOpacityPercent / 100d : null
+        );
 
     public bool IsDirty => Placement != acceptedPlacement;
 
@@ -309,8 +286,7 @@ public sealed class OverlayPlacementEditorViewModel : INotifyPropertyChanged
         || VerticalAnchor != acceptedPlacement.Vertical
         || VerticalOffset != acceptedPlacement.VerticalOffset;
 
-    public LegacyOverlayPlacement ApplyOpacityTo(
-        LegacyOverlayPlacement placement)
+    public LegacyOverlayPlacement ApplyOpacityTo(LegacyOverlayPlacement placement)
     {
         ArgumentNullException.ThrowIfNull(placement);
         return placement with { Opacity = Placement.Opacity };
@@ -336,10 +312,7 @@ public sealed class OverlayPlacementEditorViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(IsDirty));
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -355,8 +328,6 @@ public sealed class OverlayPlacementEditorViewModel : INotifyPropertyChanged
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(propertyName));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

@@ -6,11 +6,12 @@ namespace SrvSurvey.Desktop;
 public sealed partial class GuardianOverlayWindow : Window
 {
     public GuardianOverlayWindow()
-        : this(new GuardianOverlayViewModel(
-            new GuardianViewModel(Path.GetTempPath()),
-            Platform.Overlay.OverlayPlatformCapabilities.DetectCurrent()))
-    {
-    }
+        : this(
+            new GuardianOverlayViewModel(
+                new GuardianViewModel(Path.GetTempPath()),
+                Platform.Overlay.OverlayPlatformCapabilities.DetectCurrent()
+            )
+        ) { }
 
     public GuardianOverlayWindow(GuardianOverlayViewModel viewModel)
     {

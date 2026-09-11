@@ -10,9 +10,7 @@ public sealed class EliteStatusTests
     [InlineData("$humanoid_fists_name;", false)]
     [InlineData("wpn_s_pistol_kinetic_sauto", false)]
     [InlineData(null, false)]
-    public void GeneticSamplerDrawnRequiresExactSelectedWeapon(
-        string? selectedWeapon,
-        bool expected)
+    public void GeneticSamplerDrawnRequiresExactSelectedWeapon(string? selectedWeapon, bool expected)
     {
         var status = new EliteStatus { SelectedWeapon = selectedWeapon };
 

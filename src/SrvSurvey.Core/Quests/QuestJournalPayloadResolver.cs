@@ -17,35 +17,33 @@ public static class QuestJournalPayloadResolver
             "Shipyard",
             "FCMaterials",
         ],
-        StringComparer.Ordinal);
+        StringComparer.Ordinal
+    );
 
     public static async Task<QuestJournalPayloadResult> ResolveAsync(
         string journalDirectory,
         JournalEventEnvelope journalEvent,
         bool allowCargoFile = true,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(journalDirectory);
         ArgumentNullException.ThrowIfNull(journalEvent);
 
         if (!AuxiliaryEvents.Contains(journalEvent.EventName))
         {
-            return new QuestJournalPayloadResult(
-                journalEvent.Payload.Clone(),
-                UsedAuxiliaryFile: false,
-                Warning: null);
+            return new QuestJournalPayloadResult(journalEvent.Payload.Clone(), UsedAuxiliaryFile: false, Warning: null);
         }
 
         if (journalEvent.EventName == "Cargo" && !allowCargoFile)
         {
             return Fallback(
                 journalEvent,
-                "Cargo.json was ignored because multiple Elite windows prevent safe commander attribution.");
+                "Cargo.json was ignored because multiple Elite windows prevent safe commander attribution."
+            );
         }
 
-        var path = Path.Combine(
-            journalDirectory,
-            $"{journalEvent.EventName}.json");
+        var path = Path.Combine(journalDirectory, $"{journalEvent.EventName}.json");
         try
         {
             await using var stream = new FileStream(
@@ -54,44 +52,28 @@ public static class QuestJournalPayloadResolver
                 FileAccess.Read,
                 FileShare.ReadWrite | FileShare.Delete,
                 bufferSize: 4096,
-                useAsync: true);
-            using var document = await JsonDocument.ParseAsync(
-                stream,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+                useAsync: true
+            );
+            using var document = await JsonDocument
+                .ParseAsync(stream, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
             if (document.RootElement.ValueKind != JsonValueKind.Object)
             {
-                return Fallback(
-                    journalEvent,
-                    $"Quest payload file '{path}' did not contain a JSON object.");
+                return Fallback(journalEvent, $"Quest payload file '{path}' did not contain a JSON object.");
             }
 
-            return new QuestJournalPayloadResult(
-                document.RootElement.Clone(),
-                UsedAuxiliaryFile: true,
-                Warning: null);
+            return new QuestJournalPayloadResult(document.RootElement.Clone(), UsedAuxiliaryFile: true, Warning: null);
         }
-        catch (Exception exception) when (exception is IOException
-            or UnauthorizedAccessException
-            or JsonException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)
         {
-            return Fallback(
-                journalEvent,
-                $"Quest payload file '{path}' could not be read: {exception.Message}");
+            return Fallback(journalEvent, $"Quest payload file '{path}' could not be read: {exception.Message}");
         }
     }
 
-    private static QuestJournalPayloadResult Fallback(
-        JournalEventEnvelope journalEvent,
-        string warning)
+    private static QuestJournalPayloadResult Fallback(JournalEventEnvelope journalEvent, string warning)
     {
-        return new QuestJournalPayloadResult(
-            journalEvent.Payload.Clone(),
-            UsedAuxiliaryFile: false,
-            warning);
+        return new QuestJournalPayloadResult(journalEvent.Payload.Clone(), UsedAuxiliaryFile: false, warning);
     }
 }
 
-public sealed record QuestJournalPayloadResult(
-    JsonElement Payload,
-    bool UsedAuxiliaryFile,
-    string? Warning);
+public sealed record QuestJournalPayloadResult(JsonElement Payload, bool UsedAuxiliaryFile, string? Warning);

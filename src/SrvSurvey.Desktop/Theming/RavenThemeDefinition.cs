@@ -14,7 +14,8 @@ public sealed record RavenThemeDefinition(
     string AccentForegroundColor,
     string TextColor,
     string MutedTextColor,
-    string BorderColor)
+    string BorderColor
+)
 {
     public string HighestSurfaceColor { get; init; } = RaisedSurfaceColor;
 
@@ -36,14 +37,11 @@ public sealed record RavenThemeDefinition(
 
     public string ModalScrimColor { get; init; } = "#8C000000";
 
-    public string SuccessColor { get; init; } =
-        IsDark ? "#6CCB72" : "#107C10";
+    public string SuccessColor { get; init; } = IsDark ? "#6CCB72" : "#107C10";
 
-    public string WarningColor { get; init; } =
-        IsDark ? "#F7C948" : "#8A5D00";
+    public string WarningColor { get; init; } = IsDark ? "#F7C948" : "#8A5D00";
 
-    public string DangerColor { get; init; } =
-        IsDark ? "#FF7B72" : "#C50F1F";
+    public string DangerColor { get; init; } = IsDark ? "#FF7B72" : "#C50F1F";
 
     public bool UseSurfaceOnlyDepth { get; init; }
 }

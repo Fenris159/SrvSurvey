@@ -7,15 +7,9 @@ public interface IControllerDeviceProvider
     ControllerDeviceDiscoveryResult Discover();
 }
 
-public sealed record ControllerDeviceInfo(
-    string Id,
-    string Name,
-    string Description,
-    uint InstanceId);
+public sealed record ControllerDeviceInfo(string Id, string Name, string Description, uint InstanceId);
 
-public sealed record ControllerDeviceDiscoveryResult(
-    IReadOnlyList<ControllerDeviceInfo> Devices,
-    string? ErrorMessage)
+public sealed record ControllerDeviceDiscoveryResult(IReadOnlyList<ControllerDeviceInfo> Devices, string? ErrorMessage)
 {
     public bool IsAvailable => ErrorMessage is null;
 }
@@ -23,8 +17,7 @@ public sealed record ControllerDeviceDiscoveryResult(
 public sealed class SdlControllerDeviceProvider : IControllerDeviceProvider
 {
     private static readonly object SdlLifecycleLock = new();
-    private const SDL.InitFlags InputSubsystems =
-        SDL.InitFlags.Joystick | SDL.InitFlags.Gamepad;
+    private const SDL.InitFlags InputSubsystems = SDL.InitFlags.Joystick | SDL.InitFlags.Gamepad;
 
     public ControllerDeviceDiscoveryResult Discover()
     {
@@ -45,15 +38,15 @@ public sealed class SdlControllerDeviceProvider : IControllerDeviceProvider
                     .OrderBy(device => device.Name, StringComparer.OrdinalIgnoreCase)
                     .ThenBy(device => device.Id, StringComparer.Ordinal)
                     .ToArray();
-                return new ControllerDeviceDiscoveryResult(
-                    MakeDuplicateNamesDistinct(devices),
-                    ErrorMessage: null);
+                return new ControllerDeviceDiscoveryResult(MakeDuplicateNamesDistinct(devices), ErrorMessage: null);
             }
-            catch (Exception exception) when (
-                exception is DllNotFoundException
-                    or EntryPointNotFoundException
-                    or BadImageFormatException
-                    or TypeInitializationException)
+            catch (Exception exception)
+                when (exception
+                        is DllNotFoundException
+                            or EntryPointNotFoundException
+                            or BadImageFormatException
+                            or TypeInitializationException
+                )
             {
                 return Failure(exception.Message);
             }
@@ -67,59 +60,47 @@ public sealed class SdlControllerDeviceProvider : IControllerDeviceProvider
         }
     }
 
-    public static string CreateStableId(
-        string? path,
-        ushort vendor,
-        ushort product,
-        ushort version,
-        string name)
+    public static string CreateStableId(string? path, ushort vendor, ushort product, ushort version, string name)
     {
-        return !string.IsNullOrWhiteSpace(path)
-            ? $"path:{path}"
-            : $"usb:{vendor:x4}:{product:x4}:{version:x4}:{name}";
+        return !string.IsNullOrWhiteSpace(path) ? $"path:{path}" : $"usb:{vendor:x4}:{product:x4}:{version:x4}:{name}";
     }
 
     internal static ControllerDeviceInfo CreateDevice(uint instanceId)
     {
-        var name = SDL.GetJoystickNameForID(instanceId)
-            ?? $"Controller {instanceId}";
+        var name = SDL.GetJoystickNameForID(instanceId) ?? $"Controller {instanceId}";
         var path = SDL.GetJoystickPathForID(instanceId);
         var vendor = SDL.GetJoystickVendorForID(instanceId);
         var product = SDL.GetJoystickProductForID(instanceId);
         var version = SDL.GetJoystickProductVersionForID(instanceId);
         var type = SDL.GetJoystickTypeForID(instanceId);
-        var description = vendor == 0 && product == 0
-            ? type.ToString()
-            : $"{type} - USB {vendor:X4}:{product:X4}";
+        var description = vendor == 0 && product == 0 ? type.ToString() : $"{type} - USB {vendor:X4}:{product:X4}";
         return new ControllerDeviceInfo(
             CreateStableId(path, vendor, product, version, name),
             name,
             description,
-            instanceId);
+            instanceId
+        );
     }
 
-    private static ControllerDeviceInfo[]
-        MakeDuplicateNamesDistinct(IReadOnlyList<ControllerDeviceInfo> devices)
+    private static ControllerDeviceInfo[] MakeDuplicateNamesDistinct(IReadOnlyList<ControllerDeviceInfo> devices)
     {
         var totals = devices
             .GroupBy(device => device.Name, StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(
-                group => group.Key,
-                group => group.Count(),
-                StringComparer.OrdinalIgnoreCase);
-        var ordinals = new Dictionary<string, int>(
-            StringComparer.OrdinalIgnoreCase);
-        return devices.Select(device =>
-        {
-            if (totals[device.Name] == 1)
+            .ToDictionary(group => group.Key, group => group.Count(), StringComparer.OrdinalIgnoreCase);
+        var ordinals = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        return devices
+            .Select(device =>
             {
-                return device;
-            }
+                if (totals[device.Name] == 1)
+                {
+                    return device;
+                }
 
-            var ordinal = ordinals.GetValueOrDefault(device.Name) + 1;
-            ordinals[device.Name] = ordinal;
-            return device with { Name = $"{device.Name} ({ordinal})" };
-        }).ToArray();
+                var ordinal = ordinals.GetValueOrDefault(device.Name) + 1;
+                ordinals[device.Name] = ordinal;
+                return device with { Name = $"{device.Name} ({ordinal})" };
+            })
+            .ToArray();
     }
 
     private static ControllerDeviceDiscoveryResult Failure(string message)
@@ -128,6 +109,7 @@ public sealed class SdlControllerDeviceProvider : IControllerDeviceProvider
             [],
             string.IsNullOrWhiteSpace(message)
                 ? "SDL controller discovery failed."
-                : $"SDL controller discovery failed: {message}");
+                : $"SDL controller discovery failed: {message}"
+        );
     }
 }

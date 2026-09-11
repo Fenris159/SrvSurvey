@@ -11,9 +11,7 @@ public sealed class ReleaseUpdateViewModelTests
     public async Task CheckAsyncPublishesAvailableReleaseWithoutInstalling()
     {
         var service = new StubService(CreateResult(isAvailable: true));
-        var viewModel = new ReleaseUpdateViewModel(
-            service,
-            new Version(2, 0, 95, 0));
+        var viewModel = new ReleaseUpdateViewModel(service, new Version(2, 0, 95, 0));
 
         await viewModel.CheckAsync();
 
@@ -34,27 +32,26 @@ public sealed class ReleaseUpdateViewModelTests
             new ReleaseInstallationWorkflowResult(
                 ReleaseInstallationWorkflowStatus.HandoffStarted,
                 ReleaseInstallationWorkflowStage.AwaitingApplicationExit,
-                ReleaseInstallationCleanupStatus.Transferred),
+                ReleaseInstallationCleanupStatus.Transferred
+            ),
             [
-                new ReleaseInstallationWorkflowProgress(
-                    ReleaseInstallationWorkflowStage.Downloading)
+                new ReleaseInstallationWorkflowProgress(ReleaseInstallationWorkflowStage.Downloading)
                 {
                     DownloadedBytes = 1_024,
                     TotalBytes = 1_024,
                 },
-                new ReleaseInstallationWorkflowProgress(
-                    ReleaseInstallationWorkflowStage.ValidatingArchive),
-                new ReleaseInstallationWorkflowProgress(
-                    ReleaseInstallationWorkflowStage.PreparingRollback)
+                new ReleaseInstallationWorkflowProgress(ReleaseInstallationWorkflowStage.ValidatingArchive),
+                new ReleaseInstallationWorkflowProgress(ReleaseInstallationWorkflowStage.PreparingRollback)
                 {
                     StagedFileCount = 12,
                 },
-                new ReleaseInstallationWorkflowProgress(
-                    ReleaseInstallationWorkflowStage.AwaitingApplicationExit),
-            ]);
+                new ReleaseInstallationWorkflowProgress(ReleaseInstallationWorkflowStage.AwaitingApplicationExit),
+            ]
+        );
         var viewModel = new ReleaseUpdateViewModel(
             new StubService(CreateResult(isAvailable: true)),
-            new Version(2, 0, 95, 0));
+            new Version(2, 0, 95, 0)
+        );
         viewModel.ConfigureInstallationWorkflow(workflow);
         await viewModel.CheckAsync();
         viewModel.InstallConfirmed = true;
@@ -71,11 +68,11 @@ public sealed class ReleaseUpdateViewModelTests
     [Fact]
     public async Task ReadOnlyBundleKeepsReleaseAvailableWithoutOfferingReplacement()
     {
-        var workflow = new StubWorkflow(
-            ReleaseInstallationCapabilityStatus.ReadOnlyAppImage);
+        var workflow = new StubWorkflow(ReleaseInstallationCapabilityStatus.ReadOnlyAppImage);
         var viewModel = new ReleaseUpdateViewModel(
             new StubService(CreateResult(isAvailable: true)),
-            new Version(2, 0, 95, 0));
+            new Version(2, 0, 95, 0)
+        );
         viewModel.ConfigureInstallationWorkflow(workflow);
 
         await viewModel.CheckAsync();
@@ -88,9 +85,7 @@ public sealed class ReleaseUpdateViewModelTests
         Assert.False(viewModel.InstallCommand.CanExecute(null));
         Assert.Contains("AppImage is mounted read-only", viewModel.StatusMessage);
         Assert.Contains("selected release", viewModel.StatusMessage);
-        Assert.Contains(
-            "replace your existing AppImage",
-            ReleaseUpdateViewModel.AppImageManualInstallInstructions);
+        Assert.Contains("replace your existing AppImage", ReleaseUpdateViewModel.AppImageManualInstallInstructions);
         Assert.Empty(workflow.Requests);
     }
 
@@ -106,16 +101,15 @@ public sealed class ReleaseUpdateViewModelTests
                 ReleaseInstallationWorkflowStatus.Rejected,
                 ReleaseInstallationWorkflowStage.ScanningInstances,
                 ReleaseInstallationCleanupStatus.NotRequired,
-                ReleaseInstallationRejectionReason.InstancesDeclined),
+                ReleaseInstallationRejectionReason.InstancesDeclined
+            ),
             [
-                new ReleaseInstallationWorkflowProgress(
-                    ReleaseInstallationWorkflowStage.AwaitingInstanceConfirmation)
+                new ReleaseInstallationWorkflowProgress(ReleaseInstallationWorkflowStage.AwaitingInstanceConfirmation)
                 {
                     Checkpoint = ReleaseInstallationCheckpoint.BeforeDownload,
                     InstanceScan = new ApplicationInstanceScan(2, 0),
                 },
-                new ReleaseInstallationWorkflowProgress(
-                    ReleaseInstallationWorkflowStage.ClosingInstances)
+                new ReleaseInstallationWorkflowProgress(ReleaseInstallationWorkflowStage.ClosingInstances)
                 {
                     Checkpoint = ReleaseInstallationCheckpoint.BeforeDownload,
                     InstanceScan = new ApplicationInstanceScan(2, 0),
@@ -131,10 +125,12 @@ public sealed class ReleaseUpdateViewModelTests
                 {
                     closingText = viewModel?.InstallProgressText;
                 }
-            });
+            }
+        );
         viewModel = new ReleaseUpdateViewModel(
             new StubService(CreateResult(isAvailable: true)),
-            new Version(2, 0, 95, 0));
+            new Version(2, 0, 95, 0)
+        );
         viewModel.ConfigureInstallationWorkflow(workflow);
         await viewModel.CheckAsync();
         viewModel.InstallConfirmed = true;
@@ -154,10 +150,13 @@ public sealed class ReleaseUpdateViewModelTests
                 ReleaseInstallationWorkflowStatus.Rejected,
                 ReleaseInstallationWorkflowStage.ScanningInstances,
                 ReleaseInstallationCleanupStatus.NotRequired,
-                ReleaseInstallationRejectionReason.InstancesDeclined));
+                ReleaseInstallationRejectionReason.InstancesDeclined
+            )
+        );
         var viewModel = new ReleaseUpdateViewModel(
             new StubService(CreateResult(isAvailable: true)),
-            new Version(2, 0, 95, 0));
+            new Version(2, 0, 95, 0)
+        );
         viewModel.ConfigureInstallationWorkflow(workflow);
         await viewModel.CheckAsync();
         viewModel.InstallConfirmed = true;
@@ -181,20 +180,21 @@ public sealed class ReleaseUpdateViewModelTests
                 ReleaseInstallationWorkflowStatus.Failed,
                 ReleaseInstallationWorkflowStage.ClosingInstances,
                 ReleaseInstallationCleanupStatus.NotRequired,
-                Error: new IOException(
-                    "A matching SrvSurvey process remains unverified.")),
+                Error: new IOException("A matching SrvSurvey process remains unverified.")
+            ),
             [
-                new ReleaseInstallationWorkflowProgress(
-                    ReleaseInstallationWorkflowStage.AwaitingInstanceConfirmation)
+                new ReleaseInstallationWorkflowProgress(ReleaseInstallationWorkflowStage.AwaitingInstanceConfirmation)
                 {
                     Checkpoint = ReleaseInstallationCheckpoint.BeforeDownload,
                     InstanceScan = new ApplicationInstanceScan(0, 1),
                 },
             ],
-            _ => warningStatus = viewModel?.StatusMessage);
+            _ => warningStatus = viewModel?.StatusMessage
+        );
         viewModel = new ReleaseUpdateViewModel(
             new StubService(CreateResult(isAvailable: true)),
-            new Version(2, 0, 95, 0));
+            new Version(2, 0, 95, 0)
+        );
         viewModel.ConfigureInstallationWorkflow(workflow);
         await viewModel.CheckAsync();
         viewModel.InstallConfirmed = true;
@@ -215,19 +215,20 @@ public sealed class ReleaseUpdateViewModelTests
                 ReleaseInstallationWorkflowStatus.Rejected,
                 ReleaseInstallationWorkflowStage.ScanningInstances,
                 ReleaseInstallationCleanupStatus.Succeeded,
-                ReleaseInstallationRejectionReason.InstancesDeclined));
+                ReleaseInstallationRejectionReason.InstancesDeclined
+            )
+        );
         var viewModel = new ReleaseUpdateViewModel(
             new StubService(CreateResult(isAvailable: true)),
-            new Version(2, 0, 95, 0));
+            new Version(2, 0, 95, 0)
+        );
         viewModel.ConfigureInstallationWorkflow(workflow);
         await viewModel.CheckAsync();
         viewModel.InstallConfirmed = true;
 
         await viewModel.InstallAsync();
 
-        Assert.Equal(
-            "Update canceled before installation handoff.",
-            viewModel.InstallProgressText);
+        Assert.Equal("Update canceled before installation handoff.", viewModel.InstallProgressText);
         Assert.Contains("prepared candidate was removed", viewModel.StatusMessage);
     }
 
@@ -240,10 +241,13 @@ public sealed class ReleaseUpdateViewModelTests
                 ReleaseInstallationWorkflowStatus.Failed,
                 ReleaseInstallationWorkflowStage.AwaitingApplicationExit,
                 ReleaseInstallationCleanupStatus.Succeeded,
-                Error: new IOException("Parent remained active.")));
+                Error: new IOException("Parent remained active.")
+            )
+        );
         var viewModel = new ReleaseUpdateViewModel(
             new StubService(CreateResult(isAvailable: true)),
-            new Version(2, 0, 95, 0));
+            new Version(2, 0, 95, 0)
+        );
         viewModel.ConfigureInstallationWorkflow(workflow);
         await viewModel.CheckAsync();
         viewModel.InstallConfirmed = true;
@@ -265,10 +269,13 @@ public sealed class ReleaseUpdateViewModelTests
                 ReleaseInstallationWorkflowStatus.OwnershipUnresolved,
                 ReleaseInstallationWorkflowStage.AwaitingApplicationExit,
                 ReleaseInstallationCleanupStatus.Transferred,
-                Error: new InvalidDataException("Outcome could not be read.")));
+                Error: new InvalidDataException("Outcome could not be read.")
+            )
+        );
         var viewModel = new ReleaseUpdateViewModel(
             new StubService(CreateResult(isAvailable: true)),
-            new Version(2, 0, 95, 0));
+            new Version(2, 0, 95, 0)
+        );
         viewModel.ConfigureInstallationWorkflow(workflow);
         await viewModel.CheckAsync();
         viewModel.InstallConfirmed = true;
@@ -291,11 +298,13 @@ public sealed class ReleaseUpdateViewModelTests
                 ReleaseInstallationWorkflowStage.ScanningInstances,
                 ReleaseInstallationCleanupStatus.Failed,
                 Error: new IOException("Instance scan failed."),
-                CleanupError: new UnauthorizedAccessException(
-                    "Candidate is locked.")));
+                CleanupError: new UnauthorizedAccessException("Candidate is locked.")
+            )
+        );
         var viewModel = new ReleaseUpdateViewModel(
             new StubService(CreateResult(isAvailable: true)),
-            new Version(2, 0, 95, 0));
+            new Version(2, 0, 95, 0)
+        );
         viewModel.ConfigureInstallationWorkflow(workflow);
         await viewModel.CheckAsync();
         viewModel.InstallConfirmed = true;
@@ -314,10 +323,12 @@ public sealed class ReleaseUpdateViewModelTests
     {
         var workflow = new StubWorkflow(
             ReleaseInstallationCapabilityStatus.Supported,
-            exception: new IOException("workflow adapter failed"));
+            exception: new IOException("workflow adapter failed")
+        );
         var viewModel = new ReleaseUpdateViewModel(
             new StubService(CreateResult(isAvailable: true)),
-            new Version(2, 0, 95, 0));
+            new Version(2, 0, 95, 0)
+        );
         viewModel.ConfigureInstallationWorkflow(workflow);
         await viewModel.CheckAsync();
         viewModel.InstallConfirmed = true;
@@ -338,10 +349,13 @@ public sealed class ReleaseUpdateViewModelTests
             new ReleaseInstallationWorkflowResult(
                 ReleaseInstallationWorkflowStatus.Cancelled,
                 ReleaseInstallationWorkflowStage.Downloading,
-                ReleaseInstallationCleanupStatus.Succeeded));
+                ReleaseInstallationCleanupStatus.Succeeded
+            )
+        );
         var viewModel = new ReleaseUpdateViewModel(
             new StubService(CreateResult(isAvailable: true)),
-            new Version(2, 0, 95, 0));
+            new Version(2, 0, 95, 0)
+        );
         viewModel.ConfigureInstallationWorkflow(workflow);
         await viewModel.CheckAsync();
         viewModel.InstallConfirmed = true;
@@ -361,10 +375,13 @@ public sealed class ReleaseUpdateViewModelTests
             new ReleaseInstallationWorkflowResult(
                 (ReleaseInstallationWorkflowStatus)(-1),
                 ReleaseInstallationWorkflowStage.None,
-                ReleaseInstallationCleanupStatus.NotRequired));
+                ReleaseInstallationCleanupStatus.NotRequired
+            )
+        );
         var viewModel = new ReleaseUpdateViewModel(
             new StubService(CreateResult(isAvailable: true)),
-            new Version(2, 0, 95, 0));
+            new Version(2, 0, 95, 0)
+        );
         viewModel.ConfigureInstallationWorkflow(workflow);
         await viewModel.CheckAsync();
         viewModel.InstallConfirmed = true;
@@ -380,7 +397,8 @@ public sealed class ReleaseUpdateViewModelTests
     {
         var viewModel = new ReleaseUpdateViewModel(
             new StubService(CreateResult(isAvailable: true)),
-            new Version(2, 0, 95, 0));
+            new Version(2, 0, 95, 0)
+        );
         Uri? openedUri = null;
         viewModel.SetUriLauncher(uri =>
         {
@@ -398,9 +416,7 @@ public sealed class ReleaseUpdateViewModelTests
     [Fact]
     public async Task CheckFailureLeavesReleaseUnavailableAndReportsNoMutation()
     {
-        var viewModel = new ReleaseUpdateViewModel(
-            new FailingService(),
-            new Version(2, 0, 95, 0));
+        var viewModel = new ReleaseUpdateViewModel(new FailingService(), new Version(2, 0, 95, 0));
 
         await viewModel.CheckAsync();
 
@@ -414,15 +430,19 @@ public sealed class ReleaseUpdateViewModelTests
     {
         var viewModel = new ReleaseUpdateViewModel(
             new StubService(CreateResult(isAvailable: false)),
-            new Version(2, 0, 95, 0));
-        viewModel.SetPreviousInstallationOutcome(new ReleaseInstallationOutcome(
-            ReleaseInstallationOutcomeStatus.RolledBack,
-            Guid.NewGuid(),
-            new Version(2, 0, 95, 23),
-            DateTimeOffset.UtcNow,
-            null,
-            "C:\\failed",
-            "Replacement health timed out."));
+            new Version(2, 0, 95, 0)
+        );
+        viewModel.SetPreviousInstallationOutcome(
+            new ReleaseInstallationOutcome(
+                ReleaseInstallationOutcomeStatus.RolledBack,
+                Guid.NewGuid(),
+                new Version(2, 0, 95, 23),
+                DateTimeOffset.UtcNow,
+                null,
+                "C:\\failed",
+                "Replacement health timed out."
+            )
+        );
 
         await viewModel.CheckAsync();
 
@@ -434,16 +454,17 @@ public sealed class ReleaseUpdateViewModelTests
     [Fact]
     public async Task MissingStableXpReleaseIsShownAsNotAvailable()
     {
-        var service = new StubService(new ReleaseUpdateResult(
-            new Version(2, 1, 3, 9),
-            null,
-            false,
-            new Uri("https://github.com/njthomson/SrvSurvey/releases"),
-            null,
-            ReleaseChannel.Stable));
-        var viewModel = new ReleaseUpdateViewModel(
-            service,
-            new Version(2, 1, 3, 9));
+        var service = new StubService(
+            new ReleaseUpdateResult(
+                new Version(2, 1, 3, 9),
+                null,
+                false,
+                new Uri("https://github.com/njthomson/SrvSurvey/releases"),
+                null,
+                ReleaseChannel.Stable
+            )
+        );
+        var viewModel = new ReleaseUpdateViewModel(service, new Version(2, 1, 3, 9));
         viewModel.UseDevelopmentReleases = false;
 
         await WaitUntilAsync(() => viewModel.LatestVersion == "N/A");
@@ -459,16 +480,14 @@ public sealed class ReleaseUpdateViewModelTests
     {
         var temporaryDirectory = Path.Combine(
             Path.GetTempPath(),
-            $"SrvSurvey-release-channel-tests-{Guid.NewGuid():N}");
+            $"SrvSurvey-release-channel-tests-{Guid.NewGuid():N}"
+        );
         var settingsPath = Path.Combine(temporaryDirectory, "ui-settings.json");
         var settings = new ReleaseUpdateSettingsStore(settingsPath);
         var service = new RecordingService();
         try
         {
-            var viewModel = new ReleaseUpdateViewModel(
-                service,
-                new Version(2, 1, 3, 9),
-                settings);
+            var viewModel = new ReleaseUpdateViewModel(service, new Version(2, 1, 3, 9), settings);
 
             Assert.True(viewModel.UseDevelopmentReleases);
             Assert.Contains("Fenris159/SrvSurvey", viewModel.ReleaseSourceDescription);
@@ -494,7 +513,8 @@ public sealed class ReleaseUpdateViewModelTests
     {
         var viewModel = new ReleaseUpdateViewModel(
             new StubService(CreateResult(isAvailable: true)),
-            new Version(2, 0, 95, 0));
+            new Version(2, 0, 95, 0)
+        );
         var navigated = false;
         viewModel.SetDiagnosticsNavigator(() => navigated = true);
 
@@ -525,10 +545,12 @@ public sealed class ReleaseUpdateViewModelTests
                     "zip",
                     1_024,
                     new string('a', 64),
-                    new Uri("https://example.test/package.zip"))
+                    new Uri("https://example.test/package.zip")
+                )
                 : null,
             ReleaseChannel.Development,
-            "## What's changed\n\n- A useful change.");
+            "## What's changed\n\n- A useful change."
+        );
     }
 
     private static async Task WaitUntilAsync(Func<bool> predicate)
@@ -540,13 +562,13 @@ public sealed class ReleaseUpdateViewModelTests
         }
     }
 
-    private sealed class StubService(ReleaseUpdateResult result)
-        : IReleaseUpdateService
+    private sealed class StubService(ReleaseUpdateResult result) : IReleaseUpdateService
     {
         public Task<ReleaseUpdateResult> CheckAsync(
             ReleaseVersion currentVersion,
             ReleaseChannel channel,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             return Task.FromResult(result);
         }
@@ -557,7 +579,8 @@ public sealed class ReleaseUpdateViewModelTests
         public Task<ReleaseUpdateResult> CheckAsync(
             ReleaseVersion currentVersion,
             ReleaseChannel channel,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             throw new HttpRequestException("network unavailable");
         }
@@ -570,18 +593,22 @@ public sealed class ReleaseUpdateViewModelTests
         public Task<ReleaseUpdateResult> CheckAsync(
             ReleaseVersion currentVersion,
             ReleaseChannel channel,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             Channels.Add(channel);
-            return Task.FromResult(new ReleaseUpdateResult(
-                currentVersion,
-                null,
-                false,
-                channel == ReleaseChannel.Development
-                    ? ReleaseUpdateService.DevelopmentReleaseUri
-                    : ReleaseUpdateService.StableReleaseUri,
-                null,
-                channel));
+            return Task.FromResult(
+                new ReleaseUpdateResult(
+                    currentVersion,
+                    null,
+                    false,
+                    channel == ReleaseChannel.Development
+                        ? ReleaseUpdateService.DevelopmentReleaseUri
+                        : ReleaseUpdateService.StableReleaseUri,
+                    null,
+                    channel
+                )
+            );
         }
     }
 
@@ -597,14 +624,18 @@ public sealed class ReleaseUpdateViewModelTests
             ReleaseInstallationWorkflowResult? result = null,
             IReadOnlyList<ReleaseInstallationWorkflowProgress>? progress = null,
             Action<int>? afterProgress = null,
-            Exception? exception = null)
+            Exception? exception = null
+        )
         {
             Capability = new ReleaseInstallationCapability(capabilityStatus);
-            this.result = result ?? new ReleaseInstallationWorkflowResult(
-                ReleaseInstallationWorkflowStatus.Rejected,
-                ReleaseInstallationWorkflowStage.None,
-                ReleaseInstallationCleanupStatus.NotRequired,
-                ReleaseInstallationRejectionReason.Unsupported);
+            this.result =
+                result
+                ?? new ReleaseInstallationWorkflowResult(
+                    ReleaseInstallationWorkflowStatus.Rejected,
+                    ReleaseInstallationWorkflowStage.None,
+                    ReleaseInstallationCleanupStatus.NotRequired,
+                    ReleaseInstallationRejectionReason.Unsupported
+                );
             this.progress = progress ?? [];
             this.afterProgress = afterProgress;
             this.exception = exception;
@@ -617,7 +648,8 @@ public sealed class ReleaseUpdateViewModelTests
         public Task<ReleaseInstallationWorkflowResult> ExecuteAsync(
             ReleaseInstallationRequest request,
             IProgress<ReleaseInstallationWorkflowProgress>? progress = null,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             cancellationToken.ThrowIfCancellationRequested();
             Requests.Add(request);
@@ -629,8 +661,7 @@ public sealed class ReleaseUpdateViewModelTests
 
             if (exception is not null)
             {
-                return Task.FromException<ReleaseInstallationWorkflowResult>(
-                    exception);
+                return Task.FromException<ReleaseInstallationWorkflowResult>(exception);
             }
 
             return Task.FromResult(result);

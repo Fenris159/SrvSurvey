@@ -10,92 +10,93 @@ namespace SrvSurvey.Desktop.Theming;
 public sealed class LegacyOverlayThemeStore
 {
     private const string HeaderKey = "header";
-    private static readonly IReadOnlyDictionary<string, Color> DefaultColors =
-        new Dictionary<string, Color>(StringComparer.Ordinal)
-        {
-            [HeaderKey] = Color.FromArgb(255, 204, 0, 3),
-            ["orange"] = Color.FromArgb(255, 255, 111, 0),
-            ["orangeDark"] = Color.FromArgb(255, 95, 48, 3),
-            ["cyan"] = Color.FromArgb(255, 84, 223, 237),
-            ["cyanDark"] = Color.FromArgb(255, 0, 139, 139),
-            ["red"] = Color.FromArgb(255, 255, 0, 0),
-            ["redDark"] = Color.FromArgb(255, 139, 0, 0),
-            ["yellow"] = Color.FromArgb(255, 255, 255, 0),
-            ["green"] = Color.FromArgb(255, 0, 255, 0),
-            ["greenDark"] = Color.FromArgb(255, 0, 139, 0),
-            ["white"] = Color.FromArgb(255, 255, 255, 255),
-            ["black"] = Color.FromArgb(255, 0, 0, 0),
-            ["menuGold"] = Color.FromArgb(235, 235, 145, 0),
-            ["grey"] = Color.FromArgb(255, 153, 175, 191),
-            // Reward PIPs preserve the legacy VolumeBar palette. Fill colors,
-            // possible-range colors, and outer edges are independent because
-            // the WinForms renderer used a different brush for each layer.
-            ["bio.confirmed"] = Color.FromArgb(255, 255, 111, 0),
-            ["bio.confirmedDim"] = Color.FromArgb(255, 85, 36, 0),
-            ["bio.potential"] = Color.FromArgb(140, 95, 48, 3),
-            ["bio.confirmedDimPotential"] = Color.FromArgb(140, 31, 16, 1),
-            ["bio.prediction"] = Color.FromArgb(255, 84, 223, 237),
-            ["bio.predictionPotential"] = Color.FromArgb(180, 0, 139, 139),
-            ["bio.gold"] = Color.FromArgb(255, 255, 215, 0),
-            ["bio.goldDark"] = Color.FromArgb(255, 120, 95, 0),
-            ["bio.goldFill"] = Color.FromArgb(255, 184, 134, 11),
-            ["bio.goldDarkFill"] = Color.FromArgb(255, 63, 45, 3),
-            ["bio.goldPotential"] = Color.FromArgb(144, 184, 134, 11),
-            ["bio.goldDarkPotential"] = Color.FromArgb(140, 184, 134, 11),
-            ["bio.galacticRegion"] = Color.FromArgb(255, 244, 244, 244),
-            ["bio.galacticRegionPotential"] = Color.FromArgb(140, 184, 184, 184),
-            ["bio.unknown"] = Color.FromArgb(255, 105, 105, 105),
-            ["bio.unknownGlyph"] = Color.FromArgb(255, 105, 105, 105),
-            ["bio.hatch"] = Color.FromArgb(242, 64, 64, 64),
-            ["bio.empty"] = Color.FromArgb(255, 0, 0, 0),
-            ["bio.white"] = Color.FromArgb(255, 255, 255, 255),
-            ["bio.confirmedEdge"] = Color.FromArgb(96, 255, 111, 0),
-            ["bio.confirmedDimEdge"] = Color.FromArgb(96, 85, 36, 0),
-            ["bio.predictionEdge"] = Color.FromArgb(96, 0, 139, 139),
-            ["bio.goldEdge"] = Color.FromArgb(96, 255, 215, 0),
-            ["bio.goldDarkEdge"] = Color.FromArgb(96, 184, 134, 11),
-            ["bio.galacticRegionEdge"] = Color.FromArgb(96, 255, 255, 255),
-            ["bio.unknownEdge"] = Color.FromArgb(96, 0, 139, 139),
-            ["bio.confirmedSegmentEdge"] = Color.FromArgb(255, 95, 48, 3),
-            ["bio.confirmedPotentialSegmentEdge"] = Color.FromArgb(124, 255, 111, 0),
-            ["bio.confirmedDimSegmentEdge"] = Color.FromArgb(255, 31, 16, 1),
-            ["bio.confirmedDimPotentialSegmentEdge"] = Color.FromArgb(124, 85, 36, 0),
-            ["bio.predictionSegmentEdge"] = Color.FromArgb(255, 0, 139, 139),
-            ["bio.predictionPotentialSegmentEdge"] = Color.FromArgb(255, 0, 139, 139),
-            ["bio.goldSegmentEdge"] = Color.FromArgb(255, 255, 215, 0),
-            ["bio.goldPotentialSegmentEdge"] = Color.FromArgb(144, 214, 164, 11),
-            ["bio.goldDarkSegmentEdge"] = Color.FromArgb(255, 184, 134, 11),
-            ["bio.goldDarkPotentialSegmentEdge"] = Color.FromArgb(124, 63, 45, 3),
-            ["bio.galacticRegionSegmentEdge"] = Color.FromArgb(255, 128, 128, 128),
-            ["bio.galacticRegionPotentialSegmentEdge"] = Color.FromArgb(144, 255, 255, 255),
-            ["colonise.surplus"] = Color.FromArgb(255, 0, 255, 0),
-            ["colonise.surplusDark"] = Color.FromArgb(255, 0, 139, 0),
-            ["colonise.deficit"] = Color.FromArgb(255, 255, 0, 0),
-            ["colonise.deficitDark"] = Color.FromArgb(255, 139, 0, 0),
-            ["colonise.highlight"] = Color.FromArgb(255, 255, 255, 0),
-            ["colonise.item"] = Color.FromArgb(255, 255, 111, 0),
-            ["colonise.itemDark"] = Color.FromArgb(255, 95, 48, 3),
-            // Row zebra fill: RGB is colour, A is opacity (edit with #RRGGBBAA
-            // or the colour picker's alpha slider for separate control).
-            ["colonise.rowHighlight"] = Color.FromArgb(72, 56, 56, 56),
-            ["fcz.checkpoint"] = Color.FromArgb(255, 255, 255, 0),
-            ["fcz.checkpointLocal"] = Color.FromArgb(255, 0, 255, 0),
-            ["fcz.powerPost"] = Color.FromArgb(255, 218, 165, 32),
-            // Guardian overlays: dedicated palette so site/status panels can
-            // be tuned without changing the shared general accents.
-            ["guardian.background"] = Color.FromArgb(255, 0, 0, 0),
-            ["guardian.header"] = Color.FromArgb(255, 255, 255, 0),
-            ["guardian.primary"] = Color.FromArgb(255, 255, 111, 0),
-            ["guardian.primaryDark"] = Color.FromArgb(255, 95, 48, 3),
-            ["guardian.secondary"] = Color.FromArgb(255, 84, 223, 237),
-            ["guardian.secondaryDark"] = Color.FromArgb(255, 0, 139, 139),
-            ["guardian.text"] = Color.FromArgb(255, 255, 255, 255),
-            ["guardian.muted"] = Color.FromArgb(255, 100, 100, 100),
-            ["guardian.danger"] = Color.FromArgb(255, 255, 0, 0),
-            ["guardian.success"] = Color.FromArgb(255, 0, 255, 0),
-            ["guardian.warning"] = Color.FromArgb(255, 255, 255, 0),
-            ["guardian.surface"] = Color.FromArgb(255, 20, 20, 20),
-        };
+    private static readonly IReadOnlyDictionary<string, Color> DefaultColors = new Dictionary<string, Color>(
+        StringComparer.Ordinal
+    )
+    {
+        [HeaderKey] = Color.FromArgb(255, 204, 0, 3),
+        ["orange"] = Color.FromArgb(255, 255, 111, 0),
+        ["orangeDark"] = Color.FromArgb(255, 95, 48, 3),
+        ["cyan"] = Color.FromArgb(255, 84, 223, 237),
+        ["cyanDark"] = Color.FromArgb(255, 0, 139, 139),
+        ["red"] = Color.FromArgb(255, 255, 0, 0),
+        ["redDark"] = Color.FromArgb(255, 139, 0, 0),
+        ["yellow"] = Color.FromArgb(255, 255, 255, 0),
+        ["green"] = Color.FromArgb(255, 0, 255, 0),
+        ["greenDark"] = Color.FromArgb(255, 0, 139, 0),
+        ["white"] = Color.FromArgb(255, 255, 255, 255),
+        ["black"] = Color.FromArgb(255, 0, 0, 0),
+        ["menuGold"] = Color.FromArgb(235, 235, 145, 0),
+        ["grey"] = Color.FromArgb(255, 153, 175, 191),
+        // Reward PIPs preserve the legacy VolumeBar palette. Fill colors,
+        // possible-range colors, and outer edges are independent because
+        // the WinForms renderer used a different brush for each layer.
+        ["bio.confirmed"] = Color.FromArgb(255, 255, 111, 0),
+        ["bio.confirmedDim"] = Color.FromArgb(255, 85, 36, 0),
+        ["bio.potential"] = Color.FromArgb(140, 95, 48, 3),
+        ["bio.confirmedDimPotential"] = Color.FromArgb(140, 31, 16, 1),
+        ["bio.prediction"] = Color.FromArgb(255, 84, 223, 237),
+        ["bio.predictionPotential"] = Color.FromArgb(180, 0, 139, 139),
+        ["bio.gold"] = Color.FromArgb(255, 255, 215, 0),
+        ["bio.goldDark"] = Color.FromArgb(255, 120, 95, 0),
+        ["bio.goldFill"] = Color.FromArgb(255, 184, 134, 11),
+        ["bio.goldDarkFill"] = Color.FromArgb(255, 63, 45, 3),
+        ["bio.goldPotential"] = Color.FromArgb(144, 184, 134, 11),
+        ["bio.goldDarkPotential"] = Color.FromArgb(140, 184, 134, 11),
+        ["bio.galacticRegion"] = Color.FromArgb(255, 244, 244, 244),
+        ["bio.galacticRegionPotential"] = Color.FromArgb(140, 184, 184, 184),
+        ["bio.unknown"] = Color.FromArgb(255, 105, 105, 105),
+        ["bio.unknownGlyph"] = Color.FromArgb(255, 105, 105, 105),
+        ["bio.hatch"] = Color.FromArgb(242, 64, 64, 64),
+        ["bio.empty"] = Color.FromArgb(255, 0, 0, 0),
+        ["bio.white"] = Color.FromArgb(255, 255, 255, 255),
+        ["bio.confirmedEdge"] = Color.FromArgb(96, 255, 111, 0),
+        ["bio.confirmedDimEdge"] = Color.FromArgb(96, 85, 36, 0),
+        ["bio.predictionEdge"] = Color.FromArgb(96, 0, 139, 139),
+        ["bio.goldEdge"] = Color.FromArgb(96, 255, 215, 0),
+        ["bio.goldDarkEdge"] = Color.FromArgb(96, 184, 134, 11),
+        ["bio.galacticRegionEdge"] = Color.FromArgb(96, 255, 255, 255),
+        ["bio.unknownEdge"] = Color.FromArgb(96, 0, 139, 139),
+        ["bio.confirmedSegmentEdge"] = Color.FromArgb(255, 95, 48, 3),
+        ["bio.confirmedPotentialSegmentEdge"] = Color.FromArgb(124, 255, 111, 0),
+        ["bio.confirmedDimSegmentEdge"] = Color.FromArgb(255, 31, 16, 1),
+        ["bio.confirmedDimPotentialSegmentEdge"] = Color.FromArgb(124, 85, 36, 0),
+        ["bio.predictionSegmentEdge"] = Color.FromArgb(255, 0, 139, 139),
+        ["bio.predictionPotentialSegmentEdge"] = Color.FromArgb(255, 0, 139, 139),
+        ["bio.goldSegmentEdge"] = Color.FromArgb(255, 255, 215, 0),
+        ["bio.goldPotentialSegmentEdge"] = Color.FromArgb(144, 214, 164, 11),
+        ["bio.goldDarkSegmentEdge"] = Color.FromArgb(255, 184, 134, 11),
+        ["bio.goldDarkPotentialSegmentEdge"] = Color.FromArgb(124, 63, 45, 3),
+        ["bio.galacticRegionSegmentEdge"] = Color.FromArgb(255, 128, 128, 128),
+        ["bio.galacticRegionPotentialSegmentEdge"] = Color.FromArgb(144, 255, 255, 255),
+        ["colonise.surplus"] = Color.FromArgb(255, 0, 255, 0),
+        ["colonise.surplusDark"] = Color.FromArgb(255, 0, 139, 0),
+        ["colonise.deficit"] = Color.FromArgb(255, 255, 0, 0),
+        ["colonise.deficitDark"] = Color.FromArgb(255, 139, 0, 0),
+        ["colonise.highlight"] = Color.FromArgb(255, 255, 255, 0),
+        ["colonise.item"] = Color.FromArgb(255, 255, 111, 0),
+        ["colonise.itemDark"] = Color.FromArgb(255, 95, 48, 3),
+        // Row zebra fill: RGB is colour, A is opacity (edit with #RRGGBBAA
+        // or the colour picker's alpha slider for separate control).
+        ["colonise.rowHighlight"] = Color.FromArgb(72, 56, 56, 56),
+        ["fcz.checkpoint"] = Color.FromArgb(255, 255, 255, 0),
+        ["fcz.checkpointLocal"] = Color.FromArgb(255, 0, 255, 0),
+        ["fcz.powerPost"] = Color.FromArgb(255, 218, 165, 32),
+        // Guardian overlays: dedicated palette so site/status panels can
+        // be tuned without changing the shared general accents.
+        ["guardian.background"] = Color.FromArgb(255, 0, 0, 0),
+        ["guardian.header"] = Color.FromArgb(255, 255, 255, 0),
+        ["guardian.primary"] = Color.FromArgb(255, 255, 111, 0),
+        ["guardian.primaryDark"] = Color.FromArgb(255, 95, 48, 3),
+        ["guardian.secondary"] = Color.FromArgb(255, 84, 223, 237),
+        ["guardian.secondaryDark"] = Color.FromArgb(255, 0, 139, 139),
+        ["guardian.text"] = Color.FromArgb(255, 255, 255, 255),
+        ["guardian.muted"] = Color.FromArgb(255, 100, 100, 100),
+        ["guardian.danger"] = Color.FromArgb(255, 255, 0, 0),
+        ["guardian.success"] = Color.FromArgb(255, 0, 255, 0),
+        ["guardian.warning"] = Color.FromArgb(255, 255, 255, 0),
+        ["guardian.surface"] = Color.FromArgb(255, 20, 20, 20),
+    };
 
     private readonly string path;
 
@@ -114,21 +115,19 @@ public sealed class LegacyOverlayThemeStore
 
         try
         {
-            var root = JsonNode.Parse(
+            var root =
+                JsonNode.Parse(
                     File.ReadAllText(path),
                     documentOptions: new JsonDocumentOptions
                     {
                         AllowTrailingCommas = true,
                         CommentHandling = JsonCommentHandling.Skip,
-                    })
-                as JsonObject
-                ?? throw new InvalidDataException(
-                    "The legacy overlay theme is not a JSON object.");
+                    }
+                ) as JsonObject
+                ?? throw new InvalidDataException("The legacy overlay theme is not a JSON object.");
             var colors = new Dictionary<string, Color>(StringComparer.Ordinal);
             ParseObject(root, string.Empty, colors);
-            var typography = OverlayTypographySettings.Parse(
-                root["typography"] as JsonObject,
-                "Overlay theme");
+            var typography = OverlayTypographySettings.Parse(root["typography"] as JsonObject, "Overlay theme");
             _ = OverlayThemePresetCatalog.AddMissingHeaderColor(colors);
             UpgradeLegacyDefaultMutedColor(colors);
             UpgradeLegacyDefaultHeaderColor(colors);
@@ -141,37 +140,33 @@ public sealed class LegacyOverlayThemeStore
 
             return new LegacyOverlayTheme(colors, true, null, typography);
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or JsonException
-                or InvalidDataException
-                or FormatException
-                or OverflowException)
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or UnauthorizedAccessException
+                        or JsonException
+                        or InvalidDataException
+                        or FormatException
+                        or OverflowException
+            )
         {
             var fallback = CreateDefault();
-            return fallback with
-            {
-                Error = $"Could not read legacy overlay theme '{path}': "
-                    + exception.Message,
-            };
+            return fallback with { Error = $"Could not read legacy overlay theme '{path}': " + exception.Message };
         }
     }
 
     public LegacyOverlayThemeSaveResult Save(LegacyOverlayTheme theme)
     {
         ArgumentNullException.ThrowIfNull(theme);
-        var missingColor = DefaultColors.Keys.FirstOrDefault(required =>
-            !theme.Colors.ContainsKey(required));
+        var missingColor = DefaultColors.Keys.FirstOrDefault(required => !theme.Colors.ContainsKey(required));
         if (missingColor is not null)
         {
-            throw new InvalidDataException(
-                $"The overlay theme does not define required colour '{missingColor}'.");
+            throw new InvalidDataException($"The overlay theme does not define required colour '{missingColor}'.");
         }
 
-        var directory = Path.GetDirectoryName(path)
-            ?? throw new InvalidOperationException(
-                "The overlay theme path has no parent directory.");
+        var directory =
+            Path.GetDirectoryName(path)
+            ?? throw new InvalidOperationException("The overlay theme path has no parent directory.");
         Directory.CreateDirectory(directory);
         var backupPath = File.Exists(path) ? CreateVerifiedBackup(directory) : null;
         var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
@@ -179,12 +174,13 @@ public sealed class LegacyOverlayThemeStore
         {
             WriteTheme(temporaryPath, theme.Colors, theme.EffectiveTypography);
             var verified = new LegacyOverlayThemeStore(temporaryPath).Load();
-            if (verified.Error is not null
+            if (
+                verified.Error is not null
                 || !ColorsEqual(theme.Colors, verified.Colors)
-                || verified.EffectiveTypography != theme.EffectiveTypography)
+                || verified.EffectiveTypography != theme.EffectiveTypography
+            )
             {
-                throw new InvalidDataException(
-                    verified.Error ?? "The written overlay theme did not verify.");
+                throw new InvalidDataException(verified.Error ?? "The written overlay theme did not verify.");
             }
 
             File.Move(temporaryPath, path, overwrite: true);
@@ -205,43 +201,29 @@ public sealed class LegacyOverlayThemeStore
             new Dictionary<string, Color>(DefaultColors, StringComparer.Ordinal),
             false,
             null,
-            OverlayTypographySettings.Default);
+            OverlayTypographySettings.Default
+        );
     }
 
-    private static void UpgradeLegacyDefaultMutedColor(
-        Dictionary<string, Color> colors)
+    private static void UpgradeLegacyDefaultMutedColor(Dictionary<string, Color> colors)
     {
         var previousMuted = Color.FromArgb(255, 100, 100, 100);
-        if (!colors.TryGetValue("grey", out var muted)
-            || muted != previousMuted)
+        if (!colors.TryGetValue("grey", out var muted) || muted != previousMuted)
         {
             return;
         }
 
-        string[] unchangedGeneralKeys =
-        [
-            "orange",
-            "orangeDark",
-            "cyan",
-            "cyanDark",
-            "yellow",
-            "white",
-            "menuGold",
-        ];
-        if (unchangedGeneralKeys.All(key =>
-                colors.TryGetValue(key, out var color)
-                && color == DefaultColors[key]))
+        string[] unchangedGeneralKeys = ["orange", "orangeDark", "cyan", "cyanDark", "yellow", "white", "menuGold"];
+        if (unchangedGeneralKeys.All(key => colors.TryGetValue(key, out var color) && color == DefaultColors[key]))
         {
             colors["grey"] = DefaultColors["grey"];
         }
     }
 
-    private static void UpgradeLegacyDefaultHeaderColor(
-        Dictionary<string, Color> colors)
+    private static void UpgradeLegacyDefaultHeaderColor(Dictionary<string, Color> colors)
     {
         var previousHeader = Color.FromArgb(255, 255, 255, 0);
-        if (!colors.TryGetValue(HeaderKey, out var header)
-            || header != previousHeader)
+        if (!colors.TryGetValue(HeaderKey, out var header) || header != previousHeader)
         {
             return;
         }
@@ -262,23 +244,17 @@ public sealed class LegacyOverlayThemeStore
             "menuGold",
             "grey",
         ];
-        if (unchangedGeneralKeys.All(key =>
-                !colors.TryGetValue(key, out var color)
-                || color == DefaultColors[key]))
+        if (unchangedGeneralKeys.All(key => !colors.TryGetValue(key, out var color) || color == DefaultColors[key]))
         {
             colors[HeaderKey] = DefaultColors[HeaderKey];
         }
     }
 
-    private static void ParseObject(
-        JsonObject source,
-        string prefix,
-        Dictionary<string, Color> colors)
+    private static void ParseObject(JsonObject source, string prefix, Dictionary<string, Color> colors)
     {
         foreach (var entry in source)
         {
-            if (prefix.Length == 0
-                && string.Equals(entry.Key, "typography", StringComparison.Ordinal))
+            if (prefix.Length == 0 && string.Equals(entry.Key, "typography", StringComparison.Ordinal))
             {
                 continue;
             }
@@ -294,10 +270,7 @@ public sealed class LegacyOverlayThemeStore
         }
     }
 
-    private static Color ParseColor(
-        string name,
-        JsonNode? value,
-        Dictionary<string, Color> parsedColors)
+    private static Color ParseColor(string name, JsonNode? value, Dictionary<string, Color> parsedColors)
     {
         if (value is null)
         {
@@ -306,8 +279,7 @@ public sealed class LegacyOverlayThemeStore
                 return fallback;
             }
 
-            throw new InvalidDataException(
-                $"Default colour not found for '{name}'.");
+            throw new InvalidDataException($"Default colour not found for '{name}'.");
         }
 
         if (value is JsonArray components)
@@ -315,8 +287,7 @@ public sealed class LegacyOverlayThemeStore
             return ParseComponents(name, components);
         }
 
-        if (value is JsonValue textValue
-            && textValue.TryGetValue<string>(out var text))
+        if (value is JsonValue textValue && textValue.TryGetValue<string>(out var text))
         {
             if (text.StartsWith('#'))
             {
@@ -328,20 +299,17 @@ public sealed class LegacyOverlayThemeStore
                 return referenced;
             }
 
-            throw new InvalidDataException(
-                $"Prior colour '{text}' referenced by '{name}' was not found.");
+            throw new InvalidDataException($"Prior colour '{text}' referenced by '{name}' was not found.");
         }
 
-        throw new InvalidDataException(
-            $"Colour '{name}' must be an RGB/ARGB array, HTML colour, prior name, or null.");
+        throw new InvalidDataException($"Colour '{name}' must be an RGB/ARGB array, HTML colour, prior name, or null.");
     }
 
     private static Color ParseComponents(string name, JsonArray components)
     {
         if (components.Count is not 3 and not 4)
         {
-            throw new InvalidDataException(
-                $"Colour '{name}' must contain three RGB or four ARGB values.");
+            throw new InvalidDataException($"Colour '{name}' must contain three RGB or four ARGB values.");
         }
 
         Span<byte> values = stackalloc byte[4];
@@ -353,12 +321,13 @@ public sealed class LegacyOverlayThemeStore
 
         for (var index = 0; index < components.Count; index++)
         {
-            if (components[index] is not JsonValue component
+            if (
+                components[index] is not JsonValue component
                 || !component.TryGetValue<int>(out var number)
-                || number is < 0 or > 255)
+                || number is < 0 or > 255
+            )
             {
-                throw new InvalidDataException(
-                    $"Colour '{name}' components must be integers from 0 to 255.");
+                throw new InvalidDataException($"Colour '{name}' components must be integers from 0 to 255.");
             }
 
             values[index + offset] = (byte)number;
@@ -372,8 +341,7 @@ public sealed class LegacyOverlayThemeStore
         var hex = text.AsSpan(1);
         if (hex.Length is not 6 and not 8)
         {
-            throw new InvalidDataException(
-                $"HTML colour '{name}' must use #RRGGBB or #RRGGBBAA.");
+            throw new InvalidDataException($"HTML colour '{name}' must use #RRGGBB or #RRGGBBAA.");
         }
 
         var red = ParseHexByte(hex[..2]);
@@ -409,11 +377,8 @@ public sealed class LegacyOverlayThemeStore
             color = ParseHtmlColor("value", normalized);
             return true;
         }
-        catch (Exception exception) when (
-            exception is InvalidDataException
-                or FormatException
-                or OverflowException
-                or ArgumentException)
+        catch (Exception exception)
+            when (exception is InvalidDataException or FormatException or OverflowException or ArgumentException)
         {
             color = default;
             return false;
@@ -426,7 +391,8 @@ public sealed class LegacyOverlayThemeStore
             directory,
             "legacy-backups",
             "overlay-themes",
-            DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmssfff", CultureInfo.InvariantCulture));
+            DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmssfff", CultureInfo.InvariantCulture)
+        );
         Directory.CreateDirectory(backupDirectory);
         var backupPath = Path.Combine(backupDirectory, Path.GetFileName(path));
         File.Copy(path, backupPath, overwrite: false);
@@ -443,7 +409,8 @@ public sealed class LegacyOverlayThemeStore
     private static void WriteTheme(
         string outputPath,
         IReadOnlyDictionary<string, Color> colors,
-        OverlayTypographySettings typography)
+        OverlayTypographySettings typography
+    )
     {
         var root = new JsonObject();
         foreach (var entry in colors.OrderBy(entry => entry.Key, StringComparer.Ordinal))
@@ -453,18 +420,11 @@ public sealed class LegacyOverlayThemeStore
 
         root["typography"] = typography.ToJson();
 
-        using var stream = new FileStream(
-            outputPath,
-            FileMode.CreateNew,
-            FileAccess.Write,
-            FileShare.None);
+        using var stream = new FileStream(outputPath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
         using var writer = new Utf8JsonWriter(
             stream,
-            new JsonWriterOptions
-            {
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                Indented = true,
-            });
+            new JsonWriterOptions { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping, Indented = true }
+        );
         root.WriteTo(writer);
     }
 
@@ -493,11 +453,11 @@ public sealed class LegacyOverlayThemeStore
 
     private static bool ColorsEqual(
         IReadOnlyDictionary<string, Color> expected,
-        IReadOnlyDictionary<string, Color> actual)
+        IReadOnlyDictionary<string, Color> actual
+    )
     {
         return expected.Count == actual.Count
-            && expected.All(entry => actual.TryGetValue(entry.Key, out var color)
-                && color == entry.Value);
+            && expected.All(entry => actual.TryGetValue(entry.Key, out var color) && color == entry.Value);
     }
 }
 
@@ -505,20 +465,17 @@ public sealed record LegacyOverlayTheme(
     IReadOnlyDictionary<string, Color> Colors,
     bool IsCustom,
     string? Error,
-    OverlayTypographySettings? Typography = null)
+    OverlayTypographySettings? Typography = null
+)
 {
-    public OverlayTypographySettings EffectiveTypography =>
-        Typography ?? OverlayTypographySettings.Default;
+    public OverlayTypographySettings EffectiveTypography => Typography ?? OverlayTypographySettings.Default;
 
     public Color GetColor(string name)
     {
         return Colors.TryGetValue(name, out var color)
             ? color
-            : throw new KeyNotFoundException(
-                $"The legacy overlay theme does not define '{name}'.");
+            : throw new KeyNotFoundException($"The legacy overlay theme does not define '{name}'.");
     }
 }
 
-public sealed record LegacyOverlayThemeSaveResult(
-    string Path,
-    string? BackupPath);
+public sealed record LegacyOverlayThemeSaveResult(string Path, string? BackupPath);

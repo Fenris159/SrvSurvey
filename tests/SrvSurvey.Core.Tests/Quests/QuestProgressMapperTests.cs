@@ -31,11 +31,13 @@ public sealed class QuestProgressMapperTests
                     "Hello",
                     "Welcome",
                     new Dictionary<string, string> { ["go"] = "Proceed" },
-                    new HashSet<string> { "urgent" }),
+                    new HashSet<string> { "urgent" }
+                ),
             ],
             "start",
             new Dictionary<string, string> { ["start"] = "return true" },
-            "dev-sample.json");
+            "dev-sample.json"
+        );
         var progress = new LegacyQuestProgress(
             new LegacyQuestReference("publisher", "sample", 1.5),
             definition,
@@ -48,19 +50,14 @@ public sealed class QuestProgressMapperTests
                 ["simple"] = new(LegacyQuestObjectiveState.complete, 0, 0),
             },
             new HashSet<string> { "Sol" },
-            new Dictionary<string, LegacyQuestBodyLocation>
-            {
-                ["site"] = new(12.5, -42.25, 50),
-            },
+            new Dictionary<string, LegacyQuestBodyLocation> { ["site"] = new(12.5, -42.25, 50) },
             [
                 new LegacyQuestChapter(
                     "start",
                     DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
                     null,
-                    new Dictionary<string, JsonElement>
-                    {
-                        ["visits"] = JsonSerializer.SerializeToElement(2),
-                    }),
+                    new Dictionary<string, JsonElement> { ["visits"] = JsonSerializer.SerializeToElement(2) }
+                ),
             ],
             [
                 new LegacyQuestMessage(
@@ -72,23 +69,16 @@ public sealed class QuestProgressMapperTests
                     "start",
                     ["go", "later"],
                     false,
-                    null),
+                    null
+                ),
             ],
-            [
-                new LegacyQuestRoute(
-                    "route",
-                    2.5,
-                    [SampleRouteWaypoint]),
-            ],
+            [new LegacyQuestRoute("route", 2.5, [SampleRouteWaypoint])],
+            new Dictionary<string, JsonElement> { ["counter"] = JsonSerializer.SerializeToElement(42) },
             new Dictionary<string, JsonElement>
             {
-                ["counter"] = JsonSerializer.SerializeToElement(42),
-            },
-            new Dictionary<string, JsonElement>
-            {
-                ["Docked"] = JsonSerializer.SerializeToElement(
-                    new { @event = "Docked" }),
-            });
+                ["Docked"] = JsonSerializer.SerializeToElement(new { @event = "Docked" }),
+            }
+        );
 
         var mapped = QuestProgressMapper.FromLegacy(progress);
 
@@ -98,17 +88,11 @@ public sealed class QuestProgressMapperTests
         Assert.Equal("12.5,-42.25,50", mapped.BodyLocations["site"]);
         Assert.Equal(42, mapped.Variables["counter"].GetInt32());
         Assert.Equal(2, mapped.Chapters[0].Variables["visits"].GetInt32());
-        Assert.Equal(
-            ["go", "later"],
-            Assert.IsType<string[]>(mapped.Messages[0].Actions));
+        Assert.Equal(["go", "later"], Assert.IsType<string[]>(mapped.Messages[0].Actions));
         Assert.Equal([1d, 2d], mapped.Routes[0].Waypoints[0]);
         Assert.Equal(RavenQuestDuration.Long, mapped.Quest?.Duration);
         Assert.True(mapped.Quest?.Hidden);
         Assert.Equal("Proceed", mapped.Quest?.Messages[0].Actions?["go"]);
-        Assert.Equal(
-            "Docked",
-            mapped.KeptJournalEvents["Docked"]
-                .GetProperty("event")
-                .GetString());
+        Assert.Equal("Docked", mapped.KeptJournalEvents["Docked"].GetProperty("event").GetString());
     }
 }

@@ -8,15 +8,11 @@ public enum GuardianComponentMaterial
     Tech,
 }
 
-public sealed record GuardianComponentLoadout(
-    string Name,
-    IReadOnlyList<GuardianComponentMaterial> Items)
+public sealed record GuardianComponentLoadout(string Name, IReadOnlyList<GuardianComponentMaterial> Items)
 {
     public GuardianComponentMaterial GetItem(int index)
     {
-        return index >= 0 && index < Items.Count
-            ? Items[index]
-            : GuardianComponentMaterial.Unknown;
+        return index >= 0 && index < Items.Count ? Items[index] : GuardianComponentMaterial.Unknown;
     }
 
     public string ToLegacyString()
@@ -24,9 +20,7 @@ public sealed record GuardianComponentLoadout(
         return Name + "," + string.Join(',', Items.Select(ToLegacyName));
     }
 
-    public static bool TryParseLegacy(
-        string? value,
-        out GuardianComponentLoadout loadout)
+    public static bool TryParseLegacy(string? value, out GuardianComponentLoadout loadout)
     {
         loadout = new GuardianComponentLoadout(string.Empty, []);
         if (string.IsNullOrWhiteSpace(value))
@@ -34,9 +28,7 @@ public sealed record GuardianComponentLoadout(
             return false;
         }
 
-        var parts = value.Split(
-            ',',
-            StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        var parts = value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length < 2 || string.IsNullOrWhiteSpace(parts[0]))
         {
             return false;
@@ -55,9 +47,7 @@ public sealed record GuardianComponentLoadout(
         return true;
     }
 
-    private static bool TryParseMaterial(
-        string value,
-        out GuardianComponentMaterial material)
+    private static bool TryParseMaterial(string value, out GuardianComponentMaterial material)
     {
         if (value.Equals("unknown", StringComparison.OrdinalIgnoreCase))
         {
@@ -98,7 +88,8 @@ public sealed record GuardianComponentLoadout(
             _ => throw new ArgumentOutOfRangeException(
                 nameof(material),
                 material,
-                "Unknown Guardian component material."),
+                "Unknown Guardian component material."
+            ),
         };
     }
 }

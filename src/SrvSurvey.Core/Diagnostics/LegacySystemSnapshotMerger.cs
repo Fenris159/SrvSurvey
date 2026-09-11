@@ -11,16 +11,20 @@ public static class LegacySystemSnapshotMerger
         SystemScanSnapshot snapshot,
         string? commanderName,
         DateTimeOffset firstVisited,
-        DateTimeOffset lastVisited)
+        DateTimeOffset lastVisited
+    )
     {
         ArgumentNullException.ThrowIfNull(snapshot);
-        if (snapshot.SystemAddress is not { } systemAddress
+        if (
+            snapshot.SystemAddress is not { } systemAddress
             || systemAddress <= 0
-            || string.IsNullOrWhiteSpace(snapshot.SystemName))
+            || string.IsNullOrWhiteSpace(snapshot.SystemName)
+        )
         {
             throw new ArgumentException(
                 "A named system snapshot with a positive address is required.",
-                nameof(snapshot));
+                nameof(snapshot)
+            );
         }
 
         var root = existing?.DeepClone() as JsonObject ?? new JsonObject();
@@ -56,9 +60,7 @@ public static class LegacySystemSnapshotMerger
         return root;
     }
 
-    private static void MergeBody(
-        JsonObject body,
-        SystemScanBodySnapshot snapshot)
+    private static void MergeBody(JsonObject body, SystemScanBodySnapshot snapshot)
     {
         body["name"] = snapshot.Name;
         body["id"] = snapshot.BodyId;
@@ -75,8 +77,7 @@ public static class LegacySystemSnapshotMerger
         WriteTrue(body, "firstFootFall", snapshot.IsFirstFootfall);
         if (snapshot.WasFootfalled is { } wasFootfalled)
         {
-            body["wasFootfalled"] = ReadBoolean(body["wasFootfalled"])
-                ?? wasFootfalled;
+            body["wasFootfalled"] = ReadBoolean(body["wasFootfalled"]) ?? wasFootfalled;
             if (wasFootfalled)
             {
                 body["wasFootfalled"] = true;
@@ -94,10 +95,7 @@ public static class LegacySystemSnapshotMerger
         WriteString(body, "atmosphereType", snapshot.AtmosphereType);
         WriteString(body, "volcanism", snapshot.Volcanism, allowEmpty: true);
         WriteNonZero(body, "mass", snapshot.Mass);
-        WriteNonZero(
-            body,
-            "distanceFromArrivalLS",
-            snapshot.DistanceFromArrivalLs);
+        WriteNonZero(body, "distanceFromArrivalLS", snapshot.DistanceFromArrivalLs);
         WriteNonZero(body, "radius", snapshot.RadiusMeters);
         WriteNonZero(body, "surfaceGravity", snapshot.SurfaceGravity);
         WriteNonZero(body, "surfaceTemperature", snapshot.SurfaceTemperature);
@@ -106,22 +104,18 @@ public static class LegacySystemSnapshotMerger
         WriteNonZero(body, "absoluteMagnitude", snapshot.AbsoluteMagnitude);
         WriteMaximum(body, "bioSignalCount", snapshot.BiologicalSignalCount);
         WriteMaximum(body, "geoSignalCount", snapshot.GeologicalSignalCount);
-        MergeComposition(
-            body,
-            "atmosphereComposition",
-            snapshot.AtmosphereComposition);
+        MergeComposition(body, "atmosphereComposition", snapshot.AtmosphereComposition);
         MergeComposition(body, "materials", snapshot.Materials);
         MergeRings(body, snapshot.Rings);
         if (body["parents"] is null && snapshot.Parents.Count > 0)
         {
             body["parents"] = new JsonArray(
-                snapshot.Parents
-                    .Select(parent => (JsonNode)new JsonObject
-                    {
-                        ["type"] = parent.Kind.ToString(),
-                        ["id"] = parent.BodyId,
-                    })
-                    .ToArray());
+                snapshot
+                    .Parents.Select(parent =>
+                        (JsonNode)new JsonObject { ["type"] = parent.Kind.ToString(), ["id"] = parent.BodyId }
+                    )
+                    .ToArray()
+            );
         }
 
         MergeOrganisms(body, snapshot.Organisms);
@@ -130,7 +124,8 @@ public static class LegacySystemSnapshotMerger
     private static void MergeComposition(
         JsonObject owner,
         string propertyName,
-        IReadOnlyDictionary<string, double> values)
+        IReadOnlyDictionary<string, double> values
+    )
     {
         if (values.Count == 0)
         {
@@ -144,9 +139,7 @@ public static class LegacySystemSnapshotMerger
         }
     }
 
-    private static void MergeRings(
-        JsonObject body,
-        IReadOnlyList<SystemRingSnapshot> snapshots)
+    private static void MergeRings(JsonObject body, IReadOnlyList<SystemRingSnapshot> snapshots)
     {
         if (snapshots.Count == 0)
         {
@@ -156,12 +149,12 @@ public static class LegacySystemSnapshotMerger
         var rings = GetOrCreateArray(body, "rings");
         foreach (var snapshot in snapshots)
         {
-            var ring = rings
+            var ring =
+                rings
                     .OfType<JsonObject>()
-                    .FirstOrDefault(candidate => string.Equals(
-                        ReadString(candidate["name"]),
-                        snapshot.Name,
-                        StringComparison.OrdinalIgnoreCase))
+                    .FirstOrDefault(candidate =>
+                        string.Equals(ReadString(candidate["name"]), snapshot.Name, StringComparison.OrdinalIgnoreCase)
+                    )
                 ?? new JsonObject();
             if (ring.Parent is null)
             {
@@ -175,9 +168,7 @@ public static class LegacySystemSnapshotMerger
         }
     }
 
-    private static void MergeOrganisms(
-        JsonObject body,
-        IReadOnlyList<SystemOrganismSnapshot> snapshots)
+    private static void MergeOrganisms(JsonObject body, IReadOnlyList<SystemOrganismSnapshot> snapshots)
     {
         if (snapshots.Count == 0)
         {
@@ -187,28 +178,18 @@ public static class LegacySystemSnapshotMerger
         var organisms = GetOrCreateArray(body, "organisms");
         foreach (var snapshot in snapshots)
         {
-            var organism = FindOrganism(organisms, snapshot)
-                ?? new JsonObject();
+            var organism = FindOrganism(organisms, snapshot) ?? new JsonObject();
             if (organism.Parent is null)
             {
                 organisms.Add(organism);
             }
 
             organism["genus"] = snapshot.Genus;
-            WriteString(
-                organism,
-                "genusLocalized",
-                snapshot.GenusLocalized);
+            WriteString(organism, "genusLocalized", snapshot.GenusLocalized);
             WriteString(organism, "species", snapshot.Species);
-            WriteString(
-                organism,
-                "speciesLocalized",
-                snapshot.SpeciesLocalized);
+            WriteString(organism, "speciesLocalized", snapshot.SpeciesLocalized);
             WriteString(organism, "variant", snapshot.Variant);
-            WriteString(
-                organism,
-                "variantLocalized",
-                snapshot.VariantLocalized);
+            WriteString(organism, "variantLocalized", snapshot.VariantLocalized);
             if (snapshot.EntryId is > 0)
             {
                 organism["entryId"] ??= snapshot.EntryId.Value;
@@ -225,36 +206,31 @@ public static class LegacySystemSnapshotMerger
         }
     }
 
-    private static JsonObject? FindOrganism(
-        JsonArray organisms,
-        SystemOrganismSnapshot snapshot)
+    private static JsonObject? FindOrganism(JsonArray organisms, SystemOrganismSnapshot snapshot)
     {
         return OrganismIdentityMatcher.FindBestMatch(
             organisms.OfType<JsonObject>(),
-            new OrganismIdentity(
-                snapshot.Genus,
-                snapshot.EntryId,
-                snapshot.Variant,
-                snapshot.Species),
+            new OrganismIdentity(snapshot.Genus, snapshot.EntryId, snapshot.Variant, snapshot.Species),
             candidate => new OrganismIdentity(
                 ReadString(candidate["genus"]),
                 ReadInt64(candidate["entryId"]),
                 ReadString(candidate["variant"]),
-                ReadString(candidate["species"])));
+                ReadString(candidate["species"])
+            )
+        );
     }
 
-    private static JsonObject FindOrCreateBody(
-        JsonArray bodies,
-        SystemScanBodySnapshot snapshot)
+    private static JsonObject FindOrCreateBody(JsonArray bodies, SystemScanBodySnapshot snapshot)
     {
         foreach (var node in bodies)
         {
-            if (node is JsonObject candidate
-                && (ReadInt32(candidate["id"]) == snapshot.BodyId
-                    || string.Equals(
-                        ReadString(candidate["name"]),
-                        snapshot.Name,
-                        StringComparison.OrdinalIgnoreCase)))
+            if (
+                node is JsonObject candidate
+                && (
+                    ReadInt32(candidate["id"]) == snapshot.BodyId
+                    || string.Equals(ReadString(candidate["name"]), snapshot.Name, StringComparison.OrdinalIgnoreCase)
+                )
+            )
             {
                 return candidate;
             }
@@ -265,9 +241,7 @@ public static class LegacySystemSnapshotMerger
         return body;
     }
 
-    private static JsonArray GetOrCreateArray(
-        JsonObject owner,
-        string propertyName)
+    private static JsonArray GetOrCreateArray(JsonObject owner, string propertyName)
     {
         if (owner[propertyName] is null)
         {
@@ -278,12 +252,11 @@ public static class LegacySystemSnapshotMerger
 
         return owner[propertyName] as JsonArray
             ?? throw new InvalidDataException(
-                $"The legacy '{propertyName}' value is malformed and was not overwritten.");
+                $"The legacy '{propertyName}' value is malformed and was not overwritten."
+            );
     }
 
-    private static JsonObject GetOrCreateObject(
-        JsonObject owner,
-        string propertyName)
+    private static JsonObject GetOrCreateObject(JsonObject owner, string propertyName)
     {
         if (owner[propertyName] is null)
         {
@@ -294,7 +267,8 @@ public static class LegacySystemSnapshotMerger
 
         return owner[propertyName] as JsonObject
             ?? throw new InvalidDataException(
-                $"The legacy '{propertyName}' value is malformed and was not overwritten.");
+                $"The legacy '{propertyName}' value is malformed and was not overwritten."
+            );
     }
 
     private static string GetLegacyBodyType(SystemBodyKind kind)
@@ -312,10 +286,7 @@ public static class LegacySystemSnapshotMerger
         };
     }
 
-    private static void WriteEarlierTimestamp(
-        JsonObject owner,
-        string propertyName,
-        DateTimeOffset value)
+    private static void WriteEarlierTimestamp(JsonObject owner, string propertyName, DateTimeOffset value)
     {
         var existing = ReadTimestamp(owner[propertyName]);
         if (existing is null || value < existing)
@@ -324,10 +295,7 @@ public static class LegacySystemSnapshotMerger
         }
     }
 
-    private static void WriteLaterTimestamp(
-        JsonObject owner,
-        string propertyName,
-        DateTimeOffset value)
+    private static void WriteLaterTimestamp(JsonObject owner, string propertyName, DateTimeOffset value)
     {
         var existing = ReadTimestamp(owner[propertyName]);
         if (existing is null || value > existing)
@@ -336,11 +304,7 @@ public static class LegacySystemSnapshotMerger
         }
     }
 
-    private static void WriteString(
-        JsonObject owner,
-        string propertyName,
-        string? value,
-        bool allowEmpty = false)
+    private static void WriteString(JsonObject owner, string propertyName, string? value, bool allowEmpty = false)
     {
         if (value is not null && (allowEmpty || !string.IsNullOrWhiteSpace(value)))
         {
@@ -348,22 +312,15 @@ public static class LegacySystemSnapshotMerger
         }
     }
 
-    private static void WriteNonZero(
-        JsonObject owner,
-        string propertyName,
-        double value)
+    private static void WriteNonZero(JsonObject owner, string propertyName, double value)
     {
-        if (double.IsFinite(value)
-            && (value != 0 || owner[propertyName] is null))
+        if (double.IsFinite(value) && (value != 0 || owner[propertyName] is null))
         {
             owner[propertyName] = value;
         }
     }
 
-    private static void WriteMaximum(
-        JsonObject owner,
-        string propertyName,
-        int value)
+    private static void WriteMaximum(JsonObject owner, string propertyName, int value)
     {
         var existing = ReadInt32(owner[propertyName]) ?? 0;
         if (value > existing || owner[propertyName] is null)
@@ -372,10 +329,7 @@ public static class LegacySystemSnapshotMerger
         }
     }
 
-    private static void WriteTrue(
-        JsonObject owner,
-        string propertyName,
-        bool value)
+    private static void WriteTrue(JsonObject owner, string propertyName, bool value)
     {
         if (value || owner[propertyName] is null)
         {
@@ -385,10 +339,7 @@ public static class LegacySystemSnapshotMerger
 
     private static string? ReadString(JsonNode? node)
     {
-        return node is JsonValue value
-            && value.TryGetValue<string>(out var result)
-                ? result
-                : null;
+        return node is JsonValue value && value.TryGetValue<string>(out var result) ? result : null;
     }
 
     private static int? ReadInt32(JsonNode? node)
@@ -403,14 +354,11 @@ public static class LegacySystemSnapshotMerger
             return result;
         }
 
-        return value.TryGetValue<string>(out var text)
-            && int.TryParse(
-                text,
-                NumberStyles.Integer,
-                CultureInfo.InvariantCulture,
-                out result)
-                    ? result
-                    : null;
+        return
+            value.TryGetValue<string>(out var text)
+            && int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out result)
+            ? result
+            : null;
     }
 
     private static long? ReadInt64(JsonNode? node)
@@ -425,34 +373,25 @@ public static class LegacySystemSnapshotMerger
             return result;
         }
 
-        return value.TryGetValue<string>(out var text)
-            && long.TryParse(
-                text,
-                NumberStyles.Integer,
-                CultureInfo.InvariantCulture,
-                out result)
-                    ? result
-                    : null;
+        return
+            value.TryGetValue<string>(out var text)
+            && long.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out result)
+            ? result
+            : null;
     }
 
     private static bool? ReadBoolean(JsonNode? node)
     {
-        return node is JsonValue value
-            && value.TryGetValue<bool>(out var result)
-                ? result
-                : null;
+        return node is JsonValue value && value.TryGetValue<bool>(out var result) ? result : null;
     }
 
     private static DateTimeOffset? ReadTimestamp(JsonNode? node)
     {
-        return node is JsonValue value
+        return
+            node is JsonValue value
             && value.TryGetValue<string>(out var text)
-            && DateTimeOffset.TryParse(
-                text,
-                CultureInfo.InvariantCulture,
-                DateTimeStyles.RoundtripKind,
-                out var result)
-                    ? result
-                    : null;
+            && DateTimeOffset.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var result)
+            ? result
+            : null;
     }
 }

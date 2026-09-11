@@ -24,26 +24,16 @@ public sealed class SphereLimitState
     public void Reset(SphereLimitSnapshot? seed = null)
     {
         seed ??= SphereLimitSnapshot.Empty;
-        CenterSystemName = string.IsNullOrWhiteSpace(seed.CenterSystemName)
-            ? null
-            : seed.CenterSystemName.Trim();
+        CenterSystemName = string.IsNullOrWhiteSpace(seed.CenterSystemName) ? null : seed.CenterSystemName.Trim();
         Center = seed.Center;
-        Radius = IsValidRadius(seed.Radius)
-            ? seed.Radius
-            : DefaultRadius;
-        IsActive = seed.Active
-            && Center is not null
-            && CenterSystemName is not null;
+        Radius = IsValidRadius(seed.Radius) ? seed.Radius : DefaultRadius;
+        IsActive = seed.Active && Center is not null && CenterSystemName is not null;
         Version++;
     }
 
-    public bool TryEnable(
-        StarSystemReference? centerSystem,
-        double radius,
-        out string? error)
+    public bool TryEnable(StarSystemReference? centerSystem, double radius, out string? error)
     {
-        if (centerSystem is null
-            || string.IsNullOrWhiteSpace(centerSystem.Name))
+        if (centerSystem is null || string.IsNullOrWhiteSpace(centerSystem.Name))
         {
             error = "Choose a valid center system before enabling the limit.";
             return false;
@@ -51,8 +41,7 @@ public sealed class SphereLimitState
 
         if (!IsValidRadius(radius))
         {
-            error = $"Radius must be between {MinimumRadius:N0} and "
-                + $"{MaximumRadius:N0} light-years.";
+            error = $"Radius must be between {MinimumRadius:N0} and " + $"{MaximumRadius:N0} light-years.";
             return false;
         }
 
@@ -78,14 +67,10 @@ public sealed class SphereLimitState
 
     public double? DistanceFrom(GalacticCoordinate? position)
     {
-        return Center is { } center && position is { } target
-            ? center.DistanceTo(target)
-            : null;
+        return Center is { } center && position is { } target ? center.DistanceTo(target) : null;
     }
 
-    public SphereLimitEvaluation? Evaluate(
-        string targetSystemName,
-        GalacticCoordinate targetPosition)
+    public SphereLimitEvaluation? Evaluate(string targetSystemName, GalacticCoordinate targetPosition)
     {
         if (!IsActive || Center is not { } center)
         {
@@ -93,26 +78,17 @@ public sealed class SphereLimitState
         }
 
         var distance = center.DistanceTo(targetPosition);
-        return new SphereLimitEvaluation(
-            targetSystemName,
-            targetPosition,
-            distance,
-            distance < Radius);
+        return new SphereLimitEvaluation(targetSystemName, targetPosition, distance, distance < Radius);
     }
 
     public SphereLimitSnapshot CreateSnapshot()
     {
-        return new SphereLimitSnapshot(
-            IsActive,
-            CenterSystemName,
-            Center,
-            Radius);
+        return new SphereLimitSnapshot(IsActive, CenterSystemName, Center, Radius);
     }
 
     public static bool IsValidRadius(double radius)
     {
-        return double.IsFinite(radius)
-            && radius is >= MinimumRadius and <= MaximumRadius;
+        return double.IsFinite(radius) && radius is >= MinimumRadius and <= MaximumRadius;
     }
 }
 
@@ -120,17 +96,15 @@ public sealed record SphereLimitSnapshot(
     bool Active,
     string? CenterSystemName,
     GalacticCoordinate? Center,
-    double Radius)
+    double Radius
+)
 {
-    public static SphereLimitSnapshot Empty { get; } = new(
-        false,
-        null,
-        null,
-        SphereLimitState.DefaultRadius);
+    public static SphereLimitSnapshot Empty { get; } = new(false, null, null, SphereLimitState.DefaultRadius);
 }
 
 public sealed record SphereLimitEvaluation(
     string TargetSystemName,
     GalacticCoordinate TargetPosition,
     double Distance,
-    bool IsInside);
+    bool IsInside
+);

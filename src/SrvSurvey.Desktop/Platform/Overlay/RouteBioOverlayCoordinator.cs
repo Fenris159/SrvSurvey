@@ -24,20 +24,16 @@ public sealed class RouteBioOverlayCoordinator : IDisposable
         RouteWorkspaceViewModel route,
         IOverlayPlatformService platform,
         IGameWindowTracker gameWindowTracker,
-        LegacyOverlayLayout? overlayLayout = null)
+        LegacyOverlayLayout? overlayLayout = null
+    )
     {
         this.route = route ?? throw new ArgumentNullException(nameof(route));
-        this.platform = platform
-            ?? throw new ArgumentNullException(nameof(platform));
-        this.gameWindowTracker = gameWindowTracker
-            ?? throw new ArgumentNullException(nameof(gameWindowTracker));
+        this.platform = platform ?? throw new ArgumentNullException(nameof(platform));
+        this.gameWindowTracker = gameWindowTracker ?? throw new ArgumentNullException(nameof(gameWindowTracker));
         this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
         viewModel = new RouteBioOverlayViewModel(route, platform.Capabilities);
         route.PropertyChanged += OnRoutePropertyChanged;
-        timer = new OverlayDispatcherTimer
-        {
-            Interval = TimeSpan.FromMilliseconds(250),
-        };
+        timer = new OverlayDispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
         timer.Tick += OnTimerTick;
         timer.Start();
         SynchronizeWindow();
@@ -78,13 +74,13 @@ public sealed class RouteBioOverlayCoordinator : IDisposable
         SynchronizeWindow();
     }
 
-    private void OnRoutePropertyChanged(
-        object? sender,
-        PropertyChangedEventArgs eventArgs)
+    private void OnRoutePropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
-        if (eventArgs.PropertyName is
-            nameof(RouteWorkspaceViewModel.ShouldShowRouteBioOverlay)
-            or nameof(RouteWorkspaceViewModel.CurrentBioTargets))
+        if (
+            eventArgs.PropertyName
+            is nameof(RouteWorkspaceViewModel.ShouldShowRouteBioOverlay)
+                or nameof(RouteWorkspaceViewModel.CurrentBioTargets)
+        )
         {
             SynchronizeWindow();
         }
@@ -98,14 +94,16 @@ public sealed class RouteBioOverlayCoordinator : IDisposable
         }
 
         gameWindow = gameWindowTracker.GetSnapshot();
-        if (isSuppressed
+        if (
+            isSuppressed
             || !route.ShouldShowRouteBioOverlay
             || !platform.Capabilities.SupportsPassiveOverlay
             || !platform.Capabilities.SupportsClickThrough
             || !platform.Capabilities.SupportsGameWindowTracking
             || !gameWindow.IsAvailable
             || !gameWindow.IsVisible
-            || !gameWindow.IsForeground)
+            || !gameWindow.IsForeground
+        )
         {
             CloseWindow();
             return;
@@ -143,20 +141,16 @@ public sealed class RouteBioOverlayCoordinator : IDisposable
 
     private void PositionWindow(Window target, PixelRect gameBounds)
     {
-        OverlayThemeResources.ApplyOpacity(
-            target,
-            overlayLayout,
-            PlotterName);
-        var screen = target.Screens.ScreenFromBounds(gameBounds)
-            ?? target.Screens.Primary;
+        OverlayThemeResources.ApplyOpacity(target, overlayLayout, PlotterName);
+        var screen = target.Screens.ScreenFromBounds(gameBounds) ?? target.Screens.Primary;
         if (screen is null)
         {
             return;
         }
 
-        var size = OverlayWindowMetrics.PrepareForPlacement(
-            target, overlayLayout, PlotterName, screen.Scaling);
-        var position = overlayLayout.GetPosition(PlotterName, gameBounds, size)
+        var size = OverlayWindowMetrics.PrepareForPlacement(target, overlayLayout, PlotterName, screen.Scaling);
+        var position =
+            overlayLayout.GetPosition(PlotterName, gameBounds, size)
             ?? OverlayWindowPlacement.TopRight(gameBounds, size, margin: 8);
         if (target.Position != position)
         {

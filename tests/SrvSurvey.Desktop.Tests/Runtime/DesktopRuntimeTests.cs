@@ -19,14 +19,10 @@ public sealed class DesktopRuntimeTests
         List<string> events = [];
         var lifetime = new RecordingDesktopLifetime(events);
         var phases = new RecordingDesktopRuntimePhases(events);
-        await using var runtime = DesktopRuntime.CreateForTests(
-            lifetime,
-            phases);
+        await using var runtime = DesktopRuntime.CreateForTests(lifetime, phases);
 
-        var first = runtime.RequestShutdownAsync(
-            DesktopShutdownReason.MainWindowClose);
-        var second = runtime.RequestShutdownAsync(
-            DesktopShutdownReason.MainWindowClose);
+        var first = runtime.RequestShutdownAsync(DesktopShutdownReason.MainWindowClose);
+        var second = runtime.RequestShutdownAsync(DesktopShutdownReason.MainWindowClose);
 
         Assert.Same(first, second);
         phases.AllowProducerStop.SetResult();
@@ -41,7 +37,8 @@ public sealed class DesktopRuntimeTests
                 "dispose-infrastructure",
                 "shutdown:0",
             ],
-            events);
+            events
+        );
     }
 
     [Fact]
@@ -50,23 +47,16 @@ public sealed class DesktopRuntimeTests
         List<string> events = [];
         var lifetime = new RecordingDesktopLifetime(events);
         var phases = new RecordingDesktopRuntimePhases(events);
-        await using var runtime = DesktopRuntime.CreateForTests(
-            lifetime,
-            phases);
+        await using var runtime = DesktopRuntime.CreateForTests(lifetime, phases);
         Task? reentrantRequest = null;
-        phases.OnQuiesce = _ =>
-            reentrantRequest = runtime.RequestShutdownAsync(
-                DesktopShutdownReason.UpdateHandoff);
+        phases.OnQuiesce = _ => reentrantRequest = runtime.RequestShutdownAsync(DesktopShutdownReason.UpdateHandoff);
 
-        var first = runtime.RequestShutdownAsync(
-            DesktopShutdownReason.MainWindowClose);
+        var first = runtime.RequestShutdownAsync(DesktopShutdownReason.MainWindowClose);
 
         Assert.Same(first, reentrantRequest);
         phases.AllowProducerStop.SetResult();
         await first;
-        Assert.Equal(1, events.Count(item => item.StartsWith(
-            "quiesce:",
-            StringComparison.Ordinal)));
+        Assert.Equal(1, events.Count(item => item.StartsWith("quiesce:", StringComparison.Ordinal)));
         Assert.Equal(1, events.Count(item => item == "shutdown:0"));
     }
 
@@ -97,12 +87,9 @@ public sealed class DesktopRuntimeTests
             ThrowWhenReportingFailure = true,
         };
         phases.AllowProducerStop.SetResult();
-        await using var runtime = DesktopRuntime.CreateForTests(
-            lifetime,
-            phases);
+        await using var runtime = DesktopRuntime.CreateForTests(lifetime, phases);
 
-        await runtime.RequestShutdownAsync(
-            DesktopShutdownReason.MainWindowClose);
+        await runtime.RequestShutdownAsync(DesktopShutdownReason.MainWindowClose);
 
         Assert.Equal(
             [
@@ -115,7 +102,8 @@ public sealed class DesktopRuntimeTests
                 "dispose-infrastructure",
                 "shutdown:0",
             ],
-            events);
+            events
+        );
     }
 
     [AvaloniaFact]
@@ -123,19 +111,13 @@ public sealed class DesktopRuntimeTests
     {
         List<string> events = [];
         var phases = new RecordingDesktopRuntimePhases(events);
-        var runtime = DesktopRuntime.CreateForTests(
-            new RecordingDesktopLifetime(events),
-            phases);
+        var runtime = DesktopRuntime.CreateForTests(new RecordingDesktopLifetime(events), phases);
         var first = new Window();
         runtime.AttachMainWindow(first);
 
-        var exception = Assert.Throws<InvalidOperationException>(
-            () => runtime.AttachMainWindow(new Window()));
+        var exception = Assert.Throws<InvalidOperationException>(() => runtime.AttachMainWindow(new Window()));
 
-        Assert.Contains(
-            "already has a main window",
-            exception.Message,
-            StringComparison.Ordinal);
+        Assert.Contains("already has a main window", exception.Message, StringComparison.Ordinal);
         phases.AllowProducerStop.SetResult();
         await runtime.DisposeAsync();
     }
@@ -148,8 +130,7 @@ public sealed class DesktopRuntimeTests
         var phases = new RecordingDesktopRuntimePhases(events);
         phases.AllowProducerStop.SetResult();
         var expected = new InvalidOperationException("Startup failed.");
-        var acquiredResource = new RecordingDisposable(
-            () => events.Add("dispose-startup-resource"));
+        var acquiredResource = new RecordingDisposable(() => events.Add("dispose-startup-resource"));
         phases.OnDisposeViewModel = acquiredResource.Dispose;
 
         await using var runtime = DesktopRuntime.StartForTests(
@@ -159,9 +140,9 @@ public sealed class DesktopRuntimeTests
             {
                 events.Add("acquire-startup-resource");
                 throw expected;
-            });
-        await runtime.RequestShutdownAsync(
-            DesktopShutdownReason.StartupFailure);
+            }
+        );
+        await runtime.RequestShutdownAsync(DesktopShutdownReason.StartupFailure);
 
         Assert.Same(expected, phases.StartupFailure);
         Assert.Equal(
@@ -176,7 +157,8 @@ public sealed class DesktopRuntimeTests
                 "dispose-infrastructure",
                 "shutdown:1",
             ],
-            events);
+            events
+        );
         Assert.True(acquiredResource.IsDisposed);
     }
 
@@ -186,17 +168,13 @@ public sealed class DesktopRuntimeTests
     [InlineData((int)DesktopStartupCheckpoint.MainWindowReady)]
     [InlineData((int)DesktopStartupCheckpoint.OverlayDependentsReady)]
     [InlineData((int)DesktopStartupCheckpoint.ProducersReady)]
-    public async Task ProductionStartupCheckpointRollsBackAcquiredResources(
-        int checkpointValue)
+    public async Task ProductionStartupCheckpointRollsBackAcquiredResources(int checkpointValue)
     {
         var checkpoint = (DesktopStartupCheckpoint)checkpointValue;
-        var application = Application.Current
-            ?? throw new InvalidOperationException(
-                "The Headless application is unavailable.");
+        var application =
+            Application.Current ?? throw new InvalidOperationException("The Headless application is unavailable.");
         var desktop = new ClassicDesktopStyleApplicationLifetime();
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-runtime-startup-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-runtime-startup-{Guid.NewGuid():N}");
         List<string> events = [];
         var lifetime = new RecordingDesktopLifetime(events);
         try
@@ -205,39 +183,25 @@ public sealed class DesktopRuntimeTests
                 Path.Combine(root, "config"),
                 Path.Combine(root, "data"),
                 Path.Combine(root, "cache"),
-                []);
-            var applicationLog = new ApplicationLogService(
-                paths.DataDirectory);
+                []
+            );
+            var applicationLog = new ApplicationLogService(paths.DataDirectory);
             await using var runtime = DesktopRuntime.StartCompositionForTests(
                 application,
                 desktop,
-                new DesktopStartup([], applicationLog)
-                {
-                    AppDataPathsOverride = paths,
-                },
+                new DesktopStartup([], applicationLog) { AppDataPathsOverride = paths },
                 lifetime,
-                checkpoint);
-            await runtime.RequestShutdownAsync(
-                DesktopShutdownReason.StartupFailure);
+                checkpoint
+            );
+            await runtime.RequestShutdownAsync(DesktopShutdownReason.StartupFailure);
 
             Assert.Equal(["shutdown:1"], events);
-            Assert.Contains(
-                $"Startup failed at {checkpoint}.",
-                applicationLog.Text,
-                StringComparison.Ordinal);
-            Assert.Contains(
-                "Application exit",
-                applicationLog.Text,
-                StringComparison.Ordinal);
-            Assert.DoesNotContain(
-                "Desktop runtime shutdown failed",
-                applicationLog.Text,
-                StringComparison.Ordinal);
+            Assert.Contains($"Startup failed at {checkpoint}.", applicationLog.Text, StringComparison.Ordinal);
+            Assert.Contains("Application exit", applicationLog.Text, StringComparison.Ordinal);
+            Assert.DoesNotContain("Desktop runtime shutdown failed", applicationLog.Text, StringComparison.Ordinal);
             Assert.Null(desktop.MainWindow);
             Assert.Empty(OverlayWindowRegistry.Shared.Snapshot());
-            Assert.True(
-                OverlayWindowRegistry.Shared.ShouldPresent(
-                    "PlotBuildCommodities"));
+            Assert.True(OverlayWindowRegistry.Shared.ShouldPresent("PlotBuildCommodities"));
         }
         finally
         {
@@ -266,9 +230,7 @@ public sealed class DesktopRuntimeTests
         var window = new Window();
         var lifetime = new RecordingDesktopLifetime(events, window.Close);
         var phases = new RecordingDesktopRuntimePhases(events);
-        await using var runtime = DesktopRuntime.CreateForTests(
-            lifetime,
-            phases);
+        await using var runtime = DesktopRuntime.CreateForTests(lifetime, phases);
         runtime.AttachMainWindow(window);
         window.Show();
 
@@ -277,8 +239,7 @@ public sealed class DesktopRuntimeTests
         Assert.True(window.IsVisible);
         Assert.False(window.IsEnabled);
         phases.AllowProducerStop.SetResult();
-        await runtime.RequestShutdownAsync(
-            DesktopShutdownReason.MainWindowClose);
+        await runtime.RequestShutdownAsync(DesktopShutdownReason.MainWindowClose);
         Assert.False(window.IsVisible);
     }
 
@@ -288,39 +249,27 @@ public sealed class DesktopRuntimeTests
         List<string> events = [];
         var lifetime = new RecordingDesktopLifetime(events);
         var phases = new RecordingDesktopRuntimePhases(events);
-        await using var runtime = DesktopRuntime.CreateForTests(
-            lifetime,
-            phases);
+        await using var runtime = DesktopRuntime.CreateForTests(lifetime, phases);
 
-        var cancel = runtime.RequestMainWindowClose(
-            WindowCloseReason.OSShutdown);
+        var cancel = runtime.RequestMainWindowClose(WindowCloseReason.OSShutdown);
 
         Assert.False(cancel);
-        Assert.Equal(
-            [
-                "quiesce:OperatingSystemShutdown",
-                "stop-producers",
-            ],
-            events);
+        Assert.Equal(["quiesce:OperatingSystemShutdown", "stop-producers"], events);
         phases.AllowProducerStop.SetResult();
-        await runtime.RequestShutdownAsync(
-            DesktopShutdownReason.OperatingSystemShutdown);
+        await runtime.RequestShutdownAsync(DesktopShutdownReason.OperatingSystemShutdown);
     }
 
     [Theory]
     [InlineData((int)DesktopShutdownReason.JournalCommand)]
     [InlineData((int)DesktopShutdownReason.RemoteInstanceRequest)]
-    public async Task InternalExitReasonEntersTheSharedStopPipeline(
-        int reasonValue)
+    public async Task InternalExitReasonEntersTheSharedStopPipeline(int reasonValue)
     {
         var reason = (DesktopShutdownReason)reasonValue;
         List<string> events = [];
         var lifetime = new RecordingDesktopLifetime(events);
         var phases = new RecordingDesktopRuntimePhases(events);
         phases.AllowProducerStop.SetResult();
-        await using var runtime = DesktopRuntime.CreateForTests(
-            lifetime,
-            phases);
+        await using var runtime = DesktopRuntime.CreateForTests(lifetime, phases);
 
         await runtime.RequestShutdownAsync(reason);
 
@@ -335,27 +284,23 @@ public sealed class DesktopRuntimeTests
         var lifetime = new RecordingDesktopLifetime(events);
         var phases = new RecordingDesktopRuntimePhases(events);
         var entered = new TaskCompletionSource<DesktopShutdownReason>(
-            TaskCreationOptions.RunContinuationsAsynchronously);
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
         var ranOnUiThread = false;
         phases.OnQuiesce = reason =>
         {
             ranOnUiThread = Dispatcher.UIThread.CheckAccess();
             entered.SetResult(reason);
         };
-        await using var runtime = DesktopRuntime.CreateForTests(
-            lifetime,
-            phases);
+        await using var runtime = DesktopRuntime.CreateForTests(lifetime, phases);
 
-        await Task.Run(() => runtime.PostShutdownOnUiThread(
-            DesktopShutdownReason.LinuxTermination));
-        var actualReason = await entered.Task.WaitAsync(
-            TimeSpan.FromSeconds(5));
+        await Task.Run(() => runtime.PostShutdownOnUiThread(DesktopShutdownReason.LinuxTermination));
+        var actualReason = await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
         Assert.Equal(DesktopShutdownReason.LinuxTermination, actualReason);
         Assert.True(ranOnUiThread);
         phases.AllowProducerStop.SetResult();
-        await runtime.RequestShutdownAsync(
-            DesktopShutdownReason.LinuxTermination);
+        await runtime.RequestShutdownAsync(DesktopShutdownReason.LinuxTermination);
     }
 
     [AvaloniaFact]
@@ -364,13 +309,12 @@ public sealed class DesktopRuntimeTests
         List<string> events = [];
         var lifetime = new RecordingDesktopLifetime(events);
         var phases = new RecordingDesktopRuntimePhases(events);
-        await using var runtime = DesktopRuntime.CreateForTests(
-            lifetime,
-            phases);
+        await using var runtime = DesktopRuntime.CreateForTests(lifetime, phases);
         var expected = new InvalidOperationException("Launch failed.");
 
-        var actual = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => runtime.RestartAsync(() => throw expected));
+        var actual = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            runtime.RestartAsync(() => throw expected)
+        );
 
         Assert.Same(expected, actual);
         Assert.Empty(events);
@@ -384,22 +328,14 @@ public sealed class DesktopRuntimeTests
         var window = new Window();
         var lifetime = new RecordingDesktopLifetime(events, window.Close);
         var phases = new RecordingDesktopRuntimePhases(events);
-        await using var runtime = DesktopRuntime.CreateForTests(
-            lifetime,
-            phases);
+        await using var runtime = DesktopRuntime.CreateForTests(lifetime, phases);
         runtime.AttachMainWindow(window);
         window.Show();
 
         var restarting = runtime.RestartAsync(() => events.Add("launch"));
 
         Assert.False(window.IsVisible);
-        Assert.Equal(
-            [
-                "launch",
-                "quiesce:Restart",
-                "stop-producers",
-            ],
-            events);
+        Assert.Equal(["launch", "quiesce:Restart", "stop-producers"], events);
         phases.AllowProducerStop.SetResult();
         await restarting;
     }
@@ -411,28 +347,19 @@ public sealed class DesktopRuntimeTests
         var window = new Window();
         var lifetime = new RecordingDesktopLifetime(events, window.Close);
         var phases = new RecordingDesktopRuntimePhases(events);
-        await using var runtime = DesktopRuntime.CreateForTests(
-            lifetime,
-            phases);
+        await using var runtime = DesktopRuntime.CreateForTests(lifetime, phases);
         runtime.AttachMainWindow(window);
         window.Show();
 
-        var stopping = runtime.RequestShutdownAsync(
-            DesktopShutdownReason.UpdateHandoff);
+        var stopping = runtime.RequestShutdownAsync(DesktopShutdownReason.UpdateHandoff);
 
         Assert.False(window.IsVisible);
-        Assert.Equal(
-            [
-                "quiesce:UpdateHandoff",
-                "stop-producers",
-            ],
-            events);
+        Assert.Equal(["quiesce:UpdateHandoff", "stop-producers"], events);
         phases.AllowProducerStop.SetResult();
         await stopping;
     }
 
-    private sealed class RecordingDesktopRuntimePhases
-        : IDesktopRuntimePhases
+    private sealed class RecordingDesktopRuntimePhases : IDesktopRuntimePhases
     {
         private readonly List<string> events;
 
@@ -441,8 +368,8 @@ public sealed class DesktopRuntimeTests
             this.events = events;
         }
 
-        public TaskCompletionSource AllowProducerStop { get; } = new(
-            TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource AllowProducerStop { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public bool ThrowWhenStoppingProducers { get; init; }
 
@@ -500,8 +427,7 @@ public sealed class DesktopRuntimeTests
             events.Add("report:" + exception.Message);
             if (ThrowWhenReportingFailure)
             {
-                throw new InvalidOperationException(
-                    "Failure reporting failed.");
+                throw new InvalidOperationException("Failure reporting failed.");
             }
         }
 
@@ -512,15 +438,12 @@ public sealed class DesktopRuntimeTests
         }
     }
 
-    private sealed class RecordingDesktopLifetime
-        : IDesktopRuntimeLifetime
+    private sealed class RecordingDesktopLifetime : IDesktopRuntimeLifetime
     {
         private readonly List<string> events;
         private readonly Action? shutdown;
 
-        public RecordingDesktopLifetime(
-            List<string> events,
-            Action? shutdown = null)
+        public RecordingDesktopLifetime(List<string> events, Action? shutdown = null)
         {
             this.events = events;
             this.shutdown = shutdown;

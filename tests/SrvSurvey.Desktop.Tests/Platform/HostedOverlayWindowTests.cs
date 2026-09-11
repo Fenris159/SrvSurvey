@@ -2,11 +2,11 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
-using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.Platform;
@@ -22,11 +22,13 @@ public sealed class HostedOverlayWindowTests
         {
             using var mining = new SurfaceMiningViewModel(new SystemSurfaceStore(root));
             var scan = new SystemScanState();
-            foreach (var json in new[]
-            {
-                """{"event":"Location","StarSystem":"Test","SystemAddress":42}""",
-                """{"event":"Scan","StarSystem":"Test","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Radius":1000000,"PlanetClass":"Rocky body"}""",
-            })
+            foreach (
+                var json in new[]
+                {
+                    """{"event":"Location","StarSystem":"Test","SystemAddress":42}""",
+                    """{"event":"Scan","StarSystem":"Test","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Radius":1000000,"PlanetClass":"Rocky body"}""",
+                }
+            )
             {
                 Assert.True(JournalEventEnvelope.TryParse(json, out var envelope, out _));
                 scan.Apply(envelope!);
@@ -36,7 +38,7 @@ public sealed class HostedOverlayWindowTests
             {
                 Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
                 BodyName = "Test 1",
-                PlanetRadius = 1_000_000
+                PlanetRadius = 1_000_000,
             };
             await mining.ApplyUpdateAsync(commander, scan.CreateSnapshot(), status, "mev_rhino");
             await mining.ToggleRigAsync(1);
@@ -48,9 +50,22 @@ public sealed class HostedOverlayWindowTests
                 new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Mining warning test"),
                 new OverlayPresentationSessionDependencies(
                     () => platform,
-                    () => { var tracker = new RecordingGameWindowTracker(AvailableGameWindow); trackers.Add(tracker); return tracker; },
-                    _ => { var timer = new ManualHostedOverlayTimer(); timers.Add(timer); return timer; },
-                    LegacyOverlayLayout.Empty, WindowRegistry: registry));
+                    () =>
+                    {
+                        var tracker = new RecordingGameWindowTracker(AvailableGameWindow);
+                        trackers.Add(tracker);
+                        return tracker;
+                    },
+                    _ =>
+                    {
+                        var timer = new ManualHostedOverlayTimer();
+                        timers.Add(timer);
+                        return timer;
+                    },
+                    LegacyOverlayLayout.Empty,
+                    WindowRegistry: registry
+                )
+            );
             using var coordinator = new SurfaceMiningOverlayCoordinator(mining, session);
             Assert.False(coordinator.IsWarningVisible);
             var far = status with { Latitude = .3 };
@@ -60,11 +75,27 @@ public sealed class HostedOverlayWindowTests
             Assert.True(warning.Topmost);
             Assert.True(registry.TryGetPlotterName(warning, out var name));
             Assert.Equal("PlotMiningWarning", name);
-            foreach (var tracker in trackers) tracker.Snapshot = AvailableGameWindow with { IsForeground = false };
-            foreach (var timer in timers) timer.Pulse();
+            foreach (var tracker in trackers)
+            {
+                tracker.Snapshot = AvailableGameWindow with { IsForeground = false };
+            }
+
+            foreach (var timer in timers)
+            {
+                timer.Pulse();
+            }
+
             Assert.False(coordinator.IsWarningVisible);
-            foreach (var tracker in trackers) tracker.Snapshot = AvailableGameWindow;
-            foreach (var timer in timers) timer.Pulse();
+            foreach (var tracker in trackers)
+            {
+                tracker.Snapshot = AvailableGameWindow;
+            }
+
+            foreach (var timer in timers)
+            {
+                timer.Pulse();
+            }
+
             Assert.True(coordinator.IsWarningVisible);
             coordinator.SetSuppressed(true);
             Assert.False(coordinator.IsWarningVisible);
@@ -74,16 +105,25 @@ public sealed class HostedOverlayWindowTests
             Assert.False(coordinator.IsWarningVisible);
             await mining.ApplyUpdateAsync(commander, scan.CreateSnapshot(), far, "mev_rhino");
             Assert.True(coordinator.IsWarningVisible);
-            await mining.ApplyUpdateAsync(commander, scan.CreateSnapshot(), far with
-            {
-                Flags = StatusFlags.HasLatLong,
-                Flags2 = StatusFlags2.OnFoot | StatusFlags2.OnFootOnPlanet,
-            }, "mev_rhino", parkedSrvType: "mev_rhino");
+            await mining.ApplyUpdateAsync(
+                commander,
+                scan.CreateSnapshot(),
+                far with
+                {
+                    Flags = StatusFlags.HasLatLong,
+                    Flags2 = StatusFlags2.OnFoot | StatusFlags2.OnFootOnPlanet,
+                },
+                "mev_rhino",
+                parkedSrvType: "mev_rhino"
+            );
             Assert.False(coordinator.IsWarningVisible);
         }
         finally
         {
-            if (Directory.Exists(root)) Directory.Delete(root, true);
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
         }
     }
 
@@ -110,8 +150,7 @@ public sealed class HostedOverlayWindowTests
     [AvaloniaFact]
     public void CurrentSessionReportsTheDetectedPresentationDecision()
     {
-        var expected = OverlayPresentationModeSelector.DetectCurrent(
-            OverlayPlatformCapabilities.DetectCurrent());
+        var expected = OverlayPresentationModeSelector.DetectCurrent(OverlayPlatformCapabilities.DetectCurrent());
 
         using var session = OverlayPresentationSession.CreateCurrent();
 
@@ -126,25 +165,21 @@ public sealed class HostedOverlayWindowTests
         var timer = new ManualHostedOverlayTimer();
         var registry = new OverlayWindowRegistry();
         using var session = OverlayPresentationSession.CreateForAdapters(
-            new OverlayPresentationDecision(
-                OverlayPresentationMode.MultipleWindows,
-                "Test session"),
+            new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Test session"),
             new OverlayPresentationSessionDependencies(
                 () => platform,
                 () => tracker,
                 _ => timer,
                 LegacyOverlayLayout.Empty,
-                WindowRegistry: registry));
+                WindowRegistry: registry
+            )
+        );
         var preparation = default(OverlayPreparationResult);
         var fallbackCalls = 0;
         using var hosted = session.HostPassiveWindow(
             new PassiveOverlayWindowDefinition(
                 "PlotTrackTarget",
-                _ => new Window
-                {
-                    Width = 128,
-                    Height = 108,
-                },
+                _ => new Window { Width = 128, Height = 108 },
                 (gameBounds, windowSize) =>
                 {
                     fallbackCalls++;
@@ -153,7 +188,9 @@ public sealed class HostedOverlayWindowTests
                     Assert.True(windowSize.Height > 0);
                     return new PixelPoint(25, 30);
                 },
-                result => preparation = result));
+                result => preparation = result
+            )
+        );
 
         hosted.Reconcile(wantsWindow: true);
 
@@ -164,9 +201,7 @@ public sealed class HostedOverlayWindowTests
         Assert.Equal("Prepared", preparation?.Status);
         Assert.Equal(1, fallbackCalls);
         Assert.True(timer.IsStarted);
-        Assert.True(registry.TryGetPlotterName(
-            platform.PreparedWindows[0],
-            out var registeredPlotter));
+        Assert.True(registry.TryGetPlotterName(platform.PreparedWindows[0], out var registeredPlotter));
         Assert.Equal("PlotTrackTarget", registeredPlotter);
     }
 
@@ -177,15 +212,15 @@ public sealed class HostedOverlayWindowTests
         var tracker = new RecordingGameWindowTracker(AvailableGameWindow);
         var diagnostics = new List<OverlayHostDiagnostic>();
         using var session = OverlayPresentationSession.CreateForAdapters(
-            new OverlayPresentationDecision(
-                OverlayPresentationMode.MultipleWindows,
-                "Test session"),
+            new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Test session"),
             new OverlayPresentationSessionDependencies(
                 () => platform,
                 () => tracker,
                 _ => new ManualHostedOverlayTimer(),
                 LegacyOverlayLayout.Empty,
-                diagnostics.Add));
+                diagnostics.Add
+            )
+        );
         var factoryCalls = 0;
         using var hosted = session.HostPassiveWindow(
             new PassiveOverlayWindowDefinition(
@@ -195,7 +230,9 @@ public sealed class HostedOverlayWindowTests
                     factoryCalls++;
                     throw new InvalidOperationException("Factory failed");
                 },
-                (_, _) => new PixelPoint(25, 30)));
+                (_, _) => new PixelPoint(25, 30)
+            )
+        );
 
         hosted.Reconcile(wantsWindow: true);
         hosted.Reconcile(wantsWindow: true);
@@ -216,20 +253,18 @@ public sealed class HostedOverlayWindowTests
     {
         var diagnostics = new List<OverlayHostDiagnostic>();
         using var session = OverlayPresentationSession.CreateForAdapters(
-            new OverlayPresentationDecision(
-                OverlayPresentationMode.MultipleWindows,
-                "Test session"),
+            new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Test session"),
             new OverlayPresentationSessionDependencies(
                 () => new RecordingOverlayPlatform(),
                 () => new RecordingGameWindowTracker(AvailableGameWindow),
                 _ => new ManualHostedOverlayTimer(),
                 LegacyOverlayLayout.Empty,
-                diagnostics.Add));
+                diagnostics.Add
+            )
+        );
         using var hosted = session.HostPassiveWindow(
-            new PassiveOverlayWindowDefinition(
-                "PlotTrackTarget",
-                _ => null!,
-                (_, _) => new PixelPoint(25, 30)));
+            new PassiveOverlayWindowDefinition("PlotTrackTarget", _ => null!, (_, _) => new PixelPoint(25, 30))
+        );
 
         hosted.Reconcile(wantsWindow: true);
 
@@ -242,26 +277,27 @@ public sealed class HostedOverlayWindowTests
     [AvaloniaFact]
     public void UnsupportedCapabilitiesAreReportedOnceAndStopPolling()
     {
-        var capabilities = OverlayPlatformCapabilities.ForHost(
-            OverlayHostKind.LinuxWayland);
+        var capabilities = OverlayPlatformCapabilities.ForHost(OverlayHostKind.LinuxWayland);
         var platform = new RecordingOverlayPlatform(capabilities);
         var timer = new ManualHostedOverlayTimer();
         var diagnostics = new List<OverlayHostDiagnostic>();
         using var session = OverlayPresentationSession.CreateForAdapters(
-            new OverlayPresentationDecision(
-                OverlayPresentationMode.MultipleWindows,
-                "Test session"),
+            new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Test session"),
             new OverlayPresentationSessionDependencies(
                 () => platform,
                 () => new RecordingGameWindowTracker(AvailableGameWindow),
                 _ => timer,
                 LegacyOverlayLayout.Empty,
-                diagnostics.Add));
+                diagnostics.Add
+            )
+        );
         using var hosted = session.HostPassiveWindow(
             new PassiveOverlayWindowDefinition(
                 "PlotTrackTarget",
                 _ => new Window { Width = 128, Height = 108 },
-                (_, _) => new PixelPoint(25, 30)));
+                (_, _) => new PixelPoint(25, 30)
+            )
+        );
 
         hosted.Reconcile(wantsWindow: true);
         hosted.Reconcile(wantsWindow: true);
@@ -280,24 +316,24 @@ public sealed class HostedOverlayWindowTests
     public void DiagnosticSinkFailureDoesNotEscapeTheHostedLifecycle()
     {
         using var session = OverlayPresentationSession.CreateForAdapters(
-            new OverlayPresentationDecision(
-                OverlayPresentationMode.MultipleWindows,
-                "Test session"),
+            new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Test session"),
             new OverlayPresentationSessionDependencies(
                 () => new RecordingOverlayPlatform(),
                 () => new RecordingGameWindowTracker(AvailableGameWindow),
                 _ => new ManualHostedOverlayTimer(),
                 LegacyOverlayLayout.Empty,
-                _ => throw new InvalidOperationException(
-                    "Diagnostic sink failed")));
+                _ => throw new InvalidOperationException("Diagnostic sink failed")
+            )
+        );
         using var hosted = session.HostPassiveWindow(
             new PassiveOverlayWindowDefinition(
                 "PlotTrackTarget",
                 _ => throw new InvalidOperationException("Factory failed"),
-                (_, _) => new PixelPoint(25, 30)));
+                (_, _) => new PixelPoint(25, 30)
+            )
+        );
 
-        var exception = Record.Exception(
-            () => hosted.Reconcile(wantsWindow: true));
+        var exception = Record.Exception(() => hosted.Reconcile(wantsWindow: true));
 
         Assert.Null(exception);
         Assert.Equal(OverlayHostHealth.Faulted, hosted.Health);
@@ -308,21 +344,24 @@ public sealed class HostedOverlayWindowTests
     {
         var platform = new RecordingOverlayPlatform();
         using var session = OverlayPresentationSession.CreateForAdapters(
-            new OverlayPresentationDecision(
-                OverlayPresentationMode.MultipleWindows,
-                "Test session"),
+            new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Test session"),
             new OverlayPresentationSessionDependencies(
                 () => platform,
                 () => throw new InvalidOperationException("Tracker failed"),
                 _ => new ManualHostedOverlayTimer(),
-                LegacyOverlayLayout.Empty));
+                LegacyOverlayLayout.Empty
+            )
+        );
 
-        var exception = Assert.Throws<InvalidOperationException>(
-            () => session.HostPassiveWindow(
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            session.HostPassiveWindow(
                 new PassiveOverlayWindowDefinition(
                     "PlotTrackTarget",
                     _ => new Window { Width = 128, Height = 108 },
-                    (_, _) => new PixelPoint(25, 30))));
+                    (_, _) => new PixelPoint(25, 30)
+                )
+            )
+        );
 
         Assert.Equal("Tracker failed", exception.Message);
         Assert.Equal(1, platform.DisposeCalls);
@@ -333,9 +372,7 @@ public sealed class HostedOverlayWindowTests
     {
         var platformFactoryCalls = 0;
         using var session = OverlayPresentationSession.CreateForAdapters(
-            new OverlayPresentationDecision(
-                OverlayPresentationMode.MultipleWindows,
-                "Test session"),
+            new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Test session"),
             new OverlayPresentationSessionDependencies(
                 () =>
                 {
@@ -344,14 +381,12 @@ public sealed class HostedOverlayWindowTests
                 },
                 () => new RecordingGameWindowTracker(AvailableGameWindow),
                 _ => new ManualHostedOverlayTimer(),
-                LegacyOverlayLayout.Empty));
-        var definition = CreateDefinition() with
-        {
-            PollInterval = TimeSpan.Zero,
-        };
+                LegacyOverlayLayout.Empty
+            )
+        );
+        var definition = CreateDefinition() with { PollInterval = TimeSpan.Zero };
 
-        var exception = Assert.Throws<ArgumentOutOfRangeException>(
-            () => session.HostPassiveWindow(definition));
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => session.HostPassiveWindow(definition));
 
         Assert.Equal("definition", exception.ParamName);
         Assert.Equal(0, platformFactoryCalls);
@@ -363,17 +398,16 @@ public sealed class HostedOverlayWindowTests
         var platform = new RecordingOverlayPlatform();
         var tracker = new RecordingGameWindowTracker(AvailableGameWindow);
         using var session = OverlayPresentationSession.CreateForAdapters(
-            new OverlayPresentationDecision(
-                OverlayPresentationMode.MultipleWindows,
-                "Test session"),
+            new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Test session"),
             new OverlayPresentationSessionDependencies(
                 () => platform,
                 () => tracker,
                 _ => throw new InvalidOperationException("Timer failed"),
-                LegacyOverlayLayout.Empty));
+                LegacyOverlayLayout.Empty
+            )
+        );
 
-        var exception = Assert.Throws<InvalidOperationException>(
-            () => session.HostPassiveWindow(CreateDefinition()));
+        var exception = Assert.Throws<InvalidOperationException>(() => session.HostPassiveWindow(CreateDefinition()));
 
         Assert.Equal("Timer failed", exception.Message);
         Assert.Equal(1, platform.DisposeCalls);
@@ -387,21 +421,19 @@ public sealed class HostedOverlayWindowTests
         var tracker = new RecordingGameWindowTracker(AvailableGameWindow);
         var timer = new ManualHostedOverlayTimer
         {
-            StartException = new InvalidOperationException(
-                "Timer start failed"),
+            StartException = new InvalidOperationException("Timer start failed"),
         };
         using var session = OverlayPresentationSession.CreateForAdapters(
-            new OverlayPresentationDecision(
-                OverlayPresentationMode.MultipleWindows,
-                "Test session"),
+            new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Test session"),
             new OverlayPresentationSessionDependencies(
                 () => platform,
                 () => tracker,
                 _ => timer,
-                LegacyOverlayLayout.Empty));
+                LegacyOverlayLayout.Empty
+            )
+        );
 
-        var exception = Assert.Throws<InvalidOperationException>(
-            () => session.HostPassiveWindow(CreateDefinition()));
+        var exception = Assert.Throws<InvalidOperationException>(() => session.HostPassiveWindow(CreateDefinition()));
 
         Assert.Equal("Timer start failed", exception.Message);
         Assert.Equal(1, platform.DisposeCalls);
@@ -415,14 +447,14 @@ public sealed class HostedOverlayWindowTests
         var platform = new RecordingOverlayPlatform();
         var tracker = new RecordingGameWindowTracker(AvailableGameWindow);
         using var session = OverlayPresentationSession.CreateForAdapters(
-            new OverlayPresentationDecision(
-                OverlayPresentationMode.MultipleWindows,
-                "Test session"),
+            new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Test session"),
             new OverlayPresentationSessionDependencies(
                 () => platform,
                 () => tracker,
                 _ => new ManualHostedOverlayTimer(),
-                LegacyOverlayLayout.Empty));
+                LegacyOverlayLayout.Empty
+            )
+        );
         var uiThread = Environment.CurrentManagedThreadId;
         var factoryThread = 0;
         using var hosted = session.HostPassiveWindow(
@@ -433,7 +465,9 @@ public sealed class HostedOverlayWindowTests
                     factoryThread = Environment.CurrentManagedThreadId;
                     return new Window { Width = 128, Height = 108 };
                 },
-                (_, _) => new PixelPoint(25, 30)));
+                (_, _) => new PixelPoint(25, 30)
+            )
+        );
 
         await Task.Run(() => hosted.Reconcile(wantsWindow: true));
         await Dispatcher.UIThread.InvokeAsync(() => { });
@@ -446,14 +480,14 @@ public sealed class HostedOverlayWindowTests
     public void ReentrantIntentChangeRunsOneCoalescedFollowUp()
     {
         using var session = OverlayPresentationSession.CreateForAdapters(
-            new OverlayPresentationDecision(
-                OverlayPresentationMode.MultipleWindows,
-                "Test session"),
+            new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Test session"),
             new OverlayPresentationSessionDependencies(
                 () => new RecordingOverlayPlatform(),
                 () => new RecordingGameWindowTracker(AvailableGameWindow),
                 _ => new ManualHostedOverlayTimer(),
-                LegacyOverlayLayout.Empty));
+                LegacyOverlayLayout.Empty
+            )
+        );
         HostedOverlayWindow? hosted = null;
         var visibilityChanges = 0;
         hosted = session.HostPassiveWindow(
@@ -461,7 +495,9 @@ public sealed class HostedOverlayWindowTests
                 "PlotTrackTarget",
                 _ => new Window { Width = 128, Height = 108 },
                 (_, _) => new PixelPoint(25, 30),
-                _ => hosted!.Reconcile(wantsWindow: false)));
+                _ => hosted!.Reconcile(wantsWindow: false)
+            )
+        );
         hosted.VisibilityChanged += (_, _) => visibilityChanges++;
 
         hosted.Reconcile(wantsWindow: true);
@@ -478,19 +514,20 @@ public sealed class HostedOverlayWindowTests
             PreparationResult = new OverlayPreparationResult(
                 IsPrepared: false,
                 IsClickThrough: false,
-                Status: "Click-through failed"),
+                Status: "Click-through failed"
+            ),
         };
         var diagnostics = new List<OverlayHostDiagnostic>();
         using var session = OverlayPresentationSession.CreateForAdapters(
-            new OverlayPresentationDecision(
-                OverlayPresentationMode.MultipleWindows,
-                "Test session"),
+            new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Test session"),
             new OverlayPresentationSessionDependencies(
                 () => platform,
                 () => new RecordingGameWindowTracker(AvailableGameWindow),
                 _ => new ManualHostedOverlayTimer(),
                 LegacyOverlayLayout.Empty,
-                diagnostics.Add));
+                diagnostics.Add
+            )
+        );
         var factoryCalls = 0;
         var visibilityChanges = 0;
         var observedPreparations = new List<OverlayPreparationResult>();
@@ -503,7 +540,9 @@ public sealed class HostedOverlayWindowTests
                     return new Window { Width = 128, Height = 108 };
                 },
                 (_, _) => new PixelPoint(25, 30),
-                observedPreparations.Add));
+                observedPreparations.Add
+            )
+        );
         hosted.VisibilityChanged += (_, _) => visibilityChanges++;
 
         hosted.Reconcile(wantsWindow: true);
@@ -524,14 +563,14 @@ public sealed class HostedOverlayWindowTests
     {
         var timer = new ManualHostedOverlayTimer();
         using var session = OverlayPresentationSession.CreateForAdapters(
-            new OverlayPresentationDecision(
-                OverlayPresentationMode.MultipleWindows,
-                "Test session"),
+            new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Test session"),
             new OverlayPresentationSessionDependencies(
                 () => new RecordingOverlayPlatform(),
                 () => new RecordingGameWindowTracker(AvailableGameWindow),
                 _ => timer,
-                LegacyOverlayLayout.Empty));
+                LegacyOverlayLayout.Empty
+            )
+        );
         var windows = new List<Window>();
         using var hosted = session.HostPassiveWindow(
             new PassiveOverlayWindowDefinition(
@@ -542,7 +581,9 @@ public sealed class HostedOverlayWindowTests
                     windows.Add(window);
                     return window;
                 },
-                (_, _) => new PixelPoint(25, 30)));
+                (_, _) => new PixelPoint(25, 30)
+            )
+        );
         var visibilityChanges = 0;
         hosted.VisibilityChanged += (_, _) => visibilityChanges++;
 
@@ -562,19 +603,21 @@ public sealed class HostedOverlayWindowTests
         var tracker = new RecordingGameWindowTracker(AvailableGameWindow);
         var timer = new ManualHostedOverlayTimer();
         var session = OverlayPresentationSession.CreateForAdapters(
-            new OverlayPresentationDecision(
-                OverlayPresentationMode.MultipleWindows,
-                "Test session"),
+            new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Test session"),
             new OverlayPresentationSessionDependencies(
                 () => platform,
                 () => tracker,
                 _ => timer,
-                LegacyOverlayLayout.Empty));
+                LegacyOverlayLayout.Empty
+            )
+        );
         var hosted = session.HostPassiveWindow(
             new PassiveOverlayWindowDefinition(
                 "PlotTrackTarget",
                 _ => new Window { Width = 128, Height = 108 },
-                (_, _) => new PixelPoint(25, 30)));
+                (_, _) => new PixelPoint(25, 30)
+            )
+        );
 
         session.Dispose();
         session.Dispose();
@@ -594,24 +637,20 @@ public sealed class HostedOverlayWindowTests
         var trackers = new List<RecordingGameWindowTracker>();
         var timers = new List<ManualHostedOverlayTimer>();
         var session = OverlayPresentationSession.CreateForAdapters(
-            new OverlayPresentationDecision(
-                OverlayPresentationMode.MultipleWindows,
-                "Test session"),
+            new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Test session"),
             new OverlayPresentationSessionDependencies(
                 () =>
                 {
                     var platform = new RecordingOverlayPlatform
                     {
-                        DisposeException = new InvalidOperationException(
-                            "Platform disposal failed"),
+                        DisposeException = new InvalidOperationException("Platform disposal failed"),
                     };
                     platforms.Add(platform);
                     return platform;
                 },
                 () =>
                 {
-                    var tracker = new RecordingGameWindowTracker(
-                        AvailableGameWindow);
+                    var tracker = new RecordingGameWindowTracker(AvailableGameWindow);
                     trackers.Add(tracker);
                     return tracker;
                 },
@@ -621,12 +660,13 @@ public sealed class HostedOverlayWindowTests
                     timers.Add(timer);
                     return timer;
                 },
-                LegacyOverlayLayout.Empty));
+                LegacyOverlayLayout.Empty
+            )
+        );
         _ = session.HostPassiveWindow(CreateDefinition());
         _ = session.HostPassiveWindow(CreateDefinition());
 
-        var exception = Assert.Throws<InvalidOperationException>(
-            session.Dispose);
+        var exception = Assert.Throws<InvalidOperationException>(session.Dispose);
 
         Assert.Equal("Platform disposal failed", exception.Message);
         Assert.Equal(2, platforms.Sum(platform => platform.DisposeCalls));
@@ -641,18 +681,17 @@ public sealed class HostedOverlayWindowTests
         var tracker = new RecordingGameWindowTracker(AvailableGameWindow);
         var timer = new ManualHostedOverlayTimer();
         using var session = OverlayPresentationSession.CreateForAdapters(
-            new OverlayPresentationDecision(
-                OverlayPresentationMode.MultipleWindows,
-                "Test session"),
+            new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Test session"),
             new OverlayPresentationSessionDependencies(
                 () => platform,
                 () => tracker,
                 _ => timer,
-                LegacyOverlayLayout.Empty));
+                LegacyOverlayLayout.Empty
+            )
+        );
         var hosted = session.HostPassiveWindow(CreateDefinition());
 
-        var exception = await Record.ExceptionAsync(
-            () => Task.Run(hosted.Dispose));
+        var exception = await Record.ExceptionAsync(() => Task.Run(hosted.Dispose));
 
         Assert.IsType<InvalidOperationException>(exception);
         Assert.Equal(OverlayHostHealth.Healthy, hosted.Health);
@@ -669,14 +708,14 @@ public sealed class HostedOverlayWindowTests
         var tracker = new RecordingGameWindowTracker(AvailableGameWindow);
         var timer = new ManualHostedOverlayTimer();
         using var session = OverlayPresentationSession.CreateForAdapters(
-            new OverlayPresentationDecision(
-                OverlayPresentationMode.MultipleWindows,
-                "Test session"),
+            new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Test session"),
             new OverlayPresentationSessionDependencies(
                 () => new RecordingOverlayPlatform(),
                 () => tracker,
                 _ => timer,
-                LegacyOverlayLayout.Empty));
+                LegacyOverlayLayout.Empty
+            )
+        );
         var factoryCalls = 0;
         using var hosted = session.HostPassiveWindow(
             new PassiveOverlayWindowDefinition(
@@ -686,7 +725,9 @@ public sealed class HostedOverlayWindowTests
                     factoryCalls++;
                     return new Window { Width = 128, Height = 108 };
                 },
-                (_, _) => new PixelPoint(25, 30)));
+                (_, _) => new PixelPoint(25, 30)
+            )
+        );
 
         hosted.Reconcile(wantsWindow: true);
         tracker.Snapshot = AvailableGameWindow with { IsForeground = false };
@@ -700,37 +741,36 @@ public sealed class HostedOverlayWindowTests
         Assert.Equal(2, factoryCalls);
     }
 
-    private static GameWindowSnapshot AvailableGameWindow { get; } = new(
-        NativeHandle: (nint)1,
-        ProcessId: 42,
-        ClientBounds: new PixelRect(0, 0, 1920, 1080),
-        IsVisible: true,
-        IsForeground: true);
+    private static GameWindowSnapshot AvailableGameWindow { get; } =
+        new(
+            NativeHandle: (nint)1,
+            ProcessId: 42,
+            ClientBounds: new PixelRect(0, 0, 1920, 1080),
+            IsVisible: true,
+            IsForeground: true
+        );
 
     private static PassiveOverlayWindowDefinition CreateDefinition()
     {
         return new PassiveOverlayWindowDefinition(
             "PlotTrackTarget",
             _ => new Window { Width = 128, Height = 108 },
-            (_, _) => new PixelPoint(25, 30));
+            (_, _) => new PixelPoint(25, 30)
+        );
     }
 
     private sealed class RecordingOverlayPlatform : IOverlayPlatformService
     {
-        public RecordingOverlayPlatform(
-            OverlayPlatformCapabilities? capabilities = null)
+        public RecordingOverlayPlatform(OverlayPlatformCapabilities? capabilities = null)
         {
-            Capabilities = capabilities
-                ?? OverlayPlatformCapabilities.ForHost(
-                    OverlayHostKind.Windows);
+            Capabilities = capabilities ?? OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows);
         }
 
         public OverlayPlatformCapabilities Capabilities { get; }
 
         public List<Window> PreparedWindows { get; } = [];
 
-        public OverlayPreparationResult PreparationResult { get; init; } =
-            new(true, true, "Prepared");
+        public OverlayPreparationResult PreparationResult { get; init; } = new(true, true, "Prepared");
 
         public int DisposeCalls { get; private set; }
 
@@ -742,14 +782,9 @@ public sealed class HostedOverlayWindowTests
             return PreparationResult;
         }
 
-        public OverlayInteractionResult SetInteractive(
-            Window window,
-            bool interactive)
+        public OverlayInteractionResult SetInteractive(Window window, bool interactive)
         {
-            return new OverlayInteractionResult(
-                IsPrepared: true,
-                IsInteractive: interactive,
-                Status: "Prepared");
+            return new OverlayInteractionResult(IsPrepared: true, IsInteractive: interactive, Status: "Prepared");
         }
 
         public void Dispose()

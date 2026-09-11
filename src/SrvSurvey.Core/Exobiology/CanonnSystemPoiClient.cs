@@ -10,23 +10,21 @@ public interface ICanonnSystemPoiClient
     Task<CanonnSystemPoiResult> GetAsync(
         string systemName,
         string commanderName,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }
 
 public sealed class CanonnSystemPoiClient : ICanonnSystemPoiClient
 {
     private const int MaximumResponseBytes = 8 * 1024 * 1024;
 
-    private static readonly Uri DefaultBaseUri = new(
-        "https://us-central1-canonn-api-236217.cloudfunctions.net/query/");
+    private static readonly Uri DefaultBaseUri = new("https://us-central1-canonn-api-236217.cloudfunctions.net/query/");
     private static readonly HttpClient SharedClient = CreateSharedClient();
 
     private readonly HttpClient client;
     private readonly Uri baseUri;
 
-    public CanonnSystemPoiClient(
-        HttpClient? client = null,
-        Uri? baseUri = null)
+    public CanonnSystemPoiClient(HttpClient? client = null, Uri? baseUri = null)
     {
         this.client = client ?? SharedClient;
         this.baseUri = EnsureTrailingSlash(baseUri ?? DefaultBaseUri);
@@ -35,7 +33,8 @@ public sealed class CanonnSystemPoiClient : ICanonnSystemPoiClient
     public async Task<CanonnSystemPoiResult> GetAsync(
         string systemName,
         string commanderName,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(systemName);
         var requestUri = new Uri(
@@ -43,17 +42,19 @@ public sealed class CanonnSystemPoiClient : ICanonnSystemPoiClient
             "getSystemPoi?system="
                 + Uri.EscapeDataString(systemName.Trim())
                 + "&odyssey=Y&cmdr="
-                + Uri.EscapeDataString(commanderName?.Trim() ?? string.Empty));
-        using var response = await client.GetAsync(
-            requestUri,
-            HttpCompletionOption.ResponseHeadersRead,
-            cancellationToken).ConfigureAwait(false);
+                + Uri.EscapeDataString(commanderName?.Trim() ?? string.Empty)
+        );
+        using var response = await client
+            .GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+            .ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
-        using var document = await BoundedHttpContent.ReadJsonDocumentAsync(
+        using var document = await BoundedHttpContent
+            .ReadJsonDocumentAsync(
                 response.Content,
                 MaximumResponseBytes,
                 "The Canonn system-POI response",
-                cancellationToken)
+                cancellationToken
+            )
             .ConfigureAwait(false);
         var root = document.RootElement;
         if (root.ValueKind != JsonValueKind.Object)
@@ -62,21 +63,18 @@ public sealed class CanonnSystemPoiClient : ICanonnSystemPoiClient
         }
 
         var returnedSystem = GetString(root, "system");
-        if (!string.IsNullOrWhiteSpace(returnedSystem)
-            && !string.Equals(
-                returnedSystem.Trim(),
-                systemName.Trim(),
-                StringComparison.OrdinalIgnoreCase))
+        if (
+            !string.IsNullOrWhiteSpace(returnedSystem)
+            && !string.Equals(returnedSystem.Trim(), systemName.Trim(), StringComparison.OrdinalIgnoreCase)
+        )
         {
             throw new InvalidDataException(
-                $"Canonn returned POIs for {returnedSystem.Trim()} instead of "
-                    + systemName.Trim()
-                    + ".");
+                $"Canonn returned POIs for {returnedSystem.Trim()} instead of " + systemName.Trim() + "."
+            );
         }
 
         var signals = new List<CanonnSurfaceBiologySignal>();
-        if (root.TryGetProperty("codex", out var codex)
-            && codex.ValueKind == JsonValueKind.Array)
+        if (root.TryGetProperty("codex", out var codex) && codex.ValueKind == JsonValueKind.Array)
         {
             foreach (var entry in codex.EnumerateArray())
             {
@@ -88,22 +86,18 @@ public sealed class CanonnSystemPoiClient : ICanonnSystemPoiClient
         }
 
         return new CanonnSystemPoiResult(
-            string.IsNullOrWhiteSpace(returnedSystem)
-                ? systemName.Trim()
-                : returnedSystem.Trim(),
-            signals);
+            string.IsNullOrWhiteSpace(returnedSystem) ? systemName.Trim() : returnedSystem.Trim(),
+            signals
+        );
     }
 
-    private static bool TryReadSignal(
-        JsonElement entry,
-        out CanonnSurfaceBiologySignal signal)
+    private static bool TryReadSignal(JsonElement entry, out CanonnSurfaceBiologySignal signal)
     {
         signal = null!;
-        if (entry.ValueKind != JsonValueKind.Object
-            || !string.Equals(
-                GetString(entry, "hud_category"),
-                "Biology",
-                StringComparison.OrdinalIgnoreCase))
+        if (
+            entry.ValueKind != JsonValueKind.Object
+            || !string.Equals(GetString(entry, "hud_category"), "Biology", StringComparison.OrdinalIgnoreCase)
+        )
         {
             return false;
         }
@@ -112,10 +106,12 @@ public sealed class CanonnSystemPoiClient : ICanonnSystemPoiClient
         var entryId = GetInt64(entry, "entryid");
         var latitude = GetDouble(entry, "latitude");
         var longitude = GetDouble(entry, "longitude");
-        if (string.IsNullOrWhiteSpace(body)
+        if (
+            string.IsNullOrWhiteSpace(body)
             || entryId is not > 0
             || latitude is not >= -90 or > 90
-            || longitude is not >= -180 or > 180)
+            || longitude is not >= -180 or > 180
+        )
         {
             return false;
         }
@@ -125,7 +121,8 @@ public sealed class CanonnSystemPoiClient : ICanonnSystemPoiClient
             GetString(entry, "english_name")?.Trim(),
             entryId.Value,
             new SurfaceCoordinate(latitude.Value, longitude.Value),
-            GetBoolean(entry, "scanned") ?? false);
+            GetBoolean(entry, "scanned") ?? false
+        );
         return true;
     }
 
@@ -151,20 +148,16 @@ public sealed class CanonnSystemPoiClient : ICanonnSystemPoiClient
             return null;
         }
 
-        if (value.ValueKind == JsonValueKind.Number
-            && value.TryGetInt64(out var number))
+        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out var number))
         {
             return number;
         }
 
-        return value.ValueKind == JsonValueKind.String
-            && long.TryParse(
-                value.GetString(),
-                NumberStyles.Integer,
-                CultureInfo.InvariantCulture,
-                out number)
-                    ? number
-                    : null;
+        return
+            value.ValueKind == JsonValueKind.String
+            && long.TryParse(value.GetString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out number)
+            ? number
+            : null;
     }
 
     private static double? GetDouble(JsonElement root, string propertyName)
@@ -174,22 +167,17 @@ public sealed class CanonnSystemPoiClient : ICanonnSystemPoiClient
             return null;
         }
 
-        if (value.ValueKind == JsonValueKind.Number
-            && value.TryGetDouble(out var number)
-            && double.IsFinite(number))
+        if (value.ValueKind == JsonValueKind.Number && value.TryGetDouble(out var number) && double.IsFinite(number))
         {
             return number;
         }
 
-        return value.ValueKind == JsonValueKind.String
-            && double.TryParse(
-                value.GetString(),
-                NumberStyles.Float,
-                CultureInfo.InvariantCulture,
-                out number)
+        return
+            value.ValueKind == JsonValueKind.String
+            && double.TryParse(value.GetString(), NumberStyles.Float, CultureInfo.InvariantCulture, out number)
             && double.IsFinite(number)
-                ? number
-                : null;
+            ? number
+            : null;
     }
 
     private static bool? GetBoolean(JsonElement root, string propertyName)
@@ -204,10 +192,9 @@ public sealed class CanonnSystemPoiClient : ICanonnSystemPoiClient
             return value.GetBoolean();
         }
 
-        return value.ValueKind == JsonValueKind.String
-            && bool.TryParse(value.GetString(), out var parsed)
-                ? parsed
-                : null;
+        return value.ValueKind == JsonValueKind.String && bool.TryParse(value.GetString(), out var parsed)
+            ? parsed
+            : null;
     }
 
     private static Uri EnsureTrailingSlash(Uri uri)
@@ -217,29 +204,23 @@ public sealed class CanonnSystemPoiClient : ICanonnSystemPoiClient
 
     private static HttpClient CreateSharedClient()
     {
-        var client = new HttpClient
-        {
-            Timeout = TimeSpan.FromSeconds(20),
-        };
-        client.DefaultRequestHeaders.UserAgent.ParseAdd(
-            "SrvSurvey-Avalonia/1.0");
+        var client = new HttpClient { Timeout = TimeSpan.FromSeconds(20) };
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("SrvSurvey-Avalonia/1.0");
         return client;
     }
 }
 
-public sealed class CachingCanonnSystemPoiClient(
-    ICanonnSystemPoiClient inner) : ICanonnSystemPoiClient
+public sealed class CachingCanonnSystemPoiClient(ICanonnSystemPoiClient inner) : ICanonnSystemPoiClient
 {
-    private readonly ICanonnSystemPoiClient inner = inner
-        ?? throw new ArgumentNullException(nameof(inner));
+    private readonly ICanonnSystemPoiClient inner = inner ?? throw new ArgumentNullException(nameof(inner));
     private readonly object gate = new();
-    private readonly Dictionary<string, Task<CanonnSystemPoiResult>> requests =
-        new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, Task<CanonnSystemPoiResult>> requests = new(StringComparer.OrdinalIgnoreCase);
 
     public async Task<CanonnSystemPoiResult> GetAsync(
         string systemName,
         string commanderName,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(systemName);
         var normalizedSystem = systemName.Trim();
@@ -251,14 +232,11 @@ public sealed class CachingCanonnSystemPoiClient(
             if (!requests.TryGetValue(key, out request!))
             {
                 var completion = new TaskCompletionSource<CanonnSystemPoiResult>(
-                    TaskCreationOptions.RunContinuationsAsynchronously);
+                    TaskCreationOptions.RunContinuationsAsynchronously
+                );
                 request = completion.Task;
                 requests.Add(key, request);
-                _ = LoadAsync(
-                    key,
-                    normalizedSystem,
-                    normalizedCommander,
-                    completion);
+                _ = LoadAsync(key, normalizedSystem, normalizedCommander, completion);
             }
         }
 
@@ -269,29 +247,26 @@ public sealed class CachingCanonnSystemPoiClient(
         string key,
         string systemName,
         string commanderName,
-        TaskCompletionSource<CanonnSystemPoiResult> completion)
+        TaskCompletionSource<CanonnSystemPoiResult> completion
+    )
     {
         try
         {
-            var result = await inner.GetAsync(
-                    systemName,
-                    commanderName,
-                    CancellationToken.None)
-                .ConfigureAwait(false);
+            var result = await inner.GetAsync(systemName, commanderName, CancellationToken.None).ConfigureAwait(false);
             completion.TrySetResult(result);
             lock (gate)
             {
-                foreach (var oldKey in requests
-                             .Where(entry => entry.Key != key
-                                 && entry.Value.IsCompletedSuccessfully)
-                             .Select(entry => entry.Key)
-                             .Take(Math.Max(0, requests.Count - 8))
-                             .ToArray())
+                foreach (
+                    var oldKey in requests
+                        .Where(entry => entry.Key != key && entry.Value.IsCompletedSuccessfully)
+                        .Select(entry => entry.Key)
+                        .Take(Math.Max(0, requests.Count - 8))
+                        .ToArray()
+                )
                 {
                     requests.Remove(oldKey);
                 }
             }
-
         }
         catch (Exception exception)
         {
@@ -305,13 +280,12 @@ public sealed class CachingCanonnSystemPoiClient(
     }
 }
 
-public sealed record CanonnSystemPoiResult(
-    string SystemName,
-    IReadOnlyList<CanonnSurfaceBiologySignal> Signals);
+public sealed record CanonnSystemPoiResult(string SystemName, IReadOnlyList<CanonnSurfaceBiologySignal> Signals);
 
 public sealed record CanonnSurfaceBiologySignal(
     string BodyName,
     string? DisplayName,
     long EntryId,
     SurfaceCoordinate Location,
-    bool IsCommanderScan);
+    bool IsCommanderScan
+);

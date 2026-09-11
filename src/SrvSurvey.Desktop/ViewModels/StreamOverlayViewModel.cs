@@ -12,8 +12,7 @@ public sealed class StreamOverlayViewModel : INotifyPropertyChanged
 
     public StreamOverlayViewModel(StreamOverlaySettingsStore settingsStore)
     {
-        this.settingsStore = settingsStore
-            ?? throw new ArgumentNullException(nameof(settingsStore));
+        this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         enabled = settingsStore.LoadEnabled();
         statusMessage = enabled
             ? "Waiting for the Elite window before composing overlays."
@@ -63,8 +62,6 @@ public sealed class StreamOverlayViewModel : INotifyPropertyChanged
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(propertyName));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

@@ -8,17 +8,16 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
 {
     private readonly string directory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-organic-migration-{Guid.NewGuid():N}");
+        $"SrvSurvey-organic-migration-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public async Task MigratesOldClaimsAndBodyFilesWithoutChangingSources()
     {
         var catalog = ExobiologyReferenceCatalog.LoadEmbedded();
         var reference = catalog.BiologyEntries.First(entry =>
-            string.Equals(
-                entry.VariantName,
-                "$Codex_Ent_Aleoids_01_B_Name;",
-                StringComparison.Ordinal));
+            string.Equals(entry.VariantName, "$Codex_Ent_Aleoids_01_B_Name;", StringComparison.Ordinal)
+        );
         Directory.CreateDirectory(directory);
         var profilePath = Path.Combine(directory, "F123-live.json");
         await File.WriteAllTextAsync(
@@ -40,7 +39,8 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
                 }
               ]
             }
-            """);
+            """
+        );
         var organicDirectory = Path.Combine(directory, "organic", "F123");
         Directory.CreateDirectory(organicDirectory);
         var bodyPath = Path.Combine(organicDirectory, "Test 1.json");
@@ -80,7 +80,8 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
                 }
               }
             }
-            """);
+            """
+        );
         var sourceBytes = await File.ReadAllBytesAsync(bodyPath);
         var systemsDirectory = Path.Combine(directory, "systems", "F123");
         Directory.CreateDirectory(systemsDirectory);
@@ -102,7 +103,8 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
                 }
               ]
             }
-            """);
+            """
+        );
         var migrator = new LegacyOrganicProfileMigrator(directory, catalog);
 
         var result = await migrator.MigrateAsync();
@@ -114,32 +116,19 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
         Assert.Equal(1, result.MigratedOrganismCount);
         Assert.Empty(result.Errors);
         Assert.Equal(sourceBytes, await File.ReadAllBytesAsync(bodyPath));
-        var profile = JsonNode.Parse(
-            await File.ReadAllTextAsync(profilePath))!.AsObject();
+        var profile = JsonNode.Parse(await File.ReadAllTextAsync(profilePath))!.AsObject();
         Assert.True(profile["futureProfile"]!["keep"]!.GetValue<bool>());
-        Assert.True(
-            profile["migratedScannedOrganicsInEntryId"]!.GetValue<bool>());
-        Assert.True(
-            profile["migratedNonSystemDataOrganics"]!.GetValue<bool>());
-        var claims = profile["scannedBioEntryIds"]!.AsArray()
-            .Select(node => node!.GetValue<string>())
-            .ToArray();
+        Assert.True(profile["migratedScannedOrganicsInEntryId"]!.GetValue<bool>());
+        Assert.True(profile["migratedNonSystemDataOrganics"]!.GetValue<bool>());
+        var claims = profile["scannedBioEntryIds"]!.AsArray().Select(node => node!.GetValue<string>()).ToArray();
         Assert.Equal(2, claims.Length);
         Assert.All(claims, claim => Assert.Equal(5, claim.Split('_').Length));
-        Assert.Equal(
-            reference.Reward * 6,
-            profile["organicRewards"]!.GetValue<long>());
-        Assert.Contains(
-            claims,
-            claim => claim ==
-                $"42_1_{reference.EntryId}_{reference.Reward}_{bool.TrueString}");
+        Assert.Equal(reference.Reward * 6, profile["organicRewards"]!.GetValue<long>());
+        Assert.Contains(claims, claim => claim == $"42_1_{reference.EntryId}_{reference.Reward}_{bool.TrueString}");
 
-        var system = JsonNode.Parse(
-            await File.ReadAllTextAsync(systemPath))!.AsObject();
+        var system = JsonNode.Parse(await File.ReadAllTextAsync(systemPath))!.AsObject();
         Assert.Equal(7, system["futureSystem"]!.GetValue<int>());
-        Assert.Equal(
-            "2024-01-01T00:00:00.0000000+00:00",
-            system["firstVisited"]!.GetValue<string>());
+        Assert.Equal("2024-01-01T00:00:00.0000000+00:00", system["firstVisited"]!.GetValue<string>());
         var body = system["bodies"]![0]!.AsObject();
         Assert.True(body["futureBody"]!.GetValue<bool>());
         Assert.Equal("LandableBody", body["type"]!.GetValue<string>());
@@ -151,9 +140,7 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
         Assert.Equal(reference.EntryId, organism["entryId"]!.GetValue<long>());
         Assert.Equal(reference.Reward, organism["reward"]!.GetValue<long>());
         Assert.True(organism["analyzed"]!.GetValue<bool>());
-        Assert.Equal(
-            "source-only",
-            organism["futureOrganism"]!.GetValue<string>());
+        Assert.Equal("source-only", organism["futureOrganism"]!.GetValue<string>());
 
         var profileBytes = await File.ReadAllBytesAsync(profilePath);
         var systemBytes = await File.ReadAllBytesAsync(systemPath);
@@ -177,18 +164,16 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
               "organicRewards": 12345,
               "scannedBioEntryIds": ["unrecoverable-claim"]
             }
-            """);
+            """
+        );
         var organicDirectory = Path.Combine(directory, "organic", "F123");
         Directory.CreateDirectory(organicDirectory);
         var bodyPath = Path.Combine(organicDirectory, "broken.json");
-        await File.WriteAllTextAsync(
-            bodyPath,
-            """{"systemName":"Missing identity","future":true}""");
+        await File.WriteAllTextAsync(bodyPath, """{"systemName":"Missing identity","future":true}""");
         var profileBefore = await File.ReadAllBytesAsync(profilePath);
         var bodyBefore = await File.ReadAllBytesAsync(bodyPath);
 
-        var result = await new LegacyOrganicProfileMigrator(directory)
-            .MigrateAsync();
+        var result = await new LegacyOrganicProfileMigrator(directory).MigrateAsync();
 
         Assert.False(result.Migrated);
         Assert.Equal(2, result.Errors.Count);
@@ -201,21 +186,22 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
     public async Task MigrationKeepsMultipleSpeciesFromTheSameGenus()
     {
         var catalog = ExobiologyReferenceCatalog.LoadEmbedded();
-        var references = catalog.BiologyEntries
-            .GroupBy(reference =>
-                ExobiologyReferenceCatalog.GetGenusName(reference.SpeciesName))
-            .Select(group => group
-                .GroupBy(reference => reference.SpeciesName, StringComparer.Ordinal)
-                .Select(species => species.First())
-                .Take(2)
-                .ToArray())
+        var references = catalog
+            .BiologyEntries.GroupBy(reference => ExobiologyReferenceCatalog.GetGenusName(reference.SpeciesName))
+            .Select(group =>
+                group
+                    .GroupBy(reference => reference.SpeciesName, StringComparer.Ordinal)
+                    .Select(species => species.First())
+                    .Take(2)
+                    .ToArray()
+            )
             .First(group => group.Length == 2);
-        var genus = ExobiologyReferenceCatalog.GetGenusName(
-            references[0].SpeciesName);
+        var genus = ExobiologyReferenceCatalog.GetGenusName(references[0].SpeciesName);
         Directory.CreateDirectory(directory);
         await File.WriteAllTextAsync(
             Path.Combine(directory, "F123-live.json"),
-            """{"fid":"F123","commander":"Drew","organicRewards":0,"scannedBioEntryIds":[]}""");
+            """{"fid":"F123","commander":"Drew","organicRewards":0,"scannedBioEntryIds":[]}"""
+        );
         var organicDirectory = Path.Combine(directory, "organic", "F123");
         Directory.CreateDirectory(organicDirectory);
         var organisms = new JsonObject();
@@ -240,25 +226,23 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
                 ["bodyId"] = 1,
                 ["systemAddress"] = 42,
                 ["organisms"] = organisms,
-            }.ToJsonString());
+            }.ToJsonString()
+        );
 
-        var result = await new LegacyOrganicProfileMigrator(directory, catalog)
-            .MigrateAsync();
+        var result = await new LegacyOrganicProfileMigrator(directory, catalog).MigrateAsync();
 
         Assert.Empty(result.Errors);
         Assert.Equal(2, result.MigratedOrganismCount);
-        var systemPath = Assert.Single(Directory.GetFiles(
-            Path.Combine(directory, "systems", "F123"),
-            "*.json"));
-        var body = Assert.Single(JsonNode.Parse(
-            await File.ReadAllTextAsync(systemPath))!["bodies"]!.AsArray())!;
+        var systemPath = Assert.Single(Directory.GetFiles(Path.Combine(directory, "systems", "F123"), "*.json"));
+        var body = Assert.Single(JsonNode.Parse(await File.ReadAllTextAsync(systemPath))!["bodies"]!.AsArray())!;
         var migrated = body["organisms"]!.AsArray();
         Assert.Equal(2, migrated.Count);
         Assert.Equal(
-            references.Select(reference => reference.VariantName)
-                .OrderBy(value => value, StringComparer.Ordinal),
-            migrated.Select(organism => organism!["variant"]!.GetValue<string>())
-                .OrderBy(value => value, StringComparer.Ordinal));
+            references.Select(reference => reference.VariantName).OrderBy(value => value, StringComparer.Ordinal),
+            migrated
+                .Select(organism => organism!["variant"]!.GetValue<string>())
+                .OrderBy(value => value, StringComparer.Ordinal)
+        );
     }
 
     [Fact]
@@ -275,7 +259,8 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
               "organicRewards": 7,
               "scannedBioEntryIds": [42, "42_1_1234567_100_False"]
             }
-            """);
+            """
+        );
         await File.WriteAllTextAsync(
             overflowPath,
             $$"""
@@ -284,12 +269,12 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
               "organicRewards": 9,
               "scannedBioEntryIds": ["42_1_1234567_{{long.MaxValue}}_True"]
             }
-            """);
+            """
+        );
         var shapeBefore = await File.ReadAllBytesAsync(shapePath);
         var overflowBefore = await File.ReadAllBytesAsync(overflowPath);
 
-        var result = await new LegacyOrganicProfileMigrator(directory)
-            .MigrateAsync();
+        var result = await new LegacyOrganicProfileMigrator(directory).MigrateAsync();
 
         Assert.False(result.Migrated);
         Assert.Equal(2, result.Errors.Count);
@@ -301,10 +286,9 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
     public async Task SharedBodyHistoryCompletesBothLiveAndLegacyProfiles()
     {
         var catalog = ExobiologyReferenceCatalog.LoadEmbedded();
-        var reference = catalog.BiologyEntries.First(entry => string.Equals(
-            entry.VariantName,
-            "$Codex_Ent_Aleoids_01_B_Name;",
-            StringComparison.Ordinal));
+        var reference = catalog.BiologyEntries.First(entry =>
+            string.Equals(entry.VariantName, "$Codex_Ent_Aleoids_01_B_Name;", StringComparison.Ordinal)
+        );
         Directory.CreateDirectory(directory);
         var profileJson = $$"""
             {
@@ -335,7 +319,8 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
                 }
               }
             }
-            """);
+            """
+        );
         var systemDirectory = Path.Combine(directory, "systems", "F123");
         Directory.CreateDirectory(systemDirectory);
         await File.WriteAllTextAsync(
@@ -350,25 +335,21 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
                 "firstFootFall": true
               }]
             }
-            """);
+            """
+        );
 
-        var result = await new LegacyOrganicProfileMigrator(directory, catalog)
-            .MigrateAsync();
+        var result = await new LegacyOrganicProfileMigrator(directory, catalog).MigrateAsync();
 
         Assert.Equal(2, result.MigratedProfileCount);
         foreach (var path in new[] { livePath, legacyPath })
         {
-            var profile = JsonNode.Parse(
-                await File.ReadAllTextAsync(path))!.AsObject();
-            Assert.True(
-                profile["migratedNonSystemDataOrganics"]!.GetValue<bool>());
-            Assert.Equal(
-                reference.Reward * 5,
-                profile["organicRewards"]!.GetValue<long>());
+            var profile = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+            Assert.True(profile["migratedNonSystemDataOrganics"]!.GetValue<bool>());
+            Assert.Equal(reference.Reward * 5, profile["organicRewards"]!.GetValue<long>());
             Assert.Equal(
                 $"42_1_{reference.EntryId}_{reference.Reward}_{bool.TrueString}",
-                Assert.Single(profile["scannedBioEntryIds"]!.AsArray())!
-                    .GetValue<string>());
+                Assert.Single(profile["scannedBioEntryIds"]!.AsArray())!.GetValue<string>()
+            );
         }
     }
 
@@ -385,7 +366,8 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
               "organicRewards": 100,
               "scannedBioEntryIds": ["42_1_1234567_100_False"]
             }
-            """);
+            """
+        );
         var organicDirectory = Path.Combine(directory, "organic", "F123");
         Directory.CreateDirectory(organicDirectory);
         var bodyPath = Path.Combine(organicDirectory, "Test 1.json");
@@ -399,7 +381,8 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
               "systemAddress": 42,
               "organisms": {}
             }
-            """);
+            """
+        );
         var systemDirectory = Path.Combine(directory, "systems", "F123");
         Directory.CreateDirectory(systemDirectory);
         var systemPath = Path.Combine(systemDirectory, "Test_42.json");
@@ -412,18 +395,17 @@ public sealed class LegacyOrganicProfileMigratorTests : IDisposable
               "bodies": "malformed-but-preserved",
               "future": true
             }
-            """);
+            """
+        );
         var bodyBefore = await File.ReadAllBytesAsync(bodyPath);
         var systemBefore = await File.ReadAllBytesAsync(systemPath);
 
-        var result = await new LegacyOrganicProfileMigrator(directory)
-            .MigrateAsync();
+        var result = await new LegacyOrganicProfileMigrator(directory).MigrateAsync();
 
         Assert.Single(result.Errors);
         Assert.Equal(bodyBefore, await File.ReadAllBytesAsync(bodyPath));
         Assert.Equal(systemBefore, await File.ReadAllBytesAsync(systemPath));
-        var profile = JsonNode.Parse(
-            await File.ReadAllTextAsync(profilePath))!.AsObject();
+        var profile = JsonNode.Parse(await File.ReadAllTextAsync(profilePath))!.AsObject();
         Assert.Null(profile["migratedNonSystemDataOrganics"]);
     }
 

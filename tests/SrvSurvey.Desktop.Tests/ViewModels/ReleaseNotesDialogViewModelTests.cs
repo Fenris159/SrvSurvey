@@ -19,19 +19,16 @@ public sealed class ReleaseNotesDialogViewModelTests
             - Displays `10` systems per page.
             """;
 
-        var result = ReleaseNotesDialogViewModel.Create(
-            "Fallback title",
-            markdown);
+        var result = ReleaseNotesDialogViewModel.Create("Fallback title", markdown);
 
         Assert.Equal("SrvSurvey-XP 2.1.3.0-rc.26", result.Title);
         Assert.Equal("This release makes Boxel search clearer.", result.Introduction);
         Assert.Equal("What's changed since rc.25", result.ChangesHeading);
         Assert.Collection(
             result.Changes,
-            change => Assert.Equal(
-                "Adds Mark Next Empty and continues onto the following target.",
-                change.Text),
-            change => Assert.Equal("Displays 10 systems per page.", change.Text));
+            change => Assert.Equal("Adds Mark Next Empty and continues onto the following target.", change.Text),
+            change => Assert.Equal("Displays 10 systems per page.", change.Text)
+        );
     }
 
     [Fact]
@@ -39,9 +36,7 @@ public sealed class ReleaseNotesDialogViewModelTests
     {
         const string markdown = "A release note without a changes heading.";
 
-        var result = ReleaseNotesDialogViewModel.Create(
-            "Fallback title",
-            markdown);
+        var result = ReleaseNotesDialogViewModel.Create("Fallback title", markdown);
 
         Assert.Equal("Fallback title", result.Title);
         Assert.Empty(result.Introduction);
@@ -63,9 +58,7 @@ public sealed class ReleaseNotesDialogViewModelTests
             # Late title
             """;
 
-        var result = ReleaseNotesDialogViewModel.Create(
-            "Fallback title",
-            markdown);
+        var result = ReleaseNotesDialogViewModel.Create("Fallback title", markdown);
 
         Assert.Equal("Late title", result.Title);
         Assert.Empty(result.Introduction);

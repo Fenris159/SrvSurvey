@@ -11,7 +11,8 @@ public sealed class JourneyWorkspaceViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-journey-view-model-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-journey-view-model-tests-{Guid.NewGuid():N}"
+    );
 
     private string DataDirectory => Path.Combine(temporaryDirectory, "data");
 
@@ -25,16 +26,14 @@ public sealed class JourneyWorkspaceViewModelTests : IDisposable
             {"timestamp":"2026-07-01T00:00:00Z","event":"Fileheader","Odyssey":true}
             {"timestamp":"2026-07-01T00:00:01Z","event":"Commander","Name":"Drew","FID":"F123"}
             {"timestamp":"2026-07-01T00:05:00Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
-            """);
+            """
+        );
         var viewModel = CreateViewModel();
 
-        Assert.True(await viewModel.UpdateContextAsync(
-            "F123", "Drew", true, "Sol", 42));
+        Assert.True(await viewModel.UpdateContextAsync("F123", "Drew", true, "Sol", 42));
         var contextNotifications = new List<string?>();
-        viewModel.PropertyChanged += (_, eventArgs) =>
-            contextNotifications.Add(eventArgs.PropertyName);
-        Assert.False(await viewModel.UpdateContextAsync(
-            "F123", "Drew", true, "Sol", 42));
+        viewModel.PropertyChanged += (_, eventArgs) => contextNotifications.Add(eventArgs.PropertyName);
+        Assert.False(await viewModel.UpdateContextAsync("F123", "Drew", true, "Sol", 42));
         Assert.Empty(contextNotifications);
 
         await viewModel.StartNewJourneyAsync();
@@ -56,22 +55,20 @@ public sealed class JourneyWorkspaceViewModelTests : IDisposable
         Assert.False(viewModel.IsDirty);
         Assert.Equal("Updated description", viewModel.JourneyDescription);
         Assert.Equal(1, viewModel.SelectedSystem!.Visit.Counts.Notes);
-        var note = await new SystemNoteStore(DataDirectory)
-            .LoadAsync("F123", "Sol", 42);
+        var note = await new SystemNoteStore(DataDirectory).LoadAsync("F123", "Sol", 42);
         Assert.Equal("Remember this system", note.Notes);
 
         await viewModel.RefreshAsync();
 
         Assert.Equal("Active journey: Across the black.", viewModel.StatusMessage);
 
-        await viewModel.ApplyJournalEventsAsync(
-        [
+        await viewModel.ApplyJournalEventsAsync([
             Parse("""{"timestamp":"2026-07-01T00:06:00Z","event":"Screenshot"}"""),
         ]);
         Assert.Contains(
             viewModel.QuickStatistics,
-            statistic => statistic.Label == "Screenshots"
-                && statistic.Value == "1");
+            statistic => statistic.Label == "Screenshots" && statistic.Value == "1"
+        );
 
         await viewModel.ConfirmConcludeAsync();
 
@@ -88,16 +85,10 @@ public sealed class JourneyWorkspaceViewModelTests : IDisposable
             {"timestamp":"2026-07-01T00:00:00Z","event":"Fileheader","Odyssey":true}
             {"timestamp":"2026-07-01T00:00:01Z","event":"Commander","Name":"Drew","FID":"F123"}
             {"timestamp":"2026-07-01T00:05:00Z","event":"FSDJump","StarSystem":"Achenar","SystemAddress":99,"StarPos":[1,2,3]}
-            """);
-        var viewModel = CreateViewModel(
-        [
-            new StarSystemReference(
-                "Achenar",
-                99,
-                new GalacticCoordinate(1, 2, 3)),
-        ]);
-        await viewModel.UpdateContextAsync(
-            "F123", "Drew", true, "Sol", 42);
+            """
+        );
+        var viewModel = CreateViewModel([new StarSystemReference("Achenar", 99, new GalacticCoordinate(1, 2, 3))]);
+        await viewModel.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
         await viewModel.StartNewJourneyAsync();
         viewModel.UseCurrentStart = false;
         viewModel.StartSystemQuery = "Achenar";
@@ -121,14 +112,10 @@ public sealed class JourneyWorkspaceViewModelTests : IDisposable
         Assert.Empty(viewModel.SelectedSystemAddressText);
 
         var changed = new List<string?>();
-        viewModel.PropertyChanged += (_, eventArgs) =>
-            changed.Add(eventArgs.PropertyName);
+        viewModel.PropertyChanged += (_, eventArgs) => changed.Add(eventArgs.PropertyName);
         viewModel.SelectedSystem = new JourneySystemItemViewModel(
             new JourneySystemVisit(
-                new JourneySystemReference(
-                    "Sol",
-                    42,
-                    new GalacticCoordinate(0, 0, 0)),
+                new JourneySystemReference("Sol", 42, new GalacticCoordinate(0, 0, 0)),
                 DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
                 null,
                 JourneyCounts.Empty,
@@ -138,10 +125,12 @@ public sealed class JourneyWorkspaceViewModelTests : IDisposable
                 null,
                 null,
                 null,
-                null),
+                null
+            ),
             string.Empty,
             "Today",
-            "Current");
+            "Current"
+        );
 
         Assert.Equal("Sol", viewModel.SelectedSystemName);
         Assert.Equal("42", viewModel.SelectedSystemAddress);
@@ -159,10 +148,10 @@ public sealed class JourneyWorkspaceViewModelTests : IDisposable
             {"timestamp":"2026-07-01T00:00:00Z","event":"Fileheader","Odyssey":true}
             {"timestamp":"2026-07-01T00:00:01Z","event":"Commander","Name":"Drew","FID":"F123"}
             {"timestamp":"2026-07-01T00:05:00Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
-            """);
+            """
+        );
         var viewModel = CreateViewModel();
-        await viewModel.UpdateContextAsync(
-            "F123", "Drew", true, "Sol", 42);
+        await viewModel.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
         await viewModel.StartNewJourneyAsync();
         viewModel.NewJourneyName = "Journey";
         await viewModel.FindStartAsync();
@@ -178,8 +167,7 @@ public sealed class JourneyWorkspaceViewModelTests : IDisposable
         Assert.True(settings.Snapshot?.JourneyUseGalacticTime);
     }
 
-    private JourneyWorkspaceViewModel CreateViewModel(
-        IReadOnlyList<StarSystemReference>? searchResults = null)
+    private JourneyWorkspaceViewModel CreateViewModel(IReadOnlyList<StarSystemReference>? searchResults = null)
     {
         var noteStore = new SystemNoteStore(DataDirectory);
         var settingsStore = new SystemNotesSettingsStore(DataDirectory);
@@ -188,29 +176,25 @@ public sealed class JourneyWorkspaceViewModelTests : IDisposable
                 new JourneyStore(DataDirectory),
                 new JourneyJournalHistoryReader(JournalDirectory),
                 new CommanderProfileStore(DataDirectory),
-                new ExobiologyReferenceCatalog([])),
+                new ExobiologyReferenceCatalog([])
+            ),
             new StubSystemResolver(searchResults ?? []),
             noteStore,
-            settingsStore);
+            settingsStore
+        );
     }
 
     private async Task WriteJournalAsync(string content)
     {
         Directory.CreateDirectory(JournalDirectory);
-        var path = Path.Combine(
-            JournalDirectory,
-            "Journal.2026-07-01T000000.01.log");
+        var path = Path.Combine(JournalDirectory, "Journal.2026-07-01T000000.01.log");
         await File.WriteAllTextAsync(path, content);
-        File.SetLastWriteTimeUtc(
-            path,
-            new DateTime(2026, 7, 1, 0, 0, 0, DateTimeKind.Utc));
+        File.SetLastWriteTimeUtc(path, new DateTime(2026, 7, 1, 0, 0, 0, DateTimeKind.Utc));
     }
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(
-            JournalEventEnvelope.TryParse(json, out var journalEvent, out var error),
-            error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
         return journalEvent!;
     }
 
@@ -222,12 +206,12 @@ public sealed class JourneyWorkspaceViewModelTests : IDisposable
         }
     }
 
-    private sealed class StubSystemResolver(
-        IReadOnlyList<StarSystemReference> results) : IStarSystemResolver
+    private sealed class StubSystemResolver(IReadOnlyList<StarSystemReference> results) : IStarSystemResolver
     {
         public Task<IReadOnlyList<StarSystemReference>> SearchAsync(
             string query,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             return Task.FromResult(results);
         }

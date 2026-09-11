@@ -31,38 +31,24 @@ public sealed class ColonizationSettingsStore
         var defaults = ColonizationOverlayPreferences.Default;
         return new ColonizationOverlayPreferences(
             GetBoolean(overlay, "AutoShow", defaults.AutoShow),
-            GetBoolean(
-                overlay,
-                "ShowOnRightPanel",
-                defaults.ShowOnRightPanel),
-            GetBoolean(
-                overlay,
-                "ShowFleetCarrierCargo",
-                defaults.ShowFleetCarrierCargo),
-            GetBoolean(
-                overlay,
-                "ShowFleetCarrierDelta",
-                defaults.ShowFleetCarrierDelta),
-            GetBoolean(
-                overlay,
-                "InlineFleetCarrierCargo",
-                defaults.InlineFleetCarrierCargo),
-            GetBoolean(
-                overlay,
-                "CollapseCoveredGroups",
-                defaults.CollapseCoveredGroups),
+            GetBoolean(overlay, "ShowOnRightPanel", defaults.ShowOnRightPanel),
+            GetBoolean(overlay, "ShowFleetCarrierCargo", defaults.ShowFleetCarrierCargo),
+            GetBoolean(overlay, "ShowFleetCarrierDelta", defaults.ShowFleetCarrierDelta),
+            GetBoolean(overlay, "InlineFleetCarrierCargo", defaults.InlineFleetCarrierCargo),
+            GetBoolean(overlay, "CollapseCoveredGroups", defaults.CollapseCoveredGroups),
             GetBoolean(
                 overlay,
                 "HighlightAlmostCoveredFleetCarrierLoads",
-                defaults.HighlightAlmostCoveredFleetCarrierLoads));
+                defaults.HighlightAlmostCoveredFleetCarrierLoads
+            )
+        );
     }
 
     public bool LoadFleetCarrierCargoSyncEnabled()
     {
         var root = documentStore.Load();
         return root[ColonizationSectionKey] is JsonObject colonization
-            && colonization["FleetCarrierCargoSyncEnabled"]
-                is JsonValue enabled
+            && colonization["FleetCarrierCargoSyncEnabled"] is JsonValue enabled
             && enabled.TryGetValue<bool>(out var value)
             && value;
     }
@@ -71,18 +57,15 @@ public sealed class ColonizationSettingsStore
     {
         var root = documentStore.Load();
         return root[ColonizationSectionKey] is JsonObject colonization
-            && colonization["ShipCargoPublishingEnabled"]
-                is JsonValue enabled
+            && colonization["ShipCargoPublishingEnabled"] is JsonValue enabled
             && enabled.TryGetValue<bool>(out var value)
             && value;
     }
 
-    public IReadOnlyList<ColonizationBuildSiteRepairVisit>
-        LoadBuildSiteRepairVisits()
+    public IReadOnlyList<ColonizationBuildSiteRepairVisit> LoadBuildSiteRepairVisits()
     {
         var root = documentStore.Load();
-        var visits = root[ColonizationSectionKey]?["BuildSiteRepairVisits"]
-            as JsonArray;
+        var visits = root[ColonizationSectionKey]?["BuildSiteRepairVisits"] as JsonArray;
         if (visits is null)
         {
             return [];
@@ -91,19 +74,19 @@ public sealed class ColonizationSettingsStore
         var loaded = new List<ColonizationBuildSiteRepairVisit>();
         foreach (var item in visits.OfType<JsonObject>())
         {
-            if (item["MarketId"] is not JsonValue marketValue
+            if (
+                item["MarketId"] is not JsonValue marketValue
                 || !marketValue.TryGetValue<long>(out var marketId)
                 || marketId <= 0
                 || item["StationKey"] is not JsonValue stationValue
                 || !stationValue.TryGetValue<string>(out var stationKey)
-                || string.IsNullOrWhiteSpace(stationKey))
+                || string.IsNullOrWhiteSpace(stationKey)
+            )
             {
                 continue;
             }
 
-            var visit = new ColonizationBuildSiteRepairVisit(
-                marketId,
-                stationKey.Trim().ToLowerInvariant());
+            var visit = new ColonizationBuildSiteRepairVisit(marketId, stationKey.Trim().ToLowerInvariant());
             loaded.RemoveAll(existing => existing == visit);
             loaded.Add(visit);
         }
@@ -127,8 +110,7 @@ public sealed class ColonizationSettingsStore
         });
     }
 
-    public void SaveOverlayPreferences(
-        ColonizationOverlayPreferences preferences)
+    public void SaveOverlayPreferences(ColonizationOverlayPreferences preferences)
     {
         ArgumentNullException.ThrowIfNull(preferences);
         documentStore.Update(root =>
@@ -150,16 +132,11 @@ public sealed class ColonizationSettingsStore
             root[VersionKey] = 1;
             overlay["AutoShow"] = preferences.AutoShow;
             overlay["ShowOnRightPanel"] = preferences.ShowOnRightPanel;
-            overlay["ShowFleetCarrierCargo"] =
-                preferences.ShowFleetCarrierCargo;
-            overlay["ShowFleetCarrierDelta"] =
-                preferences.ShowFleetCarrierDelta;
-            overlay["InlineFleetCarrierCargo"] =
-                preferences.InlineFleetCarrierCargo;
-            overlay["CollapseCoveredGroups"] =
-                preferences.CollapseCoveredGroups;
-            overlay["HighlightAlmostCoveredFleetCarrierLoads"] =
-                preferences.HighlightAlmostCoveredFleetCarrierLoads;
+            overlay["ShowFleetCarrierCargo"] = preferences.ShowFleetCarrierCargo;
+            overlay["ShowFleetCarrierDelta"] = preferences.ShowFleetCarrierDelta;
+            overlay["InlineFleetCarrierCargo"] = preferences.InlineFleetCarrierCargo;
+            overlay["CollapseCoveredGroups"] = preferences.CollapseCoveredGroups;
+            overlay["HighlightAlmostCoveredFleetCarrierLoads"] = preferences.HighlightAlmostCoveredFleetCarrierLoads;
         });
     }
 
@@ -195,17 +172,12 @@ public sealed class ColonizationSettingsStore
         });
     }
 
-    public void SaveBuildSiteRepairVisits(
-        IEnumerable<ColonizationBuildSiteRepairVisit> visits)
+    public void SaveBuildSiteRepairVisits(IEnumerable<ColonizationBuildSiteRepairVisit> visits)
     {
         ArgumentNullException.ThrowIfNull(visits);
         var normalized = visits
-            .Where(visit => visit.MarketId > 0
-                && !string.IsNullOrWhiteSpace(visit.StationKey))
-            .Select(visit => visit with
-            {
-                StationKey = visit.StationKey.Trim().ToLowerInvariant(),
-            })
+            .Where(visit => visit.MarketId > 0 && !string.IsNullOrWhiteSpace(visit.StationKey))
+            .Select(visit => visit with { StationKey = visit.StationKey.Trim().ToLowerInvariant() })
             .Distinct()
             .TakeLast(50)
             .ToArray();
@@ -220,29 +192,24 @@ public sealed class ColonizationSettingsStore
 
             root[VersionKey] = 1;
             colonization["BuildSiteRepairVisits"] = new JsonArray(
-                normalized.Select(visit => new JsonObject
-                {
-                    ["MarketId"] = visit.MarketId,
-                    ["StationKey"] = visit.StationKey,
-                }).ToArray<JsonNode?>());
+                normalized
+                    .Select(visit => new JsonObject
+                    {
+                        ["MarketId"] = visit.MarketId,
+                        ["StationKey"] = visit.StationKey,
+                    })
+                    .ToArray<JsonNode?>()
+            );
         });
     }
 
-    private static bool GetBoolean(
-        JsonObject? source,
-        string propertyName,
-        bool fallback)
+    private static bool GetBoolean(JsonObject? source, string propertyName, bool fallback)
     {
-        return source?[propertyName] is JsonValue value
-            && value.TryGetValue<bool>(out var result)
-                ? result
-                : fallback;
+        return source?[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result) ? result : fallback;
     }
 }
 
-public sealed record ColonizationBuildSiteRepairVisit(
-    long MarketId,
-    string StationKey);
+public sealed record ColonizationBuildSiteRepairVisit(long MarketId, string StationKey);
 
 public sealed record ColonizationOverlayPreferences(
     bool AutoShow,
@@ -251,14 +218,17 @@ public sealed record ColonizationOverlayPreferences(
     bool ShowFleetCarrierDelta,
     bool InlineFleetCarrierCargo,
     bool CollapseCoveredGroups,
-    bool HighlightAlmostCoveredFleetCarrierLoads)
+    bool HighlightAlmostCoveredFleetCarrierLoads
+)
 {
-    public static ColonizationOverlayPreferences Default { get; } = new(
-        AutoShow: true,
-        ShowOnRightPanel: true,
-        ShowFleetCarrierCargo: true,
-        ShowFleetCarrierDelta: false,
-        InlineFleetCarrierCargo: false,
-        CollapseCoveredGroups: true,
-        HighlightAlmostCoveredFleetCarrierLoads: false);
+    public static ColonizationOverlayPreferences Default { get; } =
+        new(
+            AutoShow: true,
+            ShowOnRightPanel: true,
+            ShowFleetCarrierCargo: true,
+            ShowFleetCarrierDelta: false,
+            InlineFleetCarrierCargo: false,
+            CollapseCoveredGroups: true,
+            HighlightAlmostCoveredFleetCarrierLoads: false
+        );
 }

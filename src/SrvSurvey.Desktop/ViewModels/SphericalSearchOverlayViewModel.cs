@@ -22,7 +22,8 @@ public sealed class SphericalSearchOverlayViewModel : INotifyPropertyChanged, ID
         RouteWorkspaceViewModel route,
         OverlayPlatformCapabilities capabilities,
         SystemNicknameViewModel? systemNicknames = null,
-        GlobalInputSettingsViewModel? inputSettings = null)
+        GlobalInputSettingsViewModel? inputSettings = null
+    )
     {
         Sphere = sphere ?? throw new ArgumentNullException(nameof(sphere));
         Boxel = boxel ?? throw new ArgumentNullException(nameof(boxel));
@@ -31,9 +32,7 @@ public sealed class SphericalSearchOverlayViewModel : INotifyPropertyChanged, ID
         this.inputSettings = inputSettings;
         ArgumentNullException.ThrowIfNull(capabilities);
         platformStatus = capabilities.StatusText;
-        inputMode = capabilities.SupportsClickThrough
-            ? "PASSIVE"
-            : "UNAVAILABLE";
+        inputMode = capabilities.SupportsClickThrough ? "PASSIVE" : "UNAVAILABLE";
         Sphere.PropertyChanged += OnSourcePropertyChanged;
         Boxel.PropertyChanged += OnSourcePropertyChanged;
         Route.PropertyChanged += OnSourcePropertyChanged;
@@ -56,21 +55,16 @@ public sealed class SphericalSearchOverlayViewModel : INotifyPropertyChanged, ID
 
     public RouteWorkspaceViewModel Route { get; }
 
-    public string SphereCenterSystemName =>
-        editorSphereCenter ?? Resolve(Sphere.CenterSystemName);
+    public string SphereCenterSystemName => editorSphereCenter ?? Resolve(Sphere.CenterSystemName);
 
-    public string SphereDestinationSystemName =>
-        editorSphereDestination ?? Resolve(Sphere.DestinationSystemName);
+    public string SphereDestinationSystemName => editorSphereDestination ?? Resolve(Sphere.DestinationSystemName);
 
-    public string BoxelNextSystem =>
-        editorBoxelNext ?? Resolve(Boxel.NextSystem);
+    public string BoxelNextSystem => editorBoxelNext ?? Resolve(Boxel.NextSystem);
 
-    public string BoxelClipboardStatus => Boxel.RequiresManualCopy
-        ? CreateManualCopyStatus()
-        : Boxel.NextSystemClipboardStatus;
+    public string BoxelClipboardStatus =>
+        Boxel.RequiresManualCopy ? CreateManualCopyStatus() : Boxel.NextSystemClipboardStatus;
 
-    public string RouteNextHopName =>
-        editorRouteNext ?? Resolve(Route.NextHopName);
+    public string RouteNextHopName => editorRouteNext ?? Resolve(Route.NextHopName);
 
     /// <summary>
     /// Installs representative search guidance names for the position editor.
@@ -79,7 +73,8 @@ public sealed class SphericalSearchOverlayViewModel : INotifyPropertyChanged, ID
         string sphereCenter,
         string sphereDestination,
         string boxelNext,
-        string routeNext)
+        string routeNext
+    )
     {
         editorSphereCenter = sphereCenter;
         editorSphereDestination = sphereDestination;
@@ -131,9 +126,7 @@ public sealed class SphericalSearchOverlayViewModel : INotifyPropertyChanged, ID
         return systemNicknames?.Resolve(value) ?? value ?? string.Empty;
     }
 
-    private void OnSourcePropertyChanged(
-        object? sender,
-        PropertyChangedEventArgs eventArgs)
+    private void OnSourcePropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
         if (ReferenceEquals(sender, Sphere))
         {
@@ -142,8 +135,7 @@ public sealed class SphericalSearchOverlayViewModel : INotifyPropertyChanged, ID
                 RaiseNameChanged(nameof(SphereCenterSystemName));
             }
 
-            if (eventArgs.PropertyName
-                == nameof(SphereLimitViewModel.DestinationSystemName))
+            if (eventArgs.PropertyName == nameof(SphereLimitViewModel.DestinationSystemName))
             {
                 RaiseNameChanged(nameof(SphereDestinationSystemName));
             }
@@ -155,14 +147,15 @@ public sealed class SphericalSearchOverlayViewModel : INotifyPropertyChanged, ID
                 RaiseNameChanged(nameof(BoxelNextSystem));
             }
 
-            if (eventArgs.PropertyName
-                == nameof(BoxelSearchViewModel.NextSystemClipboardStatus))
+            if (eventArgs.PropertyName == nameof(BoxelSearchViewModel.NextSystemClipboardStatus))
             {
                 RaiseNameChanged(nameof(BoxelClipboardStatus));
             }
         }
-        else if (ReferenceEquals(sender, Route)
-            && eventArgs.PropertyName == nameof(RouteWorkspaceViewModel.NextHopName))
+        else if (
+            ReferenceEquals(sender, Route)
+            && eventArgs.PropertyName == nameof(RouteWorkspaceViewModel.NextHopName)
+        )
         {
             RaiseNameChanged(nameof(RouteNextHopName));
         }
@@ -176,21 +169,17 @@ public sealed class SphericalSearchOverlayViewModel : INotifyPropertyChanged, ID
         RaiseNameChanged(nameof(RouteNextHopName));
     }
 
-    private void OnInputSettingsChanged(
-        object? sender,
-        GlobalInputSettingsChangedEventArgs eventArgs)
+    private void OnInputSettingsChanged(object? sender, GlobalInputSettingsChangedEventArgs eventArgs)
     {
         RaiseNameChanged(nameof(BoxelClipboardStatus));
     }
 
     private string CreateManualCopyStatus()
     {
-        var shortcut = inputSettings?.CurrentSettings.Bindings.GetValueOrDefault(
-                GlobalInputAction.CopyNextBoxel)
+        var shortcut =
+            inputSettings?.CurrentSettings.Bindings.GetValueOrDefault(GlobalInputAction.CopyNextBoxel)
             ?? GlobalInputActionCatalog.Get(GlobalInputAction.CopyNextBoxel).DefaultChord;
-        return string.IsNullOrWhiteSpace(shortcut)
-            ? "MANUAL COPY - NOT SET"
-            : $"MANUAL COPY - {shortcut}";
+        return string.IsNullOrWhiteSpace(shortcut) ? "MANUAL COPY - NOT SET" : $"MANUAL COPY - {shortcut}";
     }
 
     private void RaiseNameChanged(string propertyName)
@@ -198,10 +187,7 @@ public sealed class SphericalSearchOverlayViewModel : INotifyPropertyChanged, ID
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {

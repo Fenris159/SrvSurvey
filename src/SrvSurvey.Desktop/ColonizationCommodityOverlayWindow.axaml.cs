@@ -6,12 +6,9 @@ namespace SrvSurvey.Desktop;
 public sealed partial class ColonizationCommodityOverlayWindow : Window
 {
     public ColonizationCommodityOverlayWindow()
-        : this(new ColonizationCommodityOverlayViewModel())
-    {
-    }
+        : this(new ColonizationCommodityOverlayViewModel()) { }
 
-    public ColonizationCommodityOverlayWindow(
-        ColonizationCommodityOverlayViewModel viewModel)
+    public ColonizationCommodityOverlayWindow(ColonizationCommodityOverlayViewModel viewModel)
     {
         ArgumentNullException.ThrowIfNull(viewModel);
         InitializeComponent();

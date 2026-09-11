@@ -18,11 +18,9 @@ public sealed class GreenGasGiantPublicationCoordinatorTests
                 Scan(310),
             ],
             enabled: true,
-            allowPublishing: false);
-        var live = await coordinator.ApplyAsync(
-            [Scan(310)],
-            enabled: true,
-            allowPublishing: true);
+            allowPublishing: false
+        );
+        var live = await coordinator.ApplyAsync([Scan(310)], enabled: true, allowPublishing: true);
 
         Assert.Empty(bootstrap.Published);
         var candidate = Assert.Single(live.Published);
@@ -48,11 +46,9 @@ public sealed class GreenGasGiantPublicationCoordinatorTests
                 Scan(310),
             ],
             enabled: false,
-            allowPublishing: true);
-        var result = await coordinator.ApplyAsync(
-            [Scan(310)],
-            enabled: true,
-            allowPublishing: true);
+            allowPublishing: true
+        );
+        var result = await coordinator.ApplyAsync([Scan(310)], enabled: true, allowPublishing: true);
 
         Assert.Single(client.Candidates);
         var candidate = Assert.Single(result.Published);
@@ -63,14 +59,9 @@ public sealed class GreenGasGiantPublicationCoordinatorTests
     [Fact]
     public async Task MissingContextAndNetworkErrorsAreNonFatalWarnings()
     {
-        var missingContext = await Create(new RecordingClient()).ApplyAsync(
-            [Scan(310)],
-            enabled: true,
-            allowPublishing: true);
-        var failingClient = new RecordingClient
-        {
-            Error = new HttpRequestException("offline"),
-        };
+        var missingContext = await Create(new RecordingClient())
+            .ApplyAsync([Scan(310)], enabled: true, allowPublishing: true);
+        var failingClient = new RecordingClient { Error = new HttpRequestException("offline") };
         var coordinator = Create(failingClient);
         var failed = await coordinator.ApplyAsync(
             [
@@ -79,7 +70,8 @@ public sealed class GreenGasGiantPublicationCoordinatorTests
                 Scan(310),
             ],
             enabled: true,
-            allowPublishing: true);
+            allowPublishing: true
+        );
 
         Assert.Empty(missingContext.Published);
         Assert.Single(missingContext.Warnings);
@@ -87,12 +79,9 @@ public sealed class GreenGasGiantPublicationCoordinatorTests
         Assert.Contains("offline", Assert.Single(failed.Warnings));
     }
 
-    private static GreenGasGiantPublicationCoordinator Create(
-        IGreenGasGiantClient client)
+    private static GreenGasGiantPublicationCoordinator Create(IGreenGasGiantClient client)
     {
-        return new GreenGasGiantPublicationCoordinator(
-            GreenGasGiantCriteriaCatalog.LoadEmbedded(),
-            client);
+        return new GreenGasGiantPublicationCoordinator(GreenGasGiantCriteriaCatalog.LoadEmbedded(), client);
     }
 
     private static JournalEventEnvelope Scan(double temperature)
@@ -100,7 +89,8 @@ public sealed class GreenGasGiantPublicationCoordinatorTests
         return Event(
             "{\"event\":\"Scan\","
                 + "\"PlanetClass\":\"Sudarsky class III gas giant\","
-                + $"\"SurfaceTemperature\":{temperature}}}");
+                + $"\"SurfaceTemperature\":{temperature}}}"
+        );
     }
 
     private static JournalEventEnvelope Event(string json)
@@ -115,9 +105,7 @@ public sealed class GreenGasGiantPublicationCoordinatorTests
 
         public Exception? Error { get; init; }
 
-        public Task PublishAsync(
-            GreenGasGiantCandidate candidate,
-            CancellationToken cancellationToken = default)
+        public Task PublishAsync(GreenGasGiantCandidate candidate, CancellationToken cancellationToken = default)
         {
             if (Error is not null)
             {

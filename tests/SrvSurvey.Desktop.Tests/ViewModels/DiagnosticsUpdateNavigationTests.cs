@@ -10,8 +10,7 @@ public sealed class DiagnosticsUpdateNavigationTests
     [AvaloniaFact]
     public void UpdateNavigationSelectsUpdatesTabBeforeShowingDiagnostics()
     {
-        using var viewModel = new MainWindowViewModel(
-            Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
+        using var viewModel = new MainWindowViewModel(Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
         var window = new MainWindow(viewModel);
 
         try
@@ -19,9 +18,7 @@ public sealed class DiagnosticsUpdateNavigationTests
             window.NavigateToReleaseUpdates();
 
             Assert.True(viewModel.IsDiagnosticsSelected);
-            Assert.Equal(
-                DiagnosticsWorkspaceTab.Updates,
-                viewModel.SelectedDiagnosticsTab);
+            Assert.Equal(DiagnosticsWorkspaceTab.Updates, viewModel.SelectedDiagnosticsTab);
             Assert.Equal("Updates", viewModel.DiagnosticsTabTitle);
             Assert.True(viewModel.IsDiagnosticsUpdatesSelected);
             Assert.False(viewModel.IsDiagnosticsSourceSelected);

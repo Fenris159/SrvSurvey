@@ -13,12 +13,11 @@ public sealed class InputBindingViewModel : INotifyPropertyChanged
     public InputBindingViewModel(
         GlobalInputActionDefinition definition,
         string chord,
-        Action<InputBindingViewModel, string> save)
+        Action<InputBindingViewModel, string> save
+    )
     {
-        Definition = definition
-            ?? throw new ArgumentNullException(nameof(definition));
-        this.save = save
-            ?? throw new ArgumentNullException(nameof(save));
+        Definition = definition ?? throw new ArgumentNullException(nameof(definition));
+        this.save = save ?? throw new ArgumentNullException(nameof(save));
         this.chord = chord;
     }
 
@@ -32,9 +31,8 @@ public sealed class InputBindingViewModel : INotifyPropertyChanged
 
     public string Description => Definition.Description;
 
-    public string DefaultChord => string.IsNullOrEmpty(Definition.DefaultChord)
-        ? "No default shortcut"
-        : $"Default: {Definition.DefaultChord}";
+    public string DefaultChord =>
+        string.IsNullOrEmpty(Definition.DefaultChord) ? "No default shortcut" : $"Default: {Definition.DefaultChord}";
 
     public string Chord
     {
@@ -48,12 +46,10 @@ public sealed class InputBindingViewModel : INotifyPropertyChanged
             }
 
             var normalized = string.Empty;
-            if (candidate.Length > 0
-                && !InputChord.TryNormalize(candidate, out normalized))
+            if (candidate.Length > 0 && !InputChord.TryNormalize(candidate, out normalized))
             {
                 chord = candidate;
-                ValidationMessage =
-                    "Enter a keyboard shortcut or controller chord, or leave blank.";
+                ValidationMessage = "Enter a keyboard shortcut or controller chord, or leave blank.";
                 OnPropertyChanged();
                 return;
             }
@@ -70,10 +66,7 @@ public sealed class InputBindingViewModel : INotifyPropertyChanged
         get => validationMessage;
         private set
         {
-            if (string.Equals(
-                    validationMessage,
-                    value,
-                    StringComparison.Ordinal))
+            if (string.Equals(validationMessage, value, StringComparison.Ordinal))
             {
                 return;
             }
@@ -93,11 +86,8 @@ public sealed class InputBindingViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(Chord));
     }
 
-    private void OnPropertyChanged(
-        [CallerMemberName] string? propertyName = null)
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(propertyName));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

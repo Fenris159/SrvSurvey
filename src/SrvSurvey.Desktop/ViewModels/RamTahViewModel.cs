@@ -10,7 +10,8 @@ namespace SrvSurvey.Desktop.ViewModels;
 [System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Design",
     "CA1001:Types that own disposable fields should be disposable",
-    Justification = "The view model is application-scoped and its gate may have in-flight waiters.")]
+    Justification = "The view model is application-scoped and its gate may have in-flight waiters."
+)]
 public sealed class RamTahViewModel : INotifyPropertyChanged
 {
     private readonly CommanderProfileStore profileStore;
@@ -31,8 +32,7 @@ public sealed class RamTahViewModel : INotifyPropertyChanged
 
     public RamTahViewModel(CommanderProfileStore profileStore)
     {
-        this.profileStore = profileStore
-            ?? throw new ArgumentNullException(nameof(profileStore));
+        this.profileStore = profileStore ?? throw new ArgumentNullException(nameof(profileStore));
         AncientRuinsGroups =
         [
             CreateGroup("Biology", RamTahMission.AncientRuins, 'B', 19),
@@ -51,24 +51,22 @@ public sealed class RamTahViewModel : INotifyPropertyChanged
         ];
         requestAncientRuinsResetCommand = new RelayCommand(
             RequestAncientRuinsReset,
-            () => state.AncientRuinsLogs.Count > 0
-                && !IsAncientRuinsResetPending);
-        cancelAncientRuinsResetCommand = new RelayCommand(
-            CancelAncientRuinsReset,
-            () => IsAncientRuinsResetPending);
+            () => state.AncientRuinsLogs.Count > 0 && !IsAncientRuinsResetPending
+        );
+        cancelAncientRuinsResetCommand = new RelayCommand(CancelAncientRuinsReset, () => IsAncientRuinsResetPending);
         confirmAncientRuinsResetCommand = new AsyncCommand(
             ConfirmAncientRuinsResetAsync,
-            () => IsAncientRuinsResetPending);
+            () => IsAncientRuinsResetPending
+        );
         requestGuardianLogsResetCommand = new RelayCommand(
             RequestGuardianLogsReset,
-            () => state.GuardianLogs.Count > 0
-                && !IsGuardianLogsResetPending);
-        cancelGuardianLogsResetCommand = new RelayCommand(
-            CancelGuardianLogsReset,
-            () => IsGuardianLogsResetPending);
+            () => state.GuardianLogs.Count > 0 && !IsGuardianLogsResetPending
+        );
+        cancelGuardianLogsResetCommand = new RelayCommand(CancelGuardianLogsReset, () => IsGuardianLogsResetPending);
         confirmGuardianLogsResetCommand = new AsyncCommand(
             ConfirmGuardianLogsResetAsync,
-            () => IsGuardianLogsResetPending);
+            () => IsGuardianLogsResetPending
+        );
         RequestAncientRuinsResetCommand = requestAncientRuinsResetCommand;
         CancelAncientRuinsResetCommand = cancelAncientRuinsResetCommand;
         ConfirmAncientRuinsResetCommand = confirmAncientRuinsResetCommand;
@@ -126,11 +124,9 @@ public sealed class RamTahViewModel : INotifyPropertyChanged
         }
     }
 
-    public string AncientRuinsMissionStatus =>
-        state.AncientRuinsMissionStatus.ToString();
+    public string AncientRuinsMissionStatus => state.AncientRuinsMissionStatus.ToString();
 
-    public string GuardianLogsMissionStatus =>
-        state.GuardianLogsMissionStatus.ToString();
+    public string GuardianLogsMissionStatus => state.GuardianLogsMissionStatus.ToString();
 
     public string AncientRuinsProgressText =>
         $"{state.AncientRuinsLogs.Count:N0} of {RamTahState.AncientRuinsLogCount:N0} logs • "
@@ -146,17 +142,16 @@ public sealed class RamTahViewModel : INotifyPropertyChanged
 
     public bool IsAnyMissionActive => state.IsAnyMissionActive;
 
-    public bool IsAncientRuinsMissionActive =>
-        state.AncientRuinsMissionStatus == RamTahMissionStatus.Active;
+    public bool IsAncientRuinsMissionActive => state.AncientRuinsMissionStatus == RamTahMissionStatus.Active;
 
-    public bool IsGuardianLogsMissionActive =>
-        state.GuardianLogsMissionStatus == RamTahMissionStatus.Active;
+    public bool IsGuardianLogsMissionActive => state.GuardianLogsMissionStatus == RamTahMissionStatus.Active;
 
     public void LoadProfile(
         string profileFrontierId,
         string? profileCommanderName,
         bool profileIsOdyssey,
-        RamTahSnapshot snapshot)
+        RamTahSnapshot snapshot
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(profileFrontierId);
         ArgumentNullException.ThrowIfNull(snapshot);
@@ -180,8 +175,7 @@ public sealed class RamTahViewModel : INotifyPropertyChanged
         UpdateDisplay();
     }
 
-    public async Task ApplyJournalEventsAsync(
-        IEnumerable<JournalEventEnvelope> journalEvents)
+    public async Task ApplyJournalEventsAsync(IEnumerable<JournalEventEnvelope> journalEvents)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
         await operationLock.WaitAsync();
@@ -226,10 +220,7 @@ public sealed class RamTahViewModel : INotifyPropertyChanged
         }
     }
 
-    public async Task<bool> SetLogCompletedAsync(
-        RamTahMission mission,
-        string code,
-        bool completed)
+    public async Task<bool> SetLogCompletedAsync(RamTahMission mission, string code, bool completed)
     {
         if (frontierId is null)
         {
@@ -303,37 +294,25 @@ public sealed class RamTahViewModel : INotifyPropertyChanged
         StatusMessage = message;
     }
 
-    private RamTahLogGroupViewModel CreateGroup(
-        string name,
-        RamTahMission mission,
-        char category,
-        int count)
+    private RamTahLogGroupViewModel CreateGroup(string name, RamTahMission mission, char category, int count)
     {
         return new RamTahLogGroupViewModel(
             name,
-            Enumerable.Range(1, count)
-                .Select(index => CreateLog(mission, $"{category}{index}"))
-                .ToArray());
+            Enumerable.Range(1, count).Select(index => CreateLog(mission, $"{category}{index}")).ToArray()
+        );
     }
 
-    private RamTahLogGroupViewModel CreateGroup(
-        string name,
-        RamTahMission mission,
-        int first,
-        int last)
+    private RamTahLogGroupViewModel CreateGroup(string name, RamTahMission mission, int first, int last)
     {
         return new RamTahLogGroupViewModel(
             name,
-            Enumerable.Range(first, last - first + 1)
-                .Select(index => CreateLog(mission, $"#{index}"))
-                .ToArray());
+            Enumerable.Range(first, last - first + 1).Select(index => CreateLog(mission, $"#{index}")).ToArray()
+        );
     }
 
     private RamTahLogViewModel CreateLog(RamTahMission mission, string code)
     {
-        return new RamTahLogViewModel(
-            code,
-            () => ToggleLogAsync(mission, code));
+        return new RamTahLogViewModel(code, () => ToggleLogAsync(mission, code));
     }
 
     private async Task ConfirmResetAsync(RamTahMission mission)
@@ -372,20 +351,13 @@ public sealed class RamTahViewModel : INotifyPropertyChanged
 
         try
         {
-            await profileStore.SaveRamTahAsync(
-                frontierId,
-                commanderName,
-                isOdyssey,
-                state.CreateSnapshot());
+            await profileStore.SaveRamTahAsync(frontierId, commanderName, isOdyssey, state.CreateSnapshot());
             StatusMessage = successMessage;
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
-            StatusMessage = "Ram Tah progress changed for this session but could not be saved: "
-                + exception.Message;
+            StatusMessage = "Ram Tah progress changed for this session but could not be saved: " + exception.Message;
         }
     }
 
@@ -395,8 +367,7 @@ public sealed class RamTahViewModel : INotifyPropertyChanged
         {
             foreach (var log in group.Logs)
             {
-                log.Update(state.AncientRuinsLogs.Contains(log.Code)
-                    || state.GuardianLogs.Contains(log.Code));
+                log.Update(state.AncientRuinsLogs.Contains(log.Code) || state.GuardianLogs.Contains(log.Code));
             }
         }
 
@@ -422,10 +393,7 @@ public sealed class RamTahViewModel : INotifyPropertyChanged
         confirmGuardianLogsResetCommand.RaiseCanExecuteChanged();
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -489,9 +457,7 @@ public sealed class RamTahViewModel : INotifyPropertyChanged
     }
 }
 
-public sealed record RamTahLogGroupViewModel(
-    string Name,
-    IReadOnlyList<RamTahLogViewModel> Logs);
+public sealed record RamTahLogGroupViewModel(string Name, IReadOnlyList<RamTahLogViewModel> Logs);
 
 public sealed class RamTahLogViewModel : INotifyPropertyChanged
 {
@@ -518,9 +484,7 @@ public sealed class RamTahLogViewModel : INotifyPropertyChanged
             }
 
             isCompleted = value;
-            PropertyChanged?.Invoke(
-                this,
-                new PropertyChangedEventArgs(nameof(IsCompleted)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsCompleted)));
         }
     }
 
@@ -535,8 +499,12 @@ public sealed class RamTahLogViewModel : INotifyPropertyChanged
     {
         public event EventHandler? CanExecuteChanged
         {
-            add { /* This command is always executable. */ }
-            remove { /* This command is always executable. */ }
+            add
+            { /* This command is always executable. */
+            }
+            remove
+            { /* This command is always executable. */
+            }
         }
 
         public bool CanExecute(object? parameter)

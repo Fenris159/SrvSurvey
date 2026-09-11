@@ -15,7 +15,8 @@ public sealed class ColonizationViewModelTests : IDisposable
     private readonly string directory = Path.Combine(
         Path.GetTempPath(),
         "SrvSurvey-colonization-view-model-tests",
-        Guid.NewGuid().ToString("N"));
+        Guid.NewGuid().ToString("N")
+    );
 
     [Fact]
     public async Task DoesNotFetchWithoutExplicitConsent()
@@ -37,30 +38,23 @@ public sealed class ColonizationViewModelTests : IDisposable
         var client = new StubRavenColonialClient
         {
             Workspace = new ColonizationCommanderProjects(
-            [
-                Project("shown", "Port", remaining: 300),
-                Project("hidden", "Hub", remaining: 100),
-            ],
-            ["hidden"],
-            "shown",
-            []),
+                [Project("shown", "Port", remaining: 300), Project("hidden", "Hub", remaining: 100)],
+                ["hidden"],
+                "shown",
+                []
+            ),
         };
         var viewModel = Create(client);
         viewModel.IsEnabled = true;
-        viewModel.ApplyJournalEvents(
-            [Event("Loadout", "\"CargoCapacity\":128")]);
+        viewModel.ApplyJournalEvents([Event("Loadout", "\"CargoCapacity\":128")]);
 
         await viewModel.SetCommanderAsync("Test Cmdr");
 
         Assert.Equal(1, client.LoadCount);
         Assert.Equal(2, viewModel.Projects.Count);
-        Assert.True(viewModel.Projects.Single(row =>
-            row.Project.BuildId == "shown").IsPrimary);
-        Assert.False(viewModel.Projects.Single(row =>
-            row.Project.BuildId == "hidden").IsShown);
-        Assert.Equal(
-            "Cargo required: 300 | 3 trips in current ship",
-            viewModel.ProjectSummary);
+        Assert.True(viewModel.Projects.Single(row => row.Project.BuildId == "shown").IsPrimary);
+        Assert.False(viewModel.Projects.Single(row => row.Project.BuildId == "hidden").IsShown);
+        Assert.Equal("Cargo required: 300 | 3 trips in current ship", viewModel.ProjectSummary);
     }
 
     [Fact]
@@ -68,11 +62,7 @@ public sealed class ColonizationViewModelTests : IDisposable
     {
         var client = new StubRavenColonialClient
         {
-            Workspace = new ColonizationCommanderProjects(
-                [Project("build-1", "Port", remaining: 100)],
-                [],
-                null,
-                []),
+            Workspace = new ColonizationCommanderProjects([Project("build-1", "Port", remaining: 100)], [], null, []),
         };
         var viewModel = Create(client);
         viewModel.IsEnabled = true;
@@ -95,11 +85,7 @@ public sealed class ColonizationViewModelTests : IDisposable
     {
         var client = new StubRavenColonialClient
         {
-            Workspace = new ColonizationCommanderProjects(
-                [Project("build-1", "Port", remaining: 100)],
-                [],
-                null,
-                []),
+            Workspace = new ColonizationCommanderProjects([Project("build-1", "Port", remaining: 100)], [], null, []),
         };
         var viewModel = Create(client);
         viewModel.IsEnabled = true;
@@ -122,15 +108,15 @@ public sealed class ColonizationViewModelTests : IDisposable
     {
         var viewModel = Create(new StubRavenColonialClient());
 
-        viewModel.ApplyJournalEvents(
-        [
+        viewModel.ApplyJournalEvents([
             Event(
                 "Docked",
                 """
                 "MarketID":10,"SystemAddress":20,"StarSystem":"Test",
                 "StationName":"Orbital Construction Site: Hope",
                 "StationServices":["colonisationcontribution"]
-                """),
+                """
+            ),
             Event(
                 "ColonisationConstructionDepot",
                 """
@@ -139,16 +125,14 @@ public sealed class ColonizationViewModelTests : IDisposable
                   {"Name":"$steel_name;","Name_Localised":"Steel","RequiredAmount":100,"ProvidedAmount":25,"Payment":5000},
                   {"Name":"$water_name;","Name_Localised":"Water","RequiredAmount":10,"ProvidedAmount":9,"Payment":600}
                 ]
-                """),
+                """
+            ),
         ]);
 
-        Assert.Equal(
-            "Orbital Construction Site: Hope",
-            viewModel.ConstructionTitle);
+        Assert.Equal("Orbital Construction Site: Hope", viewModel.ConstructionTitle);
         Assert.Equal(2, viewModel.ConstructionResources.Count);
         Assert.Equal("Steel", viewModel.ConstructionResources[0].Name);
-        Assert.Equal("75 remaining",
-            viewModel.ConstructionResources[0].RemainingText);
+        Assert.Equal("75 remaining", viewModel.ConstructionResources[0].RemainingText);
         Assert.Contains("76 cargo remaining", viewModel.ConstructionStatus);
     }
 
@@ -158,19 +142,17 @@ public sealed class ColonizationViewModelTests : IDisposable
         var viewModel = Create(new StubRavenColonialClient());
         viewModel.IsEnabled = true;
         await viewModel.SetCommanderAsync("Test Cmdr");
-        viewModel.UpdateSystemContext(
-            "Test",
-            new GalacticCoordinate(1, 2, 3));
+        viewModel.UpdateSystemContext("Test", new GalacticCoordinate(1, 2, 3));
 
-        viewModel.ApplyJournalEvents(
-        [
+        viewModel.ApplyJournalEvents([
             Event(
                 "Docked",
                 """
                 "MarketID":10,"SystemAddress":20,"StarSystem":"Test",
                 "StationName":"Orbital Construction Site: Hope",
                 "StationServices":["colonisationcontribution"]
-                """),
+                """
+            ),
             Event(
                 "ColonisationConstructionDepot",
                 """
@@ -178,7 +160,8 @@ public sealed class ColonizationViewModelTests : IDisposable
                 "ResourcesRequired":[
                   {"Name":"$steel_name;","Name_Localised":"Steel","RequiredAmount":100,"ProvidedAmount":25,"Payment":5000}
                 ]
-                """),
+                """
+            ),
         ]);
 
         Assert.True(viewModel.ProjectEditor.CanPrepare);
@@ -191,14 +174,8 @@ public sealed class ColonizationViewModelTests : IDisposable
         var viewModel = Create(new StubRavenColonialClient());
         viewModel.IsEnabled = true;
         await viewModel.SetCommanderAsync("Test Cmdr");
-        viewModel.SetCommanderProfile(
-            "F123",
-            isOdyssey: true,
-            apiKey: "secret");
-        viewModel.UpdateSystemContext(
-            "Test System",
-            new GalacticCoordinate(1, 2, 3),
-            systemAddress: 42);
+        viewModel.SetCommanderProfile("F123", isOdyssey: true, apiKey: "secret");
+        viewModel.UpdateSystemContext("Test System", new GalacticCoordinate(1, 2, 3), systemAddress: 42);
 
         Assert.True(viewModel.SystemEditor.CanLoad);
         Assert.True(viewModel.SystemEditor.LoadCommand.CanExecute(null));
@@ -211,18 +188,20 @@ public sealed class ColonizationViewModelTests : IDisposable
         var client = new StubRavenColonialClient
         {
             Workspace = new ColonizationCommanderProjects(
-            [
-                Project(
-                    "build-1",
-                    "Port",
-                    remaining: 100,
-                    marketId: 10,
-                    systemAddress: 20,
-                    factionName: "Old faction"),
-            ],
-            [],
-            null,
-            []),
+                [
+                    Project(
+                        "build-1",
+                        "Port",
+                        remaining: 100,
+                        marketId: 10,
+                        systemAddress: 20,
+                        factionName: "Old faction"
+                    ),
+                ],
+                [],
+                null,
+                []
+            ),
         };
         var viewModel = Create(client);
         viewModel.IsEnabled = true;
@@ -236,13 +215,15 @@ public sealed class ColonizationViewModelTests : IDisposable
                 "StationName":"Orbital Construction Site: Hope",
                 "StationFaction":{"Name":"New faction"},
                 "StationServices":["colonisationcontribution"]
-                """),
+                """
+            ),
             Event(
                 "ColonisationContribution",
                 """
                 "MarketID":10,
                 "Contributions":[{"Name":"$steel_name;","Amount":25}]
-                """),
+                """
+            ),
             Event(
                 "ColonisationConstructionDepot",
                 """
@@ -250,25 +231,21 @@ public sealed class ColonizationViewModelTests : IDisposable
                 "ResourcesRequired":[
                   {"Name":"$steel_name;","Name_Localised":"Steel","RequiredAmount":100,"ProvidedAmount":25,"Payment":5000}
                 ]
-                """),
+                """
+            ),
         };
         viewModel.ApplyJournalEvents(events);
 
-        await viewModel.SynchronizeLiveProjectsAsync(
-            events,
-            allowPublishing: true);
+        await viewModel.SynchronizeLiveProjectsAsync(events, allowPublishing: true);
 
         Assert.Equal(2, client.ProjectUpdates.Count);
-        Assert.Equal(
-            "New faction",
-            client.ProjectUpdates[0].FactionName);
+        Assert.Equal("New faction", client.ProjectUpdates[0].FactionName);
         Assert.Equal(75, client.ProjectUpdates[1].Commodities!["steel"]);
         var contribution = Assert.Single(client.Contributions);
         Assert.Equal("build-1", contribution.BuildId);
         Assert.Equal("Test Cmdr", contribution.CommanderName);
         Assert.Equal(25, contribution.Commodities["steel"]);
-        Assert.Equal(75, Assert.Single(viewModel.Projects)
-            .Project.RemainingRequired);
+        Assert.Equal(75, Assert.Single(viewModel.Projects).Project.RemainingRequired);
         Assert.Contains("Updated Raven construction requirements", viewModel.StatusMessage);
     }
 
@@ -277,11 +254,7 @@ public sealed class ColonizationViewModelTests : IDisposable
     {
         var client = new StubRavenColonialClient
         {
-            Workspace = new ColonizationCommanderProjects(
-                [Project("build-1", "Port", 100, 10, 20)],
-                [],
-                null,
-                []),
+            Workspace = new ColonizationCommanderProjects([Project("build-1", "Port", 100, 10, 20)], [], null, []),
         };
         var viewModel = Create(client);
         viewModel.IsEnabled = true;
@@ -293,12 +266,11 @@ public sealed class ColonizationViewModelTests : IDisposable
             "ResourcesRequired":[
               {"Name":"$steel_name;","RequiredAmount":100,"ProvidedAmount":25,"Payment":5000}
             ]
-            """);
+            """
+        );
         viewModel.ApplyJournalEvents([depot]);
 
-        await viewModel.SynchronizeLiveProjectsAsync(
-            [depot],
-            allowPublishing: false);
+        await viewModel.SynchronizeLiveProjectsAsync([depot], allowPublishing: false);
 
         Assert.Empty(client.ProjectUpdates);
         Assert.Empty(client.Contributions);
@@ -311,23 +283,13 @@ public sealed class ColonizationViewModelTests : IDisposable
         var client = new StubRavenColonialClient();
         var viewModel = Create(client);
         viewModel.IsEnabled = true;
-        viewModel.SetCommanderProfile(
-            "F123",
-            isOdyssey: true,
-            apiKey: "secret-key");
+        viewModel.SetCommanderProfile("F123", isOdyssey: true, apiKey: "secret-key");
         await viewModel.SetCommanderAsync("Test Cmdr");
-        viewModel.UpdateSystemContext(
-            "Test System",
-            new GalacticCoordinate(1, 2, 3),
-            systemAddress: 42);
-        var beacon = Event(
-            "ColonisationBeaconDeployed",
-            string.Empty);
+        viewModel.UpdateSystemContext("Test System", new GalacticCoordinate(1, 2, 3), systemAddress: 42);
+        var beacon = Event("ColonisationBeaconDeployed", string.Empty);
         viewModel.ApplyJournalEvents([beacon]);
 
-        await viewModel.SynchronizeLiveProjectsAsync(
-            [beacon],
-            allowPublishing: true);
+        await viewModel.SynchronizeLiveProjectsAsync([beacon], allowPublishing: true);
 
         var call = Assert.Single(client.SystemUpdates);
         Assert.Equal("Test System", call.SystemNameOrAddress);
@@ -345,22 +307,13 @@ public sealed class ColonizationViewModelTests : IDisposable
         var viewModel = Create(client);
         viewModel.IsEnabled = true;
         await viewModel.SetCommanderAsync("Test Cmdr");
-        viewModel.UpdateSystemContext(
-            "Test System",
-            new GalacticCoordinate(1, 2, 3),
-            systemAddress: 42);
-        var beacon = Event(
-            "ColonisationBeaconDeployed",
-            string.Empty);
+        viewModel.UpdateSystemContext("Test System", new GalacticCoordinate(1, 2, 3), systemAddress: 42);
+        var beacon = Event("ColonisationBeaconDeployed", string.Empty);
 
-        await viewModel.SynchronizeLiveProjectsAsync(
-            [beacon],
-            allowPublishing: false);
+        await viewModel.SynchronizeLiveProjectsAsync([beacon], allowPublishing: false);
         Assert.Empty(client.SystemUpdates);
 
-        await viewModel.SynchronizeLiveProjectsAsync(
-            [beacon],
-            allowPublishing: true);
+        await viewModel.SynchronizeLiveProjectsAsync([beacon], allowPublishing: true);
         Assert.Empty(client.SystemUpdates);
         Assert.Contains("no saved API key", viewModel.StatusMessage);
     }
@@ -370,11 +323,7 @@ public sealed class ColonizationViewModelTests : IDisposable
     {
         var client = new StubRavenColonialClient
         {
-            Workspace = new ColonizationCommanderProjects(
-                [Project("build-1", "Port", 25, 10, 20)],
-                [],
-                null,
-                []),
+            Workspace = new ColonizationCommanderProjects([Project("build-1", "Port", 25, 10, 20)], [], null, []),
         };
         var viewModel = Create(client);
         viewModel.IsEnabled = true;
@@ -387,7 +336,8 @@ public sealed class ColonizationViewModelTests : IDisposable
                 "MarketID":10,"SystemAddress":20,"StarSystem":"Test System",
                 "StationName":"Orbital Construction Site: Hope",
                 "StationServices":["colonisationcontribution"]
-                """),
+                """
+            ),
             Event(
                 "ColonisationConstructionDepot",
                 """
@@ -396,13 +346,12 @@ public sealed class ColonizationViewModelTests : IDisposable
                 "ResourcesRequired":[
                   {"Name":"$steel_name;","RequiredAmount":100,"ProvidedAmount":100,"Payment":5000}
                 ]
-                """),
+                """
+            ),
         };
         viewModel.ApplyJournalEvents(events);
 
-        await viewModel.SynchronizeLiveProjectsAsync(
-            events,
-            allowPublishing: true);
+        await viewModel.SynchronizeLiveProjectsAsync(events, allowPublishing: true);
 
         Assert.Equal(1, client.MarkCompleteCount);
         Assert.True(Assert.Single(viewModel.Projects).Project.IsComplete);
@@ -414,12 +363,7 @@ public sealed class ColonizationViewModelTests : IDisposable
     {
         var client = new StubRavenColonialClient
         {
-            SiteProjectResponse = Project(
-                "other-build",
-                "Other port",
-                50,
-                10,
-                20),
+            SiteProjectResponse = Project("other-build", "Other port", 50, 10, 20),
         };
         var viewModel = Create(client);
         viewModel.IsEnabled = true;
@@ -430,16 +374,14 @@ public sealed class ColonizationViewModelTests : IDisposable
             "MarketID":10,"SystemAddress":20,"StarSystem":"Test System",
             "StationName":"Orbital Construction Site: Hope",
             "StationServices":["colonisationcontribution"]
-            """);
+            """
+        );
         viewModel.ApplyJournalEvents([docked]);
 
-        await viewModel.SynchronizeLiveProjectsAsync(
-            [docked],
-            allowPublishing: true);
+        await viewModel.SynchronizeLiveProjectsAsync([docked], allowPublishing: true);
 
         Assert.Equal(1, client.SiteProjectLoadCount);
-        Assert.Equal("other-build", Assert.Single(viewModel.Projects)
-            .Project.BuildId);
+        Assert.Equal("other-build", Assert.Single(viewModel.Projects).Project.BuildId);
         Assert.Contains("untracked Raven project", viewModel.StatusMessage);
     }
 
@@ -468,14 +410,11 @@ public sealed class ColonizationViewModelTests : IDisposable
             "Docked":true,"MarketID":4310842115,
             "SystemAddress":123456789,"StarSystem":"Test System",
             "StationName":"Gold Enterprise","StationType":"Dodec"
-            """);
+            """
+        );
 
-        await viewModel.SynchronizeLiveProjectsAsync(
-            [location],
-            allowPublishing: true);
-        await viewModel.SynchronizeLiveProjectsAsync(
-            [location],
-            allowPublishing: true);
+        await viewModel.SynchronizeLiveProjectsAsync([location], allowPublishing: true);
+        await viewModel.SynchronizeLiveProjectsAsync([location], allowPublishing: true);
 
         Assert.Equal(1, client.SystemSiteLoadCount);
         var patch = Assert.Single(client.SystemSitePatches);
@@ -486,18 +425,13 @@ public sealed class ColonizationViewModelTests : IDisposable
         Assert.Equal("secret-key", patch.ApiKey);
         Assert.Contains("Repaired Raven Market Info", viewModel.StatusMessage);
 
-        var reloadedClient = new StubRavenColonialClient
-        {
-            SystemSitesResponse = client.SystemSitesResponse,
-        };
+        var reloadedClient = new StubRavenColonialClient { SystemSitesResponse = client.SystemSitesResponse };
         var reloaded = Create(reloadedClient);
         reloaded.IsEnabled = true;
         reloaded.SetCommanderProfile("F123", true, "secret-key");
         await reloaded.SetCommanderAsync("Test Cmdr");
 
-        await reloaded.SynchronizeLiveProjectsAsync(
-            [location],
-            allowPublishing: true);
+        await reloaded.SynchronizeLiveProjectsAsync([location], allowPublishing: true);
 
         Assert.Equal(0, reloadedClient.SystemSiteLoadCount);
         Assert.Empty(reloadedClient.SystemSitePatches);
@@ -508,17 +442,16 @@ public sealed class ColonizationViewModelTests : IDisposable
     {
         var delays = new List<TimeSpan>();
         var client = new StubRavenColonialClient();
-        client.SystemSiteFailures.Enqueue(
-            new HttpRequestException("temporary one"));
-        client.SystemSiteFailures.Enqueue(
-            new HttpRequestException("temporary two"));
+        client.SystemSiteFailures.Enqueue(new HttpRequestException("temporary one"));
+        client.SystemSiteFailures.Enqueue(new HttpRequestException("temporary two"));
         var viewModel = Create(
             client,
             (delay, _) =>
             {
                 delays.Add(delay);
                 return Task.CompletedTask;
-            });
+            }
+        );
         viewModel.IsEnabled = true;
         viewModel.SetCommanderProfile("F123", true, "secret-key");
         await viewModel.SetCommanderAsync("Test Cmdr");
@@ -527,15 +460,12 @@ public sealed class ColonizationViewModelTests : IDisposable
             """
             "MarketID":4310999999,"SystemAddress":20,
             "StationName":"Dampier Gateway","StationType":"Outpost"
-            """);
+            """
+        );
 
-        await viewModel.SynchronizeLiveProjectsAsync(
-            [docked],
-            allowPublishing: true);
+        await viewModel.SynchronizeLiveProjectsAsync([docked], allowPublishing: true);
 
-        Assert.Equal(
-            [TimeSpan.FromSeconds(1.5), TimeSpan.FromSeconds(3)],
-            delays);
+        Assert.Equal([TimeSpan.FromSeconds(1.5), TimeSpan.FromSeconds(3)], delays);
         Assert.Equal(3, client.SystemSiteLoadCount);
         Assert.Empty(client.SystemSitePatches);
 
@@ -549,14 +479,10 @@ public sealed class ColonizationViewModelTests : IDisposable
                 Status = ColonizationSystemSiteStatus.Complete,
             },
         ];
-        await viewModel.SynchronizeLiveProjectsAsync(
-            [docked],
-            allowPublishing: true);
+        await viewModel.SynchronizeLiveProjectsAsync([docked], allowPublishing: true);
 
         Assert.Equal(4, client.SystemSiteLoadCount);
-        Assert.Equal(
-            4_310_999_999,
-            Assert.Single(client.SystemSitePatches).Patch.MarketId);
+        Assert.Equal(4_310_999_999, Assert.Single(client.SystemSitePatches).Patch.MarketId);
     }
 
     [Fact]
@@ -571,31 +497,36 @@ public sealed class ColonizationViewModelTests : IDisposable
             """
             "MarketID":4310999999,"SystemAddress":20,
             "StationName":"Dampier Gateway","StationType":"Outpost"
-            """);
+            """
+        );
 
-        await viewModel.SynchronizeLiveProjectsAsync(
-            [completedPort],
-            allowPublishing: true);
+        await viewModel.SynchronizeLiveProjectsAsync([completedPort], allowPublishing: true);
         viewModel.SetCommanderProfile("F123", true, "secret-key");
+        await viewModel.SynchronizeLiveProjectsAsync([completedPort], allowPublishing: false);
         await viewModel.SynchronizeLiveProjectsAsync(
-            [completedPort],
-            allowPublishing: false);
+            [
+                Event(
+                    "Docked",
+                    """
+                    "MarketID":4310999999,"SystemAddress":20,
+                    "StationName":"ABC-123","StationType":"FleetCarrier"
+                    """
+                ),
+            ],
+            allowPublishing: true
+        );
         await viewModel.SynchronizeLiveProjectsAsync(
-            [Event(
-                "Docked",
-                """
-                "MarketID":4310999999,"SystemAddress":20,
-                "StationName":"ABC-123","StationType":"FleetCarrier"
-                """)],
-            allowPublishing: true);
-        await viewModel.SynchronizeLiveProjectsAsync(
-            [Event(
-                "Location",
-                """
-                "Docked":false,"MarketID":4310999999,"SystemAddress":20,
-                "StationName":"Dampier Gateway","StationType":"Outpost"
-                """)],
-            allowPublishing: true);
+            [
+                Event(
+                    "Location",
+                    """
+                    "Docked":false,"MarketID":4310999999,"SystemAddress":20,
+                    "StationName":"Dampier Gateway","StationType":"Outpost"
+                    """
+                ),
+            ],
+            allowPublishing: true
+        );
 
         Assert.Equal(0, client.SystemSiteLoadCount);
         Assert.Empty(client.SystemSitePatches);
@@ -607,11 +538,7 @@ public sealed class ColonizationViewModelTests : IDisposable
         var delays = new List<TimeSpan>();
         var client = new StubRavenColonialClient
         {
-            Workspace = new ColonizationCommanderProjects(
-                [Project("build-1", "Port", remaining: 100)],
-                [],
-                null,
-                []),
+            Workspace = new ColonizationCommanderProjects([Project("build-1", "Port", remaining: 100)], [], null, []),
         };
         using var viewModel = Create(
             client,
@@ -619,14 +546,16 @@ public sealed class ColonizationViewModelTests : IDisposable
             {
                 delays.Add(delay);
                 return Task.CompletedTask;
-            });
+            }
+        );
         viewModel.IsEnabled = true;
         await viewModel.SetCommanderAsync("Test Cmdr");
         Assert.Equal(1, client.LoadCount);
 
         await viewModel.SynchronizeLiveProjectsAsync(
             [Event("DockingGranted", "\"StationName\":\"Regular port\"")],
-            allowPublishing: true);
+            allowPublishing: true
+        );
 
         Assert.Equal([TimeSpan.FromSeconds(4)], delays);
         Assert.Equal(2, client.LoadCount);
@@ -642,10 +571,9 @@ public sealed class ColonizationViewModelTests : IDisposable
         Assert.Empty(viewModel.Projects);
 
         await viewModel.SynchronizeLiveProjectsAsync(
-            [Event(
-                "DockingGranted",
-                "\"StationName\":\"Orbital Construction Site: Hope\"")],
-            allowPublishing: true);
+            [Event("DockingGranted", "\"StationName\":\"Orbital Construction Site: Hope\"")],
+            allowPublishing: true
+        );
 
         Assert.Equal(2, client.LoadCount);
     }
@@ -661,19 +589,14 @@ public sealed class ColonizationViewModelTests : IDisposable
             {
                 delays++;
                 return Task.CompletedTask;
-            });
+            }
+        );
         viewModel.IsEnabled = true;
         await viewModel.SetCommanderAsync("Test Cmdr");
-        var granted = Event(
-            "DockingGranted",
-            "\"StationName\":\"Regular port\"");
+        var granted = Event("DockingGranted", "\"StationName\":\"Regular port\"");
 
-        await viewModel.SynchronizeLiveProjectsAsync(
-            [granted],
-            allowPublishing: false);
-        await viewModel.SynchronizeLiveProjectsAsync(
-            [granted],
-            allowPublishing: true);
+        await viewModel.SynchronizeLiveProjectsAsync([granted], allowPublishing: false);
+        await viewModel.SynchronizeLiveProjectsAsync([granted], allowPublishing: true);
 
         Assert.Equal(0, delays);
         Assert.Equal(1, client.LoadCount);
@@ -684,11 +607,7 @@ public sealed class ColonizationViewModelTests : IDisposable
     {
         var client = new StubRavenColonialClient
         {
-            Workspace = new ColonizationCommanderProjects(
-                [Project("build-1", "Port", remaining: 100)],
-                [],
-                null,
-                []),
+            Workspace = new ColonizationCommanderProjects([Project("build-1", "Port", remaining: 100)], [], null, []),
         };
         var viewModel = Create(client);
         viewModel.IsEnabled = true;
@@ -725,17 +644,16 @@ public sealed class ColonizationViewModelTests : IDisposable
               ],
               "linkedFCs": {}
             }
-            """);
-        var client = new StubRavenColonialClient
-        {
-            Failure = new HttpRequestException("offline"),
-        };
+            """
+        );
+        var client = new StubRavenColonialClient { Failure = new HttpRequestException("offline") };
         var viewModel = new ColonizationViewModel(
             new ColonizationSettingsStore(Path.Combine(directory, "ui.json")),
             client,
             ColonizationBuildCatalog.LoadEmbedded(),
             new CommanderProfileStore(directory),
-            new LegacyColonizationProfileStore(directory));
+            new LegacyColonizationProfileStore(directory)
+        );
         viewModel.IsEnabled = true;
         viewModel.SetCommanderProfile("F123", true, apiKey: null);
 
@@ -755,10 +673,7 @@ public sealed class ColonizationViewModelTests : IDisposable
         var project = Project("build-1", "Port", remaining: 100) with
         {
             Commodities = new Dictionary<string, int> { ["steel"] = 100 },
-            LinkedFleetCarriers =
-            [
-                new ColonizationProjectFleetCarrier { MarketId = 42 },
-            ],
+            LinkedFleetCarriers = [new ColonizationProjectFleetCarrier { MarketId = 42 }],
         };
         var client = new StubRavenColonialClient
         {
@@ -771,23 +686,18 @@ public sealed class ColonizationViewModelTests : IDisposable
                     {
                         MarketId = 42,
                         Name = "ABC-123",
-                        Cargo = new Dictionary<string, int>
-                        {
-                            ["steel"] = 60,
-                        },
+                        Cargo = new Dictionary<string, int> { ["steel"] = 60 },
                     },
-                ]),
+                ]
+            ),
         };
         var viewModel = Create(client);
         viewModel.IsEnabled = true;
 
         await viewModel.SetCommanderAsync("Test Cmdr");
-        await viewModel.UpdateCargoAsync(new CargoSnapshot(
-            DateTimeOffset.UtcNow,
-            "Cargo",
-            "Ship",
-            25,
-            [new CargoItem("steel", "Steel", 25, 0)]));
+        await viewModel.UpdateCargoAsync(
+            new CargoSnapshot(DateTimeOffset.UtcNow, "Cargo", "Ship", 25, [new CargoItem("steel", "Steel", 25, 0)])
+        );
 
         var row = Assert.Single(viewModel.CommodityOverlay.Plan.Rows);
         Assert.Equal(25, row.InShip);
@@ -803,47 +713,32 @@ public sealed class ColonizationViewModelTests : IDisposable
         };
         var client = new StubRavenColonialClient
         {
-            Workspace = new ColonizationCommanderProjects(
-                [project],
-                [],
-                null,
-                []),
+            Workspace = new ColonizationCommanderProjects([project], [], null, []),
         };
         var viewModel = Create(client);
         viewModel.IsEnabled = true;
         viewModel.ShipCargoPublishingEnabled = true;
         viewModel.SetCommanderProfile("F123", true, "secret-key");
-        viewModel.ApplyJournalEvents(
-        [
-            Event(
-                "Loadout",
-                "\"Ship\":\"python\",\"CargoCapacity\":192"),
-        ]);
+        viewModel.ApplyJournalEvents([Event("Loadout", "\"Ship\":\"python\",\"CargoCapacity\":192")]);
         await viewModel.SetCommanderAsync("Test Cmdr");
         var cargo = new CargoSnapshot(
             DateTimeOffset.UtcNow,
             "Cargo",
             "Ship",
             25,
-            [new CargoItem("steel", "Steel", 25, 0)]);
+            [new CargoItem("steel", "Steel", 25, 0)]
+        );
         await viewModel.UpdateCargoAsync(cargo);
-        Assert.Equal(25, Assert.Single(
-            viewModel.CommodityOverlay.Plan.Rows).InShip);
+        Assert.Equal(25, Assert.Single(viewModel.CommodityOverlay.Plan.Rows).InShip);
         Assert.Equal(1, client.PublishShipCount);
 
         viewModel.SetSharedCargoSuppressed(true);
-        await viewModel.UpdateCargoAsync(cargo with
-        {
-            Timestamp = cargo.Timestamp.AddSeconds(1),
-        });
+        await viewModel.UpdateCargoAsync(cargo with { Timestamp = cargo.Timestamp.AddSeconds(1) });
 
         Assert.True(viewModel.SharedCargoSuppressed);
-        Assert.Equal(0, Assert.Single(
-            viewModel.CommodityOverlay.Plan.Rows).InShip);
+        Assert.Equal(0, Assert.Single(viewModel.CommodityOverlay.Plan.Rows).InShip);
         Assert.Equal(1, client.PublishShipCount);
-        Assert.Contains(
-            "multiple Elite windows",
-            viewModel.ShipCargoPublishingStatus);
+        Assert.Contains("multiple Elite windows", viewModel.ShipCargoPublishingStatus);
     }
 
     [Fact]
@@ -851,34 +746,23 @@ public sealed class ColonizationViewModelTests : IDisposable
     {
         var client = new StubRavenColonialClient
         {
-            Workspace = new ColonizationCommanderProjects(
-                [Project("build-1", "Port", remaining: 100)],
-                [],
-                null,
-                []),
+            Workspace = new ColonizationCommanderProjects([Project("build-1", "Port", remaining: 100)], [], null, []),
         };
         var viewModel = Create(client);
         viewModel.IsEnabled = true;
         viewModel.ShipCargoPublishingEnabled = true;
         viewModel.SetCommanderProfile("F123", true, "secret-key");
-        viewModel.ApplyJournalEvents(
-        [
-            Event(
-                "Loadout",
-                "\"Ship\":\"python\",\"ShipName\":\"Raven One\",\"CargoCapacity\":192"),
+        viewModel.ApplyJournalEvents([
+            Event("Loadout", "\"Ship\":\"python\",\"ShipName\":\"Raven One\",\"CargoCapacity\":192"),
         ]);
         await viewModel.SetCommanderAsync("Test Cmdr");
 
-        await viewModel.UpdateCargoAsync(new CargoSnapshot(
-            DateTimeOffset.UtcNow,
-            "Cargo",
-            "Ship",
-            27,
-            [new CargoItem("steel", "Steel", 27, 0)]));
+        await viewModel.UpdateCargoAsync(
+            new CargoSnapshot(DateTimeOffset.UtcNow, "Cargo", "Ship", 27, [new CargoItem("steel", "Steel", 27, 0)])
+        );
 
         Assert.Equal(1, client.PublishShipCount);
-        var ship = Assert.IsType<ColonizationCurrentShip>(
-            client.LastPublishedShip);
+        var ship = Assert.IsType<ColonizationCurrentShip>(client.LastPublishedShip);
         Assert.Equal("Test Cmdr", ship.CommanderName);
         Assert.Equal("Raven One", ship.Name);
         Assert.Equal("python", ship.Type);
@@ -892,11 +776,12 @@ public sealed class ColonizationViewModelTests : IDisposable
                 "MarketSell",
                 "Ship",
                 26,
-                [new CargoItem("steel", "Steel", 26, 0)]),
-            publishCurrentShipCargo: false);
+                [new CargoItem("steel", "Steel", 26, 0)]
+            ),
+            publishCurrentShipCargo: false
+        );
 
-        Assert.Equal(26, Assert.Single(
-            viewModel.CommodityOverlay.Plan.Rows).InShip);
+        Assert.Equal(26, Assert.Single(viewModel.CommodityOverlay.Plan.Rows).InShip);
         Assert.Equal(1, client.PublishShipCount);
     }
 
@@ -909,33 +794,27 @@ public sealed class ColonizationViewModelTests : IDisposable
                 [Project("hidden", "Port", remaining: 100)],
                 ["hidden"],
                 null,
-                []),
+                []
+            ),
         };
         var viewModel = Create(client);
         viewModel.IsEnabled = true;
         viewModel.SetCommanderProfile("F123", true, "secret-key");
-        viewModel.ApplyJournalEvents(
-        [
-            Event(
-                "Loadout",
-                "\"Ship\":\"python\",\"CargoCapacity\":192"),
-        ]);
+        viewModel.ApplyJournalEvents([Event("Loadout", "\"Ship\":\"python\",\"CargoCapacity\":192")]);
         await viewModel.SetCommanderAsync("Test Cmdr");
         var cargo = new CargoSnapshot(
             DateTimeOffset.UtcNow,
             "Cargo",
             "Ship",
             1,
-            [new CargoItem("steel", "Steel", 1, 0)]);
+            [new CargoItem("steel", "Steel", 1, 0)]
+        );
 
         await viewModel.UpdateCargoAsync(cargo);
         Assert.Equal(0, client.PublishShipCount);
 
         viewModel.ShipCargoPublishingEnabled = true;
-        await viewModel.UpdateCargoAsync(cargo with
-        {
-            Timestamp = cargo.Timestamp.AddSeconds(1),
-        });
+        await viewModel.UpdateCargoAsync(cargo with { Timestamp = cargo.Timestamp.AddSeconds(1) });
 
         Assert.Equal(0, client.PublishShipCount);
         Assert.Contains("no visible", viewModel.ShipCargoPublishingStatus);
@@ -947,10 +826,7 @@ public sealed class ColonizationViewModelTests : IDisposable
         var project = Project("build-1", "Port", remaining: 100) with
         {
             Commodities = new Dictionary<string, int> { ["steel"] = 100 },
-            LinkedFleetCarriers =
-            [
-                new ColonizationProjectFleetCarrier { MarketId = 42 },
-            ],
+            LinkedFleetCarriers = [new ColonizationProjectFleetCarrier { MarketId = 42 }],
         };
         var client = new StubRavenColonialClient
         {
@@ -962,54 +838,54 @@ public sealed class ColonizationViewModelTests : IDisposable
                     new ColonizationFleetCarrier
                     {
                         MarketId = 42,
-                        Cargo = new Dictionary<string, int>
-                        {
-                            ["steel"] = 80,
-                        },
+                        Cargo = new Dictionary<string, int> { ["steel"] = 80 },
                     },
-                ]),
+                ]
+            ),
         };
         var viewModel = Create(client);
         viewModel.IsEnabled = true;
         await viewModel.SetCommanderAsync("Test Cmdr");
-        viewModel.ApplyJournalEvents(
-        [
-            Event(
-                "Loadout",
-                "\"CargoCapacity\":64"),
+        viewModel.ApplyJournalEvents([
+            Event("Loadout", "\"CargoCapacity\":64"),
             Event(
                 "Docked",
                 """
                 "MarketID":900,"SystemAddress":20,"StarSystem":"Test",
                 "StationName":"Supply Station","StationServices":["commodities"]
-                """),
+                """
+            ),
         ]);
-        await viewModel.UpdateMarketAsync(new MarketSnapshot(
-            DateTimeOffset.Parse("2026-07-24T12:00:01Z"),
-            "Market",
-            900,
-            "Supply Station",
-            "Coriolis",
-            string.Empty,
-            "Test",
-            [
-                new MarketItem(
-                    1,
-                    "$Steel_Name;",
-                    "Steel",
-                    "$MARKET_category_metals;",
-                    "Metals",
-                    1,
-                    1,
-                    1,
-                    1,
-                    0,
-                    50,
-                    0,
-                    true,
-                    false,
-                    false),
-            ]));
+        await viewModel.UpdateMarketAsync(
+            new MarketSnapshot(
+                DateTimeOffset.Parse("2026-07-24T12:00:01Z"),
+                "Market",
+                900,
+                "Supply Station",
+                "Coriolis",
+                string.Empty,
+                "Test",
+                [
+                    new MarketItem(
+                        1,
+                        "$Steel_Name;",
+                        "Steel",
+                        "$MARKET_category_metals;",
+                        "Metals",
+                        1,
+                        1,
+                        1,
+                        1,
+                        0,
+                        50,
+                        0,
+                        true,
+                        false,
+                        false
+                    ),
+                ]
+            )
+        );
 
         var row = Assert.Single(viewModel.CommodityOverlay.Plan.Rows);
         Assert.True(row.IsAvailableAtCurrentMarket);
@@ -1038,20 +914,13 @@ public sealed class ColonizationViewModelTests : IDisposable
     [AvaloniaFact]
     public async Task SavingRavenKeyKeepsCommandStateOnTheUiThread()
     {
-        var validation = new TaskCompletionSource<string?>(
-            TaskCreationOptions.RunContinuationsAsynchronously);
-        var client = new StubRavenColonialClient
-        {
-            ApiKeyValidation = validation,
-        };
+        var validation = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var client = new StubRavenColonialClient { ApiKeyValidation = validation };
         var viewModel = Create(client);
         viewModel.SetCommanderProfile("F123", isOdyssey: true, apiKey: null);
         await viewModel.SetCommanderAsync("Test Cmdr");
         viewModel.RavenApiKey = "secret-key";
-        var button = new Button
-        {
-            Command = viewModel.SaveRavenApiKeyCommand,
-        };
+        var button = new Button { Command = viewModel.SaveRavenApiKeyCommand };
         var window = new Window { Content = button };
         window.Show();
 
@@ -1077,23 +946,13 @@ public sealed class ColonizationViewModelTests : IDisposable
     [Fact]
     public async Task RefusesRavenKeyOwnedByDifferentCommander()
     {
-        var client = new StubRavenColonialClient
-        {
-            ValidatedCommanderName = "Other Cmdr",
-        };
+        var client = new StubRavenColonialClient { ValidatedCommanderName = "Other Cmdr" };
         var store = new CommanderProfileStore(directory);
-        await store.SaveRavenColonialApiKeyAsync(
-            "F123",
-            "Test Cmdr",
-            isOdyssey: true,
-            "existing-key");
+        await store.SaveRavenColonialApiKeyAsync("F123", "Test Cmdr", isOdyssey: true, "existing-key");
         var profilePath = Assert.Single(Directory.GetFiles(directory));
         var originalBytes = await File.ReadAllBytesAsync(profilePath);
         var viewModel = Create(client);
-        viewModel.SetCommanderProfile(
-            "F123",
-            isOdyssey: true,
-            apiKey: "existing-key");
+        viewModel.SetCommanderProfile("F123", isOdyssey: true, apiKey: "existing-key");
         await viewModel.SetCommanderAsync("Test Cmdr");
         viewModel.RavenApiKey = "wrong-key";
 
@@ -1102,9 +961,7 @@ public sealed class ColonizationViewModelTests : IDisposable
         var profile = await store.LoadAsync("F123", isOdyssey: true);
         Assert.Equal("existing-key", profile.Data?.RavenColonialApiKey);
         Assert.True(viewModel.HasStoredRavenApiKey);
-        Assert.Equal(
-            originalBytes,
-            await File.ReadAllBytesAsync(profilePath));
+        Assert.Equal(originalBytes, await File.ReadAllBytesAsync(profilePath));
         Assert.Contains("Other Cmdr", viewModel.RavenCredentialStatus);
         Assert.Contains("Test Cmdr", viewModel.RavenCredentialStatus);
         Assert.DoesNotContain("wrong-key", viewModel.RavenCredentialStatus);
@@ -1116,10 +973,7 @@ public sealed class ColonizationViewModelTests : IDisposable
         var project = Project("build-1", "Port", remaining: 100) with
         {
             Commodities = new Dictionary<string, int> { ["steel"] = 100 },
-            LinkedFleetCarriers =
-            [
-                new ColonizationProjectFleetCarrier { MarketId = 42 },
-            ],
+            LinkedFleetCarriers = [new ColonizationProjectFleetCarrier { MarketId = 42 }],
         };
         var carrier = new ColonizationFleetCarrier
         {
@@ -1130,29 +984,22 @@ public sealed class ColonizationViewModelTests : IDisposable
         };
         var client = new StubRavenColonialClient
         {
-            Workspace = new ColonizationCommanderProjects(
-                [project],
-                [],
-                null,
-                [carrier]),
+            Workspace = new ColonizationCommanderProjects([project], [], null, [carrier]),
             FleetCarrierResponse = carrier,
         };
         var viewModel = Create(client);
         viewModel.IsEnabled = true;
-        viewModel.SetCommanderProfile(
-            "F123",
-            isOdyssey: true,
-            apiKey: "secret-key");
+        viewModel.SetCommanderProfile("F123", isOdyssey: true, apiKey: "secret-key");
         await viewModel.SetCommanderAsync("Test Cmdr");
-        viewModel.ApplyJournalEvents(
-        [
+        viewModel.ApplyJournalEvents([
             Event(
                 "Docked",
                 """
                 "MarketID":42,"SystemAddress":20,"StarSystem":"Test",
                 "StationName":"Supply carrier ABC-123","StationType":"FleetCarrier",
                 "StationServices":["commodities"]
-                """),
+                """
+            ),
         ]);
         var market = new MarketSnapshot(
             DateTimeOffset.Parse("2026-07-24T12:00:01Z"),
@@ -1178,17 +1025,16 @@ public sealed class ColonizationViewModelTests : IDisposable
                     0,
                     true,
                     false,
-                    false),
-            ]);
+                    false
+                ),
+            ]
+        );
 
         await viewModel.UpdateMarketAsync(market);
         Assert.Equal(0, client.ReplaceCargoCount);
 
         viewModel.FleetCarrierCargoSyncEnabled = true;
-        await viewModel.UpdateMarketAsync(market with
-        {
-            Timestamp = market.Timestamp.AddSeconds(1),
-        });
+        await viewModel.UpdateMarketAsync(market with { Timestamp = market.Timestamp.AddSeconds(1) });
 
         Assert.Equal(1, client.ReplaceCargoCount);
         Assert.Equal(80, client.LastReplacement?["steel"]);
@@ -1203,67 +1049,49 @@ public sealed class ColonizationViewModelTests : IDisposable
         {
             MarketId = 42,
             Name = "ABC-123",
-            Cargo = new Dictionary<string, int>
-            {
-                ["steel"] = 75,
-                ["water"] = 10,
-            },
+            Cargo = new Dictionary<string, int> { ["steel"] = 75, ["water"] = 10 },
         };
         var client = new StubRavenColonialClient
         {
-            Workspace = new ColonizationCommanderProjects(
-                [],
-                [],
-                null,
-                [carrier]),
+            Workspace = new ColonizationCommanderProjects([], [], null, [carrier]),
             FleetCarrierResponse = carrier,
         };
         var viewModel = Create(client);
         viewModel.IsEnabled = true;
-        viewModel.SetCommanderProfile(
-            "F123",
-            isOdyssey: true,
-            apiKey: "secret-key");
+        viewModel.SetCommanderProfile("F123", isOdyssey: true, apiKey: "secret-key");
         await viewModel.SetCommanderAsync("Test Cmdr");
-        viewModel.ApplyJournalEvents(
-        [
+        viewModel.ApplyJournalEvents([
             Event(
                 "Docked",
                 """
                 "MarketID":42,"SystemAddress":20,"StarSystem":"Test",
                 "StationName":"ABC-123","StationType":"FleetCarrier",
                 "StationServices":["commodities"]
-                """),
+                """
+            ),
         ]);
-        viewModel.UpdateStatus(new EliteStatus
-        {
-            Flags = StatusFlags.InMainShip,
-        });
-        var bought = Event(
-            "MarketBuy",
-            "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5");
+        viewModel.UpdateStatus(new EliteStatus { Flags = StatusFlags.InMainShip });
+        var bought = Event("MarketBuy", "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5");
 
-        await viewModel.SynchronizeLiveProjectsAsync(
-            [bought],
-            allowPublishing: true);
+        await viewModel.SynchronizeLiveProjectsAsync([bought], allowPublishing: true);
         Assert.Empty(client.FleetCarrierAdjustments);
 
         viewModel.FleetCarrierCargoSyncEnabled = true;
         await viewModel.SynchronizeLiveProjectsAsync(
-        [
-            bought,
-            Event(
-                "MarketSell",
-                "\"MarketID\":42,\"Type\":\"Water\",\"Count\":2"),
-            Event(
-                "CargoTransfer",
-                """
-                "Transfers":[
-                  {"Type":"Steel","Count":4,"Direction":"tocarrier"},
-                  {"Type":"Water","Count":3,"Direction":"toship"}]
-                """),
-        ],
-        allowPublishing: true);
+            [
+                bought,
+                Event("MarketSell", "\"MarketID\":42,\"Type\":\"Water\",\"Count\":2"),
+                Event(
+                    "CargoTransfer",
+                    """
+                    "Transfers":[
+                      {"Type":"Steel","Count":4,"Direction":"tocarrier"},
+                      {"Type":"Water","Count":3,"Direction":"toship"}]
+                    """
+                ),
+            ],
+            allowPublishing: true
+        );
 
         Assert.Collection(
             client.FleetCarrierAdjustments,
@@ -1273,26 +1101,38 @@ public sealed class ColonizationViewModelTests : IDisposable
             {
                 Assert.Equal(4, call.Changes["steel"]);
                 Assert.Equal(-3, call.Changes["water"]);
-            });
+            }
+        );
         Assert.Contains("CargoTransfer", viewModel.StatusMessage);
         Assert.False(viewModel.CommodityOverlay.HasPendingCargo);
 
-        await viewModel.SynchronizeLiveProjectsAsync(
-            [bought],
-            allowPublishing: false);
+        await viewModel.SynchronizeLiveProjectsAsync([bought], allowPublishing: false);
         Assert.Equal(3, client.FleetCarrierAdjustments.Count);
     }
 
     [Fact]
     public async Task StartupSquadronDetectionSurvivesCommanderActivationAfterJournalReplay()
     {
-        var carrier = new ColonizationFleetCarrier { MarketId = 42, Name = "SQD-001", Cargo = new() { ["steel"] = 10 } };
+        var carrier = new ColonizationFleetCarrier
+        {
+            MarketId = 42,
+            Name = "SQD-001",
+            Cargo = new() { ["steel"] = 10 },
+        };
         var client = new StubRavenColonialClient { Workspace = new([], [], null, [carrier]) };
         using var viewModel = Create(client);
         viewModel.IsEnabled = true;
-        viewModel.ApplyJournalEvents([Event("Docked", """
-            "MarketID":42,"SystemAddress":20,"StarSystem":"Test","StationName":"SQD-001","StationType":"FleetCarrier","StationServices":["squadronBank"]
-            """)], "Test Cmdr");
+        viewModel.ApplyJournalEvents(
+            [
+                Event(
+                    "Docked",
+                    """
+                    "MarketID":42,"SystemAddress":20,"StarSystem":"Test","StationName":"SQD-001","StationType":"FleetCarrier","StationServices":["squadronBank"]
+                    """
+                ),
+            ],
+            "Test Cmdr"
+        );
         await viewModel.SetCommanderAsync("Test Cmdr");
         Assert.Equal(42, viewModel.DetectedSquadronCarrierMarketId);
 
@@ -1308,66 +1148,60 @@ public sealed class ColonizationViewModelTests : IDisposable
         {
             MarketId = 42,
             Name = "SQD-001",
-            Cargo = new Dictionary<string, int>
-            {
-                ["steel"] = 75,
-                ["water"] = 10,
-            },
+            Cargo = new Dictionary<string, int> { ["steel"] = 75, ["water"] = 10 },
         };
         var client = new StubRavenColonialClient
         {
-            Workspace = new ColonizationCommanderProjects(
-                [],
-                [],
-                null,
-                [carrier]),
+            Workspace = new ColonizationCommanderProjects([], [], null, [carrier]),
             FleetCarrierResponse = carrier,
         };
         var viewModel = Create(client);
         using var main = MainWindowViewModelTestBuilder.Create(null, _ => { });
         using var fleetWorkspace = new FleetCarrierWorkspaceViewModel(main.FrontierProfile, viewModel);
         viewModel.IsEnabled = true;
-        viewModel.SetCommanderProfile(
-            "F123",
-            isOdyssey: true,
-            apiKey: "secret-key");
+        viewModel.SetCommanderProfile("F123", isOdyssey: true, apiKey: "secret-key");
         await viewModel.SetCommanderAsync("Test Cmdr");
         viewModel.FleetCarrierCargoSyncEnabled = true;
-        viewModel.ApplyJournalEvents(
-        [
+        viewModel.ApplyJournalEvents([
             Event(
                 "Docked",
                 """
                 "MarketID":42,"SystemAddress":20,"StarSystem":"Test",
                 "StationName":"SQD-001","StationType":"FleetCarrier",
                 "StationServices":["commodities","squadronBank"]
-                """),
+                """
+            ),
         ]);
-        viewModel.UpdateStatus(new EliteStatus
-        {
-            Flags = StatusFlags.InMainShip,
-        });
+        viewModel.UpdateStatus(new EliteStatus { Flags = StatusFlags.InMainShip });
 
         var cargo = new CargoInventoryState();
-        cargo.Reset(new CargoSnapshot(
-            DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
-            "Cargo",
-            "Ship",
-            50,
-            [new CargoItem("steel", "Steel", 50, 0)]));
+        cargo.Reset(
+            new CargoSnapshot(
+                DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
+                "Cargo",
+                "Ship",
+                50,
+                [new CargoItem("steel", "Steel", 50, 0)]
+            )
+        );
 
         Assert.Equal(42, fleetWorkspace.SelectedSquadronCarrier?.MarketId);
         Assert.Equal("75", fleetWorkspace.SquadronCargo.Single(c => c.Name == "steel").Quantity);
         // Freeze before-state, then apply transfer mutation (as MainWindow does).
         viewModel.PrepareSquadronCargoTransferSnapshot(cargo);
         Assert.True(cargo.HasPreservedSnapshot);
-        Assert.True(cargo.Apply(Event(
-            "CargoTransfer",
-            """
-            "Transfers":[
-              {"Type":"Steel","Count":10,"Direction":"tocarrier"},
-              {"Type":"Water","Count":3,"Direction":"toship"}]
-            """)));
+        Assert.True(
+            cargo.Apply(
+                Event(
+                    "CargoTransfer",
+                    """
+                    "Transfers":[
+                      {"Type":"Steel","Count":10,"Direction":"tocarrier"},
+                      {"Type":"Water","Count":3,"Direction":"toship"}]
+                    """
+                )
+            )
+        );
         // Ship after: steel 40, water 3
         Assert.Equal(40, cargo.CreateSnapshot()!.GetCount("steel"));
         Assert.Equal(3, cargo.CreateSnapshot()!.GetCount("water"));
@@ -1380,11 +1214,13 @@ public sealed class ColonizationViewModelTests : IDisposable
                     "Transfers":[
                       {"Type":"Steel","Count":10,"Direction":"tocarrier"},
                       {"Type":"Water","Count":3,"Direction":"toship"}]
-                    """),
+                    """
+                ),
             ],
             allowPublishing: true,
             cargoInventory: cargo,
-            cargoActivity: true);
+            cargoActivity: true
+        );
 
         // Journal transfer path must not fire for squadron; only inverted ship diff.
         var adjustment = Assert.Single(client.FleetCarrierAdjustments);
@@ -1396,7 +1232,8 @@ public sealed class ColonizationViewModelTests : IDisposable
         Assert.Equal("7", fleetWorkspace.SquadronCargo.Single(c => c.Name == "water").Quantity);
         viewModel.IsEnabled = false;
         await viewModel.SetCommanderAsync("Another commander");
-        Assert.Null(fleetWorkspace.SelectedSquadronCarrier); Assert.Empty(fleetWorkspace.SquadronCargo);
+        Assert.Null(fleetWorkspace.SelectedSquadronCarrier);
+        Assert.Empty(fleetWorkspace.SquadronCargo);
     }
 
     [Fact]
@@ -1410,56 +1247,36 @@ public sealed class ColonizationViewModelTests : IDisposable
         };
         var client = new StubRavenColonialClient
         {
-            Workspace = new ColonizationCommanderProjects(
-                [],
-                [],
-                null,
-                [carrier]),
+            Workspace = new ColonizationCommanderProjects([], [], null, [carrier]),
             FleetCarrierResponse = carrier,
         };
         var viewModel = Create(client);
         viewModel.IsEnabled = true;
-        viewModel.SetCommanderProfile(
-            "F123",
-            isOdyssey: true,
-            apiKey: "secret-key");
+        viewModel.SetCommanderProfile("F123", isOdyssey: true, apiKey: "secret-key");
         await viewModel.SetCommanderAsync("Test Cmdr");
         viewModel.FleetCarrierCargoSyncEnabled = true;
-        viewModel.ApplyJournalEvents(
-        [
+        viewModel.ApplyJournalEvents([
             Event(
                 "Docked",
                 """
                 "MarketID":42,"SystemAddress":20,"StarSystem":"Test",
                 "StationName":"SQD-001","StationType":"FleetCarrier",
                 "StationServices":["commodities","squadronBank"]
-                """),
+                """
+            ),
         ]);
-        viewModel.UpdateStatus(new EliteStatus
-        {
-            Flags = StatusFlags.InMainShip,
-        });
+        viewModel.UpdateStatus(new EliteStatus { Flags = StatusFlags.InMainShip });
 
         var cargo = new CargoInventoryState();
-        cargo.Reset(new CargoSnapshot(
-            DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
-            "Cargo",
-            "Ship",
-            0,
-            []));
-        cargo.Apply(Event(
-            "MarketBuy",
-            "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5"));
+        cargo.Reset(new CargoSnapshot(DateTimeOffset.Parse("2026-07-24T12:00:00Z"), "Cargo", "Ship", 0, []));
+        cargo.Apply(Event("MarketBuy", "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5"));
 
         await viewModel.SynchronizeLiveProjectsAsync(
-            [
-                Event(
-                    "MarketBuy",
-                    "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5"),
-            ],
+            [Event("MarketBuy", "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5")],
             allowPublishing: true,
             cargoInventory: cargo,
-            cargoActivity: true);
+            cargoActivity: true
+        );
 
         // Market buy adjusts once; skipNext prevents a second cargo-diff adjustment.
         var adjustment = Assert.Single(client.FleetCarrierAdjustments);
@@ -1469,22 +1286,29 @@ public sealed class ColonizationViewModelTests : IDisposable
         // Use the production capture gate (sync enabled, API key, linked squadron FC).
         viewModel.PrepareSquadronCargoTransferSnapshot(cargo);
         Assert.True(cargo.HasPreservedSnapshot);
-        Assert.True(cargo.Apply(Event(
-            "CargoTransfer",
-            """
-            "Transfers":[{"Type":"Steel","Count":4,"Direction":"tocarrier"}]
-            """)));
+        Assert.True(
+            cargo.Apply(
+                Event(
+                    "CargoTransfer",
+                    """
+                    "Transfers":[{"Type":"Steel","Count":4,"Direction":"tocarrier"}]
+                    """
+                )
+            )
+        );
         await viewModel.SynchronizeLiveProjectsAsync(
             [
                 Event(
                     "CargoTransfer",
                     """
                     "Transfers":[{"Type":"Steel","Count":4,"Direction":"tocarrier"}]
-                    """),
+                    """
+                ),
             ],
             allowPublishing: true,
             cargoInventory: cargo,
-            cargoActivity: true);
+            cargoActivity: true
+        );
 
         Assert.Equal(2, client.FleetCarrierAdjustments.Count);
         Assert.Equal(4, client.FleetCarrierAdjustments[1].Changes["steel"]);
@@ -1501,69 +1325,65 @@ public sealed class ColonizationViewModelTests : IDisposable
         };
         var client = new StubRavenColonialClient
         {
-            Workspace = new ColonizationCommanderProjects(
-                [],
-                [],
-                null,
-                [carrier]),
+            Workspace = new ColonizationCommanderProjects([], [], null, [carrier]),
             FleetCarrierResponse = carrier,
         };
         var viewModel = Create(client);
         viewModel.IsEnabled = true;
-        viewModel.SetCommanderProfile(
-            "F123",
-            isOdyssey: true,
-            apiKey: "secret-key");
+        viewModel.SetCommanderProfile("F123", isOdyssey: true, apiKey: "secret-key");
         await viewModel.SetCommanderAsync("Test Cmdr");
         viewModel.FleetCarrierCargoSyncEnabled = true;
-        viewModel.ApplyJournalEvents(
-        [
+        viewModel.ApplyJournalEvents([
             Event(
                 "Docked",
                 """
                 "MarketID":42,"SystemAddress":20,"StarSystem":"Test",
                 "StationName":"SQD-001","StationType":"FleetCarrier",
                 "StationServices":["commodities","squadronBank"]
-                """),
+                """
+            ),
         ]);
-        viewModel.UpdateStatus(new EliteStatus
-        {
-            Flags = StatusFlags.InMainShip,
-        });
+        viewModel.UpdateStatus(new EliteStatus { Flags = StatusFlags.InMainShip });
 
         // Market buy mutates ship cargo first; transfer capture baselines after market.
         var cargo = new CargoInventoryState();
-        cargo.Reset(new CargoSnapshot(
-            DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
-            "Cargo",
-            "Ship",
-            50,
-            [new CargoItem("steel", "Steel", 50, 0)]));
-        Assert.True(cargo.Apply(Event(
-            "MarketBuy",
-            "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5")));
+        cargo.Reset(
+            new CargoSnapshot(
+                DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
+                "Cargo",
+                "Ship",
+                50,
+                [new CargoItem("steel", "Steel", 50, 0)]
+            )
+        );
+        Assert.True(cargo.Apply(Event("MarketBuy", "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5")));
         viewModel.PrepareSquadronCargoTransferSnapshot(cargo);
-        Assert.True(cargo.Apply(Event(
-            "CargoTransfer",
-            """
-            "Transfers":[{"Type":"Steel","Count":10,"Direction":"tocarrier"}]
-            """)));
-        Assert.Equal(45, cargo.CreateSnapshot()!.GetCount("steel"));
-
-        await viewModel.SynchronizeLiveProjectsAsync(
-            [
-                Event(
-                    "MarketBuy",
-                    "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5"),
+        Assert.True(
+            cargo.Apply(
                 Event(
                     "CargoTransfer",
                     """
                     "Transfers":[{"Type":"Steel","Count":10,"Direction":"tocarrier"}]
-                    """),
+                    """
+                )
+            )
+        );
+        Assert.Equal(45, cargo.CreateSnapshot()!.GetCount("steel"));
+
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [
+                Event("MarketBuy", "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5"),
+                Event(
+                    "CargoTransfer",
+                    """
+                    "Transfers":[{"Type":"Steel","Count":10,"Direction":"tocarrier"}]
+                    """
+                ),
             ],
             allowPublishing: true,
             cargoInventory: cargo,
-            cargoActivity: true);
+            cargoActivity: true
+        );
 
         // Market adjustment + transfer GetDiff (not suppressed by skipNext).
         Assert.Equal(2, client.FleetCarrierAdjustments.Count);
@@ -1582,57 +1402,60 @@ public sealed class ColonizationViewModelTests : IDisposable
         };
         var client = new StubRavenColonialClient
         {
-            Workspace = new ColonizationCommanderProjects(
-                [],
-                [],
-                null,
-                [carrier]),
+            Workspace = new ColonizationCommanderProjects([], [], null, [carrier]),
             FleetCarrierResponse = carrier,
         };
         var viewModel = Create(client);
         viewModel.IsEnabled = true;
-        viewModel.SetCommanderProfile(
-            "F123",
-            isOdyssey: true,
-            apiKey: "secret-key");
+        viewModel.SetCommanderProfile("F123", isOdyssey: true, apiKey: "secret-key");
         await viewModel.SetCommanderAsync("Test Cmdr");
         viewModel.FleetCarrierCargoSyncEnabled = true;
-        viewModel.ApplyJournalEvents(
-        [
+        viewModel.ApplyJournalEvents([
             Event(
                 "Docked",
                 """
                 "MarketID":42,"SystemAddress":20,"StarSystem":"Test",
                 "StationName":"SQD-001","StationType":"FleetCarrier",
                 "StationServices":["commodities","squadronBank"]
-                """),
+                """
+            ),
         ]);
-        viewModel.UpdateStatus(new EliteStatus
-        {
-            Flags = StatusFlags.InMainShip,
-        });
+        viewModel.UpdateStatus(new EliteStatus { Flags = StatusFlags.InMainShip });
 
         var cargo = new CargoInventoryState();
-        cargo.Reset(new CargoSnapshot(
-            DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
-            "Cargo",
-            "Ship",
-            50,
-            [new CargoItem("steel", "Steel", 50, 0)]));
+        cargo.Reset(
+            new CargoSnapshot(
+                DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
+                "Cargo",
+                "Ship",
+                50,
+                [new CargoItem("steel", "Steel", 50, 0)]
+            )
+        );
 
         // Two sequential Prepare/Apply pairs must keep the first before-state.
         viewModel.PrepareSquadronCargoTransferSnapshot(cargo);
-        Assert.True(cargo.Apply(Event(
-            "CargoTransfer",
-            """
-            "Transfers":[{"Type":"Steel","Count":10,"Direction":"tocarrier"}]
-            """)));
+        Assert.True(
+            cargo.Apply(
+                Event(
+                    "CargoTransfer",
+                    """
+                    "Transfers":[{"Type":"Steel","Count":10,"Direction":"tocarrier"}]
+                    """
+                )
+            )
+        );
         viewModel.PrepareSquadronCargoTransferSnapshot(cargo);
-        Assert.True(cargo.Apply(Event(
-            "CargoTransfer",
-            """
-            "Transfers":[{"Type":"Steel","Count":5,"Direction":"tocarrier"}]
-            """)));
+        Assert.True(
+            cargo.Apply(
+                Event(
+                    "CargoTransfer",
+                    """
+                    "Transfers":[{"Type":"Steel","Count":5,"Direction":"tocarrier"}]
+                    """
+                )
+            )
+        );
         Assert.Equal(35, cargo.CreateSnapshot()!.GetCount("steel"));
 
         await viewModel.SynchronizeLiveProjectsAsync(
@@ -1641,16 +1464,19 @@ public sealed class ColonizationViewModelTests : IDisposable
                     "CargoTransfer",
                     """
                     "Transfers":[{"Type":"Steel","Count":10,"Direction":"tocarrier"}]
-                    """),
+                    """
+                ),
                 Event(
                     "CargoTransfer",
                     """
                     "Transfers":[{"Type":"Steel","Count":5,"Direction":"tocarrier"}]
-                    """),
+                    """
+                ),
             ],
             allowPublishing: true,
             cargoInventory: cargo,
-            cargoActivity: true);
+            cargoActivity: true
+        );
 
         var adjustment = Assert.Single(client.FleetCarrierAdjustments);
         Assert.Equal(15, adjustment.Changes["steel"]);
@@ -1667,35 +1493,25 @@ public sealed class ColonizationViewModelTests : IDisposable
         };
         var client = new StubRavenColonialClient
         {
-            Workspace = new ColonizationCommanderProjects(
-                [],
-                [],
-                null,
-                [carrier]),
+            Workspace = new ColonizationCommanderProjects([], [], null, [carrier]),
             FleetCarrierResponse = carrier,
         };
         var viewModel = Create(client);
         viewModel.IsEnabled = true;
-        viewModel.SetCommanderProfile(
-            "F123",
-            isOdyssey: true,
-            apiKey: "secret-key");
+        viewModel.SetCommanderProfile("F123", isOdyssey: true, apiKey: "secret-key");
         await viewModel.SetCommanderAsync("Test Cmdr");
         viewModel.FleetCarrierCargoSyncEnabled = true;
-        viewModel.ApplyJournalEvents(
-        [
+        viewModel.ApplyJournalEvents([
             Event(
                 "Docked",
                 """
                 "MarketID":42,"SystemAddress":20,"StarSystem":"Test",
                 "StationName":"SQD-001","StationType":"FleetCarrier",
                 "StationServices":["commodities","squadronBank"]
-                """),
+                """
+            ),
         ]);
-        viewModel.UpdateStatus(new EliteStatus
-        {
-            Flags = StatusFlags.InMainShip,
-        });
+        viewModel.UpdateStatus(new EliteStatus { Flags = StatusFlags.InMainShip });
 
         // No cargoInventory => journal fallback for squadron transfers.
         await viewModel.SynchronizeLiveProjectsAsync(
@@ -1706,11 +1522,13 @@ public sealed class ColonizationViewModelTests : IDisposable
                     "Transfers":[
                       {"Type":"Steel","Count":4,"Direction":"tocarrier"},
                       {"Type":"Water","Count":3,"Direction":"toship"}]
-                    """),
+                    """
+                ),
             ],
             allowPublishing: true,
             cargoInventory: null,
-            cargoActivity: false);
+            cargoActivity: false
+        );
 
         var adjustment = Assert.Single(client.FleetCarrierAdjustments);
         Assert.Equal(4, adjustment.Changes["steel"]);
@@ -1728,52 +1546,50 @@ public sealed class ColonizationViewModelTests : IDisposable
         };
         var client = new StubRavenColonialClient
         {
-            Workspace = new ColonizationCommanderProjects(
-                [],
-                [],
-                null,
-                [carrier]),
+            Workspace = new ColonizationCommanderProjects([], [], null, [carrier]),
             FleetCarrierResponse = carrier,
         };
         var viewModel = Create(client);
         viewModel.IsEnabled = true;
-        viewModel.SetCommanderProfile(
-            "F123",
-            isOdyssey: true,
-            apiKey: "secret-key");
+        viewModel.SetCommanderProfile("F123", isOdyssey: true, apiKey: "secret-key");
         await viewModel.SetCommanderAsync("Test Cmdr");
         viewModel.FleetCarrierCargoSyncEnabled = true;
-        viewModel.ApplyJournalEvents(
-        [
+        viewModel.ApplyJournalEvents([
             Event(
                 "Docked",
                 """
                 "MarketID":42,"SystemAddress":20,"StarSystem":"Test",
                 "StationName":"SQD-001","StationType":"FleetCarrier",
                 "StationServices":["commodities","squadronBank"]
-                """),
+                """
+            ),
         ]);
-        viewModel.UpdateStatus(new EliteStatus
-        {
-            Flags = StatusFlags.InMainShip,
-        });
+        viewModel.UpdateStatus(new EliteStatus { Flags = StatusFlags.InMainShip });
 
         var cargo = new CargoInventoryState();
-        cargo.Reset(new CargoSnapshot(
-            DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
-            "Cargo",
-            "Ship",
-            50,
-            [new CargoItem("steel", "Steel", 50, 0)]));
+        cargo.Reset(
+            new CargoSnapshot(
+                DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
+                "Cargo",
+                "Ship",
+                50,
+                [new CargoItem("steel", "Steel", 50, 0)]
+            )
+        );
 
         // Initial transfer path uses journal fallback because squadron diff is disabled
         // for this read. Preserve the baseline so this call can still be replay-safe.
         viewModel.PrepareSquadronCargoTransferSnapshot(cargo);
-        Assert.True(cargo.Apply(Event(
-            "CargoTransfer",
-            """
-            "Transfers":[{"Type":"Steel","Count":10,"Direction":"tocarrier"}]
-            """)));
+        Assert.True(
+            cargo.Apply(
+                Event(
+                    "CargoTransfer",
+                    """
+                    "Transfers":[{"Type":"Steel","Count":10,"Direction":"tocarrier"}]
+                    """
+                )
+            )
+        );
 
         await viewModel.SynchronizeLiveProjectsAsync(
             [
@@ -1781,30 +1597,36 @@ public sealed class ColonizationViewModelTests : IDisposable
                     "CargoTransfer",
                     """
                     "Transfers":[{"Type":"Steel","Count":10,"Direction":"tocarrier"}]
-                    """),
+                    """
+                ),
             ],
             allowPublishing: true,
             cargoInventory: cargo,
             cargoActivity: true,
-            preferShipCargoDiffForSquadron: false);
+            preferShipCargoDiffForSquadron: false
+        );
 
         Assert.Single(client.FleetCarrierAdjustments);
         Assert.False(cargo.HasPreservedSnapshot);
 
         // Next read with fresh cargo snapshot should use GetDiff, but not replay the
         // already synced transfer (the snapshot replay is now rebased from 40).
-        cargo.Reset(new CargoSnapshot(
-            DateTimeOffset.Parse("2026-07-24T12:00:01Z"),
-            "Cargo",
-            "Ship",
-            40,
-            [new CargoItem("steel", "Steel", 40, 0)]));
+        cargo.Reset(
+            new CargoSnapshot(
+                DateTimeOffset.Parse("2026-07-24T12:00:01Z"),
+                "Cargo",
+                "Ship",
+                40,
+                [new CargoItem("steel", "Steel", 40, 0)]
+            )
+        );
 
         await viewModel.SynchronizeLiveProjectsAsync(
             [],
             allowPublishing: true,
             cargoInventory: cargo,
-            cargoActivity: false);
+            cargoActivity: false
+        );
 
         Assert.Single(client.FleetCarrierAdjustments);
     }
@@ -1819,56 +1641,52 @@ public sealed class ColonizationViewModelTests : IDisposable
             DisplayName = "Supply carrier",
             Cargo = new Dictionary<string, int> { ["steel"] = 75 },
         };
-        var client = new StubRavenColonialClient
-        {
-            FleetCarrierResponse = carrier,
-        };
+        var client = new StubRavenColonialClient { FleetCarrierResponse = carrier };
         var viewModel = Create(client);
         viewModel.IsEnabled = true;
-        viewModel.SetCommanderProfile(
-            "F123",
-            isOdyssey: true,
-            apiKey: "secret-key");
-        viewModel.ApplyJournalEvents(
-        [
-            Event(
-                "ReceiveText",
-                "\"From\":\"Supply carrier | ABC-123\""),
+        viewModel.SetCommanderProfile("F123", isOdyssey: true, apiKey: "secret-key");
+        viewModel.ApplyJournalEvents([
+            Event("ReceiveText", "\"From\":\"Supply carrier | ABC-123\""),
             Event(
                 "Docked",
                 """
                 "MarketID":42,"SystemAddress":20,"StarSystem":"Test",
                 "StationName":"ABC-123","StationType":"FleetCarrier",
                 "StationServices":["commodities"]
-                """),
+                """
+            ),
         ]);
         await viewModel.SetCommanderAsync("Test Cmdr");
-        await viewModel.UpdateMarketAsync(new MarketSnapshot(
-            DateTimeOffset.Parse("2026-07-24T12:00:01Z"),
-            "Market",
-            42,
-            "ABC-123",
-            "FleetCarrier",
-            "all",
-            "Test",
-            [
-                new MarketItem(
-                    1,
-                    "$Steel_Name;",
-                    "Steel",
-                    "$MARKET_category_metals;",
-                    "Metals",
-                    1,
-                    1,
-                    1,
-                    1,
-                    0,
-                    80,
-                    0,
-                    true,
-                    false,
-                    false),
-            ]));
+        await viewModel.UpdateMarketAsync(
+            new MarketSnapshot(
+                DateTimeOffset.Parse("2026-07-24T12:00:01Z"),
+                "Market",
+                42,
+                "ABC-123",
+                "FleetCarrier",
+                "all",
+                "Test",
+                [
+                    new MarketItem(
+                        1,
+                        "$Steel_Name;",
+                        "Steel",
+                        "$MARKET_category_metals;",
+                        "Metals",
+                        1,
+                        1,
+                        1,
+                        1,
+                        0,
+                        80,
+                        0,
+                        true,
+                        false,
+                        false
+                    ),
+                ]
+            )
+        );
 
         Assert.True(viewModel.PublishFleetCarrierCommand.CanExecute(null));
         await viewModel.PublishCurrentFleetCarrierAsync();
@@ -1876,15 +1694,11 @@ public sealed class ColonizationViewModelTests : IDisposable
         Assert.Equal(1, client.PublishCarrierCount);
         Assert.Equal(42, client.LastCarrierRegistration?.MarketId);
         Assert.Equal("ABC-123", client.LastCarrierRegistration?.Name);
-        Assert.Equal(
-            "Supply carrier",
-            client.LastCarrierRegistration?.DisplayName);
+        Assert.Equal("Supply carrier", client.LastCarrierRegistration?.DisplayName);
         Assert.Null(client.LastCarrierRegistration?.Cargo);
         Assert.Equal(1, client.ReplaceCargoCount);
         Assert.Equal(80, client.LastReplacement?["steel"]);
-        Assert.Contains(
-            "Published and linked Supply carrier",
-            viewModel.FleetCarrierSyncStatus);
+        Assert.Contains("Published and linked Supply carrier", viewModel.FleetCarrierSyncStatus);
     }
 
     public void Dispose()
@@ -1897,15 +1711,16 @@ public sealed class ColonizationViewModelTests : IDisposable
 
     private ColonizationViewModel Create(
         StubRavenColonialClient client,
-        Func<TimeSpan, CancellationToken, Task>? delayAsync = null)
+        Func<TimeSpan, CancellationToken, Task>? delayAsync = null
+    )
     {
         return new ColonizationViewModel(
-            new ColonizationSettingsStore(
-                Path.Combine(directory, "ui.json")),
+            new ColonizationSettingsStore(Path.Combine(directory, "ui.json")),
             client,
             ColonizationBuildCatalog.LoadEmbedded(),
             new CommanderProfileStore(directory),
-            delayAsync: delayAsync);
+            delayAsync: delayAsync
+        );
     }
 
     private static ColonizationProject Project(
@@ -1914,7 +1729,8 @@ public sealed class ColonizationViewModelTests : IDisposable
         int remaining,
         long marketId = 0,
         long systemAddress = 0,
-        string? factionName = null)
+        string? factionName = null
+    )
     {
         return new ColonizationProject
         {
@@ -1927,36 +1743,23 @@ public sealed class ColonizationViewModelTests : IDisposable
             FactionName = factionName,
             MaximumRequired = 1_000,
             RemainingRequired = remaining,
-            Commodities = new Dictionary<string, int>
-            {
-                ["steel"] = remaining,
-            },
+            Commodities = new Dictionary<string, int> { ["steel"] = remaining },
         };
     }
 
-    private static JournalEventEnvelope Event(
-        string eventName,
-        string properties)
+    private static JournalEventEnvelope Event(string eventName, string properties)
     {
-        var propertySuffix = string.IsNullOrWhiteSpace(properties)
-            ? string.Empty
-            : "," + properties;
+        var propertySuffix = string.IsNullOrWhiteSpace(properties) ? string.Empty : "," + properties;
         var json = $$"""
             {"timestamp":"2026-07-24T12:00:00Z","event":"{{eventName}}"{{propertySuffix}}}
             """;
-        Assert.True(
-            JournalEventEnvelope.TryParse(json, out var result, out var error),
-            error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out var result, out var error), error);
         return result!;
     }
 
     private sealed class StubRavenColonialClient : IRavenColonialClient
     {
-        public ColonizationCommanderProjects Workspace { get; set; } = new(
-            [],
-            [],
-            null,
-            []);
+        public ColonizationCommanderProjects Workspace { get; set; } = new([], [], null, []);
 
         public Exception? Failure { get; set; }
 
@@ -1976,10 +1779,7 @@ public sealed class ColonizationViewModelTests : IDisposable
 
         public int PublishShipCount { get; private set; }
 
-        public List<FleetCarrierAdjustmentCall> FleetCarrierAdjustments
-        {
-            get;
-        } = [];
+        public List<FleetCarrierAdjustmentCall> FleetCarrierAdjustments { get; } = [];
 
         public int SiteProjectLoadCount { get; private set; }
 
@@ -1999,36 +1799,24 @@ public sealed class ColonizationViewModelTests : IDisposable
 
         public Queue<Exception> SystemSiteFailures { get; } = new();
 
-        public IReadOnlyList<ColonizationSystemSite> SystemSitesResponse
-        {
-            get;
-            set;
-        } = [];
+        public IReadOnlyList<ColonizationSystemSite> SystemSitesResponse { get; set; } = [];
 
         public ColonizationCurrentShip? LastPublishedShip { get; private set; }
 
         public ColonizationFleetCarrier? FleetCarrierResponse { get; set; }
 
-        public ColonizationFleetCarrierRegistration? LastCarrierRegistration
-        {
-            get;
-            private set;
-        }
+        public ColonizationFleetCarrierRegistration? LastCarrierRegistration { get; private set; }
 
         public ColonizationProject? SiteProjectResponse { get; set; }
 
-        public IReadOnlyDictionary<string, int>? LastReplacement
-        {
-            get;
-            private set;
-        }
+        public IReadOnlyDictionary<string, int>? LastReplacement { get; private set; }
 
-        public IReadOnlyList<string> LastSavedHiddenIds { get; private set; } =
-            [];
+        public IReadOnlyList<string> LastSavedHiddenIds { get; private set; } = [];
 
         public Task<ColonizationCommanderProjects> GetCommanderProjectsAsync(
             string commanderName,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             LoadCount++;
             return Failure is null
@@ -2036,28 +1824,24 @@ public sealed class ColonizationViewModelTests : IDisposable
                 : Task.FromException<ColonizationCommanderProjects>(Failure);
         }
 
-        public Task<string?> GetCommanderByApiKeyAsync(
-            string apiKey,
-            CancellationToken cancellationToken = default)
+        public Task<string?> GetCommanderByApiKeyAsync(string apiKey, CancellationToken cancellationToken = default)
         {
             ValidateApiKeyCount++;
-            return ApiKeyValidation?.Task
-                ?? Task.FromResult(ValidatedCommanderName);
+            return ApiKeyValidation?.Task ?? Task.FromResult(ValidatedCommanderName);
         }
 
         public Task<IReadOnlyList<string>> SaveHiddenProjectIdsAsync(
             string commanderName,
             IEnumerable<string> hiddenProjectIds,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             SaveCount++;
             LastSavedHiddenIds = hiddenProjectIds.ToArray();
             return Task.FromResult(LastSavedHiddenIds);
         }
 
-        public Task<ColonizationProject?> GetProjectAsync(
-            string buildId,
-            CancellationToken cancellationToken = default)
+        public Task<ColonizationProject?> GetProjectAsync(string buildId, CancellationToken cancellationToken = default)
         {
             return Task.FromResult<ColonizationProject?>(null);
         }
@@ -2065,7 +1849,8 @@ public sealed class ColonizationViewModelTests : IDisposable
         public Task<ColonizationProject?> GetProjectAsync(
             long systemAddress,
             long marketId,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             SiteProjectLoadCount++;
             return Task.FromResult(SiteProjectResponse);
@@ -2073,31 +1858,25 @@ public sealed class ColonizationViewModelTests : IDisposable
 
         public Task<ColonizationProject> UpdateProjectAsync(
             ColonizationProjectUpdate update,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             ProjectUpdates.Add(update);
-            var source = Workspace.Projects.First(project =>
-                project.BuildId == update.BuildId);
-            var remaining = update.Commodities?.Values.Sum()
-                ?? source.RemainingRequired;
+            var source = Workspace.Projects.First(project => project.BuildId == update.BuildId);
+            var remaining = update.Commodities?.Values.Sum() ?? source.RemainingRequired;
             var updated = source with
             {
                 FactionName = update.FactionName ?? source.FactionName,
-                MaximumRequired = update.MaximumRequired
-                    ?? source.MaximumRequired,
+                MaximumRequired = update.MaximumRequired ?? source.MaximumRequired,
                 RemainingRequired = remaining,
                 Commodities = update.Commodities is null
                     ? source.Commodities
-                    : new Dictionary<string, int>(
-                        update.Commodities,
-                        StringComparer.OrdinalIgnoreCase),
+                    : new Dictionary<string, int>(update.Commodities, StringComparer.OrdinalIgnoreCase),
             };
             return Task.FromResult(updated);
         }
 
-        public Task MarkProjectCompleteAsync(
-            string buildId,
-            CancellationToken cancellationToken = default)
+        public Task MarkProjectCompleteAsync(string buildId, CancellationToken cancellationToken = default)
         {
             MarkCompleteCount++;
             return Task.CompletedTask;
@@ -2107,19 +1886,18 @@ public sealed class ColonizationViewModelTests : IDisposable
             string buildId,
             string commanderName,
             IReadOnlyDictionary<string, int> contributions,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
-            Contributions.Add(new ContributionCall(
-                buildId,
-                commanderName,
-                contributions));
+            Contributions.Add(new ContributionCall(buildId, commanderName, contributions));
             return Task.CompletedTask;
         }
 
         public Task SetPrimaryProjectAsync(
             string commanderName,
             string? buildId,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             PrimaryProjectRequests.Add(buildId);
             return Task.CompletedTask;
@@ -2127,49 +1905,50 @@ public sealed class ColonizationViewModelTests : IDisposable
 
         public Task<IReadOnlyList<ColonizationSystemSite>> GetSystemSitesAsync(
             string systemNameOrAddress,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             SystemSiteLoadCount++;
             return SystemSiteFailures.TryDequeue(out var failure)
-                ? Task.FromException<IReadOnlyList<ColonizationSystemSite>>(
-                    failure)
+                ? Task.FromException<IReadOnlyList<ColonizationSystemSite>>(failure)
                 : Task.FromResult(SystemSitesResponse);
         }
 
         public Task<string?> GetSystemArchitectAsync(
             string systemNameOrAddress,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             return Task.FromResult<string?>(null);
         }
 
         public Task<ColonizationSystemRecord> GetSystemAsync(
             string systemNameOrAddress,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
         public Task<ColonizationSystemRecord> ImportSystemBodiesAsync(
             string systemNameOrAddress,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
         public Task<ColonizationSystemRecord> UpdateSystemSitesAsync(
             string systemNameOrAddress,
             ColonizationSystemSiteUpdate update,
             string apiKey,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
-            SystemUpdates.Add(new SystemUpdateCall(
-                systemNameOrAddress,
-                update,
-                apiKey));
-            return Task.FromResult(new ColonizationSystemRecord
-            {
-                SystemAddress = 42,
-                Name = systemNameOrAddress,
-                Architect = update.Architect,
-                Sites = update.UpdatedSites,
-            });
+            SystemUpdates.Add(new SystemUpdateCall(systemNameOrAddress, update, apiKey));
+            return Task.FromResult(
+                new ColonizationSystemRecord
+                {
+                    SystemAddress = 42,
+                    Name = systemNameOrAddress,
+                    Architect = update.Architect,
+                    Sites = update.UpdatedSites,
+                }
+            );
         }
 
         public Task PatchSystemSiteAsync(
@@ -2177,26 +1956,25 @@ public sealed class ColonizationViewModelTests : IDisposable
             string siteId,
             ColonizationSystemSitePatch patch,
             string apiKey,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
-            SystemSitePatches.Add(new SystemSitePatchCall(
-                systemNameOrAddress,
-                siteId,
-                patch,
-                apiKey));
+            SystemSitePatches.Add(new SystemSitePatchCall(systemNameOrAddress, siteId, patch, apiKey));
             return Task.CompletedTask;
         }
 
         public Task<ColonizationProject?> CreateProjectAsync(
             ColonizationProjectCreate project,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             return Task.FromResult<ColonizationProject?>(null);
         }
 
         public Task<ColonizationFleetCarrier?> GetFleetCarrierAsync(
             long marketId,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             return Task.FromResult(FleetCarrierResponse);
         }
@@ -2204,31 +1982,35 @@ public sealed class ColonizationViewModelTests : IDisposable
         public Task<ColonizationFleetCarrier> PublishFleetCarrierAsync(
             ColonizationFleetCarrierRegistration carrier,
             string apiKey,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             PublishCarrierCount++;
             LastCarrierRegistration = carrier;
-            return Task.FromResult(FleetCarrierResponse ?? new()
-            {
-                MarketId = carrier.MarketId,
-                Name = carrier.Name,
-                DisplayName = carrier.DisplayName,
-            });
+            return Task.FromResult(
+                FleetCarrierResponse
+                    ?? new()
+                    {
+                        MarketId = carrier.MarketId,
+                        Name = carrier.Name,
+                        DisplayName = carrier.DisplayName,
+                    }
+            );
         }
 
-        public Task<IReadOnlyDictionary<string, int>>
-            ReplaceFleetCarrierCargoAsync(
-                long marketId,
-                IReadOnlyDictionary<string, int> cargo,
-                string apiKey,
-                CancellationToken cancellationToken = default)
+        public Task<IReadOnlyDictionary<string, int>> ReplaceFleetCarrierCargoAsync(
+            long marketId,
+            IReadOnlyDictionary<string, int> cargo,
+            string apiKey,
+            CancellationToken cancellationToken = default
+        )
         {
             ReplaceCargoCount++;
             LastReplacement = cargo;
             var updated = new Dictionary<string, int>(
-                FleetCarrierResponse?.Cargo
-                    ?? new Dictionary<string, int>(),
-                StringComparer.OrdinalIgnoreCase);
+                FleetCarrierResponse?.Cargo ?? new Dictionary<string, int>(),
+                StringComparer.OrdinalIgnoreCase
+            );
             foreach (var pair in cargo)
             {
                 updated[pair.Key] = pair.Value;
@@ -2237,35 +2019,31 @@ public sealed class ColonizationViewModelTests : IDisposable
             return Task.FromResult<IReadOnlyDictionary<string, int>>(updated);
         }
 
-        public Task<IReadOnlyDictionary<string, int>>
-            AdjustFleetCarrierCargoAsync(
-                long marketId,
-                IReadOnlyDictionary<string, int> cargoChanges,
-                string apiKey,
-                CancellationToken cancellationToken = default)
+        public Task<IReadOnlyDictionary<string, int>> AdjustFleetCarrierCargoAsync(
+            long marketId,
+            IReadOnlyDictionary<string, int> cargoChanges,
+            string apiKey,
+            CancellationToken cancellationToken = default
+        )
         {
-            FleetCarrierAdjustments.Add(new FleetCarrierAdjustmentCall(
-                marketId,
-                new Dictionary<string, int>(
-                    cargoChanges,
-                    StringComparer.OrdinalIgnoreCase)));
+            FleetCarrierAdjustments.Add(
+                new FleetCarrierAdjustmentCall(
+                    marketId,
+                    new Dictionary<string, int>(cargoChanges, StringComparer.OrdinalIgnoreCase)
+                )
+            );
             var updated = new Dictionary<string, int>(
-                FleetCarrierResponse?.Cargo
-                    ?? new Dictionary<string, int>(),
-                StringComparer.OrdinalIgnoreCase);
+                FleetCarrierResponse?.Cargo ?? new Dictionary<string, int>(),
+                StringComparer.OrdinalIgnoreCase
+            );
             foreach (var pair in cargoChanges)
             {
-                updated[pair.Key] = Math.Max(
-                    0,
-                    updated.GetValueOrDefault(pair.Key) + pair.Value);
+                updated[pair.Key] = Math.Max(0, updated.GetValueOrDefault(pair.Key) + pair.Value);
             }
 
             if (FleetCarrierResponse is not null)
             {
-                FleetCarrierResponse = FleetCarrierResponse with
-                {
-                    Cargo = updated,
-                };
+                FleetCarrierResponse = FleetCarrierResponse with { Cargo = updated };
             }
 
             return Task.FromResult<IReadOnlyDictionary<string, int>>(updated);
@@ -2274,7 +2052,8 @@ public sealed class ColonizationViewModelTests : IDisposable
         public Task PublishCurrentShipAsync(
             ColonizationCurrentShip ship,
             string apiKey,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             PublishShipCount++;
             LastPublishedShip = ship;
@@ -2285,20 +2064,21 @@ public sealed class ColonizationViewModelTests : IDisposable
     private sealed record ContributionCall(
         string BuildId,
         string CommanderName,
-        IReadOnlyDictionary<string, int> Commodities);
+        IReadOnlyDictionary<string, int> Commodities
+    );
 
     private sealed record SystemUpdateCall(
         string SystemNameOrAddress,
         ColonizationSystemSiteUpdate Update,
-        string ApiKey);
+        string ApiKey
+    );
 
     private sealed record SystemSitePatchCall(
         string SystemNameOrAddress,
         string SiteId,
         ColonizationSystemSitePatch Patch,
-        string ApiKey);
+        string ApiKey
+    );
 
-    private sealed record FleetCarrierAdjustmentCall(
-        long MarketId,
-        IReadOnlyDictionary<string, int> Changes);
+    private sealed record FleetCarrierAdjustmentCall(long MarketId, IReadOnlyDictionary<string, int> Changes);
 }

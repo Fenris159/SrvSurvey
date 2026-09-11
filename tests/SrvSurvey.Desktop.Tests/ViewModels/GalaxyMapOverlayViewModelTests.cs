@@ -10,7 +10,8 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-galaxy-map-view-model-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-galaxy-map-view-model-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void EmptyStateProvidesStableNonNullBindingTargets()
@@ -19,12 +20,8 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
 
         Assert.False(viewModel.HasPrimarySystem);
         Assert.False(viewModel.HasSecondarySystem);
-        Assert.Same(
-            GalaxyMapSystemViewModel.Empty,
-            viewModel.PrimarySystemDisplay);
-        Assert.Same(
-            GalaxyMapSystemViewModel.Empty,
-            viewModel.SecondarySystemDisplay);
+        Assert.Same(GalaxyMapSystemViewModel.Empty, viewModel.PrimarySystemDisplay);
+        Assert.Same(GalaxyMapSystemViewModel.Empty, viewModel.SecondarySystemDisplay);
     }
 
     [Fact]
@@ -33,12 +30,7 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
         var client = new FakeSummaryClient();
         using var viewModel = CreateViewModel(client);
 
-        viewModel.ApplyUpdate(
-            "Sol",
-            1,
-            CreateRoute(),
-            [],
-            new EliteStatus { GuiFocus = GuiFocus.GalaxyMap });
+        viewModel.ApplyUpdate("Sol", 1, CreateRoute(), [], new EliteStatus { GuiFocus = GuiFocus.GalaxyMap });
         await viewModel.PendingLoad;
 
         Assert.True(viewModel.ShouldShow);
@@ -65,34 +57,19 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
         var client = new FakeSummaryClient();
         using var viewModel = CreateViewModel(client);
 
-        viewModel.ApplyUpdate(
-            "Sol",
-            1,
-            CreateRoute(),
-            [],
-            new EliteStatus { GuiFocus = GuiFocus.NoFocus });
+        viewModel.ApplyUpdate("Sol", 1, CreateRoute(), [], new EliteStatus { GuiFocus = GuiFocus.NoFocus });
 
         Assert.False(viewModel.ShouldShow);
         Assert.False(viewModel.IsGalaxyMapOpen);
         Assert.Empty(client.Requests);
 
-        viewModel.ApplyUpdate(
-            "Sol",
-            1,
-            null,
-            [],
-            new EliteStatus { GuiFocus = GuiFocus.GalaxyMap });
+        viewModel.ApplyUpdate("Sol", 1, null, [], new EliteStatus { GuiFocus = GuiFocus.GalaxyMap });
         await viewModel.PendingLoad;
 
         Assert.True(viewModel.IsGalaxyMapOpen);
         Assert.Equal(2, client.Requests.Count);
 
-        viewModel.ApplyUpdate(
-            "Sol",
-            1,
-            null,
-            [],
-            new EliteStatus { GuiFocus = GuiFocus.NoFocus });
+        viewModel.ApplyUpdate("Sol", 1, null, [], new EliteStatus { GuiFocus = GuiFocus.NoFocus });
 
         Assert.False(viewModel.IsGalaxyMapOpen);
     }
@@ -108,12 +85,9 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
             1,
             CreateRoute(),
             [],
-            new EliteStatus
-            {
-                Flags = StatusFlags.InMainShip,
-                GuiFocus = GuiFocus.NoFocus,
-            },
-            nextMusicTrack: "GalaxyMap");
+            new EliteStatus { Flags = StatusFlags.InMainShip, GuiFocus = GuiFocus.NoFocus },
+            nextMusicTrack: "GalaxyMap"
+        );
         await viewModel.PendingLoad;
 
         Assert.True(viewModel.IsGalaxyMapOpen);
@@ -128,32 +102,17 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
         using var viewModel = CreateViewModel(client);
         var galaxyMapStatus = new EliteStatus { GuiFocus = GuiFocus.GalaxyMap };
 
-        viewModel.ApplyUpdate(
-            "Sol",
-            1,
-            CreateRoute(),
-            [],
-            galaxyMapStatus);
+        viewModel.ApplyUpdate("Sol", 1, CreateRoute(), [], galaxyMapStatus);
         await viewModel.PendingLoad;
 
-        viewModel.ApplyUpdate(
-            "Sol",
-            1,
-            null,
-            [Event("FSDTarget", "\"Name\":\"Alpha\",\"SystemAddress\":2")],
-            null);
+        viewModel.ApplyUpdate("Sol", 1, null, [Event("FSDTarget", "\"Name\":\"Alpha\",\"SystemAddress\":2")], null);
         await viewModel.PendingLoad;
 
         Assert.Equal("DESTINATION", viewModel.PrimarySystem!.Label);
         Assert.Equal("Beta", viewModel.PrimarySystem.Name);
         Assert.True(viewModel.HasRouteFooter);
 
-        viewModel.ApplyUpdate(
-            "Sol",
-            1,
-            null,
-            [Event("FSDTarget", "\"Name\":\"Gamma\",\"SystemAddress\":4")],
-            null);
+        viewModel.ApplyUpdate("Sol", 1, null, [Event("FSDTarget", "\"Name\":\"Gamma\",\"SystemAddress\":4")], null);
         await viewModel.PendingLoad;
 
         Assert.Equal("SELECTED", viewModel.PrimarySystem!.Label);
@@ -161,12 +120,7 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
         Assert.False(viewModel.HasSecondarySystem);
         Assert.False(viewModel.HasRouteFooter);
 
-        viewModel.ApplyUpdate(
-            "Sol",
-            1,
-            CreateRoute(),
-            [],
-            null);
+        viewModel.ApplyUpdate("Sol", 1, CreateRoute(), [], null);
         await viewModel.PendingLoad;
 
         Assert.Equal("DESTINATION", viewModel.PrimarySystem!.Label);
@@ -179,20 +133,10 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
     {
         var client = new FakeSummaryClient();
         using var viewModel = CreateViewModel(client);
-        viewModel.ApplyUpdate(
-            "Sol",
-            1,
-            CreateRoute(),
-            [],
-            new EliteStatus { GuiFocus = GuiFocus.GalaxyMap });
+        viewModel.ApplyUpdate("Sol", 1, CreateRoute(), [], new EliteStatus { GuiFocus = GuiFocus.GalaxyMap });
         await viewModel.PendingLoad;
 
-        viewModel.ApplyUpdate(
-            "Sol",
-            1,
-            null,
-            [Event("NavRouteClear")],
-            null);
+        viewModel.ApplyUpdate("Sol", 1, null, [Event("NavRouteClear")], null);
         await viewModel.PendingLoad;
 
         Assert.False(viewModel.HasPrimarySystem);
@@ -220,7 +164,8 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
                     Body = 0,
                 },
             },
-            isBootstrapRead: true);
+            isBootstrapRead: true
+        );
         await viewModel.PendingLoad;
 
         Assert.Equal("Beta", viewModel.PrimarySystem!.Name);
@@ -235,9 +180,7 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
         viewModel.AutoShow = false;
         viewModel.ShowFactions = false;
 
-        Assert.Equal(
-            new GalaxyMapPreferences(false, false),
-            new GalaxyMapSettingsStore(SettingsPath).Load());
+        Assert.Equal(new GalaxyMapPreferences(false, false), new GalaxyMapSettingsStore(SettingsPath).Load());
     }
 
     public void Dispose()
@@ -248,12 +191,9 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
         }
     }
 
-    private string SettingsPath => Path.Combine(
-        temporaryDirectory,
-        "ui-settings.json");
+    private string SettingsPath => Path.Combine(temporaryDirectory, "ui-settings.json");
 
-    private GalaxyMapOverlayViewModel CreateViewModel(
-        ISystemSummaryClient client)
+    private GalaxyMapOverlayViewModel CreateViewModel(ISystemSummaryClient client)
     {
         Directory.CreateDirectory(temporaryDirectory);
         return new GalaxyMapOverlayViewModel(
@@ -261,7 +201,9 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
             new GalaxyMapSettingsStore(SettingsPath),
             new SystemNicknameViewModel(
                 SystemNicknameCatalog.Load(temporaryDirectory),
-                new SystemNicknameSettingsStore(SettingsPath)));
+                new SystemNicknameSettingsStore(SettingsPath)
+            )
+        );
     }
 
     private static NavRouteSnapshot CreateRoute()
@@ -270,33 +212,24 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
             DateTimeOffset.Parse("2026-07-25T12:00:00Z"),
             "NavRoute",
             [
-                new NavRouteEntry(
-                    "Sol",
-                    1,
-                    new GalacticCoordinate(0, 0, 0),
-                    "G"),
-                new NavRouteEntry(
-                    "Alpha",
-                    2,
-                    new GalacticCoordinate(3, 0, 0),
-                    "K"),
-                new NavRouteEntry(
-                    "Beta",
-                    3,
-                    new GalacticCoordinate(3, 4, 0),
-                    "N"),
-            ]);
+                new NavRouteEntry("Sol", 1, new GalacticCoordinate(0, 0, 0), "G"),
+                new NavRouteEntry("Alpha", 2, new GalacticCoordinate(3, 0, 0), "K"),
+                new NavRouteEntry("Beta", 3, new GalacticCoordinate(3, 4, 0), "N"),
+            ]
+        );
     }
 
-    private static JournalEventEnvelope Event(
-        string eventName,
-        string? properties = null)
+    private static JournalEventEnvelope Event(string eventName, string? properties = null)
     {
         var suffix = properties is null ? string.Empty : "," + properties;
-        Assert.True(JournalEventEnvelope.TryParse(
-            $"{{\"timestamp\":\"2026-07-25T12:00:00Z\",\"event\":\"{eventName}\"{suffix}}}",
-            out var journalEvent,
-            out var error), error);
+        Assert.True(
+            JournalEventEnvelope.TryParse(
+                $"{{\"timestamp\":\"2026-07-25T12:00:00Z\",\"event\":\"{eventName}\"{suffix}}}",
+                out var journalEvent,
+                out var error
+            ),
+            error
+        );
         return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }
 
@@ -307,7 +240,8 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
         public Task<SystemSummaryLoadResult> GetAsync(
             string systemName,
             long systemAddress,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             Requests.Add((systemName, systemAddress));
             var summary = new SystemSummary(
@@ -323,11 +257,11 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
                 DateTimeOffset.Parse("2025-02-03T04:05:06Z"),
                 null,
                 new SystemPoiSummary(7, systemName == "Beta" ? 2 : 0, 0, 0, 0, 0, 0),
-                [])
+                []
+            )
             {
-                Factions = systemName == "Beta"
-                    ? [new SystemFactionSummary("Pathfinder Cooperative", 0.62, "Boom")]
-                    : [],
+                Factions =
+                    systemName == "Beta" ? [new SystemFactionSummary("Pathfinder Cooperative", 0.62, "Boom")] : [],
             };
             return Task.FromResult(new SystemSummaryLoadResult(summary, []));
         }

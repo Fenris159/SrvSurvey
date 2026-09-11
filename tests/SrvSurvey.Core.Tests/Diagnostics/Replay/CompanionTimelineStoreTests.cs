@@ -12,59 +12,66 @@ public sealed class CompanionTimelineStoreTests
     public async Task RollingHistoryKeepsOneDayAndSuppressesTimestampOnlyChanges()
     {
         using var temp = new TemporaryDirectory();
-        var earlyTime = new MutableTimeProvider(
-            DateTimeOffset.Parse("2026-08-22T10:00:00Z"));
+        var earlyTime = new MutableTimeProvider(DateTimeOffset.Parse("2026-08-22T10:00:00Z"));
         using (var earlyStore = new CompanionTimelineStore(temp.Path, earlyTime))
         {
-            await earlyStore.AppendAsync(CreateUpdate(new EliteStatus
-            {
-                Timestamp = earlyTime.GetUtcNow(),
-                EventName = "Status",
-                Flags = StatusFlags.InSrv,
-                Heading = 42,
-            }));
+            await earlyStore.AppendAsync(
+                CreateUpdate(
+                    new EliteStatus
+                    {
+                        Timestamp = earlyTime.GetUtcNow(),
+                        EventName = "Status",
+                        Flags = StatusFlags.InSrv,
+                        Heading = 42,
+                    }
+                )
+            );
         }
 
-        var currentTime = new MutableTimeProvider(
-            DateTimeOffset.Parse("2026-08-23T12:00:00Z"));
+        var currentTime = new MutableTimeProvider(DateTimeOffset.Parse("2026-08-23T12:00:00Z"));
         using (var store = new CompanionTimelineStore(temp.Path, currentTime))
         {
-            await store.AppendAsync(CreateUpdate(new EliteStatus
-            {
-                Timestamp = currentTime.GetUtcNow(),
-                EventName = "Status",
-                Flags = StatusFlags.InSrv,
-                Heading = 90,
-            }));
+            await store.AppendAsync(
+                CreateUpdate(
+                    new EliteStatus
+                    {
+                        Timestamp = currentTime.GetUtcNow(),
+                        EventName = "Status",
+                        Flags = StatusFlags.InSrv,
+                        Heading = 90,
+                    }
+                )
+            );
             currentTime.Advance(TimeSpan.FromSeconds(1));
-            await store.AppendAsync(CreateUpdate(new EliteStatus
-            {
-                Timestamp = currentTime.GetUtcNow(),
-                EventName = "Status",
-                Flags = StatusFlags.InSrv,
-                Heading = 90,
-            }));
+            await store.AppendAsync(
+                CreateUpdate(
+                    new EliteStatus
+                    {
+                        Timestamp = currentTime.GetUtcNow(),
+                        EventName = "Status",
+                        Flags = StatusFlags.InSrv,
+                        Heading = 90,
+                    }
+                )
+            );
         }
 
         var entries = new List<CompanionTimelineEntry>();
-        await foreach (var entry in CompanionTimelineStore.StreamAsync(
-                           temp.Path,
-                           from: null,
-                           to: null,
-                           CancellationToken.None))
+        await foreach (
+            var entry in CompanionTimelineStore.StreamAsync(temp.Path, from: null, to: null, CancellationToken.None)
+        )
         {
             entries.Add(entry);
         }
 
         var status = Assert.Single(entries);
         Assert.Equal(ReplayInputKind.Status, status.Kind);
-        Assert.Equal(
-            DateTimeOffset.Parse("2026-08-23T12:00:00Z"),
-            status.Timestamp);
+        Assert.Equal(DateTimeOffset.Parse("2026-08-23T12:00:00Z"), status.Timestamp);
         Assert.Contains(
             "2026-08-23T12:00:00.000Z",
             CompanionTimelineCodec.SerializeEntry(status),
-            StringComparison.Ordinal);
+            StringComparison.Ordinal
+        );
     }
 
     [Fact]
@@ -82,23 +89,26 @@ public sealed class CompanionTimelineStoreTests
                 "{\"timestamp\":\"2026-08-23T09:50:02Z\",\"event\":\"LoadGame\",\"Commander\":\"Private Cmdr\",\"FID\":\"F123456\",\"Odyssey\":true}",
                 "{\"timestamp\":\"2026-08-23T09:50:03Z\",\"event\":\"Location\",\"StarSystem\":\"Private System\",\"SystemAddress\":123,\"StarPos\":[1,2,3]}",
                 "{\"timestamp\":\"2026-08-23T10:00:00Z\",\"event\":\"Music\",\"MusicTrack\":\"Exploration\"}",
-            ]);
-        var time = new MutableTimeProvider(
-            DateTimeOffset.Parse("2026-08-23T10:05:00Z"));
+            ]
+        );
+        var time = new MutableTimeProvider(DateTimeOffset.Parse("2026-08-23T10:05:00Z"));
         using (var store = new CompanionTimelineStore(history, time))
         {
-            await store.AppendAsync(CreateUpdate(new EliteStatus
-            {
-                Timestamp = DateTimeOffset.Parse("2026-08-23T09:59:00Z"),
-                EventName = "Status",
-                Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
-                Latitude = 12.3,
-                Longitude = 45.6,
-                Heading = 90,
-                BodyName = "Private Body",
-            }));
-            await store.AppendAsync(CreateCompleteUpdate(
-                DateTimeOffset.Parse("2026-08-23T10:01:00Z")));
+            await store.AppendAsync(
+                CreateUpdate(
+                    new EliteStatus
+                    {
+                        Timestamp = DateTimeOffset.Parse("2026-08-23T09:59:00Z"),
+                        EventName = "Status",
+                        Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
+                        Latitude = 12.3,
+                        Longitude = 45.6,
+                        Heading = 90,
+                        BodyName = "Private Body",
+                    }
+                )
+            );
+            await store.AppendAsync(CreateCompleteUpdate(DateTimeOffset.Parse("2026-08-23T10:01:00Z")));
         }
 
         var packagePath = Path.Combine(temp.Path, "incident.srvreplay");
@@ -110,8 +120,10 @@ public sealed class CompanionTimelineStoreTests
                 DateTimeOffset.Parse("2026-08-23T10:00:00Z"),
                 DateTimeOffset.Parse("2026-08-23T10:02:00Z"),
                 ReplayPrivacyMode.Redacted,
-                "test"),
-            CancellationToken.None);
+                "test"
+            ),
+            CancellationToken.None
+        );
 
         Assert.Equal(6, result.CompanionEventCount);
         using (var archive = ZipFile.OpenRead(packagePath))
@@ -122,96 +134,68 @@ public sealed class CompanionTimelineStoreTests
         var session = await new ReplaySessionManager().ImportAsync(
             packagePath,
             Path.Combine(temp.Path, "managed"),
-            CancellationToken.None);
+            CancellationToken.None
+        );
         Assert.Empty(session.MissingCompanionTimelines);
         Assert.Equal(5, session.BootstrapInputCount);
         Assert.Contains(session.Events, item => item.Kind == ReplayInputKind.Cargo);
 
         var player = new JournalReplayPlayer(session);
-        await player.SeekAsync(
-            session.BootstrapInputCount,
-            CancellationToken.None);
+        await player.SeekAsync(session.BootstrapInputCount, CancellationToken.None);
         var playback = Path.GetDirectoryName(session.PlaybackJournalPath)!;
-        var status = await StatusFileReader.ReadAsync(
-            Path.Combine(playback, StatusFileReader.FileName));
+        var status = await StatusFileReader.ReadAsync(Path.Combine(playback, StatusFileReader.FileName));
         Assert.NotNull(status.Status);
         Assert.Equal(0, status.Status.Latitude);
         Assert.Equal(0, status.Status.Longitude);
         Assert.Equal("Replay Body", status.Status.BodyName);
 
-        while (!session.Events
-                   .Take(player.Position)
-                   .Any(item => item.Kind == ReplayInputKind.Cargo))
+        while (!session.Events.Take(player.Position).Any(item => item.Kind == ReplayInputKind.Cargo))
         {
             Assert.True(await player.StepAsync(CancellationToken.None));
         }
 
-        var cargo = await CargoFileReader.ReadAsync(
-            Path.Combine(playback, CargoFileReader.FileName));
+        var cargo = await CargoFileReader.ReadAsync(Path.Combine(playback, CargoFileReader.FileName));
         Assert.Equal(2, cargo.Snapshot?.GetCount("ancientorb"));
-        var routeEntry = Assert.Single(
-            session.Events,
-            item => item.Kind == ReplayInputKind.NavRoute);
+        var routeEntry = Assert.Single(session.Events, item => item.Kind == ReplayInputKind.NavRoute);
         using var routeDocument = JsonDocument.Parse(routeEntry.RawJson);
         Assert.Equal(
             "Replay Route 001",
-            routeDocument.RootElement.GetProperty("Route")[0]
-                .GetProperty("StarSystem").GetString());
+            routeDocument.RootElement.GetProperty("Route")[0].GetProperty("StarSystem").GetString()
+        );
     }
 
-    private static JournalMonitorUpdate CreateUpdate(EliteStatus status) => new(
-        null,
-        [],
-        status,
-        null,
-        null,
-        null,
-        [],
-        IsBootstrapRead: false);
+    private static JournalMonitorUpdate CreateUpdate(EliteStatus status) =>
+        new(null, [], status, null, null, null, [], IsBootstrapRead: false);
 
-    private static JournalMonitorUpdate CreateCompleteUpdate(
-        DateTimeOffset timestamp) => new(
-        null,
-        [],
-        new EliteStatus
-        {
-            Timestamp = timestamp,
-            EventName = "Status",
-            Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
-            Latitude = 13.3,
-            Longitude = 46.6,
-            Heading = 91,
-            BodyName = "Private Body",
-        },
-        new NavRouteSnapshot(
-            timestamp,
-            "NavRoute",
-            [new NavRouteEntry(
-                "Private Destination",
-                456,
-                new GalacticCoordinate(4, 5, 6),
-                "G")]),
-        new CargoSnapshot(
-            timestamp,
-            "Cargo",
-            "Ship",
-            2,
-            [new CargoItem("ancientorb", "Ancient Orb", 2, 0)]),
-        new MarketSnapshot(
-            timestamp,
-            "Market",
-            789,
-            "Private Station",
-            "Coriolis",
-            "all",
-            "Private System",
-            []),
-        [],
-        IsBootstrapRead: false,
-        new ShipLockerSnapshot(
-            timestamp,
-            "ShipLocker",
-            [new ShipLockerItem("Items", "healthpack", "Health Pack", 3)]));
+    private static JournalMonitorUpdate CreateCompleteUpdate(DateTimeOffset timestamp) =>
+        new(
+            null,
+            [],
+            new EliteStatus
+            {
+                Timestamp = timestamp,
+                EventName = "Status",
+                Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
+                Latitude = 13.3,
+                Longitude = 46.6,
+                Heading = 91,
+                BodyName = "Private Body",
+            },
+            new NavRouteSnapshot(
+                timestamp,
+                "NavRoute",
+                [new NavRouteEntry("Private Destination", 456, new GalacticCoordinate(4, 5, 6), "G")]
+            ),
+            new CargoSnapshot(timestamp, "Cargo", "Ship", 2, [new CargoItem("ancientorb", "Ancient Orb", 2, 0)]),
+            new MarketSnapshot(timestamp, "Market", 789, "Private Station", "Coriolis", "all", "Private System", []),
+            [],
+            IsBootstrapRead: false,
+            new ShipLockerSnapshot(
+                timestamp,
+                "ShipLocker",
+                [new ShipLockerItem("Items", "healthpack", "Health Pack", 3)]
+            )
+        );
 
     private sealed class MutableTimeProvider(DateTimeOffset now) : TimeProvider
     {
@@ -226,7 +210,8 @@ public sealed class CompanionTimelineStoreTests
         {
             Path = System.IO.Path.Combine(
                 System.IO.Path.GetTempPath(),
-                $"SrvSurvey-companion-timeline-{Guid.NewGuid():N}");
+                $"SrvSurvey-companion-timeline-{Guid.NewGuid():N}"
+            );
             Directory.CreateDirectory(Path);
         }
 

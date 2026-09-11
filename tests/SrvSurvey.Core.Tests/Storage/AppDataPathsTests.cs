@@ -12,27 +12,22 @@ public sealed class AppDataPathsTests
             DesktopPlatform.Windows,
             @"C:\Users\Cmdr",
             @"C:\Users\Cmdr\AppData\Roaming",
-            @"C:\Users\Cmdr\AppData\Local");
+            @"C:\Users\Cmdr\AppData\Local"
+        );
 
-        Assert.Equal(
-            @"C:\Users\Cmdr\AppData\Roaming\SrvSurvey",
-            paths.ConfigDirectory);
-        Assert.Equal(
-            @"C:\Users\Cmdr\AppData\Roaming\SrvSurvey\cross-platform",
-            paths.DataDirectory);
-        Assert.Equal(
-            @"C:\Users\Cmdr\AppData\Local\SrvSurvey\cache",
-            paths.CacheDirectory);
+        Assert.Equal(@"C:\Users\Cmdr\AppData\Roaming\SrvSurvey", paths.ConfigDirectory);
+        Assert.Equal(@"C:\Users\Cmdr\AppData\Roaming\SrvSurvey\cross-platform", paths.DataDirectory);
+        Assert.Equal(@"C:\Users\Cmdr\AppData\Local\SrvSurvey\cache", paths.CacheDirectory);
         Assert.Equal(3, paths.LegacyProfileCandidates.Count);
         Assert.Equal(
             @"C:\Users\Cmdr\AppData\Roaming\SrvSurvey\SrvSurvey\1.1.0.0",
-            paths.LegacyProfileCandidates[0].Path);
+            paths.LegacyProfileCandidates[0].Path
+        );
         Assert.Equal(
             @"C:\Users\Cmdr\AppData\Local\Packages\35333NosmohtSoftware.142860789C73F_p4c193bsm1z5a\LocalCache\Roaming\SrvSurvey\SrvSurvey\1.1.0.0",
-            paths.LegacyProfileCandidates[1].Path);
-        Assert.DoesNotContain(
-            paths.LegacyProfileCandidates,
-            candidate => candidate.Path == paths.DataDirectory);
+            paths.LegacyProfileCandidates[1].Path
+        );
+        Assert.DoesNotContain(paths.LegacyProfileCandidates, candidate => candidate.Path == paths.DataDirectory);
     }
 
     [Fact]
@@ -50,7 +45,8 @@ public sealed class AppDataPathsTests
             "/home/cmdr",
             string.Empty,
             string.Empty,
-            name => environment.GetValueOrDefault(name));
+            name => environment.GetValueOrDefault(name)
+        );
 
         Assert.Equal(Path.GetFullPath("/mnt/config/SrvSurvey"), paths.ConfigDirectory);
         Assert.Equal(Path.GetFullPath("/mnt/data/SrvSurvey"), paths.DataDirectory);
@@ -61,20 +57,10 @@ public sealed class AppDataPathsTests
     [Fact]
     public void LinuxFallsBackToFreedesktopDefaults()
     {
-        var paths = AppDataPaths.Resolve(
-            DesktopPlatform.Linux,
-            "/home/cmdr",
-            string.Empty,
-            string.Empty);
+        var paths = AppDataPaths.Resolve(DesktopPlatform.Linux, "/home/cmdr", string.Empty, string.Empty);
 
-        Assert.Equal(
-            Path.GetFullPath("/home/cmdr/.config/SrvSurvey"),
-            paths.ConfigDirectory);
-        Assert.Equal(
-            Path.GetFullPath("/home/cmdr/.local/share/SrvSurvey"),
-            paths.DataDirectory);
-        Assert.Equal(
-            Path.GetFullPath("/home/cmdr/.cache/SrvSurvey"),
-            paths.CacheDirectory);
+        Assert.Equal(Path.GetFullPath("/home/cmdr/.config/SrvSurvey"), paths.ConfigDirectory);
+        Assert.Equal(Path.GetFullPath("/home/cmdr/.local/share/SrvSurvey"), paths.DataDirectory);
+        Assert.Equal(Path.GetFullPath("/home/cmdr/.cache/SrvSurvey"), paths.CacheDirectory);
     }
 }

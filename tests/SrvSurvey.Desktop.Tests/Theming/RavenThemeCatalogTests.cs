@@ -8,20 +8,12 @@ public sealed class RavenThemeCatalogTests
     public void CatalogMatchesRavenThemeMenu()
     {
         Assert.Equal(
-            [
-                "Blue (light)",
-                "Blue (dark)",
-                "Orange (dark)",
-                "Green (light)",
-                "Green (dark)",
-                "Monochrome (dark)",
-            ],
-            RavenThemeCatalog.All.Select(theme => theme.DisplayName));
+            ["Blue (light)", "Blue (dark)", "Orange (dark)", "Green (light)", "Green (dark)", "Monochrome (dark)"],
+            RavenThemeCatalog.All.Select(theme => theme.DisplayName)
+        );
         Assert.Equal(2, RavenThemeCatalog.All.Count(theme => !theme.IsDark));
         Assert.Equal(4, RavenThemeCatalog.All.Count(theme => theme.IsDark));
-        Assert.Equal(
-            RavenThemeCatalog.All.Count,
-            RavenThemeCatalog.All.Select(theme => theme.Key).Distinct().Count());
+        Assert.Equal(RavenThemeCatalog.All.Count, RavenThemeCatalog.All.Select(theme => theme.Key).Distinct().Count());
     }
 
     [Theory]
@@ -30,10 +22,7 @@ public sealed class RavenThemeCatalogTests
     [InlineData("green-light", "#3C8223", "#F9FFF7")]
     [InlineData("green-dark", "#D1D93B", "#1E3533")]
     [InlineData("monochrome-dark", "#E6D59A", "#0A0A0A")]
-    public void CatalogPreservesRavenPrimaryAndWindowColors(
-        string key,
-        string primary,
-        string window)
+    public void CatalogPreservesRavenPrimaryAndWindowColors(string key, string primary, string window)
     {
         var theme = RavenThemeCatalog.Get(key);
 
@@ -65,8 +54,6 @@ public sealed class RavenThemeCatalogTests
     [Fact]
     public void UnknownThemeFallsBackToBlueDark()
     {
-        Assert.Equal(
-            RavenThemeCatalog.DefaultThemeKey,
-            RavenThemeCatalog.Get("not-a-theme").Key);
+        Assert.Equal(RavenThemeCatalog.DefaultThemeKey, RavenThemeCatalog.Get("not-a-theme").Key);
     }
 }

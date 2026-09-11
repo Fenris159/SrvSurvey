@@ -9,17 +9,12 @@ public sealed class SurfaceMiningOverlayViewModel : INotifyPropertyChanged
     private string platformStatus;
     private string inputMode;
 
-    public SurfaceMiningOverlayViewModel(
-        SurfaceMiningViewModel surfaceMining,
-        OverlayPlatformCapabilities capabilities)
+    public SurfaceMiningOverlayViewModel(SurfaceMiningViewModel surfaceMining, OverlayPlatformCapabilities capabilities)
     {
-        SurfaceMining = surfaceMining
-            ?? throw new ArgumentNullException(nameof(surfaceMining));
+        SurfaceMining = surfaceMining ?? throw new ArgumentNullException(nameof(surfaceMining));
         ArgumentNullException.ThrowIfNull(capabilities);
         platformStatus = capabilities.StatusText;
-        inputMode = capabilities.SupportsClickThrough
-            ? "PASSIVE"
-            : "UNAVAILABLE";
+        inputMode = capabilities.SupportsClickThrough ? "PASSIVE" : "UNAVAILABLE";
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -45,10 +40,7 @@ public sealed class SurfaceMiningOverlayViewModel : INotifyPropertyChanged
         InputMode = result.IsClickThrough ? "PASSIVE" : "BLOCKED";
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {

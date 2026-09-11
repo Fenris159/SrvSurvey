@@ -6,9 +6,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed class ThemeOptionViewModel
 {
-    public ThemeOptionViewModel(
-        RavenThemeDefinition definition,
-        Action<ThemeOptionViewModel> select)
+    public ThemeOptionViewModel(RavenThemeDefinition definition, Action<ThemeOptionViewModel> select)
     {
         Definition = definition;
         WindowBrush = Brush.Parse(definition.WindowColor);
@@ -38,8 +36,12 @@ public sealed class ThemeOptionViewModel
     {
         public event EventHandler? CanExecuteChanged
         {
-            add { /* This command is always executable. */ }
-            remove { /* This command is always executable. */ }
+            add
+            { /* This command is always executable. */
+            }
+            remove
+            { /* This command is always executable. */
+            }
         }
 
         public bool CanExecute(object? parameter) => true;

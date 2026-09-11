@@ -6,9 +6,7 @@ namespace SrvSurvey.Desktop;
 public sealed partial class PulseOverlayWindow : Window
 {
     public PulseOverlayWindow()
-        : this(null)
-    {
-    }
+        : this(null) { }
 
     public PulseOverlayWindow(PulseOverlayViewModel? viewModel)
     {

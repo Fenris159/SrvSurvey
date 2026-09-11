@@ -8,8 +8,7 @@ using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed class ColonizationSystemEditorViewModel
-    : INotifyPropertyChanged
+public sealed class ColonizationSystemEditorViewModel : INotifyPropertyChanged
 {
     private const int MaximumBufferedJournalEvents = 2048;
 
@@ -24,8 +23,7 @@ public sealed class ColonizationSystemEditorViewModel
     private readonly AsyncCommand confirmPublishCommand;
     private readonly DelegateCommand cancelPublishCommand;
     private readonly Queue<JournalEventEnvelope> bufferedJournalEvents = [];
-    private ColonizationSystemEditorContext context =
-        ColonizationSystemEditorContext.Unavailable;
+    private ColonizationSystemEditorContext context = ColonizationSystemEditorContext.Unavailable;
     private ColonizationSystemRecord? system;
     private List<ColonizationSystemSite> baseline = [];
     private ColonizationSystemSiteJournalTracker? journalTracker;
@@ -39,56 +37,42 @@ public sealed class ColonizationSystemEditorViewModel
     private bool hasLocalChanges;
     private bool isBodyImportConfirmationPending;
     private bool captureUnknownSurfaceSites;
-    private string statusMessage =
-        "Load a live system to review its Raven Colonial sites.";
+    private string statusMessage = "Load a live system to review its Raven Colonial sites.";
     private string reviewSummary = string.Empty;
     private IReadOnlyList<ColonizationSystemSiteConflict> conflicts = [];
     private IReadOnlyList<ColonizationSystemBodyOptionViewModel> bodies = [];
 
-    public ColonizationSystemEditorViewModel(
-        IRavenColonialClient client,
-        ColonizationBuildCatalog buildCatalog)
+    public ColonizationSystemEditorViewModel(IRavenColonialClient client, ColonizationBuildCatalog buildCatalog)
     {
         this.client = client ?? throw new ArgumentNullException(nameof(client));
         ArgumentNullException.ThrowIfNull(buildCatalog);
-        BuildTypes = buildCatalog.Builds
-            .SelectMany(build => build.Layouts)
-            .Concat(
-            [
-                "installation?",
-                "outpost?",
-                "no_truss?",
-                "orbis?",
-                "dodec?",
-                "settlement?",
-                "aphrodite?",
-            ])
+        BuildTypes = buildCatalog
+            .Builds.SelectMany(build => build.Layouts)
+            .Concat(["installation?", "outpost?", "no_truss?", "orbis?", "dodec?", "settlement?", "aphrodite?"])
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
             .ToArray();
         loadCommand = new AsyncCommand(LoadAsync, () => CanLoad);
         requestBodyImportCommand = new DelegateCommand(
             RequestBodyImport,
-            () => NeedsBodyImport && !HasLocalChanges && !IsBusy);
+            () => NeedsBodyImport && !HasLocalChanges && !IsBusy
+        );
         confirmBodyImportCommand = new AsyncCommand(
             ConfirmBodyImportAsync,
-            () => IsBodyImportConfirmationPending && !IsBusy);
+            () => IsBodyImportConfirmationPending && !IsBusy
+        );
         cancelBodyImportCommand = new DelegateCommand(
             CancelBodyImport,
-            () => IsBodyImportConfirmationPending && !IsBusy);
+            () => IsBodyImportConfirmationPending && !IsBusy
+        );
         addSiteCommand = new DelegateCommand(AddSite, () => CanAddSite);
         removeSiteCommand = new DelegateCommand(
             RemoveSelectedSite,
-            () => CanEdit && SelectedSite is not null && !IsBusy);
-        reviewCommand = new AsyncCommand(
-            ReviewAsync,
-            () => CanReview);
-        confirmPublishCommand = new AsyncCommand(
-            ConfirmPublishAsync,
-            () => CanConfirmPublish);
-        cancelPublishCommand = new DelegateCommand(
-            CancelPublish,
-            () => IsPublishConfirmationPending && !IsBusy);
+            () => CanEdit && SelectedSite is not null && !IsBusy
+        );
+        reviewCommand = new AsyncCommand(ReviewAsync, () => CanReview);
+        confirmPublishCommand = new AsyncCommand(ConfirmPublishAsync, () => CanConfirmPublish);
+        cancelPublishCommand = new DelegateCommand(CancelPublish, () => IsPublishConfirmationPending && !IsBusy);
         LoadCommand = loadCommand;
         RequestBodyImportCommand = requestBodyImportCommand;
         ConfirmBodyImportCommand = confirmBodyImportCommand;
@@ -120,10 +104,7 @@ public sealed class ColonizationSystemEditorViewModel
 
     public ICommand CancelPublishCommand { get; }
 
-    public ObservableCollection<ColonizationSystemSiteRowViewModel> Sites
-    {
-        get;
-    } = [];
+    public ObservableCollection<ColonizationSystemSiteRowViewModel> Sites { get; } = [];
 
     public IReadOnlyList<string> BuildTypes { get; }
 
@@ -132,23 +113,20 @@ public sealed class ColonizationSystemEditorViewModel
 
     public IReadOnlyList<ColonizationSystemBodyOptionViewModel> Bodies => bodies;
 
-    public bool CanLoad => !IsBusy
+    public bool CanLoad =>
+        !IsBusy
         && context.IsExternalDataEnabled
         && !string.IsNullOrWhiteSpace(context.CommanderName)
-        && (!string.IsNullOrWhiteSpace(context.SystemName)
-            || context.SystemAddress is > 0);
+        && (!string.IsNullOrWhiteSpace(context.SystemName) || context.SystemAddress is > 0);
 
     public bool IsLoaded => system is not null;
 
     public long? LoadedSystemAddress => system?.SystemAddress;
 
-    public string SystemTitle => system is null
-        ? context.SystemName ?? "No live system"
-        : $"{system.Name} ({system.SystemAddress})";
+    public string SystemTitle =>
+        system is null ? context.SystemName ?? "No live system" : $"{system.Name} ({system.SystemAddress})";
 
-    public string Architect => string.IsNullOrWhiteSpace(system?.Architect)
-        ? "Unassigned"
-        : system.Architect;
+    public string Architect => string.IsNullOrWhiteSpace(system?.Architect) ? "Unassigned" : system.Architect;
 
     public bool IsOpenSystem => system?.IsOpen == true;
 
@@ -166,8 +144,7 @@ public sealed class ColonizationSystemEditorViewModel
         }
     }
 
-    public bool NeedsBodyImport => system is not null
-        && system.Bodies is null;
+    public bool NeedsBodyImport => system is not null && system.Bodies is null;
 
     public bool IsBodyImportConfirmationPending
     {
@@ -235,9 +212,7 @@ public sealed class ColonizationSystemEditorViewModel
         }
     }
 
-    public bool CanAddSite => CanEdit
-        && !IsBusy
-        && !string.IsNullOrWhiteSpace(NewSiteName);
+    public bool CanAddSite => CanEdit && !IsBusy && !string.IsNullOrWhiteSpace(NewSiteName);
 
     public bool CaptureUnknownSurfaceSites
     {
@@ -257,20 +232,20 @@ public sealed class ColonizationSystemEditorViewModel
 
     public int ScannedBodyCount => journalTracker?.ScannedBodyCount ?? 0;
 
-    public bool IsBodyScanComplete =>
-        journalTracker?.IsBodyScanComplete == true;
+    public bool IsBodyScanComplete => journalTracker?.IsBodyScanComplete == true;
 
-    public string ScanSummary => journalTracker is null
-        ? "Journal scan context is not loaded."
-        : (IsBodyScanComplete) switch
-        {
-            true => $"Body scan complete ({ScannedBodyCount:N0} scanned).",
-            false => ExpectedBodyCount switch
+    public string ScanSummary =>
+        journalTracker is null
+            ? "Journal scan context is not loaded."
+            : (IsBodyScanComplete) switch
             {
-                int expected => $"Body scans: {ScannedBodyCount:N0} of {expected:N0}.",
-                null => $"Body scans recorded: {ScannedBodyCount:N0}."
-            }
-        };
+                true => $"Body scan complete ({ScannedBodyCount:N0} scanned).",
+                false => ExpectedBodyCount switch
+                {
+                    int expected => $"Body scans: {ScannedBodyCount:N0} of {expected:N0}.",
+                    null => $"Body scans recorded: {ScannedBodyCount:N0}.",
+                },
+            };
 
     public string StatusMessage
     {
@@ -300,15 +275,10 @@ public sealed class ColonizationSystemEditorViewModel
 
     public bool IsPublishConfirmationPending => pendingPlan is not null;
 
-    public bool CanReview => CanEdit
-        && HasLocalChanges
-        && !IsBusy
-        && !IsBodyImportConfirmationPending;
+    public bool CanReview => CanEdit && HasLocalChanges && !IsBusy && !IsBodyImportConfirmationPending;
 
-    public bool CanConfirmPublish => pendingPlan?.CanPublish == true
-        && !IsBusy
-        && CanEdit
-        && !string.IsNullOrWhiteSpace(context.RavenApiKey);
+    public bool CanConfirmPublish =>
+        pendingPlan?.CanPublish == true && !IsBusy && CanEdit && !string.IsNullOrWhiteSpace(context.RavenApiKey);
 
     public void UpdateContext(ColonizationSystemEditorContext updatedContext)
     {
@@ -316,7 +286,8 @@ public sealed class ColonizationSystemEditorViewModel
         var changed = !string.Equals(
             GetLoadedContextIdentity(context),
             GetLoadedContextIdentity(updatedContext),
-            StringComparison.Ordinal);
+            StringComparison.Ordinal
+        );
         context = updatedContext;
         if (changed)
         {
@@ -327,7 +298,7 @@ public sealed class ColonizationSystemEditorViewModel
             ? (IsLoaded) switch
             {
                 true => StatusMessage,
-                false => "The live system is ready to load from Raven Colonial."
+                false => "The live system is ready to load from Raven Colonial.",
             }
             : GetUnavailableReason(context);
         OnPropertyChanged(nameof(CanLoad));
@@ -338,12 +309,10 @@ public sealed class ColonizationSystemEditorViewModel
 
     public void ReportLinkFailure(string message)
     {
-        StatusMessage = "The Raven system page could not be opened: "
-            + message;
+        StatusMessage = "The Raven system page could not be opened: " + message;
     }
 
-    public void ApplyJournalEvents(
-        IReadOnlyList<JournalEventEnvelope> journalEvents)
+    public void ApplyJournalEvents(IReadOnlyList<JournalEventEnvelope> journalEvents)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
         foreach (var journalEvent in journalEvents)
@@ -367,7 +336,8 @@ public sealed class ColonizationSystemEditorViewModel
         {
             ReplaceRows(sites);
             MarkLocalChange(
-                $"Journal data enriched {changed:N0} Raven site entr{(changed == 1 ? "y" : "ies")} locally.");
+                $"Journal data enriched {changed:N0} Raven site entr{(changed == 1 ? "y" : "ies")} locally."
+            );
         }
     }
 
@@ -380,14 +350,10 @@ public sealed class ColonizationSystemEditorViewModel
         }
 
         var sites = SnapshotSites();
-        if (journalTracker.ApplyStatusDestination(
-                sites,
-                status,
-                CaptureUnknownSurfaceSites))
+        if (journalTracker.ApplyStatusDestination(sites, status, CaptureUnknownSurfaceSites))
         {
             ReplaceRows(sites);
-            MarkLocalChange(
-                "The selected Elite destination updated a Raven site locally.");
+            MarkLocalChange("The selected Elite destination updated a Raven site locally.");
         }
     }
 
@@ -410,14 +376,13 @@ public sealed class ColonizationSystemEditorViewModel
                 ? (NeedsBodyImport) switch
                 {
                     true => "Sites loaded read-only from Raven. Confirm a body import before using body-aware editing.",
-                    false => $"Loaded {Sites.Count:N0} sites. Changes remain local until reviewed and confirmed."
+                    false => $"Loaded {Sites.Count:N0} sites. Changes remain local until reviewed and confirmed.",
                 }
                 : "This secured system can only be edited by its architect.";
         }
         catch (Exception exception) when (IsExpectedFailure(exception))
         {
-            StatusMessage = "The Raven system could not be loaded: "
-                + exception.Message;
+            StatusMessage = "The Raven system could not be loaded: " + exception.Message;
         }
         finally
         {
@@ -434,14 +399,13 @@ public sealed class ColonizationSystemEditorViewModel
 
         ClearReview();
         IsBodyImportConfirmationPending = true;
-        StatusMessage = "Confirm to ask Raven Colonial to import this system's body catalog. No local sites will be published.";
+        StatusMessage =
+            "Confirm to ask Raven Colonial to import this system's body catalog. No local sites will be published.";
     }
 
     public async Task ConfirmBodyImportAsync()
     {
-        if (!IsBodyImportConfirmationPending
-            || system is null
-            || IsBusy)
+        if (!IsBodyImportConfirmationPending || system is null || IsBusy)
         {
             return;
         }
@@ -457,8 +421,7 @@ public sealed class ColonizationSystemEditorViewModel
         StatusMessage = "Importing the system body catalog into Raven Colonial...";
         try
         {
-            var imported = await client.ImportSystemBodiesAsync(
-                GetSystemIdentifier());
+            var imported = await client.ImportSystemBodiesAsync(GetSystemIdentifier());
             ApplyLoadedSystem(imported);
             IsBodyImportConfirmationPending = false;
             StatusMessage = imported.Bodies is null
@@ -467,8 +430,7 @@ public sealed class ColonizationSystemEditorViewModel
         }
         catch (Exception exception) when (IsExpectedFailure(exception))
         {
-            StatusMessage = "The body catalog was not imported: "
-                + exception.Message;
+            StatusMessage = "The body catalog was not imported: " + exception.Message;
         }
         finally
         {
@@ -484,10 +446,7 @@ public sealed class ColonizationSystemEditorViewModel
         }
 
         var name = NewSiteName.Trim();
-        if (Sites.Any(site => string.Equals(
-                site.Name,
-                name,
-                StringComparison.OrdinalIgnoreCase)))
+        if (Sites.Any(site => string.Equals(site.Name, name, StringComparison.OrdinalIgnoreCase)))
         {
             StatusMessage = $"A site named '{name}' already exists.";
             return;
@@ -501,7 +460,8 @@ public sealed class ColonizationSystemEditorViewModel
                 Name = name,
                 BodyNumber = -1,
                 Status = ColonizationSystemSiteStatus.Plan,
-            });
+            }
+        );
         Subscribe(row);
         Sites.Insert(0, row);
         SelectedSite = row;
@@ -549,14 +509,12 @@ public sealed class ColonizationSystemEditorViewModel
                 return;
             }
 
-            var plan = ColonizationSystemSiteReconciler.CreatePlan(
-                baseline,
-                latest.Sites,
-                edited);
+            var plan = ColonizationSystemSiteReconciler.CreatePlan(baseline, latest.Sites, edited);
             Conflicts = plan.Conflicts;
             if (plan.Conflicts.Count > 0)
             {
-                ReviewSummary = $"Review found {plan.Conflicts.Count:N0} concurrent conflict(s). Reload and reapply those edits before publishing.";
+                ReviewSummary =
+                    $"Review found {plan.Conflicts.Count:N0} concurrent conflict(s). Reload and reapply those edits before publishing.";
                 StatusMessage = "Concurrent Raven changes were preserved; nothing is ready to publish.";
                 return;
             }
@@ -571,7 +529,8 @@ public sealed class ColonizationSystemEditorViewModel
 
             pendingPlan = plan;
             pendingContextIdentity = GetContextIdentity(context);
-            ReviewSummary = $"Ready to publish {plan.Update.UpdatedSites.Count:N0} update(s) and {plan.Update.DeletedSiteIds.Count:N0} deletion(s). {plan.UnchangedCount:N0} site(s) remain unchanged.";
+            ReviewSummary =
+                $"Ready to publish {plan.Update.UpdatedSites.Count:N0} update(s) and {plan.Update.DeletedSiteIds.Count:N0} deletion(s). {plan.UnchangedCount:N0} site(s) remain unchanged.";
             StatusMessage = string.IsNullOrWhiteSpace(context.RavenApiKey)
                 ? "Review passed, but a saved Raven API key is required before publishing."
                 : "Review passed. Confirm once more to publish these Raven site changes.";
@@ -579,8 +538,7 @@ public sealed class ColonizationSystemEditorViewModel
         }
         catch (Exception exception) when (IsExpectedFailure(exception))
         {
-            StatusMessage = "The Raven site review could not be completed: "
-                + exception.Message;
+            StatusMessage = "The Raven site review could not be completed: " + exception.Message;
         }
         finally
         {
@@ -595,11 +553,10 @@ public sealed class ColonizationSystemEditorViewModel
             return;
         }
 
-        if (!string.Equals(
-                pendingContextIdentity,
-                GetContextIdentity(context),
-                StringComparison.Ordinal)
-            || !ContextMatchesLoadedSystem())
+        if (
+            !string.Equals(pendingContextIdentity, GetContextIdentity(context), StringComparison.Ordinal)
+            || !ContextMatchesLoadedSystem()
+        )
         {
             CancelPublish();
             StatusMessage = "The commander or live system changed. Review the edits again before publishing.";
@@ -611,17 +568,14 @@ public sealed class ColonizationSystemEditorViewModel
         StatusMessage = "Publishing the confirmed site changes to Raven Colonial...";
         try
         {
-            var updated = await client.UpdateSystemSitesAsync(
-                GetSystemIdentifier(),
-                plan.Update,
-                context.RavenApiKey!);
+            var updated = await client.UpdateSystemSitesAsync(GetSystemIdentifier(), plan.Update, context.RavenApiKey!);
             ApplyLoadedSystem(updated);
-            StatusMessage = $"Raven Colonial accepted the update. Revision {updated.Revision:N0} now has {updated.Sites.Count:N0} sites.";
+            StatusMessage =
+                $"Raven Colonial accepted the update. Revision {updated.Revision:N0} now has {updated.Sites.Count:N0} sites.";
         }
         catch (Exception exception) when (IsExpectedFailure(exception))
         {
-            StatusMessage = "The confirmed Raven update was not published: "
-                + exception.Message;
+            StatusMessage = "The confirmed Raven update was not published: " + exception.Message;
         }
         finally
         {
@@ -633,28 +587,24 @@ public sealed class ColonizationSystemEditorViewModel
     {
         ValidateLoadedSystem(loaded);
         system = CloneSystem(loaded);
-        bodies = system.Bodies?
-            .OrderBy(body => body.Number)
-            .Select(body => new ColonizationSystemBodyOptionViewModel(
-                body.Number,
-                body.Name))
-            .ToArray() ?? [];
+        bodies =
+            system
+                .Bodies?.OrderBy(body => body.Number)
+                .Select(body => new ColonizationSystemBodyOptionViewModel(body.Number, body.Name))
+                .ToArray()
+            ?? [];
         baseline = loaded.Sites.Select(CloneSite).ToList();
         CanEdit = CanCommanderEdit(loaded, context.CommanderName);
         journalTracker = new ColonizationSystemSiteJournalTracker(
             loaded.SystemAddress,
             loaded.Name,
-            loaded.Bodies?.Select(body => body.Number));
+            loaded.Bodies?.Select(body => body.Number)
+        );
         var editableSites = loaded.Sites.Select(CloneSite).ToList();
         if (CanEdit)
         {
-            journalTracker.ApplyJournalEvents(
-                editableSites,
-                bufferedJournalEvents);
-            journalTracker.ApplyStatusDestination(
-                editableSites,
-                latestStatus,
-                CaptureUnknownSurfaceSites);
+            journalTracker.ApplyJournalEvents(editableSites, bufferedJournalEvents);
+            journalTracker.ApplyStatusDestination(editableSites, latestStatus, CaptureUnknownSurfaceSites);
         }
 
         ReplaceRows(editableSites);
@@ -716,14 +666,11 @@ public sealed class ColonizationSystemEditorViewModel
         return Sites.Select(row => row.ToSite()).ToList();
     }
 
-    private bool TryValidateSites(
-        out List<ColonizationSystemSite> sites,
-        out string message)
+    private bool TryValidateSites(out List<ColonizationSystemSite> sites, out string message)
     {
         sites = SnapshotSites();
         message = string.Empty;
-        var missingName = sites.FirstOrDefault(site =>
-            string.IsNullOrWhiteSpace(site.Name));
+        var missingName = sites.FirstOrDefault(site => string.IsNullOrWhiteSpace(site.Name));
         if (missingName is not null)
         {
             message = "Every Raven site requires a name.";
@@ -742,30 +689,30 @@ public sealed class ColonizationSystemEditorViewModel
         var knownBodies = system?.Bodies?.Select(body => body.Number).ToHashSet();
         var invalidBody = sites.FirstOrDefault(site =>
             site.BodyNumber < -1
-            || (site.BodyNumber >= 0
-                && knownBodies is { Count: > 0 }
-                && !knownBodies.Contains(site.BodyNumber)));
+            || (site.BodyNumber >= 0 && knownBodies is { Count: > 0 } && !knownBodies.Contains(site.BodyNumber))
+        );
         if (invalidBody is not null)
         {
-            message = $"'{invalidBody.Name}' uses body number {invalidBody.BodyNumber}, which is not in the imported body catalog.";
+            message =
+                $"'{invalidBody.Name}' uses body number {invalidBody.BodyNumber}, which is not in the imported body catalog.";
             return false;
         }
 
         sites = sites
-            .Select(site => site with
-            {
-                Id = site.Id.Trim(),
-                Name = site.Name.Trim(),
-                BuildType = NormalizeOptional(site.BuildType),
-                BuildId = NormalizeOptional(site.BuildId),
-            })
+            .Select(site =>
+                site with
+                {
+                    Id = site.Id.Trim(),
+                    Name = site.Name.Trim(),
+                    BuildType = NormalizeOptional(site.BuildType),
+                    BuildId = NormalizeOptional(site.BuildId),
+                }
+            )
             .ToList();
         return true;
     }
 
-    private void SitePropertyChanged(
-        object? sender,
-        PropertyChangedEventArgs eventArgs)
+    private void SitePropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
         if (sender is ColonizationSystemSiteRowViewModel row)
         {
@@ -846,9 +793,7 @@ public sealed class ColonizationSystemEditorViewModel
 
     private string GetSystemIdentifier()
     {
-        return context.SystemAddress is > 0
-            ? context.SystemAddress.Value.ToString()
-            : context.SystemName!.Trim();
+        return context.SystemAddress is > 0 ? context.SystemAddress.Value.ToString() : context.SystemName!.Trim();
     }
 
     private bool ContextMatchesLoadedSystem()
@@ -860,10 +805,7 @@ public sealed class ColonizationSystemEditorViewModel
 
         return context.SystemAddress is > 0
             ? context.SystemAddress == system.SystemAddress
-            : string.Equals(
-                context.SystemName,
-                system.Name,
-                StringComparison.OrdinalIgnoreCase);
+            : string.Equals(context.SystemName, system.Name, StringComparison.OrdinalIgnoreCase);
     }
 
     private string CreateLocalSiteId()
@@ -873,24 +815,15 @@ public sealed class ColonizationSystemEditorViewModel
         do
         {
             id = $"y{value++}";
-        }
-        while (Sites.Any(site => string.Equals(
-            site.Id,
-            id,
-            StringComparison.Ordinal)));
+        } while (Sites.Any(site => string.Equals(site.Id, id, StringComparison.Ordinal)));
         return id;
     }
 
-    private static bool CanCommanderEdit(
-        ColonizationSystemRecord record,
-        string? commanderName)
+    private static bool CanCommanderEdit(ColonizationSystemRecord record, string? commanderName)
     {
         return string.IsNullOrWhiteSpace(record.Architect)
             || record.IsOpen
-            || string.Equals(
-                record.Architect,
-                commanderName,
-                StringComparison.OrdinalIgnoreCase);
+            || string.Equals(record.Architect, commanderName, StringComparison.OrdinalIgnoreCase);
     }
 
     private static void ValidateLoadedSystem(ColonizationSystemRecord loaded)
@@ -898,45 +831,43 @@ public sealed class ColonizationSystemEditorViewModel
         ArgumentNullException.ThrowIfNull(loaded);
         if (loaded.SystemAddress <= 0 || string.IsNullOrWhiteSpace(loaded.Name))
         {
-            throw new InvalidDataException(
-                "Raven Colonial returned an incomplete system identity.");
+            throw new InvalidDataException("Raven Colonial returned an incomplete system identity.");
         }
 
-        var duplicateId = loaded.Sites
-            .Where(site => !string.IsNullOrWhiteSpace(site.Id))
+        var duplicateId = loaded
+            .Sites.Where(site => !string.IsNullOrWhiteSpace(site.Id))
             .GroupBy(site => site.Id, StringComparer.Ordinal)
             .FirstOrDefault(group => group.Count() > 1);
-        var duplicateName = loaded.Sites
-            .GroupBy(site => site.Name, StringComparer.OrdinalIgnoreCase)
+        var duplicateName = loaded
+            .Sites.GroupBy(site => site.Name, StringComparer.OrdinalIgnoreCase)
             .FirstOrDefault(group => group.Count() > 1);
-        if (loaded.Sites.Any(site => string.IsNullOrWhiteSpace(site.Name))
+        if (
+            loaded.Sites.Any(site => string.IsNullOrWhiteSpace(site.Name))
             || duplicateId is not null
-            || duplicateName is not null)
+            || duplicateName is not null
+        )
         {
-            throw new InvalidDataException(
-                "Raven Colonial returned unnamed or duplicate system sites.");
+            throw new InvalidDataException("Raven Colonial returned unnamed or duplicate system sites.");
         }
     }
 
-    private static string GetContextIdentity(
-        ColonizationSystemEditorContext value)
+    private static string GetContextIdentity(ColonizationSystemEditorContext value)
     {
         return string.Join(
             "|",
             value.IsExternalDataEnabled,
             value.CommanderName,
             value.SystemName,
-            value.SystemAddress);
+            value.SystemAddress
+        );
     }
 
-    private static string GetLoadedContextIdentity(
-        ColonizationSystemEditorContext value)
+    private static string GetLoadedContextIdentity(ColonizationSystemEditorContext value)
     {
         return GetContextIdentity(value);
     }
 
-    private static string GetUnavailableReason(
-        ColonizationSystemEditorContext value)
+    private static string GetUnavailableReason(ColonizationSystemEditorContext value)
     {
         if (!value.IsExternalDataEnabled)
         {
@@ -948,8 +879,7 @@ public sealed class ColonizationSystemEditorViewModel
             return "An active commander profile is required.";
         }
 
-        if (string.IsNullOrWhiteSpace(value.SystemName)
-            && value.SystemAddress is not > 0)
+        if (string.IsNullOrWhiteSpace(value.SystemName) && value.SystemAddress is not > 0)
         {
             return "Enter a live Elite system before loading Raven sites.";
         }
@@ -959,9 +889,7 @@ public sealed class ColonizationSystemEditorViewModel
 
     private static bool IsExpectedFailure(Exception exception)
     {
-        return exception is HttpRequestException
-            or InvalidDataException
-            or TaskCanceledException;
+        return exception is HttpRequestException or InvalidDataException or TaskCanceledException;
     }
 
     private static string? NormalizeOptional(string? value)
@@ -969,8 +897,7 @@ public sealed class ColonizationSystemEditorViewModel
         return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     }
 
-    private static ColonizationSystemRecord CloneSystem(
-        ColonizationSystemRecord record)
+    private static ColonizationSystemRecord CloneSystem(ColonizationSystemRecord record)
     {
         return record with
         {
@@ -980,8 +907,7 @@ public sealed class ColonizationSystemEditorViewModel
         };
     }
 
-    private static ColonizationSystemBody CloneBody(
-        ColonizationSystemBody body)
+    private static ColonizationSystemBody CloneBody(ColonizationSystemBody body)
     {
         return body with
         {
@@ -991,50 +917,37 @@ public sealed class ColonizationSystemEditorViewModel
         };
     }
 
-    private static ColonizationSystemSite CloneSite(
-        ColonizationSystemSite site)
+    private static ColonizationSystemSite CloneSite(ColonizationSystemSite site)
     {
         return site with { ExtensionData = CloneJsonMap(site.ExtensionData) };
     }
 
-    private static Dictionary<string, JsonElement> CloneJsonMap(
-        IReadOnlyDictionary<string, JsonElement> source)
+    private static Dictionary<string, JsonElement> CloneJsonMap(IReadOnlyDictionary<string, JsonElement> source)
     {
-        return source.ToDictionary(
-            pair => pair.Key,
-            pair => pair.Value.Clone(),
-            StringComparer.Ordinal);
+        return source.ToDictionary(pair => pair.Key, pair => pair.Value.Clone(), StringComparer.Ordinal);
     }
 
-    private static bool SiteListsEqual(
-        List<ColonizationSystemSite> left,
-        List<ColonizationSystemSite> right)
+    private static bool SiteListsEqual(List<ColonizationSystemSite> left, List<ColonizationSystemSite> right)
     {
         if (left.Count != right.Count)
         {
             return false;
         }
 
-        return left.All(site => right.Any(candidate =>
-            string.Equals(site.Id, candidate.Id, StringComparison.Ordinal)
-            && string.Equals(site.Name, candidate.Name, StringComparison.Ordinal)
-            && site.BodyNumber == candidate.BodyNumber
-            && string.Equals(
-                site.BuildType,
-                candidate.BuildType,
-                StringComparison.Ordinal)
-            && string.Equals(
-                site.BuildId,
-                candidate.BuildId,
-                StringComparison.Ordinal)
-            && site.MarketId == candidate.MarketId
-            && site.Status == candidate.Status));
+        return left.All(site =>
+            right.Any(candidate =>
+                string.Equals(site.Id, candidate.Id, StringComparison.Ordinal)
+                && string.Equals(site.Name, candidate.Name, StringComparison.Ordinal)
+                && site.BodyNumber == candidate.BodyNumber
+                && string.Equals(site.BuildType, candidate.BuildType, StringComparison.Ordinal)
+                && string.Equals(site.BuildId, candidate.BuildId, StringComparison.Ordinal)
+                && site.MarketId == candidate.MarketId
+                && site.Status == candidate.Status
+            )
+        );
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -1046,17 +959,12 @@ public sealed class ColonizationSystemEditorViewModel
         return true;
     }
 
-    private void OnPropertyChanged(
-        [CallerMemberName] string? propertyName = null)
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(propertyName));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private sealed class DelegateCommand(
-        Action execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class DelegateCommand(Action execute, Func<bool> canExecute) : ICommand
     {
         public event EventHandler? CanExecuteChanged;
 
@@ -1076,9 +984,7 @@ public sealed class ColonizationSystemEditorViewModel
         }
     }
 
-    private sealed class AsyncCommand(
-        Func<Task> execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class AsyncCommand(Func<Task> execute, Func<bool> canExecute) : ICommand
     {
         public event EventHandler? CanExecuteChanged;
 
@@ -1099,8 +1005,7 @@ public sealed class ColonizationSystemEditorViewModel
     }
 }
 
-public sealed class ColonizationSystemSiteRowViewModel
-    : INotifyPropertyChanged
+public sealed class ColonizationSystemSiteRowViewModel : INotifyPropertyChanged
 {
     private readonly IReadOnlyDictionary<string, JsonElement> extensionData;
     private string id;
@@ -1124,13 +1029,14 @@ public sealed class ColonizationSystemSiteRowViewModel
         extensionData = site.ExtensionData.ToDictionary(
             pair => pair.Key,
             pair => pair.Value.Clone(),
-            StringComparer.Ordinal);
+            StringComparer.Ordinal
+        );
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public IReadOnlyList<ColonizationSystemSiteStatus> AllowedStatuses { get; }
-        = Enum.GetValues<ColonizationSystemSiteStatus>();
+    public IReadOnlyList<ColonizationSystemSiteStatus> AllowedStatuses { get; } =
+        Enum.GetValues<ColonizationSystemSiteStatus>();
 
     public string Id
     {
@@ -1188,14 +1094,12 @@ public sealed class ColonizationSystemSiteRowViewModel
             ExtensionData = extensionData.ToDictionary(
                 pair => pair.Key,
                 pair => pair.Value.Clone(),
-                StringComparer.Ordinal),
+                StringComparer.Ordinal
+            ),
         };
     }
 
-    private void SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private void SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -1203,15 +1107,11 @@ public sealed class ColonizationSystemSiteRowViewModel
         }
 
         field = value;
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(propertyName));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
 
-public sealed record ColonizationSystemBodyOptionViewModel(
-    int Number,
-    string Name)
+public sealed record ColonizationSystemBodyOptionViewModel(int Number, string Name)
 {
     public string Label => $"{Number}: {Name}";
 }
@@ -1221,12 +1121,8 @@ public sealed record ColonizationSystemEditorContext(
     string? CommanderName,
     string? SystemName,
     long? SystemAddress,
-    string? RavenApiKey)
+    string? RavenApiKey
+)
 {
-    public static ColonizationSystemEditorContext Unavailable { get; } = new(
-        false,
-        null,
-        null,
-        null,
-        null);
+    public static ColonizationSystemEditorContext Unavailable { get; } = new(false, null, null, null, null);
 }

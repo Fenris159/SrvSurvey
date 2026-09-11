@@ -27,19 +27,16 @@ public sealed class BoxelSurveyStatsState
 
     public string FrontierId => frontierId;
 
-    public BoxelSurveyBoxelSnapshot? Current
-        => currentPrefix is not null && TryGet(currentPrefix, out var snapshot)
-            ? snapshot
-            : null;
+    public BoxelSurveyBoxelSnapshot? Current =>
+        currentPrefix is not null && TryGet(currentPrefix, out var snapshot) ? snapshot : null;
 
-    public IReadOnlyList<BoxelSurveyIndexEntry> GetIndex()
-        => boxels.Values
-            .Select(boxel => CreateSnapshot(boxel).ToIndexEntry())
+    public IReadOnlyList<BoxelSurveyIndexEntry> GetIndex() =>
+        boxels
+            .Values.Select(boxel => CreateSnapshot(boxel).ToIndexEntry())
             .OrderBy(entry => entry.Prefix, StringComparer.Ordinal)
             .ToArray();
 
-    public IReadOnlyList<string> GetDirtyPrefixes()
-        => dirtyPrefixes.Order(StringComparer.Ordinal).ToArray();
+    public IReadOnlyList<string> GetDirtyPrefixes() => dirtyPrefixes.Order(StringComparer.Ordinal).ToArray();
 
     public bool Apply(JournalEventEnvelope journalEvent)
     {
@@ -58,24 +55,16 @@ public sealed class BoxelSurveyStatsState
         };
     }
 
-    public bool IngestSnapshot(
-        SystemScanSnapshot snapshot,
-        DateTimeOffset? visitedAt = null)
+    public bool IngestSnapshot(SystemScanSnapshot snapshot, DateTimeOffset? visitedAt = null)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         return IngestSnapshotCore(snapshot, visitedAt, replaceBodies: false);
     }
 
-    public bool IngestSystemFile(
-        SystemScanSnapshot snapshot,
-        DateTimeOffset? lastVisited)
+    public bool IngestSystemFile(SystemScanSnapshot snapshot, DateTimeOffset? lastVisited)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
-        return IngestSnapshotCore(
-            snapshot,
-            lastVisited,
-            replaceBodies: false,
-            recomputeValues: true);
+        return IngestSnapshotCore(snapshot, lastVisited, replaceBodies: false, recomputeValues: true);
     }
 
     public bool ImportDocument(BoxelSurveyBoxelDocument document)
@@ -88,9 +77,9 @@ public sealed class BoxelSurveyStatsState
 
         var working = WorkingBoxel.FromDocument(document);
         boxels[working.Prefix] = working;
-        foreach (var address in working.Systems.Values
-                     .Select(system => system.SystemAddress)
-                     .Where(address => address > 0))
+        foreach (
+            var address in working.Systems.Values.Select(system => system.SystemAddress).Where(address => address > 0)
+        )
         {
             addressToPrefix[address] = working.Prefix;
         }
@@ -111,11 +100,9 @@ public sealed class BoxelSurveyStatsState
         return true;
     }
 
-    public bool HasLoadedDocument(string prefix)
-        => boxels.TryGetValue(prefix, out var boxel) && boxel.IsHydrated;
+    public bool HasLoadedDocument(string prefix) => boxels.TryGetValue(prefix, out var boxel) && boxel.IsHydrated;
 
-    public bool ShouldLoadDocument(string prefix)
-        => boxels.TryGetValue(prefix, out var boxel) && !boxel.IsHydrated;
+    public bool ShouldLoadDocument(string prefix) => boxels.TryGetValue(prefix, out var boxel) && !boxel.IsHydrated;
 
     public bool UnloadDocument(string prefix)
     {
@@ -130,9 +117,9 @@ public sealed class BoxelSurveyStatsState
         }
 
         var snapshot = CreateSnapshot(boxel);
-        foreach (var address in boxel.Systems.Values
-                     .Select(system => system.SystemAddress)
-                     .Where(address => address > 0))
+        foreach (
+            var address in boxel.Systems.Values.Select(system => system.SystemAddress).Where(address => address > 0)
+        )
         {
             addressToPrefix.Remove(address);
         }
@@ -232,15 +219,12 @@ public sealed class BoxelSurveyStatsState
             mappedValue,
             otherTf,
             classes,
-            systems);
+            systems
+        );
     }
 
-    public BoxelSurveyStatsCatalog CreateSnapshot()
-        => new(
-            frontierId,
-            BoxelSurveyStatsCatalog.CurrentSchemaVersion,
-            DateTimeOffset.UtcNow,
-            GetIndex());
+    public BoxelSurveyStatsCatalog CreateSnapshot() =>
+        new(frontierId, BoxelSurveyStatsCatalog.CurrentSchemaVersion, DateTimeOffset.UtcNow, GetIndex());
 
     public BoxelSurveyStatsState CreateWorkingCopy()
     {
@@ -261,8 +245,8 @@ public sealed class BoxelSurveyStatsState
     public void ReplaceWith(BoxelSurveyStatsState source)
     {
         ArgumentNullException.ThrowIfNull(source);
-        var documents = source.boxels.Values
-            .Where(boxel => boxel.IsHydrated)
+        var documents = source
+            .boxels.Values.Where(boxel => boxel.IsHydrated)
             .Select(boxel => boxel.ToDocument())
             .ToArray();
         Reset(source.CreateSnapshot());
@@ -288,8 +272,7 @@ public sealed class BoxelSurveyStatsState
         {
             foreach (var entry in seed.Index)
             {
-                if (string.IsNullOrWhiteSpace(entry.Prefix)
-                    || boxels.ContainsKey(entry.Prefix))
+                if (string.IsNullOrWhiteSpace(entry.Prefix) || boxels.ContainsKey(entry.Prefix))
                 {
                     continue;
                 }
@@ -305,17 +288,16 @@ public sealed class BoxelSurveyStatsState
 
     public void MarkClean(string prefix) => dirtyPrefixes.Remove(prefix);
 
-    internal static bool TryOpenGeneratedBoxel(
-        long address,
-        string? systemName,
-        out BoxelAddress boxel)
+    internal static bool TryOpenGeneratedBoxel(long address, string? systemName, out BoxelAddress boxel)
     {
         boxel = null!;
-        if (address <= 0
+        if (
+            address <= 0
             || !BoxelAddress.TryFromSystemAddress(address, systemName, out var decoded)
             || decoded is null
             || !BoxelAddress.TryParse(systemName, out var parsed)
-            || parsed is null)
+            || parsed is null
+        )
         {
             return false;
         }
@@ -378,13 +360,10 @@ public sealed class BoxelSurveyStatsState
             return true;
         }
 
-        var terraformable = BoxelPlanetClassifier.IsTerraformable(
-            GetString(root, "TerraformState"));
+        var terraformable = BoxelPlanetClassifier.IsTerraformable(GetString(root, "TerraformState"));
         var landable = GetBoolean(root, "Landable") ?? false;
         var atmosphereType = GetString(root, "AtmosphereType");
-        var atmospheric = BoxelPlanetClassifier.IsAtmosphericLandable(
-            landable,
-            atmosphereType);
+        var atmospheric = BoxelPlanetClassifier.IsAtmosphericLandable(landable, atmosphereType);
         var mass = GetDouble(root, "MassEM") ?? 0;
         var wasDiscovered = GetBoolean(root, "WasDiscovered") ?? false;
         var wasMapped = GetBoolean(root, "WasMapped") ?? false;
@@ -403,7 +382,9 @@ public sealed class BoxelSurveyStatsState
                 wasMapped,
                 dssComplete,
                 dssEfficiency,
-                isOdyssey));
+                isOdyssey
+            )
+        );
         system.Bodies[bodyId.Value] = new WorkingBody
         {
             BodyId = bodyId.Value,
@@ -441,8 +422,7 @@ public sealed class BoxelSurveyStatsState
             return true;
         }
 
-        var efficiency = (GetInt32(root, "ProbesUsed") ?? int.MaxValue)
-            <= (GetInt32(root, "EfficiencyTarget") ?? -1);
+        var efficiency = (GetInt32(root, "ProbesUsed") ?? int.MaxValue) <= (GetInt32(root, "EfficiencyTarget") ?? -1);
         if (!system.Bodies.TryGetValue(bodyId.Value, out var body))
         {
             body = new WorkingBody { BodyId = bodyId.Value };
@@ -462,7 +442,9 @@ public sealed class BoxelSurveyStatsState
                     body.WasMapped,
                     DssComplete: true,
                     DssEfficiencyBonus: efficiency,
-                    IsOdyssey: isOdyssey));
+                    IsOdyssey: isOdyssey
+                )
+            );
             body.ScanValue = values.Scan;
             body.CurrentValue = values.Current;
             body.MappedPotentialValue = values.Mapped;
@@ -543,22 +525,18 @@ public sealed class BoxelSurveyStatsState
         SystemScanSnapshot snapshot,
         DateTimeOffset? visitedAt,
         bool replaceBodies,
-        bool recomputeValues = false)
+        bool recomputeValues = false
+    )
     {
-        if (snapshot.SystemAddress is not > 0
-            || !TryOpenGeneratedBoxel(
-                snapshot.SystemAddress.Value,
-                snapshot.SystemName,
-                out var boxel))
+        if (
+            snapshot.SystemAddress is not > 0
+            || !TryOpenGeneratedBoxel(snapshot.SystemAddress.Value, snapshot.SystemName, out var boxel)
+        )
         {
             return false;
         }
 
-        var system = OpenSystem(
-            boxel,
-            snapshot.SystemAddress.Value,
-            visitedAt,
-            out var changed);
+        var system = OpenSystem(boxel, snapshot.SystemAddress.Value, visitedAt, out var changed);
         currentPrefix = system.Boxel.Prefix;
         if (!system.AllBodiesFound && snapshot.AllBodiesFound)
         {
@@ -590,25 +568,20 @@ public sealed class BoxelSurveyStatsState
     private Dictionary<int, WorkingBody> BuildSnapshotBodies(
         WorkingSystem system,
         SystemScanSnapshot snapshot,
-        bool recomputeValues)
+        bool recomputeValues
+    )
     {
         var snapshotBodies = new Dictionary<int, WorkingBody>();
         foreach (var source in snapshot.Bodies)
         {
-            if (source.BodyId < 0
-                || !BoxelPlanetClassifier.TryFromPlanetClass(
-                    source.PlanetClass,
-                    out var classified))
+            if (source.BodyId < 0 || !BoxelPlanetClassifier.TryFromPlanetClass(source.PlanetClass, out var classified))
             {
                 continue;
             }
 
             system.Bodies.TryGetValue(source.BodyId, out var existing);
-            BoxelPlanetClassifier.TryGetHeliumPercent(
-                source.AtmosphereComposition,
-                out var helium);
-            var dssEfficiency = !recomputeValues
-                && InferDssEfficiency(source, existing);
+            BoxelPlanetClassifier.TryGetHeliumPercent(source.AtmosphereComposition, out var helium);
+            var dssEfficiency = !recomputeValues && InferDssEfficiency(source, existing);
             var values = recomputeValues
                 ? BoxelSurveyValueCalculator.Calculate(
                     new BoxelSurveyValueRequest(
@@ -619,7 +592,9 @@ public sealed class BoxelSurveyStatsState
                         source.WasMapped,
                         source.IsDssComplete,
                         dssEfficiency,
-                        isOdyssey))
+                        isOdyssey
+                    )
+                )
                 : (source.ScanValue, source.CurrentScanValue, source.EstimatedMappedValue);
             snapshotBodies[source.BodyId] = new WorkingBody
             {
@@ -627,9 +602,7 @@ public sealed class BoxelSurveyStatsState
                 Class = classified,
                 Terraformable = source.IsTerraformable,
                 Landable = source.IsLandable,
-                Atmospheric = BoxelPlanetClassifier.IsAtmosphericLandable(
-                    source.IsLandable,
-                    source.AtmosphereType),
+                Atmospheric = BoxelPlanetClassifier.IsAtmosphericLandable(source.IsLandable, source.AtmosphereType),
                 MassEm = source.Mass,
                 HeliumPercent = helium > 0 ? helium : null,
                 ScanValue = values.Item1,
@@ -649,14 +622,13 @@ public sealed class BoxelSurveyStatsState
         WorkingSystem system,
         SystemScanSnapshot snapshot,
         Dictionary<int, WorkingBody> snapshotBodies,
-        bool replaceBodies)
+        bool replaceBodies
+    )
     {
         var changed = false;
         if (replaceBodies || CanReplaceBodies(system, snapshot, snapshotBodies.Keys))
         {
-            foreach (var extraId in system.Bodies.Keys
-                         .Where(id => !snapshotBodies.ContainsKey(id))
-                         .ToArray())
+            foreach (var extraId in system.Bodies.Keys.Where(id => !snapshotBodies.ContainsKey(id)).ToArray())
             {
                 system.Bodies.Remove(extraId);
                 changed = true;
@@ -665,8 +637,7 @@ public sealed class BoxelSurveyStatsState
 
         foreach (var pair in snapshotBodies)
         {
-            if (!system.Bodies.TryGetValue(pair.Key, out var existing)
-                || !existing.HasSameFacts(pair.Value))
+            if (!system.Bodies.TryGetValue(pair.Key, out var existing) || !existing.HasSameFacts(pair.Value))
             {
                 changed = true;
                 system.Bodies[pair.Key] = pair.Value;
@@ -676,9 +647,7 @@ public sealed class BoxelSurveyStatsState
         return changed;
     }
 
-    private static bool InferDssEfficiency(
-        SystemScanBodySnapshot source,
-        WorkingBody? existing)
+    private static bool InferDssEfficiency(SystemScanBodySnapshot source, WorkingBody? existing)
     {
         if (existing?.DssComplete == true)
         {
@@ -690,33 +659,28 @@ public sealed class BoxelSurveyStatsState
             return false;
         }
 
-        return source.CurrentScanValue == source.EstimatedMappedValue
-            && source.EstimatedMappedValue > 0;
+        return source.CurrentScanValue == source.EstimatedMappedValue && source.EstimatedMappedValue > 0;
     }
 
     private static bool CanReplaceBodies(
         WorkingSystem system,
         SystemScanSnapshot snapshot,
-        IReadOnlyCollection<int> snapshotIds)
+        IReadOnlyCollection<int> snapshotIds
+    )
     {
         if (!snapshot.AllBodiesFound)
         {
             return false;
         }
 
-        var storedClassified = system.Bodies.Values
-            .Where(body => body.Class != BoxelPlanetClass.Unknown)
+        var storedClassified = system
+            .Bodies.Values.Where(body => body.Class != BoxelPlanetClass.Unknown)
             .Select(body => body.BodyId)
             .ToHashSet();
-        return snapshotIds.Count >= storedClassified.Count
-            && storedClassified.IsSubsetOf(snapshotIds);
+        return snapshotIds.Count >= storedClassified.Count && storedClassified.IsSubsetOf(snapshotIds);
     }
 
-    private WorkingSystem OpenSystem(
-        BoxelAddress boxel,
-        long address,
-        DateTimeOffset? visitedAt,
-        out bool changed)
+    private WorkingSystem OpenSystem(BoxelAddress boxel, long address, DateTimeOffset? visitedAt, out bool changed)
     {
         var workingBoxel = GetOrCreateBoxel(boxel);
         workingBoxel.IsHydrated = true;
@@ -728,18 +692,13 @@ public sealed class BoxelSurveyStatsState
 
         if (!workingBoxel.Systems.TryGetValue(boxel.GeneratedName, out var system))
         {
-            if (address > 0
-                && workingBoxel.TryGetSystemByAddress(address, out system))
+            if (address > 0 && workingBoxel.TryGetSystemByAddress(address, out system))
             {
                 workingBoxel.Systems.Remove(system.GeneratedName);
             }
             else
             {
-                system = new WorkingSystem(workingBoxel)
-                {
-                    GeneratedName = boxel.GeneratedName,
-                    N2 = boxel.N2,
-                };
+                system = new WorkingSystem(workingBoxel) { GeneratedName = boxel.GeneratedName, N2 = boxel.N2 };
             }
 
             system.GeneratedName = boxel.GeneratedName;
@@ -773,9 +732,11 @@ public sealed class BoxelSurveyStatsState
             return false;
         }
 
-        if (addressToPrefix.TryGetValue(systemAddress, out var prefix)
+        if (
+            addressToPrefix.TryGetValue(systemAddress, out var prefix)
             && boxels.TryGetValue(prefix, out var boxel)
-            && boxel.TryGetSystemByAddress(systemAddress, out system))
+            && boxel.TryGetSystemByAddress(systemAddress, out system)
+        )
         {
             return true;
         }
@@ -822,9 +783,11 @@ public sealed class BoxelSurveyStatsState
         long currentValue = 0;
         long mappedValue = 0;
         var maxN2 = 0;
-        foreach (var system in boxel.Systems.Values
-                     .OrderBy(candidate => candidate.N2)
-                     .ThenBy(candidate => candidate.GeneratedName, StringComparer.Ordinal))
+        foreach (
+            var system in boxel
+                .Systems.Values.OrderBy(candidate => candidate.N2)
+                .ThenBy(candidate => candidate.GeneratedName, StringComparer.Ordinal)
+        )
         {
             systems.Add(system.ToContribution());
             if (system.N2 > maxN2)
@@ -832,8 +795,7 @@ public sealed class BoxelSurveyStatsState
                 maxN2 = system.N2;
             }
 
-            if (system.AllBodiesFound
-                || (TreatNavBeaconAsFullyScanned && system.NavBeaconScanned))
+            if (system.AllBodiesFound || (TreatNavBeaconAsFullyScanned && system.NavBeaconScanned))
             {
                 fssComplete++;
             }
@@ -867,13 +829,15 @@ public sealed class BoxelSurveyStatsState
             mappedValue,
             otherTf,
             classes,
-            systems);
+            systems
+        );
     }
 
     private static void AccumulateClassCounts(
         WorkingSystem system,
         Dictionary<BoxelPlanetClass, BoxelSurveyClassCounts> classes,
-        ref int otherTf)
+        ref int otherTf
+    )
     {
         foreach (var body in system.Bodies.Values)
         {
@@ -884,12 +848,8 @@ public sealed class BoxelSurveyStatsState
 
             classes[body.Class] = classes.TryGetValue(body.Class, out var counts)
                 ? counts.AddBody(body.Terraformable, body.Landable, body.Atmospheric)
-                : BoxelSurveyClassCounts.Zero.AddBody(
-                    body.Terraformable,
-                    body.Landable,
-                    body.Atmospheric);
-            if (body.Terraformable
-                && !BoxelPlanetClassifier.ShowsTerraformableColumn(body.Class))
+                : BoxelSurveyClassCounts.Zero.AddBody(body.Terraformable, body.Landable, body.Atmospheric);
+            if (body.Terraformable && !BoxelPlanetClassifier.ShowsTerraformableColumn(body.Class))
             {
                 otherTf++;
             }
@@ -905,8 +865,7 @@ public sealed class BoxelSurveyStatsState
     private static Dictionary<string, double> ReadJournalComposition(JsonElement root)
     {
         var result = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
-        if (!root.TryGetProperty("AtmosphereComposition", out var values)
-            || values.ValueKind != JsonValueKind.Array)
+        if (!root.TryGetProperty("AtmosphereComposition", out var values) || values.ValueKind != JsonValueKind.Array)
         {
             return result;
         }
@@ -954,38 +913,36 @@ public sealed class BoxelSurveyStatsState
         return second is null ? first : Math.Max(first.Value, second.Value);
     }
 
-    private static string? GetString(JsonElement root, string propertyName)
-        => root.TryGetProperty(propertyName, out var value)
-            && value.ValueKind == JsonValueKind.String
-                ? value.GetString()
-                : null;
+    private static string? GetString(JsonElement root, string propertyName) =>
+        root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+            ? value.GetString()
+            : null;
 
-    private static bool? GetBoolean(JsonElement root, string propertyName)
-        => root.TryGetProperty(propertyName, out var value)
-            && value.ValueKind is JsonValueKind.True or JsonValueKind.False
-                ? value.GetBoolean()
-                : null;
+    private static bool? GetBoolean(JsonElement root, string propertyName) =>
+        root.TryGetProperty(propertyName, out var value) && value.ValueKind is JsonValueKind.True or JsonValueKind.False
+            ? value.GetBoolean()
+            : null;
 
-    private static double? GetDouble(JsonElement root, string propertyName)
-        => root.TryGetProperty(propertyName, out var value)
-            && value.ValueKind == JsonValueKind.Number
-            && value.TryGetDouble(out var number)
-                ? number
-                : null;
+    private static double? GetDouble(JsonElement root, string propertyName) =>
+        root.TryGetProperty(propertyName, out var value)
+        && value.ValueKind == JsonValueKind.Number
+        && value.TryGetDouble(out var number)
+            ? number
+            : null;
 
-    private static long? GetInt64(JsonElement root, string propertyName)
-        => root.TryGetProperty(propertyName, out var value)
-            && value.ValueKind == JsonValueKind.Number
-            && value.TryGetInt64(out var number)
-                ? number
-                : null;
+    private static long? GetInt64(JsonElement root, string propertyName) =>
+        root.TryGetProperty(propertyName, out var value)
+        && value.ValueKind == JsonValueKind.Number
+        && value.TryGetInt64(out var number)
+            ? number
+            : null;
 
-    private static int? GetInt32(JsonElement root, string propertyName)
-        => root.TryGetProperty(propertyName, out var value)
-            && value.ValueKind == JsonValueKind.Number
-            && value.TryGetInt32(out var number)
-                ? number
-                : null;
+    private static int? GetInt32(JsonElement root, string propertyName) =>
+        root.TryGetProperty(propertyName, out var value)
+        && value.ValueKind == JsonValueKind.Number
+        && value.TryGetInt32(out var number)
+            ? number
+            : null;
 
     private sealed class WorkingBoxel
     {
@@ -1003,11 +960,9 @@ public sealed class BoxelSurveyStatsState
 
         public Dictionary<string, WorkingSystem> Systems { get; } = new(StringComparer.Ordinal);
 
-        public double? MinHeliumPercent
-            => MinOf(Systems.Values.Select(system => system.MinHeliumPercent));
+        public double? MinHeliumPercent => MinOf(Systems.Values.Select(system => system.MinHeliumPercent));
 
-        public double? MaxHeliumPercent
-            => MaxOf(Systems.Values.Select(system => system.MaxHeliumPercent));
+        public double? MaxHeliumPercent => MaxOf(Systems.Values.Select(system => system.MaxHeliumPercent));
 
         public static WorkingBoxel FromAddress(BoxelAddress boxel)
         {
@@ -1017,8 +972,8 @@ public sealed class BoxelSurveyStatsState
             return working;
         }
 
-        public static WorkingBoxel FromIndexEntry(BoxelSurveyIndexEntry entry)
-            => new()
+        public static WorkingBoxel FromIndexEntry(BoxelSurveyIndexEntry entry) =>
+            new()
             {
                 Prefix = entry.Prefix,
                 MassCode = entry.MassCode,
@@ -1041,9 +996,7 @@ public sealed class BoxelSurveyStatsState
             };
             foreach (var contribution in document.Systems)
             {
-                working.Systems[contribution.GeneratedName] = WorkingSystem.FromContribution(
-                    working,
-                    contribution);
+                working.Systems[contribution.GeneratedName] = WorkingSystem.FromContribution(working, contribution);
             }
 
             return working;
@@ -1074,18 +1027,19 @@ public sealed class BoxelSurveyStatsState
             return false;
         }
 
-        public BoxelSurveyBoxelDocument ToDocument()
-            => new(
+        public BoxelSurveyBoxelDocument ToDocument() =>
+            new(
                 Prefix,
                 BoxelId64,
                 LastVisited,
                 MinHeliumPercent,
                 MaxHeliumPercent,
-                Systems.Values
-                    .OrderBy(system => system.N2)
+                Systems
+                    .Values.OrderBy(system => system.N2)
                     .ThenBy(system => system.GeneratedName, StringComparer.Ordinal)
                     .Select(system => system.ToContribution())
-                    .ToArray());
+                    .ToArray()
+            );
 
         public BoxelSurveyBoxelSnapshot ToIndexSnapshot()
         {
@@ -1107,16 +1061,15 @@ public sealed class BoxelSurveyStatsState
                 seed?.MappedPotentialValue ?? 0,
                 0,
                 new Dictionary<BoxelPlanetClass, BoxelSurveyClassCounts>(),
-                []);
+                []
+            );
         }
 
         private static (char MassCode, long? BoxelId64) ParsePrefix(string prefix)
         {
             if (BoxelAddress.TryParse(prefix + "0", out var boxel) && boxel is not null)
             {
-                long? id64 = boxel.WithSystemNumber(0).TryGetSystemAddress(out var encoded)
-                    ? encoded
-                    : null;
+                long? id64 = boxel.WithSystemNumber(0).TryGetSystemAddress(out var encoded) ? encoded : null;
                 return (boxel.MassCode, id64);
             }
 
@@ -1176,9 +1129,7 @@ public sealed class BoxelSurveyStatsState
 
         public Dictionary<int, WorkingBody> Bodies { get; } = [];
 
-        public static WorkingSystem FromContribution(
-            WorkingBoxel boxel,
-            BoxelSurveySystemContribution contribution)
+        public static WorkingSystem FromContribution(WorkingBoxel boxel, BoxelSurveySystemContribution contribution)
         {
             var system = new WorkingSystem(boxel)
             {
@@ -1227,8 +1178,8 @@ public sealed class BoxelSurveyStatsState
             MaxHeliumPercent = maxHelium;
         }
 
-        public BoxelSurveySystemContribution ToContribution()
-            => new(
+        public BoxelSurveySystemContribution ToContribution() =>
+            new(
                 GeneratedName,
                 SystemAddress,
                 N2,
@@ -1241,10 +1192,8 @@ public sealed class BoxelSurveyStatsState
                 ScanValue,
                 CurrentValue,
                 MappedPotentialValue,
-                Bodies.Values
-                    .OrderBy(body => body.BodyId)
-                    .Select(body => body.ToContribution())
-                    .ToArray());
+                Bodies.Values.OrderBy(body => body.BodyId).Select(body => body.ToContribution()).ToArray()
+            );
     }
 
     private sealed class WorkingBody
@@ -1277,21 +1226,21 @@ public sealed class BoxelSurveyStatsState
 
         public bool DssEfficiencyBonus { get; set; }
 
-        public bool HasSameFacts(WorkingBody other)
-            => BodyId == other.BodyId
-                && Class == other.Class
-                && Terraformable == other.Terraformable
-                && Landable == other.Landable
-                && Atmospheric == other.Atmospheric
-                && ApproximatelyEqual(MassEm, other.MassEm)
-                && ApproximatelyEqual(HeliumPercent, other.HeliumPercent)
-                && ScanValue == other.ScanValue
-                && CurrentValue == other.CurrentValue
-                && MappedPotentialValue == other.MappedPotentialValue
-                && WasDiscovered == other.WasDiscovered
-                && WasMapped == other.WasMapped
-                && DssComplete == other.DssComplete
-                && DssEfficiencyBonus == other.DssEfficiencyBonus;
+        public bool HasSameFacts(WorkingBody other) =>
+            BodyId == other.BodyId
+            && Class == other.Class
+            && Terraformable == other.Terraformable
+            && Landable == other.Landable
+            && Atmospheric == other.Atmospheric
+            && ApproximatelyEqual(MassEm, other.MassEm)
+            && ApproximatelyEqual(HeliumPercent, other.HeliumPercent)
+            && ScanValue == other.ScanValue
+            && CurrentValue == other.CurrentValue
+            && MappedPotentialValue == other.MappedPotentialValue
+            && WasDiscovered == other.WasDiscovered
+            && WasMapped == other.WasMapped
+            && DssComplete == other.DssComplete
+            && DssEfficiencyBonus == other.DssEfficiencyBonus;
 
         private static bool ApproximatelyEqual(double first, double second)
         {
@@ -1305,13 +1254,13 @@ public sealed class BoxelSurveyStatsState
             return Math.Abs(first - second) <= tolerance * scale;
         }
 
-        private static bool ApproximatelyEqual(double? first, double? second)
-            => first is null || second is null
+        private static bool ApproximatelyEqual(double? first, double? second) =>
+            first is null || second is null
                 ? first is null && second is null
                 : ApproximatelyEqual(first.Value, second.Value);
 
-        public static WorkingBody FromContribution(BoxelSurveyBodyContribution body)
-            => new()
+        public static WorkingBody FromContribution(BoxelSurveyBodyContribution body) =>
+            new()
             {
                 BodyId = body.BodyId,
                 Class = body.Class,
@@ -1329,8 +1278,8 @@ public sealed class BoxelSurveyStatsState
                 DssEfficiencyBonus = body.DssEfficiencyBonus,
             };
 
-        public BoxelSurveyBodyContribution ToContribution()
-            => new(
+        public BoxelSurveyBodyContribution ToContribution() =>
+            new(
                 BodyId,
                 Class,
                 Terraformable,
@@ -1344,6 +1293,7 @@ public sealed class BoxelSurveyStatsState
                 WasDiscovered,
                 WasMapped,
                 DssComplete,
-                DssEfficiencyBonus);
+                DssEfficiencyBonus
+            );
     }
 }

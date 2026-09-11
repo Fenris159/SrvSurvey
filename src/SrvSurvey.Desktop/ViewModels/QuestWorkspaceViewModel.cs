@@ -17,8 +17,7 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
     private readonly AsyncCommand removeQuestCommand;
     private readonly AsyncCommand activateQuestCommand;
     private readonly AsyncCommand resumeQuestCommand;
-    private readonly AsyncParameterCommand<QuestMessageRowViewModel>
-        openMessageCommand;
+    private readonly AsyncParameterCommand<QuestMessageRowViewModel> openMessageCommand;
     private bool isEnabled;
     private bool isBusy;
     private string statusMessage;
@@ -34,42 +33,33 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
     private IReadOnlyList<QuestRuntimeSnapshot>? appliedRuntimeSnapshots;
     private RavenQuestReference? pendingRemoval;
 
-    public QuestWorkspaceViewModel(
-        QuestRuntimeCoordinator coordinator,
-        QuestSettingsStore settingsStore)
+    public QuestWorkspaceViewModel(QuestRuntimeCoordinator coordinator, QuestSettingsStore settingsStore)
     {
-        this.coordinator = coordinator
-            ?? throw new ArgumentNullException(nameof(coordinator));
-        this.settingsStore = settingsStore
-            ?? throw new ArgumentNullException(nameof(settingsStore));
+        this.coordinator = coordinator ?? throw new ArgumentNullException(nameof(coordinator));
+        this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         Developer = new QuestDeveloperViewModel(coordinator);
         Developer.RuntimeChanged += Developer_RuntimeChanged;
         isEnabled = settingsStore.LoadEnabled();
-        statusMessage = isEnabled
-            ? "Waiting for the commander journal session."
-            : "Quests are disabled.";
-        refreshCommand = new AsyncCommand(
-            RefreshAsync,
-            () => !IsBusy);
-        toggleEnabledCommand = new AsyncCommand(
-            ToggleEnabledAsync,
-            () => !IsBusy);
+        statusMessage = isEnabled ? "Waiting for the commander journal session." : "Quests are disabled.";
+        refreshCommand = new AsyncCommand(RefreshAsync, () => !IsBusy);
+        toggleEnabledCommand = new AsyncCommand(ToggleEnabledAsync, () => !IsBusy);
         pauseQuestCommand = new AsyncCommand(
             PauseSelectedQuestAsync,
-            () => !IsBusy && SelectedQuest is { IsDevelopment: false });
-        removeQuestCommand = new AsyncCommand(
-            RemoveSelectedQuestAsync,
-            () => !IsBusy && SelectedQuest is not null);
+            () => !IsBusy && SelectedQuest is { IsDevelopment: false }
+        );
+        removeQuestCommand = new AsyncCommand(RemoveSelectedQuestAsync, () => !IsBusy && SelectedQuest is not null);
         activateQuestCommand = new AsyncCommand(
             ActivateSelectedQuestAsync,
-            () => !IsBusy && SelectedCatalogQuest is not null);
+            () => !IsBusy && SelectedCatalogQuest is not null
+        );
         resumeQuestCommand = new AsyncCommand(
             ResumeSelectedQuestAsync,
-            () => !IsBusy
-                && SelectedHistoryQuest?.State == RavenQuestState.paused);
+            () => !IsBusy && SelectedHistoryQuest?.State == RavenQuestState.paused
+        );
         openMessageCommand = new AsyncParameterCommand<QuestMessageRowViewModel>(
             OpenMessageAsync,
-            message => !IsBusy && message is not null);
+            message => !IsBusy && message is not null
+        );
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -107,9 +97,7 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
         private set => SetField(ref statusMessage, value);
     }
 
-    public string ToggleEnabledButtonText => IsEnabled
-        ? "Disable quests"
-        : "Enable quests";
+    public string ToggleEnabledButtonText => IsEnabled ? "Disable quests" : "Enable quests";
 
     public string RefreshButtonText => IsBusy ? "Working..." : "Refresh";
 
@@ -125,10 +113,10 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
         }
     }
 
-    public string ActiveQuestSummary => ActiveQuests.Count == 0
-        ? "No active quests"
-        : $"{ActiveQuests.Count:N0} active • "
-            + $"{Messages.Count(message => !message.IsRead):N0} unread";
+    public string ActiveQuestSummary =>
+        ActiveQuests.Count == 0
+            ? "No active quests"
+            : $"{ActiveQuests.Count:N0} active • " + $"{Messages.Count(message => !message.IsRead):N0} unread";
 
     public IReadOnlyList<QuestMessageRowViewModel> Messages
     {
@@ -143,10 +131,10 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
         }
     }
 
-    public string MessageSummary => Messages.Count == 0
-        ? "No messages"
-        : $"{Messages.Count:N0} messages • "
-            + $"{Messages.Count(message => !message.IsRead):N0} unread";
+    public string MessageSummary =>
+        Messages.Count == 0
+            ? "No messages"
+            : $"{Messages.Count:N0} messages • " + $"{Messages.Count(message => !message.IsRead):N0} unread";
 
     public IReadOnlyList<QuestCatalogRowViewModel> Catalog
     {
@@ -181,15 +169,17 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
         {
             if (SetField(ref selectedMessage, value))
             {
-                MessageActions = value?.Actions.Select(action =>
-                    new QuestMessageActionViewModel(
-                        action.Key,
-                        action.Value,
-                        new AsyncCommand(
-                            () => ReplyToMessageAsync(action.Key),
-                            () => !IsBusy
-                                && SelectedMessage is { Replied: null })))
-                    .ToArray()
+                MessageActions =
+                    value
+                        ?.Actions.Select(action => new QuestMessageActionViewModel(
+                            action.Key,
+                            action.Value,
+                            new AsyncCommand(
+                                () => ReplyToMessageAsync(action.Key),
+                                () => !IsBusy && SelectedMessage is { Replied: null }
+                            )
+                        ))
+                        .ToArray()
                     ?? [];
             }
         }
@@ -225,10 +215,8 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
         }
     }
 
-    public string RemoveQuestButtonText => pendingRemoval is not null
-        && SelectedQuest?.Reference == pendingRemoval
-            ? "Confirm removal"
-            : "Remove quest";
+    public string RemoveQuestButtonText =>
+        pendingRemoval is not null && SelectedQuest?.Reference == pendingRemoval ? "Confirm removal" : "Remove quest";
 
     public ICommand RefreshCommand => refreshCommand;
 
@@ -244,9 +232,7 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
 
     public ICommand OpenMessageCommand => openMessageCommand;
 
-    public void ApplyRuntimeResult(
-        QuestRuntimeUpdateResult result,
-        bool enabled)
+    public void ApplyRuntimeResult(QuestRuntimeUpdateResult result, bool enabled)
     {
         ArgumentNullException.ThrowIfNull(result);
         IsEnabled = enabled;
@@ -254,17 +240,18 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
         {
             RebuildRuntimeRows(result.Quests);
         }
-        StatusMessage = result.Warnings.Count > 0
-            ? string.Join(Environment.NewLine, result.Warnings)
-            : (!enabled) switch
-            {
-                true => "Quests are disabled.",
-                false => (ActiveQuests.Count == 0) switch
+        StatusMessage =
+            result.Warnings.Count > 0
+                ? string.Join(Environment.NewLine, result.Warnings)
+                : (!enabled) switch
                 {
-                    true => "No active quests.",
-                    false => ActiveQuestSummary
-                }
-            };
+                    true => "Quests are disabled.",
+                    false => (ActiveQuests.Count == 0) switch
+                    {
+                        true => "No active quests.",
+                        false => ActiveQuestSummary,
+                    },
+                };
     }
 
     public async Task RefreshAsync()
@@ -282,8 +269,7 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
             {
                 var definitions = await coordinator.GetPublishedQuestsAsync();
                 Catalog = definitions
-                    .Where(definition => ActiveQuests.All(active =>
-                        !SameQuest(active.Reference, definition.Reference)))
+                    .Where(definition => ActiveQuests.All(active => !SameQuest(active.Reference, definition.Reference)))
                     .Select(definition => new QuestCatalogRowViewModel(definition))
                     .OrderBy(quest => quest.Title, StringComparer.OrdinalIgnoreCase)
                     .ToArray();
@@ -295,8 +281,7 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
 
             try
             {
-                var statuses = await coordinator
-                    .GetCommanderQuestStatusesAsync();
+                var statuses = await coordinator.GetCommanderQuestStatusesAsync();
                 History = statuses
                     .Where(status => status.State != RavenQuestState.active)
                     .Select(status => new QuestHistoryRowViewModel(status))
@@ -308,9 +293,10 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
                 warnings.Add("Commander quest history: " + exception.Message);
             }
 
-            StatusMessage = warnings.Count > 0
-                ? string.Join(Environment.NewLine, warnings)
-                : $"Quest communications refreshed. {ActiveQuestSummary}.";
+            StatusMessage =
+                warnings.Count > 0
+                    ? string.Join(Environment.NewLine, warnings)
+                    : $"Quest communications refreshed. {ActiveQuestSummary}.";
         }
         catch (Exception exception) when (IsRecoverable(exception))
         {
@@ -343,14 +329,13 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
         {
             StatusMessage = enabled
                 ? "Quests are enabled and will initialize with the next commander "
-                    + "journal session. " + exception.Message
-                : "Quests are disabled for the next commander journal session. "
-                    + exception.Message;
+                    + "journal session. "
+                    + exception.Message
+                : "Quests are disabled for the next commander journal session. " + exception.Message;
         }
         catch (Exception exception) when (IsRecoverable(exception))
         {
-            StatusMessage = "Quest preference could not be changed: "
-                + exception.Message;
+            StatusMessage = "Quest preference could not be changed: " + exception.Message;
         }
         finally
         {
@@ -371,24 +356,19 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
             SelectedMessage = message;
             if (!message.IsRead)
             {
-                await coordinator.MarkMessageReadAsync(
-                    message.Quest,
-                    message.Id);
+                await coordinator.MarkMessageReadAsync(message.Quest, message.Id);
                 RebuildRuntimeRows(coordinator.Snapshot);
                 SelectedMessage = Messages.FirstOrDefault(candidate =>
                     SameQuest(candidate.Quest, message.Quest)
-                    && string.Equals(
-                        candidate.Id,
-                        message.Id,
-                        StringComparison.Ordinal));
+                    && string.Equals(candidate.Id, message.Id, StringComparison.Ordinal)
+                );
             }
 
             StatusMessage = "Message opened.";
         }
         catch (Exception exception) when (IsRecoverable(exception))
         {
-            StatusMessage = "The message could not be opened: "
-                + exception.Message;
+            StatusMessage = "The message could not be opened: " + exception.Message;
         }
         finally
         {
@@ -406,23 +386,17 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
         try
         {
             IsBusy = true;
-            await coordinator.ReplyToMessageAsync(
-                message.Quest,
-                message.Id,
-                action);
+            await coordinator.ReplyToMessageAsync(message.Quest, message.Id, action);
             RebuildRuntimeRows(coordinator.Snapshot);
             SelectedMessage = Messages.FirstOrDefault(candidate =>
                 SameQuest(candidate.Quest, message.Quest)
-                && string.Equals(
-                    candidate.Id,
-                    message.Id,
-                    StringComparison.Ordinal));
+                && string.Equals(candidate.Id, message.Id, StringComparison.Ordinal)
+            );
             StatusMessage = "Response sent to the quest script.";
         }
         catch (Exception exception) when (IsRecoverable(exception))
         {
-            StatusMessage = "The response could not be applied: "
-                + exception.Message;
+            StatusMessage = "The response could not be applied: " + exception.Message;
         }
         finally
         {
@@ -437,9 +411,7 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
             return;
         }
 
-        await RunQuestActionAsync(
-            () => coordinator.PauseQuestAsync(quest.Reference),
-            "Quest paused.");
+        await RunQuestActionAsync(() => coordinator.PauseQuestAsync(quest.Reference), "Quest paused.");
     }
 
     private async Task RemoveSelectedQuestAsync()
@@ -453,16 +425,15 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
         {
             pendingRemoval = quest.Reference;
             OnPropertyChanged(nameof(RemoveQuestButtonText));
-            StatusMessage = "Choose Confirm removal to permanently remove this "
+            StatusMessage =
+                "Choose Confirm removal to permanently remove this "
                 + "quest progress. A local development quest is backed up first.";
             return;
         }
 
         pendingRemoval = null;
         OnPropertyChanged(nameof(RemoveQuestButtonText));
-        await RunQuestActionAsync(
-            () => coordinator.RemoveQuestAsync(quest.Reference),
-            "Quest removed.");
+        await RunQuestActionAsync(() => coordinator.RemoveQuestAsync(quest.Reference), "Quest removed.");
     }
 
     private async Task ActivateSelectedQuestAsync()
@@ -473,11 +444,10 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
         }
 
         await RunQuestActionAsync(
-            () => coordinator.ActivateQuestAsync(
-                quest.Reference.Publisher,
-                quest.Reference.Id),
+            () => coordinator.ActivateQuestAsync(quest.Reference.Publisher, quest.Reference.Id),
             "Quest activated.",
-            refreshRemoteLists: true);
+            refreshRemoteLists: true
+        );
     }
 
     private async Task ResumeSelectedQuestAsync()
@@ -490,13 +460,11 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
         await RunQuestActionAsync(
             () => coordinator.ResumeQuestAsync(quest.Reference),
             "Quest resumed.",
-            refreshRemoteLists: true);
+            refreshRemoteLists: true
+        );
     }
 
-    private async Task RunQuestActionAsync(
-        Func<Task> action,
-        string success,
-        bool refreshRemoteLists = false)
+    private async Task RunQuestActionAsync(Func<Task> action, string success, bool refreshRemoteLists = false)
     {
         try
         {
@@ -521,38 +489,30 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
         }
     }
 
-    private void RebuildRuntimeRows(
-        IReadOnlyList<QuestRuntimeSnapshot> snapshots)
+    private void RebuildRuntimeRows(IReadOnlyList<QuestRuntimeSnapshot> snapshots)
     {
         appliedRuntimeSnapshots = snapshots;
         var selectedReference = SelectedQuest?.Reference;
-        (RavenQuestReference Quest, string Id)? selectedMessageIdentity =
-            SelectedMessage is null
+        (RavenQuestReference Quest, string Id)? selectedMessageIdentity = SelectedMessage is null
             ? null
             : (SelectedMessage.Quest, SelectedMessage.Id);
-        ActiveQuests = snapshots.Select(snapshot =>
-                new QuestCardViewModel(snapshot))
-            .ToArray();
+        ActiveQuests = snapshots.Select(snapshot => new QuestCardViewModel(snapshot)).ToArray();
         Developer.ApplyRuntimeSnapshots(snapshots);
-        Messages = snapshots.SelectMany(snapshot => snapshot.Messages)
+        Messages = snapshots
+            .SelectMany(snapshot => snapshot.Messages)
             .OrderByDescending(message => message.Received)
             .Select(message => new QuestMessageRowViewModel(message))
             .ToArray();
-        var firstActiveQuest = ActiveQuests.Count > 0
-            ? ActiveQuests[0]
-            : null;
+        var firstActiveQuest = ActiveQuests.Count > 0 ? ActiveQuests[0] : null;
         SelectedQuest = selectedReference is null
             ? firstActiveQuest
-            : ActiveQuests.FirstOrDefault(quest =>
-                SameQuest(quest.Reference, selectedReference));
+            : ActiveQuests.FirstOrDefault(quest => SameQuest(quest.Reference, selectedReference));
         if (selectedMessageIdentity is { } identity)
         {
             SelectedMessage = Messages.FirstOrDefault(message =>
                 SameQuest(message.Quest, identity.Quest)
-                && string.Equals(
-                    message.Id,
-                    identity.Id,
-                    StringComparison.Ordinal));
+                && string.Equals(message.Id, identity.Id, StringComparison.Ordinal)
+            );
         }
 
         RaiseCommandStates();
@@ -574,14 +534,9 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
         openMessageCommand.RaiseCanExecuteChanged();
     }
 
-    private static bool SameQuest(
-        RavenQuestReference left,
-        RavenQuestReference right)
+    private static bool SameQuest(RavenQuestReference left, RavenQuestReference right)
     {
-        return string.Equals(
-                left.Publisher,
-                right.Publisher,
-                StringComparison.Ordinal)
+        return string.Equals(left.Publisher, right.Publisher, StringComparison.Ordinal)
             && string.Equals(left.Id, right.Id, StringComparison.Ordinal);
     }
 
@@ -590,10 +545,7 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
         return exception is not OperationCanceledException;
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -610,9 +562,7 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private sealed class AsyncCommand(
-        Func<Task> execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class AsyncCommand(Func<Task> execute, Func<bool> canExecute) : ICommand
     {
         public event EventHandler? CanExecuteChanged;
 
@@ -632,15 +582,12 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
         }
     }
 
-    private sealed class AsyncParameterCommand<T>(
-        Func<T?, Task> execute,
-        Func<T?, bool> canExecute) : ICommand
+    private sealed class AsyncParameterCommand<T>(Func<T?, Task> execute, Func<T?, bool> canExecute) : ICommand
         where T : class
     {
         public event EventHandler? CanExecuteChanged;
 
-        public bool CanExecute(object? parameter) =>
-            canExecute(parameter as T);
+        public bool CanExecute(object? parameter) => canExecute(parameter as T);
 
         public async void Execute(object? parameter)
         {
@@ -669,16 +616,18 @@ public sealed record QuestCardViewModel
         StateLabel = snapshot.IsDevelopment ? "DEVELOPMENT" : "ACTIVE";
         UnreadMessageCount = snapshot.UnreadMessageCount;
         Tags = snapshot.Tags.Order(StringComparer.OrdinalIgnoreCase).ToArray();
-        Objectives = snapshot.Objectives.Select(pair =>
+        Objectives = snapshot
+            .Objectives.Select(pair =>
                 QuestObjectiveRowViewModel.Create(
                     pair.Key,
-                    snapshot.ObjectiveLabels.GetValueOrDefault(pair.Key)
-                        ?? pair.Key,
-                    pair.Value))
+                    snapshot.ObjectiveLabels.GetValueOrDefault(pair.Key) ?? pair.Key,
+                    pair.Value
+                )
+            )
             .OrderBy(objective => objective.Label, StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        Locations = snapshot.BodyLocations.Select(pair =>
-                new QuestLocationRowViewModel(pair.Key, pair.Value))
+        Locations = snapshot
+            .BodyLocations.Select(pair => new QuestLocationRowViewModel(pair.Key, pair.Value))
             .OrderBy(location => location.Label, StringComparer.OrdinalIgnoreCase)
             .ToArray();
     }
@@ -703,25 +652,17 @@ public sealed record QuestCardViewModel
 
     public string Identity => Reference.ToString();
 
-    public string TagsLabel => Tags.Count == 0
-        ? "No tags"
-        : string.Join(" • ", Tags);
+    public string TagsLabel => Tags.Count == 0 ? "No tags" : string.Join(" • ", Tags);
 }
 
-public sealed record QuestObjectiveRowViewModel(
-    string Id,
-    string Label,
-    string State,
-    string Progress)
+public sealed record QuestObjectiveRowViewModel(string Id, string Label, string State, string Progress)
 {
-    public static QuestObjectiveRowViewModel Create(
-        string id,
-        string label,
-        string value)
+    public static QuestObjectiveRowViewModel Create(string id, string label, string value)
     {
         var parts = value.Split(',', StringSplitOptions.TrimEntries);
         var state = parts.FirstOrDefault() ?? "unknown";
-        var progress = parts.Length >= 3
+        var progress =
+            parts.Length >= 3
             && int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var current)
             && int.TryParse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out var total)
                 ? $"{current:N0} / {total:N0}"
@@ -730,7 +671,8 @@ public sealed record QuestObjectiveRowViewModel(
             id,
             label,
             CultureInfo.InvariantCulture.TextInfo.ToTitleCase(state),
-            progress);
+            progress
+        );
     }
 }
 
@@ -774,19 +716,13 @@ public sealed record QuestMessageRowViewModel
 
     public string ReadLabel => IsRead ? "READ" : "UNREAD";
 
-    public string ReceivedLabel => Received == default
-        ? string.Empty
-        : Received.LocalDateTime.ToString("g", CultureInfo.CurrentCulture);
+    public string ReceivedLabel =>
+        Received == default ? string.Empty : Received.LocalDateTime.ToString("g", CultureInfo.CurrentCulture);
 
-    public string TagsLabel => Tags.Count == 0
-        ? string.Empty
-        : string.Join(" • ", Tags);
+    public string TagsLabel => Tags.Count == 0 ? string.Empty : string.Join(" • ", Tags);
 }
 
-public sealed record QuestMessageActionViewModel(
-    string Id,
-    string Label,
-    ICommand Command);
+public sealed record QuestMessageActionViewModel(string Id, string Label, ICommand Command);
 
 public sealed record QuestCatalogRowViewModel
 {
@@ -814,9 +750,7 @@ public sealed record QuestCatalogRowViewModel
 
     public string Identity => Reference.ToString();
 
-    public string TagsLabel => Tags.Count == 0
-        ? "No tags"
-        : string.Join(" • ", Tags);
+    public string TagsLabel => Tags.Count == 0 ? "No tags" : string.Join(" • ", Tags);
 
     public string SubtitleOrDescription => Subtitle ?? Description ?? string.Empty;
 }
@@ -825,10 +759,7 @@ public sealed record QuestHistoryRowViewModel
 {
     public QuestHistoryRowViewModel(RavenCommanderQuestStatus status)
     {
-        Reference = new RavenQuestReference(
-            status.Publisher,
-            status.Id,
-            status.Version);
+        Reference = new RavenQuestReference(status.Publisher, status.Id, status.Version);
         State = status.State;
         StateChangedOn = status.StateChangedOn;
     }

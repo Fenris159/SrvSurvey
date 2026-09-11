@@ -6,7 +6,8 @@ public sealed class RavenServiceSettingsStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-raven-service-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-raven-service-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void MissingOrInvalidOverrideUsesProductionDefault()
@@ -16,9 +17,7 @@ public sealed class RavenServiceSettingsStoreTests : IDisposable
         Assert.Null(store.LoadServiceUri());
 
         Directory.CreateDirectory(temporaryDirectory);
-        File.WriteAllText(
-            path,
-            "{\"RavenService\":{\"ServiceUri\":\"file:///tmp/server\"}}");
+        File.WriteAllText(path, "{\"RavenService\":{\"ServiceUri\":\"file:///tmp/server\"}}");
 
         Assert.Null(store.LoadServiceUri());
     }
@@ -26,14 +25,10 @@ public sealed class RavenServiceSettingsStoreTests : IDisposable
     [Theory]
     [InlineData("https://example.test", "https://example.test/")]
     [InlineData("http://localhost:7007/api", "http://localhost:7007/api/")]
-    [InlineData(
-        " https://example.test/dev?ignored=true#fragment ",
-        "https://example.test/dev/")]
+    [InlineData(" https://example.test/dev?ignored=true#fragment ", "https://example.test/dev/")]
     public void ValidHttpOverrideIsNormalized(string value, string expected)
     {
-        Assert.Equal(
-            new Uri(expected),
-            RavenServiceSettingsStore.NormalizeServiceUri(value));
+        Assert.Equal(new Uri(expected), RavenServiceSettingsStore.NormalizeServiceUri(value));
     }
 
     public void Dispose()

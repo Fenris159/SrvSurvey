@@ -7,7 +7,8 @@ public sealed class NavRouteFileReaderTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-nav-route-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-nav-route-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public async Task ReadAsyncPortsGeneratedAndHandAuthoredBoxelData()
@@ -35,7 +36,8 @@ public sealed class NavRouteFileReaderTests : IDisposable
                 }
               ]
             }
-            """);
+            """
+        );
 
         var result = await NavRouteFileReader.ReadAsync(path);
 
@@ -46,8 +48,7 @@ public sealed class NavRouteFileReaderTests : IDisposable
         Assert.Equal(new GalacticCoordinate(1.5, 2.5, 3.5), entry?.Position);
         var boxel = Assert.IsType<BoxelSystemObservation>(entry?.ToBoxelObservation());
         Assert.Equal(102, boxel.Boxel.SystemAddress);
-        var handAuthored = Assert.IsType<BoxelSystemObservation>(
-            result.Snapshot?.Route[1].ToBoxelObservation());
+        var handAuthored = Assert.IsType<BoxelSystemObservation>(result.Snapshot?.Route[1].ToBoxelObservation());
         Assert.Equal("Sol", handAuthored.Boxel.Name);
         Assert.NotEqual("Sol", handAuthored.Boxel.GeneratedName);
         Assert.Equal(10477373803, handAuthored.Boxel.SystemAddress);
@@ -61,10 +62,7 @@ public sealed class NavRouteFileReaderTests : IDisposable
         var path = Path.Combine(temporaryDirectory, NavRouteFileReader.FileName);
         await File.WriteAllTextAsync(path, "{\"event\":\"NavRoute\"");
 
-        var result = await NavRouteFileReader.ReadAsync(
-            path,
-            maximumAttempts: 2,
-            retryDelay: TimeSpan.Zero);
+        var result = await NavRouteFileReader.ReadAsync(path, maximumAttempts: 2, retryDelay: TimeSpan.Zero);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(2, result.Attempts);

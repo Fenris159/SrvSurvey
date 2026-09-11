@@ -23,20 +23,18 @@ public sealed class SettingsWorkspaceViewModelTests
                 "Screenshots",
                 "Data & migration",
             ],
-            viewModel.Categories.Select(category => category.Name));
+            viewModel.Categories.Select(category => category.Name)
+        );
         Assert.Contains(
             viewModel.SearchCatalog,
-            entry => entry.Title == "Import SrvSurvey User Data"
-                && entry.CategoryKey == "data");
+            entry => entry.Title == "Import SrvSurvey User Data" && entry.CategoryKey == "data"
+        );
     }
 
     [Fact]
     public void SearchUsesAliasesGroupsResultsAndSupportsKeyboardSelection()
     {
-        var viewModel = new SettingsWorkspaceViewModel
-        {
-            SearchQuery = "hotkey",
-        };
+        var viewModel = new SettingsWorkspaceViewModel { SearchQuery = "hotkey" };
 
         var group = Assert.Single(viewModel.GroupedSearchResults);
         Assert.Equal("Input", group.CategoryName);

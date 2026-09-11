@@ -7,24 +7,17 @@ public sealed class NotificationSettingsStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-notification-settings-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-notification-settings-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void SaveRoundTripsAndPreservesUnknownSettings()
     {
         Directory.CreateDirectory(temporaryDirectory);
         var path = Path.Combine(temporaryDirectory, "ui-settings.json");
-        File.WriteAllText(
-            path,
-            "{\"Future\":42,\"Notifications\":{\"FutureOption\":true}}");
+        File.WriteAllText(path, "{\"Future\":42,\"Notifications\":{\"FutureOption\":true}}");
         var store = new NotificationSettingsStore(path);
-        var preferences = new NotificationPreferences(
-            false,
-            false,
-            true,
-            false,
-            true,
-            false);
+        var preferences = new NotificationPreferences(false, false, true, false, true, false);
 
         store.Save(preferences);
 

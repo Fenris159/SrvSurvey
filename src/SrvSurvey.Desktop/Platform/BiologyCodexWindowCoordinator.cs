@@ -10,10 +10,12 @@ public sealed class BiologyCodexWindowCoordinator : IDisposable
     private readonly CodexImageSettingsViewModel imageSettings;
     private readonly Window owner;
     private readonly CodexImageCache imageCache;
+
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Usage",
         "CA2213:Disposable fields should be disposed",
-        Justification = "The pre-download worker disposes the captured source in its finally block.")]
+        Justification = "The pre-download worker disposes the captured source in its finally block."
+    )]
     private CancellationTokenSource? preDownloadCancellation;
     private BiologyCodexWindow? window;
     private bool disposed;
@@ -22,17 +24,20 @@ public sealed class BiologyCodexWindowCoordinator : IDisposable
         BiologyCodexViewModel viewModel,
         Window owner,
         CodexImageSettingsViewModel imageSettings,
-        CodexImageCache? imageCache = null)
+        CodexImageCache? imageCache = null
+    )
     {
-        this.viewModel = viewModel
-            ?? throw new ArgumentNullException(nameof(viewModel));
+        this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         this.owner = owner ?? throw new ArgumentNullException(nameof(owner));
-        this.imageSettings = imageSettings
-            ?? throw new ArgumentNullException(nameof(imageSettings));
-        this.imageCache = imageCache ?? new CodexImageCache(
-            () => new CodexImageLocations(
-                imageSettings.EffectiveCacheDirectory,
-                imageSettings.EffectiveLocalFloraDirectory));
+        this.imageSettings = imageSettings ?? throw new ArgumentNullException(nameof(imageSettings));
+        this.imageCache =
+            imageCache
+            ?? new CodexImageCache(() =>
+                new CodexImageLocations(
+                    imageSettings.EffectiveCacheDirectory,
+                    imageSettings.EffectiveLocalFloraDirectory
+                )
+            );
         imageSettings.PropertyChanged += OnImageSettingsPropertyChanged;
         viewModel.SetWindowOpener(ShowOrActivateAsync);
         RestartPreDownload();
@@ -82,14 +87,15 @@ public sealed class BiologyCodexWindowCoordinator : IDisposable
         imageCache.Dispose();
     }
 
-    private void OnImageSettingsPropertyChanged(
-        object? sender,
-        PropertyChangedEventArgs eventArgs)
+    private void OnImageSettingsPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
-        if (string.IsNullOrEmpty(eventArgs.PropertyName)
-            || eventArgs.PropertyName is nameof(CodexImageSettingsViewModel.PreDownload)
-                or nameof(CodexImageSettingsViewModel.CacheDirectory)
-                or nameof(CodexImageSettingsViewModel.LocalFloraDirectory))
+        if (
+            string.IsNullOrEmpty(eventArgs.PropertyName)
+            || eventArgs.PropertyName
+                is nameof(CodexImageSettingsViewModel.PreDownload)
+                    or nameof(CodexImageSettingsViewModel.CacheDirectory)
+                    or nameof(CodexImageSettingsViewModel.LocalFloraDirectory)
+        )
         {
             RestartPreDownload();
         }
@@ -113,9 +119,7 @@ public sealed class BiologyCodexWindowCoordinator : IDisposable
     {
         try
         {
-            imageSettings.SetPreDownloadStatus(
-                true,
-                "Preparing the Codex biology image cache...");
+            imageSettings.SetPreDownloadStatus(true, "Preparing the Codex biology image cache...");
             var progress = new Progress<CodexImagePreDownloadProgress>(value =>
             {
                 if (!cancellation.IsCancellationRequested)
@@ -123,24 +127,24 @@ public sealed class BiologyCodexWindowCoordinator : IDisposable
                     imageSettings.SetPreDownloadStatus(
                         true,
                         $"Preparing Codex images: {value.Completed:N0} of {value.Total:N0} checked, "
-                            + $"{value.Downloaded:N0} downloaded, {value.Failed:N0} unavailable.");
+                            + $"{value.Downloaded:N0} downloaded, {value.Failed:N0} unavailable."
+                    );
                 }
             });
-            var requests = imageSettings.BiologyEntries
-                .Where(entry => !string.IsNullOrWhiteSpace(entry.ImageUrl))
+            var requests = imageSettings
+                .BiologyEntries.Where(entry => !string.IsNullOrWhiteSpace(entry.ImageUrl))
                 .Select(entry => new CodexImageRequest(
                     entry.EntryId,
                     entry.ImageUrl!,
-                    entry.GetLegacyLocalImageName()));
-            var result = await imageCache.PreDownloadAsync(
-                requests,
-                progress,
-                cancellation.Token);
+                    entry.GetLegacyLocalImageName()
+                ));
+            var result = await imageCache.PreDownloadAsync(requests, progress, cancellation.Token);
             imageSettings.SetPreDownloadStatus(
                 false,
                 $"Codex image cache ready: {result.Downloaded:N0} downloaded, "
                     + $"{result.Cached:N0} already cached, {result.Local:N0} local, "
-                    + $"and {result.Failed:N0} unavailable.");
+                    + $"and {result.Failed:N0} unavailable."
+            );
         }
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
         {
@@ -149,16 +153,16 @@ public sealed class BiologyCodexWindowCoordinator : IDisposable
                 imageSettings.SetReadyStatus();
             }
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException
-                or InvalidOperationException
-                or ObjectDisposedException)
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or UnauthorizedAccessException
+                        or InvalidDataException
+                        or InvalidOperationException
+                        or ObjectDisposedException
+            )
         {
-            imageSettings.SetPreDownloadStatus(
-                false,
-                "Codex background downloading stopped: " + exception.Message);
+            imageSettings.SetPreDownloadStatus(false, "Codex background downloading stopped: " + exception.Message);
         }
         finally
         {

@@ -1,6 +1,6 @@
+using System.Threading.Channels;
 using Newtonsoft.Json.Linq;
 using SrvSurvey.Core.Journal;
-using System.Threading.Channels;
 
 namespace SrvSurvey.Core.Network;
 
@@ -31,9 +31,7 @@ public sealed class EddnApplyRequest
 
 public interface IEddnPublisher
 {
-    Task<EddnPublicationResult> ApplyAsync(
-        EddnApplyRequest request,
-        CancellationToken cancellationToken = default);
+    Task<EddnPublicationResult> ApplyAsync(EddnApplyRequest request, CancellationToken cancellationToken = default);
 
     void SetEnabled(bool enabled);
 
@@ -72,24 +70,20 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
         string? outboxPath = null,
         Action<string>? log = null,
         Func<DateTimeOffset>? utcNow = null,
-        bool automaticProcessing = true)
+        bool automaticProcessing = true
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(softwareVersion);
         this.softwareVersion = softwareVersion.Trim();
         this.log = log ?? (_ => { });
-        var transport = new EddnTransport(
-            client,
-            endpoint,
-            $"SrvSurvey/{this.softwareVersion}");
+        var transport = new EddnTransport(client, endpoint, $"SrvSurvey/{this.softwareVersion}");
         outbox = new EddnOutbox(
-            outboxPath ?? Path.Combine(
-                Path.GetTempPath(),
-                "SrvSurvey",
-                "eddn-outbox-v1.json"),
+            outboxPath ?? Path.Combine(Path.GetTempPath(), "SrvSurvey", "eddn-outbox-v1.json"),
             transport,
             WriteLog,
             utcNow,
-            automaticProcessing);
+            automaticProcessing
+        );
         outboxWrites = Channel.CreateBounded<OutboxWriteCommand>(
             new BoundedChannelOptions(4096)
             {
@@ -97,12 +91,12 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
                 SingleWriter = false,
                 FullMode = BoundedChannelFullMode.Wait,
                 AllowSynchronousContinuations = false,
-            });
+            }
+        );
         outboxWriterTask = RunOutboxWriterAsync();
     }
 
-    public int PendingCount => outbox.pendingCount
-        + Math.Max(0, Volatile.Read(ref stagedWriteCount));
+    public int PendingCount => outbox.pendingCount + Math.Max(0, Volatile.Read(ref stagedWriteCount));
 
     public void SetEnabled(bool enabled)
     {
@@ -149,7 +143,8 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
 
     public Task<EddnPublicationResult> ApplyAsync(
         EddnApplyRequest request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.JournalEvents);
@@ -171,20 +166,17 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
                 return Task.FromResult(EddnPublicationResult.Empty);
             }
 
-            return Task.FromResult(
-                currentSession.Apply(request, cancellationToken));
+            return Task.FromResult(currentSession.Apply(request, cancellationToken));
         }
     }
 
-    internal async Task ProcessPendingAsync(
-        CancellationToken cancellationToken = default)
+    internal async Task ProcessPendingAsync(CancellationToken cancellationToken = default)
     {
         await FlushOutboxWritesAsync(cancellationToken).ConfigureAwait(false);
         await outbox.processDue(cancellationToken).ConfigureAwait(false);
     }
 
-    internal async Task WaitForCompanionReadsAsync(
-        CancellationToken cancellationToken = default)
+    internal async Task WaitForCompanionReadsAsync(CancellationToken cancellationToken = default)
     {
         EddnSessionPublisher? currentSession;
         lock (sync)
@@ -194,8 +186,7 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
 
         if (currentSession is not null)
         {
-            await currentSession.WaitForCompanionReadsAsync(cancellationToken)
-                .ConfigureAwait(false);
+            await currentSession.WaitForCompanionReadsAsync(cancellationToken).ConfigureAwait(false);
         }
 
         await FlushOutboxWritesAsync(cancellationToken).ConfigureAwait(false);
@@ -206,9 +197,7 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
         lock (sync)
         {
             generation = ingestionGeneration;
-            return !disposed
-                && sharingEnabled
-                && !publishingSuspended;
+            return !disposed && sharingEnabled && !publishingSuspended;
         }
     }
 
@@ -217,7 +206,8 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
         UploadPayloadHeader header,
         long expectedGeneration,
         string eventName,
-        Action? rejected)
+        Action? rejected
+    )
     {
         ArgumentNullException.ThrowIfNull(prepared);
         ArgumentNullException.ThrowIfNull(header);
@@ -225,11 +215,13 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
         long acceptedConsentGeneration;
         lock (sync)
         {
-            if (!acceptingWrites
+            if (
+                !acceptingWrites
                 || disposed
                 || !sharingEnabled
                 || publishingSuspended
-                || ingestionGeneration != expectedGeneration)
+                || ingestionGeneration != expectedGeneration
+            )
             {
                 return false;
             }
@@ -237,16 +229,9 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
             acceptedConsentGeneration = consentGeneration;
         }
 
-        var item = EddnTransport.prepare(
-            prepared.message,
-            prepared.schemaRef,
-            header);
+        var item = EddnTransport.prepare(prepared.message, prepared.schemaRef, header);
         Interlocked.Increment(ref stagedWriteCount);
-        if (outboxWrites.Writer.TryWrite(new PersistOutboxWrite(
-            item,
-            acceptedConsentGeneration,
-            eventName,
-            rejected)))
+        if (outboxWrites.Writer.TryWrite(new PersistOutboxWrite(item, acceptedConsentGeneration, eventName, rejected)))
         {
             return true;
         }
@@ -292,9 +277,7 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
             }
             catch (Exception exception)
             {
-                WriteLog(
-                    "EDDN queue writer stopped during shutdown: "
-                        + exception.GetBaseException().Message);
+                WriteLog("EDDN queue writer stopped during shutdown: " + exception.GetBaseException().Message);
             }
 
             outbox.Dispose();
@@ -335,11 +318,7 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
             return null;
         }
 
-        var replacement = new EddnSessionPublisher(
-            this,
-            descriptor.Header,
-            descriptor.JournalDirectory,
-            WriteLog);
+        var replacement = new EddnSessionPublisher(this, descriptor.Header, descriptor.JournalDirectory, WriteLog);
         replacement.SetEnabled(enabled);
         replacement.SetSuspended(suspended);
 
@@ -356,9 +335,7 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
 
     private async Task RunOutboxWriterAsync()
     {
-        await foreach (var command in outboxWrites.Reader
-                           .ReadAllAsync(CancellationToken.None)
-                           .ConfigureAwait(false))
+        await foreach (var command in outboxWrites.Reader.ReadAllAsync(CancellationToken.None).ConfigureAwait(false))
         {
             if (command is FlushOutboxWrites flush)
             {
@@ -369,26 +346,21 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
             var write = (PersistOutboxWrite)command;
             try
             {
-                var persisted = IsConsentCurrent(write.ConsentGeneration)
-                    && outbox.enqueue(
-                        write.Item,
-                        allowWhileSuspended: true);
+                var persisted =
+                    IsConsentCurrent(write.ConsentGeneration) && outbox.enqueue(write.Item, allowWhileSuspended: true);
                 if (!persisted)
                 {
                     write.Rejected?.Invoke();
                     if (IsConsentCurrent(write.ConsentGeneration))
                     {
-                        WriteLog(
-                            $"EDDN could not persist {write.EventName} for upload.");
+                        WriteLog($"EDDN could not persist {write.EventName} for upload.");
                     }
                 }
             }
             catch (Exception exception)
             {
                 write.Rejected?.Invoke();
-                WriteLog(
-                    $"EDDN could not persist {write.EventName} for upload: "
-                        + exception.Message);
+                WriteLog($"EDDN could not persist {write.EventName} for upload: " + exception.Message);
             }
             finally
             {
@@ -397,35 +369,29 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
         }
     }
 
-    private async Task FlushOutboxWritesAsync(
-        CancellationToken cancellationToken)
+    private async Task FlushOutboxWritesAsync(CancellationToken cancellationToken)
     {
-        var completion = new TaskCompletionSource(
-            TaskCreationOptions.RunContinuationsAsynchronously);
+        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         try
         {
-            await outboxWrites.Writer.WriteAsync(
-                new FlushOutboxWrites(completion),
-                cancellationToken).ConfigureAwait(false);
+            await outboxWrites
+                .Writer.WriteAsync(new FlushOutboxWrites(completion), cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (ChannelClosedException)
         {
-            await outboxWriterTask.WaitAsync(cancellationToken)
-                .ConfigureAwait(false);
+            await outboxWriterTask.WaitAsync(cancellationToken).ConfigureAwait(false);
             return;
         }
 
-        await completion.Task.WaitAsync(cancellationToken)
-            .ConfigureAwait(false);
+        await completion.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
     }
 
     private bool IsConsentCurrent(long generation)
     {
         lock (sync)
         {
-            return !disposed
-                && sharingEnabled
-                && consentGeneration == generation;
+            return !disposed && sharingEnabled && consentGeneration == generation;
         }
     }
 
@@ -452,19 +418,18 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
         EddnQueuedMessage Item,
         long ConsentGeneration,
         string EventName,
-        Action? Rejected) : OutboxWriteCommand;
+        Action? Rejected
+    ) : OutboxWriteCommand;
 
-    private sealed record FlushOutboxWrites(
-        TaskCompletionSource Completion) : OutboxWriteCommand;
+    private sealed record FlushOutboxWrites(TaskCompletionSource Completion) : OutboxWriteCommand;
 
     private sealed record EddnSessionDescriptor(
         EddnSessionKey Key,
         UploadPayloadHeader Header,
-        string? JournalDirectory)
+        string? JournalDirectory
+    )
     {
-        internal static EddnSessionDescriptor? TryCreate(
-            EddnApplyRequest request,
-            string softwareVersion)
+        internal static EddnSessionDescriptor? TryCreate(EddnApplyRequest request, string softwareVersion)
         {
             if (string.IsNullOrWhiteSpace(request.CommanderName))
             {
@@ -476,18 +441,16 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
             var key = new EddnSessionKey(
                 commander.ToUpperInvariant(),
                 request.FrontierId?.Trim().ToUpperInvariant() ?? string.Empty,
-                NormalizePathKey(journalSeries));
+                NormalizePathKey(journalSeries)
+            );
             var journalDirectory = string.IsNullOrWhiteSpace(request.JournalDirectory)
                 ? Path.GetDirectoryName(request.JournalPath)
                 : request.JournalDirectory;
             return new EddnSessionDescriptor(
                 key,
-                new UploadPayloadHeader(
-                    commander,
-                    request.GameVersion,
-                    request.GameBuild,
-                    softwareVersion),
-                journalDirectory);
+                new UploadPayloadHeader(commander, request.GameVersion, request.GameBuild, softwareVersion),
+                journalDirectory
+            );
         }
 
         private static string NormalizePathKey(string? path)
@@ -498,9 +461,7 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
             }
 
             var normalized = Path.GetFullPath(path);
-            return OperatingSystem.IsWindows()
-                ? normalized.ToUpperInvariant()
-                : normalized;
+            return OperatingSystem.IsWindows() ? normalized.ToUpperInvariant() : normalized;
         }
 
         private static string? GetJournalSeriesPath(string? journalPath)
@@ -511,25 +472,17 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
             }
 
             var filenameParts = Path.GetFileName(journalPath).Split('.');
-            if (filenameParts.Length < 4
-                || !int.TryParse(filenameParts[^2], out _))
+            if (filenameParts.Length < 4 || !int.TryParse(filenameParts[^2], out _))
             {
                 return Path.GetFullPath(journalPath);
             }
 
-            var seriesName = string.Join('.', filenameParts[..^2])
-                + "."
-                + filenameParts[^1];
-            return Path.Combine(
-                Path.GetDirectoryName(journalPath) ?? string.Empty,
-                seriesName);
+            var seriesName = string.Join('.', filenameParts[..^2]) + "." + filenameParts[^1];
+            return Path.Combine(Path.GetDirectoryName(journalPath) ?? string.Empty, seriesName);
         }
     }
 
-    private sealed record EddnSessionKey(
-        string Commander,
-        string FrontierId,
-        string JournalSeries);
+    private sealed record EddnSessionKey(string Commander, string FrontierId, string JournalSeries);
 }
 
 /// <summary>Small seam consumed by one immutable Commander session.</summary>
@@ -542,17 +495,13 @@ internal interface IEddnSessionSink
         UploadPayloadHeader header,
         long expectedGeneration,
         string eventName,
-        Action? rejected = null);
+        Action? rejected = null
+    );
 }
 
-public sealed record EddnPublishedEvent(
-    string EventName,
-    string SchemaReference,
-    bool UsesTestSchemas);
+public sealed record EddnPublishedEvent(string EventName, string SchemaReference, bool UsesTestSchemas);
 
-public sealed record EddnPublicationResult(
-    IReadOnlyList<EddnPublishedEvent> Published,
-    IReadOnlyList<string> Warnings)
+public sealed record EddnPublicationResult(IReadOnlyList<EddnPublishedEvent> Published, IReadOnlyList<string> Warnings)
 {
     public static EddnPublicationResult Empty { get; } = new([], []);
 }

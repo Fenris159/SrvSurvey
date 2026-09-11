@@ -13,42 +13,33 @@ public sealed class ApplicationRestartService
     public ApplicationRestartService()
         : this(
             Environment.ProcessPath
-                ?? throw new InvalidOperationException(
-                    "The current application executable could not be resolved."),
+                ?? throw new InvalidOperationException("The current application executable could not be resolved."),
             Assembly.GetEntryAssembly()?.Location
-                ?? throw new InvalidOperationException(
-                    "The current application assembly could not be resolved."),
-            Program.StartupArguments)
-    {
-    }
+                ?? throw new InvalidOperationException("The current application assembly could not be resolved."),
+            Program.StartupArguments
+        ) { }
 
-    internal ApplicationRestartService(
-        string processPath,
-        string entryAssemblyPath,
-        IReadOnlyList<string> arguments)
+    internal ApplicationRestartService(string processPath, string entryAssemblyPath, IReadOnlyList<string> arguments)
     {
         this.processPath = Path.GetFullPath(processPath);
         this.entryAssemblyPath = Path.GetFullPath(entryAssemblyPath);
-        this.arguments = arguments?.ToArray()
-            ?? throw new ArgumentNullException(nameof(arguments));
+        this.arguments = arguments?.ToArray() ?? throw new ArgumentNullException(nameof(arguments));
     }
 
     public void StartReplacement()
     {
         DesktopExternalEffectPolicy.ThrowIfDisabled();
-        var startInfo = CreateStartInfo(
-            processPath,
-            entryAssemblyPath,
-            arguments);
-        using var process = Process.Start(startInfo)
-            ?? throw new InvalidOperationException(
-                "The replacement SrvSurvey process did not start.");
+        var startInfo = CreateStartInfo(processPath, entryAssemblyPath, arguments);
+        using var process =
+            Process.Start(startInfo)
+            ?? throw new InvalidOperationException("The replacement SrvSurvey process did not start.");
     }
 
     internal static ProcessStartInfo CreateStartInfo(
         string processPath,
         string entryAssemblyPath,
-        IReadOnlyList<string> arguments)
+        IReadOnlyList<string> arguments
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(processPath);
         ArgumentException.ThrowIfNullOrWhiteSpace(entryAssemblyPath);
@@ -74,9 +65,6 @@ public sealed class ApplicationRestartService
 
     private static bool IsDotnetHost(string path)
     {
-        return string.Equals(
-            Path.GetFileNameWithoutExtension(path),
-            "dotnet",
-            StringComparison.OrdinalIgnoreCase);
+        return string.Equals(Path.GetFileNameWithoutExtension(path), "dotnet", StringComparison.OrdinalIgnoreCase);
     }
 }

@@ -9,8 +9,14 @@ public sealed class MiningMissionTrackerTests
     public void DeliveryIsCumulativeAndCargoCannotBeAllocatedTwice()
     {
         var tracker = new MiningMissionTracker();
-        Apply(tracker, """{"event":"MissionAccepted","Name":"Mission_Mining","MissionID":1,"Commodity":"$platinum_name;","Count":10}""");
-        Apply(tracker, """{"event":"MissionAccepted","Name":"Mission_Mining","MissionID":2,"Commodity":"platinum","Count":10}""");
+        Apply(
+            tracker,
+            """{"event":"MissionAccepted","Name":"Mission_Mining","MissionID":1,"Commodity":"$platinum_name;","Count":10}"""
+        );
+        Apply(
+            tracker,
+            """{"event":"MissionAccepted","Name":"Mission_Mining","MissionID":2,"Commodity":"platinum","Count":10}"""
+        );
         Apply(tracker, """{"event":"CargoDepot","MissionID":1,"UpdateType":"Deliver","ItemsDelivered":4}""");
         Apply(tracker, """{"event":"CargoDepot","MissionID":1,"UpdateType":"Deliver","ItemsDelivered":4}""");
         tracker.UpdateCargo([new CargoItem("platinum", null, 8, 0)]);

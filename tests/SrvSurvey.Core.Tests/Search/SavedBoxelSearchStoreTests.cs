@@ -7,7 +7,8 @@ public sealed class SavedBoxelSearchStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        "SrvSurvey-SavedBoxelSearchStoreTests-" + Guid.NewGuid().ToString("N"));
+        "SrvSurvey-SavedBoxelSearchStoreTests-" + Guid.NewGuid().ToString("N")
+    );
 
     [Fact]
     public async Task CreateUpdateListLoadAndDeletePreserveFullProgress()
@@ -34,40 +35,21 @@ public sealed class SavedBoxelSearchStoreTests : IDisposable
                     Exceptions = [0],
                 },
             ],
-            ProgressByPrefix = new Dictionary<string, int>
-            {
-                [top.Prefix] = 3,
-            },
+            ProgressByPrefix = new Dictionary<string, int> { [top.Prefix] = 3 },
         };
 
-        var created = await store.CreateAsync(
-            "F123",
-            "My boxel search",
-            "Initial notes",
-            initial);
-        var renamed = await store.RenameAsync(
-            "F123",
-            created.FileName,
-            "Return later");
-        var noted = await store.SaveNotesAsync(
-            "F123",
-            created.FileName,
-            "Updated notes");
-        var favorite = await store.SetFavoriteAsync(
-            "F123",
-            created.FileName,
-            true);
+        var created = await store.CreateAsync("F123", "My boxel search", "Initial notes", initial);
+        var renamed = await store.RenameAsync("F123", created.FileName, "Return later");
+        var noted = await store.SaveNotesAsync("F123", created.FileName, "Updated notes");
+        var favorite = await store.SetFavoriteAsync("F123", created.FileName, true);
         var updated = await store.SaveProgressAsync(
             "F123",
             created.FileName,
             initial with
             {
-                CompletedSystems =
-                [
-                    "Praea Euq IL-P c5-0",
-                    "Praea Euq IL-P c5-3",
-                ],
-            });
+                CompletedSystems = ["Praea Euq IL-P c5-0", "Praea Euq IL-P c5-3"],
+            }
+        );
 
         var entries = await store.ListAsync("F123");
         var loaded = await store.LoadAsync("F123", created.FileName);
@@ -117,14 +99,10 @@ public sealed class SavedBoxelSearchStoreTests : IDisposable
                 TopBoxel = top,
                 Current = top,
                 CurrentCount = 1,
-                ProgressByPrefix = new Dictionary<string, int>
-                {
-                    [top.Prefix] = 1,
-                },
-            });
-        await File.WriteAllTextAsync(
-            Path.Combine(Path.GetDirectoryName(created.FilePath)!, "broken.json"),
-            "not json");
+                ProgressByPrefix = new Dictionary<string, int> { [top.Prefix] = 1 },
+            }
+        );
+        await File.WriteAllTextAsync(Path.Combine(Path.GetDirectoryName(created.FilePath)!, "broken.json"), "not json");
 
         var entry = Assert.Single(await store.ListAsync("F123"));
 
@@ -145,9 +123,9 @@ public sealed class SavedBoxelSearchStoreTests : IDisposable
                 TopBoxel = top,
                 Current = top,
                 CurrentCount = 1,
-            });
-        var root = JsonNode.Parse(await File.ReadAllTextAsync(created.FilePath))!
-            .AsObject();
+            }
+        );
+        var root = JsonNode.Parse(await File.ReadAllTextAsync(created.FilePath))!.AsObject();
         root["search"]!["currentBoxel"] = "Sol";
         await File.WriteAllTextAsync(created.FilePath, root.ToJsonString());
 

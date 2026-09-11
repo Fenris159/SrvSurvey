@@ -20,8 +20,7 @@ public sealed class OverlayBehaviorViewModel : INotifyPropertyChanged
 
     public OverlayBehaviorViewModel(OverlayBehaviorSettingsStore settingsStore)
     {
-        this.settingsStore = settingsStore
-            ?? throw new ArgumentNullException(nameof(settingsStore));
+        this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         preferences = settingsStore.Load();
     }
 
@@ -48,30 +47,28 @@ public sealed class OverlayBehaviorViewModel : INotifyPropertyChanged
     public bool HideMultiGameCommanderOverlay
     {
         get => preferences.HideMultiGameCommanderOverlay;
-        set => Update(preferences with
-        {
-            HideMultiGameCommanderOverlay = value,
-        });
+        set => Update(preferences with { HideMultiGameCommanderOverlay = value });
     }
 
-    public bool ShouldSuppressForSuit => isOnFoot
-        && (currentSuit == OdysseySuitType.Dominator && HideInDominatorSuit
-            || currentSuit == OdysseySuitType.Maverick && HideInMaverickSuit);
+    public bool ShouldSuppressForSuit =>
+        isOnFoot
+        && (
+            currentSuit == OdysseySuitType.Dominator && HideInDominatorSuit
+            || currentSuit == OdysseySuitType.Maverick && HideInMaverickSuit
+        );
 
-    public bool ShouldSuppressForSession => !hasStatus
-        || !hasCommander
-        || isShutdown
-        || isAtMainMenu
-        || isAtCarrierManagement;
+    public bool ShouldSuppressForSession =>
+        !hasStatus || !hasCommander || isShutdown || isAtMainMenu || isAtCarrierManagement;
 
-    public string CurrentSuitText => currentSuit switch
-    {
-        OdysseySuitType.Flight => "Flight suit",
-        OdysseySuitType.Artemis => "Artemis suit",
-        OdysseySuitType.Maverick => "Maverick suit",
-        OdysseySuitType.Dominator => "Dominator suit",
-        _ => "Suit not reported",
-    };
+    public string CurrentSuitText =>
+        currentSuit switch
+        {
+            OdysseySuitType.Flight => "Flight suit",
+            OdysseySuitType.Artemis => "Artemis suit",
+            OdysseySuitType.Maverick => "Maverick suit",
+            OdysseySuitType.Dominator => "Dominator suit",
+            _ => "Suit not reported",
+        };
 
     public string SettingsStatus
     {
@@ -109,13 +106,16 @@ public sealed class OverlayBehaviorViewModel : INotifyPropertyChanged
         bool hasCurrentCommander,
         bool shutdown,
         bool atMainMenu,
-        bool atCarrierManagement = false)
+        bool atCarrierManagement = false
+    )
     {
-        if (hasStatus == hasCurrentStatus
+        if (
+            hasStatus == hasCurrentStatus
             && hasCommander == hasCurrentCommander
             && isShutdown == shutdown
             && isAtMainMenu == atMainMenu
-            && isAtCarrierManagement == atCarrierManagement)
+            && isAtCarrierManagement == atCarrierManagement
+        )
         {
             return;
         }
@@ -141,13 +141,11 @@ public sealed class OverlayBehaviorViewModel : INotifyPropertyChanged
             settingsStore.Save(preferences);
             SettingsStatus = string.Empty;
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidOperationException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidOperationException)
         {
-            SettingsStatus = "Overlay behavior changed for this session but "
-                + "could not be saved: " + exception.Message;
+            SettingsStatus =
+                "Overlay behavior changed for this session but " + "could not be saved: " + exception.Message;
         }
 
         OnPropertyChanged(nameof(KeepWhenGameLosesFocus));

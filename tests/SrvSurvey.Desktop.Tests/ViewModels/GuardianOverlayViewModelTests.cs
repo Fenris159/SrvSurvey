@@ -7,7 +7,8 @@ public sealed class GuardianOverlayViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-overlay-vm-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-overlay-vm-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void PreparationMakesActualInputModeVisible()
@@ -15,14 +16,14 @@ public sealed class GuardianOverlayViewModelTests : IDisposable
         Directory.CreateDirectory(temporaryDirectory);
         var viewModel = new GuardianOverlayViewModel(
             new GuardianViewModel(temporaryDirectory),
-            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows));
+            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows)
+        );
 
         Assert.Equal("PASS-THROUGH UNAVAILABLE", viewModel.InputMode);
 
-        viewModel.ApplyPreparation(new OverlayPreparationResult(
-            IsPrepared: true,
-            IsClickThrough: true,
-            "Click-through enabled."));
+        viewModel.ApplyPreparation(
+            new OverlayPreparationResult(IsPrepared: true, IsClickThrough: true, "Click-through enabled.")
+        );
 
         Assert.True(viewModel.IsClickThrough);
         Assert.Equal("CLICK-THROUGH", viewModel.InputMode);

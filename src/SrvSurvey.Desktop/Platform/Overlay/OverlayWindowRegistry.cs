@@ -8,11 +8,9 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public sealed class OverlayWindowRegistry
 {
-    private readonly ConditionalWeakTable<Window, Registration> registrations =
-        new();
+    private readonly ConditionalWeakTable<Window, Registration> registrations = new();
     private readonly List<WeakReference<Window>> windows = [];
-    private readonly HashSet<string> userHiddenPlotters =
-        new(StringComparer.Ordinal);
+    private readonly HashSet<string> userHiddenPlotters = new(StringComparer.Ordinal);
     private HashSet<string> vehicleExcludedPlotters = new(StringComparer.Ordinal);
     private bool galaxyMapContextActive;
     private bool editorSuppressed;
@@ -29,10 +27,7 @@ public sealed class OverlayWindowRegistry
 
     public bool IsGalaxyMapContextActive => galaxyMapContextActive;
 
-    public void Register(
-        Window window,
-        string plotterName,
-        bool participatesInPlacement = true)
+    public void Register(Window window, string plotterName, bool participatesInPlacement = true)
     {
         Dispatcher.UIThread.VerifyAccess();
         ArgumentNullException.ThrowIfNull(window);
@@ -40,14 +35,12 @@ public sealed class OverlayWindowRegistry
         var definition = OverlayLayoutCatalog.GetRequired(plotterName);
         if (registrations.TryGetValue(window, out var existing))
         {
-            if (!string.Equals(
-                    existing.PlotterName,
-                    plotterName,
-                    StringComparison.Ordinal))
+            if (!string.Equals(existing.PlotterName, plotterName, StringComparison.Ordinal))
             {
                 throw new InvalidOperationException(
                     $"{window.GetType().Name} is already registered as "
-                        + $"'{existing.PlotterName}', not '{plotterName}'.");
+                        + $"'{existing.PlotterName}', not '{plotterName}'."
+                );
             }
 
             return;
@@ -65,7 +58,9 @@ public sealed class OverlayWindowRegistry
                 closed,
                 facts,
                 OverlayVisibilityPolicy.Evaluate(facts),
-                participatesInPlacement));
+                participatesInPlacement
+            )
+        );
         windows.Add(new WeakReference<Window>(window));
         window.Opened += opened;
         window.Closed += closed;
@@ -96,9 +91,7 @@ public sealed class OverlayWindowRegistry
         VerifyAccessWhenWindowsAreRegistered();
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
         _ = OverlayLayoutCatalog.GetRequired(plotterName);
-        var changed = visible
-            ? userHiddenPlotters.Remove(plotterName)
-            : userHiddenPlotters.Add(plotterName);
+        var changed = visible ? userHiddenPlotters.Remove(plotterName) : userHiddenPlotters.Add(plotterName);
         if (!changed)
         {
             return;
@@ -111,7 +104,11 @@ public sealed class OverlayWindowRegistry
     {
         VerifyAccessWhenWindowsAreRegistered();
         var next = plotterNames.ToHashSet(StringComparer.Ordinal);
-        if (vehicleExcludedPlotters.SetEquals(next)) return;
+        if (vehicleExcludedPlotters.SetEquals(next))
+        {
+            return;
+        }
+
         vehicleExcludedPlotters = next;
         ReconcileAndNotify();
     }
@@ -128,15 +125,14 @@ public sealed class OverlayWindowRegistry
         ReconcileAndNotify();
     }
 
-    internal void SetGlobalSuppression(
-        bool manualSuppressed,
-        bool suitSuppressed,
-        bool sessionSuppressed)
+    internal void SetGlobalSuppression(bool manualSuppressed, bool suitSuppressed, bool sessionSuppressed)
     {
         Dispatcher.UIThread.VerifyAccess();
-        if (this.manualSuppressed == manualSuppressed
+        if (
+            this.manualSuppressed == manualSuppressed
             && this.suitSuppressed == suitSuppressed
-            && this.sessionSuppressed == sessionSuppressed)
+            && this.sessionSuppressed == sessionSuppressed
+        )
         {
             return;
         }
@@ -164,19 +160,23 @@ public sealed class OverlayWindowRegistry
         var result = new List<RegisteredOverlayWindow>(windows.Count);
         for (var index = windows.Count - 1; index >= 0; index--)
         {
-            if (!windows[index].TryGetTarget(out var window)
-                || !registrations.TryGetValue(window, out var registration))
+            if (
+                !windows[index].TryGetTarget(out var window) || !registrations.TryGetValue(window, out var registration)
+            )
             {
                 windows.RemoveAt(index);
                 continue;
             }
 
-            result.Add(new RegisteredOverlayWindow(
-                window,
-                registration.PlotterName,
-                registration.PresentationVisual,
-                registration.Presented,
-                registration.ParticipatesInPlacement));
+            result.Add(
+                new RegisteredOverlayWindow(
+                    window,
+                    registration.PlotterName,
+                    registration.PresentationVisual,
+                    registration.Presented,
+                    registration.ParticipatesInPlacement
+                )
+            );
         }
 
         result.Reverse();
@@ -199,8 +199,7 @@ public sealed class OverlayWindowRegistry
     internal bool ShouldPresent(string plotterName)
     {
         var definition = OverlayLayoutCatalog.GetRequired(plotterName);
-        return OverlayVisibilityPolicy.Evaluate(
-            CreateFacts(definition, requested: true)).ShouldPresent;
+        return OverlayVisibilityPolicy.Evaluate(CreateFacts(definition, requested: true)).ShouldPresent;
     }
 
     internal bool ShouldPresent(Window window) => GetDecision(window).ShouldPresent;
@@ -208,8 +207,7 @@ public sealed class OverlayWindowRegistry
     internal bool ShouldHost(string plotterName)
     {
         var definition = OverlayLayoutCatalog.GetRequired(plotterName);
-        return OverlayVisibilityPolicy.Evaluate(
-            CreateFacts(definition, requested: true)).ShouldHost;
+        return OverlayVisibilityPolicy.Evaluate(CreateFacts(definition, requested: true)).ShouldHost;
     }
 
     internal OverlayVisibilityDecision GetDecision(Window window)
@@ -217,32 +215,25 @@ public sealed class OverlayWindowRegistry
         ArgumentNullException.ThrowIfNull(window);
         return registrations.TryGetValue(window, out var registration)
             ? registration.Decision
-            : throw new InvalidOperationException(
-                $"{window.GetType().Name} is not registered as an overlay.");
+            : throw new InvalidOperationException($"{window.GetType().Name} is not registered as an overlay.");
     }
 
-    internal static bool ShouldPresentInContext(
-        string plotterName,
-        bool galaxyMapActive)
+    internal static bool ShouldPresentInContext(string plotterName, bool galaxyMapActive)
     {
-        return !galaxyMapActive
-            || OverlayLayoutCatalog.GetRequired(plotterName).ShowInGalaxyMap;
+        return !galaxyMapActive || OverlayLayoutCatalog.GetRequired(plotterName).ShowInGalaxyMap;
     }
 
     internal static bool ResolvePresentationVisibility(
         string plotterName,
         bool requestedVisibility,
         bool galaxyMapActive,
-        bool userVisible = true)
+        bool userVisible = true
+    )
     {
-        return requestedVisibility
-            && userVisible
-            && ShouldPresentInContext(plotterName, galaxyMapActive);
+        return requestedVisibility && userVisible && ShouldPresentInContext(plotterName, galaxyMapActive);
     }
 
-    internal void SetPresentationVisual(
-        Window window,
-        Visual? presentationVisual)
+    internal void SetPresentationVisual(Window window, Visual? presentationVisual)
     {
         Dispatcher.UIThread.VerifyAccess();
         ArgumentNullException.ThrowIfNull(window);
@@ -252,10 +243,7 @@ public sealed class OverlayWindowRegistry
         }
 
         registration.PresentationVisual = presentationVisual;
-        registration.Facts = registration.Facts with
-        {
-            Requested = presentationVisual is not null,
-        };
+        registration.Facts = registration.Facts with { Requested = presentationVisual is not null };
         ReconcileAndNotify();
     }
 
@@ -263,8 +251,7 @@ public sealed class OverlayWindowRegistry
     {
         Dispatcher.UIThread.VerifyAccess();
         ArgumentNullException.ThrowIfNull(window);
-        if (!registrations.TryGetValue(window, out var registration)
-            || registration.PresentationVisual is null)
+        if (!registrations.TryGetValue(window, out var registration) || registration.PresentationVisual is null)
         {
             return;
         }
@@ -289,33 +276,30 @@ public sealed class OverlayWindowRegistry
         ReconcileAndNotify();
     }
 
-    private OverlayVisibilityFacts CreateFacts(
-        OverlayLayoutDefinition definition,
-        bool requested)
+    private OverlayVisibilityFacts CreateFacts(OverlayLayoutDefinition definition, bool requested)
     {
         return new OverlayVisibilityFacts(
             Requested: requested,
             HostEligible: true,
             UserEnabled: IsUserVisible(definition.Name),
-            GalaxyMapAllowed: !galaxyMapContextActive
-                || definition.ShowInGalaxyMap,
+            GalaxyMapAllowed: !galaxyMapContextActive || definition.ShowInGalaxyMap,
             EditorSuppressed: editorSuppressed,
             ManualSuppressed: manualSuppressed,
             SuitSuppressed: suitSuppressed,
             SessionSuppressed: sessionSuppressed,
-            PriorityObscured: OverlayPriorityRules.IsObscured(
-                definition.Id,
-                IsAnyPresented,
-                priorityFacts),
-            VehicleAllowed: !vehicleExcludedPlotters.Contains(definition.Name));
+            PriorityObscured: OverlayPriorityRules.IsObscured(definition.Id, IsAnyPresented, priorityFacts),
+            VehicleAllowed: !vehicleExcludedPlotters.Contains(definition.Name)
+        );
     }
 
     private bool IsAnyPresented(OverlayId id)
     {
-        return GetRegisteredWindows().Any(window =>
-            registrations.TryGetValue(window, out var registration)
-            && registration.Id == id
-            && registration.Presented);
+        return GetRegisteredWindows()
+            .Any(window =>
+                registrations.TryGetValue(window, out var registration)
+                && registration.Id == id
+                && registration.Presented
+            );
     }
 
     private void ReconcileAndNotify()
@@ -333,8 +317,7 @@ public sealed class OverlayWindowRegistry
             {
                 reconcileAgain = false;
                 ReconcileCore();
-            }
-            while (reconcileAgain);
+            } while (reconcileAgain);
         }
         finally
         {
@@ -356,50 +339,32 @@ public sealed class OverlayWindowRegistry
         }
         for (var pass = 0; pass <= entries.Count; pass++)
         {
-            var previousPresented = entries.Select(entry =>
-                entry.Registration.Presented).ToArray();
-            foreach (var registration in entries.Select(entry =>
-                         entry.Registration))
+            var previousPresented = entries.Select(entry => entry.Registration.Presented).ToArray();
+            foreach (var registration in entries.Select(entry => entry.Registration))
             {
-                var definition = OverlayLayoutCatalog.GetRequired(
-                    registration.Id);
-                registration.Facts = CreateFacts(
-                    definition,
-                    registration.Facts.Requested);
-                registration.Decision = OverlayVisibilityPolicy.Evaluate(
-                    registration.Facts);
+                var definition = OverlayLayoutCatalog.GetRequired(registration.Id);
+                registration.Facts = CreateFacts(definition, registration.Facts.Requested);
+                registration.Decision = OverlayVisibilityPolicy.Evaluate(registration.Facts);
             }
 
-            foreach (var entry in entries.Where(entry =>
-                         !entry.Registration.Decision.ShouldPresent))
+            foreach (var entry in entries.Where(entry => !entry.Registration.Decision.ShouldPresent))
             {
-                ApplyVisibility(
-                    entry.Window,
-                    entry.Registration,
-                    visible: false);
+                ApplyVisibility(entry.Window, entry.Registration, visible: false);
             }
 
-            foreach (var entry in entries.Where(entry =>
-                         entry.Registration.Decision.ShouldPresent))
+            foreach (var entry in entries.Where(entry => entry.Registration.Decision.ShouldPresent))
             {
-                ApplyVisibility(
-                    entry.Window,
-                    entry.Registration,
-                    visible: true);
+                ApplyVisibility(entry.Window, entry.Registration, visible: true);
             }
 
-            if (entries.Select(entry => entry.Registration.Presented)
-                .SequenceEqual(previousPresented))
+            if (entries.Select(entry => entry.Registration.Presented).SequenceEqual(previousPresented))
             {
                 break;
             }
         }
     }
 
-    private static void ApplyVisibility(
-        Window window,
-        Registration registration,
-        bool visible)
+    private static void ApplyVisibility(Window window, Registration registration, bool visible)
     {
         if (registration.PresentationVisual is not null)
         {
@@ -438,8 +403,7 @@ public sealed class OverlayWindowRegistry
         var result = new List<Window>(windows.Count);
         for (var index = windows.Count - 1; index >= 0; index--)
         {
-            if (!windows[index].TryGetTarget(out var window)
-                || !registrations.TryGetValue(window, out _))
+            if (!windows[index].TryGetTarget(out var window) || !registrations.TryGetValue(window, out _))
             {
                 windows.RemoveAt(index);
                 continue;
@@ -472,8 +436,7 @@ public sealed class OverlayWindowRegistry
         registrations.Remove(window);
         for (var index = windows.Count - 1; index >= 0; index--)
         {
-            if (!windows[index].TryGetTarget(out var candidate)
-                || ReferenceEquals(candidate, window))
+            if (!windows[index].TryGetTarget(out var candidate) || ReferenceEquals(candidate, window))
             {
                 windows.RemoveAt(index);
             }
@@ -489,7 +452,8 @@ public sealed class OverlayWindowRegistry
         EventHandler closedHandler,
         OverlayVisibilityFacts facts,
         OverlayVisibilityDecision decision,
-        bool participatesInPlacement)
+        bool participatesInPlacement
+    )
     {
         public OverlayId Id { get; } = id;
 
@@ -518,7 +482,8 @@ public sealed record RegisteredOverlayWindow(
     string PlotterName,
     Visual? PresentationVisual = null,
     bool IsVisible = false,
-    bool ParticipatesInPlacement = true)
+    bool ParticipatesInPlacement = true
+)
 {
     public Visual RenderSource => PresentationVisual ?? Window;
 }
@@ -529,7 +494,8 @@ internal static class OverlayWindowMetrics
         Window window,
         LegacyOverlayLayout layout,
         string plotterName,
-        double targetScaling)
+        double targetScaling
+    )
     {
         ArgumentNullException.ThrowIfNull(window);
         ArgumentNullException.ThrowIfNull(layout);
@@ -538,9 +504,7 @@ internal static class OverlayWindowMetrics
         var scaling = NormalizeScaling(targetScaling);
         var scaleIndex = layout.GetScaleIndex(plotterName);
         OverlayThemeResources.ApplyScale(window, scaleIndex, scaling);
-        var fallbackScale = scaling * OverlayScaleCatalog.GetRelativeScale(
-            scaleIndex,
-            scaling);
+        var fallbackScale = scaling * OverlayScaleCatalog.GetRelativeScale(scaleIndex, scaling);
         var fallback = ScalePixelSize(definition.PreviewSize, fallbackScale);
         return GetPixelSize(window, fallback, scaling);
     }
@@ -549,55 +513,50 @@ internal static class OverlayWindowMetrics
     {
         ArgumentNullException.ThrowIfNull(registered);
         var scaling = NormalizeScaling(registered.Window.RenderScaling);
-        var previewSize = OverlayLayoutCatalog
-            .GetRequired(registered.PlotterName)
-            .PreviewSize;
+        var previewSize = OverlayLayoutCatalog.GetRequired(registered.PlotterName).PreviewSize;
         var fallback = ScalePixelSize(previewSize, scaling);
-        return GetPixelSize(
-            registered.Window,
-            fallback,
-            scaling,
-            registered.PresentationVisual);
+        return GetPixelSize(registered.Window, fallback, scaling, registered.PresentationVisual);
     }
 
     private static PixelSize ScalePixelSize(PixelSize size, double scaling) =>
         new(
             Math.Max(1, (int)Math.Ceiling(size.Width * scaling)),
-            Math.Max(1, (int)Math.Ceiling(size.Height * scaling)));
+            Math.Max(1, (int)Math.Ceiling(size.Height * scaling))
+        );
 
     private static PixelSize GetPixelSize(
         Window window,
         PixelSize fallback,
         double scaling,
-        Visual? presentation = null)
+        Visual? presentation = null
+    )
     {
-        var logicalWidth = presentation is not null
-            && presentation.Bounds.Width > 0
-            ? presentation.Bounds.Width
-            : window.Bounds.Width;
+        var logicalWidth =
+            presentation is not null && presentation.Bounds.Width > 0 ? presentation.Bounds.Width : window.Bounds.Width;
         if (!(logicalWidth > 0))
         {
             logicalWidth = window.Width;
         }
 
-        var logicalHeight = presentation is not null
-            && presentation.Bounds.Height > 0
-            ? presentation.Bounds.Height
-            : window.Bounds.Height;
+        var logicalHeight =
+            presentation is not null && presentation.Bounds.Height > 0
+                ? presentation.Bounds.Height
+                : window.Bounds.Height;
         if (!(logicalHeight > 0))
         {
             logicalHeight = window.Height;
         }
 
-        var width = double.IsFinite(logicalWidth) && logicalWidth > 0
-            ? (int)Math.Ceiling(logicalWidth * scaling)
-            : fallback.Width;
-        var height = double.IsFinite(logicalHeight) && logicalHeight > 0
-            ? (int)Math.Ceiling(logicalHeight * scaling)
-            : fallback.Height;
+        var width =
+            double.IsFinite(logicalWidth) && logicalWidth > 0
+                ? (int)Math.Ceiling(logicalWidth * scaling)
+                : fallback.Width;
+        var height =
+            double.IsFinite(logicalHeight) && logicalHeight > 0
+                ? (int)Math.Ceiling(logicalHeight * scaling)
+                : fallback.Height;
         return new PixelSize(Math.Max(width, 1), Math.Max(height, 1));
     }
 
-    private static double NormalizeScaling(double scaling) =>
-        double.IsFinite(scaling) && scaling > 0 ? scaling : 1d;
+    private static double NormalizeScaling(double scaling) => double.IsFinite(scaling) && scaling > 0 ? scaling : 1d;
 }

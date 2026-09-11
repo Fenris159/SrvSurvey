@@ -10,9 +10,7 @@ internal sealed class UploadSuccessLogAggregator
     private DateTimeOffset? windowStartedAt;
     private long successfulCount;
 
-    internal UploadSuccessLogAggregator(
-        Func<DateTimeOffset> utcNow,
-        TimeSpan? interval = null)
+    internal UploadSuccessLogAggregator(Func<DateTimeOffset> utcNow, TimeSpan? interval = null)
     {
         ArgumentNullException.ThrowIfNull(utcNow);
         this.utcNow = utcNow;
@@ -29,8 +27,7 @@ internal sealed class UploadSuccessLogAggregator
         lock (sync)
         {
             var now = utcNow();
-            if (windowStartedAt is { } startedAt
-                && now - startedAt >= interval)
+            if (windowStartedAt is { } startedAt && now - startedAt >= interval)
             {
                 var completedCount = successfulCount;
                 windowStartedAt = now;

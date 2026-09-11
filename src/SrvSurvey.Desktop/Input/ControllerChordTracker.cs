@@ -2,8 +2,7 @@ namespace SrvSurvey.Desktop.Input;
 
 public sealed class ControllerChordTracker
 {
-    private readonly HashSet<string> pressed = new(
-        StringComparer.Ordinal);
+    private readonly HashSet<string> pressed = new(StringComparer.Ordinal);
     private string? activeHat;
     private bool releasePending;
 
@@ -31,9 +30,7 @@ public sealed class ControllerChordTracker
 
     public string? UpdateHat(ControllerHatDirection direction)
     {
-        var nextHat = direction == ControllerHatDirection.Centered
-            ? null
-            : $"Pov{GetHatSuffix(direction)}";
+        var nextHat = direction == ControllerHatDirection.Centered ? null : $"Pov{GetHatSuffix(direction)}";
         if (string.Equals(activeHat, nextHat, StringComparison.Ordinal))
         {
             return null;
@@ -58,9 +55,7 @@ public sealed class ControllerChordTracker
     {
         if (!InputChord.IsControllerToken(token))
         {
-            throw new ArgumentException(
-                "The token is not a controller input.",
-                nameof(token));
+            throw new ArgumentException("The token is not a controller input.", nameof(token));
         }
 
         if (isPressed)
@@ -75,10 +70,7 @@ public sealed class ControllerChordTracker
         }
 
         string? chord = null;
-        if (!releasePending
-            && InputChord.TryNormalize(
-                string.Join(' ', pressed),
-                out var normalized))
+        if (!releasePending && InputChord.TryNormalize(string.Join(' ', pressed), out var normalized))
         {
             releasePending = true;
             chord = normalized;

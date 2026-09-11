@@ -1,0 +1,17 @@
+**/bin/**
+**/obj/**
+**/*.g.cs
+**/*.Designer.cs
+
+# This setup governs C# only; leave project and Avalonia markup formatting unchanged.
+**/*.axaml
+**/*.config
+**/*.csproj
+**/*.props
+**/*.slnx
+**/*.targets
+**/*.xaml
+**/*.xml
+
+# Imported upstream data; preserve its source form and keep it out of new-code metrics.
+src/SrvSurvey.Core/Navigation/RegionMapData.cs

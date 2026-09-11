@@ -39,55 +39,33 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
     private string renameDraft = string.Empty;
     private string statusMessage = "Waiting for a commander profile.";
 
-    public RouteManagerViewModel(
-        FollowRouteService routeService,
-        RouteWorkspaceViewModel workspace)
+    public RouteManagerViewModel(FollowRouteService routeService, RouteWorkspaceViewModel workspace)
     {
-        this.routeService = routeService
-            ?? throw new ArgumentNullException(nameof(routeService));
-        this.workspace = workspace
-            ?? throw new ArgumentNullException(nameof(workspace));
-        openWorkspaceCommand = new AsyncCommand(
-            OpenWorkspaceAsync,
-            () => HasProfile && !IsBusy);
-        deactivateCommand = new AsyncCommand(
-            DeactivateAsync,
-            () => CanDeactivate && !IsDialogVisible);
-        toggleAutoCopyCommand = new AsyncCommand(
-            ToggleAutoCopyAsync,
-            () => CanToggleAutoCopy && !IsDialogVisible);
-        openSelectedCommand = new AsyncCommand(
-            OpenSelectedAsync,
-            () => HasSingleSelection && !IsBusy);
-        refreshCommand = new AsyncCommand(
-            RefreshAsync,
-            () => HasProfile && !IsBusy);
-        requestDeleteCommand = new RelayCommand(
-            RequestDelete,
-            () => HasSelection && !IsBusy && !IsDialogVisible);
+        this.routeService = routeService ?? throw new ArgumentNullException(nameof(routeService));
+        this.workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
+        openWorkspaceCommand = new AsyncCommand(OpenWorkspaceAsync, () => HasProfile && !IsBusy);
+        deactivateCommand = new AsyncCommand(DeactivateAsync, () => CanDeactivate && !IsDialogVisible);
+        toggleAutoCopyCommand = new AsyncCommand(ToggleAutoCopyAsync, () => CanToggleAutoCopy && !IsDialogVisible);
+        openSelectedCommand = new AsyncCommand(OpenSelectedAsync, () => HasSingleSelection && !IsBusy);
+        refreshCommand = new AsyncCommand(RefreshAsync, () => HasProfile && !IsBusy);
+        requestDeleteCommand = new RelayCommand(RequestDelete, () => HasSelection && !IsBusy && !IsDialogVisible);
         confirmDeleteCommand = new AsyncCommand(
             ConfirmDeleteAsync,
-            () => HasSelection && !IsBusy && IsDeleteConfirmationVisible);
-        cancelDialogCommand = new RelayCommand(
-            CloseDialogs,
-            () => IsDialogVisible);
+            () => HasSelection && !IsBusy && IsDeleteConfirmationVisible
+        );
+        cancelDialogCommand = new RelayCommand(CloseDialogs, () => IsDialogVisible);
         saveNotesCommand = new AsyncCommand(
             SaveNotesAsync,
-            () => EditingRoute is not null && !IsBusy && IsNotesVisible);
+            () => EditingRoute is not null && !IsBusy && IsNotesVisible
+        );
         saveRenameCommand = new AsyncCommand(
             SaveRenameAsync,
-            () => EditingRoute is not null
-                && !string.IsNullOrWhiteSpace(RenameDraft)
-                && !IsBusy
-                && IsRenameVisible);
+            () => EditingRoute is not null && !string.IsNullOrWhiteSpace(RenameDraft) && !IsBusy && IsRenameVisible
+        );
         sortNameCommand = new RelayCommand(SortByName, () => !IsBusy);
         sortDateCommand = new RelayCommand(SortByDate, () => !IsBusy);
-        selectAllCommand = new RelayCommand(
-            SelectAll,
-            () => HasRoutes && !IsBusy);
-        clearSelectionCommand = new RelayCommand(
-            ClearSelection,
-            () => HasSelection && !IsBusy);
+        selectAllCommand = new RelayCommand(SelectAll, () => HasRoutes && !IsBusy);
+        clearSelectionCommand = new RelayCommand(ClearSelection, () => HasSelection && !IsBusy);
         workspace.CatalogChanged += OnWorkspaceCatalogChanged;
         workspace.PropertyChanged += OnWorkspacePropertyChanged;
     }
@@ -102,21 +80,19 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
 
     public string PanelTitle => IsFleetCarrierManager ? "FC Routes" : "Route Manager";
 
-    public string PanelDescription => IsFleetCarrierManager
-        ? "Open the FC route workspace and organize this commander's saved fleet-carrier routes."
-        : "Open the route workspace and organize this commander's saved route files.";
+    public string PanelDescription =>
+        IsFleetCarrierManager
+            ? "Open the FC route workspace and organize this commander's saved fleet-carrier routes."
+            : "Open the route workspace and organize this commander's saved route files.";
 
-    public string OpenWorkspaceLabel => IsFleetCarrierManager
-        ? "Open FC Route Workspace"
-        : "Open Route Workspace";
+    public string OpenWorkspaceLabel => IsFleetCarrierManager ? "Open FC Route Workspace" : "Open Route Workspace";
 
-    public string CurrentRouteLabel => IsFleetCarrierManager
-        ? "CURRENT FC ROUTE"
-        : "CURRENT ROUTE";
+    public string CurrentRouteLabel => IsFleetCarrierManager ? "CURRENT FC ROUTE" : "CURRENT ROUTE";
 
-    public string EmptyLibraryMessage => IsFleetCarrierManager
-        ? "Import a fleet-carrier route or create one in FC Route Workspace."
-        : "Import a JSON route or create one in Route Workspace.";
+    public string EmptyLibraryMessage =>
+        IsFleetCarrierManager
+            ? "Import a fleet-carrier route or create one in FC Route Workspace."
+            : "Import a JSON route or create one in Route Workspace.";
 
     public bool HasProfile => !string.IsNullOrWhiteSpace(frontierId);
 
@@ -132,15 +108,11 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
 
     public bool CanExport => HasSelection && !IsBusy && !IsDialogVisible;
 
-    public bool CanDeactivate => workspace.HasSavedRoute
-        && !workspace.IsBusy
-        && !IsBusy;
+    public bool CanDeactivate => workspace.HasSavedRoute && !workspace.IsBusy && !IsBusy;
 
     public bool AutoCopy => workspace.AutoCopy;
 
-    public bool CanToggleAutoCopy => workspace.HasSavedRoute
-        && !workspace.IsBusy
-        && !IsBusy;
+    public bool CanToggleAutoCopy => workspace.HasSavedRoute && !workspace.IsBusy && !IsBusy;
 
     public string SelectionSummary
     {
@@ -180,21 +152,23 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         }
     }
 
-    public string NameSortIndicator => sortColumn == RouteManagerSortColumn.Name
-        ? (sortAscending) switch
-        {
-            true => "\u25B2",
-            false => "\u25BC"
-        }
-        : string.Empty;
+    public string NameSortIndicator =>
+        sortColumn == RouteManagerSortColumn.Name
+            ? (sortAscending) switch
+            {
+                true => "\u25B2",
+                false => "\u25BC",
+            }
+            : string.Empty;
 
-    public string DateSortIndicator => sortColumn == RouteManagerSortColumn.Created
-        ? (sortAscending) switch
-        {
-            true => "\u25B2",
-            false => "\u25BC"
-        }
-        : string.Empty;
+    public string DateSortIndicator =>
+        sortColumn == RouteManagerSortColumn.Created
+            ? (sortAscending) switch
+            {
+                true => "\u25B2",
+                false => "\u25BC",
+            }
+            : string.Empty;
 
     public bool IsDeleteConfirmationVisible
     {
@@ -235,9 +209,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         }
     }
 
-    public bool IsDialogVisible => IsDeleteConfirmationVisible
-        || IsNotesVisible
-        || IsRenameVisible;
+    public bool IsDialogVisible => IsDeleteConfirmationVisible || IsNotesVisible || IsRenameVisible;
 
     public RouteManagerItemViewModel? EditingRoute
     {
@@ -274,9 +246,10 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         }
     }
 
-    public string DeleteConfirmationText => SelectedCount == 1
-        ? $"Delete '{Routes.Single(route => route.IsSelected).Name}'? The route will be moved to recovery storage."
-        : $"Delete {SelectedCount:N0} selected routes? They will be moved to recovery storage.";
+    public string DeleteConfirmationText =>
+        SelectedCount == 1
+            ? $"Delete '{Routes.Single(route => route.IsSelected).Name}'? The route will be moved to recovery storage."
+            : $"Delete {SelectedCount:N0} selected routes? They will be moved to recovery storage.";
 
     public string StatusMessage
     {
@@ -314,13 +287,8 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
 
     public async Task UpdateContextAsync(string? nextFrontierId)
     {
-        var normalized = string.IsNullOrWhiteSpace(nextFrontierId)
-            ? null
-            : nextFrontierId.Trim();
-        if (string.Equals(
-            frontierId,
-            normalized,
-            StringComparison.OrdinalIgnoreCase))
+        var normalized = string.IsNullOrWhiteSpace(nextFrontierId) ? null : nextFrontierId.Trim();
+        if (string.Equals(frontierId, normalized, StringComparison.OrdinalIgnoreCase))
         {
             return;
         }
@@ -363,8 +331,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         catch (Exception exception) when (IsExpectedException(exception))
         {
             await RefreshCoreAsync();
-            StatusMessage = "The route import could not be completed: "
-                + exception.Message;
+            StatusMessage = "The route import could not be completed: " + exception.Message;
         }
         finally
         {
@@ -382,20 +349,14 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            var selected = Routes
-                .Where(route => route.IsSelected)
-                .Select(route => route.ToCatalogEntry())
-                .ToArray();
-            var exported = await routeService.ExportAsync(
-                frontierId,
-                selected,
-                destinationDirectory);
-            StatusMessage = $"Exported {exported.Count:N0} route file{(exported.Count == 1 ? string.Empty : "s")} to {Path.GetFullPath(destinationDirectory)}.";
+            var selected = Routes.Where(route => route.IsSelected).Select(route => route.ToCatalogEntry()).ToArray();
+            var exported = await routeService.ExportAsync(frontierId, selected, destinationDirectory);
+            StatusMessage =
+                $"Exported {exported.Count:N0} route file{(exported.Count == 1 ? string.Empty : "s")} to {Path.GetFullPath(destinationDirectory)}.";
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
-            StatusMessage = "The selected routes could not be exported: "
-                + exception.Message;
+            StatusMessage = "The selected routes could not be exported: " + exception.Message;
         }
         finally
         {
@@ -405,18 +366,12 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
 
     public Task ExportSelectedSpanshAsync(string destinationDirectory)
     {
-        return ExportSelectedFormattedAsync(
-            destinationDirectory,
-            routeService.ExportSpanshAsync,
-            "Spansh JSON");
+        return ExportSelectedFormattedAsync(destinationDirectory, routeService.ExportSpanshAsync, "Spansh JSON");
     }
 
     public Task ExportSelectedCsvAsync(string destinationDirectory)
     {
-        return ExportSelectedFormattedAsync(
-            destinationDirectory,
-            routeService.ExportCsvAsync,
-            "CSV");
+        return ExportSelectedFormattedAsync(destinationDirectory, routeService.ExportCsvAsync, "CSV");
     }
 
     private async Task ExportSelectedFormattedAsync(
@@ -426,8 +381,10 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
             IReadOnlyList<FollowRouteCatalogEntry>,
             string,
             CancellationToken,
-            Task<IReadOnlyList<string>>> export,
-        string format)
+            Task<IReadOnlyList<string>>
+        > export,
+        string format
+    )
     {
         if (frontierId is null || !CanExport)
         {
@@ -437,21 +394,14 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            var selected = Routes
-                .Where(route => route.IsSelected)
-                .Select(route => route.ToCatalogEntry())
-                .ToArray();
-            var exported = await export(
-                frontierId,
-                selected,
-                destinationDirectory,
-                CancellationToken.None);
-            StatusMessage = $"Exported {exported.Count:N0} {format} route file{(exported.Count == 1 ? string.Empty : "s")} to {Path.GetFullPath(destinationDirectory)}.";
+            var selected = Routes.Where(route => route.IsSelected).Select(route => route.ToCatalogEntry()).ToArray();
+            var exported = await export(frontierId, selected, destinationDirectory, CancellationToken.None);
+            StatusMessage =
+                $"Exported {exported.Count:N0} {format} route file{(exported.Count == 1 ? string.Empty : "s")} to {Path.GetFullPath(destinationDirectory)}.";
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
-            StatusMessage = $"The selected routes could not be exported as {format}: "
-                + exception.Message;
+            StatusMessage = $"The selected routes could not be exported as {format}: " + exception.Message;
         }
         finally
         {
@@ -461,8 +411,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
 
     public void ReportFilePickerError(string operation, Exception exception)
     {
-        StatusMessage = $"The route {operation} picker was unavailable: "
-            + exception.Message;
+        StatusMessage = $"The route {operation} picker was unavailable: " + exception.Message;
     }
 
     private async Task OpenWorkspaceAsync()
@@ -481,10 +430,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            await workspace.ActivateSavedRouteAsync(
-                route.FileName,
-                route.IsLegacy,
-                route.FilePath);
+            await workspace.ActivateSavedRouteAsync(route.FileName, route.IsLegacy, route.FilePath);
             StatusMessage = workspace.StatusMessage;
         }
         finally
@@ -540,9 +486,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
             return;
         }
 
-        await workspace.LoadSavedRouteAsync(
-            selected.FileName,
-            selected.IsLegacy);
+        await workspace.LoadSavedRouteAsync(selected.FileName, selected.IsLegacy);
         await workspace.OpenWorkspaceAsync();
     }
 
@@ -567,17 +511,16 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
             {
                 refreshPending = false;
                 await RefreshCoreAsync();
-            }
-            while (refreshPending);
+            } while (refreshPending);
 
-            StatusMessage = Routes.Count == 0
-                ? "No saved routes. Import a JSON route or create one in the workspace."
-                : $"Loaded {Routes.Count:N0} saved route{((Routes.Count == 1) switch { true => string.Empty, false => "s" })}.";
+            StatusMessage =
+                Routes.Count == 0
+                    ? "No saved routes. Import a JSON route or create one in the workspace."
+                    : $"Loaded {Routes.Count:N0} saved route{((Routes.Count == 1) switch { true => string.Empty, false => "s" })}.";
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
-            StatusMessage = "The route library could not be refreshed: "
-                + exception.Message;
+            StatusMessage = "The route library could not be refreshed: " + exception.Message;
         }
         finally
         {
@@ -594,9 +537,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         }
 
         var entries = await routeService.ListAsync(frontierId);
-        var existing = Routes.ToDictionary(
-            route => route.FilePath,
-            PathComparer);
+        var existing = Routes.ToDictionary(route => route.FilePath, PathComparer);
         var seen = new HashSet<string>(PathComparer);
         foreach (var entry in entries)
         {
@@ -607,13 +548,16 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
             }
             else
             {
-                Routes.Add(new RouteManagerItemViewModel(
-                    entry,
-                    OnSelectionChanged,
-                    ToggleFavoriteAsync,
-                    OpenNotes,
-                    OpenRename,
-                    ActivateAsync));
+                Routes.Add(
+                    new RouteManagerItemViewModel(
+                        entry,
+                        OnSelectionChanged,
+                        ToggleFavoriteAsync,
+                        OpenNotes,
+                        OpenRename,
+                        ActivateAsync
+                    )
+                );
             }
         }
 
@@ -643,7 +587,8 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
                 frontierId,
                 route.FileName,
                 route.IsLegacy,
-                !route.IsFavorite);
+                !route.IsFavorite
+            );
             route.SetFavorite(saved.IsFavorite);
             workspace.ApplyExternalFavorite(route.FilePath, saved.IsFavorite);
             ReorderRoutes();
@@ -653,8 +598,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
-            StatusMessage = "The favorite could not be updated: "
-                + exception.Message;
+            StatusMessage = "The favorite could not be updated: " + exception.Message;
         }
         finally
         {
@@ -686,11 +630,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            var result = await routeService.RenameAsync(
-                frontierId,
-                route.FileName,
-                route.IsLegacy,
-                RenameDraft);
+            var result = await routeService.RenameAsync(frontierId, route.FileName, route.IsLegacy, RenameDraft);
             route.Update(result.CatalogEntry);
             await workspace.HandleRouteRenamedAsync(result);
             ReorderRoutes();
@@ -699,8 +639,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
-            StatusMessage = "The route could not be renamed: "
-                + exception.Message;
+            StatusMessage = "The route could not be renamed: " + exception.Message;
         }
         finally
         {
@@ -718,11 +657,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            var saved = await routeService.SaveNotesAsync(
-                frontierId,
-                route.FileName,
-                route.IsLegacy,
-                NotesDraft);
+            var saved = await routeService.SaveNotesAsync(frontierId, route.FileName, route.IsLegacy, NotesDraft);
             route.SetNotes(saved.Notes);
             workspace.ApplyExternalNotes(route.FilePath, saved.Notes);
             StatusMessage = $"Saved notes for {route.Name}.";
@@ -730,8 +665,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
-            StatusMessage = "The route notes could not be saved: "
-                + exception.Message;
+            StatusMessage = "The route notes could not be saved: " + exception.Message;
         }
         finally
         {
@@ -762,14 +696,10 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            var deletedLoadedRoute = selected.Any(route =>
-                workspace.IsLoadedSavedRoute(route.FilePath));
+            var deletedLoadedRoute = selected.Any(route => workspace.IsLoadedSavedRoute(route.FilePath));
             foreach (var route in selected)
             {
-                await routeService.DeleteNamedAsync(
-                    frontierId,
-                    route.FileName,
-                    route.IsLegacy);
+                await routeService.DeleteNamedAsync(frontierId, route.FileName, route.IsLegacy);
             }
 
             if (deletedLoadedRoute)
@@ -778,13 +708,13 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
             }
 
             await RefreshCoreAsync();
-            StatusMessage = $"Moved {selected.Length:N0} route file{(selected.Length == 1 ? string.Empty : "s")} to recovery storage.";
+            StatusMessage =
+                $"Moved {selected.Length:N0} route file{(selected.Length == 1 ? string.Empty : "s")} to recovery storage.";
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
             await RefreshCoreAsync();
-            StatusMessage = "The selected routes could not all be deleted: "
-                + exception.Message;
+            StatusMessage = "The selected routes could not all be deleted: " + exception.Message;
         }
         finally
         {
@@ -853,9 +783,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
                 ?? source.OrderBy(keySelector, RouteManagerSortComparer.Instance)
             : sorted?.ThenByDescending(keySelector, RouteManagerSortComparer.Instance)
                 ?? source.OrderByDescending(keySelector, RouteManagerSortComparer.Instance);
-        var target = ordered
-            .ThenBy(route => route.FileName, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
+        var target = ordered.ThenBy(route => route.FileName, StringComparer.OrdinalIgnoreCase).ToArray();
         for (var index = 0; index < target.Length; index++)
         {
             var currentIndex = Routes.IndexOf(target[index]);
@@ -900,17 +828,18 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         await RefreshAsync();
     }
 
-    private void OnWorkspacePropertyChanged(
-        object? sender,
-        PropertyChangedEventArgs eventArgs)
+    private void OnWorkspacePropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
         if (eventArgs.PropertyName == nameof(RouteWorkspaceViewModel.AutoCopy))
         {
             OnPropertyChanged(nameof(AutoCopy));
         }
 
-        if (eventArgs.PropertyName is nameof(RouteWorkspaceViewModel.HasSavedRoute)
-            or nameof(RouteWorkspaceViewModel.IsBusy))
+        if (
+            eventArgs.PropertyName
+            is nameof(RouteWorkspaceViewModel.HasSavedRoute)
+                or nameof(RouteWorkspaceViewModel.IsBusy)
+        )
         {
             OnPropertyChanged(nameof(CanDeactivate));
             OnPropertyChanged(nameof(CanToggleAutoCopy));
@@ -964,18 +893,16 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
 
     private static bool IsExpectedException(Exception exception)
     {
-        return exception is IOException
-            or UnauthorizedAccessException
-            or InvalidDataException
-            or InvalidOperationException
-            or ArgumentException
-            or NotSupportedException;
+        return exception
+            is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException
+                or InvalidOperationException
+                or ArgumentException
+                or NotSupportedException;
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -992,13 +919,10 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private static StringComparer PathComparer => OperatingSystem.IsWindows()
-        ? StringComparer.OrdinalIgnoreCase
-        : StringComparer.Ordinal;
+    private static StringComparer PathComparer =>
+        OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
 
-    private sealed class AsyncCommand(
-        Func<Task> execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class AsyncCommand(Func<Task> execute, Func<bool> canExecute) : ICommand
     {
         private bool isExecuting;
 
@@ -1035,9 +959,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         }
     }
 
-    private sealed class RelayCommand(
-        Action execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class RelayCommand(Action execute, Func<bool> canExecute) : ICommand
     {
         public event EventHandler? CanExecuteChanged;
 
@@ -1066,15 +988,12 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
 
         public int Compare(object? first, object? second)
         {
-            if (first is DateTimeOffset firstDate
-                && second is DateTimeOffset secondDate)
+            if (first is DateTimeOffset firstDate && second is DateTimeOffset secondDate)
             {
                 return firstDate.CompareTo(secondDate);
             }
 
-            return StringComparer.OrdinalIgnoreCase.Compare(
-                first?.ToString(),
-                second?.ToString());
+            return StringComparer.OrdinalIgnoreCase.Compare(first?.ToString(), second?.ToString());
         }
     }
 }
@@ -1106,7 +1025,8 @@ public sealed class RouteManagerItemViewModel : INotifyPropertyChanged
         Func<RouteManagerItemViewModel, Task> toggleFavorite,
         Action<RouteManagerItemViewModel> editNotes,
         Action<RouteManagerItemViewModel> rename,
-        Func<RouteManagerItemViewModel, Task> activate)
+        Func<RouteManagerItemViewModel, Task> activate
+    )
     {
         this.selectionChanged = selectionChanged;
         this.toggleFavorite = toggleFavorite;
@@ -1121,8 +1041,7 @@ public sealed class RouteManagerItemViewModel : INotifyPropertyChanged
         createdAt = entry.CreatedAt;
         notes = entry.Notes;
         isFavorite = entry.IsFavorite;
-        toggleFavoriteCommand = new AsyncCommand(
-            () => this.toggleFavorite(this));
+        toggleFavoriteCommand = new AsyncCommand(() => this.toggleFavorite(this));
         editNotesCommand = new RelayCommand(() => this.editNotes(this));
         renameCommand = new RelayCommand(() => this.rename(this));
         activateCommand = new AsyncCommand(() => this.activate(this));
@@ -1146,14 +1065,13 @@ public sealed class RouteManagerItemViewModel : INotifyPropertyChanged
 
     public string? Notes => notes;
 
-    public string NotesPreview => string.IsNullOrWhiteSpace(Notes)
-        ? "No notes"
-        : string.Join(
-            " ",
-            Notes.Split(
-                ['\r', '\n', '\t'],
-                StringSplitOptions.RemoveEmptyEntries
-                    | StringSplitOptions.TrimEntries));
+    public string NotesPreview =>
+        string.IsNullOrWhiteSpace(Notes)
+            ? "No notes"
+            : string.Join(
+                " ",
+                Notes.Split(['\r', '\n', '\t'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            );
 
     public bool IsFavorite => isFavorite;
 
@@ -1189,7 +1107,8 @@ public sealed class RouteManagerItemViewModel : INotifyPropertyChanged
             LastModified,
             CreatedAt,
             Notes,
-            IsFavorite);
+            IsFavorite
+        );
     }
 
     public void Update(FollowRouteCatalogEntry entry)
@@ -1232,10 +1151,7 @@ public sealed class RouteManagerItemViewModel : INotifyPropertyChanged
         activateCommand.RaiseCanExecuteChanged();
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {

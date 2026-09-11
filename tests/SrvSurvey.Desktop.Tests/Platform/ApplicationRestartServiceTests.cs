@@ -10,7 +10,8 @@ public sealed class ApplicationRestartServiceTests
         var startInfo = ApplicationRestartService.CreateStartInfo(
             Path.Combine("runtime", "dotnet.exe"),
             Path.Combine("app", "SrvSurvey.Desktop.dll"),
-            ["--journal-directory", "C:\\Elite Journals", "--frontier-id", "F123"]);
+            ["--journal-directory", "C:\\Elite Journals", "--frontier-id", "F123"]
+        );
 
         Assert.Equal(Path.Combine("runtime", "dotnet.exe"), startInfo.FileName);
         Assert.Equal(
@@ -21,7 +22,8 @@ public sealed class ApplicationRestartServiceTests
                 "--frontier-id",
                 "F123",
             ],
-            startInfo.ArgumentList);
+            startInfo.ArgumentList
+        );
         Assert.False(startInfo.UseShellExecute);
     }
 
@@ -31,10 +33,9 @@ public sealed class ApplicationRestartServiceTests
         var startInfo = ApplicationRestartService.CreateStartInfo(
             Path.Combine("app", "SrvSurvey.Desktop.exe"),
             Path.Combine("app", "SrvSurvey.Desktop.dll"),
-            ["--frontier-id", "F123"]);
+            ["--frontier-id", "F123"]
+        );
 
-        Assert.Equal(
-            ["--frontier-id", "F123"],
-            startInfo.ArgumentList);
+        Assert.Equal(["--frontier-id", "F123"], startInfo.ArgumentList);
     }
 }

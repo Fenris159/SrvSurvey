@@ -2,9 +2,9 @@ namespace SrvSurvey.Desktop.Input;
 
 public sealed class GlobalInputBindingRouter
 {
-    private Dictionary<string, GlobalInputAction> actionsByChord =
-        new Dictionary<string, GlobalInputAction>(
-            StringComparer.OrdinalIgnoreCase);
+    private Dictionary<string, GlobalInputAction> actionsByChord = new Dictionary<string, GlobalInputAction>(
+        StringComparer.OrdinalIgnoreCase
+    );
 
     public GlobalInputBindingRouter(GlobalInputSettings settings)
     {
@@ -14,13 +14,10 @@ public sealed class GlobalInputBindingRouter
     public void Update(GlobalInputSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
-        var routes = new Dictionary<string, GlobalInputAction>(
-            StringComparer.OrdinalIgnoreCase);
-        foreach (var action in GlobalInputActionCatalog.All.Select(
-            definition => definition.Action))
+        var routes = new Dictionary<string, GlobalInputAction>(StringComparer.OrdinalIgnoreCase);
+        foreach (var action in GlobalInputActionCatalog.All.Select(definition => definition.Action))
         {
-            var configured = settings.Bindings.GetValueOrDefault(
-                action);
+            var configured = settings.Bindings.GetValueOrDefault(action);
             if (!InputChord.TryNormalize(configured, out var chord))
             {
                 continue;
@@ -36,7 +33,6 @@ public sealed class GlobalInputBindingRouter
     {
         action = default;
         var routes = Volatile.Read(ref actionsByChord);
-        return InputChord.TryNormalize(chord, out var normalized)
-            && routes.TryGetValue(normalized, out action);
+        return InputChord.TryNormalize(chord, out var normalized) && routes.TryGetValue(normalized, out action);
     }
 }

@@ -1,7 +1,7 @@
 using System.IO.Compression;
 using System.Text.Json;
-using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Firegroups;
+using SrvSurvey.Core.Navigation;
 
 namespace SrvSurvey.Core.Mining;
 
@@ -10,26 +10,41 @@ public sealed record MiningBackupContents(MiningCommanderData Data, string Bookm
 public static class MiningBackup
 {
     private const int MaximumBytes = 256 * 1024 * 1024;
-    private static readonly StringComparer FileSystemPathComparer =
-        OperatingSystem.IsWindows()
-            ? StringComparer.OrdinalIgnoreCase
-            : StringComparer.Ordinal;
+    private static readonly StringComparer FileSystemPathComparer = OperatingSystem.IsWindows()
+        ? StringComparer.OrdinalIgnoreCase
+        : StringComparer.Ordinal;
+
     public static byte[] Create(MiningCommanderData data, string bookmarks, string? firegroups = null)
     {
-        if (firegroups is not null) _ = FiregroupStore.Parse(firegroups);
+        if (firegroups is not null)
+        {
+            _ = FiregroupStore.Parse(firegroups);
+        }
+
         var locations = BookmarkCatalog.Parse(bookmarks);
         var copy = MiningStore.Parse(JsonSerializer.Serialize(data));
         using var buffer = new MemoryStream();
         using (var archive = new ZipArchive(buffer, ZipArchiveMode.Create, true))
         {
-            AddScreenshots(archive, Sessions(copy).Select(s => s.Screenshots).Concat(locations.Select(b => b.Screenshots)));
+            AddScreenshots(
+                archive,
+                Sessions(copy).Select(s => s.Screenshots).Concat(locations.Select(b => b.Screenshots))
+            );
             Write(archive, "mining.json", JsonSerializer.Serialize(copy));
             Write(archive, "bookmarks.json", JsonSerializer.Serialize(locations));
-            if (firegroups is not null) Write(archive, "firegroups.json", firegroups);
+            if (firegroups is not null)
+            {
+                Write(archive, "firegroups.json", firegroups);
+            }
         }
-        if (buffer.Length > MaximumBytes) throw new IOException("Mining backup exceeds 256 MB. Export fewer screenshot attachments.");
+        if (buffer.Length > MaximumBytes)
+        {
+            throw new IOException("Mining backup exceeds 256 MB. Export fewer screenshot attachments.");
+        }
+
         return buffer.ToArray();
     }
+
     private static void AddScreenshots(ZipArchive archive, IEnumerable<List<string>> screenshotsByRecord)
     {
         var imageNames = new Dictionary<string, string>(FileSystemPathComparer);
@@ -38,9 +53,20 @@ public static class MiningBackup
             for (var index = 0; index < screenshots.Count; index++)
             {
                 var path = screenshots[index];
-                if (!File.Exists(path)) continue;
+                if (!File.Exists(path))
+                {
+                    continue;
+                }
+
                 var extension = Path.GetExtension(path).ToLowerInvariant();
-                if (extension is not (".png" or ".jpg" or ".jpeg" or ".webp") || new FileInfo(path).Length > 20 * 1024 * 1024) continue;
+                if (
+                    extension is not (".png" or ".jpg" or ".jpeg" or ".webp")
+                    || new FileInfo(path).Length > 20 * 1024 * 1024
+                )
+                {
+                    continue;
+                }
+
                 if (!imageNames.TryGetValue(path, out var name))
                 {
                     name = "images/" + Guid.NewGuid().ToString("N") + extension;
@@ -54,27 +80,51 @@ public static class MiningBackup
             }
         }
     }
+
     public static MiningBackupContents Read(byte[] bytes, string attachmentDirectory)
     {
-        if (bytes.Length > MaximumBytes) throw new IOException("Mining backup exceeds 256 MB.");
+        if (bytes.Length > MaximumBytes)
+        {
+            throw new IOException("Mining backup exceeds 256 MB.");
+        }
+
         using var buffer = new MemoryStream(bytes, false);
         using var archive = new ZipArchive(buffer, ZipArchiveMode.Read);
-        if (archive.Entries.Sum(e => e.Length) > MaximumBytes) throw new IOException("Expanded mining backup exceeds 256 MB.");
+        if (archive.Entries.Sum(e => e.Length) > MaximumBytes)
+        {
+            throw new IOException("Expanded mining backup exceeds 256 MB.");
+        }
+
         var firegroups = archive.GetEntry("firegroups.json") is null ? null : ReadText(archive, "firegroups.json");
-        if (firegroups is not null) _ = FiregroupStore.Parse(firegroups);
+        if (firegroups is not null)
+        {
+            _ = FiregroupStore.Parse(firegroups);
+        }
+
         var data = MiningStore.Parse(ReadText(archive, "mining.json"));
         var bookmarks = ReadText(archive, "bookmarks.json");
         var locations = BookmarkCatalog.Parse(bookmarks);
         var destination = Path.Combine(attachmentDirectory, Guid.NewGuid().ToString("N"));
-        foreach (var screenshots in Sessions(data).Select(s => s.Screenshots).Concat(locations.Select(b => b.Screenshots)))
+        foreach (
+            var screenshots in Sessions(data).Select(s => s.Screenshots).Concat(locations.Select(b => b.Screenshots))
+        )
         {
             for (var index = 0; index < screenshots.Count; index++)
             {
                 var name = screenshots[index];
-                if (!name.StartsWith("images/", StringComparison.Ordinal)) continue;
-                var entry = archive.GetEntry(name) ?? throw new InvalidDataException("A screenshot is missing from the mining backup.");
+                if (!name.StartsWith("images/", StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                var entry =
+                    archive.GetEntry(name)
+                    ?? throw new InvalidDataException("A screenshot is missing from the mining backup.");
                 var extension = Path.GetExtension(name).ToLowerInvariant();
-                if (extension is not (".png" or ".jpg" or ".jpeg" or ".webp")) throw new InvalidDataException("Unsupported screenshot format.");
+                if (extension is not (".png" or ".jpg" or ".jpeg" or ".webp"))
+                {
+                    throw new InvalidDataException("Unsupported screenshot format.");
+                }
                 // Archive paths never become filesystem paths: each image receives a new generated name.
                 Directory.CreateDirectory(destination);
                 var path = Path.Combine(destination, Guid.NewGuid().ToString("N") + extension);
@@ -86,16 +136,22 @@ public static class MiningBackup
         }
         return new(data, JsonSerializer.Serialize(locations), firegroups);
     }
-    private static IEnumerable<MiningSession> Sessions(MiningCommanderData data) => data.Current is { } current ? data.History.Append(current) : data.History;
+
+    private static IEnumerable<MiningSession> Sessions(MiningCommanderData data) =>
+        data.Current is { } current ? data.History.Append(current) : data.History;
+
     private static void Write(ZipArchive archive, string name, string text)
     {
         using var stream = archive.CreateEntry(name).Open();
         using var writer = new StreamWriter(stream);
         writer.Write(text);
     }
+
     private static string ReadText(ZipArchive archive, string name)
     {
-        using var stream = (archive.GetEntry(name) ?? throw new InvalidDataException($"Missing {name} in mining backup.")).Open();
+        using var stream = (
+            archive.GetEntry(name) ?? throw new InvalidDataException($"Missing {name} in mining backup.")
+        ).Open();
         using var reader = new StreamReader(stream);
         return reader.ReadToEnd();
     }

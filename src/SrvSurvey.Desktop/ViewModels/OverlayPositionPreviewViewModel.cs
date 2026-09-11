@@ -16,7 +16,8 @@ public sealed record OverlayPositionPreviewViewModel(
     bool ShowSubtitle,
     bool ShowFooter,
     double PreferredWidth,
-    double EstimatedHeight)
+    double EstimatedHeight
+)
 {
     private const string RouteBioPlotterName = "PlotRouteBio";
 
@@ -26,36 +27,27 @@ public sealed record OverlayPositionPreviewViewModel(
 
     public bool IsRouteBio => Definition.Name == RouteBioPlotterName;
 
-    public static OverlayPositionPreviewViewModel Create(
-        OverlayLayoutDefinition definition)
+    public static OverlayPositionPreviewViewModel Create(OverlayLayoutDefinition definition)
     {
         return Create(definition, OverlayPreviewSimulationState.Default);
     }
 
     internal static OverlayPositionPreviewViewModel Create(
         OverlayLayoutDefinition definition,
-        OverlayPreviewSimulationState simulation)
+        OverlayPreviewSimulationState simulation
+    )
     {
         ArgumentNullException.ThrowIfNull(definition);
         ArgumentNullException.ThrowIfNull(simulation);
-        var content = OverlayPreviewSimulationProjector.Project(
-            definition,
-            simulation);
+        var content = OverlayPreviewSimulationProjector.Project(definition, simulation);
         var isCompact = definition.PreviewSize.Height < 50;
         var rows = isCompact ? [] : content.Rows;
         var isRouteBio = definition.Name == RouteBioPlotterName;
         var routeBioTargets = isRouteBio
-            ? rows
-                .Select(row => row.RouteBody)
-                .OfType<RouteBioTargetItemViewModel>()
-                .ToArray()
+            ? rows.Select(row => row.RouteBody).OfType<RouteBioTargetItemViewModel>().ToArray()
             : [];
         var preferredWidth = definition.PreviewSize.Width;
-        var estimatedHeight = CalculateEstimatedHeight(
-            definition,
-            rows,
-            isCompact,
-            isRouteBio);
+        var estimatedHeight = CalculateEstimatedHeight(definition, rows, isCompact, isRouteBio);
 
         return new OverlayPositionPreviewViewModel(
             definition,
@@ -64,31 +56,30 @@ public sealed record OverlayPositionPreviewViewModel(
             rows,
             routeBioTargets,
             content.Footer,
-            string.IsNullOrWhiteSpace(content.CompactText)
-                ? content.Footer
-                : content.CompactText,
+            string.IsNullOrWhiteSpace(content.CompactText) ? content.Footer : content.CompactText,
             isCompact,
             !isCompact,
             !isCompact,
             preferredWidth,
-            estimatedHeight);
+            estimatedHeight
+        );
     }
 
     public PixelSize GetEstimatedPixelSize(double scaling)
     {
-        var safeScaling = double.IsFinite(scaling) && scaling > 0
-            ? scaling
-            : 1;
+        var safeScaling = double.IsFinite(scaling) && scaling > 0 ? scaling : 1;
         return new PixelSize(
             Math.Max(1, (int)Math.Ceiling(PreferredWidth * safeScaling)),
-            Math.Max(1, (int)Math.Ceiling(EstimatedHeight * safeScaling)));
+            Math.Max(1, (int)Math.Ceiling(EstimatedHeight * safeScaling))
+        );
     }
 
     private static double CalculateEstimatedHeight(
         OverlayLayoutDefinition definition,
         IReadOnlyList<OverlayPositionPreviewRowViewModel> rows,
         bool isCompact,
-        bool isRouteBio)
+        bool isRouteBio
+    )
     {
         if (isCompact)
         {
@@ -96,8 +87,7 @@ public sealed record OverlayPositionPreviewViewModel(
         }
 
         var rowsHeight = isRouteBio
-            ? rows.Take(RouteBioTargetList.MaxVisibleItemCount)
-                .Sum(row => row.EstimatedHeight)
+            ? rows.Take(RouteBioTargetList.MaxVisibleItemCount).Sum(row => row.EstimatedHeight)
             : rows.Sum(row => row.EstimatedHeight);
         return (isRouteBio ? 108 : 92) + rowsHeight;
     }
@@ -114,7 +104,8 @@ public sealed record OverlayPositionPreviewRowViewModel(
     bool IsCompleted = false,
     string BodyIconAssetPath = "",
     string BodyIconAccessibleName = "",
-    RouteBioTargetItemViewModel? RouteBody = null)
+    RouteBioTargetItemViewModel? RouteBody = null
+)
 {
     public bool HasProgress => Progress is not null && !HasRewardBands;
 
@@ -130,8 +121,7 @@ public sealed record OverlayPositionPreviewRowViewModel(
 
     public bool IsPrimaryGlyph => GlyphTone == OverlayPreviewGlyphTone.Primary;
 
-    public bool IsInformationGlyph =>
-        GlyphTone == OverlayPreviewGlyphTone.Information;
+    public bool IsInformationGlyph => GlyphTone == OverlayPreviewGlyphTone.Information;
 
     public bool IsGoldGlyph => GlyphTone == OverlayPreviewGlyphTone.Gold;
 

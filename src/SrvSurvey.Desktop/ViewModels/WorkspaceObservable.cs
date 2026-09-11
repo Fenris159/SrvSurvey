@@ -9,10 +9,17 @@ namespace SrvSurvey.Desktop.ViewModels;
 public abstract class WorkspaceObservable : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler? PropertyChanged;
-    protected void Changed([CallerMemberName] string? name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+
+    protected void Changed([CallerMemberName] string? name = null) =>
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+
     protected bool Set<T>(ref T field, T value, [CallerMemberName] string? name = null)
     {
-        if (EqualityComparer<T>.Default.Equals(field, value)) return false;
+        if (EqualityComparer<T>.Default.Equals(field, value))
+        {
+            return false;
+        }
+
         field = value;
         Changed(name);
         return true;
@@ -22,8 +29,17 @@ public abstract class WorkspaceObservable : INotifyPropertyChanged
 internal sealed class WorkspaceCommand(Action execute, Func<bool>? enabled = null) : ICommand
 {
     public event EventHandler? CanExecuteChanged;
+
     public bool CanExecute(object? parameter) => enabled?.Invoke() ?? true;
-    public void Execute(object? parameter) { if (CanExecute(parameter)) execute(); }
+
+    public void Execute(object? parameter)
+    {
+        if (CanExecute(parameter))
+        {
+            execute();
+        }
+    }
+
     public void Refresh() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
 }
 
@@ -31,10 +47,16 @@ internal sealed class WorkspaceParameterCommand(Action<object?> execute) : IComm
 {
     public event EventHandler? CanExecuteChanged
     {
-        add { /* This command is always enabled. */ }
-        remove { /* This command is always enabled. */ }
+        add
+        { /* This command is always enabled. */
+        }
+        remove
+        { /* This command is always enabled. */
+        }
     }
+
     public bool CanExecute(object? parameter) => true;
+
     public void Execute(object? parameter) => execute(parameter);
 }
 
@@ -96,13 +118,31 @@ internal sealed class WorkspaceTableSorter
 
         public int Compare(object? left, object? right)
         {
-            if (ReferenceEquals(left, right)) return 0;
-            if (left is null) return 1;
-            if (right is null) return -1;
+            if (ReferenceEquals(left, right))
+            {
+                return 0;
+            }
+
+            if (left is null)
+            {
+                return 1;
+            }
+
+            if (right is null)
+            {
+                return -1;
+            }
+
             if (left is string leftText && right is string rightText)
+            {
                 return StringComparer.CurrentCultureIgnoreCase.Compare(leftText, rightText);
+            }
+
             if (left.GetType() == right.GetType() && left is IComparable comparable)
+            {
                 return comparable.CompareTo(right);
+            }
+
             return StringComparer.CurrentCultureIgnoreCase.Compare(left.ToString(), right.ToString());
         }
     }
@@ -112,30 +152,20 @@ public sealed class WorkspaceSortIndicators
 {
     private readonly Func<string, string> indicator;
 
-    internal WorkspaceSortIndicators(Func<string, string> indicator) =>
-        this.indicator = indicator;
+    internal WorkspaceSortIndicators(Func<string, string> indicator) => this.indicator = indicator;
 
     public string this[string propertyName] => indicator(propertyName);
-
 }
 
 public sealed class WorkspaceSortIndicatorConverter : IValueConverter
 {
     public static WorkspaceSortIndicatorConverter Instance { get; } = new();
 
-    public object Convert(
-        object? value,
-        Type targetType,
-        object? parameter,
-        CultureInfo culture) =>
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
         value is WorkspaceSortIndicators indicators && parameter is string propertyName
             ? indicators[propertyName]
             : string.Empty;
 
-    public object ConvertBack(
-        object? value,
-        Type targetType,
-        object? parameter,
-        CultureInfo culture) =>
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
         throw new NotSupportedException();
 }

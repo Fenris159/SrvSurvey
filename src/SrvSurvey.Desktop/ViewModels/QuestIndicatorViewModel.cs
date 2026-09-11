@@ -58,16 +58,13 @@ public sealed class QuestIndicatorViewModel : INotifyPropertyChanged
         IReadOnlyList<QuestRuntimeSnapshot> quests,
         EliteStatus? status,
         bool enabled,
-        string? musicTrack = null)
+        string? musicTrack = null
+    )
     {
         ArgumentNullException.ThrowIfNull(quests);
         var firstQuest = quests.Count > 0 ? quests[0] : null;
-        var mode = OverlayGameModeResolver.Resolve(
-            status,
-            musicTrack: musicTrack);
-        ShouldShow = enabled
-            && firstQuest is not null
-            && IsVisibleMode(mode);
+        var mode = OverlayGameModeResolver.Resolve(status, musicTrack: musicTrack);
+        ShouldShow = enabled && firstQuest is not null && IsVisibleMode(mode);
         QuestTitle = firstQuest?.Title ?? string.Empty;
         var unread = quests.Sum(quest => quest.UnreadMessageCount);
         HasUnreadMessages = unread > 0;
@@ -79,18 +76,20 @@ public sealed class QuestIndicatorViewModel : INotifyPropertyChanged
         {
             UnreadMessageText = $"{unread:N0} unread message{(unread == 1 ? string.Empty : "s")}";
         }
-        Objectives = firstQuest?.Objectives
-            .Where(pair => pair.Value.StartsWith(
-                "visible",
-                StringComparison.Ordinal))
-            .Select(pair => QuestObjectiveRowViewModel.Create(
-                pair.Key,
-                firstQuest.ObjectiveLabels.GetValueOrDefault(pair.Key)
-                    ?? pair.Key,
-                pair.Value))
-            .ToArray()
+        Objectives =
+            firstQuest
+                ?.Objectives.Where(pair => pair.Value.StartsWith("visible", StringComparison.Ordinal))
+                .Select(pair =>
+                    QuestObjectiveRowViewModel.Create(
+                        pair.Key,
+                        firstQuest.ObjectiveLabels.GetValueOrDefault(pair.Key) ?? pair.Key,
+                        pair.Value
+                    )
+                )
+                .ToArray()
             ?? [];
-        Locations = quests.SelectMany(quest => quest.BodyLocations)
+        Locations = quests
+            .SelectMany(quest => quest.BodyLocations)
             .Select(pair => CreateLocation(pair.Key, pair.Value, status))
             .Where(location => location is not null)
             .Select(location => location!)
@@ -99,47 +98,35 @@ public sealed class QuestIndicatorViewModel : INotifyPropertyChanged
 
     private static bool IsVisibleMode(OverlayGameMode mode)
     {
-        return mode is OverlayGameMode.Flying
-            or OverlayGameMode.SuperCruising
-            or OverlayGameMode.GlideMode
-            or OverlayGameMode.InSrv
-            or OverlayGameMode.OnFoot
-            or OverlayGameMode.OnFootInStation
-            or OverlayGameMode.InTaxi
-            or OverlayGameMode.CommsPanel
-            or OverlayGameMode.InFighter
-            or OverlayGameMode.Docked
-            or OverlayGameMode.Landed
-            or OverlayGameMode.FsdJumping
-            or OverlayGameMode.StationServices
-            or OverlayGameMode.ExternalPanel
-            or OverlayGameMode.InternalPanel;
+        return mode
+            is OverlayGameMode.Flying
+                or OverlayGameMode.SuperCruising
+                or OverlayGameMode.GlideMode
+                or OverlayGameMode.InSrv
+                or OverlayGameMode.OnFoot
+                or OverlayGameMode.OnFootInStation
+                or OverlayGameMode.InTaxi
+                or OverlayGameMode.CommsPanel
+                or OverlayGameMode.InFighter
+                or OverlayGameMode.Docked
+                or OverlayGameMode.Landed
+                or OverlayGameMode.FsdJumping
+                or OverlayGameMode.StationServices
+                or OverlayGameMode.ExternalPanel
+                or OverlayGameMode.InternalPanel;
     }
 
-    private static QuestIndicatorLocationViewModel? CreateLocation(
-        string name,
-        string encoded,
-        EliteStatus? status)
+    private static QuestIndicatorLocationViewModel? CreateLocation(string name, string encoded, EliteStatus? status)
     {
         var parts = encoded.Split(',', StringSplitOptions.TrimEntries);
-        if (parts.Length != 3
-            || !double.TryParse(
-                parts[0],
-                NumberStyles.Float,
-                CultureInfo.InvariantCulture,
-                out var latitude)
-            || !double.TryParse(
-                parts[1],
-                NumberStyles.Float,
-                CultureInfo.InvariantCulture,
-                out var longitude)
-            || !double.TryParse(
-                parts[2],
-                NumberStyles.Float,
-                CultureInfo.InvariantCulture,
-                out var targetRadius)
+        if (
+            parts.Length != 3
+            || !double.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var latitude)
+            || !double.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var longitude)
+            || !double.TryParse(parts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out var targetRadius)
             || !double.IsFinite(targetRadius)
-            || targetRadius < 0)
+            || targetRadius < 0
+        )
         {
             return null;
         }
@@ -147,31 +134,21 @@ public sealed class QuestIndicatorViewModel : INotifyPropertyChanged
         try
         {
             var target = new SurfaceCoordinate(latitude, longitude);
-            if (status?.HasLatitudeLongitude != true
-                || status.PlanetRadius <= 0)
+            if (status?.HasLatitudeLongitude != true || status.PlanetRadius <= 0)
             {
-                return new QuestIndicatorLocationViewModel(
-                    name,
-                    "Position unavailable",
-                    string.Empty,
-                    false);
+                return new QuestIndicatorLocationViewModel(name, "Position unavailable", string.Empty, false);
             }
 
-            var origin = new SurfaceCoordinate(
-                status.Latitude,
-                status.Longitude);
-            var distance = SurfaceNavigation.GetDistance(
-                origin,
-                target,
-                decimal.ToDouble(status.PlanetRadius));
+            var origin = new SurfaceCoordinate(status.Latitude, status.Longitude);
+            var distance = SurfaceNavigation.GetDistance(origin, target, decimal.ToDouble(status.PlanetRadius));
             var bearing = SurfaceNavigation.GetBearing(origin, target);
-            var relative = SurfaceNavigation.NormalizeDegrees(
-                bearing - status.NormalizedHeading);
+            var relative = SurfaceNavigation.NormalizeDegrees(bearing - status.NormalizedHeading);
             return new QuestIndicatorLocationViewModel(
                 name,
                 FormatDistance(distance),
                 $"{relative:N0}° relative",
-                distance < targetRadius);
+                distance < targetRadius
+            );
         }
         catch (ArgumentOutOfRangeException)
         {
@@ -186,14 +163,11 @@ public sealed class QuestIndicatorViewModel : INotifyPropertyChanged
             : (meters >= 1_000) switch
             {
                 true => $"{meters / 1_000:N2} km",
-                false => $"{meters:N0} m"
+                false => $"{meters:N0} m",
             };
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -206,11 +180,7 @@ public sealed class QuestIndicatorViewModel : INotifyPropertyChanged
     }
 }
 
-public sealed record QuestIndicatorLocationViewModel(
-    string Label,
-    string Distance,
-    string Bearing,
-    bool IsWithinTarget)
+public sealed record QuestIndicatorLocationViewModel(string Label, string Distance, string Bearing, bool IsWithinTarget)
 {
     public string StateGlyph => IsWithinTarget ? "✓" : "◇";
 }

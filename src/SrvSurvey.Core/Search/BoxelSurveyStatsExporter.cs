@@ -7,14 +7,9 @@ namespace SrvSurvey.Core.Search;
 
 public static class BoxelSurveyStatsExporter
 {
-    private static readonly JsonSerializerOptions SerializerOptions = new()
-    {
-        WriteIndented = true,
-    };
+    private static readonly JsonSerializerOptions SerializerOptions = new() { WriteIndented = true };
 
-    public static bool MeetsExportMinimum(
-        BoxelSurveyBoxelSnapshot snapshot,
-        int minSystemsForExport)
+    public static bool MeetsExportMinimum(BoxelSurveyBoxelSnapshot snapshot, int minSystemsForExport)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         return snapshot.Visited >= Math.Max(1, minSystemsForExport);
@@ -29,42 +24,46 @@ public static class BoxelSurveyStatsExporter
             var bodies = new JsonArray();
             foreach (var body in system.Bodies)
             {
-                bodies.Add(new JsonObject
-                {
-                    ["bodyId"] = body.BodyId,
-                    ["class"] = (int)body.Class,
-                    ["planetClass"] = BoxelPlanetClassifier.ToPlanetClassString(body.Class),
-                    ["terraformable"] = body.Terraformable,
-                    ["landable"] = body.Landable,
-                    ["atmospheric"] = body.Atmospheric,
-                    ["massEm"] = body.MassEm,
-                    ["heliumPercent"] = body.HeliumPercent,
-                    ["scanValue"] = body.ScanValue,
-                    ["currentValue"] = body.CurrentValue,
-                    ["mappedPotentialValue"] = body.MappedPotentialValue,
-                    ["wasDiscovered"] = body.WasDiscovered,
-                    ["wasMapped"] = body.WasMapped,
-                    ["dssComplete"] = body.DssComplete,
-                    ["dssEfficiencyBonus"] = body.DssEfficiencyBonus,
-                });
+                bodies.Add(
+                    new JsonObject
+                    {
+                        ["bodyId"] = body.BodyId,
+                        ["class"] = (int)body.Class,
+                        ["planetClass"] = BoxelPlanetClassifier.ToPlanetClassString(body.Class),
+                        ["terraformable"] = body.Terraformable,
+                        ["landable"] = body.Landable,
+                        ["atmospheric"] = body.Atmospheric,
+                        ["massEm"] = body.MassEm,
+                        ["heliumPercent"] = body.HeliumPercent,
+                        ["scanValue"] = body.ScanValue,
+                        ["currentValue"] = body.CurrentValue,
+                        ["mappedPotentialValue"] = body.MappedPotentialValue,
+                        ["wasDiscovered"] = body.WasDiscovered,
+                        ["wasMapped"] = body.WasMapped,
+                        ["dssComplete"] = body.DssComplete,
+                        ["dssEfficiencyBonus"] = body.DssEfficiencyBonus,
+                    }
+                );
             }
 
-            systems.Add(new JsonObject
-            {
-                ["generatedName"] = system.GeneratedName,
-                ["systemAddress"] = system.SystemAddress,
-                ["n2"] = system.N2,
-                ["lastVisited"] = system.LastVisited,
-                ["fssDiscoveryBodyCount"] = system.FssDiscoveryBodyCount,
-                ["allBodiesFound"] = system.AllBodiesFound,
-                ["navBeaconScanned"] = system.NavBeaconScanned,
-                ["minHeliumPercent"] = system.MinHeliumPercent,
-                ["maxHeliumPercent"] = system.MaxHeliumPercent,
-                ["scanValue"] = system.ScanValue,
-                ["currentValue"] = system.CurrentValue,
-                ["mappedPotentialValue"] = system.MappedPotentialValue,
-                ["bodies"] = bodies,
-            });
+            systems.Add(
+                new JsonObject
+                {
+                    ["generatedName"] = system.GeneratedName,
+                    ["systemAddress"] = system.SystemAddress,
+                    ["n2"] = system.N2,
+                    ["lastVisited"] = system.LastVisited,
+                    ["fssDiscoveryBodyCount"] = system.FssDiscoveryBodyCount,
+                    ["allBodiesFound"] = system.AllBodiesFound,
+                    ["navBeaconScanned"] = system.NavBeaconScanned,
+                    ["minHeliumPercent"] = system.MinHeliumPercent,
+                    ["maxHeliumPercent"] = system.MaxHeliumPercent,
+                    ["scanValue"] = system.ScanValue,
+                    ["currentValue"] = system.CurrentValue,
+                    ["mappedPotentialValue"] = system.MappedPotentialValue,
+                    ["bodies"] = bodies,
+                }
+            );
         }
 
         return JsonSerializer.Serialize(
@@ -77,12 +76,11 @@ public static class BoxelSurveyStatsExporter
                 ["maxHeliumPercent"] = document.MaxHeliumPercent,
                 ["systems"] = systems,
             },
-            SerializerOptions);
+            SerializerOptions
+        );
     }
 
-    public static string ToDetailCsv(
-        BoxelSurveyBoxelSnapshot snapshot,
-        BoxelSurveyAverageFormat format = default)
+    public static string ToDetailCsv(BoxelSurveyBoxelSnapshot snapshot, BoxelSurveyAverageFormat format = default)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         var csv = new StringBuilder();
@@ -124,7 +122,8 @@ public static class BoxelSurveyStatsExporter
         ArgumentNullException.ThrowIfNull(snapshots);
         var csv = new StringBuilder();
         csv.Append(
-            "Prefix,MassCode,Visited,ImpliedPopulation,FssComplete,NavBeacon,MinHeliumPercent,MaxHeliumPercent,CurrentValue,MappedPotentialValue");
+            "Prefix,MassCode,Visited,ImpliedPopulation,FssComplete,NavBeacon,MinHeliumPercent,MaxHeliumPercent,CurrentValue,MappedPotentialValue"
+        );
         foreach (var classified in Enum.GetValues<BoxelPlanetClass>())
         {
             if (classified != BoxelPlanetClass.Unknown)
@@ -153,8 +152,7 @@ public static class BoxelSurveyStatsExporter
                     continue;
                 }
 
-                csv.Append(',').Append(
-                    snapshot.CountsOf(classified).Count.ToString(CultureInfo.InvariantCulture));
+                csv.Append(',').Append(snapshot.CountsOf(classified).Count.ToString(CultureInfo.InvariantCulture));
             }
 
             csv.AppendLine();
@@ -168,21 +166,22 @@ public static class BoxelSurveyStatsExporter
         csv.Append(Escape(name)).Append(',').AppendLine(Escape(FormatNumber(value)));
     }
 
-    private static string FormatNumber(object? value)
-        => value switch
+    private static string FormatNumber(object? value) =>
+        value switch
         {
             null => string.Empty,
-            IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture)
-                ?? string.Empty,
+            IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture) ?? string.Empty,
             _ => value.ToString() ?? string.Empty,
         };
 
     private static string Escape(string? value)
     {
         var text = value ?? string.Empty;
-        if (text.Contains(',', StringComparison.Ordinal)
+        if (
+            text.Contains(',', StringComparison.Ordinal)
             || text.Contains('"', StringComparison.Ordinal)
-            || text.Contains('\n', StringComparison.Ordinal))
+            || text.Contains('\n', StringComparison.Ordinal)
+        )
         {
             return "\"" + text.Replace("\"", "\"\"", StringComparison.Ordinal) + "\"";
         }

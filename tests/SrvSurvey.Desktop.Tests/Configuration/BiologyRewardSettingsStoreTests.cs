@@ -6,7 +6,8 @@ public sealed class BiologyRewardSettingsStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-biology-reward-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-biology-reward-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void MissingSettingsUseLegacyThresholds()
@@ -36,14 +37,13 @@ public sealed class BiologyRewardSettingsStoreTests : IDisposable
         var path = Path.Combine(temporaryDirectory, "ui-settings.json");
         File.WriteAllText(
             path,
-            "{\"BiologyRewards\":{" +
-                "\"BucketOneMillions\":8," +
-                "\"BucketTwoMillions\":2," +
-                "\"BucketThreeMillions\":99}}");
+            "{\"BiologyRewards\":{"
+                + "\"BucketOneMillions\":8,"
+                + "\"BucketTwoMillions\":2,"
+                + "\"BucketThreeMillions\":99}}"
+        );
 
-        Assert.Equal(
-            new BiologyRewardThresholds(8, 8, 20),
-            new BiologyRewardSettingsStore(path).Load());
+        Assert.Equal(new BiologyRewardThresholds(8, 8, 20), new BiologyRewardSettingsStore(path).Load());
     }
 
     public void Dispose()
@@ -56,7 +56,6 @@ public sealed class BiologyRewardSettingsStoreTests : IDisposable
 
     private BiologyRewardSettingsStore CreateStore()
     {
-        return new BiologyRewardSettingsStore(
-            Path.Combine(temporaryDirectory, "ui-settings.json"));
+        return new BiologyRewardSettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json"));
     }
 }

@@ -8,7 +8,8 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        "SrvSurvey-NetworkPrivacySettings-" + Guid.NewGuid().ToString("N"));
+        "SrvSurvey-NetworkPrivacySettings-" + Guid.NewGuid().ToString("N")
+    );
 
     [Fact]
     public void MissingDocumentKeepsPublicationDisabled()
@@ -33,9 +34,7 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
         Assert.True(viewModel.TrySetEddnUploadEnabled(true));
 
         Assert.True(viewModel.EddnUploadEnabled);
-        Assert.Equal(
-            "EDDN sharing is enabled for live Commander sessions.",
-            viewModel.EddnConsentSummary);
+        Assert.Equal("EDDN sharing is enabled for live Commander sessions.", viewModel.EddnConsentSummary);
         Assert.Equal([true], changes);
         Assert.True(store.Load().EddnUploadEnabled);
     }
@@ -45,20 +44,19 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
     {
         var viewModel = new NetworkPrivacyViewModel(CreateStore());
 
-        viewModel.ReportPublicationResult(new EddnPublicationResult(
-            [
-                new EddnPublishedEvent("FSDJump", "schema/1", false),
-                new EddnPublishedEvent("Scan", "schema/1", false),
-            ],
-            []));
+        viewModel.ReportPublicationResult(
+            new EddnPublicationResult(
+                [
+                    new EddnPublishedEvent("FSDJump", "schema/1", false),
+                    new EddnPublishedEvent("Scan", "schema/1", false),
+                ],
+                []
+            )
+        );
 
-        Assert.Equal(
-            "Queued 2 journal events for EDDN.",
-            viewModel.StatusMessage);
+        Assert.Equal("Queued 2 journal events for EDDN.", viewModel.StatusMessage);
 
-        viewModel.ReportPublicationResult(new EddnPublicationResult(
-            [],
-            ["EDDN warning"]));
+        viewModel.ReportPublicationResult(new EddnPublicationResult([], ["EDDN warning"]));
         Assert.Equal("EDDN warning", viewModel.StatusMessage);
     }
 
@@ -69,8 +67,8 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
         var blockedParent = Path.Combine(temporaryDirectory, "not-a-folder");
         File.WriteAllText(blockedParent, "occupied");
         var viewModel = new NetworkPrivacyViewModel(
-            new NetworkPrivacySettingsStore(
-                Path.Combine(blockedParent, "ui-settings.json")));
+            new NetworkPrivacySettingsStore(Path.Combine(blockedParent, "ui-settings.json"))
+        );
         var changes = new List<bool>();
         viewModel.EddnUploadEnabledChanged += changes.Add;
 
@@ -79,10 +77,7 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
         Assert.False(saved);
         Assert.False(viewModel.EddnUploadEnabled);
         Assert.Empty(changes);
-        Assert.Contains(
-            "was not changed",
-            viewModel.StatusMessage,
-            StringComparison.Ordinal);
+        Assert.Contains("was not changed", viewModel.StatusMessage, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -96,8 +91,7 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
             transitions.Add(enabled);
             if (enabled)
             {
-                throw new InvalidOperationException(
-                    "simulated EDDN runtime failure");
+                throw new InvalidOperationException("simulated EDDN runtime failure");
             }
         };
 
@@ -107,10 +101,7 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
         Assert.False(viewModel.EddnUploadEnabled);
         Assert.False(store.Load().EddnUploadEnabled);
         Assert.Equal([true, false], transitions);
-        Assert.Contains(
-            "previous choice was restored",
-            viewModel.StatusMessage,
-            StringComparison.Ordinal);
+        Assert.Contains("previous choice was restored", viewModel.StatusMessage, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -122,7 +113,8 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
             path,
             """
             {"NetworkPrivacy":{"EddnUploadEnabled":"yes"}}
-            """);
+            """
+        );
 
         var preferences = new NetworkPrivacySettingsStore(path).Load();
 
@@ -149,14 +141,11 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
     [InlineData("beta")]
     [InlineData("dev")]
     [InlineData("unexpected")]
-    public void LegacySchemaPreferencesAreIgnoredAndRemovedOnSave(
-        string environment)
+    public void LegacySchemaPreferencesAreIgnoredAndRemovedOnSave(string environment)
     {
         Directory.CreateDirectory(temporaryDirectory);
         var path = Path.Combine(temporaryDirectory, "ui-settings.json");
-        File.WriteAllText(
-            path,
-            $"{{\"NetworkPrivacy\":{{\"EddnEnvironment\":\"{environment}\"}}}}");
+        File.WriteAllText(path, $"{{\"NetworkPrivacy\":{{\"EddnEnvironment\":\"{environment}\"}}}}");
         var store = new NetworkPrivacySettingsStore(path);
 
         var preferences = store.Load();
@@ -177,15 +166,14 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
             path,
             """
             {"NetworkPrivacy":{"EddnUseTestSchemas":false,"EddnEnvironment":"dev"}}
-            """);
+            """
+        );
 
         var store = new NetworkPrivacySettingsStore(path);
         var preferences = store.Load();
         store.Save(preferences);
 
-        Assert.DoesNotContain(
-            "EddnUseTestSchemas",
-            File.ReadAllText(path));
+        Assert.DoesNotContain("EddnUseTestSchemas", File.ReadAllText(path));
     }
 
     public void Dispose()
@@ -198,7 +186,6 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
 
     private NetworkPrivacySettingsStore CreateStore()
     {
-        return new NetworkPrivacySettingsStore(
-            Path.Combine(temporaryDirectory, "ui-settings.json"));
+        return new NetworkPrivacySettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json"));
     }
 }

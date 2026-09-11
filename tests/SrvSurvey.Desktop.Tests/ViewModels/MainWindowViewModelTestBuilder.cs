@@ -1,6 +1,6 @@
 using SrvSurvey.Core.Diagnostics;
-using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Edsm;
+using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Inara;
 using SrvSurvey.Core.Network;
 using SrvSurvey.Core.Search;
@@ -22,8 +22,7 @@ internal sealed class MainWindowViewModelTestBuilder
     private IFirstFootfallInferenceService? firstFootfallInferenceService;
     private CommanderProfileViewModel? frontierProfile;
     private IGameWindowSwitcher? gameWindowSwitcher;
-    private GreenGasGiantPublicationCoordinator?
-        greenGasGiantPublicationCoordinator;
+    private GreenGasGiantPublicationCoordinator? greenGasGiantPublicationCoordinator;
     private GuardianOverlaySettingsStore? guardianOverlaySettingsStore;
     private HumanSiteSettingsStore? humanSiteSettingsStore;
     private IInaraPublisher? inaraPublisher;
@@ -42,7 +41,8 @@ internal sealed class MainWindowViewModelTestBuilder
 
     public static MainWindowViewModel Create(
         string? configuredJournalDirectory,
-        Action<MainWindowViewModelTestBuilder> configure)
+        Action<MainWindowViewModelTestBuilder> configure
+    )
     {
         ArgumentNullException.ThrowIfNull(configure);
         var builder = new MainWindowViewModelTestBuilder();
@@ -70,16 +70,13 @@ internal sealed class MainWindowViewModelTestBuilder
                 {
                     OverlayThemeSettings = overlayThemeSettings,
                     ScreenshotProcessingService = screenshotProcessingService,
-                    GuardianOverlaySettingsStore =
-                        guardianOverlaySettingsStore,
-                    DesktopBehaviorSettingsStore =
-                        desktopBehaviorSettingsStore,
+                    GuardianOverlaySettingsStore = guardianOverlaySettingsStore,
+                    DesktopBehaviorSettingsStore = desktopBehaviorSettingsStore,
                 },
                 Exploration = new MainWindowExplorationInputs
                 {
                     BoxelSystemResolver = boxelSystemResolver,
-                    FirstFootfallInferenceService =
-                        firstFootfallInferenceService,
+                    FirstFootfallInferenceService = firstFootfallInferenceService,
                     SystemBodyDataClient = systemBodyDataClient,
                     EliteGameProcessDetector = eliteGameProcessDetector,
                     SystemBodyDataRetryDelay = systemBodyDataRetryDelay,
@@ -96,90 +93,68 @@ internal sealed class MainWindowViewModelTestBuilder
                     VoxStellarPublisher = voxStellarPublisher,
                     InaraPublisher = inaraPublisher,
                     EdsmPublisher = edsmPublisher,
-                    GreenGasGiantPublicationCoordinator =
-                        greenGasGiantPublicationCoordinator,
+                    GreenGasGiantPublicationCoordinator = greenGasGiantPublicationCoordinator,
                 },
                 Checkpoint = checkpoint,
-            });
+            }
+        );
     }
 
-    public MainWindowViewModelTestBuilder WithAppDataPaths(AppDataPaths value)
-        => Set(ref appDataPaths, value);
+    public MainWindowViewModelTestBuilder WithAppDataPaths(AppDataPaths value) => Set(ref appDataPaths, value);
 
-    public MainWindowViewModelTestBuilder WithApplicationLogService(
-        ApplicationLogService value)
-        => Set(ref applicationLogService, value);
+    public MainWindowViewModelTestBuilder WithApplicationLogService(ApplicationLogService value) =>
+        Set(ref applicationLogService, value);
 
-    public MainWindowViewModelTestBuilder WithBoxelSystemResolver(
-        IBoxelSystemResolver value)
-        => Set(ref boxelSystemResolver, value);
+    public MainWindowViewModelTestBuilder WithBoxelSystemResolver(IBoxelSystemResolver value) =>
+        Set(ref boxelSystemResolver, value);
 
-    public MainWindowViewModelTestBuilder WithDesktopBehaviorSettingsStore(
-        DesktopBehaviorSettingsStore value)
-        => Set(ref desktopBehaviorSettingsStore, value);
+    public MainWindowViewModelTestBuilder WithDesktopBehaviorSettingsStore(DesktopBehaviorSettingsStore value) =>
+        Set(ref desktopBehaviorSettingsStore, value);
 
-    public MainWindowViewModelTestBuilder WithEddnPublisher(IEddnPublisher value)
-        => Set(ref eddnPublisher, value);
+    public MainWindowViewModelTestBuilder WithEddnPublisher(IEddnPublisher value) => Set(ref eddnPublisher, value);
 
-    public MainWindowViewModelTestBuilder WithExternalNetworkClient(
-        HttpClient value)
-        => Set(ref externalNetworkClient, value);
+    public MainWindowViewModelTestBuilder WithExternalNetworkClient(HttpClient value) =>
+        Set(ref externalNetworkClient, value);
 
-    public MainWindowViewModelTestBuilder WithFirstFootfallInferenceService(
-        IFirstFootfallInferenceService value)
-        => Set(ref firstFootfallInferenceService, value);
+    public MainWindowViewModelTestBuilder WithFirstFootfallInferenceService(IFirstFootfallInferenceService value) =>
+        Set(ref firstFootfallInferenceService, value);
 
-    public MainWindowViewModelTestBuilder WithFrontierProfile(
-        CommanderProfileViewModel value)
-        => Set(ref frontierProfile, value);
+    public MainWindowViewModelTestBuilder WithFrontierProfile(CommanderProfileViewModel value) =>
+        Set(ref frontierProfile, value);
 
-    public MainWindowViewModelTestBuilder WithGameWindowSwitcher(
-        IGameWindowSwitcher value)
-        => Set(ref gameWindowSwitcher, value);
+    public MainWindowViewModelTestBuilder WithGameWindowSwitcher(IGameWindowSwitcher value) =>
+        Set(ref gameWindowSwitcher, value);
 
-    public MainWindowViewModelTestBuilder
-        WithGreenGasGiantPublicationCoordinator(
-            GreenGasGiantPublicationCoordinator value)
-        => Set(ref greenGasGiantPublicationCoordinator, value);
+    public MainWindowViewModelTestBuilder WithGreenGasGiantPublicationCoordinator(
+        GreenGasGiantPublicationCoordinator value
+    ) => Set(ref greenGasGiantPublicationCoordinator, value);
 
-    public MainWindowViewModelTestBuilder WithGuardianOverlaySettingsStore(
-        GuardianOverlaySettingsStore value)
-        => Set(ref guardianOverlaySettingsStore, value);
+    public MainWindowViewModelTestBuilder WithGuardianOverlaySettingsStore(GuardianOverlaySettingsStore value) =>
+        Set(ref guardianOverlaySettingsStore, value);
 
-    public MainWindowViewModelTestBuilder WithHumanSiteSettingsStore(
-        HumanSiteSettingsStore value)
-        => Set(ref humanSiteSettingsStore, value);
+    public MainWindowViewModelTestBuilder WithHumanSiteSettingsStore(HumanSiteSettingsStore value) =>
+        Set(ref humanSiteSettingsStore, value);
 
-    public MainWindowViewModelTestBuilder WithInaraPublisher(
-        IInaraPublisher value)
-        => Set(ref inaraPublisher, value);
+    public MainWindowViewModelTestBuilder WithInaraPublisher(IInaraPublisher value) => Set(ref inaraPublisher, value);
 
-    public MainWindowViewModelTestBuilder WithEdsmPublisher(
-        IEdsmPublisher value)
-        => Set(ref edsmPublisher, value);
+    public MainWindowViewModelTestBuilder WithEdsmPublisher(IEdsmPublisher value) => Set(ref edsmPublisher, value);
 
-    public MainWindowViewModelTestBuilder WithOverlayThemeSettings(
-        OverlayThemeSettingsViewModel value)
-        => Set(ref overlayThemeSettings, value);
+    public MainWindowViewModelTestBuilder WithOverlayThemeSettings(OverlayThemeSettingsViewModel value) =>
+        Set(ref overlayThemeSettings, value);
 
-    public MainWindowViewModelTestBuilder WithScreenshotProcessingService(
-        IScreenshotProcessingService value)
-        => Set(ref screenshotProcessingService, value);
+    public MainWindowViewModelTestBuilder WithScreenshotProcessingService(IScreenshotProcessingService value) =>
+        Set(ref screenshotProcessingService, value);
 
-    public MainWindowViewModelTestBuilder WithStationInfoSettingsStore(
-        StationInfoSettingsStore value)
-        => Set(ref stationInfoSettingsStore, value);
+    public MainWindowViewModelTestBuilder WithStationInfoSettingsStore(StationInfoSettingsStore value) =>
+        Set(ref stationInfoSettingsStore, value);
 
-    public MainWindowViewModelTestBuilder WithSystemBodyDataClient(
-        ISystemBodyDataClient value)
-        => Set(ref systemBodyDataClient, value);
+    public MainWindowViewModelTestBuilder WithSystemBodyDataClient(ISystemBodyDataClient value) =>
+        Set(ref systemBodyDataClient, value);
 
-    public MainWindowViewModelTestBuilder WithEliteGameProcessDetector(
-        IEliteGameProcessDetector value)
-        => Set(ref eliteGameProcessDetector, value);
+    public MainWindowViewModelTestBuilder WithEliteGameProcessDetector(IEliteGameProcessDetector value) =>
+        Set(ref eliteGameProcessDetector, value);
 
-    public MainWindowViewModelTestBuilder WithSystemBodyDataRetryDelay(
-        TimeSpan value)
+    public MainWindowViewModelTestBuilder WithSystemBodyDataRetryDelay(TimeSpan value)
     {
         systemBodyDataRetryDelay = value;
         return this;
@@ -191,9 +166,8 @@ internal sealed class MainWindowViewModelTestBuilder
         return this;
     }
 
-    public MainWindowViewModelTestBuilder WithVoxStellarPublisher(
-        IVoxStellarPublisher value)
-        => Set(ref voxStellarPublisher, value);
+    public MainWindowViewModelTestBuilder WithVoxStellarPublisher(IVoxStellarPublisher value) =>
+        Set(ref voxStellarPublisher, value);
 
     public MainWindowViewModelTestBuilder AsDiagnosticReplay(string status)
     {
@@ -202,9 +176,7 @@ internal sealed class MainWindowViewModelTestBuilder
         return this;
     }
 
-    public MainWindowViewModelTestBuilder FailAt(
-        MainWindowViewModelConstructionCheckpoint value,
-        Exception failure)
+    public MainWindowViewModelTestBuilder FailAt(MainWindowViewModelConstructionCheckpoint value, Exception failure)
     {
         ArgumentNullException.ThrowIfNull(failure);
         checkpoint = current =>
@@ -226,13 +198,12 @@ internal sealed class MainWindowViewModelTestBuilder
 
     private static AppDataPaths CreateIsolatedPaths()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-main-window-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-main-window-{Guid.NewGuid():N}");
         return new AppDataPaths(
             Path.Combine(root, "config"),
             Path.Combine(root, "data"),
             Path.Combine(root, "cache"),
-            []);
+            []
+        );
     }
 }

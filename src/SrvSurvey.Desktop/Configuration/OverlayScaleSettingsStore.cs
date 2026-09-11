@@ -15,8 +15,7 @@ public sealed class OverlayScaleSettingsStore
     public OverlayScalePreferences Load()
     {
         var settings = documentStore.Load()["OverlayScale"] as JsonObject;
-        return new OverlayScalePreferences(
-            OverlayScaleCatalog.NormalizeIndex(GetIndex(settings?["Index"])));
+        return new OverlayScalePreferences(OverlayScaleCatalog.NormalizeIndex(GetIndex(settings?["Index"])));
     }
 
     public void Save(OverlayScalePreferences preferences)
@@ -26,7 +25,8 @@ public sealed class OverlayScaleSettingsStore
         {
             throw new ArgumentOutOfRangeException(
                 nameof(preferences),
-                $"Overlay scale index {preferences.Index} is not supported.");
+                $"Overlay scale index {preferences.Index} is not supported."
+            );
         }
 
         documentStore.Update(root =>
@@ -55,10 +55,12 @@ public sealed class OverlayScaleSettingsStore
             return integer;
         }
 
-        if (value.TryGetValue<double>(out var number)
+        if (
+            value.TryGetValue<double>(out var number)
             && double.IsFinite(number)
             && double.IsInteger(number)
-            && number is >= int.MinValue and <= int.MaxValue)
+            && number is >= int.MinValue and <= int.MaxValue
+        )
         {
             return Convert.ToInt32(number, CultureInfo.InvariantCulture);
         }
@@ -105,12 +107,17 @@ public static class OverlayScaleCatalog
     ];
 
     public static IReadOnlyList<OverlayScaleOption> Options { get; } =
-        AbsoluteScales.Select((scale, index) => new OverlayScaleOption(
-                index,
-                scale is null
-                    ? "Match operating-system scale"
-                    : scale.Value.ToString("0.##%", CultureInfo.InvariantCulture),
-                scale))
+        AbsoluteScales
+            .Select(
+                (scale, index) =>
+                    new OverlayScaleOption(
+                        index,
+                        scale is null
+                            ? "Match operating-system scale"
+                            : scale.Value.ToString("0.##%", CultureInfo.InvariantCulture),
+                        scale
+                    )
+            )
             .ToArray();
 
     public static bool IsSupported(int index)
@@ -132,18 +139,12 @@ public static class OverlayScaleCatalog
             return 1d;
         }
 
-        var safeRenderScaling = double.IsFinite(renderScaling)
-            && renderScaling > 0
-                ? renderScaling
-                : 1d;
+        var safeRenderScaling = double.IsFinite(renderScaling) && renderScaling > 0 ? renderScaling : 1d;
         return absolute.Value / safeRenderScaling;
     }
 }
 
-public sealed record OverlayScaleOption(
-    int Index,
-    string DisplayName,
-    double? AbsoluteScale)
+public sealed record OverlayScaleOption(int Index, string DisplayName, double? AbsoluteScale)
 {
     public override string ToString() => DisplayName;
 }

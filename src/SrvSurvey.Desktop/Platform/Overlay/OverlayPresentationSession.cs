@@ -1,6 +1,6 @@
+using System.Runtime.ExceptionServices;
 using Avalonia.Controls;
 using Avalonia.Input;
-using System.Runtime.ExceptionServices;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
@@ -14,7 +14,8 @@ public sealed class OverlayPresentationSession : IDisposable
     private OverlayPresentationSession(
         OverlayPresentationDecision decision,
         CombinedOverlayPresentationController? combinedController,
-        OverlayPresentationSessionDependencies hostDependencies)
+        OverlayPresentationSessionDependencies hostDependencies
+    )
     {
         Decision = decision;
         this.combinedController = combinedController;
@@ -25,7 +26,8 @@ public sealed class OverlayPresentationSession : IDisposable
 
     public static OverlayPresentationSession CreateCurrent(
         IGameWindowTracker? gameWindowTracker = null,
-        OverlayWindowRegistry? registry = null)
+        OverlayWindowRegistry? registry = null
+    )
     {
         return CreateCurrent(
             gameWindowTracker,
@@ -33,7 +35,8 @@ public sealed class OverlayPresentationSession : IDisposable
             LegacyOverlayLayout.Empty,
             () => false,
             diagnosticSink: null,
-            gameWindowTrackerFactory: null);
+            gameWindowTrackerFactory: null
+        );
     }
 
     internal static OverlayPresentationSession CreateCurrent(
@@ -42,15 +45,14 @@ public sealed class OverlayPresentationSession : IDisposable
         LegacyOverlayLayout overlayLayout,
         Func<bool> keepWhenGameLosesFocus,
         Action<OverlayHostDiagnostic>? diagnosticSink,
-        Func<IGameWindowTracker>? gameWindowTrackerFactory = null)
+        Func<IGameWindowTracker>? gameWindowTrackerFactory = null
+    )
     {
         ArgumentNullException.ThrowIfNull(overlayLayout);
         ArgumentNullException.ThrowIfNull(keepWhenGameLosesFocus);
         var capabilities = OverlayPlatformCapabilities.DetectCurrent();
-        var trackerFactory = gameWindowTrackerFactory
-            ?? GameWindowTracker.CreateCurrent;
-        var decision = OverlayPresentationModeSelector.DetectCurrent(
-            capabilities);
+        var trackerFactory = gameWindowTrackerFactory ?? GameWindowTracker.CreateCurrent;
+        var decision = OverlayPresentationModeSelector.DetectCurrent(capabilities);
         if (decision.Mode != OverlayPresentationMode.CombinedWindow)
         {
             gameWindowTracker?.Dispose();
@@ -63,7 +65,9 @@ public sealed class OverlayPresentationSession : IDisposable
                     overlayLayout,
                     keepWhenGameLosesFocus,
                     diagnosticSink,
-                    trackerFactory));
+                    trackerFactory
+                )
+            );
         }
 
         var nativePlatform = OverlayPlatformService.CreateCurrent();
@@ -75,7 +79,8 @@ public sealed class OverlayPresentationSession : IDisposable
                 new OverlayPresentationDecision(
                     OverlayPresentationMode.MultipleWindows,
                     decision.Reason
-                        + " The native combined-host operations were unavailable, so separate windows remain active."),
+                        + " The native combined-host operations were unavailable, so separate windows remain active."
+                ),
                 null,
                 CreateHostDependencies(
                     OverlayPlatformService.CreateCurrent,
@@ -83,13 +88,16 @@ public sealed class OverlayPresentationSession : IDisposable
                     overlayLayout,
                     keepWhenGameLosesFocus,
                     diagnosticSink,
-                    trackerFactory));
+                    trackerFactory
+                )
+            );
         }
 
         var controller = new CombinedOverlayPresentationController(
             nativePlatform,
             gameWindowTracker ?? trackerFactory(),
-            registry);
+            registry
+        );
         return new OverlayPresentationSession(
             decision,
             controller,
@@ -99,12 +107,15 @@ public sealed class OverlayPresentationSession : IDisposable
                 overlayLayout,
                 keepWhenGameLosesFocus,
                 diagnosticSink,
-                trackerFactory));
+                trackerFactory
+            )
+        );
     }
 
     internal static OverlayPresentationSession CreateForAdapters(
         OverlayPresentationDecision decision,
-        OverlayPresentationSessionDependencies dependencies)
+        OverlayPresentationSessionDependencies dependencies
+    )
     {
         ArgumentNullException.ThrowIfNull(decision);
         ArgumentNullException.ThrowIfNull(dependencies);
@@ -119,34 +130,26 @@ public sealed class OverlayPresentationSession : IDisposable
             : new CombinedOverlayPlatformService(combinedController);
     }
 
-    internal HostedOverlayWindow HostPassiveWindow(
-        PassiveOverlayWindowDefinition definition)
+    internal HostedOverlayWindow HostPassiveWindow(PassiveOverlayWindowDefinition definition)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         ArgumentNullException.ThrowIfNull(definition);
-        var hosted = new HostedOverlayWindow(
-            definition,
-            hostDependencies,
-            RemoveHostedWindow);
+        var hosted = new HostedOverlayWindow(definition, hostDependencies, RemoveHostedWindow);
         hostedWindows.Add(hosted);
         return hosted;
     }
 
-    internal void ConfigureAuxiliaryWindow(
-        Window window,
-        string plotterName)
+    internal void ConfigureAuxiliaryWindow(Window window, string plotterName)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         ArgumentNullException.ThrowIfNull(window);
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
-        OverlayThemeResources.ApplyOpacity(
-            window,
-            hostDependencies.OverlayLayout,
-            plotterName);
+        OverlayThemeResources.ApplyOpacity(window, hostDependencies.OverlayLayout, plotterName);
         (hostDependencies.WindowRegistry ?? OverlayWindowRegistry.Shared).Register(
             window,
             plotterName,
-            participatesInPlacement: false);
+            participatesInPlacement: false
+        );
     }
 
     public void Dispose()
@@ -197,17 +200,17 @@ public sealed class OverlayPresentationSession : IDisposable
         LegacyOverlayLayout overlayLayout,
         Func<bool> keepWhenGameLosesFocus,
         Action<OverlayHostDiagnostic>? diagnosticSink,
-        Func<IGameWindowTracker> gameWindowTrackerFactory)
+        Func<IGameWindowTracker> gameWindowTrackerFactory
+    )
     {
         return new OverlayPresentationSessionDependencies(
             platformFactory,
-            () => new OverlayGameWindowTracker(
-                gameWindowTrackerFactory(),
-                keepWhenGameLosesFocus),
+            () => new OverlayGameWindowTracker(gameWindowTrackerFactory(), keepWhenGameLosesFocus),
             interval => new DispatcherHostedOverlayTimer(interval),
             overlayLayout,
             diagnosticSink,
-            registry ?? OverlayWindowRegistry.Shared);
+            registry ?? OverlayWindowRegistry.Shared
+        );
     }
 
     private void RemoveHostedWindow(HostedOverlayWindow hosted)
@@ -215,21 +218,17 @@ public sealed class OverlayPresentationSession : IDisposable
         hostedWindows.Remove(hosted);
     }
 
-    private sealed class CombinedOverlayPlatformService(
-        CombinedOverlayPresentationController controller)
+    private sealed class CombinedOverlayPlatformService(CombinedOverlayPresentationController controller)
         : IOverlayPlatformService
     {
-        public OverlayPlatformCapabilities Capabilities =>
-            controller.Capabilities;
+        public OverlayPlatformCapabilities Capabilities => controller.Capabilities;
 
         public OverlayPreparationResult PreparePassiveWindow(Window window)
         {
             return controller.PreparePassiveWindow(window);
         }
 
-        public OverlayInteractionResult SetInteractive(
-            Window window,
-            bool interactive)
+        public OverlayInteractionResult SetInteractive(Window window, bool interactive)
         {
             return controller.SetInteractive(window, interactive);
         }
@@ -239,9 +238,7 @@ public sealed class OverlayPresentationSession : IDisposable
             return controller.BeginVisibleCursorSession(window);
         }
 
-        public void BeginMoveDrag(
-            Window window,
-            PointerPressedEventArgs eventArgs)
+        public void BeginMoveDrag(Window window, PointerPressedEventArgs eventArgs)
         {
             controller.BeginMoveDrag(window, eventArgs);
         }

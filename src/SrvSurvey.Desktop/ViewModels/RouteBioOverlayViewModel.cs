@@ -11,16 +11,12 @@ public sealed class RouteBioOverlayViewModel : INotifyPropertyChanged, IDisposab
     private string? editorSystemName;
     private IReadOnlyList<RouteBioTargetItemViewModel>? editorTargets;
 
-    public RouteBioOverlayViewModel(
-        RouteWorkspaceViewModel route,
-        OverlayPlatformCapabilities capabilities)
+    public RouteBioOverlayViewModel(RouteWorkspaceViewModel route, OverlayPlatformCapabilities capabilities)
     {
         Route = route ?? throw new ArgumentNullException(nameof(route));
         ArgumentNullException.ThrowIfNull(capabilities);
         platformStatus = capabilities.StatusText;
-        inputMode = capabilities.SupportsClickThrough
-            ? "PASSIVE"
-            : "UNAVAILABLE";
+        inputMode = capabilities.SupportsClickThrough ? "PASSIVE" : "UNAVAILABLE";
         Route.PropertyChanged += OnRoutePropertyChanged;
     }
 
@@ -28,11 +24,9 @@ public sealed class RouteBioOverlayViewModel : INotifyPropertyChanged, IDisposab
 
     public RouteWorkspaceViewModel Route { get; }
 
-    public string SystemName => editorSystemName
-        ?? Route.CurrentBioSystemName;
+    public string SystemName => editorSystemName ?? Route.CurrentBioSystemName;
 
-    public IReadOnlyList<RouteBioTargetItemViewModel> Targets =>
-        editorTargets ?? Route.CurrentBioTargets;
+    public IReadOnlyList<RouteBioTargetItemViewModel> Targets => editorTargets ?? Route.CurrentBioTargets;
 
     public int CompletedCount => Targets.Count(target => target.IsCompleted);
 
@@ -41,9 +35,7 @@ public sealed class RouteBioOverlayViewModel : INotifyPropertyChanged, IDisposab
     /// <summary>
     /// Installs representative route-bio targets for the position editor.
     /// </summary>
-    internal void InstallEditorPreview(
-        string systemName,
-        IReadOnlyList<RouteBioTargetItemViewModel> targets)
+    internal void InstallEditorPreview(string systemName, IReadOnlyList<RouteBioTargetItemViewModel> targets)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(systemName);
         ArgumentNullException.ThrowIfNull(targets);
@@ -67,9 +59,7 @@ public sealed class RouteBioOverlayViewModel : INotifyPropertyChanged, IDisposab
         private set => SetField(ref inputMode, value);
     }
 
-    public Task SetCompletedAsync(
-        RouteBioTargetItemViewModel target,
-        bool isCompleted)
+    public Task SetCompletedAsync(RouteBioTargetItemViewModel target, bool isCompleted)
     {
         return Route.SetBioTargetCompletedAsync(target, isCompleted);
     }
@@ -86,14 +76,15 @@ public sealed class RouteBioOverlayViewModel : INotifyPropertyChanged, IDisposab
         Route.PropertyChanged -= OnRoutePropertyChanged;
     }
 
-    private void OnRoutePropertyChanged(
-        object? sender,
-        PropertyChangedEventArgs eventArgs)
+    private void OnRoutePropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
-        if (eventArgs.PropertyName is nameof(RouteWorkspaceViewModel.CurrentBioHop)
-            or nameof(RouteWorkspaceViewModel.CurrentBioTargets)
-            or nameof(RouteWorkspaceViewModel.CurrentBioSystemName)
-            or nameof(RouteWorkspaceViewModel.HasCurrentBioTargets))
+        if (
+            eventArgs.PropertyName
+            is nameof(RouteWorkspaceViewModel.CurrentBioHop)
+                or nameof(RouteWorkspaceViewModel.CurrentBioTargets)
+                or nameof(RouteWorkspaceViewModel.CurrentBioSystemName)
+                or nameof(RouteWorkspaceViewModel.HasCurrentBioTargets)
+        )
         {
             Raise(nameof(SystemName));
             Raise(nameof(Targets));
@@ -102,10 +93,7 @@ public sealed class RouteBioOverlayViewModel : INotifyPropertyChanged, IDisposab
         }
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -119,8 +107,6 @@ public sealed class RouteBioOverlayViewModel : INotifyPropertyChanged, IDisposab
 
     private void Raise(string? propertyName)
     {
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(propertyName));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

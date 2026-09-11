@@ -14,16 +14,17 @@ public interface IScreenshotProcessingService
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         ScreenshotProcessingPreferences preferences,
         string? commanderName,
-        IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>?
-            guardianContexts = null,
+        IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>? guardianContexts = null,
         ScreenshotNavigationContext? navigationContext = null,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Design",
     "CA1001:Types that own disposable fields should be disposable",
-    Justification = "The service is application-scoped and its gate may have in-flight waiters.")]
+    Justification = "The service is application-scoped and its gate may have in-flight waiters."
+)]
 public sealed class ScreenshotProcessingService : IScreenshotProcessingService
 {
     private const string UnknownLabel = "unknown";
@@ -31,32 +32,26 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
     private readonly SemaphoreSlim processingLock = new(1, 1);
     private readonly Func<int?> gameClientWidthProvider;
 
-    public ScreenshotProcessingService(
-        Func<int?>? gameClientWidthProvider = null)
+    public ScreenshotProcessingService(Func<int?>? gameClientWidthProvider = null)
     {
-        this.gameClientWidthProvider = gameClientWidthProvider
-            ?? GetGameClientWidth;
+        this.gameClientWidthProvider = gameClientWidthProvider ?? GetGameClientWidth;
     }
 
-    public static string GetSystemFolderPath(
-        string targetFolder,
-        string systemName)
+    public static string GetSystemFolderPath(string targetFolder, string systemName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(targetFolder);
         ArgumentException.ThrowIfNullOrWhiteSpace(systemName);
-        return Path.Combine(
-            Path.GetFullPath(targetFolder),
-            SafeFileName(systemName));
+        return Path.Combine(Path.GetFullPath(targetFolder), SafeFileName(systemName));
     }
 
     public async Task<ScreenshotProcessingResult> ProcessAsync(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         ScreenshotProcessingPreferences preferences,
         string? commanderName,
-        IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>?
-            guardianContexts = null,
+        IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>? guardianContexts = null,
         ScreenshotNavigationContext? navigationContext = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
         ArgumentNullException.ThrowIfNull(preferences);
@@ -65,9 +60,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
             return ScreenshotProcessingResult.Empty;
         }
 
-        var screenshots = journalEvents
-            .Where(entry => entry.EventName == "Screenshot")
-            .ToArray();
+        var screenshots = journalEvents.Where(entry => entry.EventName == "Screenshot").ToArray();
         if (screenshots.Length == 0)
         {
             return ScreenshotProcessingResult.Empty;
@@ -77,12 +70,14 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         try
         {
             return await ProcessCoreAsync(
-                screenshots,
-                preferences,
-                commanderName,
-                guardianContexts,
-                navigationContext,
-                cancellationToken).ConfigureAwait(false);
+                    screenshots,
+                    preferences,
+                    commanderName,
+                    guardianContexts,
+                    navigationContext,
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
         }
         finally
         {
@@ -94,27 +89,27 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         IReadOnlyList<JournalEventEnvelope> screenshots,
         ScreenshotProcessingPreferences preferences,
         string? commanderName,
-        IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>?
-            guardianContexts,
+        IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>? guardianContexts,
         ScreenshotNavigationContext? navigationContext,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var conversions = new List<ScreenshotConversion>();
         var warnings = new List<string>();
-        if (string.IsNullOrWhiteSpace(preferences.SourceFolder)
-            || !Path.IsPathFullyQualified(preferences.SourceFolder))
+        if (string.IsNullOrWhiteSpace(preferences.SourceFolder) || !Path.IsPathFullyQualified(preferences.SourceFolder))
         {
             return new ScreenshotProcessingResult(
                 conversions,
-                ["The screenshot source folder must be an absolute path."]);
+                ["The screenshot source folder must be an absolute path."]
+            );
         }
 
-        if (string.IsNullOrWhiteSpace(preferences.TargetFolder)
-            || !Path.IsPathFullyQualified(preferences.TargetFolder))
+        if (string.IsNullOrWhiteSpace(preferences.TargetFolder) || !Path.IsPathFullyQualified(preferences.TargetFolder))
         {
             return new ScreenshotProcessingResult(
                 conversions,
-                ["The screenshot target folder must be an absolute path."]);
+                ["The screenshot target folder must be an absolute path."]
+            );
         }
 
         var sourceDirectory = Path.GetFullPath(preferences.SourceFolder);
@@ -123,7 +118,8 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         {
             return new ScreenshotProcessingResult(
                 conversions,
-                [$"The screenshot source folder does not exist: {sourceDirectory}"]);
+                [$"The screenshot source folder does not exist: {sourceDirectory}"]
+            );
         }
 
         var gameClientWidth = gameClientWidthProvider();
@@ -134,32 +130,38 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
             {
                 var guardianContext = guardianContexts?.GetValueOrDefault(entry);
                 var conversion = await ConvertAsync(
-                    new ScreenshotConversionRequest(
-                        entry,
-                        preferences,
-                        commanderName,
-                        guardianContext,
-                        navigationContext,
-                        gameClientWidth,
-                        sourceDirectory,
-                        targetDirectory),
-                    cancellationToken).ConfigureAwait(false);
+                        new ScreenshotConversionRequest(
+                            entry,
+                            preferences,
+                            commanderName,
+                            guardianContext,
+                            navigationContext,
+                            gameClientWidth,
+                            sourceDirectory,
+                            targetDirectory
+                        ),
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false);
                 conversions.Add(conversion);
                 if (conversion.Warning is not null)
                 {
                     warnings.Add(conversion.Warning);
                 }
             }
-            catch (Exception exception) when (
-                exception is IOException
-                    or UnauthorizedAccessException
-                    or InvalidDataException
-                    or ArgumentException)
+            catch (Exception exception)
+                when (exception
+                        is IOException
+                            or UnauthorizedAccessException
+                            or InvalidDataException
+                            or ArgumentException
+                )
             {
                 warnings.Add(
                     $"Screenshot {entry.Timestamp?.ToString("u", CultureInfo.InvariantCulture) ?? "with unknown time"} "
-                    + "was not converted: "
-                    + exception.Message);
+                        + "was not converted: "
+                        + exception.Message
+                );
             }
         }
 
@@ -174,34 +176,28 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         ScreenshotNavigationContext? NavigationContext,
         int? GameClientWidth,
         string SourceDirectory,
-        string TargetDirectory);
+        string TargetDirectory
+    );
 
     private static async Task<ScreenshotConversion> ConvertAsync(
         ScreenshotConversionRequest request,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var entry = request.Entry;
         var preferences = request.Preferences;
         var guardianContext = request.GuardianContext;
         var sourcePath = ResolveSourcePath(entry, request.SourceDirectory);
-        await WaitForCompletedFileAsync(sourcePath, cancellationToken)
-            .ConfigureAwait(false);
+        await WaitForCompletedFileAsync(sourcePath, cancellationToken).ConfigureAwait(false);
 
-        using var source = SKBitmap.Decode(sourcePath)
-            ?? throw new InvalidDataException(
-                $"'{sourcePath}' is not a supported bitmap image.");
-        using var output = source.Copy()
-            ?? throw new InvalidDataException(
-                $"'{sourcePath}' could not be copied for conversion.");
+        using var source =
+            SKBitmap.Decode(sourcePath)
+            ?? throw new InvalidDataException($"'{sourcePath}' is not a supported bitmap image.");
+        using var output =
+            source.Copy() ?? throw new InvalidDataException($"'{sourcePath}' could not be copied for conversion.");
         if (preferences.AddBanner)
         {
-            DrawBanner(
-                output,
-                entry,
-                preferences,
-                request.CommanderName,
-                guardianContext,
-                request.NavigationContext);
+            DrawBanner(output, entry, preferences, request.CommanderName, guardianContext, request.NavigationContext);
         }
 
         var systemName = GetString(entry, "System") ?? UnknownLabel;
@@ -211,8 +207,9 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         Directory.CreateDirectory(folder);
         var baseName = SafeFileName(
             $"{bodyName} ({timestamp.UtcDateTime:yyyy-MM-dd HHmmss})"
-            + GetGuardianFileSuffix(guardianContext)
-            + GetHighResolutionSuffix(entry, request.GameClientWidth));
+                + GetGuardianFileSuffix(guardianContext)
+                + GetHighResolutionSuffix(entry, request.GameClientWidth)
+        );
         var outputPath = GetAvailablePath(folder, baseName, ".png");
         WritePngAtomically(output, outputPath);
 
@@ -222,34 +219,33 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         {
             try
             {
-                using var aerial = CreateAerialBitmap(
-                    source,
-                    guardianContext!.SiteType,
-                    preferences.RotateAlphaAerial);
+                using var aerial = CreateAerialBitmap(source, guardianContext!.SiteType, preferences.RotateAlphaAerial);
                 DrawBanner(
                     aerial,
                     entry,
                     preferences,
                     request.CommanderName,
                     guardianContext,
-                    request.NavigationContext);
+                    request.NavigationContext
+                );
                 var aerialFolder = Path.Combine(
                     request.TargetDirectory,
-                    SafeFileName("Aerial " + guardianContext.SiteType));
+                    SafeFileName("Aerial " + guardianContext.SiteType)
+                );
                 Directory.CreateDirectory(aerialFolder);
-                aerialOutputPath = GetAvailablePath(
-                    aerialFolder,
-                    baseName,
-                    ".png");
+                aerialOutputPath = GetAvailablePath(aerialFolder, baseName, ".png");
                 WritePngAtomically(aerial, aerialOutputPath);
             }
-            catch (Exception exception) when (
-                exception is IOException
-                    or UnauthorizedAccessException
-                    or InvalidDataException
-                    or ArgumentException)
+            catch (Exception exception)
+                when (exception
+                        is IOException
+                            or UnauthorizedAccessException
+                            or InvalidDataException
+                            or ArgumentException
+                )
             {
-                warning = $"Saved '{outputPath}', but the Guardian aerial copy failed; "
+                warning =
+                    $"Saved '{outputPath}', but the Guardian aerial copy failed; "
                     + "the original BMP was retained: "
                     + exception.Message;
             }
@@ -263,20 +259,13 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
                 File.Delete(sourcePath);
                 sourceDeleted = true;
             }
-            catch (Exception exception) when (
-                exception is IOException or UnauthorizedAccessException)
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
             {
-                warning = $"Saved '{outputPath}', but the original BMP could not be removed: "
-                    + exception.Message;
+                warning = $"Saved '{outputPath}', but the original BMP could not be removed: " + exception.Message;
             }
         }
 
-        return new ScreenshotConversion(
-            sourcePath,
-            outputPath,
-            sourceDeleted,
-            warning,
-            aerialOutputPath);
+        return new ScreenshotConversion(sourcePath, outputPath, sourceDeleted, warning, aerialOutputPath);
     }
 
     private static void WritePngAtomically(SKBitmap bitmap, string outputPath)
@@ -286,11 +275,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         {
             using (var image = SKImage.FromBitmap(bitmap))
             using (var data = image.Encode(SKEncodedImageFormat.Png, 100))
-            using (var stream = new FileStream(
-                       temporaryPath,
-                       FileMode.CreateNew,
-                       FileAccess.Write,
-                       FileShare.None))
+            using (var stream = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
             {
                 data.SaveTo(stream);
                 stream.Flush(true);
@@ -298,12 +283,9 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
 
             using (var verified = SKBitmap.Decode(temporaryPath))
             {
-                if (verified is null
-                    || verified.Width != bitmap.Width
-                    || verified.Height != bitmap.Height)
+                if (verified is null || verified.Width != bitmap.Width || verified.Height != bitmap.Height)
                 {
-                    throw new InvalidDataException(
-                        "The converted PNG could not be verified.");
+                    throw new InvalidDataException("The converted PNG could not be verified.");
                 }
             }
 
@@ -320,7 +302,8 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
 
     private static bool IsGuardianAerial(
         ScreenshotProcessingPreferences preferences,
-        ScreenshotGuardianContext? context)
+        ScreenshotGuardianContext? context
+    )
     {
         return preferences.UseGuardianAerialFolder
             && context is not null
@@ -329,8 +312,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
             && context.Altitude is > 500 and < 2000;
     }
 
-    private static string GetGuardianFileSuffix(
-        ScreenshotGuardianContext? context)
+    private static string GetGuardianFileSuffix(ScreenshotGuardianContext? context)
     {
         if (context is null || string.IsNullOrWhiteSpace(context.SiteType))
         {
@@ -342,34 +324,25 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
             : $", {context.SiteType}";
     }
 
-    private static string GetHighResolutionSuffix(
-        JournalEventEnvelope entry,
-        int? gameClientWidth)
+    private static string GetHighResolutionSuffix(JournalEventEnvelope entry, int? gameClientWidth)
     {
-        return gameClientWidth is > 0
+        return
+            gameClientWidth is > 0
             && entry.Payload.TryGetProperty("Width", out var width)
             && width.TryGetInt32(out var screenshotWidth)
             && screenshotWidth > gameClientWidth
-                ? " (HighRes)"
-                : string.Empty;
+            ? " (HighRes)"
+            : string.Empty;
     }
 
-    private static SKBitmap CreateAerialBitmap(
-        SKBitmap source,
-        string siteType,
-        bool rotateAlpha)
+    private static SKBitmap CreateAerialBitmap(SKBitmap source, string siteType, bool rotateAlpha)
     {
-        if (!rotateAlpha
-            || !string.Equals(siteType, "Alpha", StringComparison.OrdinalIgnoreCase))
+        if (!rotateAlpha || !string.Equals(siteType, "Alpha", StringComparison.OrdinalIgnoreCase))
         {
-            return source.Copy()
-                ?? throw new InvalidDataException(
-                    "The Guardian aerial bitmap could not be copied.");
+            return source.Copy() ?? throw new InvalidDataException("The Guardian aerial bitmap could not be copied.");
         }
 
-        var cropWidth = Math.Min(
-            source.Width,
-            Math.Max(1, (int)(source.Height * 1.3f)));
+        var cropWidth = Math.Min(source.Width, Math.Max(1, (int)(source.Height * 1.3f)));
         using var cropped = new SKBitmap(cropWidth, source.Height);
         using (var cropCanvas = new SKCanvas(cropped))
         {
@@ -378,7 +351,8 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
             cropCanvas.DrawBitmap(
                 source,
                 new SKRect(sourceX, 0, sourceX + cropWidth, source.Height),
-                new SKRect(0, 0, cropWidth, source.Height));
+                new SKRect(0, 0, cropWidth, source.Height)
+            );
         }
 
         var rotated = new SKBitmap(cropped.Height, cropped.Width);
@@ -393,27 +367,21 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         return rotated;
     }
 
-    private static string ResolveSourcePath(
-        JournalEventEnvelope entry,
-        string sourceDirectory)
+    private static string ResolveSourcePath(JournalEventEnvelope entry, string sourceDirectory)
     {
-        var journalPath = GetString(entry, "Filename")
-            ?? throw new InvalidDataException(
-                "The Screenshot event has no Filename.");
+        var journalPath =
+            GetString(entry, "Filename") ?? throw new InvalidDataException("The Screenshot event has no Filename.");
         var normalized = journalPath.Replace('\\', '/');
         var fileName = Path.GetFileName(normalized);
         if (string.IsNullOrWhiteSpace(fileName))
         {
-            throw new InvalidDataException(
-                "The Screenshot event filename is invalid.");
+            throw new InvalidDataException("The Screenshot event filename is invalid.");
         }
 
         return Path.Combine(sourceDirectory, fileName);
     }
 
-    private static async Task WaitForCompletedFileAsync(
-        string path,
-        CancellationToken cancellationToken)
+    private static async Task WaitForCompletedFileAsync(string path, CancellationToken cancellationToken)
     {
         Exception? lastError = null;
         long previousLength = -1;
@@ -423,11 +391,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
             cancellationToken.ThrowIfCancellationRequested();
             try
             {
-                using var stream = new FileStream(
-                    path,
-                    FileMode.Open,
-                    FileAccess.Read,
-                    FileShare.Read);
+                using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
                 if (stream.Length > 0 && stream.Length == previousLength)
                 {
                     stableReads++;
@@ -443,23 +407,18 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
 
                 previousLength = stream.Length;
             }
-            catch (Exception exception) when (
-                exception is IOException or UnauthorizedAccessException)
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
             {
                 lastError = exception;
             }
 
-            await Task.Delay(TimeSpan.FromMilliseconds(200), cancellationToken)
-                .ConfigureAwait(false);
+            await Task.Delay(TimeSpan.FromMilliseconds(200), cancellationToken).ConfigureAwait(false);
         }
 
-        throw new IOException(
-            $"The source bitmap did not become readable: {path}",
-            lastError);
+        throw new IOException($"The source bitmap did not become readable: {path}", lastError);
     }
 
-    private static string ResolveGuardianBannerSiteName(
-        ScreenshotGuardianContext guardianContext)
+    private static string ResolveGuardianBannerSiteName(ScreenshotGuardianContext guardianContext)
     {
         if (!string.IsNullOrWhiteSpace(guardianContext.SiteName))
         {
@@ -477,23 +436,16 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         ScreenshotProcessingPreferences preferences,
         string? commanderName,
         ScreenshotGuardianContext? guardianContext,
-        ScreenshotNavigationContext? navigationContext)
+        ScreenshotNavigationContext? navigationContext
+    )
     {
         using var canvas = new SKCanvas(bitmap);
         using var typeface = SKTypeface.Default;
         var scale = Math.Clamp(bitmap.Width / 1920f, 0.6f, 3f);
         using var titleFont = new SKFont(typeface, 30f * scale);
         using var detailFont = new SKFont(typeface, 18f * scale);
-        using var background = new SKPaint
-        {
-            Color = new SKColor(0, 0, 0, 220),
-            IsAntialias = true,
-        };
-        using var foreground = new SKPaint
-        {
-            Color = ParseColor(preferences.BannerColor),
-            IsAntialias = true,
-        };
+        using var background = new SKPaint { Color = new SKColor(0, 0, 0, 220), IsAntialias = true };
+        using var foreground = new SKPaint { Color = ParseColor(preferences.BannerColor), IsAntialias = true };
         var body = GetString(entry, "Body") ?? UnknownLabel;
         var system = GetString(entry, "System") ?? UnknownLabel;
         var timestamp = entry.Timestamp ?? DateTimeOffset.UtcNow;
@@ -520,19 +472,9 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         var gap = 6f * scale;
         var lineHeight = detailFont.Size * 1.3f;
         var title = $"Body: {body}";
-        var width = Math.Max(
-            titleFont.MeasureText(title),
-            details.Max(line => detailFont.MeasureText(line)));
-        var height = padding * 2
-            + titleFont.Size
-            + gap
-            + (details.Count * lineHeight);
-        canvas.DrawRect(
-            10f * scale,
-            10f * scale,
-            width + (padding * 2),
-            height,
-            background);
+        var width = Math.Max(titleFont.MeasureText(title), details.Max(line => detailFont.MeasureText(line)));
+        var height = padding * 2 + titleFont.Size + gap + (details.Count * lineHeight);
+        canvas.DrawRect(10f * scale, 10f * scale, width + (padding * 2), height, background);
         var x = 10f * scale + padding;
         var y = 10f * scale + padding + titleFont.Size;
         canvas.DrawText(title, x, y, SKTextAlign.Left, titleFont, foreground);
@@ -546,10 +488,10 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
 
     internal static string? CreateLocationLine(
         JournalEventEnvelope entry,
-        ScreenshotNavigationContext? navigationContext)
+        ScreenshotNavigationContext? navigationContext
+    )
     {
-        if (entry.Timestamp is not { } timestamp
-            || navigationContext is not { HasLatitudeLongitude: true } status)
+        if (entry.Timestamp is not { } timestamp || navigationContext is not { HasLatitudeLongitude: true } status)
         {
             return null;
         }
@@ -575,13 +517,16 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         string label,
         string suffix,
         int decimals,
-        double? fallback = null)
+        double? fallback = null
+    )
     {
         var number = fallback;
-        if (entry.Payload.TryGetProperty(propertyName, out var property)
+        if (
+            entry.Payload.TryGetProperty(propertyName, out var property)
             && property.ValueKind == System.Text.Json.JsonValueKind.Number
             && property.TryGetDouble(out var eventNumber)
-            && double.IsFinite(eventNumber))
+            && double.IsFinite(eventNumber)
+        )
         {
             number = eventNumber;
         }
@@ -590,17 +535,14 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
             return;
         }
 
-        values.Add(
-            $"{label}: {value.ToString($"F{decimals}", CultureInfo.InvariantCulture)}{suffix}");
+        values.Add($"{label}: {value.ToString($"F{decimals}", CultureInfo.InvariantCulture)}{suffix}");
     }
 
     private static int? GetGameClientWidth()
     {
         using var tracker = GameWindowTracker.CreateCurrent();
         var snapshot = tracker.GetSnapshot();
-        return snapshot.IsAvailable
-            ? snapshot.ClientBounds.Width
-            : null;
+        return snapshot.IsAvailable ? snapshot.ClientBounds.Width : null;
     }
 
     private static SKColor ParseColor(string value)
@@ -613,28 +555,22 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         return SKColors.Yellow;
     }
 
-    private static string? GetString(
-        JournalEventEnvelope entry,
-        string propertyName)
+    private static string? GetString(JournalEventEnvelope entry, string propertyName)
     {
-        return entry.Payload.TryGetProperty(propertyName, out var property)
+        return
+            entry.Payload.TryGetProperty(propertyName, out var property)
             && property.ValueKind == System.Text.Json.JsonValueKind.String
             ? property.GetString()
             : null;
     }
 
-    private static string GetAvailablePath(
-        string directory,
-        string baseName,
-        string extension)
+    private static string GetAvailablePath(string directory, string baseName, string extension)
     {
         var candidate = Path.Combine(directory, baseName + extension);
         var suffix = 2;
         while (File.Exists(candidate))
         {
-            candidate = Path.Combine(
-                directory,
-                $"{baseName} ({suffix++}){extension}");
+            candidate = Path.Combine(directory, $"{baseName} ({suffix++}){extension}");
         }
 
         return candidate;
@@ -646,9 +582,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         var result = new StringBuilder(value.Length);
         foreach (var character in value.Trim())
         {
-            result.Append(character < ' ' || invalid.Contains(character)
-                ? '_'
-                : character);
+            result.Append(character < ' ' || invalid.Contains(character) ? '_' : character);
         }
 
         var safe = result.ToString().TrimEnd(' ', '.');
@@ -658,7 +592,8 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
 
 public sealed record ScreenshotProcessingResult(
     IReadOnlyList<ScreenshotConversion> Conversions,
-    IReadOnlyList<string> Warnings)
+    IReadOnlyList<string> Warnings
+)
 {
     public static ScreenshotProcessingResult Empty { get; } = new([], []);
 }
@@ -668,7 +603,8 @@ public sealed record ScreenshotConversion(
     string OutputPath,
     bool SourceDeleted,
     string? Warning,
-    string? AerialOutputPath = null);
+    string? AerialOutputPath = null
+);
 
 public sealed record ScreenshotGuardianContext(
     string SiteType,
@@ -676,11 +612,13 @@ public sealed record ScreenshotGuardianContext(
     double? Altitude,
     GuardianSiteKind SiteKind = GuardianSiteKind.Structure,
     int SiteIndex = 1,
-    string? SiteName = null);
+    string? SiteName = null
+);
 
 public sealed record ScreenshotNavigationContext(
     DateTimeOffset ObservedAt,
     double Latitude,
     double Longitude,
     int Heading,
-    bool HasLatitudeLongitude);
+    bool HasLatitudeLongitude
+);

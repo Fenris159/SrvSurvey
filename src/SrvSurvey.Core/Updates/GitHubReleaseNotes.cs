@@ -11,8 +11,7 @@ public static class GitHubReleaseNotes
             return string.Empty;
         }
 
-        var normalized = markdown.Replace("\r\n", "\n", StringComparison.Ordinal)
-            .Replace('\r', '\n');
+        var normalized = markdown.Replace("\r\n", "\n", StringComparison.Ordinal).Replace('\r', '\n');
         var lines = normalized.Split('\n');
         var changesHeading = FindChangesHeading(lines);
         if (changesHeading < 0)
@@ -38,12 +37,8 @@ public static class GitHubReleaseNotes
 
         var introduction = string.Join('\n', lines[..introductionEnd]).Trim();
         var changes = string.Join('\n', lines[changesHeading..end]).Trim();
-        var excerpt = string.IsNullOrEmpty(introduction)
-            ? changes
-            : introduction + "\n\n" + changes;
-        return excerpt.Length <= MaximumExcerptCharacters
-            ? excerpt
-            : excerpt[..MaximumExcerptCharacters].TrimEnd();
+        var excerpt = string.IsNullOrEmpty(introduction) ? changes : introduction + "\n\n" + changes;
+        return excerpt.Length <= MaximumExcerptCharacters ? excerpt : excerpt[..MaximumExcerptCharacters].TrimEnd();
     }
 
     private static int FindChangesHeading(string[] lines)
@@ -57,8 +52,10 @@ public static class GitHubReleaseNotes
             }
 
             var heading = line[3..].Trim();
-            if (heading.StartsWith("What's changed", StringComparison.OrdinalIgnoreCase)
-                || heading.StartsWith("What’s changed", StringComparison.OrdinalIgnoreCase))
+            if (
+                heading.StartsWith("What's changed", StringComparison.OrdinalIgnoreCase)
+                || heading.StartsWith("What’s changed", StringComparison.OrdinalIgnoreCase)
+            )
             {
                 return index;
             }

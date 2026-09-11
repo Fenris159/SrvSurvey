@@ -7,7 +7,8 @@ public sealed class FollowRouteServiceTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-route-service-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-route-service-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public async Task ActivationSkipsCurrentFirstHopBySystemAddress()
@@ -27,16 +28,8 @@ public sealed class FollowRouteServiceTests : IDisposable
     {
         var store = new FollowRouteStore(temporaryDirectory);
         var service = new FollowRouteService(store);
-        var empty = new FollowRouteDocument(
-            "F123",
-            store.GetPath("F123"),
-            false,
-            true,
-            -1,
-            []);
-        var (_, complete) = CreateServiceAndRoute(
-            isActive: false,
-            lastReachedIndex: 2);
+        var empty = new FollowRouteDocument("F123", store.GetPath("F123"), false, true, -1, []);
+        var (_, complete) = CreateServiceAndRoute(isActive: false, lastReachedIndex: 2);
 
         var activatedEmpty = await service.SetActiveAsync(empty, true);
         var activatedComplete = await service.SetActiveAsync(complete, true);
@@ -56,7 +49,8 @@ public sealed class FollowRouteServiceTests : IDisposable
         var final = await service.ApplyArrivalAsync(
             second.Route,
             "Different casing is irrelevant when address matches",
-            3);
+            3
+        );
 
         Assert.True(second.Changed);
         Assert.Equal(1, second.ReachedIndex);
@@ -102,12 +96,7 @@ public sealed class FollowRouteServiceTests : IDisposable
         var (service, route) = CreateServiceAndRoute();
 
         var complete = await service.SetProgressAsync(route, 99);
-        var resumed = await service.ReplaceAsync(
-            complete,
-            complete.Hops,
-            0,
-            true,
-            complete.AutoCopy);
+        var resumed = await service.ReplaceAsync(complete, complete.Hops, 0, true, complete.AutoCopy);
 
         Assert.Equal(2, complete.LastReachedIndex);
         Assert.True(complete.IsComplete);
@@ -127,10 +116,10 @@ public sealed class FollowRouteServiceTests : IDisposable
         Assert.Null(sol.DistanceTo(unresolved));
     }
 
-    private (FollowRouteService Service, FollowRouteDocument Route)
-        CreateServiceAndRoute(
-            bool isActive = true,
-            int lastReachedIndex = 0)
+    private (FollowRouteService Service, FollowRouteDocument Route) CreateServiceAndRoute(
+        bool isActive = true,
+        int lastReachedIndex = 0
+    )
     {
         var store = new FollowRouteStore(temporaryDirectory);
         return (
@@ -145,21 +134,14 @@ public sealed class FollowRouteServiceTests : IDisposable
                     Hop("Sol", 1, new GalacticCoordinate(0, 0, 0)),
                     Hop("Second", 2, new GalacticCoordinate(3, 4, 0)),
                     Hop("Third", 3, new GalacticCoordinate(3, 4, 12)),
-                ]));
+                ]
+            )
+        );
     }
 
-    private static FollowRouteHop Hop(
-        string name,
-        long? address,
-        GalacticCoordinate? position)
+    private static FollowRouteHop Hop(string name, long? address, GalacticCoordinate? position)
     {
-        return new FollowRouteHop(
-            name,
-            address,
-            position,
-            null,
-            false,
-            false);
+        return new FollowRouteHop(name, address, position, null, false, false);
     }
 
     public void Dispose()

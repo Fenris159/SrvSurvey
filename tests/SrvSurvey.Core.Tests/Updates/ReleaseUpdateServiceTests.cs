@@ -11,19 +11,16 @@ public sealed class ReleaseUpdateServiceTests
         var service = new ReleaseUpdateService(
             new StubReleaseClient(release),
             "win-x64",
-            new Uri("https://example.test/releases"));
+            new Uri("https://example.test/releases")
+        );
 
-        var result = await service.CheckAsync(
-            new Version(2, 0, 95, 0),
-            ReleaseChannel.Development);
+        var result = await service.CheckAsync(new Version(2, 0, 95, 0), ReleaseChannel.Development);
 
         Assert.True(result.IsUpdateAvailable);
         Assert.Equal(ReleaseVersion.Parse("2.0.95.23"), result.LatestVersion);
         Assert.Equal(release.Package, result.Package);
         Assert.Equal(release.ReleaseNotes, result.ReleaseNotes);
-        Assert.Equal(
-            "https://example.test/releases/2.0.95.23",
-            result.ReleaseUri.AbsoluteUri);
+        Assert.Equal("https://example.test/releases/2.0.95.23", result.ReleaseUri.AbsoluteUri);
     }
 
     [Theory]
@@ -33,11 +30,10 @@ public sealed class ReleaseUpdateServiceTests
     {
         var service = new ReleaseUpdateService(
             new StubReleaseClient(CreateRelease(new Version(2, 0, 95, revision))),
-            "win-x64");
+            "win-x64"
+        );
 
-        var result = await service.CheckAsync(
-            new Version(2, 0, 95, 22),
-            ReleaseChannel.Development);
+        var result = await service.CheckAsync(new Version(2, 0, 95, 22), ReleaseChannel.Development);
 
         Assert.False(result.IsUpdateAvailable);
         Assert.Null(result.Package);
@@ -49,16 +45,15 @@ public sealed class ReleaseUpdateServiceTests
         var service = new ReleaseUpdateService(
             new StubReleaseClient(null),
             "linux-x64",
-            new Uri("https://example.test/releases"));
+            new Uri("https://example.test/releases")
+        );
         var current = new Version(2, 0, 95, 0);
 
         var result = await service.CheckAsync(current, ReleaseChannel.Development);
 
         Assert.False(result.IsUpdateAvailable);
         Assert.Null(result.LatestVersion);
-        Assert.Equal(
-            "https://example.test/releases",
-            result.ReleaseUri.AbsoluteUri);
+        Assert.Equal("https://example.test/releases", result.ReleaseUri.AbsoluteUri);
     }
 
     private static CrossPlatformRelease CreateRelease(Version version)
@@ -72,17 +67,19 @@ public sealed class ReleaseUpdateServiceTests
                 "zip",
                 1_024,
                 new string('a', 64),
-                new Uri("https://example.test/package.zip")),
-            "## What's changed\n\n- A useful change.");
+                new Uri("https://example.test/package.zip")
+            ),
+            "## What's changed\n\n- A useful change."
+        );
     }
 
-    private sealed class StubReleaseClient(CrossPlatformRelease? release)
-        : ICrossPlatformReleaseClient
+    private sealed class StubReleaseClient(CrossPlatformRelease? release) : ICrossPlatformReleaseClient
     {
         public Task<CrossPlatformRelease?> GetLatestAsync(
             string runtimeIdentifier,
             ReleaseChannel channel,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             return Task.FromResult(release);
         }

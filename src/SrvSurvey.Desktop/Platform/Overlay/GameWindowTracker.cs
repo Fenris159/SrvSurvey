@@ -25,11 +25,9 @@ public static class GameWindowTracker
             return new WindowsGameWindowTracker();
         }
 
-        if (OverlayPlatformCapabilities.DetectCurrent()
-            .UsesX11Compatibility)
+        if (OverlayPlatformCapabilities.DetectCurrent().UsesX11Compatibility)
         {
-            return X11GameWindowTracker.TryCreate()
-                ?? new UnavailableGameWindowTracker();
+            return X11GameWindowTracker.TryCreate() ?? new UnavailableGameWindowTracker();
         }
 
         return new UnavailableGameWindowTracker();
@@ -42,8 +40,7 @@ internal static class SharedGameWindowTrackerPool
     private static CachedGameWindowTracker? tracker;
     private static int leaseCount;
 
-    public static IGameWindowTracker Acquire(
-        Func<IGameWindowTracker> trackerFactory)
+    public static IGameWindowTracker Acquire(Func<IGameWindowTracker> trackerFactory)
     {
         ArgumentNullException.ThrowIfNull(trackerFactory);
 
@@ -77,21 +74,19 @@ internal static class SharedGameWindowTrackerPool
     }
 }
 
-internal sealed class SharedGameWindowTrackerLease(
-    CachedGameWindowTracker tracker,
-    Action release) : IGameWindowTracker
+internal sealed class SharedGameWindowTrackerLease(CachedGameWindowTracker tracker, Action release) : IGameWindowTracker
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Usage",
         "CA2213:Disposable fields should be disposed",
-        Justification = "The shared pool owns the tracker; this lease releases only its reference count.")]
+        Justification = "The shared pool owns the tracker; this lease releases only its reference count."
+    )]
     private CachedGameWindowTracker? tracker = tracker;
     private Action? release = release;
 
     public GameWindowSnapshot GetSnapshot()
     {
-        return Volatile.Read(ref tracker)?.GetSnapshot()
-            ?? GameWindowSnapshot.Unavailable;
+        return Volatile.Read(ref tracker)?.GetSnapshot() ?? GameWindowSnapshot.Unavailable;
     }
 
     public void Dispose()
@@ -107,8 +102,7 @@ internal sealed class SharedGameWindowTrackerLease(
 
 internal sealed class CachedGameWindowTracker : IGameWindowTracker
 {
-    internal static readonly TimeSpan DefaultFreshness =
-        TimeSpan.FromMilliseconds(40);
+    internal static readonly TimeSpan DefaultFreshness = TimeSpan.FromMilliseconds(40);
 
     private readonly object gate = new();
     private readonly IGameWindowTracker inner;
@@ -122,7 +116,8 @@ internal sealed class CachedGameWindowTracker : IGameWindowTracker
     public CachedGameWindowTracker(
         IGameWindowTracker inner,
         TimeSpan? freshness = null,
-        Func<long>? timestampProvider = null)
+        Func<long>? timestampProvider = null
+    )
     {
         this.inner = inner ?? throw new ArgumentNullException(nameof(inner));
         this.timestampProvider = timestampProvider ?? Stopwatch.GetTimestamp;
@@ -132,8 +127,7 @@ internal sealed class CachedGameWindowTracker : IGameWindowTracker
             throw new ArgumentOutOfRangeException(nameof(freshness));
         }
 
-        freshnessTimestampTicks = checked((long)Math.Ceiling(
-            effectiveFreshness.TotalSeconds * Stopwatch.Frequency));
+        freshnessTimestampTicks = checked((long)Math.Ceiling(effectiveFreshness.TotalSeconds * Stopwatch.Frequency));
     }
 
     public GameWindowSnapshot GetSnapshot()
@@ -146,9 +140,7 @@ internal sealed class CachedGameWindowTracker : IGameWindowTracker
             }
 
             var now = timestampProvider();
-            if (hasSnapshot
-                && now >= sampledAt
-                && now - sampledAt <= freshnessTimestampTicks)
+            if (hasSnapshot && now >= sampledAt && now - sampledAt <= freshnessTimestampTicks)
             {
                 return snapshot;
             }
@@ -180,18 +172,13 @@ public sealed record GameWindowSnapshot(
     int? ProcessId,
     PixelRect ClientBounds,
     bool IsVisible,
-    bool IsForeground)
+    bool IsForeground
+)
 {
-    public bool IsAvailable => NativeHandle != nint.Zero
-        && ClientBounds.Width > 0
-        && ClientBounds.Height > 0;
+    public bool IsAvailable => NativeHandle != nint.Zero && ClientBounds.Width > 0 && ClientBounds.Height > 0;
 
-    public static GameWindowSnapshot Unavailable { get; } = new(
-        nint.Zero,
-        null,
-        default,
-        IsVisible: false,
-        IsForeground: false);
+    public static GameWindowSnapshot Unavailable { get; } =
+        new(nint.Zero, null, default, IsVisible: false, IsForeground: false);
 }
 
 internal sealed class UnavailableGameWindowTracker : IGameWindowTracker
@@ -201,9 +188,7 @@ internal sealed class UnavailableGameWindowTracker : IGameWindowTracker
         return GameWindowSnapshot.Unavailable;
     }
 
-    public void Dispose()
-    {
-    }
+    public void Dispose() { }
 }
 
 [SupportedOSPlatform("windows")]
@@ -218,18 +203,16 @@ internal sealed partial class WindowsGameWindowTracker : IGameWindowTracker
         try
         {
             var foreground = GetForegroundWindow();
-            if (foreground != nint.Zero
-                && foreground != windowHandle
-                && foreground != inspectedForeground)
+            if (foreground != nint.Zero && foreground != windowHandle && foreground != inspectedForeground)
             {
                 inspectedForeground = foreground;
                 inspectedForegroundIsElite = IsEliteWindow(foreground);
             }
 
-            if (foreground != nint.Zero
-                && (foreground == windowHandle
-                    || (foreground == inspectedForeground
-                        && inspectedForegroundIsElite)))
+            if (
+                foreground != nint.Zero
+                && (foreground == windowHandle || (foreground == inspectedForeground && inspectedForegroundIsElite))
+            )
             {
                 windowHandle = foreground;
             }
@@ -239,10 +222,12 @@ internal sealed partial class WindowsGameWindowTracker : IGameWindowTracker
                 windowHandle = FindGameWindow(foreground);
             }
 
-            if (windowHandle == nint.Zero
+            if (
+                windowHandle == nint.Zero
                 || !TryGetProcessId(windowHandle, out var processId)
                 || !GetClientRect(windowHandle, out var clientRect)
-                || !ClientToScreen(windowHandle, ref clientRect.TopLeft))
+                || !ClientToScreen(windowHandle, ref clientRect.TopLeft)
+            )
             {
                 windowHandle = nint.Zero;
                 return GameWindowSnapshot.Unavailable;
@@ -257,49 +242,41 @@ internal sealed partial class WindowsGameWindowTracker : IGameWindowTracker
                     processId,
                     default,
                     IsVisible: false,
-                    IsForeground: foreground == windowHandle);
+                    IsForeground: foreground == windowHandle
+                );
             }
 
             return new GameWindowSnapshot(
                 windowHandle,
                 processId,
-                new PixelRect(
-                    clientRect.TopLeft.X,
-                    clientRect.TopLeft.Y,
-                    width,
-                    height),
+                new PixelRect(clientRect.TopLeft.X, clientRect.TopLeft.Y, width, height),
                 IsVisibleWindow(windowHandle) && !IsIconic(windowHandle),
-                foreground == windowHandle);
+                foreground == windowHandle
+            );
         }
-        catch (Exception exception) when (
-            exception is ArgumentException
-                or InvalidOperationException
-                or NotSupportedException
-                or Win32Exception)
+        catch (Exception exception)
+            when (exception is ArgumentException or InvalidOperationException or NotSupportedException or Win32Exception
+            )
         {
             windowHandle = nint.Zero;
             return GameWindowSnapshot.Unavailable;
         }
     }
 
-    public void Dispose()
-    {
-    }
+    public void Dispose() { }
 
     private static nint FindGameWindow(nint foreground)
     {
         using var currentProcess = Process.GetCurrentProcess();
         var currentSession = currentProcess.SessionId;
         var firstWindow = nint.Zero;
-        foreach (var process in Process.GetProcessesByName(
-                     EliteGameWindowIdentity.WindowsProcessName))
+        foreach (var process in Process.GetProcessesByName(EliteGameWindowIdentity.WindowsProcessName))
         {
             using (process)
             {
                 try
                 {
-                    if (process.SessionId == currentSession
-                        && process.MainWindowHandle != nint.Zero)
+                    if (process.SessionId == currentSession && process.MainWindowHandle != nint.Zero)
                     {
                         if (process.MainWindowHandle == foreground)
                         {
@@ -312,10 +289,8 @@ internal sealed partial class WindowsGameWindowTracker : IGameWindowTracker
                         }
                     }
                 }
-                catch (Exception exception) when (
-                    exception is InvalidOperationException
-                        or NotSupportedException
-                        or Win32Exception)
+                catch (Exception exception)
+                    when (exception is InvalidOperationException or NotSupportedException or Win32Exception)
                 {
                     // The process can exit while its window is being inspected.
                 }
@@ -338,12 +313,11 @@ internal sealed partial class WindowsGameWindowTracker : IGameWindowTracker
             return string.Equals(
                 process.ProcessName,
                 EliteGameWindowIdentity.WindowsProcessName,
-                StringComparison.OrdinalIgnoreCase);
+                StringComparison.OrdinalIgnoreCase
+            );
         }
-        catch (Exception exception) when (
-            exception is ArgumentException
-                or InvalidOperationException
-                or NotSupportedException)
+        catch (Exception exception)
+            when (exception is ArgumentException or InvalidOperationException or NotSupportedException)
         {
             return false;
         }
@@ -372,21 +346,15 @@ internal sealed partial class WindowsGameWindowTracker : IGameWindowTracker
     private static partial nint GetForegroundWindow();
 
     [LibraryImport("user32.dll")]
-    private static partial uint GetWindowThreadProcessId(
-        nint window,
-        out uint processId);
+    private static partial uint GetWindowThreadProcessId(nint window, out uint processId);
 
     [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool GetClientRect(
-        nint window,
-        out NativeRect rect);
+    private static partial bool GetClientRect(nint window, out NativeRect rect);
 
     [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool ClientToScreen(
-        nint window,
-        ref NativePoint point);
+    private static partial bool ClientToScreen(nint window, ref NativePoint point);
 
     [StructLayout(LayoutKind.Sequential)]
     private struct NativePoint

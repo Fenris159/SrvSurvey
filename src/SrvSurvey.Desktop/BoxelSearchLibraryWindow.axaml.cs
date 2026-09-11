@@ -46,13 +46,13 @@ public sealed partial class BoxelSearchLibraryWindow : Window
         }
     }
 
-    private void OnViewModelPropertyChanged(
-        object? sender,
-        PropertyChangedEventArgs eventArgs)
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
-        if (eventArgs.PropertyName != nameof(BoxelSearchLibraryViewModel.IsDialogVisible)
+        if (
+            eventArgs.PropertyName != nameof(BoxelSearchLibraryViewModel.IsDialogVisible)
             || sender is not BoxelSearchLibraryViewModel viewModel
-            || !viewModel.IsDialogVisible)
+            || !viewModel.IsDialogVisible
+        )
         {
             return;
         }

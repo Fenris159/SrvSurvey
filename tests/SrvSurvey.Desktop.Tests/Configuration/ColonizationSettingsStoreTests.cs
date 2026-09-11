@@ -8,7 +8,8 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
     private readonly string directory = Path.Combine(
         Path.GetTempPath(),
         "SrvSurvey-colonization-settings-tests",
-        Guid.NewGuid().ToString("N"));
+        Guid.NewGuid().ToString("N")
+    );
 
     [Fact]
     public void DefaultsOffAndPersistsExplicitConsent()
@@ -36,8 +37,7 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
         store.SaveEnabled(true);
 
         var root = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
-        Assert.Equal("blue-dark",
-            root["Theme"]?["Selected"]?.GetValue<string>());
+        Assert.Equal("blue-dark", root["Theme"]?["Selected"]?.GetValue<string>());
     }
 
     [Fact]
@@ -46,9 +46,7 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
         var path = Path.Combine(directory, "ui.json");
         var store = new ColonizationSettingsStore(path);
 
-        Assert.Equal(
-            ColonizationOverlayPreferences.Default,
-            store.LoadOverlayPreferences());
+        Assert.Equal(ColonizationOverlayPreferences.Default, store.LoadOverlayPreferences());
 
         var updated = ColonizationOverlayPreferences.Default with
         {
@@ -69,10 +67,7 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
     {
         var path = Path.Combine(directory, "ui.json");
         var store = new ColonizationSettingsStore(path);
-        var preferences = ColonizationOverlayPreferences.Default with
-        {
-            ShowOnRightPanel = false,
-        };
+        var preferences = ColonizationOverlayPreferences.Default with { ShowOnRightPanel = false };
         store.SaveOverlayPreferences(preferences);
 
         store.SaveEnabled(true);
@@ -93,9 +88,7 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
 
         Assert.True(store.LoadEnabled());
         Assert.True(store.LoadFleetCarrierCargoSyncEnabled());
-        Assert.Equal(
-            ColonizationOverlayPreferences.Default,
-            store.LoadOverlayPreferences());
+        Assert.Equal(ColonizationOverlayPreferences.Default, store.LoadOverlayPreferences());
     }
 
     [Fact]
@@ -119,13 +112,10 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
     {
         var path = Path.Combine(directory, "ui.json");
         var store = new ColonizationSettingsStore(path);
-        var visits = Enumerable.Range(1, 52)
-            .Select(index => new ColonizationBuildSiteRepairVisit(
-                4_300_000_000 + index,
-                $" Station {index} "))
-            .Append(new ColonizationBuildSiteRepairVisit(
-                4_300_000_052,
-                "STATION 52"));
+        var visits = Enumerable
+            .Range(1, 52)
+            .Select(index => new ColonizationBuildSiteRepairVisit(4_300_000_000 + index, $" Station {index} "))
+            .Append(new ColonizationBuildSiteRepairVisit(4_300_000_052, "STATION 52"));
 
         store.SaveBuildSiteRepairVisits(visits);
 
@@ -149,7 +139,8 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
               {"MarketId":4300000001},
               {"MarketId":4300000002,"StationKey":"Valid Port"}
             ]}}
-            """);
+            """
+        );
         var store = new ColonizationSettingsStore(path);
 
         var visit = Assert.Single(store.LoadBuildSiteRepairVisits());

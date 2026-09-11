@@ -22,21 +22,15 @@ public sealed class LegacyColonizationProfileStore
 
     public async Task<LegacyColonizationProfileLoadResult> LoadAsync(
         string frontierId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(frontierId);
         var normalizedFrontierId = frontierId.Trim();
-        var path = Path.Combine(
-            dataDirectory,
-            normalizedFrontierId + "-colony.json");
+        var path = Path.Combine(dataDirectory, normalizedFrontierId + "-colony.json");
         if (!File.Exists(path))
         {
-            return new LegacyColonizationProfileLoadResult(
-                path,
-                false,
-                null,
-                null,
-                []);
+            return new LegacyColonizationProfileLoadResult(path, false, null, null, []);
         }
 
         try
@@ -47,14 +41,13 @@ public sealed class LegacyColonizationProfileStore
                 FileAccess.Read,
                 FileShare.ReadWrite | FileShare.Delete,
                 4096,
-                FileOptions.Asynchronous | FileOptions.SequentialScan);
-            var document = await JsonSerializer.DeserializeAsync<LegacyDocument>(
-                    stream,
-                    SerializerOptions,
-                    cancellationToken)
-                .ConfigureAwait(false)
-                ?? throw new InvalidDataException(
-                    "The legacy colonisation profile is empty.");
+                FileOptions.Asynchronous | FileOptions.SequentialScan
+            );
+            var document =
+                await JsonSerializer
+                    .DeserializeAsync<LegacyDocument>(stream, SerializerOptions, cancellationToken)
+                    .ConfigureAwait(false)
+                ?? throw new InvalidDataException("The legacy colonisation profile is empty.");
             var warnings = new List<string>();
             var projects = (document.Projects ?? [])
                 .Where(project =>
@@ -64,8 +57,7 @@ public sealed class LegacyColonizationProfileStore
                         return true;
                     }
 
-                    warnings.Add(
-                        "A cached colonisation project without a build ID was ignored.");
+                    warnings.Add("A cached colonisation project without a build ID was ignored.");
                     return false;
                 })
                 .Select(NormalizeProject)
@@ -75,10 +67,8 @@ public sealed class LegacyColonizationProfileStore
                 .Select(id => id.Trim())
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
-            var carriers = (document.LinkedFleetCarriers
-                    ?? new Dictionary<long, ColonizationFleetCarrier>())
-                .Values
-                .Where(carrier => carrier is not null)
+            var carriers = (document.LinkedFleetCarriers ?? new Dictionary<long, ColonizationFleetCarrier>())
+                .Values.Where(carrier => carrier is not null)
                 .Select(NormalizeFleetCarrier)
                 .GroupBy(carrier => carrier.MarketId)
                 .Select(group => group.Last())
@@ -89,35 +79,22 @@ public sealed class LegacyColonizationProfileStore
                 projects,
                 hidden,
                 document.PrimaryProjectId,
-                carriers);
-            return new LegacyColonizationProfileLoadResult(
-                path,
-                true,
-                snapshot,
-                null,
-                warnings);
+                carriers
+            );
+            return new LegacyColonizationProfileLoadResult(path, true, snapshot, null, warnings);
         }
         catch (OperationCanceledException)
         {
             throw;
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or JsonException
-                or InvalidDataException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or JsonException or InvalidDataException)
         {
-            return new LegacyColonizationProfileLoadResult(
-                path,
-                true,
-                null,
-                exception.Message,
-                []);
+            return new LegacyColonizationProfileLoadResult(path, true, null, exception.Message, []);
         }
     }
 
-    private static ColonizationProject NormalizeProject(
-        ColonizationProject project)
+    private static ColonizationProject NormalizeProject(ColonizationProject project)
     {
         return project with
         {
@@ -126,35 +103,32 @@ public sealed class LegacyColonizationProfileStore
             BuildName = project.BuildName ?? string.Empty,
             SystemName = project.SystemName ?? string.Empty,
             StarPosition = project.StarPosition ?? [],
-            Commanders = project.Commanders
-                ?? new Dictionary<string, HashSet<string>>(
-                    StringComparer.OrdinalIgnoreCase),
-            Commodities = project.Commodities
-                ?? new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase),
-            Ready = project.Ready
-                ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+            Commanders =
+                project.Commanders ?? new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase),
+            Commodities = project.Commodities ?? new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase),
+            Ready = project.Ready ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase),
             LinkedFleetCarriers = (project.LinkedFleetCarriers ?? [])
                 .Where(carrier => carrier is not null)
-                .Select(carrier => carrier with
-                {
-                    Name = carrier.Name ?? string.Empty,
-                    DisplayName = carrier.DisplayName ?? string.Empty,
-                    AssignedCommodities = carrier.AssignedCommodities
-                        ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase),
-                })
+                .Select(carrier =>
+                    carrier with
+                    {
+                        Name = carrier.Name ?? string.Empty,
+                        DisplayName = carrier.DisplayName ?? string.Empty,
+                        AssignedCommodities =
+                            carrier.AssignedCommodities ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+                    }
+                )
                 .ToList(),
         };
     }
 
-    private static ColonizationFleetCarrier NormalizeFleetCarrier(
-        ColonizationFleetCarrier carrier)
+    private static ColonizationFleetCarrier NormalizeFleetCarrier(ColonizationFleetCarrier carrier)
     {
         return carrier with
         {
             Name = carrier.Name ?? string.Empty,
             DisplayName = carrier.DisplayName ?? string.Empty,
-            Cargo = carrier.Cargo
-                ?? new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase),
+            Cargo = carrier.Cargo ?? new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase),
         };
     }
 
@@ -176,9 +150,7 @@ public sealed class LegacyColonizationProfileStore
         public string? PrimaryProjectId { get; init; }
 
         [JsonPropertyName("linkedFCs")]
-        public Dictionary<long, ColonizationFleetCarrier>?
-            LinkedFleetCarriers
-        { get; init; }
+        public Dictionary<long, ColonizationFleetCarrier>? LinkedFleetCarriers { get; init; }
     }
 }
 
@@ -188,11 +160,13 @@ public sealed record LegacyColonizationProfileSnapshot(
     IReadOnlyList<ColonizationProject> Projects,
     IReadOnlyList<string> HiddenProjectIds,
     string? PrimaryProjectId,
-    IReadOnlyList<ColonizationFleetCarrier> FleetCarriers);
+    IReadOnlyList<ColonizationFleetCarrier> FleetCarriers
+);
 
 public sealed record LegacyColonizationProfileLoadResult(
     string Path,
     bool Exists,
     LegacyColonizationProfileSnapshot? Snapshot,
     string? Error,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings
+);

@@ -7,29 +7,34 @@ namespace SrvSurvey.Desktop.Controls;
 
 public sealed class JumpRouteProgressControl : Control
 {
-    public static readonly StyledProperty<IReadOnlyList<JumpInfoRouteLeg>?>
-        LegsProperty = AvaloniaProperty.Register<
-            JumpRouteProgressControl,
-            IReadOnlyList<JumpInfoRouteLeg>?>(nameof(Legs));
-    public static readonly StyledProperty<int> TargetLegIndexProperty =
-        AvaloniaProperty.Register<JumpRouteProgressControl, int>(
-            nameof(TargetLegIndex),
-            -1);
-    public static readonly StyledProperty<IBrush?> AheadBrushProperty =
-        AvaloniaProperty.Register<JumpRouteProgressControl, IBrush?>(
-            nameof(AheadBrush));
-    public static readonly StyledProperty<IBrush?> BehindBrushProperty =
-        AvaloniaProperty.Register<JumpRouteProgressControl, IBrush?>(
-            nameof(BehindBrush));
-    public static readonly StyledProperty<IBrush?> TargetBrushProperty =
-        AvaloniaProperty.Register<JumpRouteProgressControl, IBrush?>(
-            nameof(TargetBrush));
-    public static readonly StyledProperty<IBrush?> BoostBrushProperty =
-        AvaloniaProperty.Register<JumpRouteProgressControl, IBrush?>(
-            nameof(BoostBrush));
-    public static readonly StyledProperty<IBrush?> BackgroundLineBrushProperty =
-        AvaloniaProperty.Register<JumpRouteProgressControl, IBrush?>(
-            nameof(BackgroundLineBrush));
+    public static readonly StyledProperty<IReadOnlyList<JumpInfoRouteLeg>?> LegsProperty = AvaloniaProperty.Register<
+        JumpRouteProgressControl,
+        IReadOnlyList<JumpInfoRouteLeg>?
+    >(nameof(Legs));
+    public static readonly StyledProperty<int> TargetLegIndexProperty = AvaloniaProperty.Register<
+        JumpRouteProgressControl,
+        int
+    >(nameof(TargetLegIndex), -1);
+    public static readonly StyledProperty<IBrush?> AheadBrushProperty = AvaloniaProperty.Register<
+        JumpRouteProgressControl,
+        IBrush?
+    >(nameof(AheadBrush));
+    public static readonly StyledProperty<IBrush?> BehindBrushProperty = AvaloniaProperty.Register<
+        JumpRouteProgressControl,
+        IBrush?
+    >(nameof(BehindBrush));
+    public static readonly StyledProperty<IBrush?> TargetBrushProperty = AvaloniaProperty.Register<
+        JumpRouteProgressControl,
+        IBrush?
+    >(nameof(TargetBrush));
+    public static readonly StyledProperty<IBrush?> BoostBrushProperty = AvaloniaProperty.Register<
+        JumpRouteProgressControl,
+        IBrush?
+    >(nameof(BoostBrush));
+    public static readonly StyledProperty<IBrush?> BackgroundLineBrushProperty = AvaloniaProperty.Register<
+        JumpRouteProgressControl,
+        IBrush?
+    >(nameof(BackgroundLineBrush));
 
     static JumpRouteProgressControl()
     {
@@ -40,7 +45,8 @@ public sealed class JumpRouteProgressControl : Control
             BehindBrushProperty,
             TargetBrushProperty,
             BoostBrushProperty,
-            BackgroundLineBrushProperty);
+            BackgroundLineBrushProperty
+        );
     }
 
     public IReadOnlyList<JumpInfoRouteLeg>? Legs
@@ -108,10 +114,7 @@ public sealed class JumpRouteProgressControl : Control
         var ahead = AheadBrush ?? Brushes.Orange;
         var target = TargetBrush ?? Brushes.Cyan;
         var boost = BoostBrush ?? Brushes.Gold;
-        context.DrawLine(
-            new Pen(background, 2),
-            new Point(left, y),
-            new Point(right, y));
+        context.DrawLine(new Pen(background, 2), new Point(left, y), new Point(right, y));
         context.DrawEllipse(behind, null, new Point(left, y), 3, 3);
 
         var layout = new LegLayout(left, right, y, width, totalDistance);
@@ -129,24 +132,25 @@ public sealed class JumpRouteProgressControl : Control
         int index,
         double x,
         LegLayout layout,
-        LegBrushes brushes)
+        LegBrushes brushes
+    )
     {
         var leg = legs[index];
-        var nextX = index == legs.Count - 1
-            ? layout.Right
-            : x + layout.Width * (leg.DistanceLy / layout.TotalDistance);
+        var nextX = index == legs.Count - 1 ? layout.Right : x + layout.Width * (leg.DistanceLy / layout.TotalDistance);
         var brush = ResolveLegBrush(index, brushes);
-        DrawLegSegments(new LegSegmentDraw
-        {
-            Context = context,
-            Leg = leg,
-            Index = index,
-            X = x,
-            NextX = nextX,
-            Layout = layout,
-            Brushes = brushes,
-            Brush = brush,
-        });
+        DrawLegSegments(
+            new LegSegmentDraw
+            {
+                Context = context,
+                Leg = leg,
+                Index = index,
+                X = x,
+                NextX = nextX,
+                Layout = layout,
+                Brushes = brushes,
+                Brush = brush,
+            }
+        );
         DrawLegMarker(context, leg, index, nextX, layout, brushes, brush);
         return nextX;
     }
@@ -180,13 +184,15 @@ public sealed class JumpRouteProgressControl : Control
             draw.Context.DrawLine(
                 new Pen(draw.Brushes.Boost, draw.Index == TargetLegIndex ? 7 : 5),
                 new Point(draw.X, draw.Layout.Y),
-                new Point(draw.NextX, draw.Layout.Y));
+                new Point(draw.NextX, draw.Layout.Y)
+            );
         }
 
         draw.Context.DrawLine(
             new Pen(draw.Brush, draw.Index == TargetLegIndex ? 4 : 2.5),
             new Point(draw.X, draw.Layout.Y),
-            new Point(draw.NextX, draw.Layout.Y));
+            new Point(draw.NextX, draw.Layout.Y)
+        );
     }
 
     private void DrawLegMarker(
@@ -196,36 +202,18 @@ public sealed class JumpRouteProgressControl : Control
         double nextX,
         LegLayout layout,
         LegBrushes brushes,
-        IBrush brush)
+        IBrush brush
+    )
     {
         var radius = index == TargetLegIndex ? 5d : 3.5;
-        context.DrawEllipse(
-            brush,
-            null,
-            new Point(nextX, layout.Y),
-            radius,
-            radius);
+        context.DrawEllipse(brush, null, new Point(nextX, layout.Y), radius, radius);
         if (leg.IsScoopable)
         {
-            context.DrawEllipse(
-                null,
-                new Pen(brushes.Target, 1.5),
-                new Point(nextX, layout.Y - 9),
-                4,
-                2.5);
+            context.DrawEllipse(null, new Pen(brushes.Target, 1.5), new Point(nextX, layout.Y - 9), 4, 2.5);
         }
     }
 
-    private readonly record struct LegLayout(
-        double Left,
-        double Right,
-        double Y,
-        double Width,
-        double TotalDistance);
+    private readonly record struct LegLayout(double Left, double Right, double Y, double Width, double TotalDistance);
 
-    private readonly record struct LegBrushes(
-        IBrush Behind,
-        IBrush Ahead,
-        IBrush Target,
-        IBrush Boost);
+    private readonly record struct LegBrushes(IBrush Behind, IBrush Ahead, IBrush Target, IBrush Boost);
 }

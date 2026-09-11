@@ -11,12 +11,9 @@ public sealed class GreenGasGiantPublicationCoordinator
     private string? commanderName;
     private GalacticCoordinate? starPosition;
 
-    public GreenGasGiantPublicationCoordinator(
-        GreenGasGiantCriteriaCatalog criteria,
-        IGreenGasGiantClient client)
+    public GreenGasGiantPublicationCoordinator(GreenGasGiantCriteriaCatalog criteria, IGreenGasGiantClient client)
     {
-        this.criteria = criteria
-            ?? throw new ArgumentNullException(nameof(criteria));
+        this.criteria = criteria ?? throw new ArgumentNullException(nameof(criteria));
         this.client = client ?? throw new ArgumentNullException(nameof(client));
     }
 
@@ -24,7 +21,8 @@ public sealed class GreenGasGiantPublicationCoordinator
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         bool enabled,
         bool allowPublishing,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
         var published = new List<GreenGasGiantCandidate>();
@@ -38,32 +36,23 @@ public sealed class GreenGasGiantPublicationCoordinator
                 continue;
             }
 
-            await TryPublishScanAsync(
-                    journalEvent,
-                    published,
-                    warnings,
-                    cancellationToken)
-                .ConfigureAwait(false);
+            await TryPublishScanAsync(journalEvent, published, warnings, cancellationToken).ConfigureAwait(false);
         }
 
         return new GreenGasGiantPublicationResult(published, warnings);
     }
 
-    private static bool ShouldAttemptPublish(
-        JournalEventEnvelope journalEvent,
-        bool enabled,
-        bool allowPublishing)
+    private static bool ShouldAttemptPublish(JournalEventEnvelope journalEvent, bool enabled, bool allowPublishing)
     {
-        return journalEvent.EventName == "Scan"
-            && enabled
-            && allowPublishing;
+        return journalEvent.EventName == "Scan" && enabled && allowPublishing;
     }
 
     private async Task TryPublishScanAsync(
         JournalEventEnvelope journalEvent,
         List<GreenGasGiantCandidate> published,
         List<string> warnings,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var candidate = TryCreateCandidate(journalEvent, warnings);
         if (candidate is null)
@@ -71,66 +60,49 @@ public sealed class GreenGasGiantPublicationCoordinator
             return;
         }
 
-        await PublishCandidateAsync(
-                candidate,
-                published,
-                warnings,
-                cancellationToken)
-            .ConfigureAwait(false);
+        await PublishCandidateAsync(candidate, published, warnings, cancellationToken).ConfigureAwait(false);
     }
 
-    private GreenGasGiantCandidate? TryCreateCandidate(
-        JournalEventEnvelope journalEvent,
-        List<string> warnings)
+    private GreenGasGiantCandidate? TryCreateCandidate(JournalEventEnvelope journalEvent, List<string> warnings)
     {
         var root = journalEvent.Payload;
         var planetClass = GetString(root, "PlanetClass");
         var temperature = GetDouble(root, "SurfaceTemperature");
-        var tag = temperature is double value
-            ? criteria.Match(planetClass, value)
-            : null;
+        var tag = temperature is double value ? criteria.Match(planetClass, value) : null;
         if (tag is null)
         {
             return null;
         }
 
-        if (string.IsNullOrWhiteSpace(commanderName)
-            || starPosition is null)
+        if (string.IsNullOrWhiteSpace(commanderName) || starPosition is null)
         {
             warnings.Add(
-                $"A {tag} Green Gas Giant candidate was not uploaded because commander or system coordinates were unavailable.");
+                $"A {tag} Green Gas Giant candidate was not uploaded because commander or system coordinates were unavailable."
+            );
             return null;
         }
 
-        return new GreenGasGiantCandidate(
-            commanderName,
-            tag,
-            starPosition.Value,
-            journalEvent.RawJson);
+        return new GreenGasGiantCandidate(commanderName, tag, starPosition.Value, journalEvent.RawJson);
     }
 
     private async Task PublishCandidateAsync(
         GreenGasGiantCandidate candidate,
         List<GreenGasGiantCandidate> published,
         List<string> warnings,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         try
         {
-            await client.PublishAsync(candidate, cancellationToken)
-                .ConfigureAwait(false);
+            await client.PublishAsync(candidate, cancellationToken).ConfigureAwait(false);
             published.Add(candidate);
         }
-        catch (OperationCanceledException exception) when (
-            !cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException exception) when (!cancellationToken.IsCancellationRequested)
         {
             warnings.Add(CreateUploadWarning(exception));
         }
-        catch (Exception exception) when (
-            exception is HttpRequestException
-                or JsonException
-                or IOException
-                or InvalidOperationException)
+        catch (Exception exception)
+            when (exception is HttpRequestException or JsonException or IOException or InvalidOperationException)
         {
             warnings.Add(CreateUploadWarning(exception));
         }
@@ -138,8 +110,7 @@ public sealed class GreenGasGiantPublicationCoordinator
 
     private static string CreateUploadWarning(Exception exception)
     {
-        return "A Green Gas Giant candidate could not be uploaded: "
-            + exception.Message;
+        return "A Green Gas Giant candidate could not be uploaded: " + exception.Message;
     }
 
     private void UpdateContext(JournalEventEnvelope journalEvent)
@@ -162,46 +133,41 @@ public sealed class GreenGasGiantPublicationCoordinator
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
-            && value.ValueKind == JsonValueKind.String
-                ? value.GetString()
-                : null;
+        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+            ? value.GetString()
+            : null;
     }
 
     private static double? GetDouble(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
+        return
+            root.TryGetProperty(propertyName, out var value)
             && value.TryGetDouble(out var result)
             && double.IsFinite(result)
-                ? result
-                : null;
+            ? result
+            : null;
     }
 
-    private static GalacticCoordinate? GetCoordinate(
-        JsonElement root,
-        string propertyName)
+    private static GalacticCoordinate? GetCoordinate(JsonElement root, string propertyName)
     {
-        if (!root.TryGetProperty(propertyName, out var value)
-            || value.ValueKind != JsonValueKind.Array)
+        if (!root.TryGetProperty(propertyName, out var value) || value.ValueKind != JsonValueKind.Array)
         {
             return null;
         }
 
-        var components = value.EnumerateArray()
-            .Select(component => component.TryGetDouble(out var number)
-                && double.IsFinite(number)
-                    ? number
-                    : double.NaN)
+        var components = value
+            .EnumerateArray()
+            .Select(component =>
+                component.TryGetDouble(out var number) && double.IsFinite(number) ? number : double.NaN
+            )
             .ToArray();
         return components.Length == 3 && components.All(double.IsFinite)
-            ? new GalacticCoordinate(
-                components[0],
-                components[1],
-                components[2])
+            ? new GalacticCoordinate(components[0], components[1], components[2])
             : null;
     }
 }
 
 public sealed record GreenGasGiantPublicationResult(
     IReadOnlyList<GreenGasGiantCandidate> Published,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings
+);

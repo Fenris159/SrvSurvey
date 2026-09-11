@@ -6,7 +6,8 @@ public sealed class JourneyJournalHistoryReaderTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-journey-history-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-journey-history-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public async Task FindsLatestMatchingCommanderFsdJump()
@@ -18,7 +19,8 @@ public sealed class JourneyJournalHistoryReaderTests : IDisposable
             {"timestamp":"2026-07-01T00:00:00Z","event":"Fileheader","Odyssey":true}
             {"timestamp":"2026-07-01T00:00:01Z","event":"Commander","Name":"Drew","FID":"F123"}
             {"timestamp":"2026-07-01T00:05:00Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
-            """);
+            """
+        );
         await WriteJournalAsync(
             "Journal.2026-07-02T000000.01.log",
             new DateTime(2026, 7, 2, 0, 0, 0, DateTimeKind.Utc),
@@ -26,7 +28,8 @@ public sealed class JourneyJournalHistoryReaderTests : IDisposable
             {"timestamp":"2026-07-02T00:00:00Z","event":"Fileheader","Odyssey":true}
             {"timestamp":"2026-07-02T00:00:01Z","event":"Commander","Name":"Other","FID":"F999"}
             {"timestamp":"2026-07-02T00:05:00Z","event":"FSDJump","StarSystem":"Wrong","SystemAddress":42,"StarPos":[9,9,9]}
-            """);
+            """
+        );
         await WriteJournalAsync(
             "Journal.2026-07-03T000000.01.log",
             new DateTime(2026, 7, 3, 0, 0, 0, DateTimeKind.Utc),
@@ -34,15 +37,14 @@ public sealed class JourneyJournalHistoryReaderTests : IDisposable
             {"timestamp":"2026-07-03T00:00:00Z","event":"Fileheader","Odyssey":true}
             {"timestamp":"2026-07-03T00:00:01Z","event":"Commander","Name":"Drew","FID":"F123"}
             {"timestamp":"2026-07-03T00:05:00Z","event":"FSDJump","StarSystem":"Achenar","SystemAddress":42,"StarPos":[1,2,3]}
-            """);
+            """
+        );
         var reader = new JourneyJournalHistoryReader(temporaryDirectory);
 
         var result = await reader.FindLatestFsdJumpAsync("F123", true, 42);
 
         Assert.NotNull(result.Entry);
-        Assert.Equal(
-            "Journal.2026-07-03T000000.01.log",
-            result.Entry.JournalFileName);
+        Assert.Equal("Journal.2026-07-03T000000.01.log", result.Entry.JournalFileName);
         Assert.Equal("Achenar", result.Entry.System.Name);
         Assert.Equal(1, result.Entry.System.Position.X);
         Assert.Empty(result.Errors);
@@ -54,33 +56,26 @@ public sealed class JourneyJournalHistoryReaderTests : IDisposable
         await WriteJournalAsync(
             "Journal.2026-07-01T000000.01.log",
             new DateTime(2026, 7, 1, 0, 0, 0, DateTimeKind.Utc),
-            Header("F123", true)
-                + "\n"
-                + Event("2026-07-01T00:01:00Z", "Screenshot"));
+            Header("F123", true) + "\n" + Event("2026-07-01T00:01:00Z", "Screenshot")
+        );
         await WriteJournalAsync(
             "Journal.2026-07-02T000000.01.log",
             new DateTime(2026, 7, 2, 0, 0, 0, DateTimeKind.Utc),
-            Header("F999", true)
-                + "\n"
-                + Event("2026-07-02T00:01:00Z", "WrongCommander"));
+            Header("F999", true) + "\n" + Event("2026-07-02T00:01:00Z", "WrongCommander")
+        );
         await WriteJournalAsync(
             "Journal.2026-07-03T000000.01.log",
             new DateTime(2026, 7, 3, 0, 0, 0, DateTimeKind.Utc),
-            Header("F123", false)
-                + "\n"
-                + Event("2026-07-03T00:01:00Z", "WrongPlatform"));
+            Header("F123", false) + "\n" + Event("2026-07-03T00:01:00Z", "WrongPlatform")
+        );
         await WriteJournalAsync(
             "Journal.2026-07-04T000000.01.log",
             new DateTime(2026, 7, 4, 0, 0, 0, DateTimeKind.Utc),
-            Header("F123", true)
-                + "\nnot-json\n"
-                + Event("2026-07-04T00:01:00Z", "Touchdown"));
+            Header("F123", true) + "\nnot-json\n" + Event("2026-07-04T00:01:00Z", "Touchdown")
+        );
         var reader = new JourneyJournalHistoryReader(temporaryDirectory);
 
-        var result = await reader.ReadFromAsync(
-            "Journal.2026-07-01T000000.01.log",
-            "F123",
-            true);
+        var result = await reader.ReadFromAsync("Journal.2026-07-01T000000.01.log", "F123", true);
 
         Assert.Contains(result.Events, entry => entry.EventName == "Screenshot");
         Assert.Contains(result.Events, entry => entry.EventName == "Touchdown");
@@ -96,14 +91,10 @@ public sealed class JourneyJournalHistoryReaderTests : IDisposable
         Directory.CreateDirectory(temporaryDirectory);
         var reader = new JourneyJournalHistoryReader(temporaryDirectory);
 
-        await Assert.ThrowsAsync<ArgumentException>(
-            () => reader.ReadFromAsync("../Journal.outside.log", "F123", true));
+        await Assert.ThrowsAsync<ArgumentException>(() => reader.ReadFromAsync("../Journal.outside.log", "F123", true));
     }
 
-    private async Task WriteJournalAsync(
-        string fileName,
-        DateTime lastWriteTime,
-        string content)
+    private async Task WriteJournalAsync(string fileName, DateTime lastWriteTime, string content)
     {
         Directory.CreateDirectory(temporaryDirectory);
         var path = Path.Combine(temporaryDirectory, fileName);

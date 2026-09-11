@@ -28,27 +28,20 @@ public sealed class RouteBodyAssetResolverTests
     public void SubtypesMapToStableSharedAssets(
         string? subtype,
         RouteBodyVisualKind expectedKind,
-        string expectedFileName)
+        string expectedFileName
+    )
     {
         var visual = RouteBodyAssetResolver.Resolve(subtype);
 
         Assert.Equal(expectedKind, visual.Kind);
-        Assert.EndsWith(
-            $"/Assets/Bodies/{expectedFileName}",
-            visual.AssetPath,
-            StringComparison.Ordinal);
+        Assert.EndsWith($"/Assets/Bodies/{expectedFileName}", visual.AssetPath, StringComparison.Ordinal);
         Assert.False(string.IsNullOrWhiteSpace(visual.AccessibleName));
     }
 
     [Fact]
     public void EverySharedBodyAssetHasValidVectorAndRuntimeImages()
     {
-        var assetRoot = Path.Combine(
-            FindRepositoryRoot(),
-            "src",
-            "SrvSurvey.Desktop",
-            "Assets",
-            "Bodies");
+        var assetRoot = Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "Assets", "Bodies");
         var pngs = Directory.GetFiles(assetRoot, "*.png");
         var svgs = Directory.GetFiles(assetRoot, "*.svg");
 
@@ -73,16 +66,11 @@ public sealed class RouteBodyAssetResolverTests
     [Fact]
     public void DesktopProjectBundlesBodyRuntimeAssets()
     {
-        var project = File.ReadAllText(Path.Combine(
-            FindRepositoryRoot(),
-            "src",
-            "SrvSurvey.Desktop",
-            "SrvSurvey.Desktop.csproj"));
+        var project = File.ReadAllText(
+            Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "SrvSurvey.Desktop.csproj")
+        );
 
-        Assert.Contains(
-            "Assets\\Bodies\\**\\*.png",
-            project,
-            StringComparison.Ordinal);
+        Assert.Contains("Assets\\Bodies\\**\\*.png", project, StringComparison.Ordinal);
     }
 
     private static string FindRepositoryRoot()

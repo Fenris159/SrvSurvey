@@ -9,14 +9,14 @@ public sealed class GroundTargetViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-ground-target-vm-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-ground-target-vm-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public async Task LoadsGuidesPastesAndClearsLegacyGroundTarget()
     {
         var store = new GroundTargetSettingsStore(temporaryDirectory);
-        await store.SaveAsync(
-            new GroundTargetSnapshot(true, new SurfaceCoordinate(0, 1)));
+        await store.SaveAsync(new GroundTargetSnapshot(true, new SurfaceCoordinate(0, 1)));
         var viewModel = new GroundTargetViewModel(store);
 
         Assert.True(viewModel.IsTargetActive);
@@ -24,15 +24,17 @@ public sealed class GroundTargetViewModelTests : IDisposable
         Assert.Equal("0", viewModel.TargetLatitude);
         Assert.Equal("1", viewModel.TargetLongitude);
 
-        viewModel.UpdateStatus(new EliteStatus
-        {
-            Flags = StatusFlags.HasLatLong,
-            Latitude = 0,
-            Longitude = 0,
-            PlanetRadius = 1_000,
-            Heading = 45,
-            Altitude = 17.4532925,
-        });
+        viewModel.UpdateStatus(
+            new EliteStatus
+            {
+                Flags = StatusFlags.HasLatLong,
+                Latitude = 0,
+                Longitude = 0,
+                PlanetRadius = 1_000,
+                Heading = 45,
+                Altitude = 17.4532925,
+            }
+        );
 
         Assert.Equal("17 m", viewModel.DistanceToTarget);
         Assert.Equal("90°", viewModel.TargetBearing);
@@ -46,15 +48,17 @@ public sealed class GroundTargetViewModelTests : IDisposable
         Assert.True(viewModel.HasIdealApproach);
         Assert.False(viewModel.ShouldShow);
 
-        viewModel.UpdateStatus(new EliteStatus
-        {
-            Flags = StatusFlags.HasLatLong | StatusFlags.InMainShip,
-            Latitude = 0,
-            Longitude = 0,
-            PlanetRadius = 1_000,
-            Heading = 45,
-            Altitude = 17.4532925,
-        });
+        viewModel.UpdateStatus(
+            new EliteStatus
+            {
+                Flags = StatusFlags.HasLatLong | StatusFlags.InMainShip,
+                Latitude = 0,
+                Longitude = 0,
+                PlanetRadius = 1_000,
+                Heading = 45,
+                Altitude = 17.4532925,
+            }
+        );
 
         Assert.True(viewModel.ShouldShow);
 
@@ -68,9 +72,7 @@ public sealed class GroundTargetViewModelTests : IDisposable
         Assert.Equal("12.5", viewModel.TargetLatitude);
         Assert.Equal("-45.25", viewModel.TargetLongitude);
         var saved = store.Load();
-        Assert.Equal(
-            new SurfaceCoordinate(12.5, -45.25),
-            saved.Snapshot!.Target);
+        Assert.Equal(new SurfaceCoordinate(12.5, -45.25), saved.Snapshot!.Target);
 
         await viewModel.ClearTargetAsync();
 
@@ -97,20 +99,22 @@ public sealed class GroundTargetViewModelTests : IDisposable
         StatusFlags flags,
         StatusFlags2 flags2,
         GuiFocus focus,
-        bool expected)
+        bool expected
+    )
     {
         var store = new GroundTargetSettingsStore(temporaryDirectory);
-        await store.SaveAsync(
-            new GroundTargetSnapshot(true, new SurfaceCoordinate(0, 1)));
+        await store.SaveAsync(new GroundTargetSnapshot(true, new SurfaceCoordinate(0, 1)));
         var viewModel = new GroundTargetViewModel(store);
 
-        viewModel.UpdateStatus(new EliteStatus
-        {
-            Flags = flags | StatusFlags.HasLatLong,
-            Flags2 = flags2,
-            GuiFocus = focus,
-            PlanetRadius = 1_000,
-        });
+        viewModel.UpdateStatus(
+            new EliteStatus
+            {
+                Flags = flags | StatusFlags.HasLatLong,
+                Flags2 = flags2,
+                GuiFocus = focus,
+                PlanetRadius = 1_000,
+            }
+        );
 
         Assert.Equal(expected, viewModel.ShouldShow);
     }
@@ -119,22 +123,15 @@ public sealed class GroundTargetViewModelTests : IDisposable
     public async Task OverlayRequiresCoordinatesAndPositiveBodyRadius()
     {
         var store = new GroundTargetSettingsStore(temporaryDirectory);
-        await store.SaveAsync(
-            new GroundTargetSnapshot(true, new SurfaceCoordinate(0, 1)));
+        await store.SaveAsync(new GroundTargetSnapshot(true, new SurfaceCoordinate(0, 1)));
         var viewModel = new GroundTargetViewModel(store);
 
-        viewModel.UpdateStatus(new EliteStatus
-        {
-            Flags = StatusFlags.InMainShip,
-            PlanetRadius = 1_000,
-        });
+        viewModel.UpdateStatus(new EliteStatus { Flags = StatusFlags.InMainShip, PlanetRadius = 1_000 });
         Assert.False(viewModel.ShouldShow);
 
-        viewModel.UpdateStatus(new EliteStatus
-        {
-            Flags = StatusFlags.InMainShip | StatusFlags.HasLatLong,
-            PlanetRadius = 0,
-        });
+        viewModel.UpdateStatus(
+            new EliteStatus { Flags = StatusFlags.InMainShip | StatusFlags.HasLatLong, PlanetRadius = 0 }
+        );
         Assert.False(viewModel.ShouldShow);
     }
 
@@ -142,13 +139,8 @@ public sealed class GroundTargetViewModelTests : IDisposable
     public async Task InvalidInputDoesNotReplaceSavedTarget()
     {
         var store = new GroundTargetSettingsStore(temporaryDirectory);
-        await store.SaveAsync(
-            new GroundTargetSnapshot(true, new SurfaceCoordinate(1, 2)));
-        var viewModel = new GroundTargetViewModel(store)
-        {
-            TargetLatitude = "91",
-            TargetLongitude = "2",
-        };
+        await store.SaveAsync(new GroundTargetSnapshot(true, new SurfaceCoordinate(1, 2)));
+        var viewModel = new GroundTargetViewModel(store) { TargetLatitude = "91", TargetLongitude = "2" };
 
         await viewModel.SetTargetAsync();
 
@@ -163,45 +155,41 @@ public sealed class GroundTargetViewModelTests : IDisposable
         var original = new SurfaceCoordinate(1, 2);
         await store.SaveAsync(new GroundTargetSnapshot(true, original));
         var viewModel = new GroundTargetViewModel(store);
-        viewModel.UpdateStatus(new EliteStatus
-        {
-            Flags = StatusFlags.HasLatLong | StatusFlags.InMainShip,
-            Latitude = 3,
-            Longitude = 4,
-            PlanetRadius = 1_000,
-        });
+        viewModel.UpdateStatus(
+            new EliteStatus
+            {
+                Flags = StatusFlags.HasLatLong | StatusFlags.InMainShip,
+                Latitude = 3,
+                Longitude = 4,
+                PlanetRadius = 1_000,
+            }
+        );
 
-        Assert.Equal(1, await viewModel.ApplyJournalEventsAsync(
-            [Event(".target off")],
-            allowCommands: true));
+        Assert.Equal(1, await viewModel.ApplyJournalEventsAsync([Event(".target off")], allowCommands: true));
         Assert.False(store.Load().Snapshot!.IsActive);
         Assert.Equal(original, store.Load().Snapshot!.Target);
 
-        Assert.Equal(1, await viewModel.ApplyJournalEventsAsync(
-            [Event(".target on")],
-            allowCommands: true));
+        Assert.Equal(1, await viewModel.ApplyJournalEventsAsync([Event(".target on")], allowCommands: true));
         Assert.True(store.Load().Snapshot!.IsActive);
         Assert.Equal(original, store.Load().Snapshot!.Target);
 
-        Assert.Equal(1, await viewModel.ApplyJournalEventsAsync(
-            [Event("@")],
-            allowCommands: true));
-        Assert.Equal(
-            new SurfaceCoordinate(3, 4),
-            store.Load().Snapshot!.Target);
+        Assert.Equal(1, await viewModel.ApplyJournalEventsAsync([Event("@")], allowCommands: true));
+        Assert.Equal(new SurfaceCoordinate(3, 4), store.Load().Snapshot!.Target);
 
-        Assert.Equal(0, await viewModel.ApplyJournalEventsAsync(
-            [Event(".target off")],
-            allowCommands: false));
+        Assert.Equal(0, await viewModel.ApplyJournalEventsAsync([Event(".target off")], allowCommands: false));
         Assert.True(store.Load().Snapshot!.IsActive);
     }
 
     private static JournalEventEnvelope Event(string message)
     {
-        Assert.True(JournalEventEnvelope.TryParse(
-            $$"""{"event":"SendText","Message":"{{message}}"}""",
-            out var journalEvent,
-            out var error), error);
+        Assert.True(
+            JournalEventEnvelope.TryParse(
+                $$"""{"event":"SendText","Message":"{{message}}"}""",
+                out var journalEvent,
+                out var error
+            ),
+            error
+        );
         return journalEvent!;
     }
 

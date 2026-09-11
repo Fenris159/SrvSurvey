@@ -21,7 +21,8 @@ public sealed class GuardianSiteVisitCatalog
         GuardianSiteCatalog references,
         GuardianCommanderDataReadResult commanderData,
         GuardianPublishedSiteCatalog publishedSites,
-        GuardianSurveyCompletionCalculator completionCalculator)
+        GuardianSurveyCompletionCalculator completionCalculator
+    )
     {
         ArgumentNullException.ThrowIfNull(references);
         ArgumentNullException.ThrowIfNull(commanderData);
@@ -29,54 +30,48 @@ public sealed class GuardianSiteVisitCatalog
         ArgumentNullException.ThrowIfNull(completionCalculator);
 
         var mergedReferences = references.Sites.ToList();
-        var commanderOnlySurveys = commanderData.Surveys
-            .Where(survey => !mergedReferences.Any(reference =>
-                reference.Kind != GuardianSiteKind.Beacon
-                && IsSameSurvey(reference, survey)))
+        var commanderOnlySurveys = commanderData
+            .Surveys.Where(survey =>
+                !mergedReferences.Any(reference =>
+                    reference.Kind != GuardianSiteKind.Beacon && IsSameSurvey(reference, survey)
+                )
+            )
             .ToArray();
         var localSiteIds = AssignLocalSiteIds(commanderOnlySurveys);
         foreach (var survey in commanderOnlySurveys)
         {
-            mergedReferences.Add(CreateCommanderReference(
-                survey,
-                references,
-                localSiteIds[survey]));
+            mergedReferences.Add(CreateCommanderReference(survey, references, localSiteIds[survey]));
         }
 
-        foreach (var beacon in commanderData.Beacons.Where(beacon =>
-                     !mergedReferences.Any(reference =>
-                         reference.Kind == GuardianSiteKind.Beacon
-                         && IsSameBody(
-                             reference,
-                             beacon.SystemAddress,
-                             beacon.BodyId,
-                             beacon.BodyName))))
+        foreach (
+            var beacon in commanderData.Beacons.Where(beacon =>
+                !mergedReferences.Any(reference =>
+                    reference.Kind == GuardianSiteKind.Beacon
+                    && IsSameBody(reference, beacon.SystemAddress, beacon.BodyId, beacon.BodyName)
+                )
+            )
+        )
         {
             mergedReferences.Add(CreateCommanderReference(beacon, references));
         }
 
         return new GuardianSiteVisitCatalog(
-            mergedReferences.Select(reference => Merge(
-                reference,
-                commanderData,
-                publishedSites,
-                completionCalculator)));
+            mergedReferences.Select(reference => Merge(reference, commanderData, publishedSites, completionCalculator))
+        );
     }
 
     private static GuardianSiteVisit Merge(
         GuardianSiteReference reference,
         GuardianCommanderDataReadResult commanderData,
         GuardianPublishedSiteCatalog publishedSites,
-        GuardianSurveyCompletionCalculator completionCalculator)
+        GuardianSurveyCompletionCalculator completionCalculator
+    )
     {
         if (reference.Kind == GuardianSiteKind.Beacon)
         {
-            var beacon = commanderData.Beacons.FirstOrDefault(
-                visit => IsSameBody(
-                    reference,
-                    visit.SystemAddress,
-                    visit.BodyId,
-                    visit.BodyName));
+            var beacon = commanderData.Beacons.FirstOrDefault(visit =>
+                IsSameBody(reference, visit.SystemAddress, visit.BodyId, visit.BodyName)
+            );
             return new GuardianSiteVisit(
                 reference,
                 beacon?.FirstVisited ?? DateTimeOffset.MinValue,
@@ -87,11 +82,11 @@ public sealed class GuardianSiteVisitCatalog
                 beacon?.Path,
                 beacon is not null,
                 null,
-                beacon?.ScannedLocations.Count ?? 0);
+                beacon?.ScannedLocations.Count ?? 0
+            );
         }
 
-        var survey = commanderData.Surveys.FirstOrDefault(
-            candidate => IsSameSurvey(reference, candidate));
+        var survey = commanderData.Surveys.FirstOrDefault(candidate => IsSameSurvey(reference, candidate));
         if (survey is null)
         {
             return new GuardianSiteVisit(
@@ -104,19 +99,17 @@ public sealed class GuardianSiteVisitCatalog
                 null,
                 false,
                 null,
-                0);
+                0
+            );
         }
 
         reference = ApplyCatalogMetadata(reference, survey);
         var published = publishedSites.Find(reference);
         var surveyData = new GuardianSurveyData
         {
-            SiteType = string.Equals(
-                survey.SiteType,
-                "Unknown",
-                StringComparison.OrdinalIgnoreCase)
-                    ? reference.SiteType
-                    : survey.SiteType,
+            SiteType = string.Equals(survey.SiteType, "Unknown", StringComparison.OrdinalIgnoreCase)
+                ? reference.SiteType
+                : survey.SiteType,
             SiteHeading = survey.Survey.SiteHeading,
             RelicTowerHeading = survey.Survey.RelicTowerHeading,
             Location = survey.Survey.Location,
@@ -126,9 +119,7 @@ public sealed class GuardianSiteVisitCatalog
             RawPointsOfInterest = survey.Survey.RawPointsOfInterest,
         };
         var completion = completionCalculator.Calculate(surveyData, published);
-        var progress = reference.IsSurveyComplete
-            ? reference.SurveyProgress
-            : completion.Progress;
+        var progress = reference.IsSurveyComplete ? reference.SurveyProgress : completion.Progress;
         return new GuardianSiteVisit(
             reference,
             survey.FirstVisited,
@@ -139,18 +130,13 @@ public sealed class GuardianSiteVisitCatalog
             survey.Path,
             true,
             completion,
-            survey.ActiveObelisks.Count);
+            survey.ActiveObelisks.Count
+        );
     }
 
-    private static bool IsSameSurvey(
-        GuardianSiteReference reference,
-        GuardianCommanderSiteSurvey survey)
+    private static bool IsSameSurvey(GuardianSiteReference reference, GuardianCommanderSiteSurvey survey)
     {
-        if (!IsSameBody(
-                reference,
-                survey.SystemAddress,
-                survey.BodyId,
-                survey.BodyName))
+        if (!IsSameBody(reference, survey.SystemAddress, survey.BodyId, survey.BodyName))
         {
             return false;
         }
@@ -160,20 +146,15 @@ public sealed class GuardianSiteVisitCatalog
             return survey.Index == reference.Index;
         }
 
-        return string.Equals(
-                survey.SiteType,
-                "Unknown",
-                StringComparison.OrdinalIgnoreCase)
-            || string.Equals(
-                survey.SiteType,
-                reference.SiteType,
-                StringComparison.OrdinalIgnoreCase);
+        return string.Equals(survey.SiteType, "Unknown", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(survey.SiteType, reference.SiteType, StringComparison.OrdinalIgnoreCase);
     }
 
     private static GuardianSiteReference CreateCommanderReference(
         GuardianCommanderSiteSurvey survey,
         GuardianSiteCatalog references,
-        int localSiteId)
+        int localSiteId
+    )
     {
         var kind = GetSiteKind(survey);
         var position = GetKnownSystemPosition(references, survey.SystemAddress);
@@ -182,8 +163,7 @@ public sealed class GuardianSiteVisitCatalog
             kind,
             survey.SystemName,
             survey.SystemAddress,
-            survey.CatalogBodyName
-                ?? RemoveSystemPrefix(survey.BodyName, survey.SystemName),
+            survey.CatalogBodyName ?? RemoveSystemPrefix(survey.BodyName, survey.SystemName),
             survey.BodyId,
             survey.SiteType,
             survey.Index,
@@ -197,15 +177,17 @@ public sealed class GuardianSiteVisitCatalog
             survey.LastVisited,
             null,
             null,
-            true);
+            true
+        );
     }
 
     private static GuardianSiteReference CreateCommanderReference(
         GuardianCommanderBeaconVisit beacon,
-        GuardianSiteCatalog references)
+        GuardianSiteCatalog references
+    )
     {
-        var location = beacon.ScannedLocations
-            .OrderByDescending(pair => pair.Key)
+        var location = beacon
+            .ScannedLocations.OrderByDescending(pair => pair.Key)
             .Select(pair => (GuardianSurfaceLocation?)pair.Value)
             .FirstOrDefault();
         return new GuardianSiteReference(
@@ -227,12 +209,13 @@ public sealed class GuardianSiteVisitCatalog
             beacon.LastVisited,
             null,
             null,
-            true);
+            true
+        );
     }
 
-    private static Dictionary<GuardianCommanderSiteSurvey, int>
-        AssignLocalSiteIds(
-            IReadOnlyList<GuardianCommanderSiteSurvey> surveys)
+    private static Dictionary<GuardianCommanderSiteSurvey, int> AssignLocalSiteIds(
+        IReadOnlyList<GuardianCommanderSiteSurvey> surveys
+    )
     {
         var result = new Dictionary<GuardianCommanderSiteSurvey, int>();
         foreach (var kindGroup in surveys.GroupBy(GetSiteKind))
@@ -247,13 +230,15 @@ public sealed class GuardianSiteVisitCatalog
             }
 
             var next = 1;
-            foreach (var survey in kindGroup
-                         .Where(survey => survey.LocalSiteId <= 0)
-                         .OrderBy(survey => survey.FirstVisited)
-                         .ThenBy(survey => survey.SystemAddress)
-                         .ThenBy(survey => survey.BodyId)
-                         .ThenBy(survey => survey.Index)
-                         .ThenBy(survey => survey.Path, StringComparer.OrdinalIgnoreCase))
+            foreach (
+                var survey in kindGroup
+                    .Where(survey => survey.LocalSiteId <= 0)
+                    .OrderBy(survey => survey.FirstVisited)
+                    .ThenBy(survey => survey.SystemAddress)
+                    .ThenBy(survey => survey.BodyId)
+                    .ThenBy(survey => survey.Index)
+                    .ThenBy(survey => survey.Path, StringComparer.OrdinalIgnoreCase)
+            )
             {
                 while (used.Contains(next))
                 {
@@ -269,38 +254,28 @@ public sealed class GuardianSiteVisitCatalog
         return result;
     }
 
-    private static GuardianSiteKind GetSiteKind(
-        GuardianCommanderSiteSurvey survey)
+    private static GuardianSiteKind GetSiteKind(GuardianCommanderSiteSurvey survey)
     {
-        return survey.Name.StartsWith(
-            "$Ancient:#index=",
-            StringComparison.Ordinal)
-                ? GuardianSiteKind.Ruins
-                : GuardianSiteKind.Structure;
+        return survey.Name.StartsWith("$Ancient:#index=", StringComparison.Ordinal)
+            ? GuardianSiteKind.Ruins
+            : GuardianSiteKind.Structure;
     }
 
     private static GuardianSiteReference ApplyCatalogMetadata(
         GuardianSiteReference reference,
-        GuardianCommanderSiteSurvey survey)
+        GuardianCommanderSiteSurvey survey
+    )
     {
         return reference with
         {
             BodyName = survey.CatalogBodyName ?? reference.BodyName,
             Position = survey.StarPosition ?? reference.Position,
-            DistanceToArrival = survey.DistanceToArrivalLs
-                ?? reference.DistanceToArrival,
-            SiteType = IsKnownSiteType(survey.SiteType)
-                ? survey.SiteType
-                : reference.SiteType,
-            Latitude = survey.Survey.Location?.Latitude
-                ?? reference.Latitude,
-            Longitude = survey.Survey.Location?.Longitude
-                ?? reference.Longitude,
-            SiteHeading = IsKnownHeading(survey.Survey.SiteHeading)
-                ? survey.Survey.SiteHeading
-                : reference.SiteHeading,
-            RelicTowerHeading = IsKnownHeading(
-                    survey.Survey.RelicTowerHeading)
+            DistanceToArrival = survey.DistanceToArrivalLs ?? reference.DistanceToArrival,
+            SiteType = IsKnownSiteType(survey.SiteType) ? survey.SiteType : reference.SiteType,
+            Latitude = survey.Survey.Location?.Latitude ?? reference.Latitude,
+            Longitude = survey.Survey.Location?.Longitude ?? reference.Longitude,
+            SiteHeading = IsKnownHeading(survey.Survey.SiteHeading) ? survey.Survey.SiteHeading : reference.SiteHeading,
+            RelicTowerHeading = IsKnownHeading(survey.Survey.RelicTowerHeading)
                 ? survey.Survey.RelicTowerHeading
                 : reference.RelicTowerHeading,
         };
@@ -309,10 +284,7 @@ public sealed class GuardianSiteVisitCatalog
     private static bool IsKnownSiteType(string? siteType)
     {
         return !string.IsNullOrWhiteSpace(siteType)
-            && !string.Equals(
-                siteType,
-                "Unknown",
-                StringComparison.OrdinalIgnoreCase);
+            && !string.Equals(siteType, "Unknown", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsKnownHeading(int heading)
@@ -320,21 +292,16 @@ public sealed class GuardianSiteVisitCatalog
         return heading is >= 0 and <= 359;
     }
 
-    private static GalacticCoordinate GetKnownSystemPosition(
-        GuardianSiteCatalog references,
-        long systemAddress)
+    private static GalacticCoordinate GetKnownSystemPosition(GuardianSiteCatalog references, long systemAddress)
     {
-        return references.FindBySystemAddress(systemAddress)
-            .Select(reference => (GalacticCoordinate?)reference.Position)
-            .FirstOrDefault()
+        return references
+                .FindBySystemAddress(systemAddress)
+                .Select(reference => (GalacticCoordinate?)reference.Position)
+                .FirstOrDefault()
             ?? new GalacticCoordinate(0, 0, 0);
     }
 
-    private static bool IsSameBody(
-        GuardianSiteReference reference,
-        long systemAddress,
-        int bodyId,
-        string bodyName)
+    private static bool IsSameBody(GuardianSiteReference reference, long systemAddress, int bodyId, string bodyName)
     {
         if (reference.SystemAddress != systemAddress)
         {
@@ -346,16 +313,15 @@ public sealed class GuardianSiteVisitCatalog
             : string.Equals(
                 reference.BodyName,
                 RemoveSystemPrefix(bodyName, reference.SystemName),
-                StringComparison.OrdinalIgnoreCase);
+                StringComparison.OrdinalIgnoreCase
+            );
     }
 
     private static string RemoveSystemPrefix(string bodyName, string systemName)
     {
-        return bodyName.StartsWith(
-            systemName,
-            StringComparison.OrdinalIgnoreCase)
-                ? bodyName[systemName.Length..].Trim()
-                : bodyName;
+        return bodyName.StartsWith(systemName, StringComparison.OrdinalIgnoreCase)
+            ? bodyName[systemName.Length..].Trim()
+            : bodyName;
     }
 }
 
@@ -369,7 +335,8 @@ public sealed record GuardianSiteVisit(
     string? CommanderFilePath,
     bool HasCommanderData,
     GuardianSurveyCompletion? Completion,
-    int RecordedObeliskOrLocationCount)
+    int RecordedObeliskOrLocationCount
+)
 {
     public bool IsVisited => LastVisited != DateTimeOffset.MinValue;
 }

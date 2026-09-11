@@ -7,7 +7,8 @@ public sealed class CommanderPreferenceSettingsStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-commander-preference-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-commander-preference-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void RoundTripsNormalizedStableIdentityAndPreservesOtherSettings()
@@ -19,9 +20,7 @@ public sealed class CommanderPreferenceSettingsStoreTests : IDisposable
 
         store.Save(new CommanderPreferencePreferences("  Drew  ", " f123 "));
 
-        Assert.Equal(
-            new CommanderPreferencePreferences("Drew", "F123"),
-            store.Load());
+        Assert.Equal(new CommanderPreferencePreferences("Drew", "F123"), store.Load());
         Assert.Contains("green-dark", File.ReadAllText(settingsPath));
     }
 
@@ -33,8 +32,7 @@ public sealed class CommanderPreferenceSettingsStoreTests : IDisposable
         store.Save(new CommanderPreferencePreferences("Drew", "F123"));
         var before = File.ReadAllText(settingsPath);
 
-        Assert.Throws<ArgumentException>(() => store.Save(
-            new CommanderPreferencePreferences("Raven", "../profile")));
+        Assert.Throws<ArgumentException>(() => store.Save(new CommanderPreferencePreferences("Raven", "../profile")));
 
         Assert.Equal(before, File.ReadAllText(settingsPath));
     }
@@ -47,21 +45,20 @@ public sealed class CommanderPreferenceSettingsStoreTests : IDisposable
         Directory.CreateDirectory(profileDirectory);
         await File.WriteAllTextAsync(
             Path.Combine(profileDirectory, "F123-live.json"),
-            "{\"fid\":\"F123\",\"commander\":\"Drew\",\"isOdyssey\":true}");
+            "{\"fid\":\"F123\",\"commander\":\"Drew\",\"isOdyssey\":true}"
+        );
         var store = new CommanderPreferenceSettingsStore(settingsPath);
         store.Save(new CommanderPreferencePreferences("drew", null));
 
         var result = await new CommanderPreferenceResolver(
-                store,
-                new CommanderProfileCatalog(profileDirectory))
-            .ResolveAsync(null);
+            store,
+            new CommanderProfileCatalog(profileDirectory)
+        ).ResolveAsync(null);
 
         Assert.Equal("F123", result.TargetFrontierId);
         Assert.False(result.IsCommandLineOverride);
         Assert.Contains("stable identity", result.StatusMessage);
-        Assert.Equal(
-            new CommanderPreferencePreferences("Drew", "F123"),
-            store.Load());
+        Assert.Equal(new CommanderPreferencePreferences("Drew", "F123"), store.Load());
     }
 
     [Fact]
@@ -72,18 +69,20 @@ public sealed class CommanderPreferenceSettingsStoreTests : IDisposable
         Directory.CreateDirectory(profileDirectory);
         await File.WriteAllTextAsync(
             Path.Combine(profileDirectory, "F123-live.json"),
-            "{\"fid\":\"F123\",\"commander\":\"Drew\"}");
+            "{\"fid\":\"F123\",\"commander\":\"Drew\"}"
+        );
         await File.WriteAllTextAsync(
             Path.Combine(profileDirectory, "F456-live.json"),
-            "{\"fid\":\"F456\",\"commander\":\"Drew\"}");
+            "{\"fid\":\"F456\",\"commander\":\"Drew\"}"
+        );
         var store = new CommanderPreferenceSettingsStore(settingsPath);
         var preference = new CommanderPreferencePreferences("Drew", null);
         store.Save(preference);
 
         var result = await new CommanderPreferenceResolver(
-                store,
-                new CommanderProfileCatalog(profileDirectory))
-            .ResolveAsync(null);
+            store,
+            new CommanderProfileCatalog(profileDirectory)
+        ).ResolveAsync(null);
 
         Assert.Null(result.TargetFrontierId);
         Assert.Contains("more than one", result.StatusMessage);
@@ -99,11 +98,9 @@ public sealed class CommanderPreferenceSettingsStoreTests : IDisposable
         store.Save(preference);
 
         var result = await new CommanderPreferenceResolver(
-                store,
-                new CommanderProfileCatalog(Path.Combine(
-                    temporaryDirectory,
-                    "missing-profiles")))
-            .ResolveAsync("F456");
+            store,
+            new CommanderProfileCatalog(Path.Combine(temporaryDirectory, "missing-profiles"))
+        ).ResolveAsync("F456");
 
         Assert.Equal("F456", result.TargetFrontierId);
         Assert.True(result.IsCommandLineOverride);

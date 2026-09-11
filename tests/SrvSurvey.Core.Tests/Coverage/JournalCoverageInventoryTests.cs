@@ -7,117 +7,151 @@ public sealed class JournalCoverageInventoryTests
         new(
             "commander-session",
             [
-                "Commander", "LoadGame", "Loadout", "Location", "Died",
-                "Resurrect", "Music", "Shutdown", "StartJump", "FSDJump",
-                "CarrierJump", "SupercruiseExit", "ApproachBody", "LeaveBody",
-                "LaunchSRV", "DockSRV", "LaunchFighter", "DockFighter",
-                "SuitLoadout", "SwitchSuitLoadout",
+                "Commander",
+                "LoadGame",
+                "Loadout",
+                "Location",
+                "Died",
+                "Resurrect",
+                "Music",
+                "Shutdown",
+                "StartJump",
+                "FSDJump",
+                "CarrierJump",
+                "SupercruiseExit",
+                "ApproachBody",
+                "LeaveBody",
+                "LaunchSRV",
+                "DockSRV",
+                "LaunchFighter",
+                "DockFighter",
+                "SuitLoadout",
+                "SwitchSuitLoadout",
             ],
             [
                 "tests/SrvSurvey.Core.Tests/JournalSessionStateTests.cs",
                 "tests/SrvSurvey.Core.Tests/JournalSnapshotReaderTests.cs",
                 "tests/SrvSurvey.Core.Tests/Travel/DockToDockLogServiceTests.cs",
                 "tests/SrvSurvey.Core.Tests/Guardian/GuardianLiveSiteStateTests.cs",
-            ]),
+            ]
+        ),
         new(
             "system-body-exploration",
             [
-                "FSSDiscoveryScan", "FSSAllBodiesFound", "FSSSignalDiscovered",
-                "NavBeaconScan", "Scan", "ScanBaryCentre", "SAAScanComplete",
-                "SAASignalsFound", "FSSBodySignals", "Touchdown", "Liftoff",
+                "FSSDiscoveryScan",
+                "FSSAllBodiesFound",
+                "FSSSignalDiscovered",
+                "NavBeaconScan",
+                "Scan",
+                "ScanBaryCentre",
+                "SAAScanComplete",
+                "SAASignalsFound",
+                "FSSBodySignals",
+                "Touchdown",
+                "Liftoff",
             ],
             [
                 "tests/SrvSurvey.Core.Tests/Exploration/SystemScanStateTests.cs",
                 "tests/SrvSurvey.Core.Tests/Exploration/ExplorationStateTests.cs",
                 "tests/SrvSurvey.Core.Tests/Exobiology/SurfaceSurveyJournalTrackerTests.cs",
                 "tests/SrvSurvey.Core.Tests/Colonization/ColonizationSystemSiteJournalTrackerTests.cs",
-            ]),
+            ]
+        ),
         new(
             "exobiology",
-            [
-                "CodexEntry", "ScanOrganic", "SellOrganicData", "Disembark",
-                "Embark", "SendText",
-            ],
+            ["CodexEntry", "ScanOrganic", "SellOrganicData", "Disembark", "Embark", "SendText"],
             [
                 "tests/SrvSurvey.Core.Tests/Exobiology/ExobiologyStateTests.cs",
                 "tests/SrvSurvey.Core.Tests/Exobiology/SurfaceSurveyJournalTrackerTests.cs",
                 "tests/SrvSurvey.Core.Tests/Exobiology/CommanderCodexJournalTrackerTests.cs",
                 "tests/SrvSurvey.Core.Tests/Exploration/SystemScanStateTests.cs",
-            ]),
+            ]
+        ),
         new(
             "guardian-human-sites",
             [
-                "ApproachSettlement", "BackpackChange", "CollectItems",
-                "SupercruiseEntry", "DockingRequested", "DockingCancelled",
-                "DockingDenied", "DockingGranted",
+                "ApproachSettlement",
+                "BackpackChange",
+                "CollectItems",
+                "SupercruiseEntry",
+                "DockingRequested",
+                "DockingCancelled",
+                "DockingDenied",
+                "DockingGranted",
             ],
             [
                 "tests/SrvSurvey.Core.Tests/Guardian/GuardianLiveSiteStateTests.cs",
                 "tests/SrvSurvey.Core.Tests/Settlements/HumanSiteLiveStateTests.cs",
                 "tests/SrvSurvey.Core.Tests/Settlements/HumanSiteActivityTrackerTests.cs",
-            ]),
+            ]
+        ),
         new(
             "missions-combat",
             [
-                "Missions", "MissionAccepted", "MissionFailed",
-                "MissionAbandoned", "MissionCompleted", "Bounty",
+                "Missions",
+                "MissionAccepted",
+                "MissionFailed",
+                "MissionAbandoned",
+                "MissionCompleted",
+                "Bounty",
                 "FactionKillBond",
             ],
             [
                 "tests/SrvSurvey.Core.Tests/Combat/CombatStateTests.cs",
                 "tests/SrvSurvey.Core.Tests/Guardian/RamTahStateTests.cs",
-            ]),
+            ]
+        ),
         new(
             "cargo-materials",
             [
-                "CollectCargo", "EjectCargo", "CargoTransfer", "CargoDepot",
-                "Cargo", "MarketBuy", "MarketSell", "Market", "Materials",
-                "MaterialCollected", "MaterialTrade", "TechnologyBroker",
+                "CollectCargo",
+                "EjectCargo",
+                "CargoTransfer",
+                "CargoDepot",
+                "Cargo",
+                "MarketBuy",
+                "MarketSell",
+                "Market",
+                "Materials",
+                "MaterialCollected",
+                "MaterialTrade",
+                "TechnologyBroker",
             ],
             [
                 "tests/SrvSurvey.Core.Tests/Journal/CargoInventoryStateTests.cs",
                 "tests/SrvSurvey.Core.Tests/Guardian/GuardianArtifactInventoryStateTests.cs",
                 "tests/SrvSurvey.Core.Tests/JournalDirectoryMonitorTests.cs",
                 "tests/SrvSurvey.Desktop.Tests/ViewModels/NotificationViewModelTests.cs",
-            ]),
+            ]
+        ),
         new(
             "colonization",
-            [
-                "ColonisationConstructionDepot", "ColonisationContribution",
-                "ColonisationBeaconDeployed",
-            ],
-            [
-                "tests/SrvSurvey.Core.Tests/Colonization/ColonizationConstructionStateTests.cs",
-            ]),
+            ["ColonisationConstructionDepot", "ColonisationContribution", "ColonisationBeaconDeployed"],
+            ["tests/SrvSurvey.Core.Tests/Colonization/ColonizationConstructionStateTests.cs"]
+        ),
         new(
             "route-docking-travel",
-            [
-                "FSDTarget", "NavRoute", "NavRouteClear", "Interdicted",
-                "Docked", "Undocked",
-            ],
+            ["FSDTarget", "NavRoute", "NavRouteClear", "Interdicted", "Docked", "Undocked"],
             [
                 "tests/SrvSurvey.Core.Tests/Travel/DockToDockLogServiceTests.cs",
                 "tests/SrvSurvey.Desktop.Tests/ViewModels/JumpInfoViewModelTests.cs",
                 "tests/SrvSurvey.Desktop.Tests/ViewModels/GalaxyMapOverlayViewModelTests.cs",
-            ]),
+            ]
+        ),
         new(
             "screenshots-journeys",
-            [
-                "Screenshot",
-            ],
+            ["Screenshot"],
             [
                 "tests/SrvSurvey.Core.Tests/Journeys/JourneyJournalProcessorTests.cs",
                 "tests/SrvSurvey.Desktop.Tests/Platform/ScreenshotProcessingServiceTests.cs",
-            ]),
+            ]
+        ),
     ];
 
     [Fact]
     public void AuditedInventoryContainsEverySupportedJournalEventExactlyOnce()
     {
-        var auditedEvents = Groups
-            .SelectMany(group => group.Events)
-            .Order(StringComparer.Ordinal)
-            .ToArray();
+        var auditedEvents = Groups.SelectMany(group => group.Events).Order(StringComparer.Ordinal).ToArray();
 
         Assert.Equal(74, auditedEvents.Length);
         Assert.Equal(auditedEvents.Length, auditedEvents.Distinct().Count());
@@ -127,29 +161,22 @@ public sealed class JournalCoverageInventoryTests
     public void EverySupportedEventHasProductionConsumerAndRegressionEvidence()
     {
         var repositoryRoot = FindRepositoryRoot();
-        var productionFiles = EnumerateSourceFiles(
-            repositoryRoot,
-            "src/SrvSurvey.Core",
-            "src/SrvSurvey.Desktop");
+        var productionFiles = EnumerateSourceFiles(repositoryRoot, "src/SrvSurvey.Core", "src/SrvSurvey.Desktop");
         var regressionFiles = EnumerateSourceFiles(repositoryRoot, "tests")
-            .Where(path => !path.EndsWith(
-                "JournalCoverageInventoryTests.cs",
-                StringComparison.Ordinal))
+            .Where(path => !path.EndsWith("JournalCoverageInventoryTests.cs", StringComparison.Ordinal))
             .ToArray();
 
         foreach (var eventName in Groups.SelectMany(group => group.Events))
         {
             var literal = $"\"{eventName}\"";
             Assert.True(
-                productionFiles.Any(path => File.ReadAllText(path).Contains(
-                    literal,
-                    StringComparison.Ordinal)),
-                $"Supported event {eventName} has no production consumer.");
+                productionFiles.Any(path => File.ReadAllText(path).Contains(literal, StringComparison.Ordinal)),
+                $"Supported event {eventName} has no production consumer."
+            );
             Assert.True(
-                regressionFiles.Any(path => File.ReadAllText(path).Contains(
-                    literal,
-                    StringComparison.Ordinal)),
-                $"Supported event {eventName} has no event-specific regression evidence.");
+                regressionFiles.Any(path => File.ReadAllText(path).Contains(literal, StringComparison.Ordinal)),
+                $"Supported event {eventName} has no event-specific regression evidence."
+            );
         }
     }
 
@@ -163,44 +190,41 @@ public sealed class JournalCoverageInventoryTests
                 Environment.NewLine,
                 group.EvidenceFiles.Select(relativePath =>
                 {
-                    var path = Path.Combine(
-                        repositoryRoot,
-                        relativePath.Replace('/', Path.DirectorySeparatorChar));
-                    Assert.True(
-                        File.Exists(path),
-                        $"Golden evidence file is missing for {group.Name}: {relativePath}");
+                    var path = Path.Combine(repositoryRoot, relativePath.Replace('/', Path.DirectorySeparatorChar));
+                    Assert.True(File.Exists(path), $"Golden evidence file is missing for {group.Name}: {relativePath}");
                     var content = File.ReadAllText(path);
                     Assert.Contains("Assert.", content, StringComparison.Ordinal);
                     return content;
-                }));
+                })
+            );
 
             foreach (var eventName in group.Events)
             {
-                Assert.Contains(
-                    eventName,
-                    evidence,
-                    StringComparison.Ordinal);
+                Assert.Contains(eventName, evidence, StringComparison.Ordinal);
             }
         }
     }
 
-    private static string[] EnumerateSourceFiles(
-        string repositoryRoot,
-        params string[] relativeRoots)
+    private static string[] EnumerateSourceFiles(string repositoryRoot, params string[] relativeRoots)
     {
         return relativeRoots
-            .SelectMany(relativeRoot => Directory.EnumerateFiles(
-                Path.Combine(
-                    repositoryRoot,
-                    relativeRoot.Replace('/', Path.DirectorySeparatorChar)),
-                "*.cs",
-                SearchOption.AllDirectories))
-            .Where(path => !path.Contains(
+            .SelectMany(relativeRoot =>
+                Directory.EnumerateFiles(
+                    Path.Combine(repositoryRoot, relativeRoot.Replace('/', Path.DirectorySeparatorChar)),
+                    "*.cs",
+                    SearchOption.AllDirectories
+                )
+            )
+            .Where(path =>
+                !path.Contains(
                     $"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}",
-                    StringComparison.OrdinalIgnoreCase)
+                    StringComparison.OrdinalIgnoreCase
+                )
                 && !path.Contains(
                     $"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}",
-                    StringComparison.OrdinalIgnoreCase))
+                    StringComparison.OrdinalIgnoreCase
+                )
+            )
             .ToArray();
     }
 
@@ -209,9 +233,7 @@ public sealed class JournalCoverageInventoryTests
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
         while (directory is not null)
         {
-            if (File.Exists(Path.Combine(
-                    directory.FullName,
-                    "SrvSurvey.slnx")))
+            if (File.Exists(Path.Combine(directory.FullName, "SrvSurvey.slnx")))
             {
                 return directory.FullName;
             }
@@ -219,12 +241,12 @@ public sealed class JournalCoverageInventoryTests
             directory = directory.Parent;
         }
 
-        throw new DirectoryNotFoundException(
-            "Could not locate the SrvSurvey repository root.");
+        throw new DirectoryNotFoundException("Could not locate the SrvSurvey repository root.");
     }
 
     private sealed record JournalParityGroup(
         string Name,
         IReadOnlyList<string> Events,
-        IReadOnlyList<string> EvidenceFiles);
+        IReadOnlyList<string> EvidenceFiles
+    );
 }

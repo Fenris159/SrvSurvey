@@ -8,16 +8,14 @@ public sealed class RamTahState
     public const int AncientRuinsLogCount = 101;
     public const int GuardianLogsCount = 28;
 
-    private static readonly HashSet<string> ValidAncientRuinsLogs =
-        BuildAncientRuinsLogs().ToHashSet(StringComparer.Ordinal);
-    private static readonly HashSet<string> ValidGuardianLogs =
-        Enumerable.Range(1, GuardianLogsCount)
-            .Select(index => $"#{index}")
-            .ToHashSet(StringComparer.Ordinal);
-    private readonly HashSet<string> ancientRuinsLogs = new(
-        StringComparer.Ordinal);
-    private readonly HashSet<string> guardianLogs = new(
-        StringComparer.Ordinal);
+    private static readonly HashSet<string> ValidAncientRuinsLogs = BuildAncientRuinsLogs()
+        .ToHashSet(StringComparer.Ordinal);
+    private static readonly HashSet<string> ValidGuardianLogs = Enumerable
+        .Range(1, GuardianLogsCount)
+        .Select(index => $"#{index}")
+        .ToHashSet(StringComparer.Ordinal);
+    private readonly HashSet<string> ancientRuinsLogs = new(StringComparer.Ordinal);
+    private readonly HashSet<string> guardianLogs = new(StringComparer.Ordinal);
 
     public RamTahMissionStatus AncientRuinsMissionStatus { get; private set; }
 
@@ -33,11 +31,9 @@ public sealed class RamTahState
         AncientRuinsMissionStatus == RamTahMissionStatus.Active
         || GuardianLogsMissionStatus == RamTahMissionStatus.Active;
 
-    public double AncientRuinsProgress =>
-        GetProgress(ancientRuinsLogs.Count, AncientRuinsLogCount);
+    public double AncientRuinsProgress => GetProgress(ancientRuinsLogs.Count, AncientRuinsLogCount);
 
-    public double GuardianLogsProgress =>
-        GetProgress(guardianLogs.Count, GuardianLogsCount);
+    public double GuardianLogsProgress => GetProgress(guardianLogs.Count, GuardianLogsCount);
 
     public void Reset(RamTahSnapshot? snapshot = null)
     {
@@ -57,15 +53,15 @@ public sealed class RamTahState
         var changed = journalEvent.EventName switch
         {
             "Missions" => ApplyMissions(journalEvent.Payload),
-            "MissionAccepted" => ApplyMissionState(
-                GetString(journalEvent.Payload, "Name"),
-                RamTahMissionStatus.Active),
+            "MissionAccepted" => ApplyMissionState(GetString(journalEvent.Payload, "Name"), RamTahMissionStatus.Active),
             "MissionCompleted" => ApplyMissionState(
                 GetString(journalEvent.Payload, "Name"),
-                RamTahMissionStatus.Complete),
+                RamTahMissionStatus.Complete
+            ),
             "MissionFailed" or "MissionAbandoned" => ApplyMissionState(
                 GetString(journalEvent.Payload, "Name"),
-                RamTahMissionStatus.NotStarted),
+                RamTahMissionStatus.NotStarted
+            ),
             _ => false,
         };
         if (changed)
@@ -76,23 +72,14 @@ public sealed class RamTahState
         return changed;
     }
 
-    public bool SetLog(
-        RamTahMission mission,
-        string code,
-        bool completed)
+    public bool SetLog(RamTahMission mission, string code, bool completed)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(code);
-        var target = mission == RamTahMission.AncientRuins
-            ? ancientRuinsLogs
-            : guardianLogs;
-        var valid = mission == RamTahMission.AncientRuins
-            ? ValidAncientRuinsLogs
-            : ValidGuardianLogs;
+        var target = mission == RamTahMission.AncientRuins ? ancientRuinsLogs : guardianLogs;
+        var valid = mission == RamTahMission.AncientRuins ? ValidAncientRuinsLogs : ValidGuardianLogs;
         if (!valid.Contains(code))
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(code),
-                $"{code} is not a valid {mission} log code.");
+            throw new ArgumentOutOfRangeException(nameof(code), $"{code} is not a valid {mission} log code.");
         }
 
         var changed = completed ? target.Add(code) : target.Remove(code);
@@ -106,17 +93,13 @@ public sealed class RamTahState
 
     public bool ToggleLog(RamTahMission mission, string code)
     {
-        var target = mission == RamTahMission.AncientRuins
-            ? ancientRuinsLogs
-            : guardianLogs;
+        var target = mission == RamTahMission.AncientRuins ? ancientRuinsLogs : guardianLogs;
         return SetLog(mission, code, !target.Contains(code));
     }
 
     public bool Clear(RamTahMission mission)
     {
-        var target = mission == RamTahMission.AncientRuins
-            ? ancientRuinsLogs
-            : guardianLogs;
+        var target = mission == RamTahMission.AncientRuins ? ancientRuinsLogs : guardianLogs;
         if (target.Count == 0)
         {
             return false;
@@ -133,7 +116,8 @@ public sealed class RamTahState
             AncientRuinsMissionStatus,
             GuardianLogsMissionStatus,
             ancientRuinsLogs.Order(LogCodeComparer.Instance).ToArray(),
-            guardianLogs.Order(LogCodeComparer.Instance).ToArray());
+            guardianLogs.Order(LogCodeComparer.Instance).ToArray()
+        );
     }
 
     public static IReadOnlyList<string> GetAncientRuinsLogCodes()
@@ -148,8 +132,7 @@ public sealed class RamTahState
 
     private bool ApplyMissions(JsonElement root)
     {
-        if (!root.TryGetProperty("Active", out var active)
-            || active.ValueKind != JsonValueKind.Array)
+        if (!root.TryGetProperty("Active", out var active) || active.ValueKind != JsonValueKind.Array)
         {
             return false;
         }
@@ -157,17 +140,13 @@ public sealed class RamTahState
         var changed = false;
         foreach (var mission in active.EnumerateArray())
         {
-            changed |= ApplyMissionState(
-                GetString(mission, "Name"),
-                RamTahMissionStatus.Active);
+            changed |= ApplyMissionState(GetString(mission, "Name"), RamTahMissionStatus.Active);
         }
 
         return changed;
     }
 
-    private bool ApplyMissionState(
-        string? missionName,
-        RamTahMissionStatus status)
+    private bool ApplyMissionState(string? missionName, RamTahMissionStatus status)
     {
         if (IsAncientRuinsMission(missionName))
         {
@@ -206,10 +185,9 @@ public sealed class RamTahState
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
-            && value.ValueKind == JsonValueKind.String
-                ? value.GetString()
-                : null;
+        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+            ? value.GetString()
+            : null;
     }
 
     private static double GetProgress(int completed, int total)
@@ -228,8 +206,7 @@ public sealed class RamTahState
 
     private static IEnumerable<string> BuildCategory(char category, int count)
     {
-        return Enumerable.Range(1, count)
-            .Select(index => $"{category}{index}");
+        return Enumerable.Range(1, count).Select(index => $"{category}{index}");
     }
 
     private sealed class LogCodeComparer : IComparer<string>
@@ -259,10 +236,9 @@ public sealed class RamTahState
                 return prefix;
             }
 
-            return int.TryParse(x.AsSpan(1), out var xNumber)
-                && int.TryParse(y.AsSpan(1), out var yNumber)
-                    ? xNumber.CompareTo(yNumber)
-                    : string.Compare(x, y, StringComparison.Ordinal);
+            return int.TryParse(x.AsSpan(1), out var xNumber) && int.TryParse(y.AsSpan(1), out var yNumber)
+                ? xNumber.CompareTo(yNumber)
+                : string.Compare(x, y, StringComparison.Ordinal);
         }
     }
 }
@@ -284,11 +260,9 @@ public sealed record RamTahSnapshot(
     RamTahMissionStatus AncientRuinsMissionStatus,
     RamTahMissionStatus GuardianLogsMissionStatus,
     IReadOnlyList<string> AncientRuinsLogs,
-    IReadOnlyList<string> GuardianLogs)
+    IReadOnlyList<string> GuardianLogs
+)
 {
-    public static RamTahSnapshot Empty { get; } = new(
-        RamTahMissionStatus.NotStarted,
-        RamTahMissionStatus.NotStarted,
-        [],
-        []);
+    public static RamTahSnapshot Empty { get; } =
+        new(RamTahMissionStatus.NotStarted, RamTahMissionStatus.NotStarted, [], []);
 }

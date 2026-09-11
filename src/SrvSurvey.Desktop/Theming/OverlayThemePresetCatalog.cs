@@ -77,61 +77,33 @@ public static class OverlayThemePresetCatalog
     [
         new(DefaultName, LegacyOverlayThemeStore.CreateDefault().Colors),
         CreateMonochromeCompanion(),
-        CreateExpandedPreset(
-            "Nebula Cyan",
-            "#5EC8F2",
-            "#B8E8FF",
-            "#D6EEF9",
-            "#FFE8A3"),
-        CreateExpandedPreset(
-            "Toxic Green",
-            "#5CFF9E",
-            "#A8FFCC",
-            "#D8FFE8",
-            "#FFF066"),
-        CreateExpandedPreset(
-            "Crimson Wake",
-            "#FF6B6B",
-            "#FFB8B8",
-            "#FFE4E4",
-            "#FFD966"),
-        CreateExpandedPreset(
-            "Void Amethyst",
-            "#C9A0FF",
-            "#E2CCFF",
-            "#E8E0F5",
-            "#7FFFD4"),
-        CreateExpandedPreset(
-            "Cerulean Gold",
-            "#3D9EE8",
-            "#F2F7FC",
-            "#C8E4FA",
-            "#FFCC33"),
+        CreateExpandedPreset("Nebula Cyan", "#5EC8F2", "#B8E8FF", "#D6EEF9", "#FFE8A3"),
+        CreateExpandedPreset("Toxic Green", "#5CFF9E", "#A8FFCC", "#D8FFE8", "#FFF066"),
+        CreateExpandedPreset("Crimson Wake", "#FF6B6B", "#FFB8B8", "#FFE4E4", "#FFD966"),
+        CreateExpandedPreset("Void Amethyst", "#C9A0FF", "#E2CCFF", "#E8E0F5", "#7FFFD4"),
+        CreateExpandedPreset("Cerulean Gold", "#3D9EE8", "#F2F7FC", "#C8E4FA", "#FFCC33"),
     ];
 
     public static OverlayThemePreset Default => Presets[0];
 
     public static bool TryGet(string? name, out OverlayThemePreset preset)
     {
-        var match = Presets.FirstOrDefault(candidate => string.Equals(
-            candidate.Name,
-            name,
-            StringComparison.OrdinalIgnoreCase));
+        var match = Presets.FirstOrDefault(candidate =>
+            string.Equals(candidate.Name, name, StringComparison.OrdinalIgnoreCase)
+        );
         preset = match ?? Default;
         return match is not null;
     }
 
-    public static OverlayThemePreset? FindMatching(
-        IReadOnlyDictionary<string, Color> colors)
+    public static OverlayThemePreset? FindMatching(IReadOnlyDictionary<string, Color> colors)
     {
         ArgumentNullException.ThrowIfNull(colors);
-        return Presets.FirstOrDefault(preset => preset.Colors.All(entry =>
-            colors.TryGetValue(entry.Key, out var candidate)
-            && candidate == entry.Value));
+        return Presets.FirstOrDefault(preset =>
+            preset.Colors.All(entry => colors.TryGetValue(entry.Key, out var candidate) && candidate == entry.Value)
+        );
     }
 
-    internal static bool TryUpgradeLegacyBiologyPalette(
-        Dictionary<string, Color> colors)
+    internal static bool TryUpgradeLegacyBiologyPalette(Dictionary<string, Color> colors)
     {
         ArgumentNullException.ThrowIfNull(colors);
         if (ExpandedBiologyKeys.Any(colors.ContainsKey))
@@ -139,24 +111,21 @@ public static class OverlayThemePresetCatalog
             return false;
         }
 
-        var preset = Presets.FirstOrDefault(candidate => PresetIdentityKeys.All(key =>
-            colors.TryGetValue(key, out var color)
-            && candidate.Colors[key] == color));
+        var preset = Presets.FirstOrDefault(candidate =>
+            PresetIdentityKeys.All(key => colors.TryGetValue(key, out var color) && candidate.Colors[key] == color)
+        );
         if (preset is null)
         {
             return false;
         }
 
         var legacyBiology = CreateLegacyBiologyPalette(preset);
-        if (legacyBiology.Any(entry =>
-                !colors.TryGetValue(entry.Key, out var color)
-                || color != entry.Value))
+        if (legacyBiology.Any(entry => !colors.TryGetValue(entry.Key, out var color) || color != entry.Value))
         {
             return false;
         }
 
-        foreach (var entry in preset.Colors.Where(entry =>
-                     entry.Key.StartsWith("bio.", StringComparison.Ordinal)))
+        foreach (var entry in preset.Colors.Where(entry => entry.Key.StartsWith("bio.", StringComparison.Ordinal)))
         {
             colors[entry.Key] = entry.Value;
         }
@@ -164,17 +133,15 @@ public static class OverlayThemePresetCatalog
         return true;
     }
 
-    internal static bool AddMissingExpandedBiologyColors(
-        Dictionary<string, Color> colors)
+    internal static bool AddMissingExpandedBiologyColors(Dictionary<string, Color> colors)
     {
         ArgumentNullException.ThrowIfNull(colors);
         var defaults = LegacyOverlayThemeStore.CreateDefault().Colors;
-        var preset = Presets.FirstOrDefault(candidate => PresetIdentityKeys.All(key =>
-            colors.TryGetValue(key, out var color)
-            && candidate.Colors[key] == color));
+        var preset = Presets.FirstOrDefault(candidate =>
+            PresetIdentityKeys.All(key => colors.TryGetValue(key, out var color) && candidate.Colors[key] == color)
+        );
         var changed = false;
-        foreach (var fallback in defaults.Where(entry =>
-                     entry.Key.StartsWith("bio.", StringComparison.Ordinal)))
+        foreach (var fallback in defaults.Where(entry => entry.Key.StartsWith("bio.", StringComparison.Ordinal)))
         {
             if (colors.ContainsKey(fallback.Key))
             {
@@ -206,9 +173,8 @@ public static class OverlayThemePresetCatalog
 
     private static OverlayThemePreset CreateMonochromeCompanion()
     {
-        var colors = CreateExpandedPreset("Monochrome Companion", "#C8CBD0", "#8DB2BE",
-            "#D7D4CC", "#D4BF8F").Colors.ToDictionary(entry => entry.Key, entry => entry.Value,
-                StringComparer.Ordinal);
+        var colors = CreateExpandedPreset("Monochrome Companion", "#C8CBD0", "#8DB2BE", "#D7D4CC", "#D4BF8F")
+            .Colors.ToDictionary(entry => entry.Key, entry => entry.Value, StringComparer.Ordinal);
         colors[BlackKey] = Color.Parse("#111315");
         colors["grey"] = Color.Parse("#90979E");
         colors["green"] = Color.Parse("#91B69B");
@@ -231,12 +197,12 @@ public static class OverlayThemePresetCatalog
         string headerPrimary,
         string headerSecondary,
         string commodity,
-        string values)
+        string values
+    )
     {
-        var colors = LegacyOverlayThemeStore.CreateDefault().Colors.ToDictionary(
-            entry => entry.Key,
-            entry => entry.Value,
-            StringComparer.Ordinal);
+        var colors = LegacyOverlayThemeStore
+            .CreateDefault()
+            .Colors.ToDictionary(entry => entry.Key, entry => entry.Value, StringComparer.Ordinal);
         var primary = Color.Parse(headerPrimary);
         var secondary = Color.Parse(headerSecondary);
         var text = Color.Parse(commodity);
@@ -249,7 +215,8 @@ public static class OverlayThemePresetCatalog
             text,
             value,
             Scale(text, 0.56),
-            Scale(primary, 0.10));
+            Scale(primary, 0.10)
+        );
 
         ApplyGeneral(colors, palette);
         ApplyBiology(colors, palette);
@@ -259,8 +226,7 @@ public static class OverlayThemePresetCatalog
         return new OverlayThemePreset(name, colors);
     }
 
-    private static Dictionary<string, Color> CreateLegacyBiologyPalette(
-        OverlayThemePreset preset)
+    private static Dictionary<string, Color> CreateLegacyBiologyPalette(OverlayThemePreset preset)
     {
         if (string.Equals(preset.Name, DefaultName, StringComparison.Ordinal))
         {
@@ -287,9 +253,7 @@ public static class OverlayThemePresetCatalog
         };
     }
 
-    private static void ApplyGeneral(
-        Dictionary<string, Color> colors,
-        ExpandedPalette palette)
+    private static void ApplyGeneral(Dictionary<string, Color> colors, ExpandedPalette palette)
     {
         colors[HeaderKey] = palette.Value;
         colors[OrangeKey] = palette.Primary;
@@ -302,9 +266,7 @@ public static class OverlayThemePresetCatalog
         colors["grey"] = palette.Muted;
     }
 
-    private static void ApplyBiology(
-        Dictionary<string, Color> colors,
-        ExpandedPalette palette)
+    private static void ApplyBiology(Dictionary<string, Color> colors, ExpandedPalette palette)
     {
         var prediction = Blend(palette.Primary, palette.Secondary, 0.65);
         var predictionDark = Scale(prediction, 0.45);
@@ -313,9 +275,7 @@ public static class OverlayThemePresetCatalog
         colors[BioConfirmedKey] = palette.Primary;
         colors[BioConfirmedDimKey] = palette.PrimaryDark;
         colors["bio.potential"] = WithAlpha(palette.PrimaryDark, 140);
-        colors["bio.confirmedDimPotential"] = WithAlpha(
-            Scale(palette.PrimaryDark, 0.33),
-            140);
+        colors["bio.confirmedDimPotential"] = WithAlpha(Scale(palette.PrimaryDark, 0.33), 140);
         colors[BioPredictionKey] = prediction;
         colors["bio.predictionPotential"] = WithAlpha(predictionDark, 180);
         colors[BioGoldKey] = palette.Value;
@@ -325,9 +285,7 @@ public static class OverlayThemePresetCatalog
         colors["bio.goldPotential"] = WithAlpha(goldFill, 144);
         colors["bio.goldDarkPotential"] = WithAlpha(goldFill, 140);
         colors[BioGalacticRegionKey] = palette.Text;
-        colors["bio.galacticRegionPotential"] = WithAlpha(
-            Scale(palette.Text, 0.74),
-            140);
+        colors["bio.galacticRegionPotential"] = WithAlpha(Scale(palette.Text, 0.74), 140);
         colors[BioUnknownKey] = palette.Muted;
         colors["bio.unknownGlyph"] = palette.Muted;
         colors["bio.hatch"] = WithAlpha(palette.Muted, 242);
@@ -341,124 +299,69 @@ public static class OverlayThemePresetCatalog
         colors["bio.galacticRegionEdge"] = WithAlpha(palette.Text, 96);
         colors["bio.unknownEdge"] = WithAlpha(predictionDark, 96);
         colors["bio.confirmedSegmentEdge"] = palette.PrimaryDark;
-        colors["bio.confirmedPotentialSegmentEdge"] = WithAlpha(
-            palette.Primary,
-            124);
+        colors["bio.confirmedPotentialSegmentEdge"] = WithAlpha(palette.Primary, 124);
         colors["bio.confirmedDimSegmentEdge"] = Scale(palette.PrimaryDark, 0.33);
-        colors["bio.confirmedDimPotentialSegmentEdge"] = WithAlpha(
-            Scale(palette.Primary, 0.33),
-            124);
+        colors["bio.confirmedDimPotentialSegmentEdge"] = WithAlpha(Scale(palette.Primary, 0.33), 124);
         colors["bio.predictionSegmentEdge"] = predictionDark;
         colors["bio.predictionPotentialSegmentEdge"] = predictionDark;
         colors["bio.goldSegmentEdge"] = palette.Value;
-        colors["bio.goldPotentialSegmentEdge"] = WithAlpha(
-            Blend(goldFill, palette.Value, 0.4),
-            144);
+        colors["bio.goldPotentialSegmentEdge"] = WithAlpha(Blend(goldFill, palette.Value, 0.4), 144);
         colors["bio.goldDarkSegmentEdge"] = goldFill;
-        colors["bio.goldDarkPotentialSegmentEdge"] = WithAlpha(
-            goldDarkFill,
-            124);
+        colors["bio.goldDarkPotentialSegmentEdge"] = WithAlpha(goldDarkFill, 124);
         colors["bio.galacticRegionSegmentEdge"] = Scale(palette.Text, 0.5);
-        colors["bio.galacticRegionPotentialSegmentEdge"] = WithAlpha(
-            palette.Text,
-            144);
+        colors["bio.galacticRegionPotentialSegmentEdge"] = WithAlpha(palette.Text, 144);
     }
 
-    private static Color DeriveMissingBiologyColor(
-        string key,
-        Dictionary<string, Color> colors,
-        Color fallback)
+    private static Color DeriveMissingBiologyColor(string key, Dictionary<string, Color> colors, Color fallback)
     {
-        Color Get(string name, Color value) => colors.TryGetValue(name, out var color)
-            ? color
-            : value;
+        Color Get(string name, Color value) => colors.TryGetValue(name, out var color) ? color : value;
 
         return key switch
         {
             BioGoldFillKey => Scale(Get(BioGoldKey, fallback), 0.68),
             BioGoldDarkFillKey => Scale(Get(BioGoldDarkKey, fallback), 0.34),
             "bio.confirmedDimPotential" => WithAlpha(
-                Scale(
-                    Get(BioConfirmedDimKey, Get(OrangeDarkKey, fallback)),
-                    0.33),
-                140),
-            "bio.goldPotential" => WithAlpha(
-                Get(BioGoldFillKey, fallback),
-                144),
-            "bio.goldDarkPotential" => WithAlpha(
-                Get(BioGoldFillKey, fallback),
-                140),
-            "bio.predictionPotential" => WithAlpha(
-                Scale(
-                    Get(BioPredictionKey, Get("cyan", fallback)),
-                    0.45),
-                180),
-            BioGalacticRegionKey =>
-                Get(BioWhiteKey, Get(WhiteKey, fallback)),
+                Scale(Get(BioConfirmedDimKey, Get(OrangeDarkKey, fallback)), 0.33),
+                140
+            ),
+            "bio.goldPotential" => WithAlpha(Get(BioGoldFillKey, fallback), 144),
+            "bio.goldDarkPotential" => WithAlpha(Get(BioGoldFillKey, fallback), 140),
+            "bio.predictionPotential" => WithAlpha(Scale(Get(BioPredictionKey, Get("cyan", fallback)), 0.45), 180),
+            BioGalacticRegionKey => Get(BioWhiteKey, Get(WhiteKey, fallback)),
             "bio.galacticRegionPotential" => WithAlpha(
-                Scale(
-                    Get(
-                        BioGalacticRegionKey,
-                        Get(BioWhiteKey, Get(WhiteKey, fallback))),
-                    0.74),
-                140),
-            "bio.unknownGlyph" =>
-                Get(BioUnknownKey, Get("grey", fallback)),
+                Scale(Get(BioGalacticRegionKey, Get(BioWhiteKey, Get(WhiteKey, fallback))), 0.74),
+                140
+            ),
+            "bio.unknownGlyph" => Get(BioUnknownKey, Get("grey", fallback)),
             BioEmptyKey => Get(BlackKey, fallback),
-            "bio.confirmedEdge" => WithAlpha(
-                Get(BioConfirmedKey, Get(OrangeKey, fallback)),
-                96),
-            "bio.confirmedDimEdge" => WithAlpha(
-                Get(BioConfirmedDimKey, Get(OrangeDarkKey, fallback)),
-                96),
-            "bio.predictionEdge" or "bio.unknownEdge" => WithAlpha(
-                Get(CyanDarkKey, fallback),
-                96),
+            "bio.confirmedEdge" => WithAlpha(Get(BioConfirmedKey, Get(OrangeKey, fallback)), 96),
+            "bio.confirmedDimEdge" => WithAlpha(Get(BioConfirmedDimKey, Get(OrangeDarkKey, fallback)), 96),
+            "bio.predictionEdge" or "bio.unknownEdge" => WithAlpha(Get(CyanDarkKey, fallback), 96),
             "bio.goldEdge" => WithAlpha(Get(BioGoldKey, fallback), 96),
-            "bio.goldDarkEdge" => WithAlpha(
-                Get(BioGoldFillKey, Get(BioGoldDarkKey, fallback)),
-                96),
-            "bio.galacticRegionEdge" => WithAlpha(
-                Get(BioWhiteKey, Get(WhiteKey, fallback)),
-                96),
-            "bio.confirmedSegmentEdge" =>
-                Get(OrangeDarkKey, Get(BioConfirmedDimKey, fallback)),
-            "bio.confirmedPotentialSegmentEdge" => WithAlpha(
-                Get(BioConfirmedKey, Get(OrangeKey, fallback)),
-                124),
-            "bio.confirmedDimSegmentEdge" => Scale(
-                Get(BioConfirmedDimKey, Get(OrangeDarkKey, fallback)),
-                0.33),
+            "bio.goldDarkEdge" => WithAlpha(Get(BioGoldFillKey, Get(BioGoldDarkKey, fallback)), 96),
+            "bio.galacticRegionEdge" => WithAlpha(Get(BioWhiteKey, Get(WhiteKey, fallback)), 96),
+            "bio.confirmedSegmentEdge" => Get(OrangeDarkKey, Get(BioConfirmedDimKey, fallback)),
+            "bio.confirmedPotentialSegmentEdge" => WithAlpha(Get(BioConfirmedKey, Get(OrangeKey, fallback)), 124),
+            "bio.confirmedDimSegmentEdge" => Scale(Get(BioConfirmedDimKey, Get(OrangeDarkKey, fallback)), 0.33),
             "bio.confirmedDimPotentialSegmentEdge" => WithAlpha(
                 Scale(Get(BioConfirmedKey, Get(OrangeKey, fallback)), 0.33),
-                124),
-            "bio.predictionSegmentEdge" or
-                "bio.predictionPotentialSegmentEdge" =>
-                Get(CyanDarkKey, fallback),
+                124
+            ),
+            "bio.predictionSegmentEdge" or "bio.predictionPotentialSegmentEdge" => Get(CyanDarkKey, fallback),
             "bio.goldSegmentEdge" => Get(BioGoldKey, fallback),
             "bio.goldPotentialSegmentEdge" => WithAlpha(
-                Blend(
-                    Get(BioGoldFillKey, fallback),
-                    Get(BioGoldKey, fallback),
-                    0.4),
-                144),
+                Blend(Get(BioGoldFillKey, fallback), Get(BioGoldKey, fallback), 0.4),
+                144
+            ),
             "bio.goldDarkSegmentEdge" => Get(BioGoldFillKey, fallback),
-            "bio.goldDarkPotentialSegmentEdge" => WithAlpha(
-                Get(BioGoldDarkFillKey, fallback),
-                124),
-            "bio.galacticRegionSegmentEdge" => Scale(
-                Get(BioWhiteKey, Get(WhiteKey, fallback)),
-                0.5),
-            "bio.galacticRegionPotentialSegmentEdge" => WithAlpha(
-                Get(BioWhiteKey, Get(WhiteKey, fallback)),
-                144),
+            "bio.goldDarkPotentialSegmentEdge" => WithAlpha(Get(BioGoldDarkFillKey, fallback), 124),
+            "bio.galacticRegionSegmentEdge" => Scale(Get(BioWhiteKey, Get(WhiteKey, fallback)), 0.5),
+            "bio.galacticRegionPotentialSegmentEdge" => WithAlpha(Get(BioWhiteKey, Get(WhiteKey, fallback)), 144),
             _ => fallback,
         };
     }
 
-    private static void ApplyColonisation(
-        Dictionary<string, Color> colors,
-        ExpandedPalette palette)
+    private static void ApplyColonisation(Dictionary<string, Color> colors, ExpandedPalette palette)
     {
         colors["colonise.highlight"] = palette.Value;
         colors["colonise.item"] = palette.Primary;
@@ -466,17 +369,13 @@ public static class OverlayThemePresetCatalog
         colors["colonise.rowHighlight"] = WithAlpha(palette.Primary, 72);
     }
 
-    private static void ApplySettlements(
-        Dictionary<string, Color> colors,
-        ExpandedPalette palette)
+    private static void ApplySettlements(Dictionary<string, Color> colors, ExpandedPalette palette)
     {
         colors["fcz.checkpoint"] = palette.Value;
         colors["fcz.powerPost"] = palette.Primary;
     }
 
-    private static void ApplyGuardian(
-        Dictionary<string, Color> colors,
-        ExpandedPalette palette)
+    private static void ApplyGuardian(Dictionary<string, Color> colors, ExpandedPalette palette)
     {
         colors["guardian.surface"] = palette.Surface;
         colors["guardian.header"] = palette.Value;
@@ -495,7 +394,8 @@ public static class OverlayThemePresetCatalog
             color.A,
             (byte)Math.Round(color.R * factor),
             (byte)Math.Round(color.G * factor),
-            (byte)Math.Round(color.B * factor));
+            (byte)Math.Round(color.B * factor)
+        );
     }
 
     private static Color WithAlpha(Color color, byte alpha)
@@ -510,7 +410,8 @@ public static class OverlayThemePresetCatalog
             255,
             (byte)Math.Round(first.R * firstWeight + second.R * secondWeight),
             (byte)Math.Round(first.G * firstWeight + second.G * secondWeight),
-            (byte)Math.Round(first.B * firstWeight + second.B * secondWeight));
+            (byte)Math.Round(first.B * firstWeight + second.B * secondWeight)
+        );
     }
 
     private sealed record ExpandedPalette(
@@ -521,9 +422,8 @@ public static class OverlayThemePresetCatalog
         Color Text,
         Color Value,
         Color Muted,
-        Color Surface);
+        Color Surface
+    );
 }
 
-public sealed record OverlayThemePreset(
-    string Name,
-    IReadOnlyDictionary<string, Color> Colors);
+public sealed record OverlayThemePreset(string Name, IReadOnlyDictionary<string, Color> Colors);

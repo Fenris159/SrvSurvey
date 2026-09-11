@@ -19,4 +19,5 @@ internal sealed record SystemSurveyEditorPreviewState(
     IReadOnlyList<BiologySignalRewardBandViewModel> LastFssRewardBands,
     string LastFssRewardText,
     string FlightWarningBodyName,
-    double FlightWarningGravity);
+    double FlightWarningGravity
+);

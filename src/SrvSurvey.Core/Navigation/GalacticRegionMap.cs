@@ -6,15 +6,11 @@ namespace SrvSurvey.Core.Navigation
 
     public static class GalacticRegionMap
     {
-        public static IReadOnlyList<GalacticRegion> Regions =>
-            EliteDangerousRegionMap.RegionMap.Regions;
+        public static IReadOnlyList<GalacticRegion> Regions => EliteDangerousRegionMap.RegionMap.Regions;
 
         public static GalacticRegion? Find(GalacticCoordinate position)
         {
-            return EliteDangerousRegionMap.RegionMap.FindRegion(
-                position.X,
-                position.Y,
-                position.Z);
+            return EliteDangerousRegionMap.RegionMap.FindRegion(position.X, position.Y, position.Z);
         }
     }
 }
@@ -28,36 +24,27 @@ namespace EliteDangerousRegionMap
     {
         private const double XOrigin = -49985;
         private const double ZOrigin = -24105;
-        private static readonly Lazy<IReadOnlyList<
-            SrvSurvey.Core.Navigation.GalacticRegion>> regions =
-                new(CreateRegions);
+        private static readonly Lazy<IReadOnlyList<SrvSurvey.Core.Navigation.GalacticRegion>> regions = new(
+            CreateRegions
+        );
 
-        public static IReadOnlyList<SrvSurvey.Core.Navigation.GalacticRegion>
-            Regions => regions.Value;
+        public static IReadOnlyList<SrvSurvey.Core.Navigation.GalacticRegion> Regions => regions.Value;
 
-        private static SrvSurvey.Core.Navigation.GalacticRegion[]
-            CreateRegions()
+        private static SrvSurvey.Core.Navigation.GalacticRegion[] CreateRegions()
         {
             return RegionNames
                 .Select((name, id) => new { name, id })
                 .Where(item => item.id > 0)
-                .Select(item => new SrvSurvey.Core.Navigation.GalacticRegion(
-                    item.id,
-                    item.name))
+                .Select(item => new SrvSurvey.Core.Navigation.GalacticRegion(item.id, item.name))
                 .ToArray();
         }
 
-        public static SrvSurvey.Core.Navigation.GalacticRegion? FindRegion(
-            double x,
-            double y,
-            double z)
+        public static SrvSurvey.Core.Navigation.GalacticRegion? FindRegion(double x, double y, double z)
         {
             _ = y;
             var pixelX = (int)((x - XOrigin) * 83 / 4096);
             var pixelZ = (int)((z - ZOrigin) * 83 / 4096);
-            if (pixelX < 0
-                || pixelZ < 0
-                || pixelZ >= RegionMapLines.Length)
+            if (pixelX < 0 || pixelZ < 0 || pixelZ >= RegionMapLines.Length)
             {
                 return null;
             }
@@ -75,11 +62,7 @@ namespace EliteDangerousRegionMap
                 runStart += runLength;
             }
 
-            return regionId == 0
-                ? null
-                : new SrvSurvey.Core.Navigation.GalacticRegion(
-                    regionId,
-                    RegionNames[regionId]);
+            return regionId == 0 ? null : new SrvSurvey.Core.Navigation.GalacticRegion(regionId, RegionNames[regionId]);
         }
     }
 }

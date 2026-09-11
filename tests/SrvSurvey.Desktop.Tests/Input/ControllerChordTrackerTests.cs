@@ -35,9 +35,7 @@ public sealed class ControllerChordTrackerTests
         tracker.UpdateButton(0, isPressed: true);
         tracker.UpdateHat(ControllerHatDirection.UpRight);
 
-        Assert.Equal(
-            "B1 PovUR",
-            tracker.UpdateHat(ControllerHatDirection.Centered));
+        Assert.Equal("B1 PovUR", tracker.UpdateHat(ControllerHatDirection.Centered));
         Assert.Null(tracker.UpdateButton(0, isPressed: false));
     }
 

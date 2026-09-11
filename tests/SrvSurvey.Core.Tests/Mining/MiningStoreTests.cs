@@ -7,8 +7,12 @@ public sealed class MiningStoreTests
     [Fact]
     public void RejectsInvalidRecoveredSessionAndPresetBeforeRestore()
     {
-        Assert.Throws<System.Text.Json.JsonException>(() => MiningStore.Parse("""{"SchemaVersion":1,"Current":{"Prospects":null}}"""));
-        Assert.Throws<System.Text.Json.JsonException>(() => MiningStore.Parse("""{"SchemaVersion":1,"Settings":{"AnnouncementPresets":{"test":null}}}"""));
+        Assert.Throws<System.Text.Json.JsonException>(() =>
+            MiningStore.Parse("""{"SchemaVersion":1,"Current":{"Prospects":null}}""")
+        );
+        Assert.Throws<System.Text.Json.JsonException>(() =>
+            MiningStore.Parse("""{"SchemaVersion":1,"Settings":{"AnnouncementPresets":{"test":null}}}""")
+        );
     }
 
     [Fact]
@@ -18,8 +22,18 @@ public sealed class MiningStoreTests
         try
         {
             var store = new MiningStore(directory);
-            var state = new MiningCommanderData { Current = new MiningSession { System = "Sol", Started = DateTimeOffset.UtcNow } };
-            state.Rings.Add(new MiningRing { System = "Achenar", Body = "Ring", Position = new SrvSurvey.Core.Search.GalacticCoordinate(1, 2, 3) });
+            var state = new MiningCommanderData
+            {
+                Current = new MiningSession { System = "Sol", Started = DateTimeOffset.UtcNow },
+            };
+            state.Rings.Add(
+                new MiningRing
+                {
+                    System = "Achenar",
+                    Body = "Ring",
+                    Position = new SrvSurvey.Core.Search.GalacticCoordinate(1, 2, 3),
+                }
+            );
             store.Save("F1", state);
             Assert.Equal("Sol", store.Load("F1").Current?.System);
             Assert.Equal(3, store.Load("F1").Rings[0].Position?.Z);
@@ -27,6 +41,12 @@ public sealed class MiningStoreTests
             Assert.Throws<System.Text.Json.JsonException>(() => store.Restore("F1", "{}"));
             Assert.Equal("Sol", store.Load("F1").Current?.System);
         }
-        finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
     }
 }

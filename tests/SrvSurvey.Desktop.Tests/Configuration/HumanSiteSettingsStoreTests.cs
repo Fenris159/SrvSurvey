@@ -7,7 +7,8 @@ public sealed class HumanSiteSettingsStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = System.IO.Path.Combine(
         System.IO.Path.GetTempPath(),
-        $"SrvSurvey-human-site-settings-{Guid.NewGuid():N}");
+        $"SrvSurvey-human-site-settings-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void MissingSettingsUseLegacyDefaults()
@@ -56,7 +57,8 @@ public sealed class HumanSiteSettingsStoreTests : IDisposable
             SettingsPath(),
             """
             {"HumanSite":{"Width":1,"Height":9000,"ShipZoom":-2,"SrvZoom":"bad"}}
-            """);
+            """
+        );
 
         var settings = new HumanSiteSettingsStore(SettingsPath()).Load();
 

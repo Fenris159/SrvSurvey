@@ -6,9 +6,7 @@ namespace SrvSurvey.Desktop;
 public sealed partial class GuardianZoomOverlayWindow : Window
 {
     public GuardianZoomOverlayWindow()
-        : this(new GuardianZoomOverlayViewModel(_ => { }))
-    {
-    }
+        : this(new GuardianZoomOverlayViewModel(_ => { })) { }
 
     public GuardianZoomOverlayWindow(GuardianZoomOverlayViewModel viewModel)
     {

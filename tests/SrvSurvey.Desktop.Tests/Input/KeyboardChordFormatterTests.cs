@@ -12,14 +12,10 @@ public sealed class KeyboardChordFormatterTests
             "ALT CTRL SHIFT Backspace",
             KeyboardChordFormatter.Format(
                 KeyCode.VcBackspace,
-                EventMask.LeftCtrl
-                    | EventMask.RightAlt
-                    | EventMask.LeftShift));
-        Assert.Equal(
-            "CTRL +",
-            KeyboardChordFormatter.Format(
-                KeyCode.VcEquals,
-                EventMask.LeftCtrl));
+                EventMask.LeftCtrl | EventMask.RightAlt | EventMask.LeftShift
+            )
+        );
+        Assert.Equal("CTRL +", KeyboardChordFormatter.Format(KeyCode.VcEquals, EventMask.LeftCtrl));
         Assert.Equal("D1", KeyboardChordFormatter.GetKeyName(KeyCode.Vc1));
     }
 

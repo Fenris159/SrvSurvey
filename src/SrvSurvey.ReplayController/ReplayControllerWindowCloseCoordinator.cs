@@ -1,8 +1,6 @@
 namespace SrvSurvey.ReplayController;
 
-internal sealed class ReplayControllerWindowCloseCoordinator(
-    Func<ValueTask> cleanup,
-    Action completeClose)
+internal sealed class ReplayControllerWindowCloseCoordinator(Func<ValueTask> cleanup, Action completeClose)
 {
     private Task? completion;
     private bool cleanupComplete;

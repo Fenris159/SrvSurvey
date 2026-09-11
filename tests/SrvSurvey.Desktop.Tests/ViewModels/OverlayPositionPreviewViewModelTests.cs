@@ -6,18 +6,12 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class OverlayPositionPreviewViewModelTests
 {
-    private static readonly string[] LegacyGlyphs =
-    [
-        "PlotFSSInfo",
-        "PlotJumpInfo",
-        "PlotFlightWarning",
-    ];
+    private static readonly string[] LegacyGlyphs = ["PlotFSSInfo", "PlotJumpInfo", "PlotFlightWarning"];
 
     [Fact]
     public void FssPreviewUsesOverlaySpecificSimulatedSystemData()
     {
-        var definition = OverlayLayoutCatalog.Supported.Single(item =>
-            item.Name == "PlotFSSInfo");
+        var definition = OverlayLayoutCatalog.Supported.Single(item => item.Name == "PlotFSSInfo");
 
         var preview = OverlayPositionPreviewViewModel.Create(definition);
 
@@ -31,42 +25,33 @@ public sealed class OverlayPositionPreviewViewModelTests
     [Fact]
     public void BiologySystemPreviewContainsSignalRewardBars()
     {
-        var definition = OverlayLayoutCatalog.Supported.Single(item =>
-            item.Name == "PlotBioSystem");
+        var definition = OverlayLayoutCatalog.Supported.Single(item => item.Name == "PlotBioSystem");
 
         var preview = OverlayPositionPreviewViewModel.Create(definition);
 
         Assert.Contains(preview.Rows, row => row.Label == "A4");
         Assert.All(preview.Rows, row => Assert.True(row.HasRewardBands));
         Assert.DoesNotContain(preview.Rows, row => row.HasProgress);
-        Assert.Contains(
-            preview.Rows.SelectMany(row => row.RewardBands!),
-            band => band.IsPrediction);
-        Assert.Contains(
-            preview.Rows.SelectMany(row => row.RewardBands!),
-            band => band.MinimumReward == 0);
+        Assert.Contains(preview.Rows.SelectMany(row => row.RewardBands!), band => band.IsPrediction);
+        Assert.Contains(preview.Rows.SelectMany(row => row.RewardBands!), band => band.MinimumReward == 0);
         Assert.Contains("Rewards", preview.Footer);
     }
 
     [Fact]
     public void RowsWithoutProgressExposeANumericBindingFallback()
     {
-        var definition = OverlayLayoutCatalog.Supported.Single(item =>
-            item.Name == "PlotBioSystem");
+        var definition = OverlayLayoutCatalog.Supported.Single(item => item.Name == "PlotBioSystem");
 
         var preview = OverlayPositionPreviewViewModel.Create(definition);
 
         Assert.Contains(preview.Rows, row => row.Progress is null);
-        Assert.All(
-            preview.Rows.Where(row => row.Progress is null),
-            row => Assert.Equal(0d, row.ProgressValue));
+        Assert.All(preview.Rows.Where(row => row.Progress is null), row => Assert.Equal(0d, row.ProgressValue));
     }
 
     [Fact]
     public void RouteBodyPreviewUsesCheckboxesAndBodyArtworkInsteadOfProgressBars()
     {
-        var definition = OverlayLayoutCatalog.Supported.Single(item =>
-            item.Name == "PlotRouteBio");
+        var definition = OverlayLayoutCatalog.Supported.Single(item => item.Name == "PlotRouteBio");
 
         var preview = OverlayPositionPreviewViewModel.Create(definition);
 
@@ -83,45 +68,36 @@ public sealed class OverlayPositionPreviewViewModelTests
         Assert.DoesNotContain(preview.Rows, row => row.HasProgress);
         Assert.DoesNotContain(
             preview.Rows,
-            row => row.Value.Contains(
-                "Scan for biological signals",
-                StringComparison.OrdinalIgnoreCase));
+            row => row.Value.Contains("Scan for biological signals", StringComparison.OrdinalIgnoreCase)
+        );
         Assert.Contains(preview.Rows, row => row.IsCompleted);
         Assert.Contains(
             preview.Rows,
-            row => row.Label == "A 4"
+            row =>
+                row.Label == "A 4"
                 && row.Value == "Rocky body | 1,245 LS | Bio 27.4 M CR"
-                && row.RouteBody!.CompactDetailSegments.Select(segment =>
-                    segment.Text).SequenceEqual(
-                    ["Rocky body", "1,245 LS", "Bio 27.4 M CR"])
-                && row.RouteBody.InlineSegments.Select(segment =>
-                    segment.Text).SequenceEqual(
-                    ["A 4", "Rocky body", "1,245 LS", "Bio 27.4 M CR"])
+                && row.RouteBody!.CompactDetailSegments.Select(segment => segment.Text)
+                    .SequenceEqual(["Rocky body", "1,245 LS", "Bio 27.4 M CR"])
+                && row.RouteBody.InlineSegments.Select(segment => segment.Text)
+                    .SequenceEqual(["A 4", "Rocky body", "1,245 LS", "Bio 27.4 M CR"])
                 && row.RouteBody.InlineSegments[0].IsBodyName
                 && row.RouteBody.InlineSegments[1].IsDetail
                 && row.RouteBody.CompactDetailSegments[^1].HasSeparator == false
-                && row.RouteBody!.Species.SequenceEqual(
-                    ["Tussock Stigmasis", "Recepta Conditivus"]));
+                && row.RouteBody!.Species.SequenceEqual(["Tussock Stigmasis", "Recepta Conditivus"])
+        );
         Assert.Contains(
             preview.Rows,
-            row => row.BodyIconAssetPath.EndsWith(
-                "/Assets/Bodies/earth-like-world.png",
-                StringComparison.Ordinal));
-        Assert.Equal(
-            3,
-            preview.Rows.Take(3).Count());
-        Assert.True(
-            preview.EstimatedHeight
-            < 70 + preview.Rows.Sum(row => row.EstimatedHeight) + 22);
+            row => row.BodyIconAssetPath.EndsWith("/Assets/Bodies/earth-like-world.png", StringComparison.Ordinal)
+        );
+        Assert.Equal(3, preview.Rows.Take(3).Count());
+        Assert.True(preview.EstimatedHeight < 70 + preview.Rows.Sum(row => row.EstimatedHeight) + 22);
     }
 
     [Fact]
     public void PreviewUsesTheLegacyPlotterWidth()
     {
-        var jump = OverlayLayoutCatalog.Supported.Single(item =>
-            item.Name == "PlotJumpInfo");
-        var biology = OverlayLayoutCatalog.Supported.Single(item =>
-            item.Name == "PlotBioSystem");
+        var jump = OverlayLayoutCatalog.Supported.Single(item => item.Name == "PlotJumpInfo");
+        var biology = OverlayLayoutCatalog.Supported.Single(item => item.Name == "PlotBioSystem");
 
         var jumpPreview = OverlayPositionPreviewViewModel.Create(jump);
         var biologyPreview = OverlayPositionPreviewViewModel.Create(biology);
@@ -130,21 +106,16 @@ public sealed class OverlayPositionPreviewViewModelTests
         Assert.Equal(biology.PreviewSize.Width, biologyPreview.PreferredWidth);
         Assert.True(jumpPreview.EstimatedHeight < jump.PreviewSize.Height * 2);
         Assert.True(biologyPreview.EstimatedHeight > jumpPreview.EstimatedHeight);
-        Assert.Equal(
-            biologyPreview.Rows.Count,
-            biologyPreview.Rows.Count(row => row.HasRewardBands));
+        Assert.Equal(biologyPreview.Rows.Count, biologyPreview.Rows.Count(row => row.HasRewardBands));
     }
 
     [Fact]
     public void SimulatedStateIncludesLegacySemanticGlyphs()
     {
-        var definitions = LegacyGlyphs
-            .Select(name => OverlayLayoutCatalog.Supported.Single(item =>
-                item.Name == name));
+        var definitions = LegacyGlyphs.Select(name => OverlayLayoutCatalog.Supported.Single(item => item.Name == name));
 
         var glyphs = definitions
-            .SelectMany(definition =>
-                OverlayPositionPreviewViewModel.Create(definition).Rows)
+            .SelectMany(definition => OverlayPositionPreviewViewModel.Create(definition).Rows)
             .Where(row => row.HasGlyph)
             .ToArray();
 
@@ -169,28 +140,19 @@ public sealed class OverlayPositionPreviewViewModelTests
     [Fact]
     public void SimulatedSessionCanBeReplacedWithoutChangingDefaultState()
     {
-        var definition = OverlayLayoutCatalog.Supported.Single(item =>
-            item.Name == "PlotStationInfo");
-        var simulation = OverlayPreviewSimulationState.Default with
-        {
-            StationName = "Test Preview Orbital",
-        };
+        var definition = OverlayLayoutCatalog.Supported.Single(item => item.Name == "PlotStationInfo");
+        var simulation = OverlayPreviewSimulationState.Default with { StationName = "Test Preview Orbital" };
 
-        var preview = OverlayPositionPreviewViewModel.Create(
-            definition,
-            simulation);
+        var preview = OverlayPositionPreviewViewModel.Create(definition, simulation);
 
         Assert.Equal("Test Preview Orbital", preview.Subtitle);
-        Assert.Equal(
-            "Raven Colonial Port",
-            OverlayPreviewSimulationState.Default.StationName);
+        Assert.Equal("Raven Colonial Port", OverlayPreviewSimulationState.Default.StationName);
     }
 
     [Fact]
     public void CompactPreviewKeepsItsTruePlacementSizeWithoutOverflowRows()
     {
-        var definition = OverlayLayoutCatalog.Supported.Single(item =>
-            item.Name == "PlotPulse");
+        var definition = OverlayLayoutCatalog.Supported.Single(item => item.Name == "PlotPulse");
 
         var preview = OverlayPositionPreviewViewModel.Create(definition);
 
@@ -205,8 +167,7 @@ public sealed class OverlayPositionPreviewViewModelTests
     [Fact]
     public void SystemStatusPreviewShowsDssAndBiologicalContentNotJustCompactStub()
     {
-        var definition = OverlayLayoutCatalog.Supported.Single(item =>
-            item.Name == "PlotSysStatus");
+        var definition = OverlayLayoutCatalog.Supported.Single(item => item.Name == "PlotSysStatus");
 
         var preview = OverlayPositionPreviewViewModel.Create(definition);
 

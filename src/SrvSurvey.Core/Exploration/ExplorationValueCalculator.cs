@@ -49,17 +49,13 @@ public static class ExplorationValueCalculator
     private static int CalculateStarValue(string bodyClass, double mass)
     {
         var starBaseValue = GetStarBaseValue(bodyClass);
-        return (int)Math.Round(
-            starBaseValue + (mass * starBaseValue / 66.25));
+        return (int)Math.Round(starBaseValue + (mass * starBaseValue / 66.25));
     }
 
     private static double CalculatePlanetBaseValue(ExplorationValueRequest request)
     {
-        var bodyBaseValue = GetPlanetBaseValue(
-            request.BodyClass!,
-            request.IsTerraformable);
-        return (bodyBaseValue
-            + bodyBaseValue * PlanetValueExponent * Math.Pow(request.Mass, 0.2))
+        var bodyBaseValue = GetPlanetBaseValue(request.BodyClass!, request.IsTerraformable);
+        return (bodyBaseValue + bodyBaseValue * PlanetValueExponent * Math.Pow(request.Mass, 0.2))
             * GetMappingMultiplier(request);
     }
 
@@ -78,9 +74,7 @@ public static class ExplorationValueCalculator
         return request.IsFirstMapped ? 8.0956 : 3.3333333333;
     }
 
-    private static double ApplyMappedBonuses(
-        double value,
-        ExplorationValueRequest request)
+    private static double ApplyMappedBonuses(double value, ExplorationValueRequest request)
     {
         if (!request.IsMapped)
         {
@@ -110,20 +104,16 @@ public static class ExplorationValueCalculator
         return starClass.StartsWith('W') ? 14057 : 1200;
     }
 
-    public static int GetPlanetBaseValue(
-        string planetClass,
-        bool isTerraformable)
+    public static int GetPlanetBaseValue(string planetClass, bool isTerraformable)
     {
         return planetClass switch
         {
             "Metal rich body" => 21790 + (isTerraformable ? 105678 : 0),
             "Ammonia world" => 96932,
             "Sudarsky class I gas giant" => 1656,
-            "Sudarsky class II gas giant" or "High metal content body" =>
-                9654 + (isTerraformable ? 100677 : 0),
+            "Sudarsky class II gas giant" or "High metal content body" => 9654 + (isTerraformable ? 100677 : 0),
             "Water world" => 64831 + (isTerraformable ? 116295 : 0),
-            _ when planetClass.StartsWith("Earth", StringComparison.Ordinal) =>
-                64831 + 116295,
+            _ when planetClass.StartsWith("Earth", StringComparison.Ordinal) => 64831 + 116295,
             _ => 300 + (isTerraformable ? 93328 : 0),
         };
     }
@@ -132,8 +122,6 @@ public static class ExplorationValueCalculator
     {
         return bodyClass.Length < 8
             || bodyClass[1] == '_'
-            || bodyClass is "SupermassiveBlackHole"
-                or "Nebula"
-                or "StellarRemnantNebula";
+            || bodyClass is "SupermassiveBlackHole" or "Nebula" or "StellarRemnantNebula";
     }
 }

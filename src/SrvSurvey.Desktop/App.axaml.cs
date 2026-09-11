@@ -14,7 +14,8 @@ public sealed partial class App : Application
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "CodeQuality",
         "S4487:Unread private fields should be removed",
-        Justification = "The Avalonia adapter retains the runtime for the desktop application lifetime.")]
+        Justification = "The Avalonia adapter retains the runtime for the desktop application lifetime."
+    )]
     private DesktopRuntime? desktopRuntime;
 
     public override void Initialize()
@@ -35,13 +36,12 @@ public sealed partial class App : Application
             desktopRuntime = DesktopRuntime.Start(
                 this,
                 desktop,
-                new DesktopStartup(
-                    Program.StartupArguments,
-                    Program.ApplicationLog)
+                new DesktopStartup(Program.StartupArguments, Program.ApplicationLog)
                 {
                     AppDataPathsOverride = Program.StartupContext?.AppDataPaths,
                     DiagnosticReplay = Program.StartupContext?.DiagnosticReplay,
-                });
+                }
+            );
         }
 
         base.OnFrameworkInitializationCompleted();

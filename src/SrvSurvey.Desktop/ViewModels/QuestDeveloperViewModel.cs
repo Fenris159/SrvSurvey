@@ -15,10 +15,7 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
         PropertyNameCaseInsensitive = true,
         ReadCommentHandling = JsonCommentHandling.Skip,
         WriteIndented = true,
-        Converters =
-        {
-            new JsonStringEnumConverter(),
-        },
+        Converters = { new JsonStringEnumConverter() },
     };
 
     private readonly QuestRuntimeCoordinator coordinator;
@@ -32,10 +29,12 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
     private readonly AsyncCommand reloadSavedCommand;
     private readonly AsyncCommand removeCommand;
     private readonly object watcherSync = new();
+
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Usage",
         "CA2213:Disposable fields should be disposed",
-        Justification = "An in-flight import may release this gate after the view model is disposed.")]
+        Justification = "An in-flight import may release this gate after the view model is disposed."
+    )]
     private readonly SemaphoreSlim importLock = new(1, 1);
     private RavenQuestReference? reference;
     private QuestDevelopmentStateSnapshot? state;
@@ -58,25 +57,23 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
 
     public QuestDeveloperViewModel(QuestRuntimeCoordinator coordinator)
     {
-        this.coordinator = coordinator
-            ?? throw new ArgumentNullException(nameof(coordinator));
+        this.coordinator = coordinator ?? throw new ArgumentNullException(nameof(coordinator));
         synchronizationContext = SynchronizationContext.Current;
         refreshCommand = new AsyncCommand(RefreshStateAsync, CanUseQuest);
         applyCommand = new AsyncCommand(ApplyEditorAsync, CanApplyEditor);
         startChapterCommand = new AsyncCommand(
             () => SetSelectedChapterActiveAsync(active: true),
-            () => CanUseQuest() && IsChapterSelected && !IsSelectedChapterActive);
+            () => CanUseQuest() && IsChapterSelected && !IsSelectedChapterActive
+        );
         stopChapterCommand = new AsyncCommand(
             () => SetSelectedChapterActiveAsync(active: false),
-            () => CanUseQuest() && IsSelectedChapterActive);
+            () => CanUseQuest() && IsSelectedChapterActive
+        );
         runDebugCommand = new AsyncCommand(
             RunDebugAsync,
-            () => CanUseQuest()
-                && IsSelectedChapterActive
-                && !string.IsNullOrWhiteSpace(DebugCode));
-        publishCommand = new AsyncCommand(
-            PublishAsync,
-            () => CanUseQuest() && PublishConfirmed);
+            () => CanUseQuest() && IsSelectedChapterActive && !string.IsNullOrWhiteSpace(DebugCode)
+        );
+        publishCommand = new AsyncCommand(PublishAsync, () => CanUseQuest() && PublishConfirmed);
         reloadSavedCommand = new AsyncCommand(ReloadSavedAsync, CanUseQuest);
         removeCommand = new AsyncCommand(RemoveAsync, CanUseQuest);
     }
@@ -176,11 +173,10 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
 
     public bool IsChapterSelected => SelectedView?.ChapterId is not null;
 
-    public bool IsSelectedChapterActive => SelectedView?.ChapterId is { } id
-        && state?.Chapters.FirstOrDefault(chapter => string.Equals(
-            chapter.Id,
-            id,
-            StringComparison.Ordinal))?.IsActive == true;
+    public bool IsSelectedChapterActive =>
+        SelectedView?.ChapterId is { } id
+        && state?.Chapters.FirstOrDefault(chapter => string.Equals(chapter.Id, id, StringComparison.Ordinal))?.IsActive
+            == true;
 
     public string EditorJson
     {
@@ -224,9 +220,7 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
         }
     }
 
-    public string RemoveButtonText => removePending
-        ? "Confirm removal"
-        : "Remove development quest";
+    public string RemoveButtonText => removePending ? "Confirm removal" : "Remove development quest";
 
     public ICommand RefreshCommand => refreshCommand;
 
@@ -244,25 +238,23 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
 
     public ICommand RemoveCommand => removeCommand;
 
-    public void ApplyRuntimeSnapshots(
-        IReadOnlyList<QuestRuntimeSnapshot> snapshots)
+    public void ApplyRuntimeSnapshots(IReadOnlyList<QuestRuntimeSnapshot> snapshots)
     {
         ArgumentNullException.ThrowIfNull(snapshots);
-        var development = snapshots.FirstOrDefault(snapshot =>
-            snapshot.IsDevelopment);
+        var development = snapshots.FirstOrDefault(snapshot => snapshot.IsDevelopment);
         if (development is null)
         {
             ClearQuest();
             return;
         }
 
-        var changed = reference is null
+        var changed =
+            reference is null
             || !SameQuest(reference, development.Reference)
             || reference.Version.CompareTo(development.Reference.Version) != 0;
         reference = development.Reference;
         Title = development.Title;
-        VersionLabel = development.Reference.Version.ToString(
-            System.Globalization.CultureInfo.InvariantCulture);
+        VersionLabel = development.Reference.Version.ToString(System.Globalization.CultureInfo.InvariantCulture);
         OnPropertyChanged(nameof(HasDevelopmentQuest));
         if (changed)
         {
@@ -285,15 +277,11 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
         {
             IsBusy = true;
             StatusMessage = "Validating and importing development quest...";
-            var result = await coordinator.ImportDevelopmentQuestAsync(
-                path,
-                CancellationToken.None);
+            var result = await coordinator.ImportDevelopmentQuestAsync(path, CancellationToken.None);
             reference = result.Reference;
-            var restartWatcher = WatchSource
-                && !string.Equals(
-                    SourceDirectory,
-                    result.SourceDirectory,
-                    StringComparison.OrdinalIgnoreCase);
+            var restartWatcher =
+                WatchSource
+                && !string.Equals(SourceDirectory, result.SourceDirectory, StringComparison.OrdinalIgnoreCase);
             if (restartWatcher)
             {
                 WatchSource = false;
@@ -307,9 +295,10 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
 
             ApplyRuntimeSnapshots(coordinator.Snapshot);
             await LoadStateCoreAsync();
-            StatusMessage = result.Warnings.Count == 0
-                ? $"Imported {result.SourceFiles.Count:N0} verified source files."
-                : string.Join(Environment.NewLine, result.Warnings);
+            StatusMessage =
+                result.Warnings.Count == 0
+                    ? $"Imported {result.SourceFiles.Count:N0} verified source files."
+                    : string.Join(Environment.NewLine, result.Warnings);
             RuntimeChanged?.Invoke(this, EventArgs.Empty);
         }
         catch (Exception exception) when (IsRecoverable(exception))
@@ -338,8 +327,7 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
         }
         catch (Exception exception) when (IsRecoverable(exception))
         {
-            StatusMessage = "Development state could not be loaded: "
-                + exception.Message;
+            StatusMessage = "Development state could not be loaded: " + exception.Message;
         }
         finally
         {
@@ -360,37 +348,26 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
 
     private async Task LoadStateCoreAsync()
     {
-        var currentReference = reference
-            ?? throw new InvalidOperationException(
-                "No development quest is active.");
+        var currentReference = reference ?? throw new InvalidOperationException("No development quest is active.");
         var selected = SelectedView;
-        state = await coordinator.GetDevelopmentStateAsync(
-            currentReference,
-            CancellationToken.None);
+        state = await coordinator.GetDevelopmentStateAsync(currentReference, CancellationToken.None);
         Views =
         [
-            new QuestDevelopmentViewOption(
-                QuestDevelopmentViewKind.Objectives,
-                "Objectives",
-                null),
+            new QuestDevelopmentViewOption(QuestDevelopmentViewKind.Objectives, "Objectives", null),
             .. state.Chapters.Select(chapter => new QuestDevelopmentViewOption(
                 QuestDevelopmentViewKind.Chapter,
                 "Chapter: " + chapter.Id,
-                chapter.Id)),
-            new QuestDevelopmentViewOption(
-                QuestDevelopmentViewKind.Messages,
-                "Messages",
-                null),
+                chapter.Id
+            )),
+            new QuestDevelopmentViewOption(QuestDevelopmentViewKind.Messages, "Messages", null),
         ];
         var firstView = Views.Count > 0 ? Views[0] : null;
         SelectedView = selected is null
             ? firstView
-            : Views.FirstOrDefault(view => view.Kind == selected.Kind
-                && string.Equals(
-                    view.ChapterId,
-                    selected.ChapterId,
-                    StringComparison.Ordinal))
-                ?? firstView;
+            : Views.FirstOrDefault(view =>
+                view.Kind == selected.Kind
+                && string.Equals(view.ChapterId, selected.ChapterId, StringComparison.Ordinal)
+            ) ?? firstView;
         RenderEditor();
     }
 
@@ -406,14 +383,10 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
         {
             QuestDevelopmentViewKind.Objectives => state.Objectives,
             QuestDevelopmentViewKind.Messages => state.Messages,
-            QuestDevelopmentViewKind.Chapter => state.Chapters
-                .First(chapter => string.Equals(
-                    chapter.Id,
-                    SelectedView.ChapterId,
-                    StringComparison.Ordinal))
+            QuestDevelopmentViewKind.Chapter => state
+                .Chapters.First(chapter => string.Equals(chapter.Id, SelectedView.ChapterId, StringComparison.Ordinal))
                 .Variables,
-            _ => throw new InvalidOperationException(
-                $"Quest development view '{SelectedView.Kind}' is not supported."),
+            _ => throw new InvalidOperationException($"Quest development view '{SelectedView.Kind}' is not supported."),
         };
         EditorJson = JsonSerializer.Serialize(value, EditorJsonOptions);
     }
@@ -434,24 +407,28 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
                     await coordinator.UpdateDevelopmentObjectivesAsync(
                         reference,
                         Deserialize<Dictionary<string, string>>(EditorJson),
-                        CancellationToken.None);
+                        CancellationToken.None
+                    );
                     break;
                 case QuestDevelopmentViewKind.Chapter:
                     await coordinator.UpdateDevelopmentChapterVariablesAsync(
                         reference,
                         SelectedView.ChapterId!,
                         Deserialize<Dictionary<string, JsonElement>>(EditorJson),
-                        CancellationToken.None);
+                        CancellationToken.None
+                    );
                     break;
                 case QuestDevelopmentViewKind.Messages:
                     await coordinator.UpdateDevelopmentMessagesAsync(
                         reference,
                         Deserialize<List<RavenQuestMessage>>(EditorJson),
-                        CancellationToken.None);
+                        CancellationToken.None
+                    );
                     break;
                 default:
                     throw new InvalidOperationException(
-                        $"Quest development view '{SelectedView.Kind}' is not supported.");
+                        $"Quest development view '{SelectedView.Kind}' is not supported."
+                    );
             }
 
             await LoadStateCoreAsync();
@@ -460,8 +437,7 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
         }
         catch (Exception exception) when (IsRecoverable(exception))
         {
-            StatusMessage = "Development state update failed: "
-                + exception.Message;
+            StatusMessage = "Development state update failed: " + exception.Message;
         }
         finally
         {
@@ -477,12 +453,9 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
         }
 
         await RunActionAsync(
-            () => coordinator.SetDevelopmentChapterActiveAsync(
-                reference,
-                chapterId,
-                active,
-                CancellationToken.None),
-            active ? "Chapter started." : "Chapter stopped.");
+            () => coordinator.SetDevelopmentChapterActiveAsync(reference, chapterId, active, CancellationToken.None),
+            active ? "Chapter started." : "Chapter stopped."
+        );
     }
 
     public async Task RunDebugAsync()
@@ -499,7 +472,8 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
                 reference,
                 chapterId,
                 DebugCode,
-                CancellationToken.None);
+                CancellationToken.None
+            );
             DebugResult = JsonSerializer.Serialize(result, EditorJsonOptions);
             await LoadStateCoreAsync();
             StatusMessage = "Debug code completed.";
@@ -529,13 +503,13 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
             var status = await coordinator.PublishDevelopmentQuestAsync(
                 reference,
                 PublishConfirmed,
-                CancellationToken.None);
+                CancellationToken.None
+            );
             StatusMessage = "Published development quest: " + status;
         }
         catch (Exception exception) when (IsRecoverable(exception))
         {
-            StatusMessage = "Development quest publish failed: "
-                + exception.Message;
+            StatusMessage = "Development quest publish failed: " + exception.Message;
         }
         finally
         {
@@ -549,23 +523,22 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
         try
         {
             IsBusy = true;
-            var result = await coordinator.RefreshAsync(
-                CancellationToken.None);
+            var result = await coordinator.RefreshAsync(CancellationToken.None);
             ApplyRuntimeSnapshots(result.Quests);
             if (reference is not null)
             {
                 await LoadStateCoreAsync();
             }
 
-            StatusMessage = result.Warnings.Count == 0
-                ? "Reloaded development state from disk."
-                : string.Join(Environment.NewLine, result.Warnings);
+            StatusMessage =
+                result.Warnings.Count == 0
+                    ? "Reloaded development state from disk."
+                    : string.Join(Environment.NewLine, result.Warnings);
             RuntimeChanged?.Invoke(this, EventArgs.Empty);
         }
         catch (Exception exception) when (IsRecoverable(exception))
         {
-            StatusMessage = "Saved development state could not be reloaded: "
-                + exception.Message;
+            StatusMessage = "Saved development state could not be reloaded: " + exception.Message;
         }
         finally
         {
@@ -584,7 +557,8 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
         {
             removePending = true;
             OnPropertyChanged(nameof(RemoveButtonText));
-            StatusMessage = "Select Confirm removal to remove local development progress. The state file is backed up first.";
+            StatusMessage =
+                "Select Confirm removal to remove local development progress. The state file is backed up first.";
             return;
         }
 
@@ -594,17 +568,14 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
         try
         {
             IsBusy = true;
-            await coordinator.RemoveQuestAsync(
-                removing,
-                CancellationToken.None);
+            await coordinator.RemoveQuestAsync(removing, CancellationToken.None);
             ClearQuest();
             StatusMessage = "Development quest removed.";
             RuntimeChanged?.Invoke(this, EventArgs.Empty);
         }
         catch (Exception exception) when (IsRecoverable(exception))
         {
-            StatusMessage = "Development quest removal failed: "
-                + exception.Message;
+            StatusMessage = "Development quest removal failed: " + exception.Message;
         }
         finally
         {
@@ -624,8 +595,7 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
         }
         catch (Exception exception) when (IsRecoverable(exception))
         {
-            StatusMessage = "Development quest action failed: "
-                + exception.Message;
+            StatusMessage = "Development quest action failed: " + exception.Message;
         }
         finally
         {
@@ -648,9 +618,7 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
         {
             Filter = "*",
             IncludeSubdirectories = false,
-            NotifyFilter = NotifyFilters.FileName
-                | NotifyFilters.LastWrite
-                | NotifyFilters.Size,
+            NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.Size,
         };
         watcher.Changed += SourceChanged;
         watcher.Created += SourceChanged;
@@ -726,8 +694,7 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
         Post(() =>
         {
             WatchSource = false;
-            StatusMessage = "Source folder watch stopped: "
-                + eventArgs.GetException().Message;
+            StatusMessage = "Source folder watch stopped: " + eventArgs.GetException().Message;
         });
     }
 
@@ -751,9 +718,8 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
 
     private bool CanUseQuest() => !IsBusy && reference is not null;
 
-    private bool CanApplyEditor() => CanUseQuest()
-        && SelectedView is not null
-        && !string.IsNullOrWhiteSpace(EditorJson);
+    private bool CanApplyEditor() =>
+        CanUseQuest() && SelectedView is not null && !string.IsNullOrWhiteSpace(EditorJson);
 
     private void RaiseCommandStates()
     {
@@ -786,8 +752,7 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
             return action();
         }
 
-        var completion = new TaskCompletionSource(
-            TaskCreationOptions.RunContinuationsAsynchronously);
+        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         synchronizationContext.Post(
             async _ =>
             {
@@ -801,7 +766,8 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
                     completion.SetException(exception);
                 }
             },
-            null);
+            null
+        );
         return completion.Task;
     }
 
@@ -814,9 +780,7 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
         }
         catch (JsonException exception)
         {
-            throw new InvalidDataException(
-                "The editor does not contain valid JSON for this view.",
-                exception);
+            throw new InvalidDataException("The editor does not contain valid JSON for this view.", exception);
         }
     }
 
@@ -830,24 +794,15 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
             || string.Equals(extension, ".md", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static bool SameQuest(
-        RavenQuestReference left,
-        RavenQuestReference right)
+    private static bool SameQuest(RavenQuestReference left, RavenQuestReference right)
     {
-        return string.Equals(
-                left.Publisher,
-                right.Publisher,
-                StringComparison.Ordinal)
+        return string.Equals(left.Publisher, right.Publisher, StringComparison.Ordinal)
             && string.Equals(left.Id, right.Id, StringComparison.Ordinal);
     }
 
-    private static bool IsRecoverable(Exception exception) =>
-        exception is not OperationCanceledException;
+    private static bool IsRecoverable(Exception exception) => exception is not OperationCanceledException;
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -864,9 +819,7 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private sealed class AsyncCommand(
-        Func<Task> execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class AsyncCommand(Func<Task> execute, Func<bool> canExecute) : ICommand
     {
         public event EventHandler? CanExecuteChanged;
 
@@ -887,10 +840,7 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
     }
 }
 
-public sealed record QuestDevelopmentViewOption(
-    QuestDevelopmentViewKind Kind,
-    string Label,
-    string? ChapterId);
+public sealed record QuestDevelopmentViewOption(QuestDevelopmentViewKind Kind, string Label, string? ChapterId);
 
 public enum QuestDevelopmentViewKind
 {

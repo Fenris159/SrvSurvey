@@ -9,15 +9,13 @@ public static class InaraCommunityGoalEnricher
 
     public static IReadOnlyList<FrontierCommunityGoalSnapshot> Enrich(
         IReadOnlyList<FrontierCommunityGoalSnapshot>? frontierGoals,
-        InaraCommunityGoalsResult inara)
+        InaraCommunityGoalsResult inara
+    )
     {
         ArgumentNullException.ThrowIfNull(inara);
-        var source = (frontierGoals ?? [])
-            .Where(goal => !IsPriorInaraOnlyGoal(goal))
-            .ToArray();
+        var source = (frontierGoals ?? []).Where(goal => !IsPriorInaraOnlyGoal(goal)).ToArray();
         var matched = new HashSet<int>();
-        var result = new List<FrontierCommunityGoalSnapshot>(
-            source.Length + inara.Goals.Count);
+        var result = new List<FrontierCommunityGoalSnapshot>(source.Length + inara.Goals.Count);
         foreach (var frontier in source)
         {
             var matchIndex = FindMatch(frontier, source, inara.Goals, matched);
@@ -46,19 +44,25 @@ public static class InaraCommunityGoalEnricher
         FrontierCommunityGoalSnapshot frontier,
         IReadOnlyList<FrontierCommunityGoalSnapshot> frontierGoals,
         IReadOnlyList<InaraCommunityGoalSnapshot> inaraGoals,
-        HashSet<int> alreadyMatched)
+        HashSet<int> alreadyMatched
+    )
     {
         var title = Normalize(frontier.Title);
         var candidates = inaraGoals
-            .Select((goal, index) => new
-            {
-                Goal = goal,
-                Index = index,
-                Score = MatchScore(frontier, goal),
-            })
-            .Where(candidate => !alreadyMatched.Contains(candidate.Index)
+            .Select(
+                (goal, index) =>
+                    new
+                    {
+                        Goal = goal,
+                        Index = index,
+                        Score = MatchScore(frontier, goal),
+                    }
+            )
+            .Where(candidate =>
+                !alreadyMatched.Contains(candidate.Index)
                 && Normalize(candidate.Goal.Title) == title
-                && candidate.Score >= 0)
+                && candidate.Score >= 0
+            )
             .OrderByDescending(candidate => candidate.Score)
             .ToArray();
         if (candidates.Length == 0)
@@ -66,33 +70,27 @@ public static class InaraCommunityGoalEnricher
             return null;
         }
 
-        if (candidates[0].Score > 0
-            && (candidates.Length == 1
-                || candidates[0].Score > candidates[1].Score))
+        if (candidates[0].Score > 0 && (candidates.Length == 1 || candidates[0].Score > candidates[1].Score))
         {
             return candidates[0].Index;
         }
 
-        var frontierTitleCount = frontierGoals.Count(goal =>
-            Normalize(goal.Title) == title);
-        return candidates.Length == 1 && frontierTitleCount == 1
-            ? candidates[0].Index
-            : null;
+        var frontierTitleCount = frontierGoals.Count(goal => Normalize(goal.Title) == title);
+        return candidates.Length == 1 && frontierTitleCount == 1 ? candidates[0].Index : null;
     }
 
-    private static int MatchScore(
-        FrontierCommunityGoalSnapshot frontier,
-        InaraCommunityGoalSnapshot inara)
+    private static int MatchScore(FrontierCommunityGoalSnapshot frontier, InaraCommunityGoalSnapshot inara)
     {
         var score = 0;
-        if (!Compatible(frontier.System, inara.System, ref score, 4)
-            || !Compatible(frontier.Market, inara.Station, ref score, 4))
+        if (
+            !Compatible(frontier.System, inara.System, ref score, 4)
+            || !Compatible(frontier.Market, inara.Station, ref score, 4)
+        )
         {
             return -1;
         }
 
-        if (frontier.ExpiresAt is { } frontierExpiry
-            && inara.ExpiresAt is { } inaraExpiry)
+        if (frontier.ExpiresAt is { } frontierExpiry && inara.ExpiresAt is { } inaraExpiry)
         {
             if ((frontierExpiry - inaraExpiry).Duration() > ExpiryTolerance)
             {
@@ -105,11 +103,7 @@ public static class InaraCommunityGoalEnricher
         return score;
     }
 
-    private static bool Compatible(
-        string first,
-        string second,
-        ref int score,
-        int exactScore)
+    private static bool Compatible(string first, string second, ref int score, int exactScore)
     {
         if (string.IsNullOrWhiteSpace(first) || string.IsNullOrWhiteSpace(second))
         {
@@ -128,7 +122,8 @@ public static class InaraCommunityGoalEnricher
     private static FrontierCommunityGoalSnapshot Merge(
         FrontierCommunityGoalSnapshot frontier,
         InaraCommunityGoalSnapshot inara,
-        DateTimeOffset fetchedAt)
+        DateTimeOffset fetchedAt
+    )
     {
         var data = AddInaraData(frontier.DataPoints, inara, fetchedAt);
         return frontier with
@@ -140,24 +135,15 @@ public static class InaraCommunityGoalEnricher
             Market = FirstNonEmpty(frontier.Market, inara.Station),
             ExpiresAt = frontier.ExpiresAt ?? inara.ExpiresAt,
             IsComplete = frontier.IsComplete || inara.IsComplete,
-            CurrentTotal = frontier.CurrentTotal != 0
-                ? frontier.CurrentTotal
-                : inara.ContributionsTotal ?? 0,
-            Contributors = frontier.HasContributorData
-                ? frontier.Contributors
-                : inara.Contributors ?? 0,
-            TierReached = FirstNonEmpty(
-                frontier.TierReached,
-                FormatTier(inara.TierReached, inara.TierMaximum)),
-            HasContributorData = frontier.HasContributorData
-                || inara.Contributors is not null,
+            CurrentTotal = frontier.CurrentTotal != 0 ? frontier.CurrentTotal : inara.ContributionsTotal ?? 0,
+            Contributors = frontier.HasContributorData ? frontier.Contributors : inara.Contributors ?? 0,
+            TierReached = FirstNonEmpty(frontier.TierReached, FormatTier(inara.TierReached, inara.TierMaximum)),
+            HasContributorData = frontier.HasContributorData || inara.Contributors is not null,
             DataPoints = data,
         };
     }
 
-    private static FrontierCommunityGoalSnapshot Create(
-        InaraCommunityGoalSnapshot inara,
-        DateTimeOffset fetchedAt)
+    private static FrontierCommunityGoalSnapshot Create(InaraCommunityGoalSnapshot inara, DateTimeOffset fetchedAt)
     {
         return new FrontierCommunityGoalSnapshot(
             null,
@@ -179,17 +165,17 @@ public static class InaraCommunityGoalEnricher
             null,
             false,
             AddInaraData([], inara, fetchedAt)
-                .Append(new FrontierDataPointSnapshot(
-                    "inara.sourceOnly",
-                    "true"))
+                .Append(new FrontierDataPointSnapshot("inara.sourceOnly", "true"))
                 .ToArray(),
-            HasContributorData: inara.Contributors is not null);
+            HasContributorData: inara.Contributors is not null
+        );
     }
 
     private static FrontierDataPointSnapshot[] AddInaraData(
         IReadOnlyList<FrontierDataPointSnapshot>? existing,
         InaraCommunityGoalSnapshot inara,
-        DateTimeOffset fetchedAt)
+        DateTimeOffset fetchedAt
+    )
     {
         var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (var point in existing ?? [])
@@ -197,24 +183,14 @@ public static class InaraCommunityGoalEnricher
             values[point.Path] = point.Value;
         }
 
-        values["inara.fetchedAt"] = fetchedAt.ToString(
-            "O",
-            CultureInfo.InvariantCulture);
-        Add("inara.lastUpdate", inara.LastUpdatedAt?.ToString(
-            "O",
-            CultureInfo.InvariantCulture));
+        values["inara.fetchedAt"] = fetchedAt.ToString("O", CultureInfo.InvariantCulture);
+        Add("inara.lastUpdate", inara.LastUpdatedAt?.ToString("O", CultureInfo.InvariantCulture));
         Add("inara.url", inara.InaraUrl);
-        Add("inara.tierReached", inara.TierReached?.ToString(
-            CultureInfo.InvariantCulture));
-        Add("inara.tierMaximum", inara.TierMaximum?.ToString(
-            CultureInfo.InvariantCulture));
-        Add("inara.contributors", inara.Contributors?.ToString(
-            CultureInfo.InvariantCulture));
-        Add("inara.contributionsTotal", inara.ContributionsTotal?.ToString(
-            CultureInfo.InvariantCulture));
-        return values
-            .Select(pair => new FrontierDataPointSnapshot(pair.Key, pair.Value))
-            .ToArray();
+        Add("inara.tierReached", inara.TierReached?.ToString(CultureInfo.InvariantCulture));
+        Add("inara.tierMaximum", inara.TierMaximum?.ToString(CultureInfo.InvariantCulture));
+        Add("inara.contributors", inara.Contributors?.ToString(CultureInfo.InvariantCulture));
+        Add("inara.contributionsTotal", inara.ContributionsTotal?.ToString(CultureInfo.InvariantCulture));
+        return values.Select(pair => new FrontierDataPointSnapshot(pair.Key, pair.Value)).ToArray();
 
         void Add(string path, string? value)
         {
@@ -225,17 +201,11 @@ public static class InaraCommunityGoalEnricher
         }
     }
 
-    private static bool IsPriorInaraOnlyGoal(
-        FrontierCommunityGoalSnapshot goal) =>
+    private static bool IsPriorInaraOnlyGoal(FrontierCommunityGoalSnapshot goal) =>
         goal.DataPoints?.Any(point =>
-            string.Equals(
-                point.Path,
-                "inara.sourceOnly",
-                StringComparison.OrdinalIgnoreCase)
-            && string.Equals(
-                point.Value,
-                "true",
-                StringComparison.OrdinalIgnoreCase)) == true;
+            string.Equals(point.Path, "inara.sourceOnly", StringComparison.OrdinalIgnoreCase)
+            && string.Equals(point.Value, "true", StringComparison.OrdinalIgnoreCase)
+        ) == true;
 
     private static string FormatTier(int? reached, int? maximum)
     {
@@ -244,16 +214,12 @@ public static class InaraCommunityGoalEnricher
             return string.Empty;
         }
 
-        return maximum is > 0
-            ? $"Tier {reached:N0} / {maximum:N0}"
-            : $"Tier {reached:N0}";
+        return maximum is > 0 ? $"Tier {reached:N0} / {maximum:N0}" : $"Tier {reached:N0}";
     }
 
     private static string FirstNonEmpty(string first, string second) =>
         string.IsNullOrWhiteSpace(first) ? second.Trim() : first.Trim();
 
     private static string Normalize(string value) =>
-        string.Concat(value
-            .Where(char.IsLetterOrDigit)
-            .Select(char.ToUpperInvariant));
+        string.Concat(value.Where(char.IsLetterOrDigit).Select(char.ToUpperInvariant));
 }

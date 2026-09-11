@@ -13,8 +13,7 @@ public static class UriPath
         return string.Join(Separator, segments.Select(static s => s.Trim(Separator)));
     }
 
-    public static string CombineWithTrailingSeparator(params string[] segments)
-        => Combine(segments) + Separator;
+    public static string CombineWithTrailingSeparator(params string[] segments) => Combine(segments) + Separator;
 
     public static Uri EnsureTrailingSeparator(Uri uri)
     {

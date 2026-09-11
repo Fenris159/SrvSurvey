@@ -36,10 +36,9 @@ public sealed class JournalSettingsStore
 
     private static string? GetString(JsonObject? settings, string propertyName)
     {
-        return settings?[propertyName] is JsonValue value
-            && value.TryGetValue<string>(out var result)
-                ? Normalize(result)
-                : null;
+        return settings?[propertyName] is JsonValue value && value.TryGetValue<string>(out var result)
+            ? Normalize(result)
+            : null;
     }
 
     private static string? Normalize(string? path)

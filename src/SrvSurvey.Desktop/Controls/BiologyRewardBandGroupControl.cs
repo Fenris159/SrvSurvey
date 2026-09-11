@@ -11,9 +11,10 @@ namespace SrvSurvey.Desktop.Controls;
 /// </summary>
 public sealed class BiologyRewardBandGroupControl : Decorator
 {
-    public static readonly StyledProperty<IBrush?> FrameBrushProperty =
-        AvaloniaProperty.Register<BiologyRewardBandGroupControl, IBrush?>(
-            nameof(FrameBrush));
+    public static readonly StyledProperty<IBrush?> FrameBrushProperty = AvaloniaProperty.Register<
+        BiologyRewardBandGroupControl,
+        IBrush?
+    >(nameof(FrameBrush));
 
     private const double HorizontalInset = 2;
     private const double VerticalInset = 1;
@@ -38,20 +39,22 @@ public sealed class BiologyRewardBandGroupControl : Decorator
 
         var childAvailable = new Size(
             Math.Max(0, availableSize.Width - HorizontalInset * 2),
-            Math.Max(0, availableSize.Height - VerticalInset * 2));
+            Math.Max(0, availableSize.Height - VerticalInset * 2)
+        );
         Child.Measure(childAvailable);
-        return new Size(
-            Child.DesiredSize.Width + HorizontalInset * 2,
-            Child.DesiredSize.Height + VerticalInset * 2);
+        return new Size(Child.DesiredSize.Width + HorizontalInset * 2, Child.DesiredSize.Height + VerticalInset * 2);
     }
 
     protected override Size ArrangeOverride(Size finalSize)
     {
-        Child?.Arrange(new Rect(
-            HorizontalInset,
-            VerticalInset,
-            Math.Max(0, finalSize.Width - HorizontalInset * 2),
-            Math.Max(0, finalSize.Height - VerticalInset * 2)));
+        Child?.Arrange(
+            new Rect(
+                HorizontalInset,
+                VerticalInset,
+                Math.Max(0, finalSize.Width - HorizontalInset * 2),
+                Math.Max(0, finalSize.Height - VerticalInset * 2)
+            )
+        );
         return finalSize;
     }
 
@@ -66,14 +69,10 @@ public sealed class BiologyRewardBandGroupControl : Decorator
         var frame = new Rect(0.5, 0.5, Bounds.Width - 1, Bounds.Height - 1);
         context.DrawRectangle(
             Brushes.Transparent,
-            new Pen(
-                FrameBrush,
-                1,
-                DashStyle.Dot,
-                PenLineCap.Round,
-                PenLineJoin.Round),
+            new Pen(FrameBrush, 1, DashStyle.Dot, PenLineCap.Round, PenLineJoin.Round),
             frame,
             2,
-            2);
+            2
+        );
     }
 }

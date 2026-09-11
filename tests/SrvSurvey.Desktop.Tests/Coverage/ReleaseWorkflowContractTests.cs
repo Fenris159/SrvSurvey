@@ -41,87 +41,72 @@ public sealed partial class ReleaseWorkflowContractTests
         {
             var prereleasePattern = WorkflowPrereleasePattern().Match(workflow);
             Assert.True(prereleasePattern.Success);
-            Assert.Equal(version.Contains("-rc.", StringComparison.Ordinal),
-                System.Text.RegularExpressions.Regex.IsMatch(version, prereleasePattern.Groups[1].Value));
+            Assert.Equal(
+                version.Contains("-rc.", StringComparison.Ordinal),
+                System.Text.RegularExpressions.Regex.IsMatch(version, prereleasePattern.Groups[1].Value)
+            );
         }
     }
 
     [Fact]
     public void DispatchedReleasesUseTheDesktopProjectVersion()
     {
-        var workflow = File.ReadAllText(Path.Combine(
-            FindRepositoryRoot(),
-            ".github",
-            "workflows",
-            "build-srvsurvey-xp.yml"));
+        var workflow = File.ReadAllText(
+            Path.Combine(FindRepositoryRoot(), ".github", "workflows", "build-srvsurvey-xp.yml")
+        );
 
         Assert.DoesNotContain("      version:", workflow, StringComparison.Ordinal);
         Assert.DoesNotContain("      rc_number:", workflow, StringComparison.Ordinal);
         Assert.DoesNotContain("REQUESTED_VERSION", workflow, StringComparison.Ordinal);
         Assert.DoesNotContain("RC_NUMBER", workflow, StringComparison.Ordinal);
-        Assert.Contains(
-            "$packageVersion = $projectVersionText",
-            workflow,
-            StringComparison.Ordinal);
+        Assert.Contains("$packageVersion = $projectVersionText", workflow, StringComparison.Ordinal);
         Assert.Contains(
             "Development releases require the project Version to end in -rc.N or -rc.N.N.",
             workflow,
-            StringComparison.Ordinal);
+            StringComparison.Ordinal
+        );
         Assert.Contains(
             "Stable releases require the project Version without a release-candidate suffix.",
             workflow,
-            StringComparison.Ordinal);
+            StringComparison.Ordinal
+        );
     }
 
     [Fact]
     public void ReleasePackagesIncludeTheReplayController()
     {
-        var workflow = File.ReadAllText(Path.Combine(
-            FindRepositoryRoot(),
-            ".github",
-            "workflows",
-            "build-srvsurvey-xp.yml"));
+        var workflow = File.ReadAllText(
+            Path.Combine(FindRepositoryRoot(), ".github", "workflows", "build-srvsurvey-xp.yml")
+        );
 
         Assert.Contains(
             "dotnet publish src/SrvSurvey.ReplayController/SrvSurvey.ReplayController.csproj",
             workflow,
-            StringComparison.Ordinal);
-        Assert.Contains(
-            "SrvSurvey.ReplayController.exe",
-            workflow,
-            StringComparison.Ordinal);
-        var normalizedWorkflow = string.Join(
-            ' ',
-            workflow.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+            StringComparison.Ordinal
+        );
+        Assert.Contains("SrvSurvey.ReplayController.exe", workflow, StringComparison.Ordinal);
+        var normalizedWorkflow = string.Join(' ', workflow.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
         Assert.Contains(
             "Get-ChildItem -LiteralPath $controllerOutput -File ` "
                 + "-Filter 'SrvSurvey.ReplayController*' | "
                 + "Copy-Item -Destination \"artifacts/${{ matrix.rid }}\" -Force",
             normalizedWorkflow,
-            StringComparison.Ordinal);
+            StringComparison.Ordinal
+        );
         Assert.Contains(
             "test -x squashfs-root/usr/lib/srvsurvey/SrvSurvey.ReplayController",
             workflow,
-            StringComparison.Ordinal);
+            StringComparison.Ordinal
+        );
     }
 
     [Fact]
     public void LinuxAppImageExposesReplayControllerDispatch()
     {
-        var appRun = File.ReadAllText(Path.Combine(
-            FindRepositoryRoot(),
-            "packaging",
-            "linux",
-            "AppRun"));
+        var appRun = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "packaging", "linux", "AppRun"));
 
-        Assert.Contains(
-            "--replay-controller",
-            appRun,
-            StringComparison.Ordinal);
-        Assert.Contains(
-            "SrvSurvey.ReplayController",
-            appRun,
-            StringComparison.Ordinal);
+        Assert.Contains("--replay-controller", appRun, StringComparison.Ordinal);
+        Assert.Contains("SrvSurvey.ReplayController", appRun, StringComparison.Ordinal);
     }
 
     private static string FindRepositoryRoot()
@@ -137,7 +122,6 @@ public sealed partial class ReleaseWorkflowContractTests
             directory = directory.Parent;
         }
 
-        throw new DirectoryNotFoundException(
-            "Could not find the repository root from the test directory.");
+        throw new DirectoryNotFoundException("Could not find the repository root from the test directory.");
     }
 }

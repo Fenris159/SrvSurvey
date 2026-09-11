@@ -7,21 +7,20 @@ public sealed record ReleaseInstallationCleanupResult(
     int DeletedUpdateDirectories,
     int DeletedFailedDirectories,
     int RetainedDirectories,
-    IReadOnlyList<string> Failures)
+    IReadOnlyList<string> Failures
+)
 {
-    public int DeletedDirectories => DeletedBackupDirectories
-        + DeletedUpdateDirectories
-        + DeletedFailedDirectories;
+    public int DeletedDirectories => DeletedBackupDirectories + DeletedUpdateDirectories + DeletedFailedDirectories;
 }
 
 public sealed record ReleasePackageCacheCleanupResult(
     int DeletedPackageVersions,
     int DeletedStagedVersions,
     int RetainedVersions,
-    IReadOnlyList<string> Failures)
+    IReadOnlyList<string> Failures
+)
 {
-    public int DeletedVersions => checked(
-        DeletedPackageVersions + DeletedStagedVersions);
+    public int DeletedVersions => checked(DeletedPackageVersions + DeletedStagedVersions);
 }
 
 public sealed class ReleaseInstallationHistoryCleaner
@@ -38,63 +37,52 @@ public sealed class ReleaseInstallationHistoryCleaner
     public ReleaseInstallationHistoryCleaner(
         TimeProvider? timeProvider = null,
         int retainedDirectoriesPerKind = DefaultRetainedDirectoriesPerKind,
-        TimeSpan? minimumAge = null)
-        : this(
-            timeProvider,
-            retainedDirectoriesPerKind,
-            minimumAge,
-            path => Directory.Delete(path, recursive: true))
-    {
-    }
+        TimeSpan? minimumAge = null
+    )
+        : this(timeProvider, retainedDirectoriesPerKind, minimumAge, path => Directory.Delete(path, recursive: true))
+    { }
 
     internal ReleaseInstallationHistoryCleaner(
         TimeProvider? timeProvider,
         int retainedDirectoriesPerKind,
         TimeSpan? minimumAge,
-        Action<string> deleteDirectory)
+        Action<string> deleteDirectory
+    )
     {
         ArgumentOutOfRangeException.ThrowIfNegative(retainedDirectoriesPerKind);
         var resolvedMinimumAge = minimumAge ?? DefaultMinimumAge;
-        ArgumentOutOfRangeException.ThrowIfLessThan(
-            resolvedMinimumAge,
-            TimeSpan.Zero);
+        ArgumentOutOfRangeException.ThrowIfLessThan(resolvedMinimumAge, TimeSpan.Zero);
         this.timeProvider = timeProvider ?? TimeProvider.System;
         this.retainedDirectoriesPerKind = retainedDirectoriesPerKind;
         this.minimumAge = resolvedMinimumAge;
-        this.deleteDirectory = deleteDirectory
-            ?? throw new ArgumentNullException(nameof(deleteDirectory));
+        this.deleteDirectory = deleteDirectory ?? throw new ArgumentNullException(nameof(deleteDirectory));
     }
 
     public ReleaseInstallationCleanupResult Clean(
         string installationDirectory,
         IEnumerable<string>? protectedDirectories = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         cancellationToken.ThrowIfCancellationRequested();
         ArgumentException.ThrowIfNullOrWhiteSpace(installationDirectory);
-        var installation = Path.TrimEndingDirectorySeparator(
-            Path.GetFullPath(installationDirectory));
-        var parent = Directory.GetParent(installation)?.FullName
-            ?? throw new InvalidDataException(
-                "The SrvSurvey installation cannot be a file-system root.");
+        var installation = Path.TrimEndingDirectorySeparator(Path.GetFullPath(installationDirectory));
+        var parent =
+            Directory.GetParent(installation)?.FullName
+            ?? throw new InvalidDataException("The SrvSurvey installation cannot be a file-system root.");
         var installationName = Path.GetFileName(installation);
         if (string.IsNullOrWhiteSpace(installationName))
         {
-            throw new InvalidDataException(
-                "The SrvSurvey installation directory name is invalid.");
+            throw new InvalidDataException("The SrvSurvey installation directory name is invalid.");
         }
 
-        var comparer = OperatingSystem.IsWindows()
-            ? StringComparer.OrdinalIgnoreCase
-            : StringComparer.Ordinal;
+        var comparer = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
         var protectedPaths = new HashSet<string>(comparer);
         if (protectedDirectories is not null)
         {
-            foreach (var path in protectedDirectories
-                .Where(path => !string.IsNullOrWhiteSpace(path)))
+            foreach (var path in protectedDirectories.Where(path => !string.IsNullOrWhiteSpace(path)))
             {
-                protectedPaths.Add(Path.TrimEndingDirectorySeparator(
-                    Path.GetFullPath(path)));
+                protectedPaths.Add(Path.TrimEndingDirectorySeparator(Path.GetFullPath(path)));
             }
         }
 
@@ -109,20 +97,12 @@ public sealed class ReleaseInstallationHistoryCleaner
         foreach (var kind in Kinds)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var candidates = FindCandidates(
-                parent,
-                installationName,
-                kind,
-                protectedPaths,
-                failures);
-            retained += Math.Min(
-                retainedDirectoriesPerKind,
-                candidates.Length);
+            var candidates = FindCandidates(parent, installationName, kind, protectedPaths, failures);
+            retained += Math.Min(retainedDirectoriesPerKind, candidates.Length);
             foreach (var candidate in candidates.Skip(retainedDirectoriesPerKind))
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                if (timeProvider.GetUtcNow() - candidate.LastWriteTimeUtc
-                    < minimumAge)
+                if (timeProvider.GetUtcNow() - candidate.LastWriteTimeUtc < minimumAge)
                 {
                     retained++;
                     continue;
@@ -133,8 +113,7 @@ public sealed class ReleaseInstallationHistoryCleaner
                     deleteDirectory(candidate.FullName);
                     deleted[kind]++;
                 }
-                catch (Exception exception) when (
-                    exception is IOException or UnauthorizedAccessException)
+                catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
                 {
                     retained++;
                     failures.Add($"{candidate.FullName}: {exception.Message}");
@@ -147,20 +126,17 @@ public sealed class ReleaseInstallationHistoryCleaner
             deleted["update"],
             deleted["failed"],
             retained,
-            failures);
+            failures
+        );
     }
 
     public Task<ReleaseInstallationCleanupResult> CleanAsync(
         string installationDirectory,
         IEnumerable<string>? protectedDirectories = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        return Task.Run(
-            () => Clean(
-                installationDirectory,
-                protectedDirectories,
-                cancellationToken),
-            cancellationToken);
+        return Task.Run(() => Clean(installationDirectory, protectedDirectories, cancellationToken), cancellationToken);
     }
 
     private static DirectoryInfo[] FindCandidates(
@@ -168,12 +144,11 @@ public sealed class ReleaseInstallationHistoryCleaner
         string installationName,
         string kind,
         HashSet<string> protectedPaths,
-        List<string> failures)
+        List<string> failures
+    )
     {
         var prefix = $".{installationName}-{kind}-";
-        var comparison = OperatingSystem.IsWindows()
-            ? StringComparison.OrdinalIgnoreCase
-            : StringComparison.Ordinal;
+        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
         try
         {
             return new DirectoryInfo(parent)
@@ -181,15 +156,14 @@ public sealed class ReleaseInstallationHistoryCleaner
                 .Where(directory =>
                     directory.Name.StartsWith(prefix, comparison)
                     && IsGeneratedSuffix(directory.Name[prefix.Length..])
-                    && !protectedPaths.Contains(Path.TrimEndingDirectorySeparator(
-                        Path.GetFullPath(directory.FullName)))
-                    && (directory.Attributes & FileAttributes.ReparsePoint) == 0)
+                    && !protectedPaths.Contains(Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory.FullName)))
+                    && (directory.Attributes & FileAttributes.ReparsePoint) == 0
+                )
                 .OrderByDescending(directory => directory.LastWriteTimeUtc)
                 .ThenByDescending(directory => directory.Name, StringComparer.Ordinal)
                 .ToArray();
         }
-        catch (Exception exception) when (
-            exception is IOException or UnauthorizedAccessException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
             failures.Add($"{parent}: {exception.Message}");
             return [];
@@ -198,9 +172,7 @@ public sealed class ReleaseInstallationHistoryCleaner
 
     private static bool IsGeneratedSuffix(string value)
     {
-        return value.Length == 32
-            && value.All(Uri.IsHexDigit)
-            && Guid.TryParseExact(value, "N", out _);
+        return value.Length == 32 && value.All(Uri.IsHexDigit) && Guid.TryParseExact(value, "N", out _);
     }
 }
 
@@ -213,74 +185,56 @@ public sealed class ReleasePackageCacheCleaner
 
     public ReleasePackageCacheCleaner(
         TimeProvider? timeProvider = null,
-        int retainedVersions =
-            ReleaseInstallationHistoryCleaner.DefaultRetainedDirectoriesPerKind,
-        TimeSpan? minimumAge = null)
-        : this(
-            timeProvider,
-            retainedVersions,
-            minimumAge,
-            path => Directory.Delete(path, recursive: true))
-    {
-    }
+        int retainedVersions = ReleaseInstallationHistoryCleaner.DefaultRetainedDirectoriesPerKind,
+        TimeSpan? minimumAge = null
+    )
+        : this(timeProvider, retainedVersions, minimumAge, path => Directory.Delete(path, recursive: true)) { }
 
     internal ReleasePackageCacheCleaner(
         TimeProvider? timeProvider,
         int retainedVersions,
         TimeSpan? minimumAge,
-        Action<string> deleteDirectory)
+        Action<string> deleteDirectory
+    )
     {
         ArgumentOutOfRangeException.ThrowIfNegative(retainedVersions);
-        var resolvedMinimumAge = minimumAge
-            ?? ReleaseInstallationHistoryCleaner.DefaultMinimumAge;
-        ArgumentOutOfRangeException.ThrowIfLessThan(
-            resolvedMinimumAge,
-            TimeSpan.Zero);
+        var resolvedMinimumAge = minimumAge ?? ReleaseInstallationHistoryCleaner.DefaultMinimumAge;
+        ArgumentOutOfRangeException.ThrowIfLessThan(resolvedMinimumAge, TimeSpan.Zero);
         this.timeProvider = timeProvider ?? TimeProvider.System;
         this.retainedVersions = retainedVersions;
         this.minimumAge = resolvedMinimumAge;
-        this.deleteDirectory = deleteDirectory
-            ?? throw new ArgumentNullException(nameof(deleteDirectory));
+        this.deleteDirectory = deleteDirectory ?? throw new ArgumentNullException(nameof(deleteDirectory));
     }
 
-    public ReleasePackageCacheCleanupResult Clean(
-        string dataDirectory,
-        CancellationToken cancellationToken = default)
+    public ReleasePackageCacheCleanupResult Clean(string dataDirectory, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
-        var updatesRoot = Path.GetFullPath(Path.Combine(
-            dataDirectory,
-            "updates"));
+        var updatesRoot = Path.GetFullPath(Path.Combine(dataDirectory, "updates"));
         var failures = new List<string>();
-        var packageResult = CleanVersionRoot(
-            Path.Combine(updatesRoot, "packages"),
-            failures,
-            cancellationToken);
-        var stagedResult = CleanVersionRoot(
-            Path.Combine(updatesRoot, "staged"),
-            failures,
-            cancellationToken);
+        var packageResult = CleanVersionRoot(Path.Combine(updatesRoot, "packages"), failures, cancellationToken);
+        var stagedResult = CleanVersionRoot(Path.Combine(updatesRoot, "staged"), failures, cancellationToken);
         return new ReleasePackageCacheCleanupResult(
             packageResult.Deleted,
             stagedResult.Deleted,
             packageResult.Retained + stagedResult.Retained,
-            failures);
+            failures
+        );
     }
 
     public Task<ReleasePackageCacheCleanupResult> CleanAsync(
         string dataDirectory,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        return Task.Run(
-            () => Clean(dataDirectory, cancellationToken),
-            cancellationToken);
+        return Task.Run(() => Clean(dataDirectory, cancellationToken), cancellationToken);
     }
 
     private (int Deleted, int Retained) CleanVersionRoot(
         string root,
         List<string> failures,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         DirectoryInfo[] candidates;
         try
@@ -290,7 +244,8 @@ public sealed class ReleasePackageCacheCleaner
                 .EnumerateDirectories()
                 .Where(directory =>
                     ReleaseVersion.TryParse(directory.Name, out _)
-                    && (directory.Attributes & FileAttributes.ReparsePoint) == 0)
+                    && (directory.Attributes & FileAttributes.ReparsePoint) == 0
+                )
                 .OrderByDescending(directory => directory.LastWriteTimeUtc)
                 .ThenByDescending(directory => directory.Name, StringComparer.Ordinal)
                 .ToArray();
@@ -299,8 +254,7 @@ public sealed class ReleasePackageCacheCleaner
         {
             return (0, 0);
         }
-        catch (Exception exception) when (
-            exception is IOException or UnauthorizedAccessException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
             failures.Add($"{root}: {exception.Message}");
             return (0, 0);
@@ -322,8 +276,7 @@ public sealed class ReleasePackageCacheCleaner
                 deleteDirectory(candidate.FullName);
                 deleted++;
             }
-            catch (Exception exception) when (
-                exception is IOException or UnauthorizedAccessException)
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
             {
                 retained++;
                 failures.Add($"{candidate.FullName}: {exception.Message}");
@@ -342,16 +295,15 @@ public sealed class ReleaseUpdateHistoryCleanupCoordinator
         ReleaseInstallationHistoryCleaner cleaner,
         string installationDirectory,
         IEnumerable<string>? protectedDirectories = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentNullException.ThrowIfNull(cleaner);
         _ = await gate.Reader.ReadAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            return await cleaner.CleanAsync(
-                    installationDirectory,
-                    protectedDirectories,
-                    cancellationToken)
+            return await cleaner
+                .CleanAsync(installationDirectory, protectedDirectories, cancellationToken)
                 .ConfigureAwait(false);
         }
         finally
@@ -363,14 +315,14 @@ public sealed class ReleaseUpdateHistoryCleanupCoordinator
     public async Task<ReleasePackageCacheCleanupResult> CleanPackageCacheAsync(
         ReleasePackageCacheCleaner cleaner,
         string dataDirectory,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentNullException.ThrowIfNull(cleaner);
         _ = await gate.Reader.ReadAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            return await cleaner.CleanAsync(dataDirectory, cancellationToken)
-                .ConfigureAwait(false);
+            return await cleaner.CleanAsync(dataDirectory, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
@@ -381,14 +333,14 @@ public sealed class ReleaseUpdateHistoryCleanupCoordinator
     public async Task<ReleaseInstallationPlanCleanupResult> CleanPlansAsync(
         ReleaseInstallationPlanCleaner cleaner,
         string dataDirectory,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentNullException.ThrowIfNull(cleaner);
         _ = await gate.Reader.ReadAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            return await cleaner.CleanAsync(dataDirectory, cancellationToken)
-                .ConfigureAwait(false);
+            return await cleaner.CleanAsync(dataDirectory, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
@@ -398,16 +350,17 @@ public sealed class ReleaseUpdateHistoryCleanupCoordinator
 
     private static Channel<bool> CreateGate()
     {
-        var channel = Channel.CreateBounded<bool>(new BoundedChannelOptions(1)
-        {
-            FullMode = BoundedChannelFullMode.Wait,
-            SingleReader = false,
-            SingleWriter = false,
-        });
+        var channel = Channel.CreateBounded<bool>(
+            new BoundedChannelOptions(1)
+            {
+                FullMode = BoundedChannelFullMode.Wait,
+                SingleReader = false,
+                SingleWriter = false,
+            }
+        );
         if (!channel.Writer.TryWrite(true))
         {
-            throw new InvalidOperationException(
-                "Could not initialize the release-history cleanup gate.");
+            throw new InvalidOperationException("Could not initialize the release-history cleanup gate.");
         }
 
         return channel;
@@ -417,8 +370,7 @@ public sealed class ReleaseUpdateHistoryCleanupCoordinator
     {
         if (!gate.Writer.TryWrite(true))
         {
-            throw new InvalidOperationException(
-                "The release-history cleanup gate was released more than once.");
+            throw new InvalidOperationException("The release-history cleanup gate was released more than once.");
         }
     }
 }

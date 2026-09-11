@@ -12,14 +12,14 @@ internal sealed class X11CursorVisibilitySession : IDisposable
         IEnumerable<nuint> interactionWindows,
         nuint cursor,
         nuint previousActiveWindow,
-        X11CursorSessionOperations operations)
+        X11CursorSessionOperations operations
+    )
     {
         ArgumentNullException.ThrowIfNull(interactionWindows);
         this.interactionWindows = interactionWindows.ToHashSet();
         this.cursor = cursor;
         this.previousActiveWindow = previousActiveWindow;
-        this.operations = operations
-            ?? throw new ArgumentNullException(nameof(operations));
+        this.operations = operations ?? throw new ArgumentNullException(nameof(operations));
     }
 
     public void Dispose()
@@ -39,10 +39,14 @@ internal sealed class X11CursorVisibilitySession : IDisposable
             _ = operations.FreeCursor(cursor);
         }
 
-        if (previousActiveWindow != 0
+        if (
+            previousActiveWindow != 0
             && !interactionWindows.Contains(previousActiveWindow)
-            && (interactionWindows.Contains(operations.GetActiveWindow())
-                || interactionWindows.Contains(operations.GetFocusWindow())))
+            && (
+                interactionWindows.Contains(operations.GetActiveWindow())
+                || interactionWindows.Contains(operations.GetFocusWindow())
+            )
+        )
         {
             _ = operations.ActivateWindow(previousActiveWindow);
         }
@@ -56,18 +60,14 @@ internal sealed class X11CursorSessionOperations
         Func<nuint> getFocusWindow,
         Func<nuint, bool> activateWindow,
         Func<nuint, int> undefineCursor,
-        Func<nuint, int> freeCursor)
+        Func<nuint, int> freeCursor
+    )
     {
-        GetActiveWindow = getActiveWindow
-            ?? throw new ArgumentNullException(nameof(getActiveWindow));
-        GetFocusWindow = getFocusWindow
-            ?? throw new ArgumentNullException(nameof(getFocusWindow));
-        ActivateWindow = activateWindow
-            ?? throw new ArgumentNullException(nameof(activateWindow));
-        UndefineCursor = undefineCursor
-            ?? throw new ArgumentNullException(nameof(undefineCursor));
-        FreeCursor = freeCursor
-            ?? throw new ArgumentNullException(nameof(freeCursor));
+        GetActiveWindow = getActiveWindow ?? throw new ArgumentNullException(nameof(getActiveWindow));
+        GetFocusWindow = getFocusWindow ?? throw new ArgumentNullException(nameof(getFocusWindow));
+        ActivateWindow = activateWindow ?? throw new ArgumentNullException(nameof(activateWindow));
+        UndefineCursor = undefineCursor ?? throw new ArgumentNullException(nameof(undefineCursor));
+        FreeCursor = freeCursor ?? throw new ArgumentNullException(nameof(freeCursor));
     }
 
     public Func<nuint> GetActiveWindow { get; }

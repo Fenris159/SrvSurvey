@@ -22,19 +22,13 @@ public sealed partial class BoxelSystemActionMenu : UserControl
     public BoxelSystemActionMenu()
     {
         InitializeComponent();
-        closeTimer = new DispatcherTimer
-        {
-            Interval = TimeSpan.FromMilliseconds(350)
-        };
+        closeTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(350) };
         closeTimer.Tick += CloseTimer_Tick;
-        revealTimer = new DispatcherTimer
-        {
-            Interval = TimeSpan.FromMilliseconds(RevealDelayMilliseconds)
-        };
+        revealTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(RevealDelayMilliseconds) };
         revealTimer.Tick += RevealTimer_Tick;
         revealAnimationTimer = new DispatcherTimer
         {
-            Interval = TimeSpan.FromMilliseconds(RevealAnimationDelayMilliseconds)
+            Interval = TimeSpan.FromMilliseconds(RevealAnimationDelayMilliseconds),
         };
         revealAnimationTimer.Tick += RevealAnimationTimer_Tick;
         DetachedFromVisualTree += (_, _) => CloseMenu();
@@ -61,9 +55,7 @@ public sealed partial class BoxelSystemActionMenu : UserControl
         closeTimer.Start();
     }
 
-    private void Menu_PointerWheelChanged(
-        object? sender,
-        PointerWheelEventArgs eventArgs)
+    private void Menu_PointerWheelChanged(object? sender, PointerWheelEventArgs eventArgs)
     {
         CloseMenu();
     }
@@ -92,9 +84,7 @@ public sealed partial class BoxelSystemActionMenu : UserControl
     private void CloseTimer_Tick(object? sender, EventArgs eventArgs)
     {
         closeTimer.Stop();
-        TryCloseForPointerExit(
-            Launcher.IsPointerOver,
-            MenuHitSurface.IsPointerOver);
+        TryCloseForPointerExit(Launcher.IsPointerOver, MenuHitSurface.IsPointerOver);
     }
 
     private void RevealTimer_Tick(object? sender, EventArgs eventArgs)
@@ -110,9 +100,7 @@ public sealed partial class BoxelSystemActionMenu : UserControl
     internal void AdvanceCommittedReveal()
     {
         revealAnimationTimer.Stop();
-        if (MenuPopup.IsOpen
-            && MenuSurface.IsVisible
-            && !MenuSurface.Classes.Contains("open"))
+        if (MenuPopup.IsOpen && MenuSurface.IsVisible && !MenuSurface.Classes.Contains("open"))
         {
             MenuSurface.Classes.Add("open");
         }
@@ -178,9 +166,7 @@ public sealed partial class BoxelSystemActionMenu : UserControl
         return true;
     }
 
-    internal bool TryCloseForPointerExit(
-        bool launcherIsPointerOver,
-        bool menuIsPointerOver)
+    internal bool TryCloseForPointerExit(bool launcherIsPointerOver, bool menuIsPointerOver)
     {
         if (launcherIsPointerOver || menuIsPointerOver)
         {
@@ -219,8 +205,7 @@ public sealed partial class BoxelSystemActionMenu : UserControl
 
     private static void ClaimActiveMenu(BoxelSystemActionMenu menu)
     {
-        if (activeMenu?.TryGetTarget(out var active) == true
-            && !ReferenceEquals(active, menu))
+        if (activeMenu?.TryGetTarget(out var active) == true && !ReferenceEquals(active, menu))
         {
             active.CloseMenu();
         }
@@ -229,11 +214,9 @@ public sealed partial class BoxelSystemActionMenu : UserControl
 
     private static void ReleaseActiveMenu(BoxelSystemActionMenu menu)
     {
-        if (activeMenu?.TryGetTarget(out var active) == true
-            && ReferenceEquals(active, menu))
+        if (activeMenu?.TryGetTarget(out var active) == true && ReferenceEquals(active, menu))
         {
             activeMenu = null;
         }
     }
-
 }

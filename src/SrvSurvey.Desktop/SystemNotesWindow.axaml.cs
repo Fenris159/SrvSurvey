@@ -2,8 +2,8 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using SrvSurvey.Core.Storage;
-using SrvSurvey.Desktop.ViewModels;
 using SrvSurvey.Desktop.Runtime;
+using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop;
 
@@ -12,33 +12,28 @@ public sealed partial class SystemNotesWindow : Window
     private readonly SystemNotesViewModel viewModel;
 
     public SystemNotesWindow()
-        : this(new SystemNotesViewModel(
-            new SystemNoteStore(Path.GetTempPath()),
-            new SystemNotesSettingsStore(Path.GetTempPath())))
-    {
-    }
+        : this(
+            new SystemNotesViewModel(
+                new SystemNoteStore(Path.GetTempPath()),
+                new SystemNotesSettingsStore(Path.GetTempPath())
+            )
+        ) { }
 
     public SystemNotesWindow(SystemNotesViewModel viewModel)
     {
-        this.viewModel = viewModel
-            ?? throw new ArgumentNullException(nameof(viewModel));
+        this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         InitializeComponent();
         DataContext = viewModel;
         if (DesktopExternalEffectPolicy.IsAllowed)
         {
-            viewModel.SetPlatformServices(
-                LaunchUriAsync,
-                LaunchDirectoryAsync);
+            viewModel.SetPlatformServices(LaunchUriAsync, LaunchDirectoryAsync);
         }
         Closed += OnClosed;
     }
 
-    private async void AlwaysOnTop_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private async void AlwaysOnTop_Click(object? sender, RoutedEventArgs eventArgs)
     {
-        await viewModel.SetAlwaysOnTopAsync(
-            AlwaysOnTopCheckBox.IsChecked == true);
+        await viewModel.SetAlwaysOnTopAsync(AlwaysOnTopCheckBox.IsChecked == true);
     }
 
     private async void Save_Click(object? sender, RoutedEventArgs eventArgs)

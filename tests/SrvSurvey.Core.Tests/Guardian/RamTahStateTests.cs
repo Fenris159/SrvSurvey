@@ -25,11 +25,14 @@ public sealed class RamTahStateTests
     public void SnapshotRestoresAndOrdersProgress()
     {
         var state = new RamTahState();
-        state.Reset(new RamTahSnapshot(
-            RamTahMissionStatus.Active,
-            RamTahMissionStatus.Complete,
-            ["T20", "B2", "B1"],
-            ["#28", "#2", "#1"]));
+        state.Reset(
+            new RamTahSnapshot(
+                RamTahMissionStatus.Active,
+                RamTahMissionStatus.Complete,
+                ["T20", "B2", "B1"],
+                ["#28", "#2", "#1"]
+            )
+        );
 
         var snapshot = state.CreateSnapshot();
 
@@ -52,10 +55,8 @@ public sealed class RamTahStateTests
         Assert.True(state.SetLog(RamTahMission.GuardianLogs, "#28", true));
         Assert.True(state.Clear(RamTahMission.GuardianLogs));
         Assert.False(state.Clear(RamTahMission.GuardianLogs));
-        Assert.Throws<ArgumentOutOfRangeException>(
-            () => state.SetLog(RamTahMission.AncientRuins, "B20", true));
-        Assert.Throws<ArgumentOutOfRangeException>(
-            () => state.SetLog(RamTahMission.GuardianLogs, "#29", true));
+        Assert.Throws<ArgumentOutOfRangeException>(() => state.SetLog(RamTahMission.AncientRuins, "B20", true));
+        Assert.Throws<ArgumentOutOfRangeException>(() => state.SetLog(RamTahMission.GuardianLogs, "#29", true));
     }
 
     [Theory]
@@ -68,24 +69,30 @@ public sealed class RamTahStateTests
     public void MissionEventsUpdateTheMatchingLegacyStatus(
         string eventName,
         string missionName,
-        RamTahMissionStatus expected)
+        RamTahMissionStatus expected
+    )
     {
         var state = new RamTahState();
         if (expected == RamTahMissionStatus.NotStarted)
         {
-            state.Apply(Parse(
-                $"{{\"timestamp\":\"2026-07-24T12:00:00Z\",\"event\":\"MissionAccepted\",\"Name\":\"{missionName}\"}}"));
+            state.Apply(
+                Parse(
+                    $"{{\"timestamp\":\"2026-07-24T12:00:00Z\",\"event\":\"MissionAccepted\",\"Name\":\"{missionName}\"}}"
+                )
+            );
         }
 
-        var changed = state.Apply(Parse(
-            $"{{\"timestamp\":\"2026-07-24T12:00:01Z\",\"event\":\"{eventName}\",\"Name\":\"{missionName}\"}}"));
+        var changed = state.Apply(
+            Parse($"{{\"timestamp\":\"2026-07-24T12:00:01Z\",\"event\":\"{eventName}\",\"Name\":\"{missionName}\"}}")
+        );
 
         Assert.True(changed);
         Assert.Equal(
             expected,
             missionName.Contains("002", StringComparison.Ordinal)
                 ? state.GuardianLogsMissionStatus
-                : state.AncientRuinsMissionStatus);
+                : state.AncientRuinsMissionStatus
+        );
     }
 
     [Fact]
@@ -93,14 +100,17 @@ public sealed class RamTahStateTests
     {
         var state = new RamTahState();
 
-        var changed = state.Apply(Parse(
-            """
-            {"timestamp":"2026-07-24T12:00:00Z","event":"Missions","Active":[
-              {"Name":"Mission_TheDead_name"},
-              {"Name":"Mission_TheDead_002_name"},
-              {"Name":"Mission_Collect_name"}
-            ]}
-            """));
+        var changed = state.Apply(
+            Parse(
+                """
+                {"timestamp":"2026-07-24T12:00:00Z","event":"Missions","Active":[
+                  {"Name":"Mission_TheDead_name"},
+                  {"Name":"Mission_TheDead_002_name"},
+                  {"Name":"Mission_Collect_name"}
+                ]}
+                """
+            )
+        );
 
         Assert.True(changed);
         Assert.Equal(RamTahMissionStatus.Active, state.AncientRuinsMissionStatus);
@@ -113,10 +123,13 @@ public sealed class RamTahStateTests
     {
         var state = new RamTahState();
 
-        var changed = state.Apply(Parse(
-            """
-            {"timestamp":"2026-07-24T12:00:00Z","event":"MissionAccepted","Name":"Mission_Collect_name"}
-            """));
+        var changed = state.Apply(
+            Parse(
+                """
+                {"timestamp":"2026-07-24T12:00:00Z","event":"MissionAccepted","Name":"Mission_Collect_name"}
+                """
+            )
+        );
 
         Assert.False(changed);
         Assert.Equal(RamTahMissionStatus.NotStarted, state.AncientRuinsMissionStatus);
@@ -127,9 +140,7 @@ public sealed class RamTahStateTests
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(
-            JournalEventEnvelope.TryParse(json, out var journalEvent, out var error),
-            error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
         return journalEvent!;
     }
 }

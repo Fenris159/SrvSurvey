@@ -8,12 +8,7 @@ public sealed class BoxelAddressTests
     [InlineData("Praea Euq IL-P c5-19", "Praea Euq IL-P c5-", 'c', 5, 19)]
     [InlineData("Praea Euq GG-Y e1", "Praea Euq GG-Y e", 'e', 0, 1)]
     [InlineData("Wregoe BU-Y b2-0", "Wregoe BU-Y b2-", 'b', 2, 0)]
-    public void ParseMatchesLegacyGeneratedNameRules(
-        string name,
-        string prefix,
-        char massCode,
-        int n1,
-        int n2)
+    public void ParseMatchesLegacyGeneratedNameRules(string name, string prefix, char massCode, int n1, int n2)
     {
         var boxel = BoxelAddress.Parse(name);
 
@@ -52,14 +47,9 @@ public sealed class BoxelAddressTests
     [InlineData(685451322393, "Wregoe BU-Y b2-0")]
     [InlineData(1184840454858, "Synuefe NL-N c23-4")]
     [InlineData(9420415411, "Pyraea Euq ZK-P d5-0")]
-    public void SystemAddressDecodesGeneratedBoxelGeometry(
-        long systemAddress,
-        string expectedName)
+    public void SystemAddressDecodesGeneratedBoxelGeometry(long systemAddress, string expectedName)
     {
-        var decoded = BoxelAddress.TryFromSystemAddress(
-            systemAddress,
-            null,
-            out var boxel);
+        var decoded = BoxelAddress.TryFromSystemAddress(systemAddress, null, out var boxel);
 
         Assert.True(decoded);
         Assert.Equal(expectedName, boxel?.GeneratedName);
@@ -100,14 +90,10 @@ public sealed class BoxelAddressTests
     [Fact]
     public void WithSystemNumberPopulatesTheProceduralAddress()
     {
-        var system = BoxelAddress.Parse("Wregoe BU-Y b2-0")
-            .WithSystemNumber(7);
+        var system = BoxelAddress.Parse("Wregoe BU-Y b2-0").WithSystemNumber(7);
 
         Assert.True(system.SystemAddress > 0);
-        Assert.True(BoxelAddress.TryFromSystemAddress(
-            system.SystemAddress,
-            null,
-            out var decoded));
+        Assert.True(BoxelAddress.TryFromSystemAddress(system.SystemAddress, null, out var decoded));
         Assert.Equal(system.GeneratedName, decoded?.GeneratedName);
     }
 
@@ -125,12 +111,7 @@ public sealed class BoxelAddressTests
     [Fact]
     public void UnsupportedHandAuthoredSectorFailsEncodingWithoutThrowing()
     {
-        var system = new BoxelAddress(
-            "Col 173 Sector",
-            "JX-K",
-            'b',
-            24,
-            0);
+        var system = new BoxelAddress("Col 173 Sector", "JX-K", 'b', 24, 0);
 
         Assert.False(system.TryEncodeSystemAddress(out var address));
         Assert.Equal(0, address);
@@ -148,10 +129,7 @@ public sealed class BoxelAddressTests
     [Fact]
     public void SystemAddressPreservesHandAuthoredPublicName()
     {
-        var decoded = BoxelAddress.TryFromSystemAddress(
-            10477373803,
-            "Sol",
-            out var boxel);
+        var decoded = BoxelAddress.TryFromSystemAddress(10477373803, "Sol", out var boxel);
 
         Assert.True(decoded);
         Assert.Equal("Sol", boxel?.Name);
@@ -164,10 +142,7 @@ public sealed class BoxelAddressTests
     {
         const string publicName = "Col 173 Sector JX-K b24-0";
 
-        var decoded = BoxelAddress.TryFromSystemAddress(
-            684107179361,
-            publicName,
-            out var boxel);
+        var decoded = BoxelAddress.TryFromSystemAddress(684107179361, publicName, out var boxel);
 
         Assert.True(decoded);
         Assert.Equal(publicName, boxel?.Name);

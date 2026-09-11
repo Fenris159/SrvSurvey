@@ -8,7 +8,8 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-vr-coordinator-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-vr-coordinator-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void ResetOrientationUsesActiveRuntimeAndReportsResult()
@@ -16,11 +17,7 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         var viewModel = CreateViewModel();
         viewModel.Enabled = true;
         var runtime = new StubOpenVrRuntime();
-        using var coordinator = new VrOverlayCoordinator(
-            viewModel,
-            new OverlayWindowRegistry(),
-            runtime,
-            _ => true);
+        using var coordinator = new VrOverlayCoordinator(viewModel, new OverlayWindowRegistry(), runtime, _ => true);
 
         var reset = coordinator.ResetOrientation();
 
@@ -34,11 +31,7 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
     {
         var viewModel = CreateViewModel();
         var runtime = new StubOpenVrRuntime();
-        using var coordinator = new VrOverlayCoordinator(
-            viewModel,
-            new OverlayWindowRegistry(),
-            runtime,
-            _ => true);
+        using var coordinator = new VrOverlayCoordinator(viewModel, new OverlayWindowRegistry(), runtime, _ => true);
 
         var reset = coordinator.ResetOrientation();
 
@@ -64,13 +57,12 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
         var factoryPath = Path.Combine(factoryDirectory, "plotters.json");
         File.WriteAllText(
             factoryPath,
-            "{\"PlotJumpInfo\":\"center:0, top:8 "
-                + "{ s: 20, p: <1, 2, 3>, r: <4, 5, 6>}\"}");
+            "{\"PlotJumpInfo\":\"center:0, top:8 " + "{ s: 20, p: <1, 2, 3>, r: <4, 5, 6>}\"}"
+        );
         return new VrOverlayViewModel(
-            new VrOverlaySettingsStore(Path.Combine(
-                temporaryDirectory,
-                "ui-settings.json")),
-            new VrOverlayCalibrationStore(dataDirectory, factoryPath));
+            new VrOverlaySettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json")),
+            new VrOverlayCalibrationStore(dataDirectory, factoryPath)
+        );
     }
 
     private sealed class StubOpenVrRuntime : IOpenVrRuntime
@@ -89,20 +81,18 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
             string plotterName,
             VrOverlayFrame frame,
             VrOverlayCalibration calibration,
-            float alpha)
+            float alpha
+        )
         {
             return VrRuntimeResult.Success("Published.");
         }
 
-        public void RemoveOverlay(string plotterName)
-        {
-        }
+        public void RemoveOverlay(string plotterName) { }
 
         public VrRuntimeResult ResetOrientation()
         {
             ResetCount++;
-            return VrRuntimeResult.Success(
-                "Captured the current headset yaw as the overlay origin.");
+            return VrRuntimeResult.Success("Captured the current headset yaw as the overlay origin.");
         }
 
         public void Shutdown()

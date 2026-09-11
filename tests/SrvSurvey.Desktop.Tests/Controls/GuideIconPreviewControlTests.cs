@@ -25,32 +25,19 @@ public sealed class GuideIconPreviewControlTests
     [AvaloniaFact]
     public void GlyphPaletteAndFallbackSymbolsAllRender()
     {
-        string[] symbols =
-        [
-            "✓",
-            "⚠",
-            "?",
-            "⚑",
-            "⚐",
-            "☀",
-            "◆",
-            "◇",
-            "▲",
-            "+",
-            "!",
-            "■",
-            "►",
-            "AB",
-        ];
+        string[] symbols = ["✓", "⚠", "?", "⚑", "⚐", "☀", "◆", "◇", "▲", "+", "!", "■", "►", "AB"];
 
-        Assert.All(symbols, symbol => Assert.True(
-            Render(CreateControl(GuideIconKind.Glyph, symbol)),
-            $"Glyph '{symbol}' rendered no visible pixels."));
+        Assert.All(
+            symbols,
+            symbol =>
+                Assert.True(
+                    Render(CreateControl(GuideIconKind.Glyph, symbol)),
+                    $"Glyph '{symbol}' rendered no visible pixels."
+                )
+        );
     }
 
-    private static GuideIconPreviewControl CreateControl(
-        GuideIconKind kind,
-        string symbol)
+    private static GuideIconPreviewControl CreateControl(GuideIconKind kind, string symbol)
     {
         return new GuideIconPreviewControl
         {

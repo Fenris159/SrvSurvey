@@ -6,14 +6,14 @@ public sealed class ColonizationProjectFactory
 
     public ColonizationProjectFactory(ColonizationBuildCatalog buildCatalog)
     {
-        this.buildCatalog = buildCatalog
-            ?? throw new ArgumentNullException(nameof(buildCatalog));
+        this.buildCatalog = buildCatalog ?? throw new ArgumentNullException(nameof(buildCatalog));
     }
 
     public ColonizationProjectCreateResult Create(
         ColonizationProjectDraft draft,
         ColonizationDockingSnapshot? dock,
-        ColonizationConstructionDepotSnapshot? depot)
+        ColonizationConstructionDepotSnapshot? depot
+    )
     {
         ArgumentNullException.ThrowIfNull(draft);
         var errors = Validate(draft, dock, depot);
@@ -22,14 +22,13 @@ public sealed class ColonizationProjectFactory
             return new ColonizationProjectCreateResult(null, errors);
         }
 
-        var remaining = depot.Resources
-            .GroupBy(
-                resource => resource.Name,
-                StringComparer.OrdinalIgnoreCase)
+        var remaining = depot
+            .Resources.GroupBy(resource => resource.Name, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(
                 group => group.Key,
                 group => group.Sum(resource => resource.RemainingAmount),
-                StringComparer.OrdinalIgnoreCase);
+                StringComparer.OrdinalIgnoreCase
+            );
         return new ColonizationProjectCreateResult(
             new ColonizationProjectCreate
             {
@@ -44,27 +43,25 @@ public sealed class ColonizationProjectFactory
                 SystemName = dock.SystemName,
                 StarPosition = [.. draft.StarPosition],
                 BodyNumber = draft.BodyNumber,
-                BodyName = draft.BodyNumber is >= 0
-                    ? NormalizeOptional(draft.BodyName)
-                    : null,
-                Commanders = new Dictionary<string, HashSet<string>>(
-                    StringComparer.OrdinalIgnoreCase)
+                BodyName = draft.BodyNumber is >= 0 ? NormalizeOptional(draft.BodyName) : null,
+                Commanders = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase)
                 {
                     [draft.CommanderName.Trim()] = [],
                 },
                 Commodities = remaining,
                 MaximumRequired = checked((int)depot.TotalRequired),
                 SystemSiteId = NormalizeOptional(draft.SystemSiteId),
-                ConstructionDepot =
-                    ColonizationConstructionDepotPayload.FromSnapshot(depot),
+                ConstructionDepot = ColonizationConstructionDepotPayload.FromSnapshot(depot),
             },
-            []);
+            []
+        );
     }
 
     private List<string> Validate(
         ColonizationProjectDraft draft,
         ColonizationDockingSnapshot? dock,
-        ColonizationConstructionDepotSnapshot? depot)
+        ColonizationConstructionDepotSnapshot? depot
+    )
     {
         var errors = new List<string>();
         ValidateCommander(draft, errors);
@@ -75,9 +72,7 @@ public sealed class ColonizationProjectFactory
         return errors;
     }
 
-    private static void ValidateCommander(
-        ColonizationProjectDraft draft,
-        List<string> errors)
+    private static void ValidateCommander(ColonizationProjectDraft draft, List<string> errors)
     {
         if (string.IsNullOrWhiteSpace(draft.CommanderName))
         {
@@ -85,9 +80,7 @@ public sealed class ColonizationProjectFactory
         }
     }
 
-    private static void ValidateDock(
-        ColonizationDockingSnapshot? dock,
-        List<string> errors)
+    private static void ValidateDock(ColonizationDockingSnapshot? dock, List<string> errors)
     {
         if (dock is null)
         {
@@ -104,7 +97,8 @@ public sealed class ColonizationProjectFactory
     private static void ValidateDepot(
         ColonizationDockingSnapshot? dock,
         ColonizationConstructionDepotSnapshot? depot,
-        List<string> errors)
+        List<string> errors
+    )
     {
         if (depot is null)
         {
@@ -141,37 +135,40 @@ public sealed class ColonizationProjectFactory
     private void ValidateProjectIdentity(
         ColonizationProjectDraft draft,
         ColonizationDockingSnapshot? dock,
-        List<string> errors)
+        List<string> errors
+    )
     {
         if (string.IsNullOrWhiteSpace(draft.BuildName))
         {
             errors.Add("Enter a project name.");
         }
 
-        if (string.IsNullOrWhiteSpace(draft.BuildType)
-            || (buildCatalog.FindByLayout(draft.BuildType).Count == 0
-                && buildCatalog.FindByBuildType(draft.BuildType) is null))
+        if (
+            string.IsNullOrWhiteSpace(draft.BuildType)
+            || (
+                buildCatalog.FindByLayout(draft.BuildType).Count == 0
+                && buildCatalog.FindByBuildType(draft.BuildType) is null
+            )
+        )
         {
             errors.Add("Select a known colonisation build layout.");
         }
 
-        if (string.IsNullOrWhiteSpace(draft.SystemName)
-            || (dock is not null
-                && !string.Equals(
-                    draft.SystemName.Trim(),
-                    dock.SystemName,
-                    StringComparison.OrdinalIgnoreCase)))
+        if (
+            string.IsNullOrWhiteSpace(draft.SystemName)
+            || (
+                dock is not null
+                && !string.Equals(draft.SystemName.Trim(), dock.SystemName, StringComparison.OrdinalIgnoreCase)
+            )
+        )
         {
             errors.Add("The project system does not match the current dock.");
         }
     }
 
-    private static void ValidateCoordinates(
-        ColonizationProjectDraft draft,
-        List<string> errors)
+    private static void ValidateCoordinates(ColonizationProjectDraft draft, List<string> errors)
     {
-        if (draft.StarPosition.Count != 3
-            || draft.StarPosition.Any(coordinate => !double.IsFinite(coordinate)))
+        if (draft.StarPosition.Count != 3 || draft.StarPosition.Any(coordinate => !double.IsFinite(coordinate)))
         {
             errors.Add("A finite three-axis galactic position is required.");
         }
@@ -198,11 +195,10 @@ public sealed record ColonizationProjectDraft(
     string? Notes,
     int? BodyNumber,
     string? BodyName,
-    string? SystemSiteId);
+    string? SystemSiteId
+);
 
-public sealed record ColonizationProjectCreateResult(
-    ColonizationProjectCreate? Project,
-    IReadOnlyList<string> Errors)
+public sealed record ColonizationProjectCreateResult(ColonizationProjectCreate? Project, IReadOnlyList<string> Errors)
 {
     public bool IsValid => Project is not null && Errors.Count == 0;
 }

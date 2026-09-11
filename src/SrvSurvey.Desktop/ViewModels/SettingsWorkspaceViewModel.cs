@@ -94,15 +94,12 @@ public sealed class SettingsWorkspaceViewModel : INotifyPropertyChanged
 
     public bool HasSearchResults => GroupedSearchResults.Count > 0;
 
-    public bool IsApplicationSelected =>
-        SelectedCategory.Key == ApplicationCategoryKey;
+    public bool IsApplicationSelected => SelectedCategory.Key == ApplicationCategoryKey;
     public bool IsDesktopSelected => SelectedCategory.Key == DesktopCategoryKey;
-    public bool IsGlobalOverlaysSelected =>
-        SelectedCategory.Key == GlobalOverlaysCategoryKey;
+    public bool IsGlobalOverlaysSelected => SelectedCategory.Key == GlobalOverlaysCategoryKey;
     public bool IsInputSelected => SelectedCategory.Key == InputCategoryKey;
     public bool IsPrivacySelected => SelectedCategory.Key == PrivacyCategoryKey;
-    public bool IsScreenshotsSelected =>
-        SelectedCategory.Key == ScreenshotsCategoryKey;
+    public bool IsScreenshotsSelected => SelectedCategory.Key == ScreenshotsCategoryKey;
     public bool IsDataSelected => SelectedCategory.Key == DataCategoryKey;
 
     public SettingsSearchResultViewModel? SelectedSearchResult =>
@@ -124,8 +121,7 @@ public sealed class SettingsWorkspaceViewModel : INotifyPropertyChanged
         }
         else
         {
-            nextIndex = (selectedSearchResultIndex + delta + results.Length)
-                % results.Length;
+            nextIndex = (selectedSearchResultIndex + delta + results.Length) % results.Length;
         }
 
         SetSelectedSearchResult(nextIndex);
@@ -145,8 +141,7 @@ public sealed class SettingsWorkspaceViewModel : INotifyPropertyChanged
     public void ActivateSearchResult(SettingsSearchResultViewModel result)
     {
         ArgumentNullException.ThrowIfNull(result);
-        SelectedCategory = Categories.Single(
-            category => category.Key == result.CategoryKey);
+        SelectedCategory = Categories.Single(category => category.Key == result.CategoryKey);
         SearchQuery = string.Empty;
     }
 
@@ -169,7 +164,8 @@ public sealed class SettingsWorkspaceViewModel : INotifyPropertyChanged
     {
         var terms = SearchQuery.Split(
             [' ', '\t'],
-            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
+        );
         if (terms.Length == 0)
         {
             GroupedSearchResults = [];
@@ -178,15 +174,14 @@ public sealed class SettingsWorkspaceViewModel : INotifyPropertyChanged
         }
 
         var matches = catalog
-            .Where(entry => terms.All(term => entry.SearchText.Contains(
-                term,
-                StringComparison.OrdinalIgnoreCase)))
+            .Where(entry => terms.All(term => entry.SearchText.Contains(term, StringComparison.OrdinalIgnoreCase)))
             .Select(entry => new SettingsSearchResultViewModel(entry))
             .ToArray();
         GroupedSearchResults = Categories
             .Select(category => new SettingsSearchGroupViewModel(
                 category.Name,
-                matches.Where(result => result.CategoryKey == category.Key).ToArray()))
+                matches.Where(result => result.CategoryKey == category.Key).ToArray()
+            ))
             .Where(group => group.Results.Count > 0)
             .ToArray();
         SetSelectedSearchResult(matches.Length > 0 ? 0 : -1);
@@ -216,40 +211,120 @@ public sealed class SettingsWorkspaceViewModel : INotifyPropertyChanged
     }
 
     private static IReadOnlyList<SettingsSearchEntry> CreateCatalog() =>
-    [
-        new("Language", ApplicationCategoryKey, "LanguageComboBox", "LanguageCard",
-            "translation locale localization display language"),
-        new("Application window and focus", DesktopCategoryKey, "FocusGameOnStartCheckBox",
-            "DesktopBehaviorCard", "monitor scale minimize tray game elite focus startup jump reduce motion animation"),
-        new("Preferred commander", DesktopCategoryKey, "PreferredCommanderComboBox",
-            "PreferredCommanderCard", "profile frontier id journal commander selection"),
-        new("Global overlay configuration", GlobalOverlaysCategoryKey, "OpenThemeWorkspaceButton",
-            "GlobalOverlaysCard", "overlay theme appearance opacity layout typography colors"),
-        new("Keyboard shortcuts", InputCategoryKey, "KeyboardEnabledCheckBox",
-            "KeyboardHookCard", "hotkey key chord global keyboard hook"),
-        new("Shortcut bindings", InputCategoryKey, "ShortcutBindingsExpander",
-            "ShortcutBindingsExpander", "hotkey key chord edit reset"),
-        new("Controller input", InputCategoryKey, "ControllerEnabledCheckBox",
-            "ControllerInputCard", "gamepad joystick hotas sdl device"),
-        new("System nicknames", PrivacyCategoryKey, "SystemNicknamesCheckBox",
-            "SystemNicknamesCard", "raven colonial personal public names"),
-        new("EDDN sharing", PrivacyCategoryKey, "ConfigureEddnSharingButton",
-            "EddnCard", "network publication journal upload privacy consent"),
-        new("Inara API key", PrivacyCategoryKey, "InaraApiKeyTextBox",
-            "InaraCard", "commander publication upload credential api token"),
-        new("EDSM synchronization", PrivacyCategoryKey, "EdsmApiKeyTextBox",
-            "EdsmCard", "commander journal publication upload credential api key flight log"),
-        new("Screenshot processing", ScreenshotsCategoryKey, "ScreenshotEnabledCheckBox",
-            "ScreenshotProcessingCard", "image convert source target folder graphics"),
-        new("Codex reference images", DataCategoryKey, "CodexCacheTextBox",
-            "CodexImagesCard", "cache flora local image folder"),
-        new("Dock-to-dock travel log", DataCategoryKey, "DockToDockEnabledCheckBox",
-            "DockToDockCard", "journey trip station csv export"),
-        new("Elite journal source", DataCategoryKey, "JournalDirectoryTextBox",
-            "JournalSourceCard", "log folder proton profile data source"),
-        new("Import SrvSurvey User Data", DataCategoryKey, "LegacyProfilePathTextBox",
-            "LegacyImportSection", "legacy migrate migration old profile backup restore"),
-    ];
+        [
+            new(
+                "Language",
+                ApplicationCategoryKey,
+                "LanguageComboBox",
+                "LanguageCard",
+                "translation locale localization display language"
+            ),
+            new(
+                "Application window and focus",
+                DesktopCategoryKey,
+                "FocusGameOnStartCheckBox",
+                "DesktopBehaviorCard",
+                "monitor scale minimize tray game elite focus startup jump reduce motion animation"
+            ),
+            new(
+                "Preferred commander",
+                DesktopCategoryKey,
+                "PreferredCommanderComboBox",
+                "PreferredCommanderCard",
+                "profile frontier id journal commander selection"
+            ),
+            new(
+                "Global overlay configuration",
+                GlobalOverlaysCategoryKey,
+                "OpenThemeWorkspaceButton",
+                "GlobalOverlaysCard",
+                "overlay theme appearance opacity layout typography colors"
+            ),
+            new(
+                "Keyboard shortcuts",
+                InputCategoryKey,
+                "KeyboardEnabledCheckBox",
+                "KeyboardHookCard",
+                "hotkey key chord global keyboard hook"
+            ),
+            new(
+                "Shortcut bindings",
+                InputCategoryKey,
+                "ShortcutBindingsExpander",
+                "ShortcutBindingsExpander",
+                "hotkey key chord edit reset"
+            ),
+            new(
+                "Controller input",
+                InputCategoryKey,
+                "ControllerEnabledCheckBox",
+                "ControllerInputCard",
+                "gamepad joystick hotas sdl device"
+            ),
+            new(
+                "System nicknames",
+                PrivacyCategoryKey,
+                "SystemNicknamesCheckBox",
+                "SystemNicknamesCard",
+                "raven colonial personal public names"
+            ),
+            new(
+                "EDDN sharing",
+                PrivacyCategoryKey,
+                "ConfigureEddnSharingButton",
+                "EddnCard",
+                "network publication journal upload privacy consent"
+            ),
+            new(
+                "Inara API key",
+                PrivacyCategoryKey,
+                "InaraApiKeyTextBox",
+                "InaraCard",
+                "commander publication upload credential api token"
+            ),
+            new(
+                "EDSM synchronization",
+                PrivacyCategoryKey,
+                "EdsmApiKeyTextBox",
+                "EdsmCard",
+                "commander journal publication upload credential api key flight log"
+            ),
+            new(
+                "Screenshot processing",
+                ScreenshotsCategoryKey,
+                "ScreenshotEnabledCheckBox",
+                "ScreenshotProcessingCard",
+                "image convert source target folder graphics"
+            ),
+            new(
+                "Codex reference images",
+                DataCategoryKey,
+                "CodexCacheTextBox",
+                "CodexImagesCard",
+                "cache flora local image folder"
+            ),
+            new(
+                "Dock-to-dock travel log",
+                DataCategoryKey,
+                "DockToDockEnabledCheckBox",
+                "DockToDockCard",
+                "journey trip station csv export"
+            ),
+            new(
+                "Elite journal source",
+                DataCategoryKey,
+                "JournalDirectoryTextBox",
+                "JournalSourceCard",
+                "log folder proton profile data source"
+            ),
+            new(
+                "Import SrvSurvey User Data",
+                DataCategoryKey,
+                "LegacyProfilePathTextBox",
+                "LegacyImportSection",
+                "legacy migrate migration old profile backup restore"
+            ),
+        ];
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
@@ -261,7 +336,8 @@ public sealed record SettingsCategoryViewModel(string Key, string Name);
 
 public sealed record SettingsSearchGroupViewModel(
     string CategoryName,
-    IReadOnlyList<SettingsSearchResultViewModel> Results);
+    IReadOnlyList<SettingsSearchResultViewModel> Results
+);
 
 public sealed class SettingsSearchResultViewModel : INotifyPropertyChanged
 {
@@ -293,9 +369,7 @@ public sealed class SettingsSearchResultViewModel : INotifyPropertyChanged
             }
 
             isSelected = value;
-            PropertyChanged?.Invoke(
-                this,
-                new PropertyChangedEventArgs(nameof(IsSelected)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected)));
         }
     }
 }
@@ -305,7 +379,8 @@ public sealed record SettingsSearchEntry(
     string CategoryKey,
     string TargetControlName,
     string HighlightControlName,
-    string Keywords)
+    string Keywords
+)
 {
     public string SearchText => $"{Title} {Keywords}";
 }

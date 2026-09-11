@@ -30,8 +30,7 @@ internal sealed class OverlayDispatcherTimer
     {
         if (Interval <= TimeSpan.Zero)
         {
-            throw new InvalidOperationException(
-                "An overlay timer requires a positive interval.");
+            throw new InvalidOperationException("An overlay timer requires a positive interval.");
         }
 
         isEnabled = true;
@@ -63,10 +62,7 @@ internal static class OverlayDispatcherTimerScheduler
     private static readonly object Gate = new();
     private static readonly Stopwatch Clock = Stopwatch.StartNew();
     private static readonly HashSet<OverlayDispatcherTimer> Timers = [];
-    private static readonly DispatcherTimer DispatcherTimer = new()
-    {
-        Interval = TimeSpan.FromMilliseconds(50),
-    };
+    private static readonly DispatcherTimer DispatcherTimer = new() { Interval = TimeSpan.FromMilliseconds(50) };
 
     static OverlayDispatcherTimerScheduler()
     {

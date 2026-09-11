@@ -15,8 +15,7 @@ internal sealed class EddnSessionPublisher : IDisposable
     private const string EventProperty = "event";
     private const string PlanetBodyType = "Planet";
 
-    private static readonly HashSet<string> JournalEvents = new(
-        StringComparer.Ordinal)
+    private static readonly HashSet<string> JournalEvents = new(StringComparer.Ordinal)
     {
         "CodexEntry",
         "ApproachSettlement",
@@ -42,13 +41,11 @@ internal sealed class EddnSessionPublisher : IDisposable
     private readonly UploadPayloadHeader header;
     private readonly string? journalDirectory;
     private readonly Action<string> log;
-    private readonly Func<string, JObject, CancellationToken,
-        Task<EddnCompanionReadResult>> companionReader;
+    private readonly Func<string, JObject, CancellationToken, Task<EddnCompanionReadResult>> companionReader;
     private readonly CancellationTokenSource disposal = new();
     private CancellationTokenSource companionActivity = new();
     private readonly List<JObject> pendingSignals = [];
-    private readonly Dictionary<string, string> stationSignatures = new(
-        StringComparer.Ordinal);
+    private readonly Dictionary<string, string> stationSignatures = new(StringComparer.Ordinal);
     private readonly HashSet<Task> companionTasks = [];
     private EddnSignalBatchContext? pendingSignalContext;
     private EddnLocationContext? location;
@@ -71,28 +68,26 @@ internal sealed class EddnSessionPublisher : IDisposable
         UploadPayloadHeader header,
         string? journalDirectory,
         Action<string>? log = null,
-        Func<string, JObject, CancellationToken,
-            Task<EddnCompanionReadResult>>? companionReader = null)
+        Func<string, JObject, CancellationToken, Task<EddnCompanionReadResult>>? companionReader = null
+    )
     {
         ArgumentNullException.ThrowIfNull(sink);
         ArgumentNullException.ThrowIfNull(header);
         if (string.IsNullOrWhiteSpace(header.uploaderID))
         {
-            throw new ArgumentException(
-                "An EDDN session requires a Commander name.",
-                nameof(header));
+            throw new ArgumentException("An EDDN session requires a Commander name.", nameof(header));
         }
 
         this.sink = sink;
         this.header = header.clone();
         this.journalDirectory = journalDirectory;
         this.log = log ?? (_ => { });
-        this.companionReader = companionReader
-            ?? ((folder, journalEvent, cancellationToken) =>
-                EddnCompanionFileReader.read(
-                    folder,
-                    journalEvent,
-                    cancellationToken: cancellationToken));
+        this.companionReader =
+            companionReader
+            ?? (
+                (folder, journalEvent, cancellationToken) =>
+                    EddnCompanionFileReader.read(folder, journalEvent, cancellationToken: cancellationToken)
+            );
     }
 
     internal string Commander => header.uploaderID;
@@ -147,9 +142,7 @@ internal sealed class EddnSessionPublisher : IDisposable
         }
     }
 
-    internal EddnPublicationResult Apply(
-        EddnApplyRequest request,
-        CancellationToken cancellationToken)
+    internal EddnPublicationResult Apply(EddnApplyRequest request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
         var published = new List<EddnPublishedEvent>();
@@ -161,13 +154,11 @@ internal sealed class EddnSessionPublisher : IDisposable
             suspended = publishingSuspended;
         }
 
-        if (request.Enabled
-            && request.AllowPublishing
-            && suspended
-            && request.JournalEvents.Count > 0)
+        if (request.Enabled && request.AllowPublishing && suspended && request.JournalEvents.Count > 0)
         {
             warnings.Add(
-                "EDDN sharing is paused while multiple Elite windows are active; pending uploads were preserved.");
+                "EDDN sharing is paused while multiple Elite windows are active; pending uploads were preserved."
+            );
         }
 
         foreach (var journalEvent in request.JournalEvents)
@@ -180,17 +171,11 @@ internal sealed class EddnSessionPublisher : IDisposable
             }
             catch (JsonException exception)
             {
-                warnings.Add(
-                    $"EDDN skipped {journalEvent.EventName}: {exception.Message}");
+                warnings.Add($"EDDN skipped {journalEvent.EventName}: {exception.Message}");
                 continue;
             }
 
-            if (!ProcessJournalEvent(
-                    journalEvent.EventName,
-                    raw,
-                    request,
-                    published,
-                    warnings))
+            if (!ProcessJournalEvent(journalEvent.EventName, raw, request, published, warnings))
             {
                 break;
             }
@@ -199,8 +184,7 @@ internal sealed class EddnSessionPublisher : IDisposable
         return new EddnPublicationResult(published, warnings);
     }
 
-    internal async Task WaitForCompanionReadsAsync(
-        CancellationToken cancellationToken = default)
+    internal async Task WaitForCompanionReadsAsync(CancellationToken cancellationToken = default)
     {
         Task[] tasks;
         lock (companionTasksSync)
@@ -210,8 +194,7 @@ internal sealed class EddnSessionPublisher : IDisposable
 
         if (tasks.Length > 0)
         {
-            await Task.WhenAll(tasks).WaitAsync(cancellationToken)
-                .ConfigureAwait(false);
+            await Task.WhenAll(tasks).WaitAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -255,7 +238,8 @@ internal sealed class EddnSessionPublisher : IDisposable
         {
             WriteLog(
                 "EDDN companion-file processing stopped during session shutdown: "
-                    + exception.GetBaseException().Message);
+                    + exception.GetBaseException().Message
+            );
         }
 
         if (batch is not null)
@@ -275,7 +259,8 @@ internal sealed class EddnSessionPublisher : IDisposable
         JObject raw,
         EddnApplyRequest request,
         List<EddnPublishedEvent> published,
-        List<string> warnings)
+        List<string> warnings
+    )
     {
         if (!MatchesCapturedCommander(eventName, raw, warnings))
         {
@@ -295,52 +280,32 @@ internal sealed class EddnSessionPublisher : IDisposable
 
         if (eventName == "FSSSignalDiscovered")
         {
-            BufferSignal(
-                raw,
-                captured.Context,
-                request.AllowPublishing,
-                captured.SessionGeneration);
+            BufferSignal(raw, captured.Context, request.AllowPublishing, captured.SessionGeneration);
             return true;
         }
 
-        if (captured.SuppressForCrew
-            || !CanPublishNow(
-                request.AllowPublishing,
-                captured.SessionGeneration,
-                out var ingestionGeneration))
+        if (
+            captured.SuppressForCrew
+            || !CanPublishNow(request.AllowPublishing, captured.SessionGeneration, out var ingestionGeneration)
+        )
         {
             return true;
         }
 
         if (EddnMessageSanitizer.isCompanionEvent(eventName))
         {
-            return ProcessCompanionEvent(
-                eventName,
-                raw,
-                request,
-                captured,
-                ingestionGeneration,
-                warnings);
+            return ProcessCompanionEvent(eventName, raw, request, captured, ingestionGeneration, warnings);
         }
 
         if (JournalEvents.Contains(eventName))
         {
-            PublishJournalEvent(
-                eventName,
-                raw,
-                captured,
-                ingestionGeneration,
-                published,
-                warnings);
+            PublishJournalEvent(eventName, raw, captured, ingestionGeneration, published, warnings);
         }
 
         return true;
     }
 
-    private bool MatchesCapturedCommander(
-        string eventName,
-        JObject raw,
-        List<string> warnings)
+    private bool MatchesCapturedCommander(string eventName, JObject raw, List<string> warnings)
     {
         if (eventName != "LoadGame")
         {
@@ -348,24 +313,22 @@ internal sealed class EddnSessionPublisher : IDisposable
         }
 
         var eventCommander = raw.Value<string>("Commander");
-        if (string.IsNullOrWhiteSpace(eventCommander)
-            || eventCommander.Equals(
-                header.uploaderID,
-                StringComparison.OrdinalIgnoreCase))
+        if (
+            string.IsNullOrWhiteSpace(eventCommander)
+            || eventCommander.Equals(header.uploaderID, StringComparison.OrdinalIgnoreCase)
+        )
         {
             return true;
         }
 
         StopForCommanderChange(eventCommander);
         warnings.Add(
-            $"EDDN stopped the captured '{header.uploaderID}' session because LoadGame identified Commander '{eventCommander}'.");
+            $"EDDN stopped the captured '{header.uploaderID}' session because LoadGame identified Commander '{eventCommander}'."
+        );
         return false;
     }
 
-    private CapturedEventState? CaptureEventState(
-        string eventName,
-        JObject raw,
-        EddnApplyRequest request)
+    private CapturedEventState? CaptureEventState(string eventName, JObject raw, EddnApplyRequest request)
     {
         lock (sync)
         {
@@ -374,9 +337,7 @@ internal sealed class EddnSessionPublisher : IDisposable
                 return null;
             }
 
-            var signalBatch = eventName == "FSSSignalDiscovered"
-                ? null
-                : TakeSignalBatchLocked();
+            var signalBatch = eventName == "FSSSignalDiscovered" ? null : TakeSignalBatchLocked();
             var eventLocation = EddnMessageSanitizer.getLocation(raw);
             if (eventLocation is not null)
             {
@@ -384,18 +345,14 @@ internal sealed class EddnSessionPublisher : IDisposable
                 ClearTrackedBodyLocked();
             }
 
-            statusBodyName = request.AllowSharedData
-                && !string.IsNullOrWhiteSpace(request.Status?.BodyName)
+            statusBodyName =
+                request.AllowSharedData && !string.IsNullOrWhiteSpace(request.Status?.BodyName)
                     ? request.Status.BodyName
                     : null;
             UpdateBodyContextLocked(raw);
             UpdateExpansionFlagsLocked(raw);
             UpdateCrewMembershipLocked(eventName);
-            return new CapturedEventState(
-                signalBatch,
-                CreateContextLocked(),
-                isCrewMember,
-                sessionGeneration);
+            return new CapturedEventState(signalBatch, CreateContextLocked(), isCrewMember, sessionGeneration);
         }
     }
 
@@ -405,12 +362,14 @@ internal sealed class EddnSessionPublisher : IDisposable
         EddnApplyRequest request,
         CapturedEventState captured,
         long ingestionGeneration,
-        List<string> warnings)
+        List<string> warnings
+    )
     {
         if (!request.AllowSharedData)
         {
             warnings.Add(
-                $"EDDN skipped {eventName}: shared companion files are suppressed while multiple Elite instances are active.");
+                $"EDDN skipped {eventName}: shared companion files are suppressed while multiple Elite instances are active."
+            );
             return true;
         }
 
@@ -419,17 +378,19 @@ internal sealed class EddnSessionPublisher : IDisposable
             : request.JournalDirectory;
         if (string.IsNullOrWhiteSpace(directory))
         {
-            warnings.Add(
-                $"EDDN skipped {eventName}: the journal directory was unavailable.");
+            warnings.Add($"EDDN skipped {eventName}: the journal directory was unavailable.");
             return true;
         }
 
-        StartCompanionRead(new CompanionCandidate(
-            new JObject(raw),
-            captured.Context,
-            captured.SessionGeneration,
-            ingestionGeneration,
-            directory));
+        StartCompanionRead(
+            new CompanionCandidate(
+                new JObject(raw),
+                captured.Context,
+                captured.SessionGeneration,
+                ingestionGeneration,
+                directory
+            )
+        );
         return true;
     }
 
@@ -439,27 +400,24 @@ internal sealed class EddnSessionPublisher : IDisposable
         CapturedEventState captured,
         long ingestionGeneration,
         List<EddnPublishedEvent> published,
-        List<string> warnings)
+        List<string> warnings
+    )
     {
-        if (!EddnMessageSanitizer.tryBuildJournal(
-                raw,
-                captured.Context,
-                out var prepared,
-                out var reason))
+        if (!EddnMessageSanitizer.tryBuildJournal(raw, captured.Context, out var prepared, out var reason))
         {
             warnings.Add($"EDDN skipped {eventName}: {reason}.");
             return;
         }
 
-        if (TryEnqueue(
-                prepared!,
-                captured.SessionGeneration,
-                ingestionGeneration))
+        if (TryEnqueue(prepared!, captured.SessionGeneration, ingestionGeneration))
         {
-            published.Add(new EddnPublishedEvent(
-                prepared!.eventName,
-                EddnTransport.NormalizeSchemaReference(prepared.schemaRef),
-                UsesTestSchemas: EddnTransport.TestSchemasEnabled));
+            published.Add(
+                new EddnPublishedEvent(
+                    prepared!.eventName,
+                    EddnTransport.NormalizeSchemaReference(prepared.schemaRef),
+                    UsesTestSchemas: EddnTransport.TestSchemasEnabled
+                )
+            );
         }
         else if (IsCurrentSession(captured.SessionGeneration))
         {
@@ -471,12 +429,10 @@ internal sealed class EddnSessionPublisher : IDisposable
         JObject raw,
         EddnMessageContext context,
         bool allowPublishing,
-        long currentSessionGeneration)
+        long currentSessionGeneration
+    )
     {
-        if (!CanPublishNow(
-                allowPublishing,
-                currentSessionGeneration,
-                out var ingestionGeneration))
+        if (!CanPublishNow(allowPublishing, currentSessionGeneration, out var ingestionGeneration))
         {
             ClearSignals();
             return;
@@ -494,11 +450,12 @@ internal sealed class EddnSessionPublisher : IDisposable
                 context.horizons,
                 context.odyssey,
                 currentSessionGeneration,
-                ingestionGeneration);
-            if (pendingSignalContext.SessionGeneration
-                    != currentSessionGeneration
-                || pendingSignalContext.IngestionGeneration
-                    != ingestionGeneration)
+                ingestionGeneration
+            );
+            if (
+                pendingSignalContext.SessionGeneration != currentSessionGeneration
+                || pendingSignalContext.IngestionGeneration != ingestionGeneration
+            )
             {
                 pendingSignals.Clear();
                 pendingSignalContext = new EddnSignalBatchContext(
@@ -506,7 +463,8 @@ internal sealed class EddnSessionPublisher : IDisposable
                     context.horizons,
                     context.odyssey,
                     currentSessionGeneration,
-                    ingestionGeneration);
+                    ingestionGeneration
+                );
             }
 
             pendingSignals.Add(new JObject(raw));
@@ -517,20 +475,23 @@ internal sealed class EddnSessionPublisher : IDisposable
         SignalBatch batch,
         List<EddnPublishedEvent>? published,
         List<string>? warnings,
-        bool allowDisposedBatch = false)
+        bool allowDisposedBatch = false
+    )
     {
-        if (!EddnMessageSanitizer.tryBuildSignalBatch(
+        if (
+            !EddnMessageSanitizer.tryBuildSignalBatch(
                 batch.Signals,
                 batch.Context.Location,
                 batch.Context.Horizons,
                 batch.Context.Odyssey,
                 out var prepared,
-                out var reason))
+                out var reason
+            )
+        )
         {
             if (reason != "no public signals remained after filtering")
             {
-                var warning =
-                    "EDDN skipped FSSSignalDiscovered batch: " + reason;
+                var warning = "EDDN skipped FSSSignalDiscovered batch: " + reason;
                 warnings?.Add(warning);
                 if (warnings is null)
                 {
@@ -541,22 +502,26 @@ internal sealed class EddnSessionPublisher : IDisposable
             return;
         }
 
-        if (TryEnqueue(
+        if (
+            TryEnqueue(
                 prepared!,
                 batch.Context.SessionGeneration,
                 batch.Context.IngestionGeneration,
-                allowDisposedBatch))
+                allowDisposedBatch
+            )
+        )
         {
-            published?.Add(new EddnPublishedEvent(
-                prepared!.eventName,
-                EddnTransport.NormalizeSchemaReference(prepared.schemaRef),
-                UsesTestSchemas: EddnTransport.TestSchemasEnabled));
+            published?.Add(
+                new EddnPublishedEvent(
+                    prepared!.eventName,
+                    EddnTransport.NormalizeSchemaReference(prepared.schemaRef),
+                    UsesTestSchemas: EddnTransport.TestSchemasEnabled
+                )
+            );
         }
-        else if (!allowDisposedBatch
-            && IsCurrentSession(batch.Context.SessionGeneration))
+        else if (!allowDisposedBatch && IsCurrentSession(batch.Context.SessionGeneration))
         {
-            const string warning =
-                "EDDN could not queue FSSSignalDiscovered for upload.";
+            const string warning = "EDDN could not queue FSSSignalDiscovered for upload.";
             warnings?.Add(warning);
             if (warnings is null)
             {
@@ -565,18 +530,17 @@ internal sealed class EddnSessionPublisher : IDisposable
         }
     }
 
-    private bool CanPublishNow(
-        bool allowPublishing,
-        long expectedSessionGeneration,
-        out long ingestionGeneration)
+    private bool CanPublishNow(bool allowPublishing, long expectedSessionGeneration, out long ingestionGeneration)
     {
         lock (sync)
         {
-            if (!allowPublishing
+            if (
+                !allowPublishing
                 || !sharingEnabled
                 || publishingSuspended
                 || isCrewMember
-                || !IsCurrentSessionLocked(expectedSessionGeneration))
+                || !IsCurrentSessionLocked(expectedSessionGeneration)
+            )
             {
                 ingestionGeneration = default;
                 return false;
@@ -591,25 +555,20 @@ internal sealed class EddnSessionPublisher : IDisposable
         long expectedSessionGeneration,
         long expectedIngestionGeneration,
         bool allowDisposedBatch = false,
-        Action? rejected = null)
+        Action? rejected = null
+    )
     {
         lock (enqueueSync)
         {
             lock (sync)
             {
-                if (!allowDisposedBatch
-                    && !IsCurrentSessionLocked(expectedSessionGeneration))
+                if (!allowDisposedBatch && !IsCurrentSessionLocked(expectedSessionGeneration))
                 {
                     return false;
                 }
             }
 
-            return sink.TryEnqueue(
-                prepared,
-                header,
-                expectedIngestionGeneration,
-                prepared.eventName,
-                rejected);
+            return sink.TryEnqueue(prepared, header, expectedIngestionGeneration, prepared.eventName, rejected);
         }
     }
 
@@ -617,35 +576,31 @@ internal sealed class EddnSessionPublisher : IDisposable
     {
         lock (companionTasksSync)
         {
-            if (disposal.IsCancellationRequested
-                || !IsCurrentSession(candidate.SessionGeneration))
+            if (disposal.IsCancellationRequested || !IsCurrentSession(candidate.SessionGeneration))
             {
                 return;
             }
 
-            var cancellation = CancellationTokenSource.CreateLinkedTokenSource(
-                disposal.Token,
-                companionActivity.Token);
-            var task = ProcessCompanionFileWithCancellationAsync(
-                candidate,
-                cancellation);
+            var cancellation = CancellationTokenSource.CreateLinkedTokenSource(disposal.Token, companionActivity.Token);
+            var task = ProcessCompanionFileWithCancellationAsync(candidate, cancellation);
             companionTasks.Add(task);
             _ = task.ContinueWith(
                 CompleteCompanionTask,
                 CancellationToken.None,
                 TaskContinuationOptions.ExecuteSynchronously,
-                TaskScheduler.Default);
+                TaskScheduler.Default
+            );
         }
     }
 
     private async Task ProcessCompanionFileWithCancellationAsync(
         CompanionCandidate candidate,
-        CancellationTokenSource cancellation)
+        CancellationTokenSource cancellation
+    )
     {
         using (cancellation)
         {
-            await ProcessCompanionFileAsync(candidate, cancellation.Token)
-                .ConfigureAwait(false);
+            await ProcessCompanionFileAsync(candidate, cancellation.Token).ConfigureAwait(false);
         }
     }
 
@@ -682,39 +637,30 @@ internal sealed class EddnSessionPublisher : IDisposable
 
         if (task.IsFaulted)
         {
-            WriteLog(
-                "EDDN companion-file processing failed safely: "
-                    + task.Exception?.GetBaseException().Message);
+            WriteLog("EDDN companion-file processing failed safely: " + task.Exception?.GetBaseException().Message);
         }
     }
 
-    private async Task ProcessCompanionFileAsync(
-        CompanionCandidate candidate,
-        CancellationToken cancellationToken)
+    private async Task ProcessCompanionFileAsync(CompanionCandidate candidate, CancellationToken cancellationToken)
     {
-        var eventName = candidate.JournalEvent.Value<string>(EventProperty)
-            ?? "companion file";
+        var eventName = candidate.JournalEvent.Value<string>(EventProperty) ?? "companion file";
         try
         {
-            var read = await companionReader(
-                    candidate.JournalDirectory,
-                    candidate.JournalEvent,
-                    cancellationToken)
+            var read = await companionReader(candidate.JournalDirectory, candidate.JournalEvent, cancellationToken)
                 .ConfigureAwait(false);
-            if (!CanUseCompanionRead(
-                    read,
-                    candidate.SessionGeneration,
-                    eventName,
-                    cancellationToken))
+            if (!CanUseCompanionRead(read, candidate.SessionGeneration, eventName, cancellationToken))
             {
                 return;
             }
 
-            if (!EddnMessageSanitizer.tryBuildCompanion(
+            if (
+                !EddnMessageSanitizer.tryBuildCompanion(
                     read.content!,
                     candidate.Context,
                     out var prepared,
-                    out var reason))
+                    out var reason
+                )
+            )
             {
                 WriteLog($"EDDN skipped {eventName}: {reason}");
                 return;
@@ -722,8 +668,7 @@ internal sealed class EddnSessionPublisher : IDisposable
 
             QueueCompanionMessage(prepared!, candidate, eventName);
         }
-        catch (OperationCanceledException) when (
-            cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             // Session replacement and application shutdown intentionally cancel
             // reads so a shared companion file cannot cross Commander sessions.
@@ -741,7 +686,8 @@ internal sealed class EddnSessionPublisher : IDisposable
         EddnCompanionReadResult read,
         long expectedSessionGeneration,
         string eventName,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         if (!read.isSuccess)
         {
@@ -757,10 +703,7 @@ internal sealed class EddnSessionPublisher : IDisposable
         return IsCurrentSession(expectedSessionGeneration);
     }
 
-    private void QueueCompanionMessage(
-        EddnPreparedMessage prepared,
-        CompanionCandidate candidate,
-        string eventName)
+    private void QueueCompanionMessage(EddnPreparedMessage prepared, CompanionCandidate candidate, string eventName)
     {
         var signature = GetCompanionSignature(prepared);
         if (signature is not null && !ReserveSignature(signature.Value))
@@ -772,9 +715,8 @@ internal sealed class EddnSessionPublisher : IDisposable
             prepared,
             candidate.SessionGeneration,
             candidate.IngestionGeneration,
-            rejected: signature is null
-                ? null
-                : () => ReleaseSignature(signature.Value));
+            rejected: signature is null ? null : () => ReleaseSignature(signature.Value)
+        );
         if (queued)
         {
             return;
@@ -793,28 +735,20 @@ internal sealed class EddnSessionPublisher : IDisposable
 
     private static bool IsExpectedCompanionException(Exception exception)
     {
-        return exception is IOException
-            or JsonException
-            or UnauthorizedAccessException
-            or InvalidDataException;
+        return exception is IOException or JsonException or UnauthorizedAccessException or InvalidDataException;
     }
 
-    private static (string Key, string Value)? GetCompanionSignature(
-        EddnPreparedMessage prepared)
+    private static (string Key, string Value)? GetCompanionSignature(EddnPreparedMessage prepared)
     {
         if (prepared.eventName == "NavRoute")
         {
             return null;
         }
 
-        var marketId = prepared.message.Value<long?>("marketId")
-            ?? prepared.message.Value<long?>("MarketID")
-            ?? 0;
+        var marketId = prepared.message.Value<long?>("marketId") ?? prepared.message.Value<long?>("MarketID") ?? 0;
         var comparable = new JObject(prepared.message);
         comparable.Remove("timestamp");
-        return (
-            prepared.schemaRef + ":" + marketId,
-            comparable.ToString(Formatting.None));
+        return (prepared.schemaRef + ":" + marketId, comparable.ToString(Formatting.None));
     }
 
     private bool ReserveSignature((string Key, string Value) signature)
@@ -826,8 +760,7 @@ internal sealed class EddnSessionPublisher : IDisposable
                 return false;
             }
 
-            if (stationSignatures.GetValueOrDefault(signature.Key)
-                == signature.Value)
+            if (stationSignatures.GetValueOrDefault(signature.Key) == signature.Value)
             {
                 return false;
             }
@@ -841,8 +774,7 @@ internal sealed class EddnSessionPublisher : IDisposable
     {
         lock (sync)
         {
-            if (stationSignatures.GetValueOrDefault(signature.Key)
-                == signature.Value)
+            if (stationSignatures.GetValueOrDefault(signature.Key) == signature.Value)
             {
                 stationSignatures.Remove(signature.Key);
             }
@@ -870,7 +802,8 @@ internal sealed class EddnSessionPublisher : IDisposable
 
         WriteLog(
             $"EDDN stopped session '{header.uploaderID}' after LoadGame identified Commander '{eventCommander}'; "
-                + "a new journal session must capture the new Commander before uploads resume.");
+                + "a new journal session must capture the new Commander before uploads resume."
+        );
     }
 
     private SignalBatch? TakeSignalBatchLocked()
@@ -882,7 +815,8 @@ internal sealed class EddnSessionPublisher : IDisposable
 
         var batch = new SignalBatch(
             pendingSignals.Select(signal => new JObject(signal)).ToArray(),
-            pendingSignalContext);
+            pendingSignalContext
+        );
         pendingSignals.Clear();
         pendingSignalContext = null;
         return batch;
@@ -945,15 +879,13 @@ internal sealed class EddnSessionPublisher : IDisposable
 
         if (eventName is "ApproachBody" or "SupercruiseExit" or "Location")
         {
-            var bodyName = raw.Value<string>("BodyName")
-                ?? raw.Value<string>("Body");
+            var bodyName = raw.Value<string>("BodyName") ?? raw.Value<string>("Body");
             var bodyId = raw.Value<int?>("BodyID");
             if (!string.IsNullOrWhiteSpace(bodyName) && bodyId is >= 0)
             {
                 trackedBodyName = bodyName;
                 trackedBodyId = bodyId;
-                trackedBodyType = raw.Value<string>("BodyType")
-                    ?? PlanetBodyType;
+                trackedBodyType = raw.Value<string>("BodyType") ?? PlanetBodyType;
             }
         }
     }
@@ -974,7 +906,8 @@ internal sealed class EddnSessionPublisher : IDisposable
             statusBodyName,
             trackedBodyName,
             trackedBodyId,
-            trackedBodyType);
+            trackedBodyType
+        );
     }
 
     private bool IsCurrentSession(long generation)
@@ -987,11 +920,7 @@ internal sealed class EddnSessionPublisher : IDisposable
 
     private bool IsCurrentSessionLocked(long generation)
     {
-        return !disposed
-            && accepting
-            && sharingEnabled
-            && !publishingSuspended
-            && sessionGeneration == generation;
+        return !disposed && accepting && sharingEnabled && !publishingSuspended && sessionGeneration == generation;
     }
 
     private void WriteLog(string message)
@@ -1011,22 +940,23 @@ internal sealed class EddnSessionPublisher : IDisposable
         bool? Horizons,
         bool? Odyssey,
         long SessionGeneration,
-        long IngestionGeneration);
+        long IngestionGeneration
+    );
 
     private sealed record CapturedEventState(
         SignalBatch? SignalBatch,
         EddnMessageContext Context,
         bool SuppressForCrew,
-        long SessionGeneration);
+        long SessionGeneration
+    );
 
-    private sealed record SignalBatch(
-        IReadOnlyList<JObject> Signals,
-        EddnSignalBatchContext Context);
+    private sealed record SignalBatch(IReadOnlyList<JObject> Signals, EddnSignalBatchContext Context);
 
     private sealed record CompanionCandidate(
         JObject JournalEvent,
         EddnMessageContext Context,
         long SessionGeneration,
         long IngestionGeneration,
-        string JournalDirectory);
+        string JournalDirectory
+    );
 }

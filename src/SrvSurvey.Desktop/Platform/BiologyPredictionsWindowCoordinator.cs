@@ -10,12 +10,9 @@ public sealed class BiologyPredictionsWindowCoordinator : IDisposable
     private BiologyPredictionsWindow? window;
     private bool disposed;
 
-    public BiologyPredictionsWindowCoordinator(
-        BiologyPredictionsViewModel viewModel,
-        Window owner)
+    public BiologyPredictionsWindowCoordinator(BiologyPredictionsViewModel viewModel, Window owner)
     {
-        this.viewModel = viewModel
-            ?? throw new ArgumentNullException(nameof(viewModel));
+        this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         this.owner = owner ?? throw new ArgumentNullException(nameof(owner));
         viewModel.SetWindowOpener(ShowOrActivateAsync);
     }

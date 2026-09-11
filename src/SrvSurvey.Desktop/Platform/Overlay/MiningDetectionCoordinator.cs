@@ -17,8 +17,11 @@ public sealed class MiningDetectionCoordinator : IDisposable
     private MiningDetectionSettings? previousSettings;
     private SystemSurfaceContext? previousContext;
 
-    public MiningDetectionCoordinator(SurfaceMiningViewModel mining, IGameWindowTracker tracker,
-        IGameScreenCapture? capture = null)
+    public MiningDetectionCoordinator(
+        SurfaceMiningViewModel mining,
+        IGameWindowTracker tracker,
+        IGameScreenCapture? capture = null
+    )
     {
         this.mining = mining;
         this.tracker = tracker;
@@ -35,7 +38,11 @@ public sealed class MiningDetectionCoordinator : IDisposable
 
     internal async Task SynchronizeAsync()
     {
-        if (busy || disposed) return;
+        if (busy || disposed)
+        {
+            return;
+        }
+
         var model = mining.Detection;
         var game = tracker.GetSnapshot();
         var context = mining.DetectionContext;
@@ -44,7 +51,11 @@ public sealed class MiningDetectionCoordinator : IDisposable
             previousAnalysis = null;
             model.Pause("Waiting for Elite's Rhino cockpit view.");
         }
-        if (!CanCapture(model, game)) return;
+        if (!CanCapture(model, game))
+        {
+            return;
+        }
+
         var settings = model.Settings;
         var previous = ReferenceEquals(settings, previousSettings) ? previousAnalysis : null;
         var bounds = settings.GetBounds(game.ClientBounds);
@@ -58,26 +69,56 @@ public sealed class MiningDetectionCoordinator : IDisposable
             });
             await ApplyResultAsync(result, model, settings, context, game);
         }
-        catch (Exception e) when (e is InvalidOperationException or ArgumentException
-            or System.ComponentModel.Win32Exception or NotSupportedException)
+        catch (Exception e)
+            when (e
+                    is InvalidOperationException
+                        or ArgumentException
+                        or System.ComponentModel.Win32Exception
+                        or NotSupportedException
+            )
         {
-            if (!disposed) model.Pause("Rig detection paused: " + e.Message);
+            if (!disposed)
+            {
+                model.Pause("Rig detection paused: " + e.Message);
+            }
         }
         finally
         {
             busy = false;
-            if (disposed) capture.Dispose();
+            if (disposed)
+            {
+                capture.Dispose();
+            }
         }
     }
 
-    private async Task ApplyResultAsync(MiningBarAnalysis result, MiningDetectionViewModel model,
-        MiningDetectionSettings settings, SystemSurfaceContext? context, GameWindowSnapshot game)
+    private async Task ApplyResultAsync(
+        MiningBarAnalysis result,
+        MiningDetectionViewModel model,
+        MiningDetectionSettings settings,
+        SystemSurfaceContext? context,
+        GameWindowSnapshot game
+    )
     {
-        if (disposed || context != mining.DetectionContext || !ReferenceEquals(settings, model.Settings)
-            || !(model.Enabled || model.IsCalibrating) || model.IsCalibrating && !model.IsCalibrationTesting) return;
+        if (
+            disposed
+            || context != mining.DetectionContext
+            || !ReferenceEquals(settings, model.Settings)
+            || !(model.Enabled || model.IsCalibrating)
+            || model.IsCalibrating && !model.IsCalibrationTesting
+        )
+        {
+            return;
+        }
+
         var current = tracker.GetSnapshot();
-        if (!current.IsAvailable || current.ClientBounds != game.ClientBounds || !current.IsVisible
-            || !(current.IsForeground || model.IsCalibrating) || !mining.CanDetectRigs)
+        if (
+            !current.IsAvailable
+            || current.ClientBounds != game.ClientBounds
+            || !current.IsVisible
+            || !(current.IsForeground || model.IsCalibrating)
+            || !mining.CanDetectRigs
+        )
         {
             model.Pause("Waiting for Elite's Rhino cockpit view.");
             return;
@@ -93,17 +134,35 @@ public sealed class MiningDetectionCoordinator : IDisposable
         previousContext = context;
         var confirmed = model.Apply(result);
         if (CanApplyTrackers(context, current, model))
+        {
             await mining.ApplyDetectedRigsAsync(confirmed, context!, settings);
+        }
     }
-    private static bool CanApplyTrackers(SystemSurfaceContext? context, GameWindowSnapshot current, MiningDetectionViewModel model) =>
-        context is not null && current.IsForeground && model.Enabled && !model.IsCalibrating;
+
+    private static bool CanApplyTrackers(
+        SystemSurfaceContext? context,
+        GameWindowSnapshot current,
+        MiningDetectionViewModel model
+    ) => context is not null && current.IsForeground && model.Enabled && !model.IsCalibrating;
 
     private bool CanCapture(MiningDetectionViewModel model, GameWindowSnapshot game)
     {
-        if (!(model.Enabled || model.IsCalibrating)) return false;
-        if (model.IsCalibrating && !model.IsCalibrationTesting) return false;
-        if (!game.IsAvailable || !game.IsVisible || (!model.IsCalibrating && !game.IsForeground)
-            || !mining.CanDetectRigs)
+        if (!(model.Enabled || model.IsCalibrating))
+        {
+            return false;
+        }
+
+        if (model.IsCalibrating && !model.IsCalibrationTesting)
+        {
+            return false;
+        }
+
+        if (
+            !game.IsAvailable
+            || !game.IsVisible
+            || (!model.IsCalibrating && !game.IsForeground)
+            || !mining.CanDetectRigs
+        )
         {
             model.Pause("Waiting for Elite's Rhino cockpit view.");
             return false;
@@ -123,11 +182,18 @@ public sealed class MiningDetectionCoordinator : IDisposable
 
     public void Dispose()
     {
-        if (disposed) return;
+        if (disposed)
+        {
+            return;
+        }
+
         disposed = true;
         timer.Stop();
         timer.Tick -= OnTick;
         tracker.Dispose();
-        if (!busy) capture.Dispose();
+        if (!busy)
+        {
+            capture.Dispose();
+        }
     }
 }

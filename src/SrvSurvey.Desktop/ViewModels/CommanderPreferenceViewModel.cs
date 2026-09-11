@@ -20,7 +20,8 @@ public sealed class CommanderPreferenceViewModel : INotifyPropertyChanged
         CommanderPreferenceSettingsStore settingsStore,
         CommanderProfileCatalog profileCatalog,
         bool isCommandLineOverride = false,
-        string? initialStatusMessage = null)
+        string? initialStatusMessage = null
+    )
     {
         this.settingsStore = settingsStore;
         this.profileCatalog = profileCatalog;
@@ -30,13 +31,14 @@ public sealed class CommanderPreferenceViewModel : INotifyPropertyChanged
         var stored = CreateStoredOption(preference);
         options = stored is null ? [automatic] : [automatic, stored];
         selectedOption = stored ?? automatic;
-        statusMessage = initialStatusMessage
-            ?? (isCommandLineOverride
-                ? "A command-line Frontier ID controls this instance. Remove it to use a saved preference."
-                : GetPreferenceStatus(preference));
-        saveAndRestartCommand = new AsyncCommand(
-            SaveAndRestartAsync,
-            CanSaveAndRestart);
+        statusMessage =
+            initialStatusMessage
+            ?? (
+                isCommandLineOverride
+                    ? "A command-line Frontier ID controls this instance. Remove it to use a saved preference."
+                    : GetPreferenceStatus(preference)
+            );
+        saveAndRestartCommand = new AsyncCommand(SaveAndRestartAsync, CanSaveAndRestart);
         SaveAndRestartCommand = saveAndRestartCommand;
     }
 
@@ -96,31 +98,36 @@ public sealed class CommanderPreferenceViewModel : INotifyPropertyChanged
             IsBusy = true;
             var preference = settingsStore.Load();
             var catalog = await profileCatalog.LoadAsync();
-            var profileOptions = catalog.Profiles
-                .Select(profile => new CommanderPreferenceOptionViewModel(
+            var profileOptions = catalog
+                .Profiles.Select(profile => new CommanderPreferenceOptionViewModel(
                     profile.CommanderName,
                     profile.FrontierId,
                     $"{profile.CommanderName} ({profile.FrontierId})",
-                    false))
+                    false
+                ))
                 .ToList();
             Options = [CommanderPreferenceOptionViewModel.Automatic, .. profileOptions];
-            SelectedOption = ResolveSelection(preference, profileOptions)
-                ?? CommanderPreferenceOptionViewModel.Automatic;
+            SelectedOption =
+                ResolveSelection(preference, profileOptions) ?? CommanderPreferenceOptionViewModel.Automatic;
 
             if (IsCommandLineOverride)
             {
-                StatusMessage = "A command-line Frontier ID controls this instance. Remove it to use a saved preference.";
+                StatusMessage =
+                    "A command-line Frontier ID controls this instance. Remove it to use a saved preference.";
             }
-            else if (preference.PreferredFrontierId is not null
-                && SelectedOption.IsAutomatic)
+            else if (preference.PreferredFrontierId is not null && SelectedOption.IsAutomatic)
             {
-                StatusMessage = $"The saved Frontier ID {preference.PreferredFrontierId} has no readable imported profile. Automatic selection is shown until the profile is restored.";
+                StatusMessage =
+                    $"The saved Frontier ID {preference.PreferredFrontierId} has no readable imported profile. Automatic selection is shown until the profile is restored.";
             }
-            else if (preference.PreferredCommanderName is not null
+            else if (
+                preference.PreferredCommanderName is not null
                 && preference.PreferredFrontierId is null
-                && SelectedOption.IsAutomatic)
+                && SelectedOption.IsAutomatic
+            )
             {
-                StatusMessage = $"The imported preference '{preference.PreferredCommanderName}' is missing or ambiguous. Automatic selection prevents writes to the wrong profile.";
+                StatusMessage =
+                    $"The imported preference '{preference.PreferredCommanderName}' is missing or ambiguous. Automatic selection prevents writes to the wrong profile.";
             }
             else
             {
@@ -134,11 +141,9 @@ public sealed class CommanderPreferenceViewModel : INotifyPropertyChanged
                 StatusMessage += $" {catalog.Warnings.Count:N0} malformed profile file(s) were ignored.";
             }
         }
-        catch (Exception exception) when (
-            exception is IOException or UnauthorizedAccessException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            StatusMessage = "Commander profiles could not be scanned: "
-                + exception.Message;
+            StatusMessage = "Commander profiles could not be scanned: " + exception.Message;
         }
         finally
         {
@@ -155,20 +160,21 @@ public sealed class CommanderPreferenceViewModel : INotifyPropertyChanged
 
         try
         {
-            settingsStore.Save(selected.IsAutomatic
-                ? new CommanderPreferencePreferences(null, null)
-                : new CommanderPreferencePreferences(
-                    selected.CommanderName,
-                    selected.FrontierId));
+            settingsStore.Save(
+                selected.IsAutomatic
+                    ? new CommanderPreferencePreferences(null, null)
+                    : new CommanderPreferencePreferences(selected.CommanderName, selected.FrontierId)
+            );
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidOperationException
-                or ArgumentException)
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or UnauthorizedAccessException
+                        or InvalidOperationException
+                        or ArgumentException
+            )
         {
-            StatusMessage = "The commander preference could not be saved: "
-                + exception.Message;
+            StatusMessage = "The commander preference could not be saved: " + exception.Message;
             return;
         }
 
@@ -189,7 +195,8 @@ public sealed class CommanderPreferenceViewModel : INotifyPropertyChanged
         }
         catch (Exception exception)
         {
-            StatusMessage = "Commander preference saved, but automatic restart failed: "
+            StatusMessage =
+                "Commander preference saved, but automatic restart failed: "
                 + exception.Message
                 + " Close and reopen SrvSurvey manually.";
         }
@@ -197,21 +204,19 @@ public sealed class CommanderPreferenceViewModel : INotifyPropertyChanged
 
     private bool CanSaveAndRestart()
     {
-        return !IsBusy
-            && !IsCommandLineOverride
-            && SelectedOption is not null;
+        return !IsBusy && !IsCommandLineOverride && SelectedOption is not null;
     }
 
     private static CommanderPreferenceOptionViewModel? ResolveSelection(
         CommanderPreferencePreferences preference,
-        IReadOnlyList<CommanderPreferenceOptionViewModel> options)
+        IReadOnlyList<CommanderPreferenceOptionViewModel> options
+    )
     {
         if (preference.PreferredFrontierId is not null)
         {
-            return options.FirstOrDefault(option => string.Equals(
-                option.FrontierId,
-                preference.PreferredFrontierId,
-                StringComparison.OrdinalIgnoreCase));
+            return options.FirstOrDefault(option =>
+                string.Equals(option.FrontierId, preference.PreferredFrontierId, StringComparison.OrdinalIgnoreCase)
+            );
         }
 
         if (preference.PreferredCommanderName is null)
@@ -220,33 +225,34 @@ public sealed class CommanderPreferenceViewModel : INotifyPropertyChanged
         }
 
         var matches = options
-            .Where(option => string.Equals(
-                option.CommanderName,
-                preference.PreferredCommanderName,
-                StringComparison.OrdinalIgnoreCase))
+            .Where(option =>
+                string.Equals(
+                    option.CommanderName,
+                    preference.PreferredCommanderName,
+                    StringComparison.OrdinalIgnoreCase
+                )
+            )
             .ToArray();
         return matches.Length == 1 ? matches[0] : null;
     }
 
-    private static CommanderPreferenceOptionViewModel? CreateStoredOption(
-        CommanderPreferencePreferences preference)
+    private static CommanderPreferenceOptionViewModel? CreateStoredOption(CommanderPreferencePreferences preference)
     {
         if (preference.PreferredFrontierId is not null)
         {
-            var name = preference.PreferredCommanderName
-                ?? preference.PreferredFrontierId;
+            var name = preference.PreferredCommanderName ?? preference.PreferredFrontierId;
             return new CommanderPreferenceOptionViewModel(
                 name,
                 preference.PreferredFrontierId,
                 $"{name} ({preference.PreferredFrontierId})",
-                false);
+                false
+            );
         }
 
         return null;
     }
 
-    private static string GetPreferenceStatus(
-        CommanderPreferencePreferences preference)
+    private static string GetPreferenceStatus(CommanderPreferencePreferences preference)
     {
         if (preference.PreferredFrontierId is not null)
         {
@@ -260,10 +266,7 @@ public sealed class CommanderPreferenceViewModel : INotifyPropertyChanged
             : $"The imported commander preference '{preference.PreferredCommanderName}' has not resolved to a unique Frontier ID yet.";
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -280,9 +283,7 @@ public sealed class CommanderPreferenceViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private sealed class AsyncCommand(
-        Func<Task> execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class AsyncCommand(Func<Task> execute, Func<bool> canExecute) : ICommand
     {
         public event EventHandler? CanExecuteChanged;
 
@@ -307,7 +308,8 @@ public sealed record CommanderPreferenceOptionViewModel(
     string? CommanderName,
     string? FrontierId,
     string DisplayName,
-    bool IsAutomatic)
+    bool IsAutomatic
+)
 {
     public static CommanderPreferenceOptionViewModel Automatic { get; } =
         new(null, null, "Automatic (newest active journal)", true);

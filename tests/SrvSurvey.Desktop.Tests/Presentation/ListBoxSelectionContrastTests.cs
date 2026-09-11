@@ -14,35 +14,19 @@ public sealed class ListBoxSelectionContrastTests
     [AvaloniaFact]
     public void SelectedMutedTextOnlyUsesHighContrastInMonochromeTheme()
     {
-        var application = Application.Current
-            ?? throw new InvalidOperationException("Avalonia application is missing.");
-        var temporaryDirectory = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-list-selection-tests-{Guid.NewGuid():N}");
+        var application =
+            Application.Current ?? throw new InvalidOperationException("Avalonia application is missing.");
+        var temporaryDirectory = Path.Combine(Path.GetTempPath(), $"SrvSurvey-list-selection-tests-{Guid.NewGuid():N}");
         var service = new RavenThemeService(
             application,
-            new ThemePreferenceStore(Path.Combine(temporaryDirectory, "ui.json")));
+            new ThemePreferenceStore(Path.Combine(temporaryDirectory, "ui.json"))
+        );
         service.ApplyCurrent();
         var text = new TextBlock { Text = "510.0 m · 86.0°" };
         text.Classes.Add("muted");
-        var semanticText = new TextBlock
-        {
-            Text = "Warning",
-            Foreground = new SolidColorBrush(Color.Parse("#FF7B72")),
-        };
-        var row = new StackPanel
-        {
-            Children =
-            {
-                text,
-                semanticText,
-            },
-        };
-        var listBox = new ListBox
-        {
-            ItemsSource = new[] { row },
-            SelectedIndex = 0,
-        };
+        var semanticText = new TextBlock { Text = "Warning", Foreground = new SolidColorBrush(Color.Parse("#FF7B72")) };
+        var row = new StackPanel { Children = { text, semanticText } };
+        var listBox = new ListBox { ItemsSource = new[] { row }, SelectedIndex = 0 };
         var window = new Window
         {
             Width = 320,
@@ -57,40 +41,32 @@ public sealed class ListBoxSelectionContrastTests
 
             Assert.Equal(
                 Color.Parse("#C8C8C8"),
-                Assert.IsType<ISolidColorBrush>(
-                    text.Foreground,
-                    exactMatch: false).Color);
+                Assert.IsType<ISolidColorBrush>(text.Foreground, exactMatch: false).Color
+            );
             Assert.Equal(
                 Color.Parse("#FF7B72"),
-                Assert.IsType<ISolidColorBrush>(
-                    semanticText.Foreground,
-                    exactMatch: false).Color);
+                Assert.IsType<ISolidColorBrush>(semanticText.Foreground, exactMatch: false).Color
+            );
 
             service.Select("monochrome-dark");
             Assert.NotNull(window.CaptureRenderedFrame());
 
-            var selectedItem = listBox.GetVisualDescendants()
-                .OfType<ListBoxItem>()
-                .Single();
-            var foreground = Assert.IsType<ISolidColorBrush>(
-                text.Foreground,
-                exactMatch: false);
+            var selectedItem = listBox.GetVisualDescendants().OfType<ListBoxItem>().Single();
+            var foreground = Assert.IsType<ISolidColorBrush>(text.Foreground, exactMatch: false);
 
             Assert.True(selectedItem.IsSelected);
             Assert.Equal(Color.Parse("#0A0A0A"), foreground.Color);
             Assert.Equal(
                 Color.Parse("#FF7B72"),
-                Assert.IsType<ISolidColorBrush>(
-                    semanticText.Foreground,
-                    exactMatch: false).Color);
+                Assert.IsType<ISolidColorBrush>(semanticText.Foreground, exactMatch: false).Color
+            );
 
             service.Select(RavenThemeCatalog.DefaultThemeKey);
             Assert.NotNull(window.CaptureRenderedFrame());
             Assert.Equal(
                 Color.Parse("#C8C8C8"),
-                Assert.IsType<ISolidColorBrush>(
-                    text.Foreground,
-                    exactMatch: false).Color);
+                Assert.IsType<ISolidColorBrush>(text.Foreground, exactMatch: false).Color
+            );
         }
         finally
         {

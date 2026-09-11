@@ -9,7 +9,8 @@ public sealed class RamTahViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-ram-tah-vm-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-ram-tah-vm-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void ExposesEveryLegacyChecklistGroupAndLog()
@@ -18,11 +19,13 @@ public sealed class RamTahViewModelTests : IDisposable
 
         Assert.Equal(
             ["Biology", "Culture", "History", "Language", "Technology"],
-            viewModel.AncientRuinsGroups.Select(group => group.Name));
+            viewModel.AncientRuinsGroups.Select(group => group.Name)
+        );
         Assert.Equal(101, viewModel.AncientRuinsGroups.Sum(group => group.Logs.Count));
         Assert.Equal(
             ["Thargoids", "Civil war", "Technology", "Language", "Body Protectorate"],
-            viewModel.GuardianLogsGroups.Select(group => group.Name));
+            viewModel.GuardianLogsGroups.Select(group => group.Name)
+        );
         Assert.Equal(28, viewModel.GuardianLogsGroups.Sum(group => group.Logs.Count));
     }
 
@@ -35,11 +38,8 @@ public sealed class RamTahViewModelTests : IDisposable
             "F123",
             "Drew",
             true,
-            new RamTahSnapshot(
-                RamTahMissionStatus.Active,
-                RamTahMissionStatus.NotStarted,
-                ["B1"],
-                []));
+            new RamTahSnapshot(RamTahMissionStatus.Active, RamTahMissionStatus.NotStarted, ["B1"], [])
+        );
 
         await viewModel.ToggleLogAsync(RamTahMission.AncientRuins, "B2");
 
@@ -56,19 +56,17 @@ public sealed class RamTahViewModelTests : IDisposable
         var viewModel = new RamTahViewModel(store);
         viewModel.LoadProfile("F123", "Drew", true, RamTahSnapshot.Empty);
 
-        await viewModel.ApplyJournalEventsAsync(
-        [
+        await viewModel.ApplyJournalEventsAsync([
             Parse(
                 """
                 {"timestamp":"2026-07-24T12:00:00Z","event":"MissionAccepted","Name":"Mission_TheDead_002_name"}
-                """),
+                """
+            ),
         ]);
 
         Assert.Equal("Active", viewModel.GuardianLogsMissionStatus);
         var loaded = await store.LoadAsync("F123", true);
-        Assert.Equal(
-            RamTahMissionStatus.Active,
-            loaded.Data?.RamTah.GuardianLogsMissionStatus);
+        Assert.Equal(RamTahMissionStatus.Active, loaded.Data?.RamTah.GuardianLogsMissionStatus);
     }
 
     [Fact]
@@ -80,20 +78,11 @@ public sealed class RamTahViewModelTests : IDisposable
             "F123",
             "Drew",
             true,
-            new RamTahSnapshot(
-                RamTahMissionStatus.Active,
-                RamTahMissionStatus.NotStarted,
-                [],
-                []));
+            new RamTahSnapshot(RamTahMissionStatus.Active, RamTahMissionStatus.NotStarted, [], [])
+        );
 
-        Assert.True(await viewModel.SetLogCompletedAsync(
-            RamTahMission.AncientRuins,
-            "H1",
-            true));
-        Assert.False(await viewModel.SetLogCompletedAsync(
-            RamTahMission.AncientRuins,
-            "H1",
-            true));
+        Assert.True(await viewModel.SetLogCompletedAsync(RamTahMission.AncientRuins, "H1", true));
+        Assert.False(await viewModel.SetLogCompletedAsync(RamTahMission.AncientRuins, "H1", true));
         Assert.True(viewModel.IsLogCompleted(RamTahMission.AncientRuins, "H1"));
 
         var loaded = await store.LoadAsync("F123", true);
@@ -109,11 +98,8 @@ public sealed class RamTahViewModelTests : IDisposable
             "F123",
             "Drew",
             true,
-            new RamTahSnapshot(
-                RamTahMissionStatus.Active,
-                RamTahMissionStatus.Active,
-                ["B1", "C1"],
-                ["#1"]));
+            new RamTahSnapshot(RamTahMissionStatus.Active, RamTahMissionStatus.Active, ["B1", "C1"], ["#1"])
+        );
 
         viewModel.RequestAncientRuinsReset();
 
@@ -145,9 +131,7 @@ public sealed class RamTahViewModelTests : IDisposable
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(
-            JournalEventEnvelope.TryParse(json, out var journalEvent, out var error),
-            error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
         return journalEvent!;
     }
 }

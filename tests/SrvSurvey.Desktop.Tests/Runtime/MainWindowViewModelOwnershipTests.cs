@@ -16,18 +16,13 @@ public sealed class MainWindowViewModelOwnershipTests
     {
         await using var context = new TestViewModelContext();
         context.ApplicationLog.Append("Before parent disposal");
-        Assert.Contains(
-            "Before parent disposal",
-            context.ViewModel.DiagnosticsLog.LogText,
-            StringComparison.Ordinal);
+        Assert.Contains("Before parent disposal", context.ViewModel.DiagnosticsLog.LogText, StringComparison.Ordinal);
 
         await context.ViewModel.DisposeAsync();
         var disposedSnapshot = context.ViewModel.DiagnosticsLog.LogText;
         context.ApplicationLog.Append("After parent disposal");
 
-        Assert.Equal(
-            disposedSnapshot,
-            context.ViewModel.DiagnosticsLog.LogText);
+        Assert.Equal(disposedSnapshot, context.ViewModel.DiagnosticsLog.LogText);
     }
 
     [AvaloniaFact]
@@ -36,12 +31,12 @@ public sealed class MainWindowViewModelOwnershipTests
         await using var context = new TestViewModelContext();
         await context.ViewModel.DisposeAsync();
         var guardianNotifications = 0;
-        context.ViewModel.Guardian.PropertyChanged += (_, _) =>
-            guardianNotifications++;
+        context.ViewModel.Guardian.PropertyChanged += (_, _) => guardianNotifications++;
 
         context.ViewModel.ScreenshotProcessing.TargetFolder = Path.Combine(
             Path.GetTempPath(),
-            $"SrvSurvey-screenshot-target-{Guid.NewGuid():N}");
+            $"SrvSurvey-screenshot-target-{Guid.NewGuid():N}"
+        );
 
         Assert.Equal(0, guardianNotifications);
     }
@@ -59,18 +54,16 @@ public sealed class MainWindowViewModelOwnershipTests
         Assert.Contains(
             "After production window closed",
             context.ViewModel.DiagnosticsLog.LogText,
-            StringComparison.Ordinal);
+            StringComparison.Ordinal
+        );
     }
 
     [AvaloniaFact]
     public async Task StandaloneWindowDisposesItsViewModelBeforeClosing()
     {
         await using var context = new TestViewModelContext();
-        var window = new MainWindow(
-            context.ViewModel,
-            ownsApplicationLifetime: true);
-        var closed = new TaskCompletionSource(
-            TaskCreationOptions.RunContinuationsAsynchronously);
+        var window = new MainWindow(context.ViewModel, ownsApplicationLifetime: true);
+        var closed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         window.Closed += (_, _) => closed.SetResult();
 
         window.Close();
@@ -78,9 +71,7 @@ public sealed class MainWindowViewModelOwnershipTests
         var disposedSnapshot = context.ViewModel.DiagnosticsLog.LogText;
         context.ApplicationLog.Append("After standalone window closed");
 
-        Assert.Equal(
-            disposedSnapshot,
-            context.ViewModel.DiagnosticsLog.LogText);
+        Assert.Equal(disposedSnapshot, context.ViewModel.DiagnosticsLog.LogText);
     }
 
     [AvaloniaTheory]
@@ -89,15 +80,13 @@ public sealed class MainWindowViewModelOwnershipTests
     [InlineData((int)MainWindowViewModelConstructionCheckpoint.ExplorationReady)]
     [InlineData((int)MainWindowViewModelConstructionCheckpoint.TravelReady)]
     [InlineData((int)MainWindowViewModelConstructionCheckpoint.OnlineAndShellReady)]
-    public void ConstructionFailureRollsBackEveryCompletedFamily(
-        int checkpointValue)
+    public void ConstructionFailureRollsBackEveryCompletedFamily(int checkpointValue)
     {
         var root = CreateTemporaryRoot();
         try
         {
             List<string> disposalOrder = [];
-            var inference = new RecordingFirstFootfallInferenceService(
-                disposalOrder);
+            var inference = new RecordingFirstFootfallInferenceService(disposalOrder);
             var publisher = new RecordingInaraPublisher(disposalOrder);
             var switcher = new RecordingGameWindowSwitcher(disposalOrder);
             var failure = new InvalidOperationException("construction failed");
@@ -105,36 +94,23 @@ public sealed class MainWindowViewModelOwnershipTests
             var thrown = Assert.Throws<InvalidOperationException>(() =>
                 MainWindowViewModelTestBuilder.Create(
                     configuredJournalDirectory: null,
-                    builder => builder
-                        .WithAppDataPaths(CreatePaths(root))
-                        .WithFirstFootfallInferenceService(inference)
-                        .WithInaraPublisher(publisher)
-                        .WithGameWindowSwitcher(switcher)
-                        .FailAt(
-                            (MainWindowViewModelConstructionCheckpoint)
-                                checkpointValue,
-                            failure)));
+                    builder =>
+                        builder
+                            .WithAppDataPaths(CreatePaths(root))
+                            .WithFirstFootfallInferenceService(inference)
+                            .WithInaraPublisher(publisher)
+                            .WithGameWindowSwitcher(switcher)
+                            .FailAt((MainWindowViewModelConstructionCheckpoint)checkpointValue, failure)
+                )
+            );
 
             Assert.Same(failure, thrown);
             Assert.True(inference.IsDisposed);
             string[] expectedDisposalOrder =
-                checkpointValue == (int)
-                    MainWindowViewModelConstructionCheckpoint.OnlineAndShellReady
-                    ?
-                    [
-                        "game-window-switcher",
-                        "inara",
-                        "first-footfall",
-                    ]
-                    :
-                    [
-                        "inara",
-                        "game-window-switcher",
-                        "first-footfall",
-                    ];
-            Assert.Equal(
-                expectedDisposalOrder,
-                disposalOrder);
+                checkpointValue == (int)MainWindowViewModelConstructionCheckpoint.OnlineAndShellReady
+                    ? ["game-window-switcher", "inara", "first-footfall"]
+                    : ["inara", "game-window-switcher", "first-footfall"];
+            Assert.Equal(expectedDisposalOrder, disposalOrder);
         }
         finally
         {
@@ -149,40 +125,30 @@ public sealed class MainWindowViewModelOwnershipTests
         try
         {
             List<string> disposalOrder = [];
-            var cleanupFailure = new InvalidOperationException(
-                "first-footfall cleanup failed");
-            var inference = new RecordingFirstFootfallInferenceService(
-                disposalOrder,
-                cleanupFailure);
+            var cleanupFailure = new InvalidOperationException("first-footfall cleanup failed");
+            var inference = new RecordingFirstFootfallInferenceService(disposalOrder, cleanupFailure);
             var publisher = new RecordingInaraPublisher(disposalOrder);
             var switcher = new RecordingGameWindowSwitcher(disposalOrder);
-            var applicationLog = new ApplicationLogService(
-                CreatePaths(root).DataDirectory);
-            var primaryFailure = new InvalidOperationException(
-                "primary construction failure");
+            var applicationLog = new ApplicationLogService(CreatePaths(root).DataDirectory);
+            var primaryFailure = new InvalidOperationException("primary construction failure");
 
             var thrown = Assert.Throws<InvalidOperationException>(() =>
                 MainWindowViewModelTestBuilder.Create(
                     configuredJournalDirectory: null,
-                    builder => builder
-                        .WithAppDataPaths(CreatePaths(root))
-                        .WithApplicationLogService(applicationLog)
-                        .WithFirstFootfallInferenceService(inference)
-                        .WithInaraPublisher(publisher)
-                        .WithGameWindowSwitcher(switcher)
-                        .FailAt(
-                            MainWindowViewModelConstructionCheckpoint
-                                .OnlineAndShellReady,
-                            primaryFailure)));
+                    builder =>
+                        builder
+                            .WithAppDataPaths(CreatePaths(root))
+                            .WithApplicationLogService(applicationLog)
+                            .WithFirstFootfallInferenceService(inference)
+                            .WithInaraPublisher(publisher)
+                            .WithGameWindowSwitcher(switcher)
+                            .FailAt(MainWindowViewModelConstructionCheckpoint.OnlineAndShellReady, primaryFailure)
+                )
+            );
 
             Assert.Same(primaryFailure, thrown);
-            Assert.Equal(
-                ["game-window-switcher", "inara", "first-footfall"],
-                disposalOrder);
-            Assert.Contains(
-                "first-footfall cleanup failed",
-                applicationLog.Text,
-                StringComparison.Ordinal);
+            Assert.Equal(["game-window-switcher", "inara", "first-footfall"], disposalOrder);
+            Assert.Contains("first-footfall cleanup failed", applicationLog.Text, StringComparison.Ordinal);
         }
         finally
         {
@@ -192,9 +158,7 @@ public sealed class MainWindowViewModelOwnershipTests
 
     private static string CreateTemporaryRoot()
     {
-        return Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-runtime-owner-{Guid.NewGuid():N}");
+        return Path.Combine(Path.GetTempPath(), $"SrvSurvey-runtime-owner-{Guid.NewGuid():N}");
     }
 
     private static AppDataPaths CreatePaths(string root)
@@ -203,7 +167,8 @@ public sealed class MainWindowViewModelOwnershipTests
             Path.Combine(root, "config"),
             Path.Combine(root, "data"),
             Path.Combine(root, "cache"),
-            []);
+            []
+        );
     }
 
     private static void DeleteTemporaryRoot(string root)
@@ -227,8 +192,8 @@ public sealed class MainWindowViewModelOwnershipTests
 
     private sealed class RecordingFirstFootfallInferenceService(
         List<string> disposalOrder,
-        Exception? disposeFailure = null)
-        : IFirstFootfallInferenceService
+        Exception? disposeFailure = null
+    ) : IFirstFootfallInferenceService
     {
         public bool IsAvailable => true;
 
@@ -238,13 +203,12 @@ public sealed class MainWindowViewModelOwnershipTests
 
         public Task<FirstFootfallInferenceResult> DetectAsync(
             FirstFootfallInferencePreferences preferences,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
-            return Task.FromResult(new FirstFootfallInferenceResult(
-                FirstFootfallInferenceOutcome.NotDetected,
-                0,
-                0,
-                null));
+            return Task.FromResult(
+                new FirstFootfallInferenceResult(FirstFootfallInferenceOutcome.NotDetected, 0, 0, null)
+            );
         }
 
         public void Dispose()
@@ -258,26 +222,23 @@ public sealed class MainWindowViewModelOwnershipTests
         }
     }
 
-    private sealed class RecordingInaraPublisher(List<string> disposalOrder)
-        : IInaraPublisher
+    private sealed class RecordingInaraPublisher(List<string> disposalOrder) : IInaraPublisher
     {
         public Task<InaraPublicationResult> ApplyAsync(
             InaraPublicationUpdate update,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             return Task.FromResult(InaraPublicationResult.Empty);
         }
 
-        public Task<InaraPublicationResult> StopAsync(
-            CancellationToken cancellationToken = default)
+        public Task<InaraPublicationResult> StopAsync(CancellationToken cancellationToken = default)
         {
             disposalOrder.Add("inara");
             return Task.FromResult(InaraPublicationResult.Empty);
         }
 
-        public void CancelPendingPublication()
-        {
-        }
+        public void CancelPendingPublication() { }
 
         public void Dispose()
         {
@@ -285,8 +246,7 @@ public sealed class MainWindowViewModelOwnershipTests
         }
     }
 
-    private sealed class RecordingGameWindowSwitcher(List<string> disposalOrder)
-        : IGameWindowSwitcher
+    private sealed class RecordingGameWindowSwitcher(List<string> disposalOrder) : IGameWindowSwitcher
     {
         public int GetAvailableWindowCount() => 0;
 
@@ -302,9 +262,7 @@ public sealed class MainWindowViewModelOwnershipTests
 
     private sealed class TestViewModelContext : IAsyncDisposable
     {
-        private readonly string root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-runtime-owner-{Guid.NewGuid():N}");
+        private readonly string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-runtime-owner-{Guid.NewGuid():N}");
 
         public TestViewModelContext()
         {
@@ -312,13 +270,13 @@ public sealed class MainWindowViewModelOwnershipTests
                 Path.Combine(root, "config"),
                 Path.Combine(root, "data"),
                 Path.Combine(root, "cache"),
-                []);
+                []
+            );
             ApplicationLog = new ApplicationLogService(paths.DataDirectory);
             ViewModel = MainWindowViewModelTestBuilder.Create(
                 configuredJournalDirectory: null,
-                builder => builder
-                    .WithAppDataPaths(paths)
-                    .WithApplicationLogService(ApplicationLog));
+                builder => builder.WithAppDataPaths(paths).WithApplicationLogService(ApplicationLog)
+            );
         }
 
         public ApplicationLogService ApplicationLog { get; }

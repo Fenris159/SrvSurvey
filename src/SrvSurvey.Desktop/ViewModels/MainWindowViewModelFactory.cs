@@ -20,26 +20,22 @@ namespace SrvSurvey.Desktop.ViewModels;
 /// </summary>
 internal static class MainWindowViewModelFactory
 {
-    public static MainWindowViewModel Create(
-        MainWindowViewModelStartup startup)
+    public static MainWindowViewModel Create(MainWindowViewModelStartup startup)
     {
         ArgumentNullException.ThrowIfNull(startup);
 
         var construction = startup.CreateConstructionContext();
         startup.TransferOwnershipToConstruction();
-        return new MainWindowViewModel(
-            startup.ConfiguredJournalDirectory,
-            construction);
+        return new MainWindowViewModel(startup.ConfiguredJournalDirectory, construction);
     }
 
     internal static MainWindowViewModel CreateForTesting(
         string? configuredJournalDirectory,
-        MainWindowViewModelConstructionContext construction)
+        MainWindowViewModelConstructionContext construction
+    )
     {
         ArgumentNullException.ThrowIfNull(construction);
-        return new MainWindowViewModel(
-            configuredJournalDirectory,
-            construction);
+        return new MainWindowViewModel(configuredJournalDirectory, construction);
     }
 }
 
@@ -54,19 +50,17 @@ internal sealed class MainWindowViewModelStartup : IDisposable
         MainWindowOverlayInputs overlay,
         MainWindowExplorationInputs exploration,
         MainWindowTravelInputs travel,
-        MainWindowOnlineInputs online)
+        MainWindowOnlineInputs online
+    )
     {
         ConfiguredJournalDirectory = configuredJournalDirectory;
-        Foundation = foundation
-            ?? throw new ArgumentNullException(nameof(foundation));
+        Foundation = foundation ?? throw new ArgumentNullException(nameof(foundation));
         Overlay = overlay ?? throw new ArgumentNullException(nameof(overlay));
-        Exploration = exploration
-            ?? throw new ArgumentNullException(nameof(exploration));
+        Exploration = exploration ?? throw new ArgumentNullException(nameof(exploration));
         Travel = travel ?? throw new ArgumentNullException(nameof(travel));
         Online = online ?? throw new ArgumentNullException(nameof(online));
         ownedOverlayInteraction = overlay.OverlayInteraction;
-        ownedFirstFootfallInferenceService =
-            exploration.FirstFootfallInferenceService;
+        ownedFirstFootfallInferenceService = exploration.FirstFootfallInferenceService;
     }
 
     public string? ConfiguredJournalDirectory { get; }
@@ -99,9 +93,7 @@ internal sealed class MainWindowViewModelStartup : IDisposable
         {
             try
             {
-                Foundation.ApplicationLogService?.Append(
-                    "Main window startup cleanup failed: "
-                    + exception.Message);
+                Foundation.ApplicationLogService?.Append("Main window startup cleanup failed: " + exception.Message);
             }
             catch
             {
@@ -129,20 +121,16 @@ internal sealed class MainWindowViewModelStartup : IDisposable
     }
 }
 
-internal sealed class MainWindowViewModelStartupResource<T>(
-    T resource,
-    Action<Exception>? reportFailure = null)
+internal sealed class MainWindowViewModelStartupResource<T>(T resource, Action<Exception>? reportFailure = null)
     : IDisposable
     where T : class, IDisposable
 {
-    private T? ownedResource = resource
-        ?? throw new ArgumentNullException(nameof(resource));
+    private T? ownedResource = resource ?? throw new ArgumentNullException(nameof(resource));
 
     public T Transfer()
     {
-        var result = ownedResource
-            ?? throw new InvalidOperationException(
-                "The startup resource was already transferred.");
+        var result =
+            ownedResource ?? throw new InvalidOperationException("The startup resource was already transferred.");
         ownedResource = null;
         return result;
     }
@@ -181,11 +169,7 @@ internal sealed class MainWindowViewModelConstructionContext
 
     public MainWindowOnlineInputs Online { get; init; } = new();
 
-    public Action<MainWindowViewModelConstructionCheckpoint>? Checkpoint
-    {
-        get;
-        init;
-    }
+    public Action<MainWindowViewModelConstructionCheckpoint>? Checkpoint { get; init; }
 }
 
 internal sealed class MainWindowFoundationInputs
@@ -200,11 +184,7 @@ internal sealed class MainWindowFoundationInputs
 
     public string? TargetFrontierId { get; init; }
 
-    public CommanderPreferenceSettingsStore? CommanderPreferenceSettingsStore
-    {
-        get;
-        init;
-    }
+    public CommanderPreferenceSettingsStore? CommanderPreferenceSettingsStore { get; init; }
 
     public bool CommanderPreferenceCommandLineOverride { get; init; }
 
@@ -231,34 +211,18 @@ internal sealed class MainWindowOverlayInputs
 
     public OverlayThemeSettingsViewModel? OverlayThemeSettings { get; init; }
 
-    public IScreenshotProcessingService? ScreenshotProcessingService
-    {
-        get;
-        init;
-    }
+    public IScreenshotProcessingService? ScreenshotProcessingService { get; init; }
 
-    public GuardianOverlaySettingsStore? GuardianOverlaySettingsStore
-    {
-        get;
-        init;
-    }
+    public GuardianOverlaySettingsStore? GuardianOverlaySettingsStore { get; init; }
 
-    public DesktopBehaviorSettingsStore? DesktopBehaviorSettingsStore
-    {
-        get;
-        init;
-    }
+    public DesktopBehaviorSettingsStore? DesktopBehaviorSettingsStore { get; init; }
 }
 
 internal sealed class MainWindowExplorationInputs
 {
     public IBoxelSystemResolver? BoxelSystemResolver { get; init; }
 
-    public IFirstFootfallInferenceService? FirstFootfallInferenceService
-    {
-        get;
-        init;
-    }
+    public IFirstFootfallInferenceService? FirstFootfallInferenceService { get; init; }
 
     public ISystemBodyDataClient? SystemBodyDataClient { get; init; }
 
@@ -290,12 +254,7 @@ internal sealed class MainWindowOnlineInputs
 
     public IEdsmPublisher? EdsmPublisher { get; init; }
 
-    public GreenGasGiantPublicationCoordinator?
-        GreenGasGiantPublicationCoordinator
-    {
-        get;
-        init;
-    }
+    public GreenGasGiantPublicationCoordinator? GreenGasGiantPublicationCoordinator { get; init; }
 }
 
 internal enum MainWindowViewModelConstructionCheckpoint
@@ -307,8 +266,7 @@ internal enum MainWindowViewModelConstructionCheckpoint
     OnlineAndShellReady,
 }
 
-internal sealed class MainWindowViewModelConstructionRollback(
-    ApplicationLogService? applicationLogService)
+internal sealed class MainWindowViewModelConstructionRollback(ApplicationLogService? applicationLogService)
 {
     // Registration follows construction order so rollback is deterministic and
     // releases later feature families before their dependencies.
@@ -353,16 +311,12 @@ internal sealed class MainWindowViewModelConstructionRollback(
 
     public void Rollback()
     {
-        var failures = Task.Run(RollbackCoreAsync, CancellationToken.None)
-            .GetAwaiter()
-            .GetResult();
+        var failures = Task.Run(RollbackCoreAsync, CancellationToken.None).GetAwaiter().GetResult();
         foreach (var failure in failures)
         {
             try
             {
-                applicationLogService?.Append(
-                    "Main window construction cleanup failed: "
-                    + failure.Message);
+                applicationLogService?.Append("Main window construction cleanup failed: " + failure.Message);
             }
             catch
             {
@@ -390,9 +344,7 @@ internal sealed class MainWindowViewModelConstructionRollback(
     }
 }
 
-internal sealed class MainWindowViewModelConstructionOwnership<T>(
-    T? initialResource)
-    : IDisposable
+internal sealed class MainWindowViewModelConstructionOwnership<T>(T? initialResource) : IDisposable
     where T : class, IDisposable
 {
     private T? ownedResource = initialResource;
@@ -400,11 +352,9 @@ internal sealed class MainWindowViewModelConstructionOwnership<T>(
     public void Own(T candidateResource)
     {
         ArgumentNullException.ThrowIfNull(candidateResource);
-        if (ownedResource is not null
-            && !ReferenceEquals(ownedResource, candidateResource))
+        if (ownedResource is not null && !ReferenceEquals(ownedResource, candidateResource))
         {
-            throw new InvalidOperationException(
-                "Construction ownership cannot replace an owned resource.");
+            throw new InvalidOperationException("Construction ownership cannot replace an owned resource.");
         }
 
         ownedResource = candidateResource;

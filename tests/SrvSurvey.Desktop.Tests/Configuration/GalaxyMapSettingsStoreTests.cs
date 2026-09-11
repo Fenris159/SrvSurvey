@@ -6,14 +6,13 @@ public sealed class GalaxyMapSettingsStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-galaxy-map-settings-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-galaxy-map-settings-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void MissingSettingsUseLegacyEnabledDefaults()
     {
-        Assert.Equal(
-            new GalaxyMapPreferences(true, true),
-            CreateStore().Load());
+        Assert.Equal(new GalaxyMapPreferences(true, true), CreateStore().Load());
     }
 
     [Fact]
@@ -26,9 +25,7 @@ public sealed class GalaxyMapSettingsStoreTests : IDisposable
 
         store.Save(new GalaxyMapPreferences(false, false));
 
-        Assert.Equal(
-            new GalaxyMapPreferences(false, false),
-            store.Load());
+        Assert.Equal(new GalaxyMapPreferences(false, false), store.Load());
         Assert.Contains("\"Keep\": 42", File.ReadAllText(path));
     }
 
@@ -42,7 +39,6 @@ public sealed class GalaxyMapSettingsStoreTests : IDisposable
 
     private GalaxyMapSettingsStore CreateStore()
     {
-        return new GalaxyMapSettingsStore(
-            Path.Combine(temporaryDirectory, "ui-settings.json"));
+        return new GalaxyMapSettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json"));
     }
 }

@@ -15,8 +15,7 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
 
     public NetworkPrivacyViewModel(NetworkPrivacySettingsStore settingsStore)
     {
-        this.settingsStore = settingsStore
-            ?? throw new ArgumentNullException(nameof(settingsStore));
+        this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         preferences = settingsStore.Load();
     }
 
@@ -30,9 +29,8 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
         set => TrySetEddnUploadEnabled(value);
     }
 
-    public string EddnConsentSummary => EddnUploadEnabled
-        ? "EDDN sharing is enabled for live Commander sessions."
-        : "EDDN sharing is disabled.";
+    public string EddnConsentSummary =>
+        EddnUploadEnabled ? "EDDN sharing is enabled for live Commander sessions." : "EDDN sharing is disabled.";
 
     public bool TrySetEddnUploadEnabled(bool value)
     {
@@ -59,9 +57,7 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
         }
     }
 
-    private void RollBackEddnConsent(
-        NetworkPrivacyPreferences previous,
-        Exception originalException)
+    private void RollBackEddnConsent(NetworkPrivacyPreferences previous, Exception originalException)
     {
         preferences = previous;
         List<string> rollbackErrors = [];
@@ -71,9 +67,7 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
         }
         catch (Exception exception)
         {
-            rollbackErrors.Add(
-                "The previous consent could not be saved: "
-                    + exception.Message);
+            rollbackErrors.Add("The previous consent could not be saved: " + exception.Message);
         }
 
         try
@@ -82,44 +76,39 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
         }
         catch (Exception exception)
         {
-            rollbackErrors.Add(
-                "The EDDN runtime rollback failed: " + exception.Message);
+            rollbackErrors.Add("The EDDN runtime rollback failed: " + exception.Message);
         }
 
         OnPropertyChanged(string.Empty);
-        StatusMessage = rollbackErrors.Count == 0
-            ? "The EDDN sharing choice was not changed because the runtime transition failed; the previous choice was restored: "
-                + originalException.Message
-            : "The EDDN sharing choice could not be fully restored after the runtime transition failed: "
-                + originalException.Message
-                + Environment.NewLine
-                + string.Join(Environment.NewLine, rollbackErrors);
+        StatusMessage =
+            rollbackErrors.Count == 0
+                ? "The EDDN sharing choice was not changed because the runtime transition failed; the previous choice was restored: "
+                    + originalException.Message
+                : "The EDDN sharing choice could not be fully restored after the runtime transition failed: "
+                    + originalException.Message
+                    + Environment.NewLine
+                    + string.Join(Environment.NewLine, rollbackErrors);
     }
 
     private static bool IsExpectedSettingsException(Exception exception)
     {
-        return exception is IOException
-            or UnauthorizedAccessException
-            or InvalidDataException
-            or InvalidOperationException;
+        return exception
+            is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException
+                or InvalidOperationException;
     }
 
     public bool UploadGreenGasGiantCandidates
     {
         get => preferences.UploadGreenGasGiantCandidates;
-        set => Update(preferences with
-        {
-            UploadGreenGasGiantCandidates = value,
-        });
+        set => Update(preferences with { UploadGreenGasGiantCandidates = value });
     }
 
     public bool UploadHumanSettlementGeometry
     {
         get => preferences.UploadHumanSettlementGeometry;
-        set => Update(preferences with
-        {
-            UploadHumanSettlementGeometry = value,
-        });
+        set => Update(preferences with { UploadHumanSettlementGeometry = value });
     }
 
     public string StatusMessage
@@ -140,8 +129,7 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
 
     public bool HasStatusMessage => !string.IsNullOrWhiteSpace(StatusMessage);
 
-    public void ReportPublicationResult(
-        GreenGasGiantPublicationResult result)
+    public void ReportPublicationResult(GreenGasGiantPublicationResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
         if (result.Warnings.Count > 0)
@@ -150,13 +138,11 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
         }
         else if (result.Published.Count == 1)
         {
-            StatusMessage =
-                $"Uploaded a {result.Published[0].Tag} Green Gas Giant candidate.";
+            StatusMessage = $"Uploaded a {result.Published[0].Tag} Green Gas Giant candidate.";
         }
         else if (result.Published.Count > 1)
         {
-            StatusMessage =
-                $"Uploaded {result.Published.Count:N0} Green Gas Giant candidates.";
+            StatusMessage = $"Uploaded {result.Published.Count:N0} Green Gas Giant candidates.";
         }
     }
 
@@ -169,18 +155,15 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
         }
         else if (result.Published.Count == 1)
         {
-            StatusMessage =
-                $"Queued {result.Published[0].EventName} for EDDN.";
+            StatusMessage = $"Queued {result.Published[0].EventName} for EDDN.";
         }
         else if (result.Published.Count > 1)
         {
-            StatusMessage =
-                $"Queued {result.Published.Count:N0} journal events for EDDN.";
+            StatusMessage = $"Queued {result.Published.Count:N0} journal events for EDDN.";
         }
     }
 
-    public void ReportPublicationResult(
-        CanonnHumanSitePublicationResult result)
+    public void ReportPublicationResult(CanonnHumanSitePublicationResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
         if (!string.IsNullOrWhiteSpace(result.Warning))
@@ -189,8 +172,7 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
         }
         else if (result.Published is { } published)
         {
-            StatusMessage =
-                $"Uploaded settlement geometry for {published.Name} to Canonn.";
+            StatusMessage = $"Uploaded settlement geometry for {published.Name} to Canonn.";
         }
     }
 
@@ -212,17 +194,13 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
         catch (Exception exception) when (IsExpectedSettingsException(exception))
         {
             StatusMessage =
-                "The privacy preference was not changed because it could not be saved: "
-                + exception.Message;
+                "The privacy preference was not changed because it could not be saved: " + exception.Message;
             return false;
         }
     }
 
-    private void OnPropertyChanged(
-        [CallerMemberName] string? propertyName = null)
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(propertyName));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

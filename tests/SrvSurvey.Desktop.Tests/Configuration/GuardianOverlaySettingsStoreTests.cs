@@ -7,7 +7,8 @@ public sealed class GuardianOverlaySettingsStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-guardian-overlay-settings-{Guid.NewGuid():N}");
+        $"SrvSurvey-guardian-overlay-settings-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void DefaultsMatchLegacyGuardianOverlayBehavior()
@@ -33,9 +34,7 @@ public sealed class GuardianOverlaySettingsStoreTests : IDisposable
     public void SavesPreferencesWithoutLosingOtherUiSettings()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        File.WriteAllText(
-            SettingsPath,
-            """{"Theme":{"Key":"raven-dark"},"Future":42}""");
+        File.WriteAllText(SettingsPath, """{"Theme":{"Key":"raven-dark"},"Future":42}""");
         var store = new GuardianOverlaySettingsStore(SettingsPath);
 
         var expected = new GuardianOverlayPreferences(
@@ -50,7 +49,8 @@ public sealed class GuardianOverlaySettingsStoreTests : IDisposable
             DisableRuinsMeasurementGrid: true,
             DisableAerialAlignmentGrid: true,
             ShowMapNotes: false,
-            ShowMapLegend: false);
+            ShowMapLegend: false
+        );
         store.Save(expected);
 
         Assert.Equal(expected, store.Load());
@@ -59,9 +59,7 @@ public sealed class GuardianOverlaySettingsStoreTests : IDisposable
         Assert.Equal(42, root["Future"]!.GetValue<int>());
     }
 
-    private string SettingsPath => Path.Combine(
-        temporaryDirectory,
-        "ui-settings.json");
+    private string SettingsPath => Path.Combine(temporaryDirectory, "ui-settings.json");
 
     public void Dispose()
     {

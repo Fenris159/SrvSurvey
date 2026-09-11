@@ -11,7 +11,8 @@ public sealed class GreenGasGiantCriteriaCatalog
     private GreenGasGiantCriteriaCatalog(
         double tolerance,
         IReadOnlyDictionary<string, IReadOnlyList<double>> known,
-        IReadOnlyDictionary<string, IReadOnlyList<double>> theorized)
+        IReadOnlyDictionary<string, IReadOnlyList<double>> theorized
+    )
     {
         Tolerance = tolerance;
         this.known = known;
@@ -20,15 +21,15 @@ public sealed class GreenGasGiantCriteriaCatalog
 
     public double Tolerance { get; }
 
-    public int TemperatureCount => known.Values.Sum(values => values.Count)
-        + theorized.Values.Sum(values => values.Count);
+    public int TemperatureCount =>
+        known.Values.Sum(values => values.Count) + theorized.Values.Sum(values => values.Count);
 
     public static GreenGasGiantCriteriaCatalog LoadEmbedded()
     {
         var assembly = typeof(GreenGasGiantCriteriaCatalog).Assembly;
-        using var stream = assembly.GetManifestResourceStream(ResourceName)
-            ?? throw new InvalidDataException(
-                $"Embedded Green Gas Giant criteria were not found: {ResourceName}");
+        using var stream =
+            assembly.GetManifestResourceStream(ResourceName)
+            ?? throw new InvalidDataException($"Embedded Green Gas Giant criteria were not found: {ResourceName}");
         return Load(stream);
     }
 
@@ -37,23 +38,23 @@ public sealed class GreenGasGiantCriteriaCatalog
         ArgumentNullException.ThrowIfNull(stream);
         using var document = JsonDocument.Parse(stream);
         var root = document.RootElement;
-        var tolerance = root.TryGetProperty("delta", out var delta)
+        var tolerance =
+            root.TryGetProperty("delta", out var delta)
             && delta.TryGetDouble(out var parsedDelta)
             && double.IsFinite(parsedDelta)
             && parsedDelta >= 0
                 ? parsedDelta
-                : throw new InvalidDataException(
-                    "Green Gas Giant criteria have an invalid tolerance.");
+                : throw new InvalidDataException("Green Gas Giant criteria have an invalid tolerance.");
         return new GreenGasGiantCriteriaCatalog(
             tolerance,
             ReadTemperatures(root, "knownGGGTemps"),
-            ReadTemperatures(root, "theorizedGGGTemps"));
+            ReadTemperatures(root, "theorizedGGGTemps")
+        );
     }
 
     public string? Match(string? planetClass, double surfaceTemperature)
     {
-        if (string.IsNullOrWhiteSpace(planetClass)
-            || !double.IsFinite(surfaceTemperature))
+        if (string.IsNullOrWhiteSpace(planetClass) || !double.IsFinite(surfaceTemperature))
         {
             return null;
         }
@@ -87,42 +88,34 @@ public sealed class GreenGasGiantCriteriaCatalog
         return null;
     }
 
-    private bool IsApproximateMatch(
-        IReadOnlyList<double> temperatures,
-        double surfaceTemperature)
+    private bool IsApproximateMatch(IReadOnlyList<double> temperatures, double surfaceTemperature)
     {
-        return temperatures.Any(
-            temperature => Math.Abs(surfaceTemperature - temperature) < Tolerance);
+        return temperatures.Any(temperature => Math.Abs(surfaceTemperature - temperature) < Tolerance);
     }
 
-    private static Dictionary<string, IReadOnlyList<double>>
-        ReadTemperatures(JsonElement root, string propertyName)
+    private static Dictionary<string, IReadOnlyList<double>> ReadTemperatures(JsonElement root, string propertyName)
     {
-        if (!root.TryGetProperty(propertyName, out var groups)
-            || groups.ValueKind != JsonValueKind.Object)
+        if (!root.TryGetProperty(propertyName, out var groups) || groups.ValueKind != JsonValueKind.Object)
         {
-            throw new InvalidDataException(
-                $"Green Gas Giant criteria are missing {propertyName}.");
+            throw new InvalidDataException($"Green Gas Giant criteria are missing {propertyName}.");
         }
 
-        var result = new Dictionary<string, IReadOnlyList<double>>(
-            StringComparer.OrdinalIgnoreCase);
+        var result = new Dictionary<string, IReadOnlyList<double>>(StringComparer.OrdinalIgnoreCase);
         foreach (var group in groups.EnumerateObject())
         {
             if (group.Value.ValueKind != JsonValueKind.Array)
             {
-                throw new InvalidDataException(
-                    $"Green Gas Giant criteria for {group.Name} are not an array.");
+                throw new InvalidDataException($"Green Gas Giant criteria for {group.Name} are not an array.");
             }
 
             var temperatures = new List<double>();
             foreach (var value in group.Value.EnumerateArray())
             {
-                if (!value.TryGetDouble(out var temperature)
-                    || !double.IsFinite(temperature))
+                if (!value.TryGetDouble(out var temperature) || !double.IsFinite(temperature))
                 {
                     throw new InvalidDataException(
-                        $"Green Gas Giant criteria for {group.Name} contain an invalid temperature.");
+                        $"Green Gas Giant criteria for {group.Name} contain an invalid temperature."
+                    );
                 }
 
                 temperatures.Add(temperature);

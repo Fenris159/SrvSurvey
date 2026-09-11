@@ -19,7 +19,8 @@ public sealed record BiologyStatusViewModel(
     BiologyTemperatureRangeViewModel? TemperatureRange,
     bool HasCodexImageIndicator = false,
     bool HasCodexImage = false,
-    bool IsStaleActiveSample = false)
+    bool IsStaleActiveSample = false
+)
 {
     private static readonly BiologyActiveSampleViewModel EmptyActiveSample = new(
         string.Empty,
@@ -28,18 +29,18 @@ public sealed record BiologyStatusViewModel(
         null,
         null,
         0,
-        false);
+        false
+    );
 
-    private static readonly Lazy<BiologyPredictionEvaluator>
-        DefaultPredictionEvaluator = new(() => new BiologyPredictionEvaluator(
-            BiologyCriteriaCatalog.LoadEmbedded()));
+    private static readonly Lazy<BiologyPredictionEvaluator> DefaultPredictionEvaluator = new(() =>
+        new BiologyPredictionEvaluator(BiologyCriteriaCatalog.LoadEmbedded())
+    );
 
     public bool HasSignals => Signals.Count > 0;
 
     public bool HasActiveSample => ActiveSample is not null;
 
-    public BiologyActiveSampleViewModel ActiveSampleDisplay =>
-        ActiveSample ?? EmptyActiveSample;
+    public BiologyActiveSampleViewModel ActiveSampleDisplay => ActiveSample ?? EmptyActiveSample;
 
     public bool HasCodexNotification => CodexNotification is not null;
 
@@ -51,21 +52,14 @@ public sealed record BiologyStatusViewModel(
 
     public bool HasTemperatureRange => TemperatureRange is not null;
 
-    public bool ShowCodexImageIndicator => HasCodexImageIndicator
-        && !HasTemperatureRange
-        && ActiveSample is null;
+    public bool ShowCodexImageIndicator => HasCodexImageIndicator && !HasTemperatureRange && ActiveSample is null;
 
-    public string ProgressText =>
-        $"{AnalyzedSignalCount:N0} of {SignalCount:N0} analyzed";
+    public string ProgressText => $"{AnalyzedSignalCount:N0} of {SignalCount:N0} analyzed";
 
     public string CompletionPercentText => $"{CompletionPercent:N0}%";
 
-    public double CompletionPercent => SignalCount <= 0
-        ? 0
-        : Math.Clamp(
-            AnalyzedSignalCount * 100d / SignalCount,
-            0,
-            100);
+    public double CompletionPercent =>
+        SignalCount <= 0 ? 0 : Math.Clamp(AnalyzedSignalCount * 100d / SignalCount, 0, 100);
 
     public double TrackedCompletionPercent => CompletionPercent;
 
@@ -73,44 +67,34 @@ public sealed record BiologyStatusViewModel(
         SystemScanSnapshot snapshot,
         EliteStatus? status,
         ExobiologySnapshot exobiology,
-        BiologyStatusCreateOptions options)
+        BiologyStatusCreateOptions options
+    )
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(exobiology);
-        var body = options.AllowRetainedCurrentBody
-            ? ResolveCurrentBody(snapshot, status)
-            : null;
+        var body = options.AllowRetainedCurrentBody ? ResolveCurrentBody(snapshot, status) : null;
         if (body is null || body.BiologicalSignalCount <= 0)
         {
             return null;
         }
 
         var activeContext = ResolveActiveScanContext(body, exobiology);
-        var signals = CreateSignals(
-            body,
-            activeContext.Organism,
-            options.HideGeologicalSignals);
-        var activeSample = activeContext.IsLocal && activeContext.Scan is not null
-            ? CreateActiveSample(
-                body,
-                activeContext.Organism,
-                exobiology,
-                status)
-            : null;
-        var isStaleActiveSample = !activeContext.IsLocal
-            && activeContext.Scan is not null;
+        var signals = CreateSignals(body, activeContext.Organism, options.HideGeologicalSignals);
+        var activeSample =
+            activeContext.IsLocal && activeContext.Scan is not null
+                ? CreateActiveSample(body, activeContext.Organism, exobiology, status)
+                : null;
+        var isStaleActiveSample = !activeContext.IsLocal && activeContext.Scan is not null;
         var warning = BuildStaleSampleWarning(activeContext.Scan, isStaleActiveSample);
-        var allAnalyzed = body.AnalyzedBiologicalSignalCount
-            >= body.BiologicalSignalCount;
-        var currentNotification = ResolveBodyNotification(
-            options.CodexNotification,
-            body.BodyId);
+        var allAnalyzed = body.AnalyzedBiologicalSignalCount >= body.BiologicalSignalCount;
+        var currentNotification = ResolveBodyNotification(options.CodexNotification, body.BodyId);
         var footer = BiologyStatusFooter.Build(
             body,
             activeSample,
             isStaleActiveSample,
             allAnalyzed,
-            currentNotification);
+            currentNotification
+        );
 
         return new BiologyStatusViewModel(
             body.BodyId,
@@ -123,75 +107,61 @@ public sealed record BiologyStatusViewModel(
             body.Organisms.Count == 0,
             warning,
             footer,
-            ResolveOptionalTemperatureRange(
-                snapshot,
-                body,
-                activeContext.Organism,
-                status,
-                options),
+            ResolveOptionalTemperatureRange(snapshot, body, activeContext.Organism, status, options),
             HasCodexImageIndicator: currentNotification is not null,
             HasCodexImage: currentNotification?.HasImage == true,
-            IsStaleActiveSample: isStaleActiveSample);
+            IsStaleActiveSample: isStaleActiveSample
+        );
     }
 
     private readonly record struct ActiveScanContext(
         BioSampleSnapshot? Scan,
         bool IsLocal,
-        SystemOrganismSnapshot? Organism);
+        SystemOrganismSnapshot? Organism
+    );
 
     private static ActiveScanContext ResolveActiveScanContext(
         SystemScanBodySnapshot body,
-        ExobiologySnapshot exobiology)
+        ExobiologySnapshot exobiology
+    )
     {
         var activeScan = exobiology.ScanOne;
         var isLocal = IsActiveScanLocal(activeScan, body.Name);
-        var organism = isLocal
-            ? FindActiveOrganism(body, activeScan!)
-            : null;
+        var organism = isLocal ? FindActiveOrganism(body, activeScan!) : null;
         return new ActiveScanContext(activeScan, isLocal, organism);
     }
 
-    private static bool IsActiveScanLocal(
-        BioSampleSnapshot? activeScan,
-        string bodyName)
+    private static bool IsActiveScanLocal(BioSampleSnapshot? activeScan, string bodyName)
     {
         return activeScan is not null
-            && (string.IsNullOrWhiteSpace(activeScan.Body)
-                || string.Equals(
-                    activeScan.Body,
-                    bodyName,
-                    StringComparison.OrdinalIgnoreCase));
+            && (
+                string.IsNullOrWhiteSpace(activeScan.Body)
+                || string.Equals(activeScan.Body, bodyName, StringComparison.OrdinalIgnoreCase)
+            );
     }
 
-    private static SystemOrganismSnapshot? FindActiveOrganism(
-        SystemScanBodySnapshot body,
-        BioSampleSnapshot activeScan)
+    private static SystemOrganismSnapshot? FindActiveOrganism(SystemScanBodySnapshot body, BioSampleSnapshot activeScan)
     {
-        var entryMatch = activeScan.EntryId > 0
-            ? body.Organisms.FirstOrDefault(organism =>
-                organism.EntryId == activeScan.EntryId)
-            : null;
-        var speciesMatch = entryMatch is null
-            && !string.IsNullOrWhiteSpace(activeScan.Species)
-                ? body.Organisms.FirstOrDefault(organism => string.Equals(
-                    organism.Species,
-                    activeScan.Species,
-                    StringComparison.Ordinal))
+        var entryMatch =
+            activeScan.EntryId > 0
+                ? body.Organisms.FirstOrDefault(organism => organism.EntryId == activeScan.EntryId)
+                : null;
+        var speciesMatch =
+            entryMatch is null && !string.IsNullOrWhiteSpace(activeScan.Species)
+                ? body.Organisms.FirstOrDefault(organism =>
+                    string.Equals(organism.Species, activeScan.Species, StringComparison.Ordinal)
+                )
                 : null;
         return entryMatch
             ?? speciesMatch
             ?? body.Organisms.FirstOrDefault(organism =>
                 organism.EntryId is not > 0
                 && string.IsNullOrWhiteSpace(organism.Species)
-                && string.Equals(
-                    organism.Genus,
-                    activeScan.Genus,
-                    StringComparison.Ordinal));
+                && string.Equals(organism.Genus, activeScan.Genus, StringComparison.Ordinal)
+            );
     }
 
-    private static string BuildStaleSampleWarning(
-        BioSampleSnapshot? activeScan,
-        bool isStaleActiveSample)
+    private static string BuildStaleSampleWarning(BioSampleSnapshot? activeScan, bool isStaleActiveSample)
     {
         if (!isStaleActiveSample || activeScan is null)
         {
@@ -207,7 +177,8 @@ public sealed record BiologyStatusViewModel(
 
     private static BiologyCodexNotificationViewModel? ResolveBodyNotification(
         BiologyCodexNotificationViewModel? notification,
-        int bodyId)
+        int bodyId
+    )
     {
         return notification?.BodyId == bodyId ? notification : null;
     }
@@ -217,7 +188,8 @@ public sealed record BiologyStatusViewModel(
         SystemScanBodySnapshot body,
         SystemOrganismSnapshot? activeOrganism,
         EliteStatus? status,
-        BiologyStatusCreateOptions options)
+        BiologyStatusCreateOptions options
+    )
     {
         if (!options.ShowTemperatureRangeDebug)
         {
@@ -229,7 +201,8 @@ public sealed record BiologyStatusViewModel(
             body,
             activeOrganism,
             status,
-            options.PredictionEvaluator ?? DefaultPredictionEvaluator.Value);
+            options.PredictionEvaluator ?? DefaultPredictionEvaluator.Value
+        );
     }
 
     private static BiologyTemperatureRangeViewModel CreateTemperatureRange(
@@ -237,47 +210,45 @@ public sealed record BiologyStatusViewModel(
         SystemScanBodySnapshot body,
         SystemOrganismSnapshot? organism,
         EliteStatus? status,
-        BiologyPredictionEvaluator predictionEvaluator)
+        BiologyPredictionEvaluator predictionEvaluator
+    )
     {
         BiologyCriteriaClause? temperatureClause = null;
-        var targetName = organism?.VariantLocalized
-            ?? organism?.SpeciesLocalized;
-        var inputs = BiologyPredictionContextBuilder.Build(
-            snapshot,
-            body.BodyId);
+        var targetName = organism?.VariantLocalized ?? organism?.SpeciesLocalized;
+        var inputs = BiologyPredictionContextBuilder.Build(snapshot, body.BodyId);
         if (inputs is not null && !string.IsNullOrWhiteSpace(targetName))
         {
-            temperatureClause = predictionEvaluator.Evaluate(
-                    inputs.Context,
-                    inputs.Knowledge,
-                    targetName)
-                .TargetClauses
-                .LastOrDefault(clause => clause.Property == "temp"
-                    && clause.Operator == BiologyCriteriaOperator.Range);
+            temperatureClause = predictionEvaluator
+                .Evaluate(inputs.Context, inputs.Knowledge, targetName)
+                .TargetClauses.LastOrDefault(clause =>
+                    clause.Property == "temp" && clause.Operator == BiologyCriteriaOperator.Range
+                );
         }
 
         return new BiologyTemperatureRangeViewModel(
             body.SurfaceTemperature,
             status?.Temperature is > 0 ? status.Temperature : null,
             temperatureClause?.Minimum,
-            temperatureClause?.Maximum);
+            temperatureClause?.Maximum
+        );
     }
 
     private static List<BiologyStatusSignalViewModel> CreateSignals(
         SystemScanBodySnapshot body,
         SystemOrganismSnapshot? activeOrganism,
-        bool hideGeologicalSignals)
+        bool hideGeologicalSignals
+    )
     {
-        var signals = body.Organisms
-            .Select(organism =>
+        var signals = body
+            .Organisms.Select(organism =>
             {
-                var name = organism.GenusLocalized
-                    ?? FormatJournalName(organism.Genus);
+                var name = organism.GenusLocalized ?? FormatJournalName(organism.Genus);
                 var distance = string.Empty;
                 if (!organism.IsAnalyzed)
                 {
                     var meters = ExobiologyReferenceCatalog.GetSampleDistanceMeters(
-                        organism.GenusLocalized ?? organism.Genus);
+                        organism.GenusLocalized ?? organism.Genus
+                    );
                     if (meters > 0)
                     {
                         distance = $"{meters:N0} m";
@@ -288,7 +259,8 @@ public sealed record BiologyStatusViewModel(
                     distance,
                     organism.IsAnalyzed,
                     ReferenceEquals(organism, activeOrganism),
-                    false);
+                    false
+                );
             })
             .ToList();
         if (!hideGeologicalSignals)
@@ -296,14 +268,15 @@ public sealed record BiologyStatusViewModel(
             for (var index = 0; index < body.GeologicalSignalCount; index++)
             {
                 var analyzed = index < body.AnalyzedGeologicalSignals.Count;
-                signals.Add(new BiologyStatusSignalViewModel(
-                    analyzed
-                        ? body.AnalyzedGeologicalSignals[index]
-                        : $"Geo #{index + 1:N0}",
-                    string.Empty,
-                    analyzed,
-                    false,
-                    true));
+                signals.Add(
+                    new BiologyStatusSignalViewModel(
+                        analyzed ? body.AnalyzedGeologicalSignals[index] : $"Geo #{index + 1:N0}",
+                        string.Empty,
+                        analyzed,
+                        false,
+                        true
+                    )
+                );
             }
         }
 
@@ -314,15 +287,13 @@ public sealed record BiologyStatusViewModel(
         SystemScanBodySnapshot body,
         SystemOrganismSnapshot? organism,
         ExobiologySnapshot exobiology,
-        EliteStatus? status)
+        EliteStatus? status
+    )
     {
         var scan = exobiology.ScanTwo ?? exobiology.ScanOne!;
         var stage = exobiology.ScanTwo is null ? 1 : 2;
         var requiredDistance = scan.Radius;
-        var nearestDistance = CalculateNearestDistance(
-            body.Name,
-            exobiology,
-            status);
+        var nearestDistance = CalculateNearestDistance(body.Name, exobiology, status);
         var remainingDistance = nearestDistance is null
             ? (double?)null
             : Math.Max(0, requiredDistance - nearestDistance.Value);
@@ -342,7 +313,8 @@ public sealed record BiologyStatusViewModel(
             nearestDistance,
             remainingDistance,
             reward,
-            body.IsFirstFootfall);
+            body.IsFirstFootfall
+        );
     }
 
     // Keep the legacy quarter-range cue, but clamp it to the compact shared
@@ -357,10 +329,7 @@ public sealed record BiologyStatusViewModel(
         return Math.Clamp(requiredDistanceMeters * 0.25d, 12, 120);
     }
 
-    private static double? CalculateNearestDistance(
-        string bodyName,
-        ExobiologySnapshot exobiology,
-        EliteStatus? status)
+    private static double? CalculateNearestDistance(string bodyName, ExobiologySnapshot exobiology, EliteStatus? status)
     {
         if (status?.HasLatitudeLongitude != true || status.PlanetRadius <= 0)
         {
@@ -369,24 +338,26 @@ public sealed record BiologyStatusViewModel(
 
         var current = new SurfaceCoordinate(status.Latitude, status.Longitude);
         var samples = new[] { exobiology.ScanOne, exobiology.ScanTwo }
-            .Where(sample => sample is not null
-                && (string.IsNullOrWhiteSpace(sample.Body)
-                    || string.Equals(
-                        sample.Body,
-                        bodyName,
-                        StringComparison.OrdinalIgnoreCase)))
+            .Where(sample =>
+                sample is not null
+                && (
+                    string.IsNullOrWhiteSpace(sample.Body)
+                    || string.Equals(sample.Body, bodyName, StringComparison.OrdinalIgnoreCase)
+                )
+            )
             .Cast<BioSampleSnapshot>()
             .ToArray();
         try
         {
             return samples.Length == 0
                 ? null
-                : samples.Min(sample => SurfaceNavigation.GetDistance(
-                    new SurfaceCoordinate(
-                        sample.Location.Latitude,
-                        sample.Location.Longitude),
-                    current,
-                    (double)status.PlanetRadius));
+                : samples.Min(sample =>
+                    SurfaceNavigation.GetDistance(
+                        new SurfaceCoordinate(sample.Location.Latitude, sample.Location.Longitude),
+                        current,
+                        (double)status.PlanetRadius
+                    )
+                );
         }
         catch (ArgumentOutOfRangeException)
         {
@@ -394,19 +365,19 @@ public sealed record BiologyStatusViewModel(
         }
     }
 
-    private static SystemScanBodySnapshot? ResolveCurrentBody(
-        SystemScanSnapshot snapshot,
-        EliteStatus? status)
+    private static SystemScanBodySnapshot? ResolveCurrentBody(SystemScanSnapshot snapshot, EliteStatus? status)
     {
         var byName = !string.IsNullOrWhiteSpace(status?.BodyName)
-            ? snapshot.Bodies.FirstOrDefault(body => string.Equals(
-                body.Name,
-                status.BodyName,
-                StringComparison.OrdinalIgnoreCase))
+            ? snapshot.Bodies.FirstOrDefault(body =>
+                string.Equals(body.Name, status.BodyName, StringComparison.OrdinalIgnoreCase)
+            )
             : null;
-        return byName ?? (snapshot.CurrentBodyId is { } bodyId
-            ? snapshot.Bodies.FirstOrDefault(body => body.BodyId == bodyId)
-            : null);
+        return byName
+            ?? (
+                snapshot.CurrentBodyId is { } bodyId
+                    ? snapshot.Bodies.FirstOrDefault(body => body.BodyId == bodyId)
+                    : null
+            );
     }
 
     private static string FormatJournalName(string value)
@@ -417,9 +388,7 @@ public sealed record BiologyStatusViewModel(
             .Replace("_Name;", string.Empty, StringComparison.Ordinal)
             .Replace('_', ' ')
             .Trim('$', ';', ' ');
-        return string.IsNullOrWhiteSpace(normalized)
-            ? "Unidentified organism"
-            : normalized;
+        return string.IsNullOrWhiteSpace(normalized) ? "Unidentified organism" : normalized;
     }
 }
 
@@ -428,7 +397,8 @@ public readonly record struct BiologyStatusCreateOptions(
     BiologyCodexNotificationViewModel? CodexNotification = null,
     bool ShowTemperatureRangeDebug = false,
     BiologyPredictionEvaluator? PredictionEvaluator = null,
-    bool AllowRetainedCurrentBody = true);
+    bool AllowRetainedCurrentBody = true
+);
 
 internal static class BiologyStatusFooter
 {
@@ -437,7 +407,8 @@ internal static class BiologyStatusFooter
         BiologyActiveSampleViewModel? activeSample,
         bool isStaleActiveSample,
         bool allAnalyzed,
-        BiologyCodexNotificationViewModel? currentNotification)
+        BiologyCodexNotificationViewModel? currentNotification
+    )
     {
         if (activeSample is not null || isStaleActiveSample)
         {
@@ -471,14 +442,14 @@ public sealed record BiologyCodexNotificationViewModel(
     string DisplayName,
     long Reward,
     bool IsFirstFootfall,
-    bool HasImage)
+    bool HasImage
+)
 {
-    public string SummaryText => DisplayName + " · " + FormatCredits(Reward)
-        + (IsFirstFootfall ? " · FF bonus" : string.Empty);
+    public string SummaryText =>
+        DisplayName + " · " + FormatCredits(Reward) + (IsFirstFootfall ? " · FF bonus" : string.Empty);
 
-    public string ActionText => HasImage
-        ? "Reference image available · type .show"
-        : "Codex details available · type .show";
+    public string ActionText =>
+        HasImage ? "Reference image available · type .show" : "Codex details available · type .show";
 
     private static string FormatCredits(long value)
     {
@@ -496,7 +467,8 @@ public sealed record BiologyStatusSignalViewModel(
     string Detail,
     bool IsAnalyzed,
     bool IsActive,
-    bool IsGeological)
+    bool IsGeological
+)
 {
     public bool HasDetail => !string.IsNullOrWhiteSpace(Detail);
 
@@ -512,7 +484,8 @@ public sealed record BiologyActiveSampleViewModel(
     double? NearestDistanceMeters,
     double? RemainingDistanceMeters,
     long Reward,
-    bool IsFirstFootfall)
+    bool IsFirstFootfall
+)
 {
     public bool IsFirstSampleComplete => Stage >= 1;
 
@@ -522,40 +495,40 @@ public sealed record BiologyActiveSampleViewModel(
 
     public bool HasReward => Reward > 0;
 
-    public string RewardText => HasReward
-        ? FormatCredits(Reward) + ((IsFirstFootfall) switch
-        {
-            true => " · FF bonus",
-            false => string.Empty
-        })
-        : string.Empty;
+    public string RewardText =>
+        HasReward
+            ? FormatCredits(Reward)
+                + (
+                    (IsFirstFootfall) switch
+                    {
+                        true => " · FF bonus",
+                        false => string.Empty,
+                    }
+                )
+            : string.Empty;
 
-    public string RequiredDistanceText =>
-        $"{RequiredDistanceMeters:N0} m";
+    public string RequiredDistanceText => $"{RequiredDistanceMeters:N0} m";
 
     public string SampleScaleLabel => RequiredDistanceText;
 
-    public double SampleScaleBarWidth =>
-        BiologyStatusViewModel.GetSampleScaleBarWidth(RequiredDistanceMeters);
+    public double SampleScaleBarWidth => BiologyStatusViewModel.GetSampleScaleBarWidth(RequiredDistanceMeters);
 
-    public double SeparationPercent => NearestDistanceMeters is null
-        || RequiredDistanceMeters <= 0
+    public double SeparationPercent =>
+        NearestDistanceMeters is null || RequiredDistanceMeters <= 0
             ? 0
-            : Math.Clamp(
-                NearestDistanceMeters.Value * 100 / RequiredDistanceMeters,
-                0,
-                100);
+            : Math.Clamp(NearestDistanceMeters.Value * 100 / RequiredDistanceMeters, 0, 100);
 
     public bool IsSeparationReady => RemainingDistanceMeters is <= 0;
 
-    public string DistanceText => NearestDistanceMeters is null
-        ? $"Move {RequiredDistanceMeters:N0} m from a prior sample."
-        : (IsSeparationReady) switch
-        {
-            true => $"{NearestDistanceMeters:N0} m from the nearest sample · separation reached",
-            false => $"{NearestDistanceMeters:N0} m from the nearest sample · "
-                                                                                                                + $"{RemainingDistanceMeters:N0} m remaining"
-        };
+    public string DistanceText =>
+        NearestDistanceMeters is null
+            ? $"Move {RequiredDistanceMeters:N0} m from a prior sample."
+            : (IsSeparationReady) switch
+            {
+                true => $"{NearestDistanceMeters:N0} m from the nearest sample · separation reached",
+                false => $"{NearestDistanceMeters:N0} m from the nearest sample · "
+                    + $"{RemainingDistanceMeters:N0} m remaining",
+            };
 
     private static string FormatCredits(long value)
     {
@@ -572,7 +545,8 @@ public sealed record BiologyTemperatureRangeViewModel(
     double BodyTemperature,
     double? LiveTemperature,
     double? Minimum,
-    double? Maximum)
+    double? Maximum
+)
 {
     public bool HasLiveTemperature => LiveTemperature is not null;
 
@@ -580,40 +554,29 @@ public sealed record BiologyTemperatureRangeViewModel(
 
     public string BodyTemperatureText => $"Body baseline {BodyTemperature:N1} K";
 
-    public string LiveTemperatureText => LiveTemperature is { } value
-        ? $"Live suit temperature {value:N1} K"
-        : "Live suit temperature unavailable";
+    public string LiveTemperatureText =>
+        LiveTemperature is { } value ? $"Live suit temperature {value:N1} K" : "Live suit temperature unavailable";
 
-    public string ExpectedRangeText => (Minimum, Maximum) switch
-    {
-        ({ } minimum, { } maximum) =>
-            $"Expected organism range {minimum:N1} to {maximum:N1} K",
-        ({ } minimum, null) => $"Expected organism minimum {minimum:N1} K",
-        (null, { } maximum) => $"Expected organism maximum {maximum:N1} K",
-        _ => "No organism-specific temperature range was resolved.",
-    };
+    public string ExpectedRangeText =>
+        (Minimum, Maximum) switch
+        {
+            ({ } minimum, { } maximum) => $"Expected organism range {minimum:N1} to {maximum:N1} K",
+            ({ } minimum, null) => $"Expected organism minimum {minimum:N1} K",
+            (null, { } maximum) => $"Expected organism maximum {maximum:N1} K",
+            _ => "No organism-specific temperature range was resolved.",
+        };
 
     public double BodyPositionPercent => CalculatePosition(BodyTemperature);
 
-    public double LivePositionPercent => LiveTemperature is { } value
-        ? CalculatePosition(value)
-        : 0;
+    public double LivePositionPercent => LiveTemperature is { } value ? CalculatePosition(value) : 0;
 
     private double CalculatePosition(double value)
     {
-        if (Minimum is { } minimum
-            && Maximum is { } maximum
-            && maximum > minimum)
+        if (Minimum is { } minimum && Maximum is { } maximum && maximum > minimum)
         {
-            return Math.Clamp(
-                (value - minimum) * 100d / (maximum - minimum),
-                0,
-                100);
+            return Math.Clamp((value - minimum) * 100d / (maximum - minimum), 0, 100);
         }
 
-        return Math.Clamp(
-            50d + (value - BodyTemperature) * 2.5d,
-            0,
-            100);
+        return Math.Clamp(50d + (value - BodyTemperature) * 2.5d, 0, 100);
     }
 }

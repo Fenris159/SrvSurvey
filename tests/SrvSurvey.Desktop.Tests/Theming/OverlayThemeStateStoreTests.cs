@@ -1,6 +1,6 @@
+using System.Text.Json;
 using Avalonia.Media;
 using SrvSurvey.Desktop.Theming;
-using System.Text.Json;
 
 namespace SrvSurvey.Desktop.Tests.Theming;
 
@@ -8,7 +8,8 @@ public sealed class OverlayThemeStateStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-overlay-state-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-overlay-state-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void NamedStatesRoundTripUpdateAndDeleteWithoutChangingThemeJson()
@@ -20,11 +21,7 @@ public sealed class OverlayThemeStateStoreTests : IDisposable
         File.WriteAllText(themePath, originalTheme);
         var store = new OverlayThemeStateStore(statePath);
         var colors = LegacyOverlayThemeStore.CreateDefault().Colors.ToDictionary();
-        var typography = OverlayTypographySettings.Default with
-        {
-            Body = 12.5,
-            Caption = 8.5,
-        };
+        var typography = OverlayTypographySettings.Default with { Body = 12.5, Caption = 8.5 };
 
         var first = store.SaveState("Exploration", colors, typography);
         colors["orange"] = Color.FromArgb(255, 10, 20, 30);
@@ -55,9 +52,9 @@ public sealed class OverlayThemeStateStoreTests : IDisposable
         File.WriteAllText(statePath, invalid);
         var store = new OverlayThemeStateStore(statePath);
 
-        var error = Assert.Throws<InvalidDataException>(() => store.SaveState(
-            "Do not write",
-            LegacyOverlayThemeStore.CreateDefault().Colors));
+        var error = Assert.Throws<InvalidDataException>(() =>
+            store.SaveState("Do not write", LegacyOverlayThemeStore.CreateDefault().Colors)
+        );
 
         Assert.Contains("not supported", error.Message);
         Assert.Equal(invalid, File.ReadAllText(statePath));
@@ -103,25 +100,21 @@ public sealed class OverlayThemeStateStoreTests : IDisposable
 
         var serializedColors = colors.ToDictionary(
             entry => entry.Key,
-            entry => LegacyOverlayThemeStore.FormatHtmlColor(entry.Value));
+            entry => LegacyOverlayThemeStore.FormatHtmlColor(entry.Value)
+        );
         File.WriteAllText(
             statePath,
-            JsonSerializer.Serialize(new
-            {
-                version = 1,
-                states = new[]
-                {
-                    new { name = "Older default", colors = serializedColors },
-                },
-            }));
+            JsonSerializer.Serialize(
+                new { version = 1, states = new[] { new { name = "Older default", colors = serializedColors } } }
+            )
+        );
 
         var loaded = new OverlayThemeStateStore(statePath).Load();
 
         Assert.Null(loaded.Error);
         var state = Assert.Single(loaded.States);
         var defaults = LegacyOverlayThemeStore.CreateDefault().Colors;
-        Assert.All(addedRoles, role =>
-            Assert.Equal(defaults[role], state.Colors[role]));
+        Assert.All(addedRoles, role => Assert.Equal(defaults[role], state.Colors[role]));
         Assert.Equal(OverlayTypographySettings.Default, state.EffectiveTypography);
     }
 

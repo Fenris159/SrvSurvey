@@ -11,7 +11,8 @@ public sealed class SystemNicknameCatalog
     private SystemNicknameCatalog(
         IReadOnlyDictionary<string, string> localNames,
         IReadOnlyDictionary<string, string> ravenNames,
-        IReadOnlyList<string> warnings)
+        IReadOnlyList<string> warnings
+    )
     {
         this.localNames = localNames;
         this.ravenNames = ravenNames;
@@ -29,14 +30,8 @@ public sealed class SystemNicknameCatalog
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
         var root = Path.GetFullPath(dataDirectory);
         var warnings = new List<string>();
-        var local = LoadMap(
-            Path.Combine(root, "system-nick-names.json"),
-            nestedProperty: "map",
-            warnings);
-        var raven = LoadMap(
-            Path.Combine(root, "pub", "nicknames.json"),
-            nestedProperty: null,
-            warnings);
+        var local = LoadMap(Path.Combine(root, "system-nick-names.json"), nestedProperty: "map", warnings);
+        var raven = LoadMap(Path.Combine(root, "pub", "nicknames.json"), nestedProperty: null, warnings);
         return new SystemNicknameCatalog(local, raven, warnings);
     }
 
@@ -52,18 +47,12 @@ public sealed class SystemNicknameCatalog
             return systemName;
         }
 
-        return localNames.GetValueOrDefault(systemName)
-            ?? ravenNames.GetValueOrDefault(systemName)
-            ?? systemName;
+        return localNames.GetValueOrDefault(systemName) ?? ravenNames.GetValueOrDefault(systemName) ?? systemName;
     }
 
-    private static Dictionary<string, string> LoadMap(
-        string path,
-        string? nestedProperty,
-        List<string> warnings)
+    private static Dictionary<string, string> LoadMap(string path, string? nestedProperty, List<string> warnings)
     {
-        var result = new Dictionary<string, string>(
-            StringComparer.OrdinalIgnoreCase);
+        var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         if (!File.Exists(path))
         {
             return result;
@@ -71,48 +60,41 @@ public sealed class SystemNicknameCatalog
 
         try
         {
-            var parsed = JsonNode.Parse(
+            var parsed =
+                JsonNode.Parse(
                     File.ReadAllText(path),
                     documentOptions: new JsonDocumentOptions
                     {
                         AllowTrailingCommas = true,
                         CommentHandling = JsonCommentHandling.Skip,
-                    })
-                as JsonObject
-                ?? throw new InvalidDataException(
-                    "The nickname file is not a JSON object.");
+                    }
+                ) as JsonObject
+                ?? throw new InvalidDataException("The nickname file is not a JSON object.");
             var map = nestedProperty is null
                 ? parsed
                 : parsed[nestedProperty] as JsonObject
-                    ?? throw new InvalidDataException(
-                        $"The nickname file has no '{nestedProperty}' object.");
+                    ?? throw new InvalidDataException($"The nickname file has no '{nestedProperty}' object.");
             foreach (var entry in map)
             {
-                if (entry.Value is JsonValue value
+                if (
+                    entry.Value is JsonValue value
                     && value.TryGetValue<string>(out var nickname)
                     && !string.IsNullOrWhiteSpace(entry.Key)
-                    && !string.IsNullOrWhiteSpace(nickname))
+                    && !string.IsNullOrWhiteSpace(nickname)
+                )
                 {
                     result[entry.Key.Trim()] = nickname.Trim();
                 }
                 else
                 {
-                    warnings.Add(
-                        $"Ignored invalid system nickname '{entry.Key}' in "
-                        + Path.GetFileName(path)
-                        + ".");
+                    warnings.Add($"Ignored invalid system nickname '{entry.Key}' in " + Path.GetFileName(path) + ".");
                 }
             }
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or JsonException
-                or InvalidDataException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or JsonException or InvalidDataException)
         {
-            warnings.Add(
-                $"Could not read system nicknames from '{path}': "
-                + exception.Message);
+            warnings.Add($"Could not read system nicknames from '{path}': " + exception.Message);
         }
 
         return result;

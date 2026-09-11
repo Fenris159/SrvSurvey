@@ -9,14 +9,8 @@ public sealed class JourneyJournalProcessorTests
 {
     private const string Species = "$Codex_Ent_Aleoids_01_Name;";
 
-    private static readonly ExobiologyReferenceCatalog Catalog = new(
-    [
-        new ExobiologyReference(
-            1,
-            "$Codex_Ent_Aleoids_01_Green_Name;",
-            Species,
-            "Aleoida Arcus - Green",
-            7_252_500),
+    private static readonly ExobiologyReferenceCatalog Catalog = new([
+        new ExobiologyReference(1, "$Codex_Ent_Aleoids_01_Green_Name;", Species, "Aleoida Arcus - Green", 7_252_500),
     ]);
 
     [Theory]
@@ -28,25 +22,49 @@ public sealed class JourneyJournalProcessorTests
         var events = new[]
         {
             Parse("""{"timestamp":"2026-07-01T00:00:00Z","event":"Fileheader","Odyssey":true}"""),
-            Parse($$"""{"timestamp":"2026-07-01T00:00:01Z","event":"LoadGame","Odyssey":{{(hasOdyssey ? "true" : "false")}}}"""),
-            Parse("""{"timestamp":"2026-07-01T00:00:01Z","event":"Location","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}"""),
+            Parse(
+                $$"""{"timestamp":"2026-07-01T00:00:01Z","event":"LoadGame","Odyssey":{{(hasOdyssey ? "true" : "false")}}}"""
+            ),
+            Parse(
+                """{"timestamp":"2026-07-01T00:00:01Z","event":"Location","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}"""
+            ),
             Parse("""{"timestamp":"2026-07-01T00:00:02Z","event":"FSSDiscoveryScan","BodyCount":2}"""),
-            Parse("""{"timestamp":"2026-07-01T00:00:03Z","event":"Scan","SystemAddress":42,"BodyID":0,"StarType":"G","StellarMass":1,"WasDiscovered":false}"""),
-            Parse("""{"timestamp":"2026-07-01T00:00:04Z","event":"Scan","SystemAddress":42,"BodyID":1,"PlanetClass":"Earthlike body","MassEM":1,"WasDiscovered":false,"WasMapped":false}"""),
-            Parse("""{"timestamp":"2026-07-01T00:00:05Z","event":"Scan","SystemAddress":42,"BodyID":1,"PlanetClass":"Earthlike body","MassEM":1}"""),
-            Parse("""{"timestamp":"2026-07-01T00:00:06Z","event":"SAAScanComplete","SystemAddress":42,"BodyID":1,"ProbesUsed":5,"EfficiencyTarget":6}"""),
+            Parse(
+                """{"timestamp":"2026-07-01T00:00:03Z","event":"Scan","SystemAddress":42,"BodyID":0,"StarType":"G","StellarMass":1,"WasDiscovered":false}"""
+            ),
+            Parse(
+                """{"timestamp":"2026-07-01T00:00:04Z","event":"Scan","SystemAddress":42,"BodyID":1,"PlanetClass":"Earthlike body","MassEM":1,"WasDiscovered":false,"WasMapped":false}"""
+            ),
+            Parse(
+                """{"timestamp":"2026-07-01T00:00:05Z","event":"Scan","SystemAddress":42,"BodyID":1,"PlanetClass":"Earthlike body","MassEM":1}"""
+            ),
+            Parse(
+                """{"timestamp":"2026-07-01T00:00:06Z","event":"SAAScanComplete","SystemAddress":42,"BodyID":1,"ProbesUsed":5,"EfficiencyTarget":6}"""
+            ),
             Parse("""{"timestamp":"2026-07-01T00:00:07Z","event":"Touchdown","StarSystem":"Sol","Body":"Sol A 1"}"""),
             Parse("""{"timestamp":"2026-07-01T00:00:08Z","event":"Touchdown","StarSystem":"Sol","Body":"Sol A 1"}"""),
-            Parse("""{"timestamp":"2026-07-01T00:00:09Z","event":"FSSBodySignals","Signals":[{"Type":"$SAA_SignalType_Biological;","Count":3}]}"""),
+            Parse(
+                """{"timestamp":"2026-07-01T00:00:09Z","event":"FSSBodySignals","Signals":[{"Type":"$SAA_SignalType_Biological;","Count":3}]}"""
+            ),
             Parse("""{"timestamp":"2026-07-01T00:00:10Z","event":"FSSSignalDiscovered","SignalType":"USS"}"""),
             Parse("""{"timestamp":"2026-07-01T00:00:11Z","event":"FSSSignalDiscovered","SignalType":"USS"}"""),
-            Parse("""{"timestamp":"2026-07-01T00:00:12Z","event":"CodexEntry","EntryID":7,"IsNewEntry":true,"Name_Localised":"New thing","SubCategory_Localised":"Biology"}"""),
-            Parse("""{"timestamp":"2026-07-01T00:00:13Z","event":"CodexEntry","EntryID":7,"IsNewEntry":false,"SubCategory_Localised":"Biology"}"""),
-            Parse($$"""{"timestamp":"2026-07-01T00:00:14Z","event":"ScanOrganic","ScanType":"Log","Species":"{{Species}}"}"""),
-            Parse($$"""{"timestamp":"2026-07-01T00:00:15Z","event":"ScanOrganic","ScanType":"Analyse","Species":"{{Species}}"}"""),
+            Parse(
+                """{"timestamp":"2026-07-01T00:00:12Z","event":"CodexEntry","EntryID":7,"IsNewEntry":true,"Name_Localised":"New thing","SubCategory_Localised":"Biology"}"""
+            ),
+            Parse(
+                """{"timestamp":"2026-07-01T00:00:13Z","event":"CodexEntry","EntryID":7,"IsNewEntry":false,"SubCategory_Localised":"Biology"}"""
+            ),
+            Parse(
+                $$"""{"timestamp":"2026-07-01T00:00:14Z","event":"ScanOrganic","ScanType":"Log","Species":"{{Species}}"}"""
+            ),
+            Parse(
+                $$"""{"timestamp":"2026-07-01T00:00:15Z","event":"ScanOrganic","ScanType":"Analyse","Species":"{{Species}}"}"""
+            ),
             Parse("""{"timestamp":"2026-07-01T00:00:16Z","event":"Screenshot"}"""),
             Parse("""{"timestamp":"2026-07-01T00:00:17Z","event":"StartJump","JumpType":"Hyperspace"}"""),
-            Parse("""{"timestamp":"2026-07-01T00:00:18Z","event":"FSDJump","StarSystem":"Achenar","SystemAddress":43,"StarPos":[3,4,0]}"""),
+            Parse(
+                """{"timestamp":"2026-07-01T00:00:18Z","event":"FSDJump","StarSystem":"Achenar","SystemAddress":43,"StarPos":[3,4,0]}"""
+            ),
         };
 
         var replay = processor.ApplyCatchUp(events);
@@ -82,8 +100,9 @@ public sealed class JourneyJournalProcessorTests
                 IsMapped = false,
                 IsFirstMapped = true,
                 IsOdyssey = true,
-                WithEfficiencyBonus = false
-            });
+                WithEfficiencyBonus = false,
+            }
+        );
         var mappedPlanetReward = ExplorationValueCalculator.Calculate(
             new ExplorationValueRequest
             {
@@ -94,11 +113,10 @@ public sealed class JourneyJournalProcessorTests
                 IsMapped = true,
                 IsFirstMapped = true,
                 IsOdyssey = true,
-                WithEfficiencyBonus = true
-            });
-        Assert.Equal(
-            starReward + mappedPlanetReward,
-            sol.Counts.ExplorationRewards);
+                WithEfficiencyBonus = true,
+            }
+        );
+        Assert.Equal(starReward + mappedPlanetReward, sol.Counts.ExplorationRewards);
         Assert.Equal("Achenar", replay.Journey.CurrentSystem!.StarSystem.Name);
     }
 
@@ -117,29 +135,28 @@ public sealed class JourneyJournalProcessorTests
                 IsMapped = false,
                 IsFirstMapped = true,
                 IsOdyssey = true,
-                WithEfficiencyBonus = false
-            });
+                WithEfficiencyBonus = false,
+            }
+        );
         var visit = CreateVisit() with
         {
             BodiesScanned = new HashSet<int> { 4 },
-            Counts = JourneyCounts.Empty with
-            {
-                BodyScans = 1,
-                ExplorationRewards = scanReward,
-            },
+            Counts = JourneyCounts.Empty with { BodyScans = 1, ExplorationRewards = scanReward },
         };
-        var journey = CreateJourney([visit]) with
-        {
-            Watermark = DateTimeOffset.Parse("2026-07-01T00:01:00Z"),
-        };
+        var journey = CreateJourney([visit]) with { Watermark = DateTimeOffset.Parse("2026-07-01T00:01:00Z") };
         var processor = new JourneyJournalProcessor(journey, Catalog, true);
 
-        var result = processor.ApplyCatchUp(
-        [
+        var result = processor.ApplyCatchUp([
             Parse("""{"timestamp":"2026-07-01T00:00:00Z","event":"Fileheader","Odyssey":true}"""),
-            Parse($$"""{"timestamp":"2026-07-01T00:00:01Z","event":"LoadGame","Odyssey":{{(hasOdyssey ? "true" : "false")}}}"""),
-            Parse("""{"timestamp":"2026-07-01T00:01:00Z","event":"Scan","SystemAddress":42,"BodyID":4,"PlanetClass":"Water world","TerraformState":"Terraformable","MassEM":1.2,"WasDiscovered":false,"WasMapped":false}"""),
-            Parse("""{"timestamp":"2026-07-01T00:02:00Z","event":"SAAScanComplete","SystemAddress":42,"BodyID":4,"ProbesUsed":4,"EfficiencyTarget":6}"""),
+            Parse(
+                $$"""{"timestamp":"2026-07-01T00:00:01Z","event":"LoadGame","Odyssey":{{(hasOdyssey ? "true" : "false")}}}"""
+            ),
+            Parse(
+                """{"timestamp":"2026-07-01T00:01:00Z","event":"Scan","SystemAddress":42,"BodyID":4,"PlanetClass":"Water world","TerraformState":"Terraformable","MassEM":1.2,"WasDiscovered":false,"WasMapped":false}"""
+            ),
+            Parse(
+                """{"timestamp":"2026-07-01T00:02:00Z","event":"SAAScanComplete","SystemAddress":42,"BodyID":4,"ProbesUsed":4,"EfficiencyTarget":6}"""
+            ),
         ]);
 
         var counts = result.Journey.CurrentSystem!.Counts;
@@ -153,8 +170,9 @@ public sealed class JourneyJournalProcessorTests
                 IsMapped = true,
                 IsFirstMapped = true,
                 IsOdyssey = true,
-                WithEfficiencyBonus = true
-            });
+                WithEfficiencyBonus = true,
+            }
+        );
         Assert.Equal(1, result.ProcessedEventCount);
         Assert.Equal(3, result.IgnoredEventCount);
         Assert.Equal(1, counts.BodyScans);
@@ -166,16 +184,11 @@ public sealed class JourneyJournalProcessorTests
     public void LiveProcessingAcceptsEqualWatermarkAndRejectsOlderEvents()
     {
         var visit = CreateVisit();
-        var journey = CreateJourney([visit]) with
-        {
-            Watermark = DateTimeOffset.Parse("2026-07-01T00:01:00Z"),
-        };
+        var journey = CreateJourney([visit]) with { Watermark = DateTimeOffset.Parse("2026-07-01T00:01:00Z") };
         var processor = new JourneyJournalProcessor(journey, Catalog, true);
 
-        var older = processor.Apply(Parse(
-            """{"timestamp":"2026-07-01T00:00:59Z","event":"Screenshot"}"""));
-        var equal = processor.Apply(Parse(
-            """{"timestamp":"2026-07-01T00:01:00Z","event":"Screenshot"}"""));
+        var older = processor.Apply(Parse("""{"timestamp":"2026-07-01T00:00:59Z","event":"Screenshot"}"""));
+        var equal = processor.Apply(Parse("""{"timestamp":"2026-07-01T00:01:00Z","event":"Screenshot"}"""));
 
         Assert.False(older);
         Assert.True(equal);
@@ -187,19 +200,20 @@ public sealed class JourneyJournalProcessorTests
     {
         var processor = new JourneyJournalProcessor(CreateJourney(), Catalog, true);
 
-        Assert.True(processor.Apply(Parse(
-            """{"timestamp":"2026-07-01T00:00:01Z","event":"FutureEvent"}""")));
-        Assert.True(processor.Apply(Parse(
-            """{"timestamp":"2026-07-01T00:00:02Z","event":"Location","StarSystem":"Missing position","SystemAddress":42}""")));
+        Assert.True(processor.Apply(Parse("""{"timestamp":"2026-07-01T00:00:01Z","event":"FutureEvent"}""")));
+        Assert.True(
+            processor.Apply(
+                Parse(
+                    """{"timestamp":"2026-07-01T00:00:02Z","event":"Location","StarSystem":"Missing position","SystemAddress":42}"""
+                )
+            )
+        );
 
         Assert.Empty(processor.Journey.VisitedSystems);
-        Assert.Equal(
-            DateTimeOffset.Parse("2026-07-01T00:00:02Z"),
-            processor.Journey.Watermark);
+        Assert.Equal(DateTimeOffset.Parse("2026-07-01T00:00:02Z"), processor.Journey.Watermark);
     }
 
-    private static JourneyDocument CreateJourney(
-        IReadOnlyList<JourneySystemVisit>? visits = null)
+    private static JourneyDocument CreateJourney(IReadOnlyList<JourneySystemVisit>? visits = null)
     {
         return new JourneyDocument(
             "20260701_000000",
@@ -212,16 +226,14 @@ public sealed class JourneyJournalProcessorTests
             DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
             null,
             DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
-            visits ?? []);
+            visits ?? []
+        );
     }
 
     private static JourneySystemVisit CreateVisit()
     {
         return new JourneySystemVisit(
-            new JourneySystemReference(
-                "Sol",
-                42,
-                new SrvSurvey.Core.Search.GalacticCoordinate(0, 0, 0)),
+            new JourneySystemReference("Sol", 42, new SrvSurvey.Core.Search.GalacticCoordinate(0, 0, 0)),
             DateTimeOffset.Parse("2026-07-01T00:00:01Z"),
             null,
             JourneyCounts.Empty,
@@ -231,14 +243,13 @@ public sealed class JourneyJournalProcessorTests
             null,
             null,
             null,
-            null);
+            null
+        );
     }
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(
-            JournalEventEnvelope.TryParse(json, out var journalEvent, out var error),
-            error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
         return journalEvent!;
     }
 }

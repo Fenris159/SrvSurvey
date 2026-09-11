@@ -7,12 +7,11 @@ public sealed class QuestCommanderContextTracker
 {
     private static readonly HashSet<string> FactionEvents = new(
         ["Location", "FSDJump", "CarrierJump"],
-        StringComparer.Ordinal);
+        StringComparer.Ordinal
+    );
 
-    private readonly Dictionary<string, QuestFactionSnapshot> factions =
-        new(StringComparer.Ordinal);
-    private readonly Dictionary<string, JsonElement> priorJournalEvents =
-        new(StringComparer.Ordinal);
+    private readonly Dictionary<string, QuestFactionSnapshot> factions = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, JsonElement> priorJournalEvents = new(StringComparer.Ordinal);
 
     public void Apply(IEnumerable<JournalEventEnvelope> journalEvents)
     {
@@ -30,8 +29,7 @@ public sealed class QuestCommanderContextTracker
 
         if (journalEvent.EventName is "Docked" or "FSDJump")
         {
-            priorJournalEvents[journalEvent.EventName] =
-                journalEvent.Payload.Clone();
+            priorJournalEvents[journalEvent.EventName] = journalEvent.Payload.Clone();
         }
 
         if (FactionEvents.Contains(journalEvent.EventName))
@@ -40,32 +38,26 @@ public sealed class QuestCommanderContextTracker
         }
     }
 
-    public QuestCommanderContext CreateContext(
-        string commanderName,
-        EliteStatus? status)
+    public QuestCommanderContext CreateContext(string commanderName, EliteStatus? status)
     {
-        var statusPayload = status is null
-            ? (JsonElement?)null
-            : JsonSerializer.SerializeToElement(status);
-        var surface = status?.HasLatitudeLongitude == true
-            ? new QuestSurfaceContext(
-                status.Latitude,
-                status.Longitude,
-                decimal.ToDouble(status.PlanetRadius),
-                status.NormalizedHeading)
-            : null;
+        var statusPayload = status is null ? (JsonElement?)null : JsonSerializer.SerializeToElement(status);
+        var surface =
+            status?.HasLatitudeLongitude == true
+                ? new QuestSurfaceContext(
+                    status.Latitude,
+                    status.Longitude,
+                    decimal.ToDouble(status.PlanetRadius),
+                    status.NormalizedHeading
+                )
+                : null;
 
         return new QuestCommanderContext(
             commanderName,
             statusPayload,
             surface,
-            new Dictionary<string, QuestFactionSnapshot>(
-                factions,
-                StringComparer.Ordinal),
-            priorJournalEvents.ToDictionary(
-                pair => pair.Key,
-                pair => pair.Value.Clone(),
-                StringComparer.Ordinal));
+            new Dictionary<string, QuestFactionSnapshot>(factions, StringComparer.Ordinal),
+            priorJournalEvents.ToDictionary(pair => pair.Key, pair => pair.Value.Clone(), StringComparer.Ordinal)
+        );
     }
 
     public void Reset()
@@ -76,18 +68,15 @@ public sealed class QuestCommanderContextTracker
 
     private void UpdateFactions(JsonElement payload)
     {
-        if (!payload.TryGetProperty("Factions", out var factionArray)
-            || factionArray.ValueKind != JsonValueKind.Array)
+        if (!payload.TryGetProperty("Factions", out var factionArray) || factionArray.ValueKind != JsonValueKind.Array)
         {
             return;
         }
 
-        var updated = new Dictionary<string, QuestFactionSnapshot>(
-            StringComparer.Ordinal);
+        var updated = new Dictionary<string, QuestFactionSnapshot>(StringComparer.Ordinal);
         foreach (var faction in factionArray.EnumerateArray())
         {
-            if (faction.ValueKind != JsonValueKind.Object
-                || !TryGetString(faction, "Name", out var name))
+            if (faction.ValueKind != JsonValueKind.Object || !TryGetString(faction, "Name", out var name))
             {
                 continue;
             }
@@ -95,12 +84,7 @@ public sealed class QuestCommanderContextTracker
             var activeStates = ReadStates(faction, "ActiveStates");
             if (activeStates is null)
             {
-                activeStates = TryGetString(
-                    faction,
-                    "FactionState",
-                    out var factionState)
-                    ? [factionState]
-                    : [];
+                activeStates = TryGetString(faction, "FactionState", out var factionState) ? [factionState] : [];
             }
 
             updated[name] = new QuestFactionSnapshot(
@@ -108,7 +92,8 @@ public sealed class QuestCommanderContextTracker
                 ReadDouble(faction, "Influence"),
                 activeStates,
                 ReadStates(faction, "PendingStates") ?? [],
-                ReadStates(faction, "RecoveringStates") ?? []);
+                ReadStates(faction, "RecoveringStates") ?? []
+            );
         }
 
         factions.Clear();
@@ -118,9 +103,7 @@ public sealed class QuestCommanderContextTracker
         }
     }
 
-    private static string[]? ReadStates(
-        JsonElement faction,
-        string propertyName)
+    private static string[]? ReadStates(JsonElement faction, string propertyName)
     {
         if (!faction.TryGetProperty(propertyName, out var states))
         {
@@ -135,22 +118,16 @@ public sealed class QuestCommanderContextTracker
         return states
             .EnumerateArray()
             .Where(state => state.ValueKind == JsonValueKind.Object)
-            .Select(state => TryGetString(state, "State", out var value)
-                ? value
-                : null)
+            .Select(state => TryGetString(state, "State", out var value) ? value : null)
             .Where(value => value is not null)
             .Select(value => value!)
             .ToArray();
     }
 
-    private static bool TryGetString(
-        JsonElement value,
-        string propertyName,
-        out string result)
+    private static bool TryGetString(JsonElement value, string propertyName, out string result)
     {
         result = string.Empty;
-        if (!value.TryGetProperty(propertyName, out var property)
-            || property.ValueKind != JsonValueKind.String)
+        if (!value.TryGetProperty(propertyName, out var property) || property.ValueKind != JsonValueKind.String)
         {
             return false;
         }
@@ -159,13 +136,10 @@ public sealed class QuestCommanderContextTracker
         return result.Length > 0;
     }
 
-    private static double ReadDouble(
-        JsonElement value,
-        string propertyName)
+    private static double ReadDouble(JsonElement value, string propertyName)
     {
-        return value.TryGetProperty(propertyName, out var property)
-            && property.TryGetDouble(out var result)
-                ? result
-                : 0;
+        return value.TryGetProperty(propertyName, out var property) && property.TryGetDouble(out var result)
+            ? result
+            : 0;
     }
 }

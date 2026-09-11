@@ -11,10 +11,7 @@ public sealed class JournalEventEnvelopeTests
             {"timestamp":"2026-07-24T10:00:00Z","event":"FutureEvent","Nested":{"Value":42}}
             """;
 
-        var parsed = JournalEventEnvelope.TryParse(
-            json,
-            out var journalEvent,
-            out var error);
+        var parsed = JournalEventEnvelope.TryParse(json, out var journalEvent, out var error);
 
         Assert.True(parsed, error);
         Assert.NotNull(journalEvent);

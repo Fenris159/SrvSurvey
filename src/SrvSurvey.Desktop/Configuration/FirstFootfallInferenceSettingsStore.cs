@@ -13,8 +13,7 @@ public sealed class FirstFootfallInferenceSettingsStore
 
     public FirstFootfallInferencePreferences Load()
     {
-        var settings = documentStore.Load()["FirstFootfallInference"]
-            as JsonObject;
+        var settings = documentStore.Load()["FirstFootfallInference"] as JsonObject;
         var color = settings?["Color"] as JsonObject;
         var defaults = FirstFootfallInferencePreferences.Default;
         return new FirstFootfallInferencePreferences(
@@ -23,24 +22,10 @@ public sealed class FirstFootfallInferenceSettingsStore
             GetInt32(color, "Green", defaults.Green, 0, 255),
             GetInt32(color, "Blue", defaults.Blue, 0, 255),
             GetInt32(settings, "Tolerance", defaults.Tolerance, 0, 255),
-            GetDouble(
-                settings,
-                "Threshold",
-                defaults.Threshold,
-                double.Epsilon,
-                1),
-            GetInt32(
-                settings,
-                "DurationSeconds",
-                defaults.DurationSeconds,
-                1,
-                60),
-            GetInt32(
-                settings,
-                "SamplesPerSecond",
-                defaults.SamplesPerSecond,
-                1,
-                60));
+            GetDouble(settings, "Threshold", defaults.Threshold, double.Epsilon, 1),
+            GetInt32(settings, "DurationSeconds", defaults.DurationSeconds, 1, 60),
+            GetInt32(settings, "SamplesPerSecond", defaults.SamplesPerSecond, 1, 60)
+        );
     }
 
     public void Save(FirstFootfallInferencePreferences preferences)
@@ -75,8 +60,7 @@ public sealed class FirstFootfallInferenceSettingsStore
         });
     }
 
-    private static FirstFootfallInferencePreferences Normalize(
-        FirstFootfallInferencePreferences preferences)
+    private static FirstFootfallInferencePreferences Normalize(FirstFootfallInferencePreferences preferences)
     {
         var defaults = FirstFootfallInferencePreferences.Default;
         return preferences with
@@ -85,43 +69,25 @@ public sealed class FirstFootfallInferenceSettingsStore
             Green = Math.Clamp(preferences.Green, 0, 255),
             Blue = Math.Clamp(preferences.Blue, 0, 255),
             Tolerance = Math.Clamp(preferences.Tolerance, 0, 255),
-            Threshold = double.IsFinite(preferences.Threshold)
-                && preferences.Threshold > 0
+            Threshold =
+                double.IsFinite(preferences.Threshold) && preferences.Threshold > 0
                     ? Math.Clamp(preferences.Threshold, double.Epsilon, 1)
                     : defaults.Threshold,
-            DurationSeconds = Math.Clamp(
-                preferences.DurationSeconds,
-                1,
-                60),
-            SamplesPerSecond = Math.Clamp(
-                preferences.SamplesPerSecond,
-                1,
-                60),
+            DurationSeconds = Math.Clamp(preferences.DurationSeconds, 1, 60),
+            SamplesPerSecond = Math.Clamp(preferences.SamplesPerSecond, 1, 60),
         };
     }
 
-    private static bool GetBoolean(
-        JsonObject? source,
-        string propertyName,
-        bool fallback)
+    private static bool GetBoolean(JsonObject? source, string propertyName, bool fallback)
     {
-        return source?[propertyName] is JsonValue value
-            && value.TryGetValue<bool>(out var result)
-                ? result
-                : fallback;
+        return source?[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result) ? result : fallback;
     }
 
-    private static int GetInt32(
-        JsonObject? source,
-        string propertyName,
-        int fallback,
-        int minimum,
-        int maximum)
+    private static int GetInt32(JsonObject? source, string propertyName, int fallback, int minimum, int maximum)
     {
-        return source?[propertyName] is JsonValue value
-            && value.TryGetValue<int>(out var result)
-                ? Math.Clamp(result, minimum, maximum)
-                : fallback;
+        return source?[propertyName] is JsonValue value && value.TryGetValue<int>(out var result)
+            ? Math.Clamp(result, minimum, maximum)
+            : fallback;
     }
 
     private static double GetDouble(
@@ -129,14 +95,16 @@ public sealed class FirstFootfallInferenceSettingsStore
         string propertyName,
         double fallback,
         double minimum,
-        double maximum)
+        double maximum
+    )
     {
-        return source?[propertyName] is JsonValue value
+        return
+            source?[propertyName] is JsonValue value
             && value.TryGetValue<double>(out var result)
             && double.IsFinite(result)
             && result > 0
-                ? Math.Clamp(result, minimum, maximum)
-                : fallback;
+            ? Math.Clamp(result, minimum, maximum)
+            : fallback;
     }
 }
 
@@ -148,15 +116,18 @@ public sealed record FirstFootfallInferencePreferences(
     int Tolerance,
     double Threshold,
     int DurationSeconds,
-    int SamplesPerSecond)
+    int SamplesPerSecond
+)
 {
-    public static FirstFootfallInferencePreferences Default { get; } = new(
-        Enabled: true,
-        Red: 102,
-        Green: 255,
-        Blue: 255,
-        Tolerance: 25,
-        Threshold: 0.002,
-        DurationSeconds: 15,
-        SamplesPerSecond: 20);
+    public static FirstFootfallInferencePreferences Default { get; } =
+        new(
+            Enabled: true,
+            Red: 102,
+            Green: 255,
+            Blue: 255,
+            Tolerance: 25,
+            Threshold: 0.002,
+            DurationSeconds: 15,
+            SamplesPerSecond: 20
+        );
 }

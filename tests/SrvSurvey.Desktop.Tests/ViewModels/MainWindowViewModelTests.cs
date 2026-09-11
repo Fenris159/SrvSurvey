@@ -1,4 +1,6 @@
-using SrvSurvey.Desktop.ViewModels;
+using System.ComponentModel;
+using System.Globalization;
+using System.Text.Json.Nodes;
 using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Edsm;
 using SrvSurvey.Core.Exobiology;
@@ -9,16 +11,14 @@ using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Network;
 using SrvSurvey.Core.Routes;
-using SrvSurvey.Core.Storage;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Settlements;
+using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.Theming;
-using System.ComponentModel;
-using System.Globalization;
-using System.Text.Json.Nodes;
+using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
@@ -27,8 +27,7 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task SurfaceMiningSettingsOwnRhinoOverlayAndShareInputBindings()
     {
-        using var viewModel = new MainWindowViewModel(
-            Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
+        using var viewModel = new MainWindowViewModel(Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
         viewModel.SelectedNavigation = viewModel.NavigationItems.Single(item => item.Key == "mining");
         Assert.True(viewModel.IsMiningSelected);
         Assert.True(viewModel.IsActivitiesNavigationExpanded);
@@ -38,19 +37,26 @@ public sealed class MainWindowViewModelTests
         Assert.Contains(panels, item => item.PlotterName == "PlotMiningReference");
         Assert.DoesNotContain(panels, item => item.PlotterName == "PlotMiningWarning");
         Assert.DoesNotContain(panels, item => item.PlotterName == "PlotSurfaceMining");
-        var surfacePanels = viewModel.OverlayPanelVisibility.ForCategory(
-            OverlaySettingsCategory.MineMap);
+        var surfacePanels = viewModel.OverlayPanelVisibility.ForCategory(OverlaySettingsCategory.MineMap);
         Assert.Equal(3, surfacePanels.Count);
         Assert.Contains(surfacePanels, item => item.PlotterName == "PlotMiningWarning");
         var panel = Assert.Single(surfacePanels, item => item.PlotterName == "PlotSurfaceMining");
         Assert.Equal("PlotSurfaceMining", panel.PlotterName);
-        Assert.Same(viewModel.InputSettings.Bindings.Single(binding =>
-            binding.Definition.OverlayPlotterName == "PlotSurfaceMining"), panel.Shortcut);
+        Assert.Same(
+            viewModel.InputSettings.Bindings.Single(binding =>
+                binding.Definition.OverlayPlotterName == "PlotSurfaceMining"
+            ),
+            panel.Shortcut
+        );
         Assert.Equal(6, viewModel.InputSettings.MiningBindings.Count);
         foreach (var binding in viewModel.InputSettings.MiningBindings)
         {
-            Assert.Same(viewModel.InputSettings.Bindings.Single(candidate =>
-                candidate.Definition.Action == binding.Definition.Action), binding);
+            Assert.Same(
+                viewModel.InputSettings.Bindings.Single(candidate =>
+                    candidate.Definition.Action == binding.Definition.Action
+                ),
+                binding
+            );
         }
 
         await viewModel.ShowProfileAsync();
@@ -60,8 +66,7 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public void NavigationContainsEveryImplementedSurface()
     {
-        var viewModel = new MainWindowViewModel(
-            Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
+        var viewModel = new MainWindowViewModel(Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
 
         Assert.Equal(18, viewModel.NavigationItems.Count);
         Assert.Equal(
@@ -85,7 +90,8 @@ public sealed class MainWindowViewModelTests
                 "Theme",
                 "Guides",
             ],
-            viewModel.NavigationItems.Select(item => item.Label));
+            viewModel.NavigationItems.Select(item => item.Label)
+        );
         Assert.Equal(
             [
                 "firegroups",
@@ -99,83 +105,71 @@ public sealed class MainWindowViewModelTests
                 "quests",
                 "colonisation",
             ],
-            viewModel.NavigationItems
-                .Where(item => item.HasOverlaySettings)
-                .Select(item => item.Key));
-        Assert.DoesNotContain(
-            viewModel.NavigationItems,
-            item => item.Key == "search" && item.HasOverlaySettings);
-        Assert.DoesNotContain(
-            typeof(NavigationItemViewModel).GetProperties(),
-            property => property.Name == "Glyph");
+            viewModel.NavigationItems.Where(item => item.HasOverlaySettings).Select(item => item.Key)
+        );
+        Assert.DoesNotContain(viewModel.NavigationItems, item => item.Key == "search" && item.HasOverlaySettings);
+        Assert.DoesNotContain(typeof(NavigationItemViewModel).GetProperties(), property => property.Name == "Glyph");
         Assert.True(viewModel.IsOverviewSelected);
         Assert.Equal(
             ["Overview", "Fleet Carrier", "Firegroups"],
-            viewModel.OverviewNavigationItems.Select(item => item.Label));
+            viewModel.OverviewNavigationItems.Select(item => item.Label)
+        );
         Assert.Equal(
             ["Exploration", "Exobiology", "Boxel"],
-            viewModel.SurveyNavigationItems.Select(item => item.Label));
-        Assert.Equal(
-            ["Travel", "Search", "Bookmarks"],
-            viewModel.NavigationWorkspaceItems.Select(item => item.Label));
+            viewModel.SurveyNavigationItems.Select(item => item.Label)
+        );
+        Assert.Equal(["Travel", "Search", "Bookmarks"], viewModel.NavigationWorkspaceItems.Select(item => item.Label));
         Assert.Equal(
             ["Mining", "Surface Mining", "Guardian", "Quests", "Colonization"],
-            viewModel.ActivityNavigationItems.Select(item => item.Label));
+            viewModel.ActivityNavigationItems.Select(item => item.Label)
+        );
         Assert.Equal(
             ["Settings", "Theme", "Guides", "Diagnostics"],
-            viewModel.UtilityNavigationItems.Select(item => item.Label));
+            viewModel.UtilityNavigationItems.Select(item => item.Label)
+        );
         Assert.False(viewModel.IsSurveyNavigationExpanded);
         Assert.False(viewModel.IsNavigationNavigationExpanded);
         Assert.False(viewModel.IsActivitiesNavigationExpanded);
 
-        viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
-            item => item.Key == "exobiology");
+        viewModel.SelectedNavigation = viewModel.NavigationItems.Single(item => item.Key == "exobiology");
 
         Assert.True(viewModel.IsExobiologySelected);
 
-        viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
-            item => item.Key == "travel");
+        viewModel.SelectedNavigation = viewModel.NavigationItems.Single(item => item.Key == "travel");
 
         Assert.True(viewModel.IsTravelSelected);
 
-        viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
-            item => item.Key == "boxel");
+        viewModel.SelectedNavigation = viewModel.NavigationItems.Single(item => item.Key == "boxel");
 
         Assert.True(viewModel.IsBoxelSelected);
 
-        viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
-            item => item.Key == "search");
+        viewModel.SelectedNavigation = viewModel.NavigationItems.Single(item => item.Key == "search");
 
         Assert.True(viewModel.IsSearchSelected);
         Assert.False(viewModel.IsSurveyNavigationExpanded);
         Assert.True(viewModel.IsNavigationNavigationExpanded);
         Assert.False(viewModel.IsActivitiesNavigationExpanded);
 
-        viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
-            item => item.Key == "guardian");
+        viewModel.SelectedNavigation = viewModel.NavigationItems.Single(item => item.Key == "guardian");
 
         Assert.True(viewModel.IsGuardianSelected);
         Assert.False(viewModel.IsSurveyNavigationExpanded);
         Assert.False(viewModel.IsNavigationNavigationExpanded);
         Assert.True(viewModel.IsActivitiesNavigationExpanded);
 
-        viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
-            item => item.Key == "quests");
+        viewModel.SelectedNavigation = viewModel.NavigationItems.Single(item => item.Key == "quests");
 
         Assert.True(viewModel.IsQuestsSelected);
 
-        viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
-            item => item.Key == "colonisation");
+        viewModel.SelectedNavigation = viewModel.NavigationItems.Single(item => item.Key == "colonisation");
 
         Assert.True(viewModel.IsColonizationSelected);
 
-        viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
-            item => item.Key == "theme");
+        viewModel.SelectedNavigation = viewModel.NavigationItems.Single(item => item.Key == "theme");
 
         Assert.True(viewModel.IsThemeSelected);
 
-        viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
-            item => item.Key == "guides");
+        viewModel.SelectedNavigation = viewModel.NavigationItems.Single(item => item.Key == "guides");
 
         Assert.True(viewModel.IsGuidesSelected);
         Assert.True(viewModel.IsActivitiesNavigationExpanded);
@@ -184,16 +178,15 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public void OpeningSharedSurfaceMiningBookmarkLoadsItsSurveyWorkspace()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-surface-bookmark-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-surface-bookmark-{Guid.NewGuid():N}");
         try
         {
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 Path.Combine(root, "data"),
                 Path.Combine(root, "cache"),
-                []);
+                []
+            );
             var id = Guid.NewGuid();
             var map = new MineMapSurvey
             {
@@ -209,49 +202,51 @@ public sealed class MainWindowViewModelTests
                 PlanetRadiusMeters = 855_573,
                 Center = new SurfaceCoordinate(1, 2),
             };
-            new BookmarkCatalog(paths.DataDirectory).Save(new GalacticBookmark
-            {
-                Id = id,
-                System = map.SystemName,
-                Body = map.BodyName,
-                Position = map.SystemPosition,
-                CategoryAssignments = [BookmarkCategoryCatalog.SurfaceMining],
-                SurfaceMiningMap = map,
-            });
+            new BookmarkCatalog(paths.DataDirectory).Save(
+                new GalacticBookmark
+                {
+                    Id = id,
+                    System = map.SystemName,
+                    Body = map.BodyName,
+                    Position = map.SystemPosition,
+                    CategoryAssignments = [BookmarkCategoryCatalog.SurfaceMining],
+                    SurfaceMiningMap = map,
+                }
+            );
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 null,
-                builder => builder.WithAppDataPaths(paths));
-            viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
-                item => item.Key == "bookmarks");
+                builder => builder.WithAppDataPaths(paths)
+            );
+            viewModel.SelectedNavigation = viewModel.NavigationItems.Single(item => item.Key == "bookmarks");
             viewModel.Bookmarks.Selected = Assert.Single(
                 viewModel.Bookmarks.Items,
-                bookmark => bookmark.IsSurfaceMiningMap);
+                bookmark => bookmark.IsSurfaceMiningMap
+            );
 
             Assert.True(viewModel.Bookmarks.OpenSelectedSurfaceMiningMap());
 
             Assert.True(viewModel.IsMineMapSelected);
             Assert.Equal(1, viewModel.MineMap.SelectedTab);
-            Assert.Equal(
-                viewModel.Bookmarks.Selected.Id,
-                viewModel.MineMap.ActiveSurvey?.Id);
+            Assert.Equal(viewModel.Bookmarks.Selected.Id, viewModel.MineMap.ActiveSurvey?.Id);
 
-            viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
-                item => item.Key == "bookmarks");
+            viewModel.SelectedNavigation = viewModel.NavigationItems.Single(item => item.Key == "bookmarks");
             Assert.True(viewModel.Bookmarks.OpenSelectedSurfaceMiningMap());
             Assert.True(viewModel.IsMineMapSelected);
             Assert.Equal(1, viewModel.MineMap.SelectedTab);
         }
         finally
         {
-            if (Directory.Exists(root)) Directory.Delete(root, true);
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
         }
     }
 
     [Fact]
     public void NavigationAccordionIsExclusiveAndCanCollapseWithoutChevrons()
     {
-        var viewModel = new MainWindowViewModel(
-            Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
+        var viewModel = new MainWindowViewModel(Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
 
         viewModel.ToggleNavigationGroup("navigation");
 
@@ -275,18 +270,14 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public void ThemeGalleryContainsEveryRavenTheme()
     {
-        var viewModel = new MainWindowViewModel(
-            Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
+        var viewModel = new MainWindowViewModel(Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
 
         Assert.Equal(6, viewModel.ThemeOptions.Count);
-        Assert.Contains(
-            viewModel.ThemeOptions,
-            option => option.Definition.Key == "monochrome-dark");
+        Assert.Contains(viewModel.ThemeOptions, option => option.Definition.Key == "monochrome-dark");
         Assert.Equal("Blue (dark)", viewModel.SelectedThemeName);
         Assert.False(viewModel.IsMonochromeTheme);
 
-        viewModel.ThemeOptions.Single(option =>
-            option.Definition.Key == "monochrome-dark").SelectCommand.Execute(null);
+        viewModel.ThemeOptions.Single(option => option.Definition.Key == "monochrome-dark").SelectCommand.Execute(null);
 
         Assert.Equal("Monochrome (dark)", viewModel.SelectedThemeName);
         Assert.True(viewModel.IsMonochromeTheme);
@@ -295,70 +286,52 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public void SettingsLinkResultReportsSuccessAndFailureWithoutChangingData()
     {
-        var viewModel = new MainWindowViewModel(
-            Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
+        var viewModel = new MainWindowViewModel(Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
 
         viewModel.ReportSettingsLinkResult("the guide", true);
-        Assert.Equal(
-            "Opened the guide in the default browser.",
-            viewModel.SettingsLinkStatusMessage);
+        Assert.Equal("Opened the guide in the default browser.", viewModel.SettingsLinkStatusMessage);
 
-        viewModel.ReportSettingsLinkResult(
-            "the guide",
-            false,
-            "No launcher");
-        Assert.Equal(
-            "Could not open the guide: No launcher",
-            viewModel.SettingsLinkStatusMessage);
+        viewModel.ReportSettingsLinkResult("the guide", false, "No launcher");
+        Assert.Equal("Could not open the guide: No launcher", viewModel.SettingsLinkStatusMessage);
     }
 
     [Fact]
     public async Task NewPreLoginJournalSuppressesTargetCommanderOverlaysUntilLoadGame()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-main-menu-session-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-main-menu-session-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
             Directory.CreateDirectory(journals);
-            var activeJournal = Path.Combine(
-                journals,
-                "Journal.2026-08-10T100000.01.log");
+            var activeJournal = Path.Combine(journals, "Journal.2026-08-10T100000.01.log");
             await File.WriteAllTextAsync(
                 activeJournal,
                 "{\"event\":\"Fileheader\",\"Odyssey\":true}\n"
                     + "{\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
-                    + "{\"event\":\"LoadGame\",\"Commander\":\"Drew\",\"FID\":\"F123\"}\n");
-            File.SetLastWriteTimeUtc(
-                activeJournal,
-                new DateTime(2026, 8, 10, 10, 0, 0, DateTimeKind.Utc));
+                    + "{\"event\":\"LoadGame\",\"Commander\":\"Drew\",\"FID\":\"F123\"}\n"
+            );
+            File.SetLastWriteTimeUtc(activeJournal, new DateTime(2026, 8, 10, 10, 0, 0, DateTimeKind.Utc));
             await File.WriteAllTextAsync(
                 Path.Combine(journals, StatusFileReader.FileName),
-                "{\"event\":\"Status\",\"Flags\":0,\"Flags2\":0}");
+                "{\"event\":\"Status\",\"Flags\":0,\"Flags2\":0}"
+            );
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 Path.Combine(root, "data"),
                 Path.Combine(root, "cache"),
-                []);
+                []
+            );
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths)
-                    .WithTargetFrontierId("F123"));
+                builder => builder.WithAppDataPaths(paths).WithTargetFrontierId("F123")
+            );
 
             await viewModel.RefreshAsync();
             Assert.False(viewModel.OverlayBehavior.ShouldSuppressForSession);
 
-            var preLoginJournal = Path.Combine(
-                journals,
-                "Journal.2026-08-10T110000.01.log");
-            await File.WriteAllTextAsync(
-                preLoginJournal,
-                "{\"event\":\"Fileheader\",\"Odyssey\":true}\n");
-            File.SetLastWriteTimeUtc(
-                preLoginJournal,
-                new DateTime(2026, 8, 10, 11, 0, 0, DateTimeKind.Utc));
+            var preLoginJournal = Path.Combine(journals, "Journal.2026-08-10T110000.01.log");
+            await File.WriteAllTextAsync(preLoginJournal, "{\"event\":\"Fileheader\",\"Odyssey\":true}\n");
+            File.SetLastWriteTimeUtc(preLoginJournal, new DateTime(2026, 8, 10, 11, 0, 0, DateTimeKind.Utc));
 
             await viewModel.RefreshAsync();
             Assert.True(viewModel.OverlayBehavior.ShouldSuppressForSession);
@@ -366,7 +339,8 @@ public sealed class MainWindowViewModelTests
             await File.AppendAllTextAsync(
                 preLoginJournal,
                 "{\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
-                    + "{\"event\":\"LoadGame\",\"Commander\":\"Drew\",\"FID\":\"F123\"}\n");
+                    + "{\"event\":\"LoadGame\",\"Commander\":\"Drew\",\"FID\":\"F123\"}\n"
+            );
 
             await viewModel.RefreshAsync();
             Assert.False(viewModel.OverlayBehavior.ShouldSuppressForSession);
@@ -383,45 +357,28 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public void ImportedReadOnlyReferenceCachesActivateWithoutBeingRewritten()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-regional-codex-vm-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-regional-codex-vm-{Guid.NewGuid():N}");
         try
         {
             var data = Path.Combine(root, "data");
             Directory.CreateDirectory(data);
-            var catalogPath = Path.Combine(
-                data,
-                RegionalCodexCandidateCatalog.LegacyFileName);
-            const string json =
-                "{\"Inner Orion Spur\":[\"2310101_Aleoida Arcus - Green\"]}";
+            var catalogPath = Path.Combine(data, RegionalCodexCandidateCatalog.LegacyFileName);
+            const string json = "{\"Inner Orion Spur\":[\"2310101_Aleoida Arcus - Green\"]}";
             File.WriteAllText(catalogPath, json);
             var published = Path.Combine(data, "pub");
             Directory.CreateDirectory(published);
-            var knownSystemsPath = Path.Combine(
-                published,
-                KnownSystemAddressCatalog.LegacyFileName);
-            const string knownSystems =
-                "known_systems = {\n  \"sol\": 10477373803,\n}\n"
-                + "known_missing = [\n]\n";
+            var knownSystemsPath = Path.Combine(published, KnownSystemAddressCatalog.LegacyFileName);
+            const string knownSystems = "known_systems = {\n  \"sol\": 10477373803,\n}\n" + "known_missing = [\n]\n";
             File.WriteAllText(knownSystemsPath, knownSystems);
-            var paths = new AppDataPaths(
-                Path.Combine(root, "config"),
-                data,
-                Path.Combine(root, "cache"),
-                []);
+            var paths = new AppDataPaths(Path.Combine(root, "config"), data, Path.Combine(root, "cache"), []);
 
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 Path.Combine(root, "journals"),
-                builder => builder
-                    .WithAppDataPaths(paths));
+                builder => builder.WithAppDataPaths(paths)
+            );
 
-            Assert.Contains(
-                "Imported regional Codex candidates: 1.",
-                viewModel.ReferenceDataStatus);
-            Assert.Contains(
-                "Imported known system addresses: 1.",
-                viewModel.ReferenceDataStatus);
+            Assert.Contains("Imported regional Codex candidates: 1.", viewModel.ReferenceDataStatus);
+            Assert.Contains("Imported known system addresses: 1.", viewModel.ReferenceDataStatus);
             Assert.Equal(json, File.ReadAllText(catalogPath));
             Assert.Equal(knownSystems, File.ReadAllText(knownSystemsPath));
         }
@@ -437,16 +394,12 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task LiveShowCommandOpensTheLatestBiologyCodexEntry()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-main-codex-show-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-main-codex-show-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
             Directory.CreateDirectory(journals);
-            var journalPath = Path.Combine(
-                journals,
-                "Journal.2026-07-25T120000.01.log");
+            var journalPath = Path.Combine(journals, "Journal.2026-07-25T120000.01.log");
             await File.WriteAllTextAsync(
                 journalPath,
                 """
@@ -454,16 +407,18 @@ public sealed class MainWindowViewModelTests
                 {"timestamp":"2026-07-25T12:00:01Z","event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}
                 {"timestamp":"2026-07-25T12:00:02Z","event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Green","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2}
 
-                """);
+                """
+            );
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 Path.Combine(root, "data"),
                 Path.Combine(root, "cache"),
-                []);
+                []
+            );
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths));
+                builder => builder.WithAppDataPaths(paths)
+            );
             long? selectedAtOpen = null;
             viewModel.BiologyCodex.SetWindowOpener(() =>
             {
@@ -479,13 +434,12 @@ public sealed class MainWindowViewModelTests
                 """
                 {"timestamp":"2026-07-25T12:00:03Z","event":"SendText","Message":".show"}
 
-                """);
+                """
+            );
             await viewModel.RefreshAsync();
 
             Assert.Equal(2310101, selectedAtOpen);
-            Assert.Equal(
-                2310101,
-                viewModel.BiologyCodex.SelectedOrganism!.EntryId);
+            Assert.Equal(2310101, viewModel.BiologyCodex.SelectedOrganism!.EntryId);
         }
         finally
         {
@@ -499,53 +453,50 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task GreenGasGiantOptInPublishesOnlyNewLiveScans()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-main-ggg-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-main-ggg-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
             Directory.CreateDirectory(journals);
-            var journalPath = Path.Combine(
-                journals,
-                "Journal.2026-07-25T120000.01.log");
+            var journalPath = Path.Combine(journals, "Journal.2026-07-25T120000.01.log");
             await File.WriteAllTextAsync(
                 journalPath,
                 "{\"event\":\"Commander\",\"Name\":\"Test Cmdr\"}\n"
                     + "{\"event\":\"Location\",\"StarPos\":[1,2,3]}\n"
-                    + GreenGasGiantScanJson + "\n");
+                    + GreenGasGiantScanJson
+                    + "\n"
+            );
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 Path.Combine(root, "data"),
                 Path.Combine(root, "cache"),
-                []);
+                []
+            );
             new NetworkPrivacySettingsStore(paths.UiSettingsPath).Save(
-                new NetworkPrivacyPreferences(false, true, true));
+                new NetworkPrivacyPreferences(false, true, true)
+            );
             var client = new RecordingGreenGasGiantClient();
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths)
-                    .WithGreenGasGiantPublicationCoordinator(
-                        new GreenGasGiantPublicationCoordinator(
-                            GreenGasGiantCriteriaCatalog.LoadEmbedded(),
-                            client)));
+                builder =>
+                    builder
+                        .WithAppDataPaths(paths)
+                        .WithGreenGasGiantPublicationCoordinator(
+                            new GreenGasGiantPublicationCoordinator(GreenGasGiantCriteriaCatalog.LoadEmbedded(), client)
+                        )
+            );
 
             await viewModel.RefreshAsync();
 
             Assert.Empty(client.Candidates);
 
-            await File.AppendAllTextAsync(
-                journalPath,
-                GreenGasGiantScanJson + "\n");
+            await File.AppendAllTextAsync(journalPath, GreenGasGiantScanJson + "\n");
             await viewModel.RefreshAsync();
 
             var candidate = Assert.Single(client.Candidates);
             Assert.Equal("Test Cmdr", candidate.CommanderName);
             Assert.Equal("potential", candidate.Tag);
-            Assert.Contains(
-                "Uploaded a potential Green Gas Giant candidate",
-                viewModel.NetworkPrivacy.StatusMessage);
+            Assert.Contains("Uploaded a potential Green Gas Giant candidate", viewModel.NetworkPrivacy.StatusMessage);
         }
         finally
         {
@@ -559,34 +510,32 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task EddnReceivesContextButPublishesOnlyNewLiveEvents()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-main-eddn-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-main-eddn-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
             Directory.CreateDirectory(journals);
-            var journalPath = Path.Combine(
-                journals,
-                "Journal.2026-07-25T120000.01.log");
+            var journalPath = Path.Combine(journals, "Journal.2026-07-25T120000.01.log");
             await File.WriteAllTextAsync(
                 journalPath,
                 "{\"timestamp\":\"2026-07-25T12:00:00Z\",\"event\":\"Fileheader\",\"gameversion\":\"4.1\",\"build\":\"r1\"}\n"
                     + "{\"timestamp\":\"2026-07-25T12:00:01Z\",\"event\":\"LoadGame\",\"Commander\":\"Test Cmdr\",\"FID\":\"F123\",\"Horizons\":true,\"Odyssey\":true}\n"
-                    + "{\"timestamp\":\"2026-07-25T12:00:02Z\",\"event\":\"Location\",\"StarSystem\":\"Test A\",\"SystemAddress\":123,\"StarPos\":[1,2,3]}\n");
+                    + "{\"timestamp\":\"2026-07-25T12:00:02Z\",\"event\":\"Location\",\"StarSystem\":\"Test A\",\"SystemAddress\":123,\"StarPos\":[1,2,3]}\n"
+            );
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 Path.Combine(root, "data"),
                 Path.Combine(root, "cache"),
-                []);
+                []
+            );
             new NetworkPrivacySettingsStore(paths.UiSettingsPath).Save(
-                new NetworkPrivacyPreferences(true, true, false));
+                new NetworkPrivacyPreferences(true, true, false)
+            );
             var publisher = new RecordingEddnPublisher();
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths)
-                    .WithEddnPublisher(publisher));
+                builder => builder.WithAppDataPaths(paths).WithEddnPublisher(publisher)
+            );
 
             await viewModel.RefreshAsync();
 
@@ -602,16 +551,15 @@ public sealed class MainWindowViewModelTests
 
             await File.AppendAllTextAsync(
                 journalPath,
-                "{\"timestamp\":\"2026-07-25T12:01:00Z\",\"event\":\"DockingGranted\",\"MarketID\":1,\"StationName\":\"Port\",\"LandingPad\":2}\n");
+                "{\"timestamp\":\"2026-07-25T12:01:00Z\",\"event\":\"DockingGranted\",\"MarketID\":1,\"StationName\":\"Port\",\"LandingPad\":2}\n"
+            );
             await viewModel.RefreshAsync();
 
             Assert.Equal(2, publisher.Calls.Count);
             var live = publisher.Calls[1];
             Assert.True(live.AllowPublishing);
             Assert.Equal("DockingGranted", Assert.Single(live.Events).EventName);
-            Assert.Contains(
-                "Queued DockingGranted for EDDN.",
-                viewModel.NetworkPrivacy.StatusMessage);
+            Assert.Contains("Queued DockingGranted for EDDN.", viewModel.NetworkPrivacy.StatusMessage);
         }
         finally
         {
@@ -625,34 +573,30 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task VoxStellarReceivesOnlyNewLiveJournalEventsAfterOptIn()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-main-voxstellar-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-main-voxstellar-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
             Directory.CreateDirectory(journals);
-            var journalPath = Path.Combine(
-                journals,
-                "Journal.2026-08-13T120000.01.log");
+            var journalPath = Path.Combine(journals, "Journal.2026-08-13T120000.01.log");
             await File.WriteAllTextAsync(
                 journalPath,
                 "{\"timestamp\":\"2026-08-13T12:00:00Z\",\"event\":\"Fileheader\",\"gameversion\":\"4.1\",\"build\":\"r1\"}\n"
                     + "{\"timestamp\":\"2026-08-13T12:00:01Z\",\"event\":\"LoadGame\",\"Commander\":\"Test Cmdr\",\"FID\":\"F123\",\"Odyssey\":true}\n"
-                    + "{\"timestamp\":\"2026-08-13T12:00:02Z\",\"event\":\"FSDJump\",\"StarSystem\":\"Test A\",\"SystemAddress\":123,\"StarPos\":[1,2,3]}\n");
+                    + "{\"timestamp\":\"2026-08-13T12:00:02Z\",\"event\":\"FSDJump\",\"StarSystem\":\"Test A\",\"SystemAddress\":123,\"StarPos\":[1,2,3]}\n"
+            );
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 Path.Combine(root, "data"),
                 Path.Combine(root, "cache"),
-                []);
-            new VoxStellarSettingsStore(paths.UiSettingsPath).Save(
-                new VoxStellarPreferences(true));
+                []
+            );
+            new VoxStellarSettingsStore(paths.UiSettingsPath).Save(new VoxStellarPreferences(true));
             var publisher = new RecordingVoxStellarPublisher();
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths)
-                    .WithVoxStellarPublisher(publisher));
+                builder => builder.WithAppDataPaths(paths).WithVoxStellarPublisher(publisher)
+            );
 
             await viewModel.RefreshAsync();
 
@@ -664,16 +608,15 @@ public sealed class MainWindowViewModelTests
 
             await File.AppendAllTextAsync(
                 journalPath,
-                "{\"timestamp\":\"2026-08-13T12:01:00Z\",\"event\":\"Scan\",\"BodyName\":\"Test A 1\",\"BodyID\":1}\n");
+                "{\"timestamp\":\"2026-08-13T12:01:00Z\",\"event\":\"Scan\",\"BodyName\":\"Test A 1\",\"BodyID\":1}\n"
+            );
             await viewModel.RefreshAsync();
 
             Assert.Equal(2, publisher.Calls.Count);
             var live = publisher.Calls[1];
             Assert.True(live.AllowPublishing);
             Assert.Equal("Scan", Assert.Single(live.Events).EventName);
-            Assert.Contains(
-                "Queued Scan for VoxStellar",
-                viewModel.VoxStellar.StatusMessage);
+            Assert.Contains("Queued Scan for VoxStellar", viewModel.VoxStellar.StatusMessage);
 
             viewModel.VoxStellar.JournalUploadEnabled = false;
             Assert.False(publisher.EnabledStates[^1]);
@@ -698,20 +641,27 @@ public sealed class MainWindowViewModelTests
         {
             var journals = Path.Combine(root, "journals");
             Directory.CreateDirectory(journals);
-            await File.WriteAllTextAsync(Path.Combine(journals, "Journal.2026-09-05T120000.01.log"),
+            await File.WriteAllTextAsync(
+                Path.Combine(journals, "Journal.2026-09-05T120000.01.log"),
                 $$"""
                 {"timestamp":"2026-09-05T12:00:00Z","event":"Fileheader","gameversion":"{{gameVersion}}"}
                 {"timestamp":"2026-09-05T12:00:01Z","event":"LoadGame","Commander":"Test Cmdr","FID":"F123"}
                 {"timestamp":"2026-09-05T12:00:02Z","event":"Location","StarSystem":"Sol","SystemAddress":123,"StarPos":[0,0,0]}
 
-                """);
-            var paths = new AppDataPaths(Path.Combine(root, "config"),
-                Path.Combine(root, "data"), Path.Combine(root, "cache"), []);
+                """
+            );
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "data"),
+                Path.Combine(root, "cache"),
+                []
+            );
             var inara = new RecordingInaraPublisher();
             var edsm = new RecordingEdsmPublisher();
-            using var viewModel = MainWindowViewModelTestBuilder.Create(journals,
-                builder => builder.WithAppDataPaths(paths)
-                    .WithInaraPublisher(inara).WithEdsmPublisher(edsm));
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder.WithAppDataPaths(paths).WithInaraPublisher(inara).WithEdsmPublisher(edsm)
+            );
 
             await viewModel.RefreshAsync();
 
@@ -734,43 +684,37 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task InaraReceivesCommanderProfileAndMultiboxSafetyContext()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-main-inara-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-main-inara-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
             Directory.CreateDirectory(journals);
-            var journalPath = Path.Combine(
-                journals,
-                "Journal.2026-07-25T120000.01.log");
+            var journalPath = Path.Combine(journals, "Journal.2026-07-25T120000.01.log");
             await File.WriteAllTextAsync(
                 journalPath,
                 "{\"timestamp\":\"2026-07-25T12:00:00Z\",\"event\":\"Fileheader\",\"gameversion\":\"4.1\",\"build\":\"r1\",\"Odyssey\":true}\n"
                     + "{\"timestamp\":\"2026-07-25T12:00:01Z\",\"event\":\"LoadGame\",\"Commander\":\"Test Cmdr\",\"FID\":\"F123\",\"Odyssey\":true,\"Ship\":\"mandalay\",\"ShipID\":42}\n"
-                    + "{\"timestamp\":\"2026-07-25T12:00:02Z\",\"event\":\"Location\",\"StarSystem\":\"Test A\",\"SystemAddress\":123,\"StarPos\":[1,2,3]}\n");
+                    + "{\"timestamp\":\"2026-07-25T12:00:02Z\",\"event\":\"Location\",\"StarSystem\":\"Test A\",\"SystemAddress\":123,\"StarPos\":[1,2,3]}\n"
+            );
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 Path.Combine(root, "data"),
                 Path.Combine(root, "cache"),
-                []);
-            await new CommanderProfileStore(paths.DataDirectory)
-                .SaveInaraApiKeyAsync(
-                    "F123",
-                    "Test Cmdr",
-                    isOdyssey: true,
-                    "personal-key");
+                []
+            );
+            await new CommanderProfileStore(paths.DataDirectory).SaveInaraApiKeyAsync(
+                "F123",
+                "Test Cmdr",
+                isOdyssey: true,
+                "personal-key"
+            );
             var publisher = new RecordingInaraPublisher();
-            var gameWindows = new MutableGameWindowSwitcher
-            {
-                AvailableWindowCount = 2,
-            };
+            var gameWindows = new MutableGameWindowSwitcher { AvailableWindowCount = 2 };
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths)
-                    .WithGameWindowSwitcher(gameWindows)
-                    .WithInaraPublisher(publisher));
+                builder =>
+                    builder.WithAppDataPaths(paths).WithGameWindowSwitcher(gameWindows).WithInaraPublisher(publisher)
+            );
 
             await viewModel.RefreshAsync();
 
@@ -785,7 +729,8 @@ public sealed class MainWindowViewModelTests
 
             await File.AppendAllTextAsync(
                 journalPath,
-                "{\"timestamp\":\"2026-07-25T12:01:00Z\",\"event\":\"Docked\",\"StarSystem\":\"Test A\",\"SystemAddress\":123,\"StationName\":\"Test Port\"}\n");
+                "{\"timestamp\":\"2026-07-25T12:01:00Z\",\"event\":\"Docked\",\"StarSystem\":\"Test A\",\"SystemAddress\":123,\"StationName\":\"Test Port\"}\n"
+            );
             await viewModel.RefreshAsync();
 
             Assert.Equal(2, publisher.Calls.Count);
@@ -793,9 +738,7 @@ public sealed class MainWindowViewModelTests
             Assert.True(live.AllowPublishing);
             Assert.False(live.AllowSharedData);
             Assert.Equal("Test Port", live.StationName);
-            Assert.Contains(
-                "Inara accepted",
-                viewModel.Inara.PublicationStatus);
+            Assert.Contains("Inara accepted", viewModel.Inara.PublicationStatus);
         }
         finally
         {
@@ -809,44 +752,38 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task EdsmReceivesProfileCredentialsAndRequiresAttributableLiveEvents()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-main-edsm-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-main-edsm-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
             Directory.CreateDirectory(journals);
-            var journalPath = Path.Combine(
-                journals,
-                "Journal.2026-08-25T120000.01.log");
+            var journalPath = Path.Combine(journals, "Journal.2026-08-25T120000.01.log");
             await File.WriteAllTextAsync(
                 journalPath,
                 "{\"timestamp\":\"2026-08-25T12:00:00Z\",\"event\":\"Fileheader\",\"gameversion\":\"4.1\",\"build\":\"r1\",\"Odyssey\":true}\n"
                     + "{\"timestamp\":\"2026-08-25T12:00:01Z\",\"event\":\"LoadGame\",\"Commander\":\"Test Cmdr\",\"FID\":\"F123\",\"Odyssey\":true}\n"
-                    + "{\"timestamp\":\"2026-08-25T12:00:02Z\",\"event\":\"Location\",\"StarSystem\":\"Test A\",\"SystemAddress\":123,\"StarPos\":[1,2,3]}\n");
+                    + "{\"timestamp\":\"2026-08-25T12:00:02Z\",\"event\":\"Location\",\"StarSystem\":\"Test A\",\"SystemAddress\":123,\"StarPos\":[1,2,3]}\n"
+            );
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 Path.Combine(root, "data"),
                 Path.Combine(root, "cache"),
-                []);
-            await new CommanderProfileStore(paths.DataDirectory)
-                .SaveEdsmCredentialsAsync(
-                    "F123",
-                    "Test Cmdr",
-                    isOdyssey: true,
-                    "EDSM Test Cmdr",
-                    "personal-key");
+                []
+            );
+            await new CommanderProfileStore(paths.DataDirectory).SaveEdsmCredentialsAsync(
+                "F123",
+                "Test Cmdr",
+                isOdyssey: true,
+                "EDSM Test Cmdr",
+                "personal-key"
+            );
             var publisher = new RecordingEdsmPublisher();
-            var gameWindows = new MutableGameWindowSwitcher
-            {
-                AvailableWindowCount = 2,
-            };
+            var gameWindows = new MutableGameWindowSwitcher { AvailableWindowCount = 2 };
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths)
-                    .WithGameWindowSwitcher(gameWindows)
-                    .WithEdsmPublisher(publisher));
+                builder =>
+                    builder.WithAppDataPaths(paths).WithGameWindowSwitcher(gameWindows).WithEdsmPublisher(publisher)
+            );
 
             await viewModel.RefreshAsync();
 
@@ -861,14 +798,16 @@ public sealed class MainWindowViewModelTests
 
             await File.AppendAllTextAsync(
                 journalPath,
-                "{\"timestamp\":\"2026-08-25T12:01:00Z\",\"event\":\"FSDJump\",\"StarSystem\":\"Test B\",\"SystemAddress\":456,\"StarPos\":[4,5,6]}\n");
+                "{\"timestamp\":\"2026-08-25T12:01:00Z\",\"event\":\"FSDJump\",\"StarSystem\":\"Test B\",\"SystemAddress\":456,\"StarPos\":[4,5,6]}\n"
+            );
             await viewModel.RefreshAsync();
             Assert.False(publisher.Calls[1].AllowPublishing);
 
             gameWindows.AvailableWindowCount = 1;
             await File.AppendAllTextAsync(
                 journalPath,
-                "{\"timestamp\":\"2026-08-25T12:02:00Z\",\"event\":\"FSDJump\",\"StarSystem\":\"Test C\",\"SystemAddress\":789,\"StarPos\":[7,8,9]}\n");
+                "{\"timestamp\":\"2026-08-25T12:02:00Z\",\"event\":\"FSDJump\",\"StarSystem\":\"Test C\",\"SystemAddress\":789,\"StarPos\":[7,8,9]}\n"
+            );
             await viewModel.RefreshAsync();
 
             Assert.True(publisher.Calls[2].AllowPublishing);
@@ -886,37 +825,32 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task InaraFailureDoesNotInterruptExistingJournalTracking()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-main-inara-isolation-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-main-inara-isolation-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
             Directory.CreateDirectory(journals);
             await File.WriteAllTextAsync(
-                Path.Combine(
-                    journals,
-                    "Journal.2026-07-25T120000.01.log"),
+                Path.Combine(journals, "Journal.2026-07-25T120000.01.log"),
                 "{\"event\":\"Commander\",\"Name\":\"Test Cmdr\",\"FID\":\"F123\"}\n"
-                    + "{\"event\":\"Location\",\"StarSystem\":\"Test A\",\"SystemAddress\":123,\"StarPos\":[1,2,3]}\n");
+                    + "{\"event\":\"Location\",\"StarSystem\":\"Test A\",\"SystemAddress\":123,\"StarPos\":[1,2,3]}\n"
+            );
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 Path.Combine(root, "data"),
                 Path.Combine(root, "cache"),
-                []);
+                []
+            );
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths)
-                    .WithInaraPublisher(new ThrowingInaraPublisher()));
+                builder => builder.WithAppDataPaths(paths).WithInaraPublisher(new ThrowingInaraPublisher())
+            );
 
             await viewModel.RefreshAsync();
 
             Assert.Equal("Test Cmdr", viewModel.CommanderName);
             Assert.Contains("Test A", viewModel.SystemDescription);
-            Assert.Contains(
-                "without affecting journal tracking",
-                viewModel.Inara.PublicationStatus);
+            Assert.Contains("without affecting journal tracking", viewModel.Inara.PublicationStatus);
         }
         finally
         {
@@ -930,35 +864,28 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task ClearingInaraKeyImmediatelyCancelsPendingPublication()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-main-inara-opt-out-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-main-inara-opt-out-{Guid.NewGuid():N}");
         try
         {
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 Path.Combine(root, "data"),
                 Path.Combine(root, "cache"),
-                []);
+                []
+            );
             var publisher = new RecordingInaraPublisher();
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 null,
-                builder => builder
-                    .WithAppDataPaths(paths)
-                    .WithInaraPublisher(publisher));
+                builder => builder.WithAppDataPaths(paths).WithInaraPublisher(publisher)
+            );
 
-            viewModel.Inara.SetCommanderProfile(
-                "F123",
-                "Test Cmdr",
-                isOdyssey: true,
-                inaraApiKey: "personal-key");
+            viewModel.Inara.SetCommanderProfile("F123", "Test Cmdr", isOdyssey: true, inaraApiKey: "personal-key");
             Assert.Equal(0, publisher.CancellationCount);
             viewModel.Inara.RequestClearApiKeyCommand.Execute(null);
             viewModel.Inara.ConfirmClearApiKeyCommand.Execute(null);
 
             var timeout = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(2);
-            while (publisher.CancellationCount == 0
-                && DateTimeOffset.UtcNow < timeout)
+            while (publisher.CancellationCount == 0 && DateTimeOffset.UtcNow < timeout)
             {
                 await Task.Delay(10);
             }
@@ -977,37 +904,41 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public void GuardianOverlayPreferencesAreWiredIntoMainViewModel()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-main-guardian-settings-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-main-guardian-settings-{Guid.NewGuid():N}");
         try
         {
-            var settingsStore = new GuardianOverlaySettingsStore(
-                Path.Combine(root, "ui-settings.json"));
-            settingsStore.Save(new GuardianOverlayPreferences(
-                EnableGuardianSites: false,
-                AutoShowGuardianSummary: false,
-                AutoShowRamTah: true,
-                SuppressForActiveBuildProjects: true,
-                AutoZoomNearObelisks: false,
-                AutoZoomInSrvTurret: true,
-                ShowComponentMaterials: true,
-                OverlaySizeIndex: 3,
-                DisableRuinsMeasurementGrid: true,
-                DisableAerialAlignmentGrid: false,
-                ShowMapNotes: false,
-                ShowMapLegend: false));
+            var settingsStore = new GuardianOverlaySettingsStore(Path.Combine(root, "ui-settings.json"));
+            settingsStore.Save(
+                new GuardianOverlayPreferences(
+                    EnableGuardianSites: false,
+                    AutoShowGuardianSummary: false,
+                    AutoShowRamTah: true,
+                    SuppressForActiveBuildProjects: true,
+                    AutoZoomNearObelisks: false,
+                    AutoZoomInSrvTurret: true,
+                    ShowComponentMaterials: true,
+                    OverlaySizeIndex: 3,
+                    DisableRuinsMeasurementGrid: true,
+                    DisableAerialAlignmentGrid: false,
+                    ShowMapNotes: false,
+                    ShowMapLegend: false
+                )
+            );
 
             var viewModel = MainWindowViewModelTestBuilder.Create(
                 Path.Combine(root, "missing-journals"),
-                builder => builder
-                    .WithAppDataPaths(
-                        new AppDataPaths(
-                            Path.Combine(root, "config"),
-                            Path.Combine(root, "data"),
-                            Path.Combine(root, "cache"),
-                            []))
-                    .WithGuardianOverlaySettingsStore(settingsStore));
+                builder =>
+                    builder
+                        .WithAppDataPaths(
+                            new AppDataPaths(
+                                Path.Combine(root, "config"),
+                                Path.Combine(root, "data"),
+                                Path.Combine(root, "cache"),
+                                []
+                            )
+                        )
+                        .WithGuardianOverlaySettingsStore(settingsStore)
+            );
 
             Assert.False(viewModel.Guardian.EnableGuardianSites);
             Assert.False(viewModel.Guardian.AutoShowGuardianSummary);
@@ -1035,25 +966,26 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public void StationInfoPreferencesAreWiredIntoMainViewModel()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-main-station-settings-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-main-station-settings-{Guid.NewGuid():N}");
         try
         {
-            var settingsStore = new StationInfoSettingsStore(
-                Path.Combine(root, "ui-settings.json"));
+            var settingsStore = new StationInfoSettingsStore(Path.Combine(root, "ui-settings.json"));
             settingsStore.Save(new StationInfoPreferences(AutoShow: false));
 
             var viewModel = MainWindowViewModelTestBuilder.Create(
                 Path.Combine(root, "missing-journals"),
-                builder => builder
-                    .WithAppDataPaths(
-                        new AppDataPaths(
-                            Path.Combine(root, "config"),
-                            Path.Combine(root, "data"),
-                            Path.Combine(root, "cache"),
-                            []))
-                    .WithStationInfoSettingsStore(settingsStore));
+                builder =>
+                    builder
+                        .WithAppDataPaths(
+                            new AppDataPaths(
+                                Path.Combine(root, "config"),
+                                Path.Combine(root, "data"),
+                                Path.Combine(root, "cache"),
+                                []
+                            )
+                        )
+                        .WithStationInfoSettingsStore(settingsStore)
+            );
 
             Assert.False(viewModel.StationInfo.AutoShow);
             viewModel.StationInfo.Dispose();
@@ -1070,30 +1002,33 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public void HumanSitePreferencesAreWiredIntoMainViewModel()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-main-human-site-settings-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-main-human-site-settings-{Guid.NewGuid():N}");
         try
         {
-            var settingsStore = new HumanSiteSettingsStore(
-                Path.Combine(root, "ui-settings.json"));
-            settingsStore.Save(HumanSitePreferences.Default with
-            {
-                AutoShow = false,
-                FootZoom = 3,
-                ShowMedkits = false,
-            });
+            var settingsStore = new HumanSiteSettingsStore(Path.Combine(root, "ui-settings.json"));
+            settingsStore.Save(
+                HumanSitePreferences.Default with
+                {
+                    AutoShow = false,
+                    FootZoom = 3,
+                    ShowMedkits = false,
+                }
+            );
 
             var viewModel = MainWindowViewModelTestBuilder.Create(
                 Path.Combine(root, "missing-journals"),
-                builder => builder
-                    .WithAppDataPaths(
-                        new AppDataPaths(
-                            Path.Combine(root, "config"),
-                            Path.Combine(root, "data"),
-                            Path.Combine(root, "cache"),
-                            []))
-                    .WithHumanSiteSettingsStore(settingsStore));
+                builder =>
+                    builder
+                        .WithAppDataPaths(
+                            new AppDataPaths(
+                                Path.Combine(root, "config"),
+                                Path.Combine(root, "data"),
+                                Path.Combine(root, "cache"),
+                                []
+                            )
+                        )
+                        .WithHumanSiteSettingsStore(settingsStore)
+            );
 
             Assert.False(viewModel.HumanSite.AutoShow);
             Assert.Equal(3, viewModel.HumanSite.FootZoom);
@@ -1111,9 +1046,7 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task LegacyProfileCanBeImportedFromSettingsWorkflow()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-profile-vm-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-profile-vm-tests-{Guid.NewGuid():N}");
         try
         {
             var source = Path.Combine(root, "legacy");
@@ -1121,21 +1054,20 @@ public sealed class MainWindowViewModelTests
             Directory.CreateDirectory(source);
             await File.WriteAllTextAsync(
                 Path.Combine(source, "settings.json"),
-                "{\"unknownFutureField\":42,\"darkTheme\":true,"
-                    + "\"autoShowPlotJumpInfo\":false}");
+                "{\"unknownFutureField\":42,\"darkTheme\":true," + "\"autoShowPlotJumpInfo\":false}"
+            );
             Directory.CreateDirectory(Path.Combine(data, "logs"));
-            await File.WriteAllTextAsync(
-                Path.Combine(data, "logs", "startup.txt"),
-                "startup log");
+            await File.WriteAllTextAsync(Path.Combine(data, "logs", "startup.txt"), "startup log");
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 data,
                 Path.Combine(root, "cache"),
-                [new LegacyProfileCandidate(LegacyProfileLocationKind.Desktop, source)]);
+                [new LegacyProfileCandidate(LegacyProfileLocationKind.Desktop, source)]
+            );
             var viewModel = MainWindowViewModelTestBuilder.Create(
                 Path.Combine(root, "missing-journals"),
-                builder => builder
-                    .WithAppDataPaths(paths));
+                builder => builder.WithAppDataPaths(paths)
+            );
 
             Assert.Equal(source, viewModel.LegacyProfileSourcePath);
             await viewModel.ImportLegacyProfileAsync();
@@ -1146,11 +1078,8 @@ public sealed class MainWindowViewModelTests
             Assert.Contains("current-only files", viewModel.ProfileStatusMessage);
             Assert.Contains("Translated 2 legacy UI preferences", viewModel.ProfileStatusMessage);
             Assert.Contains("Restart SrvSurvey", viewModel.ProfileStatusMessage);
-            Assert.Equal(
-                "blue-dark",
-                new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
-            Assert.False(
-                new JumpInfoSettingsStore(paths.UiSettingsPath).Load().AutoShow);
+            Assert.Equal("blue-dark", new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
+            Assert.False(new JumpInfoSettingsStore(paths.UiSettingsPath).Load().AutoShow);
             Assert.True(viewModel.HasCompletedLegacyImport);
             Assert.False(viewModel.ImportLegacyProfileCommand.CanExecute(null));
             Assert.True(Directory.Exists(viewModel.ProfileBackupDirectory));
@@ -1167,19 +1096,17 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task LegacyProfileImportConvertsRetiredOrganicClaimsAfterVerification()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-profile-organic-vm-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-profile-organic-vm-tests-{Guid.NewGuid():N}");
         try
         {
             var source = Path.Combine(root, "legacy");
             var data = Path.Combine(root, "current");
             Directory.CreateDirectory(source);
-            var reference = ExobiologyReferenceCatalog.LoadEmbedded()
-                .BiologyEntries.First(entry => string.Equals(
-                    entry.VariantName,
-                    "$Codex_Ent_Aleoids_01_B_Name;",
-                    StringComparison.Ordinal));
+            var reference = ExobiologyReferenceCatalog
+                .LoadEmbedded()
+                .BiologyEntries.First(entry =>
+                    string.Equals(entry.VariantName, "$Codex_Ent_Aleoids_01_B_Name;", StringComparison.Ordinal)
+                );
             var sourceProfilePath = Path.Combine(source, "F123-live.json");
             await File.WriteAllTextAsync(
                 sourceProfilePath,
@@ -1190,37 +1117,28 @@ public sealed class MainWindowViewModelTests
                   "organicRewards": 1,
                   "scannedBioEntryIds": ["42_1_{{reference.EntryId}}"]
                 }
-                """);
+                """
+            );
             var sourceBytes = await File.ReadAllBytesAsync(sourceProfilePath);
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 data,
                 Path.Combine(root, "cache"),
-                [new LegacyProfileCandidate(
-                    LegacyProfileLocationKind.Desktop,
-                    source)]);
+                [new LegacyProfileCandidate(LegacyProfileLocationKind.Desktop, source)]
+            );
             var viewModel = MainWindowViewModelTestBuilder.Create(
                 Path.Combine(root, "missing-journals"),
-                builder => builder
-                    .WithAppDataPaths(paths));
+                builder => builder.WithAppDataPaths(paths)
+            );
 
             await viewModel.ImportLegacyProfileAsync();
 
-            Assert.Contains(
-                "Converted retired organic history",
-                viewModel.ProfileStatusMessage);
-            Assert.Equal(
-                sourceBytes,
-                await File.ReadAllBytesAsync(sourceProfilePath));
-            var profile = JsonNode.Parse(await File.ReadAllTextAsync(
-                Path.Combine(data, "F123-live.json")))!.AsObject();
+            Assert.Contains("Converted retired organic history", viewModel.ProfileStatusMessage);
+            Assert.Equal(sourceBytes, await File.ReadAllBytesAsync(sourceProfilePath));
+            var profile = JsonNode.Parse(await File.ReadAllTextAsync(Path.Combine(data, "F123-live.json")))!.AsObject();
             Assert.True(profile["futureProfile"]!.GetValue<bool>());
-            Assert.True(
-                profile["migratedScannedOrganicsInEntryId"]!
-                    .GetValue<bool>());
-            Assert.Equal(
-                reference.Reward,
-                profile["organicRewards"]!.GetValue<long>());
+            Assert.True(profile["migratedScannedOrganicsInEntryId"]!.GetValue<bool>());
+            Assert.Equal(reference.Reward, profile["organicRewards"]!.GetValue<long>());
         }
         finally
         {
@@ -1234,9 +1152,7 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task LegacyProfileImportPreservesCurrentUiSettingsWhenLegacySettingsAreMalformed()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-profile-malformed-settings-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-profile-malformed-settings-tests-{Guid.NewGuid():N}");
         try
         {
             var source = Path.Combine(root, "legacy");
@@ -1244,41 +1160,36 @@ public sealed class MainWindowViewModelTests
             var config = Path.Combine(root, "config");
             Directory.CreateDirectory(source);
             Directory.CreateDirectory(config);
-            await File.WriteAllTextAsync(
-                Path.Combine(source, "settings.json"),
-                "{\"darkTheme\":true,");
+            await File.WriteAllTextAsync(Path.Combine(source, "settings.json"), "{\"darkTheme\":true,");
             var paths = new AppDataPaths(
                 config,
                 data,
                 Path.Combine(root, "cache"),
-                [new LegacyProfileCandidate(
-                    LegacyProfileLocationKind.Desktop,
-                    source)]);
-            const string currentSettings =
-                "{\"Version\":1,\"Theme\":\"green-light\"}";
+                [new LegacyProfileCandidate(LegacyProfileLocationKind.Desktop, source)]
+            );
+            const string currentSettings = "{\"Version\":1,\"Theme\":\"green-light\"}";
             await File.WriteAllTextAsync(paths.UiSettingsPath, currentSettings);
             var viewModel = MainWindowViewModelTestBuilder.Create(
                 Path.Combine(root, "missing-journals"),
-                builder => builder
-                    .WithAppDataPaths(paths));
+                builder => builder.WithAppDataPaths(paths)
+            );
 
             // Startup migrations may add their own settings before import starts.
             var settingsBeforeImport = await File.ReadAllTextAsync(paths.UiSettingsPath);
             using (var settingsDocument = System.Text.Json.JsonDocument.Parse(settingsBeforeImport))
+            {
                 Assert.Equal("green-light", settingsDocument.RootElement.GetProperty("Theme").GetString());
+            }
+
             await viewModel.ImportLegacyProfileAsync();
 
             Assert.True(viewModel.HasCompletedLegacyImport);
-            Assert.Contains(
-                "legacy UI preferences could not be translated",
-                viewModel.ProfileStatusMessage);
-            Assert.Equal(
-                settingsBeforeImport,
-                await File.ReadAllTextAsync(paths.UiSettingsPath));
+            Assert.Contains("legacy UI preferences could not be translated", viewModel.ProfileStatusMessage);
+            Assert.Equal(settingsBeforeImport, await File.ReadAllTextAsync(paths.UiSettingsPath));
             Assert.Equal(
                 "{\"darkTheme\":true,",
-                await File.ReadAllTextAsync(
-                    Path.Combine(paths.DataDirectory, "settings.json")));
+                await File.ReadAllTextAsync(Path.Combine(paths.DataDirectory, "settings.json"))
+            );
         }
         finally
         {
@@ -1292,43 +1203,35 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task LegacyProfileImportWaitsForJournalMonitorShutdown()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-profile-monitor-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-profile-monitor-tests-{Guid.NewGuid():N}");
         try
         {
             var source = Path.Combine(root, "legacy");
             var data = Path.Combine(root, "current");
             Directory.CreateDirectory(source);
-            await File.WriteAllTextAsync(
-                Path.Combine(source, "settings.json"),
-                "before monitor shutdown");
+            await File.WriteAllTextAsync(Path.Combine(source, "settings.json"), "before monitor shutdown");
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 data,
                 Path.Combine(root, "cache"),
-                [new LegacyProfileCandidate(LegacyProfileLocationKind.Desktop, source)]);
+                [new LegacyProfileCandidate(LegacyProfileLocationKind.Desktop, source)]
+            );
             var viewModel = MainWindowViewModelTestBuilder.Create(
                 Path.Combine(root, "missing-journals"),
-                builder => builder
-                    .WithAppDataPaths(paths));
+                builder => builder.WithAppDataPaths(paths)
+            );
             var monitorStopped = false;
             viewModel.ProfileImportPreparing += async () =>
             {
                 await Task.Yield();
                 monitorStopped = true;
-                await File.WriteAllTextAsync(
-                    Path.Combine(source, "settings.json"),
-                    "after monitor shutdown");
+                await File.WriteAllTextAsync(Path.Combine(source, "settings.json"), "after monitor shutdown");
             };
 
             await viewModel.ImportLegacyProfileAsync();
 
             Assert.True(monitorStopped);
-            Assert.Equal(
-                "after monitor shutdown",
-                await File.ReadAllTextAsync(
-                    Path.Combine(data, "settings.json")));
+            Assert.Equal("after monitor shutdown", await File.ReadAllTextAsync(Path.Combine(data, "settings.json")));
         }
         finally
         {
@@ -1342,35 +1245,28 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task VerifiedLegacyProfileImportRequestsImmediateRestart()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-profile-restart-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-profile-restart-tests-{Guid.NewGuid():N}");
         try
         {
             var source = Path.Combine(root, "legacy");
             var data = Path.Combine(root, "current");
             Directory.CreateDirectory(source);
-            await File.WriteAllTextAsync(
-                Path.Combine(source, "settings.json"),
-                "{\"darkTheme\":true}");
+            await File.WriteAllTextAsync(Path.Combine(source, "settings.json"), "{\"darkTheme\":true}");
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 data,
                 Path.Combine(root, "cache"),
-                [new LegacyProfileCandidate(
-                    LegacyProfileLocationKind.Desktop,
-                    source)]);
+                [new LegacyProfileCandidate(LegacyProfileLocationKind.Desktop, source)]
+            );
             var viewModel = MainWindowViewModelTestBuilder.Create(
                 Path.Combine(root, "missing-journals"),
-                builder => builder
-                    .WithAppDataPaths(paths));
+                builder => builder.WithAppDataPaths(paths)
+            );
             var restartRequested = false;
             viewModel.ProfileImportCompleted += () =>
             {
                 Assert.True(viewModel.HasCompletedLegacyImport);
-                Assert.Equal(
-                    "{\"darkTheme\":true}",
-                    File.ReadAllText(Path.Combine(data, "settings.json")));
+                Assert.Equal("{\"darkTheme\":true}", File.ReadAllText(Path.Combine(data, "settings.json")));
                 restartRequested = true;
                 return Task.CompletedTask;
             };
@@ -1393,9 +1289,7 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task LegacyProfileCanBeImportedFromManuallySelectedFolder()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-manual-profile-vm-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-manual-profile-vm-tests-{Guid.NewGuid():N}");
         try
         {
             var source = Path.Combine(root, "copied-windows-profile");
@@ -1403,16 +1297,13 @@ public sealed class MainWindowViewModelTests
             Directory.CreateDirectory(source);
             await File.WriteAllTextAsync(
                 Path.Combine(source, "F123-live.json"),
-                "{\"fid\":\"F123\",\"commander\":\"Drew\"}");
-            var paths = new AppDataPaths(
-                Path.Combine(root, "config"),
-                data,
-                Path.Combine(root, "cache"),
-                []);
+                "{\"fid\":\"F123\",\"commander\":\"Drew\"}"
+            );
+            var paths = new AppDataPaths(Path.Combine(root, "config"), data, Path.Combine(root, "cache"), []);
             var viewModel = MainWindowViewModelTestBuilder.Create(
                 Path.Combine(root, "missing-journals"),
-                builder => builder
-                    .WithAppDataPaths(paths));
+                builder => builder.WithAppDataPaths(paths)
+            );
 
             Assert.Empty(viewModel.LegacyProfiles);
             Assert.False(viewModel.ImportLegacyProfileCommand.CanExecute(null));
@@ -1424,8 +1315,8 @@ public sealed class MainWindowViewModelTests
 
             Assert.Equal(
                 "{\"fid\":\"F123\",\"commander\":\"Drew\"}",
-                await File.ReadAllTextAsync(
-                    Path.Combine(data, "F123-live.json")));
+                await File.ReadAllTextAsync(Path.Combine(data, "F123-live.json"))
+            );
             Assert.True(viewModel.HasCompletedLegacyImport);
         }
         finally
@@ -1440,27 +1331,17 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public void PersistedJournalFolderIsUsedWhenNoStartupOverrideIsPresent()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-persisted-journal-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-persisted-journal-tests-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
             var config = Path.Combine(root, "config");
             Directory.CreateDirectory(journals);
             Directory.CreateDirectory(config);
-            var paths = new AppDataPaths(
-                config,
-                Path.Combine(root, "data"),
-                Path.Combine(root, "cache"),
-                []);
-            new JournalSettingsStore(paths.UiSettingsPath).Save(
-                new JournalPreferences(journals));
+            var paths = new AppDataPaths(config, Path.Combine(root, "data"), Path.Combine(root, "cache"), []);
+            new JournalSettingsStore(paths.UiSettingsPath).Save(new JournalPreferences(journals));
 
-            var viewModel = MainWindowViewModelTestBuilder.Create(
-                null,
-                builder => builder
-                    .WithAppDataPaths(paths));
+            var viewModel = MainWindowViewModelTestBuilder.Create(null, builder => builder.WithAppDataPaths(paths));
 
             Assert.Equal(journals, viewModel.JournalFolderPath);
             Assert.Equal(journals, viewModel.JournalSettings.DirectoryPath);
@@ -1477,9 +1358,7 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task RefreshAppliesLiveJournalAndStatusState()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-live-vm-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-live-vm-tests-{Guid.NewGuid():N}");
         try
         {
             Directory.CreateDirectory(root);
@@ -1487,19 +1366,19 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "Journal.2026-07-24T100000.01.log"),
                 "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
                     + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Sol\",\"SystemAddress\":10477373803,\"StarPos\":[0,0,0],\"Body\":\"Earth\",\"BodyType\":\"Planet\"}\n"
-                    + "{\"timestamp\":\"2026-07-24T10:00:02Z\",\"event\":\"LaunchSRV\",\"SRVType\":\"testbuggy\",\"ID\":7}\n");
+                    + "{\"timestamp\":\"2026-07-24T10:00:02Z\",\"event\":\"LaunchSRV\",\"SRVType\":\"testbuggy\",\"ID\":7}\n"
+            );
             await File.WriteAllTextAsync(
                 Path.Combine(root, StatusFileReader.FileName),
-                "{\"timestamp\":\"2026-07-24T10:00:02Z\",\"event\":\"Status\",\"Flags\":69206016,\"Flags2\":0,\"Latitude\":12.5,\"Longitude\":-44.25,\"Heading\":-1,\"Altitude\":123.4}");
+                "{\"timestamp\":\"2026-07-24T10:00:02Z\",\"event\":\"Status\",\"Flags\":69206016,\"Flags2\":0,\"Latitude\":12.5,\"Longitude\":-44.25,\"Heading\":-1,\"Altitude\":123.4}"
+            );
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 Path.Combine(root, "profile"),
                 Path.Combine(root, "cache"),
-                []);
-            var viewModel = MainWindowViewModelTestBuilder.Create(
-                root,
-                builder => builder
-                    .WithAppDataPaths(paths));
+                []
+            );
+            var viewModel = MainWindowViewModelTestBuilder.Create(root, builder => builder.WithAppDataPaths(paths));
 
             await viewModel.RefreshAsync();
 
@@ -1508,9 +1387,7 @@ public sealed class MainWindowViewModelTests
             Assert.Equal("Sol", viewModel.OverviewSystemName);
             Assert.Equal(10477373803, viewModel.OverviewSystemAddress);
             Assert.True(viewModel.HasOverviewSystemAddress);
-            Assert.Equal(
-                "id64 10477373803",
-                viewModel.OverviewSystemAddressText);
+            Assert.Equal("id64 10477373803", viewModel.OverviewSystemAddressText);
             Assert.Equal("Earth", viewModel.BodyName);
             Assert.Equal("SRV", viewModel.VehicleState);
             Assert.Equal("12.500000, -44.250000", viewModel.SurfacePosition);
@@ -1526,9 +1403,7 @@ public sealed class MainWindowViewModelTests
             Assert.True(viewModel.Route.HasProfile);
             Assert.Equal("Sol", viewModel.Route.CurrentSystem);
             Assert.Equal("Sol", viewModel.SystemSurvey.Snapshot.SystemName);
-            Assert.Equal(
-                10477373803,
-                viewModel.SystemSurvey.Snapshot.SystemAddress);
+            Assert.Equal(10477373803, viewModel.SystemSurvey.Snapshot.SystemAddress);
         }
         finally
         {
@@ -1542,27 +1417,25 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task RefreshRecognizesNomadHybridVehicleTelemetry()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-nomad-vm-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-nomad-vm-tests-{Guid.NewGuid():N}");
         try
         {
             Directory.CreateDirectory(root);
             await File.WriteAllTextAsync(
                 Path.Combine(root, "Journal.2026-08-11T020000.01.log"),
-                "{\"timestamp\":\"2026-08-11T02:03:24Z\",\"event\":\"LaunchFighter\",\"Loadout\":\"base\",\"ID\":44,\"PlayerControlled\":true}\n");
+                "{\"timestamp\":\"2026-08-11T02:03:24Z\",\"event\":\"LaunchFighter\",\"Loadout\":\"base\",\"ID\":44,\"PlayerControlled\":true}\n"
+            );
             await File.WriteAllTextAsync(
                 Path.Combine(root, StatusFileReader.FileName),
-                "{\"timestamp\":\"2026-08-11T02:05:05Z\",\"event\":\"Status\",\"Flags\":69206020,\"Flags2\":0,\"Latitude\":74.729782,\"Longitude\":-153.820694,\"Altitude\":296}");
+                "{\"timestamp\":\"2026-08-11T02:05:05Z\",\"event\":\"Status\",\"Flags\":69206020,\"Flags2\":0,\"Latitude\":74.729782,\"Longitude\":-153.820694,\"Altitude\":296}"
+            );
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 Path.Combine(root, "profile"),
                 Path.Combine(root, "cache"),
-                []);
-            var viewModel = MainWindowViewModelTestBuilder.Create(
-                root,
-                builder => builder
-                    .WithAppDataPaths(paths));
+                []
+            );
+            var viewModel = MainWindowViewModelTestBuilder.Create(root, builder => builder.WithAppDataPaths(paths));
 
             await viewModel.RefreshAsync();
 
@@ -1581,42 +1454,39 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task RefreshPreservesKnownNomadAcrossIntermediateStatus()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-known-nomad-vm-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-known-nomad-vm-tests-{Guid.NewGuid():N}");
         try
         {
             Directory.CreateDirectory(root);
             await File.WriteAllTextAsync(
                 Path.Combine(root, "Journal.2026-08-11T063600.01.log"),
                 "{\"timestamp\":\"2026-08-11T16:34:30Z\",\"event\":\"DockSRV\",\"SRVType\":\"lander01\",\"ID\":44}\n"
-                + "{\"timestamp\":\"2026-08-11T16:35:00Z\",\"event\":\"LaunchFighter\",\"ID\":44,\"PlayerControlled\":true}\n");
+                    + "{\"timestamp\":\"2026-08-11T16:35:00Z\",\"event\":\"LaunchFighter\",\"ID\":44,\"PlayerControlled\":true}\n"
+            );
             var statusPath = Path.Combine(root, StatusFileReader.FileName);
             await File.WriteAllTextAsync(
                 statusPath,
-                "{\"timestamp\":\"2026-08-11T16:34:59Z\",\"event\":\"Status\",\"Flags\":16777216,\"Flags2\":0}");
+                "{\"timestamp\":\"2026-08-11T16:34:59Z\",\"event\":\"Status\",\"Flags\":16777216,\"Flags2\":0}"
+            );
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 Path.Combine(root, "profile"),
                 Path.Combine(root, "cache"),
-                []);
-            var viewModel = MainWindowViewModelTestBuilder.Create(
-                root,
-                builder => builder
-                    .WithAppDataPaths(paths));
+                []
+            );
+            var viewModel = MainWindowViewModelTestBuilder.Create(root, builder => builder.WithAppDataPaths(paths));
 
             await viewModel.RefreshAsync();
             await File.WriteAllTextAsync(
                 statusPath,
-                "{\"timestamp\":\"2026-08-11T16:35:01Z\",\"event\":\"Status\",\"Flags\":67108864,\"Flags2\":0}");
+                "{\"timestamp\":\"2026-08-11T16:35:01Z\",\"event\":\"Status\",\"Flags\":67108864,\"Flags2\":0}"
+            );
             await viewModel.RefreshAsync();
             viewModel.SystemSurvey.AutoHideSurfaceRadarWithoutLandingGear = true;
 
             Assert.Equal("Nomad", viewModel.VehicleState);
             Assert.Equal(EliteSrvTypes.Nomad, viewModel.CurrentVrOverlayMode);
-            Assert.True(
-                viewModel.SystemSurvey
-                    .ShouldSuppressSurfaceNavigationForLandingGear);
+            Assert.True(viewModel.SystemSurvey.ShouldSuppressSurfaceNavigationForLandingGear);
         }
         finally
         {
@@ -1630,36 +1500,32 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task RefreshRecognizesNomadLoadedAsTheActiveVehicle()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-loaded-nomad-vm-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-loaded-nomad-vm-tests-{Guid.NewGuid():N}");
         try
         {
             Directory.CreateDirectory(root);
             await File.WriteAllTextAsync(
                 Path.Combine(root, "Journal.2026-08-11T063600.01.log"),
-                "{\"timestamp\":\"2026-08-11T11:36:59Z\",\"event\":\"LoadGame\",\"Ship\":\"Lander01\",\"Ship_Localised\":\"Nomad\",\"ShipID\":44,\"StartLanded\":true}\n");
+                "{\"timestamp\":\"2026-08-11T11:36:59Z\",\"event\":\"LoadGame\",\"Ship\":\"Lander01\",\"Ship_Localised\":\"Nomad\",\"ShipID\":44,\"StartLanded\":true}\n"
+            );
             await File.WriteAllTextAsync(
                 Path.Combine(root, StatusFileReader.FileName),
-                "{\"timestamp\":\"2026-08-11T11:42:38Z\",\"event\":\"Status\",\"Flags\":67108864,\"Flags2\":0,\"Latitude\":16.533182,\"Longitude\":32.519001,\"Altitude\":77}");
+                "{\"timestamp\":\"2026-08-11T11:42:38Z\",\"event\":\"Status\",\"Flags\":67108864,\"Flags2\":0,\"Latitude\":16.533182,\"Longitude\":32.519001,\"Altitude\":77}"
+            );
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 Path.Combine(root, "profile"),
                 Path.Combine(root, "cache"),
-                []);
-            var viewModel = MainWindowViewModelTestBuilder.Create(
-                root,
-                builder => builder
-                    .WithAppDataPaths(paths));
+                []
+            );
+            var viewModel = MainWindowViewModelTestBuilder.Create(root, builder => builder.WithAppDataPaths(paths));
 
             await viewModel.RefreshAsync();
             viewModel.SystemSurvey.AutoHideSurfaceRadarWithoutLandingGear = true;
 
             Assert.Equal("Nomad", viewModel.VehicleState);
             Assert.Equal(EliteSrvTypes.Nomad, viewModel.CurrentVrOverlayMode);
-            Assert.True(
-                viewModel.SystemSurvey
-                    .ShouldSuppressSurfaceNavigationForLandingGear);
+            Assert.True(viewModel.SystemSurvey.ShouldSuppressSurfaceNavigationForLandingGear);
         }
         finally
         {
@@ -1673,52 +1539,47 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task RefreshPreservesNomadAcrossSuitLoadGameAndEmbark()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-nomad-suit-load-vm-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-nomad-suit-load-vm-tests-{Guid.NewGuid():N}");
         try
         {
             Directory.CreateDirectory(root);
             await File.WriteAllTextAsync(
                 Path.Combine(root, "Journal.2026-08-19T154645.01.log"),
                 "{\"timestamp\":\"2026-08-19T20:46:42Z\",\"event\":\"Fileheader\"}\n"
-                + "{\"timestamp\":\"2026-08-19T20:47:46Z\",\"event\":\"LoadGame\",\"Commander\":\"Drew\",\"FID\":\"F123\",\"Ship\":\"Explorer_NX\",\"ShipID\":31}\n"
-                + "{\"timestamp\":\"2026-08-19T21:23:50Z\",\"event\":\"DockSRV\",\"SRVType\":\"lander01\",\"ID\":44}\n"
-                + "{\"timestamp\":\"2026-08-19T21:29:42Z\",\"event\":\"LaunchFighter\",\"ID\":44,\"PlayerControlled\":true}\n"
-                + "{\"timestamp\":\"2026-08-19T21:33:12Z\",\"event\":\"Disembark\",\"SRV\":true,\"ID\":44}\n"
-                + "{\"timestamp\":\"2026-08-19T21:35:07Z\",\"event\":\"LoadGame\",\"Commander\":\"Drew\",\"FID\":\"F123\",\"Ship\":\"ExplorationSuit_Class5\"}\n"
-                + "{\"timestamp\":\"2026-08-19T21:36:29Z\",\"event\":\"Embark\",\"SRV\":true,\"ID\":44}\n");
+                    + "{\"timestamp\":\"2026-08-19T20:47:46Z\",\"event\":\"LoadGame\",\"Commander\":\"Drew\",\"FID\":\"F123\",\"Ship\":\"Explorer_NX\",\"ShipID\":31}\n"
+                    + "{\"timestamp\":\"2026-08-19T21:23:50Z\",\"event\":\"DockSRV\",\"SRVType\":\"lander01\",\"ID\":44}\n"
+                    + "{\"timestamp\":\"2026-08-19T21:29:42Z\",\"event\":\"LaunchFighter\",\"ID\":44,\"PlayerControlled\":true}\n"
+                    + "{\"timestamp\":\"2026-08-19T21:33:12Z\",\"event\":\"Disembark\",\"SRV\":true,\"ID\":44}\n"
+                    + "{\"timestamp\":\"2026-08-19T21:35:07Z\",\"event\":\"LoadGame\",\"Commander\":\"Drew\",\"FID\":\"F123\",\"Ship\":\"ExplorationSuit_Class5\"}\n"
+                    + "{\"timestamp\":\"2026-08-19T21:36:29Z\",\"event\":\"Embark\",\"SRV\":true,\"ID\":44}\n"
+            );
             var statusPath = Path.Combine(root, StatusFileReader.FileName);
             await File.WriteAllTextAsync(
                 statusPath,
-                "{\"timestamp\":\"2026-08-19T22:03:47Z\",\"event\":\"Status\",\"Flags\":67108868,\"Flags2\":0}");
+                "{\"timestamp\":\"2026-08-19T22:03:47Z\",\"event\":\"Status\",\"Flags\":67108868,\"Flags2\":0}"
+            );
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 Path.Combine(root, "profile"),
                 Path.Combine(root, "cache"),
-                []);
-            var viewModel = MainWindowViewModelTestBuilder.Create(
-                root,
-                builder => builder
-                    .WithAppDataPaths(paths));
+                []
+            );
+            var viewModel = MainWindowViewModelTestBuilder.Create(root, builder => builder.WithAppDataPaths(paths));
 
             await viewModel.RefreshAsync();
             viewModel.SystemSurvey.AutoHideSurfaceRadarWithoutLandingGear = true;
 
             Assert.Equal("Nomad", viewModel.VehicleState);
             Assert.Equal(EliteSrvTypes.Nomad, viewModel.CurrentVrOverlayMode);
-            Assert.False(
-                viewModel.SystemSurvey
-                    .ShouldSuppressSurfaceNavigationForLandingGear);
+            Assert.False(viewModel.SystemSurvey.ShouldSuppressSurfaceNavigationForLandingGear);
 
             await File.WriteAllTextAsync(
                 statusPath,
-                "{\"timestamp\":\"2026-08-19T22:03:48Z\",\"event\":\"Status\",\"Flags\":67108864,\"Flags2\":0}");
+                "{\"timestamp\":\"2026-08-19T22:03:48Z\",\"event\":\"Status\",\"Flags\":67108864,\"Flags2\":0}"
+            );
             await viewModel.RefreshAsync();
 
-            Assert.True(
-                viewModel.SystemSurvey
-                    .ShouldSuppressSurfaceNavigationForLandingGear);
+            Assert.True(viewModel.SystemSurvey.ShouldSuppressSurfaceNavigationForLandingGear);
         }
         finally
         {
@@ -1732,33 +1593,31 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task RefreshDoesNotPresentNomadAsAnSrvWhenOnFoot()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-nomad-surface-marker-vm-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-nomad-surface-marker-vm-tests-{Guid.NewGuid():N}");
         try
         {
             Directory.CreateDirectory(root);
             await File.WriteAllTextAsync(
                 Path.Combine(root, "Journal.2026-08-19T154645.01.log"),
                 "{\"event\":\"Fileheader\",\"Odyssey\":true}\n"
-                + "{\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
-                + "{\"event\":\"LoadGame\",\"Commander\":\"Drew\",\"FID\":\"F123\",\"Ship\":\"Explorer_NX\",\"ShipID\":31}\n"
-                + "{\"event\":\"Location\",\"StarSystem\":\"Test System\",\"SystemAddress\":42,\"Body\":\"Test System 1\",\"BodyType\":\"Planet\"}\n"
-                + "{\"event\":\"Scan\",\"ScanType\":\"Detailed\",\"SystemAddress\":42,\"BodyName\":\"Test System 1\",\"BodyID\":7,\"PlanetClass\":\"Rocky body\",\"Landable\":true,\"Radius\":1000}\n"
-                + "{\"event\":\"LaunchFighter\",\"ID\":44,\"PlayerControlled\":true}\n");
+                    + "{\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + "{\"event\":\"LoadGame\",\"Commander\":\"Drew\",\"FID\":\"F123\",\"Ship\":\"Explorer_NX\",\"ShipID\":31}\n"
+                    + "{\"event\":\"Location\",\"StarSystem\":\"Test System\",\"SystemAddress\":42,\"Body\":\"Test System 1\",\"BodyType\":\"Planet\"}\n"
+                    + "{\"event\":\"Scan\",\"ScanType\":\"Detailed\",\"SystemAddress\":42,\"BodyName\":\"Test System 1\",\"BodyID\":7,\"PlanetClass\":\"Rocky body\",\"Landable\":true,\"Radius\":1000}\n"
+                    + "{\"event\":\"LaunchFighter\",\"ID\":44,\"PlayerControlled\":true}\n"
+            );
             var statusPath = Path.Combine(root, StatusFileReader.FileName);
             await File.WriteAllTextAsync(
                 statusPath,
-                "{\"event\":\"Status\",\"Flags\":69206020,\"Flags2\":0,\"Latitude\":1,\"Longitude\":2,\"Heading\":0,\"Altitude\":0,\"BodyName\":\"Test System 1\",\"PlanetRadius\":1000}");
+                "{\"event\":\"Status\",\"Flags\":69206020,\"Flags2\":0,\"Latitude\":1,\"Longitude\":2,\"Heading\":0,\"Altitude\":0,\"BodyName\":\"Test System 1\",\"PlanetRadius\":1000}"
+            );
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 Path.Combine(root, "profile"),
                 Path.Combine(root, "cache"),
-                []);
-            var viewModel = MainWindowViewModelTestBuilder.Create(
-                root,
-                builder => builder
-                    .WithAppDataPaths(paths));
+                []
+            );
+            var viewModel = MainWindowViewModelTestBuilder.Create(root, builder => builder.WithAppDataPaths(paths));
 
             await viewModel.RefreshAsync();
             Assert.Equal("Nomad", viewModel.VehicleState);
@@ -1766,18 +1625,20 @@ public sealed class MainWindowViewModelTests
             await File.AppendAllTextAsync(
                 Path.Combine(root, "Journal.2026-08-19T154645.01.log"),
                 "{\"event\":\"Touchdown\",\"StarSystem\":\"Test System\",\"SystemAddress\":42,\"Body\":\"Test System 1\",\"BodyID\":7,\"Latitude\":1,\"Longitude\":2}\n"
-                + "{\"event\":\"Disembark\",\"SRV\":true,\"ID\":44}\n");
+                    + "{\"event\":\"Disembark\",\"SRV\":true,\"ID\":44}\n"
+            );
             await File.WriteAllTextAsync(
                 statusPath,
-                "{\"event\":\"Status\",\"Flags\":2097152,\"Flags2\":17,\"Latitude\":1.001,\"Longitude\":2,\"Heading\":0,\"Altitude\":0,\"BodyName\":\"Test System 1\",\"PlanetRadius\":1000}");
+                "{\"event\":\"Status\",\"Flags\":2097152,\"Flags2\":17,\"Latitude\":1.001,\"Longitude\":2,\"Heading\":0,\"Altitude\":0,\"BodyName\":\"Test System 1\",\"PlanetRadius\":1000}"
+            );
             await viewModel.RefreshAsync();
 
-            var marker = Assert.Single(
-                viewModel.SurfaceSurvey.NavigationMarkers);
+            var marker = Assert.Single(viewModel.SurfaceSurvey.NavigationMarkers);
             Assert.Equal(SurfaceRadarMarkerKind.Ship, marker.Kind);
             Assert.DoesNotContain(
                 viewModel.SurfaceSurvey.RadarMarkers,
-                candidate => candidate.Kind == SurfaceRadarMarkerKind.Srv);
+                candidate => candidate.Kind == SurfaceRadarMarkerKind.Srv
+            );
         }
         finally
         {
@@ -1791,9 +1652,7 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task RefreshLosslesslyUpdatesImportedSystemHistoryAndRepeatState()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-system-history-vm-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-system-history-vm-tests-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
@@ -1823,54 +1682,43 @@ public sealed class MainWindowViewModelTests
                     "organisms":[{"genus":"Aleoida","analyzed":true}]
                   }]
                 }
-                """);
-            var journalPath = Path.Combine(
-                journals,
-                "Journal.2026-07-24T100000.01.log");
+                """
+            );
+            var journalPath = Path.Combine(journals, "Journal.2026-07-24T100000.01.log");
             await File.WriteAllTextAsync(
                 journalPath,
                 "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
                     + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n"
-                    + "{\"timestamp\":\"2026-07-24T10:00:02Z\",\"event\":\"FSSBodySignals\",\"SystemAddress\":42,\"BodyName\":\"Test 1\",\"BodyID\":1,\"Signals\":[{\"Type\":\"$SAA_SignalType_Biological;\",\"Count\":1}]}\n");
-            var paths = new AppDataPaths(
-                Path.Combine(root, "config"),
-                profile,
-                Path.Combine(root, "cache"),
-                []);
+                    + "{\"timestamp\":\"2026-07-24T10:00:02Z\",\"event\":\"FSSBodySignals\",\"SystemAddress\":42,\"BodyName\":\"Test 1\",\"BodyID\":1,\"Signals\":[{\"Type\":\"$SAA_SignalType_Biological;\",\"Count\":1}]}\n"
+            );
+            var paths = new AppDataPaths(Path.Combine(root, "config"), profile, Path.Combine(root, "cache"), []);
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths));
+                builder => builder.WithAppDataPaths(paths)
+            );
 
             await viewModel.RefreshAsync();
 
-            Assert.True(
-                viewModel.SystemSurvey.AreBiologyOverlaysSuppressedForRepeatVisit);
-            var restoredBody = Assert.Single(
-                viewModel.SystemSurvey.Snapshot.Bodies);
+            Assert.True(viewModel.SystemSurvey.AreBiologyOverlaysSuppressedForRepeatVisit);
+            var restoredBody = Assert.Single(viewModel.SystemSurvey.Snapshot.Bodies);
             Assert.Equal(SystemBodyKind.LandablePlanet, restoredBody.Kind);
             Assert.Equal("Rocky body", restoredBody.PlanetClass);
             Assert.Equal(180, restoredBody.SurfaceTemperature);
             Assert.Equal(20, restoredBody.Materials["iron"]);
             Assert.True(Assert.Single(restoredBody.Organisms).IsAnalyzed);
-            var saved = JsonNode.Parse(
-                await File.ReadAllTextAsync(systemPath))!.AsObject();
+            var saved = JsonNode.Parse(await File.ReadAllTextAsync(systemPath))!.AsObject();
             Assert.True(saved["futureRoot"]!["keep"]!.GetValue<bool>());
             Assert.NotNull(saved["bodies"]![0]!["bookmarks"]);
-            Assert.Equal(
-                "2026-07-24T10:00:01.0000000+00:00",
-                saved["lastVisited"]!.GetValue<string>());
+            Assert.Equal("2026-07-24T10:00:01.0000000+00:00", saved["lastVisited"]!.GetValue<string>());
 
             await File.AppendAllTextAsync(
                 journalPath,
-                "{\"timestamp\":\"2026-07-24T10:05:00Z\",\"event\":\"FSDJump\",\"StarSystem\":\"New Test\",\"SystemAddress\":84,\"StarPos\":[4,5,6]}\n");
+                "{\"timestamp\":\"2026-07-24T10:05:00Z\",\"event\":\"FSDJump\",\"StarSystem\":\"New Test\",\"SystemAddress\":84,\"StarPos\":[4,5,6]}\n"
+            );
             await viewModel.RefreshAsync();
 
-            Assert.False(
-                viewModel.SystemSurvey.AreBiologyOverlaysSuppressedForRepeatVisit);
-            Assert.True(File.Exists(Path.Combine(
-                systems,
-                "New Test_84.json")));
+            Assert.False(viewModel.SystemSurvey.AreBiologyOverlaysSuppressedForRepeatVisit);
+            Assert.True(File.Exists(Path.Combine(systems, "New Test_84.json")));
         }
         finally
         {
@@ -1884,9 +1732,7 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task RefreshHydratesExternalBodiesWithSeparateBiologyConsent()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-system-body-data-vm-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-system-body-data-vm-tests-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
@@ -1896,40 +1742,40 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(journals, "Journal.2026-07-24T100000.01.log"),
                 "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
                     + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n"
-                    + "{\"timestamp\":\"2026-07-24T10:00:02Z\",\"event\":\"Scan\",\"SystemAddress\":42,\"BodyName\":\"Test 1\",\"BodyID\":1,\"PlanetClass\":\"Rocky body\",\"Landable\":true,\"SurfaceGravity\":20}\n");
+                    + "{\"timestamp\":\"2026-07-24T10:00:02Z\",\"event\":\"Scan\",\"SystemAddress\":42,\"BodyName\":\"Test 1\",\"BodyID\":1,\"PlanetClass\":\"Rocky body\",\"Landable\":true,\"SurfaceGravity\":20}\n"
+            );
             var externalState = new SystemScanState();
-            externalState.Apply(ParseJournalEvent(
-                """{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
-            externalState.Apply(ParseJournalEvent(
-                """{"event":"Scan","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"PlanetClass":"Icy body","Landable":true,"SurfaceGravity":9,"SurfaceTemperature":180,"Materials":[{"Name":"iron","Percent":20}]}"""));
-            externalState.Apply(ParseJournalEvent(
-                """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""));
+            externalState.Apply(ParseJournalEvent("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+            externalState.Apply(
+                ParseJournalEvent(
+                    """{"event":"Scan","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"PlanetClass":"Icy body","Landable":true,"SurfaceGravity":9,"SurfaceTemperature":180,"Materials":[{"Name":"iron","Percent":20}]}"""
+                )
+            );
+            externalState.Apply(
+                ParseJournalEvent(
+                    """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""
+                )
+            );
             var external = new RecordingSystemBodyDataClient(
                 new SystemBodyDataLoadResult(
-                    [new SystemBodyDataProviderSnapshot(
-                        "Spansh",
-                        externalState.CreateSnapshot())],
-                    []));
-            var paths = new AppDataPaths(
-                Path.Combine(root, "config"),
-                profile,
-                Path.Combine(root, "cache"),
-                []);
+                    [new SystemBodyDataProviderSnapshot("Spansh", externalState.CreateSnapshot())],
+                    []
+                )
+            );
+            var paths = new AppDataPaths(Path.Combine(root, "config"), profile, Path.Combine(root, "cache"), []);
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths)
-                    .WithSystemBodyDataClient(external)
-                    .WithEliteGameProcessDetector(
-                        new StubEliteGameProcessDetector(true)));
+                builder =>
+                    builder
+                        .WithAppDataPaths(paths)
+                        .WithSystemBodyDataClient(external)
+                        .WithEliteGameProcessDetector(new StubEliteGameProcessDetector(true))
+            );
 
             viewModel.SystemSurvey.UseExternalData = false;
             await viewModel.RefreshAsync();
             Assert.Equal(0, external.CallCount);
-            Assert.Equal(
-                0,
-                Assert.Single(viewModel.SystemSurvey.Snapshot.Bodies)
-                    .SurfaceTemperature);
+            Assert.Equal(0, Assert.Single(viewModel.SystemSurvey.Snapshot.Bodies).SurfaceTemperature);
 
             viewModel.SystemSurvey.UseExternalData = true;
             await viewModel.RefreshAsync();
@@ -1943,16 +1789,9 @@ public sealed class MainWindowViewModelTests
             Assert.Equal(20, body.Materials["iron"]);
             Assert.Equal(2, body.BiologicalSignalCount);
             Assert.Empty(body.Organisms);
-            var savedPath = Path.Combine(
-                profile,
-                "systems",
-                "F123",
-                "Test_42.json");
-            var saved = JsonNode.Parse(
-                await File.ReadAllTextAsync(savedPath))!.AsObject();
-            Assert.Equal(
-                180,
-                saved["bodies"]![0]!["surfaceTemperature"]!.GetValue<double>());
+            var savedPath = Path.Combine(profile, "systems", "F123", "Test_42.json");
+            var saved = JsonNode.Parse(await File.ReadAllTextAsync(savedPath))!.AsObject();
+            Assert.Equal(180, saved["bodies"]![0]!["surfaceTemperature"]!.GetValue<double>());
 
             await viewModel.RefreshAsync();
             Assert.Equal(1, external.CallCount);
@@ -1962,10 +1801,7 @@ public sealed class MainWindowViewModelTests
             await viewModel.PendingSystemBodyDataLoad;
 
             Assert.Equal(2, external.CallCount);
-            Assert.Equal(
-                "Aleoida",
-                Assert.Single(viewModel.SystemSurvey.Snapshot.Bodies[0].Organisms)
-                    .GenusLocalized);
+            Assert.Equal("Aleoida", Assert.Single(viewModel.SystemSurvey.Snapshot.Bodies[0].Organisms).GenusLocalized);
         }
         finally
         {
@@ -1979,9 +1815,7 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task NotIndexedExternalBodiesRetryAndStopAfterSuccess()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-system-body-retry-vm-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-system-body-retry-vm-tests-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
@@ -1989,23 +1823,27 @@ public sealed class MainWindowViewModelTests
             await File.WriteAllTextAsync(
                 Path.Combine(journals, "Journal.2026-07-24T100000.01.log"),
                 "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
-                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n");
+                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n"
+            );
             var external = new SequenceSystemBodyDataClient(
                 new SystemBodyDataLoadResult([], [], ["EDSM", "Spansh"]),
-                new SystemBodyDataLoadResult([], [], []));
+                new SystemBodyDataLoadResult([], [], [])
+            );
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 Path.Combine(root, "profile"),
                 Path.Combine(root, "cache"),
-                []);
+                []
+            );
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths)
-                    .WithSystemBodyDataClient(external)
-                    .WithEliteGameProcessDetector(
-                        new StubEliteGameProcessDetector(true))
-                    .WithSystemBodyDataRetryDelay(TimeSpan.Zero));
+                builder =>
+                    builder
+                        .WithAppDataPaths(paths)
+                        .WithSystemBodyDataClient(external)
+                        .WithEliteGameProcessDetector(new StubEliteGameProcessDetector(true))
+                        .WithSystemBodyDataRetryDelay(TimeSpan.Zero)
+            );
 
             await viewModel.RefreshAsync();
             await viewModel.PendingSystemBodyDataLoad;
@@ -2030,9 +1868,7 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task ExternalBodiesWaitForActiveEliteSession()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-system-body-session-vm-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-system-body-session-vm-tests-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
@@ -2040,18 +1876,20 @@ public sealed class MainWindowViewModelTests
             await File.WriteAllTextAsync(
                 Path.Combine(journals, "Journal.2026-07-24T100000.01.log"),
                 "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
-                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n");
-            var external = new RecordingSystemBodyDataClient(
-                new SystemBodyDataLoadResult([], [], ["EDSM", "Spansh"]));
+                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n"
+            );
+            var external = new RecordingSystemBodyDataClient(new SystemBodyDataLoadResult([], [], ["EDSM", "Spansh"]));
             var detector = new StubEliteGameProcessDetector(false);
             var paths = CreateAppDataPaths(root);
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths)
-                    .WithSystemBodyDataClient(external)
-                    .WithEliteGameProcessDetector(detector)
-                    .WithSystemBodyDataRetryDelay(TimeSpan.Zero));
+                builder =>
+                    builder
+                        .WithAppDataPaths(paths)
+                        .WithSystemBodyDataClient(external)
+                        .WithEliteGameProcessDetector(detector)
+                        .WithSystemBodyDataRetryDelay(TimeSpan.Zero)
+            );
 
             await viewModel.RefreshAsync();
             await viewModel.PendingSystemBodyDataLoad;
@@ -2062,26 +1900,27 @@ public sealed class MainWindowViewModelTests
             await viewModel.PendingSystemBodyDataLoad;
             Assert.Equal(0, external.CallCount);
 
-            var liveJournalPath = Path.Combine(
-                journals,
-                "Journal.2026-07-24T110000.01.log");
+            var liveJournalPath = Path.Combine(journals, "Journal.2026-07-24T110000.01.log");
             await File.WriteAllTextAsync(
                 liveJournalPath,
-                "{\"timestamp\":\"2026-07-24T11:00:00Z\",\"event\":\"Fileheader\",\"Odyssey\":true}\n");
+                "{\"timestamp\":\"2026-07-24T11:00:00Z\",\"event\":\"Fileheader\",\"Odyssey\":true}\n"
+            );
             await viewModel.RefreshAsync();
             await viewModel.PendingSystemBodyDataLoad;
             Assert.Equal(0, external.CallCount);
 
             await File.AppendAllTextAsync(
                 liveJournalPath,
-                "{\"timestamp\":\"2026-07-24T11:00:01Z\",\"event\":\"LoadGame\",\"Commander\":\"Drew\",\"FID\":\"F123\",\"Ship\":\"SideWinder\"}\n");
+                "{\"timestamp\":\"2026-07-24T11:00:01Z\",\"event\":\"LoadGame\",\"Commander\":\"Drew\",\"FID\":\"F123\",\"Ship\":\"SideWinder\"}\n"
+            );
             await viewModel.RefreshAsync();
             await viewModel.PendingSystemBodyDataLoad;
             Assert.Equal(0, external.CallCount);
 
             await File.AppendAllTextAsync(
                 liveJournalPath,
-                "{\"timestamp\":\"2026-07-24T11:00:02Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n");
+                "{\"timestamp\":\"2026-07-24T11:00:02Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n"
+            );
             await viewModel.RefreshAsync();
             await viewModel.PendingSystemBodyDataLoad;
             Assert.Equal(1, external.CallCount);
@@ -2098,9 +1937,7 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task NotIndexedExternalBodiesScheduleOnlyThreeRetries()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-system-body-limit-vm-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-system-body-limit-vm-tests-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
@@ -2108,20 +1945,21 @@ public sealed class MainWindowViewModelTests
             await File.WriteAllTextAsync(
                 Path.Combine(journals, "Journal.2026-07-24T100000.01.log"),
                 "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
-                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n");
-            var external = new RecordingSystemBodyDataClient(
-                new SystemBodyDataLoadResult([], [], ["EDSM", "Spansh"]));
+                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n"
+            );
+            var external = new RecordingSystemBodyDataClient(new SystemBodyDataLoadResult([], [], ["EDSM", "Spansh"]));
             var log = new ApplicationLogService(Path.Combine(root, "profile"));
             var paths = CreateAppDataPaths(root);
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths)
-                    .WithApplicationLogService(log)
-                    .WithSystemBodyDataClient(external)
-                    .WithEliteGameProcessDetector(
-                        new StubEliteGameProcessDetector(true))
-                    .WithSystemBodyDataRetryDelay(TimeSpan.Zero));
+                builder =>
+                    builder
+                        .WithAppDataPaths(paths)
+                        .WithApplicationLogService(log)
+                        .WithSystemBodyDataClient(external)
+                        .WithEliteGameProcessDetector(new StubEliteGameProcessDetector(true))
+                        .WithSystemBodyDataRetryDelay(TimeSpan.Zero)
+            );
 
             for (var attempt = 0; attempt < 7; attempt++)
             {
@@ -2130,12 +1968,15 @@ public sealed class MainWindowViewModelTests
             }
 
             Assert.Equal(4, external.CallCount);
-            Assert.Contains(log.Entries, entry =>
-                entry.Contains("retry 1 of 3", StringComparison.Ordinal));
-            Assert.Contains(log.Entries, entry =>
-                entry.Contains(
-                    "automatic retries are paused until the system context changes",
-                    StringComparison.Ordinal));
+            Assert.Contains(log.Entries, entry => entry.Contains("retry 1 of 3", StringComparison.Ordinal));
+            Assert.Contains(
+                log.Entries,
+                entry =>
+                    entry.Contains(
+                        "automatic retries are paused until the system context changes",
+                        StringComparison.Ordinal
+                    )
+            );
         }
         finally
         {
@@ -2149,32 +1990,34 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task ExternalBodyRetryBudgetSurvivesRestartAndResetsOnReturnVisit()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-system-body-visit-vm-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-system-body-visit-vm-tests-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
             Directory.CreateDirectory(journals);
-            var journalPath = Path.Combine(
-                journals,
-                "Journal.2026-07-24T100000.01.log");
+            var journalPath = Path.Combine(journals, "Journal.2026-07-24T100000.01.log");
             await File.WriteAllTextAsync(
                 journalPath,
                 "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
                     + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"LoadGame\",\"Commander\":\"Drew\",\"FID\":\"F123\",\"Ship\":\"SideWinder\"}\n"
-                    + "{\"timestamp\":\"2026-07-24T10:00:02Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n");
+                    + "{\"timestamp\":\"2026-07-24T10:00:02Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n"
+            );
             var paths = CreateAppDataPaths(root);
             var detector = new StubEliteGameProcessDetector(true);
             var firstClient = new RecordingSystemBodyDataClient(
-                new SystemBodyDataLoadResult([], [], ["EDSM", "Spansh"]));
-            await using (var first = MainWindowViewModelTestBuilder.Create(
-                journals,
-                builder => builder
-                    .WithAppDataPaths(paths)
-                    .WithSystemBodyDataClient(firstClient)
-                    .WithEliteGameProcessDetector(detector)
-                    .WithSystemBodyDataRetryDelay(TimeSpan.Zero)))
+                new SystemBodyDataLoadResult([], [], ["EDSM", "Spansh"])
+            );
+            await using (
+                var first = MainWindowViewModelTestBuilder.Create(
+                    journals,
+                    builder =>
+                        builder
+                            .WithAppDataPaths(paths)
+                            .WithSystemBodyDataClient(firstClient)
+                            .WithEliteGameProcessDetector(detector)
+                            .WithSystemBodyDataRetryDelay(TimeSpan.Zero)
+                )
+            )
             {
                 for (var attempt = 0; attempt < 6; attempt++)
                 {
@@ -2186,14 +2029,17 @@ public sealed class MainWindowViewModelTests
             Assert.Equal(4, firstClient.CallCount);
 
             var secondClient = new RecordingSystemBodyDataClient(
-                new SystemBodyDataLoadResult([], [], ["EDSM", "Spansh"]));
+                new SystemBodyDataLoadResult([], [], ["EDSM", "Spansh"])
+            );
             await using var second = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths)
-                    .WithSystemBodyDataClient(secondClient)
-                    .WithEliteGameProcessDetector(detector)
-                    .WithSystemBodyDataRetryDelay(TimeSpan.Zero));
+                builder =>
+                    builder
+                        .WithAppDataPaths(paths)
+                        .WithSystemBodyDataClient(secondClient)
+                        .WithEliteGameProcessDetector(detector)
+                        .WithSystemBodyDataRetryDelay(TimeSpan.Zero)
+            );
 
             await second.RefreshAsync();
             await second.PendingSystemBodyDataLoad;
@@ -2202,7 +2048,8 @@ public sealed class MainWindowViewModelTests
             await File.AppendAllTextAsync(
                 journalPath,
                 "{\"timestamp\":\"2026-07-24T10:10:00Z\",\"event\":\"FSDJump\",\"StarSystem\":\"Away\",\"SystemAddress\":84,\"StarPos\":[4,5,6]}\n"
-                    + "{\"timestamp\":\"2026-07-24T10:20:00Z\",\"event\":\"FSDJump\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n");
+                    + "{\"timestamp\":\"2026-07-24T10:20:00Z\",\"event\":\"FSDJump\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n"
+            );
             await second.RefreshAsync();
             await second.PendingSystemBodyDataLoad;
 
@@ -2220,9 +2067,7 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task ExternalBodyRetryDelaySurvivesRestart()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-system-body-delay-vm-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-system-body-delay-vm-tests-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
@@ -2230,18 +2075,24 @@ public sealed class MainWindowViewModelTests
             await File.WriteAllTextAsync(
                 Path.Combine(journals, "Journal.2026-07-24T100000.01.log"),
                 "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
-                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n");
+                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n"
+            );
             var paths = CreateAppDataPaths(root);
             var detector = new StubEliteGameProcessDetector(true);
             var firstClient = new RecordingSystemBodyDataClient(
-                new SystemBodyDataLoadResult([], [], ["EDSM", "Spansh"]));
-            await using (var first = MainWindowViewModelTestBuilder.Create(
-                journals,
-                builder => builder
-                    .WithAppDataPaths(paths)
-                    .WithSystemBodyDataClient(firstClient)
-                    .WithEliteGameProcessDetector(detector)
-                    .WithSystemBodyDataRetryDelay(TimeSpan.FromHours(1))))
+                new SystemBodyDataLoadResult([], [], ["EDSM", "Spansh"])
+            );
+            await using (
+                var first = MainWindowViewModelTestBuilder.Create(
+                    journals,
+                    builder =>
+                        builder
+                            .WithAppDataPaths(paths)
+                            .WithSystemBodyDataClient(firstClient)
+                            .WithEliteGameProcessDetector(detector)
+                            .WithSystemBodyDataRetryDelay(TimeSpan.FromHours(1))
+                )
+            )
             {
                 await first.RefreshAsync();
                 await first.PendingSystemBodyDataLoad;
@@ -2250,14 +2101,17 @@ public sealed class MainWindowViewModelTests
             Assert.Equal(1, firstClient.CallCount);
 
             var secondClient = new RecordingSystemBodyDataClient(
-                new SystemBodyDataLoadResult([], [], ["EDSM", "Spansh"]));
+                new SystemBodyDataLoadResult([], [], ["EDSM", "Spansh"])
+            );
             await using var second = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths)
-                    .WithSystemBodyDataClient(secondClient)
-                    .WithEliteGameProcessDetector(detector)
-                    .WithSystemBodyDataRetryDelay(TimeSpan.FromHours(1)));
+                builder =>
+                    builder
+                        .WithAppDataPaths(paths)
+                        .WithSystemBodyDataClient(secondClient)
+                        .WithEliteGameProcessDetector(detector)
+                        .WithSystemBodyDataRetryDelay(TimeSpan.FromHours(1))
+            );
 
             await second.RefreshAsync();
             await second.PendingSystemBodyDataLoad;
@@ -2276,9 +2130,7 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task InFlightExternalBodyAttemptSurvivesRestart()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-system-body-in-flight-vm-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-system-body-in-flight-vm-tests-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
@@ -2286,32 +2138,37 @@ public sealed class MainWindowViewModelTests
             await File.WriteAllTextAsync(
                 Path.Combine(journals, "Journal.2026-07-24T100000.01.log"),
                 "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
-                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n");
+                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n"
+            );
             var paths = CreateAppDataPaths(root);
             var detector = new StubEliteGameProcessDetector(true);
             var firstClient = new BlockingSystemBodyDataClient();
             var first = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths)
-                    .WithSystemBodyDataClient(firstClient)
-                    .WithEliteGameProcessDetector(detector)
-                    .WithSystemBodyDataRetryDelay(TimeSpan.FromHours(1)));
+                builder =>
+                    builder
+                        .WithAppDataPaths(paths)
+                        .WithSystemBodyDataClient(firstClient)
+                        .WithEliteGameProcessDetector(detector)
+                        .WithSystemBodyDataRetryDelay(TimeSpan.FromHours(1))
+            );
 
             await first.RefreshAsync();
-            await firstClient.FirstRequestStarted.WaitAsync(
-                TimeSpan.FromSeconds(2));
+            await firstClient.FirstRequestStarted.WaitAsync(TimeSpan.FromSeconds(2));
             await first.DisposeAsync();
 
             var secondClient = new RecordingSystemBodyDataClient(
-                new SystemBodyDataLoadResult([], [], ["EDSM", "Spansh"]));
+                new SystemBodyDataLoadResult([], [], ["EDSM", "Spansh"])
+            );
             await using var second = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths)
-                    .WithSystemBodyDataClient(secondClient)
-                    .WithEliteGameProcessDetector(detector)
-                    .WithSystemBodyDataRetryDelay(TimeSpan.FromHours(1)));
+                builder =>
+                    builder
+                        .WithAppDataPaths(paths)
+                        .WithSystemBodyDataClient(secondClient)
+                        .WithEliteGameProcessDetector(detector)
+                        .WithSystemBodyDataRetryDelay(TimeSpan.FromHours(1))
+            );
 
             await second.RefreshAsync();
             await second.PendingSystemBodyDataLoad;
@@ -2331,34 +2188,33 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task SystemChangeCancelsStaleExternalBodyRequest()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-system-body-cancel-vm-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-system-body-cancel-vm-tests-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
             Directory.CreateDirectory(journals);
-            var journalPath = Path.Combine(
-                journals,
-                "Journal.2026-07-24T100000.01.log");
+            var journalPath = Path.Combine(journals, "Journal.2026-07-24T100000.01.log");
             await File.WriteAllTextAsync(
                 journalPath,
                 "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
-                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n");
+                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n"
+            );
             var client = new BlockingSystemBodyDataClient();
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 Path.Combine(root, "profile"),
                 Path.Combine(root, "cache"),
-                []);
+                []
+            );
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths)
-                    .WithSystemBodyDataClient(client)
-                    .WithEliteGameProcessDetector(
-                        new StubEliteGameProcessDetector(true))
-                    .WithSystemBodyDataRetryDelay(TimeSpan.Zero));
+                builder =>
+                    builder
+                        .WithAppDataPaths(paths)
+                        .WithSystemBodyDataClient(client)
+                        .WithEliteGameProcessDetector(new StubEliteGameProcessDetector(true))
+                        .WithSystemBodyDataRetryDelay(TimeSpan.Zero)
+            );
 
             await viewModel.RefreshAsync();
             await client.FirstRequestStarted.WaitAsync(TimeSpan.FromSeconds(2));
@@ -2369,10 +2225,10 @@ public sealed class MainWindowViewModelTests
 
             await File.AppendAllTextAsync(
                 journalPath,
-                "{\"timestamp\":\"2026-07-24T10:05:00Z\",\"event\":\"FSDJump\",\"StarSystem\":\"New Test\",\"SystemAddress\":84,\"StarPos\":[4,5,6]}\n");
+                "{\"timestamp\":\"2026-07-24T10:05:00Z\",\"event\":\"FSDJump\",\"StarSystem\":\"New Test\",\"SystemAddress\":84,\"StarPos\":[4,5,6]}\n"
+            );
             await viewModel.RefreshAsync();
-            await client.WaitForRequestAsync(84).WaitAsync(
-                TimeSpan.FromSeconds(2));
+            await client.WaitForRequestAsync(84).WaitAsync(TimeSpan.FromSeconds(2));
 
             Assert.Equal([42, 84], client.RequestedAddresses);
             Assert.Contains(42, client.CanceledAddresses);
@@ -2390,9 +2246,7 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task DisposeWaitsForCanceledExternalBodyRequest()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-system-body-dispose-vm-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-system-body-dispose-vm-tests-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
@@ -2400,20 +2254,23 @@ public sealed class MainWindowViewModelTests
             await File.WriteAllTextAsync(
                 Path.Combine(journals, "Journal.2026-07-24T100000.01.log"),
                 "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
-                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n");
+                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n"
+            );
             var client = new BlockingSystemBodyDataClient();
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 Path.Combine(root, "profile"),
                 Path.Combine(root, "cache"),
-                []);
+                []
+            );
             var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths)
-                    .WithSystemBodyDataClient(client)
-                    .WithEliteGameProcessDetector(
-                        new StubEliteGameProcessDetector(true)));
+                builder =>
+                    builder
+                        .WithAppDataPaths(paths)
+                        .WithSystemBodyDataClient(client)
+                        .WithEliteGameProcessDetector(new StubEliteGameProcessDetector(true))
+            );
 
             await viewModel.RefreshAsync();
             var pendingLoad = viewModel.PendingSystemBodyDataLoad;
@@ -2435,28 +2292,21 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task DisposePreservesSingleCleanupFailure()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-disposal-failure-vm-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-disposal-failure-vm-tests-{Guid.NewGuid():N}");
         try
         {
-            var expected =
-                new InvalidOperationException("inference disposal failed");
+            var expected = new InvalidOperationException("inference disposal failed");
             var inference = new StubFirstFootfallInferenceService(
-                new FirstFootfallInferenceResult(
-                    FirstFootfallInferenceOutcome.Disabled,
-                    0,
-                    0,
-                    null),
-                expected);
+                new FirstFootfallInferenceResult(FirstFootfallInferenceOutcome.Disabled, 0, 0, null),
+                expected
+            );
             var viewModel = MainWindowViewModelTestBuilder.Create(
                 configuredJournalDirectory: null,
-                builder => builder
-                    .WithAppDataPaths(CreateAppDataPaths(root))
-                    .WithFirstFootfallInferenceService(inference));
+                builder =>
+                    builder.WithAppDataPaths(CreateAppDataPaths(root)).WithFirstFootfallInferenceService(inference)
+            );
 
-            var actual = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => viewModel.DisposeAsync().AsTask());
+            var actual = await Assert.ThrowsAsync<InvalidOperationException>(() => viewModel.DisposeAsync().AsTask());
 
             Assert.Same(expected, actual);
         }
@@ -2472,35 +2322,27 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task DisposeAggregatesMultipleCleanupFailures()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-disposal-aggregate-vm-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-disposal-aggregate-vm-tests-{Guid.NewGuid():N}");
         try
         {
-            var inferenceFailure =
-                new InvalidOperationException("inference disposal failed");
-            var publisherFailure =
-                new InvalidOperationException("publisher disposal failed");
+            var inferenceFailure = new InvalidOperationException("inference disposal failed");
+            var publisherFailure = new InvalidOperationException("publisher disposal failed");
             var inference = new StubFirstFootfallInferenceService(
-                new FirstFootfallInferenceResult(
-                    FirstFootfallInferenceOutcome.Disabled,
-                    0,
-                    0,
-                    null),
-                inferenceFailure);
+                new FirstFootfallInferenceResult(FirstFootfallInferenceOutcome.Disabled, 0, 0, null),
+                inferenceFailure
+            );
             var viewModel = MainWindowViewModelTestBuilder.Create(
                 configuredJournalDirectory: null,
-                builder => builder
-                    .WithAppDataPaths(CreateAppDataPaths(root))
-                    .WithFirstFootfallInferenceService(inference)
-                    .WithInaraPublisher(new ThrowingInaraPublisher(publisherFailure)));
+                builder =>
+                    builder
+                        .WithAppDataPaths(CreateAppDataPaths(root))
+                        .WithFirstFootfallInferenceService(inference)
+                        .WithInaraPublisher(new ThrowingInaraPublisher(publisherFailure))
+            );
 
-            var actual = await Assert.ThrowsAsync<AggregateException>(
-                () => viewModel.DisposeAsync().AsTask());
+            var actual = await Assert.ThrowsAsync<AggregateException>(() => viewModel.DisposeAsync().AsTask());
 
-            Assert.Equal(
-                [inferenceFailure, publisherFailure],
-                actual.InnerExceptions);
+            Assert.Equal([inferenceFailure, publisherFailure], actual.InnerExceptions);
         }
         finally
         {
@@ -2514,9 +2356,7 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task RefreshFeedsHumanSettlementJournalAndStatusPipeline()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-human-site-main-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-human-site-main-tests-{Guid.NewGuid():N}");
         try
         {
             Directory.CreateDirectory(root);
@@ -2525,30 +2365,26 @@ public sealed class MainWindowViewModelTests
                 "{\"timestamp\":\"2026-07-25T03:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
                     + "{\"timestamp\":\"2026-07-25T03:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Test System\",\"SystemAddress\":42,\"StarPos\":[1,2,3],\"Body\":\"Test System 1\",\"BodyType\":\"Planet\"}\n"
                     + "{\"timestamp\":\"2026-07-25T03:00:02Z\",\"event\":\"Loadout\",\"Ship\":\"sidewinder\"}\n"
-                    + "{\"timestamp\":\"2026-07-25T03:00:03Z\",\"event\":\"ApproachSettlement\",\"Name\":\"Haberlandt Survey\",\"Name_Localised\":\"Haberlandt Survey\",\"MarketID\":12345,\"SystemAddress\":42,\"BodyID\":3,\"BodyName\":\"Test System 1\",\"Latitude\":0,\"Longitude\":0,\"StationEconomy\":\"$economy_Agri;\",\"StationEconomy_Localised\":\"Agriculture\",\"StationFaction\":{\"Name\":\"Raven Colonial\",\"FactionState\":\"Boom\"},\"StationGovernment\":\"$government_Democracy;\",\"StationGovernment_Localised\":\"Democracy\",\"StationServices\":[\"dock\",\"refuel\"]}\n");
+                    + "{\"timestamp\":\"2026-07-25T03:00:03Z\",\"event\":\"ApproachSettlement\",\"Name\":\"Haberlandt Survey\",\"Name_Localised\":\"Haberlandt Survey\",\"MarketID\":12345,\"SystemAddress\":42,\"BodyID\":3,\"BodyName\":\"Test System 1\",\"Latitude\":0,\"Longitude\":0,\"StationEconomy\":\"$economy_Agri;\",\"StationEconomy_Localised\":\"Agriculture\",\"StationFaction\":{\"Name\":\"Raven Colonial\",\"FactionState\":\"Boom\"},\"StationGovernment\":\"$government_Democracy;\",\"StationGovernment_Localised\":\"Democracy\",\"StationServices\":[\"dock\",\"refuel\"]}\n"
+            );
             await File.WriteAllTextAsync(
                 Path.Combine(root, StatusFileReader.FileName),
-                "{\"timestamp\":\"2026-07-25T03:00:04Z\",\"event\":\"Status\",\"Flags\":2097152,\"Flags2\":32785,\"Latitude\":0,\"Longitude\":0,\"Heading\":0,\"Altitude\":10,\"PlanetRadius\":6000000}");
+                "{\"timestamp\":\"2026-07-25T03:00:04Z\",\"event\":\"Status\",\"Flags\":2097152,\"Flags2\":32785,\"Latitude\":0,\"Longitude\":0,\"Heading\":0,\"Altitude\":10,\"PlanetRadius\":6000000}"
+            );
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 Path.Combine(root, "data"),
                 Path.Combine(root, "cache"),
-                []);
-            var viewModel = MainWindowViewModelTestBuilder.Create(
-                root,
-                builder => builder
-                    .WithAppDataPaths(paths));
+                []
+            );
+            var viewModel = MainWindowViewModelTestBuilder.Create(root, builder => builder.WithAppDataPaths(paths));
 
             await viewModel.RefreshAsync();
 
             Assert.NotNull(viewModel.HumanSite.ActiveSite);
             Assert.Equal("Haberlandt Survey", viewModel.HumanSite.SiteName);
             Assert.True(viewModel.HumanSite.ShouldShow);
-            Assert.True(File.Exists(Path.Combine(
-                paths.DataDirectory,
-                "systems",
-                "F123",
-                "Test System_42.json")));
+            Assert.True(File.Exists(Path.Combine(paths.DataDirectory, "systems", "F123", "Test System_42.json")));
         }
         finally
         {
@@ -2562,9 +2398,7 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task RefreshReplaysCommanderCodexFirstsToLegacyLedgers()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-codex-vm-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-codex-vm-tests-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
@@ -2574,16 +2408,10 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(journals, "Journal.2026-07-24T100000.01.log"),
                 "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
                     + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Sol\",\"SystemAddress\":10477373803,\"StarPos\":[0,0,0]}\n"
-                    + "{\"timestamp\":\"2026-07-24T10:00:02Z\",\"event\":\"CodexEntry\",\"EntryID\":2310101,\"SystemAddress\":10477373803,\"BodyID\":3}\n");
-            var paths = new AppDataPaths(
-                Path.Combine(root, "config"),
-                profile,
-                Path.Combine(root, "cache"),
-                []);
-            var viewModel = MainWindowViewModelTestBuilder.Create(
-                journals,
-                builder => builder
-                    .WithAppDataPaths(paths));
+                    + "{\"timestamp\":\"2026-07-24T10:00:02Z\",\"event\":\"CodexEntry\",\"EntryID\":2310101,\"SystemAddress\":10477373803,\"BodyID\":3}\n"
+            );
+            var paths = new AppDataPaths(Path.Combine(root, "config"), profile, Path.Combine(root, "cache"), []);
+            var viewModel = MainWindowViewModelTestBuilder.Create(journals, builder => builder.WithAppDataPaths(paths));
 
             await viewModel.RefreshAsync();
 
@@ -2611,55 +2439,36 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task RefreshConnectsFollowedRouteAndLiveFsdProgress()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-live-route-vm-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-live-route-vm-tests-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
             var profile = Path.Combine(root, "profile");
             Directory.CreateDirectory(journals);
-            var journalPath = Path.Combine(
-                journals,
-                "Journal.2026-07-24T100000.01.log");
+            var journalPath = Path.Combine(journals, "Journal.2026-07-24T100000.01.log");
             await File.WriteAllTextAsync(
                 journalPath,
                 "{\"event\":\"Fileheader\",\"Odyssey\":true}\n"
                     + "{\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
                     + "{\"event\":\"Location\",\"StarSystem\":\"Sol\","
-                    + "\"SystemAddress\":1,\"StarPos\":[0,0,0]}\n");
+                    + "\"SystemAddress\":1,\"StarPos\":[0,0,0]}\n"
+            );
             var store = new FollowRouteStore(profile);
-            await store.SaveAsync(new FollowRouteDocument(
-                "F123",
-                store.GetPath("F123"),
-                true,
-                true,
-                0,
-                [
-                    new FollowRouteHop(
-                        "Sol",
-                        1,
-                        new GalacticCoordinate(0, 0, 0),
-                        null,
-                        false,
-                        false),
-                    new FollowRouteHop(
-                        "Second",
-                        2,
-                        new GalacticCoordinate(3, 4, 0),
-                        null,
-                        false,
-                        false),
-                ]));
-            var paths = new AppDataPaths(
-                Path.Combine(root, "config"),
-                profile,
-                Path.Combine(root, "cache"),
-                []);
-            var viewModel = MainWindowViewModelTestBuilder.Create(
-                journals,
-                builder => builder
-                    .WithAppDataPaths(paths));
+            await store.SaveAsync(
+                new FollowRouteDocument(
+                    "F123",
+                    store.GetPath("F123"),
+                    true,
+                    true,
+                    0,
+                    [
+                        new FollowRouteHop("Sol", 1, new GalacticCoordinate(0, 0, 0), null, false, false),
+                        new FollowRouteHop("Second", 2, new GalacticCoordinate(3, 4, 0), null, false, false),
+                    ]
+                )
+            );
+            var paths = new AppDataPaths(Path.Combine(root, "config"), profile, Path.Combine(root, "cache"), []);
+            var viewModel = MainWindowViewModelTestBuilder.Create(journals, builder => builder.WithAppDataPaths(paths));
 
             await viewModel.RefreshAsync();
 
@@ -2670,7 +2479,8 @@ public sealed class MainWindowViewModelTests
                 journalPath,
                 "{\"timestamp\":\"2026-07-24T12:00:00Z\","
                     + "\"event\":\"FSDJump\",\"StarSystem\":\"Second\","
-                    + "\"SystemAddress\":2,\"StarPos\":[3,4,0]}\n");
+                    + "\"SystemAddress\":2,\"StarPos\":[3,4,0]}\n"
+            );
             await viewModel.RefreshAsync();
 
             Assert.True(viewModel.Route.IsComplete);
@@ -2690,28 +2500,26 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task RefreshConnectsPersistedBoxelSearchRouteAndLiveCompletion()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-live-boxel-vm-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-live-boxel-vm-tests-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
             var profile = Path.Combine(root, "profile");
             Directory.CreateDirectory(journals);
-            var journalPath = Path.Combine(
-                journals,
-                "Journal.2026-07-24T100000.01.log");
+            var journalPath = Path.Combine(journals, "Journal.2026-07-24T100000.01.log");
             await File.WriteAllTextAsync(
                 journalPath,
                 "{\"event\":\"Fileheader\",\"Odyssey\":true}\n"
                     + "{\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
                     + "{\"event\":\"Location\",\"StarSystem\":\"Praea Euq IL-P c5-0\","
-                    + "\"SystemAddress\":100,\"StarPos\":[1,2,3]}\n");
+                    + "\"SystemAddress\":100,\"StarPos\":[1,2,3]}\n"
+            );
             await File.WriteAllTextAsync(
                 Path.Combine(journals, NavRouteFileReader.FileName),
                 "{\"event\":\"NavRoute\",\"Route\":[{"
                     + "\"StarSystem\":\"Praea Euq IL-P c5-1\","
-                    + "\"SystemAddress\":101,\"StarPos\":[4,5,6]}]}");
+                    + "\"SystemAddress\":101,\"StarPos\":[4,5,6]}]}"
+            );
             var store = new CommanderProfileStore(profile);
             var top = BoxelAddress.Parse("Praea Euq IL-P c5-0");
             await store.SaveBoxelSearchAsync(
@@ -2731,22 +2539,17 @@ public sealed class MainWindowViewModelTests
                     Collapsed = false,
                     SkipAlreadyVisited = false,
                     SkipKnownToSpansh = false,
-                    CompletionMode = BoxelCompletionMode.EnterSystem
-                });
-            var paths = new AppDataPaths(
-                Path.Combine(root, "config"),
-                profile,
-                Path.Combine(root, "cache"),
-                []);
+                    CompletionMode = BoxelCompletionMode.EnterSystem,
+                }
+            );
+            var paths = new AppDataPaths(Path.Combine(root, "config"), profile, Path.Combine(root, "cache"), []);
             var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths)
-                    .WithBoxelSystemResolver(
-                        new StubBoxelResolver(
-                            [
-                                BoxelObservation("Praea Euq IL-P c5-0", 100),
-                            ])));
+                builder =>
+                    builder
+                        .WithAppDataPaths(paths)
+                        .WithBoxelSystemResolver(new StubBoxelResolver([BoxelObservation("Praea Euq IL-P c5-0", 100)]))
+            );
 
             await viewModel.RefreshAsync();
 
@@ -2759,7 +2562,8 @@ public sealed class MainWindowViewModelTests
                 journalPath,
                 "{\"timestamp\":\"2026-07-24T12:00:00Z\",\"event\":\"FSDJump\","
                     + "\"StarSystem\":\"Praea Euq IL-P c5-1\","
-                    + "\"SystemAddress\":101,\"StarPos\":[4,5,6]}\n");
+                    + "\"SystemAddress\":101,\"StarPos\":[4,5,6]}\n"
+            );
             await viewModel.RefreshAsync();
 
             Assert.True(viewModel.BoxelSearch.Systems[1].IsComplete);
@@ -2780,49 +2584,32 @@ public sealed class MainWindowViewModelTests
     [InlineData(false, false)]
     public async Task ExplorationUsesImportedTotalsThenPersistsNewEventsAndReset(bool isLive, bool hasOdyssey)
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-exploration-vm-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-exploration-vm-tests-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
             var profile = Path.Combine(root, "profile");
             Directory.CreateDirectory(journals);
             Directory.CreateDirectory(profile);
-            var journalPath = Path.Combine(
-                journals,
-                "Journal.2026-07-24T100000.01.log");
+            var journalPath = Path.Combine(journals, "Journal.2026-07-24T100000.01.log");
             await File.WriteAllTextAsync(
                 journalPath,
-                $$"""{"timestamp":"2026-07-24T10:00:00Z","event":"Fileheader","Odyssey":{{(isLive ? "true" : "false")}}}""" + "\n"
+                $$"""{"timestamp":"2026-07-24T10:00:00Z","event":"Fileheader","Odyssey":{{(isLive ? "true" : "false")}}}"""
+                    + "\n"
                     + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
-                    + $$"""{"timestamp":"2026-07-24T10:00:01Z","event":"LoadGame","Commander":"Drew","FID":"F123","Odyssey":{{(hasOdyssey ? "true" : "false")}}}""" + "\n"
-                    + "{\"timestamp\":\"2026-07-24T10:00:02Z\",\"event\":\"StartJump\",\"JumpType\":\"Hyperspace\"}\n");
+                    + $$"""{"timestamp":"2026-07-24T10:00:01Z","event":"LoadGame","Commander":"Drew","FID":"F123","Odyssey":{{(hasOdyssey ? "true" : "false")}}}"""
+                    + "\n"
+                    + "{\"timestamp\":\"2026-07-24T10:00:02Z\",\"event\":\"StartJump\",\"JumpType\":\"Hyperspace\"}\n"
+            );
             var store = new CommanderProfileStore(profile);
             await store.SaveExplorationAsync(
                 "F123",
                 "Drew",
                 isOdyssey: isLive,
-                new ExplorationSnapshot(
-                    1000,
-                    100,
-                    10,
-                    2,
-                    3,
-                    4,
-                    new Dictionary<string, long>
-                    {
-                        ["Alpha"] = 400,
-                    }));
-            var paths = new AppDataPaths(
-                Path.Combine(root, "config"),
-                profile,
-                Path.Combine(root, "cache"),
-                []);
-            var viewModel = MainWindowViewModelTestBuilder.Create(
-                journals,
-                builder => builder
-                    .WithAppDataPaths(paths));
+                new ExplorationSnapshot(1000, 100, 10, 2, 3, 4, new Dictionary<string, long> { ["Alpha"] = 400 })
+            );
+            var paths = new AppDataPaths(Path.Combine(root, "config"), profile, Path.Combine(root, "cache"), []);
+            var viewModel = MainWindowViewModelTestBuilder.Create(journals, builder => builder.WithAppDataPaths(paths));
 
             await viewModel.RefreshAsync();
 
@@ -2832,7 +2619,8 @@ public sealed class MainWindowViewModelTests
 
             await File.AppendAllTextAsync(
                 journalPath,
-                "{\"timestamp\":\"2026-07-24T10:00:03Z\",\"event\":\"SellExplorationData\",\"Systems\":[\"Alpha\"],\"Discovered\":[\"Alpha\"]}\n");
+                "{\"timestamp\":\"2026-07-24T10:00:03Z\",\"event\":\"SellExplorationData\",\"Systems\":[\"Alpha\"],\"Discovered\":[\"Alpha\"]}\n"
+            );
             await viewModel.RefreshAsync();
 
             Assert.Equal("600 CR", viewModel.EstimatedExplorationValue);
@@ -2843,7 +2631,8 @@ public sealed class MainWindowViewModelTests
             await File.AppendAllTextAsync(
                 journalPath,
                 "{\"timestamp\":\"2026-07-24T10:00:04Z\",\"event\":\"StartJump\",\"JumpType\":\"Hyperspace\"}\n"
-                    + "{\"timestamp\":\"2026-07-24T10:00:05Z\",\"event\":\"FSDJump\",\"JumpDist\":5.25}\n");
+                    + "{\"timestamp\":\"2026-07-24T10:00:05Z\",\"event\":\"FSDJump\",\"JumpDist\":5.25}\n"
+            );
             await viewModel.RefreshAsync();
 
             Assert.Equal("11", viewModel.ExplorationJumps);
@@ -2873,18 +2662,14 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task ExobiologyUsesImportedStateThenPersistsLiveScanAndClear()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-exobiology-vm-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-exobiology-vm-tests-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
             var profile = Path.Combine(root, "profile");
             Directory.CreateDirectory(journals);
             Directory.CreateDirectory(profile);
-            var journalPath = Path.Combine(
-                journals,
-                "Journal.2026-07-24T100000.01.log");
+            var journalPath = Path.Combine(journals, "Journal.2026-07-24T100000.01.log");
             const string variant = "$Codex_Ent_Aleoids_01_B_Name;";
             const string species = "$Codex_Ent_Aleoids_01_Name;";
             const string genus = "$Codex_Ent_Aleoids_Genus_Name;";
@@ -2894,28 +2679,17 @@ public sealed class MainWindowViewModelTests
                     + "{\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
                     + $"{{\"event\":\"ScanOrganic\",\"ScanType\":\"Log\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":123,\"Body\":1}}\n"
                     + $"{{\"event\":\"ScanOrganic\",\"ScanType\":\"Sample\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":123,\"Body\":1}}\n"
-                    + $"{{\"event\":\"ScanOrganic\",\"ScanType\":\"Analyse\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":123,\"Body\":1}}\n");
+                    + $"{{\"event\":\"ScanOrganic\",\"ScanType\":\"Analyse\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":123,\"Body\":1}}\n"
+            );
             var store = new CommanderProfileStore(profile);
             await store.SaveExobiologyAsync(
                 "F123",
                 "Drew",
                 true,
-                new ExobiologySnapshot(
-                    null,
-                    null,
-                    null,
-                    500,
-                    ["999_1_2310101_500_False"],
-                    0));
-            var paths = new AppDataPaths(
-                Path.Combine(root, "config"),
-                profile,
-                Path.Combine(root, "cache"),
-                []);
-            var viewModel = MainWindowViewModelTestBuilder.Create(
-                journals,
-                builder => builder
-                    .WithAppDataPaths(paths));
+                new ExobiologySnapshot(null, null, null, 500, ["999_1_2310101_500_False"], 0)
+            );
+            var paths = new AppDataPaths(Path.Combine(root, "config"), profile, Path.Combine(root, "cache"), []);
+            var viewModel = MainWindowViewModelTestBuilder.Create(journals, builder => builder.WithAppDataPaths(paths));
 
             await viewModel.RefreshAsync();
 
@@ -2926,7 +2700,8 @@ public sealed class MainWindowViewModelTests
                 journalPath,
                 $"{{\"event\":\"ScanOrganic\",\"ScanType\":\"Log\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":456,\"Body\":2}}\n"
                     + $"{{\"event\":\"ScanOrganic\",\"ScanType\":\"Sample\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":456,\"Body\":2}}\n"
-                    + $"{{\"event\":\"ScanOrganic\",\"ScanType\":\"Analyse\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":456,\"Body\":2}}\n");
+                    + $"{{\"event\":\"ScanOrganic\",\"ScanType\":\"Analyse\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":456,\"Body\":2}}\n"
+            );
             await viewModel.RefreshAsync();
 
             Assert.Equal("7,253,000 CR", viewModel.UnclaimedBioRewards);
@@ -2957,9 +2732,7 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task ClearSurfaceTrackersCommandUpdatesExobiologyStatus()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-clear-surface-trackers-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-clear-surface-trackers-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
@@ -2969,35 +2742,30 @@ public sealed class MainWindowViewModelTests
             await File.WriteAllTextAsync(
                 Path.Combine(journals, "Journal.2026-07-24T100000.01.log"),
                 "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Fileheader\",\"Odyssey\":true}\n"
-                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n");
-            var paths = new AppDataPaths(
-                Path.Combine(root, "config"),
-                profile,
-                Path.Combine(root, "cache"),
-                []);
+                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+            );
+            var paths = new AppDataPaths(Path.Combine(root, "config"), profile, Path.Combine(root, "cache"), []);
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths));
+                builder => builder.WithAppDataPaths(paths)
+            );
             Assert.NotNull(viewModel.ClearSurfaceTrackersCommand);
             Assert.False(
                 viewModel.ClearSurfaceTrackersCommand.CanExecute(null),
-                "Command should stay disabled until a commander profile is loaded.");
+                "Command should stay disabled until a commander profile is loaded."
+            );
 
             await viewModel.RefreshAsync();
 
             Assert.True(
                 viewModel.ClearSurfaceTrackersCommand.CanExecute(null),
-                "Command must raise CanExecuteChanged after profile load.");
+                "Command must raise CanExecuteChanged after profile load."
+            );
 
             await viewModel.ClearSurfaceTrackersAsync();
 
-            Assert.Contains(
-                "required",
-                viewModel.ExobiologyStatusMessage,
-                StringComparison.OrdinalIgnoreCase);
-            Assert.False(
-                string.IsNullOrWhiteSpace(viewModel.ExobiologyStatusMessage));
+            Assert.Contains("required", viewModel.ExobiologyStatusMessage, StringComparison.OrdinalIgnoreCase);
+            Assert.False(string.IsNullOrWhiteSpace(viewModel.ExobiologyStatusMessage));
         }
         finally
         {
@@ -3011,9 +2779,7 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task FirstFootfallGlobalActionUpdatesAndPersistsOrganicRewards()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-first-footfall-action-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-first-footfall-action-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
@@ -3030,31 +2796,23 @@ public sealed class MainWindowViewModelTests
                     + "{\"event\":\"Scan\",\"SystemAddress\":42,\"BodyName\":\"Test 1\",\"BodyID\":7,\"PlanetClass\":\"Rocky body\",\"WasFootfalled\":true}\n"
                     + $"{{\"event\":\"ScanOrganic\",\"ScanType\":\"Log\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":42,\"Body\":7}}\n"
                     + $"{{\"event\":\"ScanOrganic\",\"ScanType\":\"Sample\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":42,\"Body\":7}}\n"
-                    + $"{{\"event\":\"ScanOrganic\",\"ScanType\":\"Analyse\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":42,\"Body\":7}}\n");
-            var paths = new AppDataPaths(
-                Path.Combine(root, "config"),
-                profile,
-                Path.Combine(root, "cache"),
-                []);
+                    + $"{{\"event\":\"ScanOrganic\",\"ScanType\":\"Analyse\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":42,\"Body\":7}}\n"
+            );
+            var paths = new AppDataPaths(Path.Combine(root, "config"), profile, Path.Combine(root, "cache"), []);
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths));
+                builder => builder.WithAppDataPaths(paths)
+            );
             await viewModel.RefreshAsync();
             Assert.Equal("Not first footfall", viewModel.BioFirstFootfall);
             var originalReward = viewModel.UnclaimedBioRewards;
 
             Assert.True(await viewModel.ToggleCurrentBodyFirstFootfallAsync());
 
-            Assert.Equal(
-                "Confirmed; 5x reward applies",
-                viewModel.BioFirstFootfall);
+            Assert.Equal("Confirmed; 5x reward applies", viewModel.BioFirstFootfall);
             Assert.NotEqual(originalReward, viewModel.UnclaimedBioRewards);
-            var saved = await new CommanderProfileStore(profile)
-                .LoadAsync("F123", true);
-            Assert.All(
-                saved.Data!.Exobiology.ScannedBioEntryIds,
-                entry => Assert.EndsWith("_True", entry));
+            var saved = await new CommanderProfileStore(profile).LoadAsync("F123", true);
+            Assert.All(saved.Data!.Exobiology.ScannedBioEntryIds, entry => Assert.EndsWith("_True", entry));
 
             Assert.True(await viewModel.ToggleCurrentBodyFirstFootfallAsync());
             Assert.Equal("Not first footfall", viewModel.BioFirstFootfall);
@@ -3071,17 +2829,13 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task LiveFirstFootfallTextCommandCanTargetAnotherBody()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-first-footfall-text-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-first-footfall-text-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
             var profile = Path.Combine(root, "profile");
             Directory.CreateDirectory(journals);
-            var journalPath = Path.Combine(
-                journals,
-                "Journal.2026-07-25T120000.01.log");
+            var journalPath = Path.Combine(journals, "Journal.2026-07-25T120000.01.log");
             await File.WriteAllTextAsync(
                 journalPath,
                 "{\"timestamp\":\"2026-07-25T12:00:00Z\",\"event\":\"Fileheader\",\"Odyssey\":true}\n"
@@ -3089,37 +2843,29 @@ public sealed class MainWindowViewModelTests
                     + "{\"timestamp\":\"2026-07-25T12:00:02Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42}\n"
                     + "{\"timestamp\":\"2026-07-25T12:00:03Z\",\"event\":\"Scan\",\"SystemAddress\":42,\"BodyName\":\"Test 1\",\"BodyID\":1,\"PlanetClass\":\"Rocky body\",\"WasFootfalled\":true}\n"
                     + "{\"timestamp\":\"2026-07-25T12:00:04Z\",\"event\":\"Scan\",\"SystemAddress\":42,\"BodyName\":\"Test 2\",\"BodyID\":2,\"PlanetClass\":\"Rocky body\",\"WasFootfalled\":true}\n"
-                    + "{\"timestamp\":\"2026-07-25T12:00:05Z\",\"event\":\"ApproachBody\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"Body\":\"Test 1\",\"BodyID\":1}\n");
-            var paths = new AppDataPaths(
-                Path.Combine(root, "config"),
-                profile,
-                Path.Combine(root, "cache"),
-                []);
+                    + "{\"timestamp\":\"2026-07-25T12:00:05Z\",\"event\":\"ApproachBody\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"Body\":\"Test 1\",\"BodyID\":1}\n"
+            );
+            var paths = new AppDataPaths(Path.Combine(root, "config"), profile, Path.Combine(root, "cache"), []);
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths));
+                builder => builder.WithAppDataPaths(paths)
+            );
             await viewModel.RefreshAsync();
             Assert.Equal(1, viewModel.SystemSurvey.Snapshot.CurrentBodyId);
 
             await File.AppendAllTextAsync(
                 journalPath,
-                "{\"timestamp\":\"2026-07-25T12:00:06Z\",\"event\":\"SendText\",\"Message\":\".ff 2\"}\n");
+                "{\"timestamp\":\"2026-07-25T12:00:06Z\",\"event\":\"SendText\",\"Message\":\".ff 2\"}\n"
+            );
             await viewModel.RefreshAsync();
 
-            Assert.False(viewModel.SystemSurvey.Snapshot.Bodies.Single(body =>
-                body.BodyId == 1).IsFirstFootfall);
-            Assert.True(viewModel.SystemSurvey.Snapshot.Bodies.Single(body =>
-                body.BodyId == 2).IsFirstFootfall);
-            var systemPath = Assert.Single(Directory.GetFiles(
-                Path.Combine(profile, "systems"),
-                "*.json",
-                SearchOption.AllDirectories));
-            var bodies = JsonNode.Parse(
-                await File.ReadAllTextAsync(systemPath))!["bodies"]!.AsArray();
-            Assert.True(bodies.Single(body =>
-                body!["id"]!.GetValue<int>() == 2)!["firstFootFall"]!
-                .GetValue<bool>());
+            Assert.False(viewModel.SystemSurvey.Snapshot.Bodies.Single(body => body.BodyId == 1).IsFirstFootfall);
+            Assert.True(viewModel.SystemSurvey.Snapshot.Bodies.Single(body => body.BodyId == 2).IsFirstFootfall);
+            var systemPath = Assert.Single(
+                Directory.GetFiles(Path.Combine(profile, "systems"), "*.json", SearchOption.AllDirectories)
+            );
+            var bodies = JsonNode.Parse(await File.ReadAllTextAsync(systemPath))!["bodies"]!.AsArray();
+            Assert.True(bodies.Single(body => body!["id"]!.GetValue<int>() == 2)!["firstFootFall"]!.GetValue<bool>());
         }
         finally
         {
@@ -3133,9 +2879,7 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task DesktopTextCommandsAreLiveOnlyAndUsePlatformBoundaries()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-desktop-text-commands-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-desktop-text-commands-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
@@ -3144,9 +2888,7 @@ public sealed class MainWindowViewModelTests
             var systemScreenshots = Path.Combine(screenshots, "Test");
             Directory.CreateDirectory(journals);
             Directory.CreateDirectory(systemScreenshots);
-            var journalPath = Path.Combine(
-                journals,
-                "Journal.2026-07-25T120000.01.log");
+            var journalPath = Path.Combine(journals, "Journal.2026-07-25T120000.01.log");
             await File.WriteAllTextAsync(
                 journalPath,
                 "{\"timestamp\":\"2026-07-25T12:00:00Z\",\"event\":\"Fileheader\",\"Odyssey\":true}\n"
@@ -3155,21 +2897,19 @@ public sealed class MainWindowViewModelTests
                     + "{\"timestamp\":\"2026-07-25T12:00:03Z\",\"event\":\"ApproachSettlement\",\"Name\":\"Haberlandt Survey\",\"MarketID\":12345,\"SystemAddress\":42,\"BodyID\":3,\"BodyName\":\"Test 1\",\"Latitude\":-12.5,\"Longitude\":44.25,\"StationEconomy\":\"$economy_Agri;\",\"StationEconomy_Localised\":\"Agriculture\",\"StationServices\":[\"dock\"]}\n"
                     + "{\"timestamp\":\"2026-07-25T12:00:04Z\",\"event\":\"SendText\",\"Message\":\".imgs\"}\n"
                     + "{\"timestamp\":\"2026-07-25T12:00:05Z\",\"event\":\"SendText\",\"Message\":\"!\"}\n"
-                    + "{\"timestamp\":\"2026-07-25T12:00:06Z\",\"event\":\"SendText\",\"Message\":\".kill\"}\n");
-            var paths = new AppDataPaths(
-                Path.Combine(root, "config"),
-                profile,
-                Path.Combine(root, "cache"),
-                []);
+                    + "{\"timestamp\":\"2026-07-25T12:00:06Z\",\"event\":\"SendText\",\"Message\":\".kill\"}\n"
+            );
+            var paths = new AppDataPaths(Path.Combine(root, "config"), profile, Path.Combine(root, "cache"), []);
             new ScreenshotProcessingSettingsStore(paths.UiSettingsPath).Save(
                 ScreenshotProcessingPreferences.CreateDefaults() with
                 {
                     TargetFolder = screenshots,
-                });
+                }
+            );
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths));
+                builder => builder.WithAppDataPaths(paths)
+            );
             DirectoryInfo? launchedDirectory = null;
             var shutdownCount = 0;
             viewModel.SetJournalCommandPlatformServices(
@@ -3183,7 +2923,8 @@ public sealed class MainWindowViewModelTests
                     shutdownCount++;
                     return Task.CompletedTask;
                 },
-                _ => Task.CompletedTask);
+                _ => Task.CompletedTask
+            );
 
             await viewModel.RefreshAsync();
 
@@ -3195,24 +2936,15 @@ public sealed class MainWindowViewModelTests
                 journalPath,
                 "{\"timestamp\":\"2026-07-25T12:00:07Z\",\"event\":\"SendText\",\"Message\":\".imgs\"}\n"
                     + "{\"timestamp\":\"2026-07-25T12:00:08Z\",\"event\":\"SendText\",\"Message\":\"!\"}\n"
-                    + "{\"timestamp\":\"2026-07-25T12:00:09Z\",\"event\":\"SendText\",\"Message\":\".kill\"}\n");
+                    + "{\"timestamp\":\"2026-07-25T12:00:09Z\",\"event\":\"SendText\",\"Message\":\".kill\"}\n"
+            );
             await viewModel.RefreshAsync();
 
-            Assert.Equal(
-                Path.GetFullPath(systemScreenshots),
-                launchedDirectory?.FullName);
+            Assert.Equal(Path.GetFullPath(systemScreenshots), launchedDirectory?.FullName);
             Assert.Equal(1, shutdownCount);
             Assert.True(viewModel.GroundTarget.IsTargetActive);
-            Assert.Equal(
-                -12.5,
-                double.Parse(
-                    viewModel.GroundTarget.TargetLatitude,
-                    CultureInfo.CurrentCulture));
-            Assert.Equal(
-                44.25,
-                double.Parse(
-                    viewModel.GroundTarget.TargetLongitude,
-                    CultureInfo.CurrentCulture));
+            Assert.Equal(-12.5, double.Parse(viewModel.GroundTarget.TargetLatitude, CultureInfo.CurrentCulture));
+            Assert.Equal(44.25, double.Parse(viewModel.GroundTarget.TargetLongitude, CultureInfo.CurrentCulture));
         }
         finally
         {
@@ -3226,17 +2958,13 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task DeveloperMeasurementCommandsUsePortableGeometryAndClipboard()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-developer-measurement-commands-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-developer-measurement-commands-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
             var profile = Path.Combine(root, "profile");
             Directory.CreateDirectory(journals);
-            var journalPath = Path.Combine(
-                journals,
-                "Journal.2026-07-25T120000.01.log");
+            var journalPath = Path.Combine(journals, "Journal.2026-07-25T120000.01.log");
             const string shipType = "test_measurement_ship";
             await File.WriteAllTextAsync(
                 journalPath,
@@ -3244,27 +2972,18 @@ public sealed class MainWindowViewModelTests
                     + "{\"timestamp\":\"2026-07-25T12:00:01Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
                     + $"{{\"timestamp\":\"2026-07-25T12:00:02Z\",\"event\":\"LoadGame\",\"Commander\":\"Drew\",\"FID\":\"F123\",\"Ship\":\"{shipType}\"}}\n"
                     + "{\"timestamp\":\"2026-07-25T12:00:03Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42}\n"
-                    + "{\"timestamp\":\"2026-07-25T12:00:04Z\",\"event\":\"ApproachSettlement\",\"Name\":\"Haberlandt Survey\",\"MarketID\":12345,\"SystemAddress\":42,\"BodyID\":3,\"BodyName\":\"Test 1\",\"Latitude\":-12.5,\"Longitude\":44.25,\"StationEconomy\":\"$economy_Agri;\",\"StationEconomy_Localised\":\"Agriculture\",\"StationServices\":[\"dock\"]}\n");
+                    + "{\"timestamp\":\"2026-07-25T12:00:04Z\",\"event\":\"ApproachSettlement\",\"Name\":\"Haberlandt Survey\",\"MarketID\":12345,\"SystemAddress\":42,\"BodyID\":3,\"BodyName\":\"Test 1\",\"Latitude\":-12.5,\"Longitude\":44.25,\"StationEconomy\":\"$economy_Agri;\",\"StationEconomy_Localised\":\"Agriculture\",\"StationServices\":[\"dock\"]}\n"
+            );
             await File.WriteAllTextAsync(
                 Path.Combine(journals, "Status.json"),
-                "{\"event\":\"Status\",\"Flags\":69206016,\"Flags2\":0,\"Latitude\":-12.49,\"Longitude\":44.26,\"Heading\":90,\"Altitude\":10,\"BodyName\":\"Test 1\",\"PlanetRadius\":1000}");
-            var paths = new AppDataPaths(
-                Path.Combine(root, "config"),
-                profile,
-                Path.Combine(root, "cache"),
-                []);
+                "{\"event\":\"Status\",\"Flags\":69206016,\"Flags2\":0,\"Latitude\":-12.49,\"Longitude\":44.26,\"Heading\":90,\"Altitude\":10,\"BodyName\":\"Test 1\",\"PlanetRadius\":1000}"
+            );
+            var paths = new AppDataPaths(Path.Combine(root, "config"), profile, Path.Combine(root, "cache"), []);
             await new GroundTargetSettingsStore(profile).SaveAsync(
-                new GroundTargetSnapshot(
-                    true,
-                    new SurfaceCoordinate(-12.5, 44.25)));
+                new GroundTargetSnapshot(true, new SurfaceCoordinate(-12.5, 44.25))
+            );
             await new HumanSiteKnowledgeStore(profile).SaveAsync(
-                new HumanSiteKnowledgeContext(
-                    "F123",
-                    "Drew",
-                    "Test",
-                    42,
-                    null,
-                    1000),
+                new HumanSiteKnowledgeContext("F123", "Drew", "Test", 42, null, 1000),
                 new HumanSiteLiveSnapshot(
                     "Haberlandt Survey",
                     "Haberlandt Survey",
@@ -3291,14 +3010,15 @@ public sealed class MainWindowViewModelTests
                     null,
                     false,
                     DateTimeOffset.Parse("2026-07-25T12:00:04Z"),
-                    DateTimeOffset.Parse("2026-07-25T12:00:04Z")),
-                HumanSiteGeometrySource.ManualFoot);
+                    DateTimeOffset.Parse("2026-07-25T12:00:04Z")
+                ),
+                HumanSiteGeometrySource.ManualFoot
+            );
             var log = new ApplicationLogService(profile);
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths)
-                    .WithApplicationLogService(log));
+                builder => builder.WithAppDataPaths(paths).WithApplicationLogService(log)
+            );
             var clipboardWrites = new List<string>();
             viewModel.SetJournalCommandPlatformServices(
                 null,
@@ -3307,7 +3027,8 @@ public sealed class MainWindowViewModelTests
                 {
                     clipboardWrites.Add(text);
                     return Task.CompletedTask;
-                });
+                }
+            );
             await viewModel.RefreshAsync();
             Assert.Equal(30, viewModel.HumanSite.ActiveSite?.Heading);
 
@@ -3316,7 +3037,8 @@ public sealed class MainWindowViewModelTests
                 "{\"timestamp\":\"2026-07-25T12:00:05Z\",\"event\":\"SendText\",\"Message\":\"@@\"}\n"
                     + "{\"timestamp\":\"2026-07-25T12:00:06Z\",\"event\":\"SendText\",\"Message\":\"!!\"}\n"
                     + "{\"timestamp\":\"2026-07-25T12:00:07Z\",\"event\":\"SendText\",\"Message\":\"..\"}\n"
-                    + "{\"timestamp\":\"2026-07-25T12:00:08Z\",\"event\":\"SendText\",\"Message\":\"//\"}\n");
+                    + "{\"timestamp\":\"2026-07-25T12:00:08Z\",\"event\":\"SendText\",\"Message\":\"//\"}\n"
+            );
             await viewModel.RefreshAsync();
 
             Assert.Collection(
@@ -3331,14 +3053,10 @@ public sealed class MainWindowViewModelTests
                     Assert.StartsWith("\"offset\":", text);
                     Assert.Contains("\"rot\": 60", text);
                 },
-                text => Assert.StartsWith("{ \"X\":", text));
-            Assert.NotEqual(
-                default,
-                HumanSiteVehicleOffsets.Find(shipType));
-            Assert.Contains(
-                "Settlement offset comparison:",
-                log.Text,
-                StringComparison.Ordinal);
+                text => Assert.StartsWith("{ \"X\":", text)
+            );
+            Assert.NotEqual(default, HumanSiteVehicleOffsets.Find(shipType));
+            Assert.Contains("Settlement offset comparison:", log.Text, StringComparison.Ordinal);
         }
         finally
         {
@@ -3352,57 +3070,43 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task LiveFirstFootfallInferenceSynchronizesBothLegacyStores()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-first-footfall-inference-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-first-footfall-inference-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
             var profile = Path.Combine(root, "profile");
             Directory.CreateDirectory(journals);
-            var journalPath = Path.Combine(
-                journals,
-                "Journal.2026-07-25T120000.01.log");
+            var journalPath = Path.Combine(journals, "Journal.2026-07-25T120000.01.log");
             await File.WriteAllTextAsync(
                 journalPath,
                 "{\"timestamp\":\"2026-07-25T12:00:00Z\",\"event\":\"Fileheader\",\"Odyssey\":true}\n"
                     + "{\"timestamp\":\"2026-07-25T12:00:01Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
-                    + "{\"timestamp\":\"2026-07-25T12:00:02Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"Population\":0}\n");
-            var paths = new AppDataPaths(
-                Path.Combine(root, "config"),
-                profile,
-                Path.Combine(root, "cache"),
-                []);
+                    + "{\"timestamp\":\"2026-07-25T12:00:02Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"Population\":0}\n"
+            );
+            var paths = new AppDataPaths(Path.Combine(root, "config"), profile, Path.Combine(root, "cache"), []);
             var inference = new StubFirstFootfallInferenceService(
-                new FirstFootfallInferenceResult(
-                    FirstFootfallInferenceOutcome.Detected,
-                    0.004,
-                    2,
-                    null));
+                new FirstFootfallInferenceResult(FirstFootfallInferenceOutcome.Detected, 0.004, 2, null)
+            );
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths)
-                    .WithFirstFootfallInferenceService(inference));
+                builder => builder.WithAppDataPaths(paths).WithFirstFootfallInferenceService(inference)
+            );
             await viewModel.RefreshAsync();
             Assert.Equal(0, inference.CallCount);
 
             await File.AppendAllTextAsync(
                 journalPath,
-                "{\"timestamp\":\"2026-07-25T12:00:03Z\",\"event\":\"Disembark\",\"SystemAddress\":42,\"Body\":\"Test 1\",\"BodyID\":1,\"OnPlanet\":true,\"OnStation\":false}\n");
+                "{\"timestamp\":\"2026-07-25T12:00:03Z\",\"event\":\"Disembark\",\"SystemAddress\":42,\"Body\":\"Test 1\",\"BodyID\":1,\"OnPlanet\":true,\"OnStation\":false}\n"
+            );
             await viewModel.RefreshAsync();
 
             Assert.Equal(1, inference.CallCount);
-            Assert.True(Assert.Single(
-                viewModel.SystemSurvey.Snapshot.Bodies).IsFirstFootfall);
-            var systemPath = Assert.Single(Directory.GetFiles(
-                Path.Combine(profile, "systems"),
-                "*.json",
-                SearchOption.AllDirectories));
-            var system = JsonNode.Parse(
-                await File.ReadAllTextAsync(systemPath))!.AsObject();
-            Assert.True(
-                system["bodies"]![0]!["firstFootFall"]!.GetValue<bool>());
+            Assert.True(Assert.Single(viewModel.SystemSurvey.Snapshot.Bodies).IsFirstFootfall);
+            var systemPath = Assert.Single(
+                Directory.GetFiles(Path.Combine(profile, "systems"), "*.json", SearchOption.AllDirectories)
+            );
+            var system = JsonNode.Parse(await File.ReadAllTextAsync(systemPath))!.AsObject();
+            Assert.True(system["bodies"]![0]!["firstFootFall"]!.GetValue<bool>());
 
             const string variant = "$Codex_Ent_Aleoids_01_B_Name;";
             const string species = "$Codex_Ent_Aleoids_01_Name;";
@@ -3411,24 +3115,17 @@ public sealed class MainWindowViewModelTests
                 journalPath,
                 $"{{\"timestamp\":\"2026-07-25T12:00:04Z\",\"event\":\"ScanOrganic\",\"ScanType\":\"Log\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":42,\"Body\":1}}\n"
                     + $"{{\"timestamp\":\"2026-07-25T12:00:05Z\",\"event\":\"ScanOrganic\",\"ScanType\":\"Sample\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":42,\"Body\":1}}\n"
-                    + $"{{\"timestamp\":\"2026-07-25T12:00:06Z\",\"event\":\"ScanOrganic\",\"ScanType\":\"Analyse\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":42,\"Body\":1}}\n");
+                    + $"{{\"timestamp\":\"2026-07-25T12:00:06Z\",\"event\":\"ScanOrganic\",\"ScanType\":\"Analyse\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":42,\"Body\":1}}\n"
+            );
             await viewModel.RefreshAsync();
-            var saved = await new CommanderProfileStore(profile)
-                .LoadAsync("F123", true);
-            Assert.All(
-                saved.Data!.Exobiology.ScannedBioEntryIds,
-                entry => Assert.EndsWith("_True", entry));
+            var saved = await new CommanderProfileStore(profile).LoadAsync("F123", true);
+            Assert.All(saved.Data!.Exobiology.ScannedBioEntryIds, entry => Assert.EndsWith("_True", entry));
 
             Assert.True(await viewModel.ToggleCurrentBodyFirstFootfallAsync());
-            saved = await new CommanderProfileStore(profile)
-                .LoadAsync("F123", true);
-            Assert.All(
-                saved.Data!.Exobiology.ScannedBioEntryIds,
-                entry => Assert.EndsWith("_False", entry));
-            system = JsonNode.Parse(
-                await File.ReadAllTextAsync(systemPath))!.AsObject();
-            Assert.False(
-                system["bodies"]![0]!["firstFootFall"]!.GetValue<bool>());
+            saved = await new CommanderProfileStore(profile).LoadAsync("F123", true);
+            Assert.All(saved.Data!.Exobiology.ScannedBioEntryIds, entry => Assert.EndsWith("_False", entry));
+            system = JsonNode.Parse(await File.ReadAllTextAsync(systemPath))!.AsObject();
+            Assert.False(system["bodies"]![0]!["firstFootFall"]!.GetValue<bool>());
         }
         finally
         {
@@ -3442,9 +3139,7 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task BootstrapReplayNeverRunsFirstFootfallInference()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-first-footfall-bootstrap-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-first-footfall-bootstrap-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
@@ -3454,29 +3149,26 @@ public sealed class MainWindowViewModelTests
                 "{\"event\":\"Fileheader\",\"Odyssey\":true}\n"
                     + "{\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
                     + "{\"timestamp\":\"2026-07-25T12:00:02Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"Population\":0}\n"
-                    + "{\"event\":\"Disembark\",\"SystemAddress\":42,\"Body\":\"Test 1\",\"BodyID\":1,\"OnPlanet\":true,\"OnStation\":false}\n");
+                    + "{\"event\":\"Disembark\",\"SystemAddress\":42,\"Body\":\"Test 1\",\"BodyID\":1,\"OnPlanet\":true,\"OnStation\":false}\n"
+            );
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 Path.Combine(root, "profile"),
                 Path.Combine(root, "cache"),
-                []);
+                []
+            );
             var inference = new StubFirstFootfallInferenceService(
-                new FirstFootfallInferenceResult(
-                    FirstFootfallInferenceOutcome.Detected,
-                    1,
-                    1,
-                    null));
+                new FirstFootfallInferenceResult(FirstFootfallInferenceOutcome.Detected, 1, 1, null)
+            );
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths)
-                    .WithFirstFootfallInferenceService(inference));
+                builder => builder.WithAppDataPaths(paths).WithFirstFootfallInferenceService(inference)
+            );
 
             await viewModel.RefreshAsync();
 
             Assert.Equal(0, inference.CallCount);
-            Assert.False(Assert.Single(
-                viewModel.SystemSurvey.Snapshot.Bodies).IsFirstFootfall);
+            Assert.False(Assert.Single(viewModel.SystemSurvey.Snapshot.Bodies).IsFirstFootfall);
         }
         finally
         {
@@ -3490,17 +3182,13 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task LiveOrganicSamplesPopulateGroundedSurfaceHistory()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-surface-history-vm-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-surface-history-vm-tests-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
             var profile = Path.Combine(root, "profile");
             Directory.CreateDirectory(journals);
-            var journalPath = Path.Combine(
-                journals,
-                "Journal.2026-07-24T100000.01.log");
+            var journalPath = Path.Combine(journals, "Journal.2026-07-24T100000.01.log");
             const string variant = "$Codex_Ent_Aleoids_01_B_Name;";
             const string species = "$Codex_Ent_Aleoids_01_Name;";
             const string genus = "$Codex_Ent_Aleoids_Genus_Name;";
@@ -3510,52 +3198,39 @@ public sealed class MainWindowViewModelTests
                     + "{\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
                     + "{\"event\":\"Location\",\"StarSystem\":\"Test System\",\"SystemAddress\":42}\n"
                     + "{\"event\":\"Scan\",\"ScanType\":\"Detailed\",\"SystemAddress\":42,\"BodyName\":\"Test System 1\",\"BodyID\":7,\"PlanetClass\":\"Rocky body\",\"Landable\":true,\"Radius\":1000}\n"
-                    + $"{{\"event\":\"ScanOrganic\",\"ScanType\":\"Log\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":42,\"Body\":7}}\n");
+                    + $"{{\"event\":\"ScanOrganic\",\"ScanType\":\"Log\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":42,\"Body\":7}}\n"
+            );
             var statusPath = Path.Combine(journals, "Status.json");
             await WriteSurfaceStatusAsync(statusPath, 1, 2);
-            var paths = new AppDataPaths(
-                Path.Combine(root, "config"),
-                profile,
-                Path.Combine(root, "cache"),
-                []);
-            var viewModel = MainWindowViewModelTestBuilder.Create(
-                journals,
-                builder => builder
-                    .WithAppDataPaths(paths));
+            var paths = new AppDataPaths(Path.Combine(root, "config"), profile, Path.Combine(root, "cache"), []);
+            var viewModel = MainWindowViewModelTestBuilder.Create(journals, builder => builder.WithAppDataPaths(paths));
 
             await viewModel.RefreshAsync();
             await WriteSurfaceStatusAsync(statusPath, 2, 3);
             await File.AppendAllTextAsync(
                 journalPath,
-                $"{{\"event\":\"ScanOrganic\",\"ScanType\":\"Sample\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":42,\"Body\":7}}\n");
+                $"{{\"event\":\"ScanOrganic\",\"ScanType\":\"Sample\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":42,\"Body\":7}}\n"
+            );
             await viewModel.RefreshAsync();
             await WriteSurfaceStatusAsync(statusPath, 3, 4);
             await File.AppendAllTextAsync(
                 journalPath,
-                $"{{\"event\":\"ScanOrganic\",\"ScanType\":\"Analyse\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":42,\"Body\":7}}\n");
+                $"{{\"event\":\"ScanOrganic\",\"ScanType\":\"Analyse\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":42,\"Body\":7}}\n"
+            );
             await viewModel.RefreshAsync();
 
             Assert.Equal(3, viewModel.SurfaceSurvey.CurrentSurface!.BioScans.Count);
             Assert.True(viewModel.SurfaceSurvey.ShouldShow);
             Assert.Equal(
-                [
-                    new SurfaceCoordinate(3, 4),
-                    new SurfaceCoordinate(1, 2),
-                    new SurfaceCoordinate(2, 3),
-                ],
-                viewModel.SurfaceSurvey.CurrentSurface.BioScans
-                    .Select(scan => scan.Location));
+                [new SurfaceCoordinate(3, 4), new SurfaceCoordinate(1, 2), new SurfaceCoordinate(2, 3)],
+                viewModel.SurfaceSurvey.CurrentSurface.BioScans.Select(scan => scan.Location)
+            );
 
-            await File.AppendAllTextAsync(
-                journalPath,
-                "{\"event\":\"Died\"}\n");
+            await File.AppendAllTextAsync(journalPath, "{\"event\":\"Died\"}\n");
             await viewModel.RefreshAsync();
 
-            Assert.All(
-                viewModel.SurfaceSurvey.CurrentSurface!.BioScans,
-                scan => Assert.Equal("Died", scan.Status));
-            var savedProfile = await new CommanderProfileStore(profile)
-                .LoadAsync("F123", true);
+            Assert.All(viewModel.SurfaceSurvey.CurrentSurface!.BioScans, scan => Assert.Equal("Died", scan.Status));
+            var savedProfile = await new CommanderProfileStore(profile).LoadAsync("F123", true);
             Assert.Empty(savedProfile.Data!.Exobiology.ScannedBioEntryIds);
             viewModel.SurfaceSurvey.Dispose();
         }
@@ -3571,40 +3246,33 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task ScreenshotsProcessOnlyAfterBootstrapReplay()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-screenshot-monitor-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-screenshot-monitor-tests-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
             var profile = Path.Combine(root, "profile");
             Directory.CreateDirectory(journals);
-            var journalPath = Path.Combine(
-                journals,
-                "Journal.2026-07-24T100000.01.log");
+            var journalPath = Path.Combine(journals, "Journal.2026-07-24T100000.01.log");
             await File.WriteAllTextAsync(
                 journalPath,
                 "{\"event\":\"Fileheader\",\"Odyssey\":true}\n"
                     + "{\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
-                    + "{\"event\":\"Screenshot\",\"Filename\":\"\\\\ED_Pictures\\\\old.bmp\"}\n");
-            var paths = new AppDataPaths(
-                Path.Combine(root, "config"),
-                profile,
-                Path.Combine(root, "cache"),
-                []);
+                    + "{\"event\":\"Screenshot\",\"Filename\":\"\\\\ED_Pictures\\\\old.bmp\"}\n"
+            );
+            var paths = new AppDataPaths(Path.Combine(root, "config"), profile, Path.Combine(root, "cache"), []);
             var processor = new CountingScreenshotProcessor();
             var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths)
-                    .WithScreenshotProcessingService(processor));
+                builder => builder.WithAppDataPaths(paths).WithScreenshotProcessingService(processor)
+            );
 
             await viewModel.RefreshAsync();
 
             Assert.Equal(0, processor.CallCount);
             await File.AppendAllTextAsync(
                 journalPath,
-                "{\"event\":\"Screenshot\",\"Filename\":\"\\\\ED_Pictures\\\\new.bmp\"}\n");
+                "{\"event\":\"Screenshot\",\"Filename\":\"\\\\ED_Pictures\\\\new.bmp\"}\n"
+            );
             await viewModel.RefreshAsync();
 
             Assert.Equal(1, processor.CallCount);
@@ -3612,10 +3280,9 @@ public sealed class MainWindowViewModelTests
             Assert.Equal(
                 "new.bmp",
                 Path.GetFileName(
-                    Assert.Single(processor.Events).Payload
-                        .GetProperty("Filename")
-                        .GetString()!
-                        .Replace('\\', '/')));
+                    Assert.Single(processor.Events).Payload.GetProperty("Filename").GetString()!.Replace('\\', '/')
+                )
+            );
         }
         finally
         {
@@ -3629,9 +3296,7 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task EnabledMigratedQuestRunsOnlyForLiveDesktopJournalEvents()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-main-quest-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-main-quest-tests-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
@@ -3640,14 +3305,13 @@ public sealed class MainWindowViewModelTests
             var questDirectory = Path.Combine(profile, "quests");
             Directory.CreateDirectory(journals);
             Directory.CreateDirectory(questDirectory);
-            var journalPath = Path.Combine(
-                journals,
-                "Journal.2026-07-24T100000.01.log");
+            var journalPath = Path.Combine(journals, "Journal.2026-07-24T100000.01.log");
             await File.WriteAllTextAsync(
                 journalPath,
                 "{\"event\":\"Fileheader\",\"Odyssey\":true}\n"
                     + "{\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
-                    + "{\"event\":\"Scan\",\"BodyName\":\"Historical body\"}\n");
+                    + "{\"event\":\"Scan\",\"BodyName\":\"Historical body\"}\n"
+            );
             var statePath = Path.Combine(questDirectory, "F123.json");
             await File.WriteAllTextAsync(
                 statePath,
@@ -3664,7 +3328,8 @@ public sealed class MainWindowViewModelTests
                   },
                   "futureRoot":true
                 }
-                """);
+                """
+            );
             await File.WriteAllTextAsync(
                 Path.Combine(questDirectory, "dev-desktop.json"),
                 """
@@ -3681,17 +3346,14 @@ public sealed class MainWindowViewModelTests
                     "start":"function on_Scan(entry) quest:set('body', entry.BodyName); return true end"
                   }
                 }
-                """);
-            var paths = new AppDataPaths(
-                config,
-                profile,
-                Path.Combine(root, "cache"),
-                []);
+                """
+            );
+            var paths = new AppDataPaths(config, profile, Path.Combine(root, "cache"), []);
             new QuestSettingsStore(paths.UiSettingsPath).SaveEnabled(true);
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths));
+                builder => builder.WithAppDataPaths(paths)
+            );
 
             await viewModel.RefreshAsync();
 
@@ -3702,45 +3364,30 @@ public sealed class MainWindowViewModelTests
             Assert.False(viewModel.QuestIndicator.ShouldShow);
             viewModel.ShowQuests();
             Assert.True(viewModel.IsQuestsSelected);
-            Assert.DoesNotContain(
-                "Historical body",
-                await File.ReadAllTextAsync(statePath),
-                StringComparison.Ordinal);
+            Assert.DoesNotContain("Historical body", await File.ReadAllTextAsync(statePath), StringComparison.Ordinal);
 
-            await File.AppendAllTextAsync(
-                journalPath,
-                "{\"event\":\"Scan\",\"BodyName\":\"Live body\"}\n");
+            await File.AppendAllTextAsync(journalPath, "{\"event\":\"Scan\",\"BodyName\":\"Live body\"}\n");
             await viewModel.RefreshAsync();
 
-            Assert.Contains(
-                "Live body",
-                await File.ReadAllTextAsync(statePath),
-                StringComparison.Ordinal);
-            Assert.Contains(
-                "futureRoot",
-                await File.ReadAllTextAsync(statePath),
-                StringComparison.Ordinal);
-            Assert.True(JournalEventEnvelope.TryParse(
-                "{\"event\":\"Scan\",\"BodyName\":\"Replay body\"}",
-                out var replayEvent,
-                out var replayError), replayError);
+            Assert.Contains("Live body", await File.ReadAllTextAsync(statePath), StringComparison.Ordinal);
+            Assert.Contains("futureRoot", await File.ReadAllTextAsync(statePath), StringComparison.Ordinal);
+            Assert.True(
+                JournalEventEnvelope.TryParse(
+                    "{\"event\":\"Scan\",\"BodyName\":\"Replay body\"}",
+                    out var replayEvent,
+                    out var replayError
+                ),
+                replayError
+            );
             viewModel.JournalInspector.ApplyUpdate([replayEvent!], null);
-            viewModel.JournalInspector.SelectedEvent =
-                viewModel.JournalInspector.Events[0];
+            viewModel.JournalInspector.SelectedEvent = viewModel.JournalInspector.Events[0];
             viewModel.JournalInspector.ReplayConfirmed = true;
 
             await viewModel.JournalInspector.ReplayAsync();
 
-            Assert.Contains(
-                "Replay body",
-                await File.ReadAllTextAsync(statePath),
-                StringComparison.Ordinal);
-            Assert.Contains(
-                "Replayed Scan",
-                viewModel.JournalInspector.StatusMessage);
-            Assert.Equal(2, Directory.GetFiles(Path.Combine(
-                questDirectory,
-                "quest-state-backups")).Length);
+            Assert.Contains("Replay body", await File.ReadAllTextAsync(statePath), StringComparison.Ordinal);
+            Assert.Contains("Replayed Scan", viewModel.JournalInspector.StatusMessage);
+            Assert.Equal(2, Directory.GetFiles(Path.Combine(questDirectory, "quest-state-backups")).Length);
             Assert.Contains("1 active quest", viewModel.QuestStatusMessage);
         }
         finally
@@ -3755,9 +3402,7 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public void MultipleGameWindowInventoryControlsSharedCargoSuppression()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-main-multi-cargo-tests-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-main-multi-cargo-tests-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
@@ -3766,18 +3411,15 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "config"),
                 Path.Combine(root, "profile"),
                 Path.Combine(root, "cache"),
-                []);
-            var switcher = new MutableGameWindowSwitcher
-            {
-                AvailableWindowCount = 2,
-            };
+                []
+            );
+            var switcher = new MutableGameWindowSwitcher { AvailableWindowCount = 2 };
             var eddnPublisher = new RecordingEddnPublisher();
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths)
-                    .WithGameWindowSwitcher(switcher)
-                    .WithEddnPublisher(eddnPublisher));
+                builder =>
+                    builder.WithAppDataPaths(paths).WithGameWindowSwitcher(switcher).WithEddnPublisher(eddnPublisher)
+            );
 
             Assert.True(viewModel.IsSharedCargoSuppressed);
             Assert.True(viewModel.DockToDock.SharedCargoSuppressed);
@@ -3797,12 +3439,8 @@ public sealed class MainWindowViewModelTests
 
             Assert.True(viewModel.IsSharedCargoSuppressed);
             Assert.True(eddnPublisher.SuspensionStates[^1]);
-            Assert.Contains(
-                "cannot be attributed safely",
-                viewModel.DockToDock.StatusMessage);
-            Assert.Contains(
-                "cannot be attributed safely",
-                viewModel.Colonization.ShipCargoPublishingStatus);
+            Assert.Contains("cannot be attributed safely", viewModel.DockToDock.StatusMessage);
+            Assert.Contains("cannot be attributed safely", viewModel.Colonization.ShipCargoPublishingStatus);
         }
         finally
         {
@@ -3816,51 +3454,45 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task CargoProjectionAppliesJournalDeltasAndRequiresFreshFileAfterAmbiguity()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-main-cargo-projection-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-main-cargo-projection-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
             Directory.CreateDirectory(journals);
-            var journalPath = Path.Combine(
-                journals,
-                "Journal.2026-07-25T120000.01.log");
+            var journalPath = Path.Combine(journals, "Journal.2026-07-25T120000.01.log");
             await File.WriteAllTextAsync(
                 journalPath,
                 """
                 {"timestamp":"2026-07-25T12:00:00Z","event":"Commander","Name":"Drew","FID":"F123"}
                 {"timestamp":"2026-07-25T12:00:01Z","event":"LoadGame","Commander":"Drew","FID":"F123","Odyssey":true}
 
-                """);
+                """
+            );
             var cargoPath = Path.Combine(journals, CargoFileReader.FileName);
             await File.WriteAllTextAsync(
                 cargoPath,
                 """
                 {"timestamp":"2026-07-25T12:00:02Z","event":"Cargo","Vessel":"Ship","Count":2,"Inventory":[{"Name":"gold","Count":2,"Stolen":0}]}
-                """);
-            var shipLockerPath = Path.Combine(
-                journals,
-                ShipLockerFileReader.FileName);
+                """
+            );
+            var shipLockerPath = Path.Combine(journals, ShipLockerFileReader.FileName);
             await File.WriteAllTextAsync(
                 shipLockerPath,
                 """
                 {"timestamp":"2026-07-25T12:00:02Z","event":"ShipLocker","Items":[{"Name":"healthmonitor","Name_Localised":"Health Monitor","Count":2}],"Components":[],"Consumables":[],"Data":[]}
-                """);
+                """
+            );
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 Path.Combine(root, "profile"),
                 Path.Combine(root, "cache"),
-                []);
-            var switcher = new MutableGameWindowSwitcher
-            {
-                AvailableWindowCount = 1,
-            };
+                []
+            );
+            var switcher = new MutableGameWindowSwitcher { AvailableWindowCount = 1 };
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths)
-                    .WithGameWindowSwitcher(switcher));
+                builder => builder.WithAppDataPaths(paths).WithGameWindowSwitcher(switcher)
+            );
 
             await viewModel.RefreshAsync();
             Assert.Equal(2, viewModel.CurrentCargo?.GetCount("gold"));
@@ -3872,7 +3504,8 @@ public sealed class MainWindowViewModelTests
                 """
                 {"timestamp":"2026-07-25T12:00:03Z","event":"CollectCargo","Type":"silver","Type_Localised":"Silver"}
 
-                """);
+                """
+            );
             await viewModel.RefreshAsync();
 
             Assert.Equal(2, viewModel.CurrentCargo?.GetCount("gold"));
@@ -3884,9 +3517,7 @@ public sealed class MainWindowViewModelTests
             Assert.True(viewModel.IsWaitingForFreshCargoSnapshot);
             Assert.Empty(viewModel.FrontierProfile.CurrentShipCargo);
             Assert.Empty(viewModel.FrontierProfile.CurrentShipLocker);
-            Assert.Contains(
-                "multiple Elite windows",
-                viewModel.FrontierProfile.LocalInventoryStatus);
+            Assert.Contains("multiple Elite windows", viewModel.FrontierProfile.LocalInventoryStatus);
 
             switcher.AvailableWindowCount = 1;
             viewModel.CommanderInstances.RefreshGameWindowCount();
@@ -3895,7 +3526,8 @@ public sealed class MainWindowViewModelTests
                 """
                 {"timestamp":"2026-07-25T12:00:04Z","event":"CollectCargo","Type":"gold"}
 
-                """);
+                """
+            );
             await viewModel.RefreshAsync();
 
             Assert.Null(viewModel.CurrentCargo);
@@ -3905,7 +3537,8 @@ public sealed class MainWindowViewModelTests
                 cargoPath,
                 """
                 {"timestamp":"2026-07-25T12:00:05Z","event":"Cargo","Vessel":"Ship","Count":5,"Inventory":[{"Name":"gold","Count":5,"Stolen":0}]}
-                """);
+                """
+            );
             await viewModel.RefreshAsync();
 
             Assert.Equal(5, viewModel.CurrentCargo?.GetCount("gold"));
@@ -3925,9 +3558,7 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task IdleMonitorPollsDoNotRepeatUiOrPublicationProjection()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-main-idle-monitor-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-main-idle-monitor-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
@@ -3936,22 +3567,19 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "config"),
                 Path.Combine(root, "data"),
                 Path.Combine(root, "cache"),
-                []);
+                []
+            );
             var publisher = new RecordingEddnPublisher();
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths)
-                    .WithEddnPublisher(publisher));
+                builder => builder.WithAppDataPaths(paths).WithEddnPublisher(publisher)
+            );
             await viewModel.RefreshAsync();
             var statusBefore = viewModel.StatusMessage;
             var lastUpdatedBefore = viewModel.LastUpdated;
-            using var cancellation = new CancellationTokenSource(
-                TimeSpan.FromMilliseconds(100));
+            using var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
 
-            await viewModel.MonitorAsync(
-                TimeSpan.FromMilliseconds(5),
-                cancellation.Token);
+            await viewModel.MonitorAsync(TimeSpan.FromMilliseconds(5), cancellation.Token);
 
             Assert.Single(publisher.Calls);
             Assert.Equal(statusBefore, viewModel.StatusMessage);
@@ -3969,31 +3597,28 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task LiveStatusReadRecoveryClearsShutdownWarning()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-main-status-recovery-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-main-status-recovery-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
             Directory.CreateDirectory(journals);
-            var journalPath = Path.Combine(
-                journals,
-                "Journal.2026-08-09T010000.01.log");
+            var journalPath = Path.Combine(journals, "Journal.2026-08-09T010000.01.log");
             await File.WriteAllTextAsync(
                 journalPath,
-                "{\"event\":\"Fileheader\",\"Odyssey\":true}\n"
-                    + "{\"event\":\"Shutdown\"}\n");
+                "{\"event\":\"Fileheader\",\"Odyssey\":true}\n" + "{\"event\":\"Shutdown\"}\n"
+            );
             var statusPath = Path.Combine(journals, StatusFileReader.FileName);
             await File.WriteAllTextAsync(statusPath, string.Empty);
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 Path.Combine(root, "data"),
                 Path.Combine(root, "cache"),
-                []);
+                []
+            );
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(paths));
+                builder => builder.WithAppDataPaths(paths)
+            );
 
             await viewModel.RefreshAsync();
             await viewModel.RefreshAsync();
@@ -4001,18 +3626,15 @@ public sealed class MainWindowViewModelTests
             Assert.Contains("Could not read", viewModel.StatusMessage);
             Assert.Equal("Session closed", viewModel.SessionState);
 
-            await File.WriteAllTextAsync(
-                statusPath,
-                "{\"event\":\"Status\",\"Flags\":0}");
-            const string recoveredMessage =
-                "Elite session closed normally; waiting for the next journal session.";
-            using var cancellation = new CancellationTokenSource(
-                TimeSpan.FromSeconds(5));
+            await File.WriteAllTextAsync(statusPath, "{\"event\":\"Status\",\"Flags\":0}");
+            const string recoveredMessage = "Elite session closed normally; waiting for the next journal session.";
+            using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             PropertyChangedEventHandler cancelWhenRecovered = (_, eventArgs) =>
             {
-                if (eventArgs.PropertyName == nameof(
-                        MainWindowViewModel.StatusMessage)
-                    && viewModel.StatusMessage == recoveredMessage)
+                if (
+                    eventArgs.PropertyName == nameof(MainWindowViewModel.StatusMessage)
+                    && viewModel.StatusMessage == recoveredMessage
+                )
                 {
                     cancellation.Cancel();
                 }
@@ -4020,9 +3642,7 @@ public sealed class MainWindowViewModelTests
             viewModel.PropertyChanged += cancelWhenRecovered;
             try
             {
-                await viewModel.MonitorAsync(
-                    TimeSpan.FromMilliseconds(5),
-                    cancellation.Token);
+                await viewModel.MonitorAsync(TimeSpan.FromMilliseconds(5), cancellation.Token);
             }
             finally
             {
@@ -4043,9 +3663,7 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task CommanderSwitchRejectsPreviousAccountsCompanionInventory()
     {
-        var root = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-main-commander-inventory-{Guid.NewGuid():N}");
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-main-commander-inventory-{Guid.NewGuid():N}");
         try
         {
             var journals = Path.Combine(root, "journals");
@@ -4056,28 +3674,34 @@ public sealed class MainWindowViewModelTests
                 {"timestamp":"2026-07-25T12:00:00Z","event":"Commander","Name":"First","FID":"F123"}
                 {"timestamp":"2026-07-25T12:00:01Z","event":"LoadGame","Commander":"First","FID":"F123","Odyssey":true}
 
-                """);
+                """
+            );
             var cargoPath = Path.Combine(journals, CargoFileReader.FileName);
             var lockerPath = Path.Combine(journals, ShipLockerFileReader.FileName);
             await File.WriteAllTextAsync(
                 cargoPath,
                 """
                 {"timestamp":"2026-07-25T12:00:02Z","event":"Cargo","Vessel":"Ship","Count":2,"Inventory":[{"Name":"gold","Count":2,"Stolen":0}]}
-                """);
+                """
+            );
             await File.WriteAllTextAsync(
                 lockerPath,
                 """
                 {"timestamp":"2026-07-25T12:00:02Z","event":"ShipLocker","Items":[{"Name":"healthmonitor","Count":2}],"Components":[],"Consumables":[],"Data":[]}
-                """);
+                """
+            );
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
-                builder => builder
-                    .WithAppDataPaths(
+                builder =>
+                    builder.WithAppDataPaths(
                         new AppDataPaths(
                             Path.Combine(root, "config"),
                             Path.Combine(root, "profile"),
                             Path.Combine(root, "cache"),
-                            [])));
+                            []
+                        )
+                    )
+            );
 
             await viewModel.RefreshAsync();
             Assert.Equal(2, viewModel.CurrentCargo?.GetCount("gold"));
@@ -4089,7 +3713,8 @@ public sealed class MainWindowViewModelTests
                 {"timestamp":"2026-07-25T13:00:00Z","event":"Commander","Name":"Second","FID":"F456"}
                 {"timestamp":"2026-07-25T13:00:01Z","event":"LoadGame","Commander":"Second","FID":"F456","Odyssey":true}
 
-                """);
+                """
+            );
             await viewModel.RefreshAsync();
 
             Assert.Equal("Second", viewModel.CommanderName);
@@ -4101,19 +3726,19 @@ public sealed class MainWindowViewModelTests
                 cargoPath,
                 """
                 {"timestamp":"2026-07-25T13:00:02Z","event":"Cargo","Vessel":"Ship","Count":3,"Inventory":[{"Name":"silver","Count":3,"Stolen":0}]}
-                """);
+                """
+            );
             await File.WriteAllTextAsync(
                 lockerPath,
                 """
                 {"timestamp":"2026-07-25T13:00:02Z","event":"ShipLocker","Items":[],"Components":[{"Name":"microelectrode","Count":4}],"Consumables":[],"Data":[]}
-                """);
+                """
+            );
             await viewModel.RefreshAsync();
 
             Assert.Equal(3, viewModel.CurrentCargo?.GetCount("silver"));
             Assert.False(viewModel.IsWaitingForFreshCargoSnapshot);
-            Assert.Equal(
-                "Microelectrode",
-                Assert.Single(viewModel.FrontierProfile.CurrentShipLocker).Name);
+            Assert.Equal("Microelectrode", Assert.Single(viewModel.FrontierProfile.CurrentShipLocker).Name);
         }
         finally
         {
@@ -4129,7 +3754,8 @@ public sealed class MainWindowViewModelTests
     {
         var root = Path.Combine(
             Path.GetTempPath(),
-            "SrvSurvey-invalid-mine-map-position-" + Guid.NewGuid().ToString("N"));
+            "SrvSurvey-invalid-mine-map-position-" + Guid.NewGuid().ToString("N")
+        );
         try
         {
             Directory.CreateDirectory(root);
@@ -4137,74 +3763,82 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "Journal.2026-09-11T010000.01.log"),
                 "{\"timestamp\":\"2026-09-11T01:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
                     + "{\"timestamp\":\"2026-09-11T01:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Test System\",\"SystemAddress\":42,\"StarPos\":[1,2,3],\"Body\":\"Test System 1\",\"BodyID\":7,\"BodyType\":\"Planet\"}\n"
-                    + "{\"timestamp\":\"2026-09-11T01:00:02Z\",\"event\":\"Scan\",\"ScanType\":\"Detailed\",\"SystemAddress\":42,\"BodyName\":\"Test System 1\",\"BodyID\":7,\"PlanetClass\":\"Rocky body\",\"Landable\":true,\"Radius\":1000}\n");
+                    + "{\"timestamp\":\"2026-09-11T01:00:02Z\",\"event\":\"Scan\",\"ScanType\":\"Detailed\",\"SystemAddress\":42,\"BodyName\":\"Test System 1\",\"BodyID\":7,\"PlanetClass\":\"Rocky body\",\"Landable\":true,\"Radius\":1000}\n"
+            );
             await File.WriteAllTextAsync(
                 Path.Combine(root, StatusFileReader.FileName),
-                "{\"event\":\"Status\",\"Flags\":69206016,\"Flags2\":0,\"Latitude\":1,\"Longitude\":2,\"Heading\":0,\"Altitude\":0,\"BodyName\":\"Test System 1\",\"PlanetRadius\":1000}");
+                "{\"event\":\"Status\",\"Flags\":69206016,\"Flags2\":0,\"Latitude\":1,\"Longitude\":2,\"Heading\":0,\"Altitude\":0,\"BodyName\":\"Test System 1\",\"PlanetRadius\":1000}"
+            );
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 Path.Combine(root, "profile"),
                 Path.Combine(root, "cache"),
-                []);
+                []
+            );
             using var viewModel = MainWindowViewModelTestBuilder.Create(
                 root,
-                builder => builder.WithAppDataPaths(paths));
+                builder => builder.WithAppDataPaths(paths)
+            );
 
             await viewModel.RefreshAsync();
             var statusField = typeof(MainWindowViewModel).GetField(
                 "latestStatus",
-                System.Reflection.BindingFlags.Instance
-                    | System.Reflection.BindingFlags.NonPublic);
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic
+            );
             Assert.NotNull(statusField);
-            statusField.SetValue(viewModel, new EliteStatus
-            {
-                Flags = (StatusFlags)69206016,
-                Latitude = 91,
-                Longitude = 2,
-                BodyName = "Test System 1",
-                PlanetRadius = 1000,
-            });
+            statusField.SetValue(
+                viewModel,
+                new EliteStatus
+                {
+                    Flags = (StatusFlags)69206016,
+                    Latitude = 91,
+                    Longitude = 2,
+                    BodyName = "Test System 1",
+                    PlanetRadius = 1000,
+                }
+            );
             var createContext = typeof(MainWindowViewModel).GetMethod(
                 "CreateMineMapCommandContext",
-                System.Reflection.BindingFlags.Instance
-                    | System.Reflection.BindingFlags.NonPublic);
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic
+            );
             Assert.NotNull(createContext);
 
             Assert.Null(createContext.Invoke(viewModel, null));
         }
         finally
         {
-            if (Directory.Exists(root)) Directory.Delete(root, true);
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
         }
     }
 
-    private static Task WriteSurfaceStatusAsync(
-        string path,
-        double latitude,
-        double longitude)
+    private static Task WriteSurfaceStatusAsync(string path, double latitude, double longitude)
     {
         return File.WriteAllTextAsync(
             path,
             $$"""
             {"event":"Status","Flags":69206016,"Flags2":0,"Latitude":{{latitude}},"Longitude":{{longitude}},"Heading":90,"Altitude":10,"BodyName":"Test System 1","PlanetRadius":1000}
-            """);
+            """
+        );
     }
 
     private const string GreenGasGiantScanJson =
-        "{\"event\":\"Scan\","
-        + "\"PlanetClass\":\"Sudarsky class III gas giant\","
-        + "\"SurfaceTemperature\":310}";
+        "{\"event\":\"Scan\"," + "\"PlanetClass\":\"Sudarsky class III gas giant\"," + "\"SurfaceTemperature\":310}";
 
-    private static BoxelSystemObservation BoxelObservation(
-        string name,
-        long address)
+    private static BoxelSystemObservation BoxelObservation(string name, long address)
     {
         return new BoxelSystemObservation(
-            BoxelAddress.Parse(name) with { SystemAddress = address },
+            BoxelAddress.Parse(name) with
+            {
+                SystemAddress = address,
+            },
             new GalacticCoordinate(address, 0, 0),
             null,
             DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
-            true);
+            true
+        );
     }
 
     private static AppDataPaths CreateAppDataPaths(string root)
@@ -4213,50 +3847,43 @@ public sealed class MainWindowViewModelTests
             Path.Combine(root, "config"),
             Path.Combine(root, "data"),
             Path.Combine(root, "cache"),
-            []);
+            []
+        );
     }
 
     private static JournalEventEnvelope ParseJournalEvent(string json)
     {
-        Assert.True(
-            JournalEventEnvelope.TryParse(
-                json,
-                out var journalEvent,
-                out var error),
-            error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
         return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }
 
-    private sealed class RecordingSystemBodyDataClient(
-        SystemBodyDataLoadResult result) : ISystemBodyDataClient
+    private sealed class RecordingSystemBodyDataClient(SystemBodyDataLoadResult result) : ISystemBodyDataClient
     {
         public int CallCount { get; private set; }
 
         public Task<SystemBodyDataLoadResult> GetAsync(
             string systemName,
             long systemAddress,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             CallCount++;
             return Task.FromResult(result);
         }
     }
 
-    private sealed class StubEliteGameProcessDetector(bool isGameRunning)
-        : IEliteGameProcessDetector
+    private sealed class StubEliteGameProcessDetector(bool isGameRunning) : IEliteGameProcessDetector
     {
         public bool IsGameRunning { get; set; } = isGameRunning;
 
         public bool IsRunning() => IsGameRunning;
     }
 
-    private sealed class SequenceSystemBodyDataClient
-        : ISystemBodyDataClient
+    private sealed class SequenceSystemBodyDataClient : ISystemBodyDataClient
     {
         private readonly Queue<SystemBodyDataLoadResult> results;
 
-        public SequenceSystemBodyDataClient(
-            params SystemBodyDataLoadResult[] results)
+        public SequenceSystemBodyDataClient(params SystemBodyDataLoadResult[] results)
         {
             this.results = new Queue<SystemBodyDataLoadResult>(results);
         }
@@ -4266,7 +3893,8 @@ public sealed class MainWindowViewModelTests
         public Task<SystemBodyDataLoadResult> GetAsync(
             string systemName,
             long systemAddress,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             CallCount++;
             return Task.FromResult(results.Dequeue());
@@ -4278,10 +3906,10 @@ public sealed class MainWindowViewModelTests
         private readonly object sync = new();
         private readonly List<long> requestedAddresses = [];
         private readonly List<long> canceledAddresses = [];
-        private readonly Dictionary<long, TaskCompletionSource>
-            requestStartedByAddress = [];
+        private readonly Dictionary<long, TaskCompletionSource> requestStartedByAddress = [];
         private readonly TaskCompletionSource firstRequestStarted = new(
-            TaskCreationOptions.RunContinuationsAsynchronously);
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
 
         public Task FirstRequestStarted => firstRequestStarted.Task;
 
@@ -4316,15 +3944,10 @@ public sealed class MainWindowViewModelTests
                     return Task.CompletedTask;
                 }
 
-                if (!requestStartedByAddress.TryGetValue(
-                    systemAddress,
-                    out var requestStarted))
+                if (!requestStartedByAddress.TryGetValue(systemAddress, out var requestStarted))
                 {
-                    requestStarted = new TaskCompletionSource(
-                        TaskCreationOptions.RunContinuationsAsynchronously);
-                    requestStartedByAddress.Add(
-                        systemAddress,
-                        requestStarted);
+                    requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                    requestStartedByAddress.Add(systemAddress, requestStarted);
                 }
 
                 return requestStarted.Task;
@@ -4334,14 +3957,13 @@ public sealed class MainWindowViewModelTests
         public Task<SystemBodyDataLoadResult> GetAsync(
             string systemName,
             long systemAddress,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             lock (sync)
             {
                 requestedAddresses.Add(systemAddress);
-                if (requestStartedByAddress.Remove(
-                    systemAddress,
-                    out var requestStarted))
+                if (requestStartedByAddress.Remove(systemAddress, out var requestStarted))
                 {
                     requestStarted.TrySetResult();
                 }
@@ -4350,7 +3972,8 @@ public sealed class MainWindowViewModelTests
             firstRequestStarted.TrySetResult();
 
             var completion = new TaskCompletionSource<SystemBodyDataLoadResult>(
-                TaskCreationOptions.RunContinuationsAsynchronously);
+                TaskCreationOptions.RunContinuationsAsynchronously
+            );
             cancellationToken.Register(() =>
             {
                 lock (sync)
@@ -4364,30 +3987,26 @@ public sealed class MainWindowViewModelTests
         }
     }
 
-    private sealed class StubBoxelResolver(
-        IReadOnlyList<BoxelSystemObservation> systems) : IBoxelSystemResolver
+    private sealed class StubBoxelResolver(IReadOnlyList<BoxelSystemObservation> systems) : IBoxelSystemResolver
     {
         public Task<IReadOnlyList<BoxelSystemObservation>> SearchAsync(
             BoxelAddress boxel,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             return Task.FromResult<IReadOnlyList<BoxelSystemObservation>>(
-                systems.Where(system => string.Equals(
-                        system.Boxel.Prefix,
-                        boxel.Prefix,
-                        StringComparison.Ordinal))
-                    .ToArray());
+                systems
+                    .Where(system => string.Equals(system.Boxel.Prefix, boxel.Prefix, StringComparison.Ordinal))
+                    .ToArray()
+            );
         }
     }
 
-    private sealed class RecordingGreenGasGiantClient
-        : IGreenGasGiantClient
+    private sealed class RecordingGreenGasGiantClient : IGreenGasGiantClient
     {
         public List<GreenGasGiantCandidate> Candidates { get; } = [];
 
-        public Task PublishAsync(
-            GreenGasGiantCandidate candidate,
-            CancellationToken cancellationToken = default)
+        public Task PublishAsync(GreenGasGiantCandidate candidate, CancellationToken cancellationToken = default)
         {
             Candidates.Add(candidate);
             return Task.CompletedTask;
@@ -4402,22 +4021,22 @@ public sealed class MainWindowViewModelTests
 
         public Task<InaraPublicationResult> ApplyAsync(
             InaraPublicationUpdate update,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             Calls.Add(update);
-            return Task.FromResult(new InaraPublicationResult(
-                QueuedEventCount: 0,
-                AcceptedEventCount: update.AllowPublishing
-                    && update.JournalEvents.Count > 0
-                        ? 1
-                        : 0,
-                PendingEventCount: 0,
-                QueuedEventNames: [],
-                Warnings: []));
+            return Task.FromResult(
+                new InaraPublicationResult(
+                    QueuedEventCount: 0,
+                    AcceptedEventCount: update.AllowPublishing && update.JournalEvents.Count > 0 ? 1 : 0,
+                    PendingEventCount: 0,
+                    QueuedEventNames: [],
+                    Warnings: []
+                )
+            );
         }
 
-        public Task<InaraPublicationResult> StopAsync(
-            CancellationToken cancellationToken = default)
+        public Task<InaraPublicationResult> StopAsync(CancellationToken cancellationToken = default)
         {
             return Task.FromResult(InaraPublicationResult.Empty);
         }
@@ -4427,9 +4046,7 @@ public sealed class MainWindowViewModelTests
             CancellationCount++;
         }
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
     }
 
     private sealed class RecordingEdsmPublisher : IEdsmPublisher
@@ -4440,22 +4057,22 @@ public sealed class MainWindowViewModelTests
 
         public Task<EdsmPublicationResult> ApplyAsync(
             EdsmPublicationUpdate update,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             Calls.Add(update);
-            return Task.FromResult(new EdsmPublicationResult(
-                QueuedEventCount: 0,
-                AcceptedEventCount: update.AllowPublishing
-                    && update.JournalEvents.Count > 0
-                        ? 1
-                        : 0,
-                PendingEventCount: 0,
-                QueuedEventNames: [],
-                Warnings: []));
+            return Task.FromResult(
+                new EdsmPublicationResult(
+                    QueuedEventCount: 0,
+                    AcceptedEventCount: update.AllowPublishing && update.JournalEvents.Count > 0 ? 1 : 0,
+                    PendingEventCount: 0,
+                    QueuedEventNames: [],
+                    Warnings: []
+                )
+            );
         }
 
-        public Task<EdsmPublicationResult> StopAsync(
-            CancellationToken cancellationToken = default)
+        public Task<EdsmPublicationResult> StopAsync(CancellationToken cancellationToken = default)
         {
             return Task.FromResult(EdsmPublicationResult.Empty);
         }
@@ -4465,23 +4082,20 @@ public sealed class MainWindowViewModelTests
             CancellationCount++;
         }
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
     }
 
-    private sealed class ThrowingInaraPublisher(
-        Exception? disposeException = null) : IInaraPublisher
+    private sealed class ThrowingInaraPublisher(Exception? disposeException = null) : IInaraPublisher
     {
         public Task<InaraPublicationResult> ApplyAsync(
             InaraPublicationUpdate update,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             throw new InvalidOperationException("simulated Inara failure");
         }
 
-        public Task<InaraPublicationResult> StopAsync(
-            CancellationToken cancellationToken = default)
+        public Task<InaraPublicationResult> StopAsync(CancellationToken cancellationToken = default)
         {
             if (disposeException is not null)
             {
@@ -4491,13 +4105,9 @@ public sealed class MainWindowViewModelTests
             return Task.FromResult(InaraPublicationResult.Empty);
         }
 
-        public void CancelPendingPublication()
-        {
-        }
+        public void CancelPendingPublication() { }
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
     }
 
     private sealed class RecordingEddnPublisher : IEddnPublisher
@@ -4508,33 +4118,37 @@ public sealed class MainWindowViewModelTests
 
         public Task<EddnPublicationResult> ApplyAsync(
             EddnApplyRequest request,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             ArgumentNullException.ThrowIfNull(request);
-            Calls.Add(new EddnCall(
-                request.JournalEvents.ToArray(),
-                request.Enabled,
-                request.AllowPublishing,
-                request.AllowSharedData,
-                request.CommanderName,
-                request.FrontierId,
-                request.GameVersion,
-                request.GameBuild));
+            Calls.Add(
+                new EddnCall(
+                    request.JournalEvents.ToArray(),
+                    request.Enabled,
+                    request.AllowPublishing,
+                    request.AllowSharedData,
+                    request.CommanderName,
+                    request.FrontierId,
+                    request.GameVersion,
+                    request.GameBuild
+                )
+            );
             IReadOnlyList<EddnPublishedEvent> published =
-                request.Enabled
-                    && request.AllowPublishing
-                    && request.JournalEvents.Count > 0
-                    ? [new EddnPublishedEvent(
-                        request.JournalEvents[0].EventName,
-                        "https://eddn.edcd.io/schemas/test/1",
-                        UsesTestSchemas: false)]
+                request.Enabled && request.AllowPublishing && request.JournalEvents.Count > 0
+                    ?
+                    [
+                        new EddnPublishedEvent(
+                            request.JournalEvents[0].EventName,
+                            "https://eddn.edcd.io/schemas/test/1",
+                            UsesTestSchemas: false
+                        ),
+                    ]
                     : [];
             return Task.FromResult(new EddnPublicationResult(published, []));
         }
 
-        public void SetEnabled(bool enabled)
-        {
-        }
+        public void SetEnabled(bool enabled) { }
 
         public void SetSuspended(bool suspended)
         {
@@ -4552,18 +4166,20 @@ public sealed class MainWindowViewModelTests
 
         public Task<VoxStellarPublicationResult> ApplyAsync(
             VoxStellarApplyRequest request,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
-            Calls.Add(new VoxStellarCall(
-                request.JournalEvents.ToArray(),
-                request.CommanderName,
-                request.Enabled,
-                request.AllowPublishing));
-            IReadOnlyList<string> queued = request.Enabled
-                && request.AllowPublishing
-                    ? request.JournalEvents
-                        .Select(journalEvent => journalEvent.EventName)
-                        .ToArray()
+            Calls.Add(
+                new VoxStellarCall(
+                    request.JournalEvents.ToArray(),
+                    request.CommanderName,
+                    request.Enabled,
+                    request.AllowPublishing
+                )
+            );
+            IReadOnlyList<string> queued =
+                request.Enabled && request.AllowPublishing
+                    ? request.JournalEvents.Select(journalEvent => journalEvent.EventName).ToArray()
                     : [];
             return Task.FromResult(new VoxStellarPublicationResult(queued, []));
         }
@@ -4578,7 +4194,8 @@ public sealed class MainWindowViewModelTests
         IReadOnlyList<JournalEventEnvelope> Events,
         string? CommanderName,
         bool Enabled,
-        bool AllowPublishing);
+        bool AllowPublishing
+    );
 
     private sealed record EddnCall(
         IReadOnlyList<JournalEventEnvelope> Events,
@@ -4588,10 +4205,10 @@ public sealed class MainWindowViewModelTests
         string? CommanderName,
         string? FrontierId,
         string? GameVersion,
-        string? GameBuild);
+        string? GameBuild
+    );
 
-    private sealed class CountingScreenshotProcessor
-        : IScreenshotProcessingService
+    private sealed class CountingScreenshotProcessor : IScreenshotProcessingService
     {
         public int CallCount { get; private set; }
 
@@ -4603,10 +4220,10 @@ public sealed class MainWindowViewModelTests
             IReadOnlyList<JournalEventEnvelope> journalEvents,
             ScreenshotProcessingPreferences preferences,
             string? commanderName,
-            IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>?
-                guardianContexts = null,
+            IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>? guardianContexts = null,
             ScreenshotNavigationContext? navigationContext = null,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             CallCount++;
             Events = journalEvents;
@@ -4617,8 +4234,8 @@ public sealed class MainWindowViewModelTests
 
     private sealed class StubFirstFootfallInferenceService(
         FirstFootfallInferenceResult result,
-        Exception? disposeException = null)
-        : IFirstFootfallInferenceService
+        Exception? disposeException = null
+    ) : IFirstFootfallInferenceService
     {
         public int CallCount { get; private set; }
 
@@ -4628,7 +4245,8 @@ public sealed class MainWindowViewModelTests
 
         public Task<FirstFootfallInferenceResult> DetectAsync(
             FirstFootfallInferencePreferences preferences,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             CallCount++;
             return Task.FromResult(result);
@@ -4653,8 +4271,6 @@ public sealed class MainWindowViewModelTests
 
         public bool TryActivateNext() => AvailableWindowCount > 1;
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
     }
 }

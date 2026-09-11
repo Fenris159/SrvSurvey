@@ -7,15 +7,14 @@ public sealed class DiagnosticsLogViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-diagnostics-log-{Guid.NewGuid():N}");
+        $"SrvSurvey-diagnostics-log-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void LiveEntriesRefreshTheDiagnosticsSnapshot()
     {
         var log = new ApplicationLogService(temporaryDirectory);
-        using var viewModel = new DiagnosticsLogViewModel(
-            log,
-            action => action());
+        using var viewModel = new DiagnosticsLogViewModel(log, action => action());
 
         log.Append("Journal loaded");
 
@@ -30,9 +29,7 @@ public sealed class DiagnosticsLogViewModelTests : IDisposable
     {
         var log = new ApplicationLogService(temporaryDirectory);
         log.Append("First entry");
-        using var viewModel = new DiagnosticsLogViewModel(
-            log,
-            action => action());
+        using var viewModel = new DiagnosticsLogViewModel(log, action => action());
         string? copied = null;
         viewModel.SetPlatformServices(
             text =>
@@ -40,7 +37,8 @@ public sealed class DiagnosticsLogViewModelTests : IDisposable
                 copied = text;
                 return Task.CompletedTask;
             },
-            null);
+            null
+        );
 
         await viewModel.CopyAsync();
 
@@ -55,9 +53,7 @@ public sealed class DiagnosticsLogViewModelTests : IDisposable
     {
         var log = new ApplicationLogService(temporaryDirectory);
         log.Append("First entry");
-        using var viewModel = new DiagnosticsLogViewModel(
-            log,
-            action => action());
+        using var viewModel = new DiagnosticsLogViewModel(log, action => action());
 
         viewModel.Clear();
 
@@ -70,9 +66,7 @@ public sealed class DiagnosticsLogViewModelTests : IDisposable
     public async Task OpenFolderUsesTheCrossPlatformDirectoryLauncher()
     {
         var log = new ApplicationLogService(temporaryDirectory);
-        using var viewModel = new DiagnosticsLogViewModel(
-            log,
-            action => action());
+        using var viewModel = new DiagnosticsLogViewModel(log, action => action());
         DirectoryInfo? launchedDirectory = null;
         viewModel.SetPlatformServices(
             null,
@@ -80,7 +74,8 @@ public sealed class DiagnosticsLogViewModelTests : IDisposable
             {
                 launchedDirectory = directory;
                 return Task.FromResult(true);
-            });
+            }
+        );
 
         await viewModel.OpenFolderAsync();
 
@@ -91,16 +86,10 @@ public sealed class DiagnosticsLogViewModelTests : IDisposable
     [Fact]
     public void MissingServiceProducesAnExplicitUnavailableState()
     {
-        using var viewModel = new DiagnosticsLogViewModel(
-            null,
-            action => action());
+        using var viewModel = new DiagnosticsLogViewModel(null, action => action());
 
-        Assert.Equal(
-            "No log entries have been recorded for this session.",
-            viewModel.LogText);
-        Assert.Equal(
-            "Application logging is unavailable.",
-            viewModel.SessionDescription);
+        Assert.Equal("No log entries have been recorded for this session.", viewModel.LogText);
+        Assert.Equal("Application logging is unavailable.", viewModel.SessionDescription);
         Assert.False(viewModel.CopyCommand.CanExecute(null));
         Assert.False(viewModel.ClearCommand.CanExecute(null));
         Assert.False(viewModel.OpenFolderCommand.CanExecute(null));

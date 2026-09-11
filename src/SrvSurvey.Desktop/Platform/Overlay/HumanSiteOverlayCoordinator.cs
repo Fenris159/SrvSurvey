@@ -23,23 +23,16 @@ public sealed class HumanSiteOverlayCoordinator : IDisposable
         HumanSiteViewModel humanSite,
         IOverlayPlatformService platform,
         IGameWindowTracker gameWindowTracker,
-        LegacyOverlayLayout? overlayLayout = null)
+        LegacyOverlayLayout? overlayLayout = null
+    )
     {
-        this.humanSite = humanSite
-            ?? throw new ArgumentNullException(nameof(humanSite));
-        this.platform = platform
-            ?? throw new ArgumentNullException(nameof(platform));
-        this.gameWindowTracker = gameWindowTracker
-            ?? throw new ArgumentNullException(nameof(gameWindowTracker));
+        this.humanSite = humanSite ?? throw new ArgumentNullException(nameof(humanSite));
+        this.platform = platform ?? throw new ArgumentNullException(nameof(platform));
+        this.gameWindowTracker = gameWindowTracker ?? throw new ArgumentNullException(nameof(gameWindowTracker));
         this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
-        viewModel = new HumanSiteOverlayViewModel(
-            humanSite,
-            platform.Capabilities);
+        viewModel = new HumanSiteOverlayViewModel(humanSite, platform.Capabilities);
         humanSite.PropertyChanged += OnHumanSitePropertyChanged;
-        timer = new OverlayDispatcherTimer
-        {
-            Interval = TimeSpan.FromMilliseconds(250),
-        };
+        timer = new OverlayDispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
         timer.Tick += OnTimerTick;
         timer.Start();
         SynchronizeWindow();
@@ -115,14 +108,15 @@ public sealed class HumanSiteOverlayCoordinator : IDisposable
         SynchronizeWindow();
     }
 
-    private void OnHumanSitePropertyChanged(
-        object? sender,
-        PropertyChangedEventArgs eventArgs)
+    private void OnHumanSitePropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
-        if (eventArgs.PropertyName is nameof(HumanSiteViewModel.ShouldShow)
-            or nameof(HumanSiteViewModel.IsHuge)
-            or nameof(HumanSiteViewModel.PreferredWidth)
-            or nameof(HumanSiteViewModel.PreferredHeight))
+        if (
+            eventArgs.PropertyName
+            is nameof(HumanSiteViewModel.ShouldShow)
+                or nameof(HumanSiteViewModel.IsHuge)
+                or nameof(HumanSiteViewModel.PreferredWidth)
+                or nameof(HumanSiteViewModel.PreferredHeight)
+        )
         {
             SynchronizeWindow();
         }
@@ -136,14 +130,16 @@ public sealed class HumanSiteOverlayCoordinator : IDisposable
         }
 
         gameWindow = gameWindowTracker.GetSnapshot();
-        if (isSuppressed
+        if (
+            isSuppressed
             || !humanSite.ShouldShow
             || !platform.Capabilities.SupportsPassiveOverlay
             || !platform.Capabilities.SupportsClickThrough
             || !platform.Capabilities.SupportsGameWindowTracking
             || !gameWindow.IsAvailable
             || !gameWindow.IsVisible
-            || !gameWindow.IsForeground)
+            || !gameWindow.IsForeground
+        )
         {
             CloseWindow();
             return;
@@ -183,40 +179,24 @@ public sealed class HumanSiteOverlayCoordinator : IDisposable
 
     private void SizeAndPositionWindow(Window overlay, PixelRect gameBounds)
     {
-        OverlayThemeResources.ApplyOpacity(
-            overlay,
-            overlayLayout,
-            "PlotHumanSite");
-        var screen = overlay.Screens.ScreenFromBounds(gameBounds)
-            ?? overlay.Screens.Primary;
+        OverlayThemeResources.ApplyOpacity(overlay, overlayLayout, "PlotHumanSite");
+        var screen = overlay.Screens.ScreenFromBounds(gameBounds) ?? overlay.Screens.Primary;
         if (screen is null)
         {
             return;
         }
 
-        var logicalWidth = humanSite.IsHuge
-            ? gameBounds.Width * 0.4 / screen.Scaling
-            : humanSite.PreferredWidth;
-        var logicalHeight = humanSite.IsHuge
-            ? gameBounds.Height * 0.9 / screen.Scaling
-            : humanSite.PreferredHeight;
-        OverlayThemeResources.SetBaseSize(
-            overlay,
-            overlayLayout,
-            logicalWidth,
-            logicalHeight);
+        var logicalWidth = humanSite.IsHuge ? gameBounds.Width * 0.4 / screen.Scaling : humanSite.PreferredWidth;
+        var logicalHeight = humanSite.IsHuge ? gameBounds.Height * 0.9 / screen.Scaling : humanSite.PreferredHeight;
+        OverlayThemeResources.SetBaseSize(overlay, overlayLayout, logicalWidth, logicalHeight);
 
         var pixelSize = new PixelSize(
             Math.Max(1, (int)Math.Ceiling(overlay.Width * screen.Scaling)),
-            Math.Max(1, (int)Math.Ceiling(overlay.Height * screen.Scaling)));
-        var position = overlayLayout.GetPosition(
-                "PlotHumanSite",
-                gameBounds,
-                pixelSize)
-            ?? OverlayWindowPlacement.MiddleLeft(
-                gameBounds,
-                pixelSize,
-                margin: 8);
+            Math.Max(1, (int)Math.Ceiling(overlay.Height * screen.Scaling))
+        );
+        var position =
+            overlayLayout.GetPosition("PlotHumanSite", gameBounds, pixelSize)
+            ?? OverlayWindowPlacement.MiddleLeft(gameBounds, pixelSize, margin: 8);
         if (overlay.Position != position)
         {
             overlay.Position = position;

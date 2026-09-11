@@ -13,8 +13,7 @@ public sealed partial class StreamOverlayWindow : Window
         InitializeComponent();
     }
 
-    public void ReplaceFrames(
-        IReadOnlyList<StreamOverlayRenderedFrame> renderedFrames)
+    public void ReplaceFrames(IReadOnlyList<StreamOverlayRenderedFrame> renderedFrames)
     {
         ArgumentNullException.ThrowIfNull(renderedFrames);
         var previous = frames;
@@ -50,4 +49,5 @@ public sealed partial class StreamOverlayWindow : Window
 public sealed record StreamOverlayRenderedFrame(
     RenderTargetBitmap Bitmap,
     StreamOverlayFrame Projection,
-    double Opacity = 1d);
+    double Opacity = 1d
+);

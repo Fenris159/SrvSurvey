@@ -14,12 +14,12 @@ public sealed class OverlayPanelVisibilitySettingsStore
 
     public IReadOnlyDictionary<string, bool> Load()
     {
-        var stored = documentStore.Load()["OverlayPanelVisibility"]
-            as JsonObject;
+        var stored = documentStore.Load()["OverlayPanelVisibility"] as JsonObject;
         return OverlayLayoutCatalog.Supported.ToDictionary(
             definition => definition.Name,
             definition => GetBoolean(stored, definition.Name, fallback: true),
-            StringComparer.Ordinal);
+            StringComparer.Ordinal
+        );
     }
 
     public void Save(IReadOnlyDictionary<string, bool> visibility)
@@ -34,26 +34,19 @@ public sealed class OverlayPanelVisibilitySettingsStore
                 root["OverlayPanelVisibility"] = settings;
             }
 
-            foreach (var plotterName in OverlayLayoutCatalog.Supported.Select(
-                         definition => definition.Name))
+            foreach (var plotterName in OverlayLayoutCatalog.Supported.Select(definition => definition.Name))
             {
-                settings[plotterName] = visibility.GetValueOrDefault(
-                    plotterName,
-                    true);
+                settings[plotterName] = visibility.GetValueOrDefault(plotterName, true);
             }
 
             root["Version"] = 1;
         });
     }
 
-    private static bool GetBoolean(
-        JsonObject? settings,
-        string propertyName,
-        bool fallback)
+    private static bool GetBoolean(JsonObject? settings, string propertyName, bool fallback)
     {
-        return settings?[propertyName] is JsonValue value
-            && value.TryGetValue<bool>(out var result)
-                ? result
-                : fallback;
+        return settings?[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result)
+            ? result
+            : fallback;
     }
 }

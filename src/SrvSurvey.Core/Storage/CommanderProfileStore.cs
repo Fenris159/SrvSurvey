@@ -12,16 +12,14 @@ namespace SrvSurvey.Core.Storage;
 [System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Design",
     "CA1001:Types that own disposable fields should be disposable",
-    Justification = "The store is profile-scoped and its semaphore may still have in-flight waiters.")]
+    Justification = "The store is profile-scoped and its semaphore may still have in-flight waiters."
+)]
 public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearchProfileStore
 {
     private const string ExplorationRewardsBySystemProperty = "explRewardsBySystem";
     private const string ActiveProperty = "active";
     private const string RadiusProperty = "radius";
-    private static readonly JsonSerializerOptions SerializerOptions = new()
-    {
-        WriteIndented = true,
-    };
+    private static readonly JsonSerializerOptions SerializerOptions = new() { WriteIndented = true };
 
     private readonly SemaphoreSlim saveLock = new(1, 1);
 
@@ -37,7 +35,8 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
     public async Task<CommanderProfileLoadResult> LoadAsync(
         string frontierId,
         bool isOdyssey,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var path = GetProfilePath(frontierId, isOdyssey);
         if (!File.Exists(path))
@@ -54,19 +53,16 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
                     SphereLimitSnapshot.Empty,
                     BoxelSearchSnapshot.Empty,
                     RamTahSnapshot.Empty,
-                    CombatSnapshot.Empty),
-                null);
+                    CombatSnapshot.Empty
+                ),
+                null
+            );
         }
 
-        var readResult = await ReadObjectAsync(path, cancellationToken)
-            .ConfigureAwait(false);
+        var readResult = await ReadObjectAsync(path, cancellationToken).ConfigureAwait(false);
         if (readResult.Root is null)
         {
-            return new CommanderProfileLoadResult(
-                path,
-                true,
-                null,
-                readResult.Error);
+            return new CommanderProfileLoadResult(path, true, null, readResult.Error);
         }
 
         var root = readResult.Root;
@@ -81,7 +77,8 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
                 GetInt32(root, "countScans") ?? 0,
                 GetInt32(root, "countDSS") ?? 0,
                 GetInt32(root, "countLanded") ?? 0,
-                ReadExplorationRewardsBySystem(root)),
+                ReadExplorationRewardsBySystem(root)
+            ),
             ReadExobiology(root),
             ReadSphereLimit(root),
             ReadBoxelSearch(root),
@@ -91,7 +88,8 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
             GetString(root, "activeJourney"),
             GetString(root, "inaraApiKey"),
             GetString(root, "edsmCommanderName"),
-            GetString(root, "edsmApiKey"));
+            GetString(root, "edsmApiKey")
+        );
         return new CommanderProfileLoadResult(path, true, data, null);
     }
 
@@ -100,24 +98,27 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
         string? commanderName,
         bool isOdyssey,
         ExplorationSnapshot exploration,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentNullException.ThrowIfNull(exploration);
         await SaveFieldsAsync(
-            frontierId,
-            commanderName,
-            isOdyssey,
-            root =>
-            {
-                root["explRewards"] = exploration.EstimatedRewards;
-                root["distanceTravelled"] = exploration.DistanceTravelled;
-                root["countJumps"] = exploration.JumpCount;
-                root["countScans"] = exploration.ScanCount;
-                root["countDSS"] = exploration.DetailedSurfaceScanCount;
-                root["countLanded"] = exploration.LandedBodyCount;
-                WriteExplorationRewardsBySystem(root, exploration);
-            },
-            cancellationToken).ConfigureAwait(false);
+                frontierId,
+                commanderName,
+                isOdyssey,
+                root =>
+                {
+                    root["explRewards"] = exploration.EstimatedRewards;
+                    root["distanceTravelled"] = exploration.DistanceTravelled;
+                    root["countJumps"] = exploration.JumpCount;
+                    root["countScans"] = exploration.ScanCount;
+                    root["countDSS"] = exploration.DetailedSurfaceScanCount;
+                    root["countLanded"] = exploration.LandedBodyCount;
+                    WriteExplorationRewardsBySystem(root, exploration);
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
     }
 
     public async Task SaveExobiologyAsync(
@@ -125,29 +126,32 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
         string? commanderName,
         bool isOdyssey,
         ExobiologySnapshot exobiology,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentNullException.ThrowIfNull(exobiology);
         await SaveFieldsAsync(
-            frontierId,
-            commanderName,
-            isOdyssey,
-            root =>
-            {
-                root["lastOrganicScan"] = exobiology.LastOrganicScan;
-                WriteBioSample(root, "scanOne", exobiology.ScanOne);
-                WriteBioSample(root, "scanTwo", exobiology.ScanTwo);
-                root["organicRewards"] = exobiology.OrganicRewards;
-                var scannedIds = new JsonArray();
-                foreach (var entry in exobiology.ScannedBioEntryIds)
+                frontierId,
+                commanderName,
+                isOdyssey,
+                root =>
                 {
-                    scannedIds.Add(entry);
-                }
+                    root["lastOrganicScan"] = exobiology.LastOrganicScan;
+                    WriteBioSample(root, "scanOne", exobiology.ScanOne);
+                    WriteBioSample(root, "scanTwo", exobiology.ScanTwo);
+                    root["organicRewards"] = exobiology.OrganicRewards;
+                    var scannedIds = new JsonArray();
+                    foreach (var entry in exobiology.ScannedBioEntryIds)
+                    {
+                        scannedIds.Add(entry);
+                    }
 
-                root["scannedBioEntryIds"] = scannedIds;
-                root["countRadicoidaUnica"] = exobiology.CountRadicoidaUnica;
-            },
-            cancellationToken).ConfigureAwait(false);
+                    root["scannedBioEntryIds"] = scannedIds;
+                    root["countRadicoidaUnica"] = exobiology.CountRadicoidaUnica;
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
     }
 
     public async Task SaveSphereLimitAsync(
@@ -155,15 +159,18 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
         string? commanderName,
         bool isOdyssey,
         SphereLimitSnapshot sphereLimit,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentNullException.ThrowIfNull(sphereLimit);
         await SaveFieldsAsync(
-            frontierId,
-            commanderName,
-            isOdyssey,
-            root => WriteSphereLimit(root, sphereLimit),
-            cancellationToken).ConfigureAwait(false);
+                frontierId,
+                commanderName,
+                isOdyssey,
+                root => WriteSphereLimit(root, sphereLimit),
+                cancellationToken
+            )
+            .ConfigureAwait(false);
     }
 
     public async Task SaveBoxelSearchAsync(
@@ -171,15 +178,18 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
         string? commanderName,
         bool isOdyssey,
         BoxelSearchSnapshot boxelSearch,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentNullException.ThrowIfNull(boxelSearch);
         await SaveFieldsAsync(
-            frontierId,
-            commanderName,
-            isOdyssey,
-            root => WriteBoxelSearch(root, boxelSearch),
-            cancellationToken).ConfigureAwait(false);
+                frontierId,
+                commanderName,
+                isOdyssey,
+                root => WriteBoxelSearch(root, boxelSearch),
+                cancellationToken
+            )
+            .ConfigureAwait(false);
     }
 
     public async Task SaveRamTahAsync(
@@ -187,15 +197,18 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
         string? commanderName,
         bool isOdyssey,
         RamTahSnapshot ramTah,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentNullException.ThrowIfNull(ramTah);
         await SaveFieldsAsync(
-            frontierId,
-            commanderName,
-            isOdyssey,
-            root => WriteRamTah(root, ramTah),
-            cancellationToken).ConfigureAwait(false);
+                frontierId,
+                commanderName,
+                isOdyssey,
+                root => WriteRamTah(root, ramTah),
+                cancellationToken
+            )
+            .ConfigureAwait(false);
     }
 
     public async Task SaveCombatAsync(
@@ -203,15 +216,18 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
         string? commanderName,
         bool isOdyssey,
         CombatSnapshot combat,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentNullException.ThrowIfNull(combat);
         await SaveFieldsAsync(
-            frontierId,
-            commanderName,
-            isOdyssey,
-            root => WriteCombat(root, combat),
-            cancellationToken).ConfigureAwait(false);
+                frontierId,
+                commanderName,
+                isOdyssey,
+                root => WriteCombat(root, combat),
+                cancellationToken
+            )
+            .ConfigureAwait(false);
     }
 
     public async Task SaveRavenColonialApiKeyAsync(
@@ -219,27 +235,28 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
         string? commanderName,
         bool isOdyssey,
         string? apiKey,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        var normalized = string.IsNullOrWhiteSpace(apiKey)
-            ? null
-            : apiKey.Trim();
+        var normalized = string.IsNullOrWhiteSpace(apiKey) ? null : apiKey.Trim();
         await SaveFieldsAsync(
-            frontierId,
-            commanderName,
-            isOdyssey,
-            root =>
-            {
-                if (normalized is null)
+                frontierId,
+                commanderName,
+                isOdyssey,
+                root =>
                 {
-                    root.Remove("rccApiKey");
-                }
-                else
-                {
-                    root["rccApiKey"] = normalized;
-                }
-            },
-            cancellationToken).ConfigureAwait(false);
+                    if (normalized is null)
+                    {
+                        root.Remove("rccApiKey");
+                    }
+                    else
+                    {
+                        root["rccApiKey"] = normalized;
+                    }
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
     }
 
     public async Task SaveInaraApiKeyAsync(
@@ -247,27 +264,28 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
         string? commanderName,
         bool isOdyssey,
         string? apiKey,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        var normalized = string.IsNullOrWhiteSpace(apiKey)
-            ? null
-            : apiKey.Trim();
+        var normalized = string.IsNullOrWhiteSpace(apiKey) ? null : apiKey.Trim();
         await SaveFieldsAsync(
-            frontierId,
-            commanderName,
-            isOdyssey,
-            root =>
-            {
-                if (normalized is null)
+                frontierId,
+                commanderName,
+                isOdyssey,
+                root =>
                 {
-                    root.Remove("inaraApiKey");
-                }
-                else
-                {
-                    root["inaraApiKey"] = normalized;
-                }
-            },
-            cancellationToken).ConfigureAwait(false);
+                    if (normalized is null)
+                    {
+                        root.Remove("inaraApiKey");
+                    }
+                    else
+                    {
+                        root["inaraApiKey"] = normalized;
+                    }
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
     }
 
     public async Task SaveEdsmCredentialsAsync(
@@ -276,33 +294,31 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
         bool isOdyssey,
         string? edsmCommanderName,
         string? apiKey,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        var normalizedCommanderName = string.IsNullOrWhiteSpace(
-            edsmCommanderName)
-                ? null
-                : edsmCommanderName.Trim();
-        var normalizedApiKey = string.IsNullOrWhiteSpace(apiKey)
-            ? null
-            : apiKey.Trim();
+        var normalizedCommanderName = string.IsNullOrWhiteSpace(edsmCommanderName) ? null : edsmCommanderName.Trim();
+        var normalizedApiKey = string.IsNullOrWhiteSpace(apiKey) ? null : apiKey.Trim();
         await SaveFieldsAsync(
-            frontierId,
-            commanderName,
-            isOdyssey,
-            root =>
-            {
-                if (normalizedCommanderName is null || normalizedApiKey is null)
+                frontierId,
+                commanderName,
+                isOdyssey,
+                root =>
                 {
-                    root.Remove("edsmCommanderName");
-                    root.Remove("edsmApiKey");
-                }
-                else
-                {
-                    root["edsmCommanderName"] = normalizedCommanderName;
-                    root["edsmApiKey"] = normalizedApiKey;
-                }
-            },
-            cancellationToken).ConfigureAwait(false);
+                    if (normalizedCommanderName is null || normalizedApiKey is null)
+                    {
+                        root.Remove("edsmCommanderName");
+                        root.Remove("edsmApiKey");
+                    }
+                    else
+                    {
+                        root["edsmCommanderName"] = normalizedCommanderName;
+                        root["edsmApiKey"] = normalizedApiKey;
+                    }
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
     }
 
     public async Task SaveActiveJourneyAsync(
@@ -310,27 +326,28 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
         string? commanderName,
         bool isOdyssey,
         string? journeyFileName,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        var normalized = string.IsNullOrWhiteSpace(journeyFileName)
-            ? null
-            : journeyFileName.Trim();
+        var normalized = string.IsNullOrWhiteSpace(journeyFileName) ? null : journeyFileName.Trim();
         await SaveFieldsAsync(
-            frontierId,
-            commanderName,
-            isOdyssey,
-            root =>
-            {
-                if (normalized is null)
+                frontierId,
+                commanderName,
+                isOdyssey,
+                root =>
                 {
-                    root.Remove("activeJourney");
-                }
-                else
-                {
-                    root["activeJourney"] = normalized;
-                }
-            },
-            cancellationToken).ConfigureAwait(false);
+                    if (normalized is null)
+                    {
+                        root.Remove("activeJourney");
+                    }
+                    else
+                    {
+                        root["activeJourney"] = normalized;
+                    }
+                },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
     }
 
     private async Task SaveFieldsAsync(
@@ -338,7 +355,8 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
         string? commanderName,
         bool isOdyssey,
         Action<JsonObject> update,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
@@ -347,12 +365,12 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
             JsonObject root;
             if (File.Exists(path))
             {
-                var readResult = await ReadObjectAsync(path, cancellationToken)
-                    .ConfigureAwait(false);
-                root = readResult.Root
+                var readResult = await ReadObjectAsync(path, cancellationToken).ConfigureAwait(false);
+                root =
+                    readResult.Root
                     ?? throw new InvalidDataException(
-                        $"The commander profile is malformed and was not overwritten: "
-                            + readResult.Error);
+                        $"The commander profile is malformed and was not overwritten: " + readResult.Error
+                    );
             }
             else
             {
@@ -378,19 +396,19 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
             var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
             try
             {
-                await using (var stream = new FileStream(
-                                 temporaryPath,
-                                 FileMode.CreateNew,
-                                 FileAccess.Write,
-                                 FileShare.None,
-                                 16 * 1024,
-                                 FileOptions.Asynchronous))
+                await using (
+                    var stream = new FileStream(
+                        temporaryPath,
+                        FileMode.CreateNew,
+                        FileAccess.Write,
+                        FileShare.None,
+                        16 * 1024,
+                        FileOptions.Asynchronous
+                    )
+                )
                 {
-                    await JsonSerializer.SerializeAsync(
-                            stream,
-                            root,
-                            SerializerOptions,
-                            cancellationToken)
+                    await JsonSerializer
+                        .SerializeAsync(stream, root, SerializerOptions, cancellationToken)
                         .ConfigureAwait(false);
                     await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
                 }
@@ -419,11 +437,11 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
             ReadBioSample(root, "scanTwo"),
             GetInt64(root, "organicRewards") ?? 0,
             ReadStringArray(root, "scannedBioEntryIds"),
-            GetInt32(root, "countRadicoidaUnica") ?? 0);
+            GetInt32(root, "countRadicoidaUnica") ?? 0
+        );
     }
 
-    private static Dictionary<string, long>?
-        ReadExplorationRewardsBySystem(JsonObject root)
+    private static Dictionary<string, long>? ReadExplorationRewardsBySystem(JsonObject root)
     {
         if (root[ExplorationRewardsBySystemProperty] is not JsonObject rewardsBySystem)
         {
@@ -433,10 +451,12 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
         var result = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
         foreach (var entry in rewardsBySystem)
         {
-            if (string.IsNullOrWhiteSpace(entry.Key)
+            if (
+                string.IsNullOrWhiteSpace(entry.Key)
                 || entry.Value is not JsonValue value
                 || !value.TryGetValue<long>(out var reward)
-                || reward <= 0)
+                || reward <= 0
+            )
             {
                 continue;
             }
@@ -448,9 +468,7 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
         return result.Count == 0 ? null : result;
     }
 
-    private static void WriteExplorationRewardsBySystem(
-        JsonObject root,
-        ExplorationSnapshot exploration)
+    private static void WriteExplorationRewardsBySystem(JsonObject root, ExplorationSnapshot exploration)
     {
         root.Remove(ExplorationRewardsBySystemProperty);
         if (exploration.EstimatedRewardsBySystem is not { Count: > 0 } rewards)
@@ -458,20 +476,18 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
             return;
         }
 
-        var normalizedRewards = new Dictionary<string, long>(
-            StringComparer.OrdinalIgnoreCase);
-        foreach (var entry in rewards
-                     .Where(entry => !string.IsNullOrWhiteSpace(entry.Key)
-                         && entry.Value > 0))
+        var normalizedRewards = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
+        foreach (var entry in rewards.Where(entry => !string.IsNullOrWhiteSpace(entry.Key) && entry.Value > 0))
         {
             var systemName = entry.Key.Trim();
-            normalizedRewards[systemName] =
-                AddRewardsClamped(normalizedRewards.GetValueOrDefault(systemName), entry.Value);
+            normalizedRewards[systemName] = AddRewardsClamped(
+                normalizedRewards.GetValueOrDefault(systemName),
+                entry.Value
+            );
         }
 
         var rewardsBySystem = new JsonObject();
-        foreach (var entry in normalizedRewards
-                     .OrderBy(entry => entry.Key, StringComparer.OrdinalIgnoreCase))
+        foreach (var entry in normalizedRewards.OrderBy(entry => entry.Key, StringComparer.OrdinalIgnoreCase))
         {
             rewardsBySystem[entry.Key] = entry.Value;
         }
@@ -492,13 +508,13 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
             return SphereLimitSnapshot.Empty;
         }
 
-        var radius = GetDouble(sphere, RadiusProperty)
-            ?? SphereLimitState.DefaultRadius;
+        var radius = GetDouble(sphere, RadiusProperty) ?? SphereLimitState.DefaultRadius;
         return new SphereLimitSnapshot(
             GetBoolean(sphere, ActiveProperty) ?? false,
             GetString(sphere, "centerSystemName"),
             ReadGalacticCoordinate(sphere, "centerStarPos"),
-            radius);
+            radius
+        );
     }
 
     private static BoxelSearchSnapshot ReadBoxelSearch(JsonObject root)
@@ -508,22 +524,15 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
             return BoxelSearchSnapshot.Empty;
         }
 
-        _ = BoxelAddress.TryParse(
-            GetString(boxelSearch, "boxel"),
-            out var topBoxel);
-        _ = BoxelAddress.TryParse(
-            GetString(boxelSearch, "current"),
-            out var current);
+        _ = BoxelAddress.TryParse(GetString(boxelSearch, "boxel"), out var topBoxel);
+        _ = BoxelAddress.TryParse(GetString(boxelSearch, "current"), out var current);
         var lowMassCodeText = GetString(boxelSearch, "lowMassCode");
-        var lowMassCode = string.IsNullOrWhiteSpace(lowMassCodeText)
-            ? 'c'
-            : char.ToLowerInvariant(lowMassCodeText[0]);
+        var lowMassCode = string.IsNullOrWhiteSpace(lowMassCodeText) ? 'c' : char.ToLowerInvariant(lowMassCodeText[0]);
         return new BoxelSearchSnapshot
         {
             Active = GetBoolean(boxelSearch, ActiveProperty) ?? false,
             TopBoxel = topBoxel,
-            StartedOn = GetDateTimeOffset(boxelSearch, "startedOn")
-                ?? DateTimeOffset.MinValue,
+            StartedOn = GetDateTimeOffset(boxelSearch, "startedOn") ?? DateTimeOffset.MinValue,
             Current = current,
             CurrentCount = GetInt32(boxelSearch, "currentCount") ?? 0,
             LowMassCode = lowMassCode,
@@ -531,19 +540,18 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
             CompletedSystems = ReadStringArray(boxelSearch, "completedSystems"),
             EmptySystems = ReadStringArray(boxelSearch, "emptySystems"),
             DeferredSystems = ReadStringArray(boxelSearch, "deferredSystems"),
-            DeferredRanges = BoxelDeferredRangeJson.Read(
-                boxelSearch,
-                "deferredRanges"),
+            DeferredRanges = BoxelDeferredRangeJson.Read(boxelSearch, "deferredRanges"),
             ProgressByPrefix = ReadBoxelProgress(boxelSearch),
             AutoCopy = GetBoolean(boxelSearch, "autoCopy") ?? false,
             SortDescending = GetBoolean(boxelSearch, "sortDescending") ?? false,
             Collapsed = GetBoolean(boxelSearch, "collapsed") ?? false,
             SkipAlreadyVisited = GetBoolean(boxelSearch, "skipAlreadyVisited") ?? false,
             SkipKnownToSpansh = GetBoolean(boxelSearch, "skipKnownToSpansh") ?? false,
-            CompletionMode = GetBoolean(boxelSearch, "completeOnFssAllBodies") == true
-                ? BoxelCompletionMode.FssAllBodies
-                : BoxelCompletionMode.EnterSystem,
-            SavedSearchFileName = GetString(boxelSearch, "savedSearchFileName")
+            CompletionMode =
+                GetBoolean(boxelSearch, "completeOnFssAllBodies") == true
+                    ? BoxelCompletionMode.FssAllBodies
+                    : BoxelCompletionMode.EnterSystem,
+            SavedSearchFileName = GetString(boxelSearch, "savedSearchFileName"),
         };
     }
 
@@ -553,7 +561,8 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
             ReadRamTahStatus(root, "decodeTheRuinsMissionActive"),
             ReadRamTahStatus(root, "decodeTheLogsMissionActive"),
             ReadStringArray(root, "decodeTheRuins"),
-            ReadStringArray(root, "decodeTheLogs"));
+            ReadStringArray(root, "decodeTheLogs")
+        );
     }
 
     private static CombatSnapshot ReadCombat(JsonObject root)
@@ -571,18 +580,19 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
                 GetString(mission, "targetFaction") ?? string.Empty,
                 GetDateTimeOffset(mission, "expires"),
                 Math.Max(0, GetInt32(mission, "killCount") ?? 0),
-                Math.Max(0, GetInt32(mission, "remaining") ?? 0)))
-            .Where(mission => mission.MissionId > 0
+                Math.Max(0, GetInt32(mission, "remaining") ?? 0)
+            ))
+            .Where(mission =>
+                mission.MissionId > 0
                 && !string.IsNullOrWhiteSpace(mission.MissionGiver)
-                && !string.IsNullOrWhiteSpace(mission.TargetFaction))
+                && !string.IsNullOrWhiteSpace(mission.TargetFaction)
+            )
             .DistinctBy(mission => mission.MissionId)
             .ToArray();
         return new CombatSnapshot(missions);
     }
 
-    private static RamTahMissionStatus ReadRamTahStatus(
-        JsonObject root,
-        string propertyName)
+    private static RamTahMissionStatus ReadRamTahStatus(JsonObject root, string propertyName)
     {
         var text = GetString(root, propertyName);
         if (Enum.TryParse<RamTahMissionStatus>(text, true, out var status))
@@ -591,15 +601,12 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
         }
 
         var number = GetInt32(root, propertyName);
-        return number is not null
-            && Enum.IsDefined(typeof(RamTahMissionStatus), number.Value)
-                ? (RamTahMissionStatus)number.Value
-                : RamTahMissionStatus.NotStarted;
+        return number is not null && Enum.IsDefined(typeof(RamTahMissionStatus), number.Value)
+            ? (RamTahMissionStatus)number.Value
+            : RamTahMissionStatus.NotStarted;
     }
 
-    private static GalacticCoordinate? ReadGalacticCoordinate(
-        JsonObject root,
-        string propertyName)
+    private static GalacticCoordinate? ReadGalacticCoordinate(JsonObject root, string propertyName)
     {
         if (root[propertyName] is not JsonArray array || array.Count < 3)
         {
@@ -608,19 +615,12 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
 
         var values = array
             .Take(3)
-            .Select(node => node is JsonValue value
-                && value.TryGetValue<double>(out var number)
-                    ? number
-                    : double.NaN)
+            .Select(node => node is JsonValue value && value.TryGetValue<double>(out var number) ? number : double.NaN)
             .ToArray();
-        return values.All(double.IsFinite)
-            ? new GalacticCoordinate(values[0], values[1], values[2])
-            : null;
+        return values.All(double.IsFinite) ? new GalacticCoordinate(values[0], values[1], values[2]) : null;
     }
 
-    private static void WriteSphereLimit(
-        JsonObject root,
-        SphereLimitSnapshot sphereLimit)
+    private static void WriteSphereLimit(JsonObject root, SphereLimitSnapshot sphereLimit)
     {
         if (root["sphereLimit"] is not JsonObject node)
         {
@@ -630,15 +630,11 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
 
         node[ActiveProperty] = sphereLimit.Active;
         node["centerSystemName"] = sphereLimit.CenterSystemName;
-        node["centerStarPos"] = sphereLimit.Center is { } center
-            ? new JsonArray(center.X, center.Y, center.Z)
-            : null;
+        node["centerStarPos"] = sphereLimit.Center is { } center ? new JsonArray(center.X, center.Y, center.Z) : null;
         node[RadiusProperty] = sphereLimit.Radius;
     }
 
-    private static void WriteBoxelSearch(
-        JsonObject root,
-        BoxelSearchSnapshot boxelSearch)
+    private static void WriteBoxelSearch(JsonObject root, BoxelSearchSnapshot boxelSearch)
     {
         if (boxelSearch.TopBoxel is null)
         {
@@ -659,20 +655,12 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
         node["currentCount"] = boxelSearch.CurrentCount;
         node["lowMassCode"] = boxelSearch.LowMassCode.ToString();
         node["completed"] = WriteStringArray(boxelSearch.CompletedPrefixes);
-        node["completedSystems"] = WriteStringArray(
-            boxelSearch.CompletedSystems,
-            excludeBlankValues: true);
-        node["emptySystems"] = WriteStringArray(
-            boxelSearch.EmptySystems,
-            excludeBlankValues: true);
-        node["deferredSystems"] = WriteStringArray(
-            boxelSearch.DeferredSystems,
-            excludeBlankValues: true);
-        node["deferredRanges"] = BoxelDeferredRangeJson.Write(
-            boxelSearch.DeferredRanges);
+        node["completedSystems"] = WriteStringArray(boxelSearch.CompletedSystems, excludeBlankValues: true);
+        node["emptySystems"] = WriteStringArray(boxelSearch.EmptySystems, excludeBlankValues: true);
+        node["deferredSystems"] = WriteStringArray(boxelSearch.DeferredSystems, excludeBlankValues: true);
+        node["deferredRanges"] = BoxelDeferredRangeJson.Write(boxelSearch.DeferredRanges);
         var progress = new JsonObject();
-        foreach (var entry in boxelSearch.ProgressByPrefix
-                     .OrderBy(entry => entry.Key, StringComparer.Ordinal))
+        foreach (var entry in boxelSearch.ProgressByPrefix.OrderBy(entry => entry.Key, StringComparer.Ordinal))
         {
             progress[entry.Key] = entry.Value;
         }
@@ -683,13 +671,11 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
         node["collapsed"] = boxelSearch.Collapsed;
         node["skipAlreadyVisited"] = boxelSearch.SkipAlreadyVisited;
         node["skipKnownToSpansh"] = boxelSearch.SkipKnownToSpansh;
-        node["completeOnFssAllBodies"] =
-            boxelSearch.CompletionMode == BoxelCompletionMode.FssAllBodies;
+        node["completeOnFssAllBodies"] = boxelSearch.CompletionMode == BoxelCompletionMode.FssAllBodies;
         node["savedSearchFileName"] = boxelSearch.SavedSearchFileName;
     }
 
-    private static Dictionary<string, int> ReadBoxelProgress(
-        JsonObject boxelSearch)
+    private static Dictionary<string, int> ReadBoxelProgress(JsonObject boxelSearch)
     {
         if (boxelSearch["progress"] is not JsonObject progress)
         {
@@ -699,9 +685,11 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
         var result = new Dictionary<string, int>(StringComparer.Ordinal);
         foreach (var entry in progress)
         {
-            if (!string.IsNullOrWhiteSpace(entry.Key)
+            if (
+                !string.IsNullOrWhiteSpace(entry.Key)
                 && entry.Value is JsonValue value
-                && value.TryGetValue<int>(out var count))
+                && value.TryGetValue<int>(out var count)
+            )
             {
                 result[entry.Key] = count;
             }
@@ -712,10 +700,8 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
 
     private static void WriteRamTah(JsonObject root, RamTahSnapshot ramTah)
     {
-        root["decodeTheRuinsMissionActive"] =
-            ramTah.AncientRuinsMissionStatus.ToString();
-        root["decodeTheLogsMissionActive"] =
-            ramTah.GuardianLogsMissionStatus.ToString();
+        root["decodeTheRuinsMissionActive"] = ramTah.AncientRuinsMissionStatus.ToString();
+        root["decodeTheLogsMissionActive"] = ramTah.GuardianLogsMissionStatus.ToString();
         root["decodeTheRuins"] = WriteStringArray(ramTah.AncientRuinsLogs);
         root["decodeTheLogs"] = WriteStringArray(ramTah.GuardianLogs);
     }
@@ -731,30 +717,31 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
         var missions = new JsonArray();
         foreach (var mission in combat.MassacreMissions)
         {
-            missions.Add(new JsonObject
-            {
-                ["missionId"] = mission.MissionId,
-                ["missionGiver"] = mission.MissionGiver,
-                ["targetFaction"] = mission.TargetFaction,
-                ["expires"] = mission.Expires,
-                ["killCount"] = mission.KillCount,
-                ["remaining"] = mission.Remaining,
-            });
+            missions.Add(
+                new JsonObject
+                {
+                    ["missionId"] = mission.MissionId,
+                    ["missionGiver"] = mission.MissionGiver,
+                    ["targetFaction"] = mission.TargetFaction,
+                    ["expires"] = mission.Expires,
+                    ["killCount"] = mission.KillCount,
+                    ["remaining"] = mission.Remaining,
+                }
+            );
         }
 
         root["trackMassacres"] = missions;
     }
 
-    private static JsonArray WriteStringArray(
-        IEnumerable<string> values,
-        bool excludeBlankValues = false)
+    private static JsonArray WriteStringArray(IEnumerable<string> values, bool excludeBlankValues = false)
     {
         var array = new JsonArray();
-        foreach (var value in values
-                     .Where(value => !excludeBlankValues
-                         || !string.IsNullOrWhiteSpace(value))
-                     .Distinct(StringComparer.Ordinal)
-                     .Order(StringComparer.Ordinal))
+        foreach (
+            var value in values
+                .Where(value => !excludeBlankValues || !string.IsNullOrWhiteSpace(value))
+                .Distinct(StringComparer.Ordinal)
+                .Order(StringComparer.Ordinal)
+        )
         {
             array.Add(value);
         }
@@ -762,9 +749,7 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
         return array;
     }
 
-    private static BioSampleSnapshot? ReadBioSample(
-        JsonObject root,
-        string propertyName)
+    private static BioSampleSnapshot? ReadBioSample(JsonObject root, string propertyName)
     {
         if (root[propertyName] is not JsonObject sample)
         {
@@ -775,18 +760,18 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
         return new BioSampleSnapshot(
             new SurfaceLocation(
                 location is null ? 0 : GetDouble(location, "lat") ?? 0,
-                location is null ? 0 : GetDouble(location, "long") ?? 0),
+                location is null ? 0 : GetDouble(location, "long") ?? 0
+            ),
             (float)(GetDouble(sample, RadiusProperty) ?? 0),
             GetString(sample, "genus") ?? string.Empty,
             GetString(sample, "species") ?? string.Empty,
             GetString(sample, "status") ?? "Active",
             GetInt64(sample, "entryId") ?? 0,
-            GetString(sample, "body"));
+            GetString(sample, "body")
+        );
     }
 
-    private static string[] ReadStringArray(
-        JsonObject root,
-        string propertyName)
+    private static string[] ReadStringArray(JsonObject root, string propertyName)
     {
         if (root[propertyName] is not JsonArray array)
         {
@@ -803,10 +788,7 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
             .ToArray();
     }
 
-    private static void WriteBioSample(
-        JsonObject root,
-        string propertyName,
-        BioSampleSnapshot? sample)
+    private static void WriteBioSample(JsonObject root, string propertyName, BioSampleSnapshot? sample)
     {
         if (sample is null)
         {
@@ -836,9 +818,7 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
         node["body"] = sample.Body;
     }
 
-    private static async Task<JsonObjectReadResult> ReadObjectAsync(
-        string path,
-        CancellationToken cancellationToken)
+    private static async Task<JsonObjectReadResult> ReadObjectAsync(string path, CancellationToken cancellationToken)
     {
         try
         {
@@ -848,21 +828,14 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
                 FileAccess.Read,
                 FileShare.ReadWrite | FileShare.Delete,
                 16 * 1024,
-                FileOptions.Asynchronous | FileOptions.SequentialScan);
-            var node = await JsonNode.ParseAsync(
-                    stream,
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
+                FileOptions.Asynchronous | FileOptions.SequentialScan
+            );
+            var node = await JsonNode.ParseAsync(stream, cancellationToken: cancellationToken).ConfigureAwait(false);
             return node is JsonObject root
                 ? new JsonObjectReadResult(root, null)
-                : new JsonObjectReadResult(
-                    null,
-                    $"{path} does not contain a JSON object.");
+                : new JsonObjectReadResult(null, $"{path} does not contain a JSON object.");
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or JsonException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)
         {
             return new JsonObjectReadResult(null, $"Could not read {path}: {exception.Message}");
         }
@@ -870,18 +843,12 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
 
     private static string? GetString(JsonObject root, string propertyName)
     {
-        return root[propertyName] is JsonValue value
-            && value.TryGetValue<string>(out var result)
-                ? result
-                : null;
+        return root[propertyName] is JsonValue value && value.TryGetValue<string>(out var result) ? result : null;
     }
 
     private static bool? GetBoolean(JsonObject root, string propertyName)
     {
-        return root[propertyName] is JsonValue value
-            && value.TryGetValue<bool>(out var result)
-                ? result
-                : null;
+        return root[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result) ? result : null;
     }
 
     private static long? GetInt64(JsonObject root, string propertyName)
@@ -896,18 +863,15 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
             return result;
         }
 
-        return value.TryGetValue<double>(out var doubleResult)
-            && doubleResult is >= long.MinValue and <= long.MaxValue
-                ? Convert.ToInt64(doubleResult)
-                : null;
+        return value.TryGetValue<double>(out var doubleResult) && doubleResult is >= long.MinValue and <= long.MaxValue
+            ? Convert.ToInt64(doubleResult)
+            : null;
     }
 
     private static int? GetInt32(JsonObject root, string propertyName)
     {
         var value = GetInt64(root, propertyName);
-        return value is >= int.MinValue and <= int.MaxValue
-            ? (int)value.Value
-            : null;
+        return value is >= int.MinValue and <= int.MaxValue ? (int)value.Value : null;
     }
 
     private static double? GetDouble(JsonObject root, string propertyName)
@@ -925,9 +889,7 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
         return value.TryGetValue<long>(out var longResult) ? longResult : null;
     }
 
-    private static DateTimeOffset? GetDateTimeOffset(
-        JsonObject root,
-        string propertyName)
+    private static DateTimeOffset? GetDateTimeOffset(JsonObject root, string propertyName)
     {
         if (root[propertyName] is not JsonValue value)
         {
@@ -939,14 +901,16 @@ public sealed class CommanderProfileStore(string profileDirectory) : IBoxelSearc
             return dateTimeOffset;
         }
 
-        return value.TryGetValue<string>(out var text)
+        return
+            value.TryGetValue<string>(out var text)
             && DateTimeOffset.TryParse(
                 text,
                 CultureInfo.InvariantCulture,
                 DateTimeStyles.AssumeUniversal,
-                out dateTimeOffset)
-                ? dateTimeOffset
-                : null;
+                out dateTimeOffset
+            )
+            ? dateTimeOffset
+            : null;
     }
 
     private sealed record JsonObjectReadResult(JsonObject? Root, string? Error);
@@ -966,13 +930,10 @@ public sealed record CommanderProfileData(
     string? ActiveJourneyFileName = null,
     string? InaraApiKey = null,
     string? EdsmCommanderName = null,
-    string? EdsmApiKey = null);
+    string? EdsmApiKey = null
+);
 
-public sealed record CommanderProfileLoadResult(
-    string Path,
-    bool Exists,
-    CommanderProfileData? Data,
-    string? Error)
+public sealed record CommanderProfileLoadResult(string Path, bool Exists, CommanderProfileData? Data, string? Error)
 {
     public bool IsSuccess => Data is not null;
 }

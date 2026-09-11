@@ -8,7 +8,8 @@ public sealed class RouteManagerViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-route-manager-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-route-manager-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public async Task SameCommanderAndCatalogRefreshPreserveCollectionAndRows()
@@ -18,8 +19,7 @@ public sealed class RouteManagerViewModelTests : IDisposable
         var alpha = manager.Routes.Single(route => route.Name == "Alpha");
         alpha.IsSelected = true;
         var notifications = new List<string?>();
-        manager.PropertyChanged += (_, eventArgs) =>
-            notifications.Add(eventArgs.PropertyName);
+        manager.PropertyChanged += (_, eventArgs) => notifications.Add(eventArgs.PropertyName);
 
         await manager.UpdateContextAsync("F123");
 
@@ -27,11 +27,7 @@ public sealed class RouteManagerViewModelTests : IDisposable
         Assert.Same(routes, manager.Routes);
         Assert.Same(alpha, manager.Routes.Single(route => route.Name == "Alpha"));
 
-        await store.SaveNotesAsync(
-            "F123",
-            alpha.FileName,
-            alpha.IsLegacy,
-            "Updated outside the manager");
+        await store.SaveNotesAsync("F123", alpha.FileName, alpha.IsLegacy, "Updated outside the manager");
         await manager.RefreshAsync();
 
         var refreshedAlpha = manager.Routes.Single(route => route.Name == "Alpha");
@@ -57,8 +53,7 @@ public sealed class RouteManagerViewModelTests : IDisposable
         manager.FavoritesFirst = false;
         Assert.Same(alpha, manager.Routes[0]);
 
-        var catalogBeta = (await store.ListAsync("F123"))
-            .Single(route => route.Name == "Beta");
+        var catalogBeta = (await store.ListAsync("F123")).Single(route => route.Name == "Beta");
         Assert.True(catalogBeta.IsFavorite);
     }
 
@@ -74,9 +69,7 @@ public sealed class RouteManagerViewModelTests : IDisposable
         await manager.SaveNotesAsync();
 
         Assert.False(manager.IsDialogVisible);
-        Assert.Equal(
-            "Watch the neutron jump near waypoint five.",
-            beta.Notes);
+        Assert.Equal("Watch the neutron jump near waypoint five.", beta.Notes);
 
         beta.IsSelected = true;
         manager.RequestDeleteCommand.Execute(null);
@@ -112,10 +105,7 @@ public sealed class RouteManagerViewModelTests : IDisposable
         Assert.False(manager.CanDeactivate);
         Assert.Contains("deactivated", manager.StatusMessage);
 
-        var paused = await store.LoadNamedAsync(
-            "F123",
-            alpha.FileName,
-            alpha.IsLegacy);
+        var paused = await store.LoadNamedAsync("F123", alpha.FileName, alpha.IsLegacy);
         Assert.False(paused.Route!.IsActive);
         Assert.Equal(0, paused.Route.LastReachedIndex);
     }
@@ -135,10 +125,7 @@ public sealed class RouteManagerViewModelTests : IDisposable
         Assert.False(manager.AutoCopy);
         Assert.False(workspace.AutoCopy);
         Assert.Contains("disabled", manager.StatusMessage);
-        var saved = await store.LoadNamedAsync(
-            "F123",
-            alpha.FileName,
-            alpha.IsLegacy);
+        var saved = await store.LoadNamedAsync("F123", alpha.FileName, alpha.IsLegacy);
         Assert.False(saved.Route!.AutoCopy);
 
         await manager.DeactivateAsync();
@@ -177,7 +164,8 @@ public sealed class RouteManagerViewModelTests : IDisposable
     private async Task<(
         FollowRouteStore Store,
         RouteWorkspaceViewModel Workspace,
-        RouteManagerViewModel Manager)> CreateViewModelsAsync()
+        RouteManagerViewModel Manager
+    )> CreateViewModelsAsync()
     {
         var store = new FollowRouteStore(temporaryDirectory);
         await store.SaveAsAsync(
@@ -189,7 +177,8 @@ public sealed class RouteManagerViewModelTests : IDisposable
                     new FollowRouteHop("Achenar", 2, null, null, false, false),
                 ],
             },
-            "Alpha");
+            "Alpha"
+        );
         await store.SaveAsAsync(
             (await store.CreateNewAsync("F123")) with
             {
@@ -199,12 +188,14 @@ public sealed class RouteManagerViewModelTests : IDisposable
                     new FollowRouteHop("Colonia", 3, null, null, false, false),
                 ],
             },
-            "Beta");
+            "Beta"
+        );
         var service = new FollowRouteService(store);
         var workspace = new RouteWorkspaceViewModel(
             service,
             new RouteNameImporter(new EmptyResolver()),
-            new EmptySpanshClient());
+            new EmptySpanshClient()
+        );
         await workspace.UpdateContextAsync("F123", "Sol", 1, null);
         var manager = new RouteManagerViewModel(service, workspace);
         await manager.UpdateContextAsync("F123");
@@ -223,7 +214,8 @@ public sealed class RouteManagerViewModelTests : IDisposable
     {
         public Task<IReadOnlyList<StarSystemReference>> SearchAsync(
             string query,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             return Task.FromResult<IReadOnlyList<StarSystemReference>>([]);
         }
@@ -233,7 +225,8 @@ public sealed class RouteManagerViewModelTests : IDisposable
     {
         public Task<IReadOnlyList<FollowRouteHop>> GetRouteAsync(
             SpanshRouteReference route,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             return Task.FromResult<IReadOnlyList<FollowRouteHop>>([]);
         }

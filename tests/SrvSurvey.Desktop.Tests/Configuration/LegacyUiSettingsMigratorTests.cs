@@ -11,7 +11,8 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-legacy-ui-migration-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-legacy-ui-migration-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public async Task ImportedLegacyPreferencesAreTranslatedWithoutLosingCurrentSettings()
@@ -150,7 +151,8 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
                 "copyNextBoxel": "SHIFT C"
               }
             }
-            """);
+            """
+        );
         const string currentSettings =
             "{\"Version\":1,\"Theme\":\"green-dark\","
             + "\"FutureRoot\":{\"Enabled\":true},"
@@ -159,58 +161,44 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
             + "\"Bindings\":{\"futureAction\":\"ALT Z\"}},"
             + "\"Colonization\":{\"FleetCarrierCargoSyncEnabled\":true}}";
         await File.WriteAllTextAsync(paths.UiSettingsPath, currentSettings);
-        var import = await new LegacyProfileImporter().ImportAsync(
-            source,
-            paths.DataDirectory,
-            backups);
+        var import = await new LegacyProfileImporter().ImportAsync(source, paths.DataDirectory, backups);
 
         var result = new LegacyUiSettingsMigrator().MigrateIfNeeded(paths);
 
         Assert.True(result.Migrated);
         Assert.True(result.MappedPreferenceCount >= 45);
-        var backupPath = Assert.IsType<string>(
-            result.PreviousSettingsBackupPath);
-        Assert.Equal(
-            Path.Combine(import.BackupDirectory, LegacyUiSettingsMigrator.BackupFileName),
-            backupPath);
+        var backupPath = Assert.IsType<string>(result.PreviousSettingsBackupPath);
+        Assert.Equal(Path.Combine(import.BackupDirectory, LegacyUiSettingsMigrator.BackupFileName), backupPath);
         Assert.Equal(currentSettings, await File.ReadAllTextAsync(backupPath));
-        Assert.Equal(
-            "blue-dark",
-            new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
-        Assert.Equal(
-            "de",
-            new LocalizationSettingsStore(
-                paths.UiSettingsPath,
-                paths.DataDirectory)
-                .Load());
+        Assert.Equal("blue-dark", new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
+        Assert.Equal("de", new LocalizationSettingsStore(paths.UiSettingsPath, paths.DataDirectory).Load());
         Assert.Equal(
             new JumpInfoPreferences(false, true, true, true),
-            new JumpInfoSettingsStore(paths.UiSettingsPath).Load());
-        Assert.Equal(
-            new GalaxyMapPreferences(false, false),
-            new GalaxyMapSettingsStore(paths.UiSettingsPath).Load());
-        Assert.Equal(
-            new PulseOverlayPreferences(false),
-            new PulseOverlaySettingsStore(paths.UiSettingsPath).Load());
+            new JumpInfoSettingsStore(paths.UiSettingsPath).Load()
+        );
+        Assert.Equal(new GalaxyMapPreferences(false, false), new GalaxyMapSettingsStore(paths.UiSettingsPath).Load());
+        Assert.Equal(new PulseOverlayPreferences(false), new PulseOverlaySettingsStore(paths.UiSettingsPath).Load());
         Assert.Equal(
             new OverlayBehaviorPreferences(true, true, false, true),
-            new OverlayBehaviorSettingsStore(paths.UiSettingsPath).Load());
-        Assert.Equal(
-            new OverlayScalePreferences(16),
-            new OverlayScaleSettingsStore(paths.UiSettingsPath).Load());
+            new OverlayBehaviorSettingsStore(paths.UiSettingsPath).Load()
+        );
+        Assert.Equal(new OverlayScalePreferences(16), new OverlayScaleSettingsStore(paths.UiSettingsPath).Load());
         Assert.Equal(
             new DesktopBehaviorPreferences(false, false, true, true),
-            new DesktopBehaviorSettingsStore(paths.UiSettingsPath).Load());
+            new DesktopBehaviorSettingsStore(paths.UiSettingsPath).Load()
+        );
         Assert.Equal(
             new CommanderPreferencePreferences("Drew", null),
-            new CommanderPreferenceSettingsStore(paths.UiSettingsPath).Load());
+            new CommanderPreferenceSettingsStore(paths.UiSettingsPath).Load()
+        );
         Assert.Equal(
             new JournalPreferences("D:\\Elite Journals"),
-            new JournalSettingsStore(paths.UiSettingsPath).Load());
+            new JournalSettingsStore(paths.UiSettingsPath).Load()
+        );
         Assert.Equal(
             new Uri("http://localhost:7007/"),
-            new RavenServiceSettingsStore(paths.UiSettingsPath)
-                .LoadServiceUri());
+            new RavenServiceSettingsStore(paths.UiSettingsPath).LoadServiceUri()
+        );
 
         var survey = new SystemSurveySettingsStore(paths.UiSettingsPath).Load();
         Assert.False(survey.AutoShowBodyInfo);
@@ -230,39 +218,31 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
                 77,
                 new FssPixelColor(22, 23, 24, 21),
                 new FssPixelColor(32, 33, 34, 31),
-                new FssPixelColor(42, 43, 44, 41)),
-            survey.FssTuningDetector);
+                new FssPixelColor(42, 43, 44, 41)
+            ),
+            survey.FssTuningDetector
+        );
         Assert.Equal(4, survey.SurfaceRadarSize);
         Assert.False(survey.HighlightDssCandidates);
         Assert.Equal(7_654_321, survey.DssValueFloor);
         Assert.True(survey.SuppressForActiveBuildProjects);
         Assert.Equal(
             new BiologyPredictionsPreferences(true, 3),
-            new BiologyPredictionsSettingsStore(paths.UiSettingsPath).Load());
+            new BiologyPredictionsSettingsStore(paths.UiSettingsPath).Load()
+        );
         Assert.Equal(
             new BiologyRewardThresholds(2.5, 6.5, 11.5),
-            new BiologyRewardSettingsStore(paths.UiSettingsPath).Load());
+            new BiologyRewardSettingsStore(paths.UiSettingsPath).Load()
+        );
+        Assert.Equal(new CombatPreferences(true, true, true), new CombatSettingsStore(paths.UiSettingsPath).Load());
         Assert.Equal(
-            new CombatPreferences(true, true, true),
-            new CombatSettingsStore(paths.UiSettingsPath).Load());
-        Assert.Equal(
-            new GuardianOverlayPreferences(
-                false,
-                false,
-                false,
-                true,
-                false,
-                true,
-                true,
-                3,
-                true,
-                true,
-                false,
-                false),
-            new GuardianOverlaySettingsStore(paths.UiSettingsPath).Load());
+            new GuardianOverlayPreferences(false, false, false, true, false, true, true, 3, true, true, false, false),
+            new GuardianOverlaySettingsStore(paths.UiSettingsPath).Load()
+        );
         Assert.Equal(
             new GuardianGesturePreferences(StatusFlags.HudInAnalysisMode, 2_500),
-            new GuardianGestureSettingsStore(paths.UiSettingsPath).Load());
+            new GuardianGestureSettingsStore(paths.UiSettingsPath).Load()
+        );
         Assert.Equal(
             new HumanSitePreferences(
                 false,
@@ -280,17 +260,17 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
                 false,
                 false,
                 true,
-                true),
-            new HumanSiteSettingsStore(paths.UiSettingsPath).Load());
-        Assert.Equal(
-            new StationInfoPreferences(false),
-            new StationInfoSettingsStore(paths.UiSettingsPath).Load());
-        Assert.True(
-            new SystemNicknameSettingsStore(paths.UiSettingsPath).LoadEnabled());
+                true
+            ),
+            new HumanSiteSettingsStore(paths.UiSettingsPath).Load()
+        );
+        Assert.Equal(new StationInfoPreferences(false), new StationInfoSettingsStore(paths.UiSettingsPath).Load());
+        Assert.True(new SystemNicknameSettingsStore(paths.UiSettingsPath).LoadEnabled());
         Assert.True(new QuestSettingsStore(paths.UiSettingsPath).LoadEnabled());
         Assert.Equal(
             new NetworkPrivacyPreferences(true, true, false),
-            new NetworkPrivacySettingsStore(paths.UiSettingsPath).Load());
+            new NetworkPrivacySettingsStore(paths.UiSettingsPath).Load()
+        );
         Assert.Equal(
             new ScreenshotProcessingPreferences(
                 true,
@@ -304,61 +284,46 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
                 true,
                 1100,
                 1500,
-                1700),
-            new ScreenshotProcessingSettingsStore(paths.UiSettingsPath).Load());
+                1700
+            ),
+            new ScreenshotProcessingSettingsStore(paths.UiSettingsPath).Load()
+        );
         Assert.Equal(
-            new NotificationPreferences(
-                false,
-                false,
-                false,
-                false,
-                false,
-                false),
-            new NotificationSettingsStore(paths.UiSettingsPath).Load());
+            new NotificationPreferences(false, false, false, false, false, false),
+            new NotificationSettingsStore(paths.UiSettingsPath).Load()
+        );
 
         var colonization = new ColonizationSettingsStore(paths.UiSettingsPath);
         Assert.True(colonization.LoadEnabled());
         Assert.True(colonization.LoadShipCargoPublishingEnabled());
         Assert.True(colonization.LoadFleetCarrierCargoSyncEnabled());
         Assert.Equal(
-            new ColonizationOverlayPreferences(
-                false,
-                false,
-                false,
-                true,
-                true,
-                false,
-                true),
-            colonization.LoadOverlayPreferences());
+            new ColonizationOverlayPreferences(false, false, false, true, true, false, true),
+            colonization.LoadOverlayPreferences()
+        );
 
         var input = new GlobalInputSettingsStore(paths.UiSettingsPath).Load();
         Assert.True(input.KeyboardEnabled);
         Assert.True(input.ControllerEnabled);
-        Assert.Equal(
-            "b7bd7df1-251e-4335-a994-8ce36011eeb2",
-            input.ControllerDeviceId);
+        Assert.Equal("b7bd7df1-251e-4335-a994-8ce36011eeb2", input.ControllerDeviceId);
         Assert.Equal("CTRL J", input.Bindings[GlobalInputAction.ShowJumpInfo]);
         Assert.Equal("SHIFT C", input.Bindings[GlobalInputAction.CopyNextBoxel]);
-        Assert.True(
-            new StreamOverlaySettingsStore(paths.UiSettingsPath).LoadEnabled());
+        Assert.True(new StreamOverlaySettingsStore(paths.UiSettingsPath).LoadEnabled());
         Assert.Equal(
             new VrOverlayPreferences(true, "vrcompositor"),
-            new VrOverlaySettingsStore(paths.UiSettingsPath).Load());
-        Assert.True(
-            new DockToDockSettingsStore(paths.UiSettingsPath).LoadEnabled());
+            new VrOverlaySettingsStore(paths.UiSettingsPath).Load()
+        );
+        Assert.True(new DockToDockSettingsStore(paths.UiSettingsPath).LoadEnabled());
 
-        var migrated = Assert.IsType<JsonObject>(
-            JsonNode.Parse(await File.ReadAllTextAsync(paths.UiSettingsPath)));
+        var migrated = Assert.IsType<JsonObject>(JsonNode.Parse(await File.ReadAllTextAsync(paths.UiSettingsPath)));
         Assert.True(migrated["FutureRoot"]?["Enabled"]?.GetValue<bool>());
         Assert.Equal(42, migrated["JumpInfo"]?["FutureOption"]?.GetValue<int>());
         Assert.Equal("keep", migrated["Input"]?["FutureOption"]?.GetValue<string>());
-        Assert.Equal(
-            "ALT Z",
-            migrated["Input"]?["Bindings"]?["futureAction"]?.GetValue<string>());
+        Assert.Equal("ALT Z", migrated["Input"]?["Bindings"]?["futureAction"]?.GetValue<string>());
         Assert.Equal(
             import.Manifest.ImportedAtUtc,
-            migrated["LegacyImport"]?["ImportedAtUtc"]
-                ?.GetValue<DateTimeOffset>());
+            migrated["LegacyImport"]?["ImportedAtUtc"]?.GetValue<DateTimeOffset>()
+        );
     }
 
     [Fact]
@@ -367,22 +332,17 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         var paths = CreatePaths();
         var source = Path.Combine(temporaryDirectory, "legacy-disabled-fss");
         Directory.CreateDirectory(source);
-        await File.WriteAllTextAsync(
-            Path.Combine(source, "settings.json"),
-            "{\"watchFssSettings_TEST\":null}");
+        await File.WriteAllTextAsync(Path.Combine(source, "settings.json"), "{\"watchFssSettings_TEST\":null}");
         await new LegacyProfileImporter().ImportAsync(
             source,
             paths.DataDirectory,
-            Path.Combine(temporaryDirectory, "backups-disabled-fss"));
+            Path.Combine(temporaryDirectory, "backups-disabled-fss")
+        );
 
         var result = new LegacyUiSettingsMigrator().MigrateIfNeeded(paths);
 
         Assert.True(result.Migrated);
-        Assert.False(
-            new SystemSurveySettingsStore(paths.UiSettingsPath)
-                .Load()
-                .FssTuningDetector
-                .Enabled);
+        Assert.False(new SystemSurveySettingsStore(paths.UiSettingsPath).Load().FssTuningDetector.Enabled);
     }
 
     [Fact]
@@ -391,13 +351,12 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         var paths = CreatePaths();
         var source = Path.Combine(temporaryDirectory, "legacy");
         Directory.CreateDirectory(source);
-        await File.WriteAllTextAsync(
-            Path.Combine(source, "settings.json"),
-            "{\"darkTheme\":true}");
+        await File.WriteAllTextAsync(Path.Combine(source, "settings.json"), "{\"darkTheme\":true}");
         await new LegacyProfileImporter().ImportAsync(
             source,
             paths.DataDirectory,
-            Path.Combine(temporaryDirectory, "backups"));
+            Path.Combine(temporaryDirectory, "backups")
+        );
         var migrator = new LegacyUiSettingsMigrator();
         Assert.True(migrator.MigrateIfNeeded(paths).Migrated);
         new ThemePreferenceStore(paths.UiSettingsPath).SaveThemeKey("green-light");
@@ -406,9 +365,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
 
         Assert.False(second.Migrated);
         Assert.Null(second.Error);
-        Assert.Equal(
-            "green-light",
-            new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
+        Assert.Equal("green-light", new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
     }
 
     [Fact]
@@ -419,11 +376,13 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Directory.CreateDirectory(source);
         await File.WriteAllTextAsync(
             Path.Combine(source, "settings.json"),
-            "{\"preferredCommander\":\"Drew\",\"darkTheme\":true}");
+            "{\"preferredCommander\":\"Drew\",\"darkTheme\":true}"
+        );
         await new LegacyProfileImporter().ImportAsync(
             source,
             paths.DataDirectory,
-            Path.Combine(temporaryDirectory, "backups-commander-upgrade"));
+            Path.Combine(temporaryDirectory, "backups-commander-upgrade")
+        );
         var migrator = new LegacyUiSettingsMigrator();
         Assert.True(migrator.MigrateIfNeeded(paths).Migrated);
         var document = new UiSettingsDocumentStore(paths.UiSettingsPath);
@@ -439,10 +398,9 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.Equal(1, result.MappedPreferenceCount);
         Assert.Equal(
             new CommanderPreferencePreferences("Drew", null),
-            new CommanderPreferenceSettingsStore(paths.UiSettingsPath).Load());
-        Assert.Equal(
-            "green-light",
-            new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
+            new CommanderPreferenceSettingsStore(paths.UiSettingsPath).Load()
+        );
+        Assert.Equal("green-light", new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
         Assert.Null(result.PreviousSettingsBackupPath);
     }
 
@@ -454,11 +412,13 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Directory.CreateDirectory(source);
         await File.WriteAllTextAsync(
             Path.Combine(source, "settings.json"),
-            "{\"plotterScale\":22.0,\"darkTheme\":true}");
+            "{\"plotterScale\":22.0,\"darkTheme\":true}"
+        );
         await new LegacyProfileImporter().ImportAsync(
             source,
             paths.DataDirectory,
-            Path.Combine(temporaryDirectory, "backups-scale-upgrade"));
+            Path.Combine(temporaryDirectory, "backups-scale-upgrade")
+        );
         var migrator = new LegacyUiSettingsMigrator();
         Assert.True(migrator.MigrateIfNeeded(paths).Migrated);
         var document = new UiSettingsDocumentStore(paths.UiSettingsPath);
@@ -472,12 +432,8 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
 
         Assert.True(result.Migrated);
         Assert.Equal(1, result.MappedPreferenceCount);
-        Assert.Equal(
-            new OverlayScalePreferences(22),
-            new OverlayScaleSettingsStore(paths.UiSettingsPath).Load());
-        Assert.Equal(
-            "green-light",
-            new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
+        Assert.Equal(new OverlayScalePreferences(22), new OverlayScaleSettingsStore(paths.UiSettingsPath).Load());
+        Assert.Equal("green-light", new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
         Assert.Null(result.PreviousSettingsBackupPath);
     }
 
@@ -489,11 +445,13 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Directory.CreateDirectory(source);
         await File.WriteAllTextAsync(
             Path.Combine(source, "settings.json"),
-            "{\"hideMultiFloatie\":true,\"darkTheme\":true}");
+            "{\"hideMultiFloatie\":true,\"darkTheme\":true}"
+        );
         await new LegacyProfileImporter().ImportAsync(
             source,
             paths.DataDirectory,
-            Path.Combine(temporaryDirectory, "backups-multi-game-upgrade"));
+            Path.Combine(temporaryDirectory, "backups-multi-game-upgrade")
+        );
         var migrator = new LegacyUiSettingsMigrator();
         Assert.True(migrator.MigrateIfNeeded(paths).Migrated);
         var document = new UiSettingsDocumentStore(paths.UiSettingsPath);
@@ -508,12 +466,8 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
 
         Assert.True(result.Migrated);
         Assert.Equal(1, result.MappedPreferenceCount);
-        Assert.True(new OverlayBehaviorSettingsStore(paths.UiSettingsPath)
-            .Load()
-            .HideMultiGameCommanderOverlay);
-        Assert.Equal(
-            "green-light",
-            new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
+        Assert.True(new OverlayBehaviorSettingsStore(paths.UiSettingsPath).Load().HideMultiGameCommanderOverlay);
+        Assert.Equal("green-light", new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
         Assert.Null(result.PreviousSettingsBackupPath);
     }
 
@@ -525,12 +479,13 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Directory.CreateDirectory(source);
         await File.WriteAllTextAsync(
             Path.Combine(source, "settings.json"),
-            "{\"buildProjectsUrl_TEST\":\"https://localhost:7007\","
-                + "\"darkTheme\":true}");
+            "{\"buildProjectsUrl_TEST\":\"https://localhost:7007\"," + "\"darkTheme\":true}"
+        );
         await new LegacyProfileImporter().ImportAsync(
             source,
             paths.DataDirectory,
-            Path.Combine(temporaryDirectory, "backups-raven-upgrade"));
+            Path.Combine(temporaryDirectory, "backups-raven-upgrade")
+        );
         var migrator = new LegacyUiSettingsMigrator();
         Assert.True(migrator.MigrateIfNeeded(paths).Migrated);
         var document = new UiSettingsDocumentStore(paths.UiSettingsPath);
@@ -546,11 +501,9 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.Equal(1, result.MappedPreferenceCount);
         Assert.Equal(
             new Uri("https://localhost:7007/"),
-            new RavenServiceSettingsStore(paths.UiSettingsPath)
-                .LoadServiceUri());
-        Assert.Equal(
-            "green-light",
-            new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
+            new RavenServiceSettingsStore(paths.UiSettingsPath).LoadServiceUri()
+        );
+        Assert.Equal("green-light", new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
         Assert.Null(result.PreviousSettingsBackupPath);
     }
 
@@ -562,12 +515,13 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Directory.CreateDirectory(source);
         await File.WriteAllTextAsync(
             Path.Combine(source, "settings.json"),
-            "{\"useLastUpdatedFromSpanshNotEDSM\":true,"
-                + "\"darkTheme\":true}");
+            "{\"useLastUpdatedFromSpanshNotEDSM\":true," + "\"darkTheme\":true}"
+        );
         await new LegacyProfileImporter().ImportAsync(
             source,
             paths.DataDirectory,
-            Path.Combine(temporaryDirectory, "backups-timestamp-upgrade"));
+            Path.Combine(temporaryDirectory, "backups-timestamp-upgrade")
+        );
         var migrator = new LegacyUiSettingsMigrator();
         Assert.True(migrator.MigrateIfNeeded(paths).Migrated);
         var document = new UiSettingsDocumentStore(paths.UiSettingsPath);
@@ -582,12 +536,8 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
 
         Assert.True(result.Migrated);
         Assert.Equal(1, result.MappedPreferenceCount);
-        Assert.True(new JumpInfoSettingsStore(paths.UiSettingsPath)
-            .Load()
-            .UseSpanshLastUpdated);
-        Assert.Equal(
-            "green-light",
-            new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
+        Assert.True(new JumpInfoSettingsStore(paths.UiSettingsPath).Load().UseSpanshLastUpdated);
+        Assert.Equal("green-light", new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
         Assert.Null(result.PreviousSettingsBackupPath);
     }
 
@@ -605,11 +555,13 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
               "inferTolerance": 17,
               "inferThreshold": 0.004
             }
-            """);
+            """
+        );
         await new LegacyProfileImporter().ImportAsync(
             source,
             paths.DataDirectory,
-            Path.Combine(temporaryDirectory, "backups-footfall-upgrade"));
+            Path.Combine(temporaryDirectory, "backups-footfall-upgrade")
+        );
         var migrator = new LegacyUiSettingsMigrator();
         Assert.True(migrator.MigrateIfNeeded(paths).Migrated);
         var document = new UiSettingsDocumentStore(paths.UiSettingsPath);
@@ -628,8 +580,8 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
                 Tolerance = 17,
                 Threshold = 0.004,
             },
-            new FirstFootfallInferenceSettingsStore(paths.UiSettingsPath)
-                .Load());
+            new FirstFootfallInferenceSettingsStore(paths.UiSettingsPath).Load()
+        );
         Assert.Null(result.PreviousSettingsBackupPath);
     }
 
@@ -640,16 +592,14 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         var source = Path.Combine(temporaryDirectory, "legacy");
         Directory.CreateDirectory(source);
         Directory.CreateDirectory(paths.ConfigDirectory);
-        await File.WriteAllTextAsync(
-            Path.Combine(source, "settings.json"),
-            "{\"darkTheme\":true,");
-        const string currentSettings =
-            "{\"Version\":1,\"Theme\":\"orange-dark\"}";
+        await File.WriteAllTextAsync(Path.Combine(source, "settings.json"), "{\"darkTheme\":true,");
+        const string currentSettings = "{\"Version\":1,\"Theme\":\"orange-dark\"}";
         await File.WriteAllTextAsync(paths.UiSettingsPath, currentSettings);
         await new LegacyProfileImporter().ImportAsync(
             source,
             paths.DataDirectory,
-            Path.Combine(temporaryDirectory, "backups"));
+            Path.Combine(temporaryDirectory, "backups")
+        );
 
         var result = new LegacyUiSettingsMigrator().MigrateIfNeeded(paths);
 
@@ -668,12 +618,8 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         var sourceFlora = Path.Combine(source, "local-flora");
         Directory.CreateDirectory(sourceCache);
         Directory.CreateDirectory(sourceFlora);
-        await File.WriteAllBytesAsync(
-            Path.Combine(sourceCache, "2310101.jpg"),
-            [1, 2, 3, 4]);
-        await File.WriteAllBytesAsync(
-            Path.Combine(sourceFlora, "aleoida-arcus-yellow.png"),
-            [5, 6, 7, 8]);
+        await File.WriteAllBytesAsync(Path.Combine(sourceCache, "2310101.jpg"), [1, 2, 3, 4]);
+        await File.WriteAllBytesAsync(Path.Combine(sourceFlora, "aleoida-arcus-yellow.png"), [5, 6, 7, 8]);
         await File.WriteAllTextAsync(
             Path.Combine(source, "settings.json"),
             new JsonObject
@@ -681,35 +627,29 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
                 ["downloadCodexImageFolder"] = sourceCache,
                 ["localFloraFolder"] = sourceFlora,
                 ["preDownloadCodexImages"] = true,
-            }.ToJsonString());
+            }.ToJsonString()
+        );
         await new LegacyProfileImporter().ImportAsync(
             source,
             paths.DataDirectory,
-            Path.Combine(temporaryDirectory, "backups-codex-images"));
+            Path.Combine(temporaryDirectory, "backups-codex-images")
+        );
 
         var result = new LegacyUiSettingsMigrator().MigrateIfNeeded(paths);
 
         Assert.True(result.Migrated);
-        var preferences = new CodexImageSettingsStore(
-            paths.UiSettingsPath,
-            paths.CacheDirectory).Load();
-        Assert.Equal(
-            Path.Combine(paths.DataDirectory, "codexImages"),
-            preferences.CacheDirectory);
-        Assert.Equal(
-            Path.Combine(paths.DataDirectory, "local-flora"),
-            preferences.LocalFloraDirectory);
+        var preferences = new CodexImageSettingsStore(paths.UiSettingsPath, paths.CacheDirectory).Load();
+        Assert.Equal(Path.Combine(paths.DataDirectory, "codexImages"), preferences.CacheDirectory);
+        Assert.Equal(Path.Combine(paths.DataDirectory, "local-flora"), preferences.LocalFloraDirectory);
         Assert.True(preferences.PreDownload);
         Assert.Equal(
             [1, 2, 3, 4],
-            await File.ReadAllBytesAsync(Path.Combine(
-                preferences.CacheDirectory,
-                "2310101.jpg")));
+            await File.ReadAllBytesAsync(Path.Combine(preferences.CacheDirectory, "2310101.jpg"))
+        );
         Assert.Equal(
             [5, 6, 7, 8],
-            await File.ReadAllBytesAsync(Path.Combine(
-                preferences.LocalFloraDirectory!,
-                "aleoida-arcus-yellow.png")));
+            await File.ReadAllBytesAsync(Path.Combine(preferences.LocalFloraDirectory!, "aleoida-arcus-yellow.png"))
+        );
     }
 
     public void Dispose()
@@ -726,6 +666,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
             Path.Combine(temporaryDirectory, "config"),
             Path.Combine(temporaryDirectory, "data"),
             Path.Combine(temporaryDirectory, "cache"),
-            []);
+            []
+        );
     }
 }

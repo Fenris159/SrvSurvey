@@ -20,12 +20,9 @@ public sealed class PulseOverlayViewModel : INotifyPropertyChanged
     private string? musicTrack;
     private string settingsStatus = string.Empty;
 
-    public PulseOverlayViewModel(
-        PulseOverlaySettingsStore settingsStore,
-        TimeProvider? timeProvider = null)
+    public PulseOverlayViewModel(PulseOverlaySettingsStore settingsStore, TimeProvider? timeProvider = null)
     {
-        this.settingsStore = settingsStore
-            ?? throw new ArgumentNullException(nameof(settingsStore));
+        this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         this.timeProvider = timeProvider ?? TimeProvider.System;
         preferences = settingsStore.Load();
     }
@@ -64,12 +61,8 @@ public sealed class PulseOverlayViewModel : INotifyPropertyChanged
     {
         get
         {
-            var mode = OverlayGameModeResolver.Resolve(
-                status,
-                musicTrack: musicTrack);
-            return Enabled
-                && mode is not OverlayGameMode.GalaxyMap
-                    and not OverlayGameMode.SystemMap;
+            var mode = OverlayGameModeResolver.Resolve(status, musicTrack: musicTrack);
+            return Enabled && mode is not OverlayGameMode.GalaxyMap and not OverlayGameMode.SystemMap;
         }
     }
 
@@ -83,20 +76,17 @@ public sealed class PulseOverlayViewModel : INotifyPropertyChanged
             }
 
             var remaining = (expires - timeProvider.GetUtcNow()).TotalSeconds;
-            return Math.Clamp(
-                remaining / PulseDuration.TotalSeconds * 20,
-                0,
-                20);
+            return Math.Clamp(remaining / PulseDuration.TotalSeconds * 20, 0, 20);
         }
     }
 
     public bool IsScoActive => supercruiseOverdrive;
 
-    public bool IsScoCoolingDown => !supercruiseOverdrive
-        && GetScoElapsed() is { } elapsed
-        && elapsed < ScoReadyThreshold;
+    public bool IsScoCoolingDown =>
+        !supercruiseOverdrive && GetScoElapsed() is { } elapsed && elapsed < ScoReadyThreshold;
 
-    public bool IsScoReady => !supercruiseOverdrive
+    public bool IsScoReady =>
+        !supercruiseOverdrive
         && GetScoElapsed() is { } elapsed
         && elapsed >= ScoReadyThreshold
         && elapsed < ScoCooldownDuration;
@@ -131,16 +121,14 @@ public sealed class PulseOverlayViewModel : INotifyPropertyChanged
     /// <summary>
     /// Installs a representative journal/SCO state for the position editor.
     /// </summary>
-    internal void InstallEditorPreview(
-        PulseEditorPreviewState state = PulseEditorPreviewState.ScoCooling)
+    internal void InstallEditorPreview(PulseEditorPreviewState state = PulseEditorPreviewState.ScoCooling)
     {
         var now = timeProvider.GetUtcNow();
         pulseExpiresAtUtc = now + TimeSpan.FromSeconds(6);
         (bool isActive, DateTimeOffset? stoppedAtUtc) = state switch
         {
             PulseEditorPreviewState.ScoActive => (true, (DateTimeOffset?)null),
-            PulseEditorPreviewState.ScoReady =>
-                (false, now - ScoReadyThreshold),
+            PulseEditorPreviewState.ScoReady => (false, now - ScoReadyThreshold),
             PulseEditorPreviewState.JournalPulse => (false, (DateTimeOffset?)null),
             _ => (false, now - TimeSpan.FromSeconds(4)),
         };
@@ -157,7 +145,8 @@ public sealed class PulseOverlayViewModel : INotifyPropertyChanged
     public void ApplyUpdate(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         EliteStatus? status,
-        bool isBootstrapRead)
+        bool isBootstrapRead
+    )
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
         var now = timeProvider.GetUtcNow();
@@ -188,10 +177,10 @@ public sealed class PulseOverlayViewModel : INotifyPropertyChanged
             {
                 musicTrack = null;
             }
-            else if (journalEvent.EventName == "Music"
-                && journalEvent.Payload.TryGetProperty(
-                    "MusicTrack",
-                    out var track))
+            else if (
+                journalEvent.EventName == "Music"
+                && journalEvent.Payload.TryGetProperty("MusicTrack", out var track)
+            )
             {
                 musicTrack = track.GetString();
             }
@@ -208,8 +197,7 @@ public sealed class PulseOverlayViewModel : INotifyPropertyChanged
             pulseExpiresAtUtc = null;
         }
 
-        if (scoStoppedAtUtc is { } stopped
-            && now - stopped >= ScoCooldownDuration)
+        if (scoStoppedAtUtc is { } stopped && now - stopped >= ScoCooldownDuration)
         {
             scoStoppedAtUtc = null;
         }
@@ -234,13 +222,11 @@ public sealed class PulseOverlayViewModel : INotifyPropertyChanged
             settingsStore.Save(preferences);
             SettingsStatus = string.Empty;
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidOperationException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidOperationException)
         {
-            SettingsStatus = "Pulse overlay preference changed for this session "
-                + "but could not be saved: " + exception.Message;
+            SettingsStatus =
+                "Pulse overlay preference changed for this session " + "but could not be saved: " + exception.Message;
         }
     }
 

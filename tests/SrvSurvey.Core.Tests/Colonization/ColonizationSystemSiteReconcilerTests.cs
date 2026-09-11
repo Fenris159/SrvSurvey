@@ -19,10 +19,7 @@ public sealed class ColonizationSystemSiteReconcilerTests
         };
         var edited = baseline with { BodyNumber = 2 };
 
-        var plan = ColonizationSystemSiteReconciler.CreatePlan(
-            [baseline],
-            [latest],
-            [edited]);
+        var plan = ColonizationSystemSiteReconciler.CreatePlan([baseline], [latest], [edited]);
 
         Assert.True(plan.CanPublish);
         var update = Assert.Single(plan.Update.UpdatedSites);
@@ -39,10 +36,7 @@ public sealed class ColonizationSystemSiteReconcilerTests
         var latest = baseline with { BodyNumber = 2 };
         var edited = baseline with { BodyNumber = 3 };
 
-        var plan = ColonizationSystemSiteReconciler.CreatePlan(
-            [baseline],
-            [latest],
-            [edited]);
+        var plan = ColonizationSystemSiteReconciler.CreatePlan([baseline], [latest], [edited]);
 
         var conflict = Assert.Single(plan.Conflicts);
         Assert.Equal("bodyNum", conflict.Field);
@@ -61,7 +55,8 @@ public sealed class ColonizationSystemSiteReconcilerTests
         var plan = ColonizationSystemSiteReconciler.CreatePlan(
             [stable, changed, noId],
             [stable, latestChanged, noId],
-            []);
+            []
+        );
 
         Assert.Equal(["stable"], plan.Update.DeletedSiteIds);
         Assert.Equal(2, plan.Conflicts.Count);
@@ -79,7 +74,8 @@ public sealed class ColonizationSystemSiteReconcilerTests
         var plan = ColonizationSystemSiteReconciler.CreatePlan(
             [baseline],
             [baseline, remoteOnly],
-            [baseline, localNew]);
+            [baseline, localNew]
+        );
 
         Assert.Equal("Local", Assert.Single(plan.Update.UpdatedSites).Name);
         Assert.Empty(plan.Update.DeletedSiteIds);
@@ -93,19 +89,14 @@ public sealed class ColonizationSystemSiteReconcilerTests
             ColonizationSystemSiteReconciler.CreatePlan(
                 [],
                 [],
-                [
-                    Site("one", "Port", body: 1),
-                    Site("two", "PORT", body: 2),
-                ]));
+                [Site("one", "Port", body: 1), Site("two", "PORT", body: 2)]
+            )
+        );
 
         Assert.Contains("duplicate name", exception.Message);
     }
 
-    private static ColonizationSystemSite Site(
-        string id,
-        string name,
-        int body,
-        string? buildType = null)
+    private static ColonizationSystemSite Site(string id, string name, int body, string? buildType = null)
     {
         return new ColonizationSystemSite
         {

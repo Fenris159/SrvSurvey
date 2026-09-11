@@ -8,8 +8,7 @@ public sealed class JourneyStatisticsTests
     [Fact]
     public void CalculatesDistanceDistinctSystemsAndLegacyCounters()
     {
-        var journey = CreateJourney(
-        [
+        var journey = CreateJourney([
             Visit(
                 "Sol",
                 1,
@@ -23,7 +22,8 @@ public sealed class JourneyStatisticsTests
                 },
                 new Dictionary<string, int> { ["Earth"] = 2 },
                 new HashSet<long> { 10, 11 },
-                new Dictionary<string, int> { ["Biology"] = 1 }),
+                new Dictionary<string, int> { ["Biology"] = 1 }
+            ),
             Visit(
                 "Alpha",
                 2,
@@ -34,12 +34,9 @@ public sealed class JourneyStatisticsTests
                     BodyCount = 3,
                     Organisms = 2,
                     ExobiologyRewards = 1_000,
-                }),
-            Visit(
-                "Sol",
-                1,
-                new GalacticCoordinate(0, 0, 0),
-                JourneyCounts.Empty),
+                }
+            ),
+            Visit("Sol", 1, new GalacticCoordinate(0, 0, 0), JourneyCounts.Empty),
         ]);
 
         var result = JourneyStatistics.Calculate(journey);
@@ -66,8 +63,7 @@ public sealed class JourneyStatisticsTests
         Assert.Equal(JourneyCounts.Empty, result.Counts);
     }
 
-    private static JourneyDocument CreateJourney(
-        IReadOnlyList<JourneySystemVisit> visits)
+    private static JourneyDocument CreateJourney(IReadOnlyList<JourneySystemVisit> visits)
     {
         return new JourneyDocument(
             "test",
@@ -80,7 +76,8 @@ public sealed class JourneyStatisticsTests
             DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
             null,
             DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
-            visits);
+            visits
+        );
     }
 
     private static JourneySystemVisit Visit(
@@ -90,7 +87,8 @@ public sealed class JourneyStatisticsTests
         JourneyCounts counts,
         IReadOnlyDictionary<string, int>? landedOn = null,
         IReadOnlySet<long>? codexScanned = null,
-        IReadOnlyDictionary<string, int>? subCategories = null)
+        IReadOnlyDictionary<string, int>? subCategories = null
+    )
     {
         return new JourneySystemVisit(
             new JourneySystemReference(name, address, position),
@@ -103,6 +101,7 @@ public sealed class JourneyStatisticsTests
             null,
             subCategories,
             null,
-            null);
+            null
+        );
     }
 }

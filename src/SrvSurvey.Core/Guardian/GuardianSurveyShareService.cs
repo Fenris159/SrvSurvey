@@ -9,28 +9,21 @@ public sealed class GuardianSurveyShareService
     private readonly string dataDirectory;
     private readonly GuardianPublishedSiteCatalog publishedSites;
 
-    public GuardianSurveyShareService(
-        string dataDirectory,
-        GuardianPublishedSiteCatalog? publishedSites = null)
+    public GuardianSurveyShareService(string dataDirectory, GuardianPublishedSiteCatalog? publishedSites = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
         this.dataDirectory = Path.GetFullPath(dataDirectory);
-        this.publishedSites = publishedSites
-            ?? GuardianPublishedSiteCatalog.LoadEmbedded();
+        this.publishedSites = publishedSites ?? GuardianPublishedSiteCatalog.LoadEmbedded();
     }
 
-    public IReadOnlyList<string> GetDiscoveryReasons(
-        GuardianCommanderSiteSurvey survey)
+    public IReadOnlyList<string> GetDiscoveryReasons(GuardianCommanderSiteSurvey survey)
     {
         ArgumentNullException.ThrowIfNull(survey);
         var reasons = new List<string>();
         AddPortableSurveyReasons(survey, reasons);
 
         var kind = GetKind(survey);
-        var published = publishedSites.Find(
-            kind,
-            survey.BodyName,
-            survey.Index);
+        var published = publishedSites.Find(kind, survey.BodyName, survey.Index);
         if (published is null)
         {
             if (HasSurveyData(survey))
@@ -45,9 +38,7 @@ public sealed class GuardianSurveyShareService
         return reasons;
     }
 
-    private static void AddPortableSurveyReasons(
-        GuardianCommanderSiteSurvey survey,
-        List<string> reasons)
+    private static void AddPortableSurveyReasons(GuardianCommanderSiteSurvey survey, List<string> reasons)
     {
         if (survey.Survey.RawPointsOfInterest?.Count > 0)
         {
@@ -69,16 +60,19 @@ public sealed class GuardianSurveyShareService
         GuardianCommanderSiteSurvey survey,
         GuardianSiteKind kind,
         GuardianPublishedSite published,
-        List<string> reasons)
+        List<string> reasons
+    )
     {
         if (published.SiteHeading == -1 && survey.Survey.SiteHeading != -1)
         {
             reasons.Add("Site heading");
         }
 
-        if (kind == GuardianSiteKind.Ruins
+        if (
+            kind == GuardianSiteKind.Ruins
             && published.RelicTowerHeading == -1
-            && survey.Survey.RelicTowerHeading != -1)
+            && survey.Survey.RelicTowerHeading != -1
+        )
         {
             reasons.Add("Relic tower heading");
         }
@@ -88,24 +82,22 @@ public sealed class GuardianSurveyShareService
             reasons.Add("Surface location");
         }
 
-        if (survey.Survey.PoiStatuses.Any(pair =>
-                !published.PoiStatuses.TryGetValue(pair.Key, out var status)
-                || status != pair.Value))
+        if (
+            survey.Survey.PoiStatuses.Any(pair =>
+                !published.PoiStatuses.TryGetValue(pair.Key, out var status) || status != pair.Value
+            )
+        )
         {
             reasons.Add("Point-of-interest status");
         }
 
-        if (survey.Survey.RelicHeadings.Keys.Any(
-                name => !published.RelicHeadings.ContainsKey(name)))
+        if (survey.Survey.RelicHeadings.Keys.Any(name => !published.RelicHeadings.ContainsKey(name)))
         {
             reasons.Add("Relic heading");
         }
 
         var groups = string.Concat(survey.ObeliskGroups.Order());
-        if (!string.Equals(
-                published.ObeliskGroups,
-                groups,
-                StringComparison.Ordinal))
+        if (!string.Equals(published.ObeliskGroups, groups, StringComparison.Ordinal))
         {
             reasons.Add("Obelisk groups");
         }
@@ -115,36 +107,30 @@ public sealed class GuardianSurveyShareService
         string frontierId,
         bool isOdyssey,
         GuardianCommanderDataReadResult commanderData,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ValidateFrontierId(frontierId);
         ArgumentNullException.ThrowIfNull(commanderData);
-        var sourceRoot = Path.Combine(
-            dataDirectory,
-            "guardian",
-            frontierId,
-            isOdyssey ? string.Empty : "legacy");
+        var sourceRoot = Path.Combine(dataDirectory, "guardian", frontierId, isOdyssey ? string.Empty : "legacy");
         sourceRoot = Path.GetFullPath(sourceRoot);
-        var sites = commanderData.Surveys
-            .Select(survey => new GuardianSurveyShareSite(
+        var sites = commanderData
+            .Surveys.Select(survey => new GuardianSurveyShareSite(
                 GetDisplayName(survey),
                 ValidateSourcePath(sourceRoot, survey.Path),
-                GetDiscoveryReasons(survey)))
+                GetDiscoveryReasons(survey)
+            ))
             .Where(site => site.Reasons.Count > 0)
             .OrderBy(site => site.DisplayName, StringComparer.OrdinalIgnoreCase)
             .ThenBy(site => site.SourcePath, StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var shareDirectory = Path.Combine(dataDirectory, "share");
         Directory.CreateDirectory(shareDirectory);
-        var hash = await ComputeHashAsync(sites, cancellationToken)
-            .ConfigureAwait(false);
-        var archivePath = Path.Combine(
-            shareDirectory,
-            $"surveys-{frontierId}-{hash}.zip");
+        var hash = await ComputeHashAsync(sites, cancellationToken).ConfigureAwait(false);
+        var archivePath = Path.Combine(shareDirectory, $"surveys-{frontierId}-{hash}.zip");
         if (!File.Exists(archivePath))
         {
-            await WriteArchiveAsync(archivePath, sites, cancellationToken)
-                .ConfigureAwait(false);
+            await WriteArchiveAsync(archivePath, sites, cancellationToken).ConfigureAwait(false);
         }
 
         return new GuardianSurveyShareBundle(archivePath, sites);
@@ -152,80 +138,75 @@ public sealed class GuardianSurveyShareService
 
     private static async Task<string> ComputeHashAsync(
         IReadOnlyList<GuardianSurveyShareSite> sites,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         foreach (var sourcePath in sites.Select(site => site.SourcePath))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            hash.AppendData(Encoding.UTF8.GetBytes(
-                Path.GetFileName(sourcePath)));
+            hash.AppendData(Encoding.UTF8.GetBytes(Path.GetFileName(sourcePath)));
             await using var stream = new FileStream(
                 sourcePath,
                 FileMode.Open,
                 FileAccess.Read,
                 FileShare.ReadWrite | FileShare.Delete,
                 16 * 1024,
-                FileOptions.Asynchronous | FileOptions.SequentialScan);
+                FileOptions.Asynchronous | FileOptions.SequentialScan
+            );
             var buffer = new byte[16 * 1024];
             int read;
-            while ((read = await stream.ReadAsync(buffer, cancellationToken)
-                       .ConfigureAwait(false)) > 0)
+            while ((read = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0)
             {
                 hash.AppendData(buffer.AsSpan(0, read));
             }
         }
 
-        return Convert.ToHexString(hash.GetHashAndReset())
-            .ToLowerInvariant()[..16];
+        return Convert.ToHexString(hash.GetHashAndReset()).ToLowerInvariant()[..16];
     }
 
     private static async Task WriteArchiveAsync(
         string archivePath,
         IReadOnlyList<GuardianSurveyShareSite> sites,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var temporaryPath = archivePath + $".{Guid.NewGuid():N}.tmp";
         try
         {
-            await using (var output = new FileStream(
-                             temporaryPath,
-                             FileMode.CreateNew,
-                             FileAccess.ReadWrite,
-                             FileShare.None,
-                             16 * 1024,
-                             FileOptions.Asynchronous))
-            using (var archive = new ZipArchive(
-                       output,
-                       ZipArchiveMode.Create,
-                       leaveOpen: false))
+            await using (
+                var output = new FileStream(
+                    temporaryPath,
+                    FileMode.CreateNew,
+                    FileAccess.ReadWrite,
+                    FileShare.None,
+                    16 * 1024,
+                    FileOptions.Asynchronous
+                )
+            )
+            using (var archive = new ZipArchive(output, ZipArchiveMode.Create, leaveOpen: false))
             {
-                var entryNames = new HashSet<string>(
-                    StringComparer.OrdinalIgnoreCase);
+                var entryNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 foreach (var sourcePath in sites.Select(site => site.SourcePath))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     var entryName = Path.GetFileName(sourcePath);
                     if (!entryNames.Add(entryName))
                     {
-                        throw new InvalidDataException(
-                            $"Multiple Guardian surveys use the filename {entryName}.");
+                        throw new InvalidDataException($"Multiple Guardian surveys use the filename {entryName}.");
                     }
 
-                    var entry = archive.CreateEntry(
-                        entryName,
-                        CompressionLevel.SmallestSize);
+                    var entry = archive.CreateEntry(entryName, CompressionLevel.SmallestSize);
                     await using var input = new FileStream(
                         sourcePath,
                         FileMode.Open,
                         FileAccess.Read,
                         FileShare.ReadWrite | FileShare.Delete,
                         16 * 1024,
-                        FileOptions.Asynchronous | FileOptions.SequentialScan);
-                    await using var entryStream = await entry.OpenAsync(
-                        cancellationToken);
-                    await input.CopyToAsync(entryStream, cancellationToken)
-                        .ConfigureAwait(false);
+                        FileOptions.Asynchronous | FileOptions.SequentialScan
+                    );
+                    await using var entryStream = await entry.OpenAsync(cancellationToken);
+                    await input.CopyToAsync(entryStream, cancellationToken).ConfigureAwait(false);
                 }
             }
 
@@ -252,21 +233,18 @@ public sealed class GuardianSurveyShareService
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         var fullPath = Path.GetFullPath(path);
         var relative = Path.GetRelativePath(sourceRoot, fullPath);
-        if (relative == ".."
-            || relative.StartsWith(
-                ".." + Path.DirectorySeparatorChar,
-                StringComparison.Ordinal)
-            || Path.IsPathRooted(relative))
+        if (
+            relative == ".."
+            || relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+            || Path.IsPathRooted(relative)
+        )
         {
-            throw new InvalidDataException(
-                $"Guardian survey path is outside the commander folder: {path}");
+            throw new InvalidDataException($"Guardian survey path is outside the commander folder: {path}");
         }
 
         if (!File.Exists(fullPath))
         {
-            throw new FileNotFoundException(
-                "The Guardian survey file no longer exists.",
-                fullPath);
+            throw new FileNotFoundException("The Guardian survey file no longer exists.", fullPath);
         }
 
         return fullPath;
@@ -285,14 +263,14 @@ public sealed class GuardianSurveyShareService
             || survey.ObeliskGroups.Count > 0;
     }
 
-    private static GuardianSiteKind GetKind(
-        GuardianCommanderSiteSurvey survey)
+    private static GuardianSiteKind GetKind(GuardianCommanderSiteSurvey survey)
     {
-        return survey.SiteType.Equals("Alpha", StringComparison.OrdinalIgnoreCase)
+        return
+            survey.SiteType.Equals("Alpha", StringComparison.OrdinalIgnoreCase)
             || survey.SiteType.Equals("Beta", StringComparison.OrdinalIgnoreCase)
             || survey.SiteType.Equals("Gamma", StringComparison.OrdinalIgnoreCase)
-                ? GuardianSiteKind.Ruins
-                : GuardianSiteKind.Structure;
+            ? GuardianSiteKind.Ruins
+            : GuardianSiteKind.Structure;
     }
 
     private static string GetDisplayName(GuardianCommanderSiteSurvey survey)
@@ -313,26 +291,17 @@ public sealed class GuardianSurveyShareService
     private static void ValidateFrontierId(string frontierId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(frontierId);
-        if (frontierId is "." or ".."
-            || !string.Equals(
-                Path.GetFileName(frontierId),
-                frontierId,
-                StringComparison.Ordinal)
-            || frontierId.IndexOfAny(
-                [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar]) >= 0)
+        if (
+            frontierId is "." or ".."
+            || !string.Equals(Path.GetFileName(frontierId), frontierId, StringComparison.Ordinal)
+            || frontierId.IndexOfAny([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar]) >= 0
+        )
         {
-            throw new ArgumentException(
-                "The Frontier ID must be a folder name, not a path.",
-                nameof(frontierId));
+            throw new ArgumentException("The Frontier ID must be a folder name, not a path.", nameof(frontierId));
         }
     }
 }
 
-public sealed record GuardianSurveyShareBundle(
-    string ArchivePath,
-    IReadOnlyList<GuardianSurveyShareSite> Sites);
+public sealed record GuardianSurveyShareBundle(string ArchivePath, IReadOnlyList<GuardianSurveyShareSite> Sites);
 
-public sealed record GuardianSurveyShareSite(
-    string DisplayName,
-    string SourcePath,
-    IReadOnlyList<string> Reasons);
+public sealed record GuardianSurveyShareSite(string DisplayName, string SourcePath, IReadOnlyList<string> Reasons);

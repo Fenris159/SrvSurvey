@@ -15,7 +15,8 @@ public sealed class DiagnosticInstanceLauncherTests
         await using var instance = await launcher.LaunchAsync(
             executablePath,
             Path.Combine(Path.GetTempPath(), "replay-session.json"),
-            CancellationToken.None);
+            CancellationToken.None
+        );
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         var exitCode = await instance.WaitForExitAsync(timeout.Token);
 
@@ -32,9 +33,7 @@ public sealed class DiagnosticInstanceLauncherTests
         await cancellation.CancelAsync();
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
-            launcher.LaunchAsync(
-                "unused",
-                "unused",
-                cancellation.Token));
+            launcher.LaunchAsync("unused", "unused", cancellation.Token)
+        );
     }
 }

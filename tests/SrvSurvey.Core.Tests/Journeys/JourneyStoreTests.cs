@@ -7,7 +7,8 @@ public sealed class JourneyStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-journey-store-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-journey-store-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public async Task LoadsCompactAndLegacyStarReferences()
@@ -44,7 +45,8 @@ public sealed class JourneyStoreTests : IDisposable
                 }
               ]
             }
-            """);
+            """
+        );
         var store = new JourneyStore(temporaryDirectory);
 
         var result = await store.LoadAsync("F123", "20260701_120000");
@@ -84,7 +86,8 @@ public sealed class JourneyStoreTests : IDisposable
                 "futureVisit": "kept"
               }]
             }
-            """);
+            """
+        );
         var store = new JourneyStore(temporaryDirectory);
         var loaded = await store.LoadAsync("F123", "20260701_120000");
         var journey = Assert.IsType<JourneyDocument>(loaded.Journey);
@@ -93,13 +96,7 @@ public sealed class JourneyStoreTests : IDisposable
         {
             Name = "After",
             Description = "After description",
-            VisitedSystems =
-            [
-                visit with
-                {
-                    Counts = visit.Counts with { Notes = 2, Screenshots = 3 },
-                },
-            ],
+            VisitedSystems = [visit with { Counts = visit.Counts with { Notes = 2, Screenshots = 3 } }],
         };
 
         await store.SaveAsync(updated);
@@ -127,7 +124,9 @@ public sealed class JourneyStoreTests : IDisposable
                 "Fresh journey",
                 string.Empty,
                 "Journal.2026-07-24T123456.01.log",
-                timestamp));
+                timestamp
+            )
+        );
 
         Assert.Equal("20260724_123456", journey.FileName);
         Assert.Equal(timestamp.AddMilliseconds(-10), journey.StartTime);
@@ -166,13 +165,11 @@ public sealed class JourneyStoreTests : IDisposable
                 }
               ]
             }
-            """);
+            """
+        );
         var store = new JourneyStore(temporaryDirectory);
 
-        var updated = await store.IncrementNoteCountAsync(
-            "F123",
-            "20260701_120000",
-            42);
+        var updated = await store.IncrementNoteCountAsync("F123", "20260701_120000", 42);
 
         Assert.True(updated);
         var loaded = await store.LoadAsync("F123", "20260701_120000");
@@ -186,10 +183,9 @@ public sealed class JourneyStoreTests : IDisposable
         var directory = CreateJourneyDirectory();
         await File.WriteAllTextAsync(
             Path.Combine(directory, "good.json"),
-            "{\"name\":\"Good\",\"startTime\":\"2026-07-01T12:00:00Z\"}");
-        await File.WriteAllTextAsync(
-            Path.Combine(directory, "bad.json"),
-            "{\"name\":");
+            "{\"name\":\"Good\",\"startTime\":\"2026-07-01T12:00:00Z\"}"
+        );
+        await File.WriteAllTextAsync(Path.Combine(directory, "bad.json"), "{\"name\":");
         var store = new JourneyStore(temporaryDirectory);
 
         var result = await store.LoadAllAsync("F123");
@@ -219,10 +215,10 @@ public sealed class JourneyStoreTests : IDisposable
             DateTimeOffset.UtcNow,
             null,
             DateTimeOffset.UtcNow,
-            []);
+            []
+        );
 
-        await Assert.ThrowsAsync<InvalidDataException>(
-            () => store.SaveAsync(journey));
+        await Assert.ThrowsAsync<InvalidDataException>(() => store.SaveAsync(journey));
 
         Assert.Equal(malformed, await File.ReadAllTextAsync(path));
     }
@@ -232,12 +228,9 @@ public sealed class JourneyStoreTests : IDisposable
     {
         var store = new JourneyStore(temporaryDirectory);
 
-        await Assert.ThrowsAsync<ArgumentException>(
-            () => store.LoadAsync("../outside", "test"));
-        await Assert.ThrowsAsync<ArgumentException>(
-            () => store.LoadAsync("F123", "../outside"));
-        await Assert.ThrowsAsync<ArgumentException>(
-            () => store.LoadAsync("F123", "../outside.json"));
+        await Assert.ThrowsAsync<ArgumentException>(() => store.LoadAsync("../outside", "test"));
+        await Assert.ThrowsAsync<ArgumentException>(() => store.LoadAsync("F123", "../outside"));
+        await Assert.ThrowsAsync<ArgumentException>(() => store.LoadAsync("F123", "../outside.json"));
     }
 
     private string CreateJourneyDirectory()

@@ -16,7 +16,8 @@ public sealed class DiagnosticReplayOverlayIntegrationTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-diagnostic-overlay-{Guid.NewGuid():N}");
+        $"SrvSurvey-diagnostic-overlay-{Guid.NewGuid():N}"
+    );
 
     [AvaloniaFact]
     public async Task ProgressiveReplayDrivesNormalOverlayVisibilityAndExpiry()
@@ -29,38 +30,34 @@ public sealed class DiagnosticReplayOverlayIntegrationTests : IDisposable
                 "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Commander\",\"Name\":\"Replay Cmdr\",\"FID\":\"F123456\"}",
                 "{\"timestamp\":\"2026-08-21T18:00:01Z\",\"event\":\"Materials\",\"Raw\":[],\"Manufactured\":[],\"Encoded\":[{\"Name\":\"ancienttechnologicaldata\",\"Name_Localised\":\"Pattern Epsilon Obelisk Data\",\"Count\":4}]}",
                 "{\"timestamp\":\"2026-08-21T18:00:02Z\",\"event\":\"MaterialCollected\",\"Category\":\"Encoded\",\"Name\":\"ancienttechnologicaldata\",\"Name_Localised\":\"Pattern Epsilon Obelisk Data\",\"Count\":3}",
-            ]);
+            ]
+        );
         var session = await new ReplaySessionManager().ImportAsync(
             sourcePath,
             Path.Combine(temporaryDirectory, "managed"),
-            CancellationToken.None);
-        var context = await DiagnosticReplayContext.LoadAsync(
-            session.ManifestPath,
-            CancellationToken.None);
+            CancellationToken.None
+        );
+        var context = await DiagnosticReplayContext.LoadAsync(session.ManifestPath, CancellationToken.None);
         var player = new JournalReplayPlayer(session);
-        var monitor = new JournalDirectoryMonitor(
-            context.JournalDirectory,
-            context.Commander.FrontierId);
-        var time = new MutableTimeProvider(
-            DateTimeOffset.Parse("2026-08-21T18:00:00Z"));
+        var monitor = new JournalDirectoryMonitor(context.JournalDirectory, context.Commander.FrontierId);
+        var time = new MutableTimeProvider(DateTimeOffset.Parse("2026-08-21T18:00:00Z"));
         var notification = new NotificationViewModel(
-            new NotificationSettingsStore(
-                context.AppDataPaths.UiSettingsPath),
-            time);
+            new NotificationSettingsStore(context.AppDataPaths.UiSettingsPath),
+            time
+        );
         var registry = new OverlayWindowRegistry();
         var platform = new RecordingOverlayPlatform();
         using var coordinator = new NotificationOverlayCoordinator(
             notification,
             platform,
             context.CreateGameWindowTracker(),
-            registry: registry);
+            registry: registry
+        );
 
         Assert.True(await player.StepAsync(CancellationToken.None));
         Assert.True(await player.StepAsync(CancellationToken.None));
         var bootstrap = await monitor.PollAsync(CancellationToken.None);
-        notification.ApplyJournalEvents(
-            bootstrap.JournalEvents,
-            allowNotifications: !bootstrap.IsBootstrapRead);
+        notification.ApplyJournalEvents(bootstrap.JournalEvents, allowNotifications: !bootstrap.IsBootstrapRead);
 
         Assert.True(bootstrap.IsBootstrapRead);
         Assert.False(coordinator.IsVisible);
@@ -68,9 +65,7 @@ public sealed class DiagnosticReplayOverlayIntegrationTests : IDisposable
 
         Assert.True(await player.StepAsync(CancellationToken.None));
         var live = await monitor.PollAsync(CancellationToken.None);
-        notification.ApplyJournalEvents(
-            live.JournalEvents,
-            allowNotifications: !live.IsBootstrapRead);
+        notification.ApplyJournalEvents(live.JournalEvents, allowNotifications: !live.IsBootstrapRead);
 
         Assert.False(live.IsBootstrapRead);
         Assert.True(coordinator.IsVisible);
@@ -80,9 +75,7 @@ public sealed class DiagnosticReplayOverlayIntegrationTests : IDisposable
 
         registry.SetUserVisibility("PlotFloatie", visible: false);
         Assert.False(Find(registry, "PlotFloatie").IsVisible);
-        Assert.Equal(
-            OverlayVisibilityReasons.UserDisabled,
-            registry.GetDecision(replayWindow).Reasons);
+        Assert.Equal(OverlayVisibilityReasons.UserDisabled, registry.GetDecision(replayWindow).Reasons);
         registry.SetUserVisibility("PlotFloatie", visible: true);
         Assert.True(Find(registry, "PlotFloatie").IsVisible);
 
@@ -100,10 +93,7 @@ public sealed class DiagnosticReplayOverlayIntegrationTests : IDisposable
             Assert.True(Find(registry, "PlotFloatie").IsVisible);
             registry.SetGalaxyMapContextActive(active: false);
 
-            registry.SetGlobalSuppression(
-                manualSuppressed: false,
-                suitSuppressed: true,
-                sessionSuppressed: false);
+            registry.SetGlobalSuppression(manualSuppressed: false, suitSuppressed: true, sessionSuppressed: false);
             Assert.All(registry.Snapshot(), item => Assert.False(item.IsVisible));
             registry.SetGlobalSuppression(false, false, false);
 
@@ -115,16 +105,12 @@ public sealed class DiagnosticReplayOverlayIntegrationTests : IDisposable
             guardianWindow.Show();
             Assert.True(guardianWindow.IsVisible);
             Assert.False(biologyWindow.IsVisible);
-            Assert.Equal(
-                OverlayVisibilityReasons.PriorityObscured,
-                registry.GetDecision(biologyWindow).Reasons);
+            Assert.Equal(OverlayVisibilityReasons.PriorityObscured, registry.GetDecision(biologyWindow).Reasons);
 
             notification.Enabled = false;
             Assert.False(coordinator.IsVisible);
             notification.Enabled = true;
-            notification.ApplyJournalEvents(
-                live.JournalEvents,
-                allowNotifications: true);
+            notification.ApplyJournalEvents(live.JournalEvents, allowNotifications: true);
             Assert.True(coordinator.IsVisible);
 
             time.Advance(TimeSpan.FromSeconds(6));
@@ -162,13 +148,10 @@ public sealed class DiagnosticReplayOverlayIntegrationTests : IDisposable
         }
     }
 
-    private static RegisteredOverlayWindow Find(
-        OverlayWindowRegistry registry,
-        string plotterName) => registry.Snapshot().Single(item =>
-            item.PlotterName == plotterName);
+    private static RegisteredOverlayWindow Find(OverlayWindowRegistry registry, string plotterName) =>
+        registry.Snapshot().Single(item => item.PlotterName == plotterName);
 
-    private sealed class MutableTimeProvider(DateTimeOffset value)
-        : TimeProvider
+    private sealed class MutableTimeProvider(DateTimeOffset value) : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => value;
 
@@ -191,15 +174,9 @@ public sealed class DiagnosticReplayOverlayIntegrationTests : IDisposable
             return new OverlayPreparationResult(true, true, "Prepared");
         }
 
-        public OverlayInteractionResult SetInteractive(
-            Window window,
-            bool interactive) => new(
-                true,
-                interactive,
-                "Prepared");
+        public OverlayInteractionResult SetInteractive(Window window, bool interactive) =>
+            new(true, interactive, "Prepared");
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
     }
 }

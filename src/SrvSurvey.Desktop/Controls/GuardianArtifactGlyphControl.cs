@@ -7,9 +7,10 @@ namespace SrvSurvey.Desktop.Controls;
 
 public sealed class GuardianArtifactGlyphControl : Control
 {
-    public static readonly StyledProperty<string?> ArtifactCodeProperty =
-        AvaloniaProperty.Register<GuardianArtifactGlyphControl, string?>(
-            nameof(ArtifactCode));
+    public static readonly StyledProperty<string?> ArtifactCodeProperty = AvaloniaProperty.Register<
+        GuardianArtifactGlyphControl,
+        string?
+    >(nameof(ArtifactCode));
 
     static GuardianArtifactGlyphControl()
     {
@@ -30,20 +31,14 @@ public sealed class GuardianArtifactGlyphControl : Control
             return;
         }
 
-        var style = GuardianLegacyMapDrawing.GetPointStyle(
-            type,
-            GuardianPoiStatus.Present);
+        var style = GuardianLegacyMapDrawing.GetPointStyle(type, GuardianPoiStatus.Present);
         var fill = new SolidColorBrush(style.Fill);
         var pen = new Pen(new SolidColorBrush(style.Stroke), 2);
         var center = new Point(Bounds.Width / 2, Bounds.Height / 2);
         if (type == GuardianPoiType.Relic)
         {
             var geometry = new StreamGeometry();
-            var points = GuardianLegacyMapDrawing.CreateGlyphPoints(
-                type,
-                center,
-                0,
-                0.65);
+            var points = GuardianLegacyMapDrawing.CreateGlyphPoints(type, center, 0, 0.65);
             using var geometryContext = geometry.Open();
             geometryContext.BeginFigure(points[0], isFilled: true);
             foreach (var point in points.Skip(1))
@@ -59,9 +54,7 @@ public sealed class GuardianArtifactGlyphControl : Control
         context.DrawEllipse(fill, pen, center, 5, 5);
     }
 
-    private static bool TryResolveType(
-        string? code,
-        out GuardianPoiType type)
+    private static bool TryResolveType(string? code, out GuardianPoiType type)
     {
         type = code?.ToLowerInvariant() switch
         {

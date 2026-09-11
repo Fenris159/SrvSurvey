@@ -3,8 +3,8 @@ using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Storage;
-using SrvSurvey.Desktop.ViewModels;
 using SrvSurvey.Desktop.Platform.Overlay;
+using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
@@ -28,8 +28,15 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
         clock.Advance(1);
         await mining.ToggleRigAsync(1);
         var location = mining.Rigs[0].Marker!.Location;
-        MiningBarState[] wrong = [MiningBarState.Absent, MiningBarState.Unknown, MiningBarState.Unknown,
-            MiningBarState.Present, MiningBarState.Unknown, MiningBarState.Unknown];
+        MiningBarState[] wrong =
+        [
+            MiningBarState.Absent,
+            MiningBarState.Unknown,
+            MiningBarState.Unknown,
+            MiningBarState.Present,
+            MiningBarState.Unknown,
+            MiningBarState.Unknown,
+        ];
         for (var i = 1; i <= 8; i++)
         {
             clock.Advance(.5);
@@ -45,8 +52,15 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
         Assert.True(mining.Rigs[0].IsSet);
         Assert.False(mining.Rigs[3].IsSet);
         clock.Advance(.5);
-        MiningBarState[] corrected = [MiningBarState.Present, MiningBarState.Present, MiningBarState.Unknown,
-            MiningBarState.Absent, MiningBarState.Unknown, MiningBarState.Unknown];
+        MiningBarState[] corrected =
+        [
+            MiningBarState.Present,
+            MiningBarState.Present,
+            MiningBarState.Unknown,
+            MiningBarState.Absent,
+            MiningBarState.Unknown,
+            MiningBarState.Unknown,
+        ];
         await mining.ApplyDetectedRigsAsync(corrected, mining.DetectionContext!, mining.Detection.Settings);
         Assert.Equal(location, mining.Rigs[0].Marker!.Location);
         Assert.True(mining.Rigs[1].IsSet);
@@ -64,8 +78,20 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
         clock.Advance(1);
         async Task Apply(MiningBarState first, MiningBarState second)
         {
-            var states = mining.Detection.Apply(new([first, second, MiningBarState.Unknown,
-                MiningBarState.Unknown, MiningBarState.Unknown, MiningBarState.Unknown], 0, 0));
+            var states = mining.Detection.Apply(
+                new(
+                    [
+                        first,
+                        second,
+                        MiningBarState.Unknown,
+                        MiningBarState.Unknown,
+                        MiningBarState.Unknown,
+                        MiningBarState.Unknown,
+                    ],
+                    0,
+                    0
+                )
+            );
             await mining.ApplyDetectedRigsAsync(states, mining.DetectionContext!, mining.Detection.Settings);
         }
         await Apply(MiningBarState.Present, MiningBarState.Present);
@@ -76,12 +102,20 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
         await Apply(MiningBarState.Present, MiningBarState.Present);
         Assert.Equal(original, mining.Rigs[0].Marker!.Location);
         await Apply(MiningBarState.Absent, MiningBarState.Unknown);
-        for (var i = 0; i < 5; i++) { clock.Advance(.5); await Apply(MiningBarState.Absent, MiningBarState.Unknown); }
+        for (var i = 0; i < 5; i++)
+        {
+            clock.Advance(.5);
+            await Apply(MiningBarState.Absent, MiningBarState.Unknown);
+        }
         Assert.True(mining.Rigs[0].IsSet);
         await Apply(MiningBarState.Unknown, MiningBarState.Unknown);
         clock.Advance(1);
         await Apply(MiningBarState.Absent, MiningBarState.Unknown);
-        for (var i = 0; i < 5; i++) { clock.Advance(.5); await Apply(MiningBarState.Absent, MiningBarState.Unknown); }
+        for (var i = 0; i < 5; i++)
+        {
+            clock.Advance(.5);
+            await Apply(MiningBarState.Absent, MiningBarState.Unknown);
+        }
         Assert.True(mining.Rigs[0].IsSet);
         clock.Advance(.5);
         await Apply(MiningBarState.Absent, MiningBarState.Unknown);
@@ -97,7 +131,11 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
     [InlineData(false, false, false)]
     [InlineData(true, true, false)]
     [InlineData(true, false, true)]
-    public async Task DetectionDoesNotWriteWhenDisabledCalibratingOrContextChanged(bool enabled, bool calibrating, bool changedContext)
+    public async Task DetectionDoesNotWriteWhenDisabledCalibratingOrContextChanged(
+        bool enabled,
+        bool calibrating,
+        bool changedContext
+    )
     {
         using var mining = new SurfaceMiningViewModel(new SystemSurfaceStore(root));
         mining.Detection.Enabled = enabled;
@@ -105,8 +143,15 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
         var context = mining.DetectionContext!;
         mining.Detection.IsCalibrating = calibrating;
         if (changedContext)
+        {
             await mining.ApplyUpdateAsync(Session with { FrontierId = "F456" }, Snapshot(), Status(), "mev_rhino");
-        await mining.ApplyDetectedRigsAsync(Enumerable.Repeat(MiningBarState.Present, 6).ToArray(), context, mining.Detection.Settings);
+        }
+
+        await mining.ApplyDetectedRigsAsync(
+            Enumerable.Repeat(MiningBarState.Present, 6).ToArray(),
+            context,
+            mining.Detection.Settings
+        );
         Assert.All(mining.Rigs, rig => Assert.False(rig.IsSet));
     }
 
@@ -114,7 +159,9 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
     {
         private long ticks;
         public override long TimestampFrequency => TimeSpan.TicksPerSecond;
+
         public override long GetTimestamp() => ticks;
+
         internal void Advance(double seconds) => ticks += TimeSpan.FromSeconds(seconds).Ticks;
     }
 
@@ -122,8 +169,13 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
     public async Task NamedResourcesTrackEveryLocationWithoutBiologyOrRigSlots()
     {
         using var mining = new SurfaceMiningViewModel(new SystemSurfaceStore(root));
-        SurfaceRadarMarkerViewModel Resource(string name, double distance, double bearing = 20,
-            SurfaceRadarMarkerKind kind = SurfaceRadarMarkerKind.Bookmark) => new()
+        SurfaceRadarMarkerViewModel Resource(
+            string name,
+            double distance,
+            double bearing = 20,
+            SurfaceRadarMarkerKind kind = SurfaceRadarMarkerKind.Bookmark
+        ) =>
+            new()
             {
                 Name = name,
                 Kind = kind,
@@ -132,22 +184,30 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
                 Location = new(0, distance / 1_000_000 * 180 / Math.PI),
                 IsActive = false,
             };
-        SurfaceRadarMarkerViewModel[] bookmarks = [
-            Resource("thortveitite", 149), Resource("helium", 2_350), Resource("helium", 150),
-            Resource("#1", 12), Resource("$Codex_Ent_Bacterial_Genus_Name;", 45),
-            Resource("Bacterium", 45), Resource("organic", 50, kind: SurfaceRadarMarkerKind.ActiveSample),
+        SurfaceRadarMarkerViewModel[] bookmarks =
+        [
+            Resource("thortveitite", 149),
+            Resource("helium", 2_350),
+            Resource("helium", 150),
+            Resource("#1", 12),
+            Resource("$Codex_Ent_Bacterial_Genus_Name;", 45),
+            Resource("Bacterium", 45),
+            Resource("organic", 50, kind: SurfaceRadarMarkerKind.ActiveSample),
         ];
         await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino", surfaceMarkers: bookmarks);
         Assert.Equal(ExpectedResourceNames, mining.Resources.Select(resource => resource.Name));
         Assert.Equal(ExpectedResourceDistances, mining.Resources.Select(resource => resource.Marker.DistanceMeters));
         Assert.Equal(ExpectedResourceNearStates, mining.Resources.Select(resource => resource.IsNear));
         Assert.All(mining.Rigs, rig => Assert.False(rig.IsSet));
-        Assert.All(mining.Resources, resource =>
-        {
-            Assert.True(resource.Marker.IsActive);
-            Assert.Equal(70, resource.Marker.RadiusMeters);
-            Assert.Contains(resource.Marker, mining.RadarMarkers);
-        });
+        Assert.All(
+            mining.Resources,
+            resource =>
+            {
+                Assert.True(resource.Marker.IsActive);
+                Assert.Equal(70, resource.Marker.RadiusMeters);
+                Assert.Contains(resource.Marker, mining.RadarMarkers);
+            }
+        );
         var original = mining.Resources;
         await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino", surfaceMarkers: bookmarks);
         Assert.Same(original, mining.Resources);
@@ -160,8 +220,13 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
         Assert.Equal(3, mining.Resources.Count);
         Assert.All(mining.Rigs, rig => Assert.False(rig.IsSet));
 
-        await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino",
-            surfaceMarkers: [Resource("helium", 10, 270)]);
+        await mining.ApplyUpdateAsync(
+            Session,
+            Snapshot(),
+            Status(),
+            "mev_rhino",
+            surfaceMarkers: [Resource("helium", 10, 270)]
+        );
         var updated = Assert.Single(mining.Resources);
         Assert.True(updated.IsNear);
         Assert.Equal("10 m", updated.DistanceText);
@@ -183,13 +248,24 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
         Assert.False(mining.ShouldShowRigWarning);
         await mining.ToggleRigAsync(1);
         // The saved rig is 7 m behind the cockpit; vehicle centre is 4 m behind.
-        var moved = Status() with { Latitude = (distance - 3) / 1_000_000 * 180 / Math.PI };
+        var moved = Status() with
+        {
+            Latitude = (distance - 3) / 1_000_000 * 180 / Math.PI,
+        };
         await mining.ApplyUpdateAsync(Session, Snapshot(), moved, "mev_rhino");
         await mining.ToggleRigAsync(2);
         Assert.InRange(mining.Rigs[0].Marker!.DistanceMeters, distance - .01, distance + .01);
         Assert.True(mining.Rigs[1].CanCollect);
         Assert.Equal(expected, mining.ShouldShowRigWarning);
-        await mining.ApplyUpdateAsync(Session, Snapshot(), Status() with { Latitude = moved.Latitude / 2 }, "mev_rhino");
+        await mining.ApplyUpdateAsync(
+            Session,
+            Snapshot(),
+            Status() with
+            {
+                Latitude = moved.Latitude / 2,
+            },
+            "mev_rhino"
+        );
         Assert.False(mining.ShouldShowRigWarning);
         await mining.ApplyUpdateAsync(Session, Snapshot(), moved, "mev_rhino");
         await mining.ToggleRigAsync(1);
@@ -279,8 +355,12 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
     [InlineData("mev_rhino", false, 0, false)]
     [InlineData("testbuggy", true, 0, false)]
     [InlineData(null, true, 0, false)]
-    public async Task HudAnalysisRequiresRhinoCockpitWithoutAnOpenPanel(string? srv, bool inSrv,
-        int focus, bool expected)
+    public async Task HudAnalysisRequiresRhinoCockpitWithoutAnOpenPanel(
+        string? srv,
+        bool inSrv,
+        int focus,
+        bool expected
+    )
     {
         using var mining = new SurfaceMiningViewModel(new SystemSurfaceStore(root));
         var status = Status() with
@@ -358,8 +438,20 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
         var cargo = new CargoSnapshot(DateTimeOffset.UtcNow, "Cargo", "SRV", 36, []);
         await mining.ApplyUpdateAsync(Session, Snapshot(), Status() with { Cargo = 12 }, "mev_rhino", cargo: cargo);
         Assert.Equal("Cargo capacity: 36 of 72", mining.CargoText);
-        await mining.ApplyUpdateAsync(Session, Snapshot(), Status() with { Cargo = 13 }, "mev_rhino",
-            cargo: cargo with { Vessel = "Ship", Count = 400 });
+        await mining.ApplyUpdateAsync(
+            Session,
+            Snapshot(),
+            Status() with
+            {
+                Cargo = 13,
+            },
+            "mev_rhino",
+            cargo: cargo with
+            {
+                Vessel = "Ship",
+                Count = 400,
+            }
+        );
         Assert.Equal(13, mining.CargoUsed);
     }
 
@@ -480,21 +572,24 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
         Assert.All(reopened.Rigs, rig => Assert.False(rig.IsSet));
     }
 
-    private static EliteStatus Status() => new()
-    {
-        Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
-        BodyName = "Test 1",
-        PlanetRadius = 1_000_000,
-    };
+    private static EliteStatus Status() =>
+        new()
+        {
+            Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
+            BodyName = "Test 1",
+            PlanetRadius = 1_000_000,
+        };
 
     private static SystemScanSnapshot Snapshot()
     {
         var state = new SystemScanState();
-        foreach (var json in new[]
-        {
-            """{"event":"Location","StarSystem":"Test","SystemAddress":42}""",
-            """{"event":"Scan","StarSystem":"Test","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Radius":1000000,"PlanetClass":"Rocky body"}""",
-        })
+        foreach (
+            var json in new[]
+            {
+                """{"event":"Location","StarSystem":"Test","SystemAddress":42}""",
+                """{"event":"Scan","StarSystem":"Test","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Radius":1000000,"PlanetClass":"Rocky body"}""",
+            }
+        )
         {
             Assert.True(JournalEventEnvelope.TryParse(json, out var envelope, out _));
             state.Apply(envelope!);

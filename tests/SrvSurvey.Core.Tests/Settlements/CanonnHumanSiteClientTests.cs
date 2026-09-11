@@ -10,37 +10,36 @@ public sealed class CanonnHumanSiteClientTests
     [Fact]
     public void ParseReadsLegacyEnvelopeAndKeepsFirstMarketSubmission()
     {
-        var bytes = JsonSerializer.SerializeToUtf8Bytes(new object[]
-        {
-            new
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(
+            new object[]
             {
-                raw_json =
-                    "{\"name\":\"Haberlandt Survey\",\"marketId\":12345,"
-                    + "\"systemAddress\":42,\"bodyId\":3,"
-                    + "\"stationEconomy\":\"$economy_Agri;\","
-                    + "\"lat\":12.5,\"long\":-45.25,\"subType\":4,"
-                    + "\"heading\":370,\"calcMethod\":\"ManualFoot\","
-                    + "\"availblePads\":{\"Small\":2,\"Medium\":0,\"Large\":1}}",
-            },
-            new
-            {
-                raw_json =
-                    "{\"name\":\"Duplicate\",\"marketId\":12345,"
-                    + "\"systemAddress\":42,\"bodyId\":3,"
-                    + "\"stationEconomy\":\"$economy_Agri;\","
-                    + "\"lat\":12.5,\"long\":-45.25,\"subType\":1,"
-                    + "\"heading\":90}",
-            },
-            new
-            {
-                raw_json =
-                    "{\"name\":\"Wrong system\",\"marketId\":67890,"
-                    + "\"systemAddress\":99,\"bodyId\":3,"
-                    + "\"stationEconomy\":\"$economy_Agri;\","
-                    + "\"lat\":12.5,\"long\":-45.25}",
-            },
-            new { raw_json = "{" },
-        });
+                new
+                {
+                    raw_json = "{\"name\":\"Haberlandt Survey\",\"marketId\":12345,"
+                        + "\"systemAddress\":42,\"bodyId\":3,"
+                        + "\"stationEconomy\":\"$economy_Agri;\","
+                        + "\"lat\":12.5,\"long\":-45.25,\"subType\":4,"
+                        + "\"heading\":370,\"calcMethod\":\"ManualFoot\","
+                        + "\"availblePads\":{\"Small\":2,\"Medium\":0,\"Large\":1}}",
+                },
+                new
+                {
+                    raw_json = "{\"name\":\"Duplicate\",\"marketId\":12345,"
+                        + "\"systemAddress\":42,\"bodyId\":3,"
+                        + "\"stationEconomy\":\"$economy_Agri;\","
+                        + "\"lat\":12.5,\"long\":-45.25,\"subType\":1,"
+                        + "\"heading\":90}",
+                },
+                new
+                {
+                    raw_json = "{\"name\":\"Wrong system\",\"marketId\":67890,"
+                        + "\"systemAddress\":99,\"bodyId\":3,"
+                        + "\"stationEconomy\":\"$economy_Agri;\","
+                        + "\"lat\":12.5,\"long\":-45.25}",
+                },
+                new { raw_json = "{" },
+            }
+        );
 
         var result = CanonnHumanSiteClient.Parse(bytes, 42);
 
@@ -59,40 +58,33 @@ public sealed class CanonnHumanSiteClientTests
     [InlineData("not json")]
     public void ParseRejectsInvalidOuterEnvelope(string payload)
     {
-        Assert.Throws<InvalidDataException>(() =>
-            CanonnHumanSiteClient.Parse(Encoding.UTF8.GetBytes(payload), 42));
+        Assert.Throws<InvalidDataException>(() => CanonnHumanSiteClient.Parse(Encoding.UTF8.GetBytes(payload), 42));
     }
 
     [Fact]
     public async Task GetStationsTreatsNotFoundAsAnEmptyResult()
     {
-        var handler = new StubHandler(new HttpResponseMessage(
-            HttpStatusCode.NotFound));
-        var client = new CanonnHumanSiteClient(
-            new HttpClient(handler),
-            new Uri("https://example.test/query/"));
+        var handler = new StubHandler(new HttpResponseMessage(HttpStatusCode.NotFound));
+        var client = new CanonnHumanSiteClient(new HttpClient(handler), new Uri("https://example.test/query/"));
 
         var result = await client.GetStationsAsync(42);
 
         Assert.Empty(result.Stations);
         Assert.Empty(result.Warnings);
-        Assert.Equal(
-            new Uri("https://example.test/query/42"),
-            handler.RequestUri);
+        Assert.Equal(new Uri("https://example.test/query/42"), handler.RequestUri);
     }
 
     [Fact]
     public async Task PublishStationUsesLegacyPayloadAndEndpointContract()
     {
-        var handler = new RecordingHandler(new HttpResponseMessage(
-            HttpStatusCode.OK)
-        {
-            Content = new StringContent("accepted"),
-        });
+        var handler = new RecordingHandler(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("accepted") }
+        );
         var client = new CanonnHumanSiteClient(
             new HttpClient(handler),
             new Uri("https://example.test/query/"),
-            new Uri("https://example.test/publish"));
+            new Uri("https://example.test/publish")
+        );
         var submission = new CanonnHumanSiteSubmission(
             DateTimeOffset.Parse("2026-07-25T12:00:00Z"),
             new Version(2, 0, 95, 0),
@@ -111,7 +103,8 @@ public sealed class CanonnHumanSiteClientTests
             "foot",
             0,
             6_000_000,
-            new HumanSiteLandingPads(2, 0, 1));
+            new HumanSiteLandingPads(2, 0, 1)
+        );
 
         var result = await client.PublishStationAsync(submission);
 
@@ -124,16 +117,14 @@ public sealed class CanonnHumanSiteClientTests
         Assert.Equal(12345, root.GetProperty("marketId").GetInt64());
         Assert.Equal(275, root.GetProperty("heading").GetDouble());
         Assert.Equal("ManualFoot", root.GetProperty("calcMethod").GetString());
-        Assert.Equal(2,
-            root.GetProperty("availblePads").GetProperty("Small").GetInt32());
+        Assert.Equal(2, root.GetProperty("availblePads").GetProperty("Small").GetInt32());
         Assert.False(root.TryGetProperty("availablePads", out _));
     }
 
     [Fact]
     public async Task PublishStationRejectsIncompleteDataBeforeSending()
     {
-        var handler = new RecordingHandler(new HttpResponseMessage(
-            HttpStatusCode.OK));
+        var handler = new RecordingHandler(new HttpResponseMessage(HttpStatusCode.OK));
         var client = new CanonnHumanSiteClient(new HttpClient(handler));
         var submission = new CanonnHumanSiteSubmission(
             DateTimeOffset.UtcNow,
@@ -153,30 +144,29 @@ public sealed class CanonnHumanSiteClientTests
             "sidewinder",
             1,
             6_000_000,
-            HumanSiteLandingPads.Empty);
+            HumanSiteLandingPads.Empty
+        );
 
-        await Assert.ThrowsAsync<ArgumentException>(
-            () => client.PublishStationAsync(submission));
+        await Assert.ThrowsAsync<ArgumentException>(() => client.PublishStationAsync(submission));
 
         Assert.Null(handler.RequestUri);
     }
 
-    private sealed class StubHandler(HttpResponseMessage response)
-        : HttpMessageHandler
+    private sealed class StubHandler(HttpResponseMessage response) : HttpMessageHandler
     {
         public Uri? RequestUri { get; private set; }
 
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
             RequestUri = request.RequestUri;
             return Task.FromResult(response);
         }
     }
 
-    private sealed class RecordingHandler(HttpResponseMessage response)
-        : HttpMessageHandler
+    private sealed class RecordingHandler(HttpResponseMessage response) : HttpMessageHandler
     {
         public HttpMethod? Method { get; private set; }
 
@@ -186,13 +176,12 @@ public sealed class CanonnHumanSiteClientTests
 
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
             Method = request.Method;
             RequestUri = request.RequestUri;
-            Content = request.Content is null
-                ? null
-                : await request.Content.ReadAsStringAsync(cancellationToken);
+            Content = request.Content is null ? null : await request.Content.ReadAsStringAsync(cancellationToken);
             return response;
         }
     }

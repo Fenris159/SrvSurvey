@@ -10,68 +10,61 @@ public sealed class QuestDevelopmentFolderLoader
 {
     private static readonly UTF8Encoding StrictUtf8 = new(
         encoderShouldEmitUTF8Identifier: false,
-        throwOnInvalidBytes: true);
+        throwOnInvalidBytes: true
+    );
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         AllowTrailingCommas = true,
         PropertyNameCaseInsensitive = true,
         ReadCommentHandling = JsonCommentHandling.Skip,
-        Converters =
-        {
-            new JsonStringEnumConverter(),
-        },
+        Converters = { new JsonStringEnumConverter() },
     };
 
     [SuppressMessage(
         "Performance",
         "CA1822:Mark members as static",
-        Justification = "The loader is exposed as an injectable service instance.")]
+        Justification = "The loader is exposed as an injectable service instance."
+    )]
     public async Task<QuestDevelopmentFolderLoadResult> LoadAsync(
         string sourceDirectory,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceDirectory);
         var root = Path.GetFullPath(sourceDirectory);
         if (!Directory.Exists(root))
         {
-            throw new DirectoryNotFoundException(
-                $"Quest development folder was not found: {root}");
+            throw new DirectoryNotFoundException($"Quest development folder was not found: {root}");
         }
 
         var questPath = Path.Combine(root, "quest.json");
         if (!File.Exists(questPath))
         {
-            throw new FileNotFoundException(
-                "The quest development folder does not contain quest.json.",
-                questPath);
+            throw new FileNotFoundException("The quest development folder does not contain quest.json.", questPath);
         }
 
         var paths = EnumerateSourcePaths(root, questPath);
-        var loaded = new Dictionary<string, LoadedSourceFile>(
-            PathComparer);
+        var loaded = new Dictionary<string, LoadedSourceFile>(PathComparer);
         foreach (var path in paths)
         {
             cancellationToken.ThrowIfCancellationRequested();
             RejectReparsePoint(path);
-            var bytes = await File.ReadAllBytesAsync(path, cancellationToken)
-                .ConfigureAwait(false);
-            loaded.Add(path, new LoadedSourceFile(
-                Path.GetRelativePath(root, path),
-                bytes,
-                Convert.ToHexString(SHA256.HashData(bytes))));
+            var bytes = await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false);
+            loaded.Add(
+                path,
+                new LoadedSourceFile(
+                    Path.GetRelativePath(root, path),
+                    bytes,
+                    Convert.ToHexString(SHA256.HashData(bytes))
+                )
+            );
         }
 
-        await VerifySourcesUnchangedAsync(
-                root,
-                questPath,
-                loaded,
-                cancellationToken)
-            .ConfigureAwait(false);
+        await VerifySourcesUnchangedAsync(root, questPath, loaded, cancellationToken).ConfigureAwait(false);
 
-        var definition = Deserialize<RavenQuestDefinition>(
-                loaded[questPath],
-                "quest.json")
+        var definition =
+            Deserialize<RavenQuestDefinition>(loaded[questPath], "quest.json")
             ?? throw new InvalidDataException("quest.json contains JSON null.");
         definition = Normalize(definition);
         ValidateDefinitionIdentity(definition);
@@ -81,33 +74,32 @@ public sealed class QuestDevelopmentFolderLoader
         {
             definition = definition with
             {
-                Strings = Deserialize<Dictionary<string, string>>(
-                        stringsFile,
-                        "strings.json")
-                    ?? throw new InvalidDataException(
-                        "strings.json contains JSON null."),
+                Strings =
+                    Deserialize<Dictionary<string, string>>(stringsFile, "strings.json")
+                    ?? throw new InvalidDataException("strings.json contains JSON null."),
             };
         }
 
         var messages = definition.Messages.ToList();
-        foreach (var file in loaded.Values
-                     .Where(file => string.Equals(
-                         Path.GetExtension(file.RelativePath),
-                         ".md",
-                         StringComparison.OrdinalIgnoreCase))
-                     .OrderBy(file => file.RelativePath, PathComparer))
+        foreach (
+            var file in loaded
+                .Values.Where(file =>
+                    string.Equals(Path.GetExtension(file.RelativePath), ".md", StringComparison.OrdinalIgnoreCase)
+                )
+                .OrderBy(file => file.RelativePath, PathComparer)
+        )
         {
             messages.Add(ParseMessage(file));
         }
 
-        var chapters = definition.Chapters.ToDictionary(
-            StringComparer.Ordinal);
-        foreach (var file in loaded.Values
-                     .Where(file => string.Equals(
-                         Path.GetExtension(file.RelativePath),
-                         ".lua",
-                         StringComparison.OrdinalIgnoreCase))
-                     .OrderBy(file => file.RelativePath, PathComparer))
+        var chapters = definition.Chapters.ToDictionary(StringComparer.Ordinal);
+        foreach (
+            var file in loaded
+                .Values.Where(file =>
+                    string.Equals(Path.GetExtension(file.RelativePath), ".lua", StringComparison.OrdinalIgnoreCase)
+                )
+                .OrderBy(file => file.RelativePath, PathComparer)
+        )
         {
             var chapterId = Path.GetFileNameWithoutExtension(file.RelativePath);
             chapters[chapterId] = Decode(file, file.RelativePath);
@@ -115,43 +107,25 @@ public sealed class QuestDevelopmentFolderLoader
 
         if (!chapters.ContainsKey(definition.FirstChapter))
         {
-            throw new InvalidDataException(
-                $"First chapter script not found: {definition.FirstChapter}.lua");
+            throw new InvalidDataException($"First chapter script not found: {definition.FirstChapter}.lua");
         }
 
-        definition = definition with
-        {
-            Messages = messages,
-            Chapters = chapters,
-        };
+        definition = definition with { Messages = messages, Chapters = chapters };
         var warnings = messages
             .GroupBy(message => message.Id, StringComparer.Ordinal)
             .Where(group => group.Count() > 1)
-            .Select(group =>
-                $"Quest message ID '{group.Key}' is defined more than once.")
+            .Select(group => $"Quest message ID '{group.Key}' is defined more than once.")
             .ToArray();
-        var inventory = loaded.Values
-            .OrderBy(file => file.RelativePath, PathComparer)
-            .Select(file => new QuestDevelopmentSourceFile(
-                file.RelativePath,
-                file.Bytes.LongLength,
-                file.Sha256))
+        var inventory = loaded
+            .Values.OrderBy(file => file.RelativePath, PathComparer)
+            .Select(file => new QuestDevelopmentSourceFile(file.RelativePath, file.Bytes.LongLength, file.Sha256))
             .ToArray();
-        return new QuestDevelopmentFolderLoadResult(
-            root,
-            definition,
-            inventory,
-            warnings);
+        return new QuestDevelopmentFolderLoadResult(root, definition, inventory, warnings);
     }
 
-    private static string[] EnumerateSourcePaths(
-        string root,
-        string questPath)
+    private static string[] EnumerateSourcePaths(string root, string questPath)
     {
-        var paths = new HashSet<string>(PathComparer)
-        {
-            questPath,
-        };
+        var paths = new HashSet<string>(PathComparer) { questPath };
         var stringsPath = Path.Combine(root, "strings.json");
         if (File.Exists(stringsPath))
         {
@@ -160,19 +134,12 @@ public sealed class QuestDevelopmentFolderLoader
 
         foreach (var pattern in new[] { "*.md", "*.lua" })
         {
-            foreach (var path in Directory.EnumerateFiles(
-                         root,
-                         pattern,
-                         SearchOption.TopDirectoryOnly))
+            foreach (var path in Directory.EnumerateFiles(root, pattern, SearchOption.TopDirectoryOnly))
             {
                 var fullPath = Path.GetFullPath(path);
-                if (!string.Equals(
-                        Path.GetDirectoryName(fullPath),
-                        root,
-                        PathComparison))
+                if (!string.Equals(Path.GetDirectoryName(fullPath), root, PathComparison))
                 {
-                    throw new InvalidDataException(
-                        $"Quest source path escapes its selected folder: {path}");
+                    throw new InvalidDataException($"Quest source path escapes its selected folder: {path}");
                 }
 
                 paths.Add(fullPath);
@@ -186,14 +153,13 @@ public sealed class QuestDevelopmentFolderLoader
         string root,
         string questPath,
         IReadOnlyDictionary<string, LoadedSourceFile> loaded,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var currentPaths = EnumerateSourcePaths(root, questPath);
-        if (currentPaths.Length != loaded.Count
-            || currentPaths.Any(path => !loaded.ContainsKey(path)))
+        if (currentPaths.Length != loaded.Count || currentPaths.Any(path => !loaded.ContainsKey(path)))
         {
-            throw new IOException(
-                "Quest source files changed while the folder was being read.");
+            throw new IOException("Quest source files changed while the folder was being read.");
         }
 
         foreach (var pair in loaded)
@@ -201,19 +167,19 @@ public sealed class QuestDevelopmentFolderLoader
             cancellationToken.ThrowIfCancellationRequested();
             if (!File.Exists(pair.Key))
             {
-                throw new IOException(
-                    $"Quest source changed while it was being read: {pair.Value.RelativePath}");
+                throw new IOException($"Quest source changed while it was being read: {pair.Value.RelativePath}");
             }
 
-            var current = await File.ReadAllBytesAsync(pair.Key, cancellationToken)
-                .ConfigureAwait(false);
-            if (current.LongLength != pair.Value.Bytes.LongLength
+            var current = await File.ReadAllBytesAsync(pair.Key, cancellationToken).ConfigureAwait(false);
+            if (
+                current.LongLength != pair.Value.Bytes.LongLength
                 || !CryptographicOperations.FixedTimeEquals(
                     SHA256.HashData(current),
-                    Convert.FromHexString(pair.Value.Sha256)))
+                    Convert.FromHexString(pair.Value.Sha256)
+                )
+            )
             {
-                throw new IOException(
-                    $"Quest source changed while it was being read: {pair.Value.RelativePath}");
+                throw new IOException($"Quest source changed while it was being read: {pair.Value.RelativePath}");
             }
         }
     }
@@ -222,20 +188,15 @@ public sealed class QuestDevelopmentFolderLoader
     {
         try
         {
-            return JsonSerializer.Deserialize<T>(
-                Decode(file, displayName),
-                JsonOptions);
+            return JsonSerializer.Deserialize<T>(Decode(file, displayName), JsonOptions);
         }
         catch (JsonException exception)
         {
-            throw new InvalidDataException(
-                $"{displayName} is not valid quest JSON.",
-                exception);
+            throw new InvalidDataException($"{displayName} is not valid quest JSON.", exception);
         }
     }
 
-    private static RavenQuestDefinition Normalize(
-        RavenQuestDefinition definition)
+    private static RavenQuestDefinition Normalize(RavenQuestDefinition definition)
     {
         return definition with
         {
@@ -250,32 +211,32 @@ public sealed class QuestDevelopmentFolderLoader
         };
     }
 
-    private static void ValidateDefinitionIdentity(
-        RavenQuestDefinition definition)
+    private static void ValidateDefinitionIdentity(RavenQuestDefinition definition)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(definition.Publisher);
         ArgumentException.ThrowIfNullOrWhiteSpace(definition.Id);
         ArgumentException.ThrowIfNullOrWhiteSpace(definition.Title);
         ArgumentException.ThrowIfNullOrWhiteSpace(definition.FirstChapter);
-        if (definition.Publisher.Contains('|', StringComparison.Ordinal)
-            || definition.Id.Contains('|', StringComparison.Ordinal))
+        if (
+            definition.Publisher.Contains('|', StringComparison.Ordinal)
+            || definition.Id.Contains('|', StringComparison.Ordinal)
+        )
         {
-            throw new InvalidDataException(
-                "Quest publisher or ID cannot contain '|' characters.");
+            throw new InvalidDataException("Quest publisher or ID cannot contain '|' characters.");
         }
 
-        if (definition.Id is "." or ".."
+        if (
+            definition.Id is "." or ".."
             || definition.Id.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0
             || definition.Id.Contains(Path.DirectorySeparatorChar)
-            || definition.Id.Contains(Path.AltDirectorySeparatorChar))
+            || definition.Id.Contains(Path.AltDirectorySeparatorChar)
+        )
         {
-            throw new InvalidDataException(
-                "Quest ID must be safe to use as a local definition filename.");
+            throw new InvalidDataException("Quest ID must be safe to use as a local definition filename.");
         }
     }
 
-    private static RavenQuestMessageDefinition ParseMessage(
-        LoadedSourceFile file)
+    private static RavenQuestMessageDefinition ParseMessage(LoadedSourceFile file)
     {
         var parsed = ParseMessageFields(file);
         return new RavenQuestMessageDefinition
@@ -283,9 +244,7 @@ public sealed class QuestDevelopmentFolderLoader
             Id = Path.GetFileNameWithoutExtension(file.RelativePath),
             From = parsed.From,
             Subject = parsed.Subject,
-            Body = parsed.Body.Count == 0
-                ? string.Empty
-                : string.Join('\n', parsed.Body) + "\n",
+            Body = parsed.Body.Count == 0 ? string.Empty : string.Join('\n', parsed.Body) + "\n",
             Actions = parsed.Actions.Count == 0 ? null : parsed.Actions,
             Tags = parsed.Tags,
         };
@@ -296,7 +255,8 @@ public sealed class QuestDevelopmentFolderLoader
         string? Subject,
         Dictionary<string, string> Actions,
         HashSet<string>? Tags,
-        List<string> Body);
+        List<string> Body
+    );
 
     private static MessageFields ParseMessageFields(LoadedSourceFile file)
     {
@@ -317,12 +277,7 @@ public sealed class QuestDevelopmentFolderLoader
             state.Body.Add(line);
         }
 
-        return new MessageFields(
-            state.From,
-            state.Subject,
-            state.Actions,
-            state.Tags,
-            state.Body);
+        return new MessageFields(state.From, state.Subject, state.Actions, state.Tags, state.Body);
     }
 
     private sealed class MessageParseState
@@ -340,10 +295,7 @@ public sealed class QuestDevelopmentFolderLoader
         public bool FirstBlankLine { get; set; } = true;
     }
 
-    private static bool TryParseMessageHeader(
-        LoadedSourceFile file,
-        string line,
-        MessageParseState state)
+    private static bool TryParseMessageHeader(LoadedSourceFile file, string line, MessageParseState state)
     {
         if (line.StartsWith("from:", StringComparison.OrdinalIgnoreCase))
         {
@@ -372,49 +324,37 @@ public sealed class QuestDevelopmentFolderLoader
         return false;
     }
 
-    private static HashSet<string>? ParseMessageTags(
-        LoadedSourceFile file,
-        string line)
+    private static HashSet<string>? ParseMessageTags(LoadedSourceFile file, string line)
     {
         try
         {
-            return JsonSerializer.Deserialize<HashSet<string>>(
-                line["tags:".Length..],
-                JsonOptions);
+            return JsonSerializer.Deserialize<HashSet<string>>(line["tags:".Length..], JsonOptions);
         }
         catch (JsonException exception)
         {
-            throw new InvalidDataException(
-                $"{file.RelativePath} contains invalid message tags.",
-                exception);
+            throw new InvalidDataException($"{file.RelativePath} contains invalid message tags.", exception);
         }
     }
 
-    private static void ParseMessageAction(
-        LoadedSourceFile file,
-        string line,
-        Dictionary<string, string> actions)
+    private static void ParseMessageAction(LoadedSourceFile file, string line, Dictionary<string, string> actions)
     {
         var value = line["action:".Length..];
         var separator = value.IndexOf(':', StringComparison.Ordinal);
         if (separator < 0)
         {
-            throw new InvalidDataException(
-                $"{file.RelativePath} contains an action without an ID and label.");
+            throw new InvalidDataException($"{file.RelativePath} contains an action without an ID and label.");
         }
 
         var id = value[..separator].Trim();
         var label = value[(separator + 1)..].Trim();
         if (id.Length == 0 || label.Length == 0)
         {
-            throw new InvalidDataException(
-                $"{file.RelativePath} contains an action without an ID and label.");
+            throw new InvalidDataException($"{file.RelativePath} contains an action without an ID and label.");
         }
 
         if (!actions.TryAdd(id, label))
         {
-            throw new InvalidDataException(
-                $"{file.RelativePath} defines action '{id}' more than once.");
+            throw new InvalidDataException($"{file.RelativePath} defines action '{id}' more than once.");
         }
     }
 
@@ -442,9 +382,7 @@ public sealed class QuestDevelopmentFolderLoader
         }
         catch (DecoderFallbackException exception)
         {
-            throw new InvalidDataException(
-                $"{displayName} is not valid UTF-8 and was not imported.",
-                exception);
+            throw new InvalidDataException($"{displayName} is not valid UTF-8 and was not imported.", exception);
         }
     }
 
@@ -452,32 +390,24 @@ public sealed class QuestDevelopmentFolderLoader
     {
         if ((File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0)
         {
-            throw new InvalidDataException(
-                $"Quest source links are not imported: {Path.GetFileName(path)}");
+            throw new InvalidDataException($"Quest source links are not imported: {Path.GetFileName(path)}");
         }
     }
 
-    private static StringComparer PathComparer => OperatingSystem.IsWindows()
-        ? StringComparer.OrdinalIgnoreCase
-        : StringComparer.Ordinal;
+    private static StringComparer PathComparer =>
+        OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
 
-    private static StringComparison PathComparison => OperatingSystem.IsWindows()
-        ? StringComparison.OrdinalIgnoreCase
-        : StringComparison.Ordinal;
+    private static StringComparison PathComparison =>
+        OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
 
-    private sealed record LoadedSourceFile(
-        string RelativePath,
-        byte[] Bytes,
-        string Sha256);
+    private sealed record LoadedSourceFile(string RelativePath, byte[] Bytes, string Sha256);
 }
 
 public sealed record QuestDevelopmentFolderLoadResult(
     string SourceDirectory,
     RavenQuestDefinition Definition,
     IReadOnlyList<QuestDevelopmentSourceFile> SourceFiles,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings
+);
 
-public sealed record QuestDevelopmentSourceFile(
-    string RelativePath,
-    long Length,
-    string Sha256);
+public sealed record QuestDevelopmentSourceFile(string RelativePath, long Length, string Sha256);

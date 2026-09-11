@@ -42,20 +42,19 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
         JournalReplayExporter? exporter = null,
         string? companionHistoryDirectory = null,
         Func<ReplayPresentationSnapshot?>? presentationSnapshotProvider = null,
-        TimeProvider? timeProvider = null)
+        TimeProvider? timeProvider = null
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(journalDirectory);
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceVersion);
         this.journalDirectory = Path.GetFullPath(journalDirectory);
-        this.companionHistoryDirectory = string.IsNullOrWhiteSpace(
-            companionHistoryDirectory)
-                ? null
-                : Path.GetFullPath(companionHistoryDirectory);
+        this.companionHistoryDirectory = string.IsNullOrWhiteSpace(companionHistoryDirectory)
+            ? null
+            : Path.GetFullPath(companionHistoryDirectory);
         this.sourceVersion = sourceVersion.Trim();
         this.reader = reader ?? new JournalHistoryReader();
         this.exporter = exporter ?? new JournalReplayExporter();
-        this.presentationSnapshotProvider = presentationSnapshotProvider
-            ?? (() => null);
+        this.presentationSnapshotProvider = presentationSnapshotProvider ?? (() => null);
         this.timeProvider = timeProvider ?? TimeProvider.System;
         synchronizationContext = SynchronizationContext.Current;
         refreshCommand = new AsyncCommand(RefreshAsync, () => !IsBusy);
@@ -94,11 +93,9 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
 
     public string SelectedEventFileName => SelectedEvent?.FileName ?? string.Empty;
 
-    public string SelectedEventCommanderName =>
-        SelectedEvent?.CommanderName ?? string.Empty;
+    public string SelectedEventCommanderName => SelectedEvent?.CommanderName ?? string.Empty;
 
-    public string SelectedEventSystemName =>
-        SelectedEvent?.SystemName ?? string.Empty;
+    public string SelectedEventSystemName => SelectedEvent?.SystemName ?? string.Empty;
 
     public DateTimeOffset? SelectedEventTimestamp => SelectedEvent?.Timestamp;
 
@@ -195,9 +192,7 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
         {
             var yesterday = timeProvider.GetUtcNow().UtcDateTime.Date.AddDays(-1);
             var journalStart = firstJournalTimestamp?.UtcDateTime.Date;
-            return journalStart is { } firstDate && firstDate < yesterday
-                ? firstDate
-                : yesterday;
+            return journalStart is { } firstDate && firstDate < yesterday ? firstDate : yesterday;
         }
     }
 
@@ -207,9 +202,7 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
         {
             var today = timeProvider.GetUtcNow().UtcDateTime.Date;
             var journalEnd = lastJournalTimestamp?.UtcDateTime.Date;
-            return journalEnd is { } lastDate && lastDate > today
-                ? lastDate
-                : today;
+            return journalEnd is { } lastDate && lastDate > today ? lastDate : today;
         }
     }
 
@@ -224,10 +217,7 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
 
             var maximumDate = (from + MaximumExportRange).UtcDateTime.Date;
             var availableMaximum = RangeMaximumDate;
-            return availableMaximum is { } availableDate
-                && availableDate < maximumDate
-                    ? availableDate
-                    : maximumDate;
+            return availableMaximum is { } availableDate && availableDate < maximumDate ? availableDate : maximumDate;
         }
     }
 
@@ -283,7 +273,8 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
             var selectedCount = allEvents.Count(item =>
                 item.Timestamp is { } timestamp
                 && (from is null || timestamp >= from)
-                && (to is null || timestamp <= to));
+                && (to is null || timestamp <= to)
+            );
             if (!isHistoryWindowed && selectedCount == 0)
             {
                 return "No timestamped events are inside the export range.";
@@ -317,9 +308,10 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
         CancelPendingFilter();
         try
         {
-            var snapshot = await Task.Run(() => reader.LoadAsync(
-                journalDirectory,
-                CancellationToken.None), CancellationToken.None);
+            var snapshot = await Task.Run(
+                () => reader.LoadAsync(journalDirectory, CancellationToken.None),
+                CancellationToken.None
+            );
             allEvents = snapshot.Events;
             totalEventCount = snapshot.TotalEventCount;
             isHistoryWindowed = snapshot.IsWindowed;
@@ -338,11 +330,8 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
             OnPropertyChanged(nameof(HasEvents));
             OnPropertyChanged(nameof(ExportPreview));
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException
-                or JsonException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidDataException or JsonException)
         {
             allEvents = [];
             totalEventCount = 0;
@@ -360,9 +349,7 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
         }
     }
 
-    public async Task<bool> ExportAsync(
-        string destinationPath,
-        CancellationToken cancellationToken = default)
+    public async Task<bool> ExportAsync(string destinationPath, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(destinationPath);
         if (IsBusy || !HasEvents)
@@ -383,29 +370,30 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
             var request = new JournalReplayExportRequest(
                 from,
                 to,
-                RedactExport
-                    ? ReplayPrivacyMode.Redacted
-                    : ReplayPrivacyMode.Raw,
+                RedactExport ? ReplayPrivacyMode.Redacted : ReplayPrivacyMode.Raw,
                 sourceVersion,
-                presentationSnapshotProvider());
-            var result = await Task.Run(() => exporter.ExportAsync(
-                    journalDirectory,
-                    companionHistoryDirectory,
-                    destinationPath,
-                    request,
-                    cancellationToken),
-                cancellationToken);
-            StatusMessage = $"Exported {result.EventCount:N0} events "
+                presentationSnapshotProvider()
+            );
+            var result = await Task.Run(
+                () =>
+                    exporter.ExportAsync(
+                        journalDirectory,
+                        companionHistoryDirectory,
+                        destinationPath,
+                        request,
+                        cancellationToken
+                    ),
+                cancellationToken
+            );
+            StatusMessage =
+                $"Exported {result.EventCount:N0} events "
                 + $"({result.BootstrapEventCount:N0} bootstrap) and "
                 + $"{result.CompanionEventCount:N0} companion snapshots to "
                 + $"{result.Path}.";
             return true;
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException
-                or ArgumentException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidDataException or ArgumentException)
         {
             StatusMessage = "Replay export failed: " + exception.Message;
             return false;
@@ -435,31 +423,29 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
     {
         return filter.Length == 0
             ? allEvents
-            : allEvents.Where(item => Contains(item.EventName, filter)
-                || Contains(item.FileName, filter)
-                || Contains(item.CommanderName, filter)
-                || Contains(item.SystemName, filter)
-                || Contains(item.RawJson, filter))
+            : allEvents
+                .Where(item =>
+                    Contains(item.EventName, filter)
+                    || Contains(item.FileName, filter)
+                    || Contains(item.CommanderName, filter)
+                    || Contains(item.SystemName, filter)
+                    || Contains(item.RawJson, filter)
+                )
                 .ToArray();
     }
 
-    private async Task ApplyFilterInBackgroundAsync(
-        string filter,
-        CancellationTokenSource cancellation)
+    private async Task ApplyFilterInBackgroundAsync(string filter, CancellationTokenSource cancellation)
     {
         try
         {
             await Task.Delay(150, cancellation.Token);
-            var filtered = await Task.Run(
-                () => FilterEvents(filter),
-                cancellation.Token);
+            var filtered = await Task.Run(() => FilterEvents(filter), cancellation.Token);
             await InvokeOnCapturedContextAsync(() =>
             {
-                if (ReferenceEquals(filterCancellation, cancellation)
-                    && string.Equals(
-                        SearchText.Trim(),
-                        filter,
-                        StringComparison.Ordinal))
+                if (
+                    ReferenceEquals(filterCancellation, cancellation)
+                    && string.Equals(SearchText.Trim(), filter, StringComparison.Ordinal)
+                )
                 {
                     ApplyFilteredEvents(filtered);
                 }
@@ -490,15 +476,13 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
 
     private Task InvokeOnCapturedContextAsync(Action action)
     {
-        if (synchronizationContext is null
-            || ReferenceEquals(SynchronizationContext.Current, synchronizationContext))
+        if (synchronizationContext is null || ReferenceEquals(SynchronizationContext.Current, synchronizationContext))
         {
             action();
             return Task.CompletedTask;
         }
 
-        var completion = new TaskCompletionSource(
-            TaskCreationOptions.RunContinuationsAsynchronously);
+        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         synchronizationContext.Post(
             _ =>
             {
@@ -512,7 +496,8 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
                     completion.SetException(exception);
                 }
             },
-            state: null);
+            state: null
+        );
         return completion.Task;
     }
 
@@ -569,8 +554,7 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
 
     private static string FormatTimestamp(DateTimeOffset? timestamp)
     {
-        return timestamp?.ToString("u", System.Globalization.CultureInfo.InvariantCulture)
-            ?? "unknown time";
+        return timestamp?.ToString("u", System.Globalization.CultureInfo.InvariantCulture) ?? "unknown time";
     }
 
     private DateTimeOffset? ConstrainRangeTo(DateTimeOffset? value)
@@ -589,26 +573,15 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
         return candidate > maximum ? maximum : candidate;
     }
 
-    private static DateTimeOffset? CombineDateAndTime(
-        DateTime? date,
-        TimeSpan? time)
+    private static DateTimeOffset? CombineDateAndTime(DateTime? date, TimeSpan? time)
     {
         return date is { } selectedDate
-            ? new DateTimeOffset(
-                selectedDate.Year,
-                selectedDate.Month,
-                selectedDate.Day,
-                0,
-                0,
-                0,
-                TimeSpan.Zero) + (time ?? TimeSpan.Zero)
+            ? new DateTimeOffset(selectedDate.Year, selectedDate.Month, selectedDate.Day, 0, 0, 0, TimeSpan.Zero)
+                + (time ?? TimeSpan.Zero)
             : null;
     }
 
-    private bool TryResolveRange(
-        out DateTimeOffset? from,
-        out DateTimeOffset? to,
-        out string error)
+    private bool TryResolveRange(out DateTimeOffset? from, out DateTimeOffset? to, out string error)
     {
         from = RangeFrom;
         to = RangeTo;
@@ -623,10 +596,7 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
         return true;
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -640,14 +610,10 @@ public sealed class JournalHistoryViewModel : INotifyPropertyChanged, IDisposabl
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(propertyName));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private sealed class AsyncCommand(
-        Func<Task> execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class AsyncCommand(Func<Task> execute, Func<bool> canExecute) : ICommand
     {
         public event EventHandler? CanExecuteChanged;
 

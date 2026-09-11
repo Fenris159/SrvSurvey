@@ -8,7 +8,8 @@ public sealed class BiologyRewardSettingsViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-biology-reward-vm-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-biology-reward-vm-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void EditingThresholdsKeepsBandsOrderedAndPersistsThem()
@@ -29,8 +30,7 @@ public sealed class BiologyRewardSettingsViewModelTests : IDisposable
     public void SpeciesGroupPreviewRewardsFillOneThroughFourBars()
     {
         var path = Path.Combine(temporaryDirectory, "ui-settings.json");
-        var viewModel = new BiologyRewardSettingsViewModel(
-            new BiologyRewardSettingsStore(path));
+        var viewModel = new BiologyRewardSettingsViewModel(new BiologyRewardSettingsStore(path));
         var thresholds = BiologyRewardThresholds.Default;
 
         Assert.Equal(
@@ -40,10 +40,14 @@ public sealed class BiologyRewardSettingsViewModelTests : IDisposable
                 BiologyRewardBandSegment.Empty,
                 BiologyRewardBandSegment.Empty,
             ],
-            BiologyRewardBandScale.Calculate(
-                BiologyRewardSettingsViewModel.PreviewOneBarReward,
-                BiologyRewardSettingsViewModel.PreviewOneBarReward,
-                thresholds).Segments);
+            BiologyRewardBandScale
+                .Calculate(
+                    BiologyRewardSettingsViewModel.PreviewOneBarReward,
+                    BiologyRewardSettingsViewModel.PreviewOneBarReward,
+                    thresholds
+                )
+                .Segments
+        );
         Assert.Equal(
             [
                 BiologyRewardBandSegment.Filled,
@@ -51,10 +55,10 @@ public sealed class BiologyRewardSettingsViewModelTests : IDisposable
                 BiologyRewardBandSegment.Empty,
                 BiologyRewardBandSegment.Empty,
             ],
-            BiologyRewardBandScale.Calculate(
-                viewModel.PreviewTwoBarReward,
-                viewModel.PreviewTwoBarReward,
-                thresholds).Segments);
+            BiologyRewardBandScale
+                .Calculate(viewModel.PreviewTwoBarReward, viewModel.PreviewTwoBarReward, thresholds)
+                .Segments
+        );
         Assert.Equal(
             [
                 BiologyRewardBandSegment.Filled,
@@ -62,10 +66,10 @@ public sealed class BiologyRewardSettingsViewModelTests : IDisposable
                 BiologyRewardBandSegment.Filled,
                 BiologyRewardBandSegment.Empty,
             ],
-            BiologyRewardBandScale.Calculate(
-                viewModel.PreviewThreeBarReward,
-                viewModel.PreviewThreeBarReward,
-                thresholds).Segments);
+            BiologyRewardBandScale
+                .Calculate(viewModel.PreviewThreeBarReward, viewModel.PreviewThreeBarReward, thresholds)
+                .Segments
+        );
         Assert.Equal(
             [
                 BiologyRewardBandSegment.Filled,
@@ -73,18 +77,17 @@ public sealed class BiologyRewardSettingsViewModelTests : IDisposable
                 BiologyRewardBandSegment.Filled,
                 BiologyRewardBandSegment.Filled,
             ],
-            BiologyRewardBandScale.Calculate(
-                viewModel.PreviewFourBarReward,
-                viewModel.PreviewFourBarReward,
-                thresholds).Segments);
+            BiologyRewardBandScale
+                .Calculate(viewModel.PreviewFourBarReward, viewModel.PreviewFourBarReward, thresholds)
+                .Segments
+        );
     }
 
     [Fact]
     public void LegacySampleRewardAliasesMatchProgressivePreviewRewards()
     {
         var path = Path.Combine(temporaryDirectory, "ui-settings.json");
-        var viewModel = new BiologyRewardSettingsViewModel(
-            new BiologyRewardSettingsStore(path));
+        var viewModel = new BiologyRewardSettingsViewModel(new BiologyRewardSettingsStore(path));
 
         Assert.Equal(viewModel.PreviewTwoBarReward, viewModel.BucketOneSampleReward);
         Assert.Equal(viewModel.PreviewThreeBarReward, viewModel.BucketTwoSampleReward);
@@ -103,8 +106,7 @@ public sealed class BiologyRewardSettingsViewModelTests : IDisposable
     public void PreviewRewardsStayStrictlyAboveNearIntegerMillionThresholds()
     {
         var path = Path.Combine(temporaryDirectory, "ui-settings.json");
-        var viewModel = new BiologyRewardSettingsViewModel(
-            new BiologyRewardSettingsStore(path));
+        var viewModel = new BiologyRewardSettingsViewModel(new BiologyRewardSettingsStore(path));
 
         // Just below the displayed 3 M boundary; truncation alone would under-fill.
         viewModel.BucketOneMillions = 2.999999999d;
@@ -114,7 +116,8 @@ public sealed class BiologyRewardSettingsViewModelTests : IDisposable
         var state = BiologyRewardBandScale.Calculate(
             viewModel.PreviewTwoBarReward,
             viewModel.PreviewTwoBarReward,
-            viewModel.Thresholds);
+            viewModel.Thresholds
+        );
 
         Assert.Equal(
             [
@@ -123,7 +126,8 @@ public sealed class BiologyRewardSettingsViewModelTests : IDisposable
                 BiologyRewardBandSegment.Empty,
                 BiologyRewardBandSegment.Empty,
             ],
-            state.Segments);
+            state.Segments
+        );
         Assert.True(viewModel.PreviewTwoBarReward > 3_000_000);
         Assert.True(viewModel.PreviewThreeBarReward > 7_000_000);
         Assert.True(viewModel.PreviewFourBarReward > 12_000_000);

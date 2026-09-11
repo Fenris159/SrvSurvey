@@ -54,11 +54,7 @@ public sealed class GuardianSurveyCopyOptions
 
     public int? RelicTowerHeading { get; init; }
 
-    public IReadOnlyDictionary<string, GuardianPoiStatus>? PoiStatuses
-    {
-        get;
-        init;
-    }
+    public IReadOnlyDictionary<string, GuardianPoiStatus>? PoiStatuses { get; init; }
 
     public IReadOnlyDictionary<string, int>? RelicHeadings { get; init; }
 

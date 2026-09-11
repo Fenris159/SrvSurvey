@@ -17,17 +17,14 @@ public sealed class GuardianGestureSettingsStore
     public GuardianGesturePreferences Load()
     {
         var settings = documentStore.Load()["GuardianGestures"] as JsonObject;
-        return new GuardianGesturePreferences(
-            GetTrigger(settings),
-            GetDuration(settings));
+        return new GuardianGesturePreferences(GetTrigger(settings), GetDuration(settings));
     }
 
     public void Save(GuardianGesturePreferences preferences)
     {
         ArgumentNullException.ThrowIfNull(preferences);
         var trigger = NormalizeTrigger(preferences.BlinkTrigger);
-        var duration = NormalizeDuration(
-            preferences.BlinkDurationMilliseconds);
+        var duration = NormalizeDuration(preferences.BlinkDurationMilliseconds);
         documentStore.Update(root =>
         {
             root["Version"] = 1;
@@ -60,41 +57,32 @@ public sealed class GuardianGestureSettingsStore
             return NormalizeTrigger((StatusFlags)(uint)signed);
         }
 
-        return value.TryGetValue<string>(out var text)
-            && Enum.TryParse<StatusFlags>(text, true, out var parsed)
-                ? NormalizeTrigger(parsed)
-                : StatusFlags.HudInAnalysisMode;
+        return value.TryGetValue<string>(out var text) && Enum.TryParse<StatusFlags>(text, true, out var parsed)
+            ? NormalizeTrigger(parsed)
+            : StatusFlags.HudInAnalysisMode;
     }
 
     private static int GetDuration(JsonObject? settings)
     {
-        return settings?["BlinkDurationMilliseconds"] is JsonValue value
-            && value.TryGetValue<int>(out var duration)
-                ? NormalizeDuration(duration)
-                : DefaultBlinkDurationMilliseconds;
+        return settings?["BlinkDurationMilliseconds"] is JsonValue value && value.TryGetValue<int>(out var duration)
+            ? NormalizeDuration(duration)
+            : DefaultBlinkDurationMilliseconds;
     }
 
     private static StatusFlags NormalizeTrigger(StatusFlags value)
     {
         var raw = (uint)value;
-        return raw != 0 && (raw & (raw - 1)) == 0
-            ? value
-            : StatusFlags.HudInAnalysisMode;
+        return raw != 0 && (raw & (raw - 1)) == 0 ? value : StatusFlags.HudInAnalysisMode;
     }
 
     private static int NormalizeDuration(int value)
     {
-        return value is >= 250 and <= 60_000
-            ? value
-            : DefaultBlinkDurationMilliseconds;
+        return value is >= 250 and <= 60_000 ? value : DefaultBlinkDurationMilliseconds;
     }
 }
 
-public sealed record GuardianGesturePreferences(
-    StatusFlags BlinkTrigger,
-    int BlinkDurationMilliseconds)
+public sealed record GuardianGesturePreferences(StatusFlags BlinkTrigger, int BlinkDurationMilliseconds)
 {
-    public static GuardianGesturePreferences Default { get; } = new(
-        StatusFlags.HudInAnalysisMode,
-        GuardianGestureSettingsStore.DefaultBlinkDurationMilliseconds);
+    public static GuardianGesturePreferences Default { get; } =
+        new(StatusFlags.HudInAnalysisMode, GuardianGestureSettingsStore.DefaultBlinkDurationMilliseconds);
 }

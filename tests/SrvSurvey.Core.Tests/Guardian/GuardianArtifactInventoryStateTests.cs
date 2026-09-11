@@ -18,7 +18,8 @@ public sealed class GuardianArtifactInventoryStateTests
                 new CargoItem("ancientcasket", "Guardian Casket", 2, 0),
                 new CargoItem("ANCIENTORB", "Guardian Orb", 1, 0),
                 new CargoItem("gold", "Gold", 5, 0),
-            ]);
+            ]
+        );
 
         Assert.True(state.Reset(cargo));
 
@@ -37,19 +38,22 @@ public sealed class GuardianArtifactInventoryStateTests
     public void MissionTwoThargoidArtifactsMatchLegacyCargoNamesAndAliases()
     {
         var state = new GuardianArtifactInventoryState();
-        state.Reset(new CargoSnapshot(
-            DateTimeOffset.UtcNow,
-            "Cargo",
-            "SRV",
-            6,
-            [
-                new CargoItem("unknownartifact", null, 1, 0),
-                new CargoItem("unknownartifact2", null, 1, 0),
-                new CargoItem("unknownartifact3", null, 1, 0),
-                new CargoItem("thargoidtissuesampletype1", null, 1, 0),
-                new CargoItem("thargoidtissuesampletype2", null, 1, 0),
-                new CargoItem("thargoidtissuesampletype3", null, 1, 0),
-            ]));
+        state.Reset(
+            new CargoSnapshot(
+                DateTimeOffset.UtcNow,
+                "Cargo",
+                "SRV",
+                6,
+                [
+                    new CargoItem("unknownartifact", null, 1, 0),
+                    new CargoItem("unknownartifact2", null, 1, 0),
+                    new CargoItem("unknownartifact3", null, 1, 0),
+                    new CargoItem("thargoidtissuesampletype1", null, 1, 0),
+                    new CargoItem("thargoidtissuesampletype2", null, 1, 0),
+                    new CargoItem("thargoidtissuesampletype3", null, 1, 0),
+                ]
+            )
+        );
 
         Assert.Equal(1, state.GetCount("sensor"));
         Assert.Equal(1, state.GetCount("pr"));
@@ -68,18 +72,13 @@ public sealed class GuardianArtifactInventoryStateTests
     public void RequirementsPreserveDuplicateArtifactQuantities()
     {
         var state = new GuardianArtifactInventoryState();
-        state.Reset(new CargoSnapshot(
-            DateTimeOffset.UtcNow,
-            "Cargo",
-            "SRV",
-            2,
-            [new CargoItem("ancientcasket", null, 1, 0)]));
+        state.Reset(
+            new CargoSnapshot(DateTimeOffset.UtcNow, "Cargo", "SRV", 2, [new CargoItem("ancientcasket", null, 1, 0)])
+        );
 
         var requirements = state.GetRequirements(["ca", "casket", "or"]);
 
-        var casket = Assert.Single(
-            requirements,
-            requirement => requirement.ShortCode == "ca");
+        var casket = Assert.Single(requirements, requirement => requirement.ShortCode == "ca");
         Assert.Equal(2, casket.Required);
         Assert.Equal(1, casket.Available);
         Assert.False(casket.IsMet);
@@ -92,47 +91,35 @@ public sealed class GuardianArtifactInventoryStateTests
     {
         var state = new GuardianArtifactInventoryState();
 
-        Assert.True(state.Apply(Event(
-            "CollectCargo",
-            "\"Type\":\"ancienttablet\"")));
-        Assert.True(state.Apply(Event(
-            "CollectCargo",
-            "\"Type\":\"ancienttablet\"")));
-        Assert.True(state.Apply(Event(
-            "EjectCargo",
-            "\"Type\":\"ancienttablet\",\"Count\":5")));
+        Assert.True(state.Apply(Event("CollectCargo", "\"Type\":\"ancienttablet\"")));
+        Assert.True(state.Apply(Event("CollectCargo", "\"Type\":\"ancienttablet\"")));
+        Assert.True(state.Apply(Event("EjectCargo", "\"Type\":\"ancienttablet\",\"Count\":5")));
 
         Assert.Equal(0, state.GetCount("ta"));
-        Assert.False(state.Apply(Event(
-            "EjectCargo",
-            "\"Type\":\"ancienttablet\",\"Count\":1")));
-        Assert.False(state.Apply(Event(
-            "CollectCargo",
-            "\"Type\":\"gold\"")));
+        Assert.False(state.Apply(Event("EjectCargo", "\"Type\":\"ancienttablet\",\"Count\":1")));
+        Assert.False(state.Apply(Event("CollectCargo", "\"Type\":\"gold\"")));
     }
 
     [Fact]
     public void MarketAndMainShipTransfersUpdateArtifactCounts()
     {
         var state = new GuardianArtifactInventoryState();
-        state.Reset(new CargoSnapshot(
-            DateTimeOffset.UtcNow,
-            "Cargo",
-            "Ship",
-            2,
-            [new CargoItem("ancientcasket", null, 2, 0)]));
+        state.Reset(
+            new CargoSnapshot(DateTimeOffset.UtcNow, "Cargo", "Ship", 2, [new CargoItem("ancientcasket", null, 2, 0)])
+        );
 
-        Assert.True(state.Apply(Event(
-            "MarketBuy",
-            "\"Type\":\"ancientcasket\",\"Count\":3")));
-        Assert.True(state.Apply(Event(
-            "MarketSell",
-            "\"Type\":\"ancientcasket\",\"Count\":1")));
-        Assert.True(state.Apply(Event(
-            "CargoTransfer",
-            "\"Transfers\":["
-                + "{\"Type\":\"ancientcasket\",\"Count\":2,\"Direction\":\"tocarrier\"},"
-                + "{\"Type\":\"ancientorb\",\"Count\":1,\"Direction\":\"toship\"}]")));
+        Assert.True(state.Apply(Event("MarketBuy", "\"Type\":\"ancientcasket\",\"Count\":3")));
+        Assert.True(state.Apply(Event("MarketSell", "\"Type\":\"ancientcasket\",\"Count\":1")));
+        Assert.True(
+            state.Apply(
+                Event(
+                    "CargoTransfer",
+                    "\"Transfers\":["
+                        + "{\"Type\":\"ancientcasket\",\"Count\":2,\"Direction\":\"tocarrier\"},"
+                        + "{\"Type\":\"ancientorb\",\"Count\":1,\"Direction\":\"toship\"}]"
+                )
+            )
+        );
 
         Assert.Equal(2, state.GetCount("ca"));
         Assert.Equal(1, state.GetCount("or"));
@@ -143,19 +130,26 @@ public sealed class GuardianArtifactInventoryStateTests
     {
         var state = new GuardianArtifactInventoryState();
 
-        Assert.True(state.Apply(
-            Event(
-                "CargoTransfer",
-                "\"Transfers\":["
-                    + "{\"Type\":\"ancienttablet\",\"Count\":3,\"Direction\":\"tosrv\"},"
-                    + "{\"Type\":\"ancientrelic\",\"Count\":1,\"Direction\":\"toship\"}]"),
-            isInSrv: true));
-        Assert.True(state.Apply(
-            Event(
-                "CargoTransfer",
-                "\"Transfers\":["
-                    + "{\"Type\":\"ancienttablet\",\"Count\":1,\"Direction\":\"toship\"}]"),
-            isInSrv: true));
+        Assert.True(
+            state.Apply(
+                Event(
+                    "CargoTransfer",
+                    "\"Transfers\":["
+                        + "{\"Type\":\"ancienttablet\",\"Count\":3,\"Direction\":\"tosrv\"},"
+                        + "{\"Type\":\"ancientrelic\",\"Count\":1,\"Direction\":\"toship\"}]"
+                ),
+                isInSrv: true
+            )
+        );
+        Assert.True(
+            state.Apply(
+                Event(
+                    "CargoTransfer",
+                    "\"Transfers\":[" + "{\"Type\":\"ancienttablet\",\"Count\":1,\"Direction\":\"toship\"}]"
+                ),
+                isInSrv: true
+            )
+        );
 
         Assert.Equal(2, state.GetCount("ta"));
         Assert.Equal(0, state.GetCount("re"));
@@ -165,16 +159,17 @@ public sealed class GuardianArtifactInventoryStateTests
     public void ArtifactDeltasClampWithoutOverflow()
     {
         var state = new GuardianArtifactInventoryState();
-        state.Reset(new CargoSnapshot(
-            DateTimeOffset.UtcNow,
-            "Cargo",
-            "Ship",
-            int.MaxValue,
-            [new CargoItem("ancienturn", null, int.MaxValue, 0)]));
+        state.Reset(
+            new CargoSnapshot(
+                DateTimeOffset.UtcNow,
+                "Cargo",
+                "Ship",
+                int.MaxValue,
+                [new CargoItem("ancienturn", null, int.MaxValue, 0)]
+            )
+        );
 
-        Assert.False(state.Apply(Event(
-            "MarketBuy",
-            "\"Type\":\"ancienturn\",\"Count\":1")));
+        Assert.False(state.Apply(Event("MarketBuy", "\"Type\":\"ancienturn\",\"Count\":1")));
 
         Assert.Equal(int.MaxValue, state.GetCount("ur"));
     }
@@ -183,18 +178,20 @@ public sealed class GuardianArtifactInventoryStateTests
     public void CargoJournalInventoryReplacesStaleCounts()
     {
         var state = new GuardianArtifactInventoryState();
-        state.Reset(new CargoSnapshot(
-            DateTimeOffset.UtcNow,
-            "Cargo",
-            "Ship",
-            3,
-            [new CargoItem("ancienturn", null, 3, 0)]));
+        state.Reset(
+            new CargoSnapshot(DateTimeOffset.UtcNow, "Cargo", "Ship", 3, [new CargoItem("ancienturn", null, 3, 0)])
+        );
 
-        Assert.True(state.Apply(Event(
-            "Cargo",
-            "\"Vessel\":\"SRV\",\"Inventory\":["
-                + "{\"Name\":\"ancientorb\",\"Count\":1},"
-                + "{\"Name\":\"ANCIENTORB\",\"Count\":1}]")));
+        Assert.True(
+            state.Apply(
+                Event(
+                    "Cargo",
+                    "\"Vessel\":\"SRV\",\"Inventory\":["
+                        + "{\"Name\":\"ancientorb\",\"Count\":1},"
+                        + "{\"Name\":\"ANCIENTORB\",\"Count\":1}]"
+                )
+            )
+        );
 
         Assert.Equal(0, state.GetCount("ur"));
         Assert.Equal(2, state.GetCount("or"));
@@ -204,12 +201,9 @@ public sealed class GuardianArtifactInventoryStateTests
     public void CargoJournalWithoutInventoryDoesNotClearState()
     {
         var state = new GuardianArtifactInventoryState();
-        state.Reset(new CargoSnapshot(
-            DateTimeOffset.UtcNow,
-            "Cargo",
-            "Ship",
-            1,
-            [new CargoItem("ancientrelic", null, 1, 0)]));
+        state.Reset(
+            new CargoSnapshot(DateTimeOffset.UtcNow, "Cargo", "Ship", 1, [new CargoItem("ancientrelic", null, 1, 0)])
+        );
 
         Assert.False(state.Apply(Event("Cargo", "\"Vessel\":\"Ship\",\"Count\":1")));
 
@@ -218,11 +212,8 @@ public sealed class GuardianArtifactInventoryStateTests
 
     private static JournalEventEnvelope Event(string name, string properties)
     {
-        var json = $"{{\"timestamp\":\"2026-07-24T12:00:00Z\","
-            + $"\"event\":\"{name}\",{properties}}}";
-        Assert.True(
-            JournalEventEnvelope.TryParse(json, out var journalEvent, out var error),
-            error);
+        var json = $"{{\"timestamp\":\"2026-07-24T12:00:00Z\"," + $"\"event\":\"{name}\",{properties}}}";
+        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
         return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }
 }

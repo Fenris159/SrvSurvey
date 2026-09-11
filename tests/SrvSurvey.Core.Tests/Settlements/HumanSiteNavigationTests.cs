@@ -11,16 +11,8 @@ public sealed class HumanSiteNavigationTests
         var site = new SurfaceCoordinate(32.5, -117.25);
         var expected = new HumanSiteMapPoint(149.25, -82.5);
 
-        var location = HumanSiteNavigation.GetSurfaceLocation(
-            site,
-            expected,
-            6_000_000,
-            73);
-        var actual = HumanSiteNavigation.GetSiteOffset(
-            site,
-            location,
-            6_000_000,
-            73);
+        var location = HumanSiteNavigation.GetSurfaceLocation(site, expected, 6_000_000, 73);
+        var actual = HumanSiteNavigation.GetSiteOffset(site, location, 6_000_000, 73);
 
         Assert.Equal(expected.X, actual.X, precision: 4);
         Assert.Equal(expected.Y, actual.Y, precision: 4);
@@ -35,17 +27,9 @@ public sealed class HumanSiteNavigationTests
         var template = catalog.Find(HumanSiteEconomy.Extraction, 5)!;
         var origin = new SurfaceCoordinate(-12.5, 44.25);
         var pad = Assert.Single(template.LandingPads);
-        var observerHeading = SurfaceNavigation.NormalizeDegrees(
-            heading + pad.Rotation);
-        var location = HumanSiteNavigation.GetSurfaceLocation(
-            origin,
-            pad.Offset,
-            radius,
-            heading);
-        var site = CreateSite(
-            origin,
-            HumanSiteEconomy.Extraction,
-            HumanSiteLandingPads.From(template));
+        var observerHeading = SurfaceNavigation.NormalizeDegrees(heading + pad.Rotation);
+        var location = HumanSiteNavigation.GetSurfaceLocation(origin, pad.Offset, radius, heading);
+        var site = CreateSite(origin, HumanSiteEconomy.Extraction, HumanSiteLandingPads.From(template));
 
         var solution = new HumanSiteNavigation(catalog).InferGeometry(
             site,
@@ -53,7 +37,8 @@ public sealed class HumanSiteNavigationTests
             observerHeading,
             radius,
             vehicle: "foot",
-            targetPad: 1);
+            targetPad: 1
+        );
 
         Assert.NotNull(solution);
         Assert.Equal(5, solution.SubType);
@@ -73,25 +58,16 @@ public sealed class HumanSiteNavigationTests
         var template = catalog.Find(HumanSiteEconomy.Extraction, 5)!;
         var origin = new SurfaceCoordinate(5, 6);
         var pad = Assert.Single(template.LandingPads);
-        var observerHeading = SurfaceNavigation.NormalizeDegrees(
-            heading + pad.Rotation);
-        var center = HumanSiteNavigation.GetSurfaceLocation(
-            origin,
-            pad.Offset,
-            radius,
-            heading);
+        var observerHeading = SurfaceNavigation.NormalizeDegrees(heading + pad.Rotation);
+        var center = HumanSiteNavigation.GetSurfaceLocation(origin, pad.Offset, radius, heading);
         var cockpitCorrection = HumanSiteVehicleOffsets.Find(vehicle);
         var observed = HumanSiteNavigation.GetSurfaceLocation(
             center,
-            new HumanSiteMapPoint(
-                -cockpitCorrection.X,
-                -cockpitCorrection.Y),
+            new HumanSiteMapPoint(-cockpitCorrection.X, -cockpitCorrection.Y),
             radius,
-            observerHeading);
-        var site = CreateSite(
-            origin,
-            HumanSiteEconomy.Extraction,
-            HumanSiteLandingPads.From(template));
+            observerHeading
+        );
+        var site = CreateSite(origin, HumanSiteEconomy.Extraction, HumanSiteLandingPads.From(template));
 
         var solution = new HumanSiteNavigation(catalog).InferGeometry(
             site,
@@ -99,7 +75,8 @@ public sealed class HumanSiteNavigationTests
             observerHeading,
             radius,
             vehicle,
-            targetPad: 1);
+            targetPad: 1
+        );
 
         Assert.NotNull(solution);
         Assert.Equal(heading, solution.Heading, precision: 4);
@@ -113,13 +90,10 @@ public sealed class HumanSiteNavigationTests
         var site = CreateSite(
             new SurfaceCoordinate(0, 0),
             HumanSiteEconomy.Extraction,
-            new HumanSiteLandingPads(9, 9, 9));
+            new HumanSiteLandingPads(9, 9, 9)
+        );
 
-        var solution = new HumanSiteNavigation(catalog).InferGeometry(
-            site,
-            new SurfaceCoordinate(0, 0),
-            0,
-            6_000_000);
+        var solution = new HumanSiteNavigation(catalog).InferGeometry(site, new SurfaceCoordinate(0, 0), 0, 6_000_000);
 
         Assert.Null(solution);
     }
@@ -127,7 +101,8 @@ public sealed class HumanSiteNavigationTests
     private static HumanSiteLiveSnapshot CreateSite(
         SurfaceCoordinate location,
         HumanSiteEconomy economy,
-        HumanSiteLandingPads pads)
+        HumanSiteLandingPads pads
+    )
     {
         return new HumanSiteLiveSnapshot(
             "Test",
@@ -136,9 +111,7 @@ public sealed class HumanSiteNavigationTests
             2,
             3,
             "Test 1",
-            new HumanSiteSurfaceLocation(
-                location.Latitude,
-                location.Longitude),
+            new HumanSiteSurfaceLocation(location.Latitude, location.Longitude),
             economy,
             string.Empty,
             string.Empty,
@@ -157,6 +130,7 @@ public sealed class HumanSiteNavigationTests
             null,
             false,
             default,
-            default);
+            default
+        );
     }
 }

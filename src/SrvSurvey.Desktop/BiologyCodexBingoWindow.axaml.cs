@@ -2,8 +2,8 @@ using Avalonia.Controls;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using SrvSurvey.Core.Exobiology;
-using SrvSurvey.Desktop.ViewModels;
 using SrvSurvey.Desktop.Runtime;
+using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop;
 
@@ -12,14 +12,11 @@ public sealed partial class BiologyCodexBingoWindow : Window
     private readonly BiologyCodexBingoViewModel viewModel;
 
     public BiologyCodexBingoWindow()
-        : this(CreateDesignViewModel())
-    {
-    }
+        : this(CreateDesignViewModel()) { }
 
     public BiologyCodexBingoWindow(BiologyCodexBingoViewModel viewModel)
     {
-        this.viewModel = viewModel
-            ?? throw new ArgumentNullException(nameof(viewModel));
+        this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         InitializeComponent();
         DataContext = viewModel;
         if (DesktopExternalEffectPolicy.IsAllowed)
@@ -43,9 +40,9 @@ public sealed partial class BiologyCodexBingoWindow : Window
 
     private async Task WriteClipboardAsync(string text)
     {
-        var clipboard = TopLevel.GetTopLevel(this)?.Clipboard
-            ?? throw new InvalidOperationException(
-                "The desktop clipboard is not available.");
+        var clipboard =
+            TopLevel.GetTopLevel(this)?.Clipboard
+            ?? throw new InvalidOperationException("The desktop clipboard is not available.");
         await clipboard.SetTextAsync(text);
         await clipboard.FlushAsync();
     }
@@ -63,19 +60,15 @@ public sealed partial class BiologyCodexBingoWindow : Window
 
     private static BiologyCodexBingoViewModel CreateDesignViewModel()
     {
-        var temporaryDirectory = Path.Combine(
-            Path.GetTempPath(),
-            "SrvSurvey-CodexBingo-Design");
+        var temporaryDirectory = Path.Combine(Path.GetTempPath(), "SrvSurvey-CodexBingo-Design");
         var store = new CommanderCodexStore(temporaryDirectory);
         var catalog = ExobiologyReferenceCatalog.LoadEmbedded();
         return new BiologyCodexBingoViewModel(
             store,
             catalog,
-            new CanonnCodexChallengeImporter(
-                new CanonnCodexChallengeClient(),
-                store,
-                catalog),
+            new CanonnCodexChallengeImporter(new CanonnCodexChallengeClient(), store, catalog),
             new CommanderCodexJournalImporter(temporaryDirectory, store),
-            new CodexDiscoveryLocationClient());
+            new CodexDiscoveryLocationClient()
+        );
     }
 }

@@ -12,38 +12,39 @@ public sealed class SphericalSearchOverlayViewModelTests : IAsyncLifetime
     private readonly List<BoxelSearchSession> sessions = [];
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-search-overlay-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-search-overlay-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void WrapsAllThreeLegacySlicesAndReportsPreparation()
     {
-        var sphere = new SphereLimitViewModel(
-            new CommanderProfileStore(temporaryDirectory),
-            new EmptyStarResolver());
+        var sphere = new SphereLimitViewModel(new CommanderProfileStore(temporaryDirectory), new EmptyStarResolver());
         var boxel = CreateBoxel(
             new CommanderProfileStore(temporaryDirectory),
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
-            new EmptyBoxelResolver());
+            new EmptyBoxelResolver()
+        );
         var route = new RouteWorkspaceViewModel(
             new FollowRouteService(new FollowRouteStore(temporaryDirectory)),
             new RouteNameImporter(new EmptyStarResolver()),
-            new EmptyRouteClient());
+            new EmptyRouteClient()
+        );
         var viewModel = new SphericalSearchOverlayViewModel(
             sphere,
             boxel,
             route,
-            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows));
+            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows)
+        );
 
         Assert.Same(sphere, viewModel.Sphere);
         Assert.Same(boxel, viewModel.Boxel);
         Assert.Same(route, viewModel.Route);
         Assert.Equal("PASSIVE", viewModel.InputMode);
 
-        viewModel.ApplyPreparation(new OverlayPreparationResult(
-            IsPrepared: true,
-            IsClickThrough: false,
-            "Click-through was rejected."));
+        viewModel.ApplyPreparation(
+            new OverlayPreparationResult(IsPrepared: true, IsClickThrough: false, "Click-through was rejected.")
+        );
 
         Assert.Equal("BLOCKED", viewModel.InputMode);
         Assert.Equal("Click-through was rejected.", viewModel.PlatformStatus);
@@ -52,45 +53,40 @@ public sealed class SphericalSearchOverlayViewModelTests : IAsyncLifetime
     [Fact]
     public async Task ManualBoxelCopyGuidanceTracksTheConfiguredShortcut()
     {
-        var capabilities = OverlayPlatformCapabilities.ForHost(
-            OverlayHostKind.Windows);
+        var capabilities = OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows);
         var inputSettings = new GlobalInputSettingsViewModel(
-            new GlobalInputSettingsStore(Path.Combine(
-                temporaryDirectory,
-                "ui-settings.json")),
-            capabilities);
+            new GlobalInputSettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json")),
+            capabilities
+        );
         var copyBinding = inputSettings.Bindings.Single(binding =>
-            binding.Definition.Action == GlobalInputAction.CopyNextBoxel);
+            binding.Definition.Action == GlobalInputAction.CopyNextBoxel
+        );
         copyBinding.Chord = "ALT X";
-        var sphere = new SphereLimitViewModel(
-            new CommanderProfileStore(temporaryDirectory),
-            new EmptyStarResolver());
+        var sphere = new SphereLimitViewModel(new CommanderProfileStore(temporaryDirectory), new EmptyStarResolver());
         var boxel = CreateBoxel(
             new CommanderProfileStore(temporaryDirectory),
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
-            new EmptyBoxelResolver());
-        await boxel.LoadProfileAsync(
-            "F123",
-            "Drew",
-            true,
-            BoxelSearchSnapshot.Empty);
+            new EmptyBoxelResolver()
+        );
+        await boxel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
         boxel.TopBoxelText = "Praea Euq IL-P c5-0";
         boxel.LowMassCode = "c";
         await boxel.ActivateAsync();
         var route = new RouteWorkspaceViewModel(
             new FollowRouteService(new FollowRouteStore(temporaryDirectory)),
             new RouteNameImporter(new EmptyStarResolver()),
-            new EmptyRouteClient());
+            new EmptyRouteClient()
+        );
         using var viewModel = new SphericalSearchOverlayViewModel(
             sphere,
             boxel,
             route,
             capabilities,
-            inputSettings: inputSettings);
+            inputSettings: inputSettings
+        );
         var notifications = new List<string?>();
-        viewModel.PropertyChanged += (_, eventArgs) =>
-            notifications.Add(eventArgs.PropertyName);
+        viewModel.PropertyChanged += (_, eventArgs) => notifications.Add(eventArgs.PropertyName);
 
         Assert.Equal("MANUAL COPY - ALT X", viewModel.BoxelClipboardStatus);
 
@@ -123,14 +119,16 @@ public sealed class SphericalSearchOverlayViewModelTests : IAsyncLifetime
         CommanderProfileStore profileStore,
         LegacySystemDataReader localSystemReader,
         EmptyBoxelStore emptyBoxelStore,
-        IBoxelSystemResolver systemResolver)
+        IBoxelSystemResolver systemResolver
+    )
     {
         var viewModel = BoxelSearchViewModelTestFactory.Create(
             profileStore,
             localSystemReader,
             emptyBoxelStore,
             systemResolver,
-            out var session);
+            out var session
+        );
         sessions.Add(session);
         return viewModel;
     }
@@ -139,7 +137,8 @@ public sealed class SphericalSearchOverlayViewModelTests : IAsyncLifetime
     {
         public Task<IReadOnlyList<StarSystemReference>> SearchAsync(
             string query,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             return Task.FromResult<IReadOnlyList<StarSystemReference>>([]);
         }
@@ -149,7 +148,8 @@ public sealed class SphericalSearchOverlayViewModelTests : IAsyncLifetime
     {
         public Task<IReadOnlyList<BoxelSystemObservation>> SearchAsync(
             BoxelAddress boxel,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             return Task.FromResult<IReadOnlyList<BoxelSystemObservation>>([]);
         }
@@ -159,7 +159,8 @@ public sealed class SphericalSearchOverlayViewModelTests : IAsyncLifetime
     {
         public Task<IReadOnlyList<FollowRouteHop>> GetRouteAsync(
             SpanshRouteReference route,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             return Task.FromResult<IReadOnlyList<FollowRouteHop>>([]);
         }

@@ -16,17 +16,15 @@ public sealed class OverlayScaleSettingsViewModel : INotifyPropertyChanged
     public OverlayScaleSettingsViewModel(
         OverlayScaleSettingsStore settingsStore,
         LegacyOverlayLayout activeLayout,
-        OverlayWindowRegistry? windowRegistry = null)
+        OverlayWindowRegistry? windowRegistry = null
+    )
     {
-        this.settingsStore = settingsStore
-            ?? throw new ArgumentNullException(nameof(settingsStore));
-        this.activeLayout = activeLayout
-            ?? throw new ArgumentNullException(nameof(activeLayout));
+        this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
+        this.activeLayout = activeLayout ?? throw new ArgumentNullException(nameof(activeLayout));
         this.windowRegistry = windowRegistry ?? OverlayWindowRegistry.Shared;
         Options = OverlayScaleCatalog.Options;
         var preferences = settingsStore.Load();
-        selectedOption = Options.Single(option =>
-            option.Index == preferences.Index);
+        selectedOption = Options.Single(option => option.Index == preferences.Index);
         activeLayout.SetScaleIndex(preferences.Index);
     }
 
@@ -53,25 +51,22 @@ public sealed class OverlayScaleSettingsViewModel : INotifyPropertyChanged
                 activeLayout.SetScaleIndex(value.Index);
                 foreach (var registered in windowRegistry.Snapshot())
                 {
-                    OverlayThemeResources.ApplyScale(
-                        registered.Window,
-                        activeLayout,
-                        registered.PlotterName);
+                    OverlayThemeResources.ApplyScale(registered.Window, activeLayout, registered.PlotterName);
                 }
 
-                SettingsStatus =
-                    $"Overlay scale changed to {value.DisplayName}.";
+                SettingsStatus = $"Overlay scale changed to {value.DisplayName}.";
                 OnPropertyChanged();
             }
-            catch (Exception exception) when (
-                exception is IOException
-                    or UnauthorizedAccessException
-                    or InvalidDataException
-                    or ArgumentException)
+            catch (Exception exception)
+                when (exception
+                        is IOException
+                            or UnauthorizedAccessException
+                            or InvalidDataException
+                            or ArgumentException
+                )
             {
                 selectedOption = previous;
-                SettingsStatus = "Overlay scale was not changed: "
-                    + exception.Message;
+                SettingsStatus = "Overlay scale was not changed: " + exception.Message;
                 OnPropertyChanged();
             }
         }
@@ -95,11 +90,8 @@ public sealed class OverlayScaleSettingsViewModel : INotifyPropertyChanged
 
     public bool HasSettingsStatus => !string.IsNullOrWhiteSpace(SettingsStatus);
 
-    private void OnPropertyChanged(
-        [CallerMemberName] string? propertyName = null)
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(propertyName));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

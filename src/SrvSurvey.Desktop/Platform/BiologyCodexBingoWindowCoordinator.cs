@@ -14,13 +14,13 @@ public sealed class BiologyCodexBingoWindowCoordinator : IDisposable
     public BiologyCodexBingoWindowCoordinator(
         BiologyCodexBingoViewModel viewModel,
         Window owner,
-        Func<CodexBingoNearestRequest, Task> nearestSearchHandler)
+        Func<CodexBingoNearestRequest, Task> nearestSearchHandler
+    )
     {
-        this.viewModel = viewModel
-            ?? throw new ArgumentNullException(nameof(viewModel));
+        this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         this.owner = owner ?? throw new ArgumentNullException(nameof(owner));
-        this.nearestSearchHandler = nearestSearchHandler
-            ?? throw new ArgumentNullException(nameof(nearestSearchHandler));
+        this.nearestSearchHandler =
+            nearestSearchHandler ?? throw new ArgumentNullException(nameof(nearestSearchHandler));
         viewModel.SetWindowOpener(ShowOrActivateAsync);
         viewModel.SetNearestSearchHandler(OpenNearestSearchAsync);
     }

@@ -7,7 +7,8 @@ public sealed class QuestDeveloperViewModelTests : IAsyncLifetime
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        "srv-survey-quest-developer-vm-" + Guid.NewGuid().ToString("N"));
+        "srv-survey-quest-developer-vm-" + Guid.NewGuid().ToString("N")
+    );
     private readonly FakeRavenQuestClient client = new();
     private QuestRuntimeCoordinator? coordinator;
 
@@ -28,12 +29,10 @@ public sealed class QuestDeveloperViewModelTests : IAsyncLifetime
               "objectives":{"scan":"Scan"},
               "chapters":{}
             }
-            """);
-        await File.WriteAllTextAsync(
-            Path.Combine(source, "start.lua"),
-            "counter = 1");
-        var sourceBytes = Directory.GetFiles(source)
-            .ToDictionary(path => path, File.ReadAllBytes);
+            """
+        );
+        await File.WriteAllTextAsync(Path.Combine(source, "start.lua"), "counter = 1");
+        var sourceBytes = Directory.GetFiles(source).ToDictionary(path => path, File.ReadAllBytes);
         using var viewModel = new QuestDeveloperViewModel(coordinator!);
 
         await viewModel.ImportFolderAsync(source);
@@ -43,8 +42,7 @@ public sealed class QuestDeveloperViewModelTests : IAsyncLifetime
         Assert.Equal("1", viewModel.VersionLabel);
         Assert.Equal(3, viewModel.Views.Count);
         Assert.Equal(source, viewModel.SourceDirectory);
-        viewModel.SelectedView = viewModel.Views.Single(view =>
-            view.Kind == QuestDevelopmentViewKind.Chapter);
+        viewModel.SelectedView = viewModel.Views.Single(view => view.Kind == QuestDevelopmentViewKind.Chapter);
         Assert.True(viewModel.IsSelectedChapterActive);
         Assert.Contains("\"counter\": 1", viewModel.EditorJson);
 
@@ -90,14 +88,12 @@ public sealed class QuestDeveloperViewModelTests : IAsyncLifetime
               "firstChapter":"start",
               "chapters":{}
             }
-            """);
-        await File.WriteAllTextAsync(
-            Path.Combine(source, "start.lua"),
-            "counter = 1");
+            """
+        );
+        await File.WriteAllTextAsync(Path.Combine(source, "start.lua"), "counter = 1");
         using var viewModel = new QuestDeveloperViewModel(coordinator!);
         await viewModel.ImportFolderAsync(source);
-        viewModel.SelectedView = viewModel.Views.Single(view =>
-            view.Kind == QuestDevelopmentViewKind.Chapter);
+        viewModel.SelectedView = viewModel.Views.Single(view => view.Kind == QuestDevelopmentViewKind.Chapter);
 
         viewModel.EditorJson = """{"invented":true}""";
         await viewModel.ApplyEditorAsync();
@@ -110,19 +106,13 @@ public sealed class QuestDeveloperViewModelTests : IAsyncLifetime
     public async ValueTask InitializeAsync()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        coordinator = new QuestRuntimeCoordinator(
-            new LegacyQuestStateStore(temporaryDirectory),
-            client);
+        coordinator = new QuestRuntimeCoordinator(new LegacyQuestStateStore(temporaryDirectory), client);
         await coordinator.ApplyUpdateAsync(
-            new QuestRuntimeConfiguration(
-                true,
-                "F123",
-                "Test Cmdr",
-                "secret",
-                null),
+            new QuestRuntimeConfiguration(true, "F123", "Test Cmdr", "secret", null),
             temporaryDirectory,
             [],
-            isBootstrap: true);
+            isBootstrap: true
+        );
     }
 
     public async ValueTask DisposeAsync()
@@ -144,19 +134,20 @@ public sealed class QuestDeveloperViewModelTests : IAsyncLifetime
 
         public Task<IReadOnlyList<RavenQuestDefinition>> GetPublishedQuestsAsync(
             string? apiKey = null,
-            CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<RavenQuestDefinition>>([]);
+            CancellationToken cancellationToken = default
+        ) => Task.FromResult<IReadOnlyList<RavenQuestDefinition>>([]);
 
         public Task<RavenQuestDefinition?> GetQuestAsync(
             RavenQuestReference reference,
             string? apiKey = null,
-            CancellationToken cancellationToken = default) =>
-            Task.FromResult<RavenQuestDefinition?>(null);
+            CancellationToken cancellationToken = default
+        ) => Task.FromResult<RavenQuestDefinition?>(null);
 
         public Task<string> PublishQuestAsync(
             RavenQuestDefinition quest,
             string apiKey,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             PublishCount++;
             return Task.FromResult("OK");
@@ -165,48 +156,47 @@ public sealed class QuestDeveloperViewModelTests : IAsyncLifetime
         public Task SaveCommanderQuestAsync(
             RavenCommanderQuest quest,
             string apiKey,
-            CancellationToken cancellationToken = default) =>
-            Task.CompletedTask;
+            CancellationToken cancellationToken = default
+        ) => Task.CompletedTask;
 
         public Task<IReadOnlyList<RavenCommanderQuest>> LoadCommanderQuestsAsync(
             RavenQuestState state,
             string apiKey,
-            CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<RavenCommanderQuest>>([]);
+            CancellationToken cancellationToken = default
+        ) => Task.FromResult<IReadOnlyList<RavenCommanderQuest>>([]);
 
-        public Task<IReadOnlyList<RavenCommanderQuestStatus>>
-            GetCommanderQuestStatusesAsync(
-                string apiKey,
-                CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<RavenCommanderQuestStatus>>([]);
+        public Task<IReadOnlyList<RavenCommanderQuestStatus>> GetCommanderQuestStatusesAsync(
+            string apiKey,
+            CancellationToken cancellationToken = default
+        ) => Task.FromResult<IReadOnlyList<RavenCommanderQuestStatus>>([]);
 
         public Task<RavenQuestDefinition> ActivateQuestAsync(
             string publisher,
             string id,
             string apiKey,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
         public Task<bool> DeleteQuestAsync(
             string publisher,
             string id,
             string apiKey,
-            CancellationToken cancellationToken = default) =>
-            Task.FromResult(false);
+            CancellationToken cancellationToken = default
+        ) => Task.FromResult(false);
 
         public Task<bool> SetQuestStateAsync(
             string publisher,
             string id,
             RavenQuestState state,
             string apiKey,
-            CancellationToken cancellationToken = default) =>
-            Task.FromResult(false);
+            CancellationToken cancellationToken = default
+        ) => Task.FromResult(false);
 
         public Task<string?> GetQuestChapterAsync(
             RavenQuestReference reference,
             string chapterId,
             string? apiKey = null,
-            CancellationToken cancellationToken = default) =>
-            Task.FromResult<string?>(null);
+            CancellationToken cancellationToken = default
+        ) => Task.FromResult<string?>(null);
     }
 }

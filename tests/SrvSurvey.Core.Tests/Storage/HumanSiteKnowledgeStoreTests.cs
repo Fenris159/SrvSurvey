@@ -9,7 +9,8 @@ public sealed class HumanSiteKnowledgeStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-human-sites-{Guid.NewGuid():N}");
+        $"SrvSurvey-human-sites-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public async Task LoadsLegacyCanonnStationGeometryAndMisspelledPads()
@@ -36,7 +37,8 @@ public sealed class HumanSiteKnowledgeStoreTests : IDisposable
                 "availblePads": {"Large":1,"Medium":0,"Small":2}
               }]
             }
-            """);
+            """
+        );
         var store = new HumanSiteKnowledgeStore(temporaryDirectory);
 
         var result = await store.LoadAsync(Context(), 12345);
@@ -46,10 +48,8 @@ public sealed class HumanSiteKnowledgeStoreTests : IDisposable
         Assert.True(result.SiteExists);
         Assert.Equal(4, result.Knowledge!.SubType);
         Assert.Equal(10, result.Knowledge.Heading);
-        Assert.Equal(HumanSiteGeometrySource.AutoDock,
-            result.Knowledge.GeometrySource);
-        Assert.Equal(new HumanSiteLandingPads(2, 0, 1),
-            result.Knowledge.AvailablePads);
+        Assert.Equal(HumanSiteGeometrySource.AutoDock, result.Knowledge.GeometrySource);
+        Assert.Equal(new HumanSiteLandingPads(2, 0, 1), result.Knowledge.AvailablePads);
     }
 
     [Fact]
@@ -79,7 +79,8 @@ public sealed class HumanSiteKnowledgeStoreTests : IDisposable
               "bodies": [],
               "stations": [{"name":"Other","marketId":999,"futureStation":7}]
             }
-            """);
+            """
+        );
         var store = new HumanSiteKnowledgeStore(temporaryDirectory);
 
         await store.SaveAsync(
@@ -90,7 +91,8 @@ public sealed class HumanSiteKnowledgeStoreTests : IDisposable
                 Heading = 270,
                 AvailablePads = new HumanSiteLandingPads(2, 0, 1),
             },
-            HumanSiteGeometrySource.ManualFoot);
+            HumanSiteGeometrySource.ManualFoot
+        );
 
         var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.True(root["futureSystem"]!.GetValue<bool>());
@@ -99,32 +101,24 @@ public sealed class HumanSiteKnowledgeStoreTests : IDisposable
         Assert.Equal(7, stations[0]!["futureStation"]!.GetValue<int>());
         var saved = stations[1]!.AsObject();
         Assert.Equal(12345, saved["marketId"]!.GetValue<long>());
-        Assert.Equal("$economy_Agri;",
-            saved["stationEconomy"]!.GetValue<string>());
+        Assert.Equal("$economy_Agri;", saved["stationEconomy"]!.GetValue<string>());
         Assert.Equal(270, saved["heading"]!.GetValue<double>());
         Assert.Equal("ManualFoot", saved["calcMethod"]!.GetValue<string>());
-        Assert.Equal(2,
-            saved["availblePads"]!["Small"]!.GetValue<int>());
+        Assert.Equal(2, saved["availblePads"]!["Small"]!.GetValue<int>());
     }
 
     [Fact]
     public async Task WeakerObservationDoesNotEraseKnownGeometry()
     {
         var store = new HumanSiteKnowledgeStore(temporaryDirectory);
-        await store.SaveAsync(
-            Context(),
-            Site() with { SubType = 4, Heading = 270 },
-            HumanSiteGeometrySource.AutoDock);
+        await store.SaveAsync(Context(), Site() with { SubType = 4, Heading = 270 }, HumanSiteGeometrySource.AutoDock);
 
-        await store.SaveAsync(
-            Context(),
-            Site() with { SubType = 4, Heading = 270 });
+        await store.SaveAsync(Context(), Site() with { SubType = 4, Heading = 270 });
         var result = await store.LoadAsync(Context(), 12345);
 
         Assert.Equal(4, result.Knowledge!.SubType);
         Assert.Equal(270, result.Knowledge.Heading);
-        Assert.Equal(HumanSiteGeometrySource.AutoDock,
-            result.Knowledge.GeometrySource);
+        Assert.Equal(HumanSiteGeometrySource.AutoDock, result.Knowledge.GeometrySource);
     }
 
     public void Dispose()
@@ -150,7 +144,8 @@ public sealed class HumanSiteKnowledgeStoreTests : IDisposable
             "Test System",
             42,
             new GalacticCoordinate(1, 2, 3),
-            6_000_000);
+            6_000_000
+        );
     }
 
     private static HumanSiteLiveSnapshot Site()
@@ -181,6 +176,7 @@ public sealed class HumanSiteKnowledgeStoreTests : IDisposable
             null,
             false,
             DateTimeOffset.Parse("2026-07-25T03:00:00Z"),
-            DateTimeOffset.Parse("2026-07-25T03:10:00Z"));
+            DateTimeOffset.Parse("2026-07-25T03:10:00Z")
+        );
     }
 }

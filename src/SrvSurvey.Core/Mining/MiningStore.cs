@@ -29,6 +29,7 @@ public sealed record MiningPreferences
     public Dictionary<string, double> Thresholds { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     public List<MiningFiregroup> Firegroups { get; set; } = [];
 }
+
 public sealed record MiningAnnouncementPreset(Dictionary<string, double> Thresholds, bool Cores, bool NonCores);
 
 public sealed record MiningFiregroup(int Group, string Primary, string Secondary);
@@ -66,12 +67,15 @@ public sealed record MiningRing
 public sealed class MiningStore(string directory)
 {
     private static readonly JsonSerializerOptions Options = new() { WriteIndented = true };
+
     public MiningCommanderData Load(string commander)
     {
         var path = GetPath(commander);
         return File.Exists(path) ? Parse(File.ReadAllText(path)) : new();
     }
+
     public static string Export(MiningCommanderData state) => JsonSerializer.Serialize(state, Options);
+
     public void Save(string commander, MiningCommanderData state)
     {
         var path = GetPath(commander);
@@ -82,46 +86,118 @@ public sealed class MiningStore(string directory)
             File.WriteAllText(temporary, Export(state));
             File.Move(temporary, path, true);
         }
-        finally { if (File.Exists(temporary)) File.Delete(temporary); }
+        finally
+        {
+            if (File.Exists(temporary))
+            {
+                File.Delete(temporary);
+            }
+        }
     }
+
     public MiningCommanderData Restore(string commander, string json)
     {
         var state = Parse(json);
         // Retain the pre-restore state for recovery even when an otherwise valid backup was selected accidentally.
         var path = GetPath(commander);
-        if (File.Exists(path)) File.Copy(path, path + ".before-restore", true);
+        if (File.Exists(path))
+        {
+            File.Copy(path, path + ".before-restore", true);
+        }
+
         Save(commander, state);
         return state;
     }
+
     private string GetPath(string commander)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(commander);
-        return Path.Combine(directory, "mining", Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(commander)))[..24] + ".json");
+        return Path.Combine(
+            directory,
+            "mining",
+            Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(commander)))[..24] + ".json"
+        );
     }
+
     public static MiningCommanderData Parse(string json)
     {
         using var document = JsonDocument.Parse(json);
-        if (document.RootElement.ValueKind != JsonValueKind.Object || !document.RootElement.TryGetProperty("SchemaVersion", out var version)
-            || version.ValueKind != JsonValueKind.Number || !version.TryGetInt32(out var number) || number != 1) throw new JsonException("Unsupported mining backup format.");
-        var state = JsonSerializer.Deserialize<MiningCommanderData>(json, Options) ?? throw new JsonException("Empty mining backup.");
-        if (state.History is null || state.Missions is null || state.Settings is null || state.Rings is null || state.ProcessedEvents is null
-            || state.Settings.SearchOptions is null || state.Settings.Thresholds is null || state.Settings.Firegroups is null || state.Settings.AnnouncementPresets is null) throw new JsonException("Incomplete mining backup.");
-        if (state.History.Any(InvalidSession) || (state.Current is { } current && InvalidSession(current))
+        if (
+            document.RootElement.ValueKind != JsonValueKind.Object
+            || !document.RootElement.TryGetProperty("SchemaVersion", out var version)
+            || version.ValueKind != JsonValueKind.Number
+            || !version.TryGetInt32(out var number)
+            || number != 1
+        )
+        {
+            throw new JsonException("Unsupported mining backup format.");
+        }
+
+        var state =
+            JsonSerializer.Deserialize<MiningCommanderData>(json, Options)
+            ?? throw new JsonException("Empty mining backup.");
+        if (
+            state.History is null
+            || state.Missions is null
+            || state.Settings is null
+            || state.Rings is null
+            || state.ProcessedEvents is null
+            || state.Settings.SearchOptions is null
+            || state.Settings.Thresholds is null
+            || state.Settings.Firegroups is null
+            || state.Settings.AnnouncementPresets is null
+        )
+        {
+            throw new JsonException("Incomplete mining backup.");
+        }
+
+        if (
+            state.History.Any(InvalidSession)
+            || (state.Current is { } current && InvalidSession(current))
             || state.Rings.Any(r => r is null || r.Hotspots is null || r.System is null || r.Body is null)
-            || state.Missions.Any(m => m is null || m.Commodity is null)) throw new JsonException("Invalid records in mining backup.");
+            || state.Missions.Any(m => m is null || m.Commodity is null)
+        )
+        {
+            throw new JsonException("Invalid records in mining backup.");
+        }
+
         ValidateSettings(state.Settings);
         return state;
     }
+
     private static void ValidateSettings(MiningPreferences settings)
     {
-        if (settings.AnnouncementPresets.Values.Any(p => p is null || p.Thresholds is null || p.Thresholds.Values.Any(v => !double.IsFinite(v) || v is < 0 or > 100))
+        if (
+            settings.AnnouncementPresets.Values.Any(p =>
+                p is null
+                || p.Thresholds is null
+                || p.Thresholds.Values.Any(v => !double.IsFinite(v) || v is < 0 or > 100)
+            )
             || settings.Thresholds.Values.Any(v => !double.IsFinite(v) || v is < 0 or > 100)
-            || settings.Firegroups.Any(g => g is null || g.Group is < 0 or > 7 || g.Primary is null || g.Secondary is null))
+            || settings.Firegroups.Any(g =>
+                g is null || g.Group is < 0 or > 7 || g.Primary is null || g.Secondary is null
+            )
+        )
+        {
             throw new JsonException("Invalid mining settings in backup.");
+        }
     }
-    private static bool InvalidSession(MiningSession s) => s is null || s.System is null || s.Ring is null || s.Notes is null
-        || s.Thresholds is null || s.QualityAdjustments is null || s.Prospects is null || s.Collections is null || s.Screenshots is null || s.RefineryEstimates is null
-        || (s.Imported is { } imported && (imported.Fields is null || !double.IsFinite(imported.Tons) || imported.Tons < 0))
+
+    private static bool InvalidSession(MiningSession s) =>
+        s is null
+        || s.System is null
+        || s.Ring is null
+        || s.Notes is null
+        || s.Thresholds is null
+        || s.QualityAdjustments is null
+        || s.Prospects is null
+        || s.Collections is null
+        || s.Screenshots is null
+        || s.RefineryEstimates is null
+        || (
+            s.Imported is { } imported
+            && (imported.Fields is null || !double.IsFinite(imported.Tons) || imported.Tons < 0)
+        )
         || s.Screenshots.Any(string.IsNullOrWhiteSpace)
         || s.Prospects.Any(InvalidProspect)
         || (s.ActiveProspect is { } activeProspect && InvalidProspect(activeProspect))
@@ -129,6 +205,11 @@ public sealed class MiningStore(string directory)
         || s.RefineryEstimates.Values.Any(v => !double.IsFinite(v) || v is < 0 or > 16);
 
     private static bool InvalidProspect(MiningProspect prospect) =>
-        prospect is null || prospect.Materials is null || !double.IsFinite(prospect.Remaining) || prospect.Remaining is < 0 or > 100
-        || prospect.Materials.Any(m => m is null || m.Name is null || !double.IsFinite(m.Percentage) || m.Percentage is < 0 or > 100);
+        prospect is null
+        || prospect.Materials is null
+        || !double.IsFinite(prospect.Remaining)
+        || prospect.Remaining is < 0 or > 100
+        || prospect.Materials.Any(m =>
+            m is null || m.Name is null || !double.IsFinite(m.Percentage) || m.Percentage is < 0 or > 100
+        );
 }

@@ -26,18 +26,14 @@ public sealed class BoxelSurveyRebuildService
         BoxelSurveyStatsState state,
         string? currentJournalPath = null,
         IProgress<BoxelSurveyRebuildProgress>? progress = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(frontierId);
         ArgumentNullException.ThrowIfNull(state);
 
         var warnings = new List<string>();
-        var systemFiles = await IngestSystemFilesAsync(
-                frontierId,
-                state,
-                progress,
-                warnings,
-                cancellationToken)
+        var systemFiles = await IngestSystemFilesAsync(frontierId, state, progress, warnings, cancellationToken)
             .ConfigureAwait(false);
         var journals = await ReplayJournalsAsync(
                 frontierId,
@@ -45,14 +41,16 @@ public sealed class BoxelSurveyRebuildService
                 currentJournalPath,
                 progress,
                 warnings,
-                cancellationToken)
+                cancellationToken
+            )
             .ConfigureAwait(false);
         return new BoxelSurveyRebuildResult(
             systemFiles,
             journals.Processed,
             journals.Skipped,
             journals.Malformed,
-            warnings);
+            warnings
+        );
     }
 
     private async Task<int> IngestSystemFilesAsync(
@@ -60,7 +58,8 @@ public sealed class BoxelSurveyRebuildService
         BoxelSurveyStatsState state,
         IProgress<BoxelSurveyRebuildProgress>? progress,
         List<string> warnings,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         BoxelSurveyStatsStore.ValidateFileName(frontierId, nameof(frontierId));
         var directory = Path.Combine(dataDirectory, "systems", frontierId);
@@ -75,15 +74,12 @@ public sealed class BoxelSurveyRebuildService
         {
             cancellationToken.ThrowIfCancellationRequested();
             var path = files[index];
-            progress?.Report(new BoxelSurveyRebuildProgress(
-                "System files",
-                index + 1,
-                files.Length,
-                Path.GetFileName(path)));
+            progress?.Report(
+                new BoxelSurveyRebuildProgress("System files", index + 1, files.Length, Path.GetFileName(path))
+            );
             try
             {
-                var root = await ReadObjectAsync(path, cancellationToken)
-                    .ConfigureAwait(false);
+                var root = await ReadObjectAsync(path, cancellationToken).ConfigureAwait(false);
                 var snapshot = LegacySystemSnapshotParser.Parse(root);
                 var lastVisited = GetDateTimeOffset(root, "lastVisited");
                 if (state.IngestSystemFile(snapshot, lastVisited))
@@ -91,11 +87,8 @@ public sealed class BoxelSurveyRebuildService
                     ingested++;
                 }
             }
-            catch (Exception exception) when (
-                exception is IOException
-                    or UnauthorizedAccessException
-                    or InvalidDataException
-                    or JsonException)
+            catch (Exception exception)
+                when (exception is IOException or UnauthorizedAccessException or InvalidDataException or JsonException)
             {
                 warnings.Add($"{Path.GetFileName(path)}: {exception.Message}");
             }
@@ -110,7 +103,8 @@ public sealed class BoxelSurveyRebuildService
         string? currentJournalPath,
         IProgress<BoxelSurveyRebuildProgress>? progress,
         List<string> warnings,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         if (!Directory.Exists(journalDirectory))
         {
@@ -120,10 +114,8 @@ public sealed class BoxelSurveyRebuildService
         var currentFullPath = string.IsNullOrWhiteSpace(currentJournalPath)
             ? null
             : Path.GetFullPath(currentJournalPath);
-        var files = Directory.GetFiles(
-                journalDirectory,
-                "Journal.*.log",
-                SearchOption.TopDirectoryOnly)
+        var files = Directory
+            .GetFiles(journalDirectory, "Journal.*.log", SearchOption.TopDirectoryOnly)
             .Order(StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var processed = 0;
@@ -134,18 +126,17 @@ public sealed class BoxelSurveyRebuildService
         {
             cancellationToken.ThrowIfCancellationRequested();
             var path = files[index];
-            progress?.Report(new BoxelSurveyRebuildProgress(
-                "Journals",
-                index + 1,
-                files.Length,
-                Path.GetFileName(path)));
-            if (currentFullPath is not null
+            progress?.Report(
+                new BoxelSurveyRebuildProgress("Journals", index + 1, files.Length, Path.GetFileName(path))
+            );
+            if (
+                currentFullPath is not null
                 && string.Equals(
                     Path.GetFullPath(path),
                     currentFullPath,
-                    OperatingSystem.IsWindows()
-                        ? StringComparison.OrdinalIgnoreCase
-                        : StringComparison.Ordinal))
+                    OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal
+                )
+            )
             {
                 skipped++;
                 continue;
@@ -154,16 +145,10 @@ public sealed class BoxelSurveyRebuildService
             JournalFileReplay replay;
             try
             {
-                replay = await ReplayJournalAsync(
-                        path,
-                        frontierId,
-                        scan,
-                        state,
-                        cancellationToken)
+                replay = await ReplayJournalAsync(path, frontierId, scan, state, cancellationToken)
                     .ConfigureAwait(false);
             }
-            catch (Exception exception) when (
-                exception is IOException or UnauthorizedAccessException)
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
             {
                 warnings.Add($"{Path.GetFileName(path)}: {exception.Message}");
                 skipped++;
@@ -188,7 +173,8 @@ public sealed class BoxelSurveyRebuildService
         JournalEventEnvelope journalEvent,
         SystemScanState scan,
         BoxelSurveyStatsState state,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         cancellationToken.ThrowIfCancellationRequested();
         if (IsSystemChange(journalEvent))
@@ -227,7 +213,8 @@ public sealed class BoxelSurveyRebuildService
         string frontierId,
         SystemScanState scan,
         BoxelSurveyStatsState state,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var replay = new JournalReplayContext(frontierId);
         var malformed = 0;
@@ -237,13 +224,10 @@ public sealed class BoxelSurveyRebuildService
             FileAccess.Read,
             FileShare.ReadWrite | FileShare.Delete,
             16 * 1024,
-            FileOptions.Asynchronous | FileOptions.SequentialScan);
-        using var reader = new StreamReader(
-            stream,
-            Encoding.UTF8,
-            detectEncodingFromByteOrderMarks: true);
-        while (await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false)
-               is { } line)
+            FileOptions.Asynchronous | FileOptions.SequentialScan
+        );
+        using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+        while (await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false) is { } line)
         {
             var journalEvent = ParseJournalLine(line, ref malformed);
             if (journalEvent is null)
@@ -251,12 +235,7 @@ public sealed class BoxelSurveyRebuildService
                 continue;
             }
 
-            ReplayJournalEvent(
-                journalEvent,
-                scan,
-                state,
-                replay,
-                cancellationToken);
+            ReplayJournalEvent(journalEvent, scan, state, replay, cancellationToken);
         }
 
         return new JournalFileReplay(replay.MatchesCommander, malformed);
@@ -269,8 +248,7 @@ public sealed class BoxelSurveyRebuildService
             return null;
         }
 
-        if (JournalEventEnvelope.TryParse(line, out var journalEvent, out _)
-            && journalEvent is not null)
+        if (JournalEventEnvelope.TryParse(line, out var journalEvent, out _) && journalEvent is not null)
         {
             return journalEvent;
         }
@@ -284,7 +262,8 @@ public sealed class BoxelSurveyRebuildService
         SystemScanState scan,
         BoxelSurveyStatsState state,
         JournalReplayContext replay,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         if (journalEvent.EventName == "Fileheader" && !replay.MatchesCommander)
         {
@@ -292,13 +271,16 @@ public sealed class BoxelSurveyRebuildService
             replay.Context.Add(journalEvent);
         }
 
-        if (journalEvent.EventName is "Commander" or "LoadGame"
-            && GetString(journalEvent.Payload, "FID") is { } eventFrontierId)
+        if (
+            journalEvent.EventName is "Commander" or "LoadGame"
+            && GetString(journalEvent.Payload, "FID") is { } eventFrontierId
+        )
         {
             replay.IncludeEvents = string.Equals(
                 eventFrontierId,
                 replay.FrontierId,
-                StringComparison.OrdinalIgnoreCase);
+                StringComparison.OrdinalIgnoreCase
+            );
             if (replay.IncludeEvents && !replay.MatchesCommander)
             {
                 foreach (var contextEvent in replay.Context)
@@ -317,9 +299,7 @@ public sealed class BoxelSurveyRebuildService
         }
     }
 
-    private static async Task<JsonObject> ReadObjectAsync(
-        string path,
-        CancellationToken cancellationToken)
+    private static async Task<JsonObject> ReadObjectAsync(string path, CancellationToken cancellationToken)
     {
         await using var stream = new FileStream(
             path,
@@ -327,9 +307,10 @@ public sealed class BoxelSurveyRebuildService
             FileAccess.Read,
             FileShare.ReadWrite | FileShare.Delete,
             16 * 1024,
-            FileOptions.Asynchronous | FileOptions.SequentialScan);
-        return await JsonNode.ParseAsync(stream, cancellationToken: cancellationToken)
-                .ConfigureAwait(false) as JsonObject
+            FileOptions.Asynchronous | FileOptions.SequentialScan
+        );
+        return await JsonNode.ParseAsync(stream, cancellationToken: cancellationToken).ConfigureAwait(false)
+                as JsonObject
             ?? throw new InvalidDataException("The system file did not contain a JSON object.");
     }
 
@@ -345,25 +326,19 @@ public sealed class BoxelSurveyRebuildService
             return stamp;
         }
 
-        return value.TryGetValue<string>(out var text)
-            && DateTimeOffset.TryParse(
-                text,
-                CultureInfo.InvariantCulture,
-                DateTimeStyles.RoundtripKind,
-                out var parsed)
-                ? parsed
-                : null;
+        return
+            value.TryGetValue<string>(out var text)
+            && DateTimeOffset.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var parsed)
+            ? parsed
+            : null;
     }
 
-    private static string? GetString(JsonElement root, string propertyName)
-        => root.TryGetProperty(propertyName, out var value)
-            && value.ValueKind == JsonValueKind.String
-                ? value.GetString()
-                : null;
+    private static string? GetString(JsonElement root, string propertyName) =>
+        root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+            ? value.GetString()
+            : null;
 
-    private sealed record JournalFileReplay(
-        bool MatchesCommander,
-        int MalformedLineCount);
+    private sealed record JournalFileReplay(bool MatchesCommander, int MalformedLineCount);
 
     private sealed class JournalReplayContext(string frontierId)
     {
@@ -377,15 +352,12 @@ public sealed class BoxelSurveyRebuildService
     }
 }
 
-public sealed record BoxelSurveyRebuildProgress(
-    string Stage,
-    int Processed,
-    int Total,
-    string? CurrentFile);
+public sealed record BoxelSurveyRebuildProgress(string Stage, int Processed, int Total, string? CurrentFile);
 
 public sealed record BoxelSurveyRebuildResult(
     int SystemFilesIngested,
     int JournalFilesProcessed,
     int JournalFilesSkipped,
     int MalformedLines,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings
+);

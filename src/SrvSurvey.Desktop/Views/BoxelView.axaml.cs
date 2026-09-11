@@ -9,8 +9,8 @@ using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Controls;
-using SrvSurvey.Desktop.ViewModels;
 using SrvSurvey.Desktop.Runtime;
+using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Views;
 
@@ -27,23 +27,21 @@ public sealed partial class BoxelView : UserControl
             PointerWheelChangedEvent,
             BoxelView_PointerWheelChanged,
             RoutingStrategies.Tunnel,
-            handledEventsToo: true);
+            handledEventsToo: true
+        );
         AttachedToVisualTree += (_, _) => ConnectClipboard();
         DetachedFromVisualTree += (_, _) => DisconnectClipboard();
         DataContextChanged += (_, _) => ConnectClipboard();
     }
 
-    private static void BoxelView_PointerWheelChanged(
-        object? sender,
-        PointerWheelEventArgs eventArgs)
+    private static void BoxelView_PointerWheelChanged(object? sender, PointerWheelEventArgs eventArgs)
     {
         BoxelSystemActionMenu.DismissActiveMenuForScroll();
     }
 
     private void ConnectClipboard()
     {
-        if (DesktopExternalEffectPolicy.IsAllowed
-            && DataContext is MainWindowViewModel viewModel)
+        if (DesktopExternalEffectPolicy.IsAllowed && DataContext is MainWindowViewModel viewModel)
         {
             viewModel.BoxelClipboard.SetWriter(WriteClipboardAsync);
         }
@@ -57,9 +55,7 @@ public sealed partial class BoxelView : UserControl
         }
     }
 
-    private void LastSystemAvailable_LostFocus(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private void LastSystemAvailable_LostFocus(object? sender, RoutedEventArgs eventArgs)
     {
         if (DataContext is MainWindowViewModel viewModel)
         {
@@ -71,13 +67,12 @@ public sealed partial class BoxelView : UserControl
                         viewModel.BoxelSearch.RestoreLastSystemAvailable();
                     }
                 },
-                DispatcherPriority.Background);
+                DispatcherPriority.Background
+            );
         }
     }
 
-    private void ApplyLastSystemAvailable_LostFocus(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private void ApplyLastSystemAvailable_LostFocus(object? sender, RoutedEventArgs eventArgs)
     {
         if (DataContext is MainWindowViewModel viewModel)
         {
@@ -89,16 +84,14 @@ public sealed partial class BoxelView : UserControl
                         viewModel.BoxelSearch.RestoreLastSystemAvailable();
                     }
                 },
-                DispatcherPriority.Background);
+                DispatcherPriority.Background
+            );
         }
     }
 
-    private void SystemPageList_SelectionChanged(
-        object? sender,
-        SelectionChangedEventArgs eventArgs)
+    private void SystemPageList_SelectionChanged(object? sender, SelectionChangedEventArgs eventArgs)
     {
-        if (eventArgs.AddedItems.Count > 0
-            && SystemPagePickerButton.Flyout is PopupFlyoutBase flyout)
+        if (eventArgs.AddedItems.Count > 0 && SystemPagePickerButton.Flyout is PopupFlyoutBase flyout)
         {
             flyout.Hide();
         }
@@ -106,16 +99,14 @@ public sealed partial class BoxelView : UserControl
 
     private async Task WriteClipboardAsync(string text)
     {
-        var clipboard = TopLevel.GetTopLevel(this)?.Clipboard
-            ?? throw new InvalidOperationException(
-                "The desktop clipboard is not available.");
+        var clipboard =
+            TopLevel.GetTopLevel(this)?.Clipboard
+            ?? throw new InvalidOperationException("The desktop clipboard is not available.");
         await clipboard.SetTextAsync(text);
         await clipboard.FlushAsync();
     }
 
-    private void TopBoxelTextBox_KeyDown(
-        object? sender,
-        KeyEventArgs eventArgs)
+    private void TopBoxelTextBox_KeyDown(object? sender, KeyEventArgs eventArgs)
     {
         if (DataContext is not MainWindowViewModel viewModel)
         {
@@ -134,32 +125,28 @@ public sealed partial class BoxelView : UserControl
         }
         else if (eventArgs.Key == Key.Enter)
         {
-            eventArgs.Handled =
-                viewModel.BoxelSearch.SelectCurrentSystemSuggestion();
+            eventArgs.Handled = viewModel.BoxelSearch.SelectCurrentSystemSuggestion();
         }
-        else if (eventArgs.Key == Key.Escape
-            && viewModel.BoxelSearch.HasSystemNameSuggestions)
+        else if (eventArgs.Key == Key.Escape && viewModel.BoxelSearch.HasSystemNameSuggestions)
         {
             viewModel.BoxelSearch.DismissSystemSuggestions();
             eventArgs.Handled = true;
         }
     }
 
-    private void SystemSuggestion_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private void SystemSuggestion_Click(object? sender, RoutedEventArgs eventArgs)
     {
-        if (DataContext is MainWindowViewModel viewModel
-            && sender is Button { DataContext: SystemNameSuggestion suggestion })
+        if (
+            DataContext is MainWindowViewModel viewModel
+            && sender is Button { DataContext: SystemNameSuggestion suggestion }
+        )
         {
             viewModel.BoxelSearch.SelectSystemSuggestion(suggestion);
             TopBoxelTextBox.Focus();
         }
     }
 
-    private async void SaveProgress_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private async void SaveProgress_Click(object? sender, RoutedEventArgs eventArgs)
     {
         if (DataContext is not MainWindowViewModel viewModel)
         {
@@ -169,20 +156,16 @@ public sealed partial class BoxelView : UserControl
         try
         {
             var result = await viewModel.BoxelSearch.SaveProgressAsync();
-            if (result != SaveBoxelProgressResult.RequiresDetails
-                || TopLevel.GetTopLevel(this) is not Window owner)
+            if (result != SaveBoxelProgressResult.RequiresDetails || TopLevel.GetTopLevel(this) is not Window owner)
             {
                 return;
             }
 
-            var dialog = new SaveBoxelSearchDialog(
-                viewModel.BoxelSearch.SuggestedSaveName);
+            var dialog = new SaveBoxelSearchDialog(viewModel.BoxelSearch.SuggestedSaveName);
             var details = await dialog.ShowDialog<BoxelSearchSaveDialogResult?>(owner);
             if (details is not null)
             {
-                await viewModel.BoxelSearch.SaveProgressAsync(
-                    details.Name,
-                    details.Notes);
+                await viewModel.BoxelSearch.SaveProgressAsync(details.Name, details.Notes);
             }
         }
         catch (Exception exception)
@@ -191,12 +174,9 @@ public sealed partial class BoxelView : UserControl
         }
     }
 
-    private void ResumeSearch_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private void ResumeSearch_Click(object? sender, RoutedEventArgs eventArgs)
     {
-        if (DataContext is not MainWindowViewModel viewModel
-            || TopLevel.GetTopLevel(this) is not Window owner)
+        if (DataContext is not MainWindowViewModel viewModel || TopLevel.GetTopLevel(this) is not Window owner)
         {
             return;
         }
@@ -207,27 +187,20 @@ public sealed partial class BoxelView : UserControl
             return;
         }
 
-        var library = new BoxelSearchLibraryViewModel(
-            viewModel.BoxelSearchSession,
-            viewModel.BoxelSurveyStats);
+        var library = new BoxelSearchLibraryViewModel(viewModel.BoxelSearchSession, viewModel.BoxelSurveyStats);
         library.StatisticsRequested += async (_, request) =>
         {
             try
             {
                 await OpenStatisticsAsync(viewModel, owner, request);
             }
-            catch (Exception exception) when (
-                exception is IOException
-                    or UnauthorizedAccessException
-                    or InvalidDataException)
+            catch (Exception exception)
+                when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
             {
                 ReportStatsFailure(viewModel, exception);
             }
         };
-        boxelSearchLibraryWindow = new BoxelSearchLibraryWindow
-        {
-            DataContext = library
-        };
+        boxelSearchLibraryWindow = new BoxelSearchLibraryWindow { DataContext = library };
         boxelSearchLibraryWindow.Closed += (_, _) =>
         {
             library.Dispose();
@@ -236,12 +209,9 @@ public sealed partial class BoxelView : UserControl
         boxelSearchLibraryWindow.Show(owner);
     }
 
-    internal async void BoxelStats_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    internal async void BoxelStats_Click(object? sender, RoutedEventArgs eventArgs)
     {
-        if (DataContext is not MainWindowViewModel viewModel
-            || TopLevel.GetTopLevel(this) is not Window owner)
+        if (DataContext is not MainWindowViewModel viewModel || TopLevel.GetTopLevel(this) is not Window owner)
         {
             return;
         }
@@ -263,10 +233,8 @@ public sealed partial class BoxelView : UserControl
             await InitializeStatsWindowAsync(stats, () => stats.InitializeAsync());
             ShowStatsWindow(window, owner);
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
             ReportStatsFailure(viewModel, exception);
         }
@@ -275,7 +243,8 @@ public sealed partial class BoxelView : UserControl
     private async Task OpenStatisticsAsync(
         MainWindowViewModel viewModel,
         Window owner,
-        BoxelSurveyStatsFocusRequest request)
+        BoxelSurveyStatsFocusRequest request
+    )
     {
         if (boxelStatsWindow?.DataContext is BoxelSurveyStatsViewModel existing)
         {
@@ -285,25 +254,20 @@ public sealed partial class BoxelView : UserControl
         }
 
         var (stats, window) = CreateStatsWindow(viewModel);
-        await InitializeStatsWindowAsync(
-            stats,
-            () => stats.FocusPrefixesAsync(request.Prefixes, request.LowMassCode));
+        await InitializeStatsWindowAsync(stats, () => stats.FocusPrefixesAsync(request.Prefixes, request.LowMassCode));
         ShowStatsWindow(window, owner);
     }
 
-    private (BoxelSurveyStatsViewModel Stats, BoxelStatsWindow Window) CreateStatsWindow(
-        MainWindowViewModel viewModel)
+    private (BoxelSurveyStatsViewModel Stats, BoxelStatsWindow Window) CreateStatsWindow(MainWindowViewModel viewModel)
     {
         var stats = new BoxelSurveyStatsViewModel(
             viewModel.BoxelSurveyStats,
             new BoxelSurveyStatsSettingsStore(viewModel.AppDataPaths.UiSettingsPath),
             viewModel.BoxelSearch,
             viewModel.JournalFolderPath,
-            () => viewModel.CurrentJournalPath);
-        var window = new BoxelStatsWindow
-        {
-            DataContext = stats,
-        };
+            () => viewModel.CurrentJournalPath
+        );
+        var window = new BoxelStatsWindow { DataContext = stats };
         window.Closed += (_, _) =>
         {
             if (ReferenceEquals(boxelStatsWindow, window))
@@ -314,18 +278,14 @@ public sealed partial class BoxelView : UserControl
         return (stats, window);
     }
 
-    private static async Task InitializeStatsWindowAsync(
-        BoxelSurveyStatsViewModel stats,
-        Func<Task> initialize)
+    private static async Task InitializeStatsWindowAsync(BoxelSurveyStatsViewModel stats, Func<Task> initialize)
     {
         try
         {
             await initialize();
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
             stats.ReportStatus("Could not open boxel statistics: " + exception.Message);
         }
@@ -337,23 +297,18 @@ public sealed partial class BoxelView : UserControl
         boxelStatsWindow = window;
     }
 
-    private void ReportStatsFailure(
-        MainWindowViewModel viewModel,
-        Exception exception)
+    private void ReportStatsFailure(MainWindowViewModel viewModel, Exception exception)
     {
         if (boxelStatsWindow?.DataContext is BoxelSurveyStatsViewModel stats)
         {
-            stats.ReportStatus(
-                "Could not open boxel statistics: " + exception.Message);
+            stats.ReportStatus("Could not open boxel statistics: " + exception.Message);
             return;
         }
 
         viewModel.BoxelSearch.ReportStatisticsFailure(exception.Message);
     }
 
-    private async void VoxStellar_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private async void VoxStellar_Click(object? sender, RoutedEventArgs eventArgs)
     {
         if (DataContext is not MainWindowViewModel viewModel)
         {
@@ -363,26 +318,21 @@ public sealed partial class BoxelView : UserControl
         try
         {
             DesktopExternalEffectPolicy.ThrowIfDisabled();
-            var launcher = TopLevel.GetTopLevel(this)?.Launcher
-                ?? throw new InvalidOperationException(
-                    "The desktop link launcher is not available.");
+            var launcher =
+                TopLevel.GetTopLevel(this)?.Launcher
+                ?? throw new InvalidOperationException("The desktop link launcher is not available.");
             if (!await launcher.LaunchUriAsync(WellKnownUris.VoxStellarWebsite))
             {
-                throw new InvalidOperationException(
-                    "The default browser declined the request.");
+                throw new InvalidOperationException("The default browser declined the request.");
             }
         }
-        catch (Exception exception) when (
-            exception is InvalidOperationException
-                or NotSupportedException)
+        catch (Exception exception) when (exception is InvalidOperationException or NotSupportedException)
         {
             viewModel.VoxStellar.ReportLinkFailure(exception.Message);
         }
     }
 
-    private void VoxStellarInfo_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private void VoxStellarInfo_Click(object? sender, RoutedEventArgs eventArgs)
     {
         if (TopLevel.GetTopLevel(this) is Window owner)
         {
@@ -390,9 +340,7 @@ public sealed partial class BoxelView : UserControl
         }
     }
 
-    private void ExpectedSystemsInfo_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private void ExpectedSystemsInfo_Click(object? sender, RoutedEventArgs eventArgs)
     {
         if (TopLevel.GetTopLevel(this) is not Window owner)
         {
@@ -406,8 +354,7 @@ public sealed partial class BoxelView : UserControl
         }
 
         expectedSystemsInformationWindow = new ExpectedSystemsInformationWindow();
-        expectedSystemsInformationWindow.Closed += (_, _) =>
-            expectedSystemsInformationWindow = null;
+        expectedSystemsInformationWindow.Closed += (_, _) => expectedSystemsInformationWindow = null;
         expectedSystemsInformationWindow.Show(owner);
     }
 }

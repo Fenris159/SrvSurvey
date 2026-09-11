@@ -14,8 +14,7 @@ public sealed class ReleaseUpdateSettingsStore
     public bool LoadUseDevelopmentReleases()
     {
         var settings = documentStore.Load()["ReleaseUpdates"] as JsonObject;
-        if (settings?["UseDevelopmentReleases"] is JsonValue value
-            && value.TryGetValue<bool>(out var enabled))
+        if (settings?["UseDevelopmentReleases"] is JsonValue value && value.TryGetValue<bool>(out var enabled))
         {
             return enabled;
         }

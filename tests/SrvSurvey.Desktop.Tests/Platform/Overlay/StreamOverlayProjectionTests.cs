@@ -12,11 +12,10 @@ public sealed class StreamOverlayProjectionTests
             new PixelRect(100, 200, 2560, 1440),
             new PixelPoint(400, 500),
             new PixelSize(600, 300),
-            1.5);
+            1.5
+        );
 
-        Assert.Equal(
-            new StreamOverlayFrame(200, 200, 400, 200),
-            frame);
+        Assert.Equal(new StreamOverlayFrame(200, 200, 400, 200), frame);
     }
 
     [Theory]
@@ -28,7 +27,8 @@ public sealed class StreamOverlayProjectionTests
             new PixelRect(100, 200, 1920, 1080),
             new PixelPoint(x, y),
             new PixelSize(300, 200),
-            1);
+            1
+        );
 
         Assert.Null(frame);
     }
@@ -37,16 +37,14 @@ public sealed class StreamOverlayProjectionTests
     [InlineData(0, 100, 1)]
     [InlineData(100, 0, 1)]
     [InlineData(100, 100, 0)]
-    public void RejectsInvalidDimensions(
-        int gameWidth,
-        int gameHeight,
-        double scaling)
+    public void RejectsInvalidDimensions(int gameWidth, int gameHeight, double scaling)
     {
         var frame = StreamOverlayProjection.Create(
             new PixelRect(0, 0, gameWidth, gameHeight),
             new PixelPoint(0, 0),
             new PixelSize(10, 10),
-            scaling);
+            scaling
+        );
 
         Assert.Null(frame);
     }

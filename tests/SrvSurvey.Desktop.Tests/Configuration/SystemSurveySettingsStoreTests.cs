@@ -6,7 +6,8 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        "SrvSurvey-SystemSurveySettings-" + Guid.NewGuid().ToString("N"));
+        "SrvSurvey-SystemSurveySettings-" + Guid.NewGuid().ToString("N")
+    );
 
     [Fact]
     public void MissingDocumentUsesLegacyCompatibleDefaults()
@@ -89,9 +90,11 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
                 5,
                 new FssPixelColor(6, 7, 8, 9),
                 new FssPixelColor(10, 11, 12, 13),
-                new FssPixelColor(14, 15, 16, 17)),
+                new FssPixelColor(14, 15, 16, 17)
+            ),
             SuppressForActiveBuildProjects: true,
-            ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn: true);
+            ShowSurfaceRadarOnlyWhenGeneticSamplerDrawn: true
+        );
 
         store.Save(expected);
 
@@ -118,7 +121,8 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
                 + "\"SurfaceRadarSize\":99,"
                 + "\"FssTuningDetector\":{"
                 + "\"YellowHorizontalTolerance\":999,"
-                + "\"YellowBar\":{\"Red\":-1,\"Green\":999}}}}");
+                + "\"YellowBar\":{\"Red\":-1,\"Green\":999}}}}"
+        );
 
         var preferences = new SystemSurveySettingsStore(path).Load();
 
@@ -133,14 +137,10 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
         Assert.Equal(600, preferences.BioPlotterDssDurationSeconds);
         Assert.Equal(50, preferences.HighGravityWarningLevel);
         Assert.Equal(4, preferences.SurfaceRadarSize);
-        Assert.Equal(
-            255,
-            preferences.FssTuningDetector.YellowHorizontalTolerance);
+        Assert.Equal(255, preferences.FssTuningDetector.YellowHorizontalTolerance);
         Assert.Equal(0, preferences.FssTuningDetector.YellowBar.Red);
         Assert.Equal(255, preferences.FssTuningDetector.YellowBar.Green);
-        Assert.Equal(
-            FssTuningDetectorSettings.Default.YellowBar.Blue,
-            preferences.FssTuningDetector.YellowBar.Blue);
+        Assert.Equal(FssTuningDetectorSettings.Default.YellowBar.Blue, preferences.FssTuningDetector.YellowBar.Blue);
     }
 
     [Fact]
@@ -152,14 +152,12 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
             path,
             "{\"SystemSurvey\":{\"FssTuningDetector\":{"
                 + "\"FutureOption\":42,"
-                + "\"YellowBar\":{\"FutureColor\":true}}}}");
+                + "\"YellowBar\":{\"FutureColor\":true}}}}"
+        );
         var store = new SystemSurveySettingsStore(path);
         var preferences = store.Load() with
         {
-            FssTuningDetector = FssTuningDetectorSettings.Default with
-            {
-                Enabled = false,
-            },
+            FssTuningDetector = FssTuningDetectorSettings.Default with { Enabled = false },
         };
 
         store.Save(preferences);
@@ -180,7 +178,6 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
 
     private SystemSurveySettingsStore CreateStore()
     {
-        return new SystemSurveySettingsStore(
-            Path.Combine(temporaryDirectory, "ui-settings.json"));
+        return new SystemSurveySettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json"));
     }
 }

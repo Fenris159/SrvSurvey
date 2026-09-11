@@ -16,18 +16,10 @@ public sealed class NetworkPrivacySettingsStore
         var settings = documentStore.Load()["NetworkPrivacy"] as JsonObject;
         var defaults = NetworkPrivacyPreferences.Default;
         return new NetworkPrivacyPreferences(
-            GetBoolean(
-                settings,
-                "EddnUploadEnabled",
-                defaults.EddnUploadEnabled),
-            GetBoolean(
-                settings,
-                "UploadGreenGasGiantCandidates",
-                defaults.UploadGreenGasGiantCandidates),
-            GetBoolean(
-                settings,
-                "UploadHumanSettlementGeometry",
-                defaults.UploadHumanSettlementGeometry));
+            GetBoolean(settings, "EddnUploadEnabled", defaults.EddnUploadEnabled),
+            GetBoolean(settings, "UploadGreenGasGiantCandidates", defaults.UploadGreenGasGiantCandidates),
+            GetBoolean(settings, "UploadHumanSettlementGeometry", defaults.UploadHumanSettlementGeometry)
+        );
     }
 
     public void Save(NetworkPrivacyPreferences preferences)
@@ -46,33 +38,23 @@ public sealed class NetworkPrivacySettingsStore
             settings["EddnUploadEnabled"] = preferences.EddnUploadEnabled;
             settings.Remove("EddnUseTestSchemas");
             settings.Remove("EddnEnvironment");
-            settings["UploadGreenGasGiantCandidates"] =
-                preferences.UploadGreenGasGiantCandidates;
-            settings["UploadHumanSettlementGeometry"] =
-                preferences.UploadHumanSettlementGeometry;
+            settings["UploadGreenGasGiantCandidates"] = preferences.UploadGreenGasGiantCandidates;
+            settings["UploadHumanSettlementGeometry"] = preferences.UploadHumanSettlementGeometry;
         });
     }
 
-    private static bool GetBoolean(
-        JsonObject? source,
-        string propertyName,
-        bool fallback)
+    private static bool GetBoolean(JsonObject? source, string propertyName, bool fallback)
     {
-        return source?[propertyName] is JsonValue value
-            && value.TryGetValue<bool>(out var result)
-                ? result
-                : fallback;
+        return source?[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result) ? result : fallback;
     }
-
 }
 
 public sealed record NetworkPrivacyPreferences(
     bool EddnUploadEnabled,
     bool UploadGreenGasGiantCandidates,
-    bool UploadHumanSettlementGeometry = false)
+    bool UploadHumanSettlementGeometry = false
+)
 {
-    public static NetworkPrivacyPreferences Default { get; } = new(
-        EddnUploadEnabled: false,
-        UploadGreenGasGiantCandidates: false,
-        UploadHumanSettlementGeometry: false);
+    public static NetworkPrivacyPreferences Default { get; } =
+        new(EddnUploadEnabled: false, UploadGreenGasGiantCandidates: false, UploadHumanSettlementGeometry: false);
 }

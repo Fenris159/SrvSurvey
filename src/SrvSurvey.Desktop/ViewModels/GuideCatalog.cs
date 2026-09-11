@@ -36,7 +36,8 @@ public static class GuideCatalog
                         [
                             "Overview shows the active Commander, game mode, location, exploration totals, and unclaimed exobiology rewards.",
                             "If no Commander appears, use Diagnostics to inspect the selected folder and newest Journal file.",
-                        ]),
+                        ]
+                    ),
                     IntroSection(
                         "How the interface is organized",
                         "The sidebar keeps the active Commander and the major SrvSurvey workflows close at hand. Guides remains available even when Elite is not running.",
@@ -48,7 +49,8 @@ public static class GuideCatalog
                             "Use the sidebar icon at the top-right of the navigation column to collapse it into a narrow strip and give the current workspace more room. The same icon restores navigation; your selected workspace stays open and the window keeps its size.",
                             "Settings is divided into Application, Desktop, Global overlays, Input, Privacy & sharing, Screenshots, and Data & migration. Search settings to jump directly to a matching control.",
                             "Theme owns both application palettes and in-game overlay appearance, while Guides can search workflows, settings, and map symbols.",
-                        ]),
+                        ]
+                    ),
                     IntroSection(
                         "What this field manual covers",
                         "The in-app guide reconciles the original SrvSurvey user guide with the current cross-platform implementation.",
@@ -57,7 +59,8 @@ public static class GuideCatalog
                             "Content is derived from the repository README, porting plan, UI/journal/network/data-migration parity matrices, biology-criteria notes, the original project wiki, and the behavior implemented in the current code.",
                             "Legacy Windows-only steps are replaced with their current Avalonia workflow. Features that still require an operating-system capability report that status in the relevant setting.",
                             "Developer file formats are summarized as player tasks here; Diagnostics and repository documentation retain the lower-level evidence.",
-                        ]),
+                        ]
+                    ),
                     IntroSection(
                         "Automatic overlays",
                         "Most overlays appear only when their information is useful, then hide when that game context ends.",
@@ -69,8 +72,10 @@ public static class GuideCatalog
                         [
                             "Borderless or windowed Elite modes provide the most predictable desktop overlay stacking. Exclusive fullscreen behavior depends on the operating system and compositor.",
                             "A passive overlay is click-through. The live-interaction shortcut temporarily makes existing live overlays draggable without opening the full position editor.",
-                        ]),
-                ]),
+                        ]
+                    ),
+                ]
+            ),
             Category(
                 "overview-journals",
                 "02",
@@ -86,7 +91,8 @@ public static class GuideCatalog
                             "Location and body follow the newest location, approach, touchdown, and departure events.",
                             "Exploration totals combine jump, scan, mapping, landing, distance, and estimated reward state for the active profile.",
                             "Exobiology totals show samples and rewards that have not yet been sold.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Multiple Commanders",
                         "Profiles remain isolated even when their journals share one folder.",
@@ -97,7 +103,8 @@ public static class GuideCatalog
                         ],
                         [
                             "Ambiguous shared Cargo.json data is suppressed while multiple Elite windows are detected. A fresh unambiguous cargo write is required before cargo can re-enter plans or publishing.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Live versus historical processing",
                         "Live journal monitoring never requires rewriting an Elite journal. Historical tools analyze older files separately.",
@@ -106,8 +113,10 @@ public static class GuideCatalog
                             "Diagnostics can analyze older journals by Commander and date without changing profile data.",
                             "Commander Codex merges and Odyssey system/body reconstruction require explicit confirmation, verified backups, and atomic activation.",
                             "Recent active journals are excluded from destructive historical reconstruction paths.",
-                        ]),
-                ]),
+                        ]
+                    ),
+                ]
+            ),
             Category(
                 "exploration",
                 "03",
@@ -127,7 +136,8 @@ public static class GuideCatalog
                             "External-data enrichment can add prior discovery, traffic, station, and biological context when its privacy setting is enabled.",
                             "EDSM and Spansh body lookups wait for an active Elite session and a confirmed visit to the current system. If newly discovered body data is not indexed yet, SrvSurvey allows up to three retries after the initial lookup and remembers the current-visit budget across application restarts.",
                             "Leaving and later returning to the system starts a new visit budget. Closing and reopening SrvSurvey during the same visit does not bypass the limit.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Body information and values",
                         "Body information combines the scan, orbit, atmosphere, gravity, temperature, volcanism, materials, and reward details known so far.",
@@ -138,7 +148,8 @@ public static class GuideCatalog
                             "A first-discovery flag means the body was not previously discovered according to the journal data.",
                             "Enable Show flight warnings and choose a gravity threshold in Exploration overlay settings. The warning appears only when SrvSurvey can identify a nearby landable body in a supported ship, fighter, or SRV flight context.",
                             "Flight-warning color and advice escalate at 2 g, 4 g, and 8 g. The panel hides when the body context is stale, while on foot, or while an external game panel has focus.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Galaxy Map and next jump",
                         "Route overlays keep destination and next-hop information visible while the Galaxy Map or route is active.",
@@ -147,7 +158,8 @@ public static class GuideCatalog
                             "Next-jump information shows route progress, remaining distance, star class, scoopability, neutron routing, and available system context.",
                             "Galaxy Map preview can show destination discovery, biological, traffic, and port data; some fields require external lookup data.",
                             "Use the configurable jump-information shortcut to show or hide the route overlay manually.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Exploration screenshots",
                         "Screenshot processing can convert new images, organize them, and embed useful site data without changing old captures.",
@@ -159,8 +171,10 @@ public static class GuideCatalog
                         [
                             "Guardian aerial images can be rotated and aligned using per-layout altitude guidance.",
                             "Processing is opt-in and writes converted output to the configured destination.",
-                        ]),
-                ]),
+                        ]
+                    ),
+                ]
+            ),
             Category(
                 "exobiology",
                 "04",
@@ -179,7 +193,8 @@ public static class GuideCatalog
                             "A body row can contain more prediction PIPs than its reported biological-signal count when several genera remain plausible. Those additional hatched PIPs are alternative candidates, not extra signals or additive rewards.",
                             "A reward range appears when unresolved signals could match organisms with different values.",
                             "A filled flag marks a Commander first, an outline flag marks a Commander regional first, and a sun marks a potential Galactic-region first from external candidate data.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Sampling an organism",
                         "The bio-status and surface overlays track the active genus, three-sample sequence, colony distance, and estimated reward.",
@@ -191,7 +206,8 @@ public static class GuideCatalog
                         [
                             "First-footfall status can change reward presentation because a confirmed first footfall multiplies biological sale value.",
                             "The first-footfall screen detector is optional; its shortcut can override the current body state when automatic inference is unavailable.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Surface radar and bookmarks",
                         "The grounded radar keeps the Commander, ship, SRV, samples, prior scan locations, and numbered bookmarks in one relative view.",
@@ -201,7 +217,8 @@ public static class GuideCatalog
                             "Dots represent biological samples or bookmarks. Their surrounding circles show the organism colony radius.",
                             "For an active sample, warning color inside the radius means you are too close; success color outside the radius means the next sample is valid.",
                             "Use Track location 1 through 8 shortcuts to toggle reusable surface bookmarks.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Codex, Codex Bingo, and prior scans",
                         "Codex tools distinguish personal discoveries, regional discoveries, confirmed entries, predictions, and known scan locations.",
@@ -211,8 +228,10 @@ public static class GuideCatalog
                             "Old journals or the Canonn Codex Challenge can be imported into the Commander Codex without replacing unrelated profile data.",
                             "Prior-scan overlays can show known biological locations near the current body when external Canonn data is enabled.",
                             "A filled discovery flag is a Commander first; an outline flag is a regional first. Highlighting regional firsts is optional.",
-                        ]),
-                ]),
+                        ]
+                    ),
+                ]
+            ),
             Category(
                 "surface-mining",
                 "05",
@@ -229,7 +248,8 @@ public static class GuideCatalog
                         [
                             "Surface Survey and its mini tracker remain hidden while operating the Rhino or returning to its parked location on foot, even if the Mining panel is toggled off.",
                             "Use the overlay position editor to move or resize the panel. Its colors follow the selected overlay theme, including Monochrome Companion.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Experimental rig bar detection",
                         "Track the six rigs automatically from their HUD bars. Detection adds a missing tracker immediately and clears its location only after three continuous seconds of empty readings.",
@@ -246,7 +266,8 @@ public static class GuideCatalog
                             "Detection groups bright segments matching the selected bar color, allowing for shading and small hue differences. Gray, white, black and dark pixels do not count as a deployment bar. Gaps separate rig groups; calibrated positions and the established anchor determine their numbers. Unreadable or ambiguous groups remain uncertain instead of being renumbered. Low brightness, changed HUD geometry, head look, or obscuring windows can prevent recognition.",
                             "The top row maps left to right to rigs 1, 2, and 3; the bottom row maps to rigs 4, 5, and 6. A bar adds its tracker immediately; clearing requires three continuous seconds of empty readings. Missing frames and uncertain readings do not clear your trackers. Symbols and counters inside circles do not determine deployment.",
                             "Calibration follows the game viewport when resolution changes. Check alignment after changing aspect ratio, field of view or HUD layout; update the selected color after changing HUD colors. Only calibration and the selected color are saved; screen captures are processed in memory and discarded. Audio is not captured.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Rig tracking with key chords",
                         "Ctrl+Alt+F1 through Ctrl+Alt+F6 toggle the six saved rig locations. Each numbered radar circle is paired with the matching rig chevron below the vehicle row.",
@@ -262,7 +283,8 @@ public static class GuideCatalog
                             "Locations are saved for the current Commander and body separately from biology bookmarks. Placement accounts for the Rhino cockpit and deployment offsets and requires being aboard the Rhino.",
                             "By default, returning to your own ship on foot or docking the Rhino automatically clears all six rig locations because the game destroys deployed rigs then. Turn off Clear rigs automatically when boarding your ship in Surface Mining overlay settings to keep your saved markers; this preference persists between sessions. Re-entering the Rhino on foot keeps the locations; boarding a taxi or another Commander's ship does not clear them.",
                             "Send --- in game chat to clear all rigs and surface bookmarks on the current body, including resource, biology, and regular tracker bookmarks. This works even when automatic rig clearing is disabled and does not erase scan history or bookmarks on other bodies.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Rig circles and distance cues",
                         "The radar shows 78-meter-radius rig circles at the legacy mining zoom. Chevrons turn with your heading and show distance to each saved location.",
@@ -270,7 +292,8 @@ public static class GuideCatalog
                         [
                             "COLLECT uses cyan when within 5 meters of a saved rig. TOO CLOSE uses red inside the 78-meter deployment exclusion distance. TRACKED means outside that distance; NOT SET means the slot has no saved location.",
                             "Colors follow the selected theme, while the text labels keep their meaning. On foot, distances use your position without the Rhino cockpit offset.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Rig range warning",
                         "Aboard the Rhino, the Mining warning appears beyond 4 km from the farthest saved rig and clears when every rig is back within range.",
@@ -279,7 +302,8 @@ public static class GuideCatalog
                             "TOO FAR FROM RIGS uses the high-risk flight warning colors and the reminder: Moving beyond 4.5Km will Destroy Rigs. Only saved rig bookmarks count; resource bookmarks do not.",
                             "Surface Mining overlay settings provides an independent visibility toggle and optional shortcut. Its initial placement copies your saved Flight Warning placement; you can move it separately in the overlay editor.",
                             "The warning is hidden when you leave the Rhino. Flight warnings are also hidden on foot and in ground vehicles, with the Nomad retaining its flight warnings.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Ground resource bookmarks",
                         "Named resource locations appear below the rig trackers in two columns, filled left to right. Each saved location has its own material name, bearing chevron, and distance.",
@@ -292,7 +316,8 @@ public static class GuideCatalog
                             "Within 150 meters, the name and distance use the theme's near-target color and the chevron becomes a single arrow. Farther targets use the normal accent and double chevron; kilometers are shown for longer distances.",
                             "Resource bookmarks also appear as 70-meter circles on the mining radar. Long lists scroll in the resource area using overlay interaction mode. Biological bookmarks and numbered quick trackers are excluded from these rows.",
                             "Named resources use the existing Commander/body surface bookmarks. Boarding your own ship clears the six rig slots but preserves these resource locations.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Surface Mining maps",
                         "Save a surface mining location's center and map its deposits with case-insensitive chat commands.",
@@ -305,7 +330,8 @@ public static class GuideCatalog
                             "Mineral amount and density accept only high or low. Deposit names must match a commodity in Activities > Surface Mining > Hotspot List; rejected commands explain the problem in Status notifications.",
                             "Surface maps use the shared Navigation > Bookmarks catalog. Edit their system, body, category, notes, signal, body type, arrival distance, mineral amount, or density there; deleting the bookmark also removes the map. Contains and Body Type filters populate automatically from those saved maps.",
                             "The fixed-upright map shows 1 km rings, the 2.47 km location border, saved deposits, and your live position. Use the mouse wheel, slider, or minus and plus controls to zoom; drag to pan after zooming in.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Ship, Rhino, and cargo",
                         "Two vehicle columns sit above the rig chevrons, with cargo capacity below them.",
@@ -313,10 +339,10 @@ public static class GuideCatalog
                             "Follow Ship for ship guidance. After disembarking, follow the Rhino chevron back to the parked vehicle.",
                             "Re-enter the Rhino: its chevron becomes X to indicate untracked while aboard. Mining remains available during the walk back.",
                         ],
-                        [
-                            "The cargo row shows occupied capacity out of 72. Rig-setting chords remain disabled on foot.",
-                        ]),
-                ]),
+                        ["The cargo row shows occupied capacity out of 72. Rig-setting chords remain disabled on foot."]
+                    ),
+                ]
+            ),
             Category(
                 "travel-search",
                 "06",
@@ -331,9 +357,8 @@ public static class GuideCatalog
                             "Follow the circular bearing display relative to ship heading. The attack-angle line helps judge descent toward the target.",
                             "Send .target off or clear the target in Travel when finished.",
                         ],
-                        [
-                            "Ground targets are body-specific. A target is not treated as valid on a different body.",
-                        ]),
+                        ["Ground targets are body-specific. A target is not treated as valid on a different body."]
+                    ),
                     Section(
                         "Journeys, routes, and system notes",
                         "Journeys preserve an expedition timeline, while routes provide an ordered destination list and notes preserve local research.",
@@ -343,7 +368,8 @@ public static class GuideCatalog
                             "Import a named route or create one from supported route data, then advance it as jumps arrive.",
                             "A saved standard route can include body destinations for each system. Route bodies shows their body icon, arrival distance, exploration and biology values, and completion state; arriving at the matching body marks that destination complete.",
                             "Use Show system notes to edit notes for the current system without leaving the game context.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Spherical search",
                         "A spherical search finds candidate systems inside a radius around a central coordinate.",
@@ -352,7 +378,8 @@ public static class GuideCatalog
                             "Generate the next candidate and copy or paste it into the Galaxy Map with the configured shortcuts.",
                             "Use the overlay color and warning text to distinguish valid in-radius destinations, out-of-radius systems, low mass codes, and already-surveyed systems.",
                         ],
-                        []),
+                        []
+                    ),
                     Section(
                         "Nearby-system searches",
                         "Nearby systems resolves biological search results around a known reference system.",
@@ -361,8 +388,10 @@ public static class GuideCatalog
                             "Choose the search mode, enter a system name or id64 for the distance origin, and select an EDSM suggestion before using that origin.",
                             "Use current restores the active Commander system as the distance origin.",
                             "External system resolution is clearly reported when a lookup service is unavailable or disabled.",
-                        ]),
-                ]),
+                        ]
+                    ),
+                ]
+            ),
             Category(
                 "boxel",
                 "07",
@@ -379,7 +408,8 @@ public static class GuideCatalog
                             "Mass code correlates with the system's original mass allocation, but it does not guarantee a particular present-day star class, planet, or biological species.",
                             "Surveying a complete sequence gives an explorer a bounded, repeatable area to study. It is useful for finding regional formation patterns, checking nearby systems after an interesting discovery, and keeping a long project organized.",
                             "The terminology and naming model follow community research documented by Elite Dangerous Astrometrics, Marx's Guide to Boxels, and the IGAU system-identifier notes.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Start a boxel search",
                         "Use the Boxel workspace after choosing a procedurally generated system whose surrounding sequence you want to survey.",
@@ -393,7 +423,8 @@ public static class GuideCatalog
                         [
                             "Mass-code h searches are intentionally unavailable because reliable empty-boxel tracking is not practical at the full 1,280-light-year sector scale.",
                             "Every lower level multiplies the work: one boxel has eight direct children, and selecting several levels can create a very large search tree.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Survey the current boxel",
                         "Current boxel prefix identifies the sequence being worked; Next incomplete system is the next active suffix in the chosen direction that has not met your completion rule.",
@@ -410,7 +441,8 @@ public static class GuideCatalog
                         [
                             "The systems table keeps active systems in the current sort direction and groups deferred systems last. Show Only Deferred temporarily hides the active group.",
                             "The top Current system is where the Commander actually is; it is not the first system in the sequence. Next incomplete system is the next work item calculated from saved completion state.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Navigate the boxel hierarchy",
                         "Hierarchy controls move between nested cubes, not between systems in the current table.",
@@ -422,7 +454,8 @@ public static class GuideCatalog
                         ],
                         [
                             "A parent contains eight child cubes at the next lower mass code. This nested layout explains why systems with different prefixes can be close together and systems sharing a large high-mass boxel can be far apart.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Save, resume, and audit a boxel project",
                         "Saved searches let one Commander pause several independent boxel surveys and return to each without replacing its progress.",
@@ -435,7 +468,8 @@ public static class GuideCatalog
                         ],
                         [
                             "External timestamps describe when a community service last received data, not guaranteed first-discovery or current in-game completeness. Treat skip rules as workflow filters rather than proof that a system has nothing left to discover.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Review Boxel statistics",
                         "Boxel Stats summarizes the Commander data SrvSurvey has actually recorded; it does not estimate unvisited systems from a configured search size.",
@@ -447,7 +481,8 @@ public static class GuideCatalog
                         ],
                         [
                             "Count Nav Beacon scans as FSS complete changes only the displayed statistic. Minimum-system settings control when averages appear and which boxels export; they do not change stored survey data, Boxel completion, or the next target.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Share a survey with VoxStellar",
                         "VoxStellar is an independent boxel-surveying service. SrvSurvey can send selected new exploration journal events to it only after you opt in from the top of the Boxel workspace.",
@@ -458,8 +493,10 @@ public static class GuideCatalog
                         ],
                         [
                             "VoxStellar maintains its own database and says it does not forward these submissions to EDDN. Use a separate EDDN-capable tool when you also want to contribute discoveries to the wider community database.",
-                        ]),
-                ]),
+                        ]
+                    ),
+                ]
+            ),
             Category(
                 "guardian",
                 "08",
@@ -474,7 +511,8 @@ public static class GuideCatalog
                             "The system summary can appear automatically when the system has known Guardian sites.",
                             "Near a site, the live map projects the published layout around your current position and heading.",
                             "Map size, automatic zoom, SRV-turret zoom, measurement grid, material dots, notes, aerial grid, and legend are independently configurable.",
-                        ]),
+                        ]
+                    ),
                     GuardianSection(
                         "Aligning and surveying a site",
                         "A correct site type and heading make the projected map line up with the ruins or structure.",
@@ -487,7 +525,8 @@ public static class GuideCatalog
                         ],
                         [
                             "Present, absent, empty, active, scanned, and target states use different fills, outlines, and colors. The icon glossary shows the underlying shapes.",
-                        ]),
+                        ]
+                    ),
                     GuardianSection(
                         "Ram Tah and obelisks",
                         "The Ram Tah workspace tracks mission logs, active obelisks, required combinations, and decoded entries.",
@@ -496,7 +535,8 @@ public static class GuideCatalog
                             "An active obelisk receives an emphasized ring; a scanned obelisk is filled with the success color.",
                             "Filters can show only mission logs still needed for the active Ram Tah task.",
                             "The nearest mapped point and target ring help correlate the in-game site with the survey layout.",
-                        ]),
+                        ]
+                    ),
                     GuardianSection(
                         "Inspecting the Survey map",
                         "Reference maps and Commander surveys use the same selectable marker inspector so the preview matches the live editing workflow.",
@@ -508,7 +548,8 @@ public static class GuideCatalog
                         [
                             "The legend identifies each marker and explains active-obelisk wedges: gray is unscanned, orange is scanned, and cyan is still needed for Ram Tah.",
                             "At the active in-game site, the Commander position is mirrored onto the Survey map. It is a passive marker and cannot block selection of an overlapping survey point.",
-                        ]),
+                        ]
+                    ),
                     GuardianSection(
                         "Editing a Commander survey",
                         "A live Commander survey unlocks the same point form used by the reference preview and adds survey-specific controls below the map.",
@@ -521,7 +562,8 @@ public static class GuideCatalog
                         ],
                         [
                             "Published reference geometry is shared by every site of that type and cannot be changed through an ordinary Commander survey. Use a map draft when the shared template itself needs correction.",
-                        ]),
+                        ]
+                    ),
                     GuardianSection(
                         "Building a map draft",
                         "Start map draft from the Selected Map card to author or correct shared template geometry without leaving the Survey map workspace.",
@@ -533,7 +575,8 @@ public static class GuideCatalog
                         ],
                         [
                             "Draft changes preview immediately but remain session-only until verified export. Starting a draft naturally unlocks the same selected-point form that was read only in reference mode.",
-                        ]),
+                        ]
+                    ),
                     GuardianSection(
                         "Sharing a Guardian survey",
                         "Share data packages meaningful Commander discoveries for review without changing published reference data.",
@@ -544,8 +587,10 @@ public static class GuideCatalog
                         [
                             "The export preserves site identity, visits, headings, surface location, notes, point states, relic headings, obelisk groups and scan state, raw points, and component materials in the expected compact survey format.",
                             "Only meaningful differences are included in a content-addressed ZIP. Packaging never clears the legacy staging folder or modifies the published catalogs.",
-                        ]),
-                ]),
+                        ]
+                    ),
+                ]
+            ),
             Category(
                 "quests",
                 "09",
@@ -560,7 +605,8 @@ public static class GuideCatalog
                             "Unread message counts are shown in the application and the compact quest indicator.",
                             "Use the quest communications shortcut to show or hide the overlay without stopping the quest.",
                             "Objective history and variables are stored per quest identity so unrelated chapters do not overwrite one another.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Settlement and massacre guidance",
                         "Active quest geometry can add routes and target radii to a human-settlement map, while massacre missions track credited kills by mission giver.",
@@ -568,7 +614,8 @@ public static class GuideCatalog
                         [
                             "A gold target circle means the Commander is outside the objective radius; the accent color means the Commander is inside it.",
                             "Massacre rows show progress only for compatible active missions and avoid double-crediting one bounty event to the same mission giver.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Developer tools",
                         "Quest authors can validate and test Lua chapters without risking unrelated player progress.",
@@ -577,8 +624,10 @@ public static class GuideCatalog
                             "Imports are hash-verified and preserve progress only when the quest identity matches.",
                             "Definitions can be reloaded from disk, edited as JSON, debugged, started, stopped, and removed with explicit guards.",
                             "Publishing to Raven requires a separate overwrite confirmation; local testing does not publish implicitly.",
-                        ]),
-                ]),
+                        ]
+                    ),
+                ]
+            ),
             Category(
                 "colonisation",
                 "10",
@@ -595,7 +644,8 @@ public static class GuideCatalog
                         ],
                         [
                             "Automatic ship cargo publishing, Fleet Carrier publishing, system updates, and Green Gas Giant publication each have their own gates.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Focused primary project",
                         "The Commander shopping focus is explicit Raven state and is separate from a system's primary-port order.",
@@ -605,7 +655,8 @@ public static class GuideCatalog
                         ],
                         [
                             "Making a project primary changes Commander planning focus; it does not reorder the sites stored for the system.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Primary port order safety",
                         "Creating a project protects the existing first system site because Raven's nexus page treats that position as the primary port.",
@@ -617,7 +668,8 @@ public static class GuideCatalog
                         ],
                         [
                             "The correction changes only the ordered site IDs; it does not rebuild or overwrite the site's other Raven fields.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Create and update projects",
                         "Project creation uses the live docked construction-site context and a shipped build catalog.",
@@ -626,7 +678,8 @@ public static class GuideCatalog
                             "Review the system, body, construction market, build type, layout, architect, and notes before confirming publication.",
                             "Depot contribution, completion, docking, beacon architect, and market events update the matching project only when the identity is unambiguous.",
                             "Stale docking, SRV, bootstrap, malformed delta, or missing API-key context cannot publish project mutations.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Construction shopping overlay",
                         "The shopping plan compares project need with current ship cargo and linked Fleet Carrier cargo.",
@@ -636,7 +689,8 @@ public static class GuideCatalog
                             "A check means that source has enough for the row. A direction marker calls out the next useful item or focused project. Dimmed rows are unavailable or already satisfied.",
                             "The overlay can focus a primary project, the docked build site, a local aggregate, or all visible projects depending on game context and settings.",
                             "Fresh Market and Cargo events reconcile carrier and ship totals. Ambiguous multi-client cargo is excluded until a fresh unambiguous file write arrives.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Completed build-site repair",
                         "When docking at a player colony, SrvSurvey can repair a Raven system-site entry that is missing its MarketID or final name.",
@@ -646,7 +700,8 @@ public static class GuideCatalog
                             "Ambiguous or missing matches are not changed and remain retryable.",
                             "Successful repairs are kept in a persistent 50-location guard, preventing repeat API calls on routine revisits.",
                             "A cache-write failure does not repeat a successful server mutation in the same session.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Raven system update tool",
                         "The updater merges live discoveries, local edits, and the latest Raven copy before publishing.",
@@ -658,8 +713,10 @@ public static class GuideCatalog
                         ],
                         [
                             "Scanning, approaching, or docking can infer system/site data locally, but none of those actions alone publishes the system record.",
-                        ]),
-                ]),
+                        ]
+                    ),
+                ]
+            ),
             Category(
                 "overlays",
                 "11",
@@ -676,7 +733,8 @@ public static class GuideCatalog
                             "Manual show shortcuts do not fabricate live data; the full position editor is the intentional offline preview surface.",
                             "Use the overlay-settings icon beside a supported navigation category to open only that activity's overlay controls. The main Settings workspace remains the complete view.",
                             "When overlays compete for the same context, SrvSurvey hides lower-priority panels first and restores them from their current settings and game state when the blocker ends.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Overlay Exceptions",
                         "Restrict each overlay category to selected ships or vehicles without changing its normal triggers.",
@@ -689,7 +747,8 @@ public static class GuideCatalog
                             "All entries start checked. Other / unknown controls unrecognized ship types, unavailable boarded status and taxi/multicrew rides where the current vessel is not identified.",
                             "Firegroups has a dedicated overlay settings window with its own exceptions. The button in global overlay settings controls the other Status & utilities panels. Panels shared by several settings categories must be allowed in each of those categories.",
                             "These filters only hide overlays; enabling a vehicle does not bypass the panel’s normal game-state trigger, visibility switch or focus rules. Editor previews remain available.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Edit all overlay positions",
                         "The position editor can display realistic simulated overlays without Elite running.",
@@ -701,7 +760,8 @@ public static class GuideCatalog
                         ],
                         [
                             "The editor forces normally contextual overlays to appear, but it does not publish network data or change the player profile.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Move existing live overlays",
                         "Live-interaction mode is intentionally separate from the full editor.",
@@ -710,9 +770,8 @@ public static class GuideCatalog
                             "The existing live overlays stop being click-through and can be dragged in place.",
                             "Press the shortcut again to restore passive click-through behavior.",
                         ],
-                        [
-                            "This shortcut does not open simulated previews or change which overlays are visible.",
-                        ]),
+                        ["This shortcut does not open simulated previews or change which overlays are visible."]
+                    ),
                     Section(
                         "Overlay appearance and saved states",
                         "The in-game palette is independent from the application light/dark theme.",
@@ -725,7 +784,8 @@ public static class GuideCatalog
                         [
                             "Changing Blue light, Blue dark, Orange dark, Green light, or Green dark for the application never rewrites theme.json or a named overlay state.",
                             "Imported legacy overlay colors, positions, scale, and opacity remain in the overlay control group.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Input bindings",
                         "Keyboard and supported controller bindings are configurable per action and checked for collisions.",
@@ -733,8 +793,10 @@ public static class GuideCatalog
                         [
                             "Useful actions include overlay visibility, live interaction, map zoom, jump/FSS/body/station panels, colony shopping, system notes, boxel copy/paste, quest communications, VR adjustment, surface bookmarks, and screenshot data.",
                             "A binding is reported as unavailable when the current operating system cannot provide the required global input capability.",
-                        ]),
-                ]),
+                        ]
+                    ),
+                ]
+            ),
             Category(
                 "settings-migration",
                 "12",
@@ -749,7 +811,8 @@ public static class GuideCatalog
                             "Application theme changes the main Avalonia windows. Choose Blue light/dark, Orange dark, Green light/dark, or the low-glare Monochrome dark palette.",
                             "In-game overlay appearance changes only detached overlays and retains the original SrvSurvey color roles, named states, and defaults.",
                             "Neither selector writes into the other control group, so a light application can use a dark orange overlay palette or any custom combination.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Finding settings",
                         "Settings uses focused categories and a searchable catalog so long configuration pages do not have to be scanned manually.",
@@ -758,7 +821,8 @@ public static class GuideCatalog
                             "Enter one or more terms in Search settings. Use Up and Down to move through grouped results, Enter to open the selected setting, or select a result directly.",
                             "Open Theme workspace from Global overlays when you need overlay colors, typography, opacity, layout, or individual overlay controls.",
                         ],
-                        []),
+                        []
+                    ),
                     Section(
                         "Desktop placement and focus",
                         "Desktop behavior controls where the main application returns, how large it appears, and whether focus is handed back to Elite Dangerous.",
@@ -767,7 +831,8 @@ public static class GuideCatalog
                             "SrvSurvey restores the last on-screen window position when that display is still available. Otherwise it uses the configured Default monitor and clamps the window to the usable desktop.",
                             "Application window scale changes the complete shell and is reduced only when the selected size would not fit the active monitor.",
                             "Focus-on-start, focus-on-minimize, focus-after-jump, and minimize-to-tray are independent. Passive overlays remain click-through and do not activate the application window.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Import an original SrvSurvey profile",
                         "Legacy migration is backup-first, staged, checksum-verified, and designed to leave the source untouched.",
@@ -780,7 +845,8 @@ public static class GuideCatalog
                             "Commander data, journeys, routes, notes, Codex progress, system surveys, Guardian work, quest state, Raven settings, plotters.json layout/opacity, and theme.json overlay colors are migrated when compatible.",
                             "Unknown compatible JSON fields are preserved where the modern store supports lossless merging. Incompatible reference catalogs are ignored safely and reported in logs.",
                             "A SHA-256 manifest records the imported files so partial copies and silent corruption can be detected.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Reference-data updates",
                         "SrvSurvey still uses small version files and GitHub-hosted JSON catalogs so data corrections can ship without reinstalling the application.",
@@ -790,7 +856,8 @@ public static class GuideCatalog
                             "Downloaded catalogs are bounded, validated, checksummed, staged, and activated with health confirmation and rollback.",
                             "Guardian sites, biology criteria, human settlements, and other published datasets remain independent from executable releases.",
                             "Diagnostics can refresh the catalogs manually and reports when a restart is required.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Privacy and network services",
                         "External reads and every upload path are visible and separately gated.",
@@ -799,7 +866,8 @@ public static class GuideCatalog
                             "System enrichment may use EDSM, Spansh, Canonn, or Raven depending on the enabled feature.",
                             "EDDN publication, Inara publication, direct EDSM synchronization, human-settlement geometry, Green Gas Giant candidates, Raven cargo, Fleet Carrier data, system updates, and quest publication each require the corresponding setting, credential, or explicit confirmation.",
                             "Analysis, previews, imports, and historical reconstruction do not imply network publication.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "EDDN sharing",
                         "EDDN sharing is installation-wide, disabled by default, and configured from Settings > Privacy & sharing.",
@@ -811,7 +879,8 @@ public static class GuideCatalog
                         [
                             "Eligible live events enter a bounded durable retry queue. Startup history and multicrew activity are not uploaded, and delivery pauses when multiple Elite windows make companion-file ownership ambiguous.",
                             "EDDN needs no personal account or API key. This release sends production-schema messages through the Live gateway.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Inara publishing",
                         "Inara publishing follows the active Commander and is enabled by saving that Commander's personal API key.",
@@ -822,7 +891,8 @@ public static class GuideCatalog
                         ],
                         [
                             "Queued events never cross Commander or API-key boundaries. Live/beta eligibility, final session reporting, batching, retries, and shutdown flushes follow the bound Commander session.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "EDSM synchronization",
                         "Direct EDSM synchronization follows the active Commander and is enabled by saving that profile's personal API key.",
@@ -834,7 +904,8 @@ public static class GuideCatalog
                         [
                             "Only new attributable Live journal events are considered. SrvSurvey first loads EDSM's current discard policy, then sends bounded ordered batches with EDSM-sanctioned system, station, and ship context when known.",
                             "Startup history, Legacy, alpha/beta, diagnostic replay, multicrew, and sessions with multiple Elite windows are excluded. The pending queue is memory-only and credentials or events never cross Commander sessions.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Screenshots, notifications, stream, and VR",
                         "Optional desktop integrations are configured independently so unsupported platforms degrade without disabling core journal processing.",
@@ -843,8 +914,10 @@ public static class GuideCatalog
                             "Screenshot conversion has its own source, destination, naming, banner, and image-embedding controls. High-resolution naming is determined from the Elite game client dimensions rather than whichever desktop happens to be primary.",
                             "Notifications and the dedicated stream overlay can be enabled without changing ordinary overlay positions.",
                             "VR overlay adjustment captures and resets orientation through dedicated actions; capability and status are reported when the runtime is unavailable.",
-                        ]),
-                ]),
+                        ]
+                    ),
+                ]
+            ),
             Category(
                 "diagnostics",
                 "13",
@@ -861,7 +934,8 @@ public static class GuideCatalog
                         ],
                         [
                             "Malformed or unknown journal fields are logged without requiring SrvSurvey to rewrite the source file.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Application logs and crash reports",
                         "Diagnostics exposes persisted application logs and the non-destructive crash-report workflow.",
@@ -870,7 +944,8 @@ public static class GuideCatalog
                             "Copy the relevant log section when reporting a problem, including the first error and the operation that preceded it.",
                             "Crash packages are staged for review and do not silently upload user data.",
                             "Network response sizes, validation failures, ignored incompatible catalogs, and rollback results are recorded for diagnosis.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Updates and reference recovery",
                         "Executable releases and reference catalogs are checked and activated independently.",
@@ -880,7 +955,8 @@ public static class GuideCatalog
                             "Downloads are staged before shutdown; cancelled or failed pre-handoff attempts clean their candidates, stale plans are removed automatically, and failed startup can roll back safely.",
                             "Reference refresh updates only changed catalogs and retains verified backups.",
                             "Visited-star cache swap/restore is blocked while Elite is running, uses a persistent original backup, validates responses, and rolls back failed activation.",
-                        ]),
+                        ]
+                    ),
                     Section(
                         "Common fixes",
                         "Use the smallest targeted recovery before considering a profile import or reset.",
@@ -892,14 +968,17 @@ public static class GuideCatalog
                             "Wrong cargo: close extra Elite clients and wait for a fresh Cargo.json write from the intended Commander.",
                             "Raven mutation rejected: verify the active Commander key, feature permission, dock/system identity, and explicit confirmation state.",
                             "Imported data incomplete: inspect the import manifest and logs; do not modify or delete the untouched legacy source while investigating.",
-                        ]),
-                ]),
+                        ]
+                    ),
+                ]
+            ),
             Category(
                 "chat-commands",
                 "14",
                 "Chat Commands",
                 "Activity-by-activity reference for the chat messages SrvSurvey currently recognizes, including examples, requirements, and clearing behavior.",
-                ChatCommandSections.Value),
+                ChatCommandSections.Value
+            ),
             Category(
                 "icons",
                 "15",
@@ -914,46 +993,116 @@ public static class GuideCatalog
                             "Primary/secondary colors identify ordinary information and active guidance. Success means confirmed, complete, or safely outside a sample radius.",
                             "Warning calls for attention. Danger marks an invalid, prohibited, failed, dead, or too-close state. Muted/dim means historical, unavailable, inactive, or already satisfied.",
                             "Gold highlights valuable biology, Guardian information, focused targets, or other high-interest rows depending on the overlay.",
-                        ]),
+                        ]
+                    ),
                 ],
-                CreateIconGlossary()),
+                CreateIconGlossary()
+            ),
             Category(
                 "mining-workspace",
                 "16",
                 "Mining workspace",
                 "Plan mining trips, track sessions and missions, and keep shared locations and reports.",
                 [
-                    Section("Sessions and cargo", "Activities → Mining combines ship mining tools with the existing cargo and journal feed.",
-                        ["Start manually or enable automatic start when a prospector limpet launches. Pause and resume exclude breaks from efficiency. End a session to add it to Reports.", "A recovered session opens paused. Check the system and ring, then resume when ready.", "Session shows prospecting percentages, core discoveries, quality hits, refined tonnage, limpets, engineering materials and cargo. Manual count corrections retain the original observations."],
-                        ["Cargo transfers and purchases do not count as mining production. Mission cargo is allocated once across active mining missions.", "Refinery bins are not reported by the journal. Enter pending contents manually; reports keep these estimates separate from refined tonnage.", "The optional cargo-full reminder waits until cargo has been full and collection idle for one minute."]),
-                    Section("Find rings, markets and traders", "Mining → Find keeps each search and its results in a dedicated viewport.",
-                        ["Find → Rings combines historical reference rings, your scans and Spansh. Choose Local for cached data, Spansh for online results, or Both. Refine by radius, mineral, ring type, count, overlap or RES annotations.", "Right-click a ring to bookmark it, save the online observation locally, copy the system or open a reference site. Historical journal import adds this commander's rings and missions without starting sessions.", "Markets → Sell mined cargo finds stations buying your commodity, highest observed prices first. Buy supplies finds stations selling it, cheapest first. Choose a category or enter a commodity name; expand station and freshness filters for pads, carrier exclusions and price age. Traders has its own results for raw, manufactured or encoded engineering materials.", "Use Local discoveries / import journals to review your own scans and import earlier journals. Search destinations returns to online/local combined searching. Provider page starts at 0; station searches use 20 results per page."],
-                        ["Unknown coordinates are not treated as nearby. Bundled observations are historical; multiple hotspots alone do not establish an overlap. Local searches show at most 500 rings.", "Prices are observations and may change. Settings → Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.", "Fleet Carrier reuses the existing Frontier profile. Distance supports two systems, current position, home and your carrier's system."]),
-                    Section("Plan mining for Powerplay", "Find → Powerplay connects the system, ring and market decisions.",
-                        ["Choose Reinforce, Undermine or Acquire and your pledged Power. Powerplay journal events fill the pledge when available; you can select it manually. Reinforce matches known ownership by your Power; Undermine matches another known Power. Acquire shows explicitly unoccupied/expansion candidates, not unknown ownership.",
-                         "Select a system and choose Find rings in selected system. This switches to Rings and searches that exact system. Adjust mineral and ring type as needed. For acquisition, uncheck Only this system to compare surrounding rings; the chosen acquisition destination is retained separately. Select a ring and choose Selling stations to open Markets → Sell mined cargo. The plan context shows the mining origin and Powerplay destination.",
-                         "Only this system constrains rings and nearby markets to the reference system. Reinforce/Undermine plans keep mining and selling in the same system; acquisition plans retain the selected selling destination even when the ring is elsewhere. Ordinary ring-to-market searches compare nearby destinations. Clear Powerplay plan ends that destination link. Galaxy-wide prices deliberately ignore that location restriction."],
-                        ["These are planning filters, not a merit calculator. Check current Powerplay assignments, system eligibility and acquisition support range in the game before mining or selling. Commodity prices and Powerplay observations may be stale; no reward is guaranteed. Unknown Power ownership is never counted as an enemy or an acquisition target.",
-                         "Spansh searches show one provider page. Expansion and Contested use local journal/EDDN observations because Spansh does not index those states; an empty result can mean the local cache has not seen them. Broaden the radius or change page if filters return no matches. A failed or oversized response appears as a search message; retry or narrow the search."]),
-                    Section("Shared bookmarks", "Navigation → Bookmarks and Mining → Bookmarks use the same catalog.",
-                        ["Enter a system, optional body/ring and category; saving a new category makes it available to the category filter.", "Store minerals, ratings, hotspot names, average yields, last-mined dates, overlap/RES notes and screenshots. Right-click to copy or delete; Undo restores the last deletion during this run.", "Import shared bookmark JSON or EliteMining bookmark lists. Imports retain existing locations rather than silently replacing them."], []),
-                    Section("Reports and backups", "Reports preserve the observations behind mining statistics.",
-                        ["Select a completed session to edit notes or attach screenshots. Export HTML for graphs, material breakdowns and the prospecting timeline; open it in a browser to print or save as PDF.", "Compare all sessions, export CSV, or import EliteMining/SrvSurvey summary CSVs. Imported summaries keep their original fields without pretending that per-asteroid journal data was supplied.", "Settings → Backup exports a ZIP with commander mining data, named Firegroups configurations and cached loadouts, shared bookmarks and local screenshot attachments. Restore applies the backed-up contents and keeps previous files for recovery. Older ZIPs without Firegroups leave current named configurations intact."],
-                        ["Screenshots larger than 20 MB or unsupported formats are omitted from packaged images. Keep originals when using standalone bookmark JSON."]),
-                    Section("Carrier and distance workspaces", "Shared tools are available outside Mining.",
-                        ["Fleet Carrier sits directly below Overview and retains the full carrier profile. Linked Frontier data loads automatically when the commander journal is detected, with the existing cache and refresh cooldown.", "Linked cargo uses the existing RavenColonial inventory and follows its cargo-sync preference. Frontier remains the source for capacity, finances and services.", "The squadron section uses linked RavenColonial carriers. Docking at a linked carrier with a squadron bank identifies it automatically; otherwise select your squadron carrier. RavenColonial does not supply its capacity.", "Travel → Distance follows FC Routes. Calculate distances and save a home system there."], []),
-                    Section("Announcements and firegroups", "Mining has independent ship notifications and a firegroup reference panel.",
-                        ["In Mining Overlay Settings, enable Mining notifications. Firegroups has its own overlay settings window, opened with the settings icon beside Firegroups in the sidebar; placement remains in the editor’s Status & utilities category. Assign shortcuts and adjust placement in the overlay editor.", "Settings → Announcements controls collected/refined/prospecting notices, mineral thresholds, core/non-core filters and named announcement presets. Optional speech uses locally installed Windows voices.", "Firegroups, directly below Fleet Carrier in the sidebar, reads equipped modules from Loadout. Choose A–H with the arrows, add primary and secondary dropdowns with the circled plus buttons, then Add group. The tree previews all assignments. Enter a configuration name and Save; click a saved name to edit, or expand it to inspect the groups. Save and Remove sit beside the name. Each saved row also has a trash button for direct deletion; confirm Yes to delete, or No to keep it.", "Save mining settings to persist search filters and preferences for this commander."],
-                        ["Mining notifications require the main ship and disappear on foot or in any SRV. Their session-only visibility and supercruise preferences are in Mining Overlay Settings. Firegroups selects the saved configuration for the identified boarded ship and maps Status.json values 0–7 to A–H. It requires that vessel’s Loadout and a saved configuration, and hides on foot or aboard an unidentified vessel. Its dedicated settings window contains visibility, shortcut and Overlay Exceptions. Existing Rhino overlays remain independent."]),
-                ]),
+                    Section(
+                        "Sessions and cargo",
+                        "Activities → Mining combines ship mining tools with the existing cargo and journal feed.",
+                        [
+                            "Start manually or enable automatic start when a prospector limpet launches. Pause and resume exclude breaks from efficiency. End a session to add it to Reports.",
+                            "A recovered session opens paused. Check the system and ring, then resume when ready.",
+                            "Session shows prospecting percentages, core discoveries, quality hits, refined tonnage, limpets, engineering materials and cargo. Manual count corrections retain the original observations.",
+                        ],
+                        [
+                            "Cargo transfers and purchases do not count as mining production. Mission cargo is allocated once across active mining missions.",
+                            "Refinery bins are not reported by the journal. Enter pending contents manually; reports keep these estimates separate from refined tonnage.",
+                            "The optional cargo-full reminder waits until cargo has been full and collection idle for one minute.",
+                        ]
+                    ),
+                    Section(
+                        "Find rings, markets and traders",
+                        "Mining → Find keeps each search and its results in a dedicated viewport.",
+                        [
+                            "Find → Rings combines historical reference rings, your scans and Spansh. Choose Local for cached data, Spansh for online results, or Both. Refine by radius, mineral, ring type, count, overlap or RES annotations.",
+                            "Right-click a ring to bookmark it, save the online observation locally, copy the system or open a reference site. Historical journal import adds this commander's rings and missions without starting sessions.",
+                            "Markets → Sell mined cargo finds stations buying your commodity, highest observed prices first. Buy supplies finds stations selling it, cheapest first. Choose a category or enter a commodity name; expand station and freshness filters for pads, carrier exclusions and price age. Traders has its own results for raw, manufactured or encoded engineering materials.",
+                            "Use Local discoveries / import journals to review your own scans and import earlier journals. Search destinations returns to online/local combined searching. Provider page starts at 0; station searches use 20 results per page.",
+                        ],
+                        [
+                            "Unknown coordinates are not treated as nearby. Bundled observations are historical; multiple hotspots alone do not establish an overlap. Local searches show at most 500 rings.",
+                            "Prices are observations and may change. Settings → Session can enable receive-only EDDN observations, retained for 24 hours for commodities. This does not enable uploads.",
+                            "Fleet Carrier reuses the existing Frontier profile. Distance supports two systems, current position, home and your carrier's system.",
+                        ]
+                    ),
+                    Section(
+                        "Plan mining for Powerplay",
+                        "Find → Powerplay connects the system, ring and market decisions.",
+                        [
+                            "Choose Reinforce, Undermine or Acquire and your pledged Power. Powerplay journal events fill the pledge when available; you can select it manually. Reinforce matches known ownership by your Power; Undermine matches another known Power. Acquire shows explicitly unoccupied/expansion candidates, not unknown ownership.",
+                            "Select a system and choose Find rings in selected system. This switches to Rings and searches that exact system. Adjust mineral and ring type as needed. For acquisition, uncheck Only this system to compare surrounding rings; the chosen acquisition destination is retained separately. Select a ring and choose Selling stations to open Markets → Sell mined cargo. The plan context shows the mining origin and Powerplay destination.",
+                            "Only this system constrains rings and nearby markets to the reference system. Reinforce/Undermine plans keep mining and selling in the same system; acquisition plans retain the selected selling destination even when the ring is elsewhere. Ordinary ring-to-market searches compare nearby destinations. Clear Powerplay plan ends that destination link. Galaxy-wide prices deliberately ignore that location restriction.",
+                        ],
+                        [
+                            "These are planning filters, not a merit calculator. Check current Powerplay assignments, system eligibility and acquisition support range in the game before mining or selling. Commodity prices and Powerplay observations may be stale; no reward is guaranteed. Unknown Power ownership is never counted as an enemy or an acquisition target.",
+                            "Spansh searches show one provider page. Expansion and Contested use local journal/EDDN observations because Spansh does not index those states; an empty result can mean the local cache has not seen them. Broaden the radius or change page if filters return no matches. A failed or oversized response appears as a search message; retry or narrow the search.",
+                        ]
+                    ),
+                    Section(
+                        "Shared bookmarks",
+                        "Navigation → Bookmarks and Mining → Bookmarks use the same catalog.",
+                        [
+                            "Enter a system, optional body/ring and category; saving a new category makes it available to the category filter.",
+                            "Store minerals, ratings, hotspot names, average yields, last-mined dates, overlap/RES notes and screenshots. Right-click to copy or delete; Undo restores the last deletion during this run.",
+                            "Import shared bookmark JSON or EliteMining bookmark lists. Imports retain existing locations rather than silently replacing them.",
+                        ],
+                        []
+                    ),
+                    Section(
+                        "Reports and backups",
+                        "Reports preserve the observations behind mining statistics.",
+                        [
+                            "Select a completed session to edit notes or attach screenshots. Export HTML for graphs, material breakdowns and the prospecting timeline; open it in a browser to print or save as PDF.",
+                            "Compare all sessions, export CSV, or import EliteMining/SrvSurvey summary CSVs. Imported summaries keep their original fields without pretending that per-asteroid journal data was supplied.",
+                            "Settings → Backup exports a ZIP with commander mining data, named Firegroups configurations and cached loadouts, shared bookmarks and local screenshot attachments. Restore applies the backed-up contents and keeps previous files for recovery. Older ZIPs without Firegroups leave current named configurations intact.",
+                        ],
+                        [
+                            "Screenshots larger than 20 MB or unsupported formats are omitted from packaged images. Keep originals when using standalone bookmark JSON.",
+                        ]
+                    ),
+                    Section(
+                        "Carrier and distance workspaces",
+                        "Shared tools are available outside Mining.",
+                        [
+                            "Fleet Carrier sits directly below Overview and retains the full carrier profile. Linked Frontier data loads automatically when the commander journal is detected, with the existing cache and refresh cooldown.",
+                            "Linked cargo uses the existing RavenColonial inventory and follows its cargo-sync preference. Frontier remains the source for capacity, finances and services.",
+                            "The squadron section uses linked RavenColonial carriers. Docking at a linked carrier with a squadron bank identifies it automatically; otherwise select your squadron carrier. RavenColonial does not supply its capacity.",
+                            "Travel → Distance follows FC Routes. Calculate distances and save a home system there.",
+                        ],
+                        []
+                    ),
+                    Section(
+                        "Announcements and firegroups",
+                        "Mining has independent ship notifications and a firegroup reference panel.",
+                        [
+                            "In Mining Overlay Settings, enable Mining notifications. Firegroups has its own overlay settings window, opened with the settings icon beside Firegroups in the sidebar; placement remains in the editor’s Status & utilities category. Assign shortcuts and adjust placement in the overlay editor.",
+                            "Settings → Announcements controls collected/refined/prospecting notices, mineral thresholds, core/non-core filters and named announcement presets. Optional speech uses locally installed Windows voices.",
+                            "Firegroups, directly below Fleet Carrier in the sidebar, reads equipped modules from Loadout. Choose A–H with the arrows, add primary and secondary dropdowns with the circled plus buttons, then Add group. The tree previews all assignments. Enter a configuration name and Save; click a saved name to edit, or expand it to inspect the groups. Save and Remove sit beside the name. Each saved row also has a trash button for direct deletion; confirm Yes to delete, or No to keep it.",
+                            "Save mining settings to persist search filters and preferences for this commander.",
+                        ],
+                        [
+                            "Mining notifications require the main ship and disappear on foot or in any SRV. Their session-only visibility and supercruise preferences are in Mining Overlay Settings. Firegroups selects the saved configuration for the identified boarded ship and maps Status.json values 0–7 to A–H. It requires that vessel’s Loadout and a saved configuration, and hides on foot or aboard an unidentified vessel. Its dedicated settings window contains visibility, shortcut and Overlay Exceptions. Existing Rhino overlays remain independent.",
+                        ]
+                    ),
+                ]
+            ),
         ];
     }
 
     private static GuideSectionViewModel[] LoadChatCommandSections()
     {
-        using var stream = typeof(GuideCatalog).Assembly.GetManifestResourceStream(
-            "SrvSurvey.Desktop.Resources.chat-commands-guide.json")
-            ?? throw new InvalidOperationException("The chat command guide resource is missing.");
+        using var stream =
+            typeof(GuideCatalog).Assembly.GetManifestResourceStream(
+                "SrvSurvey.Desktop.Resources.chat-commands-guide.json"
+            ) ?? throw new InvalidOperationException("The chat command guide resource is missing.");
         return JsonSerializer.Deserialize<GuideSectionViewModel[]>(stream)
             ?? throw new InvalidOperationException("The chat command guide resource is empty.");
     }
@@ -962,69 +1111,458 @@ public static class GuideCatalog
     {
         return
         [
-            Icon(GuideIconKind.Glyph, "⚑", "Commander first", "The organism is a first discovery for the current Commander. The same filled flag on compact FSS rows marks an undiscovered body.", "FSS information, system survey, biology"),
-            Icon(GuideIconKind.Glyph, "⚐", "Commander regional first", "The organism is new to this Commander in the current Codex region. The optional regional-first setting promotes the outline flag and its reward PIP to the highlight color.", "Biology system and Codex overlays"),
-            Icon(GuideIconKind.Glyph, "☀", "Potential Galactic-region first", "The external regional candidate catalog has no reported discovery for this predicted organism in the current Galactic region. This is advisory until an in-game CodexEntry confirms the result.", "Biology system and body predictions", "global regional first discovery biology"),
-            Icon(GuideIconKind.Glyph, "?", "Predicted organism", "A trailing question mark means the body criteria predict the colored species, but a DSS or organic scan has not confirmed it. Hover the marker in the overlay for its state description.", "Biology body predictions", "uncertain predicted species subtype"),
-            Icon(GuideIconKind.Glyph, "►", "Next or active direction", "Calls out the next action, selected destination, active target, route note, or focused row.", "Travel, search, Guardian, colonization, messages"),
-            Icon(GuideIconKind.Glyph, "✓", "Complete or sufficient", "The scan/task is complete, the condition is valid, or the ship/carrier has enough cargo for the requirement.", "FSS, body information, quests, colonization"),
-            Icon(GuideIconKind.Glyph, "⚠", "Warning", "The route, gravity, search candidate, build state, or other condition needs attention before proceeding.", "Flight warning, search, travel, colonization"),
-            Icon(GuideIconKind.Glyph, "◆", "Mapped site or Codex item", "Identifies a Guardian/site point or a recorded Codex-style item in compact overlay rows.", "Guardian, Codex, preview rows"),
-            Icon(GuideIconKind.Glyph, "◇", "Objective outside target", "A quest objective exists but the Commander is not yet within its required target area.", "Quest indicator and settlement objectives"),
-            Icon(GuideIconKind.DirectionalChevron, "", "Near and far bearing chevrons", "An open chevron points toward a near or standard target. A double chevron marks a target beyond its defined far threshold; markers without one use 1 km.", "Prior scans, mini-track, surface survey", "relative bearing direction near far distance"),
-            Icon(GuideIconKind.Glyph, "☀", "Star, body, or biological signal", "Outside the body-prediction discovery markers, this symbol identifies a stellar/body context or an unresolved biological signal according to the row title.", "System survey and biology overlays"),
-            Icon(GuideIconKind.Glyph, "T", "Terraformable", "The body is a terraformable candidate.", "FSS information and system survey"),
-            Icon(GuideIconKind.Glyph, "L", "Landable", "The body can be landed on.", "FSS information and system survey"),
-            Icon(GuideIconKind.Glyph, "?", "Unknown", "A standalone question mark means the signal, organism, site detail, or reward cannot yet be identified reliably from current data.", "Biology, Guardian, body and system rows"),
-            Icon(GuideIconKind.Glyph, "■", "Construction site", "Identifies construction/build context; the exact row color reports whether the item is actionable, satisfied, or unavailable.", "Colonization shopping"),
-            AssetIcon(DesktopAssetUri("Assets/Routes/refuel-star.png"), "Fuel-scoop stop", "An orange star containing a fuel droplet marks a route waypoint where the ship should refuel by fuel scooping.", "Route Workspace and next-jump overlay", "fuel scoop refuel star route"),
-            AssetIcon(DesktopAssetUri("Assets/Routes/neutron-star.png"), "Neutron boost stop", "A blue neutron-star marker identifies a route waypoint that uses or approaches a neutron-star FSD boost.", "Route Workspace and next-jump overlay", "neutron boost fsd star route"),
+            Icon(
+                GuideIconKind.Glyph,
+                "⚑",
+                "Commander first",
+                "The organism is a first discovery for the current Commander. The same filled flag on compact FSS rows marks an undiscovered body.",
+                "FSS information, system survey, biology"
+            ),
+            Icon(
+                GuideIconKind.Glyph,
+                "⚐",
+                "Commander regional first",
+                "The organism is new to this Commander in the current Codex region. The optional regional-first setting promotes the outline flag and its reward PIP to the highlight color.",
+                "Biology system and Codex overlays"
+            ),
+            Icon(
+                GuideIconKind.Glyph,
+                "☀",
+                "Potential Galactic-region first",
+                "The external regional candidate catalog has no reported discovery for this predicted organism in the current Galactic region. This is advisory until an in-game CodexEntry confirms the result.",
+                "Biology system and body predictions",
+                "global regional first discovery biology"
+            ),
+            Icon(
+                GuideIconKind.Glyph,
+                "?",
+                "Predicted organism",
+                "A trailing question mark means the body criteria predict the colored species, but a DSS or organic scan has not confirmed it. Hover the marker in the overlay for its state description.",
+                "Biology body predictions",
+                "uncertain predicted species subtype"
+            ),
+            Icon(
+                GuideIconKind.Glyph,
+                "►",
+                "Next or active direction",
+                "Calls out the next action, selected destination, active target, route note, or focused row.",
+                "Travel, search, Guardian, colonization, messages"
+            ),
+            Icon(
+                GuideIconKind.Glyph,
+                "✓",
+                "Complete or sufficient",
+                "The scan/task is complete, the condition is valid, or the ship/carrier has enough cargo for the requirement.",
+                "FSS, body information, quests, colonization"
+            ),
+            Icon(
+                GuideIconKind.Glyph,
+                "⚠",
+                "Warning",
+                "The route, gravity, search candidate, build state, or other condition needs attention before proceeding.",
+                "Flight warning, search, travel, colonization"
+            ),
+            Icon(
+                GuideIconKind.Glyph,
+                "◆",
+                "Mapped site or Codex item",
+                "Identifies a Guardian/site point or a recorded Codex-style item in compact overlay rows.",
+                "Guardian, Codex, preview rows"
+            ),
+            Icon(
+                GuideIconKind.Glyph,
+                "◇",
+                "Objective outside target",
+                "A quest objective exists but the Commander is not yet within its required target area.",
+                "Quest indicator and settlement objectives"
+            ),
+            Icon(
+                GuideIconKind.DirectionalChevron,
+                "",
+                "Near and far bearing chevrons",
+                "An open chevron points toward a near or standard target. A double chevron marks a target beyond its defined far threshold; markers without one use 1 km.",
+                "Prior scans, mini-track, surface survey",
+                "relative bearing direction near far distance"
+            ),
+            Icon(
+                GuideIconKind.Glyph,
+                "☀",
+                "Star, body, or biological signal",
+                "Outside the body-prediction discovery markers, this symbol identifies a stellar/body context or an unresolved biological signal according to the row title.",
+                "System survey and biology overlays"
+            ),
+            Icon(
+                GuideIconKind.Glyph,
+                "T",
+                "Terraformable",
+                "The body is a terraformable candidate.",
+                "FSS information and system survey"
+            ),
+            Icon(
+                GuideIconKind.Glyph,
+                "L",
+                "Landable",
+                "The body can be landed on.",
+                "FSS information and system survey"
+            ),
+            Icon(
+                GuideIconKind.Glyph,
+                "?",
+                "Unknown",
+                "A standalone question mark means the signal, organism, site detail, or reward cannot yet be identified reliably from current data.",
+                "Biology, Guardian, body and system rows"
+            ),
+            Icon(
+                GuideIconKind.Glyph,
+                "■",
+                "Construction site",
+                "Identifies construction/build context; the exact row color reports whether the item is actionable, satisfied, or unavailable.",
+                "Colonization shopping"
+            ),
+            AssetIcon(
+                DesktopAssetUri("Assets/Routes/refuel-star.png"),
+                "Fuel-scoop stop",
+                "An orange star containing a fuel droplet marks a route waypoint where the ship should refuel by fuel scooping.",
+                "Route Workspace and next-jump overlay",
+                "fuel scoop refuel star route"
+            ),
+            AssetIcon(
+                DesktopAssetUri("Assets/Routes/neutron-star.png"),
+                "Neutron boost stop",
+                "A blue neutron-star marker identifies a route waypoint that uses or approaches a neutron-star FSD boost.",
+                "Route Workspace and next-jump overlay",
+                "neutron boost fsd star route"
+            ),
             .. CreateBodyIconGlossary(),
-            Icon(GuideIconKind.BiologyRewardKnown, "", "Confirmed reward PIPs", "An unhatched PIP means the organism and its reward are confirmed. Each filled segment clears one reward threshold; black empty slots show thresholds the reward does not reach. The dotted outer frame and solid segment outlines are independently themeable.", "Bio signals and biology system overlays", "bars pips confirmed solid filled empty border"),
-            Icon(GuideIconKind.BiologyRewardPredicted, "", "Predicted reward PIPs", "Diagonal hatching marks a predicted organism or reward. Solid prediction segments show the dependable lower band; the darker possible segment shows how high the reward range may extend. Each segment retains its legacy solid outline. The dotted group frame spans the body's reported biological signal count; additional PIPs outside it are alternative genus candidates, not additive rewards.", "Bio signals and biology predictions", "bars pips estimate range hatched potential alternative genus overflow dotted frame"),
-            Icon(GuideIconKind.BiologyRewardHighlighted, "", "Commander-first and regional-first PIPs", "The bright yellow or theme-highlight PIP marks an organism that is new to the current Commander, or new to this Commander in the current Codex region when regional highlighting is enabled. Hatching still means the organism and reward are predicted.", "Biology system and prediction overlays", "bars pips gold yellow highlighted commander first discovery regional"),
-            Icon(GuideIconKind.BiologyRewardGlobalRegional, "", "Galactic-region candidate PIPs", "The white or separately themed PIP means external candidate data has no reported discovery for this predicted organism in the current Galactic region. It is advisory until an in-game journal event confirms the result; hatching remains because the organism is predicted.", "Biology system and prediction overlays", "bars pips white galactic region potential candidate first discovery"),
-            Icon(GuideIconKind.BiologyRewardDimmed, "", "Analyzed reward PIPs", "A dimmed PIP means that organism has already been analyzed for the current body. Its reward band remains visible for reference, but it is no longer an outstanding sample.", "Biology system and body-detail overlays", "bars pips dim analyzed complete scanned"),
-            Icon(GuideIconKind.BiologyRewardUnknown, "", "Unknown reward PIP", "A question mark inside the unknown-color frame means there is not enough dependable organism or reward data to calculate a band yet.", "Bio signals and unresolved biology", "bars pips question mark unknown unresolved"),
-            Icon(GuideIconKind.CanonnSignals, "", "Canonn-known signals", "The original Canonn Research logo means external Canonn data contains known biological signals for this body. It appears immediately beside the reward PIPs when external data and automatic prior-scan loading are enabled.", "System biology overlay", "canonn external known signals pips prior scans"),
-            Icon(GuideIconKind.RadarCommander, "", "Commander and heading", "The ringed arrow at radar center is your current position and heading.", "Grounded surface radar"),
-            Icon(GuideIconKind.RadarShip, "", "Ship position", "A triangle marks the current ship. A dim triangle marks a former ship position.", "Grounded surface radar"),
-            Icon(GuideIconKind.RadarSrv, "", "SRV position", "A rounded rectangle marks the Surface Recon Vehicle.", "Grounded surface radar"),
-            Icon(GuideIconKind.RadarSample, "", "Biology sample and colony radius", "The dot is a scan/sample location and the circle is its colony radius. Warning inside means too close; success outside means valid spacing.", "Grounded surface radar and prior scans"),
-            Icon(GuideIconKind.RadarHistoricalScan, "", "Historical biology scan", "A muted dot is a prior scan location. A danger-colored radius means the Commander is currently too close to reuse that colony area.", "Grounded surface radar and prior scans"),
-            Icon(GuideIconKind.RadarBookmark, "", "Surface bookmark", "A dot and radius mark one of the eight reusable tracked surface locations. Inactive bookmarks are dimmed.", "Grounded surface radar and mini-track"),
-            Icon(GuideIconKind.GroundTarget, "", "Ground-target guidance", "The inner ringed pointer is the ship heading; the radial line points toward the target. The lower angled line shows approach or attack angle.", "Ground target overlay"),
-            Icon(GuideIconKind.JumpRoute, "", "Jump-route progress", "Connected nodes show completed, current, and remaining route positions. The emphasized node is the active jump context.", "Next-jump information and route overlays"),
-            Icon(GuideIconKind.GuardianRelic, "", "Guardian relic tower", "The original blue-filled, cyan-edged triangle is a confirmed relic tower. It rotates to its recorded heading; a translucent blue line through the tower means that tower has an individual heading measurement.", GuardianSiteMap),
-            Icon(GuideIconKind.GuardianArtifact, "", "Guardian artifact points", "Legacy POI colors identify present artifacts: orange Orb, green Casket, pale-blue Tablet, blue-violet Totem, and magenta Urn.", GuardianSiteMap, "orb casket tablet totem urn colors"),
-            Icon(GuideIconKind.GuardianEmptyPuddle, "", "Empty puddle", "A gold-filled, yellow-edged circle identifies a surveyed artifact puddle with no object present.", GuardianSiteMap),
-            Icon(GuideIconKind.GuardianObelisk, "", "Guardian obelisk", "The narrow dark-cyan, three-sided legacy glyph identifies an inactive obelisk and rotates with the template geometry. A dotted lime ring identifies the nearest or targeted point.", "Guardian site map and Ram Tah"),
-            Icon(GuideIconKind.GuardianActiveObelisk, "", "Active Guardian obelisk", "A cyan obelisk with a 90-degree radial glow is active. The glow center is cyan when its log is needed for the active Ram Tah mission, orange when scanned, and light gray when active but neither needed nor scanned.", "Guardian site map and Ram Tah", "active scanned needed glow wedge"),
-            Icon(GuideIconKind.GuardianBrokenObelisk, "", "Broken obelisk", "The asymmetric narrow three-sided legacy outline identifies a broken obelisk; it is not a generic X.", GuardianSiteMap),
-            Icon(GuideIconKind.GuardianPylon, "", "Guardian energy pylon", "The rotated legacy diamond and its center-to-tip stem identify an energy pylon. Its outline color records unknown, present, absent, or empty survey state.", GuardianSiteMap),
-            Icon(GuideIconKind.GuardianComponent, "", "Guardian component tower", "Nested triangular outlines identify a component tower. The three fixed screen-facing dots are lime Power Cell, cyan Power Conduit, and orange-red Technology Component; a small square uses the same materials for a destructible panel.", GuardianSiteMap),
-            Icon(GuideIconKind.GuardianCommander, "", "Guardian-map Commander", "A ring with a center dot marks the Commander's live position on the Guardian site projection.", GuardianSiteMap),
-            Icon(GuideIconKind.GuardianSiteHeading, "", "Guardian site heading", "A dashed dark-red line through site center is the recorded site alignment heading and rotates with the live Commander view.", GuardianSiteMapLegend),
-            Icon(GuideIconKind.GuardianTowerHeading, "", "Guardian tower heading", "A translucent blue line through site center is the general relic-tower heading. A wider, fainter line through one relic records that tower's individual heading.", GuardianSiteMapLegend),
-            Icon(GuideIconKind.GuardianSurveyNeeded, "", "Guardian survey needed", "A dotted ring marks a point or site state that still needs survey data.", GuardianSiteMapLegend),
-            Icon(GuideIconKind.GuardianPoiStates, "", "Guardian survey states", "Unknown points use the cyan dotted survey treatment, absent points use translucent gray, present points use their POI-specific legacy color, and empty puddles use gold with a yellow edge.", GuardianSiteMapLegend, "unknown absent present empty colors"),
-            Icon(GuideIconKind.Glyph, "A", "Atmospheric regulator", "A named atmospheric-control point in a human settlement.", HumanSettlementMap, "atmos"),
-            Icon(GuideIconKind.Glyph, "!", "Settlement alarm", "An alarm-control point in a human settlement. Its color reflects access/security context.", HumanSettlementMap),
-            Icon(GuideIconKind.Glyph, "K", "Authorization point", "An authorization or security-clearance point in a human settlement.", HumanSettlementMap, "auth access"),
-            Icon(GuideIconKind.Glyph, "+", "Medkit", "A known medical-kit location in a human settlement.", HumanSettlementMap),
-            Icon(GuideIconKind.Glyph, "B", "Battery", "A known battery or energy-cell location in a human settlement.", HumanSettlementMap),
-            Icon(GuideIconKind.Glyph, "P", "Power control", "A named power-control point in a human settlement.", HumanSettlementMap),
-            Icon(GuideIconKind.HumanLandingPad, "", "Landing pad", "A rotated rectangular outline and pad number show a settlement landing pad and its orientation.", HumanSettlementMap),
-            Icon(GuideIconKind.HumanDoor, "", "Secure door", "A short filled bar marks a secure door. Green, cyan, gold, and danger colors correspond to increasing security levels.", HumanSettlementMap),
-            Icon(GuideIconKind.HumanTerminal, "", "Data terminal", "A rounded square with a center line marks a data terminal. A dim/processed color means it has already been handled.", HumanSettlementMap),
-            Icon(GuideIconKind.HumanMaterial, "", "Collected material", "A small outlined dot marks material already collected at that settlement position.", HumanSettlementMap),
-            Icon(GuideIconKind.HumanCommander, "", "Settlement Commander", "A circle with a heading stalk shows the Commander's position and facing on the settlement map.", HumanSettlementMap),
-            Icon(GuideIconKind.HumanShip, "", "Settlement ship", "A large circle labeled SHIP marks the current or departed ship. A dashed boundary can show the dismissal distance.", HumanSettlementMap),
-            Icon(GuideIconKind.HumanSrv, "", "Settlement SRV", "A rounded square labeled SRV marks the vehicle on the settlement map.", HumanSettlementMap),
-            Icon(GuideIconKind.HumanQuestTarget, "", "Settlement quest target", "A target-radius circle marks quest geometry. Gold means outside the target; the active accent means within it.", HumanSettlementQuestMap),
-            Icon(GuideIconKind.HumanFloor, "", "Upper floor", "One upward chevron means floor 2; two chevrons mean floor 3 or higher for a named point or terminal.", HumanSettlementMap),
-            Icon(GuideIconKind.ConflictCheckpoint, "", "Conflict-zone checkpoint", "A labeled circle marks a frontline checkpoint. The local checkpoint uses the configured local/success color.", HumanSettlementConflictZoneMap, "fcz"),
-            Icon(GuideIconKind.ConflictPowerPost, "", "Conflict-zone power post", "A circle with a lightning stroke marks a power post.", HumanSettlementConflictZoneMap, "fcz"),
+            Icon(
+                GuideIconKind.BiologyRewardKnown,
+                "",
+                "Confirmed reward PIPs",
+                "An unhatched PIP means the organism and its reward are confirmed. Each filled segment clears one reward threshold; black empty slots show thresholds the reward does not reach. The dotted outer frame and solid segment outlines are independently themeable.",
+                "Bio signals and biology system overlays",
+                "bars pips confirmed solid filled empty border"
+            ),
+            Icon(
+                GuideIconKind.BiologyRewardPredicted,
+                "",
+                "Predicted reward PIPs",
+                "Diagonal hatching marks a predicted organism or reward. Solid prediction segments show the dependable lower band; the darker possible segment shows how high the reward range may extend. Each segment retains its legacy solid outline. The dotted group frame spans the body's reported biological signal count; additional PIPs outside it are alternative genus candidates, not additive rewards.",
+                "Bio signals and biology predictions",
+                "bars pips estimate range hatched potential alternative genus overflow dotted frame"
+            ),
+            Icon(
+                GuideIconKind.BiologyRewardHighlighted,
+                "",
+                "Commander-first and regional-first PIPs",
+                "The bright yellow or theme-highlight PIP marks an organism that is new to the current Commander, or new to this Commander in the current Codex region when regional highlighting is enabled. Hatching still means the organism and reward are predicted.",
+                "Biology system and prediction overlays",
+                "bars pips gold yellow highlighted commander first discovery regional"
+            ),
+            Icon(
+                GuideIconKind.BiologyRewardGlobalRegional,
+                "",
+                "Galactic-region candidate PIPs",
+                "The white or separately themed PIP means external candidate data has no reported discovery for this predicted organism in the current Galactic region. It is advisory until an in-game journal event confirms the result; hatching remains because the organism is predicted.",
+                "Biology system and prediction overlays",
+                "bars pips white galactic region potential candidate first discovery"
+            ),
+            Icon(
+                GuideIconKind.BiologyRewardDimmed,
+                "",
+                "Analyzed reward PIPs",
+                "A dimmed PIP means that organism has already been analyzed for the current body. Its reward band remains visible for reference, but it is no longer an outstanding sample.",
+                "Biology system and body-detail overlays",
+                "bars pips dim analyzed complete scanned"
+            ),
+            Icon(
+                GuideIconKind.BiologyRewardUnknown,
+                "",
+                "Unknown reward PIP",
+                "A question mark inside the unknown-color frame means there is not enough dependable organism or reward data to calculate a band yet.",
+                "Bio signals and unresolved biology",
+                "bars pips question mark unknown unresolved"
+            ),
+            Icon(
+                GuideIconKind.CanonnSignals,
+                "",
+                "Canonn-known signals",
+                "The original Canonn Research logo means external Canonn data contains known biological signals for this body. It appears immediately beside the reward PIPs when external data and automatic prior-scan loading are enabled.",
+                "System biology overlay",
+                "canonn external known signals pips prior scans"
+            ),
+            Icon(
+                GuideIconKind.RadarCommander,
+                "",
+                "Commander and heading",
+                "The ringed arrow at radar center is your current position and heading.",
+                "Grounded surface radar"
+            ),
+            Icon(
+                GuideIconKind.RadarShip,
+                "",
+                "Ship position",
+                "A triangle marks the current ship. A dim triangle marks a former ship position.",
+                "Grounded surface radar"
+            ),
+            Icon(
+                GuideIconKind.RadarSrv,
+                "",
+                "SRV position",
+                "A rounded rectangle marks the Surface Recon Vehicle.",
+                "Grounded surface radar"
+            ),
+            Icon(
+                GuideIconKind.RadarSample,
+                "",
+                "Biology sample and colony radius",
+                "The dot is a scan/sample location and the circle is its colony radius. Warning inside means too close; success outside means valid spacing.",
+                "Grounded surface radar and prior scans"
+            ),
+            Icon(
+                GuideIconKind.RadarHistoricalScan,
+                "",
+                "Historical biology scan",
+                "A muted dot is a prior scan location. A danger-colored radius means the Commander is currently too close to reuse that colony area.",
+                "Grounded surface radar and prior scans"
+            ),
+            Icon(
+                GuideIconKind.RadarBookmark,
+                "",
+                "Surface bookmark",
+                "A dot and radius mark one of the eight reusable tracked surface locations. Inactive bookmarks are dimmed.",
+                "Grounded surface radar and mini-track"
+            ),
+            Icon(
+                GuideIconKind.GroundTarget,
+                "",
+                "Ground-target guidance",
+                "The inner ringed pointer is the ship heading; the radial line points toward the target. The lower angled line shows approach or attack angle.",
+                "Ground target overlay"
+            ),
+            Icon(
+                GuideIconKind.JumpRoute,
+                "",
+                "Jump-route progress",
+                "Connected nodes show completed, current, and remaining route positions. The emphasized node is the active jump context.",
+                "Next-jump information and route overlays"
+            ),
+            Icon(
+                GuideIconKind.GuardianRelic,
+                "",
+                "Guardian relic tower",
+                "The original blue-filled, cyan-edged triangle is a confirmed relic tower. It rotates to its recorded heading; a translucent blue line through the tower means that tower has an individual heading measurement.",
+                GuardianSiteMap
+            ),
+            Icon(
+                GuideIconKind.GuardianArtifact,
+                "",
+                "Guardian artifact points",
+                "Legacy POI colors identify present artifacts: orange Orb, green Casket, pale-blue Tablet, blue-violet Totem, and magenta Urn.",
+                GuardianSiteMap,
+                "orb casket tablet totem urn colors"
+            ),
+            Icon(
+                GuideIconKind.GuardianEmptyPuddle,
+                "",
+                "Empty puddle",
+                "A gold-filled, yellow-edged circle identifies a surveyed artifact puddle with no object present.",
+                GuardianSiteMap
+            ),
+            Icon(
+                GuideIconKind.GuardianObelisk,
+                "",
+                "Guardian obelisk",
+                "The narrow dark-cyan, three-sided legacy glyph identifies an inactive obelisk and rotates with the template geometry. A dotted lime ring identifies the nearest or targeted point.",
+                "Guardian site map and Ram Tah"
+            ),
+            Icon(
+                GuideIconKind.GuardianActiveObelisk,
+                "",
+                "Active Guardian obelisk",
+                "A cyan obelisk with a 90-degree radial glow is active. The glow center is cyan when its log is needed for the active Ram Tah mission, orange when scanned, and light gray when active but neither needed nor scanned.",
+                "Guardian site map and Ram Tah",
+                "active scanned needed glow wedge"
+            ),
+            Icon(
+                GuideIconKind.GuardianBrokenObelisk,
+                "",
+                "Broken obelisk",
+                "The asymmetric narrow three-sided legacy outline identifies a broken obelisk; it is not a generic X.",
+                GuardianSiteMap
+            ),
+            Icon(
+                GuideIconKind.GuardianPylon,
+                "",
+                "Guardian energy pylon",
+                "The rotated legacy diamond and its center-to-tip stem identify an energy pylon. Its outline color records unknown, present, absent, or empty survey state.",
+                GuardianSiteMap
+            ),
+            Icon(
+                GuideIconKind.GuardianComponent,
+                "",
+                "Guardian component tower",
+                "Nested triangular outlines identify a component tower. The three fixed screen-facing dots are lime Power Cell, cyan Power Conduit, and orange-red Technology Component; a small square uses the same materials for a destructible panel.",
+                GuardianSiteMap
+            ),
+            Icon(
+                GuideIconKind.GuardianCommander,
+                "",
+                "Guardian-map Commander",
+                "A ring with a center dot marks the Commander's live position on the Guardian site projection.",
+                GuardianSiteMap
+            ),
+            Icon(
+                GuideIconKind.GuardianSiteHeading,
+                "",
+                "Guardian site heading",
+                "A dashed dark-red line through site center is the recorded site alignment heading and rotates with the live Commander view.",
+                GuardianSiteMapLegend
+            ),
+            Icon(
+                GuideIconKind.GuardianTowerHeading,
+                "",
+                "Guardian tower heading",
+                "A translucent blue line through site center is the general relic-tower heading. A wider, fainter line through one relic records that tower's individual heading.",
+                GuardianSiteMapLegend
+            ),
+            Icon(
+                GuideIconKind.GuardianSurveyNeeded,
+                "",
+                "Guardian survey needed",
+                "A dotted ring marks a point or site state that still needs survey data.",
+                GuardianSiteMapLegend
+            ),
+            Icon(
+                GuideIconKind.GuardianPoiStates,
+                "",
+                "Guardian survey states",
+                "Unknown points use the cyan dotted survey treatment, absent points use translucent gray, present points use their POI-specific legacy color, and empty puddles use gold with a yellow edge.",
+                GuardianSiteMapLegend,
+                "unknown absent present empty colors"
+            ),
+            Icon(
+                GuideIconKind.Glyph,
+                "A",
+                "Atmospheric regulator",
+                "A named atmospheric-control point in a human settlement.",
+                HumanSettlementMap,
+                "atmos"
+            ),
+            Icon(
+                GuideIconKind.Glyph,
+                "!",
+                "Settlement alarm",
+                "An alarm-control point in a human settlement. Its color reflects access/security context.",
+                HumanSettlementMap
+            ),
+            Icon(
+                GuideIconKind.Glyph,
+                "K",
+                "Authorization point",
+                "An authorization or security-clearance point in a human settlement.",
+                HumanSettlementMap,
+                "auth access"
+            ),
+            Icon(
+                GuideIconKind.Glyph,
+                "+",
+                "Medkit",
+                "A known medical-kit location in a human settlement.",
+                HumanSettlementMap
+            ),
+            Icon(
+                GuideIconKind.Glyph,
+                "B",
+                "Battery",
+                "A known battery or energy-cell location in a human settlement.",
+                HumanSettlementMap
+            ),
+            Icon(
+                GuideIconKind.Glyph,
+                "P",
+                "Power control",
+                "A named power-control point in a human settlement.",
+                HumanSettlementMap
+            ),
+            Icon(
+                GuideIconKind.HumanLandingPad,
+                "",
+                "Landing pad",
+                "A rotated rectangular outline and pad number show a settlement landing pad and its orientation.",
+                HumanSettlementMap
+            ),
+            Icon(
+                GuideIconKind.HumanDoor,
+                "",
+                "Secure door",
+                "A short filled bar marks a secure door. Green, cyan, gold, and danger colors correspond to increasing security levels.",
+                HumanSettlementMap
+            ),
+            Icon(
+                GuideIconKind.HumanTerminal,
+                "",
+                "Data terminal",
+                "A rounded square with a center line marks a data terminal. A dim/processed color means it has already been handled.",
+                HumanSettlementMap
+            ),
+            Icon(
+                GuideIconKind.HumanMaterial,
+                "",
+                "Collected material",
+                "A small outlined dot marks material already collected at that settlement position.",
+                HumanSettlementMap
+            ),
+            Icon(
+                GuideIconKind.HumanCommander,
+                "",
+                "Settlement Commander",
+                "A circle with a heading stalk shows the Commander's position and facing on the settlement map.",
+                HumanSettlementMap
+            ),
+            Icon(
+                GuideIconKind.HumanShip,
+                "",
+                "Settlement ship",
+                "A large circle labeled SHIP marks the current or departed ship. A dashed boundary can show the dismissal distance.",
+                HumanSettlementMap
+            ),
+            Icon(
+                GuideIconKind.HumanSrv,
+                "",
+                "Settlement SRV",
+                "A rounded square labeled SRV marks the vehicle on the settlement map.",
+                HumanSettlementMap
+            ),
+            Icon(
+                GuideIconKind.HumanQuestTarget,
+                "",
+                "Settlement quest target",
+                "A target-radius circle marks quest geometry. Gold means outside the target; the active accent means within it.",
+                HumanSettlementQuestMap
+            ),
+            Icon(
+                GuideIconKind.HumanFloor,
+                "",
+                "Upper floor",
+                "One upward chevron means floor 2; two chevrons mean floor 3 or higher for a named point or terminal.",
+                HumanSettlementMap
+            ),
+            Icon(
+                GuideIconKind.ConflictCheckpoint,
+                "",
+                "Conflict-zone checkpoint",
+                "A labeled circle marks a frontline checkpoint. The local checkpoint uses the configured local/success color.",
+                HumanSettlementConflictZoneMap,
+                "fcz"
+            ),
+            Icon(
+                GuideIconKind.ConflictPowerPost,
+                "",
+                "Conflict-zone power post",
+                "A circle with a lightning stroke marks a power post.",
+                HumanSettlementConflictZoneMap,
+                "fcz"
+            ),
         ];
     }
 
@@ -1036,7 +1574,9 @@ public static class GuideCatalog
                 visual.AccessibleName,
                 GetBodyIconMeaning(visual),
                 "Route Workspace and route-bodies overlay",
-                $"body planet stellar route {visual.AccessibleName}"));
+                $"body planet stellar route {visual.AccessibleName}"
+            )
+        );
     }
 
     private static string GetBodyIconMeaning(RouteBodyVisual visual)
@@ -1052,22 +1592,18 @@ public static class GuideCatalog
         string title,
         string summary,
         IReadOnlyList<GuideSectionViewModel> sections,
-        IReadOnlyList<GuideIconViewModel>? icons = null)
+        IReadOnlyList<GuideIconViewModel>? icons = null
+    )
     {
-        return new GuideCategoryViewModel(
-            key,
-            number,
-            title,
-            summary,
-            sections,
-            icons ?? []);
+        return new GuideCategoryViewModel(key, number, title, summary, sections, icons ?? []);
     }
 
     private static GuideSectionViewModel Section(
         string title,
         string summary,
         IReadOnlyList<string> steps,
-        IReadOnlyList<string> details)
+        IReadOnlyList<string> details
+    )
     {
         return new GuideSectionViewModel(title, summary, steps, details);
     }
@@ -1076,13 +1612,15 @@ public static class GuideCatalog
         string title,
         string summary,
         IReadOnlyList<string> steps,
-        IReadOnlyList<string> details) => Section(title, summary, steps, details);
+        IReadOnlyList<string> details
+    ) => Section(title, summary, steps, details);
 
     private static GuideSectionViewModel GuardianSection(
         string title,
         string summary,
         IReadOnlyList<string> steps,
-        IReadOnlyList<string> details) => Section(title, summary, steps, details);
+        IReadOnlyList<string> details
+    ) => Section(title, summary, steps, details);
 
     private static GuideIconViewModel Icon(
         GuideIconKind kind,
@@ -1090,15 +1628,10 @@ public static class GuideCatalog
         string name,
         string meaning,
         string appearsIn,
-        string searchTerms = "")
+        string searchTerms = ""
+    )
     {
-        return new GuideIconViewModel(
-            kind,
-            symbol,
-            name,
-            meaning,
-            appearsIn,
-            searchTerms);
+        return new GuideIconViewModel(kind, symbol, name, meaning, appearsIn, searchTerms);
     }
 
     private static GuideIconViewModel AssetIcon(
@@ -1106,7 +1639,8 @@ public static class GuideCatalog
         string name,
         string meaning,
         string appearsIn,
-        string searchTerms)
+        string searchTerms
+    )
     {
         return new GuideIconViewModel(
             GuideIconKind.Asset,
@@ -1115,7 +1649,8 @@ public static class GuideCatalog
             meaning,
             appearsIn,
             searchTerms,
-            assetPath);
+            assetPath
+        );
     }
 
     private static string DesktopAssetUri(string relativePath)

@@ -1,9 +1,9 @@
 using Avalonia;
-using Avalonia.Input;
-using Avalonia.Data;
-using Avalonia.Headless.XUnit;
-using Avalonia.Headless;
 using Avalonia.Controls;
+using Avalonia.Data;
+using Avalonia.Headless;
+using Avalonia.Headless.XUnit;
+using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using SrvSurvey.Desktop.Controls;
@@ -18,11 +18,7 @@ public sealed class ShortcutCaptureBoxTests
     [AvaloniaFact]
     public void UsesTheStandardTextBoxThemeAndRendersAtUsableSize()
     {
-        var capture = new ShortcutCaptureBox
-        {
-            Width = 220,
-            Chord = "CTRL K",
-        };
+        var capture = new ShortcutCaptureBox { Width = 220, Chord = "CTRL K" };
         var window = new Window { Content = capture };
         try
         {
@@ -34,8 +30,7 @@ public sealed class ShortcutCaptureBoxTests
             Assert.Equal("CTRL K", capture.Text);
             var frame = window.CaptureRenderedFrame();
             Assert.NotNull(frame);
-            var outputPath = Environment.GetEnvironmentVariable(
-                "SRVSURVEY_SHORTCUT_CAPTURE_RENDER_OUTPUT");
+            var outputPath = Environment.GetEnvironmentVariable("SRVSURVEY_SHORTCUT_CAPTURE_RENDER_OUTPUT");
             if (!string.IsNullOrWhiteSpace(outputPath))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
@@ -116,15 +111,13 @@ public sealed class ShortcutCaptureBoxTests
         var viewModel = new InputBindingViewModel(
             GlobalInputActionCatalog.Get(GlobalInputAction.MapZoomIn),
             "CTRL +",
-            (_, chord) => saved = chord);
+            (_, chord) => saved = chord
+        );
         var capture = new ShortcutCaptureBox();
         capture.Bind(
             ShortcutCaptureBox.ChordProperty,
-            new Binding(nameof(InputBindingViewModel.Chord))
-            {
-                Source = viewModel,
-                Mode = BindingMode.TwoWay,
-            });
+            new Binding(nameof(InputBindingViewModel.Chord)) { Source = viewModel, Mode = BindingMode.TwoWay }
+        );
 
         capture.BeginCapture();
         capture.CaptureKeyDown(Key.LeftAlt);
@@ -143,26 +136,21 @@ public sealed class ShortcutCaptureBoxTests
         var viewModel = new InputBindingViewModel(
             GlobalInputActionCatalog.Get(GlobalInputAction.MapZoomIn),
             "CTRL +",
-            (_, chord) => saved = chord);
+            (_, chord) => saved = chord
+        );
         var capture = new ShortcutCaptureBox();
         capture.Bind(
             ShortcutCaptureBox.ChordProperty,
-            new Binding(nameof(InputBindingViewModel.Chord))
-            {
-                Source = viewModel,
-                Mode = BindingMode.TwoWay,
-            });
+            new Binding(nameof(InputBindingViewModel.Chord)) { Source = viewModel, Mode = BindingMode.TwoWay }
+        );
 
         capture.BeginCapture();
-        Assert.True(ShortcutCaptureSession.TryCapture(
-            new ControllerInputChange("B2", IsPressed: true)));
-        Assert.True(ShortcutCaptureSession.TryCapture(
-            new ControllerInputChange("B1", IsPressed: true)));
+        Assert.True(ShortcutCaptureSession.TryCapture(new ControllerInputChange("B2", IsPressed: true)));
+        Assert.True(ShortcutCaptureSession.TryCapture(new ControllerInputChange("B1", IsPressed: true)));
         Assert.Equal("B1 B2", capture.Text);
         Assert.Equal("CTRL +", capture.Chord);
 
-        Assert.True(ShortcutCaptureSession.TryCapture(
-            new ControllerInputChange("B2", IsPressed: false)));
+        Assert.True(ShortcutCaptureSession.TryCapture(new ControllerInputChange("B2", IsPressed: false)));
 
         Assert.False(capture.IsCapturing);
         Assert.Equal("B1 B2", viewModel.Chord);
@@ -227,11 +215,7 @@ public sealed class ShortcutCaptureBoxTests
     [AvaloniaFact]
     public void ClickingNonFocusableSpaceCancelsCaptureAndReleasesFocus()
     {
-        var capture = new ShortcutCaptureBox
-        {
-            Height = 36,
-            Chord = "ALT X",
-        };
+        var capture = new ShortcutCaptureBox { Height = 36, Chord = "ALT X" };
         var window = new Window
         {
             Width = 320,
@@ -241,11 +225,7 @@ public sealed class ShortcutCaptureBoxTests
                 Children =
                 {
                     capture,
-                    new Border
-                    {
-                        Height = 120,
-                        Background = Brushes.Transparent,
-                    },
+                    new Border { Height = 120, Background = Brushes.Transparent },
                 },
             },
         };
@@ -256,14 +236,8 @@ public sealed class ShortcutCaptureBoxTests
             capture.CaptureKeyDown(Key.LeftCtrl);
             Assert.True(capture.IsCapturing);
 
-            window.MouseDown(
-                new Point(20, 100),
-                MouseButton.Left,
-                RawInputModifiers.None);
-            window.MouseUp(
-                new Point(20, 100),
-                MouseButton.Left,
-                RawInputModifiers.None);
+            window.MouseDown(new Point(20, 100), MouseButton.Left, RawInputModifiers.None);
+            window.MouseUp(new Point(20, 100), MouseButton.Left, RawInputModifiers.None);
 
             Assert.False(capture.IsCapturing);
             Assert.False(capture.IsFocused);
@@ -310,11 +284,7 @@ public sealed class ShortcutCaptureBoxTests
     [AvaloniaFact]
     public void ClickingNonFocusableSpaceAfterCommitAcceptsAndReleasesFocus()
     {
-        var capture = new ShortcutCaptureBox
-        {
-            Height = 36,
-            Chord = "ALT X",
-        };
+        var capture = new ShortcutCaptureBox { Height = 36, Chord = "ALT X" };
         var window = new Window
         {
             Width = 320,
@@ -324,11 +294,7 @@ public sealed class ShortcutCaptureBoxTests
                 Children =
                 {
                     capture,
-                    new Border
-                    {
-                        Height = 120,
-                        Background = Brushes.Transparent,
-                    },
+                    new Border { Height = 120, Background = Brushes.Transparent },
                 },
             },
         };
@@ -343,14 +309,8 @@ public sealed class ShortcutCaptureBoxTests
             Assert.Equal("CTRL K", capture.Chord);
             Assert.True(capture.IsFocused);
 
-            window.MouseDown(
-                new Point(20, 100),
-                MouseButton.Left,
-                RawInputModifiers.None);
-            window.MouseUp(
-                new Point(20, 100),
-                MouseButton.Left,
-                RawInputModifiers.None);
+            window.MouseDown(new Point(20, 100), MouseButton.Left, RawInputModifiers.None);
+            window.MouseUp(new Point(20, 100), MouseButton.Left, RawInputModifiers.None);
 
             Assert.Equal("CTRL K", capture.Chord);
             Assert.False(capture.IsFocused);

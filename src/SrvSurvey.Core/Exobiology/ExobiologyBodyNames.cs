@@ -21,8 +21,7 @@ public static class ExobiologyBodyNames
         if (!string.IsNullOrWhiteSpace(systemName))
         {
             var system = systemName.Trim();
-            if (trimmed.Length > system.Length
-                && trimmed.StartsWith(system, StringComparison.OrdinalIgnoreCase))
+            if (trimmed.Length > system.Length && trimmed.StartsWith(system, StringComparison.OrdinalIgnoreCase))
             {
                 var remainder = trimmed[system.Length..];
                 // Require a boundary so "Sol" does not strip from "Solitude 1".
@@ -39,15 +38,10 @@ public static class ExobiologyBodyNames
     /// <summary>
     /// True when both names resolve to the same non-empty body key.
     /// </summary>
-    public static bool Matches(
-        string? first,
-        string? second,
-        string? systemName = null)
+    public static bool Matches(string? first, string? second, string? systemName = null)
     {
         var left = NormalizeKey(first, systemName);
         var right = NormalizeKey(second, systemName);
-        return left.Length > 0
-            && right.Length > 0
-            && string.Equals(left, right, StringComparison.OrdinalIgnoreCase);
+        return left.Length > 0 && right.Length > 0 && string.Equals(left, right, StringComparison.OrdinalIgnoreCase);
     }
 }

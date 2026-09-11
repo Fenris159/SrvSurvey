@@ -8,10 +8,8 @@ namespace SrvSurvey.Desktop;
 public sealed partial class NotificationOverlayWindow : Window
 {
     public NotificationOverlayWindow()
-        : this(new NotificationViewModel(new NotificationSettingsStore(
-            AppDataPaths.ResolveCurrent().UiSettingsPath)))
-    {
-    }
+        : this(new NotificationViewModel(new NotificationSettingsStore(AppDataPaths.ResolveCurrent().UiSettingsPath)))
+    { }
 
     public NotificationOverlayWindow(NotificationViewModel viewModel)
     {

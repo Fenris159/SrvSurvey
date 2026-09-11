@@ -6,9 +6,7 @@ namespace SrvSurvey.Desktop;
 public sealed partial class MiningWarningOverlayWindow : Window
 {
     public MiningWarningOverlayWindow()
-        : this(OverlayEditorPreviewFactories.CreateSurfaceMining())
-    {
-    }
+        : this(OverlayEditorPreviewFactories.CreateSurfaceMining()) { }
 
     public MiningWarningOverlayWindow(SurfaceMiningOverlayViewModel viewModel)
     {

@@ -9,37 +9,41 @@ public sealed class PriorScanPlannerTests
     private const string AleoidaSpecies = "$Codex_Ent_Aleoids_01_Name;";
     private const string BacteriumSpecies = "$Codex_Ent_Bacterial_01_Name;";
 
-    private readonly PriorScanPlanner planner = new(new ExobiologyReferenceCatalog(
-    [
-        new ExobiologyReference(
-            2310101,
-            "$Codex_Ent_Aleoids_01_B_Name;",
-            AleoidaSpecies,
-            "Aleoida Arcus - Green",
-            7_252_500,
-            HudCategory: "Biology"),
-        new ExobiologyReference(
-            2320101,
-            "$Codex_Ent_Bacterial_01_A_Name;",
-            BacteriumSpecies,
-            "Bacterium Aurasus - Teal",
-            1_000,
-            HudCategory: "Biology"),
-    ]));
+    private readonly PriorScanPlanner planner = new(
+        new ExobiologyReferenceCatalog([
+            new ExobiologyReference(
+                2310101,
+                "$Codex_Ent_Aleoids_01_B_Name;",
+                AleoidaSpecies,
+                "Aleoida Arcus - Green",
+                7_252_500,
+                HudCategory: "Biology"
+            ),
+            new ExobiologyReference(
+                2320101,
+                "$Codex_Ent_Bacterial_01_A_Name;",
+                BacteriumSpecies,
+                "Bacterium Aurasus - Teal",
+                1_000,
+                HudCategory: "Biology"
+            ),
+        ])
+    );
 
     [Fact]
     public void CreatePlanFiltersGroupsSortsAndCalculatesNavigation()
     {
         var request = Request(
-        [
-            Signal("A1", 2320101, 0, 0.02),
-            Signal("A 1", 2310101, 0, 0.01),
-            Signal("A 1", 2310101, 0, -0.01),
-            Signal("A 2", 2310101, 0, 0.001),
-            Signal("A 1", 9999999, 0, 0.001),
-        ],
-        heading: 90,
-        activeSpecies: AleoidaSpecies);
+            [
+                Signal("A1", 2320101, 0, 0.02),
+                Signal("A 1", 2310101, 0, 0.01),
+                Signal("A 1", 2310101, 0, -0.01),
+                Signal("A 2", 2310101, 0, 0.001),
+                Signal("A 1", 9999999, 0, 0.001),
+            ],
+            heading: 90,
+            activeSpecies: AleoidaSpecies
+        );
 
         var plan = planner.CreatePlan(request);
 
@@ -51,11 +55,7 @@ public sealed class PriorScanPlannerTests
                 Assert.Equal(7_252_500, species.Reward);
                 Assert.True(species.IsActive);
                 Assert.Equal(2, species.Targets.Count);
-                Assert.All(
-                    species.Targets,
-                    target => Assert.Equal(
-                        PriorScanTargetState.Standard,
-                        target.State));
+                Assert.All(species.Targets, target => Assert.Equal(PriorScanTargetState.Standard, target.State));
                 Assert.Equal(90, species.Targets[0].BearingDegrees, 6);
                 Assert.Equal(0, species.Targets[0].RelativeBearingDegrees, 6);
                 Assert.Equal(174.5329, species.Targets[0].DistanceMeters, 3);
@@ -64,7 +64,8 @@ public sealed class PriorScanPlannerTests
             {
                 Assert.Equal(2320101, species.EntryId);
                 Assert.False(species.IsActive);
-            });
+            }
+        );
     }
 
     [Fact]
@@ -72,149 +73,197 @@ public sealed class PriorScanPlannerTests
     {
         Assert.Equal(
             "Brain Tree - Roseum",
-            PriorScanPlanner.FormatDisplayName(new ExobiologyReference(
-                2100201,
-                "$Codex_Ent_Seed_Name;",
-                "$Codex_Ent_Seed_Name;",
-                "Roseum Brain Tree",
-                1_593_700,
-                HudCategory: "Biology",
-                SubClass: "Brain Tree",
-                Platform: "legacy")));
+            PriorScanPlanner.FormatDisplayName(
+                new ExobiologyReference(
+                    2100201,
+                    "$Codex_Ent_Seed_Name;",
+                    "$Codex_Ent_Seed_Name;",
+                    "Roseum Brain Tree",
+                    1_593_700,
+                    HudCategory: "Biology",
+                    SubClass: "Brain Tree",
+                    Platform: "legacy"
+                )
+            )
+        );
         Assert.Equal(
             "Anemone - Luteolum",
-            PriorScanPlanner.FormatDisplayName(new ExobiologyReference(
-                2100401,
-                "$Codex_Ent_Sphere_Name;",
-                "$Codex_Ent_Sphere_Name;",
-                "Luteolum Anemone",
-                1_000_000,
-                HudCategory: "Biology",
-                SubClass: "Anemone",
-                Platform: "horizons")));
+            PriorScanPlanner.FormatDisplayName(
+                new ExobiologyReference(
+                    2100401,
+                    "$Codex_Ent_Sphere_Name;",
+                    "$Codex_Ent_Sphere_Name;",
+                    "Luteolum Anemone",
+                    1_000_000,
+                    HudCategory: "Biology",
+                    SubClass: "Anemone",
+                    Platform: "horizons"
+                )
+            )
+        );
         Assert.Equal(
             "Brain Tree",
-            PriorScanPlanner.FormatDisplayName(new ExobiologyReference(
-                2100299,
-                "$Codex_Ent_Seed_Name;",
-                "$Codex_Ent_Seed_Name;",
-                null,
-                1_000_000,
-                HudCategory: "Biology",
-                SubClass: "Brain Tree",
-                Platform: "legacy"),
-                signalDisplayName: null));
+            PriorScanPlanner.FormatDisplayName(
+                new ExobiologyReference(
+                    2100299,
+                    "$Codex_Ent_Seed_Name;",
+                    "$Codex_Ent_Seed_Name;",
+                    null,
+                    1_000_000,
+                    HudCategory: "Biology",
+                    SubClass: "Brain Tree",
+                    Platform: "legacy"
+                ),
+                signalDisplayName: null
+            )
+        );
         Assert.Equal(
             "Aleoida",
-            PriorScanPlanner.FormatDisplayName(new ExobiologyReference(
-                2100300,
-                "$Codex_Ent_Aleoids_Name;",
-                "$Codex_Ent_Aleoids_Name;",
-                "Aleoida",
-                1_000_000,
-                HudCategory: "Biology",
-                Platform: "legacy")));
+            PriorScanPlanner.FormatDisplayName(
+                new ExobiologyReference(
+                    2100300,
+                    "$Codex_Ent_Aleoids_Name;",
+                    "$Codex_Ent_Aleoids_Name;",
+                    "Aleoida",
+                    1_000_000,
+                    HudCategory: "Biology",
+                    Platform: "legacy"
+                )
+            )
+        );
         Assert.Equal(
             "Bark Mounds",
-            PriorScanPlanner.FormatDisplayName(new ExobiologyReference(
-                2100301,
-                "$Codex_Ent_Cone_Name;",
-                "$Codex_Ent_Cone_Name;",
-                "Bark Mounds",
-                1_000_000,
-                HudCategory: "Biology",
-                SubClass: "Bark Mounds",
-                Platform: "legacy")));
+            PriorScanPlanner.FormatDisplayName(
+                new ExobiologyReference(
+                    2100301,
+                    "$Codex_Ent_Cone_Name;",
+                    "$Codex_Ent_Cone_Name;",
+                    "Bark Mounds",
+                    1_000_000,
+                    HudCategory: "Biology",
+                    SubClass: "Bark Mounds",
+                    Platform: "legacy"
+                )
+            )
+        );
         Assert.Equal(
             "Amphora Plant",
-            PriorScanPlanner.FormatDisplayName(new ExobiologyReference(
-                2101400,
-                "$Codex_Ent_Vents_Name;",
-                "$Codex_Ent_Vents_Name;",
-                "Amphora Plant",
-                1_000_000,
-                HudCategory: "Biology",
-                SubClass: "Amphora Plant",
-                Platform: "legacy")));
+            PriorScanPlanner.FormatDisplayName(
+                new ExobiologyReference(
+                    2101400,
+                    "$Codex_Ent_Vents_Name;",
+                    "$Codex_Ent_Vents_Name;",
+                    "Amphora Plant",
+                    1_000_000,
+                    HudCategory: "Biology",
+                    SubClass: "Amphora Plant",
+                    Platform: "legacy"
+                )
+            )
+        );
         Assert.Equal(
             "Radicoida - Unica",
-            PriorScanPlanner.FormatDisplayName(new ExobiologyReference(
-                2460101,
-                "$Codex_Ent_Ingensradices_Unicus_Name;",
-                "$Codex_Ent_Ingensradices_Unicus_Name;",
-                "Radicoida Unica",
-                19_000_000,
-                HudCategory: "Biology",
-                Platform: "odyssey")));
+            PriorScanPlanner.FormatDisplayName(
+                new ExobiologyReference(
+                    2460101,
+                    "$Codex_Ent_Ingensradices_Unicus_Name;",
+                    "$Codex_Ent_Ingensradices_Unicus_Name;",
+                    "Radicoida Unica",
+                    19_000_000,
+                    HudCategory: "Biology",
+                    Platform: "odyssey"
+                )
+            )
+        );
         Assert.Equal(
             "Aleoida Arcus - Green",
-            PriorScanPlanner.FormatDisplayName(new ExobiologyReference(
-                2310102,
-                "$Codex_Ent_Aleoids_01_B_Name;",
-                "$Codex_Ent_Aleoids_01_Name;",
-                "Aleoida Arcus - Green",
-                7_252_500,
-                HudCategory: "Biology",
-                Platform: "odyssey")));
+            PriorScanPlanner.FormatDisplayName(
+                new ExobiologyReference(
+                    2310102,
+                    "$Codex_Ent_Aleoids_01_B_Name;",
+                    "$Codex_Ent_Aleoids_01_Name;",
+                    "Aleoida Arcus - Green",
+                    7_252_500,
+                    HudCategory: "Biology",
+                    Platform: "odyssey"
+                )
+            )
+        );
         Assert.Equal(
             "$Codex_Ent_Aleoids_01_Name;",
-            PriorScanPlanner.FormatDisplayName(new ExobiologyReference(
-                2310199,
-                "$Codex_Ent_Aleoids_01_B_Name;",
-                "$Codex_Ent_Aleoids_01_Name;",
-                null,
-                1,
-                HudCategory: "Biology",
-                Platform: "odyssey")));
+            PriorScanPlanner.FormatDisplayName(
+                new ExobiologyReference(
+                    2310199,
+                    "$Codex_Ent_Aleoids_01_B_Name;",
+                    "$Codex_Ent_Aleoids_01_Name;",
+                    null,
+                    1,
+                    HudCategory: "Biology",
+                    Platform: "odyssey"
+                )
+            )
+        );
         Assert.Equal(
             "Signal fallback",
-            PriorScanPlanner.FormatDisplayName(new ExobiologyReference(
-                2310198,
-                "$Codex_Ent_Aleoids_01_B_Name;",
-                "$Codex_Ent_Aleoids_01_Name;",
-                "   ",
-                1,
-                HudCategory: "Biology",
-                Platform: "odyssey"),
-                signalDisplayName: "Signal fallback"));
+            PriorScanPlanner.FormatDisplayName(
+                new ExobiologyReference(
+                    2310198,
+                    "$Codex_Ent_Aleoids_01_B_Name;",
+                    "$Codex_Ent_Aleoids_01_Name;",
+                    "   ",
+                    1,
+                    HudCategory: "Biology",
+                    Platform: "odyssey"
+                ),
+                signalDisplayName: "Signal fallback"
+            )
+        );
         Assert.Equal(
             "Brain Tree - Roseum",
-            PriorScanPlanner.FormatDisplayName(new ExobiologyReference(
-                2100202,
-                "$Codex_Ent_Seed_Name;",
-                "$Codex_Ent_Seed_Name;",
-                string.Empty,
-                1_593_700,
-                HudCategory: "Biology",
-                SubClass: "Brain Tree",
-                Platform: "legacy"),
-                signalDisplayName: "Roseum Brain Tree"));
+            PriorScanPlanner.FormatDisplayName(
+                new ExobiologyReference(
+                    2100202,
+                    "$Codex_Ent_Seed_Name;",
+                    "$Codex_Ent_Seed_Name;",
+                    string.Empty,
+                    1_593_700,
+                    HudCategory: "Biology",
+                    SubClass: "Brain Tree",
+                    Platform: "legacy"
+                ),
+                signalDisplayName: "Roseum Brain Tree"
+            )
+        );
     }
 
     [Fact]
     public void CreatePlanUsesFormattedDisplayNamesForSpeciesRows()
     {
-        var legacyPlanner = new PriorScanPlanner(new ExobiologyReferenceCatalog(
-        [
-            new ExobiologyReference(
-                2100201,
-                "$Codex_Ent_Seed_Name;",
-                "$Codex_Ent_Seed_Name;",
-                "Roseum Brain Tree",
-                1_593_700,
-                HudCategory: "Biology",
-                SubClass: "Brain Tree",
-                Platform: "legacy"),
-        ]));
-        var plan = legacyPlanner.CreatePlan(Request(
-        [
-            new CanonnSurfaceBiologySignal(
-                "A 1",
-                "Roseum Brain Tree",
-                2100201,
-                new SurfaceCoordinate(0, 0.01),
-                false),
-        ]));
+        var legacyPlanner = new PriorScanPlanner(
+            new ExobiologyReferenceCatalog([
+                new ExobiologyReference(
+                    2100201,
+                    "$Codex_Ent_Seed_Name;",
+                    "$Codex_Ent_Seed_Name;",
+                    "Roseum Brain Tree",
+                    1_593_700,
+                    HudCategory: "Biology",
+                    SubClass: "Brain Tree",
+                    Platform: "legacy"
+                ),
+            ])
+        );
+        var plan = legacyPlanner.CreatePlan(
+            Request([
+                new CanonnSurfaceBiologySignal(
+                    "A 1",
+                    "Roseum Brain Tree",
+                    2100201,
+                    new SurfaceCoordinate(0, 0.01),
+                    false
+                ),
+            ])
+        );
         Assert.Equal("Brain Tree - Roseum", Assert.Single(plan.Species).DisplayName);
     }
 
@@ -227,24 +276,18 @@ public sealed class PriorScanPlannerTests
             Signal("A 1", 2310101, 0, 0.02),
             Signal("A 1", 2320101, 0, 0.03),
         };
-        var analyzed = planner.CreatePlan(Request(
-            signals,
-            analyzed: [2310101]));
-        Assert.Equal(
-            PriorScanTargetState.Analyzed,
-            analyzed.Species[0].Targets[0].State);
+        var analyzed = planner.CreatePlan(Request(signals, analyzed: [2310101]));
+        Assert.Equal(PriorScanTargetState.Analyzed, analyzed.Species[0].Targets[0].State);
 
-        var filtered = planner.CreatePlan(Request(
-            signals,
-            analyzed: [2310101],
-            personalSamples:
-            [
-                new PriorScanPersonalSample(
-                    BacteriumSpecies,
-                    new SurfaceCoordinate(0, 0.03)),
-            ],
-            skipLowValue: true,
-            hideOwn: true));
+        var filtered = planner.CreatePlan(
+            Request(
+                signals,
+                analyzed: [2310101],
+                personalSamples: [new PriorScanPersonalSample(BacteriumSpecies, new SurfaceCoordinate(0, 0.03))],
+                skipLowValue: true,
+                hideOwn: true
+            )
+        );
 
         Assert.Empty(filtered.Species);
     }
@@ -252,12 +295,12 @@ public sealed class PriorScanPlannerTests
     [Fact]
     public void CreatePlanHidesCanonnRowsAttributedToCommander()
     {
-        var plan = planner.CreatePlan(Request(
-        [
-            Signal("A 1", 2310101, 0, 0.01, commanderScan: true),
-            Signal("A 1", 2310101, 0, 0.02),
-        ],
-        hideOwn: true));
+        var plan = planner.CreatePlan(
+            Request(
+                [Signal("A 1", 2310101, 0, 0.01, commanderScan: true), Signal("A 1", 2310101, 0, 0.02)],
+                hideOwn: true
+            )
+        );
 
         var target = Assert.Single(Assert.Single(plan.Species).Targets);
         Assert.Equal(349.066, target.DistanceMeters, 3);
@@ -266,12 +309,13 @@ public sealed class PriorScanPlannerTests
     [Fact]
     public void CreatePlanDeduplicatesBySurfaceSeparationNotRadialDistance()
     {
-        var plan = planner.CreatePlan(Request(
-        [
-            Signal("A 1", 2310101, 0.01, 0),
-            Signal("A 1", 2310101, -0.01, 0),
-            Signal("A 1", 2310101, 0.0101, 0),
-        ]));
+        var plan = planner.CreatePlan(
+            Request([
+                Signal("A 1", 2310101, 0.01, 0),
+                Signal("A 1", 2310101, -0.01, 0),
+                Signal("A 1", 2310101, 0.0101, 0),
+            ])
+        );
 
         var species = Assert.Single(plan.Species);
         Assert.Equal(2, species.Targets.Count);
@@ -280,33 +324,30 @@ public sealed class PriorScanPlannerTests
     [Fact]
     public void CreatePlanClassifiesCloseAndFarTargets()
     {
-        var plan = planner.CreatePlan(Request(
-        [
-            Signal("A 1", 2310101, 0, 0.001),
-            Signal("A 1", 2310101, 0, 100),
-        ]));
+        var plan = planner.CreatePlan(Request([Signal("A 1", 2310101, 0, 0.001), Signal("A 1", 2310101, 0, 100)]));
 
         Assert.Collection(
             Assert.Single(plan.Species).Targets,
             target => Assert.Equal(PriorScanTargetState.Close, target.State),
-            target => Assert.Equal(PriorScanTargetState.Far, target.State));
+            target => Assert.Equal(PriorScanTargetState.Far, target.State)
+        );
     }
 
     [Fact]
     public void CreatePlanMatchesFullEliteBodyNameToCanonnShortLabel()
     {
-        var plan = planner.CreatePlan(new PriorScanPlanRequest(
-            "Col 285 Sector AB-C d1-2 1 a",
-            Radius,
-            new SurfaceCoordinate(0, 0),
-            0,
-            [
-                Signal("1 a", 2310101, 0, 0.01),
-                Signal("1 b", 2320101, 0, 0.02),
-            ],
-            [],
-            [],
-            SystemName: "Col 285 Sector AB-C d1-2"));
+        var plan = planner.CreatePlan(
+            new PriorScanPlanRequest(
+                "Col 285 Sector AB-C d1-2 1 a",
+                Radius,
+                new SurfaceCoordinate(0, 0),
+                0,
+                [Signal("1 a", 2310101, 0, 0.01), Signal("1 b", 2320101, 0, 0.02)],
+                [],
+                [],
+                SystemName: "Col 285 Sector AB-C d1-2"
+            )
+        );
 
         Assert.Equal(2310101, Assert.Single(plan.Species).EntryId);
     }
@@ -318,7 +359,8 @@ public sealed class PriorScanPlannerTests
         IReadOnlyList<PriorScanPersonalSample>? personalSamples = null,
         string? activeSpecies = null,
         bool skipLowValue = false,
-        bool hideOwn = false)
+        bool hideOwn = false
+    )
     {
         return new PriorScanPlanRequest(
             "A 1",
@@ -331,7 +373,8 @@ public sealed class PriorScanPlannerTests
             activeSpecies,
             skipLowValue,
             1_000_000,
-            hideOwn);
+            hideOwn
+        );
     }
 
     private static CanonnSurfaceBiologySignal Signal(
@@ -339,13 +382,15 @@ public sealed class PriorScanPlannerTests
         long entryId,
         double latitude,
         double longitude,
-        bool commanderScan = false)
+        bool commanderScan = false
+    )
     {
         return new CanonnSurfaceBiologySignal(
             body,
             null,
             entryId,
             new SurfaceCoordinate(latitude, longitude),
-            commanderScan);
+            commanderScan
+        );
     }
 }

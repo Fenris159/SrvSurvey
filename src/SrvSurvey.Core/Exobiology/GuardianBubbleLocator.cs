@@ -25,15 +25,11 @@ public static class GuardianBubbleLocator
 
     public static bool IsWithinKnownBubble(GalacticCoordinate position)
     {
-        return LargeBubbleCenters.Any(
-                center => Distance(position, center) < LargeBubbleRadiusLy)
-            || SmallBubbleCenters.Any(
-                center => Distance(position, center) < SmallBubbleRadiusLy);
+        return LargeBubbleCenters.Any(center => Distance(position, center) < LargeBubbleRadiusLy)
+            || SmallBubbleCenters.Any(center => Distance(position, center) < SmallBubbleRadiusLy);
     }
 
-    private static double Distance(
-        GalacticCoordinate first,
-        GalacticCoordinate second)
+    private static double Distance(GalacticCoordinate first, GalacticCoordinate second)
     {
         var x = first.X - second.X;
         var y = first.Y - second.Y;

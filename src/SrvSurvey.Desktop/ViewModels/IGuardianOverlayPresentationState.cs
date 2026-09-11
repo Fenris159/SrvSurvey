@@ -102,9 +102,7 @@ public interface IGuardianOverlayPresentationState : INotifyPropertyChanged
 
     string GuardianStatusObeliskRequirementsText { get; }
 
-    IReadOnlyList<GuardianArtifactRequirementViewModel>
-        GuardianStatusObeliskArtifacts
-    { get; }
+    IReadOnlyList<GuardianArtifactRequirementViewModel> GuardianStatusObeliskArtifacts { get; }
 
     string GuardianStatusObeliskMissionStatus { get; }
 

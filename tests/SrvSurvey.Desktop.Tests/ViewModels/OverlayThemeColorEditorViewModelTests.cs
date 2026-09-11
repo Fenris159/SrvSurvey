@@ -37,6 +37,7 @@ public sealed class OverlayThemeColorEditorViewModelTests
         return new OverlayThemeColorEditorViewModel(
             new OverlayThemeColorDefinition("Test", "test", "Test colour"),
             Color.FromRgb(10, 20, 30),
-            changed);
+            changed
+        );
     }
 }

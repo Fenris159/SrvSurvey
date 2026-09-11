@@ -6,7 +6,8 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-input-settings-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-input-settings-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void CatalogPreservesLegacyActionsAndAddsOverlayEditShortcut()
@@ -14,40 +15,34 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
         Assert.Equal(66, GlobalInputActionCatalog.All.Count);
         Assert.Equal(
             GlobalInputActionCatalog.All.Count,
-            GlobalInputActionCatalog.All
-                .Select(definition => definition.LegacyName)
+            GlobalInputActionCatalog
+                .All.Select(definition => definition.LegacyName)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Count());
-        Assert.Equal(
-            "ALT F2",
-            GlobalInputActionCatalog.Get(
-                GlobalInputAction.ToggleAllVisibility).DefaultChord);
-        Assert.Equal(
-            "ALT CTRL I",
-            GlobalInputActionCatalog.Get(
-                GlobalInputAction.ToggleImageEmbed).DefaultChord);
+                .Count()
+        );
+        Assert.Equal("ALT F2", GlobalInputActionCatalog.Get(GlobalInputAction.ToggleAllVisibility).DefaultChord);
+        Assert.Equal("ALT CTRL I", GlobalInputActionCatalog.Get(GlobalInputAction.ToggleImageEmbed).DefaultChord);
         Assert.Equal(
             "ALT SHIFT O",
-            GlobalInputActionCatalog.Get(
-                GlobalInputAction.ToggleOverlayInteraction).DefaultChord);
-        Assert.Equal(
-            new("adjustVR", "ALT V"),
-            GetLegacyBinding(GlobalInputAction.AdjustVr));
-        Assert.Equal(
-            new("resetVR", string.Empty),
-            GetLegacyBinding(GlobalInputAction.ResetVr));
-        var panelToggles = GlobalInputActionCatalog.All
-            .Where(definition => definition.OverlayPlotterName is not null)
+            GlobalInputActionCatalog.Get(GlobalInputAction.ToggleOverlayInteraction).DefaultChord
+        );
+        Assert.Equal(new("adjustVR", "ALT V"), GetLegacyBinding(GlobalInputAction.AdjustVr));
+        Assert.Equal(new("resetVR", string.Empty), GetLegacyBinding(GlobalInputAction.ResetVr));
+        var panelToggles = GlobalInputActionCatalog
+            .All.Where(definition => definition.OverlayPlotterName is not null)
             .ToArray();
         Assert.Equal(35, panelToggles.Length);
-        Assert.All(panelToggles, definition =>
-        {
-            Assert.Empty(definition.DefaultChord);
-            Assert.StartsWith("Toggle ", definition.DisplayName);
-            Assert.EndsWith(" visibility", definition.DisplayName);
-            Assert.Contains("rendered inactive", definition.Description);
-            Assert.Contains("until toggled on", definition.Description);
-        });
+        Assert.All(
+            panelToggles,
+            definition =>
+            {
+                Assert.Empty(definition.DefaultChord);
+                Assert.StartsWith("Toggle ", definition.DisplayName);
+                Assert.EndsWith(" visibility", definition.DisplayName);
+                Assert.Contains("rendered inactive", definition.Description);
+                Assert.Contains("until toggled on", definition.Description);
+            }
+        );
     }
 
     [Theory]
@@ -57,7 +52,10 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
     [InlineData("CTRL X", "CTRL Y", "CTRL Y")]
     [InlineData("CTRL X", "", "")]
     public void SharedTrackersMigrateCustomizedRigBindingsAndResetCleanly(
-        string rigChord, string trackerChord, string expectedChord)
+        string rigChord,
+        string trackerChord,
+        string expectedChord
+    )
     {
         Directory.CreateDirectory(temporaryDirectory);
         var path = Path.Combine(temporaryDirectory, "ui.json");
@@ -95,24 +93,26 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
               "Version": 1,
               "Theme": "green-dark"
             }
-            """);
+            """
+        );
         var store = new GlobalInputSettingsStore(path);
         var bindings = GlobalInputSettings.Default.Bindings.ToDictionary();
         bindings[GlobalInputAction.CopyNextBoxel] = "ALT X";
 
-        store.Save(new GlobalInputSettings(
-            KeyboardEnabled: true,
-            ControllerEnabled: true,
-            ControllerDeviceId: "controller-1",
-            bindings));
+        store.Save(
+            new GlobalInputSettings(
+                KeyboardEnabled: true,
+                ControllerEnabled: true,
+                ControllerDeviceId: "controller-1",
+                bindings
+            )
+        );
         var loaded = store.Load();
 
         Assert.True(loaded.KeyboardEnabled);
         Assert.True(loaded.ControllerEnabled);
         Assert.Equal("controller-1", loaded.ControllerDeviceId);
-        Assert.Equal(
-            "ALT X",
-            loaded.Bindings[GlobalInputAction.CopyNextBoxel]);
+        Assert.Equal("ALT X", loaded.Bindings[GlobalInputAction.CopyNextBoxel]);
         Assert.Contains("\"Theme\": \"green-dark\"", File.ReadAllText(path));
     }
 
@@ -134,16 +134,13 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
                 }
               }
             }
-            """);
+            """
+        );
 
         var loaded = new GlobalInputSettingsStore(path).Load();
 
-        Assert.Equal(
-            "SHIFT C",
-            loaded.Bindings[GlobalInputAction.CopyNextBoxel]);
-        Assert.Equal(
-            "ALT F2",
-            loaded.Bindings[GlobalInputAction.ToggleAllVisibility]);
+        Assert.Equal("SHIFT C", loaded.Bindings[GlobalInputAction.CopyNextBoxel]);
+        Assert.Equal("ALT F2", loaded.Bindings[GlobalInputAction.ToggleAllVisibility]);
         Assert.Equal(GlobalInputActionCatalog.All.Count, loaded.Bindings.Count);
     }
 
@@ -164,7 +161,8 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
                 }
               }
             }
-            """);
+            """
+        );
 
         new GlobalInputSettingsStore(path).Save(GlobalInputSettings.Default);
         var json = File.ReadAllText(path);
@@ -181,12 +179,9 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
         }
     }
 
-    private static KeyValuePair<string, string> GetLegacyBinding(
-        GlobalInputAction action)
+    private static KeyValuePair<string, string> GetLegacyBinding(GlobalInputAction action)
     {
         var definition = GlobalInputActionCatalog.Get(action);
-        return new KeyValuePair<string, string>(
-            definition.LegacyName,
-            definition.DefaultChord);
+        return new KeyValuePair<string, string>(definition.LegacyName, definition.DefaultChord);
     }
 }

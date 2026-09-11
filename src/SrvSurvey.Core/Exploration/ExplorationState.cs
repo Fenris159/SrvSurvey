@@ -68,9 +68,7 @@ public sealed class ExplorationState
                 return true;
 
             case "SellExplorationData":
-                ApplySoldSystems(
-                    GetStringArray(root, "Systems")
-                        .Concat(GetStringArray(root, "Discovered")));
+                ApplySoldSystems(GetStringArray(root, "Systems").Concat(GetStringArray(root, "Discovered")));
                 return true;
 
             case "MultiSellExplorationData":
@@ -91,7 +89,8 @@ public sealed class ExplorationState
             ScanCount,
             DetailedSurfaceScanCount,
             LandedBodyCount,
-            estimatedRewardsBySystem);
+            estimatedRewardsBySystem
+        );
     }
 
     public void Reset(ExplorationSnapshot? seed = null)
@@ -103,8 +102,7 @@ public sealed class ExplorationState
         ScanCount = seed.ScanCount;
         DetailedSurfaceScanCount = seed.DetailedSurfaceScanCount;
         LandedBodyCount = seed.LandedBodyCount;
-        estimatedRewardsBySystem = NormalizeRewardsBySystem(
-            seed.EstimatedRewardsBySystem);
+        estimatedRewardsBySystem = NormalizeRewardsBySystem(seed.EstimatedRewardsBySystem);
         bodies.Clear();
         landedBodies.Clear();
     }
@@ -117,8 +115,7 @@ public sealed class ExplorationState
             return;
         }
 
-        var bodyClass = GetString(root, "PlanetClass")
-            ?? GetString(root, "StarType");
+        var bodyClass = GetString(root, "PlanetClass") ?? GetString(root, "StarType");
         if (bodyClass is null)
         {
             return;
@@ -129,9 +126,7 @@ public sealed class ExplorationState
         body.BodyClass = bodyClass;
         body.IsTerraformable = GetString(root, "TerraformState") == "Terraformable";
         var planetMass = GetDouble(root, "MassEM");
-        body.Mass = planetMass is > 0
-            ? planetMass.Value
-            : GetDouble(root, "StellarMass") ?? 0;
+        body.Mass = planetMass is > 0 ? planetMass.Value : GetDouble(root, "StellarMass") ?? 0;
         body.IsFirstDiscoverer = !(GetBoolean(root, "WasDiscovered") ?? false);
         body.IsFirstMapped = !(GetBoolean(root, "WasMapped") ?? false);
         bodies[key.Value] = body;
@@ -155,10 +150,7 @@ public sealed class ExplorationState
 
         var probesUsed = GetInt32(root, "ProbesUsed") ?? int.MaxValue;
         var efficiencyTarget = GetInt32(root, "EfficiencyTarget") ?? -1;
-        var reward = CalculateReward(
-            body,
-            isMapped: true,
-            withEfficiencyBonus: probesUsed <= efficiencyTarget);
+        var reward = CalculateReward(body, isMapped: true, withEfficiencyBonus: probesUsed <= efficiencyTarget);
         if (reward > body.Reward)
         {
             body.Reward = reward;
@@ -215,9 +207,7 @@ public sealed class ExplorationState
         }
 
         EstimatedRewards -= Math.Min(EstimatedRewards, removedRewards);
-        estimatedRewardsBySystem = updated.Count == 0
-            ? null
-            : new ReadOnlyDictionary<string, long>(updated);
+        estimatedRewardsBySystem = updated.Count == 0 ? null : new ReadOnlyDictionary<string, long>(updated);
     }
 
     private Dictionary<string, long> CopyRewardsBySystem()
@@ -237,7 +227,8 @@ public sealed class ExplorationState
     }
 
     private static ReadOnlyDictionary<string, long>? NormalizeRewardsBySystem(
-        IReadOnlyDictionary<string, long>? rewardsBySystem)
+        IReadOnlyDictionary<string, long>? rewardsBySystem
+    )
     {
         if (rewardsBySystem is not { Count: > 0 })
         {
@@ -256,9 +247,7 @@ public sealed class ExplorationState
             normalized[systemName] = normalized.GetValueOrDefault(systemName) + entry.Value;
         }
 
-        return normalized.Count == 0
-            ? null
-            : new ReadOnlyDictionary<string, long>(normalized);
+        return normalized.Count == 0 ? null : new ReadOnlyDictionary<string, long>(normalized);
     }
 
     private void ApplyTouchdown(JsonElement root)
@@ -275,10 +264,7 @@ public sealed class ExplorationState
         }
     }
 
-    private int CalculateReward(
-        BodyExplorationState body,
-        bool isMapped,
-        bool withEfficiencyBonus)
+    private int CalculateReward(BodyExplorationState body, bool isMapped, bool withEfficiencyBonus)
     {
         return ExplorationValueCalculator.Calculate(
             new ExplorationValueRequest
@@ -290,55 +276,49 @@ public sealed class ExplorationState
                 IsMapped = isMapped,
                 IsFirstMapped = body.IsFirstMapped,
                 IsOdyssey = isOdyssey,
-                WithEfficiencyBonus = withEfficiencyBonus
-            });
+                WithEfficiencyBonus = withEfficiencyBonus,
+            }
+        );
     }
 
     private static BodyKey? GetBodyKey(JsonElement root)
     {
         var systemAddress = GetInt64(root, "SystemAddress");
         var bodyId = GetInt32(root, "BodyID");
-        return systemAddress is null || bodyId is null
-            ? null
-            : new BodyKey(systemAddress.Value, bodyId.Value);
+        return systemAddress is null || bodyId is null ? null : new BodyKey(systemAddress.Value, bodyId.Value);
     }
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
-            && value.ValueKind == JsonValueKind.String
-                ? value.GetString()
-                : null;
+        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+            ? value.GetString()
+            : null;
     }
 
-    private static IEnumerable<string> GetStringArray(
-        JsonElement root,
-        string propertyName)
+    private static IEnumerable<string> GetStringArray(JsonElement root, string propertyName)
     {
-        if (!root.TryGetProperty(propertyName, out var value)
-            || value.ValueKind != JsonValueKind.Array)
+        if (!root.TryGetProperty(propertyName, out var value) || value.ValueKind != JsonValueKind.Array)
         {
             return [];
         }
 
-        return value.EnumerateArray()
+        return value
+            .EnumerateArray()
             .Where(item => item.ValueKind == JsonValueKind.String)
             .Select(item => item.GetString())
             .Where(item => item is not null)
             .Select(item => item!);
     }
 
-    private static IEnumerable<string> GetSystemNames(
-        JsonElement root,
-        string propertyName)
+    private static IEnumerable<string> GetSystemNames(JsonElement root, string propertyName)
     {
-        if (!root.TryGetProperty(propertyName, out var value)
-            || value.ValueKind != JsonValueKind.Array)
+        if (!root.TryGetProperty(propertyName, out var value) || value.ValueKind != JsonValueKind.Array)
         {
             return [];
         }
 
-        return value.EnumerateArray()
+        return value
+            .EnumerateArray()
             .Where(item => item.ValueKind == JsonValueKind.Object)
             .Select(item => GetString(item, "SystemName"))
             .Where(item => item is not null)
@@ -347,37 +327,41 @@ public sealed class ExplorationState
 
     private static bool? GetBoolean(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
+        return
+            root.TryGetProperty(propertyName, out var value)
             && value.ValueKind is JsonValueKind.True or JsonValueKind.False
-                ? value.GetBoolean()
-                : null;
+            ? value.GetBoolean()
+            : null;
     }
 
     private static double? GetDouble(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
+        return
+            root.TryGetProperty(propertyName, out var value)
             && value.ValueKind == JsonValueKind.Number
             && value.TryGetDouble(out var number)
-                ? number
-                : null;
+            ? number
+            : null;
     }
 
     private static long? GetInt64(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
+        return
+            root.TryGetProperty(propertyName, out var value)
             && value.ValueKind == JsonValueKind.Number
             && value.TryGetInt64(out var number)
-                ? number
-                : null;
+            ? number
+            : null;
     }
 
     private static int? GetInt32(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
+        return
+            root.TryGetProperty(propertyName, out var value)
             && value.ValueKind == JsonValueKind.Number
             && value.TryGetInt32(out var number)
-                ? number
-                : null;
+            ? number
+            : null;
     }
 
     private readonly record struct BodyKey(long SystemAddress, int BodyId);
@@ -409,7 +393,8 @@ public sealed record ExplorationSnapshot(
     int ScanCount,
     int DetailedSurfaceScanCount,
     int LandedBodyCount,
-    IReadOnlyDictionary<string, long>? EstimatedRewardsBySystem = null)
+    IReadOnlyDictionary<string, long>? EstimatedRewardsBySystem = null
+)
 {
     public static ExplorationSnapshot Empty { get; } = new(0, 0, 0, 0, 0, 0);
 }

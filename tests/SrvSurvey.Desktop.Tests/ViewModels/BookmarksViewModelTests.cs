@@ -1,6 +1,7 @@
 using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Desktop.ViewModels;
+
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class BookmarksViewModelTests
@@ -12,14 +13,23 @@ public sealed class BookmarksViewModelTests
         try
         {
             var vm = new BookmarksViewModel(directory) { System = "Sol", Category = "Location" };
-            vm.SaveCommand.Execute(null); vm.Notes = "Updated"; vm.SaveCommand.Execute(null);
+            vm.SaveCommand.Execute(null);
+            vm.Notes = "Updated";
+            vm.SaveCommand.Execute(null);
             Assert.Equal("Updated", Assert.Single(vm.Items).Notes);
-            vm.DeleteCommand.Execute(null); Assert.Empty(vm.Items); vm.UndoDelete();
+            vm.DeleteCommand.Execute(null);
+            Assert.Empty(vm.Items);
+            vm.UndoDelete();
             Assert.Equal("Location", Assert.Single(new BookmarksViewModel(directory).Items).Category);
         }
-        finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
     }
-
 
     [Fact]
     public void HeadersSortTheSharedCatalogAscendingThenDescending()
@@ -42,7 +52,13 @@ public sealed class BookmarksViewModelTests
             Assert.Equal(["Zulu", "Alpha"], vm.Items.Select(item => item.System));
             Assert.Equal("↓", vm.SortIndicators["System"]);
         }
-        finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
     }
 
     [Fact]
@@ -82,7 +98,13 @@ public sealed class BookmarksViewModelTests
 
             Assert.Equal([bookmark.Id, bookmark.Id], opened);
         }
-        finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
     }
 
     [Fact]
@@ -99,17 +121,18 @@ public sealed class BookmarksViewModelTests
             var original = Assert.Single(vm.Items);
             vm.Selected = original;
 
-            vm.Catalog!.Save(original with
-            {
-                Minerals = "Gold",
-                Hotspot = "Signal 5",
-                Notes = "Updated externally",
-            });
+            vm.Catalog!.Save(original with { Minerals = "Gold", Hotspot = "Signal 5", Notes = "Updated externally" });
 
             Assert.Equal("Gold", vm.Minerals);
             Assert.Equal("Signal 5", vm.Hotspot);
             Assert.Equal("Updated externally", vm.Notes);
         }
-        finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
     }
 }

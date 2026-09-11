@@ -7,9 +7,7 @@ namespace SrvSurvey.Core.Search;
 internal readonly record struct SectorCoordinate(int x, int y, int z)
 {
     public SectorCoordinate(int[] coordinates)
-        : this(coordinates[0], coordinates[1], coordinates[2])
-    {
-    }
+        : this(coordinates[0], coordinates[1], coordinates[2]) { }
 
     public static SectorCoordinate operator +(SectorCoordinate left, SectorCoordinate right)
     {
@@ -29,9 +27,7 @@ internal static class BoxelSectorNameResolver
         return get_sector_name(new SectorCoordinate(x, y, z), false);
     }
 
-    public static SectorCoordinate? GetSectorCoordinates(
-        string sectorName,
-        char massCode)
+    public static SectorCoordinate? GetSectorCoordinates(string sectorName, char massCode)
     {
         return getSectorCoords(sectorName, massCode);
     }
@@ -53,13 +49,12 @@ internal static class BoxelSectorNameResolver
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Maintainability",
         "S3963:Static fields should be initialized inline",
-        Justification = "The ordered offset tables require multi-step initialization after all ported source tables exist.")]
+        Justification = "The ordered offset tables require multi-step initialization after all ported source tables exist."
+    )]
     static BoxelSectorNameResolver()
     {
         // Sort fragments by length to ensure we check the longest ones first
-        cx_fragments = cx_raw_fragments
-            .OrderByDescending(f => f.Length)
-            .ToArray();
+        cx_fragments = cx_raw_fragments.OrderByDescending(f => f.Length).ToArray();
 
         // Get the total length of one run over all prefixes
         cx_prefix_total_run_length = cx_prefixes.Select(p => _get_prefix_run_length(p)).Sum();
@@ -69,8 +64,12 @@ internal static class BoxelSectorNameResolver
         c1_infix_s2_length_default = cx_suffixes_s1.Length;
 
         // Total lengths of runs over all infixes, for each sequence
-        c1_infix_s1_total_run_length = c1_infixes_s1.Sum(p => c1_infix_length_overrides.GetValueOrDefault(p, c1_infix_s1_length_default));
-        c1_infix_s2_total_run_length = c1_infixes_s2.Sum(p => c1_infix_length_overrides.GetValueOrDefault(p, c1_infix_s2_length_default));
+        c1_infix_s1_total_run_length = c1_infixes_s1.Sum(p =>
+            c1_infix_length_overrides.GetValueOrDefault(p, c1_infix_s1_length_default)
+        );
+        c1_infix_s2_total_run_length = c1_infixes_s2.Sum(p =>
+            c1_infix_length_overrides.GetValueOrDefault(p, c1_infix_s2_length_default)
+        );
 
         // Cache the run offsets of all prefixes and C1 infixes
         _prefix_offsets = new();
@@ -108,7 +107,10 @@ internal static class BoxelSectorNameResolver
         // Hand-authored sectors are not currently resolved by this port.
 
         var offset = get_offset_from_name(sectorName);
-        if (offset == -1) return null;
+        if (offset == -1)
+        {
+            return null;
+        }
 
         var x = (offset % galaxy_size[0]);
         var y = (offset / galaxy_size[0]) % galaxy_size[1];
@@ -123,13 +125,20 @@ internal static class BoxelSectorNameResolver
     private static long get_offset_from_name(string sectorName)
     {
         var frags = BoxelSectorNameResolver.get_sector_fragments(sectorName)!;
-        if (frags == null) return -1;
+        if (frags == null)
+        {
+            return -1;
+        }
 
         var sc = _get_sector_class(frags);
         if (sc == 2)
+        {
             return BoxelSectorNameResolver._c2_get_offset_from_name(frags);
+        }
         else
+        {
             return BoxelSectorNameResolver._c1_get_offset_from_name(frags);
+        }
     }
 
     #region pgdata.py
@@ -138,38 +147,309 @@ internal static class BoxelSectorNameResolver
     /// <summary> Hopefully-complete list of valid name fragments / phonemes </summary>
     private static string[] cx_raw_fragments = new string[]
     {
-                "Th", "Eo", "Oo", "Eu", "Tr", "Sly", "Dry", "Ou",
-                "Tz", "Phl", "Ae", "Sch", "Hyp", "Syst", "Ai", "Kyl",
-                "Phr", "Eae", "Ph", "Fl", "Ao", "Scr", "Shr", "Fly",
-                "Pl", "Fr", "Au", "Pry", "Pr", "Hyph", "Py", "Chr",
-                "Phyl", "Tyr", "Bl", "Cry", "Gl", "Br", "Gr", "By",
-                "Aae", "Myc", "Gyr", "Ly", "Myl", "Lych", "Myn", "Ch",
-                "Myr", "Cl", "Rh", "Wh", "Pyr", "Cr", "Syn", "Str",
-                "Syr", "Cy", "Wr", "Hy", "My", "Sty", "Sc", "Sph",
-                "Spl", "A", "Sh", "B", "C", "D", "Sk", "Io",
-                "Dr", "E", "Sl", "F", "Sm", "G", "H", "I",
-                "Sp", "J", "Sq", "K", "L", "Pyth", "M", "St",
-                "N", "O", "Ny", "Lyr", "P", "Sw", "Thr", "Lys",
-                "Q", "R", "S", "T", "Ea", "U", "V", "W",
-                "Schr", "X", "Ee", "Y", "Z", "Ei", "Oe",
-
-                "ll", "ss", "b", "c", "d", "f", "dg", "g", "ng", "h", "j", "k", "l", "m", "n",
-                "mb", "p", "q", "gn", "th", "r", "s", "t", "ch", "tch", "v", "w", "wh",
-                "ck", "x", "y", "z", "ph", "sh", "ct", "wr", "o", "ai", "a", "oi", "ea",
-                "ie", "u", "e", "ee", "oo", "ue", "i", "oa", "au", "ae", "oe", "scs",
-                "wsy", "vsky", "sms", "dst", "rb", "nts", "rd", "rld", "lls", "rgh",
-                "rg", "hm", "hn", "rk", "rl", "rm", "cs", "wyg", "rn", "hs", "rbs", "rp",
-                "tts", "wn", "ms", "rr", "mt", "rs", "cy", "rt", "ws", "lch", "my", "ry",
-                "nks", "nd", "sc", "nk", "sk", "nn", "ds", "sm", "sp", "ns", "nt", "dy",
-                "st", "rrs", "xt", "nz", "sy", "xy", "rsch", "rphs", "sts", "sys", "sty",
-                "tl", "tls", "rds", "nch", "rns", "ts", "wls", "rnt", "tt", "rdy", "rst",
-                "pps", "tz", "sks", "ppy", "ff", "sps", "kh", "sky", "lts", "wnst", "rth",
-                "ths", "fs", "pp", "ft", "ks", "pr", "ps", "pt", "fy", "rts", "ky",
-                "rshch", "mly", "py", "bb", "nds", "wry", "zz", "nns", "ld", "lf",
-                "gh", "lks", "sly", "lk", "rph", "ln", "bs", "rsts", "gs", "ls", "vvy",
-                "lt", "rks", "qs", "rps", "gy", "wns", "lz", "nth", "phs", "io", "oea",
-                "aa", "ua", "eia", "ooe", "iae", "oae", "ou", "uae", "ao", "eae", "aea",
-                "ia", "eou", "aei", "uia", "aae", "eau"
+        "Th",
+        "Eo",
+        "Oo",
+        "Eu",
+        "Tr",
+        "Sly",
+        "Dry",
+        "Ou",
+        "Tz",
+        "Phl",
+        "Ae",
+        "Sch",
+        "Hyp",
+        "Syst",
+        "Ai",
+        "Kyl",
+        "Phr",
+        "Eae",
+        "Ph",
+        "Fl",
+        "Ao",
+        "Scr",
+        "Shr",
+        "Fly",
+        "Pl",
+        "Fr",
+        "Au",
+        "Pry",
+        "Pr",
+        "Hyph",
+        "Py",
+        "Chr",
+        "Phyl",
+        "Tyr",
+        "Bl",
+        "Cry",
+        "Gl",
+        "Br",
+        "Gr",
+        "By",
+        "Aae",
+        "Myc",
+        "Gyr",
+        "Ly",
+        "Myl",
+        "Lych",
+        "Myn",
+        "Ch",
+        "Myr",
+        "Cl",
+        "Rh",
+        "Wh",
+        "Pyr",
+        "Cr",
+        "Syn",
+        "Str",
+        "Syr",
+        "Cy",
+        "Wr",
+        "Hy",
+        "My",
+        "Sty",
+        "Sc",
+        "Sph",
+        "Spl",
+        "A",
+        "Sh",
+        "B",
+        "C",
+        "D",
+        "Sk",
+        "Io",
+        "Dr",
+        "E",
+        "Sl",
+        "F",
+        "Sm",
+        "G",
+        "H",
+        "I",
+        "Sp",
+        "J",
+        "Sq",
+        "K",
+        "L",
+        "Pyth",
+        "M",
+        "St",
+        "N",
+        "O",
+        "Ny",
+        "Lyr",
+        "P",
+        "Sw",
+        "Thr",
+        "Lys",
+        "Q",
+        "R",
+        "S",
+        "T",
+        "Ea",
+        "U",
+        "V",
+        "W",
+        "Schr",
+        "X",
+        "Ee",
+        "Y",
+        "Z",
+        "Ei",
+        "Oe",
+        "ll",
+        "ss",
+        "b",
+        "c",
+        "d",
+        "f",
+        "dg",
+        "g",
+        "ng",
+        "h",
+        "j",
+        "k",
+        "l",
+        "m",
+        "n",
+        "mb",
+        "p",
+        "q",
+        "gn",
+        "th",
+        "r",
+        "s",
+        "t",
+        "ch",
+        "tch",
+        "v",
+        "w",
+        "wh",
+        "ck",
+        "x",
+        "y",
+        "z",
+        "ph",
+        "sh",
+        "ct",
+        "wr",
+        "o",
+        "ai",
+        "a",
+        "oi",
+        "ea",
+        "ie",
+        "u",
+        "e",
+        "ee",
+        "oo",
+        "ue",
+        "i",
+        "oa",
+        "au",
+        "ae",
+        "oe",
+        "scs",
+        "wsy",
+        "vsky",
+        "sms",
+        "dst",
+        "rb",
+        "nts",
+        "rd",
+        "rld",
+        "lls",
+        "rgh",
+        "rg",
+        "hm",
+        "hn",
+        "rk",
+        "rl",
+        "rm",
+        "cs",
+        "wyg",
+        "rn",
+        "hs",
+        "rbs",
+        "rp",
+        "tts",
+        "wn",
+        "ms",
+        "rr",
+        "mt",
+        "rs",
+        "cy",
+        "rt",
+        "ws",
+        "lch",
+        "my",
+        "ry",
+        "nks",
+        "nd",
+        "sc",
+        "nk",
+        "sk",
+        "nn",
+        "ds",
+        "sm",
+        "sp",
+        "ns",
+        "nt",
+        "dy",
+        "st",
+        "rrs",
+        "xt",
+        "nz",
+        "sy",
+        "xy",
+        "rsch",
+        "rphs",
+        "sts",
+        "sys",
+        "sty",
+        "tl",
+        "tls",
+        "rds",
+        "nch",
+        "rns",
+        "ts",
+        "wls",
+        "rnt",
+        "tt",
+        "rdy",
+        "rst",
+        "pps",
+        "tz",
+        "sks",
+        "ppy",
+        "ff",
+        "sps",
+        "kh",
+        "sky",
+        "lts",
+        "wnst",
+        "rth",
+        "ths",
+        "fs",
+        "pp",
+        "ft",
+        "ks",
+        "pr",
+        "ps",
+        "pt",
+        "fy",
+        "rts",
+        "ky",
+        "rshch",
+        "mly",
+        "py",
+        "bb",
+        "nds",
+        "wry",
+        "zz",
+        "nns",
+        "ld",
+        "lf",
+        "gh",
+        "lks",
+        "sly",
+        "lk",
+        "rph",
+        "ln",
+        "bs",
+        "rsts",
+        "gs",
+        "ls",
+        "vvy",
+        "lt",
+        "rks",
+        "qs",
+        "rps",
+        "gy",
+        "wns",
+        "lz",
+        "nth",
+        "phs",
+        "io",
+        "oea",
+        "aa",
+        "ua",
+        "eia",
+        "ooe",
+        "iae",
+        "oae",
+        "ou",
+        "uae",
+        "ao",
+        "eae",
+        "aea",
+        "ia",
+        "eou",
+        "aei",
+        "uia",
+        "aae",
+        "eau",
     };
 
     /// <summary>  Order here is relevant, keep it </summary>
@@ -178,127 +458,371 @@ internal static class BoxelSectorNameResolver
     /// <summary> Vowel-ish infixes </summary>
     private static string[] c1_infixes_s1 = new string[]
     {
-                "o", "ai", "a", "oi", "ea", "ie", "u", "e",
-                "ee", "oo", "ue", "i", "oa", "au", "ae", "oe"
+        "o",
+        "ai",
+        "a",
+        "oi",
+        "ea",
+        "ie",
+        "u",
+        "e",
+        "ee",
+        "oo",
+        "ue",
+        "i",
+        "oa",
+        "au",
+        "ae",
+        "oe",
     };
 
     /// <summary> Consonant-ish infixes </summary>
     private static string[] c1_infixes_s2 = new string[]
     {
-                "ll", "ss", "b", "c", "d", "f", "dg", "g",
-                "ng", "h", "j", "k", "l", "m", "n", "mb",
-                "p", "q", "gn", "th", "r", "s", "t", "ch",
-                "tch", "v", "w", "wh", "ck", "x", "y", "z",
-                "ph", "sh", "ct", "wr"
+        "ll",
+        "ss",
+        "b",
+        "c",
+        "d",
+        "f",
+        "dg",
+        "g",
+        "ng",
+        "h",
+        "j",
+        "k",
+        "l",
+        "m",
+        "n",
+        "mb",
+        "p",
+        "q",
+        "gn",
+        "th",
+        "r",
+        "s",
+        "t",
+        "ch",
+        "tch",
+        "v",
+        "w",
+        "wh",
+        "ck",
+        "x",
+        "y",
+        "z",
+        "ph",
+        "sh",
+        "ct",
+        "wr",
     };
 
-    private static string[][] c1_infixes = new string[][]
-    {
-                Array.Empty<string>(),
-                c1_infixes_s1,
-                c1_infixes_s2,
-    };
+    private static string[][] c1_infixes = new string[][] { Array.Empty<string>(), c1_infixes_s1, c1_infixes_s2 };
 
     /// <summary> Sequence 1 </summary>
     private static string[] cx_suffixes_s1 = new string[]
     {
-                "oe",  "io",  "oea", "oi",  "aa",  "ua", "eia", "ae",
-                "ooe", "oo",  "a",   "ue",  "ai",  "e",  "iae", "oae",
-                "ou",  "uae", "i",   "ao",  "au",  "o",  "eae", "u",
-                "aea", "ia",  "ie",  "eou", "aei", "ea", "uia", "oa",
-                "aae", "eau", "ee"
+        "oe",
+        "io",
+        "oea",
+        "oi",
+        "aa",
+        "ua",
+        "eia",
+        "ae",
+        "ooe",
+        "oo",
+        "a",
+        "ue",
+        "ai",
+        "e",
+        "iae",
+        "oae",
+        "ou",
+        "uae",
+        "i",
+        "ao",
+        "au",
+        "o",
+        "eae",
+        "u",
+        "aea",
+        "ia",
+        "ie",
+        "eou",
+        "aei",
+        "ea",
+        "uia",
+        "oa",
+        "aae",
+        "eau",
+        "ee",
     };
 
     /// <summary> Sequence 2 </summary>
     private static string[] c1_suffixes_s2 = new string[]
     {
-                "b", "scs", "wsy", "c", "d", "vsky", "f", "sms",
-                "dst", "g", "rb", "h", "nts", "ch", "rd", "rld",
-                "k", "lls", "ck", "rgh", "l", "rg", "m", "n",
-                // Formerly sequence 4/5...
-                "hm", "p", "hn", "rk", "q", "rl", "r", "rm",
-                "s", "cs", "wyg", "rn", "ct", "t", "hs", "rbs",
-                "rp", "tts", "v", "wn", "ms", "w", "rr", "mt",
-                "x", "rs", "cy", "y", "rt", "z", "ws", "lch", // "y" is speculation
-                "my", "ry", "nks", "nd", "sc", "ng", "sh", "nk",
-                "sk", "nn", "ds", "sm", "sp", "ns", "nt", "dy",
-                "ss", "st", "rrs", "xt", "nz", "sy", "xy", "rsch",
-                "rphs", "sts", "sys", "sty", "th", "tl", "tls", "rds",
-                "nch", "rns", "ts", "wls", "rnt", "tt", "rdy", "rst",
-                "pps", "tz", "tch", "sks", "ppy", "ff", "sps", "kh",
-                "sky", "ph", "lts", "wnst", "rth", "ths", "fs", "pp",
-                "ft", "ks", "pr", "ps", "pt", "fy", "rts", "ky",
-                "rshch", "mly", "py", "bb", "nds", "wry", "zz", "nns",
-                "ld", "lf", "gh", "lks", "sly", "lk", "ll", "rph",
-                "ln", "bs", "rsts", "gs", "ls", "vvy", "lt", "rks",
-                "qs", "rps", "gy", "wns", "lz", "nth", "phs"
+        "b",
+        "scs",
+        "wsy",
+        "c",
+        "d",
+        "vsky",
+        "f",
+        "sms",
+        "dst",
+        "g",
+        "rb",
+        "h",
+        "nts",
+        "ch",
+        "rd",
+        "rld",
+        "k",
+        "lls",
+        "ck",
+        "rgh",
+        "l",
+        "rg",
+        "m",
+        "n",
+        // Formerly sequence 4/5...
+        "hm",
+        "p",
+        "hn",
+        "rk",
+        "q",
+        "rl",
+        "r",
+        "rm",
+        "s",
+        "cs",
+        "wyg",
+        "rn",
+        "ct",
+        "t",
+        "hs",
+        "rbs",
+        "rp",
+        "tts",
+        "v",
+        "wn",
+        "ms",
+        "w",
+        "rr",
+        "mt",
+        "x",
+        "rs",
+        "cy",
+        "y",
+        "rt",
+        "z",
+        "ws",
+        "lch", // "y" is speculation
+        "my",
+        "ry",
+        "nks",
+        "nd",
+        "sc",
+        "ng",
+        "sh",
+        "nk",
+        "sk",
+        "nn",
+        "ds",
+        "sm",
+        "sp",
+        "ns",
+        "nt",
+        "dy",
+        "ss",
+        "st",
+        "rrs",
+        "xt",
+        "nz",
+        "sy",
+        "xy",
+        "rsch",
+        "rphs",
+        "sts",
+        "sys",
+        "sty",
+        "th",
+        "tl",
+        "tls",
+        "rds",
+        "nch",
+        "rns",
+        "ts",
+        "wls",
+        "rnt",
+        "tt",
+        "rdy",
+        "rst",
+        "pps",
+        "tz",
+        "tch",
+        "sks",
+        "ppy",
+        "ff",
+        "sps",
+        "kh",
+        "sky",
+        "ph",
+        "lts",
+        "wnst",
+        "rth",
+        "ths",
+        "fs",
+        "pp",
+        "ft",
+        "ks",
+        "pr",
+        "ps",
+        "pt",
+        "fy",
+        "rts",
+        "ky",
+        "rshch",
+        "mly",
+        "py",
+        "bb",
+        "nds",
+        "wry",
+        "zz",
+        "nns",
+        "ld",
+        "lf",
+        "gh",
+        "lks",
+        "sly",
+        "lk",
+        "ll",
+        "rph",
+        "ln",
+        "bs",
+        "rsts",
+        "gs",
+        "ls",
+        "vvy",
+        "lt",
+        "rks",
+        "qs",
+        "rps",
+        "gy",
+        "wns",
+        "lz",
+        "nth",
+        "phs",
     };
 
-    private static string[] c2_suffixes_s2 = c1_suffixes_s2
-        .ToList()
-        .GetRange(0, cx_suffixes_s1.Length)
-        .ToArray();
+    private static string[] c2_suffixes_s2 = c1_suffixes_s2.ToList().GetRange(0, cx_suffixes_s1.Length).ToArray();
 
-    private static string[][] c1_suffixes = new string[][]
-    {
-                Array.Empty<string>(),
-                cx_suffixes_s1,
-                c1_suffixes_s2,
-    };
+    private static string[][] c1_suffixes = new string[][] { Array.Empty<string>(), cx_suffixes_s1, c1_suffixes_s2 };
 
-    private static string[][] c2_suffixes = new string[][]
-    {
-                Array.Empty<string>(),
-                cx_suffixes_s1,
-                c2_suffixes_s2,
-    };
+    private static string[][] c2_suffixes = new string[][] { Array.Empty<string>(), cx_suffixes_s1, c2_suffixes_s2 };
 
     /// <summary> These prefixes use the specified index into the c2_suffixes list </summary>
     private static Dictionary<string, int> c2_prefix_suffix_override_map = new()
-            {
-              {"Eo",  2}, {"Oo", 2}, {"Eu", 2},
-              {"Ou",  2}, {"Ae", 2}, {"Ai", 2},
-              {"Eae", 2}, {"Ao", 2}, {"Au", 2},
-              {"Aae", 2}
-            };
+    {
+        { "Eo", 2 },
+        { "Oo", 2 },
+        { "Eu", 2 },
+        { "Ou", 2 },
+        { "Ae", 2 },
+        { "Ai", 2 },
+        { "Eae", 2 },
+        { "Ao", 2 },
+        { "Au", 2 },
+        { "Aae", 2 },
+    };
 
     /// <summary> These prefixes use the specified index into the c1_infixes list </summary>
     private static Dictionary<string, int> c1_prefix_infix_override_map = new()
-            {
-                {"Eo", 2}, {"Oo",  2}, {"Eu",  2}, {"Ou", 2},
-                {"Ae", 2}, {"Ai",  2}, {"Eae", 2}, {"Ao", 2},
-                {"Au", 2}, {"Aae", 2}, {"A",   2}, {"Io", 2},
-                {"E",  2}, {"I",   2}, {"O",   2}, {"Ea", 2},
-                {"U",  2}, {"Ee",  2}, {"Ei",  2}, {"Oe", 2}
-            };
+    {
+        { "Eo", 2 },
+        { "Oo", 2 },
+        { "Eu", 2 },
+        { "Ou", 2 },
+        { "Ae", 2 },
+        { "Ai", 2 },
+        { "Eae", 2 },
+        { "Ao", 2 },
+        { "Au", 2 },
+        { "Aae", 2 },
+        { "A", 2 },
+        { "Io", 2 },
+        { "E", 2 },
+        { "I", 2 },
+        { "O", 2 },
+        { "Ea", 2 },
+        { "U", 2 },
+        { "Ee", 2 },
+        { "Ei", 2 },
+        { "Oe", 2 },
+    };
 
     // The default run length for most prefixes
     private static int cx_prefix_length_default = 35;
 
     // Some prefixes use short run lengths; specify them here
     private static Dictionary<string, int> cx_prefix_length_overrides = new()
-            {
-              { "Eu",  31}, { "Sly",  4}, {  "Tz",  1}, { "Phl", 13},
-              { "Ae",  12}, { "Hyp", 25}, { "Kyl", 30}, { "Phr", 10},
-              { "Eae",  4}, {  "Ao",  5}, { "Scr", 24}, { "Shr", 11},
-              { "Fly", 20}, { "Pry",  3}, {"Hyph", 14}, {  "Py", 12},
-              { "Phyl", 8}, { "Tyr", 25}, { "Cry",  5}, { "Aae",  5},
-              { "Myc",  2}, { "Gyr", 10}, { "Myl", 12}, {"Lych",  3},
-              { "Myn", 10}, { "Myr",  4}, {  "Rh", 15}, {  "Wr", 31},
-              { "Sty",  4}, { "Spl", 16}, {  "Sk", 27}, {  "Sq",  7},
-              { "Pyth", 1}, { "Lyr", 10}, {  "Sw", 24}, { "Thr", 32},
-              { "Lys", 10}, {"Schr",  3}, {   "Z", 34},
-            };
+    {
+        { "Eu", 31 },
+        { "Sly", 4 },
+        { "Tz", 1 },
+        { "Phl", 13 },
+        { "Ae", 12 },
+        { "Hyp", 25 },
+        { "Kyl", 30 },
+        { "Phr", 10 },
+        { "Eae", 4 },
+        { "Ao", 5 },
+        { "Scr", 24 },
+        { "Shr", 11 },
+        { "Fly", 20 },
+        { "Pry", 3 },
+        { "Hyph", 14 },
+        { "Py", 12 },
+        { "Phyl", 8 },
+        { "Tyr", 25 },
+        { "Cry", 5 },
+        { "Aae", 5 },
+        { "Myc", 2 },
+        { "Gyr", 10 },
+        { "Myl", 12 },
+        { "Lych", 3 },
+        { "Myn", 10 },
+        { "Myr", 4 },
+        { "Rh", 15 },
+        { "Wr", 31 },
+        { "Sty", 4 },
+        { "Spl", 16 },
+        { "Sk", 27 },
+        { "Sq", 7 },
+        { "Pyth", 1 },
+        { "Lyr", 10 },
+        { "Sw", 24 },
+        { "Thr", 32 },
+        { "Lys", 10 },
+        { "Schr", 3 },
+        { "Z", 34 },
+    };
 
     private static Dictionary<string, int> c1_infix_length_overrides = new()
-            {
-                // Sequence 1
-                { "oi",  88 }, { "ue", 147 }, { "oa",  57 },
-                { "au", 119 }, { "ae",  12 }, { "oe",  39 },
-                // Sequence 2
-                { "dg",  31 }, { "tch", 20 }, { "wr",  31 },
-            };
-
+    {
+        // Sequence 1
+        { "oi", 88 },
+        { "ue", 147 },
+        { "oa", 57 },
+        { "au", 119 },
+        { "ae", 12 },
+        { "oe", 39 },
+        // Sequence 2
+        { "dg", 31 },
+        { "tch", 20 },
+        { "wr", 31 },
+    };
 
     #endregion
 
@@ -328,9 +852,13 @@ internal static class BoxelSectorNameResolver
         int offset = _c1_get_offset(pos);
         string? output;
         if (_get_c1_or_c2(offset) == 1)
+        {
             output = _c1_get_name(pos);
+        }
         else
+        {
             output = _c2_get_name(pos);
+        }
 
         // output will contain pre-formatted names
         return output;
@@ -380,12 +908,19 @@ internal static class BoxelSectorNameResolver
          *  Returns:
          *      The sector name as a string
          */
-        if (fragments == null) return null!;
+        if (fragments == null)
+        {
+            return null!;
+        }
 
         if (fragments.Count == 4 && cx_prefixes.Contains(fragments[2]))
+        {
             return $"{fragments[0]}{fragments[1]} {fragments[2]}{fragments[3]}";
+        }
         else
+        {
             return string.Join("", fragments);
+        }
     }
 
     /// <summary>
@@ -397,11 +932,17 @@ internal static class BoxelSectorNameResolver
         // Hand-authored sectors do not use a procedural sector class.
 
         if (frags.Count == 4 && cx_prefixes.Contains(frags[0]) && cx_prefixes.Contains(frags[2]))
+        {
             return 2;
+        }
         else if ((frags.Count == 3 || frags.Count == 4) && cx_prefixes.Contains(frags[0]))
+        {
             return 1;
+        }
         else
+        {
             return 0;
+        }
     }
 
     private static List<string> _get_suffixes(string sectorName, bool getAll = false)
@@ -453,9 +994,7 @@ internal static class BoxelSectorNameResolver
     /// </summary>
     private static int _get_prefix_run_length(string prefix)
     {
-        var len = cx_prefix_length_overrides.TryGetValue(prefix, out var value)
-            ? value
-            : cx_prefix_length_default;
+        var len = cx_prefix_length_overrides.TryGetValue(prefix, out var value) ? value : cx_prefix_length_default;
         return len;
     }
 
@@ -495,16 +1034,26 @@ internal static class BoxelSectorNameResolver
         if (cx_prefixes.Contains(frags[^1]))
         {
             if (c1_prefix_infix_override_map.ContainsKey(frags[^1]))
+            {
                 return c1_infixes[c1_prefix_infix_override_map[frags[^1]]];
+            }
             else
+            {
                 return c1_infixes[1];
+            }
         }
         else if (c1_infixes[1].Contains(frags[^1]))
+        {
             return c1_infixes[2];
+        }
         else if (c1_infixes[2].Contains(frags[^1]))
+        {
             return c1_infixes[1];
+        }
         else
+        {
             return Array.Empty<string>();
+        }
     }
 
     /// <summary>
@@ -512,9 +1061,7 @@ internal static class BoxelSectorNameResolver
     /// </summary>
     private static int _c1_get_infix_run_length(string frag)
     {
-        var def_len = c1_infixes_s1.Contains(frag)
-            ? c1_infix_s1_length_default
-            : c1_infix_s2_length_default;
+        var def_len = c1_infixes_s1.Contains(frag) ? c1_infix_s1_length_default : c1_infix_s2_length_default;
 
         var len = c1_infix_length_overrides.GetValueOrDefault(frag, def_len);
         return len;
@@ -526,9 +1073,13 @@ internal static class BoxelSectorNameResolver
     private static int _c1_get_infix_total_run_length(string frag)
     {
         if (c1_infixes_s1.Contains(frag))
+        {
             return c1_infix_s1_total_run_length;
+        }
         else
+        {
             return c1_infix_s2_total_run_length;
+        }
     }
 
     /// <summary>
@@ -560,7 +1111,9 @@ internal static class BoxelSectorNameResolver
                 // from individual suffix runs up to fragment3 runs and then to fragment2 runs
 
                 // Check which fragment3 run we're on, and jump us up by that many total run lengths if not the first
-                suf_offset += (sufs.IndexOf(frags[^1]) / _c1_get_infix_run_length(frags[2])) * _c1_get_infix_total_run_length(frags[2]);
+                suf_offset +=
+                    (sufs.IndexOf(frags[^1]) / _c1_get_infix_run_length(frags[2]))
+                    * _c1_get_infix_total_run_length(frags[2]);
 
                 // STEP 1.5: Take our current offset from "suffix space" to "fragment3 space"
                 // Divide by the current fragment3's run length
@@ -578,7 +1131,8 @@ internal static class BoxelSectorNameResolver
             // STEP 2: Take our current offset from "fragment3 space" to "fragment2 space"
             // Divide by the current fragment2's run length
             // Remember the offset that we're at on the current f3-run
-            int f2_offset, f2_offset_mod;
+            int f2_offset,
+                f2_offset_mod;
             (f2_offset, f2_offset_mod) = Divmod(f3_offset, _c1_get_infix_run_length(frags[1]));
             // Multiply by the total run length for this series of fragment2s
             f2_offset *= _c1_get_infix_total_run_length(frags[1]);
@@ -589,7 +1143,8 @@ internal static class BoxelSectorNameResolver
 
             // Divide by the current prefix's run length, this is now how many iterations of the full 3037 we should have passed over
             // Also remember the current offset's position within a prefix run
-            int offset, offset_mod;
+            int offset,
+                offset_mod;
             (offset, offset_mod) = Divmod(f2_offset, _get_prefix_run_length(frags[0]));
             // Now multiply by the total run length (3037) to get the actual offset of this run
             offset *= cx_prefix_total_run_length;
@@ -615,7 +1170,8 @@ internal static class BoxelSectorNameResolver
         int offset = _c1_get_offset(pos);
 
         // Get the current prefix run we're on, and keep the remaining offset
-        int prefixCnt, curOffset;
+        int prefixCnt,
+            curOffset;
         (prefixCnt, curOffset) = Divmod(offset, cx_prefix_total_run_length);
 
         // Work out which prefix we're currently within
@@ -632,7 +1188,6 @@ internal static class BoxelSectorNameResolver
         int infix1Cnt;
         (infix1Cnt, curOffset) = Divmod(prefixCnt * _get_prefix_run_length(prefix) + curOffset, infix1TotalLen);
 
-
         // Find which infix1 we're currently in
         var infix1 = _get_entry_from_offset(curOffset, infix1s, _c1_infix_offsets);
 
@@ -645,7 +1200,6 @@ internal static class BoxelSectorNameResolver
 
         // Get the index of the next entry in that list, in infix1 space
         int nextIdx = (infix1RunLen * infix1Cnt) + curOffset;
-
 
         // Start creating our output
         var frags = new List<string> { prefix, infix1 };
@@ -669,7 +1223,8 @@ internal static class BoxelSectorNameResolver
 
             // Recalculate the next system index based on the infix2 data
             int infix2RunLen = _c1_get_infix_run_length(infix2);
-            sufs = _get_suffixes(new List<string> { prefix, infix1, infix2 }, true); nextIdx = (infix2RunLen * infix2Cnt) + curOffset;
+            sufs = _get_suffixes(new List<string> { prefix, infix1, infix2 }, true);
+            nextIdx = (infix2RunLen * infix2Cnt) + curOffset;
 
             // Add our infix2 to the output
             frags.Add(infix2);
@@ -768,10 +1323,14 @@ internal static class BoxelSectorNameResolver
         int output = 0;
 
         for (int i = 0; i <= maxbits / 2; i++)
+        {
             output |= ((val1 >> i) & 1) << (i * 2);
+        }
 
         for (int i = 0; i <= maxbits / 2; i++)
+        {
             output |= ((val2 >> i) & 1) << (i * 2 + 1);
+        }
 
         return output;
     }
@@ -782,10 +1341,14 @@ internal static class BoxelSectorNameResolver
         int out2 = 0;
 
         for (int i = 0; i < maxbits; i += 2)
+        {
             out1 |= ((val >> i) & 1) << (i / 2);
+        }
 
         for (int i = 1; i < maxbits; i += 2)
+        {
             out2 |= ((val >> i) & 1) << (i / 2);
+        }
 
         return (out1, out2);
     }
@@ -802,8 +1365,7 @@ internal static class BoxelSectorNameResolver
     {
         return string.Join(
             ' ',
-            value.Split(' ').Select(
-                word => char.ToUpperInvariant(word[0])
-                    + word[1..].ToLowerInvariant()));
+            value.Split(' ').Select(word => char.ToUpperInvariant(word[0]) + word[1..].ToLowerInvariant())
+        );
     }
 }

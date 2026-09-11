@@ -21,9 +21,7 @@ public sealed class DockToDockLogService
     private string? shipName;
     private double? shipMaximumJump;
 
-    public DockToDockLogService(
-        string outputPath,
-        TimeProvider? timeProvider = null)
+    public DockToDockLogService(string outputPath, TimeProvider? timeProvider = null)
     {
         writer = new DockToDockCsvWriter(outputPath);
         this.timeProvider = timeProvider ?? TimeProvider.System;
@@ -42,7 +40,8 @@ public sealed class DockToDockLogService
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         CargoSnapshot? currentCargo,
         bool enabled,
-        bool isBootstrapRead)
+        bool isBootstrapRead
+    )
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
         cargo = currentCargo ?? cargo;
@@ -52,9 +51,7 @@ public sealed class DockToDockLogService
             ApplyIdentity(journalEvent);
             ApplyLocation(journalEvent);
 
-            if (!isBootstrapRead
-                && enabled
-                && ApplyTripEvent(journalEvent) is { } entry)
+            if (!isBootstrapRead && enabled && ApplyTripEvent(journalEvent) is { } entry)
             {
                 completed.Add(entry);
             }
@@ -83,15 +80,10 @@ public sealed class DockToDockLogService
                 writer.Append(entry);
                 written++;
             }
-            catch (Exception exception) when (
-                exception is IOException
-                    or UnauthorizedAccessException
-                    or InvalidDataException)
+            catch (Exception exception)
+                when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
             {
-                return new DockToDockApplyResult(
-                    written,
-                    completed,
-                    exception.Message);
+                return new DockToDockApplyResult(written, completed, exception.Message);
             }
         }
 
@@ -140,10 +132,7 @@ public sealed class DockToDockLogService
         var docked = lastDocked?.MarketId == marketId ? lastDocked : null;
         var cargoCounts = (cargo?.Inventory ?? [])
             .Where(item => item.Count > 0)
-            .ToDictionary(
-                item => item.Name,
-                item => item.Count,
-                StringComparer.OrdinalIgnoreCase);
+            .ToDictionary(item => item.Name, item => item.Count, StringComparer.OrdinalIgnoreCase);
         return new DockToDockTrip(
             GetEventTime(journalEvent),
             new DockToDockStartLocation
@@ -152,24 +141,16 @@ public sealed class DockToDockLogService
                 SystemAddress = docked?.SystemAddress ?? systemAddress,
                 BodyId = docked?.BodyId ?? bodyId,
                 BodyName = docked?.BodyName ?? bodyName,
-                DistanceFromStarLs = docked?.DistanceFromStarLs
-                    ?? bodyDistanceLs,
+                DistanceFromStarLs = docked?.DistanceFromStarLs ?? bodyDistanceLs,
                 MarketId = marketId,
-                StationName = GetString(root, "StationName")
-                    ?? docked?.StationName
-                    ?? "?",
+                StationName = GetString(root, "StationName") ?? docked?.StationName ?? "?",
                 StationType = docked?.StationType ?? "?",
             },
-            new DockToDockShipContext(
-                shipType ?? "?",
-                shipName ?? "?",
-                shipMaximumJump,
-                cargoCounts));
+            new DockToDockShipContext(shipType ?? "?", shipName ?? "?", shipMaximumJump, cargoCounts)
+        );
     }
 
-    private DockToDockLogEntry CompleteTrip(
-        DockToDockTrip trip,
-        JournalEventEnvelope journalEvent)
+    private DockToDockLogEntry CompleteTrip(DockToDockTrip trip, JournalEventEnvelope journalEvent)
     {
         var root = journalEvent.Payload;
         var endedAt = GetEventTime(journalEvent);
@@ -178,12 +159,8 @@ public sealed class DockToDockLogService
             StartedAt = trip.StartedAt,
             EndedAt = endedAt,
             Duration = endedAt - trip.StartedAt,
-            EgressDuration = trip.EgressEndedAt is { } egress
-                ? egress - trip.StartedAt
-                : TimeSpan.Zero,
-            IngressDuration = trip.IngressStartedAt is { } ingress
-                ? endedAt - ingress
-                : TimeSpan.Zero,
+            EgressDuration = trip.EgressEndedAt is { } egress ? egress - trip.StartedAt : TimeSpan.Zero,
+            IngressDuration = trip.IngressStartedAt is { } ingress ? endedAt - ingress : TimeSpan.Zero,
             Jumps = trip.Jumps,
             Distance = trip.Distance,
             StartSystem = trip.StartSystem,
@@ -202,8 +179,7 @@ public sealed class DockToDockLogService
             EndMarketId = GetInt64(root, "MarketID") ?? -1,
             EndStationName = GetString(root, "StationName") ?? "?",
             EndStationType = GetString(root, "StationType") ?? "?",
-            EndDistanceFromStarLs = GetDouble(root, "DistFromStarLS")
-                ?? bodyDistanceLs,
+            EndDistanceFromStarLs = GetDouble(root, "DistFromStarLS") ?? bodyDistanceLs,
             ShipType = trip.ShipType,
             ShipName = trip.ShipName,
             ShipMaximumJump = trip.ShipMaximumJump,
@@ -219,17 +195,13 @@ public sealed class DockToDockLogService
             case "LoadGame":
             case "Loadout":
                 shipType = GetString(root, "Ship") ?? shipType;
-                shipName = GetString(root, "ShipName")
-                    ?? GetString(root, "ShipIdent")
-                    ?? shipName;
-                shipMaximumJump = GetDouble(root, "MaxJumpRange")
-                    ?? shipMaximumJump;
+                shipName = GetString(root, "ShipName") ?? GetString(root, "ShipIdent") ?? shipName;
+                shipMaximumJump = GetDouble(root, "MaxJumpRange") ?? shipMaximumJump;
                 break;
 
             case "ShipyardSwap":
                 shipType = GetString(root, "ShipType") ?? shipType;
-                shipName = GetString(root, "ShipName")
-                    ?? shipName;
+                shipName = GetString(root, "ShipName") ?? shipName;
                 break;
         }
     }
@@ -245,8 +217,7 @@ public sealed class DockToDockLogService
             case "SupercruiseExit":
                 systemName = GetString(root, "StarSystem") ?? systemName;
                 systemAddress = GetInt64(root, "SystemAddress") ?? systemAddress;
-                if (GetString(root, "BodyType") == "Planet"
-                    || journalEvent.EventName == "SupercruiseExit")
+                if (GetString(root, "BodyType") == "Planet" || journalEvent.EventName == "SupercruiseExit")
                 {
                     bodyId = GetInt32(root, "BodyID") ?? bodyId;
                     bodyName = GetString(root, "Body") ?? bodyName;
@@ -268,8 +239,7 @@ public sealed class DockToDockLogService
             case "Scan":
                 if (GetInt32(root, "BodyID") == bodyId)
                 {
-                    bodyDistanceLs = GetDouble(root, "DistanceFromArrivalLS")
-                        ?? bodyDistanceLs;
+                    bodyDistanceLs = GetDouble(root, "DistanceFromArrivalLS") ?? bodyDistanceLs;
                 }
 
                 break;
@@ -285,8 +255,7 @@ public sealed class DockToDockLogService
             SystemAddress = GetInt64(root, "SystemAddress") ?? systemAddress,
             BodyId = bodyId,
             BodyName = bodyName,
-            DistanceFromStarLs = GetDouble(root, "DistFromStarLS")
-                ?? bodyDistanceLs,
+            DistanceFromStarLs = GetDouble(root, "DistFromStarLS") ?? bodyDistanceLs,
             MarketId = GetInt64(root, "MarketID") ?? -1,
             StationName = GetString(root, "StationName") ?? "?",
             StationType = GetString(root, "StationType") ?? "?",
@@ -300,38 +269,40 @@ public sealed class DockToDockLogService
 
     private static string? GetString(JsonElement root, string name)
     {
-        return root.TryGetProperty(name, out var value)
-            && value.ValueKind == JsonValueKind.String
-                ? value.GetString()
-                : null;
+        return root.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String
+            ? value.GetString()
+            : null;
     }
 
     private static long? GetInt64(JsonElement root, string name)
     {
-        return root.TryGetProperty(name, out var value)
+        return
+            root.TryGetProperty(name, out var value)
             && value.ValueKind == JsonValueKind.Number
             && value.TryGetInt64(out var result)
-                ? result
-                : null;
+            ? result
+            : null;
     }
 
     private static int? GetInt32(JsonElement root, string name)
     {
-        return root.TryGetProperty(name, out var value)
+        return
+            root.TryGetProperty(name, out var value)
             && value.ValueKind == JsonValueKind.Number
             && value.TryGetInt32(out var result)
-                ? result
-                : null;
+            ? result
+            : null;
     }
 
     private static double? GetDouble(JsonElement root, string name)
     {
-        return root.TryGetProperty(name, out var value)
+        return
+            root.TryGetProperty(name, out var value)
             && value.ValueKind == JsonValueKind.Number
             && value.TryGetDouble(out var result)
             && double.IsFinite(result)
-                ? result
-                : null;
+            ? result
+            : null;
     }
 
     private sealed class DockedLocation
@@ -376,12 +347,14 @@ public sealed class DockToDockLogService
         string ShipType,
         string ShipName,
         double? ShipMaximumJump,
-        IReadOnlyDictionary<string, int> Cargo);
+        IReadOnlyDictionary<string, int> Cargo
+    );
 
     private sealed class DockToDockTrip(
         DateTimeOffset startedAt,
         DockToDockStartLocation start,
-        DockToDockShipContext ship)
+        DockToDockShipContext ship
+    )
     {
         public DateTimeOffset StartedAt { get; } = startedAt;
         public string? StartSystem { get; } = start.SystemName;
@@ -412,36 +385,55 @@ public sealed class DockToDockCsvWriter
 
     private static readonly string[] Columns =
     [
-        "startDate", "startTime", "endDate", "endTime", "duration",
-        "durationEgress", "durationIngress", "jumps", "distance",
-        "startSystem", "startAddress", "startBodyNum", "startBodyName",
-        "startDistFromStartLs", "startMarketId", "startStationName",
-        "startStationType", "interdicted", "endSystem", "endAddress",
-        "endBodyNum", "endBodyName", "endMarketId", "endStationName",
-        "endStationType", "endDistFromStartLs", "shipType", "shipName",
-        "shipMaxJump", "cargo",
+        "startDate",
+        "startTime",
+        "endDate",
+        "endTime",
+        "duration",
+        "durationEgress",
+        "durationIngress",
+        "jumps",
+        "distance",
+        "startSystem",
+        "startAddress",
+        "startBodyNum",
+        "startBodyName",
+        "startDistFromStartLs",
+        "startMarketId",
+        "startStationName",
+        "startStationType",
+        "interdicted",
+        "endSystem",
+        "endAddress",
+        "endBodyNum",
+        "endBodyName",
+        "endMarketId",
+        "endStationName",
+        "endStationType",
+        "endDistFromStartLs",
+        "shipType",
+        "shipName",
+        "shipMaxJump",
+        "cargo",
     ];
 
     public DockToDockCsvWriter(string outputPath)
     {
         OutputPath = Path.GetFullPath(
             string.IsNullOrWhiteSpace(outputPath)
-                ? throw new ArgumentException(
-                    "A dock-to-dock CSV path is required.",
-                    nameof(outputPath))
-                : outputPath);
+                ? throw new ArgumentException("A dock-to-dock CSV path is required.", nameof(outputPath))
+                : outputPath
+        );
     }
 
     public string OutputPath { get; }
 
     public static string GetDefaultPath()
     {
-        var documents = Environment.GetFolderPath(
-            Environment.SpecialFolder.MyDocuments);
+        var documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         if (string.IsNullOrWhiteSpace(documents))
         {
-            documents = Environment.GetFolderPath(
-                Environment.SpecialFolder.UserProfile);
+            documents = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         }
 
         return Path.Combine(documents, FileName);
@@ -450,32 +442,25 @@ public sealed class DockToDockCsvWriter
     public void Append(DockToDockLogEntry entry)
     {
         ArgumentNullException.ThrowIfNull(entry);
-        var directory = Path.GetDirectoryName(OutputPath)
-            ?? throw new InvalidOperationException(
-                "The dock-to-dock CSV path has no directory.");
+        var directory =
+            Path.GetDirectoryName(OutputPath)
+            ?? throw new InvalidOperationException("The dock-to-dock CSV path has no directory.");
         Directory.CreateDirectory(directory);
         ValidateExistingFile();
-        var includeHeader = !File.Exists(OutputPath)
-            || new FileInfo(OutputPath).Length == 0;
-        var text = (includeHeader
-                ? string.Join(',', Columns) + "\r\n"
-                : string.Empty)
+        var includeHeader = !File.Exists(OutputPath) || new FileInfo(OutputPath).Length == 0;
+        var text =
+            (includeHeader ? string.Join(',', Columns) + "\r\n" : string.Empty)
             + string.Join(',', CreateValues(entry).Select(Escape))
             + "\r\n";
         var bytes = new UTF8Encoding(false).GetBytes(text);
-        using var stream = new FileStream(
-            OutputPath,
-            FileMode.Append,
-            FileAccess.Write,
-            FileShare.Read);
+        using var stream = new FileStream(OutputPath, FileMode.Append, FileAccess.Write, FileShare.Read);
         stream.Write(bytes);
         stream.Flush(true);
     }
 
     private void ValidateExistingFile()
     {
-        if (!File.Exists(OutputPath)
-            || new FileInfo(OutputPath).Length == 0)
+        if (!File.Exists(OutputPath) || new FileInfo(OutputPath).Length == 0)
         {
             return;
         }
@@ -484,28 +469,29 @@ public sealed class DockToDockCsvWriter
             OutputPath,
             FileMode.Open,
             FileAccess.Read,
-            FileShare.ReadWrite | FileShare.Delete);
+            FileShare.ReadWrite | FileShare.Delete
+        );
         using var reader = new StreamReader(
             stream,
             Encoding.UTF8,
             detectEncodingFromByteOrderMarks: true,
             bufferSize: 1024,
-            leaveOpen: true);
+            leaveOpen: true
+        );
         var header = reader.ReadLine();
-        if (!string.Equals(
-                header,
-                string.Join(',', Columns),
-                StringComparison.Ordinal))
+        if (!string.Equals(header, string.Join(',', Columns), StringComparison.Ordinal))
         {
             throw new InvalidDataException(
-                "The existing dock-to-dock CSV header is not compatible; it was left unchanged.");
+                "The existing dock-to-dock CSV header is not compatible; it was left unchanged."
+            );
         }
 
         stream.Seek(-1, SeekOrigin.End);
         if (stream.ReadByte() is not ('\n' or '\r'))
         {
             throw new InvalidDataException(
-                "The existing dock-to-dock CSV ends with an incomplete row; it was left unchanged.");
+                "The existing dock-to-dock CSV ends with an incomplete row; it was left unchanged."
+            );
         }
     }
 
@@ -526,9 +512,7 @@ public sealed class DockToDockCsvWriter
             entry.StartAddress?.ToString(CultureInfo.InvariantCulture) ?? "-1",
             entry.StartBodyId?.ToString(CultureInfo.InvariantCulture) ?? "-1",
             entry.StartBodyName ?? "?",
-            entry.StartDistanceFromStarLs?.ToString(
-                HighPrecisionNumberFormat,
-                CultureInfo.InvariantCulture) ?? "-1",
+            entry.StartDistanceFromStarLs?.ToString(HighPrecisionNumberFormat, CultureInfo.InvariantCulture) ?? "-1",
             entry.StartMarketId.ToString(CultureInfo.InvariantCulture),
             entry.StartStationName,
             entry.StartStationType,
@@ -540,14 +524,10 @@ public sealed class DockToDockCsvWriter
             entry.EndMarketId.ToString(CultureInfo.InvariantCulture),
             entry.EndStationName,
             entry.EndStationType,
-            entry.EndDistanceFromStarLs?.ToString(
-                HighPrecisionNumberFormat,
-                CultureInfo.InvariantCulture) ?? "-1",
+            entry.EndDistanceFromStarLs?.ToString(HighPrecisionNumberFormat, CultureInfo.InvariantCulture) ?? "-1",
             entry.ShipType,
             entry.ShipName,
-            entry.ShipMaximumJump?.ToString(
-                HighPrecisionNumberFormat,
-                CultureInfo.InvariantCulture) ?? "-1",
+            entry.ShipMaximumJump?.ToString(HighPrecisionNumberFormat, CultureInfo.InvariantCulture) ?? "-1",
             JsonSerializer.Serialize(entry.Cargo),
         ];
     }
@@ -560,9 +540,7 @@ public sealed class DockToDockCsvWriter
 
     private static string Escape(string value)
     {
-        return value.IndexOfAny([',', '"', '\r', '\n']) < 0
-            ? value
-            : '"' + value.Replace("\"", "\"\"") + '"';
+        return value.IndexOfAny([',', '"', '\r', '\n']) < 0 ? value : '"' + value.Replace("\"", "\"\"") + '"';
     }
 }
 
@@ -625,10 +603,7 @@ public sealed class DockToDockLogEntry
     public required IReadOnlyDictionary<string, int> Cargo { get; init; }
 }
 
-public sealed record DockToDockApplyResult(
-    int WrittenCount,
-    IReadOnlyList<DockToDockLogEntry> Entries,
-    string? Error)
+public sealed record DockToDockApplyResult(int WrittenCount, IReadOnlyList<DockToDockLogEntry> Entries, string? Error)
 {
     public bool Written => WrittenCount > 0;
 }

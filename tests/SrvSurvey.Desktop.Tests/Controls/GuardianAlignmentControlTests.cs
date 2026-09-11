@@ -30,13 +30,10 @@ public sealed class GuardianAlignmentControlTests
 
         foreach (var (name, hash) in expected)
         {
-            var uri = new Uri(
-                $"avares://SrvSurvey.Desktop/Assets/GuardianGuidance/{name}-heading-guide.png");
+            var uri = new Uri($"avares://SrvSurvey.Desktop/Assets/GuardianGuidance/{name}-heading-guide.png");
             Assert.True(AssetLoader.Exists(uri), name);
             using var stream = AssetLoader.Open(uri);
-            Assert.Equal(
-                hash,
-                Convert.ToHexString(SHA256.HashData(stream)).ToLowerInvariant());
+            Assert.Equal(hash, Convert.ToHexString(SHA256.HashData(stream)).ToLowerInvariant());
         }
     }
 
@@ -69,8 +66,7 @@ public sealed class GuardianAlignmentControlTests
                 {
                     using var stream = new MemoryStream();
                     frame.Save(stream, PngBitmapEncoderOptions.Default);
-                    structureHashes.Add(Convert.ToHexString(
-                        SHA256.HashData(stream.ToArray())));
+                    structureHashes.Add(Convert.ToHexString(SHA256.HashData(stream.ToArray())));
                 }
             }
             finally

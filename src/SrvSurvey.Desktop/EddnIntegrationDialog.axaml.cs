@@ -13,10 +13,10 @@ public sealed partial class EddnIntegrationDialog : Window
         InitializeComponent();
     }
 
-    public EddnIntegrationDialog(NetworkPrivacyViewModel networkPrivacy) : this()
+    public EddnIntegrationDialog(NetworkPrivacyViewModel networkPrivacy)
+        : this()
     {
-        this.networkPrivacy = networkPrivacy
-            ?? throw new ArgumentNullException(nameof(networkPrivacy));
+        this.networkPrivacy = networkPrivacy ?? throw new ArgumentNullException(nameof(networkPrivacy));
         EddnUploadEnabledCheckBox.IsChecked = networkPrivacy.EddnUploadEnabled;
     }
 

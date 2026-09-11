@@ -24,16 +24,13 @@ public sealed class BiologyCriteriaCatalogTests
         var any = BiologyCriteriaClause.Parse("body [HMC,RockyIce]");
         var all = BiologyCriteriaClause.Parse("mats &[Iron,Nickel]");
         var none = BiologyCriteriaClause.Parse("regions ![CentreTop]");
-        var composition = BiologyCriteriaClause.Parse(
-            "atmosComp [Argon >= 100 | Nitrogen >= 0.5]");
+        var composition = BiologyCriteriaClause.Parse("atmosComp [Argon >= 100 | Nitrogen >= 0.5]");
         var comment = BiologyCriteriaClause.Parse("# observation count");
 
         Assert.Equal(BiologyCriteriaOperator.Range, range.Operator);
         Assert.Equal(0.1, range.Minimum);
         Assert.Equal(0.3, range.Maximum);
-        Assert.Equal(
-            ["High metal content ", "Rocky ice "],
-            any.Values);
+        Assert.Equal(["High metal content ", "Rocky ice "], any.Values);
         Assert.Equal(BiologyCriteriaOperator.All, all.Operator);
         Assert.Equal(BiologyCriteriaOperator.Not, none.Operator);
         Assert.Equal(["1", "3", "7"], none.Values);
@@ -53,10 +50,10 @@ public sealed class BiologyCriteriaCatalogTests
               "useCommonChildren": true,
               "children": [ { "species": "One" } ]
             }
-            """);
+            """
+        );
 
-        var error = Assert.Throws<InvalidDataException>(
-            () => BiologyCriteriaCatalog.Load(stream));
+        var error = Assert.Throws<InvalidDataException>(() => BiologyCriteriaCatalog.Load(stream));
 
         Assert.Contains("both children and useCommonChildren", error.Message);
     }
@@ -67,10 +64,10 @@ public sealed class BiologyCriteriaCatalogTests
         using var stream = JsonStream(
             """
             { "genus": "Test", "query": [ "regions [UnknownArm]" ] }
-            """);
+            """
+        );
 
-        Assert.Throws<InvalidDataException>(
-            () => BiologyCriteriaCatalog.Load(stream));
+        Assert.Throws<InvalidDataException>(() => BiologyCriteriaCatalog.Load(stream));
     }
 
     private static MemoryStream JsonStream(string json)

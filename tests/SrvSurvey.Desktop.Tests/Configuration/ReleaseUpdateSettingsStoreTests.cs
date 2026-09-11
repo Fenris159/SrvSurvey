@@ -6,7 +6,8 @@ public sealed class ReleaseUpdateSettingsStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-release-update-settings-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-release-update-settings-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void MissingSettingOptsIntoDevelopmentReleases()
@@ -42,7 +43,6 @@ public sealed class ReleaseUpdateSettingsStoreTests : IDisposable
 
     private ReleaseUpdateSettingsStore CreateStore()
     {
-        return new ReleaseUpdateSettingsStore(
-            Path.Combine(temporaryDirectory, "ui-settings.json"));
+        return new ReleaseUpdateSettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json"));
     }
 }

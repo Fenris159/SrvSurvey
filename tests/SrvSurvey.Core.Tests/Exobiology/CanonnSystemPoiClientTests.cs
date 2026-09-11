@@ -34,14 +34,11 @@ public sealed class CanonnSystemPoiClientTests
                 }
               ]
             }
-            """);
-        var client = new CanonnSystemPoiClient(
-            new HttpClient(handler),
-            new Uri("https://example.test/query"));
+            """
+        );
+        var client = new CanonnSystemPoiClient(new HttpClient(handler), new Uri("https://example.test/query"));
 
-        var result = await client.GetAsync(
-            " Shinrarta Dezhra ",
-            " CMDR Test ");
+        var result = await client.GetAsync(" Shinrarta Dezhra ", " CMDR Test ");
 
         Assert.Equal("Shinrarta Dezhra", result.SystemName);
         Assert.Collection(
@@ -59,10 +56,12 @@ public sealed class CanonnSystemPoiClientTests
                 Assert.Equal(2370401, signal.EntryId);
                 Assert.Equal(12.5, signal.Location.Latitude);
                 Assert.False(signal.IsCommanderScan);
-            });
+            }
+        );
         Assert.Equal(
             "https://example.test/query/getSystemPoi?system=Shinrarta%20Dezhra&odyssey=Y&cmdr=CMDR%20Test",
-            handler.RequestUri?.AbsoluteUri);
+            handler.RequestUri?.AbsoluteUri
+        );
     }
 
     [Fact]
@@ -80,10 +79,9 @@ public sealed class CanonnSystemPoiClientTests
                 {"body":"A 1","entryid":5,"hud_category":"biology","latitude":"1","longitude":"2"}
               ]
             }
-            """);
-        var client = new CanonnSystemPoiClient(
-            new HttpClient(handler),
-            new Uri("https://example.test/"));
+            """
+        );
+        var client = new CanonnSystemPoiClient(new HttpClient(handler), new Uri("https://example.test/"));
 
         var result = await client.GetAsync("System", string.Empty);
 
@@ -95,14 +93,10 @@ public sealed class CanonnSystemPoiClientTests
     [Fact]
     public async Task GetAsyncRejectsResponseForAnotherSystem()
     {
-        var handler = new RecordingHandler(
-            """{"system":"Other","codex":[]}""");
-        var client = new CanonnSystemPoiClient(
-            new HttpClient(handler),
-            new Uri("https://example.test/"));
+        var handler = new RecordingHandler("""{"system":"Other","codex":[]}""");
+        var client = new CanonnSystemPoiClient(new HttpClient(handler), new Uri("https://example.test/"));
 
-        var exception = await Assert.ThrowsAsync<InvalidDataException>(
-            () => client.GetAsync("Expected", string.Empty));
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(() => client.GetAsync("Expected", string.Empty));
 
         Assert.Contains("Other", exception.Message);
         Assert.Contains("Expected", exception.Message);
@@ -114,16 +108,16 @@ public sealed class CanonnSystemPoiClientTests
 
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
             RequestUri = request.RequestUri;
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(
-                    payload,
-                    Encoding.UTF8,
-                    "application/json"),
-            });
+            return Task.FromResult(
+                new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(payload, Encoding.UTF8, "application/json"),
+                }
+            );
         }
     }
 }

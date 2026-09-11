@@ -22,10 +22,14 @@ The supported solution is `SrvSurvey.slnx` and requires the .NET
 10 SDK. Release validation uses:
 
 ```console
+dotnet tool restore
 dotnet restore SrvSurvey.slnx
+dotnet csharpier check .
 dotnet build SrvSurvey.slnx --configuration Release --no-restore
 dotnet test SrvSurvey.slnx --configuration Release --no-build --no-restore
 ```
+
+Run `dotnet csharpier format .` to format C# before committing.
 
 The Docker build runs the same solution build and test before exporting a
 self-contained `linux-x64` publish directory. GitHub Actions additionally

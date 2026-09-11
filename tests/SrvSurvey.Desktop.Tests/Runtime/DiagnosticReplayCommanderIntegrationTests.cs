@@ -22,23 +22,24 @@ public sealed class DiagnosticReplayCommanderIntegrationTests
             [
                 "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Commander\",\"Name\":\"Imported Cmdr\",\"FID\":\"F987654\"}",
                 "{\"timestamp\":\"2026-08-21T18:00:01Z\",\"event\":\"LoadGame\",\"Commander\":\"Imported Cmdr\",\"FID\":\"F987654\",\"Odyssey\":true}",
-            ]);
+            ]
+        );
         var session = await new ReplaySessionManager().ImportAsync(
             sourcePath,
             Path.Combine(temp.Path, "managed"),
-            CancellationToken.None);
-        var context = await DiagnosticReplayContext.LoadAsync(
-            session.ManifestPath,
-            CancellationToken.None);
+            CancellationToken.None
+        );
+        var context = await DiagnosticReplayContext.LoadAsync(session.ManifestPath, CancellationToken.None);
         using var blockedNetwork = DiagnosticReplayContext.CreateNetworkClient();
         using var viewModel = MainWindowViewModelTestBuilder.Create(
             context.JournalDirectory,
-            builder => builder
-                .WithAppDataPaths(context.AppDataPaths)
-                .WithExternalNetworkClient(blockedNetwork)
-                .WithFrontierProfile(new CommanderProfileViewModel(
-                    new DiagnosticReplayFrontierAccountService()))
-                .AsDiagnosticReplay("External effects disabled."));
+            builder =>
+                builder
+                    .WithAppDataPaths(context.AppDataPaths)
+                    .WithExternalNetworkClient(blockedNetwork)
+                    .WithFrontierProfile(new CommanderProfileViewModel(new DiagnosticReplayFrontierAccountService()))
+                    .AsDiagnosticReplay("External effects disabled.")
+        );
         var player = new JournalReplayPlayer(session);
         Assert.NotEqual("Imported Cmdr", viewModel.CommanderName);
         _ = await player.StepAsync(CancellationToken.None);
@@ -51,10 +52,7 @@ public sealed class DiagnosticReplayCommanderIntegrationTests
         Assert.Equal("F987654", viewModel.FrontierId);
         Assert.Equal(session.DataDirectory, viewModel.AppDataPaths.DataDirectory);
         Assert.Equal("Personal Cmdr", await File.ReadAllTextAsync(personalMarker));
-        Assert.DoesNotContain(
-            personalData,
-            viewModel.ProfileDataDirectory,
-            StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(personalData, viewModel.ProfileDataDirectory, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -72,59 +70,61 @@ public sealed class DiagnosticReplayCommanderIntegrationTests
                 "{\"timestamp\":\"2026-08-21T17:50:02Z\",\"event\":\"LoadGame\",\"Commander\":\"Imported Cmdr\",\"FID\":\"F987654\",\"Odyssey\":true}",
                 "{\"timestamp\":\"2026-08-21T17:50:03Z\",\"event\":\"Location\",\"StarSystem\":\"Replay System\",\"SystemAddress\":123}",
                 "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Music\",\"MusicTrack\":\"Exploration\"}",
-            ]);
-        using (var store = new CompanionTimelineStore(
-                   history,
-                   new FixedTimeProvider(
-                       DateTimeOffset.Parse("2026-08-21T18:01:00Z"))))
+            ]
+        );
+        using (
+            var store = new CompanionTimelineStore(
+                history,
+                new FixedTimeProvider(DateTimeOffset.Parse("2026-08-21T18:01:00Z"))
+            )
+        )
         {
             var timestamp = DateTimeOffset.Parse("2026-08-21T17:59:00Z");
-            await store.AppendAsync(new JournalMonitorUpdate(
-                null,
-                [],
-                new EliteStatus
-                {
-                    Timestamp = timestamp,
-                    EventName = "Status",
-                    Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
-                    Latitude = 12.3,
-                    Longitude = 45.6,
-                    Heading = 90,
-                    BodyName = "Replay Body",
-                },
-                new NavRouteSnapshot(
-                    timestamp,
-                    "NavRoute",
-                    [new NavRouteEntry(
-                        "Replay Destination",
-                        456,
-                        new GalacticCoordinate(4, 5, 6),
-                        "G")]),
-                new CargoSnapshot(
-                    timestamp,
-                    "Cargo",
-                    "Ship",
-                    2,
-                    [new CargoItem("ancientorb", "Ancient Orb", 2, 0)]),
-                new MarketSnapshot(
-                    timestamp,
-                    "Market",
-                    789,
-                    "Replay Station",
-                    "Coriolis",
-                    "all",
-                    "Replay System",
-                    []),
-                [],
-                IsBootstrapRead: false,
-                new ShipLockerSnapshot(
-                    timestamp,
-                    "ShipLocker",
-                    [new ShipLockerItem(
-                        "Items",
-                        "healthpack",
-                        "Health Pack",
-                        3)])));
+            await store.AppendAsync(
+                new JournalMonitorUpdate(
+                    null,
+                    [],
+                    new EliteStatus
+                    {
+                        Timestamp = timestamp,
+                        EventName = "Status",
+                        Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
+                        Latitude = 12.3,
+                        Longitude = 45.6,
+                        Heading = 90,
+                        BodyName = "Replay Body",
+                    },
+                    new NavRouteSnapshot(
+                        timestamp,
+                        "NavRoute",
+                        [new NavRouteEntry("Replay Destination", 456, new GalacticCoordinate(4, 5, 6), "G")]
+                    ),
+                    new CargoSnapshot(
+                        timestamp,
+                        "Cargo",
+                        "Ship",
+                        2,
+                        [new CargoItem("ancientorb", "Ancient Orb", 2, 0)]
+                    ),
+                    new MarketSnapshot(
+                        timestamp,
+                        "Market",
+                        789,
+                        "Replay Station",
+                        "Coriolis",
+                        "all",
+                        "Replay System",
+                        []
+                    ),
+                    [],
+                    IsBootstrapRead: false,
+                    new ShipLockerSnapshot(
+                        timestamp,
+                        "ShipLocker",
+                        [new ShipLockerItem("Items", "healthpack", "Health Pack", 3)]
+                    )
+                )
+            );
         }
 
         var packagePath = Path.Combine(temp.Path, "incident.srvreplay");
@@ -136,28 +136,28 @@ public sealed class DiagnosticReplayCommanderIntegrationTests
                 DateTimeOffset.Parse("2026-08-21T18:00:00Z"),
                 DateTimeOffset.Parse("2026-08-21T18:01:00Z"),
                 ReplayPrivacyMode.Raw,
-                "test"),
-            CancellationToken.None);
+                "test"
+            ),
+            CancellationToken.None
+        );
         var session = await new ReplaySessionManager().ImportAsync(
             packagePath,
             Path.Combine(temp.Path, "managed"),
-            CancellationToken.None);
+            CancellationToken.None
+        );
         var player = new JournalReplayPlayer(session);
-        await player.SeekAsync(
-            session.BootstrapInputCount,
-            CancellationToken.None);
-        var context = await DiagnosticReplayContext.LoadAsync(
-            session.ManifestPath,
-            CancellationToken.None);
+        await player.SeekAsync(session.BootstrapInputCount, CancellationToken.None);
+        var context = await DiagnosticReplayContext.LoadAsync(session.ManifestPath, CancellationToken.None);
         using var blockedNetwork = DiagnosticReplayContext.CreateNetworkClient();
         using var viewModel = MainWindowViewModelTestBuilder.Create(
             context.JournalDirectory,
-            builder => builder
-                .WithAppDataPaths(context.AppDataPaths)
-                .WithExternalNetworkClient(blockedNetwork)
-                .WithFrontierProfile(new CommanderProfileViewModel(
-                    new DiagnosticReplayFrontierAccountService()))
-                .AsDiagnosticReplay("External effects disabled."));
+            builder =>
+                builder
+                    .WithAppDataPaths(context.AppDataPaths)
+                    .WithExternalNetworkClient(blockedNetwork)
+                    .WithFrontierProfile(new CommanderProfileViewModel(new DiagnosticReplayFrontierAccountService()))
+                    .AsDiagnosticReplay("External effects disabled.")
+        );
 
         await viewModel.RefreshAsync();
 
@@ -182,23 +182,24 @@ public sealed class DiagnosticReplayCommanderIntegrationTests
                 "{\"timestamp\":\"2026-08-21T18:00:01Z\",\"event\":\"LoadGame\",\"Commander\":\"First Cmdr\",\"FID\":\"F111111\",\"Odyssey\":true}",
                 "{\"timestamp\":\"2026-08-21T18:10:00Z\",\"event\":\"Commander\",\"Name\":\"Second Cmdr\",\"FID\":\"F222222\"}",
                 "{\"timestamp\":\"2026-08-21T18:10:01Z\",\"event\":\"LoadGame\",\"Commander\":\"Second Cmdr\",\"FID\":\"F222222\",\"Odyssey\":true}",
-            ]);
+            ]
+        );
         var session = await new ReplaySessionManager().ImportAsync(
             sourcePath,
             Path.Combine(temp.Path, "managed"),
-            CancellationToken.None);
-        var context = await DiagnosticReplayContext.LoadAsync(
-            session.ManifestPath,
-            CancellationToken.None);
+            CancellationToken.None
+        );
+        var context = await DiagnosticReplayContext.LoadAsync(session.ManifestPath, CancellationToken.None);
         using var blockedNetwork = DiagnosticReplayContext.CreateNetworkClient();
         using var viewModel = MainWindowViewModelTestBuilder.Create(
             context.JournalDirectory,
-            builder => builder
-                .WithAppDataPaths(context.AppDataPaths)
-                .WithExternalNetworkClient(blockedNetwork)
-                .WithFrontierProfile(new CommanderProfileViewModel(
-                    new DiagnosticReplayFrontierAccountService()))
-                .AsDiagnosticReplay("External effects disabled."));
+            builder =>
+                builder
+                    .WithAppDataPaths(context.AppDataPaths)
+                    .WithExternalNetworkClient(blockedNetwork)
+                    .WithFrontierProfile(new CommanderProfileViewModel(new DiagnosticReplayFrontierAccountService()))
+                    .AsDiagnosticReplay("External effects disabled.")
+        );
         var player = new JournalReplayPlayer(session);
 
         _ = await player.StepAsync(CancellationToken.None);
@@ -212,10 +213,7 @@ public sealed class DiagnosticReplayCommanderIntegrationTests
         await viewModel.RefreshAsync();
         Assert.Equal("Second Cmdr", viewModel.CommanderName);
         Assert.Equal("F222222", viewModel.FrontierId);
-        Assert.StartsWith(
-            session.DataDirectory,
-            viewModel.ProfileDataDirectory,
-            StringComparison.OrdinalIgnoreCase);
+        Assert.StartsWith(session.DataDirectory, viewModel.ProfileDataDirectory, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -227,13 +225,13 @@ public sealed class DiagnosticReplayCommanderIntegrationTests
             Path.Combine(temp.Path, "config"),
             Path.Combine(temp.Path, "data"),
             Path.Combine(temp.Path, "cache"),
-            []);
+            []
+        );
 
         using var viewModel = MainWindowViewModelTestBuilder.Create(
             missingPlayback,
-            builder => builder
-                .WithAppDataPaths(paths)
-                .AsDiagnosticReplay("External effects disabled."));
+            builder => builder.WithAppDataPaths(paths).AsDiagnosticReplay("External effects disabled.")
+        );
 
         Assert.Equal(missingPlayback, viewModel.JournalFolderPath);
         Assert.Equal(missingPlayback, viewModel.CandidatePaths);
@@ -246,32 +244,29 @@ public sealed class DiagnosticReplayCommanderIntegrationTests
         using var temp = new TemporaryDirectory();
         var source = Path.Combine(temp.Path, "personal-profile");
         Directory.CreateDirectory(source);
-        await File.WriteAllTextAsync(
-            Path.Combine(source, "F123-live.json"),
-            "personal commander");
+        await File.WriteAllTextAsync(Path.Combine(source, "F123-live.json"), "personal commander");
         var paths = new SrvSurvey.Core.Storage.AppDataPaths(
             Path.Combine(temp.Path, "config"),
             Path.Combine(temp.Path, "diagnostic-data"),
             Path.Combine(temp.Path, "cache"),
-            []);
+            []
+        );
 
         using var viewModel = MainWindowViewModelTestBuilder.Create(
             Path.Combine(temp.Path, "playback"),
-            builder => builder
-                .WithAppDataPaths(paths)
-                .AsDiagnosticReplay("External effects disabled."));
+            builder => builder.WithAppDataPaths(paths).AsDiagnosticReplay("External effects disabled.")
+        );
         viewModel.LegacyProfileSourcePath = source;
 
         Assert.False(viewModel.ImportLegacyProfileCommand.CanExecute(null));
         await viewModel.ImportLegacyProfileAsync();
 
-        Assert.False(File.Exists(Path.Combine(
-            paths.DataDirectory,
-            "F123-live.json")));
+        Assert.False(File.Exists(Path.Combine(paths.DataDirectory, "F123-live.json")));
         Assert.Contains(
             "unavailable during diagnostic replay",
             viewModel.ProfileStatusMessage,
-            StringComparison.OrdinalIgnoreCase);
+            StringComparison.OrdinalIgnoreCase
+        );
     }
 
     private sealed class TemporaryDirectory : IDisposable
@@ -280,7 +275,8 @@ public sealed class DiagnosticReplayCommanderIntegrationTests
         {
             Path = System.IO.Path.Combine(
                 System.IO.Path.GetTempPath(),
-                $"SrvSurvey-diagnostic-commander-{Guid.NewGuid():N}");
+                $"SrvSurvey-diagnostic-commander-{Guid.NewGuid():N}"
+            );
             Directory.CreateDirectory(Path);
         }
 

@@ -7,19 +7,17 @@ public sealed class ReplayControllerMarkupTests
     [Fact]
     public void SpeedPickerFollowsPlaybackChangeEligibility()
     {
-        var document = XDocument.Load(Path.Combine(
-            FindRepositoryRoot(),
-            "src",
-            "SrvSurvey.ReplayController",
-            "MainWindow.axaml"));
-        var speedPicker = document.Descendants().Single(element =>
-            element.Name.LocalName == "ComboBox"
-            && element.Attribute("SelectedItem")?.Value
-                == "{Binding SpeedMultiplier, Mode=TwoWay}");
+        var document = XDocument.Load(
+            Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.ReplayController", "MainWindow.axaml")
+        );
+        var speedPicker = document
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "ComboBox"
+                && element.Attribute("SelectedItem")?.Value == "{Binding SpeedMultiplier, Mode=TwoWay}"
+            );
 
-        Assert.Equal(
-            "{Binding CanChangeSpeed}",
-            speedPicker.Attribute("IsEnabled")?.Value);
+        Assert.Equal("{Binding CanChangeSpeed}", speedPicker.Attribute("IsEnabled")?.Value);
     }
 
     private static string FindRepositoryRoot()
@@ -35,7 +33,6 @@ public sealed class ReplayControllerMarkupTests
             current = current.Parent;
         }
 
-        throw new DirectoryNotFoundException(
-            "Could not locate the repository root.");
+        throw new DirectoryNotFoundException("Could not locate the repository root.");
     }
 }

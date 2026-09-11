@@ -6,7 +6,8 @@ public sealed class MarketFileReaderTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-market-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-market-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public async Task ReadAsyncPortsLegacyMarketFieldsAndCommodityNames()
@@ -46,7 +47,8 @@ public sealed class MarketFileReaderTests : IDisposable
                 { "Name": "", "Stock": 999 }
               ]
             }
-            """);
+            """
+        );
 
         var result = await MarketFileReader.ReadAsync(path);
 
@@ -75,10 +77,7 @@ public sealed class MarketFileReaderTests : IDisposable
         var path = Path.Combine(temporaryDirectory, MarketFileReader.FileName);
         await File.WriteAllTextAsync(path, "{\"event\":\"Market\"");
 
-        var result = await MarketFileReader.ReadAsync(
-            path,
-            maximumAttempts: 2,
-            retryDelay: TimeSpan.Zero);
+        var result = await MarketFileReader.ReadAsync(path, maximumAttempts: 2, retryDelay: TimeSpan.Zero);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(2, result.Attempts);

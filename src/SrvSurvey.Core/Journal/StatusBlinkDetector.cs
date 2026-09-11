@@ -1,29 +1,20 @@
 namespace SrvSurvey.Core.Journal;
 
-public sealed class StatusBlinkDetector(
-    StatusFlags trigger,
-    TimeSpan maximumInterval)
+public sealed class StatusBlinkDetector(StatusFlags trigger, TimeSpan maximumInterval)
 {
     private bool? previousState;
     private StatusFlags previousTrigger;
     private DateTimeOffset? previousChange;
 
-    public StatusFlags Trigger { get; } = trigger == StatusFlags.None
-        ? StatusFlags.HudInAnalysisMode
-        : trigger;
+    public StatusFlags Trigger { get; } = trigger == StatusFlags.None ? StatusFlags.HudInAnalysisMode : trigger;
 
-    public TimeSpan MaximumInterval { get; } = maximumInterval > TimeSpan.Zero
-        ? maximumInterval
-        : TimeSpan.FromSeconds(3);
+    public TimeSpan MaximumInterval { get; } =
+        maximumInterval > TimeSpan.Zero ? maximumInterval : TimeSpan.FromSeconds(3);
 
-    public StatusBlinkResult Update(
-        EliteStatus status,
-        DateTimeOffset observedAt)
+    public StatusBlinkResult Update(EliteStatus status, DateTimeOffset observedAt)
     {
         ArgumentNullException.ThrowIfNull(status);
-        var activeTrigger = status.OnFootExterior
-            ? StatusFlags.ShieldsUp
-            : Trigger;
+        var activeTrigger = status.OnFootExterior ? StatusFlags.ShieldsUp : Trigger;
         var currentState = status.Flags.HasFlag(activeTrigger);
         if (previousState is null || previousTrigger != activeTrigger)
         {
@@ -35,8 +26,7 @@ public sealed class StatusBlinkDetector(
 
         if (previousState == currentState)
         {
-            var primed = previousChange is { } last
-                && observedAt - last < MaximumInterval;
+            var primed = previousChange is { } last && observedAt - last < MaximumInterval;
             if (!primed)
             {
                 previousChange = null;
@@ -46,14 +36,10 @@ public sealed class StatusBlinkDetector(
         }
 
         previousState = currentState;
-        var detected = previousChange is { } previous
-            && observedAt >= previous
-            && observedAt - previous < MaximumInterval;
+        var detected =
+            previousChange is { } previous && observedAt >= previous && observedAt - previous < MaximumInterval;
         previousChange = detected ? null : observedAt;
-        return new StatusBlinkResult(
-            detected,
-            !detected,
-            activeTrigger);
+        return new StatusBlinkResult(detected, !detected, activeTrigger);
     }
 
     public void Reset()
@@ -64,7 +50,4 @@ public sealed class StatusBlinkDetector(
     }
 }
 
-public readonly record struct StatusBlinkResult(
-    bool Detected,
-    bool IsPrimed,
-    StatusFlags ActiveTrigger);
+public readonly record struct StatusBlinkResult(bool Detected, bool IsPrimed, StatusFlags ActiveTrigger);

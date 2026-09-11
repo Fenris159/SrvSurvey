@@ -8,8 +8,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed class InaraSettingsViewModel : INotifyPropertyChanged
 {
-    private readonly Func<string, string?, bool, string?, CancellationToken, Task>
-        saveInaraApiKeyAsync;
+    private readonly Func<string, string?, bool, string?, CancellationToken, Task> saveInaraApiKeyAsync;
     private readonly AsyncCommand saveApiKeyCommand;
     private readonly AsyncCommand confirmClearApiKeyCommand;
     private readonly DelegateCommand requestClearApiKeyCommand;
@@ -21,36 +20,29 @@ public sealed class InaraSettingsViewModel : INotifyPropertyChanged
     private bool profileIsOdyssey = true;
     private int profileGeneration;
     private bool isClearKeyConfirmationVisible;
-    private string credentialStatus =
-        "Load a commander profile to configure an Inara API key.";
+    private string credentialStatus = "Load a commander profile to configure an Inara API key.";
     private string publicationStatus = string.Empty;
 
-    public InaraSettingsViewModel(
-        CommanderProfileStore commanderProfileStore)
-        : this(commanderProfileStore, null)
-    {
-    }
+    public InaraSettingsViewModel(CommanderProfileStore commanderProfileStore)
+        : this(commanderProfileStore, null) { }
 
     internal InaraSettingsViewModel(
         CommanderProfileStore commanderProfileStore,
-        Func<string, string?, bool, string?, CancellationToken, Task>?
-            saveInaraApiKeyAsync)
+        Func<string, string?, bool, string?, CancellationToken, Task>? saveInaraApiKeyAsync
+    )
     {
         ArgumentNullException.ThrowIfNull(commanderProfileStore);
-        this.saveInaraApiKeyAsync = saveInaraApiKeyAsync
-            ?? commanderProfileStore.SaveInaraApiKeyAsync;
-        saveApiKeyCommand = new AsyncCommand(
-            () => SaveApiKeyAsync(ApiKey.Trim()),
-            CanSaveApiKey);
+        this.saveInaraApiKeyAsync = saveInaraApiKeyAsync ?? commanderProfileStore.SaveInaraApiKeyAsync;
+        saveApiKeyCommand = new AsyncCommand(() => SaveApiKeyAsync(ApiKey.Trim()), CanSaveApiKey);
         confirmClearApiKeyCommand = new AsyncCommand(
             () => SaveApiKeyAsync(apiKey: null),
-            () => HasStoredApiKey && IsClearKeyConfirmationVisible);
+            () => HasStoredApiKey && IsClearKeyConfirmationVisible
+        );
         requestClearApiKeyCommand = new DelegateCommand(
             RequestClearApiKey,
-            () => HasStoredApiKey && !IsClearKeyConfirmationVisible);
-        cancelClearApiKeyCommand = new DelegateCommand(
-            CancelClearApiKey,
-            () => IsClearKeyConfirmationVisible);
+            () => HasStoredApiKey && !IsClearKeyConfirmationVisible
+        );
+        cancelClearApiKeyCommand = new DelegateCommand(CancelClearApiKey, () => IsClearKeyConfirmationVisible);
         SaveApiKeyCommand = saveApiKeyCommand;
         ConfirmClearApiKeyCommand = confirmClearApiKeyCommand;
         RequestClearApiKeyCommand = requestClearApiKeyCommand;
@@ -125,8 +117,7 @@ public sealed class InaraSettingsViewModel : INotifyPropertyChanged
         }
     }
 
-    public bool HasPublicationStatus =>
-        !string.IsNullOrWhiteSpace(PublicationStatus);
+    public bool HasPublicationStatus => !string.IsNullOrWhiteSpace(PublicationStatus);
 
     internal string? StoredApiKey => storedApiKey;
 
@@ -134,19 +125,14 @@ public sealed class InaraSettingsViewModel : INotifyPropertyChanged
         string? frontierId,
         string? activeCommanderName,
         bool isOdyssey,
-        string? inaraApiKey)
+        string? inaraApiKey
+    )
     {
         profileGeneration++;
-        profileFrontierId = string.IsNullOrWhiteSpace(frontierId)
-            ? null
-            : frontierId.Trim();
-        commanderName = string.IsNullOrWhiteSpace(activeCommanderName)
-            ? null
-            : activeCommanderName.Trim();
+        profileFrontierId = string.IsNullOrWhiteSpace(frontierId) ? null : frontierId.Trim();
+        commanderName = string.IsNullOrWhiteSpace(activeCommanderName) ? null : activeCommanderName.Trim();
         profileIsOdyssey = isOdyssey;
-        storedApiKey = string.IsNullOrWhiteSpace(inaraApiKey)
-            ? null
-            : inaraApiKey.Trim();
+        storedApiKey = string.IsNullOrWhiteSpace(inaraApiKey) ? null : inaraApiKey.Trim();
         apiKey = storedApiKey ?? string.Empty;
         IsClearKeyConfirmationVisible = false;
 
@@ -175,14 +161,11 @@ public sealed class InaraSettingsViewModel : INotifyPropertyChanged
         ArgumentNullException.ThrowIfNull(result);
         if (result.Warnings.Count > 0)
         {
-            PublicationStatus = string.Join(
-                Environment.NewLine,
-                result.Warnings);
+            PublicationStatus = string.Join(Environment.NewLine, result.Warnings);
         }
         else if (result.AcceptedEventCount > 0)
         {
-            PublicationStatus =
-                $"Inara accepted {result.AcceptedEventCount:N0} event(s).";
+            PublicationStatus = $"Inara accepted {result.AcceptedEventCount:N0} event(s).";
         }
         else if (result.QueuedEventCount > 0)
         {
@@ -195,9 +178,7 @@ public sealed class InaraSettingsViewModel : INotifyPropertyChanged
     public void ReportPublicationFailure(Exception exception)
     {
         ArgumentNullException.ThrowIfNull(exception);
-        PublicationStatus =
-            "Inara processing was skipped without affecting journal tracking: "
-            + exception.Message;
+        PublicationStatus = "Inara processing was skipped without affecting journal tracking: " + exception.Message;
     }
 
     private void RequestClearApiKey()
@@ -217,9 +198,7 @@ public sealed class InaraSettingsViewModel : INotifyPropertyChanged
             return;
         }
 
-        var normalized = string.IsNullOrWhiteSpace(apiKey)
-            ? null
-            : apiKey.Trim();
+        var normalized = string.IsNullOrWhiteSpace(apiKey) ? null : apiKey.Trim();
         var saveGeneration = profileGeneration;
         var saveFrontierId = profileFrontierId;
         var saveCommanderName = commanderName;
@@ -231,7 +210,8 @@ public sealed class InaraSettingsViewModel : INotifyPropertyChanged
                 saveCommanderName,
                 saveIsOdyssey,
                 normalized,
-                CancellationToken.None);
+                CancellationToken.None
+            );
             if (saveGeneration != profileGeneration)
             {
                 return;
@@ -248,15 +228,12 @@ public sealed class InaraSettingsViewModel : INotifyPropertyChanged
                 : $"The Inara API key was saved for {CommanderDisplayName}.";
             ApiKeyChanged?.Invoke(this, EventArgs.Empty);
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
             if (saveGeneration == profileGeneration)
             {
-                CredentialStatus =
-                    "The Inara API key was not saved: " + exception.Message;
+                CredentialStatus = "The Inara API key was not saved: " + exception.Message;
             }
         }
         finally
@@ -267,21 +244,13 @@ public sealed class InaraSettingsViewModel : INotifyPropertyChanged
 
     private bool CanSaveApiKey()
     {
-        var normalized = string.IsNullOrWhiteSpace(ApiKey)
-            ? null
-            : ApiKey.Trim();
+        var normalized = string.IsNullOrWhiteSpace(ApiKey) ? null : ApiKey.Trim();
         return profileFrontierId is not null
             && normalized is not null
-            && !string.Equals(
-                normalized,
-                storedApiKey,
-                StringComparison.Ordinal);
+            && !string.Equals(normalized, storedApiKey, StringComparison.Ordinal);
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -293,17 +262,12 @@ public sealed class InaraSettingsViewModel : INotifyPropertyChanged
         return true;
     }
 
-    private void OnPropertyChanged(
-        [CallerMemberName] string? propertyName = null)
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(propertyName));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private sealed class AsyncCommand(
-        Func<Task> execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class AsyncCommand(Func<Task> execute, Func<bool> canExecute) : ICommand
     {
         private bool isExecuting;
 
@@ -340,9 +304,7 @@ public sealed class InaraSettingsViewModel : INotifyPropertyChanged
         }
     }
 
-    private sealed class DelegateCommand(
-        Action execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class DelegateCommand(Action execute, Func<bool> canExecute) : ICommand
     {
         public event EventHandler? CanExecuteChanged;
 

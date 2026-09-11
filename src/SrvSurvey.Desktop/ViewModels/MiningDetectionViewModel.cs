@@ -5,7 +5,8 @@ using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed class MiningDetectionViewModel(SurfaceMiningSettingsStore? store, TimeProvider? timeProvider = null) : INotifyPropertyChanged
+public sealed class MiningDetectionViewModel(SurfaceMiningSettingsStore? store, TimeProvider? timeProvider = null)
+    : INotifyPropertyChanged
 {
     private MiningDetectionSettings saved = store?.LoadDetection() ?? new();
     private MiningDetectionSettings? draft;
@@ -20,13 +21,21 @@ public sealed class MiningDetectionViewModel(SurfaceMiningSettingsStore? store, 
         get => saved.Enabled;
         set
         {
-            if (value == saved.Enabled) return;
+            if (value == saved.Enabled)
+            {
+                return;
+            }
+
             try
             {
                 var next = saved with { Enabled = value };
                 store?.SaveDetection(next);
                 saved = next;
-                if (draft is not null) draft = draft with { Enabled = value };
+                if (draft is not null)
+                {
+                    draft = draft with { Enabled = value };
+                }
+
                 Reset();
             }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException)
@@ -43,29 +52,57 @@ public sealed class MiningDetectionViewModel(SurfaceMiningSettingsStore? store, 
         set
         {
             var color = (uint)(value.R << 16 | value.G << 8 | value.B);
-            if (Settings.BarColor == color) return;
+            if (Settings.BarColor == color)
+            {
+                return;
+            }
+
             var next = Settings with { BarColor = color };
-            if (draft is not null) draft = next;
+            if (draft is not null)
+            {
+                draft = next;
+            }
             else
             {
-                try { store?.SaveDetection(next); saved = next; }
+                try
+                {
+                    store?.SaveDetection(next);
+                    saved = next;
+                }
                 catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException)
-                { StatusText = "Detection settings could not be saved: " + e.Message; Notify(); return; }
+                {
+                    StatusText = "Detection settings could not be saved: " + e.Message;
+                    Notify();
+                    return;
+                }
             }
             Reset();
             Notify();
         }
     }
 
-    public string StatusText { get; private set; } = "Rig bars set trackers immediately; three seconds empty clears them.";
+    public string StatusText { get; private set; } =
+        "Rig bars set trackers immediately; three seconds empty clears them.";
     public string SlotsText { get; private set; } = "1 ?   2 ?   3 ?   4 ?   5 ?   6 ?";
     public MiningBarAnalysis Latest { get; private set; } = MiningBarAnalysis.Unknown();
-    public void BeginEdit() { draft = saved; Reset(); }
+
+    public void BeginEdit()
+    {
+        draft = saved;
+        Reset();
+    }
+
     public void UpdateCalibration(MiningDetectionSettings value)
     {
         value = value.Normalize();
-        if (value.HasSameCalibration(Settings)) return;
-        if ((value with { MotionMargin = Settings.MotionMargin, BarGap = Settings.BarGap }).HasSameCalibration(Settings))
+        if (value.HasSameCalibration(Settings))
+        {
+            return;
+        }
+
+        if (
+            (value with { MotionMargin = Settings.MotionMargin, BarGap = Settings.BarGap }).HasSameCalibration(Settings)
+        )
         {
             draft = value;
             Reset();
@@ -75,24 +112,40 @@ public sealed class MiningDetectionViewModel(SurfaceMiningSettingsStore? store, 
         IsCalibrationTesting = false;
         Reset();
     }
+
     public void StartCalibrationTest()
     {
-        if (!IsCalibrating) return;
+        if (!IsCalibrating)
+        {
+            return;
+        }
+
         IsCalibrationTesting = true;
         Pause("Watching for bars of the selected color. Look forward in the Rhino.");
     }
+
     public void StopCalibrationTest()
     {
-        if (!IsCalibrationTesting) return;
+        if (!IsCalibrationTesting)
+        {
+            return;
+        }
+
         IsCalibrationTesting = false;
         Reset();
     }
+
     public void SaveEdit()
     {
-        if (draft is null || draft.HasSameCalibration(saved)) return;
+        if (draft is null || draft.HasSameCalibration(saved))
+        {
+            return;
+        }
+
         store?.SaveDetection(draft);
         saved = draft;
     }
+
     public void EndEdit()
     {
         draft = null;
@@ -100,6 +153,7 @@ public sealed class MiningDetectionViewModel(SurfaceMiningSettingsStore? store, 
         IsCalibrationTesting = false;
         Reset();
     }
+
     public void Pause(string reason)
     {
         confirmation = new(timeProvider);
@@ -108,28 +162,61 @@ public sealed class MiningDetectionViewModel(SurfaceMiningSettingsStore? store, 
         StatusText = reason;
         Notify();
     }
+
     public IReadOnlyList<MiningBarState> Apply(MiningBarAnalysis analysis)
     {
         Latest = analysis;
         confirmation.Apply(analysis);
-        SlotsText = string.Join("   ", analysis.Slots.Select((state, i) => $"{i + 1} {SlotLabel(state, confirmation.States[i])}"));
+        SlotsText = string.Join(
+            "   ",
+            analysis.Slots.Select((state, i) => $"{i + 1} {SlotLabel(state, confirmation.States[i])}")
+        );
         StatusText = DetectionStatus(analysis);
         Notify();
         return confirmation.States.ToArray();
     }
+
     private static string SlotLabel(MiningBarState observed, MiningBarState confirmed)
     {
-        if (observed == MiningBarState.Unknown) return "?";
-        if (observed != confirmed) return "…";
-        return confirmed switch { MiningBarState.Present => "BAR", MiningBarState.Absent => "empty", _ => "…" };
+        if (observed == MiningBarState.Unknown)
+        {
+            return "?";
+        }
+
+        if (observed != confirmed)
+        {
+            return "…";
+        }
+
+        return confirmed switch
+        {
+            MiningBarState.Present => "BAR",
+            MiningBarState.Absent => "empty",
+            _ => "…",
+        };
     }
+
     private string DetectionStatus(MiningBarAnalysis analysis)
     {
-        if (confirmation.IsSettling) return "HUD moving or reacquiring — tracker changes paused until steady for one second.";
-        if (analysis.Slots.All(s => s == MiningBarState.Unknown)) return "HUD not located — adjust alignment or return to the cockpit view.";
-        return IsCalibrating ? "Calibration preview — saved trackers are unchanged." : "Rig bars set trackers immediately; three seconds empty clears them.";
+        if (confirmation.IsSettling)
+        {
+            return "HUD moving or reacquiring — tracker changes paused until steady for one second.";
+        }
+
+        if (analysis.Slots.All(s => s == MiningBarState.Unknown))
+        {
+            return "HUD not located — adjust alignment or return to the cockpit view.";
+        }
+
+        return IsCalibrating
+            ? "Calibration preview — saved trackers are unchanged."
+            : "Rig bars set trackers immediately; three seconds empty clears them.";
     }
-    private void Reset() => Pause(Enabled || IsCalibrating
-        ? "Waiting for a clear view of the six HUD circles." : "Rig bar detection is off.");
+
+    private void Reset() =>
+        Pause(
+            Enabled || IsCalibrating ? "Waiting for a clear view of the six HUD circles." : "Rig bar detection is off."
+        );
+
     private void Notify() => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
 }

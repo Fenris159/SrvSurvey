@@ -9,10 +9,7 @@ public sealed class GameScreenCaptureTests
     [Fact]
     public void CapturedBufferReadsBgraPixelsAsRgb()
     {
-        var buffer = new CapturedPixelBuffer(
-            2,
-            1,
-            [51, 34, 17, 255, 102, 85, 68, 255]);
+        var buffer = new CapturedPixelBuffer(2, 1, [51, 34, 17, 255, 102, 85, 68, 255]);
 
         Assert.Equal(new FssRgbPixel(17, 34, 51), buffer.GetPixel(0, 0));
         Assert.Equal(new FssRgbPixel(68, 85, 102), buffer.GetPixel(1, 0));
@@ -22,10 +19,7 @@ public sealed class GameScreenCaptureTests
     [Fact]
     public void X11DecoderReadsLittleEndian32BitPixels()
     {
-        var buffer = DecodeX11(
-            [51, 34, 17, 0],
-            bitsPerPixel: 32,
-            byteOrder: 0);
+        var buffer = DecodeX11([51, 34, 17, 0], bitsPerPixel: 32, byteOrder: 0);
 
         Assert.Equal(new FssRgbPixel(17, 34, 51), buffer.GetPixel(0, 0));
     }
@@ -33,11 +27,7 @@ public sealed class GameScreenCaptureTests
     [Fact]
     public void X11DecoderReadsBigEndian24BitPixels()
     {
-        var buffer = DecodeX11(
-            [17, 34, 51, 0],
-            bitsPerPixel: 24,
-            byteOrder: 1,
-            stride: 4);
+        var buffer = DecodeX11([17, 34, 51, 0], bitsPerPixel: 24, byteOrder: 1, stride: 4);
 
         Assert.Equal(new FssRgbPixel(17, 34, 51), buffer.GetPixel(0, 0));
     }
@@ -49,8 +39,7 @@ public sealed class GameScreenCaptureTests
 
         Assert.False(capture.IsAvailable);
         Assert.Contains("Wayland", capture.UnavailableReason);
-        Assert.Throws<NotSupportedException>(
-            () => capture.Capture(new PixelRect(0, 0, 1, 1)));
+        Assert.Throws<NotSupportedException>(() => capture.Capture(new PixelRect(0, 0, 1, 1)));
     }
 
     [Fact]
@@ -58,47 +47,34 @@ public sealed class GameScreenCaptureTests
     {
         Assert.Equal(
             new PixelRect(0, 10, 30, 40),
-            X11GameScreenCapture.ClipToRootWindow(
-                new PixelRect(-20, 10, 50, 40),
-                rootWidth: 100,
-                rootHeight: 80));
+            X11GameScreenCapture.ClipToRootWindow(new PixelRect(-20, 10, 50, 40), rootWidth: 100, rootHeight: 80)
+        );
         Assert.Equal(
             new PixelRect(80, 60, 20, 20),
-            X11GameScreenCapture.ClipToRootWindow(
-                new PixelRect(80, 60, 50, 40),
-                rootWidth: 100,
-                rootHeight: 80));
+            X11GameScreenCapture.ClipToRootWindow(new PixelRect(80, 60, 50, 40), rootWidth: 100, rootHeight: 80)
+        );
     }
 
     [Fact]
     public void X11CaptureRejectsBoundsOutsideTheRootWindow()
     {
-        Assert.Throws<InvalidOperationException>(
-            () => X11GameScreenCapture.ClipToRootWindow(
-                new PixelRect(100, 20, 10, 10),
-                rootWidth: 100,
-                rootHeight: 80));
+        Assert.Throws<InvalidOperationException>(() =>
+            X11GameScreenCapture.ClipToRootWindow(new PixelRect(100, 20, 10, 10), rootWidth: 100, rootHeight: 80)
+        );
     }
 
     [Fact]
     public void DiagnosticWriterCreatesAPortablePng()
     {
-        var directory = Path.Combine(
-            Path.GetTempPath(),
-            "SrvSurvey-fss-diagnostic-" + Guid.NewGuid().ToString("N"));
+        var directory = Path.Combine(Path.GetTempPath(), "SrvSurvey-fss-diagnostic-" + Guid.NewGuid().ToString("N"));
         try
         {
-            var buffer = new CapturedPixelBuffer(
-                1,
-                1,
-                [51, 34, 17, 255]);
+            var buffer = new CapturedPixelBuffer(1, 1, [51, 34, 17, 255]);
 
             var path = FssTuningDiagnosticWriter.Save(directory, buffer, 42);
 
             Assert.StartsWith(directory, path);
-            Assert.Equal(
-                new byte[] { 137, 80, 78, 71 },
-                File.ReadAllBytes(path)[..4]);
+            Assert.Equal(new byte[] { 137, 80, 78, 71 }, File.ReadAllBytes(path)[..4]);
         }
         finally
         {
@@ -109,11 +85,7 @@ public sealed class GameScreenCaptureTests
         }
     }
 
-    private static CapturedPixelBuffer DecodeX11(
-        byte[] bytes,
-        int bitsPerPixel,
-        int byteOrder,
-        int? stride = null)
+    private static CapturedPixelBuffer DecodeX11(byte[] bytes, int bitsPerPixel, int byteOrder, int? stride = null)
     {
         var pointer = Marshal.AllocHGlobal(bytes.Length);
         try
@@ -131,7 +103,8 @@ public sealed class GameScreenCaptureTests
                     RedMask = 0x00FF0000,
                     GreenMask = 0x0000FF00,
                     BlueMask = 0x000000FF,
-                });
+                }
+            );
         }
         finally
         {

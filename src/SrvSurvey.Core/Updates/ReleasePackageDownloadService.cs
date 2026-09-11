@@ -10,21 +10,15 @@ public interface IReleasePackageDownloadService
         CrossPlatformReleasePackage package,
         string dataDirectory,
         IProgress<ReleasePackageDownloadProgress>? progress = null,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }
 
-public sealed record ReleasePackageDownloadProgress(
-    long DownloadedBytes,
-    long TotalBytes);
+public sealed record ReleasePackageDownloadProgress(long DownloadedBytes, long TotalBytes);
 
-public sealed record ReleasePackageDownloadResult(
-    string ArchivePath,
-    bool Downloaded,
-    long Size,
-    string Sha256);
+public sealed record ReleasePackageDownloadResult(string ArchivePath, bool Downloaded, long Size, string Sha256);
 
-public sealed class ReleasePackageDownloadService
-    : IReleasePackageDownloadService
+public sealed class ReleasePackageDownloadService : IReleasePackageDownloadService
 {
     private const long MaximumPackageBytes = 512L * 1024 * 1024;
     private static readonly HttpClient SharedClient = CreateSharedClient();
@@ -40,75 +34,50 @@ public sealed class ReleasePackageDownloadService
         CrossPlatformReleasePackage package,
         string dataDirectory,
         IProgress<ReleasePackageDownloadProgress>? progress = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         Validate(version, package, dataDirectory);
-        var packageDirectory = ResolvePackageDirectory(
-            dataDirectory,
-            version,
-            package.RuntimeIdentifier);
+        var packageDirectory = ResolvePackageDirectory(dataDirectory, version, package.RuntimeIdentifier);
         Directory.CreateDirectory(packageDirectory);
         var archivePath = Path.Combine(packageDirectory, package.ArchiveName);
-        if (await MatchesAsync(
-                archivePath,
-                package.Size,
-                package.Sha256,
-                cancellationToken)
-            .ConfigureAwait(false))
+        if (await MatchesAsync(archivePath, package.Size, package.Sha256, cancellationToken).ConfigureAwait(false))
         {
-            progress?.Report(new ReleasePackageDownloadProgress(
-                package.Size,
-                package.Size));
-            return new ReleasePackageDownloadResult(
-                archivePath,
-                false,
-                package.Size,
-                package.Sha256);
+            progress?.Report(new ReleasePackageDownloadProgress(package.Size, package.Size));
+            return new ReleasePackageDownloadResult(archivePath, false, package.Size, package.Sha256);
         }
 
-        var partialPath = Path.Combine(
-            packageDirectory,
-            $".{package.ArchiveName}.{Guid.NewGuid():N}.partial");
+        var partialPath = Path.Combine(packageDirectory, $".{package.ArchiveName}.{Guid.NewGuid():N}.partial");
         try
         {
-            using var request = new HttpRequestMessage(
-                HttpMethod.Get,
-                package.DownloadUri);
-            request.Headers.CacheControl = new CacheControlHeaderValue
-            {
-                NoCache = true,
-            };
+            using var request = new HttpRequestMessage(HttpMethod.Get, package.DownloadUri);
+            request.Headers.CacheControl = new CacheControlHeaderValue { NoCache = true };
             request.Headers.UserAgent.ParseAdd("SrvSurvey-XP/1.0");
-            using var response = await client.SendAsync(
-                    request,
-                    HttpCompletionOption.ResponseHeadersRead,
-                    cancellationToken)
+            using var response = await client
+                .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                 .ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
             var contentLength = response.Content.Headers.ContentLength;
             if (contentLength.HasValue && contentLength.Value != package.Size)
             {
-                throw new InvalidDataException(
-                    "The package response size does not match the release index.");
+                throw new InvalidDataException("The package response size does not match the release index.");
             }
 
-            await using var input = await response.Content.ReadAsStreamAsync(
-                    cancellationToken)
-                .ConfigureAwait(false);
+            await using var input = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             await using var output = new FileStream(
                 partialPath,
                 FileMode.CreateNew,
                 FileAccess.Write,
                 FileShare.None,
                 128 * 1024,
-                FileOptions.Asynchronous | FileOptions.SequentialScan);
+                FileOptions.Asynchronous | FileOptions.SequentialScan
+            );
             using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
             var buffer = new byte[128 * 1024];
             long total = 0;
             while (true)
             {
-                var read = await input.ReadAsync(buffer, cancellationToken)
-                    .ConfigureAwait(false);
+                var read = await input.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
                 if (read == 0)
                 {
                     break;
@@ -117,43 +86,30 @@ public sealed class ReleasePackageDownloadService
                 total += read;
                 if (total > package.Size || total > MaximumPackageBytes)
                 {
-                    throw new InvalidDataException(
-                        "The package response exceeded the indexed size.");
+                    throw new InvalidDataException("The package response exceeded the indexed size.");
                 }
 
                 hash.AppendData(buffer, 0, read);
-                await output.WriteAsync(
-                        buffer.AsMemory(0, read),
-                        cancellationToken)
-                    .ConfigureAwait(false);
-                progress?.Report(new ReleasePackageDownloadProgress(
-                    total,
-                    package.Size));
+                await output.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
+                progress?.Report(new ReleasePackageDownloadProgress(total, package.Size));
             }
 
             if (total != package.Size)
             {
-                throw new InvalidDataException(
-                    "The package response ended before the indexed size was reached.");
+                throw new InvalidDataException("The package response ended before the indexed size was reached.");
             }
 
-            var actualHash = Convert.ToHexString(hash.GetHashAndReset())
-                .ToLowerInvariant();
+            var actualHash = Convert.ToHexString(hash.GetHashAndReset()).ToLowerInvariant();
             if (!HashesMatch(actualHash, package.Sha256))
             {
-                throw new InvalidDataException(
-                    "The package SHA-256 does not match the release index.");
+                throw new InvalidDataException("The package SHA-256 does not match the release index.");
             }
 
             await output.FlushAsync(cancellationToken).ConfigureAwait(false);
             output.Flush(flushToDisk: true);
             output.Close();
             File.Move(partialPath, archivePath, overwrite: true);
-            return new ReleasePackageDownloadResult(
-                archivePath,
-                true,
-                package.Size,
-                actualHash);
+            return new ReleasePackageDownloadResult(archivePath, true, package.Size, actualHash);
         }
         finally
         {
@@ -168,7 +124,8 @@ public sealed class ReleasePackageDownloadService
         string path,
         long expectedSize,
         string expectedHash,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var file = new FileInfo(path);
         if (!file.Exists || file.Length != expectedSize)
@@ -182,9 +139,9 @@ public sealed class ReleasePackageDownloadService
             FileAccess.Read,
             FileShare.Read,
             128 * 1024,
-            FileOptions.Asynchronous | FileOptions.SequentialScan);
-        var hash = await SHA256.HashDataAsync(stream, cancellationToken)
-            .ConfigureAwait(false);
+            FileOptions.Asynchronous | FileOptions.SequentialScan
+        );
+        var hash = await SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false);
         return HashesMatch(Convert.ToHexString(hash), expectedHash);
     }
 
@@ -192,9 +149,7 @@ public sealed class ReleasePackageDownloadService
     {
         try
         {
-            return CryptographicOperations.FixedTimeEquals(
-                Convert.FromHexString(left),
-                Convert.FromHexString(right));
+            return CryptographicOperations.FixedTimeEquals(Convert.FromHexString(left), Convert.FromHexString(right));
         }
         catch (FormatException)
         {
@@ -205,33 +160,24 @@ public sealed class ReleasePackageDownloadService
     private static string ResolvePackageDirectory(
         string dataDirectory,
         ReleaseVersion version,
-        string runtimeIdentifier)
+        string runtimeIdentifier
+    )
     {
         var dataRoot = Path.GetFullPath(dataDirectory);
-        var packageDirectory = Path.GetFullPath(Path.Combine(
-            dataRoot,
-            "updates",
-            "packages",
-            version.ToString(),
-            runtimeIdentifier));
-        var rootPrefix = Path.TrimEndingDirectorySeparator(dataRoot)
-            + Path.DirectorySeparatorChar;
-        var comparison = OperatingSystem.IsWindows()
-            ? StringComparison.OrdinalIgnoreCase
-            : StringComparison.Ordinal;
+        var packageDirectory = Path.GetFullPath(
+            Path.Combine(dataRoot, "updates", "packages", version.ToString(), runtimeIdentifier)
+        );
+        var rootPrefix = Path.TrimEndingDirectorySeparator(dataRoot) + Path.DirectorySeparatorChar;
+        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
         if (!packageDirectory.StartsWith(rootPrefix, comparison))
         {
-            throw new InvalidDataException(
-                "The update package path escaped the application data directory.");
+            throw new InvalidDataException("The update package path escaped the application data directory.");
         }
 
         return packageDirectory;
     }
 
-    private static void Validate(
-        ReleaseVersion version,
-        CrossPlatformReleasePackage package,
-        string dataDirectory)
+    private static void Validate(ReleaseVersion version, CrossPlatformReleasePackage package, string dataDirectory)
     {
         ArgumentNullException.ThrowIfNull(package);
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
@@ -245,48 +191,39 @@ public sealed class ReleasePackageDownloadService
             "win-x64" => "zip",
             "linux-x64" => "tar.gz",
             _ => throw new PlatformNotSupportedException(
-                $"The runtime '{package.RuntimeIdentifier}' has no update package."),
+                $"The runtime '{package.RuntimeIdentifier}' has no update package."
+            ),
         };
         var suffix = expectedArchiveType == "zip" ? ".zip" : ".tar.gz";
         var expectedName = $"SrvSurvey-XP-{version}-{package.RuntimeIdentifier}{suffix}";
-        if (!string.Equals(package.ArchiveType, expectedArchiveType, StringComparison.Ordinal)
+        if (
+            !string.Equals(package.ArchiveType, expectedArchiveType, StringComparison.Ordinal)
             || !string.Equals(package.ArchiveName, expectedName, StringComparison.Ordinal)
-            || !string.Equals(
-                Path.GetFileName(package.ArchiveName),
-                package.ArchiveName,
-                StringComparison.Ordinal))
+            || !string.Equals(Path.GetFileName(package.ArchiveName), package.ArchiveName, StringComparison.Ordinal)
+        )
         {
-            throw new InvalidDataException(
-                "The release package name or archive type is invalid.");
+            throw new InvalidDataException("The release package name or archive type is invalid.");
         }
 
         if (package.Size is <= 0 or > MaximumPackageBytes)
         {
-            throw new InvalidDataException(
-                "The release package size is outside the supported range.");
+            throw new InvalidDataException("The release package size is outside the supported range.");
         }
 
-        if (package.Sha256.Length != 64
-            || package.Sha256.Any(character => !Uri.IsHexDigit(character)))
+        if (package.Sha256.Length != 64 || package.Sha256.Any(character => !Uri.IsHexDigit(character)))
         {
-            throw new InvalidDataException(
-                "The release package SHA-256 is invalid.");
+            throw new InvalidDataException("The release package SHA-256 is invalid.");
         }
 
-        if (!package.DownloadUri.IsAbsoluteUri
-            || package.DownloadUri.Scheme != Uri.UriSchemeHttps)
+        if (!package.DownloadUri.IsAbsoluteUri || package.DownloadUri.Scheme != Uri.UriSchemeHttps)
         {
-            throw new InvalidDataException(
-                "The release package download URI must use HTTPS.");
+            throw new InvalidDataException("The release package download URI must use HTTPS.");
         }
     }
 
     private static HttpClient CreateSharedClient()
     {
-        var client = new HttpClient
-        {
-            Timeout = TimeSpan.FromMinutes(10),
-        };
+        var client = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
         client.DefaultRequestHeaders.UserAgent.ParseAdd("SrvSurvey-XP/1.0");
         return client;
     }

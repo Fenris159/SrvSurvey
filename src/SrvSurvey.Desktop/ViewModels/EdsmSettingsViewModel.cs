@@ -8,14 +8,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed class EdsmSettingsViewModel : INotifyPropertyChanged
 {
-    private readonly Func<
-        string,
-        string?,
-        bool,
-        string?,
-        string?,
-        CancellationToken,
-        Task> saveCredentialsAsync;
+    private readonly Func<string, string?, bool, string?, string?, CancellationToken, Task> saveCredentialsAsync;
     private readonly AsyncCommand saveCredentialsCommand;
     private readonly AsyncCommand confirmClearCredentialsCommand;
     private readonly DelegateCommand requestClearCredentialsCommand;
@@ -27,43 +20,32 @@ public sealed class EdsmSettingsViewModel : INotifyPropertyChanged
     private bool profileIsOdyssey = true;
     private int profileGeneration;
     private bool isClearCredentialsConfirmationVisible;
-    private string credentialStatus =
-        "Load a commander profile to configure EDSM synchronization.";
+    private string credentialStatus = "Load a commander profile to configure EDSM synchronization.";
     private string publicationStatus = string.Empty;
 
     public EdsmSettingsViewModel(CommanderProfileStore commanderProfileStore)
-        : this(commanderProfileStore, null)
-    {
-    }
+        : this(commanderProfileStore, null) { }
 
     internal EdsmSettingsViewModel(
         CommanderProfileStore commanderProfileStore,
-        Func<
-            string,
-            string?,
-            bool,
-            string?,
-            string?,
-            CancellationToken,
-            Task>? saveCredentialsAsync)
+        Func<string, string?, bool, string?, string?, CancellationToken, Task>? saveCredentialsAsync
+    )
     {
         ArgumentNullException.ThrowIfNull(commanderProfileStore);
-        this.saveCredentialsAsync = saveCredentialsAsync
-            ?? commanderProfileStore.SaveEdsmCredentialsAsync;
-        saveCredentialsCommand = new AsyncCommand(
-            SaveCredentialsAsync,
-            CanSaveCredentials);
+        this.saveCredentialsAsync = saveCredentialsAsync ?? commanderProfileStore.SaveEdsmCredentialsAsync;
+        saveCredentialsCommand = new AsyncCommand(SaveCredentialsAsync, CanSaveCredentials);
         confirmClearCredentialsCommand = new AsyncCommand(
             ClearCredentialsAsync,
-            () => HasStoredCredentials
-                && IsClearCredentialsConfirmationVisible);
+            () => HasStoredCredentials && IsClearCredentialsConfirmationVisible
+        );
         requestClearCredentialsCommand = new DelegateCommand(
             RequestClearCredentials,
-            () => HasStoredCredentials
-                && !IsClearCredentialsConfirmationVisible);
+            () => HasStoredCredentials && !IsClearCredentialsConfirmationVisible
+        );
         cancelClearCredentialsCommand = new DelegateCommand(
             CancelClearCredentials,
-            () => IsClearCredentialsConfirmationVisible);
+            () => IsClearCredentialsConfirmationVisible
+        );
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -72,14 +54,11 @@ public sealed class EdsmSettingsViewModel : INotifyPropertyChanged
 
     public ICommand SaveCredentialsCommand => saveCredentialsCommand;
 
-    public ICommand RequestClearCredentialsCommand =>
-        requestClearCredentialsCommand;
+    public ICommand RequestClearCredentialsCommand => requestClearCredentialsCommand;
 
-    public ICommand ConfirmClearCredentialsCommand =>
-        confirmClearCredentialsCommand;
+    public ICommand ConfirmClearCredentialsCommand => confirmClearCredentialsCommand;
 
-    public ICommand CancelClearCredentialsCommand =>
-        cancelClearCredentialsCommand;
+    public ICommand CancelClearCredentialsCommand => cancelClearCredentialsCommand;
 
     public string ApiKey
     {
@@ -97,8 +76,7 @@ public sealed class EdsmSettingsViewModel : INotifyPropertyChanged
 
     public bool HasStoredCredentials => storedApiKey is not null;
 
-    public string ActiveCommanderDisplayName =>
-        activeCommanderName ?? "No commander loaded";
+    public string ActiveCommanderDisplayName => activeCommanderName ?? "No commander loaded";
 
     public bool IsClearCredentialsConfirmationVisible
     {
@@ -134,19 +112,13 @@ public sealed class EdsmSettingsViewModel : INotifyPropertyChanged
         }
     }
 
-    public bool HasPublicationStatus =>
-        !string.IsNullOrWhiteSpace(PublicationStatus);
+    public bool HasPublicationStatus => !string.IsNullOrWhiteSpace(PublicationStatus);
 
-    internal string? UploadCommanderName =>
-        HasStoredCredentials ? activeCommanderName : null;
+    internal string? UploadCommanderName => HasStoredCredentials ? activeCommanderName : null;
 
     internal string? StoredApiKey => storedApiKey;
 
-    public void SetCommanderProfile(
-        string? frontierId,
-        string? commanderName,
-        bool isOdyssey,
-        string? savedApiKey)
+    public void SetCommanderProfile(string? frontierId, string? commanderName, bool isOdyssey, string? savedApiKey)
     {
         profileGeneration++;
         profileFrontierId = Normalize(frontierId);
@@ -174,8 +146,7 @@ public sealed class EdsmSettingsViewModel : INotifyPropertyChanged
         }
         else if (result.AcceptedEventCount > 0)
         {
-            PublicationStatus =
-                $"EDSM accepted {result.AcceptedEventCount:N0} journal event(s).";
+            PublicationStatus = $"EDSM accepted {result.AcceptedEventCount:N0} journal event(s).";
         }
         else if (result.QueuedEventCount > 0)
         {
@@ -188,16 +159,12 @@ public sealed class EdsmSettingsViewModel : INotifyPropertyChanged
     public void ReportPublicationFailure(Exception exception)
     {
         ArgumentNullException.ThrowIfNull(exception);
-        PublicationStatus =
-            "EDSM processing was skipped without affecting journal tracking: "
-            + exception.Message;
+        PublicationStatus = "EDSM processing was skipped without affecting journal tracking: " + exception.Message;
     }
 
     private async Task SaveCredentialsAsync()
     {
-        await PersistCredentialsAsync(
-            activeCommanderName,
-            Normalize(ApiKey));
+        await PersistCredentialsAsync(activeCommanderName, Normalize(ApiKey));
     }
 
     private async Task ClearCredentialsAsync()
@@ -205,9 +172,7 @@ public sealed class EdsmSettingsViewModel : INotifyPropertyChanged
         await PersistCredentialsAsync(null, null);
     }
 
-    private async Task PersistCredentialsAsync(
-        string? commanderName,
-        string? key)
+    private async Task PersistCredentialsAsync(string? commanderName, string? key)
     {
         if (profileFrontierId is null)
         {
@@ -226,7 +191,8 @@ public sealed class EdsmSettingsViewModel : INotifyPropertyChanged
                 saveIsOdyssey,
                 commanderName,
                 key,
-                CancellationToken.None);
+                CancellationToken.None
+            );
             if (saveGeneration != profileGeneration)
             {
                 return;
@@ -236,20 +202,18 @@ public sealed class EdsmSettingsViewModel : INotifyPropertyChanged
             ApiKey = key ?? string.Empty;
             IsClearCredentialsConfirmationVisible = false;
             OnPropertyChanged(nameof(HasStoredCredentials));
-            CredentialStatus = commanderName is null || key is null
-                ? $"EDSM synchronization was disabled for {ActiveCommanderDisplayName}."
-                : $"EDSM synchronization was enabled for {ActiveCommanderDisplayName}.";
+            CredentialStatus =
+                commanderName is null || key is null
+                    ? $"EDSM synchronization was disabled for {ActiveCommanderDisplayName}."
+                    : $"EDSM synchronization was enabled for {ActiveCommanderDisplayName}.";
             CredentialsChanged?.Invoke(this, EventArgs.Empty);
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
             if (saveGeneration == profileGeneration)
             {
-                CredentialStatus =
-                    "The EDSM credentials were not saved: " + exception.Message;
+                CredentialStatus = "The EDSM credentials were not saved: " + exception.Message;
             }
         }
         finally
@@ -264,10 +228,7 @@ public sealed class EdsmSettingsViewModel : INotifyPropertyChanged
         return profileFrontierId is not null
             && activeCommanderName is not null
             && key is not null
-            && !string.Equals(
-                key,
-                storedApiKey,
-                StringComparison.Ordinal);
+            && !string.Equals(key, storedApiKey, StringComparison.Ordinal);
     }
 
     private string BuildCredentialStatus()
@@ -305,10 +266,7 @@ public sealed class EdsmSettingsViewModel : INotifyPropertyChanged
         return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -320,24 +278,18 @@ public sealed class EdsmSettingsViewModel : INotifyPropertyChanged
         return true;
     }
 
-    private void OnPropertyChanged(
-        [CallerMemberName] string? propertyName = null)
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(propertyName));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private sealed class AsyncCommand(
-        Func<Task> execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class AsyncCommand(Func<Task> execute, Func<bool> canExecute) : ICommand
     {
         private bool isExecuting;
 
         public event EventHandler? CanExecuteChanged;
 
-        public bool CanExecute(object? parameter) =>
-            !isExecuting && canExecute();
+        public bool CanExecute(object? parameter) => !isExecuting && canExecute();
 
         public async void Execute(object? parameter)
         {
@@ -365,9 +317,7 @@ public sealed class EdsmSettingsViewModel : INotifyPropertyChanged
         }
     }
 
-    private sealed class DelegateCommand(
-        Action execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class DelegateCommand(Action execute, Func<bool> canExecute) : ICommand
     {
         public event EventHandler? CanExecuteChanged;
 

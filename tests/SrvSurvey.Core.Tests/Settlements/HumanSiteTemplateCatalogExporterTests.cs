@@ -7,7 +7,8 @@ public sealed class HumanSiteTemplateCatalogExporterTests : IDisposable
 {
     private readonly string directory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-template-export-{Guid.NewGuid():N}");
+        $"SrvSurvey-template-export-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public async Task ExportRoundTripsEveryTemplateAndAuthoredElement()
@@ -15,18 +16,13 @@ public sealed class HumanSiteTemplateCatalogExporterTests : IDisposable
         var source = HumanSiteTemplateCatalog.LoadEmbedded();
         var template = source.Templates[0];
         var session = new HumanSiteTemplateAuthoringSession(template);
-        session.AddNamedPoint(
-            "QA Point",
-            new HumanSiteMapPoint(1.25, -2.5),
-            securityLevel: 2,
-            floor: 3);
+        session.AddNamedPoint("QA Point", new HumanSiteMapPoint(1.25, -2.5), securityLevel: 2, floor: 3);
         session.AddCircle(new HumanSiteMapPoint(5, 6), radius: 7);
         session.CommitBuilding("QA Building");
         var updated = source.WithTemplate(session.Template);
         var path = Path.Combine(directory, "humanSiteTemplates.json");
 
-        var result = await new HumanSiteTemplateCatalogExporter()
-            .ExportAsync(updated, path);
+        var result = await new HumanSiteTemplateCatalogExporter().ExportAsync(updated, path);
 
         await using var stream = File.OpenRead(path);
         var reloaded = HumanSiteTemplateCatalog.Load(stream);
@@ -35,8 +31,7 @@ public sealed class HumanSiteTemplateCatalogExporterTests : IDisposable
         Assert.Equal("QA Point", match.NamedPoints[^1].Name);
         Assert.Equal("QA Building", match.Buildings[^1].Name);
         Assert.Null(result.BackupPath);
-        Assert.Equal(result.Sha256, Convert.ToHexString(
-            SHA256.HashData(await File.ReadAllBytesAsync(path))));
+        Assert.Equal(result.Sha256, Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(path))));
     }
 
     [Fact]
@@ -48,12 +43,10 @@ public sealed class HumanSiteTemplateCatalogExporterTests : IDisposable
         await File.WriteAllBytesAsync(path, original);
 
         var catalog = HumanSiteTemplateCatalog.LoadEmbedded();
-        var result = await new HumanSiteTemplateCatalogExporter()
-            .ExportAsync(catalog, path);
+        var result = await new HumanSiteTemplateCatalogExporter().ExportAsync(catalog, path);
 
         Assert.NotNull(result.BackupPath);
-        Assert.Equal(original, await File.ReadAllBytesAsync(
-            result.BackupPath!));
+        Assert.Equal(original, await File.ReadAllBytesAsync(result.BackupPath!));
         await using var stream = File.OpenRead(path);
         Assert.Equal(catalog.Count, HumanSiteTemplateCatalog.Load(stream).Count);
     }
@@ -64,19 +57,15 @@ public sealed class HumanSiteTemplateCatalogExporterTests : IDisposable
         Directory.CreateDirectory(directory);
         var path = Path.Combine(directory, "humanSiteTemplates.json");
         await File.WriteAllTextAsync(path, "original");
-        var exporter = new HumanSiteTemplateCatalogExporter(
-            target => File.WriteAllTextAsync(target, "newer"));
+        var exporter = new HumanSiteTemplateCatalogExporter(target => File.WriteAllTextAsync(target, "newer"));
 
         var exception = await Assert.ThrowsAsync<IOException>(() =>
-            exporter.ExportAsync(
-                HumanSiteTemplateCatalog.LoadEmbedded(),
-                path));
+            exporter.ExportAsync(HumanSiteTemplateCatalog.LoadEmbedded(), path)
+        );
 
         Assert.Contains("changed during export", exception.Message);
         Assert.Equal("newer", await File.ReadAllTextAsync(path));
-        var backup = Assert.Single(Directory.GetFiles(
-            directory,
-            "humanSiteTemplates.json.backup-*"));
+        var backup = Assert.Single(Directory.GetFiles(directory, "humanSiteTemplates.json.backup-*"));
         Assert.Equal("original", await File.ReadAllTextAsync(backup));
         Assert.Empty(Directory.GetFiles(directory, "*.tmp"));
     }

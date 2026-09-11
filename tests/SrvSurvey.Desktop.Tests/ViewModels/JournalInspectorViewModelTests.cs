@@ -11,9 +11,9 @@ public sealed class JournalInspectorViewModelTests
     public void RetainsNewestOneHundredTwentyEvents()
     {
         var viewModel = new JournalInspectorViewModel();
-        var events = Enumerable.Range(0, 125)
-            .Select(index => Event(
-                $$"""{"timestamp":"2026-07-25T12:00:00Z","event":"Event{{index}}"}"""))
+        var events = Enumerable
+            .Range(0, 125)
+            .Select(index => Event($$"""{"timestamp":"2026-07-25T12:00:00Z","event":"Event{{index}}"}"""))
             .ToArray();
 
         viewModel.ApplyUpdate(events, null);
@@ -28,39 +28,22 @@ public sealed class JournalInspectorViewModelTests
     public void LiveEventsUpdateIncrementallyWithoutReplacingExistingRows()
     {
         var viewModel = new JournalInspectorViewModel();
-        viewModel.ApplyUpdate(
-        [
-            Event("{\"event\":\"Initial0\"}"),
-            Event("{\"event\":\"Initial1\"}"),
-        ], null);
+        viewModel.ApplyUpdate([Event("{\"event\":\"Initial0\"}"), Event("{\"event\":\"Initial1\"}")], null);
         var collection = viewModel.Events;
         var retainedRow = viewModel.Events[1];
         viewModel.SelectedEvent = retainedRow;
         var changes = new List<NotifyCollectionChangedEventArgs>();
-        ((INotifyCollectionChanged)collection).CollectionChanged +=
-            (_, eventArgs) => changes.Add(eventArgs);
+        ((INotifyCollectionChanged)collection).CollectionChanged += (_, eventArgs) => changes.Add(eventArgs);
 
-        viewModel.ApplyUpdate(
-        [
-            Event("{\"event\":\"Live2\"}"),
-            Event("{\"event\":\"Live3\"}"),
-        ], null);
+        viewModel.ApplyUpdate([Event("{\"event\":\"Live2\"}"), Event("{\"event\":\"Live3\"}")], null);
 
         Assert.Same(collection, viewModel.Events);
-        Assert.Equal(
-            ["Live3", "Live2", "Initial1", "Initial0"],
-            viewModel.Events.Select(item => item.EventName));
+        Assert.Equal(["Live3", "Live2", "Initial1", "Initial0"], viewModel.Events.Select(item => item.EventName));
         Assert.Same(retainedRow, viewModel.Events[3]);
         Assert.Same(retainedRow, viewModel.SelectedEvent);
         Assert.Equal(2, changes.Count);
-        Assert.All(
-            changes,
-            change => Assert.Equal(
-                NotifyCollectionChangedAction.Add,
-                change.Action));
-        Assert.DoesNotContain(
-            changes,
-            change => change.Action == NotifyCollectionChangedAction.Reset);
+        Assert.All(changes, change => Assert.Equal(NotifyCollectionChangedAction.Add, change.Action));
+        Assert.DoesNotContain(changes, change => change.Action == NotifyCollectionChangedAction.Reset);
     }
 
     [Fact]
@@ -68,30 +51,26 @@ public sealed class JournalInspectorViewModelTests
     {
         var viewModel = new JournalInspectorViewModel();
         viewModel.ApplyUpdate(
-            [Event(
-                "{\"timestamp\":\"2026-07-25T12:00:00Z\","
-                    + "\"event\":\"Scan\",\"Body Name\":\"A \\\"quote\\\"\","
-                    + "\"Nested\":{\"Flag\":true,\"end\":\"done\"},"
-                    + "\"Values\":[42],\"A.B\":\"dot\"}")],
-            null);
+            [
+                Event(
+                    "{\"timestamp\":\"2026-07-25T12:00:00Z\","
+                        + "\"event\":\"Scan\",\"Body Name\":\"A \\\"quote\\\"\","
+                        + "\"Nested\":{\"Flag\":true,\"end\":\"done\"},"
+                        + "\"Values\":[42],\"A.B\":\"dot\"}"
+                ),
+            ],
+            null
+        );
 
-        Assert.False(viewModel.Properties.Single(
-            property => property.Path == "timestamp").IsSelectable);
-        viewModel.Properties.Single(
-            property => property.Path == "Body Name").IsIncluded = true;
-        viewModel.Properties.Single(
-            property => property.Path == "Nested.Flag").IsIncluded = true;
-        viewModel.Properties.Single(
-            property => property.Path == "Values[0]").IsIncluded = true;
-        viewModel.Properties.Single(
-            property => property.Path == "Nested.end").IsIncluded = true;
-        viewModel.Properties.Single(
-            property => property.Path == "A.B").IsIncluded = true;
+        Assert.False(viewModel.Properties.Single(property => property.Path == "timestamp").IsSelectable);
+        viewModel.Properties.Single(property => property.Path == "Body Name").IsIncluded = true;
+        viewModel.Properties.Single(property => property.Path == "Nested.Flag").IsIncluded = true;
+        viewModel.Properties.Single(property => property.Path == "Values[0]").IsIncluded = true;
+        viewModel.Properties.Single(property => property.Path == "Nested.end").IsIncluded = true;
+        viewModel.Properties.Single(property => property.Path == "A.B").IsIncluded = true;
 
         Assert.Contains("function on_Scan(entry)", viewModel.CodeText);
-        Assert.Contains(
-            "entry[\"Body Name\"] == \"A \\\"quote\\\"\"",
-            viewModel.CodeText);
+        Assert.Contains("entry[\"Body Name\"] == \"A \\\"quote\\\"\"", viewModel.CodeText);
         Assert.Contains("entry.Nested.Flag == true", viewModel.CodeText);
         Assert.Contains("entry.Values[1] == 42", viewModel.CodeText);
         Assert.Contains("entry.Nested[\"end\"] == \"done\"", viewModel.CodeText);
@@ -131,7 +110,8 @@ public sealed class JournalInspectorViewModelTests
                 },
                 SelectedWeapon = "$humanoid_companalyser_name;",
                 SelectedWeaponLocalised = "Genetic Sampler",
-            });
+            }
+        );
 
         await viewModel.CopyCoordinatesAsync();
         await viewModel.CopyCodeAsync();
@@ -152,9 +132,7 @@ public sealed class JournalInspectorViewModelTests
             replayed.Add(journalEvent);
             return Task.FromResult(new QuestRuntimeUpdateResult([], [], 1));
         });
-        viewModel.ApplyUpdate(
-            [Event("{\"event\":\"Scan\",\"BodyName\":\"Body A\"}")],
-            null);
+        viewModel.ApplyUpdate([Event("{\"event\":\"Scan\",\"BodyName\":\"Body A\"}")], null);
 
         await viewModel.ReplayAsync();
 
@@ -169,9 +147,10 @@ public sealed class JournalInspectorViewModelTests
         Assert.Contains("Replayed Scan", viewModel.StatusMessage);
 
         viewModel.ReplayConfirmed = true;
-        viewModel.ApplyUpdate(Enumerable.Range(0, 120)
-            .Select(index => Event($"{{\"event\":\"Live{index}\"}}"))
-            .ToArray(), null);
+        viewModel.ApplyUpdate(
+            Enumerable.Range(0, 120).Select(index => Event($"{{\"event\":\"Live{index}\"}}")).ToArray(),
+            null
+        );
 
         Assert.False(viewModel.ReplayConfirmed);
         Assert.Equal("Live119", viewModel.SelectedEvent!.EventName);
@@ -179,9 +158,7 @@ public sealed class JournalInspectorViewModelTests
 
     private static JournalEventEnvelope Event(string json)
     {
-        Assert.True(
-            JournalEventEnvelope.TryParse(json, out var result, out var error),
-            error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out var result, out var error), error);
         return result!;
     }
 }

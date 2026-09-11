@@ -12,23 +12,17 @@ public sealed class SystemNameEntryTests
     [Fact]
     public void ConstructorRejectsInvalidDependenciesBeforeInitialization()
     {
-        Assert.Throws<ArgumentNullException>(() =>
-            new SystemNameEntry(null!, TimeSpan.Zero));
+        Assert.Throws<ArgumentNullException>(() => new SystemNameEntry(null!, TimeSpan.Zero));
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            new SystemNameEntry(new StubClient([]), TimeSpan.FromMilliseconds(-1)));
+            new SystemNameEntry(new StubClient([]), TimeSpan.FromMilliseconds(-1))
+        );
     }
 
     [AvaloniaFact]
     public async Task SelectionReplacesId64WithResolvedNameAndRetainsAddress()
     {
-        var client = new StubClient(
-        [
-            new SystemNameSuggestion("Sol", 10477373803, "EDSM"),
-        ]);
-        var control = new SystemNameEntry(client, TimeSpan.Zero)
-        {
-            Text = "10477373803",
-        };
+        var client = new StubClient([new SystemNameSuggestion("Sol", 10477373803, "EDSM")]);
+        var control = new SystemNameEntry(client, TimeSpan.Zero) { Text = "10477373803" };
         await WaitUntilAsync(() => control.HasSuggestions);
 
         Assert.Equal("1 suggestion from EDSM.", control.Status);
@@ -37,9 +31,7 @@ public sealed class SystemNameEntryTests
         Assert.Equal("Sol", control.Text);
         Assert.Equal(10477373803, control.SelectedSystemAddress);
         Assert.False(control.HasSuggestions);
-        Assert.Equal(
-            "Selected Sol · id64 10477373803.",
-            control.Status);
+        Assert.Equal("Selected Sol · id64 10477373803.", control.Status);
     }
 
     [AvaloniaFact]
@@ -64,13 +56,12 @@ public sealed class SystemNameEntryTests
         Assert.True(condition(), "Timed out waiting for system suggestions.");
     }
 
-    private sealed class StubClient(
-        IReadOnlyList<SystemNameSuggestion> suggestions)
-        : ISystemNameSuggestionClient
+    private sealed class StubClient(IReadOnlyList<SystemNameSuggestion> suggestions) : ISystemNameSuggestionClient
     {
         public Task<IReadOnlyList<SystemNameSuggestion>> SearchAsync(
             string query,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             return Task.FromResult(suggestions);
         }

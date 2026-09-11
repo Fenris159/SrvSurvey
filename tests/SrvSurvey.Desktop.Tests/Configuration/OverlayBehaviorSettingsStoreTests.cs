@@ -6,14 +6,13 @@ public sealed class OverlayBehaviorSettingsStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-overlay-behavior-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-overlay-behavior-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void MissingSettingsUseLegacyDefaults()
     {
-        Assert.Equal(
-            new OverlayBehaviorPreferences(false, false, false),
-            CreateStore().Load());
+        Assert.Equal(new OverlayBehaviorPreferences(false, false, false), CreateStore().Load());
     }
 
     [Fact]
@@ -41,7 +40,6 @@ public sealed class OverlayBehaviorSettingsStoreTests : IDisposable
 
     private OverlayBehaviorSettingsStore CreateStore()
     {
-        return new OverlayBehaviorSettingsStore(
-            Path.Combine(temporaryDirectory, "ui-settings.json"));
+        return new OverlayBehaviorSettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json"));
     }
 }

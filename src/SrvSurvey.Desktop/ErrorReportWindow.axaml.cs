@@ -3,8 +3,8 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
-using SrvSurvey.Desktop.ViewModels;
 using SrvSurvey.Desktop.Runtime;
+using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop;
 
@@ -14,22 +14,12 @@ public sealed partial class ErrorReportWindow : Window
     private readonly Action showLogs;
 
     public ErrorReportWindow()
-        : this(
-            new ErrorReportViewModel(
-                new InvalidOperationException("Design-time error"),
-                "0.0.0"),
-            () => { })
-    {
-    }
+        : this(new ErrorReportViewModel(new InvalidOperationException("Design-time error"), "0.0.0"), () => { }) { }
 
-    public ErrorReportWindow(
-        ErrorReportViewModel viewModel,
-        Action showLogs)
+    public ErrorReportWindow(ErrorReportViewModel viewModel, Action showLogs)
     {
-        this.viewModel = viewModel
-            ?? throw new ArgumentNullException(nameof(viewModel));
-        this.showLogs = showLogs
-            ?? throw new ArgumentNullException(nameof(showLogs));
+        this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
+        this.showLogs = showLogs ?? throw new ArgumentNullException(nameof(showLogs));
         InitializeComponent();
         DataContext = viewModel;
         KeyDown += OnWindowKeyDown;
@@ -40,37 +30,27 @@ public sealed partial class ErrorReportWindow : Window
         await viewModel.CopyErrorAsync(WriteClipboardAsync);
     }
 
-    private async void CopyRecentLogs_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private async void CopyRecentLogs_Click(object? sender, RoutedEventArgs eventArgs)
     {
         await viewModel.CopyRecentLogsAsync(WriteClipboardAsync);
     }
 
-    private async void CopyJournalPath_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private async void CopyJournalPath_Click(object? sender, RoutedEventArgs eventArgs)
     {
         await viewModel.CopyJournalPathAsync(WriteClipboardAsync);
     }
 
-    private async void OpenJournal_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private async void OpenJournal_Click(object? sender, RoutedEventArgs eventArgs)
     {
         await viewModel.OpenJournalAsync(LaunchFileAsync);
     }
 
-    private async void CreateIssue_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private async void CreateIssue_Click(object? sender, RoutedEventArgs eventArgs)
     {
         await viewModel.OpenIssueAsync(LaunchUriAsync);
     }
 
-    private async void OpenDiscord_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private async void OpenDiscord_Click(object? sender, RoutedEventArgs eventArgs)
     {
         await viewModel.OpenDiscordAsync(LaunchUriAsync);
     }
@@ -98,9 +78,7 @@ public sealed partial class ErrorReportWindow : Window
     private async Task WriteClipboardAsync(string text)
     {
         DesktopExternalEffectPolicy.ThrowIfDisabled();
-        var clipboard = Clipboard
-            ?? throw new InvalidOperationException(
-                "The desktop clipboard is not available.");
+        var clipboard = Clipboard ?? throw new InvalidOperationException("The desktop clipboard is not available.");
         await clipboard.SetTextAsync(text);
         await clipboard.FlushAsync();
     }

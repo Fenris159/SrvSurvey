@@ -22,30 +22,22 @@ public sealed class HumanSiteTemplateAuthoringSession
 
     public HumanSiteTemplate Template => template;
 
-    public IReadOnlyList<HumanSiteBuildingPath> PendingBuildingPaths =>
-        pendingBuildingPaths;
+    public IReadOnlyList<HumanSiteBuildingPath> PendingBuildingPaths => pendingBuildingPaths;
 
-    public IReadOnlyList<HumanSiteMapPoint> PendingPolygonPoints =>
-        polygonPoints ?? [];
+    public IReadOnlyList<HumanSiteMapPoint> PendingPolygonPoints => polygonPoints ?? [];
 
     public bool IsCapturingPolygon => polygonPoints is not null;
 
     public bool HasPendingBuilding => pendingBuildingPaths.Count > 0;
 
-    public HumanSiteTemplate CreatePreviewTemplate(
-        string pendingBuildingName = "Draft building")
+    public HumanSiteTemplate CreatePreviewTemplate(string pendingBuildingName = "Draft building")
     {
         var previewPaths = pendingBuildingPaths.Select(Clone).ToList();
         if (polygonPoints is { Count: > 0 })
         {
-            var pointTypes = Enumerable.Repeat(
-                LinePoint,
-                polygonPoints.Count).ToArray();
+            var pointTypes = Enumerable.Repeat(LinePoint, polygonPoints.Count).ToArray();
             pointTypes[0] = StartPoint;
-            previewPaths.Add(new HumanSiteBuildingPath(
-                polygonPoints.ToArray(),
-                pointTypes,
-                FillMode: 0));
+            previewPaths.Add(new HumanSiteBuildingPath(polygonPoints.ToArray(), pointTypes, FillMode: 0));
         }
 
         if (previewPaths.Count == 0)
@@ -53,14 +45,10 @@ public sealed class HumanSiteTemplateAuthoringSession
             return template;
         }
 
-        var name = string.IsNullOrWhiteSpace(pendingBuildingName)
-            ? "Draft building"
-            : pendingBuildingName.Trim();
+        var name = string.IsNullOrWhiteSpace(pendingBuildingName) ? "Draft building" : pendingBuildingName.Trim();
         return template with
         {
-            Buildings = template.Buildings
-                .Append(new HumanSiteBuilding(name, previewPaths))
-                .ToArray(),
+            Buildings = template.Buildings.Append(new HumanSiteBuilding(name, previewPaths)).ToArray(),
         };
     }
 
@@ -69,8 +57,7 @@ public sealed class HumanSiteTemplateAuthoringSession
         ValidatePoint(firstPoint);
         if (polygonPoints is not null)
         {
-            throw new InvalidOperationException(
-                "A settlement polygon is already being captured.");
+            throw new InvalidOperationException("A settlement polygon is already being captured.");
         }
 
         polygonPoints = [firstPoint];
@@ -81,8 +68,7 @@ public sealed class HumanSiteTemplateAuthoringSession
         ValidatePoint(point);
         if (polygonPoints is null)
         {
-            throw new InvalidOperationException(
-                "Start a settlement polygon before adding points.");
+            throw new InvalidOperationException("Start a settlement polygon before adding points.");
         }
 
         if (polygonPoints[^1] != point)
@@ -91,15 +77,12 @@ public sealed class HumanSiteTemplateAuthoringSession
         }
     }
 
-    public HumanSiteBuildingPath EndPolygon(
-        HumanSiteMapPoint finalPoint,
-        bool closePath = false)
+    public HumanSiteBuildingPath EndPolygon(HumanSiteMapPoint finalPoint, bool closePath = false)
     {
         AddPolygonPoint(finalPoint);
         if (polygonPoints!.Count < 2)
         {
-            throw new InvalidOperationException(
-                "A settlement polygon requires at least two distinct points.");
+            throw new InvalidOperationException("A settlement polygon requires at least two distinct points.");
         }
 
         var points = polygonPoints.ToArray();
@@ -121,22 +104,20 @@ public sealed class HumanSiteTemplateAuthoringSession
         polygonPoints = null;
     }
 
-    public HumanSiteBuildingPath AddCircle(
-        HumanSiteMapPoint center,
-        double radius)
+    public HumanSiteBuildingPath AddCircle(HumanSiteMapPoint center, double radius)
     {
         ValidatePoint(center);
         if (!double.IsFinite(radius) || radius <= 0 || radius > 10_000)
         {
             throw new ArgumentOutOfRangeException(
                 nameof(radius),
-                "The settlement circle radius must be between 0 and 10,000 metres.");
+                "The settlement circle radius must be between 0 and 10,000 metres."
+            );
         }
 
         if (polygonPoints is not null)
         {
-            throw new InvalidOperationException(
-                "Finish or cancel the current polygon before adding a circle.");
+            throw new InvalidOperationException("Finish or cancel the current polygon before adding a circle.");
         }
 
         var control = radius * CircleControlRatio;
@@ -192,30 +173,21 @@ public sealed class HumanSiteTemplateAuthoringSession
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            throw new ArgumentException(
-                "A settlement building requires a name.",
-                nameof(name));
+            throw new ArgumentException("A settlement building requires a name.", nameof(name));
         }
 
         if (polygonPoints is not null)
         {
-            throw new InvalidOperationException(
-                "Finish or cancel the current polygon before committing a building.");
+            throw new InvalidOperationException("Finish or cancel the current polygon before committing a building.");
         }
 
         if (pendingBuildingPaths.Count == 0)
         {
-            throw new InvalidOperationException(
-                "Add at least one building path before committing a building.");
+            throw new InvalidOperationException("Add at least one building path before committing a building.");
         }
 
-        var building = new HumanSiteBuilding(
-            name.Trim(),
-            pendingBuildingPaths.Select(Clone).ToArray());
-        template = template with
-        {
-            Buildings = template.Buildings.Append(building).ToArray(),
-        };
+        var building = new HumanSiteBuilding(name.Trim(), pendingBuildingPaths.Select(Clone).ToArray());
+        template = template with { Buildings = template.Buildings.Append(building).ToArray() };
         pendingBuildingPaths.Clear();
         return building;
     }
@@ -230,44 +202,25 @@ public sealed class HumanSiteTemplateAuthoringSession
         string name,
         HumanSiteMapPoint offset,
         int securityLevel,
-        int floor)
+        int floor
+    )
     {
         ValidatePointMetadata(offset, securityLevel, floor);
         if (string.IsNullOrWhiteSpace(name))
         {
-            throw new ArgumentException(
-                "A named settlement point requires a name.",
-                nameof(name));
+            throw new ArgumentException("A named settlement point requires a name.", nameof(name));
         }
 
-        var point = new HumanSiteNamedPointOfInterest(
-            offset,
-            Rotation: 0,
-            securityLevel,
-            floor,
-            name.Trim());
-        template = template with
-        {
-            NamedPoints = template.NamedPoints.Append(point).ToArray(),
-        };
+        var point = new HumanSiteNamedPointOfInterest(offset, Rotation: 0, securityLevel, floor, name.Trim());
+        template = template with { NamedPoints = template.NamedPoints.Append(point).ToArray() };
         return point;
     }
 
-    public HumanSitePointOfInterest AddDataTerminal(
-        HumanSiteMapPoint offset,
-        int securityLevel,
-        int floor)
+    public HumanSitePointOfInterest AddDataTerminal(HumanSiteMapPoint offset, int securityLevel, int floor)
     {
         ValidatePointMetadata(offset, securityLevel, floor);
-        var point = new HumanSitePointOfInterest(
-            offset,
-            Rotation: 0,
-            securityLevel,
-            floor);
-        template = template with
-        {
-            DataTerminals = template.DataTerminals.Append(point).ToArray(),
-        };
+        var point = new HumanSitePointOfInterest(offset, Rotation: 0, securityLevel, floor);
+        template = template with { DataTerminals = template.DataTerminals.Append(point).ToArray() };
         return point;
     }
 
@@ -275,25 +228,22 @@ public sealed class HumanSiteTemplateAuthoringSession
         HumanSiteMapPoint offset,
         double rotation,
         int securityLevel,
-        int floor)
+        int floor
+    )
     {
         ValidatePointMetadata(offset, securityLevel, floor);
         if (!double.IsFinite(rotation))
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(rotation),
-                "The secure-door rotation must be finite.");
+            throw new ArgumentOutOfRangeException(nameof(rotation), "The secure-door rotation must be finite.");
         }
 
         var point = new HumanSitePointOfInterest(
             offset,
             SurfaceNavigation.NormalizeDegrees(rotation),
             securityLevel,
-            floor);
-        template = template with
-        {
-            SecureDoors = template.SecureDoors.Append(point).ToArray(),
-        };
+            floor
+        );
+        template = template with { SecureDoors = template.SecureDoors.Append(point).ToArray() };
         return point;
     }
 
@@ -304,10 +254,7 @@ public sealed class HumanSiteTemplateAuthoringSession
             return false;
         }
 
-        template = template with
-        {
-            NamedPoints = template.NamedPoints.SkipLast(1).ToArray(),
-        };
+        template = template with { NamedPoints = template.NamedPoints.SkipLast(1).ToArray() };
         return true;
     }
 
@@ -318,10 +265,7 @@ public sealed class HumanSiteTemplateAuthoringSession
             return false;
         }
 
-        template = template with
-        {
-            DataTerminals = template.DataTerminals.SkipLast(1).ToArray(),
-        };
+        template = template with { DataTerminals = template.DataTerminals.SkipLast(1).ToArray() };
         return true;
     }
 
@@ -332,10 +276,7 @@ public sealed class HumanSiteTemplateAuthoringSession
             return false;
         }
 
-        template = template with
-        {
-            SecureDoors = template.SecureDoors.SkipLast(1).ToArray(),
-        };
+        template = template with { SecureDoors = template.SecureDoors.SkipLast(1).ToArray() };
         return true;
     }
 
@@ -346,31 +287,24 @@ public sealed class HumanSiteTemplateAuthoringSession
             return false;
         }
 
-        template = template with
-        {
-            Buildings = template.Buildings.SkipLast(1).ToArray(),
-        };
+        template = template with { Buildings = template.Buildings.SkipLast(1).ToArray() };
         return true;
     }
 
-    private static void ValidatePointMetadata(
-        HumanSiteMapPoint point,
-        int securityLevel,
-        int floor)
+    private static void ValidatePointMetadata(HumanSiteMapPoint point, int securityLevel, int floor)
     {
         ValidatePoint(point);
         if (securityLevel is < 0 or > 3)
         {
             throw new ArgumentOutOfRangeException(
                 nameof(securityLevel),
-                "The settlement security level must be between 0 and 3.");
+                "The settlement security level must be between 0 and 3."
+            );
         }
 
         if (floor is < 0 or > 99)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(floor),
-                "The settlement floor must be between 0 and 99.");
+            throw new ArgumentOutOfRangeException(nameof(floor), "The settlement floor must be between 0 and 99.");
         }
     }
 
@@ -380,7 +314,8 @@ public sealed class HumanSiteTemplateAuthoringSession
         {
             throw new ArgumentOutOfRangeException(
                 nameof(point),
-                "The settlement map point must be finite and within 10 km of the origin.");
+                "The settlement map point must be finite and within 10 km of the origin."
+            );
         }
     }
 
@@ -393,21 +328,14 @@ public sealed class HumanSiteTemplateAuthoringSession
             NamedPoints = source.NamedPoints.ToArray(),
             DataTerminals = source.DataTerminals.ToArray(),
             ConflictZonePoints = source.ConflictZonePoints.ToArray(),
-            Buildings = source.Buildings
-                .Select(building => building with
-                {
-                    Paths = building.Paths.Select(Clone).ToArray(),
-                })
+            Buildings = source
+                .Buildings.Select(building => building with { Paths = building.Paths.Select(Clone).ToArray() })
                 .ToArray(),
         };
     }
 
     private static HumanSiteBuildingPath Clone(HumanSiteBuildingPath path)
     {
-        return path with
-        {
-            Points = path.Points.ToArray(),
-            PointTypes = path.PointTypes.ToArray(),
-        };
+        return path with { Points = path.Points.ToArray(), PointTypes = path.PointTypes.ToArray() };
     }
 }

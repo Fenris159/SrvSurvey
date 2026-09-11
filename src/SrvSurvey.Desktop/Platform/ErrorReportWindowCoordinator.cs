@@ -18,15 +18,13 @@ public sealed class ErrorReportWindowCoordinator : IDisposable
         Window owner,
         ApplicationLogService applicationLog,
         Func<string?> getJournalPath,
-        Action showLogs)
+        Action showLogs
+    )
     {
         this.owner = owner ?? throw new ArgumentNullException(nameof(owner));
-        this.applicationLog = applicationLog
-            ?? throw new ArgumentNullException(nameof(applicationLog));
-        this.getJournalPath = getJournalPath
-            ?? throw new ArgumentNullException(nameof(getJournalPath));
-        this.showLogs = showLogs
-            ?? throw new ArgumentNullException(nameof(showLogs));
+        this.applicationLog = applicationLog ?? throw new ArgumentNullException(nameof(applicationLog));
+        this.getJournalPath = getJournalPath ?? throw new ArgumentNullException(nameof(getJournalPath));
+        this.showLogs = showLogs ?? throw new ArgumentNullException(nameof(showLogs));
     }
 
     public bool IsVisible => window is not null;
@@ -74,9 +72,7 @@ public sealed class ErrorReportWindowCoordinator : IDisposable
         }
         catch (Exception reportException)
         {
-            applicationLog.Append(
-                "The error-report window could not be opened: "
-                + reportException);
+            applicationLog.Append("The error-report window could not be opened: " + reportException);
         }
     }
 
@@ -93,15 +89,8 @@ public sealed class ErrorReportWindowCoordinator : IDisposable
             return;
         }
 
-        var version = typeof(ErrorReportWindowCoordinator).Assembly
-            .GetName()
-            .Version?
-            .ToString() ?? "unknown";
-        var viewModel = new ErrorReportViewModel(
-            exception,
-            version,
-            applicationLog,
-            getJournalPath());
+        var version = typeof(ErrorReportWindowCoordinator).Assembly.GetName().Version?.ToString() ?? "unknown";
+        var viewModel = new ErrorReportViewModel(exception, version, applicationLog, getJournalPath());
         var errorWindow = new ErrorReportWindow(viewModel, showLogs);
         errorWindow.Closed += OnWindowClosed;
         window = errorWindow;

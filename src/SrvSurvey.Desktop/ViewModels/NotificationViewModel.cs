@@ -15,18 +15,14 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
     private static readonly TimeSpan MessageDuration = TimeSpan.FromSeconds(6);
     private readonly NotificationSettingsStore settingsStore;
     private readonly TimeProvider timeProvider;
-    private readonly Dictionary<string, MaterialState> materials = new(
-        StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, MaterialState> materials = new(StringComparer.OrdinalIgnoreCase);
     private NotificationPreferences preferences;
     private IReadOnlyList<NotificationMessageViewModel> messages = [];
     private string settingsStatus = string.Empty;
 
-    public NotificationViewModel(
-        NotificationSettingsStore settingsStore,
-        TimeProvider? timeProvider = null)
+    public NotificationViewModel(NotificationSettingsStore settingsStore, TimeProvider? timeProvider = null)
     {
-        this.settingsStore = settingsStore
-            ?? throw new ArgumentNullException(nameof(settingsStore));
+        this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         this.timeProvider = timeProvider ?? TimeProvider.System;
         preferences = settingsStore.Load();
     }
@@ -95,12 +91,10 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
                 return 0;
             }
 
-            var remaining = (Messages.Max(message => message.ExpiresAtUtc)
-                - timeProvider.GetUtcNow()).TotalMilliseconds;
-            return Math.Clamp(
-                remaining / MessageDuration.TotalMilliseconds * 100,
-                0,
-                100);
+            var remaining = (
+                Messages.Max(message => message.ExpiresAtUtc) - timeProvider.GetUtcNow()
+            ).TotalMilliseconds;
+            return Math.Clamp(remaining / MessageDuration.TotalMilliseconds * 100, 0, 100);
         }
     }
 
@@ -118,9 +112,7 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
 
     public bool HasSettingsStatus => !string.IsNullOrWhiteSpace(SettingsStatus);
 
-    public void ApplyJournalEvents(
-        IReadOnlyList<JournalEventEnvelope> journalEvents,
-        bool allowNotifications)
+    public void ApplyJournalEvents(IReadOnlyList<JournalEventEnvelope> journalEvents, bool allowNotifications)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
         foreach (var journalEvent in journalEvents)
@@ -132,9 +124,7 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
                     break;
 
                 case "MaterialCollected":
-                    ApplyMaterialCollected(
-                        journalEvent.Payload,
-                        allowNotifications);
+                    ApplyMaterialCollected(journalEvent.Payload, allowNotifications);
                     break;
 
                 case "MaterialTrade":
@@ -145,8 +135,7 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
                     ApplyTechnologyBroker(journalEvent.Payload);
                     break;
 
-                case "CargoDepot" when allowNotifications
-                    && CargoMissionRemaining:
+                case "CargoDepot" when allowNotifications && CargoMissionRemaining:
                     ApplyCargoDepot(journalEvent.Payload);
                     break;
             }
@@ -157,12 +146,15 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
         BoxelSearchNotificationState before,
         BoxelSearchNotificationState after,
         bool hadFssAllBodiesFound,
-        bool allowNotifications)
+        bool allowNotifications
+    )
     {
-        if (!allowNotifications
+        if (
+            !allowNotifications
             || !hadFssAllBodiesFound
             || !after.IsActive
-            || after.CompletionMode != BoxelCompletionMode.FssAllBodies)
+            || after.CompletionMode != BoxelCompletionMode.FssAllBodies
+        )
         {
             return;
         }
@@ -171,23 +163,22 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
         {
             var progress = after.CompletedSystems / (double)after.TotalSystems;
             ShowMessage(
-                "Current boxel "
-                + (progress * 100).ToString("0", CultureInfo.InvariantCulture)
-                + "% searched.");
+                "Current boxel " + (progress * 100).ToString("0", CultureInfo.InvariantCulture) + "% searched."
+            );
         }
 
-        if (ShowNextBoxelToSearch
+        if (
+            ShowNextBoxelToSearch
             && !before.CurrentSystemsComplete
             && after.CurrentSystemsComplete
-            && !string.IsNullOrWhiteSpace(after.NextSystem))
+            && !string.IsNullOrWhiteSpace(after.NextSystem)
+        )
         {
             ShowMessage($"Next boxel to search: {after.NextSystem}");
         }
     }
 
-    public void ReportScreenshotResult(
-        ScreenshotProcessingResult result,
-        bool includedBanner)
+    public void ReportScreenshotResult(ScreenshotProcessingResult result, bool includedBanner)
     {
         ArgumentNullException.ThrowIfNull(result);
         if (!ShowScreenshot)
@@ -199,13 +190,13 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
         {
             ShowMessage(
                 $"Saved '{Path.GetFileName(conversion.OutputPath)}' with"
-                + (includedBanner ? string.Empty : " no")
-                + " banner");
+                    + (includedBanner ? string.Empty : " no")
+                    + " banner"
+            );
         }
     }
 
-    public void ReportGreenGasGiantUploads(
-        GreenGasGiantPublicationResult result)
+    public void ReportGreenGasGiantUploads(GreenGasGiantPublicationResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
         foreach (var candidate in result.Published)
@@ -216,16 +207,14 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
 
     public void ShowBannerPreference(bool enabled)
     {
-        ShowMessage(enabled
-            ? "Adding embedded banner to future screenshots"
-            : "Future screenshots will have no embedded banner");
+        ShowMessage(
+            enabled ? "Adding embedded banner to future screenshots" : "Future screenshots will have no embedded banner"
+        );
     }
 
     public void ShowOverlayInteraction(bool enabled)
     {
-        ShowMessage(enabled
-            ? "Overlay mouse interaction enabled"
-            : "Overlay mouse interaction disabled");
+        ShowMessage(enabled ? "Overlay mouse interaction enabled" : "Overlay mouse interaction disabled");
     }
 
     public void ShowMessage(string message)
@@ -238,10 +227,7 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
         var text = message.Trim();
         var expires = timeProvider.GetUtcNow() + MessageDuration;
         Messages = Messages
-            .Where(existing => !string.Equals(
-                existing.Text,
-                text,
-                StringComparison.Ordinal))
+            .Where(existing => !string.Equals(existing.Text, text, StringComparison.Ordinal))
             .Append(new NotificationMessageViewModel(text, expires))
             .ToArray();
         OnPropertyChanged(nameof(ProgressPercent));
@@ -250,9 +236,7 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
     public void Refresh()
     {
         var now = timeProvider.GetUtcNow();
-        var active = Messages
-            .Where(message => message.ExpiresAtUtc > now)
-            .ToArray();
+        var active = Messages.Where(message => message.ExpiresAtUtc > now).ToArray();
         if (active.Length != Messages.Count)
         {
             Messages = active;
@@ -266,8 +250,7 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
         materials.Clear();
         foreach (var category in new[] { "Raw", "Manufactured", "Encoded" })
         {
-            if (!root.TryGetProperty(category, out var entries)
-                || entries.ValueKind != JsonValueKind.Array)
+            if (!root.TryGetProperty(category, out var entries) || entries.ValueKind != JsonValueKind.Array)
             {
                 continue;
             }
@@ -283,52 +266,43 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
 
                 materials[GetMaterialKey(category, name)] = new MaterialState(
                     GetString(entry, "Name_Localised") ?? name,
-                    Math.Max(0, count.Value));
+                    Math.Max(0, count.Value)
+                );
             }
         }
     }
 
-    private void ApplyMaterialCollected(
-        JsonElement root,
-        bool allowNotifications)
+    private void ApplyMaterialCollected(JsonElement root, bool allowNotifications)
     {
         var category = GetString(root, "Category");
         var name = GetString(root, "Name");
         var count = GetInt32(root, "Count");
-        if (string.IsNullOrWhiteSpace(category)
-            || string.IsNullOrWhiteSpace(name)
-            || count is not > 0)
+        if (string.IsNullOrWhiteSpace(category) || string.IsNullOrWhiteSpace(name) || count is not > 0)
         {
             return;
         }
 
         var key = GetMaterialKey(category, name);
         var existing = materials.GetValueOrDefault(key);
-        var displayName = GetString(root, "Name_Localised")
-            ?? existing?.DisplayName
-            ?? name;
-        var total = (int)Math.Clamp(
-            (long)(existing?.Count ?? 0) + count.Value,
-            0,
-            int.MaxValue);
+        var displayName = GetString(root, "Name_Localised") ?? existing?.DisplayName ?? name;
+        var total = (int)Math.Clamp((long)(existing?.Count ?? 0) + count.Value, 0, int.MaxValue);
         materials[key] = new MaterialState(displayName, total);
         if (allowNotifications && MaterialCountAfterPickup)
         {
-            ShowMessage(
-                $"Collected: {count.Value}x {displayName}, new total {total}");
+            ShowMessage($"Collected: {count.Value}x {displayName}, new total {total}");
         }
     }
 
     private void ApplyMaterialTrade(JsonElement root)
     {
-        if (!root.TryGetProperty("Paid", out var paidElement)
+        if (
+            !root.TryGetProperty("Paid", out var paidElement)
             || paidElement.ValueKind != JsonValueKind.Object
             || !root.TryGetProperty("Received", out var receivedElement)
             || receivedElement.ValueKind != JsonValueKind.Object
-            || TryReadMaterialAdjustment(paidElement, "Quantity")
-                is not { } paid
-            || TryReadMaterialAdjustment(receivedElement, "Quantity")
-                is not { } received)
+            || TryReadMaterialAdjustment(paidElement, "Quantity") is not { } paid
+            || TryReadMaterialAdjustment(receivedElement, "Quantity") is not { } received
+        )
         {
             return;
         }
@@ -339,26 +313,23 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
             return;
         }
 
-        materials[paidKey] = paidState with
-        {
-            Count = Math.Max(0, paidState.Count - paid.Count),
-        };
+        materials[paidKey] = paidState with { Count = Math.Max(0, paidState.Count - paid.Count) };
         ApplyMaterialIncrease(received);
     }
 
     private void ApplyTechnologyBroker(JsonElement root)
     {
-        if (!root.TryGetProperty("Materials", out var entries)
-            || entries.ValueKind != JsonValueKind.Array)
+        if (!root.TryGetProperty("Materials", out var entries) || entries.ValueKind != JsonValueKind.Array)
         {
             return;
         }
 
         foreach (var entry in entries.EnumerateArray())
         {
-            if (entry.ValueKind != JsonValueKind.Object
-                || TryReadMaterialAdjustment(entry, "Count")
-                    is not { } material)
+            if (
+                entry.ValueKind != JsonValueKind.Object
+                || TryReadMaterialAdjustment(entry, "Count") is not { } material
+            )
             {
                 continue;
             }
@@ -366,10 +337,7 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
             var key = GetMaterialKey(material.Category, material.Name);
             if (materials.TryGetValue(key, out var existing))
             {
-                materials[key] = existing with
-                {
-                    Count = Math.Max(0, existing.Count - material.Count),
-                };
+                materials[key] = existing with { Count = Math.Max(0, existing.Count - material.Count) };
             }
         }
     }
@@ -380,28 +348,23 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
         var existing = materials.GetValueOrDefault(key);
         materials[key] = new MaterialState(
             material.DisplayName ?? existing?.DisplayName ?? material.Name,
-            (int)Math.Min(
-                int.MaxValue,
-                (long)(existing?.Count ?? 0) + material.Count));
+            (int)Math.Min(int.MaxValue, (long)(existing?.Count ?? 0) + material.Count)
+        );
     }
 
-    private static MaterialAdjustment? TryReadMaterialAdjustment(
-        JsonElement root,
-        string countProperty)
+    private static MaterialAdjustment? TryReadMaterialAdjustment(JsonElement root, string countProperty)
     {
         var category = GetString(root, "Category");
         var name = GetString(root, "Material") ?? GetString(root, "Name");
         var count = GetInt32(root, countProperty);
-        return string.IsNullOrWhiteSpace(category)
-            || string.IsNullOrWhiteSpace(name)
-            || count is not > 0
-                ? null
-                : new MaterialAdjustment(
-                    category,
-                    name,
-                    GetString(root, "Material_Localised")
-                        ?? GetString(root, "Name_Localised"),
-                    count.Value);
+        return string.IsNullOrWhiteSpace(category) || string.IsNullOrWhiteSpace(name) || count is not > 0
+            ? null
+            : new MaterialAdjustment(
+                category,
+                name,
+                GetString(root, "Material_Localised") ?? GetString(root, "Name_Localised"),
+                count.Value
+            );
     }
 
     private void ApplyCargoDepot(JsonElement root)
@@ -410,17 +373,18 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
         var delivered = GetInt32(root, "ItemsDelivered");
         var total = GetInt32(root, "TotalItemsToDeliver");
         var cargoType = GetString(root, "CargoType");
-        if (!string.Equals(updateType, "Deliver", StringComparison.Ordinal)
+        if (
+            !string.Equals(updateType, "Deliver", StringComparison.Ordinal)
             || delivered is null
             || total is null
             || delivered.Value >= total.Value
-            || string.IsNullOrWhiteSpace(cargoType))
+            || string.IsNullOrWhiteSpace(cargoType)
+        )
         {
             return;
         }
 
-        ShowMessage(
-            $"Deliver {cargoType}: {total.Value - delivered.Value} units remaining");
+        ShowMessage($"Deliver {cargoType}: {total.Value - delivered.Value} units remaining");
     }
 
     private void Update(NotificationPreferences updated)
@@ -442,31 +406,24 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
             settingsStore.Save(preferences);
             SettingsStatus = string.Empty;
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
-            SettingsStatus = "Notification preferences changed for this session "
-                + "but could not be saved: "
-                + exception.Message;
+            SettingsStatus =
+                "Notification preferences changed for this session " + "but could not be saved: " + exception.Message;
         }
     }
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
-            && value.ValueKind == JsonValueKind.String
-                ? value.GetString()
-                : null;
+        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+            ? value.GetString()
+            : null;
     }
 
     private static int? GetInt32(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
-            && value.TryGetInt32(out var result)
-                ? result
-                : null;
+        return root.TryGetProperty(propertyName, out var value) && value.TryGetInt32(out var result) ? result : null;
     }
 
     private static string GetMaterialKey(string category, string name)
@@ -474,10 +431,7 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
         return category + "\0" + name;
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -491,23 +445,15 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(propertyName));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     private sealed record MaterialState(string DisplayName, int Count);
 
-    private sealed record MaterialAdjustment(
-        string Category,
-        string Name,
-        string? DisplayName,
-        int Count);
+    private sealed record MaterialAdjustment(string Category, string Name, string? DisplayName, int Count);
 }
 
-public sealed record NotificationMessageViewModel(
-    string Text,
-    DateTimeOffset ExpiresAtUtc);
+public sealed record NotificationMessageViewModel(string Text, DateTimeOffset ExpiresAtUtc);
 
 public sealed record BoxelSearchNotificationState(
     bool IsActive,
@@ -515,4 +461,5 @@ public sealed record BoxelSearchNotificationState(
     int CompletedSystems,
     int TotalSystems,
     bool CurrentSystemsComplete,
-    string? NextSystem);
+    string? NextSystem
+);

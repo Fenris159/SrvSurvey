@@ -13,10 +13,7 @@ public sealed class FleetCarrierJumpCountdownCoordinator : IDisposable
     public FleetCarrierJumpCountdownCoordinator(RouteWorkspaceViewModel route)
     {
         this.route = route ?? throw new ArgumentNullException(nameof(route));
-        timer = new OverlayDispatcherTimer
-        {
-            Interval = TimeSpan.FromSeconds(1),
-        };
+        timer = new OverlayDispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         timer.Tick += OnTimerTick;
         route.PropertyChanged += OnRoutePropertyChanged;
         SynchronizeTimer();
@@ -44,12 +41,9 @@ public sealed class FleetCarrierJumpCountdownCoordinator : IDisposable
         route.RefreshCarrierJumpCountdown();
     }
 
-    private void OnRoutePropertyChanged(
-        object? sender,
-        PropertyChangedEventArgs eventArgs)
+    private void OnRoutePropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
-        if (eventArgs.PropertyName ==
-            nameof(RouteWorkspaceViewModel.HasCarrierJumpCountdown))
+        if (eventArgs.PropertyName == nameof(RouteWorkspaceViewModel.HasCarrierJumpCountdown))
         {
             SynchronizeTimer();
         }

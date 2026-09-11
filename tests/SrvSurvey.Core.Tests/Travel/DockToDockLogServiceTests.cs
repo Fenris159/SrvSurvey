@@ -7,31 +7,38 @@ public sealed class DockToDockLogServiceTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        "SrvSurvey-DockToDock-" + Guid.NewGuid().ToString("N"));
+        "SrvSurvey-DockToDock-" + Guid.NewGuid().ToString("N")
+    );
 
     [Fact]
     public void LiveTripRetainsLegacyColumnsAndEscapesCsvWithoutReplayingHistory()
     {
-        var path = Path.Combine(
-            temporaryDirectory,
-            DockToDockCsvWriter.FileName);
+        var path = Path.Combine(temporaryDirectory, DockToDockCsvWriter.FileName);
         var service = new DockToDockLogService(path);
         var bootstrap = service.Apply(
-        [
-            Event("2026-07-25T11:00:00Z", "Loadout",
-                "\"Ship\":\"python\",\"ShipName\":\"Raven, One\",\"MaxJumpRange\":31.75"),
-            Event("2026-07-25T11:01:00Z", "Location",
-                "\"StarSystem\":\"Alpha\",\"SystemAddress\":1,\"BodyType\":\"Planet\",\"BodyID\":4,\"Body\":\"Alpha 4\""),
-            Event("2026-07-25T11:02:00Z", "Scan",
-                "\"BodyID\":4,\"DistanceFromArrivalLS\":4.5"),
-            Event("2026-07-25T11:03:00Z", "Docked",
-                "\"StarSystem\":\"Alpha\",\"SystemAddress\":1,\"MarketID\":100,\"StationName\":\"Alpha, Hub\",\"StationType\":\"Orbis\",\"DistFromStarLS\":4.5"),
-            Event("2026-07-25T11:04:00Z", "Undocked",
-                "\"MarketID\":100,\"StationName\":\"Alpha, Hub\""),
-        ],
-        null,
-        enabled: true,
-        isBootstrapRead: true);
+            [
+                Event(
+                    "2026-07-25T11:00:00Z",
+                    "Loadout",
+                    "\"Ship\":\"python\",\"ShipName\":\"Raven, One\",\"MaxJumpRange\":31.75"
+                ),
+                Event(
+                    "2026-07-25T11:01:00Z",
+                    "Location",
+                    "\"StarSystem\":\"Alpha\",\"SystemAddress\":1,\"BodyType\":\"Planet\",\"BodyID\":4,\"Body\":\"Alpha 4\""
+                ),
+                Event("2026-07-25T11:02:00Z", "Scan", "\"BodyID\":4,\"DistanceFromArrivalLS\":4.5"),
+                Event(
+                    "2026-07-25T11:03:00Z",
+                    "Docked",
+                    "\"StarSystem\":\"Alpha\",\"SystemAddress\":1,\"MarketID\":100,\"StationName\":\"Alpha, Hub\",\"StationType\":\"Orbis\",\"DistFromStarLS\":4.5"
+                ),
+                Event("2026-07-25T11:04:00Z", "Undocked", "\"MarketID\":100,\"StationName\":\"Alpha, Hub\""),
+            ],
+            null,
+            enabled: true,
+            isBootstrapRead: true
+        );
         Assert.False(bootstrap.Written);
         Assert.False(service.HasActiveTrip);
         Assert.False(File.Exists(path));
@@ -41,27 +48,38 @@ public sealed class DockToDockLogServiceTests : IDisposable
             "Cargo",
             "Ship",
             3,
-            [new CargoItem("gold", "Gold", 2, 0),
-             new CargoItem("silver", "Silver", 1, 0)]);
+            [new CargoItem("gold", "Gold", 2, 0), new CargoItem("silver", "Silver", 1, 0)]
+        );
         var result = service.Apply(
-        [
-            Event("2026-07-25T12:00:00Z", "Undocked",
-                "\"MarketID\":100,\"StationName\":\"Alpha, Hub\""),
-            Event("2026-07-25T12:05:00Z", "StartJump",
-                "\"JumpType\":\"Hyperspace\""),
-            Event("2026-07-25T12:10:00Z", "FSDJump",
-                "\"StarSystem\":\"Beta\",\"SystemAddress\":2,\"JumpDist\":10.5"),
-            Event("2026-07-25T12:11:00Z", "Interdicted", string.Empty),
-            Event("2026-07-25T12:20:00Z", "FSDJump",
-                "\"StarSystem\":\"Gamma\",\"SystemAddress\":3,\"JumpDist\":20.25"),
-            Event("2026-07-25T12:30:00Z", "SupercruiseExit",
-                "\"StarSystem\":\"Gamma\",\"SystemAddress\":3,\"BodyType\":\"Planet\",\"BodyID\":7,\"Body\":\"Gamma 7\""),
-            Event("2026-07-25T12:40:00Z", "Docked",
-                "\"StarSystem\":\"Gamma\",\"SystemAddress\":3,\"MarketID\":200,\"StationName\":\"Beta \\\"Port\\\"\",\"StationType\":\"Outpost\",\"DistFromStarLS\":321.5"),
-        ],
-        cargo,
-        enabled: true,
-        isBootstrapRead: false);
+            [
+                Event("2026-07-25T12:00:00Z", "Undocked", "\"MarketID\":100,\"StationName\":\"Alpha, Hub\""),
+                Event("2026-07-25T12:05:00Z", "StartJump", "\"JumpType\":\"Hyperspace\""),
+                Event(
+                    "2026-07-25T12:10:00Z",
+                    "FSDJump",
+                    "\"StarSystem\":\"Beta\",\"SystemAddress\":2,\"JumpDist\":10.5"
+                ),
+                Event("2026-07-25T12:11:00Z", "Interdicted", string.Empty),
+                Event(
+                    "2026-07-25T12:20:00Z",
+                    "FSDJump",
+                    "\"StarSystem\":\"Gamma\",\"SystemAddress\":3,\"JumpDist\":20.25"
+                ),
+                Event(
+                    "2026-07-25T12:30:00Z",
+                    "SupercruiseExit",
+                    "\"StarSystem\":\"Gamma\",\"SystemAddress\":3,\"BodyType\":\"Planet\",\"BodyID\":7,\"Body\":\"Gamma 7\""
+                ),
+                Event(
+                    "2026-07-25T12:40:00Z",
+                    "Docked",
+                    "\"StarSystem\":\"Gamma\",\"SystemAddress\":3,\"MarketID\":200,\"StationName\":\"Beta \\\"Port\\\"\",\"StationType\":\"Outpost\",\"DistFromStarLS\":321.5"
+                ),
+            ],
+            cargo,
+            enabled: true,
+            isBootstrapRead: false
+        );
 
         Assert.Equal(1, result.WrittenCount);
         Assert.Null(result.Error);
@@ -103,16 +121,14 @@ public sealed class DockToDockLogServiceTests : IDisposable
         File.WriteAllText(path, incompatible);
         var writer = new DockToDockCsvWriter(path);
 
-        var exception = Assert.Throws<InvalidDataException>(
-            () => writer.Append(CreateEntry()));
+        var exception = Assert.Throws<InvalidDataException>(() => writer.Append(CreateEntry()));
 
         Assert.Contains("header", exception.Message);
         Assert.Equal(incompatible, File.ReadAllText(path));
 
         var validHeader = File.ReadLines(WriteValidFile()).First();
         File.WriteAllText(path, validHeader + "\r\npartial");
-        exception = Assert.Throws<InvalidDataException>(
-            () => writer.Append(CreateEntry()));
+        exception = Assert.Throws<InvalidDataException>(() => writer.Append(CreateEntry()));
         Assert.Contains("incomplete", exception.Message);
         Assert.Equal(validHeader + "\r\npartial", File.ReadAllText(path));
     }
@@ -120,29 +136,21 @@ public sealed class DockToDockLogServiceTests : IDisposable
     [Fact]
     public void ClearingAmbiguousCargoPreventsItEnteringNewTrip()
     {
-        var path = Path.Combine(
-            temporaryDirectory,
-            DockToDockCsvWriter.FileName);
+        var path = Path.Combine(temporaryDirectory, DockToDockCsvWriter.FileName);
         var service = new DockToDockLogService(path);
-        var cargo = new CargoSnapshot(
-            DateTimeOffset.UtcNow,
-            "Cargo",
-            "Ship",
-            2,
-            [new CargoItem("gold", "Gold", 2, 0)]);
+        var cargo = new CargoSnapshot(DateTimeOffset.UtcNow, "Cargo", "Ship", 2, [new CargoItem("gold", "Gold", 2, 0)]);
         service.Apply([], cargo, enabled: true, isBootstrapRead: false);
 
         service.ClearCargo();
         var result = service.Apply(
-        [
-            Event("2026-07-25T12:00:00Z", "Undocked",
-                "\"MarketID\":100,\"StationName\":\"Start\""),
-            Event("2026-07-25T12:10:00Z", "Docked",
-                "\"MarketID\":200,\"StationName\":\"End\""),
-        ],
-        null,
-        enabled: true,
-        isBootstrapRead: false);
+            [
+                Event("2026-07-25T12:00:00Z", "Undocked", "\"MarketID\":100,\"StationName\":\"Start\""),
+                Event("2026-07-25T12:10:00Z", "Docked", "\"MarketID\":200,\"StationName\":\"End\""),
+            ],
+            null,
+            enabled: true,
+            isBootstrapRead: false
+        );
 
         Assert.Empty(Assert.Single(result.Entries).Cargo);
     }
@@ -198,19 +206,17 @@ public sealed class DockToDockLogServiceTests : IDisposable
         };
     }
 
-    private static JournalEventEnvelope Event(
-        string timestamp,
-        string eventName,
-        string properties)
+    private static JournalEventEnvelope Event(string timestamp, string eventName, string properties)
     {
-        var json = "{\"timestamp\":\"" + timestamp + "\",\"event\":\""
+        var json =
+            "{\"timestamp\":\""
+            + timestamp
+            + "\",\"event\":\""
             + eventName
             + "\""
             + (string.IsNullOrEmpty(properties) ? string.Empty : "," + properties)
             + "}";
-        Assert.True(
-            JournalEventEnvelope.TryParse(json, out var result, out var error),
-            error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out var result, out var error), error);
         return result!;
     }
 }

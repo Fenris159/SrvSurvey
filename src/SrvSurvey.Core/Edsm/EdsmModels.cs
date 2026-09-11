@@ -10,7 +10,8 @@ public sealed record EdsmPublicationOptions(
     string? FrontierId,
     string? GameVersion,
     string? GameBuild,
-    bool IsOdyssey)
+    bool IsOdyssey
+)
 {
     public override string ToString() =>
         $"EdsmPublicationOptions {{ HasApiKey = {!string.IsNullOrWhiteSpace(ApiKey)}, EdsmCommanderName = {EdsmCommanderName}, ActiveCommanderName = {ActiveCommanderName}, FrontierId = {FrontierId}, GameVersion = {GameVersion}, GameBuild = {GameBuild}, IsOdyssey = {IsOdyssey} }}";
@@ -20,26 +21,21 @@ public sealed record EdsmPublicationUpdate(
     IReadOnlyList<JournalEventEnvelope> JournalEvents,
     string? JournalPath,
     bool AllowPublishing,
-    EdsmPublicationOptions Options);
+    EdsmPublicationOptions Options
+);
 
 public sealed record EdsmPublicationResult(
     int QueuedEventCount,
     int AcceptedEventCount,
     int PendingEventCount,
     IReadOnlyList<string> QueuedEventNames,
-    IReadOnlyList<string> Warnings)
+    IReadOnlyList<string> Warnings
+)
 {
-    public static EdsmPublicationResult Empty { get; } = new(
-        0,
-        0,
-        0,
-        [],
-        []);
+    public static EdsmPublicationResult Empty { get; } = new(0, 0, 0, [], []);
 }
 
-internal sealed record EdsmCredentials(
-    string CommanderName,
-    string ApiKey);
+internal sealed record EdsmCredentials(string CommanderName, string ApiKey);
 
 internal sealed record EdsmSession(
     string ActiveCommanderName,
@@ -48,21 +44,22 @@ internal sealed record EdsmSession(
     string GameVersion,
     string GameBuild,
     bool IsLive,
-    bool IsBeta)
+    bool IsBeta
+)
 {
-    internal static EdsmSession? Create(
-        EdsmPublicationOptions options,
-        string? journalPath)
+    internal static EdsmSession? Create(EdsmPublicationOptions options, string? journalPath)
     {
         ArgumentNullException.ThrowIfNull(options);
         var activeCommanderName = options.ActiveCommanderName?.Trim();
         var frontierId = options.FrontierId?.Trim();
         var gameVersion = options.GameVersion?.Trim();
         var gameBuild = options.GameBuild?.Trim();
-        if (string.IsNullOrWhiteSpace(activeCommanderName)
+        if (
+            string.IsNullOrWhiteSpace(activeCommanderName)
             || string.IsNullOrWhiteSpace(frontierId)
             || string.IsNullOrWhiteSpace(gameVersion)
-            || string.IsNullOrWhiteSpace(gameBuild))
+            || string.IsNullOrWhiteSpace(gameBuild)
+        )
         {
             return null;
         }
@@ -74,7 +71,8 @@ internal sealed record EdsmSession(
             gameVersion,
             gameBuild,
             EdsmPublisher.IsLiveVersion(gameVersion, options.IsOdyssey),
-            EdsmPublisher.IsBetaVersion(gameVersion));
+            EdsmPublisher.IsBetaVersion(gameVersion)
+        );
     }
 
     internal bool Matches(EdsmSession other)
@@ -82,14 +80,8 @@ internal sealed record EdsmSession(
         var pathComparison = OperatingSystem.IsWindows()
             ? StringComparison.OrdinalIgnoreCase
             : StringComparison.Ordinal;
-        return string.Equals(
-                ActiveCommanderName,
-                other.ActiveCommanderName,
-                StringComparison.OrdinalIgnoreCase)
-            && string.Equals(
-                FrontierId,
-                other.FrontierId,
-                StringComparison.OrdinalIgnoreCase)
+        return string.Equals(ActiveCommanderName, other.ActiveCommanderName, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(FrontierId, other.FrontierId, StringComparison.OrdinalIgnoreCase)
             && string.Equals(JournalPath, other.JournalPath, pathComparison)
             && string.Equals(GameVersion, other.GameVersion, StringComparison.Ordinal)
             && string.Equals(GameBuild, other.GameBuild, StringComparison.Ordinal)
@@ -97,23 +89,17 @@ internal sealed record EdsmSession(
             && IsBeta == other.IsBeta;
     }
 
-    internal static EdsmCredentials? GetCredentials(
-        string? edsmCommanderName,
-        string? apiKey)
+    internal static EdsmCredentials? GetCredentials(string? edsmCommanderName, string? apiKey)
     {
         var normalizedCommander = edsmCommanderName?.Trim();
         var normalizedKey = apiKey?.Trim();
-        return string.IsNullOrWhiteSpace(normalizedCommander)
-            || string.IsNullOrWhiteSpace(normalizedKey)
-                ? null
-                : new EdsmCredentials(normalizedCommander, normalizedKey);
+        return string.IsNullOrWhiteSpace(normalizedCommander) || string.IsNullOrWhiteSpace(normalizedKey)
+            ? null
+            : new EdsmCredentials(normalizedCommander, normalizedKey);
     }
 }
 
-internal sealed record EdsmQueuedEvent(
-    long AuthorizationGeneration,
-    string EventName,
-    string RawJson);
+internal sealed record EdsmQueuedEvent(long AuthorizationGeneration, string EventName, string RawJson);
 
 internal sealed class EdsmJournalContext
 {
@@ -196,9 +182,7 @@ internal sealed class EdsmJournalContext
 
             case "ShipyardBuy":
             case "ShipyardNew":
-                ShipId = ReadInt64(entry, "NewShipID")
-                    ?? ReadInt64(entry, "ShipID")
-                    ?? ShipId;
+                ShipId = ReadInt64(entry, "NewShipID") ?? ReadInt64(entry, "ShipID") ?? ShipId;
                 break;
         }
     }
@@ -223,12 +207,12 @@ internal sealed class EdsmJournalContext
     {
         SystemName = entry.Value<string>("StarSystem") ?? SystemName;
         SystemAddress = ReadInt64(entry, nameof(SystemAddress)) ?? SystemAddress;
-        if (entry["StarPos"] is JArray { Count: >= 3 } starPosition
-            && starPosition.Take(3).All(item => item.Type is
-                JTokenType.Integer or JTokenType.Float))
+        if (
+            entry["StarPos"] is JArray { Count: >= 3 } starPosition
+            && starPosition.Take(3).All(item => item.Type is JTokenType.Integer or JTokenType.Float)
+        )
         {
-            SystemCoordinates = new JArray(
-                starPosition.Take(3).Select(item => item.DeepClone()));
+            SystemCoordinates = new JArray(starPosition.Take(3).Select(item => item.DeepClone()));
         }
     }
 
@@ -240,16 +224,14 @@ internal sealed class EdsmJournalContext
 
     private void UpdateMulticrew(string? eventName, JObject entry)
     {
-        if (eventName is "LoadGame"
-            or "QuitACrew"
-            or "EndCrewSession"
-            or "CrewMemberQuits")
+        if (eventName is "LoadGame" or "QuitACrew" or "EndCrewSession" or "CrewMemberQuits")
         {
             InMulticrew = false;
         }
-        else if (eventName is "JoinACrew" or "ChangeCrewRole"
-            || entry["Multicrew"]?.Type == JTokenType.Boolean
-                && entry["Multicrew"]!.Value<bool>())
+        else if (
+            eventName is "JoinACrew" or "ChangeCrewRole"
+            || entry["Multicrew"]?.Type == JTokenType.Boolean && entry["Multicrew"]!.Value<bool>()
+        )
         {
             InMulticrew = true;
         }
@@ -267,15 +249,13 @@ internal sealed class EdsmJournalContext
             token?.Value<string>(),
             System.Globalization.NumberStyles.Integer,
             System.Globalization.CultureInfo.InvariantCulture,
-            out var value)
+            out var value
+        )
             ? value
             : null;
     }
 
-    private static void SetIfKnown(
-        JObject target,
-        string propertyName,
-        object? value)
+    private static void SetIfKnown(JObject target, string propertyName, object? value)
     {
         if (value is not null)
         {

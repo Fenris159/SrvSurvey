@@ -32,10 +32,7 @@ internal enum OverlayGameMode
 
 internal static class OverlayGameModeResolver
 {
-    public static OverlayGameMode Resolve(
-        EliteStatus? status,
-        bool isFsdJumping = false,
-        string? musicTrack = null)
+    public static OverlayGameMode Resolve(EliteStatus? status, bool isFsdJumping = false, string? musicTrack = null)
     {
         if (status is null)
         {
@@ -60,9 +57,7 @@ internal static class OverlayGameModeResolver
         return ResolvePhysicalMode(status);
     }
 
-    private static bool TryResolveGuiFocus(
-        GuiFocus focus,
-        out OverlayGameMode mode)
+    private static bool TryResolveGuiFocus(GuiFocus focus, out OverlayGameMode mode)
     {
         mode = focus switch
         {
@@ -83,9 +78,7 @@ internal static class OverlayGameModeResolver
         return focus != GuiFocus.NoFocus;
     }
 
-    private static bool TryResolveMusicTrack(
-        string? musicTrack,
-        out OverlayGameMode mode)
+    private static bool TryResolveMusicTrack(string? musicTrack, out OverlayGameMode mode)
     {
         if (string.Equals(musicTrack, "GalaxyMap", StringComparison.Ordinal))
         {
@@ -156,10 +149,9 @@ internal static class OverlayGameModeResolver
             return OverlayGameMode.Flying;
         }
 
-        return status.Flags == StatusFlags.None
-            && status.Flags2 == StatusFlags2.None
-                ? OverlayGameMode.Offline
-                : OverlayGameMode.Unknown;
+        return status.Flags == StatusFlags.None && status.Flags2 == StatusFlags2.None
+            ? OverlayGameMode.Offline
+            : OverlayGameMode.Unknown;
     }
 
     private static OverlayVehicle ResolveVehicle(EliteStatus status)

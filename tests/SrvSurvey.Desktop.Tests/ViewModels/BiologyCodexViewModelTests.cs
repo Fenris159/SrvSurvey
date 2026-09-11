@@ -9,7 +9,8 @@ public sealed class BiologyCodexViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        "SrvSurvey-BiologyCodex-" + Guid.NewGuid().ToString("N"));
+        "SrvSurvey-BiologyCodex-" + Guid.NewGuid().ToString("N")
+    );
 
     [Fact]
     public async Task BuildsExactPredictionAndPreservesLegacyDiscoveryStatesAndLinks()
@@ -19,26 +20,31 @@ public sealed class BiologyCodexViewModelTests : IDisposable
             survey,
             ExobiologyReferenceCatalog.LoadEmbedded(),
             BiologyCriteriaCatalog.LoadEmbedded(),
-            () => "Cmdr Test");
+            () => "Cmdr Test"
+        );
         survey.ApplyUpdate(
-        [
-            Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""),
-            Parse("""{"event":"Scan","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"L","StellarMass":1,"Radius":695700000,"SurfaceTemperature":5000}"""),
-            Parse(PredictableAleoidaScan),
-            Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""),
-        ],
-        new EliteStatus
-        {
-            BodyName = "Test 1",
-            Flags2 = StatusFlags2.OnFoot,
-            Temperature = 1_000,
-        });
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""),
+                Parse(
+                    """{"event":"Scan","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"L","StellarMass":1,"Radius":695700000,"SurfaceTemperature":5000}"""
+                ),
+                Parse(PredictableAleoidaScan),
+                Parse(
+                    """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""
+                ),
+            ],
+            new EliteStatus
+            {
+                BodyName = "Test 1",
+                Flags2 = StatusFlags2.OnFoot,
+                Temperature = 1_000,
+            }
+        );
 
         Assert.True(viewModel.HasSystem);
         Assert.Equal("Test", viewModel.SystemName);
         Assert.Equal("Test 1", viewModel.SelectedBody!.Name);
-        var organism = Assert.IsType<BiologyCodexOrganismViewModel>(
-            viewModel.SelectedOrganism);
+        var organism = Assert.IsType<BiologyCodexOrganismViewModel>(viewModel.SelectedOrganism);
         Assert.Equal(2310206, organism.EntryId);
         Assert.Equal("Aleoida Coronamus - Lime", organism.DisplayName);
         Assert.Equal(BiologyCodexDiscoveryStatus.Predicted, organism.Status);
@@ -69,31 +75,20 @@ public sealed class BiologyCodexViewModelTests : IDisposable
         Assert.EndsWith("/42", launchedUri.AbsoluteUri);
 
         survey.ApplyUpdate(
-        [
-            Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310206,"Name_Localised":"Aleoida Coronamus - Lime","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2}"""),
-        ],
-        null);
-        Assert.Equal(
-            BiologyCodexDiscoveryStatus.Reported,
-            viewModel.SelectedOrganism!.Status);
+            [
+                Parse(
+                    """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310206,"Name_Localised":"Aleoida Coronamus - Lime","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2}"""
+                ),
+            ],
+            null
+        );
+        Assert.Equal(BiologyCodexDiscoveryStatus.Reported, viewModel.SelectedOrganism!.Status);
 
-        survey.ApplyUpdate(
-        [
-            Parse(OrganicLog),
-        ],
-        null);
-        Assert.Equal(
-            BiologyCodexDiscoveryStatus.Confirmed,
-            viewModel.SelectedOrganism!.Status);
+        survey.ApplyUpdate([Parse(OrganicLog)], null);
+        Assert.Equal(BiologyCodexDiscoveryStatus.Confirmed, viewModel.SelectedOrganism!.Status);
 
-        survey.ApplyUpdate(
-        [
-            Parse(OrganicAnalyse),
-        ],
-        null);
-        Assert.Equal(
-            BiologyCodexDiscoveryStatus.Analyzed,
-            viewModel.SelectedOrganism!.Status);
+        survey.ApplyUpdate([Parse(OrganicAnalyse)], null);
+        Assert.Equal(BiologyCodexDiscoveryStatus.Analyzed, viewModel.SelectedOrganism!.Status);
     }
 
     [Fact]
@@ -103,7 +98,8 @@ public sealed class BiologyCodexViewModelTests : IDisposable
         using var viewModel = new BiologyCodexViewModel(
             survey,
             ExobiologyReferenceCatalog.LoadEmbedded(),
-            BiologyCriteriaCatalog.LoadEmbedded());
+            BiologyCriteriaCatalog.LoadEmbedded()
+        );
         var opened = false;
         viewModel.SetWindowOpener(() =>
         {
@@ -113,14 +109,23 @@ public sealed class BiologyCodexViewModelTests : IDisposable
 
         Assert.False(viewModel.OpenWindowCommand.CanExecute(null));
         survey.ApplyUpdate(
-        [
-            Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""),
-            Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""),
-            Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 2","BodyID":2,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""),
-            Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Yellow","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2}"""),
-            Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2320101,"Name_Localised":"Bacterium Aurasus - Teal","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1.1,"Longitude":2.1}"""),
-        ],
-        null);
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""),
+                Parse(
+                    """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""
+                ),
+                Parse(
+                    """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 2","BodyID":2,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""
+                ),
+                Parse(
+                    """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Yellow","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2}"""
+                ),
+                Parse(
+                    """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2320101,"Name_Localised":"Bacterium Aurasus - Teal","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1.1,"Longitude":2.1}"""
+                ),
+            ],
+            null
+        );
 
         Assert.True(viewModel.OpenWindowCommand.CanExecute(null));
         viewModel.OpenWindowCommand.Execute(null);
@@ -147,15 +152,23 @@ public sealed class BiologyCodexViewModelTests : IDisposable
         using var viewModel = new BiologyCodexViewModel(
             survey,
             ExobiologyReferenceCatalog.LoadEmbedded(),
-            BiologyCriteriaCatalog.LoadEmbedded());
+            BiologyCriteriaCatalog.LoadEmbedded()
+        );
         survey.ApplyUpdate(
-        [
-            Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""),
-            Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2}]}"""),
-            Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Yellow","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2}"""),
-            Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2320101,"Name_Localised":"Bacterium Aurasus - Teal","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1.1,"Longitude":2.1}"""),
-        ],
-        null);
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""),
+                Parse(
+                    """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2}]}"""
+                ),
+                Parse(
+                    """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Yellow","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2}"""
+                ),
+                Parse(
+                    """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2320101,"Name_Localised":"Bacterium Aurasus - Teal","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1.1,"Longitude":2.1}"""
+                ),
+            ],
+            null
+        );
         long? selectedAtOpen = null;
         viewModel.SetWindowOpener(() =>
         {
@@ -180,16 +193,13 @@ public sealed class BiologyCodexViewModelTests : IDisposable
     private SystemSurveyViewModel CreateSurvey()
     {
         return new SystemSurveyViewModel(
-            new SystemSurveySettingsStore(
-                Path.Combine(temporaryDirectory, "ui-settings.json")));
+            new SystemSurveySettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json"))
+        );
     }
 
     private static JournalEventEnvelope Parse(string json)
     {
-        var success = JournalEventEnvelope.TryParse(
-            json,
-            out var journalEvent,
-            out var error);
+        var success = JournalEventEnvelope.TryParse(json, out var journalEvent, out var error);
         Assert.True(success, error);
         return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }

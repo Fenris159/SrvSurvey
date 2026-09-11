@@ -10,7 +10,8 @@ public sealed class SystemScanPersistenceStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        "SrvSurvey-SystemScanPersistence-" + Guid.NewGuid().ToString("N"));
+        "SrvSurvey-SystemScanPersistence-" + Guid.NewGuid().ToString("N")
+    );
 
     [Fact]
     public async Task ExplicitFirstFootfallCorrectionCanClearPersistedTrue()
@@ -23,20 +24,20 @@ public sealed class SystemScanPersistenceStoreTests : IDisposable
               "address": 42,
               "bodies": [{ "name": "Test 1", "id": 1, "firstFootFall": true }]
             }
-            """);
+            """
+        );
         var snapshot = CreateSnapshot(
             """{"event":"Location","StarSystem":"Test","SystemAddress":42}""",
-            """{"event":"Disembark","SystemAddress":42,"Body":"Test 1","BodyID":1,"OnPlanet":true,"OnStation":false}""");
+            """{"event":"Disembark","SystemAddress":42,"Body":"Test 1","BodyID":1,"OnPlanet":true,"OnStation":false}"""
+        );
         var store = new SystemScanPersistenceStore(temporaryDirectory);
 
         await store.SaveFirstFootfallCorrectionAsync(
-            new SystemScanPersistenceContext(
-                "F123",
-                "Drew",
-                DateTimeOffset.Parse("2026-07-25T00:00:00Z")),
+            new SystemScanPersistenceContext("F123", "Drew", DateTimeOffset.Parse("2026-07-25T00:00:00Z")),
             snapshot,
             1,
-            false);
+            false
+        );
 
         var saved = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.False(saved["bodies"]![0]!["firstFootFall"]!.GetValue<bool>());
@@ -71,17 +72,17 @@ public sealed class SystemScanPersistenceStoreTests : IDisposable
                 }
               ]
             }
-            """);
+            """
+        );
         var snapshot = CreateSnapshot(
-            """{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[1,2,3]}""");
+            """{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[1,2,3]}"""
+        );
         var store = new SystemScanPersistenceStore(temporaryDirectory);
 
         var result = await store.SaveAsync(
-            new SystemScanPersistenceContext(
-                "F123",
-                "Drew",
-                DateTimeOffset.Parse("2026-07-22T00:00:00Z")),
-            snapshot);
+            new SystemScanPersistenceContext("F123", "Drew", DateTimeOffset.Parse("2026-07-22T00:00:00Z")),
+            snapshot
+        );
 
         Assert.Equal(path, result.Path);
         Assert.True(result.IsRepeatVisit);
@@ -90,19 +91,12 @@ public sealed class SystemScanPersistenceStoreTests : IDisposable
         var saved = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.Equal(7, saved["futureRoot"]!["value"]!.GetValue<int>());
         Assert.Equal("Drew", saved["commander"]!.GetValue<string>());
-        Assert.Equal(
-            "2026-07-20T00:00:00Z",
-            saved["firstVisited"]!.GetValue<string>());
-        Assert.Equal(
-            "2026-07-22T00:00:00.0000000+00:00",
-            saved["lastVisited"]!.GetValue<string>());
-        var body = Assert.IsType<JsonObject>(
-            Assert.Single(saved["bodies"]!.AsArray()));
+        Assert.Equal("2026-07-20T00:00:00Z", saved["firstVisited"]!.GetValue<string>());
+        Assert.Equal("2026-07-22T00:00:00.0000000+00:00", saved["lastVisited"]!.GetValue<string>());
+        var body = Assert.IsType<JsonObject>(Assert.Single(saved["bodies"]!.AsArray()));
         Assert.True(body["futureBody"]!.GetValue<bool>());
         Assert.NotNull(body["bookmarks"]);
-        Assert.Equal(
-            "keep",
-            body["organisms"]![0]!["futureOrganism"]!.GetValue<string>());
+        Assert.Equal("keep", body["organisms"]![0]!["futureOrganism"]!.GetValue<string>());
     }
 
     [Fact]
@@ -118,16 +112,14 @@ public sealed class SystemScanPersistenceStoreTests : IDisposable
               "lastVisited": "2026-07-21T00:00:00Z",
               "bodies": [{ "name": "Test 1", "id": 1, "bioSignalCount": 2 }]
             }
-            """);
+            """
+        );
         var store = new SystemScanPersistenceStore(temporaryDirectory);
 
         var result = await store.SaveAsync(
-            new SystemScanPersistenceContext(
-                "F123",
-                "Drew",
-                DateTimeOffset.Parse("2026-07-22T00:00:00Z")),
-            CreateSnapshot(
-                """{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+            new SystemScanPersistenceContext("F123", "Drew", DateTimeOffset.Parse("2026-07-22T00:00:00Z")),
+            CreateSnapshot("""{"event":"Location","StarSystem":"Test","SystemAddress":42}""")
+        );
 
         Assert.True(result.IsRepeatVisit);
         Assert.Equal(2, result.BiologicalSignalsRemaining);
@@ -143,12 +135,10 @@ public sealed class SystemScanPersistenceStoreTests : IDisposable
 
         var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
             store.SaveAsync(
-                new SystemScanPersistenceContext(
-                    "F123",
-                    "Drew",
-                    DateTimeOffset.Parse("2026-07-22T00:00:00Z")),
-                CreateSnapshot(
-                    """{"event":"Location","StarSystem":"Test","SystemAddress":42}""")));
+                new SystemScanPersistenceContext("F123", "Drew", DateTimeOffset.Parse("2026-07-22T00:00:00Z")),
+                CreateSnapshot("""{"event":"Location","StarSystem":"Test","SystemAddress":42}""")
+            )
+        );
 
         Assert.Contains("was not overwritten", exception.Message);
         Assert.Equal(before, await File.ReadAllBytesAsync(path));
@@ -206,15 +196,12 @@ public sealed class SystemScanPersistenceStoreTests : IDisposable
                 }
               ]
             }
-            """);
+            """
+        );
         var before = await File.ReadAllBytesAsync(path);
         var store = new SystemScanPersistenceStore(temporaryDirectory);
 
-        var result = await store.LoadAsync(
-            "F123",
-            "Drew",
-            "Test",
-            42);
+        var result = await store.LoadAsync("F123", "Drew", "Test", 42);
 
         Assert.True(result.Exists);
         Assert.Null(result.Error);
@@ -227,12 +214,8 @@ public sealed class SystemScanPersistenceStoreTests : IDisposable
         Assert.Equal(SystemBodyKind.LandablePlanet, body.Kind);
         Assert.Equal(9.5, body.SurfaceGravity);
         Assert.Equal(20, body.Materials["iron"]);
-        Assert.Equal(
-            new SystemBodyParentSnapshot(SystemBodyParentKind.Star, 0),
-            Assert.Single(body.Parents));
-        Assert.Equal(
-            "Water Geysers",
-            Assert.Single(body.AnalyzedGeologicalSignals));
+        Assert.Equal(new SystemBodyParentSnapshot(SystemBodyParentKind.Star, 0), Assert.Single(body.Parents));
+        Assert.Equal("Water Geysers", Assert.Single(body.AnalyzedGeologicalSignals));
         Assert.True(Assert.Single(body.Organisms).IsAnalyzed);
         Assert.Equal(before, await File.ReadAllBytesAsync(path));
     }
@@ -250,11 +233,11 @@ public sealed class SystemScanPersistenceStoreTests : IDisposable
                 { "name": "Test 1", "id": 1, "type": "FutureBodyType" }
               ]
             }
-            """);
+            """
+        );
         var before = await File.ReadAllBytesAsync(path);
 
-        var result = await new SystemScanPersistenceStore(temporaryDirectory)
-            .LoadAsync("F123", "Drew", "Test", 42);
+        var result = await new SystemScanPersistenceStore(temporaryDirectory).LoadAsync("F123", "Drew", "Test", 42);
 
         Assert.True(result.Exists);
         Assert.Null(result.Snapshot);
@@ -284,12 +267,7 @@ public sealed class SystemScanPersistenceStoreTests : IDisposable
         var state = new SystemScanState();
         foreach (var json in events)
         {
-            Assert.True(
-                JournalEventEnvelope.TryParse(
-                    json,
-                    out var journalEvent,
-                    out var error),
-                error);
+            Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
             state.Apply(Assert.IsType<JournalEventEnvelope>(journalEvent));
         }
 

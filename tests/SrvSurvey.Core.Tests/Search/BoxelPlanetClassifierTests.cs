@@ -4,34 +4,33 @@ namespace SrvSurvey.Core.Tests.Search;
 
 public sealed class BoxelPlanetClassifierTests
 {
-    public static TheoryData<string, BoxelPlanetClass> JournalPlanetClasses { get; } = new()
-    {
-        { "Metal rich body", BoxelPlanetClass.MetalRich },
-        { "High metal content body", BoxelPlanetClass.HighMetalContent },
-        { "Rocky body", BoxelPlanetClass.Rocky },
-        { "Icy body", BoxelPlanetClass.Icy },
-        { "Rocky ice body", BoxelPlanetClass.RockyIce },
-        { "Earthlike body", BoxelPlanetClass.Earthlike },
-        { "Water world", BoxelPlanetClass.WaterWorld },
-        { "Ammonia world", BoxelPlanetClass.AmmoniaWorld },
-        { "Water giant", BoxelPlanetClass.WaterGiant },
-        { "Water giant with life", BoxelPlanetClass.WaterGiantWithLife },
-        { "Gas giant with water based life", BoxelPlanetClass.GasGiantWaterLife },
-        { "Gas giant with ammonia based life", BoxelPlanetClass.GasGiantAmmoniaLife },
-        { "Sudarsky class I gas giant", BoxelPlanetClass.SudarskyI },
-        { "Sudarsky class II gas giant", BoxelPlanetClass.SudarskyII },
-        { "Sudarsky class III gas giant", BoxelPlanetClass.SudarskyIII },
-        { "Sudarsky class IV gas giant", BoxelPlanetClass.SudarskyIV },
-        { "Sudarsky class V gas giant", BoxelPlanetClass.SudarskyV },
-        { "Helium rich gas giant", BoxelPlanetClass.HeliumRichGasGiant },
-        { "Helium gas giant", BoxelPlanetClass.HeliumGasGiant },
-    };
+    public static TheoryData<string, BoxelPlanetClass> JournalPlanetClasses { get; } =
+        new()
+        {
+            { "Metal rich body", BoxelPlanetClass.MetalRich },
+            { "High metal content body", BoxelPlanetClass.HighMetalContent },
+            { "Rocky body", BoxelPlanetClass.Rocky },
+            { "Icy body", BoxelPlanetClass.Icy },
+            { "Rocky ice body", BoxelPlanetClass.RockyIce },
+            { "Earthlike body", BoxelPlanetClass.Earthlike },
+            { "Water world", BoxelPlanetClass.WaterWorld },
+            { "Ammonia world", BoxelPlanetClass.AmmoniaWorld },
+            { "Water giant", BoxelPlanetClass.WaterGiant },
+            { "Water giant with life", BoxelPlanetClass.WaterGiantWithLife },
+            { "Gas giant with water based life", BoxelPlanetClass.GasGiantWaterLife },
+            { "Gas giant with ammonia based life", BoxelPlanetClass.GasGiantAmmoniaLife },
+            { "Sudarsky class I gas giant", BoxelPlanetClass.SudarskyI },
+            { "Sudarsky class II gas giant", BoxelPlanetClass.SudarskyII },
+            { "Sudarsky class III gas giant", BoxelPlanetClass.SudarskyIII },
+            { "Sudarsky class IV gas giant", BoxelPlanetClass.SudarskyIV },
+            { "Sudarsky class V gas giant", BoxelPlanetClass.SudarskyV },
+            { "Helium rich gas giant", BoxelPlanetClass.HeliumRichGasGiant },
+            { "Helium gas giant", BoxelPlanetClass.HeliumGasGiant },
+        };
 
     [Theory]
     [MemberData(nameof(JournalPlanetClasses))]
-    public void MapsAllNineteenJournalPlanetClasses(
-        string planetClass,
-        BoxelPlanetClass expected)
+    public void MapsAllNineteenJournalPlanetClasses(string planetClass, BoxelPlanetClass expected)
     {
         Assert.True(BoxelPlanetClassifier.TryFromPlanetClass(planetClass, out var classified));
         Assert.Equal(expected, classified);
@@ -86,39 +85,35 @@ public sealed class BoxelPlanetClassifierTests
     [InlineData(true, "None", false)]
     [InlineData(false, "Nitrogen", false)]
     [InlineData(false, null, false)]
-    public void AtmosphericLandableRequiresLandableAndAtmosphere(
-        bool isLandable,
-        string? atmosphereType,
-        bool expected)
+    public void AtmosphericLandableRequiresLandableAndAtmosphere(bool isLandable, string? atmosphereType, bool expected)
     {
-        Assert.Equal(
-            expected,
-            BoxelPlanetClassifier.IsAtmosphericLandable(isLandable, atmosphereType));
+        Assert.Equal(expected, BoxelPlanetClassifier.IsAtmosphericLandable(isLandable, atmosphereType));
     }
 
     [Fact]
     public void HeliumPercentUsesCaseInsensitiveNameAndIgnoresZero()
     {
-        Assert.True(BoxelPlanetClassifier.TryGetHeliumPercent(
-            new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["helium"] = 28.5,
-            },
-            out var percent));
+        Assert.True(
+            BoxelPlanetClassifier.TryGetHeliumPercent(
+                new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase) { ["helium"] = 28.5 },
+                out var percent
+            )
+        );
         Assert.Equal(28.5, percent);
 
-        Assert.False(BoxelPlanetClassifier.TryGetHeliumPercent(
-            new Dictionary<string, double> { ["Helium"] = 0 },
-            out _));
-        Assert.False(BoxelPlanetClassifier.TryGetHeliumPercent(
-            new Dictionary<string, double> { ["Hydrogen"] = 80 },
-            out _));
-        Assert.False(BoxelPlanetClassifier.TryGetHeliumPercent(
-            new Dictionary<string, double>(),
-            out _));
-        Assert.False(BoxelPlanetClassifier.TryGetHeliumPercent(
-            new Dictionary<string, double> { ["Helium"] = 150 },
-            out var overflow));
+        Assert.False(
+            BoxelPlanetClassifier.TryGetHeliumPercent(new Dictionary<string, double> { ["Helium"] = 0 }, out _)
+        );
+        Assert.False(
+            BoxelPlanetClassifier.TryGetHeliumPercent(new Dictionary<string, double> { ["Hydrogen"] = 80 }, out _)
+        );
+        Assert.False(BoxelPlanetClassifier.TryGetHeliumPercent(new Dictionary<string, double>(), out _));
+        Assert.False(
+            BoxelPlanetClassifier.TryGetHeliumPercent(
+                new Dictionary<string, double> { ["Helium"] = 150 },
+                out var overflow
+            )
+        );
         Assert.Equal(0, overflow);
     }
 
@@ -135,13 +130,10 @@ public sealed class BoxelPlanetClassifierTests
     public void ExtraColumnsMatchDisplaySlices(
         BoxelPlanetClass classified,
         bool terraformableColumn,
-        bool landableColumns)
+        bool landableColumns
+    )
     {
-        Assert.Equal(
-            terraformableColumn,
-            BoxelPlanetClassifier.ShowsTerraformableColumn(classified));
-        Assert.Equal(
-            landableColumns,
-            BoxelPlanetClassifier.ShowsLandableColumns(classified));
+        Assert.Equal(terraformableColumn, BoxelPlanetClassifier.ShowsTerraformableColumn(classified));
+        Assert.Equal(landableColumns, BoxelPlanetClassifier.ShowsLandableColumns(classified));
     }
 }

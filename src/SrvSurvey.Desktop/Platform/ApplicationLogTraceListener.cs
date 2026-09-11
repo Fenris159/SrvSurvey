@@ -4,8 +4,7 @@ using SrvSurvey.Core.Diagnostics;
 
 namespace SrvSurvey.Desktop.Platform;
 
-public sealed class ApplicationLogTraceListener(
-    ApplicationLogService applicationLog) : TraceListener
+public sealed class ApplicationLogTraceListener(ApplicationLogService applicationLog) : TraceListener
 {
     private const string ClosedPresentationSourceWarning =
         "[Control] PlatformImpl is null, couldn't handle input. (PresentationSource #";
@@ -55,9 +54,7 @@ public sealed class ApplicationLogTraceListener(
                     continue;
                 }
 
-                completeLines.Add(pending
-                    .ToString(startIndex, index - startIndex)
-                    .TrimEnd('\r'));
+                completeLines.Add(pending.ToString(startIndex, index - startIndex).TrimEnd('\r'));
                 startIndex = index + 1;
             }
 
@@ -88,6 +85,5 @@ public sealed class ApplicationLogTraceListener(
     }
 
     private static bool IsExpectedClosedPresentationSourceWarning(string line) =>
-        line.StartsWith(ClosedPresentationSourceWarning, StringComparison.Ordinal)
-        && line.EndsWith(')');
+        line.StartsWith(ClosedPresentationSourceWarning, StringComparison.Ordinal) && line.EndsWith(')');
 }

@@ -28,50 +28,41 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
     private GalacticCoordinate? referencePosition;
     private string commanderName = string.Empty;
     private bool isSearching;
-    private string statusMessage =
-        "Enter a biological signal or missing variants to find nearby systems.";
+    private string statusMessage = "Enter a biological signal or missing variants to find nearby systems.";
     private IReadOnlyList<NearestSystemRowViewModel> results = [];
     private NearestSystemRowViewModel? selectedResult;
     private string? spanshSearchReference;
     private Func<string, Task>? clipboardWriter;
     private Func<Uri, Task<bool>>? uriLauncher;
 
-    public NearestSystemsViewModel(
-        INearestSystemsClient nearestSystemsClient,
-        IStarSystemResolver systemResolver)
+    public NearestSystemsViewModel(INearestSystemsClient nearestSystemsClient, IStarSystemResolver systemResolver)
     {
-        this.nearestSystemsClient = nearestSystemsClient
-            ?? throw new ArgumentNullException(nameof(nearestSystemsClient));
-        this.systemResolver = systemResolver
-            ?? throw new ArgumentNullException(nameof(systemResolver));
+        this.nearestSystemsClient =
+            nearestSystemsClient ?? throw new ArgumentNullException(nameof(nearestSystemsClient));
+        this.systemResolver = systemResolver ?? throw new ArgumentNullException(nameof(systemResolver));
         Modes =
         [
             new(
                 NearestSystemsSearchMode.CanonnSignal,
                 "Biological signal",
-                "Find the nearest systems containing a Canonn codex signal."),
+                "Find the nearest systems containing a Canonn codex signal."
+            ),
             new(
                 NearestSystemsSearchMode.MissingVariants,
                 "Missing variants",
-                "Find nearby bodies with selected biological color variants."),
+                "Find nearby bodies with selected biological color variants."
+            ),
         ];
         selectedMode = Modes[0];
         searchCommand = new AsyncCommand(SearchAsync, CanSearch);
-        copySystemCommand = new AsyncCommand(
-            CopySystemAsync,
-            CanUseSelectedResult);
-        copyCoordinatesCommand = new AsyncCommand(
-            CopyCoordinatesAsync,
-            CanUseSelectedResult);
-        openCanonnCommand = new AsyncCommand(
-            OpenCanonnAsync,
-            CanUseSelectedResult);
-        openSpanshCommand = new AsyncCommand(
-            OpenSpanshAsync,
-            CanUseSelectedResult);
+        copySystemCommand = new AsyncCommand(CopySystemAsync, CanUseSelectedResult);
+        copyCoordinatesCommand = new AsyncCommand(CopyCoordinatesAsync, CanUseSelectedResult);
+        openCanonnCommand = new AsyncCommand(OpenCanonnAsync, CanUseSelectedResult);
+        openSpanshCommand = new AsyncCommand(OpenSpanshAsync, CanUseSelectedResult);
         openSpanshSearchCommand = new AsyncCommand(
             OpenOriginalSpanshSearchAsync,
-            () => HasSpanshSearchReference && !IsSearching);
+            () => HasSpanshSearchReference && !IsSearching
+        );
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -100,11 +91,9 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
         }
     }
 
-    public bool IsCanonnMode => SelectedMode.Mode
-        == NearestSystemsSearchMode.CanonnSignal;
+    public bool IsCanonnMode => SelectedMode.Mode == NearestSystemsSearchMode.CanonnSignal;
 
-    public bool IsVariantMode => SelectedMode.Mode
-        == NearestSystemsSearchMode.MissingVariants;
+    public bool IsVariantMode => SelectedMode.Mode == NearestSystemsSearchMode.MissingVariants;
 
     public string BiologicalSignal
     {
@@ -160,19 +149,16 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
         private set => SetField(ref referenceSystemName, value);
     }
 
-    public string ReferencePosition => referencePosition?.ToString()
-        ?? Unavailable;
+    public string ReferencePosition => referencePosition?.ToString() ?? Unavailable;
 
     public bool HasReferenceSystemAddress => referenceSystemAddress is > 0;
 
     public long? ReferenceSystemAddress => referenceSystemAddress;
 
-    public string ReferenceSystemAddressText => SystemAddressFormatter.Format(
-        referenceSystemAddress);
+    public string ReferenceSystemAddressText => SystemAddressFormatter.Format(referenceSystemAddress);
 
-    public string ReferenceSummary => referencePosition is null
-        ? "Waiting for current-system coordinates"
-        : $"Searching from {ReferenceSystemName}";
+    public string ReferenceSummary =>
+        referencePosition is null ? "Waiting for current-system coordinates" : $"Searching from {ReferenceSystemName}";
 
     public IReadOnlyList<NearestSystemRowViewModel> Results
     {
@@ -208,13 +194,14 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
         private set => SetField(ref statusMessage, value);
     }
 
-    public string SearchButtonText => IsSearching
-        ? "Searching\u2026"
-        : (IsCanonnMode) switch
-        {
-            true => "Find nearest",
-            false => "Find variants"
-        };
+    public string SearchButtonText =>
+        IsSearching
+            ? "Searching\u2026"
+            : (IsCanonnMode) switch
+            {
+                true => "Find nearest",
+                false => "Find variants",
+            };
 
     public bool IsSearching
     {
@@ -233,8 +220,7 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
         }
     }
 
-    public bool HasSpanshSearchReference => !string.IsNullOrWhiteSpace(
-        SpanshSearchReference);
+    public bool HasSpanshSearchReference => !string.IsNullOrWhiteSpace(SpanshSearchReference);
 
     public ICommand SearchCommand => searchCommand;
 
@@ -252,23 +238,18 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
         string? systemName,
         GalacticCoordinate? position,
         string? currentCommanderName,
-        long? systemAddress = null)
+        long? systemAddress = null
+    )
     {
-        var nextSystemName = string.IsNullOrWhiteSpace(systemName)
-            ? Unavailable
-            : systemName;
+        var nextSystemName = string.IsNullOrWhiteSpace(systemName) ? Unavailable : systemName;
         var nextSystemAddress = systemAddress is > 0 ? systemAddress : null;
         var nextCommanderName = currentCommanderName?.Trim() ?? string.Empty;
-        if (string.Equals(
-                referenceSystemName,
-                nextSystemName,
-                StringComparison.OrdinalIgnoreCase)
+        if (
+            string.Equals(referenceSystemName, nextSystemName, StringComparison.OrdinalIgnoreCase)
             && referencePosition == position
             && referenceSystemAddress == nextSystemAddress
-            && string.Equals(
-                commanderName,
-                nextCommanderName,
-                StringComparison.Ordinal))
+            && string.Equals(commanderName, nextCommanderName, StringComparison.Ordinal)
+        )
         {
             return;
         }
@@ -285,9 +266,7 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
         searchCommand.RaiseCanExecuteChanged();
     }
 
-    public void SetPlatformServices(
-        Func<string, Task>? writer,
-        Func<Uri, Task<bool>>? launcher)
+    public void SetPlatformServices(Func<string, Task>? writer, Func<Uri, Task<bool>>? launcher)
     {
         clipboardWriter = writer;
         uriLauncher = launcher;
@@ -296,26 +275,20 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
     public async Task SearchCodexSignalAsync(string signal)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(signal);
-        SelectedMode = Modes.Single(option =>
-            option.Mode == NearestSystemsSearchMode.CanonnSignal);
+        SelectedMode = Modes.Single(option => option.Mode == NearestSystemsSearchMode.CanonnSignal);
         BiologicalSignal = signal.Trim();
         await SearchAsync();
     }
 
-    public async Task SearchCodexVariantsAsync(
-        string genus,
-        string species,
-        IReadOnlyList<string> variants)
+    public async Task SearchCodexVariantsAsync(string genus, string species, IReadOnlyList<string> variants)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(genus);
         ArgumentException.ThrowIfNullOrWhiteSpace(species);
         ArgumentNullException.ThrowIfNull(variants);
-        SelectedMode = Modes.Single(option =>
-            option.Mode == NearestSystemsSearchMode.MissingVariants);
+        SelectedMode = Modes.Single(option => option.Mode == NearestSystemsSearchMode.MissingVariants);
         Genus = genus.Trim();
         Species = species.Trim();
-        VariantColors = string.Join(", ", variants.Where(
-            variant => !string.IsNullOrWhiteSpace(variant)));
+        VariantColors = string.Join(", ", variants.Where(variant => !string.IsNullOrWhiteSpace(variant)));
         await SearchAsync();
     }
 
@@ -323,8 +296,7 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
     {
         if (referencePosition is not { } position)
         {
-            StatusMessage =
-                "Current-system coordinates are required before searching.";
+            StatusMessage = "Current-system coordinates are required before searching.";
             return;
         }
 
@@ -344,35 +316,28 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
             SpanshSearchReference = null;
             StatusMessage = $"Searching near {ReferenceSystemName}\u2026";
             var searchResult = IsCanonnMode
-                ? await nearestSystemsClient.SearchCanonnAsync(
-                    position,
-                    BiologicalSignal.Trim(),
-                    commanderName)
+                ? await nearestSystemsClient.SearchCanonnAsync(position, BiologicalSignal.Trim(), commanderName)
                 : await nearestSystemsClient.SearchMissingVariantsAsync(
                     position,
                     Genus.Trim(),
                     Species.Trim(),
-                    ParseVariantColors());
-            Results = searchResult.Rows
-                .Select(row => new NearestSystemRowViewModel(row))
-                .ToArray();
+                    ParseVariantColors()
+                );
+            Results = searchResult.Rows.Select(row => new NearestSystemRowViewModel(row)).ToArray();
             SelectedResult = Results.Count > 0 ? Results[0] : null;
             SpanshSearchReference = searchResult.SpanshSearchReference;
-            StatusMessage = Results.Count == 0
-                ? "No nearby systems matched this search."
-                : $"Found {Results.Count:N0} nearby system(s).";
+            StatusMessage =
+                Results.Count == 0
+                    ? "No nearby systems matched this search."
+                    : $"Found {Results.Count:N0} nearby system(s).";
         }
         catch (TaskCanceledException)
         {
             StatusMessage = "The nearby-system search timed out.";
         }
-        catch (Exception exception) when (
-            exception is HttpRequestException
-                or JsonException
-                or InvalidDataException)
+        catch (Exception exception) when (exception is HttpRequestException or JsonException or InvalidDataException)
         {
-            StatusMessage = "The nearby-system search failed: "
-                + exception.Message;
+            StatusMessage = "The nearby-system search failed: " + exception.Message;
         }
         finally
         {
@@ -382,16 +347,12 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
 
     public Task CopySystemAsync()
     {
-        return CopySelectedTextAsync(
-            SelectedResult?.SystemName,
-            "system name");
+        return CopySelectedTextAsync(SelectedResult?.SystemName, "system name");
     }
 
     public Task CopyCoordinatesAsync()
     {
-        return CopySelectedTextAsync(
-            SelectedResult?.Coordinate.ToString(),
-            "galactic coordinates");
+        return CopySelectedTextAsync(SelectedResult?.Coordinate.ToString(), "galactic coordinates");
     }
 
     public Task OpenCanonnAsync()
@@ -403,9 +364,7 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
         }
 
         var system = Uri.EscapeDataString(selected.SystemName);
-        return LaunchAsync(
-            new Uri($"https://signals.canonn.tech/?system={system}"),
-            "Canonn Signals");
+        return LaunchAsync(new Uri($"https://signals.canonn.tech/?system={system}"), "Canonn Signals");
     }
 
     public async Task OpenSpanshAsync()
@@ -422,35 +381,28 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
             try
             {
                 StatusMessage = $"Resolving {selected.SystemName} on Spansh\u2026";
-                var systems = await systemResolver.SearchAsync(
-                    selected.SystemName);
-                address = systems.FirstOrDefault(system =>
-                    string.Equals(
-                        system.Name,
-                        selected.SystemName,
-                        StringComparison.OrdinalIgnoreCase))?.SystemAddress;
+                var systems = await systemResolver.SearchAsync(selected.SystemName);
+                address = systems
+                    .FirstOrDefault(system =>
+                        string.Equals(system.Name, selected.SystemName, StringComparison.OrdinalIgnoreCase)
+                    )
+                    ?.SystemAddress;
             }
-            catch (Exception exception) when (
-                exception is HttpRequestException
-                    or JsonException
-                    or TaskCanceledException)
+            catch (Exception exception)
+                when (exception is HttpRequestException or JsonException or TaskCanceledException)
             {
-                StatusMessage = "The Spansh system address could not be resolved: "
-                    + exception.Message;
+                StatusMessage = "The Spansh system address could not be resolved: " + exception.Message;
                 return;
             }
         }
 
         if (address is null or <= 0)
         {
-            StatusMessage =
-                "Spansh did not return an address for the selected system.";
+            StatusMessage = "Spansh did not return an address for the selected system.";
             return;
         }
 
-        await LaunchAsync(
-            new Uri($"https://spansh.co.uk/system/{address.Value}"),
-            "Spansh");
+        await LaunchAsync(new Uri($"https://spansh.co.uk/system/{address.Value}"), "Spansh");
     }
 
     public Task OpenOriginalSpanshSearchAsync()
@@ -462,9 +414,7 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
         }
 
         var reference = Uri.EscapeDataString(SpanshSearchReference);
-        return LaunchAsync(
-            new Uri($"https://spansh.co.uk/bodies/search/{reference}/1"),
-            "the original Spansh search");
+        return LaunchAsync(new Uri($"https://spansh.co.uk/bodies/search/{reference}/1"), "the original Spansh search");
     }
 
     private string? SpanshSearchReference
@@ -484,9 +434,7 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
 
     private bool CanSearch()
     {
-        return !IsSearching
-            && referencePosition is not null
-            && HasValidInputs();
+        return !IsSearching && referencePosition is not null && HasValidInputs();
     }
 
     private bool HasValidInputs()
@@ -500,10 +448,8 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
 
     private string[] ParseVariantColors()
     {
-        return VariantColors.Split(
-                [',', ';', '\r', '\n'],
-                StringSplitOptions.RemoveEmptyEntries
-                    | StringSplitOptions.TrimEntries)
+        return VariantColors
+            .Split([',', ';', '\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
     }
@@ -532,13 +478,10 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
             await clipboardWriter(text);
             StatusMessage = $"Copied the {label}.";
         }
-        catch (Exception exception) when (
-            exception is InvalidOperationException
-                or NotSupportedException
-                or UnauthorizedAccessException)
+        catch (Exception exception)
+            when (exception is InvalidOperationException or NotSupportedException or UnauthorizedAccessException)
         {
-            StatusMessage = $"The {label} could not be copied: "
-                + exception.Message;
+            StatusMessage = $"The {label} could not be copied: " + exception.Message;
         }
     }
 
@@ -553,17 +496,12 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
         try
         {
             var launched = await uriLauncher(uri);
-            StatusMessage = launched
-                ? $"Opened {label}."
-                : $"The operating system could not open {label}.";
+            StatusMessage = launched ? $"Opened {label}." : $"The operating system could not open {label}.";
         }
-        catch (Exception exception) when (
-            exception is InvalidOperationException
-                or NotSupportedException
-                or UriFormatException)
+        catch (Exception exception)
+            when (exception is InvalidOperationException or NotSupportedException or UriFormatException)
         {
-            StatusMessage = $"{label} could not be opened: "
-                + exception.Message;
+            StatusMessage = $"{label} could not be opened: " + exception.Message;
         }
     }
 
@@ -575,10 +513,7 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
         openSpanshCommand.RaiseCanExecuteChanged();
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -595,9 +530,7 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private sealed class AsyncCommand(
-        Func<Task> execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class AsyncCommand(Func<Task> execute, Func<bool> canExecute) : ICommand
     {
         public event EventHandler? CanExecuteChanged;
 
@@ -630,7 +563,8 @@ public enum NearestSystemsSearchMode
 public sealed record NearestSystemsSearchModeOptionViewModel(
     NearestSystemsSearchMode Mode,
     string Label,
-    string Description);
+    string Description
+);
 
 public sealed class NearestSystemRowViewModel
 {
@@ -673,8 +607,7 @@ internal static class SystemAddressFormatter
     public static string FormatValue(long? systemAddress)
     {
         return systemAddress is > 0
-            ? systemAddress.Value.ToString(
-                System.Globalization.CultureInfo.InvariantCulture)
+            ? systemAddress.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)
             : string.Empty;
     }
 }

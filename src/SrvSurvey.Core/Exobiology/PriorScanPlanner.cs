@@ -4,54 +4,43 @@ namespace SrvSurvey.Core.Exobiology;
 
 public sealed class PriorScanPlanner(ExobiologyReferenceCatalog catalog)
 {
-    private readonly ExobiologyReferenceCatalog catalog = catalog
-        ?? throw new ArgumentNullException(nameof(catalog));
+    private readonly ExobiologyReferenceCatalog catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
 
     public PriorScanPlan CreatePlan(PriorScanPlanRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.BodyName);
         ArgumentOutOfRangeException.ThrowIfNegative(request.MinimumReward);
-        if (!double.IsFinite(request.BodyRadiusMeters)
-            || request.BodyRadiusMeters <= 0)
+        if (!double.IsFinite(request.BodyRadiusMeters) || request.BodyRadiusMeters <= 0)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(request),
-                "The body radius must be positive.");
+            throw new ArgumentOutOfRangeException(nameof(request), "The body radius must be positive.");
         }
 
         if (!double.IsFinite(request.HeadingDegrees))
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(request),
-                "The heading must be finite.");
+            throw new ArgumentOutOfRangeException(nameof(request), "The heading must be finite.");
         }
 
         var analyzedEntryIds = request.AnalyzedEntryIds.ToHashSet();
-        var candidates = request.Signals
-            .Where(signal => ExobiologyBodyNames.Matches(
-                signal.BodyName,
-                request.BodyName,
-                request.SystemName))
-            .Select(signal => new Candidate(
-                signal,
-                catalog.FindByEntryId(signal.EntryId)))
+        var candidates = request
+            .Signals.Where(signal => ExobiologyBodyNames.Matches(signal.BodyName, request.BodyName, request.SystemName))
+            .Select(signal => new Candidate(signal, catalog.FindByEntryId(signal.EntryId)))
             .Where(candidate => candidate.Reference is not null)
-            .Where(candidate => !request.SkipLowValue
-                || candidate.Reference!.Reward >= request.MinimumReward)
-            .Where(candidate => !request.HideOwnSignals
-                || !candidate.Signal.IsCommanderScan
-                    && !analyzedEntryIds.Contains(candidate.Signal.EntryId))
-            .Where(candidate => !IsNearPersonalSample(
-                candidate,
-                request.PersonalSamples,
-                request.BodyRadiusMeters,
-                request.HighlightDistanceMeters))
+            .Where(candidate => !request.SkipLowValue || candidate.Reference!.Reward >= request.MinimumReward)
+            .Where(candidate =>
+                !request.HideOwnSignals
+                || !candidate.Signal.IsCommanderScan && !analyzedEntryIds.Contains(candidate.Signal.EntryId)
+            )
+            .Where(candidate =>
+                !IsNearPersonalSample(
+                    candidate,
+                    request.PersonalSamples,
+                    request.BodyRadiusMeters,
+                    request.HighlightDistanceMeters
+                )
+            )
             .GroupBy(candidate => candidate.Signal.EntryId)
-            .Select(group => CreateSpecies(
-                group,
-                request,
-                analyzedEntryIds.Contains(group.Key)))
+            .Select(group => CreateSpecies(group, request, analyzedEntryIds.Contains(group.Key)))
             .Where(species => species.Targets.Count > 0)
             .OrderByDescending(species => species.Reward)
             .ThenBy(species => species.DisplayName, StringComparer.OrdinalIgnoreCase)
@@ -62,29 +51,20 @@ public sealed class PriorScanPlanner(ExobiologyReferenceCatalog catalog)
     private static PriorScanSpecies CreateSpecies(
         IGrouping<long, Candidate> group,
         PriorScanPlanRequest request,
-        bool analyzed)
+        bool analyzed
+    )
     {
         var first = group.First();
         var reference = first.Reference!;
         var targets = group
-            .Select(candidate => CreateTarget(
-                candidate.Signal.Location,
-                request,
-                analyzed))
+            .Select(candidate => CreateTarget(candidate.Signal.Location, request, analyzed))
             .OrderBy(target => target.DistanceMeters)
             .ToList();
-        RemoveNearbyDuplicates(
-            targets,
-            request.BodyRadiusMeters,
-            request.HighlightDistanceMeters);
-        var displayName = FormatDisplayName(
-            reference,
-            first.Signal.DisplayName);
-        var active = string.IsNullOrWhiteSpace(request.ActiveSpeciesName)
-            || string.Equals(
-                request.ActiveSpeciesName,
-                reference.SpeciesName,
-                StringComparison.Ordinal);
+        RemoveNearbyDuplicates(targets, request.BodyRadiusMeters, request.HighlightDistanceMeters);
+        var displayName = FormatDisplayName(reference, first.Signal.DisplayName);
+        var active =
+            string.IsNullOrWhiteSpace(request.ActiveSpeciesName)
+            || string.Equals(request.ActiveSpeciesName, reference.SpeciesName, StringComparison.Ordinal);
         return new PriorScanSpecies(
             group.Key,
             reference.SpeciesName,
@@ -93,7 +73,8 @@ public sealed class PriorScanPlanner(ExobiologyReferenceCatalog catalog)
             reference.Reward,
             analyzed,
             active,
-            targets);
+            targets
+        );
     }
 
     /// <summary>
@@ -101,9 +82,7 @@ public sealed class PriorScanPlanner(ExobiologyReferenceCatalog catalog)
     /// "Genus - Color", Radicoida Unica uses "Radicoida - Unica", and
     /// Odyssey biology keeps the catalog display name.
     /// </summary>
-    public static string FormatDisplayName(
-        ExobiologyReference reference,
-        string? signalDisplayName = null)
+    public static string FormatDisplayName(ExobiologyReference reference, string? signalDisplayName = null)
     {
         ArgumentNullException.ThrowIfNull(reference);
         if (reference.EntryId == 2460101)
@@ -111,44 +90,30 @@ public sealed class PriorScanPlanner(ExobiologyReferenceCatalog catalog)
             return "Radicoida - Unica";
         }
 
-        var displayName = FirstPresentDisplayName(
-            reference.DisplayName,
-            signalDisplayName);
-        var isLegacyPlatform = string.Equals(
-                reference.Platform,
-                "legacy",
-                StringComparison.OrdinalIgnoreCase)
-            || string.Equals(
-                reference.Platform,
-                "horizons",
-                StringComparison.OrdinalIgnoreCase);
+        var displayName = FirstPresentDisplayName(reference.DisplayName, signalDisplayName);
+        var isLegacyPlatform =
+            string.Equals(reference.Platform, "legacy", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(reference.Platform, "horizons", StringComparison.OrdinalIgnoreCase);
         if (isLegacyPlatform)
         {
             var genus = !string.IsNullOrWhiteSpace(reference.SubClass)
                 ? reference.SubClass.Trim()
                 : ExobiologyReferenceCatalog.GetGenusDisplayName(
-                    ExobiologyReferenceCatalog.GetGenusName(
-                        reference.SpeciesName));
+                    ExobiologyReferenceCatalog.GetGenusName(reference.SpeciesName)
+                );
             var color = ExtractHorizonsColorName(displayName, genus);
-            return string.IsNullOrWhiteSpace(color)
-                ? genus
-                : $"{genus} - {color}";
+            return string.IsNullOrWhiteSpace(color) ? genus : $"{genus} - {color}";
         }
 
-        return FirstPresentDisplayName(displayName, reference.SpeciesName)
-            ?? reference.SpeciesName;
+        return FirstPresentDisplayName(displayName, reference.SpeciesName) ?? reference.SpeciesName;
     }
 
     private static string? FirstPresentDisplayName(params string?[] values)
     {
-        return values
-            .FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))
-            ?.Trim();
+        return values.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))?.Trim();
     }
 
-    private static string? ExtractHorizonsColorName(
-        string? displayName,
-        string genusDisplayName)
+    private static string? ExtractHorizonsColorName(string? displayName, string genusDisplayName)
     {
         if (string.IsNullOrWhiteSpace(displayName))
         {
@@ -156,16 +121,15 @@ public sealed class PriorScanPlanner(ExobiologyReferenceCatalog catalog)
         }
 
         var trimmed = displayName.Trim();
-        if (string.Equals(
-                trimmed,
-                genusDisplayName,
-                StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(trimmed, genusDisplayName, StringComparison.OrdinalIgnoreCase))
         {
             return null;
         }
 
-        if (trimmed.EndsWith(genusDisplayName, StringComparison.OrdinalIgnoreCase)
-            && trimmed.Length > genusDisplayName.Length)
+        if (
+            trimmed.EndsWith(genusDisplayName, StringComparison.OrdinalIgnoreCase)
+            && trimmed.Length > genusDisplayName.Length
+        )
         {
             return trimmed[..^genusDisplayName.Length].Trim(' ', '-');
         }
@@ -176,18 +140,10 @@ public sealed class PriorScanPlanner(ExobiologyReferenceCatalog catalog)
         return null;
     }
 
-    private static PriorScanTarget CreateTarget(
-        SurfaceCoordinate location,
-        PriorScanPlanRequest request,
-        bool analyzed)
+    private static PriorScanTarget CreateTarget(SurfaceCoordinate location, PriorScanPlanRequest request, bool analyzed)
     {
-        var distance = SurfaceNavigation.GetDistance(
-            request.CurrentLocation,
-            location,
-            request.BodyRadiusMeters);
-        var bearing = SurfaceNavigation.GetBearing(
-            request.CurrentLocation,
-            location);
+        var distance = SurfaceNavigation.GetDistance(request.CurrentLocation, location, request.BodyRadiusMeters);
+        var bearing = SurfaceNavigation.GetBearing(request.CurrentLocation, location);
         var state = analyzed
             ? PriorScanTargetState.Analyzed
             : (distance < request.HighlightDistanceMeters) switch
@@ -196,50 +152,47 @@ public sealed class PriorScanPlanner(ExobiologyReferenceCatalog catalog)
                 false => (distance > request.FarDistanceMeters) switch
                 {
                     true => PriorScanTargetState.Far,
-                    false => PriorScanTargetState.Standard
-                }
+                    false => PriorScanTargetState.Standard,
+                },
             };
         return new PriorScanTarget(
             location,
             distance,
             bearing,
-            SurfaceNavigation.NormalizeDegrees(
-                bearing - request.HeadingDegrees),
-            state);
+            SurfaceNavigation.NormalizeDegrees(bearing - request.HeadingDegrees),
+            state
+        );
     }
 
     private static bool IsNearPersonalSample(
         Candidate candidate,
         IReadOnlyList<PriorScanPersonalSample> personalSamples,
         double bodyRadiusMeters,
-        double highlightDistanceMeters)
+        double highlightDistanceMeters
+    )
     {
-        return personalSamples.Any(sample => string.Equals(
-                sample.SpeciesName,
-                candidate.Reference!.SpeciesName,
-                StringComparison.Ordinal)
-            && SurfaceNavigation.GetDistance(
-                sample.Location,
-                candidate.Signal.Location,
-                bodyRadiusMeters) < highlightDistanceMeters);
+        return personalSamples.Any(sample =>
+            string.Equals(sample.SpeciesName, candidate.Reference!.SpeciesName, StringComparison.Ordinal)
+            && SurfaceNavigation.GetDistance(sample.Location, candidate.Signal.Location, bodyRadiusMeters)
+                < highlightDistanceMeters
+        );
     }
 
     private static void RemoveNearbyDuplicates(
         List<PriorScanTarget> targets,
         double bodyRadiusMeters,
-        double highlightDistanceMeters)
+        double highlightDistanceMeters
+    )
     {
         for (var index = 0; index < targets.Count; index++)
         {
             var target = targets[index];
-            for (var candidateIndex = targets.Count - 1;
-                 candidateIndex > index;
-                 candidateIndex--)
+            for (var candidateIndex = targets.Count - 1; candidateIndex > index; candidateIndex--)
             {
-                if (SurfaceNavigation.GetDistance(
-                        target.Location,
-                        targets[candidateIndex].Location,
-                        bodyRadiusMeters) < highlightDistanceMeters)
+                if (
+                    SurfaceNavigation.GetDistance(target.Location, targets[candidateIndex].Location, bodyRadiusMeters)
+                    < highlightDistanceMeters
+                )
                 {
                     targets.RemoveAt(candidateIndex);
                 }
@@ -247,9 +200,7 @@ public sealed class PriorScanPlanner(ExobiologyReferenceCatalog catalog)
         }
     }
 
-    private sealed record Candidate(
-        CanonnSurfaceBiologySignal Signal,
-        ExobiologyReference? Reference);
+    private sealed record Candidate(CanonnSurfaceBiologySignal Signal, ExobiologyReference? Reference);
 }
 
 public sealed record PriorScanPlanRequest(
@@ -270,14 +221,12 @@ public sealed record PriorScanPlanRequest(
     /// Optional system name so full Elite body names and Canonn short labels
     /// normalize to the same comparison key.
     /// </summary>
-    string? SystemName = null);
+    string? SystemName = null
+);
 
-public sealed record PriorScanPersonalSample(
-    string SpeciesName,
-    SurfaceCoordinate Location);
+public sealed record PriorScanPersonalSample(string SpeciesName, SurfaceCoordinate Location);
 
-public sealed record PriorScanPlan(
-    IReadOnlyList<PriorScanSpecies> Species);
+public sealed record PriorScanPlan(IReadOnlyList<PriorScanSpecies> Species);
 
 public sealed record PriorScanSpecies(
     long EntryId,
@@ -287,14 +236,16 @@ public sealed record PriorScanSpecies(
     long Reward,
     bool IsAnalyzed,
     bool IsActive,
-    IReadOnlyList<PriorScanTarget> Targets);
+    IReadOnlyList<PriorScanTarget> Targets
+);
 
 public sealed record PriorScanTarget(
     SurfaceCoordinate Location,
     double DistanceMeters,
     double BearingDegrees,
     double RelativeBearingDegrees,
-    PriorScanTargetState State);
+    PriorScanTargetState State
+);
 
 public enum PriorScanTargetState
 {

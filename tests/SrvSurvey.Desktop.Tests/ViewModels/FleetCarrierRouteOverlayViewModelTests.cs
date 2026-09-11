@@ -10,14 +10,13 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-fc-overlay-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-fc-overlay-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public async Task FormatsNextCarrierHopAsCompactLogisticsReadout()
     {
-        var store = new FollowRouteStore(
-            temporaryDirectory,
-            FollowRouteKind.FleetCarrier);
+        var store = new FollowRouteStore(temporaryDirectory, FollowRouteKind.FleetCarrier);
         var document = (await store.CreateNewAsync("F123")) with
         {
             Name = "Carrier Test",
@@ -27,16 +26,10 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
             Hops =
             [
                 Hop("Sol", null),
-                Hop("Col 359 Sector EE-X b16-1", new FollowRouteCarrierHop(
-                    499.76,
-                    21502.09,
-                    1000,
-                    2799,
-                    93,
-                    true,
-                    true,
-                    true,
-                    3892)),
+                Hop(
+                    "Col 359 Sector EE-X b16-1",
+                    new FollowRouteCarrierHop(499.76, 21502.09, 1000, 2799, 93, true, true, true, 3892)
+                ),
                 Hop("Colonia", null),
             ],
         };
@@ -45,17 +38,17 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
             new FollowRouteService(store),
             new RouteNameImporter(new EmptyResolver()),
             new EmptySpanshClient(),
-            FollowRouteKind.FleetCarrier);
+            FollowRouteKind.FleetCarrier
+        );
         await route.UpdateContextAsync("F123", "Sol", null, null);
         using var viewModel = new FleetCarrierRouteOverlayViewModel(
             route,
-            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Other));
+            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Other)
+        );
 
         Assert.Equal("HOP 1 / 2", viewModel.HopProgress);
         Assert.Equal("Col 359 Sector EE-X b16-1", viewModel.SystemName);
-        Assert.Equal(
-            $"{499.76:N2} LY JUMP  •  {21502.09:N2} LY REMAINING",
-            viewModel.JumpSummary);
+        Assert.Equal($"{499.76:N2} LY JUMP  •  {21502.09:N2} LY REMAINING", viewModel.JumpSummary);
         Assert.Equal("1 JUMP LEFT", viewModel.JumpsLeft);
         Assert.Equal($"{1000:N0} t", viewModel.FuelLeft);
         Assert.Equal($"{2799:N0} t", viewModel.TritiumInMarket);
@@ -69,14 +62,13 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
     [Fact]
     public async Task FormatsEmptyRouteWithoutInventingCarrierLogistics()
     {
-        var store = new FollowRouteStore(
-            temporaryDirectory,
-            FollowRouteKind.FleetCarrier);
+        var store = new FollowRouteStore(temporaryDirectory, FollowRouteKind.FleetCarrier);
         var route = CreateRoute(store);
         await route.UpdateContextAsync("F999", null, null, null);
         using var viewModel = new FleetCarrierRouteOverlayViewModel(
             route,
-            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Other));
+            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Other)
+        );
 
         Assert.Equal("NO ROUTE", viewModel.HopProgress);
         Assert.Equal("\u2014 LY JUMP  \u2022  \u2014 LY REMAINING", viewModel.JumpSummary);
@@ -95,27 +87,22 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
     [Fact]
     public async Task NotStartedRouteLabelsItsFirstSystemAsStart()
     {
-        var store = new FollowRouteStore(
-            temporaryDirectory,
-            FollowRouteKind.FleetCarrier);
+        var store = new FollowRouteStore(temporaryDirectory, FollowRouteKind.FleetCarrier);
         var document = (await store.CreateNewAsync("F456")) with
         {
             Name = "Carrier Start",
             IsActive = true,
             LastReachedIndex = -1,
             Kind = FollowRouteKind.FleetCarrier,
-            Hops =
-            [
-                Hop("Sol", null, 1),
-                Hop("Colonia", null, 2),
-            ],
+            Hops = [Hop("Sol", null, 1), Hop("Colonia", null, 2)],
         };
         await store.SaveAsAsync(document, "Carrier Start");
         var route = CreateRoute(store);
         await route.UpdateContextAsync("F456", null, null, null);
         using var viewModel = new FleetCarrierRouteOverlayViewModel(
             route,
-            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Other));
+            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Other)
+        );
 
         Assert.Equal("START", viewModel.HopProgress);
         Assert.Equal("Sol", viewModel.SystemName);
@@ -124,44 +111,38 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
     [Fact]
     public async Task FinalCarrierArrivalShowsFinishedForThreeSeconds()
     {
-        var store = new FollowRouteStore(
-            temporaryDirectory,
-            FollowRouteKind.FleetCarrier);
+        var store = new FollowRouteStore(temporaryDirectory, FollowRouteKind.FleetCarrier);
         var document = (await store.CreateNewAsync("F321")) with
         {
             Name = "Carrier Finish",
             IsActive = true,
             LastReachedIndex = 1,
             Kind = FollowRouteKind.FleetCarrier,
-            Hops =
-            [
-                Hop("Sol", null, 1),
-                Hop("Second", null, 2),
-                Hop("Colonia", null, 3),
-            ],
+            Hops = [Hop("Sol", null, 1), Hop("Second", null, 2), Hop("Colonia", null, 3)],
         };
         await store.SaveAsAsync(document, "Carrier Finish");
-        var time = new MutableTimeProvider(
-            DateTimeOffset.Parse("2026-08-12T12:00:00Z"));
+        var time = new MutableTimeProvider(DateTimeOffset.Parse("2026-08-12T12:00:00Z"));
         var route = new RouteWorkspaceViewModel(
             new FollowRouteService(store),
             new RouteNameImporter(new EmptyResolver()),
             new EmptySpanshClient(),
             FollowRouteKind.FleetCarrier,
-            () => time.GetUtcNow());
+            () => time.GetUtcNow()
+        );
         await route.UpdateContextAsync("F321", "Second", 2, null);
         using var viewModel = new FleetCarrierRouteOverlayViewModel(
             route,
             OverlayPlatformCapabilities.ForHost(OverlayHostKind.Other),
-            time);
+            time
+        );
 
         Assert.Equal("HOP 2 / 2", viewModel.HopProgress);
-        await route.ApplyJournalEventsAsync(
-        [
+        await route.ApplyJournalEventsAsync([
             Parse(
                 """
                 {"event":"CarrierJump","StarSystem":"Colonia","SystemAddress":3}
-                """),
+                """
+            ),
         ]);
 
         Assert.Equal("FINISHED", viewModel.HopProgress);
@@ -180,9 +161,7 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
     [Fact]
     public async Task RouteAndCountdownChangesRaiseTheirCompletePropertyGroups()
     {
-        var store = new FollowRouteStore(
-            temporaryDirectory,
-            FollowRouteKind.FleetCarrier);
+        var store = new FollowRouteStore(temporaryDirectory, FollowRouteKind.FleetCarrier);
         var document = (await store.CreateNewAsync("F789")) with
         {
             Name = "Carrier Notifications",
@@ -192,16 +171,7 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
             Hops =
             [
                 Hop("Sol", null, 1),
-                Hop("Second", new FollowRouteCarrierHop(
-                    499,
-                    1000,
-                    500,
-                    null,
-                    88,
-                    true,
-                    false,
-                    false,
-                    null), 2),
+                Hop("Second", new FollowRouteCarrierHop(499, 1000, 500, null, 88, true, false, false, null), 2),
                 Hop("Third", null, 3),
                 Hop("Fourth", null, 4),
             ],
@@ -213,24 +183,25 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
             new RouteNameImporter(new EmptyResolver()),
             new EmptySpanshClient(),
             FollowRouteKind.FleetCarrier,
-            () => now);
+            () => now
+        );
         await route.UpdateContextAsync("F789", "Sol", 1, null);
         var viewModel = new FleetCarrierRouteOverlayViewModel(
             route,
-            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Other));
+            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Other)
+        );
         var notifications = new List<string>();
-        viewModel.PropertyChanged += (_, eventArgs) =>
-            notifications.Add(eventArgs.PropertyName!);
+        viewModel.PropertyChanged += (_, eventArgs) => notifications.Add(eventArgs.PropertyName!);
 
         Assert.Equal("2 JUMPS LEFT", viewModel.JumpsLeft);
         Assert.True(viewModel.HasIcyRing);
         Assert.Equal("ICY RING", viewModel.IcyRingLabel);
-        await route.ApplyJournalEventsAsync(
-        [
+        await route.ApplyJournalEventsAsync([
             Parse(
                 """
                 {"event":"CarrierJump","StarSystem":"Second","SystemAddress":2}
-                """),
+                """
+            ),
         ]);
 
         Assert.Contains(nameof(FleetCarrierRouteOverlayViewModel.HopProgress), notifications);
@@ -239,12 +210,12 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
         Assert.Contains(nameof(FleetCarrierRouteOverlayViewModel.RestockAmount), notifications);
 
         notifications.Clear();
-        route.ApplyFleetCarrierJumpEvents(
-        [
+        route.ApplyFleetCarrierJumpEvents([
             Parse(
                 """
                 {"timestamp":"2026-08-02T12:00:00Z","event":"CarrierJumpRequest","CarrierID":123,"SystemName":"Third","DepartureTime":"2026-08-02T12:15:00Z"}
-                """),
+                """
+            ),
         ]);
 
         Assert.True(viewModel.HasCountdown);
@@ -271,19 +242,9 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
         }
     }
 
-    private static FollowRouteHop Hop(
-        string name,
-        FollowRouteCarrierHop? carrier,
-        long? systemAddress = null)
+    private static FollowRouteHop Hop(string name, FollowRouteCarrierHop? carrier, long? systemAddress = null)
     {
-        return new FollowRouteHop(
-            name,
-            systemAddress,
-            null,
-            null,
-            false,
-            false,
-            Carrier: carrier);
+        return new FollowRouteHop(name, systemAddress, null, null, false, false, Carrier: carrier);
     }
 
     private static RouteWorkspaceViewModel CreateRoute(FollowRouteStore store)
@@ -292,14 +253,13 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
             new FollowRouteService(store),
             new RouteNameImporter(new EmptyResolver()),
             new EmptySpanshClient(),
-            FollowRouteKind.FleetCarrier);
+            FollowRouteKind.FleetCarrier
+        );
     }
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(
-            JournalEventEnvelope.TryParse(json, out var journalEvent, out var error),
-            error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
         return journalEvent!;
     }
 
@@ -307,7 +267,8 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
     {
         public Task<IReadOnlyList<StarSystemReference>> SearchAsync(
             string query,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             return Task.FromResult<IReadOnlyList<StarSystemReference>>([]);
         }
@@ -317,7 +278,8 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
     {
         public Task<IReadOnlyList<FollowRouteHop>> GetRouteAsync(
             SpanshRouteReference route,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             return Task.FromResult<IReadOnlyList<FollowRouteHop>>([]);
         }

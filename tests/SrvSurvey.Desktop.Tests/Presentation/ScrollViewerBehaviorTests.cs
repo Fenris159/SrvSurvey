@@ -124,9 +124,7 @@ public sealed class ScrollViewerBehaviorTests
             Assert.NotNull(window.CaptureRenderedFrame());
             Assert.True(horizontal.Extent.Width > horizontal.Viewport.Width);
 
-            window.MouseWheel(
-                new Point(80, 90),
-                new Vector(-1, 0));
+            window.MouseWheel(new Point(80, 90), new Vector(-1, 0));
             Assert.NotNull(window.CaptureRenderedFrame());
 
             Assert.True(horizontal.Offset.X > 0);
@@ -166,10 +164,7 @@ public sealed class ScrollViewerBehaviorTests
             window.Show();
             Assert.NotNull(window.CaptureRenderedFrame());
 
-            window.MouseWheel(
-                new Point(80, 90),
-                new Vector(0, -1),
-                RawInputModifiers.Shift);
+            window.MouseWheel(new Point(80, 90), new Vector(0, -1), RawInputModifiers.Shift);
             Assert.NotNull(window.CaptureRenderedFrame());
 
             Assert.True(horizontal.Offset.X > 0);
@@ -202,9 +197,7 @@ public sealed class ScrollViewerBehaviorTests
             window.Show();
             Assert.NotNull(window.CaptureRenderedFrame());
 
-            window.MouseWheel(
-                new Point(80, 90),
-                new Vector(-1, 0));
+            window.MouseWheel(new Point(80, 90), new Vector(-1, 0));
             Assert.NotNull(window.CaptureRenderedFrame());
 
             Assert.True(horizontal.Offset.X > 0);
@@ -237,9 +230,7 @@ public sealed class ScrollViewerBehaviorTests
             window.Show();
             Assert.NotNull(window.CaptureRenderedFrame());
 
-            var eventArgs = new ScrollGestureEventArgs(
-                id: 1,
-                new Vector(2.5, 0))
+            var eventArgs = new ScrollGestureEventArgs(id: 1, new Vector(2.5, 0))
             {
                 RoutedEvent = InputElement.ScrollGestureEvent,
             };
@@ -284,9 +275,7 @@ public sealed class ScrollViewerBehaviorTests
             window.Show();
             Assert.NotNull(window.CaptureRenderedFrame());
 
-            var eventArgs = new ScrollGestureEventArgs(
-                id: 1,
-                new Vector(2.5, 0))
+            var eventArgs = new ScrollGestureEventArgs(id: 1, new Vector(2.5, 0))
             {
                 RoutedEvent = InputElement.ScrollGestureEvent,
             };
@@ -332,19 +321,13 @@ public sealed class ScrollViewerBehaviorTests
         {
             window.Show();
             Assert.NotNull(window.CaptureRenderedFrame());
-            inner.Offset = new Vector(
-                inner.Extent.Width - inner.Viewport.Width,
-                0);
+            inner.Offset = new Vector(inner.Extent.Width - inner.Viewport.Width, 0);
 
-            window.MouseWheel(
-                new Point(80, 90),
-                new Vector(-1, 0));
+            window.MouseWheel(new Point(80, 90), new Vector(-1, 0));
             Assert.NotNull(window.CaptureRenderedFrame());
 
             Assert.Equal(0, outer.Offset.X);
-            Assert.Equal(
-                inner.Extent.Width - inner.Viewport.Width,
-                inner.Offset.X);
+            Assert.Equal(inner.Extent.Width - inner.Viewport.Width, inner.Offset.X);
         }
         finally
         {
@@ -381,13 +364,9 @@ public sealed class ScrollViewerBehaviorTests
         {
             window.Show();
             Assert.NotNull(window.CaptureRenderedFrame());
-            inner.Offset = new Vector(
-                inner.Extent.Width - inner.Viewport.Width,
-                0);
+            inner.Offset = new Vector(inner.Extent.Width - inner.Viewport.Width, 0);
 
-            var eventArgs = new ScrollGestureEventArgs(
-                id: 1,
-                new Vector(2.5, 0))
+            var eventArgs = new ScrollGestureEventArgs(id: 1, new Vector(2.5, 0))
             {
                 RoutedEvent = InputElement.ScrollGestureEvent,
             };
@@ -395,9 +374,7 @@ public sealed class ScrollViewerBehaviorTests
             Assert.NotNull(window.CaptureRenderedFrame());
 
             Assert.Equal(0, outer.Offset.X);
-            Assert.Equal(
-                inner.Extent.Width - inner.Viewport.Width,
-                inner.Offset.X);
+            Assert.Equal(inner.Extent.Width - inner.Viewport.Width, inner.Offset.X);
             Assert.True(eventArgs.ShouldEndScrollGesture);
         }
         finally
@@ -436,28 +413,20 @@ public sealed class ScrollViewerBehaviorTests
         try
         {
             window.Show();
-            inner.Offset = new Vector(
-                0,
-                inner.Extent.Height - inner.Viewport.Height);
+            inner.Offset = new Vector(0, inner.Extent.Height - inner.Viewport.Height);
             var outerOffset = outer.Offset;
 
-            window.MouseWheel(
-                new Point(80, 90),
-                new Vector(0, -1));
+            window.MouseWheel(new Point(80, 90), new Vector(0, -1));
 
             Assert.False(inner.IsScrollChainingEnabled);
             Assert.Equal(outerOffset, outer.Offset);
-            Assert.Equal(
-                inner.Extent.Height - inner.Viewport.Height,
-                inner.Offset.Y);
+            Assert.Equal(inner.Extent.Height - inner.Viewport.Height, inner.Offset.Y);
 
             inner.Offset = default;
             outer.Offset = new Vector(0, 20);
             outerOffset = outer.Offset;
 
-            window.MouseWheel(
-                new Point(80, 90),
-                new Vector(0, 1));
+            window.MouseWheel(new Point(80, 90), new Vector(0, 1));
 
             Assert.Equal(outerOffset, outer.Offset);
             Assert.Equal(0, inner.Offset.Y);
@@ -471,12 +440,7 @@ public sealed class ScrollViewerBehaviorTests
     [AvaloniaFact]
     public void WheelAtListBoxEndpointDoesNotScrollOuterPage()
     {
-        var listBox = new ListBox
-        {
-            ItemsSource = Enumerable.Range(0, 30)
-                .Select(index => $"Event {index}")
-                .ToArray(),
-        };
+        var listBox = new ListBox { ItemsSource = Enumerable.Range(0, 30).Select(index => $"Event {index}").ToArray() };
 
         AssertWheelAtEndpointDoesNotScrollOuterPage(listBox);
     }
@@ -487,9 +451,7 @@ public sealed class ScrollViewerBehaviorTests
         var textBox = new TextBox
         {
             AcceptsReturn = true,
-            Text = string.Join(
-                Environment.NewLine,
-                Enumerable.Range(0, 40).Select(index => $"Log line {index}")),
+            Text = string.Join(Environment.NewLine, Enumerable.Range(0, 40).Select(index => $"Log line {index}")),
         };
 
         AssertWheelAtEndpointDoesNotScrollOuterPage(textBox);
@@ -501,9 +463,7 @@ public sealed class ScrollViewerBehaviorTests
         var listBox = new ListBox
         {
             Height = 120,
-            ItemsSource = Enumerable.Range(0, 30)
-                .Select(index => $"Event {index}")
-                .ToArray(),
+            ItemsSource = Enumerable.Range(0, 30).Select(index => $"Event {index}").ToArray(),
         };
         var outer = new ScrollViewer
         {
@@ -529,9 +489,7 @@ public sealed class ScrollViewerBehaviorTests
             window.Show();
             Assert.NotNull(window.CaptureRenderedFrame());
             Assert.True(ListBoxBringIntoViewBehavior.GetContain(listBox));
-            var listScroller = listBox.GetVisualDescendants()
-                .OfType<ScrollViewer>()
-                .Single();
+            var listScroller = listBox.GetVisualDescendants().OfType<ScrollViewer>().Single();
 
             listBox.SelectedIndex = 29;
             Assert.NotNull(window.CaptureRenderedFrame());
@@ -545,8 +503,7 @@ public sealed class ScrollViewerBehaviorTests
         }
     }
 
-    private static void AssertWheelAtEndpointDoesNotScrollOuterPage(
-        Control nestedScroller)
+    private static void AssertWheelAtEndpointDoesNotScrollOuterPage(Control nestedScroller)
     {
         nestedScroller.Height = 120;
         var outer = new ScrollViewer
@@ -571,24 +528,15 @@ public sealed class ScrollViewerBehaviorTests
         try
         {
             window.Show();
-            var scrollViewer = nestedScroller.GetVisualDescendants()
-                .OfType<ScrollViewer>()
-                .Single();
-            scrollViewer.Offset = new Vector(
-                0,
-                scrollViewer.Extent.Height - scrollViewer.Viewport.Height);
+            var scrollViewer = nestedScroller.GetVisualDescendants().OfType<ScrollViewer>().Single();
+            scrollViewer.Offset = new Vector(0, scrollViewer.Extent.Height - scrollViewer.Viewport.Height);
             var outerOffset = outer.Offset;
 
-            Assert.False(
-                ScrollViewer.GetIsScrollChainingEnabled(nestedScroller));
-            window.MouseWheel(
-                new Point(80, 90),
-                new Vector(0, -1));
+            Assert.False(ScrollViewer.GetIsScrollChainingEnabled(nestedScroller));
+            window.MouseWheel(new Point(80, 90), new Vector(0, -1));
 
             Assert.Equal(outerOffset, outer.Offset);
-            Assert.Equal(
-                scrollViewer.Extent.Height - scrollViewer.Viewport.Height,
-                scrollViewer.Offset.Y);
+            Assert.Equal(scrollViewer.Extent.Height - scrollViewer.Viewport.Height, scrollViewer.Offset.Y);
         }
         finally
         {

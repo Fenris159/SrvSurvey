@@ -19,7 +19,8 @@ public sealed class JourneyJournalHistoryReader
         string frontierId,
         bool isOdyssey,
         long systemAddress,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(frontierId);
         EnsureDirectoryExists();
@@ -28,8 +29,7 @@ public sealed class JourneyJournalHistoryReader
         foreach (var file in EnumerateJournalFiles(descending: true))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var read = await ReadFileAsync(file, cancellationToken)
-                .ConfigureAwait(false);
+            var read = await ReadFileAsync(file, cancellationToken).ConfigureAwait(false);
             errors.AddRange(read.Errors);
             if (!MatchesCommander(read, frontierId, isOdyssey))
             {
@@ -39,22 +39,19 @@ public sealed class JourneyJournalHistoryReader
             for (var index = read.Events.Count - 1; index >= 0; index--)
             {
                 var journalEvent = read.Events[index];
-                if (journalEvent.EventName != "FSDJump"
-                    || GetInt64(journalEvent.Payload, "SystemAddress")
-                        != systemAddress
-                    || !TryGetSystemReference(
-                        journalEvent.Payload,
-                        out var systemReference))
+                if (
+                    journalEvent.EventName != "FSDJump"
+                    || GetInt64(journalEvent.Payload, "SystemAddress") != systemAddress
+                    || !TryGetSystemReference(journalEvent.Payload, out var systemReference)
+                )
                 {
                     continue;
                 }
 
                 return new JourneyJournalSystemSearchResult(
-                    new JourneyJournalSystemEntry(
-                        file.Name,
-                        journalEvent,
-                        systemReference),
-                    errors);
+                    new JourneyJournalSystemEntry(file.Name, journalEvent, systemReference),
+                    errors
+                );
             }
         }
 
@@ -65,7 +62,8 @@ public sealed class JourneyJournalHistoryReader
         string startingJournal,
         string frontierId,
         bool isOdyssey,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ValidateJournalFileName(startingJournal);
         ArgumentException.ThrowIfNullOrWhiteSpace(frontierId);
@@ -74,17 +72,19 @@ public sealed class JourneyJournalHistoryReader
         var files = EnumerateJournalFiles(descending: false).ToArray();
         var startIndex = Array.FindIndex(
             files,
-            file => string.Equals(
-                file.Name,
-                startingJournal,
-                OperatingSystem.IsWindows()
-                    ? StringComparison.OrdinalIgnoreCase
-                    : StringComparison.Ordinal));
+            file =>
+                string.Equals(
+                    file.Name,
+                    startingJournal,
+                    OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal
+                )
+        );
         if (startIndex < 0)
         {
             throw new FileNotFoundException(
                 $"The starting journal was not found: {startingJournal}",
-                Path.Combine(journalDirectory, startingJournal));
+                Path.Combine(journalDirectory, startingJournal)
+            );
         }
 
         var events = new List<JournalEventEnvelope>();
@@ -93,8 +93,7 @@ public sealed class JourneyJournalHistoryReader
         {
             cancellationToken.ThrowIfCancellationRequested();
             var file = files[index];
-            var read = await ReadFileAsync(file, cancellationToken)
-                .ConfigureAwait(false);
+            var read = await ReadFileAsync(file, cancellationToken).ConfigureAwait(false);
             errors.AddRange(read.Errors);
             if (MatchesCommander(read, frontierId, isOdyssey))
             {
@@ -109,27 +108,21 @@ public sealed class JourneyJournalHistoryReader
     {
         if (!Directory.Exists(journalDirectory))
         {
-            throw new DirectoryNotFoundException(
-                $"The journal folder does not exist: {journalDirectory}");
+            throw new DirectoryNotFoundException($"The journal folder does not exist: {journalDirectory}");
         }
     }
 
     private IEnumerable<FileInfo> EnumerateJournalFiles(bool descending)
     {
-        var files = new DirectoryInfo(journalDirectory)
-            .EnumerateFiles("Journal.*.log", SearchOption.TopDirectoryOnly);
+        var files = new DirectoryInfo(journalDirectory).EnumerateFiles("Journal.*.log", SearchOption.TopDirectoryOnly);
         return descending
             ? files
                 .OrderByDescending(file => file.LastWriteTimeUtc)
                 .ThenByDescending(file => file.Name, StringComparer.Ordinal)
-            : files
-                .OrderBy(file => file.LastWriteTimeUtc)
-                .ThenBy(file => file.Name, StringComparer.Ordinal);
+            : files.OrderBy(file => file.LastWriteTimeUtc).ThenBy(file => file.Name, StringComparer.Ordinal);
     }
 
-    private static async Task<JournalFileReadResult> ReadFileAsync(
-        FileInfo file,
-        CancellationToken cancellationToken)
+    private static async Task<JournalFileReadResult> ReadFileAsync(FileInfo file, CancellationToken cancellationToken)
     {
         var events = new List<JournalEventEnvelope>();
         var errors = new List<string>();
@@ -142,15 +135,12 @@ public sealed class JourneyJournalHistoryReader
             FileAccess.Read,
             FileShare.ReadWrite | FileShare.Delete,
             16 * 1024,
-            FileOptions.Asynchronous | FileOptions.SequentialScan);
-        using var reader = new StreamReader(
-            stream,
-            Encoding.UTF8,
-            detectEncodingFromByteOrderMarks: true);
+            FileOptions.Asynchronous | FileOptions.SequentialScan
+        );
+        using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
 
         var lineNumber = 0;
-        while (await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false)
-               is { } line)
+        while (await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false) is { } line)
         {
             lineNumber++;
             if (string.IsNullOrWhiteSpace(line))
@@ -158,15 +148,9 @@ public sealed class JourneyJournalHistoryReader
                 continue;
             }
 
-            if (!JournalEventEnvelope.TryParse(
-                    line,
-                    out var journalEvent,
-                    out var error)
-                || journalEvent is null)
+            if (!JournalEventEnvelope.TryParse(line, out var journalEvent, out var error) || journalEvent is null)
             {
-                errors.Add(
-                    $"{file.Name}, line {lineNumber}: "
-                        + (error ?? "The journal entry could not be parsed."));
+                errors.Add($"{file.Name}, line {lineNumber}: " + (error ?? "The journal entry could not be parsed."));
                 continue;
             }
 
@@ -181,72 +165,57 @@ public sealed class JourneyJournalHistoryReader
             }
         }
 
-        return new JournalFileReadResult(
-            file.Name,
-            frontierId,
-            isOdyssey,
-            events,
-            errors);
+        return new JournalFileReadResult(file.Name, frontierId, isOdyssey, events, errors);
     }
 
-    private static bool MatchesCommander(
-        JournalFileReadResult read,
-        string frontierId,
-        bool isOdyssey)
+    private static bool MatchesCommander(JournalFileReadResult read, string frontierId, bool isOdyssey)
     {
         return read.IsOdyssey == isOdyssey
-            && string.Equals(
-                read.FrontierId,
-                frontierId,
-                StringComparison.OrdinalIgnoreCase);
+            && string.Equals(read.FrontierId, frontierId, StringComparison.OrdinalIgnoreCase);
     }
 
     private static void ValidateJournalFileName(string fileName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(fileName);
-        if (!string.Equals(
-                fileName,
-                Path.GetFileName(fileName),
-                StringComparison.Ordinal)
+        if (
+            !string.Equals(fileName, Path.GetFileName(fileName), StringComparison.Ordinal)
             || !fileName.StartsWith("Journal.", StringComparison.OrdinalIgnoreCase)
-            || !fileName.EndsWith(".log", StringComparison.OrdinalIgnoreCase))
+            || !fileName.EndsWith(".log", StringComparison.OrdinalIgnoreCase)
+        )
         {
-            throw new ArgumentException(
-                "The starting journal must be a Journal.*.log file name.",
-                nameof(fileName));
+            throw new ArgumentException("The starting journal must be a Journal.*.log file name.", nameof(fileName));
         }
     }
 
-    internal static bool TryGetSystemReference(
-        JsonElement root,
-        out JourneySystemReference systemReference)
+    internal static bool TryGetSystemReference(JsonElement root, out JourneySystemReference systemReference)
     {
         systemReference = null!;
         var name = GetString(root, "StarSystem");
         var address = GetInt64(root, "SystemAddress");
-        if (string.IsNullOrWhiteSpace(name)
+        if (
+            string.IsNullOrWhiteSpace(name)
             || address is null
             || !root.TryGetProperty("StarPos", out var position)
             || position.ValueKind != JsonValueKind.Array
-            || position.GetArrayLength() != 3)
+            || position.GetArrayLength() != 3
+        )
         {
             return false;
         }
 
         var coordinates = position.EnumerateArray().ToArray();
-        if (!coordinates[0].TryGetDouble(out var x)
+        if (
+            !coordinates[0].TryGetDouble(out var x)
             || !coordinates[1].TryGetDouble(out var y)
-            || !coordinates[2].TryGetDouble(out var z))
+            || !coordinates[2].TryGetDouble(out var z)
+        )
         {
             return false;
         }
 
         try
         {
-            systemReference = new JourneySystemReference(
-                name,
-                address.Value,
-                new GalacticCoordinate(x, y, z));
+            systemReference = new JourneySystemReference(name, address.Value, new GalacticCoordinate(x, y, z));
             return true;
         }
         catch (ArgumentOutOfRangeException)
@@ -257,27 +226,28 @@ public sealed class JourneyJournalHistoryReader
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
-            && value.ValueKind == JsonValueKind.String
-                ? value.GetString()
-                : null;
+        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+            ? value.GetString()
+            : null;
     }
 
     private static bool? GetBoolean(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
+        return
+            root.TryGetProperty(propertyName, out var value)
             && value.ValueKind is JsonValueKind.True or JsonValueKind.False
-                ? value.GetBoolean()
-                : null;
+            ? value.GetBoolean()
+            : null;
     }
 
     private static long? GetInt64(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
+        return
+            root.TryGetProperty(propertyName, out var value)
             && value.ValueKind == JsonValueKind.Number
             && value.TryGetInt64(out var number)
-                ? number
-                : null;
+            ? number
+            : null;
     }
 
     private sealed record JournalFileReadResult(
@@ -285,18 +255,16 @@ public sealed class JourneyJournalHistoryReader
         string? FrontierId,
         bool IsOdyssey,
         IReadOnlyList<JournalEventEnvelope> Events,
-        IReadOnlyList<string> Errors);
+        IReadOnlyList<string> Errors
+    );
 }
 
 public sealed record JourneyJournalSystemEntry(
     string JournalFileName,
     JournalEventEnvelope Event,
-    JourneySystemReference System);
+    JourneySystemReference System
+);
 
-public sealed record JourneyJournalSystemSearchResult(
-    JourneyJournalSystemEntry? Entry,
-    IReadOnlyList<string> Errors);
+public sealed record JourneyJournalSystemSearchResult(JourneyJournalSystemEntry? Entry, IReadOnlyList<string> Errors);
 
-public sealed record JourneyJournalReadResult(
-    IReadOnlyList<JournalEventEnvelope> Events,
-    IReadOnlyList<string> Errors);
+public sealed record JourneyJournalReadResult(IReadOnlyList<JournalEventEnvelope> Events, IReadOnlyList<string> Errors);

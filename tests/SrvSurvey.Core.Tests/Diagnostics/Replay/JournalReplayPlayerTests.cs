@@ -18,7 +18,8 @@ public sealed class JournalReplayPlayerTests
         var session = await new ReplaySessionManager().ImportAsync(
             sourcePath,
             Path.Combine(temp.Path, "managed"),
-            CancellationToken.None);
+            CancellationToken.None
+        );
         var player = new JournalReplayPlayer(session);
 
         Assert.True(await player.StepAsync(CancellationToken.None));
@@ -26,8 +27,7 @@ public sealed class JournalReplayPlayerTests
         Assert.False(await player.StepAsync(CancellationToken.None));
 
         Assert.Equal(2, player.Position);
-        Assert.Equal(lines, await File.ReadAllLinesAsync(
-            session.PlaybackJournalPath));
+        Assert.Equal(lines, await File.ReadAllLinesAsync(session.PlaybackJournalPath));
     }
 
     [Fact]
@@ -41,22 +41,20 @@ public sealed class JournalReplayPlayerTests
                 "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Commander\",\"Name\":\"Replay Cmdr\",\"FID\":\"F123456\"}",
                 "{\"timestamp\":\"2026-08-21T18:00:04Z\",\"event\":\"Location\"}",
                 "{\"timestamp\":\"2026-08-21T18:00:08Z\",\"event\":\"Shutdown\"}",
-            ]);
+            ]
+        );
         var session = await new ReplaySessionManager().ImportAsync(
             sourcePath,
             Path.Combine(temp.Path, "managed"),
-            CancellationToken.None);
+            CancellationToken.None
+        );
         var delay = new RecordingDelay();
         var player = new JournalReplayPlayer(session, delay);
         var speeds = new Queue<double>([1, 2, 4]);
 
-        await player.PlayAsync(
-            () => speeds.Dequeue(),
-            CancellationToken.None);
+        await player.PlayAsync(() => speeds.Dequeue(), CancellationToken.None);
 
-        Assert.Equal(
-            [TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(1)],
-            delay.Delays);
+        Assert.Equal([TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(1)], delay.Delays);
         Assert.True(player.IsComplete);
     }
 
@@ -65,12 +63,14 @@ public sealed class JournalReplayPlayerTests
     {
         using var temp = new TemporaryDirectory();
         var sourcePath = Path.Combine(temp.Path, "Journal.01.log");
-        var line = "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Commander\",\"Name\":\"Replay Cmdr\",\"FID\":\"F123456\"}";
+        var line =
+            "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Commander\",\"Name\":\"Replay Cmdr\",\"FID\":\"F123456\"}";
         await File.WriteAllTextAsync(sourcePath, line + Environment.NewLine);
         var session = await new ReplaySessionManager().ImportAsync(
             sourcePath,
             Path.Combine(temp.Path, "managed"),
-            CancellationToken.None);
+            CancellationToken.None
+        );
         using var cancellation = new CancellationTokenSource();
         var writer = new AtomicReplayJournalWriter(cancellation.Cancel);
         var player = new JournalReplayPlayer(session, delay: null, writer);
@@ -78,40 +78,35 @@ public sealed class JournalReplayPlayerTests
         Assert.True(await player.StepAsync(cancellation.Token));
 
         Assert.Equal(1, player.Position);
-        Assert.Equal([line], await File.ReadAllLinesAsync(
-            session.PlaybackJournalPath));
+        Assert.Equal([line], await File.ReadAllLinesAsync(session.PlaybackJournalPath));
     }
 
     [Fact]
     public async Task SystemDelayChunksIntervalsBeyondThePlatformTimerLimit()
     {
         var segments = new List<TimeSpan>();
-        var delay = new SystemReplayDelay((segment, cancellationToken) =>
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            segments.Add(segment);
-            return Task.CompletedTask;
-        });
+        var delay = new SystemReplayDelay(
+            (segment, cancellationToken) =>
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                segments.Add(segment);
+                return Task.CompletedTask;
+            }
+        );
         var requested = TimeSpan.FromDays(30);
 
         await delay.WaitAsync(requested, CancellationToken.None);
 
         Assert.True(segments.Count > 1);
-        Assert.All(segments, segment => Assert.InRange(
-            segment,
-            TimeSpan.Zero,
-            SystemReplayDelay.MaximumSegment));
-        Assert.Equal(requested, segments.Aggregate(TimeSpan.Zero, (sum, item) =>
-            sum + item));
+        Assert.All(segments, segment => Assert.InRange(segment, TimeSpan.Zero, SystemReplayDelay.MaximumSegment));
+        Assert.Equal(requested, segments.Aggregate(TimeSpan.Zero, (sum, item) => sum + item));
     }
 
     private sealed class RecordingDelay : IReplayDelay
     {
         public List<TimeSpan> Delays { get; } = [];
 
-        public Task WaitAsync(
-            TimeSpan delay,
-            CancellationToken cancellationToken)
+        public Task WaitAsync(TimeSpan delay, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             Delays.Add(delay);
@@ -123,9 +118,7 @@ public sealed class JournalReplayPlayerTests
     {
         public TemporaryDirectory()
         {
-            Path = System.IO.Path.Combine(
-                System.IO.Path.GetTempPath(),
-                $"SrvSurvey-replay-player-{Guid.NewGuid():N}");
+            Path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"SrvSurvey-replay-player-{Guid.NewGuid():N}");
             Directory.CreateDirectory(Path);
         }
 

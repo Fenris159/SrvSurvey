@@ -55,10 +55,8 @@ public static class JourneyStatistics
             codexScans,
             categoryCounts
                 .OrderBy(entry => entry.Key, StringComparer.Ordinal)
-                .ToDictionary(
-                    entry => entry.Key,
-                    entry => entry.Value,
-                    StringComparer.Ordinal));
+                .ToDictionary(entry => entry.Key, entry => entry.Value, StringComparer.Ordinal)
+        );
     }
 }
 
@@ -71,4 +69,5 @@ public sealed record JourneyQuickStatistics(
     int LandedBodyCount,
     int TotalLandingCount,
     int CodexScanCount,
-    IReadOnlyDictionary<string, int> SubCategoryCounts);
+    IReadOnlyDictionary<string, int> SubCategoryCounts
+);

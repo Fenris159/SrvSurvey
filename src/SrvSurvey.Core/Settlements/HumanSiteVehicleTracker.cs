@@ -17,29 +17,33 @@ public sealed class HumanSiteVehicleTracker
 
     public int Version { get; private set; }
 
-    public bool Apply(
-        JournalEventEnvelope journalEvent,
-        EliteStatus? status)
+    public bool Apply(JournalEventEnvelope journalEvent, EliteStatus? status)
     {
         ArgumentNullException.ThrowIfNull(journalEvent);
         var changed = journalEvent.EventName switch
         {
             "Touchdown" => SetShipLocation(
                 GetCoordinate(journalEvent.Payload) ?? GetCoordinate(status),
-                status?.NormalizedHeading),
-            "Docked" => SetShipLocation(
-                GetCoordinate(status),
-                status?.NormalizedHeading),
+                status?.NormalizedHeading
+            ),
+            "Docked" => SetShipLocation(GetCoordinate(status), status?.NormalizedHeading),
             "Liftoff" or "ShipDismissed" => MarkShipDeparted(),
             "Disembark" => ApplyDisembark(journalEvent.Payload, status),
             "Embark" => ApplyEmbark(journalEvent.Payload),
-            "LeaveBody" or "StartJump" or "SupercruiseEntry" or "FSDJump"
-                or "CarrierJump" or "Shutdown" or "Died" or "Resurrect" =>
-                Clear(),
-            "Music" when string.Equals(
-                GetString(journalEvent.Payload, "MusicTrack"),
-                "MainMenu",
-                StringComparison.Ordinal) => Clear(),
+            "LeaveBody"
+            or "StartJump"
+            or "SupercruiseEntry"
+            or "FSDJump"
+            or "CarrierJump"
+            or "Shutdown"
+            or "Died"
+            or "Resurrect" => Clear(),
+            "Music"
+                when string.Equals(
+                    GetString(journalEvent.Payload, "MusicTrack"),
+                    "MainMenu",
+                    StringComparison.Ordinal
+                ) => Clear(),
             _ => false,
         };
         if (changed)
@@ -50,21 +54,15 @@ public sealed class HumanSiteVehicleTracker
         return changed;
     }
 
-    private bool SetShipLocation(
-        SurfaceCoordinate? location,
-        double? heading)
+    private bool SetShipLocation(SurfaceCoordinate? location, double? heading)
     {
         if (location is null)
         {
             return false;
         }
 
-        var normalizedHeading = heading is { } value
-            ? SurfaceNavigation.NormalizeDegrees(value)
-            : ShipHeading;
-        if (ShipLocation == location
-            && EquivalentHeading(ShipHeading, normalizedHeading)
-            && !HasShipDeparted)
+        var normalizedHeading = heading is { } value ? SurfaceNavigation.NormalizeDegrees(value) : ShipHeading;
+        if (ShipLocation == location && EquivalentHeading(ShipHeading, normalizedHeading) && !HasShipDeparted)
         {
             return false;
         }
@@ -88,9 +86,7 @@ public sealed class HumanSiteVehicleTracker
 
     private bool ApplyDisembark(JsonElement root, EliteStatus? status)
     {
-        if (!(GetBoolean(root, "SRV") ?? false)
-            || GetCoordinate(status) is not { } location
-            || SrvLocation == location)
+        if (!(GetBoolean(root, "SRV") ?? false) || GetCoordinate(status) is not { } location || SrvLocation == location)
         {
             return false;
         }
@@ -112,10 +108,7 @@ public sealed class HumanSiteVehicleTracker
 
     private bool Clear()
     {
-        if (ShipLocation is null
-            && ShipHeading is null
-            && !HasShipDeparted
-            && SrvLocation is null)
+        if (ShipLocation is null && ShipHeading is null && !HasShipDeparted && SrvLocation is null)
         {
             return false;
         }
@@ -129,23 +122,17 @@ public sealed class HumanSiteVehicleTracker
 
     private static SurfaceCoordinate? GetCoordinate(EliteStatus? status)
     {
-        return status?.HasLatitudeLongitude == true
-            ? CreateCoordinate(status.Latitude, status.Longitude)
-            : null;
+        return status?.HasLatitudeLongitude == true ? CreateCoordinate(status.Latitude, status.Longitude) : null;
     }
 
     private static SurfaceCoordinate? GetCoordinate(JsonElement root)
     {
         var latitude = GetDouble(root, "Latitude");
         var longitude = GetDouble(root, "Longitude");
-        return latitude is not null && longitude is not null
-            ? CreateCoordinate(latitude.Value, longitude.Value)
-            : null;
+        return latitude is not null && longitude is not null ? CreateCoordinate(latitude.Value, longitude.Value) : null;
     }
 
-    private static SurfaceCoordinate? CreateCoordinate(
-        double latitude,
-        double longitude)
+    private static SurfaceCoordinate? CreateCoordinate(double latitude, double longitude)
     {
         try
         {
@@ -159,18 +146,18 @@ public sealed class HumanSiteVehicleTracker
 
     private static bool? GetBoolean(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
+        return
+            root.TryGetProperty(propertyName, out var value)
             && value.ValueKind is JsonValueKind.True or JsonValueKind.False
-                ? value.GetBoolean()
-                : null;
+            ? value.GetBoolean()
+            : null;
     }
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
-            && value.ValueKind == JsonValueKind.String
-                ? value.GetString()
-                : null;
+        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+            ? value.GetString()
+            : null;
     }
 
     private static double? GetDouble(JsonElement root, string propertyName)
@@ -180,22 +167,17 @@ public sealed class HumanSiteVehicleTracker
             return null;
         }
 
-        if (value.ValueKind == JsonValueKind.Number
-            && value.TryGetDouble(out var number)
-            && double.IsFinite(number))
+        if (value.ValueKind == JsonValueKind.Number && value.TryGetDouble(out var number) && double.IsFinite(number))
         {
             return number;
         }
 
-        return value.ValueKind == JsonValueKind.String
-            && double.TryParse(
-                value.GetString(),
-                NumberStyles.Float,
-                CultureInfo.InvariantCulture,
-                out number)
+        return
+            value.ValueKind == JsonValueKind.String
+            && double.TryParse(value.GetString(), NumberStyles.Float, CultureInfo.InvariantCulture, out number)
             && double.IsFinite(number)
-                ? number
-                : null;
+            ? number
+            : null;
     }
 
     private static bool EquivalentHeading(double? left, double? right)
@@ -205,7 +187,6 @@ public sealed class HumanSiteVehicleTracker
             return false;
         }
 
-        return !left.HasValue
-            || Math.Abs(left.Value - right!.Value) <= 0.0001d;
+        return !left.HasValue || Math.Abs(left.Value - right!.Value) <= 0.0001d;
     }
 }

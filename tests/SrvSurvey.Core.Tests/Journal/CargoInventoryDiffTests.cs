@@ -9,11 +9,7 @@ public sealed class CargoInventoryDiffTests
     {
         var dest = CargoInventoryDiff.CreateCountMap();
         dest["old"] = 9;
-        var inventory = new[]
-        {
-            new CargoItem("iron", "Iron", 3, 0),
-            new CargoItem("nickel", "Nickel", 7, 0),
-        };
+        var inventory = new[] { new CargoItem("iron", "Iron", 3, 0), new CargoItem("nickel", "Nickel", 7, 0) };
 
         CargoInventoryDiff.CopyFromInventory(dest, inventory);
 
@@ -135,11 +131,7 @@ public sealed class CargoInventoryDiffTests
     [Fact]
     public void ToCountMap_maps_names_and_counts()
     {
-        var inventory = new[]
-        {
-            new CargoItem("iron", "Iron", 1, 0),
-            new CargoItem("nickel", "Nickel", 2, 0),
-        };
+        var inventory = new[] { new CargoItem("iron", "Iron", 1, 0), new CargoItem("nickel", "Nickel", 2, 0) };
 
         var map = CargoInventoryDiff.ToCountMap(inventory);
 

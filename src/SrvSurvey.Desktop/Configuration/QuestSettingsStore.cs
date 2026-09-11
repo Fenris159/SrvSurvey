@@ -14,9 +14,7 @@ public sealed class QuestSettingsStore
     public bool LoadEnabled()
     {
         var settings = documentStore.Load()["Quests"] as JsonObject;
-        return settings?["Enabled"] is JsonValue enabled
-            && enabled.TryGetValue<bool>(out var value)
-            && value;
+        return settings?["Enabled"] is JsonValue enabled && enabled.TryGetValue<bool>(out var value) && value;
     }
 
     public void SaveEnabled(bool enabled)

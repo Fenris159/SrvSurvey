@@ -10,7 +10,8 @@ public sealed class MultiGameCommanderOverlayCoordinatorTests
         123,
         new PixelRect(100, 200, 1920, 1080),
         IsVisible: true,
-        IsForeground: true);
+        IsForeground: true
+    );
 
     [Fact]
     public void VisibleForMultipleGamesWhileGameHasFocus()
@@ -21,9 +22,7 @@ public sealed class MultiGameCommanderOverlayCoordinatorTests
     [Fact]
     public void VisibleForMultipleGamesWhileSrvSurveyHasFocus()
     {
-        Assert.True(ShouldShow(
-            VisibleGame with { IsForeground = false },
-            isApplicationActive: true));
+        Assert.True(ShouldShow(VisibleGame with { IsForeground = false }, isApplicationActive: true));
     }
 
     [Theory]
@@ -39,16 +38,20 @@ public sealed class MultiGameCommanderOverlayCoordinatorTests
         bool isSuppressed,
         bool supportsPassiveOverlay,
         bool supportsClickThrough,
-        bool supportsGameWindowTracking)
+        bool supportsGameWindowTracking
+    )
     {
-        Assert.False(ShouldShow(
-            VisibleGame,
-            hasMultipleGameWindows,
-            hideByPreference,
-            isSuppressed,
-            supportsPassiveOverlay,
-            supportsClickThrough,
-            supportsGameWindowTracking));
+        Assert.False(
+            ShouldShow(
+                VisibleGame,
+                hasMultipleGameWindows,
+                hideByPreference,
+                isSuppressed,
+                supportsPassiveOverlay,
+                supportsClickThrough,
+                supportsGameWindowTracking
+            )
+        );
     }
 
     [Fact]
@@ -67,7 +70,8 @@ public sealed class MultiGameCommanderOverlayCoordinatorTests
         bool supportsPassiveOverlay = true,
         bool supportsClickThrough = true,
         bool supportsGameWindowTracking = true,
-        bool isApplicationActive = false)
+        bool isApplicationActive = false
+    )
     {
         return MultiGameCommanderOverlayCoordinator.ShouldShow(
             new MultiGameOverlayVisibilityContext
@@ -79,7 +83,8 @@ public sealed class MultiGameCommanderOverlayCoordinatorTests
                 SupportsClickThrough = supportsClickThrough,
                 SupportsGameWindowTracking = supportsGameWindowTracking,
                 GameWindow = gameWindow,
-                IsApplicationActive = isApplicationActive
-            });
+                IsApplicationActive = isApplicationActive,
+            }
+        );
     }
 }

@@ -15,12 +15,11 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
 
     public ScreenshotProcessingViewModel(
         ScreenshotProcessingSettingsStore settingsStore,
-        IScreenshotProcessingService? processingService = null)
+        IScreenshotProcessingService? processingService = null
+    )
     {
-        this.settingsStore = settingsStore
-            ?? throw new ArgumentNullException(nameof(settingsStore));
-        this.processingService = processingService
-            ?? new ScreenshotProcessingService();
+        this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
+        this.processingService = processingService ?? new ScreenshotProcessingService();
         preferences = settingsStore.Load();
         statusMessage = CreateReadyStatus(preferences);
     }
@@ -60,28 +59,19 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
     public string SourceFolder
     {
         get => preferences.SourceFolder;
-        set => Update(preferences with
-        {
-            SourceFolder = value?.Trim() ?? string.Empty,
-        });
+        set => Update(preferences with { SourceFolder = value?.Trim() ?? string.Empty });
     }
 
     public string TargetFolder
     {
         get => preferences.TargetFolder;
-        set => Update(preferences with
-        {
-            TargetFolder = value?.Trim() ?? string.Empty,
-        });
+        set => Update(preferences with { TargetFolder = value?.Trim() ?? string.Empty });
     }
 
     public string BannerColor
     {
         get => preferences.BannerColor;
-        set => Update(preferences with
-        {
-            BannerColor = value?.Trim() ?? string.Empty,
-        });
+        set => Update(preferences with { BannerColor = value?.Trim() ?? string.Empty });
     }
 
     public bool BannerLocalTime
@@ -93,28 +83,19 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
     public double AerialAltitudeAlpha
     {
         get => preferences.AerialAltitudeAlpha;
-        set => Update(preferences with
-        {
-            AerialAltitudeAlpha = NormalizeAerialAltitude(value),
-        });
+        set => Update(preferences with { AerialAltitudeAlpha = NormalizeAerialAltitude(value) });
     }
 
     public double AerialAltitudeBeta
     {
         get => preferences.AerialAltitudeBeta;
-        set => Update(preferences with
-        {
-            AerialAltitudeBeta = NormalizeAerialAltitude(value),
-        });
+        set => Update(preferences with { AerialAltitudeBeta = NormalizeAerialAltitude(value) });
     }
 
     public double AerialAltitudeGamma
     {
         get => preferences.AerialAltitudeGamma;
-        set => Update(preferences with
-        {
-            AerialAltitudeGamma = NormalizeAerialAltitude(value),
-        });
+        set => Update(preferences with { AerialAltitudeGamma = NormalizeAerialAltitude(value) });
     }
 
     public string StatusMessage
@@ -126,19 +107,17 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
     public bool ToggleBanner()
     {
         AddBanner = !AddBanner;
-        StatusMessage = AddBanner
-            ? "Screenshot data banners are enabled."
-            : "Screenshot data banners are disabled.";
+        StatusMessage = AddBanner ? "Screenshot data banners are enabled." : "Screenshot data banners are disabled.";
         return true;
     }
 
     public async Task<ScreenshotProcessingResult> ProcessJournalEventsAsync(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         string? commanderName,
-        IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>?
-            guardianContexts = null,
+        IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>? guardianContexts = null,
         ScreenshotNavigationContext? navigationContext = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var result = await processingService.ProcessAsync(
             journalEvents,
@@ -146,7 +125,8 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
             commanderName,
             guardianContexts,
             navigationContext,
-            cancellationToken);
+            cancellationToken
+        );
         if (result.Conversions.Count == 0 && result.Warnings.Count == 0)
         {
             return result;
@@ -156,19 +136,13 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
         {
             0 => "No screenshots were converted.",
             1 => $"Saved screenshot: {result.Conversions[0].OutputPath}",
-            _ => $"Saved {result.Conversions.Count:N0} screenshots to "
-                + preferences.TargetFolder
-                + ".",
+            _ => $"Saved {result.Conversions.Count:N0} screenshots to " + preferences.TargetFolder + ".",
         };
-        StatusMessage = result.Warnings.Count == 0
-            ? converted
-            : converted + " " + string.Join(" ", result.Warnings);
+        StatusMessage = result.Warnings.Count == 0 ? converted : converted + " " + string.Join(" ", result.Warnings);
         return result;
     }
 
-    private void Update(
-        ScreenshotProcessingPreferences updated,
-        [CallerMemberName] string? propertyName = null)
+    private void Update(ScreenshotProcessingPreferences updated, [CallerMemberName] string? propertyName = null)
     {
         if (preferences == updated)
         {
@@ -182,27 +156,22 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
             settingsStore.Save(preferences);
             StatusMessage = CreateReadyStatus(preferences);
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
             StatusMessage =
-                "The screenshot preference changed for this session but could not be saved: "
-                + exception.Message;
+                "The screenshot preference changed for this session but could not be saved: " + exception.Message;
         }
     }
 
-    private static string CreateReadyStatus(
-        ScreenshotProcessingPreferences preferences)
+    private static string CreateReadyStatus(ScreenshotProcessingPreferences preferences)
     {
         if (!preferences.Enabled)
         {
             return "Screenshot conversion is off.";
         }
 
-        if (!Path.IsPathFullyQualified(preferences.SourceFolder)
-            || !Directory.Exists(preferences.SourceFolder))
+        if (!Path.IsPathFullyQualified(preferences.SourceFolder) || !Directory.Exists(preferences.SourceFolder))
         {
             return "Choose an existing absolute screenshot source folder.";
         }
@@ -220,10 +189,7 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
         return double.IsFinite(value) ? Math.Clamp(value, 0, 5_000) : 0;
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -237,8 +203,6 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(propertyName));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

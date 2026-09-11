@@ -13,15 +13,14 @@ public sealed class JumpInfoOverlayViewModel : INotifyPropertyChanged, IDisposab
     public JumpInfoOverlayViewModel(
         JumpInfoViewModel jumpInfo,
         OverlayPlatformCapabilities capabilities,
-        SystemNicknameViewModel? systemNicknames = null)
+        SystemNicknameViewModel? systemNicknames = null
+    )
     {
         JumpInfo = jumpInfo ?? throw new ArgumentNullException(nameof(jumpInfo));
         this.systemNicknames = systemNicknames;
         ArgumentNullException.ThrowIfNull(capabilities);
         platformStatus = capabilities.StatusText;
-        inputMode = capabilities.SupportsClickThrough
-            ? "PASSIVE"
-            : "UNAVAILABLE";
+        inputMode = capabilities.SupportsClickThrough ? "PASSIVE" : "UNAVAILABLE";
         JumpInfo.PropertyChanged += OnJumpInfoPropertyChanged;
         if (systemNicknames is not null)
         {
@@ -33,8 +32,7 @@ public sealed class JumpInfoOverlayViewModel : INotifyPropertyChanged, IDisposab
 
     public JumpInfoViewModel JumpInfo { get; }
 
-    public string TargetName => systemNicknames?.Resolve(JumpInfo.TargetName)
-        ?? JumpInfo.TargetName;
+    public string TargetName => systemNicknames?.Resolve(JumpInfo.TargetName) ?? JumpInfo.TargetName;
 
     public string PlatformStatus
     {
@@ -64,29 +62,20 @@ public sealed class JumpInfoOverlayViewModel : INotifyPropertyChanged, IDisposab
         }
     }
 
-    private void OnJumpInfoPropertyChanged(
-        object? sender,
-        PropertyChangedEventArgs eventArgs)
+    private void OnJumpInfoPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
         if (eventArgs.PropertyName == nameof(JumpInfoViewModel.TargetName))
         {
-            PropertyChanged?.Invoke(
-                this,
-                new PropertyChangedEventArgs(nameof(TargetName)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TargetName)));
         }
     }
 
     private void OnNamesChanged(object? sender, EventArgs eventArgs)
     {
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(nameof(TargetName)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TargetName)));
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {

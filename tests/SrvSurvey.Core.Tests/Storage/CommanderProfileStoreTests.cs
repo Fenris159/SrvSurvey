@@ -3,8 +3,8 @@ using SrvSurvey.Core.Combat;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Guardian;
-using SrvSurvey.Core.Storage;
 using SrvSurvey.Core.Search;
+using SrvSurvey.Core.Storage;
 
 namespace SrvSurvey.Core.Tests.Storage;
 
@@ -12,7 +12,8 @@ public sealed class CommanderProfileStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-commander-profile-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-commander-profile-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public async Task LoadReadsLegacyExplorationFields()
@@ -37,7 +38,8 @@ public sealed class CommanderProfileStoreTests : IDisposable
               "edsmApiKey": "edsm-secret",
               "futureSetting": { "enabled": true }
             }
-            """);
+            """
+        );
         var store = new CommanderProfileStore(temporaryDirectory);
 
         var result = await store.LoadAsync("F123", isOdyssey: true);
@@ -50,9 +52,7 @@ public sealed class CommanderProfileStoreTests : IDisposable
         Assert.Equal("inara-secret", result.Data.InaraApiKey);
         Assert.Equal("EDSM Drew", result.Data.EdsmCommanderName);
         Assert.Equal("edsm-secret", result.Data.EdsmApiKey);
-        Assert.Equal(
-            new ExplorationSnapshot(123456, 42.5, 3, 4, 5, 6),
-            result.Data.Exploration);
+        Assert.Equal(new ExplorationSnapshot(123456, 42.5, 3, 4, 5, 6), result.Data.Exploration);
     }
 
     [Fact]
@@ -62,17 +62,20 @@ public sealed class CommanderProfileStoreTests : IDisposable
         var path = Path.Combine(temporaryDirectory, "F123-live.json");
         await File.WriteAllTextAsync(
             path,
-            "{\"fid\":\"F123\",\"commander\":\"Drew\",\"futureSetting\":{\"enabled\":true},\"activeJourney\":\"Before\"}");
+            "{\"fid\":\"F123\",\"commander\":\"Drew\",\"futureSetting\":{\"enabled\":true},\"activeJourney\":\"Before\"}"
+        );
         var store = new CommanderProfileStore(temporaryDirectory);
 
         await File.WriteAllTextAsync(
             path,
-            "{\"fid\":\"F123\",\"commander\":\"Drew\",\"futureSetting\":{\"enabled\":true},\"activeJourney\":\"Changed elsewhere\"}");
+            "{\"fid\":\"F123\",\"commander\":\"Drew\",\"futureSetting\":{\"enabled\":true},\"activeJourney\":\"Changed elsewhere\"}"
+        );
         await store.SaveExplorationAsync(
             "F123",
             "Drew",
             isOdyssey: true,
-            new ExplorationSnapshot(9000, 12.25, 1, 2, 3, 4));
+            new ExplorationSnapshot(9000, 12.25, 1, 2, 3, 4)
+        );
 
         var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.True(root["futureSetting"]!["enabled"]!.GetValue<bool>());
@@ -100,35 +103,25 @@ public sealed class CommanderProfileStoreTests : IDisposable
               },
               "futureSetting": true
             }
-            """);
+            """
+        );
         var store = new CommanderProfileStore(temporaryDirectory);
 
         var loaded = await store.LoadAsync("F123", isOdyssey: true);
 
         Assert.NotNull(loaded.Data);
-        var rewards = Assert.Single(
-            loaded.Data.Exploration.EstimatedRewardsBySystem!);
+        var rewards = Assert.Single(loaded.Data.Exploration.EstimatedRewardsBySystem!);
         Assert.Equal("Alpha", rewards.Key);
         Assert.Equal(1000, rewards.Value);
 
-        await store.SaveExplorationAsync(
-            "F123",
-            "Drew",
-            isOdyssey: true,
-            loaded.Data.Exploration);
+        await store.SaveExplorationAsync("F123", "Drew", isOdyssey: true, loaded.Data.Exploration);
 
         var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.True(root["futureSetting"]!.GetValue<bool>());
-        Assert.Equal(
-            1000,
-            root["explRewardsBySystem"]!["Alpha"]!.GetValue<long>());
+        Assert.Equal(1000, root["explRewardsBySystem"]!["Alpha"]!.GetValue<long>());
         Assert.Equal("explRewardsBySystem", root.Last().Key);
 
-        await store.SaveExplorationAsync(
-            "F123",
-            "Drew",
-            isOdyssey: true,
-            ExplorationSnapshot.Empty);
+        await store.SaveExplorationAsync("F123", "Drew", isOdyssey: true, ExplorationSnapshot.Empty);
 
         root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.False(root.ContainsKey("explRewardsBySystem"));
@@ -138,13 +131,11 @@ public sealed class CommanderProfileStoreTests : IDisposable
     [InlineData("{\"Alpha\":600,\"alpha\":400,\"Ignored\":0}")]
     [InlineData("null")]
     [InlineData(null)]
-    public async Task SaveActiveJourneyPreservesExplorationLedgerAndKeepsItLast(
-        string? ledgerJson)
+    public async Task SaveActiveJourneyPreservesExplorationLedgerAndKeepsItLast(string? ledgerJson)
     {
         Directory.CreateDirectory(temporaryDirectory);
         var path = Path.Combine(temporaryDirectory, "F123-live.json");
-        var original = JsonNode.Parse(
-            """{"fid":"F123","futureSetting":{"enabled":true}}""")!.AsObject();
+        var original = JsonNode.Parse("""{"fid":"F123","futureSetting":{"enabled":true}}""")!.AsObject();
         if (ledgerJson is not null)
         {
             original["explRewardsBySystem"] = JsonNode.Parse(ledgerJson);
@@ -153,8 +144,7 @@ public sealed class CommanderProfileStoreTests : IDisposable
         await File.WriteAllTextAsync(path, original.ToJsonString());
         var store = new CommanderProfileStore(temporaryDirectory);
 
-        await store.SaveActiveJourneyAsync(
-            "F123", "Drew", isOdyssey: true, "journey.json");
+        await store.SaveActiveJourneyAsync("F123", "Drew", isOdyssey: true, "journey.json");
 
         var saved = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.Equal("journey.json", saved["activeJourney"]!.GetValue<string>());
@@ -163,8 +153,7 @@ public sealed class CommanderProfileStoreTests : IDisposable
         if (ledgerJson is not null)
         {
             Assert.Equal("explRewardsBySystem", saved.Last().Key);
-            Assert.True(JsonNode.DeepEquals(
-                original["explRewardsBySystem"], saved["explRewardsBySystem"]));
+            Assert.True(JsonNode.DeepEquals(original["explRewardsBySystem"], saved["explRewardsBySystem"]));
         }
     }
 
@@ -186,7 +175,8 @@ public sealed class CommanderProfileStoreTests : IDisposable
             "F123",
             "Drew",
             isOdyssey: true,
-            new ExplorationSnapshot(1000, 0, 0, 0, 0, 0, rewards));
+            new ExplorationSnapshot(1000, 0, 0, 0, 0, 0, rewards)
+        );
 
         var path = store.GetProfilePath("F123", isOdyssey: true);
         var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
@@ -208,33 +198,26 @@ public sealed class CommanderProfileStoreTests : IDisposable
         var root = new JsonObject
         {
             ["fid"] = "F123",
-            ["explRewardsBySystem"] = new JsonObject
-            {
-                ["Alpha"] = first,
-                ["alpha"] = second,
-            },
+            ["explRewardsBySystem"] = new JsonObject { ["Alpha"] = first, ["alpha"] = second },
         };
         await File.WriteAllTextAsync(path, root.ToJsonString());
 
         var loaded = await store.LoadAsync("F123", isOdyssey: true);
         Assert.NotNull(loaded.Data);
-        Assert.Equal(long.MaxValue, Assert.Single(
-            loaded.Data.Exploration.EstimatedRewardsBySystem!).Value);
+        Assert.Equal(long.MaxValue, Assert.Single(loaded.Data.Exploration.EstimatedRewardsBySystem!).Value);
 
-        var rewards = new Dictionary<string, long>(StringComparer.Ordinal)
-        {
-            ["Alpha"] = first,
-            [" alpha "] = second,
-        };
-        await store.SaveExplorationAsync("F123", "Drew", isOdyssey: true,
-            new ExplorationSnapshot(0, 0, 0, 0, 0, 0, rewards));
+        var rewards = new Dictionary<string, long>(StringComparer.Ordinal) { ["Alpha"] = first, [" alpha "] = second };
+        await store.SaveExplorationAsync(
+            "F123",
+            "Drew",
+            isOdyssey: true,
+            new ExplorationSnapshot(0, 0, 0, 0, 0, 0, rewards)
+        );
         var saved = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
-        Assert.Equal(long.MaxValue, Assert.Single(
-            saved["explRewardsBySystem"]!.AsObject()).Value!.GetValue<long>());
+        Assert.Equal(long.MaxValue, Assert.Single(saved["explRewardsBySystem"]!.AsObject()).Value!.GetValue<long>());
         var reloaded = await store.LoadAsync("F123", isOdyssey: true);
         Assert.NotNull(reloaded.Data);
-        Assert.Equal(long.MaxValue, Assert.Single(
-            reloaded.Data.Exploration.EstimatedRewardsBySystem!).Value);
+        Assert.Equal(long.MaxValue, Assert.Single(reloaded.Data.Exploration.EstimatedRewardsBySystem!).Value);
     }
 
     [Fact]
@@ -246,12 +229,9 @@ public sealed class CommanderProfileStoreTests : IDisposable
         await File.WriteAllTextAsync(path, malformed);
         var store = new CommanderProfileStore(temporaryDirectory);
 
-        var exception = await Assert.ThrowsAsync<InvalidDataException>(
-            () => store.SaveExplorationAsync(
-                "F123",
-                "Drew",
-                isOdyssey: true,
-                ExplorationSnapshot.Empty));
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            store.SaveExplorationAsync("F123", "Drew", isOdyssey: true, ExplorationSnapshot.Empty)
+        );
 
         Assert.Contains("was not overwritten", exception.Message);
         Assert.Equal(malformed, await File.ReadAllTextAsync(path));
@@ -262,11 +242,7 @@ public sealed class CommanderProfileStoreTests : IDisposable
     {
         var store = new CommanderProfileStore(temporaryDirectory);
 
-        await store.SaveExplorationAsync(
-            "F123",
-            "Drew",
-            isOdyssey: false,
-            ExplorationSnapshot.Empty);
+        await store.SaveExplorationAsync("F123", "Drew", isOdyssey: false, ExplorationSnapshot.Empty);
 
         Assert.True(File.Exists(Path.Combine(temporaryDirectory, "F123-legacy.json")));
         Assert.False(File.Exists(Path.Combine(temporaryDirectory, "F123-live.json")));
@@ -294,7 +270,8 @@ public sealed class CommanderProfileStoreTests : IDisposable
               ],
               "futureSetting": 42
             }
-            """);
+            """
+        );
         var store = new CommanderProfileStore(temporaryDirectory);
 
         var loaded = await store.LoadAsync("F123", isOdyssey: true);
@@ -310,15 +287,11 @@ public sealed class CommanderProfileStoreTests : IDisposable
             "F123",
             "Drew",
             isOdyssey: true,
-            new CombatSnapshot(
-            [
-                mission with { Remaining = 3 },
-            ]));
+            new CombatSnapshot([mission with { Remaining = 3 }])
+        );
 
         var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
-        Assert.Equal(
-            3,
-            root["trackMassacres"]![0]!["remaining"]!.GetValue<int>());
+        Assert.Equal(3, root["trackMassacres"]![0]!["remaining"]!.GetValue<int>());
         Assert.Equal(42, root["futureSetting"]!.GetValue<int>());
     }
 
@@ -327,16 +300,10 @@ public sealed class CommanderProfileStoreTests : IDisposable
     {
         Directory.CreateDirectory(temporaryDirectory);
         var path = Path.Combine(temporaryDirectory, "F123-live.json");
-        await File.WriteAllTextAsync(
-            path,
-            """{"fid":"F123","trackMassacres":[{"missionId":1}]}""");
+        await File.WriteAllTextAsync(path, """{"fid":"F123","trackMassacres":[{"missionId":1}]}""");
         var store = new CommanderProfileStore(temporaryDirectory);
 
-        await store.SaveCombatAsync(
-            "F123",
-            "Drew",
-            isOdyssey: true,
-            CombatSnapshot.Empty);
+        await store.SaveCombatAsync("F123", "Drew", isOdyssey: true, CombatSnapshot.Empty);
 
         var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.Null(root["trackMassacres"]);
@@ -347,27 +314,17 @@ public sealed class CommanderProfileStoreTests : IDisposable
     {
         Directory.CreateDirectory(temporaryDirectory);
         var path = Path.Combine(temporaryDirectory, "F123-live.json");
-        await File.WriteAllTextAsync(
-            path,
-            "{\"fid\":\"F123\",\"futureSetting\":42}");
+        await File.WriteAllTextAsync(path, "{\"fid\":\"F123\",\"futureSetting\":42}");
         var store = new CommanderProfileStore(temporaryDirectory);
 
-        await store.SaveRavenColonialApiKeyAsync(
-            "F123",
-            "Drew",
-            isOdyssey: true,
-            "  secret-key  ");
+        await store.SaveRavenColonialApiKeyAsync("F123", "Drew", isOdyssey: true, "  secret-key  ");
 
         var saved = await store.LoadAsync("F123", isOdyssey: true);
         Assert.Equal("secret-key", saved.Data?.RavenColonialApiKey);
         var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.Equal(42, root["futureSetting"]!.GetValue<int>());
 
-        await store.SaveRavenColonialApiKeyAsync(
-            "F123",
-            "Drew",
-            isOdyssey: true,
-            "  ");
+        await store.SaveRavenColonialApiKeyAsync("F123", "Drew", isOdyssey: true, "  ");
 
         var cleared = await store.LoadAsync("F123", isOdyssey: true);
         Assert.Null(cleared.Data?.RavenColonialApiKey);
@@ -381,27 +338,17 @@ public sealed class CommanderProfileStoreTests : IDisposable
     {
         Directory.CreateDirectory(temporaryDirectory);
         var path = Path.Combine(temporaryDirectory, "F123-live.json");
-        await File.WriteAllTextAsync(
-            path,
-            "{\"fid\":\"F123\",\"futureSetting\":42}");
+        await File.WriteAllTextAsync(path, "{\"fid\":\"F123\",\"futureSetting\":42}");
         var store = new CommanderProfileStore(temporaryDirectory);
 
-        await store.SaveInaraApiKeyAsync(
-            "F123",
-            "Drew",
-            isOdyssey: true,
-            "  personal-key  ");
+        await store.SaveInaraApiKeyAsync("F123", "Drew", isOdyssey: true, "  personal-key  ");
 
         var saved = await store.LoadAsync("F123", isOdyssey: true);
         Assert.Equal("personal-key", saved.Data?.InaraApiKey);
         var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.Equal(42, root["futureSetting"]!.GetValue<int>());
 
-        await store.SaveInaraApiKeyAsync(
-            "F123",
-            "Drew",
-            isOdyssey: true,
-            "  ");
+        await store.SaveInaraApiKeyAsync("F123", "Drew", isOdyssey: true, "  ");
 
         var cleared = await store.LoadAsync("F123", isOdyssey: true);
         Assert.Null(cleared.Data?.InaraApiKey);
@@ -415,17 +362,10 @@ public sealed class CommanderProfileStoreTests : IDisposable
     {
         Directory.CreateDirectory(temporaryDirectory);
         var path = Path.Combine(temporaryDirectory, "F123-live.json");
-        await File.WriteAllTextAsync(
-            path,
-            "{\"fid\":\"F123\",\"futureSetting\":42}");
+        await File.WriteAllTextAsync(path, "{\"fid\":\"F123\",\"futureSetting\":42}");
         var store = new CommanderProfileStore(temporaryDirectory);
 
-        await store.SaveEdsmCredentialsAsync(
-            "F123",
-            "Drew",
-            isOdyssey: true,
-            "  EDSM Drew  ",
-            "  personal-key  ");
+        await store.SaveEdsmCredentialsAsync("F123", "Drew", isOdyssey: true, "  EDSM Drew  ", "  personal-key  ");
 
         var saved = await store.LoadAsync("F123", isOdyssey: true);
         Assert.Equal("EDSM Drew", saved.Data?.EdsmCommanderName);
@@ -433,12 +373,7 @@ public sealed class CommanderProfileStoreTests : IDisposable
         var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.Equal(42, root["futureSetting"]!.GetValue<int>());
 
-        await store.SaveEdsmCredentialsAsync(
-            "F123",
-            "Drew",
-            isOdyssey: true,
-            null,
-            "  ");
+        await store.SaveEdsmCredentialsAsync("F123", "Drew", isOdyssey: true, null, "  ");
 
         var cleared = await store.LoadAsync("F123", isOdyssey: true);
         Assert.Null(cleared.Data?.EdsmCommanderName);
@@ -456,29 +391,20 @@ public sealed class CommanderProfileStoreTests : IDisposable
         var path = Path.Combine(temporaryDirectory, "F123-live.json");
         await File.WriteAllTextAsync(
             path,
-            "{\"fid\":\"F123\",\"activeJourney\":\"20260701_120000\",\"futureSetting\":42}");
+            "{\"fid\":\"F123\",\"activeJourney\":\"20260701_120000\",\"futureSetting\":42}"
+        );
         var store = new CommanderProfileStore(temporaryDirectory);
 
         var loaded = await store.LoadAsync("F123", isOdyssey: true);
 
         Assert.Equal("20260701_120000", loaded.Data?.ActiveJourneyFileName);
 
-        await store.SaveActiveJourneyAsync(
-            "F123",
-            "Drew",
-            isOdyssey: true,
-            "20260724_123456");
+        await store.SaveActiveJourneyAsync("F123", "Drew", isOdyssey: true, "20260724_123456");
         var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
-        Assert.Equal(
-            "20260724_123456",
-            root["activeJourney"]!.GetValue<string>());
+        Assert.Equal("20260724_123456", root["activeJourney"]!.GetValue<string>());
         Assert.Equal(42, root["futureSetting"]!.GetValue<int>());
 
-        await store.SaveActiveJourneyAsync(
-            "F123",
-            "Drew",
-            isOdyssey: true,
-            null);
+        await store.SaveActiveJourneyAsync("F123", "Drew", isOdyssey: true, null);
         root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.False(root.ContainsKey("activeJourney"));
         Assert.Equal(42, root["futureSetting"]!.GetValue<int>());
@@ -510,7 +436,8 @@ public sealed class CommanderProfileStoreTests : IDisposable
               "scannedBioEntryIds": ["123_7_2310101_7252500_False"],
               "countRadicoidaUnica": 2
             }
-            """);
+            """
+        );
         var store = new CommanderProfileStore(temporaryDirectory);
 
         var loaded = await store.LoadAsync("F123", isOdyssey: true);
@@ -527,12 +454,8 @@ public sealed class CommanderProfileStoreTests : IDisposable
 
         var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.True(root["scanOne"]!["futureSample"]!.GetValue<bool>());
-        Assert.Equal(
-            8,
-            root["scanOne"]!["location"]!["futureCoordinate"]!.GetValue<int>());
-        Assert.Equal(
-            "123_7_2310101_7252500_False",
-            root["scannedBioEntryIds"]![0]!.GetValue<string>());
+        Assert.Equal(8, root["scanOne"]!["location"]!["futureCoordinate"]!.GetValue<int>());
+        Assert.Equal("123_7_2310101_7252500_False", root["scannedBioEntryIds"]![0]!.GetValue<string>());
     }
 
     [Fact]
@@ -544,12 +467,9 @@ public sealed class CommanderProfileStoreTests : IDisposable
         await File.WriteAllTextAsync(path, malformed);
         var store = new CommanderProfileStore(temporaryDirectory);
 
-        await Assert.ThrowsAsync<InvalidDataException>(
-            () => store.SaveExobiologyAsync(
-                "F123",
-                "Drew",
-                true,
-                ExobiologySnapshot.Empty));
+        await Assert.ThrowsAsync<InvalidDataException>(() =>
+            store.SaveExobiologyAsync("F123", "Drew", true, ExobiologySnapshot.Empty)
+        );
 
         Assert.Equal(malformed, await File.ReadAllTextAsync(path));
     }
@@ -558,21 +478,12 @@ public sealed class CommanderProfileStoreTests : IDisposable
     public async Task ConcurrentFeatureSavesDoNotLoseEitherUpdate()
     {
         var store = new CommanderProfileStore(temporaryDirectory);
-        var bio = new ExobiologySnapshot(
-            null,
-            null,
-            null,
-            42,
-            ["123_7_2310101_42_False"],
-            0);
+        var bio = new ExobiologySnapshot(null, null, null, 42, ["123_7_2310101_42_False"], 0);
 
         await Task.WhenAll(
-            store.SaveExplorationAsync(
-                "F123",
-                "Drew",
-                true,
-                new ExplorationSnapshot(99, 10, 1, 2, 3, 4)),
-            store.SaveExobiologyAsync("F123", "Drew", true, bio));
+            store.SaveExplorationAsync("F123", "Drew", true, new ExplorationSnapshot(99, 10, 1, 2, 3, 4)),
+            store.SaveExobiologyAsync("F123", "Drew", true, bio)
+        );
 
         var result = await store.LoadAsync("F123", true);
         Assert.NotNull(result.Data);
@@ -599,29 +510,24 @@ public sealed class CommanderProfileStoreTests : IDisposable
                 "futureSphereOption": "preserve"
               }
             }
-            """);
+            """
+        );
         var store = new CommanderProfileStore(temporaryDirectory);
 
         var loaded = await store.LoadAsync("F123", true);
 
         Assert.NotNull(loaded.Data);
         Assert.Equal(
-            new SphereLimitSnapshot(
-                true,
-                "Sol",
-                new GalacticCoordinate(0, 0, 0),
-                250),
-            loaded.Data.SphereLimit);
+            new SphereLimitSnapshot(true, "Sol", new GalacticCoordinate(0, 0, 0), 250),
+            loaded.Data.SphereLimit
+        );
 
         await store.SaveSphereLimitAsync(
             "F123",
             "Drew",
             true,
-            new SphereLimitSnapshot(
-                false,
-                "Colonia",
-                new GalacticCoordinate(-9530.5, -910.28125, 19808.125),
-                100));
+            new SphereLimitSnapshot(false, "Colonia", new GalacticCoordinate(-9530.5, -910.28125, 19808.125), 100)
+        );
 
         var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         var sphere = root["sphereLimit"]!.AsObject();
@@ -637,20 +543,14 @@ public sealed class CommanderProfileStoreTests : IDisposable
         var store = new CommanderProfileStore(temporaryDirectory);
 
         await Task.WhenAll(
-            store.SaveExplorationAsync(
-                "F123",
-                "Drew",
-                true,
-                new ExplorationSnapshot(99, 10, 1, 2, 3, 4)),
+            store.SaveExplorationAsync("F123", "Drew", true, new ExplorationSnapshot(99, 10, 1, 2, 3, 4)),
             store.SaveSphereLimitAsync(
                 "F123",
                 "Drew",
                 true,
-                new SphereLimitSnapshot(
-                    true,
-                    "Sol",
-                    new GalacticCoordinate(0, 0, 0),
-                    100)));
+                new SphereLimitSnapshot(true, "Sol", new GalacticCoordinate(0, 0, 0), 100)
+            )
+        );
 
         var result = await store.LoadAsync("F123", true);
         Assert.NotNull(result.Data);
@@ -685,7 +585,8 @@ public sealed class CommanderProfileStoreTests : IDisposable
                 "futureBoxelOption": 42
               }
             }
-            """);
+            """
+        );
         var store = new CommanderProfileStore(temporaryDirectory);
 
         var loaded = await store.LoadAsync("F123", true);
@@ -717,16 +618,15 @@ public sealed class CommanderProfileStoreTests : IDisposable
                 SkipAlreadyVisited = boxelSearch.SkipAlreadyVisited,
                 SkipKnownToSpansh = boxelSearch.SkipKnownToSpansh,
                 CompletionMode = BoxelCompletionMode.FssAllBodies,
-            });
+            }
+        );
 
         var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         var saved = root["boxelSearch"]!.AsObject();
         Assert.False(saved["active"]!.GetValue<bool>());
         Assert.True(saved["completeOnFssAllBodies"]!.GetValue<bool>());
         Assert.Equal(42, saved["futureBoxelOption"]!.GetValue<int>());
-        Assert.Equal(
-            "Praea Euq IL-P c5-19|84456510258",
-            saved["boxel"]!.GetValue<string>());
+        Assert.Equal("Praea Euq IL-P c5-19|84456510258", saved["boxel"]!.GetValue<string>());
     }
 
     [Fact]
@@ -744,11 +644,7 @@ public sealed class CommanderProfileStoreTests : IDisposable
                 TopBoxel = top,
                 Current = top,
                 CurrentCount = 4,
-                CompletedSystems =
-                [
-                    "Praea Euq IL-P c5-0",
-                    "Praea Euq IL-P c5-2",
-                ],
+                CompletedSystems = ["Praea Euq IL-P c5-0", "Praea Euq IL-P c5-2"],
                 EmptySystems = ["Praea Euq IL-P c5-1"],
                 DeferredSystems = ["Praea Euq IL-P c5-3"],
                 DeferredRanges =
@@ -761,24 +657,18 @@ public sealed class CommanderProfileStoreTests : IDisposable
                         Exceptions = [3],
                     },
                 ],
-                ProgressByPrefix = new Dictionary<string, int>
-                {
-                    [top.Prefix] = 4,
-                },
+                ProgressByPrefix = new Dictionary<string, int> { [top.Prefix] = 4 },
                 SortDescending = true,
                 SavedSearchFileName = "saved-search.json",
-            });
+            }
+        );
 
         var loaded = await store.LoadAsync("F123", true);
 
         Assert.NotNull(loaded.Data);
         Assert.Equal(2, loaded.Data.BoxelSearch.CompletedSystems.Count);
-        Assert.Equal(
-            ["Praea Euq IL-P c5-1"],
-            loaded.Data.BoxelSearch.EmptySystems);
-        Assert.Equal(
-            ["Praea Euq IL-P c5-3"],
-            loaded.Data.BoxelSearch.DeferredSystems);
+        Assert.Equal(["Praea Euq IL-P c5-1"], loaded.Data.BoxelSearch.EmptySystems);
+        Assert.Equal(["Praea Euq IL-P c5-3"], loaded.Data.BoxelSearch.DeferredSystems);
         var deferredRange = Assert.Single(loaded.Data.BoxelSearch.DeferredRanges);
         Assert.Equal(top.Prefix, deferredRange.Prefix);
         Assert.Equal(2, deferredRange.StartSystemNumber);
@@ -786,9 +676,7 @@ public sealed class CommanderProfileStoreTests : IDisposable
         Assert.Equal([3], deferredRange.Exceptions);
         Assert.Equal(4, loaded.Data.BoxelSearch.ProgressByPrefix[top.Prefix]);
         Assert.True(loaded.Data.BoxelSearch.SortDescending);
-        Assert.Equal(
-            "saved-search.json",
-            loaded.Data.BoxelSearch.SavedSearchFileName);
+        Assert.Equal("saved-search.json", loaded.Data.BoxelSearch.SavedSearchFileName);
     }
 
     [Fact]
@@ -808,7 +696,8 @@ public sealed class CommanderProfileStoreTests : IDisposable
               "decodeTheLogs": ["#28", "#1"],
               "futureRamTahOption": { "enabled": true }
             }
-            """);
+            """
+        );
         var store = new CommanderProfileStore(temporaryDirectory);
 
         var loaded = await store.LoadAsync("F123", true);
@@ -823,17 +712,16 @@ public sealed class CommanderProfileStoreTests : IDisposable
             RamTahMissionStatus.Complete,
             RamTahMissionStatus.Active,
             ["T20", "B1"],
-            ["#2", "#1"]);
+            ["#2", "#1"]
+        );
         await store.SaveRamTahAsync("F123", "Drew", true, updated);
 
         var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.True(root["futureRamTahOption"]!["enabled"]!.GetValue<bool>());
         Assert.Equal("Complete", root["decodeTheRuinsMissionActive"]!.GetValue<string>());
         Assert.Equal("Active", root["decodeTheLogsMissionActive"]!.GetValue<string>());
-        Assert.Equal(["B1", "T20"], root["decodeTheRuins"]!.AsArray()
-            .Select(value => value!.GetValue<string>()));
-        Assert.Equal(["#1", "#2"], root["decodeTheLogs"]!.AsArray()
-            .Select(value => value!.GetValue<string>()));
+        Assert.Equal(["B1", "T20"], root["decodeTheRuins"]!.AsArray().Select(value => value!.GetValue<string>()));
+        Assert.Equal(["#1", "#2"], root["decodeTheLogs"]!.AsArray().Select(value => value!.GetValue<string>()));
 
         loaded = await store.LoadAsync("F123", true);
         Assert.NotNull(loaded.Data);

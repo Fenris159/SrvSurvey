@@ -9,10 +9,8 @@ public sealed class ExobiologyReferenceCatalogTests
     {
         var catalog = ExobiologyReferenceCatalog.LoadEmbedded();
 
-        var byVariant = catalog.FindByVariant(
-            "$Codex_Ent_Aleoids_01_B_Name;");
-        var bySpecies = catalog.FindBySpecies(
-            "$Codex_Ent_Aleoids_01_Name;");
+        var byVariant = catalog.FindByVariant("$Codex_Ent_Aleoids_01_B_Name;");
+        var bySpecies = catalog.FindBySpecies("$Codex_Ent_Aleoids_01_Name;");
 
         Assert.Equal(1070, catalog.Count);
         Assert.Equal(814, catalog.BiologyEntries.Count);
@@ -26,17 +24,13 @@ public sealed class ExobiologyReferenceCatalogTests
         Assert.Equal("LCU No Fool Like One", byVariant.ImageCommander);
         Assert.Equal(
             "https://storage.googleapis.com/canonn-downloads/codex_images/Fool/Boerth%20GR-W%20e1-134(A%2010%20e)_00002.png",
-            byVariant.ImageUrl);
+            byVariant.ImageUrl
+        );
         Assert.Equal(byVariant, bySpecies);
         Assert.Equal(byVariant, catalog.FindByEntryId(2310101));
-        Assert.Equal(
-            byVariant,
-            catalog.FindByDisplayName(byVariant.DisplayName?.ToLowerInvariant()));
+        Assert.Equal(byVariant, catalog.FindByDisplayName(byVariant.DisplayName?.ToLowerInvariant()));
         Assert.Equal("23101", byVariant.EntryIdPrefix);
-        Assert.Equal(
-            "$Codex_Ent_Aleoids_Genus_Name;",
-            ExobiologyReferenceCatalog.GetGenusName(
-                byVariant.SpeciesName));
+        Assert.Equal("$Codex_Ent_Aleoids_Genus_Name;", ExobiologyReferenceCatalog.GetGenusName(byVariant.SpeciesName));
 
         var touristEntry = catalog.FindByEntryId(1200102);
         Assert.NotNull(touristEntry);
@@ -53,12 +47,9 @@ public sealed class ExobiologyReferenceCatalogTests
     [InlineData(2310101, "aleoida-arcus-yellow")]
     [InlineData(2100402, "Anemone-Croceum")]
     [InlineData(2100201, "Brain-Trees-Roseum-Brain-Tree")]
-    public void LocalImageNamesMatchLegacyFloraContract(
-        long entryId,
-        string expected)
+    public void LocalImageNamesMatchLegacyFloraContract(long entryId, string expected)
     {
-        var entry = ExobiologyReferenceCatalog.LoadEmbedded()
-            .FindByEntryId(entryId);
+        var entry = ExobiologyReferenceCatalog.LoadEmbedded().FindByEntryId(entryId);
 
         Assert.NotNull(entry);
         Assert.Equal(expected, entry.GetLegacyLocalImageName());
@@ -72,17 +63,12 @@ public sealed class ExobiologyReferenceCatalogTests
     [InlineData(2101400, "$Codex_Ent_Vents_Name;")]
     [InlineData(2101500, "$Codex_Ent_Ground_Struct_Ice_Name;")]
     [InlineData(2100501, "$Codex_Ent_Tube_Name;")]
-    public void LegacyBiologyUsesCanonicalJournalGenus(
-        long entryId,
-        string expectedGenus)
+    public void LegacyBiologyUsesCanonicalJournalGenus(long entryId, string expectedGenus)
     {
-        var reference = ExobiologyReferenceCatalog.LoadEmbedded()
-            .FindByEntryId(entryId);
+        var reference = ExobiologyReferenceCatalog.LoadEmbedded().FindByEntryId(entryId);
 
         Assert.NotNull(reference);
-        Assert.Equal(
-            expectedGenus,
-            ExobiologyReferenceCatalog.GetGenusName(reference));
+        Assert.Equal(expectedGenus, ExobiologyReferenceCatalog.GetGenusName(reference));
     }
 
     [Fact]
@@ -90,8 +76,7 @@ public sealed class ExobiologyReferenceCatalogTests
     {
         using var stream = new MemoryStream("[]"u8.ToArray());
 
-        Assert.Throws<InvalidDataException>(
-            () => ExobiologyReferenceCatalog.Load(stream));
+        Assert.Throws<InvalidDataException>(() => ExobiologyReferenceCatalog.Load(stream));
     }
 
     [Theory]
@@ -106,13 +91,9 @@ public sealed class ExobiologyReferenceCatalogTests
     [InlineData("Electricae", 1_000)]
     [InlineData("Unknown genus", 50)]
     [InlineData(null, 50)]
-    public void SampleDistanceMatchesLegacyGenusContract(
-        string? genusName,
-        int expected)
+    public void SampleDistanceMatchesLegacyGenusContract(string? genusName, int expected)
     {
-        Assert.Equal(
-            expected,
-            ExobiologyReferenceCatalog.GetSampleDistanceMeters(genusName));
+        Assert.Equal(expected, ExobiologyReferenceCatalog.GetSampleDistanceMeters(genusName));
     }
 
     [Theory]
@@ -122,12 +103,8 @@ public sealed class ExobiologyReferenceCatalogTests
     [InlineData("$Codex_Ent_Ground_Struct_Ice_Name;", "Crystalline Shards")]
     [InlineData("$Codex_Ent_Ingensradices_Genus_Name;", "Radicoida")]
     [InlineData("custom_tracker", "Custom Tracker")]
-    public void GenusDisplayNameMatchesLegacyLabels(
-        string genusName,
-        string expected)
+    public void GenusDisplayNameMatchesLegacyLabels(string genusName, string expected)
     {
-        Assert.Equal(
-            expected,
-            ExobiologyReferenceCatalog.GetGenusDisplayName(genusName));
+        Assert.Equal(expected, ExobiologyReferenceCatalog.GetGenusDisplayName(genusName));
     }
 }

@@ -4,11 +4,8 @@ namespace SrvSurvey.Core.Tests.Updates;
 
 public sealed class ReleaseInstallationPlanCleanerTests : IDisposable
 {
-    private static readonly DateTimeOffset Now =
-        new(2026, 8, 21, 12, 0, 0, TimeSpan.Zero);
-    private readonly string root = Path.Combine(
-        Path.GetTempPath(),
-        $"SrvSurvey-plan-cleaner-tests-{Guid.NewGuid():N}");
+    private static readonly DateTimeOffset Now = new(2026, 8, 21, 12, 0, 0, TimeSpan.Zero);
+    private readonly string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-plan-cleaner-tests-{Guid.NewGuid():N}");
 
     [Fact]
     public void CleanDeletesOnlyOldDirectGuidPlanDirectories()
@@ -21,12 +18,9 @@ public sealed class ReleaseInstallationPlanCleanerTests : IDisposable
         var nestedPlan = Path.Combine(unrelated, Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(emptyRequest);
         Directory.CreateDirectory(nestedPlan);
-        Directory.SetLastWriteTimeUtc(
-            unrelated,
-            Now.AddDays(-8).UtcDateTime);
+        Directory.SetLastWriteTimeUtc(unrelated, Now.AddDays(-8).UtcDateTime);
 
-        var result = new ReleaseInstallationPlanCleaner(
-            new FixedTimeProvider(Now)).Clean(root);
+        var result = new ReleaseInstallationPlanCleaner(new FixedTimeProvider(Now)).Clean(root);
 
         Assert.Equal(1, result.DeletedPlans);
         Assert.Equal(1, result.RetainedPlans);
@@ -41,8 +35,7 @@ public sealed class ReleaseInstallationPlanCleanerTests : IDisposable
     [Fact]
     public void CleanReturnsAnEmptyResultWhenThePlanRootDoesNotExist()
     {
-        var result = new ReleaseInstallationPlanCleaner(
-            new FixedTimeProvider(Now)).Clean(root);
+        var result = new ReleaseInstallationPlanCleaner(new FixedTimeProvider(Now)).Clean(root);
 
         Assert.Equal(0, result.DeletedPlans);
         Assert.Equal(0, result.RetainedPlans);
@@ -56,7 +49,8 @@ public sealed class ReleaseInstallationPlanCleanerTests : IDisposable
         var cleaner = new ReleaseInstallationPlanCleaner(
             new FixedTimeProvider(Now),
             minimumAge: TimeSpan.FromHours(24),
-            _ => throw new UnauthorizedAccessException("locked"));
+            _ => throw new UnauthorizedAccessException("locked")
+        );
 
         var result = cleaner.Clean(root);
 
@@ -76,10 +70,11 @@ public sealed class ReleaseInstallationPlanCleanerTests : IDisposable
         await cancellation.CancelAsync();
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
-            new ReleaseInstallationPlanCleaner(
-                new FixedTimeProvider(Now),
-                minimumAge: TimeSpan.Zero)
-                .CleanAsync(root, cancellation.Token));
+            new ReleaseInstallationPlanCleaner(new FixedTimeProvider(Now), minimumAge: TimeSpan.Zero).CleanAsync(
+                root,
+                cancellation.Token
+            )
+        );
 
         Assert.True(Directory.Exists(plan));
     }
@@ -92,7 +87,8 @@ public sealed class ReleaseInstallationPlanCleanerTests : IDisposable
 
         var result = await coordinator.CleanPlansAsync(
             new ReleaseInstallationPlanCleaner(new FixedTimeProvider(Now)),
-            root);
+            root
+        );
 
         Assert.Equal(1, result.DeletedPlans);
         Assert.False(Directory.Exists(plan));
@@ -108,11 +104,7 @@ public sealed class ReleaseInstallationPlanCleanerTests : IDisposable
 
     private string CreatePlan(Guid requestId, DateTimeOffset lastWriteTime)
     {
-        var path = Path.Combine(
-            root,
-            "updates",
-            "install-plans",
-            requestId.ToString("N"));
+        var path = Path.Combine(root, "updates", "install-plans", requestId.ToString("N"));
         Directory.CreateDirectory(path);
         File.WriteAllText(Path.Combine(path, "plan.json"), "{}");
         Directory.SetLastWriteTimeUtc(path, lastWriteTime.UtcDateTime);

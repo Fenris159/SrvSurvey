@@ -16,35 +16,35 @@ public sealed class DesktopBehaviorSettingsPresentationTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-desktop-behavior-presentation-{Guid.NewGuid():N}");
+        $"SrvSurvey-desktop-behavior-presentation-{Guid.NewGuid():N}"
+    );
 
     [AvaloniaFact]
     public void MonitorAndApplicationScaleSelectorsRenderInsideDesktopCard()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var settingsPath = Path.Combine(
-            temporaryDirectory,
-            "config",
-            "cross-platform-ui.json");
+        var settingsPath = Path.Combine(temporaryDirectory, "config", "cross-platform-ui.json");
         using var viewModel = MainWindowViewModelTestBuilder.Create(
             Path.Combine(temporaryDirectory, "journals"),
-            builder => builder
-                .WithAppDataPaths(
-                    new AppDataPaths(
-                        Path.Combine(temporaryDirectory, "config"),
-                        Path.Combine(temporaryDirectory, "data"),
-                        Path.Combine(temporaryDirectory, "cache"),
-                        []))
-                .WithDesktopBehaviorSettingsStore(new DesktopBehaviorSettingsStore(settingsPath))
-                .WithGameWindowSwitcher(new UnavailableGameWindowSwitcher()));
-        var secondaryMonitor = new ApplicationMonitorOption(
-            "DISPLAY2",
-            "DISPLAY2 - 2560 x 1440 - 100%");
+            builder =>
+                builder
+                    .WithAppDataPaths(
+                        new AppDataPaths(
+                            Path.Combine(temporaryDirectory, "config"),
+                            Path.Combine(temporaryDirectory, "data"),
+                            Path.Combine(temporaryDirectory, "cache"),
+                            []
+                        )
+                    )
+                    .WithDesktopBehaviorSettingsStore(new DesktopBehaviorSettingsStore(settingsPath))
+                    .WithGameWindowSwitcher(new UnavailableGameWindowSwitcher())
+        );
+        var secondaryMonitor = new ApplicationMonitorOption("DISPLAY2", "DISPLAY2 - 2560 x 1440 - 100%");
         viewModel.DesktopBehavior.SetAvailableMonitors([secondaryMonitor]);
         viewModel.DesktopBehavior.SelectedMonitor = secondaryMonitor;
-        viewModel.DesktopBehavior.SelectedApplicationWindowScale =
-            ApplicationWindowScaleCatalog.All.Single(option =>
-                option.Percent == 125);
+        viewModel.DesktopBehavior.SelectedApplicationWindowScale = ApplicationWindowScaleCatalog.All.Single(option =>
+            option.Percent == 125
+        );
         viewModel.SettingsWorkspace.SelectCategory("desktop");
         var settings = new SettingsView { DataContext = viewModel };
         var window = new Window
@@ -58,10 +58,8 @@ public sealed class DesktopBehaviorSettingsPresentationTests : IDisposable
         {
             window.Show();
             var card = settings.FindControl<Border>("DesktopBehaviorCard");
-            var monitor = settings.FindControl<ComboBox>(
-                "DefaultMonitorComboBox");
-            var scale = settings.FindControl<ComboBox>(
-                "ApplicationWindowScaleComboBox");
+            var monitor = settings.FindControl<ComboBox>("DefaultMonitorComboBox");
+            var scale = settings.FindControl<ComboBox>("ApplicationWindowScaleComboBox");
             Assert.NotNull(card);
             Assert.NotNull(monitor);
             Assert.NotNull(scale);
@@ -77,9 +75,7 @@ public sealed class DesktopBehaviorSettingsPresentationTests : IDisposable
             Assert.NotNull(monitorOrigin);
             Assert.NotNull(scaleOrigin);
             Assert.True(monitorOrigin.Value.X < scaleOrigin.Value.X);
-            Assert.True(
-                scaleOrigin.Value.X + scale.Bounds.Width
-                <= card.Bounds.Width);
+            Assert.True(scaleOrigin.Value.X + scale.Bounds.Width <= card.Bounds.Width);
         }
         finally
         {
@@ -103,8 +99,6 @@ public sealed class DesktopBehaviorSettingsPresentationTests : IDisposable
 
         public bool TryActivateNext() => false;
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
     }
 }

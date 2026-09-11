@@ -12,13 +12,10 @@ public sealed partial class QuestView : UserControl
         InitializeComponent();
     }
 
-    private async void ImportDevelopmentFolder_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private async void ImportDevelopmentFolder_Click(object? sender, RoutedEventArgs eventArgs)
     {
         var topLevel = TopLevel.GetTopLevel(this);
-        if (topLevel?.StorageProvider is null
-            || DataContext is not MainWindowViewModel viewModel)
+        if (topLevel?.StorageProvider is null || DataContext is not MainWindowViewModel viewModel)
         {
             return;
         }
@@ -28,12 +25,12 @@ public sealed partial class QuestView : UserControl
             {
                 Title = "Select folder containing quest definition files",
                 AllowMultiple = false,
-            });
+            }
+        );
         var folder = folders.Count > 0 ? folders[0] : null;
         if (folder is not null)
         {
-            await viewModel.QuestWorkspace.Developer.ImportFolderAsync(
-                folder.Path.LocalPath);
+            await viewModel.QuestWorkspace.Developer.ImportFolderAsync(folder.Path.LocalPath);
         }
     }
 }

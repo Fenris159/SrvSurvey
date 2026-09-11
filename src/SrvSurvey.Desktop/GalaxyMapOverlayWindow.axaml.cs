@@ -6,9 +6,7 @@ namespace SrvSurvey.Desktop;
 public sealed partial class GalaxyMapOverlayWindow : Window
 {
     public GalaxyMapOverlayWindow()
-        : this(null)
-    {
-    }
+        : this(null) { }
 
     public GalaxyMapOverlayWindow(GalaxyMapOverlayViewModel? viewModel)
     {

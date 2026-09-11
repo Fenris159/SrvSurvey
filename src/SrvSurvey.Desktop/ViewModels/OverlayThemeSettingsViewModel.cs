@@ -34,116 +34,41 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         new(CategoryExobiology, "bio.confirmed", "Confirmed organism reward PIP"),
         new(CategoryExobiology, "bio.confirmedDim", "Analyzed organism reward PIP"),
         new(CategoryExobiology, "bio.potential", "Confirmed reward-range upper segment"),
-        new(
-            CategoryExobiology,
-            "bio.confirmedDimPotential",
-            "Analyzed reward-range upper segment"),
+        new(CategoryExobiology, "bio.confirmedDimPotential", "Analyzed reward-range upper segment"),
         new(CategoryExobiology, "bio.prediction", "Predicted organism reward PIP"),
-        new(
-            CategoryExobiology,
-            "bio.predictionPotential",
-            "Predicted reward-range upper segment"),
-        new(
-            CategoryExobiology,
-            "bio.gold",
-            "Commander/regional-first marker"),
-        new(
-            CategoryExobiology,
-            "bio.goldDark",
-            "Commander/regional-first marker (analyzed)"),
+        new(CategoryExobiology, "bio.predictionPotential", "Predicted reward-range upper segment"),
+        new(CategoryExobiology, "bio.gold", "Commander/regional-first marker"),
+        new(CategoryExobiology, "bio.goldDark", "Commander/regional-first marker (analyzed)"),
         new(CategoryExobiology, "bio.goldFill", "Commander/regional-first PIP fill"),
-        new(
-            CategoryExobiology,
-            "bio.goldDarkFill",
-            "Commander/regional-first PIP fill (analyzed)"),
-        new(
-            CategoryExobiology,
-            "bio.goldPotential",
-            "Commander/regional-first possible segment"),
-        new(
-            CategoryExobiology,
-            "bio.goldDarkPotential",
-            "Analyzed first-discovery possible segment"),
-        new(
-            CategoryExobiology,
-            "bio.galacticRegion",
-            "Galactic-region candidate PIP"),
-        new(
-            CategoryExobiology,
-            "bio.galacticRegionPotential",
-            "Galactic-region possible segment"),
+        new(CategoryExobiology, "bio.goldDarkFill", "Commander/regional-first PIP fill (analyzed)"),
+        new(CategoryExobiology, "bio.goldPotential", "Commander/regional-first possible segment"),
+        new(CategoryExobiology, "bio.goldDarkPotential", "Analyzed first-discovery possible segment"),
+        new(CategoryExobiology, "bio.galacticRegion", "Galactic-region candidate PIP"),
+        new(CategoryExobiology, "bio.galacticRegionPotential", "Galactic-region possible segment"),
         new(CategoryExobiology, "bio.unknown", "Unknown reward frame"),
         new(CategoryExobiology, "bio.unknownGlyph", "Unknown reward question mark"),
         new(CategoryExobiology, "bio.hatch", "Prediction hatch lines"),
         new(CategoryExobiology, "bio.empty", "Empty reward segment"),
         new(CategoryExobiology, "bio.white", "Biology labels and values"),
         new(CategoryExobiology, "bio.confirmedEdge", "Confirmed PIP outer border"),
-        new(
-            CategoryExobiology,
-            "bio.confirmedDimEdge",
-            "Analyzed PIP outer border"),
+        new(CategoryExobiology, "bio.confirmedDimEdge", "Analyzed PIP outer border"),
         new(CategoryExobiology, "bio.predictionEdge", "Predicted PIP outer border"),
-        new(
-            CategoryExobiology,
-            "bio.goldEdge",
-            "Commander/regional-first PIP outer border"),
-        new(
-            CategoryExobiology,
-            "bio.goldDarkEdge",
-            "Analyzed first-discovery PIP outer border"),
-        new(
-            CategoryExobiology,
-            "bio.galacticRegionEdge",
-            "Galactic-region PIP outer border"),
+        new(CategoryExobiology, "bio.goldEdge", "Commander/regional-first PIP outer border"),
+        new(CategoryExobiology, "bio.goldDarkEdge", "Analyzed first-discovery PIP outer border"),
+        new(CategoryExobiology, "bio.galacticRegionEdge", "Galactic-region PIP outer border"),
         new(CategoryExobiology, "bio.unknownEdge", "Unknown reward PIP outer border"),
-        new(
-            CategoryExobiology,
-            "bio.confirmedSegmentEdge",
-            "Confirmed PIP filled-segment border"),
-        new(
-            CategoryExobiology,
-            "bio.confirmedPotentialSegmentEdge",
-            "Confirmed PIP possible-segment border"),
-        new(
-            CategoryExobiology,
-            "bio.confirmedDimSegmentEdge",
-            "Analyzed PIP filled-segment border"),
-        new(
-            CategoryExobiology,
-            "bio.confirmedDimPotentialSegmentEdge",
-            "Analyzed PIP possible-segment border"),
-        new(
-            CategoryExobiology,
-            "bio.predictionSegmentEdge",
-            "Predicted PIP filled-segment border"),
-        new(
-            CategoryExobiology,
-            "bio.predictionPotentialSegmentEdge",
-            "Predicted PIP possible-segment border"),
-        new(
-            CategoryExobiology,
-            "bio.goldSegmentEdge",
-            "Commander/regional-first filled-segment border"),
-        new(
-            CategoryExobiology,
-            "bio.goldPotentialSegmentEdge",
-            "Commander/regional-first possible-segment border"),
-        new(
-            CategoryExobiology,
-            "bio.goldDarkSegmentEdge",
-            "Analyzed first-discovery filled-segment border"),
-        new(
-            CategoryExobiology,
-            "bio.goldDarkPotentialSegmentEdge",
-            "Analyzed first-discovery possible-segment border"),
-        new(
-            CategoryExobiology,
-            "bio.galacticRegionSegmentEdge",
-            "Galactic-region filled-segment border"),
-        new(
-            CategoryExobiology,
-            "bio.galacticRegionPotentialSegmentEdge",
-            "Galactic-region possible-segment border"),
+        new(CategoryExobiology, "bio.confirmedSegmentEdge", "Confirmed PIP filled-segment border"),
+        new(CategoryExobiology, "bio.confirmedPotentialSegmentEdge", "Confirmed PIP possible-segment border"),
+        new(CategoryExobiology, "bio.confirmedDimSegmentEdge", "Analyzed PIP filled-segment border"),
+        new(CategoryExobiology, "bio.confirmedDimPotentialSegmentEdge", "Analyzed PIP possible-segment border"),
+        new(CategoryExobiology, "bio.predictionSegmentEdge", "Predicted PIP filled-segment border"),
+        new(CategoryExobiology, "bio.predictionPotentialSegmentEdge", "Predicted PIP possible-segment border"),
+        new(CategoryExobiology, "bio.goldSegmentEdge", "Commander/regional-first filled-segment border"),
+        new(CategoryExobiology, "bio.goldPotentialSegmentEdge", "Commander/regional-first possible-segment border"),
+        new(CategoryExobiology, "bio.goldDarkSegmentEdge", "Analyzed first-discovery filled-segment border"),
+        new(CategoryExobiology, "bio.goldDarkPotentialSegmentEdge", "Analyzed first-discovery possible-segment border"),
+        new(CategoryExobiology, "bio.galacticRegionSegmentEdge", "Galactic-region filled-segment border"),
+        new(CategoryExobiology, "bio.galacticRegionPotentialSegmentEdge", "Galactic-region possible-segment border"),
         new(CategoryColonisation, "colonise.surplus", "Surplus"),
         new(CategoryColonisation, "colonise.surplusDark", "Surplus (dim)"),
         new(CategoryColonisation, "colonise.deficit", "Deficit"),
@@ -151,10 +76,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         new(CategoryColonisation, "colonise.highlight", "Highlight"),
         new(CategoryColonisation, "colonise.item", "Item"),
         new(CategoryColonisation, "colonise.itemDark", "Item (dim)"),
-        new(
-            CategoryColonisation,
-            "colonise.rowHighlight",
-            "Commodity row fill (colour + alpha)"),
+        new(CategoryColonisation, "colonise.rowHighlight", "Commodity row fill (colour + alpha)"),
         new(CategoryHumanSettlements, "fcz.checkpoint", "Checkpoint"),
         new(CategoryHumanSettlements, "fcz.checkpointLocal", "Local checkpoint"),
         new(CategoryHumanSettlements, "fcz.powerPost", "Power post"),
@@ -172,16 +94,15 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         new(CategoryGuardian, "guardian.danger", "Danger / missing"),
     ];
 
-    private static readonly IReadOnlyList<OverlayTypographyDefinition>
-        TypographyDefinitions =
-        [
-            new(HeaderKey, "Header"),
-            new("title", "Title"),
-            new("value", "Value"),
-            new("body", "Body"),
-            new("detail", "Detail"),
-            new("caption", "Caption"),
-        ];
+    private static readonly IReadOnlyList<OverlayTypographyDefinition> TypographyDefinitions =
+    [
+        new(HeaderKey, "Header"),
+        new("title", "Title"),
+        new("value", "Value"),
+        new("body", "Body"),
+        new("detail", "Detail"),
+        new("caption", "Caption"),
+    ];
 
     private readonly LegacyOverlayThemeStore activeStore;
     private readonly OverlayThemeStateStore stateStore;
@@ -202,22 +123,17 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         LegacyOverlayThemeStore activeStore,
         OverlayThemeStateStore stateStore,
         RavenThemeService? themeService = null,
-        LegacyOverlayTheme? initialTheme = null)
+        LegacyOverlayTheme? initialTheme = null
+    )
     {
-        this.activeStore = activeStore
-            ?? throw new ArgumentNullException(nameof(activeStore));
-        this.stateStore = stateStore
-            ?? throw new ArgumentNullException(nameof(stateStore));
+        this.activeStore = activeStore ?? throw new ArgumentNullException(nameof(activeStore));
+        this.stateStore = stateStore ?? throw new ArgumentNullException(nameof(stateStore));
         this.themeService = themeService;
         applyCommand = new DelegateCommand(Apply, () => CanApply);
         previewCommand = new DelegateCommand(Preview, () => CanPreview);
         saveStateCommand = new DelegateCommand(SaveState, () => CanSaveState);
-        loadStateCommand = new DelegateCommand(
-            LoadState,
-            () => SelectedSavedState is not null);
-        deleteStateCommand = new DelegateCommand(
-            DeleteState,
-            () => CanDeleteSelectedState);
+        loadStateCommand = new DelegateCommand(LoadState, () => SelectedSavedState is not null);
+        deleteStateCommand = new DelegateCommand(DeleteState, () => CanDeleteSelectedState);
         ApplyCommand = applyCommand;
         PreviewCommand = previewCommand;
         SaveStateCommand = saveStateCommand;
@@ -229,9 +145,9 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         var theme = initialTheme ?? themeService?.CurrentOverlayTheme ?? activeStore.Load();
         ReplaceEditors(theme.Colors, acceptChanges: true);
         ReplaceTypographyEditors(theme.EffectiveTypography, acceptChanges: true);
-        RefreshSavedStates(
-            OverlayThemePresetCatalog.FindMatching(theme.Colors)?.Name);
-        StatusMessage = theme.Error
+        RefreshSavedStates(OverlayThemePresetCatalog.FindMatching(theme.Colors)?.Name);
+        StatusMessage =
+            theme.Error
             ?? "Overlay colours and typography are independent from the application theme."
                 + " Imported theme.json appearance settings are active until you apply changes here.";
     }
@@ -313,24 +229,25 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
 
     public bool HasStatusMessage => StatusMessage.Length > 0;
 
-    public bool IsDirty => Categories.SelectMany(category => category.Colors)
-        .Any(color => color.IsDirty)
+    public bool IsDirty =>
+        Categories.SelectMany(category => category.Colors).Any(color => color.IsDirty)
         || Typography.Any(editor => editor.IsDirty);
 
-    public bool HasValidationErrors => Categories.SelectMany(category => category.Colors)
-        .Any(color => color.HasValidationError);
+    public bool HasValidationErrors =>
+        Categories.SelectMany(category => category.Colors).Any(color => color.HasValidationError);
 
     public bool CanApply => IsDirty && !HasValidationErrors;
 
     public bool CanPreview => themeService is not null && !HasValidationErrors;
 
-    public bool CanSaveState => !string.IsNullOrWhiteSpace(StateName)
+    public bool CanSaveState =>
+        !string.IsNullOrWhiteSpace(StateName)
         && StateName.Trim().Length <= 80
         && !OverlayThemePresetCatalog.TryGet(StateName.Trim(), out _)
         && !HasValidationErrors;
 
-    public bool CanDeleteSelectedState => SelectedSavedState is not null
-        && !OverlayThemePresetCatalog.TryGet(SelectedSavedState, out _);
+    public bool CanDeleteSelectedState =>
+        SelectedSavedState is not null && !OverlayThemePresetCatalog.TryGet(SelectedSavedState, out _);
 
     public ICommand ApplyCommand { get; }
 
@@ -363,18 +280,19 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
                 editor.AcceptChanges();
             }
 
-            StatusMessage = "Applied overlay colours and typography to theme.json and all open overlays."
-                + (result.BackupPath is null
-                    ? string.Empty
-                    : $" Previous theme backup: {result.BackupPath}");
+            StatusMessage =
+                "Applied overlay colours and typography to theme.json and all open overlays."
+                + (result.BackupPath is null ? string.Empty : $" Previous theme backup: {result.BackupPath}");
             OnEditorsChanged();
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException
-                or InvalidOperationException
-                or ArgumentException)
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or UnauthorizedAccessException
+                        or InvalidDataException
+                        or InvalidOperationException
+                        or ArgumentException
+            )
         {
             StatusMessage = "The overlay theme was not changed: " + exception.Message;
         }
@@ -385,15 +303,13 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         try
         {
             themeService?.ApplyOverlayTheme(CreateDraftTheme());
-            StatusMessage = "Refreshed all open overlays and position previews with unsaved colours and typography. Apply to keep them, or discard changes to restore theme.json.";
+            StatusMessage =
+                "Refreshed all open overlays and position previews with unsaved colours and typography. Apply to keep them, or discard changes to restore theme.json.";
         }
-        catch (Exception exception) when (
-            exception is InvalidDataException
-                or InvalidOperationException
-                or ArgumentException)
+        catch (Exception exception)
+            when (exception is InvalidDataException or InvalidOperationException or ArgumentException)
         {
-            StatusMessage = "The overlay preview was not refreshed: "
-                + exception.Message;
+            StatusMessage = "The overlay preview was not refreshed: " + exception.Message;
         }
     }
 
@@ -401,30 +317,29 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
     {
         if (OverlayThemePresetCatalog.TryGet(StateName.Trim(), out _))
         {
-            StatusMessage = $"'{StateName.Trim()}' is a built-in overlay theme name."
-                + " Choose another name for a saved state.";
+            StatusMessage =
+                $"'{StateName.Trim()}' is a built-in overlay theme name." + " Choose another name for a saved state.";
             return;
         }
 
         try
         {
             var draft = CreateDraftTheme();
-            var result = stateStore.SaveState(
-                StateName,
-                draft.Colors,
-                draft.EffectiveTypography);
+            var result = stateStore.SaveState(StateName, draft.Colors, draft.EffectiveTypography);
             RefreshSavedStates(result.StateName);
             StateName = result.StateName;
             StatusMessage = result.ReplacedExisting
                 ? $"Updated saved overlay theme state '{result.StateName}'."
                 : $"Saved overlay theme state '{result.StateName}'.";
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException
-                or InvalidOperationException
-                or ArgumentException)
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or UnauthorizedAccessException
+                        or InvalidDataException
+                        or InvalidOperationException
+                        or ArgumentException
+            )
         {
             StatusMessage = "The overlay theme state was not saved: " + exception.Message;
         }
@@ -446,22 +361,18 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         }
 
         var collection = stateStore.Load();
-        var state = collection.States.SingleOrDefault(candidate => string.Equals(
-            candidate.Name,
-            selected,
-            StringComparison.Ordinal));
+        var state = collection.States.SingleOrDefault(candidate =>
+            string.Equals(candidate.Name, selected, StringComparison.Ordinal)
+        );
         if (state is null)
         {
-            StatusMessage = collection.Error
-                ?? $"Saved overlay theme state '{selected}' was not found.";
+            StatusMessage = collection.Error ?? $"Saved overlay theme state '{selected}' was not found.";
             RefreshSavedStates();
             return;
         }
 
         ReplaceEditors(state.Colors, acceptChanges: false);
-        ReplaceTypographyEditors(
-            state.EffectiveTypography,
-            acceptChanges: false);
+        ReplaceTypographyEditors(state.EffectiveTypography, acceptChanges: false);
         StateName = state.Name;
         Preview();
     }
@@ -478,27 +389,26 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         {
             _ = stateStore.DeleteState(selected);
             RefreshSavedStates();
-            StatusMessage = $"Deleted saved overlay theme state '{selected}'."
-                + " The active in-game theme was not changed.";
+            StatusMessage =
+                $"Deleted saved overlay theme state '{selected}'." + " The active in-game theme was not changed.";
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException
-                or InvalidOperationException
-                or ArgumentException
-                or KeyNotFoundException)
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or UnauthorizedAccessException
+                        or InvalidDataException
+                        or InvalidOperationException
+                        or ArgumentException
+                        or KeyNotFoundException
+            )
         {
-            StatusMessage = "The saved overlay theme state was not deleted: "
-                + exception.Message;
+            StatusMessage = "The saved overlay theme state was not deleted: " + exception.Message;
         }
     }
 
     private void RestoreDefaults()
     {
-        LoadBuiltInPreset(
-            OverlayThemePresetCatalog.Default,
-            updateSelection: true);
+        LoadBuiltInPreset(OverlayThemePresetCatalog.Default, updateSelection: true);
     }
 
     private void ReloadActive()
@@ -506,11 +416,10 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         var theme = activeStore.Load();
         ReplaceEditors(theme.Colors, acceptChanges: true);
         ReplaceTypographyEditors(theme.EffectiveTypography, acceptChanges: true);
-        SetSelectedSavedState(
-            OverlayThemePresetCatalog.FindMatching(theme.Colors)?.Name,
-            loadBuiltInPreset: false);
+        SetSelectedSavedState(OverlayThemePresetCatalog.FindMatching(theme.Colors)?.Name, loadBuiltInPreset: false);
         themeService?.ApplyOverlayTheme(theme);
-        StatusMessage = theme.Error
+        StatusMessage =
+            theme.Error
             ?? "Reloaded the active theme.json colours and typography, discarded editor changes, and refreshed open overlays.";
     }
 
@@ -518,69 +427,58 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
     {
         if (HasValidationErrors)
         {
-            throw new InvalidDataException(
-                "Correct invalid colour values before saving or applying.");
+            throw new InvalidDataException("Correct invalid colour values before saving or applying.");
         }
 
         return new LegacyOverlayTheme(
-            Categories.SelectMany(category => category.Colors).ToDictionary(
-                editor => editor.Key,
-                editor => editor.Color,
-                StringComparer.Ordinal),
+            Categories
+                .SelectMany(category => category.Colors)
+                .ToDictionary(editor => editor.Key, editor => editor.Color, StringComparer.Ordinal),
             IsCustom: true,
             Error: null,
-            Typography: CreateTypographySettings());
+            Typography: CreateTypographySettings()
+        );
     }
 
-    private void ReplaceEditors(
-        IReadOnlyDictionary<string, Color> colors,
-        bool acceptChanges)
+    private void ReplaceEditors(IReadOnlyDictionary<string, Color> colors, bool acceptChanges)
     {
-        var expandedCategoryName = Categories
-            .FirstOrDefault(category => category.IsExpanded)?.Name;
+        var expandedCategoryName = Categories.FirstOrDefault(category => category.IsExpanded)?.Name;
         var definitions = Definitions.ToList();
-        var knownKeys = definitions.Select(definition => definition.Key)
-            .ToHashSet(StringComparer.Ordinal);
-        definitions.AddRange(colors.Keys
-            .Where(key => !knownKeys.Contains(key))
-            .OrderBy(key => key, StringComparer.Ordinal)
-            .Select(key => new OverlayThemeColorDefinition(
-                "Custom / imported",
-                key,
-                key)));
+        var knownKeys = definitions.Select(definition => definition.Key).ToHashSet(StringComparer.Ordinal);
+        definitions.AddRange(
+            colors
+                .Keys.Where(key => !knownKeys.Contains(key))
+                .OrderBy(key => key, StringComparer.Ordinal)
+                .Select(key => new OverlayThemeColorDefinition("Custom / imported", key, key))
+        );
 
         var rebuiltCategories = definitions
             .GroupBy(definition => definition.Category, StringComparer.Ordinal)
             .Select(group => new OverlayThemeCategoryViewModel(
                 group.Key,
-                group.Select(definition =>
-                {
-                    var initialColor = colors.TryGetValue(
-                        definition.Key,
-                        out var configuredColor)
-                            ? configuredColor
-                            : LegacyOverlayThemeStore.CreateDefault().GetColor(
-                                definition.Key);
-                    var editor = new OverlayThemeColorEditorViewModel(
-                        definition,
-                        initialColor,
-                        OnEditorsChanged);
-                    if (!acceptChanges)
+                group
+                    .Select(definition =>
                     {
-                        editor.MarkDirty();
-                    }
+                        var initialColor = colors.TryGetValue(definition.Key, out var configuredColor)
+                            ? configuredColor
+                            : LegacyOverlayThemeStore.CreateDefault().GetColor(definition.Key);
+                        var editor = new OverlayThemeColorEditorViewModel(definition, initialColor, OnEditorsChanged);
+                        if (!acceptChanges)
+                        {
+                            editor.MarkDirty();
+                        }
 
-                    return editor;
-                }).ToArray(),
-                SelectExpandedCategory))
+                        return editor;
+                    })
+                    .ToArray(),
+                SelectExpandedCategory
+            ))
             .ToArray();
         Categories = rebuiltCategories;
-        var categoryToExpand = rebuiltCategories.FirstOrDefault(category =>
-                string.Equals(
-                    category.Name,
-                    expandedCategoryName,
-                    StringComparison.Ordinal))
-            ?? rebuiltCategories.FirstOrDefault();
+        var categoryToExpand =
+            rebuiltCategories.FirstOrDefault(category =>
+                string.Equals(category.Name, expandedCategoryName, StringComparison.Ordinal)
+            ) ?? rebuiltCategories.FirstOrDefault();
         categoryToExpand?.SetExpanded(true);
         OnEditorsChanged();
     }
@@ -593,43 +491,42 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         }
     }
 
-    private void ReplaceTypographyEditors(
-        OverlayTypographySettings settings,
-        bool acceptChanges)
+    private void ReplaceTypographyEditors(OverlayTypographySettings settings, bool acceptChanges)
     {
-        Typography = TypographyDefinitions.Select(definition =>
-        {
-            var editor = new OverlayTypographyEditorViewModel(
-                definition,
-                GetTypographyValue(settings, definition.Key),
-                OnEditorsChanged);
-            if (!acceptChanges)
+        Typography = TypographyDefinitions
+            .Select(definition =>
             {
-                editor.MarkDirty();
-            }
+                var editor = new OverlayTypographyEditorViewModel(
+                    definition,
+                    GetTypographyValue(settings, definition.Key),
+                    OnEditorsChanged
+                );
+                if (!acceptChanges)
+                {
+                    editor.MarkDirty();
+                }
 
-            return editor;
-        }).ToArray();
+                return editor;
+            })
+            .ToArray();
         OnEditorsChanged();
     }
 
-    private OverlayTypographySettings CreateTypographySettings() => new(
-        Header: GetTypographyEditor(HeaderKey).FontSize,
-        Title: GetTypographyEditor("title").FontSize,
-        Value: GetTypographyEditor("value").FontSize,
-        Body: GetTypographyEditor("body").FontSize,
-        Detail: GetTypographyEditor("detail").FontSize,
-        Caption: GetTypographyEditor("caption").FontSize);
+    private OverlayTypographySettings CreateTypographySettings() =>
+        new(
+            Header: GetTypographyEditor(HeaderKey).FontSize,
+            Title: GetTypographyEditor("title").FontSize,
+            Value: GetTypographyEditor("value").FontSize,
+            Body: GetTypographyEditor("body").FontSize,
+            Detail: GetTypographyEditor("detail").FontSize,
+            Caption: GetTypographyEditor("caption").FontSize
+        );
 
     private OverlayTypographyEditorViewModel GetTypographyEditor(string key) =>
-        Typography.Single(editor => string.Equals(
-            editor.Key,
-            key,
-            StringComparison.Ordinal));
+        Typography.Single(editor => string.Equals(editor.Key, key, StringComparison.Ordinal));
 
-    private static double GetTypographyValue(
-        OverlayTypographySettings settings,
-        string key) => key switch
+    private static double GetTypographyValue(OverlayTypographySettings settings, string key) =>
+        key switch
         {
             HeaderKey => settings.Header,
             "title" => settings.Title,
@@ -643,32 +540,30 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
     private void RefreshSavedStates(string? select = null)
     {
         var collection = stateStore.Load();
-        SavedStates = OverlayThemePresetCatalog.Presets
-            .Select(preset => preset.Name)
-            .Concat(collection.States
-                .Select(state => state.Name)
-                .Where(name => !OverlayThemePresetCatalog.TryGet(name, out _)))
+        SavedStates = OverlayThemePresetCatalog
+            .Presets.Select(preset => preset.Name)
+            .Concat(
+                collection
+                    .States.Select(state => state.Name)
+                    .Where(name => !OverlayThemePresetCatalog.TryGet(name, out _))
+            )
             .ToArray();
         var requested = select ?? SelectedSavedState;
         SetSelectedSavedState(
-            requested is not null && SavedStates.Contains(requested)
-                ? requested
-                : null,
-            loadBuiltInPreset: false);
+            requested is not null && SavedStates.Contains(requested) ? requested : null,
+            loadBuiltInPreset: false
+        );
         if (collection.Error is not null)
         {
             StatusMessage = collection.Error;
         }
     }
 
-    private void SetSelectedSavedState(
-        string? value,
-        bool loadBuiltInPreset)
+    private void SetSelectedSavedState(string? value, bool loadBuiltInPreset)
     {
         if (string.Equals(selectedSavedState, value, StringComparison.Ordinal))
         {
-            if (loadBuiltInPreset
-                && OverlayThemePresetCatalog.TryGet(value, out var currentPreset))
+            if (loadBuiltInPreset && OverlayThemePresetCatalog.TryGet(value, out var currentPreset))
             {
                 LoadBuiltInPreset(currentPreset, updateSelection: false);
             }
@@ -681,16 +576,13 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(CanDeleteSelectedState));
         loadStateCommand.RaiseCanExecuteChanged();
         deleteStateCommand.RaiseCanExecuteChanged();
-        if (loadBuiltInPreset
-            && OverlayThemePresetCatalog.TryGet(value, out var preset))
+        if (loadBuiltInPreset && OverlayThemePresetCatalog.TryGet(value, out var preset))
         {
             LoadBuiltInPreset(preset, updateSelection: false);
         }
     }
 
-    private void LoadBuiltInPreset(
-        OverlayThemePreset preset,
-        bool updateSelection)
+    private void LoadBuiltInPreset(OverlayThemePreset preset, bool updateSelection)
     {
         ArgumentNullException.ThrowIfNull(preset);
         if (updateSelection)
@@ -699,12 +591,9 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         }
 
         ReplaceEditors(preset.Colors, acceptChanges: false);
-        ReplaceTypographyEditors(
-            OverlayTypographySettings.Default,
-            acceptChanges: false);
+        ReplaceTypographyEditors(OverlayTypographySettings.Default, acceptChanges: false);
         StateName = string.Empty;
-        StatusMessage = $"Loaded the built-in '{preset.Name}' overlay theme."
-            + " Choose Apply to use it in-game.";
+        StatusMessage = $"Loaded the built-in '{preset.Name}' overlay theme." + " Choose Apply to use it in-game.";
     }
 
     private void OnEditorsChanged()
@@ -724,8 +613,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private sealed class DelegateCommand(Action execute, Func<bool>? canExecute = null)
-        : ICommand
+    private sealed class DelegateCommand(Action execute, Func<bool>? canExecute = null) : ICommand
     {
         public event EventHandler? CanExecuteChanged;
 
@@ -748,7 +636,8 @@ public sealed class OverlayThemeCategoryViewModel : INotifyPropertyChanged
     public OverlayThemeCategoryViewModel(
         string name,
         IReadOnlyList<OverlayThemeColorEditorViewModel> colors,
-        Action<OverlayThemeCategoryViewModel> selectExpanded)
+        Action<OverlayThemeCategoryViewModel> selectExpanded
+    )
     {
         Name = name;
         Colors = colors;
@@ -772,9 +661,7 @@ public sealed class OverlayThemeCategoryViewModel : INotifyPropertyChanged
             }
 
             isExpanded = value;
-            PropertyChanged?.Invoke(
-                this,
-                new PropertyChangedEventArgs(nameof(IsExpanded)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsExpanded)));
             if (value)
             {
                 selectExpanded(this);
@@ -790,9 +677,7 @@ public sealed class OverlayThemeCategoryViewModel : INotifyPropertyChanged
         }
 
         isExpanded = value;
-        PropertyChanged?.Invoke(
-            this,
-            new PropertyChangedEventArgs(nameof(IsExpanded)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsExpanded)));
     }
 }
 
@@ -808,7 +693,8 @@ public sealed class OverlayTypographyEditorViewModel : INotifyPropertyChanged
     public OverlayTypographyEditorViewModel(
         OverlayTypographyDefinition definition,
         double initialFontSize,
-        Action changed)
+        Action changed
+    )
     {
         Definition = definition;
         this.changed = changed ?? throw new ArgumentNullException(nameof(changed));
@@ -843,9 +729,7 @@ public sealed class OverlayTypographyEditorViewModel : INotifyPropertyChanged
         }
     }
 
-    public bool IsDirty => forceDirty || !AreFontSizesEqual(
-        fontSize,
-        acceptedFontSize);
+    public bool IsDirty => forceDirty || !AreFontSizesEqual(fontSize, acceptedFontSize);
 
     public void AcceptChanges()
     {
@@ -878,10 +762,7 @@ public sealed class OverlayThemeColorEditorViewModel : INotifyPropertyChanged
     private string validationMessage = string.Empty;
     private bool forceDirty;
 
-    public OverlayThemeColorEditorViewModel(
-        OverlayThemeColorDefinition definition,
-        Color initialColor,
-        Action changed)
+    public OverlayThemeColorEditorViewModel(OverlayThemeColorDefinition definition, Color initialColor, Action changed)
     {
         Definition = definition;
         this.changed = changed ?? throw new ArgumentNullException(nameof(changed));
@@ -936,9 +817,7 @@ public sealed class OverlayThemeColorEditorViewModel : INotifyPropertyChanged
         set
         {
             var formatted = LegacyOverlayThemeStore.FormatHtmlColor(value);
-            if (color == value
-                && string.Equals(hexValue, formatted, StringComparison.Ordinal)
-                && !HasValidationError)
+            if (color == value && string.Equals(hexValue, formatted, StringComparison.Ordinal) && !HasValidationError)
             {
                 return;
             }
@@ -1002,11 +881,6 @@ public sealed class OverlayThemeColorEditorViewModel : INotifyPropertyChanged
     }
 }
 
-public sealed record OverlayThemeColorDefinition(
-    string Category,
-    string Key,
-    string DisplayName);
+public sealed record OverlayThemeColorDefinition(string Category, string Key, string DisplayName);
 
-public sealed record OverlayTypographyDefinition(
-    string Key,
-    string DisplayName);
+public sealed record OverlayTypographyDefinition(string Key, string DisplayName);

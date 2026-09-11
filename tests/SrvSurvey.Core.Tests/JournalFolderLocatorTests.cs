@@ -15,7 +15,8 @@ public sealed class JournalFolderLocatorTests
             environment,
             @"C:\Users\Cmdr",
             DesktopPlatform.Windows,
-            path => path is configured or environment);
+            path => path is configured or environment
+        );
 
         Assert.Equal(configured, result.SelectedPath);
         Assert.Equal(configured, result.CandidatePaths[0]);
@@ -30,7 +31,8 @@ public sealed class JournalFolderLocatorTests
             @"d:\elite\journals",
             @"C:\Users\Cmdr",
             DesktopPlatform.Windows,
-            _ => false);
+            _ => false
+        );
 
         Assert.Equal(2, result.CandidatePaths.Count);
     }
@@ -38,19 +40,20 @@ public sealed class JournalFolderLocatorTests
     [Fact]
     public void LinuxDefaultsIncludeCommonSteamInstallations()
     {
-        var paths = JournalFolderLocator.GetPlatformDefaults(
-            "/home/cmdr",
-            DesktopPlatform.Linux);
+        var paths = JournalFolderLocator.GetPlatformDefaults("/home/cmdr", DesktopPlatform.Linux);
 
         Assert.Equal(4, paths.Count);
         Assert.Contains(
             "/home/cmdr/.local/share/Steam/steamapps/compatdata/359320/pfx/drive_c/users/steamuser/Saved Games/Frontier Developments/Elite Dangerous",
-            paths);
+            paths
+        );
         Assert.Contains(
             "/home/cmdr/.var/app/com.valvesoftware.Steam/.local/share/Steam/steamapps/compatdata/359320/pfx/drive_c/users/steamuser/Saved Games/Frontier Developments/Elite Dangerous",
-            paths);
+            paths
+        );
         Assert.Contains(
             "/home/cmdr/.var/app/com.valvesoftware.Steam/data/Steam/steamapps/compatdata/359320/pfx/drive_c/users/steamuser/Saved Games/Frontier Developments/Elite Dangerous",
-            paths);
+            paths
+        );
     }
 }

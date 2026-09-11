@@ -3,8 +3,7 @@ using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using SrvSurvey.Desktop;
 
-[assembly: AvaloniaTestApplication(
-    typeof(SrvSurvey.Desktop.Tests.Infrastructure.AvaloniaHeadlessTestApplication))]
+[assembly: AvaloniaTestApplication(typeof(SrvSurvey.Desktop.Tests.Infrastructure.AvaloniaHeadlessTestApplication))]
 
 namespace SrvSurvey.Desktop.Tests.Infrastructure;
 
@@ -12,11 +11,9 @@ public static class AvaloniaHeadlessTestApplication
 {
     public static AppBuilder BuildAvaloniaApp()
     {
-        return AppBuilder.Configure<App>()
+        return AppBuilder
+            .Configure<App>()
             .UseSkia()
-            .UseHeadless(new AvaloniaHeadlessPlatformOptions
-            {
-                UseHeadlessDrawing = false,
-            });
+            .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false });
     }
 }

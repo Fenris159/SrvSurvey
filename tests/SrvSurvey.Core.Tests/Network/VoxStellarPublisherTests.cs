@@ -15,26 +15,24 @@ public sealed class VoxStellarPublisherTests
         const string sharedKey = "test-shared-key";
         var handler = new RecordingHandler();
         using var client = new HttpClient(handler);
-        using var publisher = new VoxStellarPublisher(
-            "2.1.3.0",
-            sharedKey,
-            client);
+        using var publisher = new VoxStellarPublisher("2.1.3.0", sharedKey, client);
         publisher.SetEnabled(true);
 
-        var result = await publisher.ApplyAsync(new VoxStellarApplyRequest
-        {
-            JournalEvents =
-            [
-                Parse("""{"timestamp":"2026-08-13T22:00:00Z","event":"Scan","BodyName":"Test A 1","BodyID":1}"""),
-                Parse("""{"timestamp":"2026-08-13T22:00:01Z","event":"Docked","StationName":"Test Port"}"""),
-            ],
-            CommanderName = "Test Cmdr",
-            Enabled = true,
-            AllowPublishing = true,
-        });
+        var result = await publisher.ApplyAsync(
+            new VoxStellarApplyRequest
+            {
+                JournalEvents =
+                [
+                    Parse("""{"timestamp":"2026-08-13T22:00:00Z","event":"Scan","BodyName":"Test A 1","BodyID":1}"""),
+                    Parse("""{"timestamp":"2026-08-13T22:00:01Z","event":"Docked","StationName":"Test Port"}"""),
+                ],
+                CommanderName = "Test Cmdr",
+                Enabled = true,
+                AllowPublishing = true,
+            }
+        );
 
-        var request = await handler.Request.Task.WaitAsync(
-            TimeSpan.FromSeconds(2));
+        var request = await handler.Request.Task.WaitAsync(TimeSpan.FromSeconds(2));
         Assert.Equal(["Scan"], result.QueuedEventNames);
         Assert.Empty(result.Warnings);
         Assert.Equal(HttpMethod.Post, request.Method);
@@ -43,18 +41,9 @@ public sealed class VoxStellarPublisherTests
         Assert.Equal("SrvSurvey-XP/2.1.3.0", request.UserAgent);
 
         using var document = JsonDocument.Parse(request.Body);
-        Assert.Equal(
-            "Test Cmdr",
-            document.RootElement.GetProperty("commander").GetString());
-        Assert.Equal(
-            "Scan",
-            document.RootElement
-                .GetProperty("data")
-                .GetProperty("event")
-                .GetString());
-        Assert.Equal(
-            ExpectedSignature(sharedKey, request.Body),
-            request.Signature);
+        Assert.Equal("Test Cmdr", document.RootElement.GetProperty("commander").GetString());
+        Assert.Equal("Scan", document.RootElement.GetProperty("data").GetProperty("event").GetString());
+        Assert.Equal(ExpectedSignature(sharedKey, request.Body), request.Signature);
         Assert.Equal(request.Signature.ToLowerInvariant(), request.Signature);
     }
 
@@ -63,26 +52,27 @@ public sealed class VoxStellarPublisherTests
     {
         var handler = new RecordingHandler();
         using var client = new HttpClient(handler);
-        using var publisher = new VoxStellarPublisher(
-            "1.0.0",
-            "test-key",
-            client);
+        using var publisher = new VoxStellarPublisher("1.0.0", "test-key", client);
         var scan = Parse("""{"event":"Scan","BodyName":"Test A 1"}""");
 
-        var bootstrap = await publisher.ApplyAsync(new VoxStellarApplyRequest
-        {
-            JournalEvents = [scan],
-            CommanderName = "Test Cmdr",
-            Enabled = true,
-            AllowPublishing = false,
-        });
-        var disabled = await publisher.ApplyAsync(new VoxStellarApplyRequest
-        {
-            JournalEvents = [scan],
-            CommanderName = "Test Cmdr",
-            Enabled = false,
-            AllowPublishing = true,
-        });
+        var bootstrap = await publisher.ApplyAsync(
+            new VoxStellarApplyRequest
+            {
+                JournalEvents = [scan],
+                CommanderName = "Test Cmdr",
+                Enabled = true,
+                AllowPublishing = false,
+            }
+        );
+        var disabled = await publisher.ApplyAsync(
+            new VoxStellarApplyRequest
+            {
+                JournalEvents = [scan],
+                CommanderName = "Test Cmdr",
+                Enabled = false,
+                AllowPublishing = true,
+            }
+        );
 
         await Task.Delay(50);
         Assert.Empty(bootstrap.QueuedEventNames);
@@ -95,24 +85,22 @@ public sealed class VoxStellarPublisherTests
     {
         var handler = new BlockingHandler();
         using var client = new HttpClient(handler);
-        using var publisher = new VoxStellarPublisher(
-            "1.0.0",
-            "test-key",
-            client);
+        using var publisher = new VoxStellarPublisher("1.0.0", "test-key", client);
         publisher.SetEnabled(true);
-        await publisher.ApplyAsync(new VoxStellarApplyRequest
-        {
-            JournalEvents =
-            [
-                Parse("""{"event":"Scan","BodyName":"Test A 1"}"""),
-                Parse("""{"event":"ScanOrganic","Body":"Test A 1"}"""),
-            ],
-            CommanderName = "Test Cmdr",
-            Enabled = true,
-            AllowPublishing = true,
-        });
-        await handler.FirstRequestStarted.Task.WaitAsync(
-            TimeSpan.FromSeconds(2));
+        await publisher.ApplyAsync(
+            new VoxStellarApplyRequest
+            {
+                JournalEvents =
+                [
+                    Parse("""{"event":"Scan","BodyName":"Test A 1"}"""),
+                    Parse("""{"event":"ScanOrganic","Body":"Test A 1"}"""),
+                ],
+                CommanderName = "Test Cmdr",
+                Enabled = true,
+                AllowPublishing = true,
+            }
+        );
+        await handler.FirstRequestStarted.Task.WaitAsync(TimeSpan.FromSeconds(2));
 
         publisher.SetEnabled(false);
         handler.ReleaseFirstRequest.TrySetResult();
@@ -126,24 +114,21 @@ public sealed class VoxStellarPublisherTests
     {
         var handler = new TransportStartBlockingHandler();
         using var client = new HttpClient(handler);
-        using var publisher = new VoxStellarPublisher(
-            "1.0.0",
-            "test-key",
-            client);
+        using var publisher = new VoxStellarPublisher("1.0.0", "test-key", client);
         publisher.SetEnabled(true);
 
-        await publisher.ApplyAsync(new VoxStellarApplyRequest
-        {
-            JournalEvents = [Parse("""{"event":"Scan","BodyName":"Test A 1"}""")],
-            CommanderName = "Test Cmdr",
-            Enabled = true,
-            AllowPublishing = true,
-        });
-        await handler.TransportStartEntered.Task.WaitAsync(
-            TimeSpan.FromSeconds(2));
+        await publisher.ApplyAsync(
+            new VoxStellarApplyRequest
+            {
+                JournalEvents = [Parse("""{"event":"Scan","BodyName":"Test A 1"}""")],
+                CommanderName = "Test Cmdr",
+                Enabled = true,
+                AllowPublishing = true,
+            }
+        );
+        await handler.TransportStartEntered.Task.WaitAsync(TimeSpan.FromSeconds(2));
 
-        var disableStarted = new TaskCompletionSource(
-            TaskCreationOptions.RunContinuationsAsynchronously);
+        var disableStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var disableTask = Task.Factory.StartNew(
             () =>
             {
@@ -152,7 +137,8 @@ public sealed class VoxStellarPublisherTests
             },
             CancellationToken.None,
             TaskCreationOptions.LongRunning,
-            TaskScheduler.Default);
+            TaskScheduler.Default
+        );
         try
         {
             await disableStarted.Task.WaitAsync(TimeSpan.FromSeconds(2));
@@ -172,42 +158,33 @@ public sealed class VoxStellarPublisherTests
     {
         var handler = new RecordingHandler();
         using var client = new HttpClient(handler);
-        using var publisher = new VoxStellarPublisher(
-            "1.0.0",
-            sharedKey: null,
-            client);
+        using var publisher = new VoxStellarPublisher("1.0.0", sharedKey: null, client);
 
-        var result = await publisher.ApplyAsync(new VoxStellarApplyRequest
-        {
-            JournalEvents = [Parse("""{"event":"FSDJump","StarSystem":"Test A"}""")],
-            CommanderName = "Test Cmdr",
-            Enabled = true,
-            AllowPublishing = true,
-        });
+        var result = await publisher.ApplyAsync(
+            new VoxStellarApplyRequest
+            {
+                JournalEvents = [Parse("""{"event":"FSDJump","StarSystem":"Test A"}""")],
+                CommanderName = "Test Cmdr",
+                Enabled = true,
+                AllowPublishing = true,
+            }
+        );
 
         Assert.False(publisher.IsConfigured);
         Assert.Empty(result.QueuedEventNames);
-        Assert.Contains(result.Warnings, warning => warning.Contains(
-            "signing key",
-            StringComparison.Ordinal));
+        Assert.Contains(result.Warnings, warning => warning.Contains("signing key", StringComparison.Ordinal));
         Assert.False(handler.Request.Task.IsCompleted);
     }
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(
-            json,
-            out var journalEvent,
-            out var error), error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
         return journalEvent!;
     }
 
     private static string ExpectedSignature(string key, byte[] body)
     {
-        return Convert.ToHexString(HMACSHA256.HashData(
-                Encoding.UTF8.GetBytes(key),
-                body))
-            .ToLowerInvariant();
+        return Convert.ToHexString(HMACSHA256.HashData(Encoding.UTF8.GetBytes(key), body)).ToLowerInvariant();
     }
 
     private sealed record RecordedRequest(
@@ -216,41 +193,47 @@ public sealed class VoxStellarPublisherTests
         string ContentType,
         string UserAgent,
         string Signature,
-        byte[] Body);
+        byte[] Body
+    );
 
     private sealed class RecordingHandler : HttpMessageHandler
     {
-        public TaskCompletionSource<RecordedRequest> Request { get; } = new(
-            TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource<RecordedRequest> Request { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
-            Request.TrySetResult(new RecordedRequest(
-                request.Method,
-                request.RequestUri!,
-                request.Content!.Headers.ContentType!.MediaType!,
-                request.Headers.UserAgent.ToString(),
-                request.Headers.GetValues("Signature").Single(),
-                await request.Content.ReadAsByteArrayAsync(cancellationToken)));
+            Request.TrySetResult(
+                new RecordedRequest(
+                    request.Method,
+                    request.RequestUri!,
+                    request.Content!.Headers.ContentType!.MediaType!,
+                    request.Headers.UserAgent.ToString(),
+                    request.Headers.GetValues("Signature").Single(),
+                    await request.Content.ReadAsByteArrayAsync(cancellationToken)
+                )
+            );
             return new HttpResponseMessage(HttpStatusCode.OK);
         }
     }
 
     private sealed class BlockingHandler : HttpMessageHandler
     {
-        public TaskCompletionSource FirstRequestStarted { get; } = new(
-            TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource FirstRequestStarted { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        public TaskCompletionSource ReleaseFirstRequest { get; } = new(
-            TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource ReleaseFirstRequest { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public int CallCount { get; private set; }
 
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
             CallCount++;
             FirstRequestStarted.TrySetResult();
@@ -261,14 +244,15 @@ public sealed class VoxStellarPublisherTests
 
     private sealed class TransportStartBlockingHandler : HttpMessageHandler
     {
-        public TaskCompletionSource TransportStartEntered { get; } = new(
-            TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource TransportStartEntered { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public ManualResetEventSlim AllowTransportStart { get; } = new(false);
 
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
             TransportStartEntered.TrySetResult();
             AllowTransportStart.Wait(cancellationToken);

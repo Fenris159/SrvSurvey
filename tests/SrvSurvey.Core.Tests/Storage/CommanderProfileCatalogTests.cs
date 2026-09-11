@@ -6,7 +6,8 @@ public sealed class CommanderProfileCatalogTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-profile-catalog-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-profile-catalog-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public async Task LoadsProfilesAcrossModesAndIsolatesMalformedFiles()
@@ -14,19 +15,16 @@ public sealed class CommanderProfileCatalogTests : IDisposable
         Directory.CreateDirectory(temporaryDirectory);
         await File.WriteAllTextAsync(
             Path.Combine(temporaryDirectory, "F123-live.json"),
-            "{\"fid\":\"F123\",\"commander\":\"Drew\",\"isOdyssey\":true}");
+            "{\"fid\":\"F123\",\"commander\":\"Drew\",\"isOdyssey\":true}"
+        );
         await File.WriteAllTextAsync(
             Path.Combine(temporaryDirectory, "F123-legacy.json"),
-            "{\"fid\":\"F123\",\"commander\":\"Old Drew\",\"isOdyssey\":false}");
-        await File.WriteAllTextAsync(
-            Path.Combine(temporaryDirectory, "F456-live.json"),
-            "{\"commander\":\"Raven\"}");
-        await File.WriteAllTextAsync(
-            Path.Combine(temporaryDirectory, "F789-live.json"),
-            "{malformed");
+            "{\"fid\":\"F123\",\"commander\":\"Old Drew\",\"isOdyssey\":false}"
+        );
+        await File.WriteAllTextAsync(Path.Combine(temporaryDirectory, "F456-live.json"), "{\"commander\":\"Raven\"}");
+        await File.WriteAllTextAsync(Path.Combine(temporaryDirectory, "F789-live.json"), "{malformed");
 
-        var result = await new CommanderProfileCatalog(temporaryDirectory)
-            .LoadAsync();
+        var result = await new CommanderProfileCatalog(temporaryDirectory).LoadAsync();
 
         Assert.Collection(
             result.Profiles,
@@ -43,7 +41,8 @@ public sealed class CommanderProfileCatalogTests : IDisposable
                 Assert.Equal("Raven", profile.CommanderName);
                 Assert.True(profile.HasLiveProfile);
                 Assert.False(profile.HasLegacyProfile);
-            });
+            }
+        );
         Assert.Single(result.Warnings);
         Assert.Contains("F789-live.json", result.Warnings[0]);
     }
@@ -51,8 +50,7 @@ public sealed class CommanderProfileCatalogTests : IDisposable
     [Fact]
     public async Task EmptyDirectoryReturnsNoProfiles()
     {
-        var result = await new CommanderProfileCatalog(temporaryDirectory)
-            .LoadAsync();
+        var result = await new CommanderProfileCatalog(temporaryDirectory).LoadAsync();
 
         Assert.Empty(result.Profiles);
         Assert.Empty(result.Warnings);

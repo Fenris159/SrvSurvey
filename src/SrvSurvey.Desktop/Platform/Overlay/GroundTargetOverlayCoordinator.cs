@@ -16,22 +16,19 @@ public sealed class GroundTargetOverlayCoordinator : IDisposable
 
     public GroundTargetOverlayCoordinator(
         GroundTargetViewModel groundTarget,
-        OverlayPresentationSession presentationSession)
+        OverlayPresentationSession presentationSession
+    )
     {
-        this.groundTarget = groundTarget
-            ?? throw new ArgumentNullException(nameof(groundTarget));
+        this.groundTarget = groundTarget ?? throw new ArgumentNullException(nameof(groundTarget));
         ArgumentNullException.ThrowIfNull(presentationSession);
         hostedWindow = presentationSession.HostPassiveWindow(
             new PassiveOverlayWindowDefinition(
                 PlotterName,
-                capabilities => new GroundTargetOverlayWindow(
-                    GetOrCreateOverlayViewModel(capabilities)),
-                (gameBounds, windowSize) =>
-                    OverlayWindowPlacement.BottomCenter(
-                        gameBounds,
-                        windowSize),
-                preparation => overlayViewModel?.ApplyPreparation(
-                    preparation)));
+                capabilities => new GroundTargetOverlayWindow(GetOrCreateOverlayViewModel(capabilities)),
+                (gameBounds, windowSize) => OverlayWindowPlacement.BottomCenter(gameBounds, windowSize),
+                preparation => overlayViewModel?.ApplyPreparation(preparation)
+            )
+        );
         hostedWindow.VisibilityChanged += OnHostedVisibilityChanged;
         groundTarget.PropertyChanged += OnGroundTargetPropertyChanged;
         SynchronizeIntent();
@@ -67,9 +64,7 @@ public sealed class GroundTargetOverlayCoordinator : IDisposable
         hostedWindow.Dispose();
     }
 
-    private void OnGroundTargetPropertyChanged(
-        object? sender,
-        PropertyChangedEventArgs eventArgs)
+    private void OnGroundTargetPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
         if (eventArgs.PropertyName == nameof(GroundTargetViewModel.ShouldShow))
         {
@@ -77,12 +72,9 @@ public sealed class GroundTargetOverlayCoordinator : IDisposable
         }
     }
 
-    private GroundTargetOverlayViewModel GetOrCreateOverlayViewModel(
-        OverlayPlatformCapabilities capabilities)
+    private GroundTargetOverlayViewModel GetOrCreateOverlayViewModel(OverlayPlatformCapabilities capabilities)
     {
-        return overlayViewModel ??= new GroundTargetOverlayViewModel(
-            groundTarget,
-            capabilities);
+        return overlayViewModel ??= new GroundTargetOverlayViewModel(groundTarget, capabilities);
     }
 
     private void SynchronizeIntent()

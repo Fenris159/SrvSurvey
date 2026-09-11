@@ -11,11 +11,9 @@ public sealed class HumanSiteActivityTracker
     private readonly List<HumanSiteCollectedMaterial> collectedMaterials = [];
     private string? siteKey;
 
-    public IReadOnlySet<int> ProcessedTerminalIndexes =>
-        processedTerminalIndexes;
+    public IReadOnlySet<int> ProcessedTerminalIndexes => processedTerminalIndexes;
 
-    public IReadOnlyList<HumanSiteCollectedMaterial> CollectedMaterials =>
-        collectedMaterials;
+    public IReadOnlyList<HumanSiteCollectedMaterial> CollectedMaterials => collectedMaterials;
 
     public int Version { get; private set; }
 
@@ -23,7 +21,8 @@ public sealed class HumanSiteActivityTracker
         JournalEventEnvelope journalEvent,
         HumanSiteLiveSnapshot? site,
         EliteStatus? status,
-        bool trackMaterialCollection)
+        bool trackMaterialCollection
+    )
     {
         ArgumentNullException.ThrowIfNull(journalEvent);
         var reset = SynchronizeSite(site);
@@ -38,18 +37,10 @@ public sealed class HumanSiteActivityTracker
             return HumanSiteActivityApplyResult.None;
         }
 
-        return ApplyWithOffset(
-            journalEvent,
-            site!,
-            status!,
-            commanderOffset.Value,
-            trackMaterialCollection,
-            reset);
+        return ApplyWithOffset(journalEvent, site!, status!, commanderOffset.Value, trackMaterialCollection, reset);
     }
 
-    private static bool CanTrackSite(
-        HumanSiteLiveSnapshot? site,
-        EliteStatus? status)
+    private static bool CanTrackSite(HumanSiteLiveSnapshot? site, EliteStatus? status)
     {
         return site is { Template: not null, Heading: not null }
             && status is { HasLatitudeLongitude: true }
@@ -72,18 +63,17 @@ public sealed class HumanSiteActivityTracker
         EliteStatus status,
         HumanSiteMapPoint commanderOffset,
         bool trackMaterialCollection,
-        bool reset)
+        bool reset
+    )
     {
-        var collectionOffset = MoveOneMeterAhead(
-            commanderOffset,
-            status.NormalizedHeading,
-            site.Heading!.Value);
+        var collectionOffset = MoveOneMeterAhead(commanderOffset, status.NormalizedHeading, site.Heading!.Value);
         var (terminalsChanged, added) = ApplyCollectionEvents(
             journalEvent,
             site,
             commanderOffset,
             collectionOffset,
-            trackMaterialCollection);
+            trackMaterialCollection
+        );
 
         if (added.Length > 0)
         {
@@ -95,60 +85,45 @@ public sealed class HumanSiteActivityTracker
             Version++;
         }
 
-        return new HumanSiteActivityApplyResult(
-            reset,
-            terminalsChanged,
-            added);
+        return new HumanSiteActivityApplyResult(reset, terminalsChanged, added);
     }
 
-    private (bool TerminalsChanged, HumanSiteCollectedMaterial[] Added)
-        ApplyCollectionEvents(
-            JournalEventEnvelope journalEvent,
-            HumanSiteLiveSnapshot site,
-            HumanSiteMapPoint commanderOffset,
-            HumanSiteMapPoint collectionOffset,
-            bool trackMaterialCollection)
+    private (bool TerminalsChanged, HumanSiteCollectedMaterial[] Added) ApplyCollectionEvents(
+        JournalEventEnvelope journalEvent,
+        HumanSiteLiveSnapshot site,
+        HumanSiteMapPoint commanderOffset,
+        HumanSiteMapPoint collectionOffset,
+        bool trackMaterialCollection
+    )
     {
         if (journalEvent.EventName == "BackpackChange")
         {
-            return ApplyBackpackChange(
-                journalEvent,
-                site,
-                commanderOffset,
-                collectionOffset,
-                trackMaterialCollection);
+            return ApplyBackpackChange(journalEvent, site, commanderOffset, collectionOffset, trackMaterialCollection);
         }
 
-        if (journalEvent.EventName == "CollectItems"
+        if (
+            journalEvent.EventName == "CollectItems"
             && trackMaterialCollection
             && ReadCollectedItem(journalEvent.Payload) is { } item
-            && !string.Equals(
-                item.Type,
-                "Data",
-                StringComparison.OrdinalIgnoreCase))
+            && !string.Equals(item.Type, "Data", StringComparison.OrdinalIgnoreCase)
+        )
         {
-            return (false,
-            [
-                CreateMaterial(item, collectionOffset, journalEvent.Timestamp),
-            ]);
+            return (false, [CreateMaterial(item, collectionOffset, journalEvent.Timestamp)]);
         }
 
         return (false, []);
     }
 
-    private (bool TerminalsChanged, HumanSiteCollectedMaterial[] Added)
-        ApplyBackpackChange(
-            JournalEventEnvelope journalEvent,
-            HumanSiteLiveSnapshot site,
-            HumanSiteMapPoint commanderOffset,
-            HumanSiteMapPoint collectionOffset,
-            bool trackMaterialCollection)
+    private (bool TerminalsChanged, HumanSiteCollectedMaterial[] Added) ApplyBackpackChange(
+        JournalEventEnvelope journalEvent,
+        HumanSiteLiveSnapshot site,
+        HumanSiteMapPoint commanderOffset,
+        HumanSiteMapPoint collectionOffset,
+        bool trackMaterialCollection
+    )
     {
         var dataItems = ReadAddedItems(journalEvent.Payload)
-            .Where(item => string.Equals(
-                item.Type,
-                "Data",
-                StringComparison.OrdinalIgnoreCase))
+            .Where(item => string.Equals(item.Type, "Data", StringComparison.OrdinalIgnoreCase))
             .ToArray();
         if (dataItems.Length == 0)
         {
@@ -157,18 +132,12 @@ public sealed class HumanSiteActivityTracker
 
         var terminalsChanged = MarkClosestTerminal(site, commanderOffset);
         var added = trackMaterialCollection
-            ? dataItems
-                .Select(item => CreateMaterial(
-                    item,
-                    collectionOffset,
-                    journalEvent.Timestamp))
-                .ToArray()
+            ? dataItems.Select(item => CreateMaterial(item, collectionOffset, journalEvent.Timestamp)).ToArray()
             : [];
         return (terminalsChanged, added);
     }
 
-    public bool ReplaceCollectedMaterials(
-        IEnumerable<HumanSiteCollectedMaterial> materials)
+    public bool ReplaceCollectedMaterials(IEnumerable<HumanSiteCollectedMaterial> materials)
     {
         ArgumentNullException.ThrowIfNull(materials);
         var replacement = materials.ToArray();
@@ -185,9 +154,7 @@ public sealed class HumanSiteActivityTracker
 
     private bool SynchronizeSite(HumanSiteLiveSnapshot? site)
     {
-        var nextKey = site is null
-            ? null
-            : $"{site.SystemAddress}/{site.MarketId}";
+        var nextKey = site is null ? null : $"{site.SystemAddress}/{site.MarketId}";
         if (string.Equals(siteKey, nextKey, StringComparison.Ordinal))
         {
             return false;
@@ -199,41 +166,24 @@ public sealed class HumanSiteActivityTracker
         return true;
     }
 
-    private bool MarkClosestTerminal(
-        HumanSiteLiveSnapshot site,
-        HumanSiteMapPoint currentOffset)
+    private bool MarkClosestTerminal(HumanSiteLiveSnapshot site, HumanSiteMapPoint currentOffset)
     {
         var terminals = site.Template!.DataTerminals;
         var closest = terminals
-            .Select((terminal, index) => new
-            {
-                Index = index,
-                Distance = GetDistance(terminal.Offset, currentOffset),
-            })
+            .Select((terminal, index) => new { Index = index, Distance = GetDistance(terminal.Offset, currentOffset) })
             .Where(candidate => candidate.Distance < 5)
             .OrderBy(candidate => candidate.Distance)
             .FirstOrDefault();
-        return closest is not null
-            && processedTerminalIndexes.Add(closest.Index);
+        return closest is not null && processedTerminalIndexes.Add(closest.Index);
     }
 
-    private static HumanSiteMapPoint? GetCommanderOffset(
-        HumanSiteLiveSnapshot site,
-        EliteStatus status)
+    private static HumanSiteMapPoint? GetCommanderOffset(HumanSiteLiveSnapshot site, EliteStatus status)
     {
         try
         {
-            var current = new SurfaceCoordinate(
-                status.Latitude,
-                status.Longitude);
-            var origin = new SurfaceCoordinate(
-                site.Location.Latitude,
-                site.Location.Longitude);
-            return HumanSiteNavigation.GetSiteOffset(
-                origin,
-                current,
-                (double)status.PlanetRadius,
-                site.Heading!.Value);
+            var current = new SurfaceCoordinate(status.Latitude, status.Longitude);
+            var origin = new SurfaceCoordinate(site.Location.Latitude, site.Location.Longitude);
+            return HumanSiteNavigation.GetSiteOffset(origin, current, (double)status.PlanetRadius, site.Heading!.Value);
         }
         catch (ArgumentOutOfRangeException)
         {
@@ -244,20 +194,19 @@ public sealed class HumanSiteActivityTracker
     private static HumanSiteMapPoint MoveOneMeterAhead(
         HumanSiteMapPoint offset,
         double commanderHeading,
-        double siteHeading)
+        double siteHeading
+    )
     {
-        var relativeHeading = SurfaceNavigation.NormalizeDegrees(
-            commanderHeading - siteHeading);
+        var relativeHeading = SurfaceNavigation.NormalizeDegrees(commanderHeading - siteHeading);
         var radians = relativeHeading * Math.PI / 180;
-        return new HumanSiteMapPoint(
-            offset.X + Math.Sin(radians),
-            offset.Y + Math.Cos(radians));
+        return new HumanSiteMapPoint(offset.X + Math.Sin(radians), offset.Y + Math.Cos(radians));
     }
 
     private static HumanSiteCollectedMaterial CreateMaterial(
         HumanSiteMaterialItem item,
         HumanSiteMapPoint offset,
-        DateTimeOffset? timestamp)
+        DateTimeOffset? timestamp
+    )
     {
         return new HumanSiteCollectedMaterial(
             item.Name,
@@ -265,19 +214,19 @@ public sealed class HumanSiteActivityTracker
             item.Type,
             Math.Max(1, item.Count),
             offset,
-            timestamp);
+            timestamp
+        );
     }
 
-    private static HumanSiteMaterialItem[] ReadAddedItems(
-        JsonElement root)
+    private static HumanSiteMaterialItem[] ReadAddedItems(JsonElement root)
     {
-        if (!root.TryGetProperty("Added", out var added)
-            || added.ValueKind != JsonValueKind.Array)
+        if (!root.TryGetProperty("Added", out var added) || added.ValueKind != JsonValueKind.Array)
         {
             return [];
         }
 
-        return added.EnumerateArray()
+        return added
+            .EnumerateArray()
             .Select(ReadMaterialItem)
             .Where(item => item is not null)
             .Cast<HumanSiteMaterialItem>()
@@ -294,20 +243,12 @@ public sealed class HumanSiteActivityTracker
         var name = GetString(root, "Name");
         var type = GetString(root, "Type");
         var count = GetInt32(root, "Count") ?? 0;
-        return string.IsNullOrWhiteSpace(name)
-            || string.IsNullOrWhiteSpace(type)
-            || count <= 0
-                ? null
-                : new HumanSiteMaterialItem(
-                    name,
-                    GetString(root, "Name_Localised"),
-                    type,
-                    count);
+        return string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(type) || count <= 0
+            ? null
+            : new HumanSiteMaterialItem(name, GetString(root, "Name_Localised"), type, count);
     }
 
-    private static double GetDistance(
-        HumanSiteMapPoint left,
-        HumanSiteMapPoint right)
+    private static double GetDistance(HumanSiteMapPoint left, HumanSiteMapPoint right)
     {
         var x = left.X - right.X;
         var y = left.Y - right.Y;
@@ -316,10 +257,9 @@ public sealed class HumanSiteActivityTracker
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
-            && value.ValueKind == JsonValueKind.String
-                ? value.GetString()
-                : null;
+        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+            ? value.GetString()
+            : null;
     }
 
     private static int? GetInt32(JsonElement root, string propertyName)
@@ -329,20 +269,16 @@ public sealed class HumanSiteActivityTracker
             return null;
         }
 
-        if (value.ValueKind == JsonValueKind.Number
-            && value.TryGetInt32(out var number))
+        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out var number))
         {
             return number;
         }
 
-        return value.ValueKind == JsonValueKind.String
-            && int.TryParse(
-                value.GetString(),
-                NumberStyles.Integer,
-                CultureInfo.InvariantCulture,
-                out number)
-                ? number
-                : null;
+        return
+            value.ValueKind == JsonValueKind.String
+            && int.TryParse(value.GetString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out number)
+            ? number
+            : null;
     }
 }
 
@@ -352,25 +288,18 @@ public sealed record HumanSiteCollectedMaterial(
     string Type,
     int Count,
     HumanSiteMapPoint Offset,
-    DateTimeOffset? Timestamp);
+    DateTimeOffset? Timestamp
+);
 
 public sealed record HumanSiteActivityApplyResult(
     bool Reset,
     bool ProcessedTerminalsChanged,
-    IReadOnlyList<HumanSiteCollectedMaterial> AddedMaterials)
+    IReadOnlyList<HumanSiteCollectedMaterial> AddedMaterials
+)
 {
-    public static HumanSiteActivityApplyResult None { get; } = new(
-        false,
-        false,
-        []);
+    public static HumanSiteActivityApplyResult None { get; } = new(false, false, []);
 
-    public bool Changed => Reset
-        || ProcessedTerminalsChanged
-        || AddedMaterials.Count > 0;
+    public bool Changed => Reset || ProcessedTerminalsChanged || AddedMaterials.Count > 0;
 }
 
-internal sealed record HumanSiteMaterialItem(
-    string Name,
-    string? LocalizedName,
-    string Type,
-    int Count);
+internal sealed record HumanSiteMaterialItem(string Name, string? LocalizedName, string Type, int Count);

@@ -19,23 +19,18 @@ public sealed class SpanshStarSystemResolverTests
               ],
               "values": ["Sol", "Solati"]
             }
-            """);
-        var resolver = new SpanshStarSystemResolver(
-            new HttpClient(handler),
-            new Uri("https://example.test/api/"));
+            """
+        );
+        var resolver = new SpanshStarSystemResolver(new HttpClient(handler), new Uri("https://example.test/api/"));
 
         var systems = await resolver.SearchAsync(" Sol ");
 
         Assert.Equal(2, systems.Count);
-        Assert.Equal(
-            new StarSystemReference(
-                "Sol",
-                10477373803,
-                new GalacticCoordinate(0, 0, 0)),
-            systems[0]);
+        Assert.Equal(new StarSystemReference("Sol", 10477373803, new GalacticCoordinate(0, 0, 0)), systems[0]);
         Assert.Equal(
             "https://example.test/api/systems/field_values/system_names?q=Sol",
-            handler.LastRequestUri?.AbsoluteUri);
+            handler.LastRequestUri?.AbsoluteUri
+        );
     }
 
     [Fact]
@@ -43,28 +38,29 @@ public sealed class SpanshStarSystemResolverTests
     {
         var resolver = new SpanshStarSystemResolver(
             new HttpClient(new StubHandler(HttpStatusCode.ServiceUnavailable, "{}")),
-            new Uri("https://example.test/api/"));
+            new Uri("https://example.test/api/")
+        );
 
-        await Assert.ThrowsAsync<HttpRequestException>(
-            () => resolver.SearchAsync("Sol"));
+        await Assert.ThrowsAsync<HttpRequestException>(() => resolver.SearchAsync("Sol"));
     }
 
-    private sealed class StubHandler(
-        HttpStatusCode statusCode,
-        string content) : HttpMessageHandler
+    private sealed class StubHandler(HttpStatusCode statusCode, string content) : HttpMessageHandler
     {
         public Uri? LastRequestUri { get; private set; }
 
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
             LastRequestUri = request.RequestUri;
-            return Task.FromResult(new HttpResponseMessage(statusCode)
-            {
-                Content = new StringContent(content, Encoding.UTF8, "application/json"),
-                RequestMessage = request,
-            });
+            return Task.FromResult(
+                new HttpResponseMessage(statusCode)
+                {
+                    Content = new StringContent(content, Encoding.UTF8, "application/json"),
+                    RequestMessage = request,
+                }
+            );
         }
     }
 }

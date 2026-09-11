@@ -12,28 +12,23 @@ internal enum ReleaseInstallationCapabilityStatus
     ReadOnlyAppImage,
 }
 
-internal sealed record ReleaseInstallationCapability(
-    ReleaseInstallationCapabilityStatus Status)
+internal sealed record ReleaseInstallationCapability(ReleaseInstallationCapabilityStatus Status)
 {
     public bool CanInstall => Status == ReleaseInstallationCapabilityStatus.Supported;
 
-    public static ReleaseInstallationCapability Detect(
-        string installationDirectory,
-        bool isAppImage)
+    public static ReleaseInstallationCapability Detect(string installationDirectory, bool isAppImage)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(installationDirectory);
         if (isAppImage)
         {
-            return new ReleaseInstallationCapability(
-                ReleaseInstallationCapabilityStatus.ReadOnlyAppImage);
+            return new ReleaseInstallationCapability(ReleaseInstallationCapabilityStatus.ReadOnlyAppImage);
         }
 
         return new ReleaseInstallationCapability(
-            File.Exists(Path.Combine(
-                Path.GetFullPath(installationDirectory),
-                "release-package.json"))
+            File.Exists(Path.Combine(Path.GetFullPath(installationDirectory), "release-package.json"))
                 ? ReleaseInstallationCapabilityStatus.Supported
-                : ReleaseInstallationCapabilityStatus.Unpackaged);
+                : ReleaseInstallationCapabilityStatus.Unpackaged
+        );
     }
 }
 
@@ -83,12 +78,9 @@ internal enum ReleaseInstallationCleanupStatus
     Transferred,
 }
 
-internal sealed record ReleaseInstallationRequest(
-    ReleaseVersion Version,
-    CrossPlatformReleasePackage Package);
+internal sealed record ReleaseInstallationRequest(ReleaseVersion Version, CrossPlatformReleasePackage Package);
 
-internal sealed record ReleaseInstallationWorkflowProgress(
-    ReleaseInstallationWorkflowStage Stage)
+internal sealed record ReleaseInstallationWorkflowProgress(ReleaseInstallationWorkflowStage Stage)
 {
     public ReleaseInstallationCheckpoint? Checkpoint { get; init; }
 
@@ -109,11 +101,11 @@ internal sealed record ReleaseInstallationWorkflowResult(
     ReleaseInstallationWorkflowStatus Status,
     ReleaseInstallationWorkflowStage Stage,
     ReleaseInstallationCleanupStatus CleanupStatus,
-    ReleaseInstallationRejectionReason RejectionReason =
-        ReleaseInstallationRejectionReason.None,
+    ReleaseInstallationRejectionReason RejectionReason = ReleaseInstallationRejectionReason.None,
     Exception? Error = null,
     Exception? CleanupError = null,
-    ReleaseInstallationHandoffPlan? HandoffPlan = null);
+    ReleaseInstallationHandoffPlan? HandoffPlan = null
+);
 
 internal interface IReleaseInstallationWorkflow
 {
@@ -122,16 +114,17 @@ internal interface IReleaseInstallationWorkflow
     Task<ReleaseInstallationWorkflowResult> ExecuteAsync(
         ReleaseInstallationRequest request,
         IProgress<ReleaseInstallationWorkflowProgress>? progress = null,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }
 
 internal delegate Task<bool> ConfirmReleaseInstallationInstances(
     ApplicationInstanceScan scan,
     ReleaseInstallationCheckpoint checkpoint,
-    CancellationToken cancellationToken);
+    CancellationToken cancellationToken
+);
 
-internal delegate Task RequestReleaseInstallationShutdown(
-    CancellationToken cancellationToken);
+internal delegate Task RequestReleaseInstallationShutdown(CancellationToken cancellationToken);
 
 internal enum ApplicationUpdateHandoffStatus
 {
@@ -143,7 +136,8 @@ internal enum ApplicationUpdateHandoffStatus
 internal sealed record ApplicationUpdateHandoffResult(
     ApplicationUpdateHandoffStatus Status,
     ReleaseInstallationHandoffPlan? Plan,
-    Exception? Error = null);
+    Exception? Error = null
+);
 
 internal interface IApplicationUpdateHandoff
 {
@@ -151,14 +145,16 @@ internal interface IApplicationUpdateHandoff
         string dataDirectory,
         ReleaseInstallationPreparation preparation,
         string stagedEntryPoint,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }
 
 internal interface IReleaseInstallationOutcomeMonitor
 {
     Task<ReleaseInstallationOutcome?> WaitForOutcomeAsync(
         ReleaseInstallationHandoffPlan plan,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }
 
 internal sealed record ReleaseInstallationWorkflowAdapters(
@@ -167,7 +163,8 @@ internal sealed record ReleaseInstallationWorkflowAdapters(
     IReleaseInstallationPreparer InstallationPreparer,
     IApplicationUpdateHandoff Handoff,
     IApplicationInstanceManager InstanceManager,
-    ConfirmReleaseInstallationInstances ConfirmInstances);
+    ConfirmReleaseInstallationInstances ConfirmInstances
+);
 
 internal sealed record ReleaseInstallationWorkflowContext(
     string DataDirectory,
@@ -175,18 +172,19 @@ internal sealed record ReleaseInstallationWorkflowContext(
     IReadOnlyList<string> StartupArguments,
     RequestReleaseInstallationShutdown RequestShutdown,
     bool IsAppImage,
-    Action<string>? Log = null);
+    Action<string>? Log = null
+);
 
 internal sealed record ReleaseInstallationWorkflowSeams(
     IReleaseInstallationOutcomeMonitor OutcomeMonitor,
     Func<bool> IsCurrentProcessRunning,
     Func<string, bool> PathExists,
-    ReleaseInstallationCapability Capability);
+    ReleaseInstallationCapability Capability
+);
 
 internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
 {
-    private const string MissingTransferredPlanMessage =
-        "Transferred update ownership has no installation plan.";
+    private const string MissingTransferredPlanMessage = "Transferred update ownership has no installation plan.";
 
     private readonly IReleasePackageDownloadService downloadService;
     private readonly IReleasePackageStagingService stagingService;
@@ -206,7 +204,8 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
 
     internal ReleaseInstallationWorkflow(
         ReleaseInstallationWorkflowAdapters adapters,
-        ReleaseInstallationWorkflowContext context)
+        ReleaseInstallationWorkflowContext context
+    )
         : this(
             adapters,
             context,
@@ -214,16 +213,15 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
                 new ReleaseInstallationOutcomeMonitor(log: context.Log),
                 () => true,
                 path => Directory.Exists(path) || File.Exists(path),
-                ReleaseInstallationCapability.Detect(
-                    context.InstallationDirectory,
-                    context.IsAppImage)))
-    {
-    }
+                ReleaseInstallationCapability.Detect(context.InstallationDirectory, context.IsAppImage)
+            )
+        ) { }
 
     internal ReleaseInstallationWorkflow(
         ReleaseInstallationWorkflowAdapters adapters,
         ReleaseInstallationWorkflowContext context,
-        ReleaseInstallationWorkflowSeams seams)
+        ReleaseInstallationWorkflowSeams seams
+    )
     {
         ArgumentNullException.ThrowIfNull(adapters);
         ArgumentNullException.ThrowIfNull(context);
@@ -251,7 +249,8 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
     public async Task<ReleaseInstallationWorkflowResult> ExecuteAsync(
         ReleaseInstallationRequest request,
         IProgress<ReleaseInstallationWorkflowProgress>? progress = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.Package);
@@ -260,8 +259,7 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
             return Rejected(ReleaseInstallationRejectionReason.Unsupported);
         }
 
-        if (retryBlocked
-            || Interlocked.CompareExchange(ref executionActive, 1, 0) != 0)
+        if (retryBlocked || Interlocked.CompareExchange(ref executionActive, 1, 0) != 0)
         {
             return Rejected(ReleaseInstallationRejectionReason.Busy);
         }
@@ -269,48 +267,41 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
         var state = new WorkflowExecutionState();
         try
         {
-            return await RunWorkflowAsync(
-                    request,
-                    progress,
-                    state,
-                    cancellationToken)
-                .ConfigureAwait(false);
+            return await RunWorkflowAsync(request, progress, state, cancellationToken).ConfigureAwait(false);
         }
-        catch (OperationCanceledException exception) when (
-            !state.OwnershipTransferred)
+        catch (OperationCanceledException exception) when (!state.OwnershipTransferred)
         {
             return await FinishBeforeHandoffAsync(
                     ReleaseInstallationWorkflowStatus.Cancelled,
                     state.Stage,
                     state.Preparation,
-                    error: exception)
+                    error: exception
+                )
                 .ConfigureAwait(false);
         }
-        catch (Exception exception) when (
-            !state.OwnershipTransferred && IsOperationalFailure(exception))
+        catch (Exception exception) when (!state.OwnershipTransferred && IsOperationalFailure(exception))
         {
             return await FinishBeforeHandoffAsync(
                     ReleaseInstallationWorkflowStatus.Failed,
                     state.Stage,
                     state.Preparation,
-                    error: exception)
+                    error: exception
+                )
                 .ConfigureAwait(false);
         }
         catch (Exception exception) when (!state.OwnershipTransferred)
         {
-            await CleanupBeforeRethrowAsync(state.Preparation, exception)
-                .ConfigureAwait(false);
+            await CleanupBeforeRethrowAsync(state.Preparation, exception).ConfigureAwait(false);
             throw;
         }
-        catch (Exception exception) when (
-            state.OwnershipTransferred && IsOperationalFailure(exception))
+        catch (Exception exception) when (state.OwnershipTransferred && IsOperationalFailure(exception))
         {
             retryBlocked = true;
             return OwnershipUnresolved(
                 state.Stage,
                 exception,
-                state.Plan ?? throw new UnreachableException(
-                    MissingTransferredPlanMessage));
+                state.Plan ?? throw new UnreachableException(MissingTransferredPlanMessage)
+            );
         }
         catch when (state.OwnershipTransferred)
         {
@@ -330,113 +321,96 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
         ReleaseInstallationRequest request,
         IProgress<ReleaseInstallationWorkflowProgress>? progress,
         WorkflowExecutionState state,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         state.Stage = ReleaseInstallationWorkflowStage.ScanningInstances;
-        if (!await CloseOtherInstancesAsync(
-                ReleaseInstallationCheckpoint.BeforeDownload,
-                progress,
-                cancellationToken)
-            .ConfigureAwait(false))
+        if (
+            !await CloseOtherInstancesAsync(ReleaseInstallationCheckpoint.BeforeDownload, progress, cancellationToken)
+                .ConfigureAwait(false)
+        )
         {
-            return Rejected(
-                ReleaseInstallationRejectionReason.InstancesDeclined,
-                state.Stage);
+            return Rejected(ReleaseInstallationRejectionReason.InstancesDeclined, state.Stage);
         }
 
-        var prepared = await PrepareCandidateAsync(
-                request,
-                progress,
-                state,
-                cancellationToken)
-            .ConfigureAwait(false);
+        var prepared = await PrepareCandidateAsync(request, progress, state, cancellationToken).ConfigureAwait(false);
         state.Stage = ReleaseInstallationWorkflowStage.ScanningInstances;
-        if (!await CloseOtherInstancesAsync(
-                ReleaseInstallationCheckpoint.BeforeHandoff,
-                progress,
-                cancellationToken)
-            .ConfigureAwait(false))
+        if (
+            !await CloseOtherInstancesAsync(ReleaseInstallationCheckpoint.BeforeHandoff, progress, cancellationToken)
+                .ConfigureAwait(false)
+        )
         {
             return await FinishBeforeHandoffAsync(
                     ReleaseInstallationWorkflowStatus.Rejected,
                     state.Stage,
                     prepared.Preparation,
-                    ReleaseInstallationRejectionReason.InstancesDeclined)
+                    ReleaseInstallationRejectionReason.InstancesDeclined
+                )
                 .ConfigureAwait(false);
         }
 
-        return await StartHelperAndShutdownAsync(
-                prepared,
-                progress,
-                state,
-                cancellationToken)
-            .ConfigureAwait(false);
+        return await StartHelperAndShutdownAsync(prepared, progress, state, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<PreparedReleaseInstallation> PrepareCandidateAsync(
         ReleaseInstallationRequest request,
         IProgress<ReleaseInstallationWorkflowProgress>? progress,
         WorkflowExecutionState state,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         state.Stage = ReleaseInstallationWorkflowStage.Downloading;
         progress?.Report(new ReleaseInstallationWorkflowProgress(state.Stage));
-        var download = await downloadService.DownloadAsync(
+        var download = await downloadService
+            .DownloadAsync(
                 request.Version,
                 request.Package,
                 dataDirectory,
                 new DownloadProgressAdapter(progress),
-                cancellationToken)
+                cancellationToken
+            )
             .ConfigureAwait(false);
 
         state.Stage = ReleaseInstallationWorkflowStage.ValidatingArchive;
         progress?.Report(new ReleaseInstallationWorkflowProgress(state.Stage));
         state.Stage = ReleaseInstallationWorkflowStage.Staging;
         progress?.Report(new ReleaseInstallationWorkflowProgress(state.Stage));
-        var staged = await stagingService.StageAsync(
-                request.Version,
-                request.Package,
-                download.ArchivePath,
-                dataDirectory,
-                cancellationToken)
+        var staged = await stagingService
+            .StageAsync(request.Version, request.Package, download.ArchivePath, dataDirectory, cancellationToken)
             .ConfigureAwait(false);
 
         state.Stage = ReleaseInstallationWorkflowStage.PreparingRollback;
-        progress?.Report(new ReleaseInstallationWorkflowProgress(state.Stage)
-        {
-            StagedFileCount = staged.FileCount,
-        });
-        state.Preparation = await installationPreparer.PrepareAsync(
+        progress?.Report(new ReleaseInstallationWorkflowProgress(state.Stage) { StagedFileCount = staged.FileCount });
+        state.Preparation = await installationPreparer
+            .PrepareAsync(
                 request.Version,
                 request.Package.RuntimeIdentifier,
                 staged.ReadyDirectory,
                 staged.ManifestSha256,
                 installationDirectory,
                 startupArguments,
-                cancellationToken)
+                cancellationToken
+            )
             .ConfigureAwait(false);
-        return new PreparedReleaseInstallation(
-            state.Preparation,
-            staged.EntryPointPath);
+        return new PreparedReleaseInstallation(state.Preparation, staged.EntryPointPath);
     }
 
-    private async Task<ReleaseInstallationWorkflowResult>
-        StartHelperAndShutdownAsync(
-            PreparedReleaseInstallation prepared,
-            IProgress<ReleaseInstallationWorkflowProgress>? progress,
-            WorkflowExecutionState state,
-            CancellationToken cancellationToken)
+    private async Task<ReleaseInstallationWorkflowResult> StartHelperAndShutdownAsync(
+        PreparedReleaseInstallation prepared,
+        IProgress<ReleaseInstallationWorkflowProgress>? progress,
+        WorkflowExecutionState state,
+        CancellationToken cancellationToken
+    )
     {
         state.Stage = ReleaseInstallationWorkflowStage.StartingHelper;
-        progress?.Report(new ReleaseInstallationWorkflowProgress(state.Stage)
-        {
-            RequiresElevation = prepared.Preparation.RequiresElevation,
-        });
-        var handoffResult = await handoff.StartHelperAttemptAsync(
-                dataDirectory,
-                prepared.Preparation,
-                prepared.EntryPointPath,
-                cancellationToken)
+        progress?.Report(
+            new ReleaseInstallationWorkflowProgress(state.Stage)
+            {
+                RequiresElevation = prepared.Preparation.RequiresElevation,
+            }
+        );
+        var handoffResult = await handoff
+            .StartHelperAttemptAsync(dataDirectory, prepared.Preparation, prepared.EntryPointPath, cancellationToken)
             .ConfigureAwait(false);
         if (handoffResult.Status == ApplicationUpdateHandoffStatus.NotStarted)
         {
@@ -444,18 +418,16 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
                     ReleaseInstallationWorkflowStatus.Failed,
                     state.Stage,
                     prepared.Preparation,
-                    error: handoffResult.Error)
+                    error: handoffResult.Error
+                )
                 .ConfigureAwait(false);
         }
 
-        state.TransferOwnership(handoffResult.Plan
-            ?? throw new UnreachableException(
-                "A started update handoff has no installation plan."));
+        state.TransferOwnership(
+            handoffResult.Plan ?? throw new UnreachableException("A started update handoff has no installation plan.")
+        );
         state.Stage = ReleaseInstallationWorkflowStage.AwaitingApplicationExit;
-        progress?.Report(new ReleaseInstallationWorkflowProgress(state.Stage)
-        {
-            Error = handoffResult.Error,
-        });
+        progress?.Report(new ReleaseInstallationWorkflowProgress(state.Stage) { Error = handoffResult.Error });
         var shutdownError = await TryRequestShutdownAsync().ConfigureAwait(false);
         if (!isCurrentProcessRunning())
         {
@@ -464,13 +436,11 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
                 state.Stage,
                 ReleaseInstallationCleanupStatus.Transferred,
                 Error: handoffResult.Error ?? shutdownError,
-                HandoffPlan: state.Plan);
+                HandoffPlan: state.Plan
+            );
         }
 
-        return await ObserveTransferredOutcomeAsync(
-                prepared.Preparation,
-                state,
-                handoffResult.Error ?? shutdownError)
+        return await ObserveTransferredOutcomeAsync(prepared.Preparation, state, handoffResult.Error ?? shutdownError)
             .ConfigureAwait(false);
     }
 
@@ -487,24 +457,21 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
         }
     }
 
-    private async Task<ReleaseInstallationWorkflowResult>
-        ObserveTransferredOutcomeAsync(
-            ReleaseInstallationPreparation preparation,
-            WorkflowExecutionState state,
-            Exception? handoffError)
+    private async Task<ReleaseInstallationWorkflowResult> ObserveTransferredOutcomeAsync(
+        ReleaseInstallationPreparation preparation,
+        WorkflowExecutionState state,
+        Exception? handoffError
+    )
     {
         try
         {
-            var outcome = await outcomeMonitor.WaitForOutcomeAsync(
-                    state.Plan ?? throw new UnreachableException(
-                        MissingTransferredPlanMessage),
-                    CancellationToken.None)
+            var outcome = await outcomeMonitor
+                .WaitForOutcomeAsync(
+                    state.Plan ?? throw new UnreachableException(MissingTransferredPlanMessage),
+                    CancellationToken.None
+                )
                 .ConfigureAwait(false);
-            return InterpretTransferredOutcome(
-                preparation,
-                state,
-                outcome,
-                handoffError);
+            return InterpretTransferredOutcome(preparation, state, outcome, handoffError);
         }
         catch (Exception exception) when (IsOperationalFailure(exception))
         {
@@ -512,8 +479,8 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
             return OwnershipUnresolved(
                 state.Stage,
                 exception,
-                state.Plan ?? throw new UnreachableException(
-                    MissingTransferredPlanMessage));
+                state.Plan ?? throw new UnreachableException(MissingTransferredPlanMessage)
+            );
         }
     }
 
@@ -521,10 +488,10 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
         ReleaseInstallationPreparation preparation,
         WorkflowExecutionState state,
         ReleaseInstallationOutcome? outcome,
-        Exception? handoffError)
+        Exception? handoffError
+    )
     {
-        var plan = state.Plan ?? throw new UnreachableException(
-            MissingTransferredPlanMessage);
+        var plan = state.Plan ?? throw new UnreachableException(MissingTransferredPlanMessage);
         if (outcome is null)
         {
             retryBlocked = true;
@@ -536,13 +503,12 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
             retryBlocked = true;
             return OwnershipUnresolved(
                 state.Stage,
-                new InvalidOperationException(
-                    "The helper completed an installation while its parent remained active."),
-                plan);
+                new InvalidOperationException("The helper completed an installation while its parent remained active."),
+                plan
+            );
         }
 
-        var helperError = new InvalidOperationException(
-            outcome.Error ?? "The update helper aborted the installation.");
+        var helperError = new InvalidOperationException(outcome.Error ?? "The update helper aborted the installation.");
         if (pathExists(preparation.CandidateDirectory))
         {
             retryBlocked = true;
@@ -551,9 +517,9 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
                 state.Stage,
                 ReleaseInstallationCleanupStatus.Failed,
                 Error: helperError,
-                CleanupError: new IOException(
-                    "The prepared update candidate still exists after helper abort."),
-                HandoffPlan: plan);
+                CleanupError: new IOException("The prepared update candidate still exists after helper abort."),
+                HandoffPlan: plan
+            );
         }
 
         return new ReleaseInstallationWorkflowResult(
@@ -561,12 +527,11 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
             state.Stage,
             ReleaseInstallationCleanupStatus.Succeeded,
             Error: helperError,
-            HandoffPlan: plan);
+            HandoffPlan: plan
+        );
     }
 
-    private async Task CleanupBeforeRethrowAsync(
-        ReleaseInstallationPreparation? preparation,
-        Exception exception)
+    private async Task CleanupBeforeRethrowAsync(ReleaseInstallationPreparation? preparation, Exception exception)
     {
         if (preparation is null)
         {
@@ -575,10 +540,7 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
 
         try
         {
-            await installationPreparer.AbortAsync(
-                    preparation,
-                    CancellationToken.None)
-                .ConfigureAwait(false);
+            await installationPreparer.AbortAsync(preparation, CancellationToken.None).ConfigureAwait(false);
         }
         catch (Exception cleanupError)
         {
@@ -586,47 +548,49 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
             throw new AggregateException(
                 "The installation operation and candidate cleanup both failed.",
                 exception,
-                cleanupError);
+                cleanupError
+            );
         }
     }
 
     private async Task<bool> CloseOtherInstancesAsync(
         ReleaseInstallationCheckpoint checkpoint,
         IProgress<ReleaseInstallationWorkflowProgress>? progress,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
-        progress?.Report(new ReleaseInstallationWorkflowProgress(
-            ReleaseInstallationWorkflowStage.ScanningInstances)
-        {
-            Checkpoint = checkpoint,
-        });
-        var scan = await instanceManager.ScanOtherInstancesAsync(cancellationToken)
-            .ConfigureAwait(false);
+        progress?.Report(
+            new ReleaseInstallationWorkflowProgress(ReleaseInstallationWorkflowStage.ScanningInstances)
+            {
+                Checkpoint = checkpoint,
+            }
+        );
+        var scan = await instanceManager.ScanOtherInstancesAsync(cancellationToken).ConfigureAwait(false);
         if (scan.TotalCount == 0)
         {
             return true;
         }
 
-        progress?.Report(new ReleaseInstallationWorkflowProgress(
-            ReleaseInstallationWorkflowStage.AwaitingInstanceConfirmation)
-        {
-            Checkpoint = checkpoint,
-            InstanceScan = scan,
-        });
-        if (!await confirmInstances(scan, checkpoint, cancellationToken)
-            .ConfigureAwait(false))
+        progress?.Report(
+            new ReleaseInstallationWorkflowProgress(ReleaseInstallationWorkflowStage.AwaitingInstanceConfirmation)
+            {
+                Checkpoint = checkpoint,
+                InstanceScan = scan,
+            }
+        );
+        if (!await confirmInstances(scan, checkpoint, cancellationToken).ConfigureAwait(false))
         {
             return false;
         }
 
-        progress?.Report(new ReleaseInstallationWorkflowProgress(
-            ReleaseInstallationWorkflowStage.ClosingInstances)
-        {
-            Checkpoint = checkpoint,
-            InstanceScan = scan,
-        });
-        await instanceManager.CloseOtherInstancesAsync(cancellationToken)
-            .ConfigureAwait(false);
+        progress?.Report(
+            new ReleaseInstallationWorkflowProgress(ReleaseInstallationWorkflowStage.ClosingInstances)
+            {
+                Checkpoint = checkpoint,
+                InstanceScan = scan,
+            }
+        );
+        await instanceManager.CloseOtherInstancesAsync(cancellationToken).ConfigureAwait(false);
         return true;
     }
 
@@ -634,9 +598,9 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
         ReleaseInstallationWorkflowStatus status,
         ReleaseInstallationWorkflowStage stage,
         ReleaseInstallationPreparation? preparation,
-        ReleaseInstallationRejectionReason rejectionReason =
-            ReleaseInstallationRejectionReason.None,
-        Exception? error = null)
+        ReleaseInstallationRejectionReason rejectionReason = ReleaseInstallationRejectionReason.None,
+        Exception? error = null
+    )
     {
         if (preparation is null)
         {
@@ -645,21 +609,20 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
                 stage,
                 ReleaseInstallationCleanupStatus.NotRequired,
                 rejectionReason,
-                error);
+                error
+            );
         }
 
         try
         {
-            await installationPreparer.AbortAsync(
-                    preparation,
-                    CancellationToken.None)
-                .ConfigureAwait(false);
+            await installationPreparer.AbortAsync(preparation, CancellationToken.None).ConfigureAwait(false);
             return new ReleaseInstallationWorkflowResult(
                 status,
                 stage,
                 ReleaseInstallationCleanupStatus.Succeeded,
                 rejectionReason,
-                error);
+                error
+            );
         }
         catch (Exception cleanupError) when (IsOperationalFailure(cleanupError))
         {
@@ -670,50 +633,57 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
                 ReleaseInstallationCleanupStatus.Failed,
                 rejectionReason,
                 error,
-                cleanupError);
+                cleanupError
+            );
         }
     }
 
     private static ReleaseInstallationWorkflowResult Rejected(
         ReleaseInstallationRejectionReason reason,
-        ReleaseInstallationWorkflowStage stage = ReleaseInstallationWorkflowStage.None)
+        ReleaseInstallationWorkflowStage stage = ReleaseInstallationWorkflowStage.None
+    )
     {
         return new ReleaseInstallationWorkflowResult(
             ReleaseInstallationWorkflowStatus.Rejected,
             stage,
             ReleaseInstallationCleanupStatus.NotRequired,
-            reason);
+            reason
+        );
     }
 
     private static ReleaseInstallationWorkflowResult OwnershipUnresolved(
         ReleaseInstallationWorkflowStage stage,
         Exception? error,
-        ReleaseInstallationHandoffPlan plan)
+        ReleaseInstallationHandoffPlan plan
+    )
     {
         return new ReleaseInstallationWorkflowResult(
             ReleaseInstallationWorkflowStatus.OwnershipUnresolved,
             stage,
             ReleaseInstallationCleanupStatus.Transferred,
             Error: error,
-            HandoffPlan: plan);
+            HandoffPlan: plan
+        );
     }
 
     private static bool IsOperationalFailure(Exception exception)
     {
-        return exception is HttpRequestException
-            or IOException
-            or UnauthorizedAccessException
-            or Win32Exception
-            or InvalidDataException
-            or JsonException
-            or TaskCanceledException
-            or InvalidOperationException
-            or PlatformNotSupportedException;
+        return exception
+            is HttpRequestException
+                or IOException
+                or UnauthorizedAccessException
+                or Win32Exception
+                or InvalidDataException
+                or JsonException
+                or TaskCanceledException
+                or InvalidOperationException
+                or PlatformNotSupportedException;
     }
 
     private sealed record PreparedReleaseInstallation(
         ReleaseInstallationPreparation Preparation,
-        string EntryPointPath);
+        string EntryPointPath
+    );
 
     private sealed class WorkflowExecutionState
     {
@@ -732,18 +702,18 @@ internal sealed class ReleaseInstallationWorkflow : IReleaseInstallationWorkflow
         }
     }
 
-    private sealed class DownloadProgressAdapter(
-        IProgress<ReleaseInstallationWorkflowProgress>? progress)
+    private sealed class DownloadProgressAdapter(IProgress<ReleaseInstallationWorkflowProgress>? progress)
         : IProgress<ReleasePackageDownloadProgress>
     {
         public void Report(ReleasePackageDownloadProgress value)
         {
-            progress?.Report(new ReleaseInstallationWorkflowProgress(
-                ReleaseInstallationWorkflowStage.Downloading)
-            {
-                DownloadedBytes = value.DownloadedBytes,
-                TotalBytes = value.TotalBytes,
-            });
+            progress?.Report(
+                new ReleaseInstallationWorkflowProgress(ReleaseInstallationWorkflowStage.Downloading)
+                {
+                    DownloadedBytes = value.DownloadedBytes,
+                    TotalBytes = value.TotalBytes,
+                }
+            );
         }
     }
 }
@@ -753,19 +723,20 @@ internal sealed class ReleaseInstallationOutcomeMonitor(
     TimeProvider? timeProvider = null,
     TimeSpan? pollInterval = null,
     TimeSpan? timeout = null,
-    Action<string>? log = null) : IReleaseInstallationOutcomeMonitor
+    Action<string>? log = null
+) : IReleaseInstallationOutcomeMonitor
 {
     private static readonly TimeSpan DefaultPollInterval = TimeSpan.FromSeconds(1);
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromMinutes(2.25);
-    private readonly ReleaseInstallationPlanStore store = planStore
-        ?? new ReleaseInstallationPlanStore();
+    private readonly ReleaseInstallationPlanStore store = planStore ?? new ReleaseInstallationPlanStore();
     private readonly TimeProvider clock = timeProvider ?? TimeProvider.System;
     private readonly TimeSpan interval = pollInterval ?? DefaultPollInterval;
     private readonly TimeSpan maximumWait = timeout ?? DefaultTimeout;
 
     public async Task<ReleaseInstallationOutcome?> WaitForOutcomeAsync(
         ReleaseInstallationHandoffPlan plan,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentNullException.ThrowIfNull(plan);
         var startedAt = clock.GetUtcNow();
@@ -774,17 +745,16 @@ internal sealed class ReleaseInstallationOutcomeMonitor(
             cancellationToken.ThrowIfCancellationRequested();
             if (File.Exists(plan.OutcomePath))
             {
-                return await store.ReadOutcomeAsync(plan, cancellationToken)
-                    .ConfigureAwait(false);
+                return await store.ReadOutcomeAsync(plan, cancellationToken).ConfigureAwait(false);
             }
 
-            await Task.Delay(interval, clock, cancellationToken)
-                .ConfigureAwait(false);
+            await Task.Delay(interval, clock, cancellationToken).ConfigureAwait(false);
         }
 
         log?.Invoke(
             $"Update helper outcome was not available for request "
-            + $"{plan.Preparation.RequestId:N} within {maximumWait}.");
+                + $"{plan.Preparation.RequestId:N} within {maximumWait}."
+        );
         return null;
     }
 }

@@ -58,26 +58,19 @@ public sealed record ColonizationProject
     public bool IsPrimaryPort { get; init; }
 
     [JsonPropertyName("commanders")]
-    public Dictionary<string, HashSet<string>> Commanders { get; init; } =
-        new(StringComparer.OrdinalIgnoreCase);
+    public Dictionary<string, HashSet<string>> Commanders { get; init; } = new(StringComparer.OrdinalIgnoreCase);
 
     [JsonPropertyName("notes")]
     public string? Notes { get; init; }
 
     [JsonPropertyName("commodities")]
-    public Dictionary<string, int> Commodities { get; init; } =
-        new(StringComparer.OrdinalIgnoreCase);
+    public Dictionary<string, int> Commodities { get; init; } = new(StringComparer.OrdinalIgnoreCase);
 
     [JsonPropertyName("ready")]
-    public HashSet<string> Ready { get; init; } =
-        new(StringComparer.OrdinalIgnoreCase);
+    public HashSet<string> Ready { get; init; } = new(StringComparer.OrdinalIgnoreCase);
 
     [JsonPropertyName("linkedFC")]
-    public List<ColonizationProjectFleetCarrier> LinkedFleetCarriers
-    {
-        get;
-        init;
-    } = [];
+    public List<ColonizationProjectFleetCarrier> LinkedFleetCarriers { get; init; } = [];
 
     [JsonPropertyName("Timestamp")]
     public DateTimeOffset? Timestamp { get; init; }
@@ -86,23 +79,17 @@ public sealed record ColonizationProject
     public string? ETag { get; init; }
 
     [JsonIgnore]
-    public bool IsFleetCarrierLoading => string.Equals(
-        BuildType,
-        FleetCarrierLoadingBuildType,
-        StringComparison.OrdinalIgnoreCase);
+    public bool IsFleetCarrierLoading =>
+        string.Equals(BuildType, FleetCarrierLoadingBuildType, StringComparison.OrdinalIgnoreCase);
 
     [JsonIgnore]
-    public long Delivered => MaximumRequired <= 0
-        ? 0
-        : Math.Clamp(
-            (long)MaximumRequired - Math.Max(0, RemainingRequired),
-            0,
-            MaximumRequired);
+    public long Delivered =>
+        MaximumRequired <= 0
+            ? 0
+            : Math.Clamp((long)MaximumRequired - Math.Max(0, RemainingRequired), 0, MaximumRequired);
 
     [JsonIgnore]
-    public double? Progress => MaximumRequired > 0
-        ? Math.Clamp(Delivered / (double)MaximumRequired, 0, 1)
-        : null;
+    public double? Progress => MaximumRequired > 0 ? Math.Clamp(Delivered / (double)MaximumRequired, 0, 1) : null;
 }
 
 public sealed record ColonizationProjectFleetCarrier
@@ -117,8 +104,7 @@ public sealed record ColonizationProjectFleetCarrier
     public string DisplayName { get; init; } = string.Empty;
 
     [JsonPropertyName("assign")]
-    public HashSet<string> AssignedCommodities { get; init; } =
-        new(StringComparer.OrdinalIgnoreCase);
+    public HashSet<string> AssignedCommodities { get; init; } = new(StringComparer.OrdinalIgnoreCase);
 }
 
 public static class ColonizationProjectCalculator
@@ -126,27 +112,16 @@ public static class ColonizationProjectCalculator
     public static ColonizationProjectTotals CalculateTotals(
         IEnumerable<ColonizationProject> projects,
         IEnumerable<string>? hiddenBuildIds,
-        int shipCargoCapacity)
+        int shipCargoCapacity
+    )
     {
         ArgumentNullException.ThrowIfNull(projects);
-        var hidden = hiddenBuildIds?.ToHashSet(StringComparer.OrdinalIgnoreCase)
-            ?? [];
-        var selected = projects
-            .Where(project => !hidden.Contains(project.BuildId))
-            .ToArray();
-        var remaining = selected.Sum(
-            project => Math.Max(0L, project.RemainingRequired));
-        var trips = shipCargoCapacity > 0
-            ? (long?)Math.Ceiling(remaining / (double)shipCargoCapacity)
-            : null;
-        return new ColonizationProjectTotals(
-            selected.Length,
-            remaining,
-            trips);
+        var hidden = hiddenBuildIds?.ToHashSet(StringComparer.OrdinalIgnoreCase) ?? [];
+        var selected = projects.Where(project => !hidden.Contains(project.BuildId)).ToArray();
+        var remaining = selected.Sum(project => Math.Max(0L, project.RemainingRequired));
+        var trips = shipCargoCapacity > 0 ? (long?)Math.Ceiling(remaining / (double)shipCargoCapacity) : null;
+        return new ColonizationProjectTotals(selected.Length, remaining, trips);
     }
 }
 
-public sealed record ColonizationProjectTotals(
-    int SelectedProjectCount,
-    long RemainingCargo,
-    long? TripsInCurrentShip);
+public sealed record ColonizationProjectTotals(int SelectedProjectCount, long RemainingCargo, long? TripsInCurrentShip);

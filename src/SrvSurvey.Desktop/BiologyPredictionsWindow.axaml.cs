@@ -1,8 +1,8 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using SrvSurvey.Desktop.Configuration;
-using SrvSurvey.Desktop.ViewModels;
 using SrvSurvey.Desktop.Runtime;
+using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop;
 
@@ -11,14 +11,11 @@ public sealed partial class BiologyPredictionsWindow : Window
     private readonly BiologyPredictionsViewModel viewModel;
 
     public BiologyPredictionsWindow()
-        : this(CreateDesignViewModel())
-    {
-    }
+        : this(CreateDesignViewModel()) { }
 
     public BiologyPredictionsWindow(BiologyPredictionsViewModel viewModel)
     {
-        this.viewModel = viewModel
-            ?? throw new ArgumentNullException(nameof(viewModel));
+        this.viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         InitializeComponent();
         DataContext = viewModel;
         if (DesktopExternalEffectPolicy.IsAllowed)
@@ -45,13 +42,11 @@ public sealed partial class BiologyPredictionsWindow : Window
 
     private static BiologyPredictionsViewModel CreateDesignViewModel()
     {
-        var temporaryDirectory = Path.Combine(
-            Path.GetTempPath(),
-            "SrvSurvey-BiologyPredictions-Design");
+        var temporaryDirectory = Path.Combine(Path.GetTempPath(), "SrvSurvey-BiologyPredictions-Design");
         var settingsPath = Path.Combine(temporaryDirectory, "ui-settings.json");
         return new BiologyPredictionsViewModel(
-            new SystemSurveyViewModel(
-                new SystemSurveySettingsStore(settingsPath)),
-            new BiologyPredictionsSettingsStore(settingsPath));
+            new SystemSurveyViewModel(new SystemSurveySettingsStore(settingsPath)),
+            new BiologyPredictionsSettingsStore(settingsPath)
+        );
     }
 }

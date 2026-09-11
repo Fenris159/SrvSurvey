@@ -9,9 +9,7 @@ internal static partial class WindowsRestartManagerProcessFinder
     private const int ErrorMoreData = 234;
     private const int SessionKeyLength = 32;
 
-    public static IReadOnlySet<int> FindLockingProcessIds(
-        string executablePath,
-        Action<string>? log = null)
+    public static IReadOnlySet<int> FindLockingProcessIds(string executablePath, Action<string>? log = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(executablePath);
         if (!OperatingSystem.IsWindows())
@@ -23,8 +21,7 @@ internal static partial class WindowsRestartManagerProcessFinder
         var startResult = RmStartSession(out var session, 0, sessionKey);
         if (startResult != ErrorSuccess)
         {
-            log?.Invoke(
-                $"Windows Restart Manager session failed with error {startResult}.");
+            log?.Invoke($"Windows Restart Manager session failed with error {startResult}.");
             return new HashSet<int>();
         }
 
@@ -37,11 +34,11 @@ internal static partial class WindowsRestartManagerProcessFinder
                 0,
                 IntPtr.Zero,
                 0,
-                null);
+                null
+            );
             if (registerResult != ErrorSuccess)
             {
-                log?.Invoke(
-                    $"Windows Restart Manager registration failed with error {registerResult}.");
+                log?.Invoke($"Windows Restart Manager registration failed with error {registerResult}.");
                 return new HashSet<int>();
             }
 
@@ -53,18 +50,11 @@ internal static partial class WindowsRestartManagerProcessFinder
         }
     }
 
-    private static HashSet<int> ReadProcessIds(
-        uint session,
-        Action<string>? log)
+    private static HashSet<int> ReadProcessIds(uint session, Action<string>? log)
     {
         uint count = 0;
         uint rebootReasons = 0;
-        var result = RmGetList(
-            session,
-            out var needed,
-            ref count,
-            null,
-            ref rebootReasons);
+        var result = RmGetList(session, out var needed, ref count, null, ref rebootReasons);
         if (result == ErrorSuccess && needed == 0)
         {
             return new HashSet<int>();
@@ -76,30 +66,22 @@ internal static partial class WindowsRestartManagerProcessFinder
             return new HashSet<int>();
         }
 
-        return ReadAllocatedProcessList(
-            session,
-            needed,
-            rebootReasons,
-            log);
+        return ReadAllocatedProcessList(session, needed, rebootReasons, log);
     }
 
     private static HashSet<int> ReadAllocatedProcessList(
         uint session,
         uint needed,
         uint rebootReasons,
-        Action<string>? log)
+        Action<string>? log
+    )
     {
         var result = ErrorMoreData;
         for (var attempt = 0; attempt < 3; attempt++)
         {
             var count = needed;
             var processes = new RestartManagerProcessInfo[count];
-            result = RmGetList(
-                session,
-                out needed,
-                ref count,
-                processes,
-                ref rebootReasons);
+            result = RmGetList(session, out needed, ref count, processes, ref rebootReasons);
             if (result == ErrorSuccess)
             {
                 return processes
@@ -121,8 +103,7 @@ internal static partial class WindowsRestartManagerProcessFinder
 
     private static void LogDiscoveryFailure(Action<string>? log, int error)
     {
-        log?.Invoke(
-            $"Windows Restart Manager discovery failed with error {error}.");
+        log?.Invoke($"Windows Restart Manager discovery failed with error {error}.");
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -153,10 +134,7 @@ internal static partial class WindowsRestartManagerProcessFinder
 
 #pragma warning disable SYSLIB1054 // Restart Manager arrays require runtime marshalling.
     [DllImport("rstrtmgr.dll", CharSet = CharSet.Unicode)]
-    private static extern int RmStartSession(
-        out uint sessionHandle,
-        int sessionFlags,
-        StringBuilder sessionKey);
+    private static extern int RmStartSession(out uint sessionHandle, int sessionFlags, StringBuilder sessionKey);
 
     [DllImport("rstrtmgr.dll", CharSet = CharSet.Unicode)]
     private static extern int RmRegisterResources(
@@ -166,7 +144,8 @@ internal static partial class WindowsRestartManagerProcessFinder
         uint applicationCount,
         IntPtr applications,
         uint serviceCount,
-        string[]? serviceNames);
+        string[]? serviceNames
+    );
 
     [DllImport("rstrtmgr.dll", CharSet = CharSet.Unicode)]
     private static extern int RmGetList(
@@ -174,7 +153,8 @@ internal static partial class WindowsRestartManagerProcessFinder
         out uint processInfoNeeded,
         ref uint processInfoCount,
         [In, Out] RestartManagerProcessInfo[]? affectedApplications,
-        ref uint rebootReasons);
+        ref uint rebootReasons
+    );
 #pragma warning restore SYSLIB1054
 
     [LibraryImport("rstrtmgr.dll")]

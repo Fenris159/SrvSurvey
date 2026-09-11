@@ -29,9 +29,7 @@ public sealed class CapturedPixelBuffer : IFssPixelSource
         var expectedLength = checked(width * height * 4);
         if (bgraPixels.Length != expectedLength)
         {
-            throw new ArgumentException(
-                "The BGRA buffer length does not match its dimensions.",
-                nameof(bgraPixels));
+            throw new ArgumentException("The BGRA buffer length does not match its dimensions.", nameof(bgraPixels));
         }
 
         Width = width;
@@ -49,16 +47,11 @@ public sealed class CapturedPixelBuffer : IFssPixelSource
     {
         if ((uint)x >= (uint)Width || (uint)y >= (uint)Height)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(x),
-                "The pixel is outside the captured image.");
+            throw new ArgumentOutOfRangeException(nameof(x), "The pixel is outside the captured image.");
         }
 
         var offset = checked(((y * Width) + x) * 4);
-        return new FssRgbPixel(
-            bgraPixels[offset + 2],
-            bgraPixels[offset + 1],
-            bgraPixels[offset]);
+        return new FssRgbPixel(bgraPixels[offset + 2], bgraPixels[offset + 1], bgraPixels[offset]);
     }
 }
 
@@ -71,19 +64,17 @@ public static class GameScreenCapture
             return new WindowsGameScreenCapture();
         }
 
-        if (OverlayPlatformCapabilities.DetectCurrent()
-            .UsesX11Compatibility)
+        if (OverlayPlatformCapabilities.DetectCurrent().UsesX11Compatibility)
         {
             return X11GameScreenCapture.TryCreate()
-                ?? new UnavailableGameScreenCapture(
-                    "X11 screen capture could not connect to the display.");
+                ?? new UnavailableGameScreenCapture("X11 screen capture could not connect to the display.");
         }
 
         return new UnavailableGameScreenCapture(
             OperatingSystem.IsLinux()
-                ? "FSS tuning detection requires an X11 session; direct "
-                    + "screen capture is unavailable on Wayland."
-                : "FSS tuning detection is not supported on this platform.");
+                ? "FSS tuning detection requires an X11 session; direct " + "screen capture is unavailable on Wayland."
+                : "FSS tuning detection is not supported on this platform."
+        );
     }
 }
 
@@ -91,9 +82,7 @@ public sealed class UnavailableGameScreenCapture : IGameScreenCapture
 {
     public UnavailableGameScreenCapture(string reason)
     {
-        UnavailableReason = string.IsNullOrWhiteSpace(reason)
-            ? "Screen capture is unavailable."
-            : reason;
+        UnavailableReason = string.IsNullOrWhiteSpace(reason) ? "Screen capture is unavailable." : reason;
     }
 
     public bool IsAvailable => false;
@@ -105,9 +94,7 @@ public sealed class UnavailableGameScreenCapture : IGameScreenCapture
         throw new NotSupportedException(UnavailableReason);
     }
 
-    public void Dispose()
-    {
-    }
+    public void Dispose() { }
 }
 
 [SupportedOSPlatform("windows")]
@@ -138,8 +125,7 @@ internal sealed partial class WindowsGameScreenCapture : IGameScreenCapture
             memoryDc = CreateCompatibleDC(screenDc);
             if (memoryDc == nint.Zero)
             {
-                throw CreateWin32Exception(
-                    "Could not create an FSS capture surface.");
+                throw CreateWin32Exception("Could not create an FSS capture surface.");
             }
 
             var bitmapInfo = new BitmapInfo
@@ -159,47 +145,33 @@ internal sealed partial class WindowsGameScreenCapture : IGameScreenCapture
                 usage: 0,
                 out var pixels,
                 section: nint.Zero,
-                offset: 0);
+                offset: 0
+            );
             if (bitmap == nint.Zero || pixels == nint.Zero)
             {
-                throw CreateWin32Exception(
-                    "Could not allocate the FSS capture buffer.");
+                throw CreateWin32Exception("Could not allocate the FSS capture buffer.");
             }
 
             previousBitmap = SelectObject(memoryDc, bitmap);
             if (previousBitmap == nint.Zero || previousBitmap == new nint(-1))
             {
-                throw CreateWin32Exception(
-                    "Could not select the FSS capture buffer.");
+                throw CreateWin32Exception("Could not select the FSS capture buffer.");
             }
 
-            if (!BitBlt(
-                    memoryDc,
-                    0,
-                    0,
-                    bounds.Width,
-                    bounds.Height,
-                    screenDc,
-                    bounds.X,
-                    bounds.Y,
-                    SrcCopy | CaptureBlt))
+            if (
+                !BitBlt(memoryDc, 0, 0, bounds.Width, bounds.Height, screenDc, bounds.X, bounds.Y, SrcCopy | CaptureBlt)
+            )
             {
-                throw CreateWin32Exception(
-                    "Could not copy the Elite Dangerous window.");
+                throw CreateWin32Exception("Could not copy the Elite Dangerous window.");
             }
 
             var managedPixels = new byte[byteCount];
             Marshal.Copy(pixels, managedPixels, 0, managedPixels.Length);
-            return new CapturedPixelBuffer(
-                bounds.Width,
-                bounds.Height,
-                managedPixels);
+            return new CapturedPixelBuffer(bounds.Width, bounds.Height, managedPixels);
         }
         finally
         {
-            if (previousBitmap != nint.Zero
-                && previousBitmap != new nint(-1)
-                && memoryDc != nint.Zero)
+            if (previousBitmap != nint.Zero && previousBitmap != new nint(-1) && memoryDc != nint.Zero)
             {
                 _ = SelectObject(memoryDc, previousBitmap);
             }
@@ -218,17 +190,13 @@ internal sealed partial class WindowsGameScreenCapture : IGameScreenCapture
         }
     }
 
-    public void Dispose()
-    {
-    }
+    public void Dispose() { }
 
     private static int ValidateBounds(PixelRect bounds)
     {
         if (bounds.Width <= 0 || bounds.Height <= 0)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(bounds),
-                "The capture bounds must have a positive size.");
+            throw new ArgumentOutOfRangeException(nameof(bounds), "The capture bounds must have a positive size.");
         }
 
         var byteCount = checked((long)bounds.Width * bounds.Height * 4);
@@ -236,7 +204,8 @@ internal sealed partial class WindowsGameScreenCapture : IGameScreenCapture
         {
             throw new ArgumentOutOfRangeException(
                 nameof(bounds),
-                "The capture bounds exceed the 256 MiB safety limit.");
+                "The capture bounds exceed the 256 MiB safety limit."
+            );
         }
 
         return (int)byteCount;
@@ -264,12 +233,11 @@ internal sealed partial class WindowsGameScreenCapture : IGameScreenCapture
         uint usage,
         out nint pixels,
         nint section,
-        uint offset);
+        uint offset
+    );
 
     [LibraryImport("gdi32.dll", SetLastError = true)]
-    private static partial nint SelectObject(
-        nint deviceContext,
-        nint graphicsObject);
+    private static partial nint SelectObject(nint deviceContext, nint graphicsObject);
 
     [LibraryImport("gdi32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -282,7 +250,8 @@ internal sealed partial class WindowsGameScreenCapture : IGameScreenCapture
         nint source,
         int sourceX,
         int sourceY,
-        uint rasterOperation);
+        uint rasterOperation
+    );
 
     [LibraryImport("gdi32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -331,9 +300,7 @@ internal sealed class X11GameScreenCapture : IGameScreenCapture
 
     public bool IsAvailable => display != nint.Zero;
 
-    public string? UnavailableReason => IsAvailable
-        ? null
-        : "The X11 display connection is closed.";
+    public string? UnavailableReason => IsAvailable ? null : "The X11 display connection is closed.";
 
     public static IGameScreenCapture? TryCreate()
     {
@@ -355,10 +322,8 @@ internal sealed class X11GameScreenCapture : IGameScreenCapture
             X11OverlayPlatformService.RegisterErrorHandledDisplay(display);
             return new X11GameScreenCapture(display);
         }
-        catch (Exception exception) when (
-            exception is DllNotFoundException
-                or EntryPointNotFoundException
-                or BadImageFormatException)
+        catch (Exception exception)
+            when (exception is DllNotFoundException or EntryPointNotFoundException or BadImageFormatException)
         {
             if (display != nint.Zero)
             {
@@ -368,8 +333,7 @@ internal sealed class X11GameScreenCapture : IGameScreenCapture
                 }
                 finally
                 {
-                    X11OverlayPlatformService.UnregisterErrorHandledDisplay(
-                        display);
+                    X11OverlayPlatformService.UnregisterErrorHandledDisplay(display);
                 }
             }
 
@@ -379,9 +343,7 @@ internal sealed class X11GameScreenCapture : IGameScreenCapture
 
     public CapturedPixelBuffer Capture(PixelRect bounds)
     {
-        ObjectDisposedException.ThrowIf(
-            display == nint.Zero,
-            this);
+        ObjectDisposedException.ThrowIf(display == nint.Zero, this);
 
         ValidateBounds(bounds);
         var captureBounds = ClipToRootWindow(bounds);
@@ -393,11 +355,11 @@ internal sealed class X11GameScreenCapture : IGameScreenCapture
             (uint)captureBounds.Width,
             (uint)captureBounds.Height,
             nuint.MaxValue,
-            X11Native.ZPixmap);
+            X11Native.ZPixmap
+        );
         if (image == nint.Zero)
         {
-            throw new InvalidOperationException(
-                "X11 could not capture the Elite Dangerous window.");
+            throw new InvalidOperationException("X11 could not capture the Elite Dangerous window.");
         }
 
         try
@@ -423,41 +385,38 @@ internal sealed class X11GameScreenCapture : IGameScreenCapture
             }
             finally
             {
-                X11OverlayPlatformService.UnregisterErrorHandledDisplay(
-                    currentDisplay);
+                X11OverlayPlatformService.UnregisterErrorHandledDisplay(currentDisplay);
             }
         }
     }
 
     internal static CapturedPixelBuffer Decode(X11ImageMetadata image)
     {
-        if (image.Width <= 0
+        if (
+            image.Width <= 0
             || image.Height <= 0
             || image.Data == nint.Zero
             || image.BytesPerLine <= 0
             || image.BitsPerPixel is not (16 or 24 or 32)
             || image.RedMask == 0
             || image.GreenMask == 0
-            || image.BlueMask == 0)
+            || image.BlueMask == 0
+        )
         {
-            throw new InvalidDataException(
-                "The X11 capture returned an unsupported image layout.");
+            throw new InvalidDataException("The X11 capture returned an unsupported image layout.");
         }
 
         var bytesPerPixel = image.BitsPerPixel / 8;
         if (image.BytesPerLine < checked(image.Width * bytesPerPixel))
         {
-            throw new InvalidDataException(
-                "The X11 capture stride is shorter than a pixel row.");
+            throw new InvalidDataException("The X11 capture stride is shorter than a pixel row.");
         }
 
         var sourceLength = checked((long)image.BytesPerLine * image.Height);
         var targetLength = checked((long)image.Width * image.Height * 4);
-        if (sourceLength > MaximumCaptureBytes
-            || targetLength > MaximumCaptureBytes)
+        if (sourceLength > MaximumCaptureBytes || targetLength > MaximumCaptureBytes)
         {
-            throw new InvalidDataException(
-                "The X11 capture exceeds the 256 MiB safety limit.");
+            throw new InvalidDataException("The X11 capture exceeds the 256 MiB safety limit.");
         }
 
         var source = new byte[(int)sourceLength];
@@ -467,17 +426,12 @@ internal sealed class X11GameScreenCapture : IGameScreenCapture
         {
             for (var x = 0; x < image.Width; x++)
             {
-                var sourceOffset = (y * image.BytesPerLine)
-                    + (x * bytesPerPixel);
-                var pixel = ReadPixel(
-                    source.AsSpan(sourceOffset, bytesPerPixel),
-                    image.ByteOrder == LsbFirst);
+                var sourceOffset = (y * image.BytesPerLine) + (x * bytesPerPixel);
+                var pixel = ReadPixel(source.AsSpan(sourceOffset, bytesPerPixel), image.ByteOrder == LsbFirst);
                 var targetOffset = ((y * image.Width) + x) * 4;
                 target[targetOffset] = ExtractChannel(pixel, image.BlueMask);
-                target[targetOffset + 1] =
-                    ExtractChannel(pixel, image.GreenMask);
-                target[targetOffset + 2] =
-                    ExtractChannel(pixel, image.RedMask);
+                target[targetOffset + 1] = ExtractChannel(pixel, image.GreenMask);
+                target[targetOffset + 2] = ExtractChannel(pixel, image.RedMask);
                 target[targetOffset + 3] = 255;
             }
         }
@@ -519,9 +473,7 @@ internal sealed class X11GameScreenCapture : IGameScreenCapture
     {
         if (bounds.Width <= 0 || bounds.Height <= 0)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(bounds),
-                "The capture bounds must have a positive size.");
+            throw new ArgumentOutOfRangeException(nameof(bounds), "The capture bounds must have a positive size.");
         }
 
         var byteCount = checked((long)bounds.Width * bounds.Height * 4);
@@ -529,33 +481,26 @@ internal sealed class X11GameScreenCapture : IGameScreenCapture
         {
             throw new ArgumentOutOfRangeException(
                 nameof(bounds),
-                "The capture bounds exceed the 256 MiB safety limit.");
+                "The capture bounds exceed the 256 MiB safety limit."
+            );
         }
     }
 
     private PixelRect ClipToRootWindow(PixelRect bounds)
     {
-        if (X11Native.XGetWindowAttributes(
-                display,
-                rootWindow,
-                out var rootAttributes) == 0
+        if (
+            X11Native.XGetWindowAttributes(display, rootWindow, out var rootAttributes) == 0
             || rootAttributes.Width <= 0
-            || rootAttributes.Height <= 0)
+            || rootAttributes.Height <= 0
+        )
         {
-            throw new InvalidOperationException(
-                "X11 could not read the desktop capture bounds.");
+            throw new InvalidOperationException("X11 could not read the desktop capture bounds.");
         }
 
-        return ClipToRootWindow(
-            bounds,
-            rootAttributes.Width,
-            rootAttributes.Height);
+        return ClipToRootWindow(bounds, rootAttributes.Width, rootAttributes.Height);
     }
 
-    internal static PixelRect ClipToRootWindow(
-        PixelRect bounds,
-        int rootWidth,
-        int rootHeight)
+    internal static PixelRect ClipToRootWindow(PixelRect bounds, int rootWidth, int rootHeight)
     {
         ValidateBounds(bounds);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(rootWidth);
@@ -563,23 +508,19 @@ internal sealed class X11GameScreenCapture : IGameScreenCapture
 
         var left = Math.Max(0L, bounds.X);
         var top = Math.Max(0L, bounds.Y);
-        var right = Math.Min(
-            rootWidth,
-            checked((long)bounds.X + bounds.Width));
-        var bottom = Math.Min(
-            rootHeight,
-            checked((long)bounds.Y + bounds.Height));
+        var right = Math.Min(rootWidth, checked((long)bounds.X + bounds.Width));
+        var bottom = Math.Min(rootHeight, checked((long)bounds.Y + bounds.Height));
         if (right <= left || bottom <= top)
         {
-            throw new InvalidOperationException(
-                "The Elite Dangerous capture area is outside the X11 desktop.");
+            throw new InvalidOperationException("The Elite Dangerous capture area is outside the X11 desktop.");
         }
 
         return new PixelRect(
             checked((int)left),
             checked((int)top),
             checked((int)(right - left)),
-            checked((int)(bottom - top)));
+            checked((int)(bottom - top))
+        );
     }
 
     [StructLayout(LayoutKind.Sequential)]

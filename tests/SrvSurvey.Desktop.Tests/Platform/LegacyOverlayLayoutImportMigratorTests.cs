@@ -7,18 +7,15 @@ public sealed class LegacyOverlayLayoutImportMigratorTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-overlay-import-migration-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-overlay-import-migration-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void ImportedAbsoluteDesktopAnchorsAreConvertedToRelativeDefaults()
     {
         var paths = CreatePaths();
         Directory.CreateDirectory(paths.DataDirectory);
-        File.WriteAllText(
-            Path.Combine(
-                paths.DataDirectory,
-                LegacyProfileImporter.ManifestFileName),
-            "{}");
+        File.WriteAllText(Path.Combine(paths.DataDirectory, LegacyProfileImporter.ManifestFileName), "{}");
         File.WriteAllText(
             Path.Combine(paths.DataDirectory, "plotters.json"),
             """
@@ -27,7 +24,8 @@ public sealed class LegacyOverlayLayoutImportMigratorTests : IDisposable
               "PlotSysStatus": "right:18, bottom:44",
               "PlotAdjustVR": "screen:-100, os:25"
             }
-            """);
+            """
+        );
 
         var result = LegacyOverlayLayoutImportMigrator.MigrateIfNeeded(paths);
 
@@ -37,53 +35,33 @@ public sealed class LegacyOverlayLayoutImportMigratorTests : IDisposable
         Assert.True(File.Exists(result.BackupPath));
         var layout = new LegacyOverlayLayoutStore(paths.DataDirectory).Load();
         Assert.Equal(
-            new LegacyOverlayPlacement(
-                LegacyHorizontalAnchor.Left,
-                8,
-                LegacyVerticalAnchor.Top,
-                8,
-                0.65),
-            layout.Placements["PlotBodyInfo"]);
+            new LegacyOverlayPlacement(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Top, 8, 0.65),
+            layout.Placements["PlotBodyInfo"]
+        );
         Assert.Equal(
-            new LegacyOverlayPlacement(
-                LegacyHorizontalAnchor.Right,
-                18,
-                LegacyVerticalAnchor.Bottom,
-                44,
-                null),
-            layout.Placements["PlotSysStatus"]);
+            new LegacyOverlayPlacement(LegacyHorizontalAnchor.Right, 18, LegacyVerticalAnchor.Bottom, 44, null),
+            layout.Placements["PlotSysStatus"]
+        );
         Assert.Equal(
-            new LegacyOverlayPlacement(
-                LegacyHorizontalAnchor.Screen,
-                -100,
-                LegacyVerticalAnchor.Screen,
-                25,
-                null),
-            layout.Placements["PlotAdjustVR"]);
-        var saved = File.ReadAllText(
-            Path.Combine(paths.DataDirectory, "plotters.json"));
+            new LegacyOverlayPlacement(LegacyHorizontalAnchor.Screen, -100, LegacyVerticalAnchor.Screen, 25, null),
+            layout.Placements["PlotAdjustVR"]
+        );
+        var saved = File.ReadAllText(Path.Combine(paths.DataDirectory, "plotters.json"));
         Assert.Contains("left:8, top:8, 0.65", saved);
-        Assert.Contains(
-            "{ s: 10, p: <1, 2, 3>, r: <4, 5, 6>}",
-            saved);
+        Assert.Contains("{ s: 10, p: <1, 2, 3>, r: <4, 5, 6>}", saved);
         Assert.Contains("screen:-100, os:25", saved);
 
-        Assert.True(File.Exists(Path.Combine(
-            paths.DataDirectory,
-            LegacyOverlayLayoutImportMigrator.CompletionMarkerFileName)));
+        Assert.True(
+            File.Exists(Path.Combine(paths.DataDirectory, LegacyOverlayLayoutImportMigrator.CompletionMarkerFileName))
+        );
 
-        const string remapped =
-            "{\"PlotBodyInfo\":\"screen:400, os:250\"}";
-        File.WriteAllText(
-            Path.Combine(paths.DataDirectory, "plotters.json"),
-            remapped);
+        const string remapped = "{\"PlotBodyInfo\":\"screen:400, os:250\"}";
+        File.WriteAllText(Path.Combine(paths.DataDirectory, "plotters.json"), remapped);
         var repeated = LegacyOverlayLayoutImportMigrator.MigrateIfNeeded(paths);
 
         Assert.False(repeated.Migrated);
         Assert.Null(repeated.Error);
-        Assert.Equal(
-            remapped,
-            File.ReadAllText(Path.Combine(paths.DataDirectory, "plotters.json")));
+        Assert.Equal(remapped, File.ReadAllText(Path.Combine(paths.DataDirectory, "plotters.json")));
     }
 
     [Fact]
@@ -106,25 +84,18 @@ public sealed class LegacyOverlayLayoutImportMigratorTests : IDisposable
     {
         var paths = CreatePaths();
         Directory.CreateDirectory(paths.DataDirectory);
-        File.WriteAllText(
-            Path.Combine(
-                paths.DataDirectory,
-                LegacyProfileImporter.ManifestFileName),
-            "{}");
+        File.WriteAllText(Path.Combine(paths.DataDirectory, LegacyProfileImporter.ManifestFileName), "{}");
         var plottersPath = Path.Combine(paths.DataDirectory, "plotters.json");
-        File.WriteAllText(
-            plottersPath,
-            "{\"PlotBodyInfo\":\"left:8, top:8\"}");
+        File.WriteAllText(plottersPath, "{\"PlotBodyInfo\":\"left:8, top:8\"}");
 
         var result = LegacyOverlayLayoutImportMigrator.MigrateIfNeeded(paths);
 
         Assert.False(result.Migrated);
-        Assert.True(File.Exists(Path.Combine(
-            paths.DataDirectory,
-            LegacyOverlayLayoutImportMigrator.CompletionMarkerFileName)));
+        Assert.True(
+            File.Exists(Path.Combine(paths.DataDirectory, LegacyOverlayLayoutImportMigrator.CompletionMarkerFileName))
+        );
 
-        const string laterAbsolute =
-            "{\"PlotBodyInfo\":\"screen:900, os:300\"}";
+        const string laterAbsolute = "{\"PlotBodyInfo\":\"screen:900, os:300\"}";
         File.WriteAllText(plottersPath, laterAbsolute);
 
         var repeated = LegacyOverlayLayoutImportMigrator.MigrateIfNeeded(paths);
@@ -141,9 +112,11 @@ public sealed class LegacyOverlayLayoutImportMigratorTests : IDisposable
         }
     }
 
-    private AppDataPaths CreatePaths() => new(
-        Path.Combine(temporaryDirectory, "config"),
-        Path.Combine(temporaryDirectory, "data"),
-        Path.Combine(temporaryDirectory, "cache"),
-        []);
+    private AppDataPaths CreatePaths() =>
+        new(
+            Path.Combine(temporaryDirectory, "config"),
+            Path.Combine(temporaryDirectory, "data"),
+            Path.Combine(temporaryDirectory, "cache"),
+            []
+        );
 }

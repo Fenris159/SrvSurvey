@@ -27,24 +27,16 @@ public sealed class JumpInfoOverlayCoordinator : IDisposable
         IOverlayPlatformService platform,
         IGameWindowTracker gameWindowTracker,
         LegacyOverlayLayout? overlayLayout = null,
-        SystemNicknameViewModel? systemNicknames = null)
+        SystemNicknameViewModel? systemNicknames = null
+    )
     {
-        this.jumpInfo = jumpInfo
-            ?? throw new ArgumentNullException(nameof(jumpInfo));
-        this.platform = platform
-            ?? throw new ArgumentNullException(nameof(platform));
-        this.gameWindowTracker = gameWindowTracker
-            ?? throw new ArgumentNullException(nameof(gameWindowTracker));
+        this.jumpInfo = jumpInfo ?? throw new ArgumentNullException(nameof(jumpInfo));
+        this.platform = platform ?? throw new ArgumentNullException(nameof(platform));
+        this.gameWindowTracker = gameWindowTracker ?? throw new ArgumentNullException(nameof(gameWindowTracker));
         this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
-        viewModel = new JumpInfoOverlayViewModel(
-            jumpInfo,
-            platform.Capabilities,
-            systemNicknames);
+        viewModel = new JumpInfoOverlayViewModel(jumpInfo, platform.Capabilities, systemNicknames);
         jumpInfo.PropertyChanged += OnJumpInfoPropertyChanged;
-        timer = new OverlayDispatcherTimer
-        {
-            Interval = TimeSpan.FromMilliseconds(250),
-        };
+        timer = new OverlayDispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
         timer.Tick += OnTimerTick;
         timer.Start();
         SynchronizeWindow();
@@ -90,9 +82,7 @@ public sealed class JumpInfoOverlayCoordinator : IDisposable
         SynchronizeWindow();
     }
 
-    private void OnJumpInfoPropertyChanged(
-        object? sender,
-        PropertyChangedEventArgs eventArgs)
+    private void OnJumpInfoPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
         if (eventArgs.PropertyName == nameof(JumpInfoViewModel.ShouldShow))
         {
@@ -111,14 +101,16 @@ public sealed class JumpInfoOverlayCoordinator : IDisposable
         try
         {
             gameWindow = gameWindowTracker.GetSnapshot();
-            if (isSuppressed
+            if (
+                isSuppressed
                 || !jumpInfo.ShouldShow
                 || !platform.Capabilities.SupportsPassiveOverlay
                 || !platform.Capabilities.SupportsClickThrough
                 || !platform.Capabilities.SupportsGameWindowTracking
                 || !gameWindow.IsAvailable
                 || !gameWindow.IsVisible
-                || !gameWindow.IsForeground)
+                || !gameWindow.IsForeground
+            )
             {
                 CloseWindow();
                 return;
@@ -143,10 +135,7 @@ public sealed class JumpInfoOverlayCoordinator : IDisposable
             try
             {
                 overlay = new JumpInfoOverlayWindow(viewModel);
-                OverlayThemeResources.Apply(
-                    overlay,
-                    overlayLayout,
-                    PlotterName);
+                OverlayThemeResources.Apply(overlay, overlayLayout, PlotterName);
                 overlay.Opened += (_, _) =>
                 {
                     PositionWindow(overlay, gameWindow.ClientBounds);
@@ -194,20 +183,16 @@ public sealed class JumpInfoOverlayCoordinator : IDisposable
 
     private void PositionWindow(Window window, PixelRect gameBounds)
     {
-        OverlayThemeResources.ApplyOpacity(
-            window,
-            overlayLayout,
-            PlotterName);
-        var screen = window.Screens.ScreenFromBounds(gameBounds)
-            ?? window.Screens.Primary;
+        OverlayThemeResources.ApplyOpacity(window, overlayLayout, PlotterName);
+        var screen = window.Screens.ScreenFromBounds(gameBounds) ?? window.Screens.Primary;
         if (screen is null)
         {
             return;
         }
 
-        var size = OverlayWindowMetrics.PrepareForPlacement(
-            window, overlayLayout, PlotterName, screen.Scaling);
-        var position = overlayLayout.GetPosition(PlotterName, gameBounds, size)
+        var size = OverlayWindowMetrics.PrepareForPlacement(window, overlayLayout, PlotterName, screen.Scaling);
+        var position =
+            overlayLayout.GetPosition(PlotterName, gameBounds, size)
             ?? OverlayWindowPlacement.TopCenter(gameBounds, size);
         if (window.Position != position)
         {

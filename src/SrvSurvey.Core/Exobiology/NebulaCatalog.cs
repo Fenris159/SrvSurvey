@@ -5,8 +5,7 @@ namespace SrvSurvey.Core.Exobiology;
 
 public sealed class NebulaCatalog
 {
-    private const string EmbeddedResourceName =
-        "SrvSurvey.Core.Resources.nebulae.json";
+    private const string EmbeddedResourceName = "SrvSurvey.Core.Resources.nebulae.json";
 
     private readonly GalacticCoordinate[] coordinates;
 
@@ -44,9 +43,9 @@ public sealed class NebulaCatalog
     public static NebulaCatalog LoadEmbedded()
     {
         var assembly = typeof(NebulaCatalog).Assembly;
-        using var stream = assembly.GetManifestResourceStream(EmbeddedResourceName)
-            ?? throw new InvalidOperationException(
-                $"The embedded nebula catalog {EmbeddedResourceName} is missing.");
+        using var stream =
+            assembly.GetManifestResourceStream(EmbeddedResourceName)
+            ?? throw new InvalidOperationException($"The embedded nebula catalog {EmbeddedResourceName} is missing.");
         return Load(stream);
     }
 
@@ -58,44 +57,37 @@ public sealed class NebulaCatalog
             using var document = JsonDocument.Parse(stream);
             if (document.RootElement.ValueKind != JsonValueKind.Array)
             {
-                throw new InvalidDataException(
-                    "The nebula catalog is not a JSON array.");
+                throw new InvalidDataException("The nebula catalog is not a JSON array.");
             }
 
-            var coordinates = document.RootElement.EnumerateArray()
-                .Select(ParseCoordinate)
-                .ToArray();
+            var coordinates = document.RootElement.EnumerateArray().Select(ParseCoordinate).ToArray();
             return new NebulaCatalog(coordinates);
         }
         catch (JsonException ex)
         {
-            throw new InvalidDataException(
-                "The nebula catalog is not valid JSON.",
-                ex);
+            throw new InvalidDataException("The nebula catalog is not valid JSON.", ex);
         }
     }
 
     private static GalacticCoordinate ParseCoordinate(JsonElement element)
     {
-        if (element.ValueKind != JsonValueKind.Array
-            || element.GetArrayLength() != 3)
+        if (element.ValueKind != JsonValueKind.Array || element.GetArrayLength() != 3)
         {
-            throw new InvalidDataException(
-                "The nebula catalog contains an invalid coordinate.");
+            throw new InvalidDataException("The nebula catalog contains an invalid coordinate.");
         }
 
         var values = element.EnumerateArray().ToArray();
-        if (values.Any(value => value.ValueKind != JsonValueKind.Number
+        if (
+            values.Any(value =>
+                value.ValueKind != JsonValueKind.Number
                 || !value.TryGetDouble(out var number)
-                || !double.IsFinite(number)))
+                || !double.IsFinite(number)
+            )
+        )
         {
-            throw new InvalidDataException(
-                "The nebula catalog contains a non-numeric coordinate.");
+            throw new InvalidDataException("The nebula catalog contains a non-numeric coordinate.");
         }
 
-        return new GalacticCoordinate(
-            values[0].GetDouble(),
-            values[1].GetDouble(),
-            values[2].GetDouble());
+        return new GalacticCoordinate(values[0].GetDouble(), values[1].GetDouble(), values[2].GetDouble());
     }
 }

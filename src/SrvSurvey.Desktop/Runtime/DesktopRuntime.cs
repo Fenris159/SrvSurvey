@@ -6,9 +6,7 @@ using SrvSurvey.Core.Storage;
 
 namespace SrvSurvey.Desktop.Runtime;
 
-internal sealed record DesktopStartup(
-    string[] Arguments,
-    ApplicationLogService? ApplicationLog)
+internal sealed record DesktopStartup(string[] Arguments, ApplicationLogService? ApplicationLog)
 {
     internal AppDataPaths? AppDataPathsOverride { get; init; }
 
@@ -69,32 +67,26 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
     private Window? attachedMainWindow;
     private Task? shutdownTask;
 
-    private DesktopRuntime(
-        IDesktopRuntimeLifetime lifetime,
-        IDesktopRuntimePhases phases)
+    private DesktopRuntime(IDesktopRuntimeLifetime lifetime, IDesktopRuntimePhases phases)
     {
-        this.lifetime = lifetime
-            ?? throw new ArgumentNullException(nameof(lifetime));
-        this.phases = phases
-            ?? throw new ArgumentNullException(nameof(phases));
+        this.lifetime = lifetime ?? throw new ArgumentNullException(nameof(lifetime));
+        this.phases = phases ?? throw new ArgumentNullException(nameof(phases));
     }
 
     private DesktopRuntime(IDesktopRuntimeLifetime lifetime)
     {
-        this.lifetime = lifetime
-            ?? throw new ArgumentNullException(nameof(lifetime));
+        this.lifetime = lifetime ?? throw new ArgumentNullException(nameof(lifetime));
         phases = new ProductionDesktopRuntimePhases(this);
     }
 
     private DesktopRuntime(IClassicDesktopStyleApplicationLifetime lifetime)
-        : this(new AvaloniaDesktopRuntimeLifetime(lifetime))
-    {
-    }
+        : this(new AvaloniaDesktopRuntimeLifetime(lifetime)) { }
 
     internal static DesktopRuntime Start(
         Application application,
         IClassicDesktopStyleApplicationLifetime lifetime,
-        DesktopStartup startup)
+        DesktopStartup startup
+    )
     {
         ArgumentNullException.ThrowIfNull(application);
         ArgumentNullException.ThrowIfNull(lifetime);
@@ -114,9 +106,7 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
         return runtime;
     }
 
-    internal static DesktopRuntime CreateForTests(
-        IDesktopRuntimeLifetime lifetime,
-        IDesktopRuntimePhases phases)
+    internal static DesktopRuntime CreateForTests(IDesktopRuntimeLifetime lifetime, IDesktopRuntimePhases phases)
     {
         return new DesktopRuntime(lifetime, phases);
     }
@@ -124,7 +114,8 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
     internal static DesktopRuntime StartForTests(
         IDesktopRuntimeLifetime lifetime,
         IDesktopRuntimePhases phases,
-        Action initialize)
+        Action initialize
+    )
     {
         ArgumentNullException.ThrowIfNull(initialize);
         var runtime = new DesktopRuntime(lifetime, phases);
@@ -145,7 +136,8 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
         IClassicDesktopStyleApplicationLifetime desktop,
         DesktopStartup startup,
         IDesktopRuntimeLifetime lifetime,
-        DesktopStartupCheckpoint failureCheckpoint)
+        DesktopStartupCheckpoint failureCheckpoint
+    )
     {
         ArgumentNullException.ThrowIfNull(application);
         ArgumentNullException.ThrowIfNull(desktop);
@@ -163,11 +155,11 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
                     {
                         if (checkpoint == failureCheckpoint)
                         {
-                            throw new InvalidOperationException(
-                                $"Startup failed at {checkpoint}.");
+                            throw new InvalidOperationException($"Startup failed at {checkpoint}.");
                         }
                     },
-                });
+                }
+            );
         }
         catch (Exception exception)
         {
@@ -177,9 +169,7 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
         return runtime;
     }
 
-    internal Task RequestShutdownAsync(
-        DesktopShutdownReason reason,
-        int exitCode = 0)
+    internal Task RequestShutdownAsync(DesktopShutdownReason reason, int exitCode = 0)
     {
         TaskCompletionSource completion;
         lock (sync)
@@ -189,8 +179,7 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
                 return shutdownTask;
             }
 
-            completion = new TaskCompletionSource(
-                TaskCreationOptions.RunContinuationsAsynchronously);
+            completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             shutdownTask = completion.Task;
         }
 
@@ -203,8 +192,7 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
         ArgumentNullException.ThrowIfNull(window);
         if (attachedMainWindow is not null)
         {
-            throw new InvalidOperationException(
-                "The desktop runtime already has a main window.");
+            throw new InvalidOperationException("The desktop runtime already has a main window.");
         }
 
         attachedMainWindow = window;
@@ -215,8 +203,7 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
     {
         if (closeReason == WindowCloseReason.OSShutdown)
         {
-            _ = RequestShutdownAsync(
-                DesktopShutdownReason.OperatingSystemShutdown);
+            _ = RequestShutdownAsync(DesktopShutdownReason.OperatingSystemShutdown);
             return false;
         }
 
@@ -228,9 +215,7 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
     {
         ArgumentNullException.ThrowIfNull(startReplacement);
         startReplacement();
-        await RequestShutdownOnUiThreadAsync(
-            DesktopShutdownReason.Restart,
-            CancellationToken.None);
+        await RequestShutdownOnUiThreadAsync(DesktopShutdownReason.Restart, CancellationToken.None);
     }
 
     public async ValueTask DisposeAsync()
@@ -238,9 +223,7 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
         await RequestShutdownAsync(DesktopShutdownReason.RuntimeDisposed);
     }
 
-    private async Task StopAsync(
-        DesktopShutdownReason reason,
-        int exitCode)
+    private async Task StopAsync(DesktopShutdownReason reason, int exitCode)
     {
         TryRun(() => QuiesceMainWindow(reason));
         TryRun(() => phases.Quiesce(reason));
@@ -251,10 +234,7 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
         TryRun(() => lifetime.Shutdown(exitCode));
     }
 
-    private async Task CompleteStopAsync(
-        TaskCompletionSource completion,
-        DesktopShutdownReason reason,
-        int exitCode)
+    private async Task CompleteStopAsync(TaskCompletionSource completion, DesktopShutdownReason reason, int exitCode)
     {
         try
         {
@@ -267,9 +247,7 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
         }
     }
 
-    private void HandleMainWindowClosing(
-        object? sender,
-        WindowClosingEventArgs eventArgs)
+    private void HandleMainWindowClosing(object? sender, WindowClosingEventArgs eventArgs)
     {
         eventArgs.Cancel = RequestMainWindowClose(eventArgs.CloseReason);
     }
@@ -290,8 +268,7 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
         }
 
         window.IsEnabled = false;
-        if (reason is DesktopShutdownReason.Restart
-            or DesktopShutdownReason.UpdateHandoff)
+        if (reason is DesktopShutdownReason.Restart or DesktopShutdownReason.UpdateHandoff)
         {
             window.Hide();
         }
@@ -300,9 +277,7 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
     private void BeginStartupFailure(Exception exception)
     {
         TryReportStartupFailure(exception);
-        _ = RequestShutdownAsync(
-            DesktopShutdownReason.StartupFailure,
-            exitCode: 1);
+        _ = RequestShutdownAsync(DesktopShutdownReason.StartupFailure, exitCode: 1);
     }
 
     private void TryRun(Action action)
@@ -353,8 +328,7 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
         }
     }
 
-    private sealed class AvaloniaDesktopRuntimeLifetime(
-        IClassicDesktopStyleApplicationLifetime lifetime)
+    private sealed class AvaloniaDesktopRuntimeLifetime(IClassicDesktopStyleApplicationLifetime lifetime)
         : IDesktopRuntimeLifetime
     {
         public void Shutdown(int exitCode = 0)
@@ -363,8 +337,7 @@ internal sealed partial class DesktopRuntime : IAsyncDisposable
         }
     }
 
-    private sealed class ProductionDesktopRuntimePhases(DesktopRuntime runtime)
-        : IDesktopRuntimePhases
+    private sealed class ProductionDesktopRuntimePhases(DesktopRuntime runtime) : IDesktopRuntimePhases
     {
         public void Quiesce(DesktopShutdownReason reason)
         {

@@ -12,17 +12,13 @@ public sealed partial class RouteBioOverlayPresentation : UserControl
         TargetList.CompletionRequested += OnCompletionRequested;
     }
 
-    private async void OnCompletionRequested(
-        object? sender,
-        RouteBioCompletionRequestedEventArgs eventArgs)
+    private async void OnCompletionRequested(object? sender, RouteBioCompletionRequestedEventArgs eventArgs)
     {
         if (DataContext is not RouteBioOverlayViewModel viewModel)
         {
             return;
         }
 
-        await viewModel.SetCompletedAsync(
-            eventArgs.Target,
-            eventArgs.IsCompleted);
+        await viewModel.SetCompletedAsync(eventArgs.Target, eventArgs.IsCompleted);
     }
 }

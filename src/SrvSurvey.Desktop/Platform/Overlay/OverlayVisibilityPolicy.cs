@@ -26,13 +26,15 @@ internal readonly record struct OverlayVisibilityFacts(
     bool SuitSuppressed,
     bool SessionSuppressed,
     bool PriorityObscured,
-    bool VehicleAllowed = true);
+    bool VehicleAllowed = true
+);
 
 internal readonly record struct OverlayVisibilityDecision(
     bool Permitted,
     bool ShouldHost,
     bool ShouldPresent,
-    OverlayVisibilityReasons Reasons);
+    OverlayVisibilityReasons Reasons
+);
 
 internal static class OverlayVisibilityPolicy
 {
@@ -53,8 +55,7 @@ internal static class OverlayVisibilityPolicy
         | OverlayVisibilityReasons.EditorSuppressed
         | OverlayVisibilityReasons.VehicleExcluded;
 
-    internal static OverlayVisibilityDecision Evaluate(
-        OverlayVisibilityFacts facts)
+    internal static OverlayVisibilityDecision Evaluate(OverlayVisibilityFacts facts)
     {
         var reasons = OverlayVisibilityReasons.None;
         if (!facts.Requested)
@@ -112,6 +113,7 @@ internal static class OverlayVisibilityPolicy
             (reasons & PolicyReasons) == 0,
             shouldHost,
             shouldHost && reasons == OverlayVisibilityReasons.None,
-            reasons);
+            reasons
+        );
     }
 }

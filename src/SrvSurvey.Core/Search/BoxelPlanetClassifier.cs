@@ -2,9 +2,7 @@ namespace SrvSurvey.Core.Search;
 
 public static class BoxelPlanetClassifier
 {
-    public static bool TryFromPlanetClass(
-        string? planetClass,
-        out BoxelPlanetClass classified)
+    public static bool TryFromPlanetClass(string? planetClass, out BoxelPlanetClass classified)
     {
         classified = UnknownOrExact(planetClass);
         if (classified != BoxelPlanetClass.Unknown)
@@ -12,8 +10,7 @@ public static class BoxelPlanetClassifier
             return true;
         }
 
-        if (!string.IsNullOrWhiteSpace(planetClass)
-            && planetClass.StartsWith("Earth", StringComparison.Ordinal))
+        if (!string.IsNullOrWhiteSpace(planetClass) && planetClass.StartsWith("Earth", StringComparison.Ordinal))
         {
             classified = BoxelPlanetClass.Earthlike;
             return true;
@@ -23,19 +20,20 @@ public static class BoxelPlanetClassifier
         return false;
     }
 
-    public static bool IsTerraformable(string? terraformState)
-        => string.Equals(terraformState, "Terraformable", StringComparison.Ordinal);
+    public static bool IsTerraformable(string? terraformState) =>
+        string.Equals(terraformState, "Terraformable", StringComparison.Ordinal);
 
-    public static bool HasAtmosphere(string? atmosphereType)
-        => !string.IsNullOrWhiteSpace(atmosphereType)
-           && !string.Equals(atmosphereType, "None", StringComparison.OrdinalIgnoreCase);
+    public static bool HasAtmosphere(string? atmosphereType) =>
+        !string.IsNullOrWhiteSpace(atmosphereType)
+        && !string.Equals(atmosphereType, "None", StringComparison.OrdinalIgnoreCase);
 
-    public static bool IsAtmosphericLandable(bool isLandable, string? atmosphereType)
-        => isLandable && HasAtmosphere(atmosphereType);
+    public static bool IsAtmosphericLandable(bool isLandable, string? atmosphereType) =>
+        isLandable && HasAtmosphere(atmosphereType);
 
     public static bool TryGetHeliumPercent(
         IReadOnlyDictionary<string, double>? atmosphereComposition,
-        out double percent)
+        out double percent
+    )
     {
         percent = 0;
         if (atmosphereComposition is null)
@@ -43,8 +41,10 @@ public static class BoxelPlanetClassifier
             return false;
         }
 
-        if (!atmosphereComposition.TryGetValue("Helium", out percent)
-            && !TryGetHeliumIgnoreCase(atmosphereComposition, out percent))
+        if (
+            !atmosphereComposition.TryGetValue("Helium", out percent)
+            && !TryGetHeliumIgnoreCase(atmosphereComposition, out percent)
+        )
         {
             percent = 0;
             return false;
@@ -59,21 +59,23 @@ public static class BoxelPlanetClassifier
         return false;
     }
 
-    public static bool ShowsTerraformableColumn(BoxelPlanetClass classified)
-        => classified is BoxelPlanetClass.MetalRich
-            or BoxelPlanetClass.HighMetalContent
-            or BoxelPlanetClass.Rocky
-            or BoxelPlanetClass.WaterWorld;
+    public static bool ShowsTerraformableColumn(BoxelPlanetClass classified) =>
+        classified
+            is BoxelPlanetClass.MetalRich
+                or BoxelPlanetClass.HighMetalContent
+                or BoxelPlanetClass.Rocky
+                or BoxelPlanetClass.WaterWorld;
 
-    public static bool ShowsLandableColumns(BoxelPlanetClass classified)
-        => classified is BoxelPlanetClass.MetalRich
-            or BoxelPlanetClass.HighMetalContent
-            or BoxelPlanetClass.Rocky
-            or BoxelPlanetClass.Icy
-            or BoxelPlanetClass.RockyIce;
+    public static bool ShowsLandableColumns(BoxelPlanetClass classified) =>
+        classified
+            is BoxelPlanetClass.MetalRich
+                or BoxelPlanetClass.HighMetalContent
+                or BoxelPlanetClass.Rocky
+                or BoxelPlanetClass.Icy
+                or BoxelPlanetClass.RockyIce;
 
-    public static string ToPlanetClassString(BoxelPlanetClass classified)
-        => classified switch
+    public static string ToPlanetClassString(BoxelPlanetClass classified) =>
+        classified switch
         {
             BoxelPlanetClass.MetalRich => "Metal rich body",
             BoxelPlanetClass.HighMetalContent => "High metal content body",
@@ -97,8 +99,8 @@ public static class BoxelPlanetClassifier
             _ => string.Empty,
         };
 
-    private static BoxelPlanetClass UnknownOrExact(string? planetClass)
-        => planetClass switch
+    private static BoxelPlanetClass UnknownOrExact(string? planetClass) =>
+        planetClass switch
         {
             "Metal rich body" => BoxelPlanetClass.MetalRich,
             "High metal content body" => BoxelPlanetClass.HighMetalContent,
@@ -124,10 +126,12 @@ public static class BoxelPlanetClassifier
 
     private static bool TryGetHeliumIgnoreCase(
         IReadOnlyDictionary<string, double> atmosphereComposition,
-        out double percent)
+        out double percent
+    )
     {
         var pair = atmosphereComposition.FirstOrDefault(pair =>
-            string.Equals(pair.Key, "Helium", StringComparison.OrdinalIgnoreCase));
+            string.Equals(pair.Key, "Helium", StringComparison.OrdinalIgnoreCase)
+        );
         if (pair.Key is not null)
         {
             percent = pair.Value;

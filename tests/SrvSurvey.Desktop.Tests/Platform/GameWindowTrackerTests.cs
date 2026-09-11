@@ -14,7 +14,8 @@ public sealed class GameWindowTrackerTests
             7,
             new PixelRect(100, 200, 1920, 1080),
             IsVisible: true,
-            IsForeground: true);
+            IsForeground: true
+        );
         var missingHandle = available with { NativeHandle = nint.Zero };
         var missingProcess = available with { ProcessId = null };
         var emptyBounds = available with { ClientBounds = default };
@@ -52,10 +53,7 @@ public sealed class GameWindowTrackerTests
     {
         var timestamp = 0L;
         var inner = new CountingGameWindowTracker();
-        using var tracker = new CachedGameWindowTracker(
-            inner,
-            TimeSpan.FromMilliseconds(40),
-            () => timestamp);
+        using var tracker = new CachedGameWindowTracker(inner, TimeSpan.FromMilliseconds(40), () => timestamp);
 
         var first = tracker.GetSnapshot();
         timestamp += Stopwatch.Frequency / 100;
@@ -71,10 +69,7 @@ public sealed class GameWindowTrackerTests
     [Fact]
     public void OverlayTimerPulsesOnlyWhenItsIntervalIsDue()
     {
-        var timer = new OverlayDispatcherTimer
-        {
-            Interval = TimeSpan.FromMilliseconds(250),
-        };
+        var timer = new OverlayDispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
         var ticks = 0;
         timer.Tick += (_, _) => ticks++;
         timer.Arm(TimeSpan.Zero);
@@ -98,11 +93,10 @@ public sealed class GameWindowTrackerTests
                 GetSnapshotCount,
                 new PixelRect(0, 0, 1920, 1080),
                 IsVisible: true,
-                IsForeground: true);
+                IsForeground: true
+            );
         }
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
     }
 }

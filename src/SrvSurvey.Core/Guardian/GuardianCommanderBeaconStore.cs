@@ -8,25 +8,31 @@ namespace SrvSurvey.Core.Guardian;
 public sealed class GuardianCommanderBeaconStore(string dataDirectory) : IDisposable
 {
     private static readonly char[] CrossPlatformInvalidFileNameCharacters =
-        ['<', '>', ':', '"', '/', '\\', '|', '?', '*', '\0'];
-    private static readonly SearchValues<char> PathSeparators =
-        SearchValues.Create(
-            Path.DirectorySeparatorChar,
-            Path.AltDirectorySeparatorChar);
-    private static readonly SearchValues<char> InvalidFileNameCharacters =
-        SearchValues.Create(CrossPlatformInvalidFileNameCharacters);
-    private static readonly JsonSerializerOptions SerializerOptions = new()
-    {
-        WriteIndented = true,
-    };
+    [
+        '<',
+        '>',
+        ':',
+        '"',
+        '/',
+        '\\',
+        '|',
+        '?',
+        '*',
+        '\0',
+    ];
+    private static readonly SearchValues<char> PathSeparators = SearchValues.Create(
+        Path.DirectorySeparatorChar,
+        Path.AltDirectorySeparatorChar
+    );
+    private static readonly SearchValues<char> InvalidFileNameCharacters = SearchValues.Create(
+        CrossPlatformInvalidFileNameCharacters
+    );
+    private static readonly JsonSerializerOptions SerializerOptions = new() { WriteIndented = true };
     private readonly SemaphoreSlim saveLock = new(1, 1);
     private readonly string dataDirectory = Path.GetFullPath(dataDirectory);
     private bool disposed;
 
-    public string GetBeaconPath(
-        string frontierId,
-        bool isOdyssey,
-        string systemName)
+    public string GetBeaconPath(string frontierId, bool isOdyssey, string systemName)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         ValidateFileName(frontierId, "Frontier ID");
@@ -44,7 +50,8 @@ public sealed class GuardianCommanderBeaconStore(string dataDirectory) : IDispos
         string frontierId,
         bool isOdyssey,
         GuardianCommanderBeaconVisit beacon,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         ArgumentNullException.ThrowIfNull(beacon);
@@ -57,8 +64,7 @@ public sealed class GuardianCommanderBeaconStore(string dataDirectory) : IDispos
             {
                 try
                 {
-                    root = await ReadExistingAsync(path, cancellationToken)
-                        .ConfigureAwait(false);
+                    root = await ReadExistingAsync(path, cancellationToken).ConfigureAwait(false);
                 }
                 catch (InvalidDataException)
                 {
@@ -80,8 +86,7 @@ public sealed class GuardianCommanderBeaconStore(string dataDirectory) : IDispos
             root["notes"] = beacon.Notes;
             root["legacy"] = !isOdyssey;
             root["scannedLocations"] = WriteLocations(beacon.ScannedLocations);
-            await WriteAtomicAsync(path, root, cancellationToken)
-                .ConfigureAwait(false);
+            await WriteAtomicAsync(path, root, cancellationToken).ConfigureAwait(false);
             return path;
         }
         finally
@@ -101,26 +106,22 @@ public sealed class GuardianCommanderBeaconStore(string dataDirectory) : IDispos
         saveLock.Dispose();
     }
 
-    private static JsonObject WriteLocations(
-        IReadOnlyDictionary<DateTimeOffset, GuardianSurfaceLocation> locations)
+    private static JsonObject WriteLocations(IReadOnlyDictionary<DateTimeOffset, GuardianSurfaceLocation> locations)
     {
         var root = new JsonObject();
         foreach (var pair in locations.OrderBy(pair => pair.Key))
         {
-            root[pair.Key.ToString("O", CultureInfo.InvariantCulture)] =
-                new JsonObject
-                {
-                    ["lat"] = pair.Value.Latitude,
-                    ["long"] = pair.Value.Longitude,
-                };
+            root[pair.Key.ToString("O", CultureInfo.InvariantCulture)] = new JsonObject
+            {
+                ["lat"] = pair.Value.Latitude,
+                ["long"] = pair.Value.Longitude,
+            };
         }
 
         return root;
     }
 
-    private static async Task<JsonObject> ReadExistingAsync(
-        string path,
-        CancellationToken cancellationToken)
+    private static async Task<JsonObject> ReadExistingAsync(string path, CancellationToken cancellationToken)
     {
         try
         {
@@ -130,51 +131,45 @@ public sealed class GuardianCommanderBeaconStore(string dataDirectory) : IDispos
                 FileAccess.Read,
                 FileShare.ReadWrite | FileShare.Delete,
                 16 * 1024,
-                FileOptions.Asynchronous | FileOptions.SequentialScan);
-            var node = await JsonNode.ParseAsync(
-                    stream,
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
+                FileOptions.Asynchronous | FileOptions.SequentialScan
+            );
+            var node = await JsonNode.ParseAsync(stream, cancellationToken: cancellationToken).ConfigureAwait(false);
             return node as JsonObject
                 ?? throw new InvalidDataException(
-                    $"The Guardian beacon is not a JSON object and was not overwritten: {path}");
+                    $"The Guardian beacon is not a JSON object and was not overwritten: {path}"
+                );
         }
-        catch (Exception exception) when (
-            exception is JsonException
-                or IOException
-                or UnauthorizedAccessException)
+        catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
         {
             throw new InvalidDataException(
                 $"The Guardian beacon is malformed and was not overwritten: {path}",
-                exception);
+                exception
+            );
         }
     }
 
-    private static async Task WriteAtomicAsync(
-        string path,
-        JsonObject root,
-        CancellationToken cancellationToken)
+    private static async Task WriteAtomicAsync(string path, JsonObject root, CancellationToken cancellationToken)
     {
-        var folder = Path.GetDirectoryName(path)
-            ?? throw new InvalidOperationException(
-                "The Guardian beacon path has no parent folder.");
+        var folder =
+            Path.GetDirectoryName(path)
+            ?? throw new InvalidOperationException("The Guardian beacon path has no parent folder.");
         Directory.CreateDirectory(folder);
         var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
         try
         {
-            await using (var stream = new FileStream(
-                             temporaryPath,
-                             FileMode.CreateNew,
-                             FileAccess.Write,
-                             FileShare.None,
-                             16 * 1024,
-                             FileOptions.Asynchronous))
+            await using (
+                var stream = new FileStream(
+                    temporaryPath,
+                    FileMode.CreateNew,
+                    FileAccess.Write,
+                    FileShare.None,
+                    16 * 1024,
+                    FileOptions.Asynchronous
+                )
+            )
             {
-                await JsonSerializer.SerializeAsync(
-                        stream,
-                        root,
-                        SerializerOptions,
-                        cancellationToken)
+                await JsonSerializer
+                    .SerializeAsync(stream, root, SerializerOptions, cancellationToken)
                     .ConfigureAwait(false);
                 await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
             }
@@ -190,15 +185,15 @@ public sealed class GuardianCommanderBeaconStore(string dataDirectory) : IDispos
         }
     }
 
-    private static void TryArchiveCorruptFile(
-        string path)
+    private static void TryArchiveCorruptFile(string path)
     {
-        var folder = Path.GetDirectoryName(path)
-            ?? throw new InvalidOperationException(
-                "The Guardian beacon path has no parent folder.");
+        var folder =
+            Path.GetDirectoryName(path)
+            ?? throw new InvalidOperationException("The Guardian beacon path has no parent folder.");
         var corruptPath = Path.Combine(
             folder,
-            $"{Path.GetFileName(path)}.{DateTimeOffset.UtcNow:yyyyMMddHHmmssfff}.corrupt.json");
+            $"{Path.GetFileName(path)}.{DateTimeOffset.UtcNow:yyyyMMddHHmmssfff}.corrupt.json"
+        );
         try
         {
             if (File.Exists(path))
@@ -216,14 +211,14 @@ public sealed class GuardianCommanderBeaconStore(string dataDirectory) : IDispos
     private static void ValidateFileName(string value, string label)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
-        if (value is "." or ".."
+        if (
+            value is "." or ".."
             || !string.Equals(Path.GetFileName(value), value, StringComparison.Ordinal)
             || value.AsSpan().ContainsAny(PathSeparators)
-            || value.AsSpan().ContainsAny(InvalidFileNameCharacters))
+            || value.AsSpan().ContainsAny(InvalidFileNameCharacters)
+        )
         {
-            throw new ArgumentException(
-                $"The {label} must be a valid folder or file name.",
-                nameof(value));
+            throw new ArgumentException($"The {label} must be a valid folder or file name.", nameof(value));
         }
     }
 }

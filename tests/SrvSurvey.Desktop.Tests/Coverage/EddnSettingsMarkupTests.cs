@@ -8,19 +8,17 @@ public sealed class EddnSettingsMarkupTests
     public void ConfigureButtonIsImmediatelyBeforeInaraAndSchemaModeIsNotAChoice()
     {
         var document = LoadMarkup("Views", "SettingsView.axaml");
-        var values = document.Descendants()
+        var values = document
+            .Descendants()
             .SelectMany(element => element.Attributes())
             .Select(attribute => attribute.Value)
             .ToArray();
 
         Assert.Contains("Configure EDDN Sharing", values);
-        Assert.DoesNotContain(
-            values,
-            value => value.Contains(
-                "EddnUseTestSchemas",
-                StringComparison.Ordinal));
+        Assert.DoesNotContain(values, value => value.Contains("EddnUseTestSchemas", StringComparison.Ordinal));
 
-        var cardTitles = document.Descendants()
+        var cardTitles = document
+            .Descendants()
             .Where(element => element.Name.LocalName == "TextBlock")
             .Select(element => element.Attribute("Text")?.Value)
             .OfType<string>()
@@ -50,11 +48,9 @@ public sealed class EddnSettingsMarkupTests
 
     private static XDocument LoadMarkup(params string[] relativePath)
     {
-        return XDocument.Load(Path.Combine(
-            FindRepositoryRoot(),
-            "src",
-            "SrvSurvey.Desktop",
-            Path.Combine(relativePath)));
+        return XDocument.Load(
+            Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", Path.Combine(relativePath))
+        );
     }
 
     private static string FindRepositoryRoot()
@@ -70,7 +66,6 @@ public sealed class EddnSettingsMarkupTests
             current = current.Parent;
         }
 
-        throw new DirectoryNotFoundException(
-            "Could not locate the repository root.");
+        throw new DirectoryNotFoundException("Could not locate the repository root.");
     }
 }

@@ -60,30 +60,26 @@ public sealed record EliteStatus
     public bool OnFoot => Flags2.HasFlag(StatusFlags2.OnFoot);
 
     [JsonIgnore]
-    public bool IsGeneticSamplerDrawn => string.Equals(
-        SelectedWeapon,
-        "$humanoid_sampletool_name;",
-        StringComparison.Ordinal);
+    public bool IsGeneticSamplerDrawn =>
+        string.Equals(SelectedWeapon, "$humanoid_sampletool_name;", StringComparison.Ordinal);
 
     [JsonIgnore]
     public bool OnFootOnPlanet => Flags2.HasFlag(StatusFlags2.OnFootOnPlanet);
 
     [JsonIgnore]
-    public bool OnFootInside => OnFoot
-        && Flags2.HasFlag(StatusFlags2.BreathableAtmosphere);
+    public bool OnFootInside => OnFoot && Flags2.HasFlag(StatusFlags2.BreathableAtmosphere);
 
     [JsonIgnore]
     public bool OnFootExterior => Flags2.HasFlag(StatusFlags2.OnFootExterior);
 
     [JsonIgnore]
-    public bool OnFootSocial => OnFoot
-        && Flags2.HasFlag(StatusFlags2.OnFootSocialSpace);
+    public bool OnFootSocial => OnFoot && Flags2.HasFlag(StatusFlags2.OnFootSocialSpace);
 
     [JsonIgnore]
-    public bool OnFootInStation => OnFoot
-        && (Flags2 & (StatusFlags2.OnFootInHangar
-            | StatusFlags2.OnFootInStation
-            | StatusFlags2.OnFootSocialSpace)) != 0;
+    public bool OnFootInStation =>
+        OnFoot
+        && (Flags2 & (StatusFlags2.OnFootInHangar | StatusFlags2.OnFootInStation | StatusFlags2.OnFootSocialSpace))
+            != 0;
 
     [JsonIgnore]
     public bool InSrv => Flags.HasFlag(StatusFlags.InSrv);
@@ -160,7 +156,8 @@ public sealed record StatusDestination
 [System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Naming",
     "S2344:Enumeration type names should not have Flags suffixes",
-    Justification = "The name mirrors Elite's Status.json Flags field and is part of the public model.")]
+    Justification = "The name mirrors Elite's Status.json Flags field and is part of the public model."
+)]
 public enum StatusFlags : uint
 {
     None = 0,
@@ -202,7 +199,8 @@ public enum StatusFlags : uint
 [System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Naming",
     "S2342:Enumeration types should comply with a naming convention",
-    Justification = "The name mirrors Elite's Status.json Flags2 field and is part of the public model.")]
+    Justification = "The name mirrors Elite's Status.json Flags2 field and is part of the public model."
+)]
 public enum StatusFlags2 : uint
 {
     None = 0,

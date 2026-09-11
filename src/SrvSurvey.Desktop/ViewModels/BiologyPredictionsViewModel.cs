@@ -36,13 +36,10 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
     private string launchStatus = string.Empty;
     private bool disposed;
 
-    public BiologyPredictionsViewModel(
-        SystemSurveyViewModel survey,
-        BiologyPredictionsSettingsStore settingsStore)
+    public BiologyPredictionsViewModel(SystemSurveyViewModel survey, BiologyPredictionsSettingsStore settingsStore)
     {
         this.survey = survey ?? throw new ArgumentNullException(nameof(survey));
-        this.settingsStore = settingsStore
-            ?? throw new ArgumentNullException(nameof(settingsStore));
+        this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         var preferences = settingsStore.Load();
         currentBodyOnly = preferences.CurrentBodyOnly;
         rowSize = preferences.RowSize;
@@ -52,24 +49,12 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
             new BiologyPredictionRowSizeOption(2, "Comfortable"),
             new BiologyPredictionRowSizeOption(3, "Large"),
         ];
-        openWindowCommand = new AsyncCommand(
-            OpenWindowAsync,
-            () => windowOpener is not null && HasSystem);
-        openCanonnCommand = new AsyncCommand(
-            OpenCanonnAsync,
-            CanOpenExternalLink);
-        openSpanshCommand = new AsyncCommand(
-            OpenSpanshAsync,
-            CanOpenExternalLink);
-        openEdsmCommand = new AsyncCommand(
-            OpenEdsmAsync,
-            CanOpenExternalLink);
-        expandAllCommand = new DelegateCommand(
-            ExpandAll,
-            () => Bodies.Count > 0);
-        collapseAllCommand = new DelegateCommand(
-            CollapseAll,
-            () => Bodies.Count > 0);
+        openWindowCommand = new AsyncCommand(OpenWindowAsync, () => windowOpener is not null && HasSystem);
+        openCanonnCommand = new AsyncCommand(OpenCanonnAsync, CanOpenExternalLink);
+        openSpanshCommand = new AsyncCommand(OpenSpanshAsync, CanOpenExternalLink);
+        openEdsmCommand = new AsyncCommand(OpenEdsmAsync, CanOpenExternalLink);
+        expandAllCommand = new DelegateCommand(ExpandAll, () => Bodies.Count > 0);
+        collapseAllCommand = new DelegateCommand(CollapseAll, () => Bodies.Count > 0);
         survey.PropertyChanged += OnSurveyPropertyChanged;
         Refresh();
     }
@@ -238,28 +223,25 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
     public Task<bool> OpenCanonnAsync()
     {
         return LaunchUriAsync(
-            new Uri(
-                WellKnownUris.CanonnSignalsSystemPrefix
-                    + Uri.EscapeDataString(SystemName)),
-            "Canonn Signals");
+            new Uri(WellKnownUris.CanonnSignalsSystemPrefix + Uri.EscapeDataString(SystemName)),
+            "Canonn Signals"
+        );
     }
 
     public Task<bool> OpenSpanshAsync()
     {
         return LaunchUriAsync(
-            new Uri(
-                WellKnownUris.SpanshSystemPrefix
-                    + SystemAddress?.ToString(CultureInfo.InvariantCulture)),
-            "Spansh");
+            new Uri(WellKnownUris.SpanshSystemPrefix + SystemAddress?.ToString(CultureInfo.InvariantCulture)),
+            "Spansh"
+        );
     }
 
     public Task<bool> OpenEdsmAsync()
     {
         return LaunchUriAsync(
-            new Uri(
-                WellKnownUris.EdsmSystemById64Prefix
-                    + SystemAddress?.ToString(CultureInfo.InvariantCulture)),
-            "EDSM");
+            new Uri(WellKnownUris.EdsmSystemById64Prefix + SystemAddress?.ToString(CultureInfo.InvariantCulture)),
+            "EDSM"
+        );
     }
 
     public void Dispose()
@@ -275,14 +257,15 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
         uriLauncher = null;
     }
 
-    private void OnSurveyPropertyChanged(
-        object? sender,
-        PropertyChangedEventArgs eventArgs)
+    private void OnSurveyPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
-        if (eventArgs.PropertyName is nameof(SystemSurveyViewModel.Snapshot)
-            or nameof(SystemSurveyViewModel.BiologySurvey)
-            or nameof(SystemSurveyViewModel.CurrentBiologyDiscoveryContext)
-            or nameof(SystemSurveyViewModel.DisableBioPredictions))
+        if (
+            eventArgs.PropertyName
+            is nameof(SystemSurveyViewModel.Snapshot)
+                or nameof(SystemSurveyViewModel.BiologySurvey)
+                or nameof(SystemSurveyViewModel.CurrentBiologyDiscoveryContext)
+                or nameof(SystemSurveyViewModel.DisableBioPredictions)
+        )
         {
             Refresh();
         }
@@ -290,9 +273,7 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
 
     private void Refresh()
     {
-        var expandedState = Bodies.ToDictionary(
-            body => body.BodyId,
-            body => body.IsExpanded);
+        var expandedState = Bodies.ToDictionary(body => body.BodyId, body => body.IsExpanded);
         var snapshot = survey.Snapshot;
         var overview = BiologySurveyViewModel.CreateSystemOverview(
             snapshot,
@@ -304,7 +285,8 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
                 ReferenceCatalog = survey.BiologyReferenceCatalog,
                 HighlightRegionalFirsts = survey.HighlightRegionalFirsts,
                 DiscoveryContext = survey.CurrentBiologyDiscoveryContext,
-            });
+            }
+        );
         if (overview is null)
         {
             SystemName = snapshot.SystemName ?? "No biological signals";
@@ -330,49 +312,51 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
             3 => 10d,
             _ => 7d,
         };
-        var bodyRows = overview.Bodies.Select(row =>
-        {
-            var body = snapshot.Bodies.Single(candidate =>
-                candidate.BodyId == row.BodyId);
-            var detail = BiologySurveyViewModel.CreateBodyDetail(
-                snapshot,
-                body.BodyId,
-                survey.CurrentExobiology,
-                new BiologySurveyBodyDetailOptions(
-                    survey.HighlightRegionalFirsts,
-                    survey.DimAnalyzedOrganisms,
-                    survey.HideGeoCountInBioSystem,
-                    survey.DisableBioPredictions)
-                {
-                    DiscoveryContext = survey.CurrentBiologyDiscoveryContext,
-                    RewardThresholds = survey.BiologyRewardThresholds,
-                    PredictionEvaluator = survey.BiologyPredictionEvaluator,
-                    ReferenceCatalog = survey.BiologyReferenceCatalog,
-                })!;
-            var isExpanded = expandedState.GetValueOrDefault(
-                body.BodyId,
-                !CurrentBodyOnly || row.IsCurrentBody);
-            return new BiologyPredictionBodyViewModel(
-                new BiologyPredictionBodyOptions
-                {
-                    BodyId = body.BodyId,
-                    Name = body.Name,
-                    DistanceText = FormatDistance(body.DistanceFromArrivalLs),
-                    ProgressText = row.ProgressText,
-                    RewardText = detail.RewardSummary,
-                    IsFirstFootfall = body.IsFirstFootfall,
-                    IsCurrent = row.IsCurrentBody,
-                    IsDestination = row.IsDestination,
-                    RequiresDss = detail.RequiresDss,
-                    PredictionStatus = detail.PredictionStatus,
-                    Organisms = detail.Organisms.Select(organism =>
-                        BiologyPredictionOrganismViewModel.Create(
-                            organism,
-                            rowFontSize,
-                            rowVerticalPadding)).ToArray(),
-                    IsExpanded = isExpanded,
-                });
-        }).ToArray();
+        var bodyRows = overview
+            .Bodies.Select(row =>
+            {
+                var body = snapshot.Bodies.Single(candidate => candidate.BodyId == row.BodyId);
+                var detail = BiologySurveyViewModel.CreateBodyDetail(
+                    snapshot,
+                    body.BodyId,
+                    survey.CurrentExobiology,
+                    new BiologySurveyBodyDetailOptions(
+                        survey.HighlightRegionalFirsts,
+                        survey.DimAnalyzedOrganisms,
+                        survey.HideGeoCountInBioSystem,
+                        survey.DisableBioPredictions
+                    )
+                    {
+                        DiscoveryContext = survey.CurrentBiologyDiscoveryContext,
+                        RewardThresholds = survey.BiologyRewardThresholds,
+                        PredictionEvaluator = survey.BiologyPredictionEvaluator,
+                        ReferenceCatalog = survey.BiologyReferenceCatalog,
+                    }
+                )!;
+                var isExpanded = expandedState.GetValueOrDefault(body.BodyId, !CurrentBodyOnly || row.IsCurrentBody);
+                return new BiologyPredictionBodyViewModel(
+                    new BiologyPredictionBodyOptions
+                    {
+                        BodyId = body.BodyId,
+                        Name = body.Name,
+                        DistanceText = FormatDistance(body.DistanceFromArrivalLs),
+                        ProgressText = row.ProgressText,
+                        RewardText = detail.RewardSummary,
+                        IsFirstFootfall = body.IsFirstFootfall,
+                        IsCurrent = row.IsCurrentBody,
+                        IsDestination = row.IsDestination,
+                        RequiresDss = detail.RequiresDss,
+                        PredictionStatus = detail.PredictionStatus,
+                        Organisms = detail
+                            .Organisms.Select(organism =>
+                                BiologyPredictionOrganismViewModel.Create(organism, rowFontSize, rowVerticalPadding)
+                            )
+                            .ToArray(),
+                        IsExpanded = isExpanded,
+                    }
+                );
+            })
+            .ToArray();
 
         SystemName = overview.Heading;
         SystemAddress = snapshot.SystemAddress;
@@ -381,16 +365,11 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
         EstimatedReward = string.IsNullOrWhiteSpace(overview.RewardSummary)
             ? PredictionUnavailable
             : overview.RewardSummary;
-        FirstFootfallEstimate = CalculateFirstFootfallEstimate(
-            snapshot,
-            overview.Bodies);
-        var predictedBodyCountLabel = bodyRows.Length == 1
-            ? "body."
-            : "bodies.";
+        FirstFootfallEstimate = CalculateFirstFootfallEstimate(snapshot, overview.Bodies);
+        var predictedBodyCountLabel = bodyRows.Length == 1 ? "body." : "bodies.";
         var predictionStatus = bodyRows.Any(body => body.HasPredictionStatus)
             ? "Some bodies still need complete planet or parent-star scans."
-            : $"Exact criteria evaluated for {bodyRows.Length:N0} biological "
-                + predictedBodyCountLabel;
+            : $"Exact criteria evaluated for {bodyRows.Length:N0} biological " + predictedBodyCountLabel;
         StatusMessage = survey.DisableBioPredictions
             ? "Exact predictions are disabled in system-survey settings."
             : predictionStatus;
@@ -413,9 +392,10 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
             return;
         }
 
-        var preferredBodyId = survey.CurrentStatus?.GuiFocus == GuiFocus.Fss
-            ? survey.Snapshot.LastDetailedBodyId
-            : survey.Snapshot.CurrentBodyId;
+        var preferredBodyId =
+            survey.CurrentStatus?.GuiFocus == GuiFocus.Fss
+                ? survey.Snapshot.LastDetailedBodyId
+                : survey.Snapshot.CurrentBodyId;
         if (preferredBodyId is null)
         {
             preferredBodyId = Bodies.FirstOrDefault(body => body.IsCurrent)?.BodyId;
@@ -469,14 +449,10 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
         try
         {
             var launched = await uriLauncher(uri);
-            LaunchStatus = launched
-                ? $"Opened {label}."
-                : $"The platform could not open {label}.";
+            LaunchStatus = launched ? $"Opened {label}." : $"The platform could not open {label}.";
             return launched;
         }
-        catch (Exception exception) when (
-            exception is InvalidOperationException
-                or NotSupportedException)
+        catch (Exception exception) when (exception is InvalidOperationException or NotSupportedException)
         {
             LaunchStatus = $"{label} could not be opened: {exception.Message}";
             return false;
@@ -485,9 +461,7 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
 
     private void SavePreferences()
     {
-        settingsStore.Save(new BiologyPredictionsPreferences(
-            CurrentBodyOnly,
-            RowSize));
+        settingsStore.Save(new BiologyPredictionsPreferences(CurrentBodyOnly, RowSize));
     }
 
     private void RaiseCommands()
@@ -502,34 +476,36 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
 
     private static long CalculateConfirmedReward(SystemScanSnapshot snapshot)
     {
-        return snapshot.Bodies.Sum((SystemScanBodySnapshot body) =>
-        {
-            long reward = 0;
-            var bonus = body.IsFirstFootfall ? 5 : 1;
-            foreach (var organism in body.Organisms)
+        return snapshot.Bodies.Sum(
+            (SystemScanBodySnapshot body) =>
             {
-                if (!organism.IsAnalyzed)
+                long reward = 0;
+                var bonus = body.IsFirstFootfall ? 5 : 1;
+                foreach (var organism in body.Organisms)
                 {
-                    continue;
-                }
+                    if (!organism.IsAnalyzed)
+                    {
+                        continue;
+                    }
 
-                reward += (organism.Reward ?? 0) * bonus;
+                    reward += (organism.Reward ?? 0) * bonus;
+                }
+                return reward;
             }
-            return reward;
-        });
+        );
     }
 
     private static string CalculateFirstFootfallEstimate(
         SystemScanSnapshot snapshot,
-        IReadOnlyList<BiologyBodyRowViewModel> rows)
+        IReadOnlyList<BiologyBodyRowViewModel> rows
+    )
     {
         var minimum = 0L;
         var maximum = 0L;
         var hasUnknown = false;
         foreach (var row in rows)
         {
-            var body = snapshot.Bodies.Single(candidate =>
-                candidate.BodyId == row.BodyId);
+            var body = snapshot.Bodies.Single(candidate => candidate.BodyId == row.BodyId);
             var multiplier = body.IsFirstFootfall ? 5 : 1;
             minimum += row.MinimumReward * multiplier;
             maximum += row.MaximumReward * multiplier;
@@ -539,14 +515,10 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
         return FormatRewardRange(minimum, maximum, hasUnknown);
     }
 
-    private static string FormatRewardRange(
-        long minimum,
-        long maximum,
-        bool hasUnknown)
+    private static string FormatRewardRange(long minimum, long maximum, bool hasUnknown)
     {
-        var range = minimum == maximum
-            ? FormatCredits(minimum)
-            : $"{FormatCredits(minimum)} - {FormatCredits(maximum)}";
+        var range =
+            minimum == maximum ? FormatCredits(minimum) : $"{FormatCredits(minimum)} - {FormatCredits(maximum)}";
         return hasUnknown ? range + " + pending" : range;
     }
 
@@ -570,10 +542,7 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
         };
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -590,9 +559,7 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private sealed class DelegateCommand(
-        Action execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class DelegateCommand(Action execute, Func<bool> canExecute) : ICommand
     {
         public event EventHandler? CanExecuteChanged;
 
@@ -612,9 +579,7 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
         }
     }
 
-    private sealed class AsyncCommand(
-        Func<Task<bool>> execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class AsyncCommand(Func<Task<bool>> execute, Func<bool> canExecute) : ICommand
     {
         private bool isExecuting;
 
@@ -676,11 +641,7 @@ public sealed class BiologyPredictionBodyOptions
 
     public required string PredictionStatus { get; init; }
 
-    public required IReadOnlyList<BiologyPredictionOrganismViewModel> Organisms
-    {
-        get;
-        init;
-    }
+    public required IReadOnlyList<BiologyPredictionOrganismViewModel> Organisms { get; init; }
 
     public required bool IsExpanded { get; init; }
 }
@@ -730,8 +691,7 @@ public sealed class BiologyPredictionBodyViewModel : INotifyPropertyChanged
 
     public string PredictionStatus { get; }
 
-    public bool HasPredictionStatus => !string.IsNullOrWhiteSpace(
-        PredictionStatus);
+    public bool HasPredictionStatus => !string.IsNullOrWhiteSpace(PredictionStatus);
 
     public IReadOnlyList<BiologyPredictionOrganismViewModel> Organisms { get; }
 
@@ -746,9 +706,7 @@ public sealed class BiologyPredictionBodyViewModel : INotifyPropertyChanged
             }
 
             isExpanded = value;
-            PropertyChanged?.Invoke(
-                this,
-                new PropertyChangedEventArgs(nameof(IsExpanded)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsExpanded)));
         }
     }
 }
@@ -795,13 +753,13 @@ public sealed class BiologyPredictionOrganismViewModel
 
     public double RewardBucketThreeMillions { get; init; }
 
-    public bool HasSampleDistance => !string.IsNullOrWhiteSpace(
-        SampleDistanceText);
+    public bool HasSampleDistance => !string.IsNullOrWhiteSpace(SampleDistanceText);
 
     public static BiologyPredictionOrganismViewModel Create(
         BiologyOrganismRowViewModel source,
         double rowFontSize,
-        double rowVerticalPadding)
+        double rowVerticalPadding
+    )
     {
         ArgumentNullException.ThrowIfNull(source);
         return new BiologyPredictionOrganismViewModel

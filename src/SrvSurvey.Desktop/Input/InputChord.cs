@@ -14,42 +14,26 @@ public static partial class InputChord
             return false;
         }
 
-        var tokens = value.Split(
-            ' ',
-            StringSplitOptions.RemoveEmptyEntries
-                | StringSplitOptions.TrimEntries);
-        if (tokens.Length == 0
-            || tokens.Distinct(StringComparer.OrdinalIgnoreCase).Count()
-                != tokens.Length)
+        var tokens = value.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (tokens.Length == 0 || tokens.Distinct(StringComparer.OrdinalIgnoreCase).Count() != tokens.Length)
         {
             return false;
         }
 
         if (tokens.All(IsControllerToken))
         {
-            normalized = string.Join(
-                ' ',
-                tokens.Select(NormalizeControllerToken)
-                    .Order(StringComparer.Ordinal));
+            normalized = string.Join(' ', tokens.Select(NormalizeControllerToken).Order(StringComparer.Ordinal));
             return true;
         }
 
-        var keyTokens = tokens
-            .Where(token => !IsModifier(token))
-            .ToArray();
-        if (keyTokens.Length != 1
-            || IsControllerToken(keyTokens[0])
-            || ControllerLikePattern().IsMatch(keyTokens[0]))
+        var keyTokens = tokens.Where(token => !IsModifier(token)).ToArray();
+        if (keyTokens.Length != 1 || IsControllerToken(keyTokens[0]) || ControllerLikePattern().IsMatch(keyTokens[0]))
         {
             return false;
         }
 
-        var modifiers = ModifierOrder.Where(modifier => tokens.Contains(
-            modifier,
-            StringComparer.OrdinalIgnoreCase));
-        normalized = string.Join(
-            ' ',
-            modifiers.Append(NormalizeKeyboardToken(keyTokens[0])));
+        var modifiers = ModifierOrder.Where(modifier => tokens.Contains(modifier, StringComparer.OrdinalIgnoreCase));
+        normalized = string.Join(' ', modifiers.Append(NormalizeKeyboardToken(keyTokens[0])));
         return true;
     }
 
@@ -88,15 +72,12 @@ public static partial class InputChord
             return token.ToUpperInvariant();
         }
 
-        if (FunctionKeyPattern().IsMatch(token)
-            || DigitKeyPattern().IsMatch(token))
+        if (FunctionKeyPattern().IsMatch(token) || DigitKeyPattern().IsMatch(token))
         {
             return token.ToUpperInvariant();
         }
 
-        return token.Equals("Backspace", StringComparison.OrdinalIgnoreCase)
-            ? "Backspace"
-            : token;
+        return token.Equals("Backspace", StringComparison.OrdinalIgnoreCase) ? "Backspace" : token;
     }
 
     [GeneratedRegex("^B(?:[1-9]|[1-9][0-9]|1[01][0-9]|12[0-8])$", RegexOptions.IgnoreCase)]

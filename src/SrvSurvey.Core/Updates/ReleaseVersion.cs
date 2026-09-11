@@ -9,9 +9,7 @@ public readonly record struct ReleaseVersion : IComparable<ReleaseVersion>
     private readonly string? prerelease;
 
     public ReleaseVersion(Version version)
-        : this(version, null)
-    {
-    }
+        : this(version, null) { }
 
     private ReleaseVersion(Version version, string? prerelease)
     {
@@ -20,7 +18,8 @@ public readonly record struct ReleaseVersion : IComparable<ReleaseVersion>
         {
             throw new ArgumentOutOfRangeException(
                 nameof(version),
-                "A release version requires at least three numeric components.");
+                "A release version requires at least three numeric components."
+            );
         }
 
         coreVersion = version;
@@ -44,24 +43,19 @@ public readonly record struct ReleaseVersion : IComparable<ReleaseVersion>
     public static ReleaseVersion FromAssembly(Assembly assembly)
     {
         ArgumentNullException.ThrowIfNull(assembly);
-        var informational = assembly
-            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
-            ?.InformationalVersion;
+        var informational = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
         if (TryParse(informational, out var releaseVersion))
         {
             return releaseVersion;
         }
 
-        var fileVersion = assembly
-            .GetCustomAttribute<AssemblyFileVersionAttribute>()
-            ?.Version;
+        var fileVersion = assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version;
         if (TryParse(fileVersion, out releaseVersion))
         {
             return releaseVersion;
         }
 
-        return new ReleaseVersion(
-            assembly.GetName().Version ?? new Version(0, 0, 0));
+        return new ReleaseVersion(assembly.GetName().Version ?? new Version(0, 0, 0));
     }
 
     public static ReleaseVersion Parse(string value)
@@ -103,8 +97,7 @@ public readonly record struct ReleaseVersion : IComparable<ReleaseVersion>
                 return false;
             }
 
-            prerelease = text[(prereleaseIndex + 1)..]
-                .ToLowerInvariant();
+            prerelease = text[(prereleaseIndex + 1)..].ToLowerInvariant();
             text = text[..prereleaseIndex];
             if (!IsValidPrerelease(prerelease))
             {
@@ -112,10 +105,7 @@ public readonly record struct ReleaseVersion : IComparable<ReleaseVersion>
             }
         }
 
-        if (!Version.TryParse(text, out var core)
-            || core.Major < 0
-            || core.Minor < 0
-            || core.Build < 0)
+        if (!Version.TryParse(text, out var core) || core.Major < 0 || core.Minor < 0 || core.Build < 0)
         {
             return false;
         }
@@ -158,40 +148,33 @@ public readonly record struct ReleaseVersion : IComparable<ReleaseVersion>
 
     public override string ToString()
     {
-        var core = coreVersion.Revision >= 0
-            ? coreVersion.ToString(4)
-            : coreVersion.ToString(3);
+        var core = coreVersion.Revision >= 0 ? coreVersion.ToString(4) : coreVersion.ToString(3);
         return prerelease is null ? core : $"{core}-{prerelease}";
     }
 
     public static implicit operator ReleaseVersion(Version version) => new(version);
 
-    public static bool operator <(ReleaseVersion left, ReleaseVersion right) =>
-        left.CompareTo(right) < 0;
+    public static bool operator <(ReleaseVersion left, ReleaseVersion right) => left.CompareTo(right) < 0;
 
-    public static bool operator >(ReleaseVersion left, ReleaseVersion right) =>
-        left.CompareTo(right) > 0;
+    public static bool operator >(ReleaseVersion left, ReleaseVersion right) => left.CompareTo(right) > 0;
 
-    public static bool operator <=(ReleaseVersion left, ReleaseVersion right) =>
-        left.CompareTo(right) <= 0;
+    public static bool operator <=(ReleaseVersion left, ReleaseVersion right) => left.CompareTo(right) <= 0;
 
-    public static bool operator >=(ReleaseVersion left, ReleaseVersion right) =>
-        left.CompareTo(right) >= 0;
+    public static bool operator >=(ReleaseVersion left, ReleaseVersion right) => left.CompareTo(right) >= 0;
 
     private static bool IsValidPrerelease(string value)
     {
         foreach (var identifier in value.Split('.'))
         {
-            if (identifier.Length == 0
-                || identifier.Any(character =>
-                    !char.IsAsciiLetterOrDigit(character) && character != '-'))
+            if (
+                identifier.Length == 0
+                || identifier.Any(character => !char.IsAsciiLetterOrDigit(character) && character != '-')
+            )
             {
                 return false;
             }
 
-            if (identifier.Length > 1
-                && identifier[0] == '0'
-                && identifier.All(char.IsAsciiDigit))
+            if (identifier.Length > 1 && identifier[0] == '0' && identifier.All(char.IsAsciiDigit))
             {
                 return false;
             }
@@ -202,16 +185,8 @@ public readonly record struct ReleaseVersion : IComparable<ReleaseVersion>
 
     private static int CompareIdentifier(string left, string right)
     {
-        var leftNumeric = long.TryParse(
-            left,
-            NumberStyles.None,
-            CultureInfo.InvariantCulture,
-            out var leftValue);
-        var rightNumeric = long.TryParse(
-            right,
-            NumberStyles.None,
-            CultureInfo.InvariantCulture,
-            out var rightValue);
+        var leftNumeric = long.TryParse(left, NumberStyles.None, CultureInfo.InvariantCulture, out var leftValue);
+        var rightNumeric = long.TryParse(right, NumberStyles.None, CultureInfo.InvariantCulture, out var rightValue);
         if (leftNumeric && rightNumeric)
         {
             return leftValue.CompareTo(rightValue);

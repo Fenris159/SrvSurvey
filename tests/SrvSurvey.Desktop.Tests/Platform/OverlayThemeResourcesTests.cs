@@ -13,49 +13,47 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class OverlayThemeResourcesTests
 {
-    private static readonly IReadOnlyDictionary<string, string>
-        ExpectedConfigurationBindings = new Dictionary<string, string>(
-            StringComparer.Ordinal)
-        {
-            ["PlotBioStatus"] = "SystemSurvey.AutoShowBioStatus",
-            ["PlotBioSystem"] = "SystemSurvey.AutoShowBioSystem",
-            ["PlotBodyInfo"] = "SystemSurvey.AutoShowBodyInfo",
-            ["PlotBuildCommodities"] =
-                "Colonization.AutoShowCommodityOverlay",
-            ["PlotFlightWarning"] = "SystemSurvey.AutoShowFlightWarnings",
-            ["PlotFloatie"] = "Notifications.Enabled",
-            ["PlotFootCombat"] = "Combat.AutoShowFootCombat",
-            ["PlotFSS"] = "SystemSurvey.AutoShowLastFssBody",
-            ["PlotFSSInfo"] = "SystemSurvey.AutoShowFssInfo",
-            ["PlotGalMap"] = "GalaxyMap.AutoShow",
-            ["PlotMiningNotifications"] = "MiningWorkspace.ShouldShowNotifications",
-            ["PlotMiningReference"] = "MineMap.ShouldShowMiningReference",
-            ["PlotMiningFiregroups"] = "Firegroups.ShouldShow",
-            ["PlotMiningWarning"] = "Mining.ShouldShowRigWarning",
-            ["PlotSurfaceMining"] = "Mining.ShouldShow",
-            ["PlotMineMap"] = "MineMap.ShouldShowOverlay",
-            ["PlotGrounded"] = "SystemSurvey.AutoShowSurfaceRadar",
-            ["PlotGuardians"] = "Guardian.EnableGuardianSites",
-            ["PlotGuardianStatus"] = "Guardian.EnableGuardianSites",
-            ["PlotGuardianSystem"] = "Guardian.AutoShowGuardianSummary",
-            ["PlotHumanSite"] = "HumanSite.AutoShow",
-            ["PlotJumpInfo"] = "JumpInfo.AutoShow",
-            ["PlotFleetCarrierRoute"] = "FleetCarrierRoute.IsActive",
-            ["PlotRouteBio"] = "Route.IsActive",
-            ["PlotMassacre"] = "Combat.AutoShowMassacreMissions",
-            ["PlotMiniTrack"] = "SystemSurvey.AutoShowMiniTrack",
-            ["PlotMultiGameCommander"] =
-                "OverlayBehavior.HideMultiGameCommanderOverlay",
-            ["PlotPriorScans"] = "SystemSurvey.AutoShowPriorScans",
-            ["PlotPulse"] = "PulseOverlay.Enabled",
-            ["PlotQuestMini"] = "QuestWorkspace.IsEnabled",
-            ["PlotRamTah"] = "Guardian.AutoShowRamTah",
-            ["PlotSphericalSearch"] =
-                "Search, BoxelSearch, or Route active",
-            ["PlotStationInfo"] = "StationInfo.AutoShow",
-            ["PlotSysStatus"] = "SystemSurvey.AutoShowSystemStatus",
-            ["PlotTrackTarget"] = "GroundTarget.ShouldShow",
-        };
+    private static readonly IReadOnlyDictionary<string, string> ExpectedConfigurationBindings = new Dictionary<
+        string,
+        string
+    >(StringComparer.Ordinal)
+    {
+        ["PlotBioStatus"] = "SystemSurvey.AutoShowBioStatus",
+        ["PlotBioSystem"] = "SystemSurvey.AutoShowBioSystem",
+        ["PlotBodyInfo"] = "SystemSurvey.AutoShowBodyInfo",
+        ["PlotBuildCommodities"] = "Colonization.AutoShowCommodityOverlay",
+        ["PlotFlightWarning"] = "SystemSurvey.AutoShowFlightWarnings",
+        ["PlotFloatie"] = "Notifications.Enabled",
+        ["PlotFootCombat"] = "Combat.AutoShowFootCombat",
+        ["PlotFSS"] = "SystemSurvey.AutoShowLastFssBody",
+        ["PlotFSSInfo"] = "SystemSurvey.AutoShowFssInfo",
+        ["PlotGalMap"] = "GalaxyMap.AutoShow",
+        ["PlotMiningNotifications"] = "MiningWorkspace.ShouldShowNotifications",
+        ["PlotMiningReference"] = "MineMap.ShouldShowMiningReference",
+        ["PlotMiningFiregroups"] = "Firegroups.ShouldShow",
+        ["PlotMiningWarning"] = "Mining.ShouldShowRigWarning",
+        ["PlotSurfaceMining"] = "Mining.ShouldShow",
+        ["PlotMineMap"] = "MineMap.ShouldShowOverlay",
+        ["PlotGrounded"] = "SystemSurvey.AutoShowSurfaceRadar",
+        ["PlotGuardians"] = "Guardian.EnableGuardianSites",
+        ["PlotGuardianStatus"] = "Guardian.EnableGuardianSites",
+        ["PlotGuardianSystem"] = "Guardian.AutoShowGuardianSummary",
+        ["PlotHumanSite"] = "HumanSite.AutoShow",
+        ["PlotJumpInfo"] = "JumpInfo.AutoShow",
+        ["PlotFleetCarrierRoute"] = "FleetCarrierRoute.IsActive",
+        ["PlotRouteBio"] = "Route.IsActive",
+        ["PlotMassacre"] = "Combat.AutoShowMassacreMissions",
+        ["PlotMiniTrack"] = "SystemSurvey.AutoShowMiniTrack",
+        ["PlotMultiGameCommander"] = "OverlayBehavior.HideMultiGameCommanderOverlay",
+        ["PlotPriorScans"] = "SystemSurvey.AutoShowPriorScans",
+        ["PlotPulse"] = "PulseOverlay.Enabled",
+        ["PlotQuestMini"] = "QuestWorkspace.IsEnabled",
+        ["PlotRamTah"] = "Guardian.AutoShowRamTah",
+        ["PlotSphericalSearch"] = "Search, BoxelSearch, or Route active",
+        ["PlotStationInfo"] = "StationInfo.AutoShow",
+        ["PlotSysStatus"] = "SystemSurvey.AutoShowSystemStatus",
+        ["PlotTrackTarget"] = "GroundTarget.ShouldShow",
+    };
 
     [Fact]
     public void RuntimeSurfaceUsesCompactBorderlessPreviewChrome()
@@ -70,11 +68,7 @@ public sealed class OverlayThemeResourcesTests
             Opacity = 0.97,
         };
 
-        OverlayThemeResources.ApplySurfaceChrome(
-            surface,
-            isEditorPreview: false,
-            Brushes.Black,
-            Brushes.Yellow);
+        OverlayThemeResources.ApplySurfaceChrome(surface, isEditorPreview: false, Brushes.Black, Brushes.Yellow);
 
         Assert.Equal(new Thickness(0), surface.Margin);
         Assert.Equal(new Thickness(4), surface.Padding);
@@ -102,9 +96,7 @@ public sealed class OverlayThemeResourcesTests
         OverlayThemeResources.RefreshAll();
 
         Assert.Equal(ThemeVariant.Dark, window.RequestedThemeVariant);
-        Assert.Contains(
-            OverlayThemeResources.OverlayTypographyClass,
-            window.Classes);
+        Assert.Contains(OverlayThemeResources.OverlayTypographyClass, window.Classes);
         Assert.Equal(new Thickness(0), surface.Margin);
         Assert.Equal(new Thickness(4), surface.Padding);
         Assert.Null(surface.BorderBrush);
@@ -119,36 +111,12 @@ public sealed class OverlayThemeResourcesTests
         var header = new TextBlock { Text = "Header", Classes = { "overlay-header" } };
         var eyebrow = new TextBlock { Text = "Eyebrow", Classes = { "eyebrow" } };
         var muted = new TextBlock { Text = "Muted", Classes = { "muted" } };
-        var value = new TextBlock
-        {
-            Text = "Value",
-            Classes = { "monospace", "overlay-value" },
-        };
-        var compactBySize = new TextBlock
-        {
-            Text = "Size alone remains primary",
-            FontSize = 9,
-        };
-        var detail = new TextBlock
-        {
-            Text = "Longer detail",
-            Classes = { "overlay-detail" },
-        };
-        var caption = new TextBlock
-        {
-            Text = "Caption",
-            Classes = { "overlay-caption" },
-        };
-        var guardianPrimary = new TextBlock
-        {
-            Text = "Guardian primary",
-            Classes = { "guardian-legacy-middle" },
-        };
-        var guardianCompact = new TextBlock
-        {
-            Text = "Guardian compact",
-            Classes = { "guardian-legacy-small" },
-        };
+        var value = new TextBlock { Text = "Value", Classes = { "monospace", "overlay-value" } };
+        var compactBySize = new TextBlock { Text = "Size alone remains primary", FontSize = 9 };
+        var detail = new TextBlock { Text = "Longer detail", Classes = { "overlay-detail" } };
+        var caption = new TextBlock { Text = "Caption", Classes = { "overlay-caption" } };
+        var guardianPrimary = new TextBlock { Text = "Guardian primary", Classes = { "guardian-legacy-middle" } };
+        var guardianCompact = new TextBlock { Text = "Guardian compact", Classes = { "guardian-legacy-small" } };
         var window = new Window
         {
             Content = new StackPanel
@@ -195,64 +163,38 @@ public sealed class OverlayThemeResourcesTests
     public void OverlayFontFilesAndLicensesArePackaged()
     {
         var root = FindRepositoryRoot();
-        var project = File.ReadAllText(Path.Combine(
-            root,
-            "src",
-            "SrvSurvey.Desktop",
-            "SrvSurvey.Desktop.csproj"));
+        var project = File.ReadAllText(Path.Combine(root, "src", "SrvSurvey.Desktop", "SrvSurvey.Desktop.csproj"));
 
         Assert.Contains("Assets\\Fonts\\**\\*.ttf", project);
         Assert.Contains("Assets\\Fonts\\**\\OFL.txt", project);
-        Assert.True(new FileInfo(Path.Combine(
-            root,
-            "src",
-            "SrvSurvey.Desktop",
-            "Assets",
-            "Fonts",
-            "Oxanium",
-            "Oxanium-Variable.ttf")).Length > 0);
-        Assert.True(new FileInfo(Path.Combine(
-            root,
-            "src",
-            "SrvSurvey.Desktop",
-            "Assets",
-            "Fonts",
-            "Rajdhani",
-            "Rajdhani-Regular.ttf")).Length > 0);
-        Assert.True(File.Exists(Path.Combine(
-            root,
-            "src",
-            "SrvSurvey.Desktop",
-            "Assets",
-            "Fonts",
-            "Oxanium",
-            "OFL.txt")));
-        Assert.True(File.Exists(Path.Combine(
-            root,
-            "src",
-            "SrvSurvey.Desktop",
-            "Assets",
-            "Fonts",
-            "Rajdhani",
-            "OFL.txt")));
+        Assert.True(
+            new FileInfo(
+                Path.Combine(root, "src", "SrvSurvey.Desktop", "Assets", "Fonts", "Oxanium", "Oxanium-Variable.ttf")
+            ).Length > 0
+        );
+        Assert.True(
+            new FileInfo(
+                Path.Combine(root, "src", "SrvSurvey.Desktop", "Assets", "Fonts", "Rajdhani", "Rajdhani-Regular.ttf")
+            ).Length > 0
+        );
+        Assert.True(
+            File.Exists(Path.Combine(root, "src", "SrvSurvey.Desktop", "Assets", "Fonts", "Oxanium", "OFL.txt"))
+        );
+        Assert.True(
+            File.Exists(Path.Combine(root, "src", "SrvSurvey.Desktop", "Assets", "Fonts", "Rajdhani", "OFL.txt"))
+        );
     }
 
     [AvaloniaFact]
     public void FullApplyTracksPerPanelOpacityScaleAndBaseSizeChanges()
     {
         var definition = OverlayLayoutCatalog.GetRequired("PlotJumpInfo");
-        var placement = definition.DefaultPlacement with
-        {
-            Opacity = 0.42,
-            ScaleIndex = 3,
-        };
+        var placement = definition.DefaultPlacement with { Opacity = 0.42, ScaleIndex = 3 };
         var layout = new LegacyOverlayLayout(
-            new Dictionary<string, LegacyOverlayPlacement>(StringComparer.Ordinal)
-            {
-                [definition.Name] = placement,
-            },
+            new Dictionary<string, LegacyOverlayPlacement>(StringComparer.Ordinal) { [definition.Name] = placement },
             defaultOpacity: 0.9,
-            error: null);
+            error: null
+        );
         layout.SetScaleIndex(2);
         var originalContent = new StackPanel
         {
@@ -288,9 +230,7 @@ public sealed class OverlayThemeResourcesTests
         // injection is skipped so the original surface content stays intact.
         Assert.Same(originalContent, surface.Child);
 
-        Assert.True(layout.SetPlacement(
-            definition.Name,
-            placement with { Opacity = 0.75, ScaleIndex = 1 }));
+        Assert.True(layout.SetPlacement(definition.Name, placement with { Opacity = 0.75, ScaleIndex = 1 }));
         Assert.Equal(0.75, window.Opacity);
         Assert.Equal(definition.PreviewSize.Width, window.Width, 5);
 
@@ -298,27 +238,24 @@ public sealed class OverlayThemeResourcesTests
         OverlayThemeResources.SetBaseSize(window, layout, 250, 125);
         Assert.Equal(250, window.Width, 5);
         Assert.Equal(125, window.Height, 5);
+        Assert.Throws<ArgumentOutOfRangeException>(() => OverlayThemeResources.SetBaseSize(window, layout, 0, 100));
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            OverlayThemeResources.SetBaseSize(window, layout, 0, 100));
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
-            OverlayThemeResources.SetBaseSize(window, layout, 100, double.NaN));
+            OverlayThemeResources.SetBaseSize(window, layout, 100, double.NaN)
+        );
 
         OverlayThemeResources.Apply(window, layout, definition.Name);
         var otherLayout = new LegacyOverlayLayout(
             new Dictionary<string, LegacyOverlayPlacement>(StringComparer.Ordinal),
             defaultOpacity: null,
-            error: null);
+            error: null
+        );
         Assert.Throws<InvalidOperationException>(() =>
-            OverlayThemeResources.Apply(
-                window,
-                otherLayout,
-                definition.Name));
+            OverlayThemeResources.Apply(window, otherLayout, definition.Name)
+        );
 
         window.Show();
         window.Close();
-        Assert.True(layout.SetPlacement(
-            definition.Name,
-            placement with { Opacity = 0.5, ScaleIndex = 2 }));
+        Assert.True(layout.SetPlacement(definition.Name, placement with { Opacity = 0.5, ScaleIndex = 2 }));
     }
 
     [AvaloniaFact]
@@ -327,7 +264,8 @@ public sealed class OverlayThemeResourcesTests
         var layout = new LegacyOverlayLayout(
             new Dictionary<string, LegacyOverlayPlacement>(StringComparer.Ordinal),
             defaultOpacity: null,
-            error: null);
+            error: null
+        );
         var contentless = new Window { Width = 123 };
 
         OverlayThemeResources.ApplyScale(contentless, layout);
@@ -344,11 +282,7 @@ public sealed class OverlayThemeResourcesTests
     {
         var surface = new Border { Opacity = 0.42 };
 
-        OverlayThemeResources.ApplySurfaceChrome(
-            surface,
-            isEditorPreview: true,
-            Brushes.Black,
-            Brushes.Yellow);
+        OverlayThemeResources.ApplySurfaceChrome(surface, isEditorPreview: true, Brushes.Black, Brushes.Yellow);
 
         Assert.Equal(new Thickness(1), surface.Margin);
         Assert.Equal(new Thickness(4), surface.Padding);
@@ -365,43 +299,35 @@ public sealed class OverlayThemeResourcesTests
         var viewModel = GuardianOverlayViewModel.CreateEditorPreview();
         (string PlotterName, Type PresentationType, Window LiveWindow)[] cases =
         [
-            (
-                "PlotGuardians",
-                typeof(GuardianSiteOverlayPresentation),
-                new GuardianOverlayWindow(viewModel)),
+            ("PlotGuardians", typeof(GuardianSiteOverlayPresentation), new GuardianOverlayWindow(viewModel)),
             (
                 "PlotGuardianStatus",
                 typeof(GuardianStatusOverlayPresentation),
-                new GuardianStatusOverlayWindow(viewModel)),
+                new GuardianStatusOverlayWindow(viewModel)
+            ),
             (
                 "PlotGuardianSystem",
                 typeof(GuardianSystemOverlayPresentation),
-                new GuardianSystemOverlayWindow(viewModel)),
-            (
-                "PlotRamTah",
-                typeof(RamTahOverlayPresentation),
-                new RamTahOverlayWindow(viewModel)),
+                new GuardianSystemOverlayWindow(viewModel)
+            ),
+            ("PlotRamTah", typeof(RamTahOverlayPresentation), new RamTahOverlayWindow(viewModel)),
         ];
 
         foreach (var testCase in cases)
         {
-            var definition = OverlayLayoutCatalog.GetRequired(
-                testCase.PlotterName);
+            var definition = OverlayLayoutCatalog.GetRequired(testCase.PlotterName);
             var preview = new OverlayPositionPreviewWindow(definition);
-            var liveSurface = Assert.IsType<Border>(
-                testCase.LiveWindow.Content);
+            var liveSurface = Assert.IsType<Border>(testCase.LiveWindow.Content);
 
             Assert.Equal(
                 testCase.PresentationType,
-                Assert.IsType<Control>(liveSurface.Child, exactMatch: false)
-                    .GetType());
+                Assert.IsType<Control>(liveSurface.Child, exactMatch: false).GetType()
+            );
             Assert.Equal(
                 testCase.PresentationType,
-                Assert.IsType<Control>(
-                    preview.RuntimePresentation,
-                    exactMatch: false).GetType());
-            Assert.IsType<GuardianOverlayViewModel>(
-                preview.RuntimePresentation?.DataContext);
+                Assert.IsType<Control>(preview.RuntimePresentation, exactMatch: false).GetType()
+            );
+            Assert.IsType<GuardianOverlayViewModel>(preview.RuntimePresentation?.DataContext);
         }
     }
 
@@ -416,9 +342,7 @@ public sealed class OverlayThemeResourcesTests
             ["PlotRamTah"] = new PixelSize(190, 224),
         };
 
-        Assert.All(expected, pair => Assert.Equal(
-            pair.Value,
-            OverlayLayoutCatalog.GetRequired(pair.Key).PreviewSize));
+        Assert.All(expected, pair => Assert.Equal(pair.Value, OverlayLayoutCatalog.GetRequired(pair.Key).PreviewSize));
     }
 
     [AvaloniaFact]
@@ -435,16 +359,12 @@ public sealed class OverlayThemeResourcesTests
             CornerRadius = new CornerRadius(12),
             Child = presentation,
         };
-        var window = new Window
-        {
-            Width = definition.PreviewSize.Width,
-            Content = surface,
-        };
+        var window = new Window { Width = definition.PreviewSize.Width, Content = surface };
         var layout = new LegacyOverlayLayout(
-            new Dictionary<string, LegacyOverlayPlacement>(
-                StringComparer.Ordinal),
+            new Dictionary<string, LegacyOverlayPlacement>(StringComparer.Ordinal),
             defaultOpacity: null,
-            error: null);
+            error: null
+        );
 
         OverlayThemeResources.Apply(window, layout, definition.Name);
 
@@ -460,24 +380,23 @@ public sealed class OverlayThemeResourcesTests
     [Fact]
     public void RuntimeWindowUsesTheSameLegacyWidthAsItsEditorPreview()
     {
-        var definition = OverlayLayoutCatalog.Supported.Single(candidate =>
-            candidate.Name == "PlotBioSystem");
+        var definition = OverlayLayoutCatalog.Supported.Single(candidate => candidate.Name == "PlotBioSystem");
 
-        Assert.Equal(
-            definition.PreviewSize.Width,
-            OverlayThemeResources.GetLegacyFormFactorWidth(
-                definition.Name));
+        Assert.Equal(definition.PreviewSize.Width, OverlayThemeResources.GetLegacyFormFactorWidth(definition.Name));
     }
 
     [Fact]
     public void EveryRuntimeOverlayUsesItsEditorCatalogWidth()
     {
         Assert.Equal(35, OverlayLayoutCatalog.Supported.Count);
-        Assert.All(OverlayLayoutCatalog.Supported, definition =>
-            Assert.Equal(
-                definition.PreviewSize.Width,
-                OverlayThemeResources.GetLegacyFormFactorWidth(
-                definition.Name)));
+        Assert.All(
+            OverlayLayoutCatalog.Supported,
+            definition =>
+                Assert.Equal(
+                    definition.PreviewSize.Width,
+                    OverlayThemeResources.GetLegacyFormFactorWidth(definition.Name)
+                )
+        );
     }
 
     [Fact]
@@ -492,9 +411,10 @@ public sealed class OverlayThemeResourcesTests
             ["PlotStationInfo"] = 220,
         };
 
-        Assert.All(expected, pair => Assert.Equal(
-            pair.Value,
-            OverlayThemeResources.GetLegacyFormFactorWidth(pair.Key)));
+        Assert.All(
+            expected,
+            pair => Assert.Equal(pair.Value, OverlayThemeResources.GetLegacyFormFactorWidth(pair.Key))
+        );
     }
 
     [Fact]
@@ -502,20 +422,18 @@ public sealed class OverlayThemeResourcesTests
     {
         Assert.Equal(
             ExpectedConfigurationBindings.Keys.Order(StringComparer.Ordinal),
-            OverlayLayoutCatalog.Supported
-                .Select(definition => definition.Name)
-                .Order(StringComparer.Ordinal));
-        Assert.All(OverlayLayoutCatalog.Supported, definition =>
-            Assert.Equal(
-                ExpectedConfigurationBindings[definition.Name],
-                definition.ConfigurationBinding));
+            OverlayLayoutCatalog.Supported.Select(definition => definition.Name).Order(StringComparer.Ordinal)
+        );
+        Assert.All(
+            OverlayLayoutCatalog.Supported,
+            definition => Assert.Equal(ExpectedConfigurationBindings[definition.Name], definition.ConfigurationBinding)
+        );
     }
 
     [Fact]
     public void UnknownPassivePanelIdentityIsRejected()
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
-            OverlayLayoutCatalog.GetRequired("PlotWrongPanel"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => OverlayLayoutCatalog.GetRequired("PlotWrongPanel"));
     }
 
     [Fact]
@@ -600,9 +518,7 @@ public sealed class OverlayThemeResourcesTests
 
         var emptySurface = new Border();
         var emptyReplacement = new StackPanel();
-        OverlayThemeResources.ReplaceSurfaceContent(
-            emptySurface,
-            emptyReplacement);
+        OverlayThemeResources.ReplaceSurfaceContent(emptySurface, emptyReplacement);
         Assert.Same(emptyReplacement, emptySurface.Child);
         Assert.Empty(emptyReplacement.Children);
     }
@@ -620,7 +536,6 @@ public sealed class OverlayThemeResourcesTests
             current = current.Parent;
         }
 
-        throw new DirectoryNotFoundException(
-            "Could not locate the repository root.");
+        throw new DirectoryNotFoundException("Could not locate the repository root.");
     }
 }

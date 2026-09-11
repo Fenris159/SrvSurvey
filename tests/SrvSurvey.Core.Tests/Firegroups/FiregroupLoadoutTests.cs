@@ -38,8 +38,14 @@ public sealed class FiregroupLoadoutTests
         var ship = Parse(new LoadoutModule("MediumHardpoint1", symbol, localizedName));
         var shipWithoutLocalizedName = Parse(new LoadoutModule("MediumHardpoint1", symbol));
 
-        Assert.Contains(ship.Modules, module => module.Symbol.Equals(symbol, StringComparison.OrdinalIgnoreCase) && module.Name == localizedName);
-        Assert.Contains(shipWithoutLocalizedName.Modules, module => module.Symbol.Equals(symbol, StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(
+            ship.Modules,
+            module => module.Symbol.Equals(symbol, StringComparison.OrdinalIgnoreCase) && module.Name == localizedName
+        );
+        Assert.Contains(
+            shipWithoutLocalizedName.Modules,
+            module => module.Symbol.Equals(symbol, StringComparison.OrdinalIgnoreCase)
+        );
     }
 
     [Theory]
@@ -61,7 +67,15 @@ public sealed class FiregroupLoadoutTests
 
     private static FiregroupShip Parse(params LoadoutModule[] modules)
     {
-        var json = JsonSerializer.Serialize(new { Ship = "python", ShipID = 12, ShipName = "Survey Python", Modules = modules });
+        var json = JsonSerializer.Serialize(
+            new
+            {
+                Ship = "python",
+                ShipID = 12,
+                ShipName = "Survey Python",
+                Modules = modules,
+            }
+        );
         using var document = JsonDocument.Parse(json);
         return Assert.IsType<FiregroupShip>(FiregroupLoadout.Parse(document.RootElement));
     }

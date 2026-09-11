@@ -9,25 +9,16 @@ public sealed class BiologyStatusViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        "SrvSurvey-BiologyStatus-" + Guid.NewGuid().ToString("N"));
+        "SrvSurvey-BiologyStatus-" + Guid.NewGuid().ToString("N")
+    );
 
     [Fact]
     public void CodexNotificationUsesReadableLegacySummarySeparators()
     {
-        var notification = new BiologyCodexNotificationViewModel(
-            1,
-            2,
-            "Aleoida Arcus - Green",
-            7_252_500,
-            true,
-            true);
+        var notification = new BiologyCodexNotificationViewModel(1, 2, "Aleoida Arcus - Green", 7_252_500, true, true);
 
-        Assert.Equal(
-            "Aleoida Arcus - Green · 7.25 M CR · FF bonus",
-            notification.SummaryText);
-        Assert.Equal(
-            "Reference image available · type .show",
-            notification.ActionText);
+        Assert.Equal("Aleoida Arcus - Green · 7.25 M CR · FF bonus", notification.SummaryText);
+        Assert.Equal("Reference image available · type .show", notification.ActionText);
     }
 
     [Fact]
@@ -41,53 +32,54 @@ public sealed class BiologyStatusViewModelTests : IDisposable
             "$Codex_Ent_Aleoids_01_Name;",
             "Active",
             2310101,
-            "Test 1");
-        var scanTwo = scanOne with
-        {
-            Location = new SurfaceLocation(0, 0.001),
-        };
+            "Test 1"
+        );
+        var scanTwo = scanOne with { Location = new SurfaceLocation(0, 0.001) };
         viewModel.ApplyUpdate(
-        [
-            Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"Population":0}"""),
-            Parse(BodyScan),
-            Parse("""{"event":"SAASignalsFound","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2},{"Type":"$SAA_SignalType_Geological;","Count":2}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"},{"Genus":"$Codex_Ent_Bacterial_Genus_Name;","Genus_Localised":"Bacterium"}]}"""),
-            Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":100,"Name_Localised":"Silicate Vapour Fumarole","SubCategory":"$Codex_SubCategory_Geology_and_Anomalies;"}"""),
-            Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Green","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2}"""),
-            Parse("""{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida","Species":"$Codex_Ent_Aleoids_01_Name;","Species_Localised":"Aleoida Arcus","Variant":"$Codex_Ent_Aleoids_01_B_Name;","Variant_Localised":"Aleoida Arcus - Green"}"""),
-            Parse("""{"event":"Disembark","SystemAddress":42,"Body":"Test 1","BodyID":1,"OnPlanet":true,"OnStation":false}"""),
-        ],
-        new EliteStatus
-        {
-            GuiFocus = GuiFocus.NoFocus,
-            Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
-            BodyName = "Test 1",
-            Latitude = 0,
-            Longitude = 0.002,
-            PlanetRadius = 6_000_000,
-        },
-        new ExobiologySnapshot(null, scanOne, scanTwo, 0, [], 0));
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"Population":0}"""),
+                Parse(BodyScan),
+                Parse(
+                    """{"event":"SAASignalsFound","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2},{"Type":"$SAA_SignalType_Geological;","Count":2}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"},{"Genus":"$Codex_Ent_Bacterial_Genus_Name;","Genus_Localised":"Bacterium"}]}"""
+                ),
+                Parse(
+                    """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":100,"Name_Localised":"Silicate Vapour Fumarole","SubCategory":"$Codex_SubCategory_Geology_and_Anomalies;"}"""
+                ),
+                Parse(
+                    """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Green","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2}"""
+                ),
+                Parse(
+                    """{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida","Species":"$Codex_Ent_Aleoids_01_Name;","Species_Localised":"Aleoida Arcus","Variant":"$Codex_Ent_Aleoids_01_B_Name;","Variant_Localised":"Aleoida Arcus - Green"}"""
+                ),
+                Parse(
+                    """{"event":"Disembark","SystemAddress":42,"Body":"Test 1","BodyID":1,"OnPlanet":true,"OnStation":false}"""
+                ),
+            ],
+            new EliteStatus
+            {
+                GuiFocus = GuiFocus.NoFocus,
+                Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
+                BodyName = "Test 1",
+                Latitude = 0,
+                Longitude = 0.002,
+                PlanetRadius = 6_000_000,
+            },
+            new ExobiologySnapshot(null, scanOne, scanTwo, 0, [], 0)
+        );
 
         Assert.True(viewModel.ShouldShowBioStatus);
-        var status = Assert.IsType<BiologyStatusViewModel>(
-            viewModel.BiologyStatus);
+        var status = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
         Assert.Equal("1", status.BodyName);
         Assert.Equal("0 of 2 analyzed", status.ProgressText);
         Assert.Equal(0, status.CompletionPercent);
         Assert.Equal(0, status.TrackedCompletionPercent);
         Assert.False(status.RequiresDss);
         Assert.Equal(4, status.Signals.Count);
-        Assert.True(Assert.Single(
-            status.Signals,
-            signal => signal.Name == "Aleoida").IsActive);
-        Assert.Equal("150 m", Assert.Single(
-            status.Signals,
-            signal => signal.Name == "Aleoida").Detail);
-        Assert.True(Assert.Single(
-            status.Signals,
-            signal => signal.Name == "Silicate Vapour Fumarole").IsAnalyzed);
+        Assert.True(Assert.Single(status.Signals, signal => signal.Name == "Aleoida").IsActive);
+        Assert.Equal("150 m", Assert.Single(status.Signals, signal => signal.Name == "Aleoida").Detail);
+        Assert.True(Assert.Single(status.Signals, signal => signal.Name == "Silicate Vapour Fumarole").IsAnalyzed);
 
-        var active = Assert.IsType<BiologyActiveSampleViewModel>(
-            status.ActiveSample);
+        var active = Assert.IsType<BiologyActiveSampleViewModel>(status.ActiveSample);
         Assert.Equal("Aleoida Arcus - Green", active.DisplayName);
         Assert.Equal(2, active.Stage);
         Assert.True(active.IsFirstSampleComplete);
@@ -112,25 +104,28 @@ public sealed class BiologyStatusViewModelTests : IDisposable
             "$Codex_Ent_Aleoids_01_Name;",
             "Active",
             2310101,
-            "Other Body");
+            "Other Body"
+        );
         viewModel.ApplyUpdate(
-        [
-            Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"Population":0}"""),
-            Parse(BodyScan),
-            Parse("""{"event":"SAASignalsFound","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""),
-        ],
-        new EliteStatus
-        {
-            Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
-            BodyName = "Test 1",
-            Latitude = 0,
-            Longitude = 0,
-            PlanetRadius = 6_000_000,
-        },
-        new ExobiologySnapshot(null, scanOne, null, 0, [], 0));
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"Population":0}"""),
+                Parse(BodyScan),
+                Parse(
+                    """{"event":"SAASignalsFound","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""
+                ),
+            ],
+            new EliteStatus
+            {
+                Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
+                BodyName = "Test 1",
+                Latitude = 0,
+                Longitude = 0,
+                PlanetRadius = 6_000_000,
+            },
+            new ExobiologySnapshot(null, scanOne, null, 0, [], 0)
+        );
 
-        var status = Assert.IsType<BiologyStatusViewModel>(
-            viewModel.BiologyStatus);
+        var status = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
         Assert.True(status.IsStaleActiveSample);
         Assert.Null(status.ActiveSample);
         Assert.True(status.HasWarning);
@@ -150,29 +145,36 @@ public sealed class BiologyStatusViewModelTests : IDisposable
             "$Codex_Ent_Aleoids_02_Name;",
             "Active",
             2310206,
-            "Test 1");
+            "Test 1"
+        );
         viewModel.ApplyUpdate(
-        [
-            Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
-            Parse(BodyScan),
-            Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2}]}"""),
-            Parse("""{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida","Species":"$Codex_Ent_Aleoids_01_Name;","Species_Localised":"Aleoida Arcus","Variant":"$Codex_Ent_Aleoids_01_B_Name;","Variant_Localised":"Aleoida Arcus - Green"}"""),
-            Parse("""{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida","Species":"$Codex_Ent_Aleoids_02_Name;","Species_Localised":"Aleoida Coronamus","Variant":"$Codex_Ent_Aleoids_02_L_Name;","Variant_Localised":"Aleoida Coronamus - Lime"}"""),
-        ],
-        new EliteStatus
-        {
-            Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
-            BodyName = "Test 1",
-            PlanetRadius = 6_000_000,
-        },
-        new ExobiologySnapshot(null, active, null, 0, [], 0));
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse(BodyScan),
+                Parse(
+                    """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2}]}"""
+                ),
+                Parse(
+                    """{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida","Species":"$Codex_Ent_Aleoids_01_Name;","Species_Localised":"Aleoida Arcus","Variant":"$Codex_Ent_Aleoids_01_B_Name;","Variant_Localised":"Aleoida Arcus - Green"}"""
+                ),
+                Parse(
+                    """{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida","Species":"$Codex_Ent_Aleoids_02_Name;","Species_Localised":"Aleoida Coronamus","Variant":"$Codex_Ent_Aleoids_02_L_Name;","Variant_Localised":"Aleoida Coronamus - Lime"}"""
+                ),
+            ],
+            new EliteStatus
+            {
+                Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
+                BodyName = "Test 1",
+                PlanetRadius = 6_000_000,
+            },
+            new ExobiologySnapshot(null, active, null, 0, [], 0)
+        );
 
-        var status = Assert.IsType<BiologyStatusViewModel>(
-            viewModel.BiologyStatus);
+        var status = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
         Assert.Equal(
             "Aleoida Coronamus - Lime",
-            Assert.IsType<BiologyActiveSampleViewModel>(
-                status.ActiveSample).DisplayName);
+            Assert.IsType<BiologyActiveSampleViewModel>(status.ActiveSample).DisplayName
+        );
     }
 
     [Fact]
@@ -188,18 +190,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
     [Fact]
     public void MissingActiveSampleUsesANonNullPresentationProjection()
     {
-        var status = new BiologyStatusViewModel(
-            1,
-            "1",
-            0,
-            1,
-            [],
-            null,
-            null,
-            false,
-            string.Empty,
-            string.Empty,
-            null);
+        var status = new BiologyStatusViewModel(1, "1", 0, 1, [], null, null, false, string.Empty, string.Empty, null);
 
         Assert.Null(status.ActiveSample);
         Assert.False(status.HasActiveSample);
@@ -209,18 +200,9 @@ public sealed class BiologyStatusViewModelTests : IDisposable
         Assert.False(status.ActiveSampleDisplay.HasReward);
         Assert.Equal(string.Empty, status.ActiveSampleDisplay.RewardText);
 
-        var active = new BiologyActiveSampleViewModel(
-            "Aleoida Arcus",
-            2,
-            150,
-            200,
-            0,
-            7_252_500,
-            false);
+        var active = new BiologyActiveSampleViewModel("Aleoida Arcus", 2, 150, 200, 0, 7_252_500, false);
 
-        Assert.Same(
-            active,
-            (status with { ActiveSample = active }).ActiveSampleDisplay);
+        Assert.Same(active, (status with { ActiveSample = active }).ActiveSampleDisplay);
     }
 
     [Fact]
@@ -228,21 +210,26 @@ public sealed class BiologyStatusViewModelTests : IDisposable
     {
         var viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
-        [
-            Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"Population":0}"""),
-            Parse(BodyScan),
-            Parse("""{"event":"SAASignalsFound","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""),
-            Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Green","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2}"""),
-        ],
-        new EliteStatus
-        {
-            Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
-            BodyName = "Test 1",
-            Latitude = 0,
-            Longitude = 0,
-            PlanetRadius = 6_000_000,
-        },
-        ExobiologySnapshot.Empty);
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"Population":0}"""),
+                Parse(BodyScan),
+                Parse(
+                    """{"event":"SAASignalsFound","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""
+                ),
+                Parse(
+                    """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Green","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2}"""
+                ),
+            ],
+            new EliteStatus
+            {
+                Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
+                BodyName = "Test 1",
+                Latitude = 0,
+                Longitude = 0,
+                PlanetRadius = 6_000_000,
+            },
+            ExobiologySnapshot.Empty
+        );
 
         var status = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
         Assert.NotNull(status.CodexNotification);
@@ -263,22 +250,23 @@ public sealed class BiologyStatusViewModelTests : IDisposable
             "$Codex_Ent_Bacterial_01_Name;",
             "Active",
             2320101,
-            "Test 1");
+            "Test 1"
+        );
         viewModel.ApplyUpdate(
-        [
-            Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
-            Parse("""{"event":"Scan","SystemAddress":42,"BodyName":"Test 2","BodyID":2,"PlanetClass":"Rocky body","MassEM":0.1,"Radius":6000000,"Landable":true}"""),
-            Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 2","BodyID":2,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""),
-        ],
-        new EliteStatus
-        {
-            Flags = StatusFlags.InMainShip | StatusFlags.HasLatLong,
-            BodyName = "Test 2",
-        },
-        new ExobiologySnapshot(null, staleScan, null, 0, [], 0));
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse(
+                    """{"event":"Scan","SystemAddress":42,"BodyName":"Test 2","BodyID":2,"PlanetClass":"Rocky body","MassEM":0.1,"Radius":6000000,"Landable":true}"""
+                ),
+                Parse(
+                    """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 2","BodyID":2,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""
+                ),
+            ],
+            new EliteStatus { Flags = StatusFlags.InMainShip | StatusFlags.HasLatLong, BodyName = "Test 2" },
+            new ExobiologySnapshot(null, staleScan, null, 0, [], 0)
+        );
 
-        var status = Assert.IsType<BiologyStatusViewModel>(
-            viewModel.BiologyStatus);
+        var status = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
         Assert.False(status.HasActiveSample);
         Assert.True(status.HasWarning);
         Assert.Contains("Bacterial", status.Warning);
@@ -298,28 +286,38 @@ public sealed class BiologyStatusViewModelTests : IDisposable
             "$Codex_Ent_Aleoids_02_Name;",
             "Active",
             2310206,
-            "Test 1");
+            "Test 1"
+        );
         viewModel.ApplyUpdate(
-        [
-            Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0],"Population":0}"""),
-            Parse("""{"event":"Scan","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"L","StellarMass":1,"Radius":695700000,"SurfaceTemperature":5000}"""),
-            Parse(PredictableAleoidaScan),
-            Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""),
-            Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310206,"Name_Localised":"Aleoida Coronamus - Lime","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2}"""),
-            Parse("""{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida","Species":"$Codex_Ent_Aleoids_02_Name;","Species_Localised":"Aleoida Coronamus","Variant":"$Codex_Ent_Aleoids_02_L_Name;","Variant_Localised":"Aleoida Coronamus - Lime"}"""),
-        ],
-        new EliteStatus
-        {
-            Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
-            BodyName = "Test 1",
-            Temperature = 187,
-        },
-        new ExobiologySnapshot(null, scan, null, 0, [], 0));
+            [
+                Parse(
+                    """{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0],"Population":0}"""
+                ),
+                Parse(
+                    """{"event":"Scan","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"L","StellarMass":1,"Radius":695700000,"SurfaceTemperature":5000}"""
+                ),
+                Parse(PredictableAleoidaScan),
+                Parse(
+                    """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""
+                ),
+                Parse(
+                    """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310206,"Name_Localised":"Aleoida Coronamus - Lime","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2}"""
+                ),
+                Parse(
+                    """{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida","Species":"$Codex_Ent_Aleoids_02_Name;","Species_Localised":"Aleoida Coronamus","Variant":"$Codex_Ent_Aleoids_02_L_Name;","Variant_Localised":"Aleoida Coronamus - Lime"}"""
+                ),
+            ],
+            new EliteStatus
+            {
+                Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
+                BodyName = "Test 1",
+                Temperature = 187,
+            },
+            new ExobiologySnapshot(null, scan, null, 0, [], 0)
+        );
 
-        var status = Assert.IsType<BiologyStatusViewModel>(
-            viewModel.BiologyStatus);
-        var temperature = Assert.IsType<BiologyTemperatureRangeViewModel>(
-            status.TemperatureRange);
+        var status = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
+        var temperature = Assert.IsType<BiologyTemperatureRangeViewModel>(status.TemperatureRange);
         Assert.True(status.HasTemperatureRange);
         Assert.Equal(185, temperature.BodyTemperature);
         Assert.Equal(187, temperature.LiveTemperature);
@@ -343,19 +341,24 @@ public sealed class BiologyStatusViewModelTests : IDisposable
             PlanetRadius = 6_000_000,
         };
         viewModel.ApplyUpdate(
-        [
-            Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"Population":0}"""),
-            Parse(BodyScan),
-            Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""),
-            Parse("""{"event":"Disembark","SystemAddress":42,"Body":"Test 1","BodyID":1,"OnPlanet":true,"OnStation":false}"""),
-            Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Green","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2}"""),
-        ],
-        status);
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"Population":0}"""),
+                Parse(BodyScan),
+                Parse(
+                    """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""
+                ),
+                Parse(
+                    """{"event":"Disembark","SystemAddress":42,"Body":"Test 1","BodyID":1,"OnPlanet":true,"OnStation":false}"""
+                ),
+                Parse(
+                    """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Green","SubCategory":"$Codex_SubCategory_Organic_Structures;","Latitude":1,"Longitude":2}"""
+                ),
+            ],
+            status
+        );
 
-        var biologyStatus = Assert.IsType<BiologyStatusViewModel>(
-            viewModel.BiologyStatus);
-        var notification = Assert.IsType<BiologyCodexNotificationViewModel>(
-            biologyStatus.CodexNotification);
+        var biologyStatus = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
+        var notification = Assert.IsType<BiologyCodexNotificationViewModel>(biologyStatus.CodexNotification);
         Assert.True(biologyStatus.HasCodexNotification);
         Assert.Equal(2310101, viewModel.LatestBiologyEntryId);
         Assert.Equal(2310101, notification.EntryId);
@@ -367,13 +370,15 @@ public sealed class BiologyStatusViewModelTests : IDisposable
         Assert.Contains(".show", notification.ActionText);
 
         viewModel.ApplyUpdate(
-        [
-            Parse("""{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Species":"$Codex_Ent_Aleoids_01_Name;","Variant":"$Codex_Ent_Aleoids_01_B_Name;"}"""),
-        ],
-        null);
+            [
+                Parse(
+                    """{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Species":"$Codex_Ent_Aleoids_01_Name;","Variant":"$Codex_Ent_Aleoids_01_B_Name;"}"""
+                ),
+            ],
+            null
+        );
 
-        biologyStatus = Assert.IsType<BiologyStatusViewModel>(
-            viewModel.BiologyStatus);
+        biologyStatus = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
         Assert.False(biologyStatus.HasCodexNotification);
         Assert.Equal(2310101, viewModel.LatestBiologyEntryId);
     }
@@ -383,19 +388,17 @@ public sealed class BiologyStatusViewModelTests : IDisposable
     {
         var viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
-        [
-            Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
-            Parse(BodyScan),
-            Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""),
-        ],
-        new EliteStatus
-        {
-            Flags = StatusFlags.InMainShip | StatusFlags.HasLatLong,
-            BodyName = "Test 1",
-        });
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse(BodyScan),
+                Parse(
+                    """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""
+                ),
+            ],
+            new EliteStatus { Flags = StatusFlags.InMainShip | StatusFlags.HasLatLong, BodyName = "Test 1" }
+        );
 
-        var status = Assert.IsType<BiologyStatusViewModel>(
-            viewModel.BiologyStatus);
+        var status = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
         Assert.True(status.RequiresDss);
         Assert.False(status.HasFooter);
         Assert.True(viewModel.ShouldShowBioStatus);
@@ -403,26 +406,24 @@ public sealed class BiologyStatusViewModelTests : IDisposable
         viewModel.SetRepeatVisitBiologySuppression(true);
         Assert.True(viewModel.ShouldShowBioStatus);
 
-        viewModel.ApplyUpdate([], new EliteStatus
-        {
-            GuiFocus = GuiFocus.SystemMap,
-            Flags = StatusFlags.InMainShip,
-            BodyName = "Test 1",
-        });
+        viewModel.ApplyUpdate(
+            [],
+            new EliteStatus
+            {
+                GuiFocus = GuiFocus.SystemMap,
+                Flags = StatusFlags.InMainShip,
+                BodyName = "Test 1",
+            }
+        );
         Assert.False(viewModel.ShouldShowBioStatus);
 
-        viewModel.ApplyUpdate([], new EliteStatus
-        {
-            Flags = StatusFlags.Docked | StatusFlags.InMainShip,
-            BodyName = "Test 1",
-        });
+        viewModel.ApplyUpdate(
+            [],
+            new EliteStatus { Flags = StatusFlags.Docked | StatusFlags.InMainShip, BodyName = "Test 1" }
+        );
         Assert.False(viewModel.ShouldShowBioStatus);
 
-        viewModel.ApplyUpdate([], new EliteStatus
-        {
-            Flags = StatusFlags.InMainShip,
-            BodyName = "Test 1",
-        });
+        viewModel.ApplyUpdate([], new EliteStatus { Flags = StatusFlags.InMainShip, BodyName = "Test 1" });
         viewModel.AutoShowBioStatus = false;
         Assert.False(viewModel.ShouldShowBioStatus);
     }
@@ -442,34 +443,34 @@ public sealed class BiologyStatusViewModelTests : IDisposable
             "$Codex_Ent_Aleoids_01_Name;",
             "Active",
             2310101,
-            state == "stale-sample" ? "Other Body" : "Test 1");
-        var signalsEvent = state == "dss-required"
-            ? Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}""")
-            : Parse("""{"event":"SAASignalsFound","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}""");
+            state == "stale-sample" ? "Other Body" : "Test 1"
+        );
+        var signalsEvent =
+            state == "dss-required"
+                ? Parse(
+                    """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""
+                )
+                : Parse(
+                    """{"event":"SAASignalsFound","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""
+                );
         var exobiology = state is "active-sample" or "stale-sample"
             ? new ExobiologySnapshot(null, activeSample, null, 0, [], 0)
             : ExobiologySnapshot.Empty;
         var supercruise = new EliteStatus
         {
-            Flags = StatusFlags.InMainShip
-                | StatusFlags.Supercruise
-                | StatusFlags.HasLatLong,
+            Flags = StatusFlags.InMainShip | StatusFlags.Supercruise | StatusFlags.HasLatLong,
             GuiFocus = GuiFocus.Saa,
             BodyName = "Test 1",
             PlanetRadius = 6_000_000,
         };
 
         viewModel.ApplyUpdate(
-        [
-            Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
-            Parse(BodyScan),
-            signalsEvent,
-        ],
-        supercruise,
-        exobiology);
+            [Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""), Parse(BodyScan), signalsEvent],
+            supercruise,
+            exobiology
+        );
 
-        var biologyStatus = Assert.IsType<BiologyStatusViewModel>(
-            viewModel.BiologyStatus);
+        var biologyStatus = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
         switch (state)
         {
             case "active-sample":
@@ -501,7 +502,8 @@ public sealed class BiologyStatusViewModelTests : IDisposable
             "$Codex_Ent_Aleoids_01_Name;",
             "Active",
             2310101,
-            "Test 1");
+            "Test 1"
+        );
         var surface = new EliteStatus
         {
             Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
@@ -511,24 +513,23 @@ public sealed class BiologyStatusViewModelTests : IDisposable
             PlanetRadius = 6_000_000,
         };
         viewModel.ApplyUpdate(
-        [
-            Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"Population":0}"""),
-            Parse(BodyScan),
-            Parse("""{"event":"SAASignalsFound","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""),
-        ],
-        surface,
-        new ExobiologySnapshot(null, scanOne, null, 0, [], 0));
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"Population":0}"""),
+                Parse(BodyScan),
+                Parse(
+                    """{"event":"SAASignalsFound","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""
+                ),
+            ],
+            surface,
+            new ExobiologySnapshot(null, scanOne, null, 0, [], 0)
+        );
 
         Assert.True(viewModel.ShouldShowBioStatus);
-        var firstDistance = viewModel.BiologyStatus!.ActiveSample!
-            .NearestDistanceMeters;
+        var firstDistance = viewModel.BiologyStatus!.ActiveSample!.NearestDistanceMeters;
         Assert.NotNull(firstDistance);
 
-        viewModel.ApplyUpdate(
-            [],
-            surface with { Longitude = 0.002 });
-        var secondDistance = viewModel.BiologyStatus!.ActiveSample!
-            .NearestDistanceMeters;
+        viewModel.ApplyUpdate([], surface with { Longitude = 0.002 });
+        var secondDistance = viewModel.BiologyStatus!.ActiveSample!.NearestDistanceMeters;
         Assert.NotNull(secondDistance);
         Assert.True(secondDistance > firstDistance);
 
@@ -541,9 +542,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
             }
         };
 
-        viewModel.ApplyUpdate(
-            [],
-            surface with { Flags2 = StatusFlags2.InTaxi });
+        viewModel.ApplyUpdate([], surface with { Flags2 = StatusFlags2.InTaxi });
         Assert.False(viewModel.ShouldShowBioStatus);
         Assert.True(visibilityChanges > 0);
 
@@ -552,7 +551,8 @@ public sealed class BiologyStatusViewModelTests : IDisposable
             surface with
             {
                 Flags = StatusFlags.InMainShip | StatusFlags.FsdJump | StatusFlags.HasLatLong,
-            });
+            }
+        );
         Assert.False(viewModel.ShouldShowBioStatus);
 
         viewModel.ApplyUpdate([], surface);
@@ -565,30 +565,31 @@ public sealed class BiologyStatusViewModelTests : IDisposable
     {
         var now = new DateTimeOffset(2026, 7, 25, 12, 0, 0, TimeSpan.Zero);
         var viewModel = new SystemSurveyViewModel(
-            new SystemSurveySettingsStore(Path.Combine(
-                temporaryDirectory,
-                "dss-window-ui-settings.json")),
-            utcNow: () => now);
+            new SystemSurveySettingsStore(Path.Combine(temporaryDirectory, "dss-window-ui-settings.json")),
+            utcNow: () => now
+        );
         viewModel.ApplyUpdate(
-        [
-            Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
-            Parse(BodyScan),
-            Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""),
-        ],
-        new EliteStatus
-        {
-            Flags = StatusFlags.InMainShip,
-            BodyName = "Test 1",
-        });
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse(BodyScan),
+                Parse(
+                    """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""
+                ),
+            ],
+            new EliteStatus { Flags = StatusFlags.InMainShip, BodyName = "Test 1" }
+        );
         viewModel.AutoShowBioStatus = false;
 
         Assert.False(viewModel.ShouldShowBioStatus);
 
         viewModel.ApplyUpdate(
-        [
-            Parse("""{"timestamp":"2026-07-25T12:00:00Z","event":"SAAScanComplete","SystemAddress":42,"BodyName":"Test 1","BodyID":1}"""),
-        ],
-        null);
+            [
+                Parse(
+                    """{"timestamp":"2026-07-25T12:00:00Z","event":"SAAScanComplete","SystemAddress":42,"BodyName":"Test 1","BodyID":1}"""
+                ),
+            ],
+            null
+        );
 
         Assert.True(viewModel.IsWithinPostDssBiologyWindow);
         Assert.True(viewModel.ShouldShowBioStatus);
@@ -600,10 +601,13 @@ public sealed class BiologyStatusViewModelTests : IDisposable
 
         viewModel.KeepBioPlottersVisibleAfterDss = false;
         viewModel.ApplyUpdate(
-        [
-            Parse("""{"timestamp":"2026-07-25T12:02:01Z","event":"SAAScanComplete","SystemAddress":42,"BodyName":"Test 1","BodyID":1}"""),
-        ],
-        null);
+            [
+                Parse(
+                    """{"timestamp":"2026-07-25T12:02:01Z","event":"SAAScanComplete","SystemAddress":42,"BodyName":"Test 1","BodyID":1}"""
+                ),
+            ],
+            null
+        );
         Assert.False(viewModel.IsWithinPostDssBiologyWindow);
         Assert.False(viewModel.ShouldShowBioStatus);
     }
@@ -618,16 +622,14 @@ public sealed class BiologyStatusViewModelTests : IDisposable
 
     private SystemSurveyViewModel CreateViewModel()
     {
-        return new SystemSurveyViewModel(new SystemSurveySettingsStore(
-            Path.Combine(temporaryDirectory, "ui-settings.json")));
+        return new SystemSurveyViewModel(
+            new SystemSurveySettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json"))
+        );
     }
 
     private static JournalEventEnvelope Parse(string json)
     {
-        var success = JournalEventEnvelope.TryParse(
-            json,
-            out var journalEvent,
-            out var error);
+        var success = JournalEventEnvelope.TryParse(json, out var journalEvent, out var error);
         Assert.True(success, error);
         return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }

@@ -6,7 +6,8 @@ public sealed class JumpInfoSettingsStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        "SrvSurvey-JumpInfoSettings-" + Guid.NewGuid().ToString("N"));
+        "SrvSurvey-JumpInfoSettings-" + Guid.NewGuid().ToString("N")
+    );
 
     [Fact]
     public void MissingDocumentUsesLegacyCompatibleDefaults()
@@ -46,7 +47,6 @@ public sealed class JumpInfoSettingsStoreTests : IDisposable
 
     private JumpInfoSettingsStore CreateStore()
     {
-        return new JumpInfoSettingsStore(
-            Path.Combine(temporaryDirectory, "ui-settings.json"));
+        return new JumpInfoSettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json"));
     }
 }

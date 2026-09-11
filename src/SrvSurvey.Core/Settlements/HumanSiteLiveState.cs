@@ -5,16 +5,13 @@ using SrvSurvey.Core.Navigation;
 
 namespace SrvSurvey.Core.Settlements;
 
-public sealed class HumanSiteLiveState(
-    HumanSiteTemplateCatalog templates,
-    TimeProvider? timeProvider = null)
+public sealed class HumanSiteLiveState(HumanSiteTemplateCatalog templates, TimeProvider? timeProvider = null)
 {
     private const string OnFootSettlement = "OnFootSettlement";
     private const string EngineerGovernment = "$government_Engineer;";
-    private readonly HumanSiteTemplateCatalog templates = templates
-        ?? throw new ArgumentNullException(nameof(templates));
-    private readonly TimeProvider timeProvider = timeProvider
-        ?? TimeProvider.System;
+    private readonly HumanSiteTemplateCatalog templates =
+        templates ?? throw new ArgumentNullException(nameof(templates));
+    private readonly TimeProvider timeProvider = timeProvider ?? TimeProvider.System;
 
     public HumanSiteLiveSnapshot? CurrentSite { get; private set; }
 
@@ -23,70 +20,68 @@ public sealed class HumanSiteLiveState(
     public bool ApplyGeometry(HumanSiteGeometrySolution geometry)
     {
         ArgumentNullException.ThrowIfNull(geometry);
-        if (CurrentSite is null
+        if (
+            CurrentSite is null
             || geometry.Template.Economy != CurrentSite.Economy
             || geometry.Template.SubType != geometry.SubType
-            || !double.IsFinite(geometry.Heading))
+            || !double.IsFinite(geometry.Heading)
+        )
         {
             return false;
         }
 
         var heading = SurfaceNavigation.NormalizeDegrees(geometry.Heading);
-        if (CurrentSite.SubType == geometry.SubType
-            && EquivalentHeading(CurrentSite.Heading, heading))
+        if (CurrentSite.SubType == geometry.SubType && EquivalentHeading(CurrentSite.Heading, heading))
         {
             return false;
         }
 
-        CurrentSite = CurrentSite with
-        {
-            SubType = geometry.SubType,
-            Template = geometry.Template,
-            Heading = heading,
-        };
+        CurrentSite = CurrentSite with { SubType = geometry.SubType, Template = geometry.Template, Heading = heading };
         Version++;
         return true;
     }
 
     public bool ApplyKnowledge(
         HumanSiteKnowledge knowledge,
-        HumanSiteKnowledgeMergeMode mergeMode =
-            HumanSiteKnowledgeMergeMode.PreferIncoming)
+        HumanSiteKnowledgeMergeMode mergeMode = HumanSiteKnowledgeMergeMode.PreferIncoming
+    )
     {
         ArgumentNullException.ThrowIfNull(knowledge);
-        if (CurrentSite is null
+        if (
+            CurrentSite is null
             || CurrentSite.MarketId != knowledge.MarketId
             || CurrentSite.SystemAddress != knowledge.SystemAddress
-            || CurrentSite.Economy != knowledge.Economy)
+            || CurrentSite.Economy != knowledge.Economy
+        )
         {
             return false;
         }
 
-        var incomingTemplate = knowledge.SubType > 0
-            ? templates.Find(knowledge.Economy, knowledge.SubType)
-            : null;
-        var template = mergeMode == HumanSiteKnowledgeMergeMode.FillMissing
-                && CurrentSite.Template is not null
-            ? CurrentSite.Template
-            : incomingTemplate ?? CurrentSite.Template;
-        var heading = mergeMode == HumanSiteKnowledgeMergeMode.FillMissing
-                && CurrentSite.Heading is not null
-            ? CurrentSite.Heading
-            : knowledge.Heading switch
-            {
-                double savedHeading => SurfaceNavigation.NormalizeDegrees(savedHeading),
-                null => CurrentSite.Heading
-            };
-        var pads = knowledge.AvailablePads.Total > 0
-                && (mergeMode != HumanSiteKnowledgeMergeMode.FillMissing
-                    || CurrentSite.AvailablePads.Total == 0)
-            ? knowledge.AvailablePads
-            : CurrentSite.AvailablePads;
+        var incomingTemplate = knowledge.SubType > 0 ? templates.Find(knowledge.Economy, knowledge.SubType) : null;
+        var template =
+            mergeMode == HumanSiteKnowledgeMergeMode.FillMissing && CurrentSite.Template is not null
+                ? CurrentSite.Template
+                : incomingTemplate ?? CurrentSite.Template;
+        var heading =
+            mergeMode == HumanSiteKnowledgeMergeMode.FillMissing && CurrentSite.Heading is not null
+                ? CurrentSite.Heading
+                : knowledge.Heading switch
+                {
+                    double savedHeading => SurfaceNavigation.NormalizeDegrees(savedHeading),
+                    null => CurrentSite.Heading,
+                };
+        var pads =
+            knowledge.AvailablePads.Total > 0
+            && (mergeMode != HumanSiteKnowledgeMergeMode.FillMissing || CurrentSite.AvailablePads.Total == 0)
+                ? knowledge.AvailablePads
+                : CurrentSite.AvailablePads;
         var subType = template?.SubType ?? CurrentSite.SubType;
-        if (CurrentSite.SubType == subType
+        if (
+            CurrentSite.SubType == subType
             && CurrentSite.Template == template
             && EquivalentHeading(CurrentSite.Heading, heading)
-            && CurrentSite.AvailablePads == pads)
+            && CurrentSite.AvailablePads == pads
+        )
         {
             return false;
         }
@@ -115,24 +110,21 @@ public sealed class HumanSiteLiveState(
             "Docked" => ApplyDocked(journalEvent.Payload),
             "Undocked" => ApplyDockingReset(journalEvent.Payload),
             "Touchdown" => ApplyTouchdown(journalEvent.Payload),
-            "StartJump" or "SupercruiseEntry" or "FSDJump"
-                or "CarrierJump" or "Died" or "Resurrect" or "Shutdown" =>
+            "StartJump" or "SupercruiseEntry" or "FSDJump" or "CarrierJump" or "Died" or "Resurrect" or "Shutdown" =>
                 Clear(),
-            "Music" when string.Equals(
-                GetString(journalEvent.Payload, "MusicTrack"),
-                "MainMenu",
-                StringComparison.Ordinal) => Clear(),
+            "Music"
+                when string.Equals(
+                    GetString(journalEvent.Payload, "MusicTrack"),
+                    "MainMenu",
+                    StringComparison.Ordinal
+                ) => Clear(),
             _ => false,
         };
         if (changed)
         {
             if (CurrentSite is not null)
             {
-                CurrentSite = CurrentSite with
-                {
-                    LastUpdated = journalEvent.Timestamp
-                        ?? timeProvider.GetUtcNow(),
-                };
+                CurrentSite = CurrentSite with { LastUpdated = journalEvent.Timestamp ?? timeProvider.GetUtcNow() };
             }
 
             Version++;
@@ -151,36 +143,29 @@ public sealed class HumanSiteLiveState(
 
         var timestamp = journalEvent.Timestamp ?? timeProvider.GetUtcNow();
         var current = CurrentSite;
-        var firstApproached = current is not null
-            && IsSameSite(current, site.MarketId, site.SystemAddress)
+        var firstApproached =
+            current is not null && IsSameSite(current, site.MarketId, site.SystemAddress)
                 ? current.FirstApproached
                 : timestamp;
         CurrentSite = site with
         {
             FirstApproached = firstApproached,
             LastUpdated = timestamp,
-            AvailablePads = current is not null
-                && IsSameSite(current, site.MarketId, site.SystemAddress)
+            AvailablePads =
+                current is not null && IsSameSite(current, site.MarketId, site.SystemAddress)
                     ? current.AvailablePads
                     : HumanSiteLandingPads.Empty,
-            SubType = current is not null
-                && IsSameSite(current, site.MarketId, site.SystemAddress)
-                    ? current.SubType
-                    : 0,
-            Template = current is not null
-                && IsSameSite(current, site.MarketId, site.SystemAddress)
-                    ? current.Template
-                    : null,
-            Heading = current is not null
-                && IsSameSite(current, site.MarketId, site.SystemAddress)
-                    ? current.Heading
-                    : null,
+            SubType =
+                current is not null && IsSameSite(current, site.MarketId, site.SystemAddress) ? current.SubType : 0,
+            Template =
+                current is not null && IsSameSite(current, site.MarketId, site.SystemAddress) ? current.Template : null,
+            Heading =
+                current is not null && IsSameSite(current, site.MarketId, site.SystemAddress) ? current.Heading : null,
             Docking = HumanSiteDockingStatus.None,
             GrantedPad = 0,
             DockingDeniedReason = null,
-            HasLanded = current is not null
-                && IsSameSite(current, site.MarketId, site.SystemAddress)
-                && current.HasLanded,
+            HasLanded =
+                current is not null && IsSameSite(current, site.MarketId, site.SystemAddress) && current.HasLanded,
         };
         return true;
     }
@@ -199,9 +184,7 @@ public sealed class HumanSiteLiveState(
             StationType = OnFootSettlement,
             AvailablePads = pads,
             SubType = subType,
-            Template = subType > 0
-                ? templates.Find(CurrentSite.Economy, subType)
-                : null,
+            Template = subType > 0 ? templates.Find(CurrentSite.Economy, subType) : null,
             Docking = HumanSiteDockingStatus.Requested,
             GrantedPad = 0,
             DockingDeniedReason = null,
@@ -271,17 +254,13 @@ public sealed class HumanSiteLiveState(
             pads = CurrentSite!.AvailablePads;
         }
 
-        var subType = CurrentSite!.SubType > 0
-            ? CurrentSite.SubType
-            : InferSubType(CurrentSite.Economy, pads);
+        var subType = CurrentSite!.SubType > 0 ? CurrentSite.SubType : InferSubType(CurrentSite.Economy, pads);
         CurrentSite = CurrentSite with
         {
             StationType = OnFootSettlement,
             AvailablePads = pads,
             SubType = subType,
-            Template = subType > 0
-                ? templates.Find(CurrentSite.Economy, subType)
-                : null,
+            Template = subType > 0 ? templates.Find(CurrentSite.Economy, subType) : null,
             Docking = HumanSiteDockingStatus.Docked,
             DockingDeniedReason = null,
             HasLanded = true,
@@ -297,11 +276,10 @@ public sealed class HumanSiteLiveState(
         }
 
         var nearestDestination = GetString(root, "NearestDestination");
-        if (!string.IsNullOrWhiteSpace(nearestDestination)
-            && !string.Equals(
-                nearestDestination,
-                CurrentSite.Name,
-                StringComparison.OrdinalIgnoreCase))
+        if (
+            !string.IsNullOrWhiteSpace(nearestDestination)
+            && !string.Equals(nearestDestination, CurrentSite.Name, StringComparison.OrdinalIgnoreCase)
+        )
         {
             return false;
         }
@@ -310,9 +288,7 @@ public sealed class HumanSiteLiveState(
         return true;
     }
 
-    private static bool TryReadCompatibleSite(
-        JsonElement root,
-        out HumanSiteLiveSnapshot site)
+    private static bool TryReadCompatibleSite(JsonElement root, out HumanSiteLiveSnapshot site)
     {
         site = null!;
         var name = GetString(root, "Name");
@@ -322,9 +298,9 @@ public sealed class HumanSiteLiveState(
         var bodyId = GetInt32(root, "BodyID") ?? -1;
         var latitude = GetDouble(root, "Latitude");
         var longitude = GetDouble(root, "Longitude");
-        var economy = HumanSiteEconomyParser.ParseJournalValue(
-            GetString(root, "StationEconomy"));
-        if (string.IsNullOrWhiteSpace(name)
+        var economy = HumanSiteEconomyParser.ParseJournalValue(GetString(root, "StationEconomy"));
+        if (
+            string.IsNullOrWhiteSpace(name)
             || name.StartsWith("$Ancient", StringComparison.Ordinal)
             || marketId <= 0
             || systemAddress <= 0
@@ -335,10 +311,8 @@ public sealed class HumanSiteLiveState(
             || services.Length == 0
             || services.Contains("socialspace", StringComparer.OrdinalIgnoreCase)
             || IsConstructionSite(name, services)
-            || string.Equals(
-                GetString(root, "StationGovernment"),
-                EngineerGovernment,
-                StringComparison.Ordinal))
+            || string.Equals(GetString(root, "StationGovernment"), EngineerGovernment, StringComparison.Ordinal)
+        )
         {
             return false;
         }
@@ -369,15 +343,15 @@ public sealed class HumanSiteLiveState(
             null,
             false,
             default,
-            default);
+            default
+        );
         return true;
     }
 
-    private int InferSubType(
-        HumanSiteEconomy economy,
-        HumanSiteLandingPads pads)
+    private int InferSubType(HumanSiteEconomy economy, HumanSiteLandingPads pads)
     {
-        var matches = templates.ForEconomy(economy)
+        var matches = templates
+            .ForEconomy(economy)
             .Where(template => HumanSiteLandingPads.From(template) == pads)
             .Select(template => template.SubType)
             .Take(2)
@@ -398,19 +372,12 @@ public sealed class HumanSiteLiveState(
 
     private static bool IsOnFootSettlement(JsonElement root)
     {
-        return string.Equals(
-            GetString(root, "StationType"),
-            OnFootSettlement,
-            StringComparison.OrdinalIgnoreCase);
+        return string.Equals(GetString(root, "StationType"), OnFootSettlement, StringComparison.OrdinalIgnoreCase);
     }
 
-    private static bool IsSameSite(
-        HumanSiteLiveSnapshot site,
-        long marketId,
-        long systemAddress)
+    private static bool IsSameSite(HumanSiteLiveSnapshot site, long marketId, long systemAddress)
     {
-        return site.MarketId == marketId
-            && site.SystemAddress == systemAddress;
+        return site.MarketId == marketId && site.SystemAddress == systemAddress;
     }
 
     private bool Clear()
@@ -424,20 +391,15 @@ public sealed class HumanSiteLiveState(
         return true;
     }
 
-    private static bool IsConstructionSite(
-        string name,
-        IReadOnlyList<string> services)
+    private static bool IsConstructionSite(string name, IReadOnlyList<string> services)
     {
         return ColonizationDockingSnapshot.IsConstructionSiteName(name)
-            && services.Contains(
-                "colonisationcontribution",
-                StringComparer.OrdinalIgnoreCase);
+            && services.Contains("colonisationcontribution", StringComparer.OrdinalIgnoreCase);
     }
 
     private static HumanSiteLandingPads ReadLandingPads(JsonElement root)
     {
-        if (!root.TryGetProperty("LandingPads", out var pads)
-            || pads.ValueKind != JsonValueKind.Object)
+        if (!root.TryGetProperty("LandingPads", out var pads) || pads.ValueKind != JsonValueKind.Object)
         {
             return HumanSiteLandingPads.Empty;
         }
@@ -445,66 +407,55 @@ public sealed class HumanSiteLiveState(
         return new HumanSiteLandingPads(
             Math.Max(0, GetInt32(pads, "Small") ?? 0),
             Math.Max(0, GetInt32(pads, "Medium") ?? 0),
-            Math.Max(0, GetInt32(pads, "Large") ?? 0));
+            Math.Max(0, GetInt32(pads, "Large") ?? 0)
+        );
     }
 
-    private static string[] GetStringArray(
-        JsonElement root,
-        string propertyName)
+    private static string[] GetStringArray(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
-            && value.ValueKind == JsonValueKind.Array
-                ? value.EnumerateArray()
-                    .Where(item => item.ValueKind == JsonValueKind.String)
-                    .Select(item => item.GetString())
-                    .Where(item => !string.IsNullOrWhiteSpace(item))
-                    .Select(item => item!)
-                    .ToArray()
-                : [];
+        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.Array
+            ? value
+                .EnumerateArray()
+                .Where(item => item.ValueKind == JsonValueKind.String)
+                .Select(item => item.GetString())
+                .Where(item => !string.IsNullOrWhiteSpace(item))
+                .Select(item => item!)
+                .ToArray()
+            : [];
     }
 
-    private static string? GetNestedString(
-        JsonElement root,
-        string objectName,
-        string propertyName)
+    private static string? GetNestedString(JsonElement root, string objectName, string propertyName)
     {
-        return root.TryGetProperty(objectName, out var nested)
-            && nested.ValueKind == JsonValueKind.Object
-                ? GetString(nested, propertyName)
-                : null;
+        return root.TryGetProperty(objectName, out var nested) && nested.ValueKind == JsonValueKind.Object
+            ? GetString(nested, propertyName)
+            : null;
     }
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
-            && value.ValueKind == JsonValueKind.String
-                ? value.GetString()
-                : null;
+        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+            ? value.GetString()
+            : null;
     }
 
     private static int? GetInt32(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
-            && value.TryGetInt32(out var result)
-                ? result
-                : null;
+        return root.TryGetProperty(propertyName, out var value) && value.TryGetInt32(out var result) ? result : null;
     }
 
     private static long? GetInt64(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
-            && value.TryGetInt64(out var result)
-                ? result
-                : null;
+        return root.TryGetProperty(propertyName, out var value) && value.TryGetInt64(out var result) ? result : null;
     }
 
     private static double? GetDouble(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
+        return
+            root.TryGetProperty(propertyName, out var value)
             && value.TryGetDouble(out var result)
             && double.IsFinite(result)
-                ? result
-                : null;
+            ? result
+            : null;
     }
 
     private static bool EquivalentHeading(double? left, double? right)
@@ -514,8 +465,7 @@ public sealed class HumanSiteLiveState(
             return false;
         }
 
-        return !left.HasValue
-            || Math.Abs(left.Value - right!.Value) <= 0.0001d;
+        return !left.HasValue || Math.Abs(left.Value - right!.Value) <= 0.0001d;
     }
 }
 
@@ -571,16 +521,12 @@ public sealed record HumanSiteLiveSnapshot(
     string? DockingDeniedReason,
     bool HasLanded,
     DateTimeOffset FirstApproached,
-    DateTimeOffset LastUpdated);
+    DateTimeOffset LastUpdated
+);
 
-public readonly record struct HumanSiteSurfaceLocation(
-    double Latitude,
-    double Longitude);
+public readonly record struct HumanSiteSurfaceLocation(double Latitude, double Longitude);
 
-public readonly record struct HumanSiteLandingPads(
-    int Small,
-    int Medium,
-    int Large)
+public readonly record struct HumanSiteLandingPads(int Small, int Medium, int Large)
 {
     public static HumanSiteLandingPads Empty { get; } = new(0, 0, 0);
 
@@ -588,12 +534,10 @@ public readonly record struct HumanSiteLandingPads(
     {
         ArgumentNullException.ThrowIfNull(template);
         return new HumanSiteLandingPads(
-            template.LandingPads.Count(
-                pad => pad.Size == HumanSiteLandingPadSize.Small),
-            template.LandingPads.Count(
-                pad => pad.Size == HumanSiteLandingPadSize.Medium),
-            template.LandingPads.Count(
-                pad => pad.Size == HumanSiteLandingPadSize.Large));
+            template.LandingPads.Count(pad => pad.Size == HumanSiteLandingPadSize.Small),
+            template.LandingPads.Count(pad => pad.Size == HumanSiteLandingPadSize.Medium),
+            template.LandingPads.Count(pad => pad.Size == HumanSiteLandingPadSize.Large)
+        );
     }
 
     public int Total => Small + Medium + Large;
@@ -619,7 +563,8 @@ public sealed record HumanSiteKnowledge(
     int SubType,
     double? Heading,
     HumanSiteLandingPads AvailablePads,
-    HumanSiteGeometrySource GeometrySource);
+    HumanSiteGeometrySource GeometrySource
+);
 
 public enum HumanSiteGeometrySource
 {

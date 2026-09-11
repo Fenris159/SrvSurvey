@@ -7,7 +7,8 @@ public sealed class EmptyBoxelStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-empty-boxel-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-empty-boxel-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public async Task SetEmptyUsesTheLegacyMassCodeGGroupAndIdFormat()
@@ -23,11 +24,8 @@ public sealed class EmptyBoxelStoreTests : IDisposable
         Assert.Contains(boxel.Id, await store.LoadGroupAsync(boxel));
 
         var path = store.GetFilePath(boxel);
-        Assert.Equal(
-            Path.Combine(temporaryDirectory, "emptyBoxels"),
-            Path.GetDirectoryName(path));
-        var values = JsonSerializer.Deserialize<HashSet<string>>(
-            await File.ReadAllTextAsync(path));
+        Assert.Equal(Path.Combine(temporaryDirectory, "emptyBoxels"), Path.GetDirectoryName(path));
+        var values = JsonSerializer.Deserialize<HashSet<string>>(await File.ReadAllTextAsync(path));
         Assert.Contains(boxel.Id, Assert.IsType<HashSet<string>>(values));
 
         Assert.True(await store.SetEmptyAsync(boxel, false));
@@ -44,8 +42,7 @@ public sealed class EmptyBoxelStoreTests : IDisposable
         const string malformed = "[\"IL-P c5\",";
         await File.WriteAllTextAsync(path, malformed);
 
-        var exception = await Assert.ThrowsAsync<InvalidDataException>(
-            () => store.SetEmptyAsync(boxel, true));
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(() => store.SetEmptyAsync(boxel, true));
 
         Assert.Contains("was not changed", exception.Message, StringComparison.Ordinal);
         Assert.Equal(malformed, await File.ReadAllTextAsync(path));
@@ -56,10 +53,9 @@ public sealed class EmptyBoxelStoreTests : IDisposable
     {
         var store = new EmptyBoxelStore(temporaryDirectory);
 
-        await Assert.ThrowsAsync<ArgumentException>(
-            () => store.SetEmptyAsync(
-                BoxelAddress.Parse("Praea Euq IL-P h5-0"),
-                true));
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            store.SetEmptyAsync(BoxelAddress.Parse("Praea Euq IL-P h5-0"), true)
+        );
     }
 
     public void Dispose()

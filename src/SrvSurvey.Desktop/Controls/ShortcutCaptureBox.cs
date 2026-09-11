@@ -11,11 +11,11 @@ namespace SrvSurvey.Desktop.Controls;
 
 public sealed class ShortcutCaptureBox : TextBox
 {
-    public static readonly StyledProperty<string> ChordProperty =
-        AvaloniaProperty.Register<ShortcutCaptureBox, string>(
-            nameof(Chord),
-            string.Empty,
-            defaultBindingMode: BindingMode.TwoWay);
+    public static readonly StyledProperty<string> ChordProperty = AvaloniaProperty.Register<ShortcutCaptureBox, string>(
+        nameof(Chord),
+        string.Empty,
+        defaultBindingMode: BindingMode.TwoWay
+    );
 
     private readonly HashSet<Key> heldModifiers = [];
     private readonly ControllerChordTracker controllerTracker = new();
@@ -36,21 +36,9 @@ public sealed class ShortcutCaptureBox : TextBox
         };
         LostFocus += (_, _) => EndFocusInteraction();
         DetachedFromVisualTree += (_, _) => EndFocusInteraction();
-        AddHandler(
-            PointerPressedEvent,
-            (_, _) => BeginCapture(),
-            RoutingStrategies.Tunnel,
-            handledEventsToo: true);
-        AddHandler(
-            KeyDownEvent,
-            OnCaptureKeyDown,
-            RoutingStrategies.Tunnel,
-            handledEventsToo: true);
-        AddHandler(
-            KeyUpEvent,
-            OnCaptureKeyUp,
-            RoutingStrategies.Tunnel,
-            handledEventsToo: true);
+        AddHandler(PointerPressedEvent, (_, _) => BeginCapture(), RoutingStrategies.Tunnel, handledEventsToo: true);
+        AddHandler(KeyDownEvent, OnCaptureKeyDown, RoutingStrategies.Tunnel, handledEventsToo: true);
+        AddHandler(KeyUpEvent, OnCaptureKeyUp, RoutingStrategies.Tunnel, handledEventsToo: true);
     }
 
     public string Chord
@@ -165,19 +153,17 @@ public sealed class ShortcutCaptureBox : TextBox
             return;
         }
 
-        var chord = controllerTracker.UpdateToken(
-            change.Token,
-            change.IsPressed);
+        var chord = controllerTracker.UpdateToken(change.Token, change.IsPressed);
         if (chord is not null)
         {
             Commit(chord);
             return;
         }
 
-        if (controllerTracker.Pressed.Count > 0
-            && InputChord.TryNormalize(
-                string.Join(' ', controllerTracker.Pressed),
-                out var candidate))
+        if (
+            controllerTracker.Pressed.Count > 0
+            && InputChord.TryNormalize(string.Join(' ', controllerTracker.Pressed), out var candidate)
+        )
         {
             candidateChord = candidate;
             UpdateDisplay();
@@ -254,24 +240,19 @@ public sealed class ShortcutCaptureBox : TextBox
             PointerPressedEvent,
             OnTopLevelPointerPressed,
             RoutingStrategies.Tunnel,
-            handledEventsToo: true);
+            handledEventsToo: true
+        );
     }
 
     private void DetachOutsidePointerHandler()
     {
-        captureTopLevel?.RemoveHandler(
-            PointerPressedEvent,
-            OnTopLevelPointerPressed);
+        captureTopLevel?.RemoveHandler(PointerPressedEvent, OnTopLevelPointerPressed);
         captureTopLevel = null;
     }
 
-    private void OnTopLevelPointerPressed(
-        object? sender,
-        PointerPressedEventArgs eventArgs)
+    private void OnTopLevelPointerPressed(object? sender, PointerPressedEventArgs eventArgs)
     {
-        if (eventArgs.Source is Visual source
-                && (ReferenceEquals(source, this)
-                    || this.IsVisualAncestorOf(source)))
+        if (eventArgs.Source is Visual source && (ReferenceEquals(source, this) || this.IsVisualAncestorOf(source)))
         {
             return;
         }
@@ -325,9 +306,7 @@ public sealed class ShortcutCaptureBox : TextBox
 
     private void UpdateDisplay()
     {
-        Text = candidateChord.Length > 0
-            ? candidateChord
-            : FormatCandidate(includePrompt: true);
+        Text = candidateChord.Length > 0 ? candidateChord : FormatCandidate(includePrompt: true);
     }
 
     private string FormatCandidate(bool includePrompt)
@@ -362,9 +341,7 @@ public sealed class ShortcutCaptureBox : TextBox
 
     private static bool IsModifier(Key key)
     {
-        return key is Key.LeftAlt or Key.RightAlt
-            or Key.LeftCtrl or Key.RightCtrl
-            or Key.LeftShift or Key.RightShift;
+        return key is Key.LeftAlt or Key.RightAlt or Key.LeftCtrl or Key.RightCtrl or Key.LeftShift or Key.RightShift;
     }
 
     private static string? GetKeyName(Key key)
@@ -379,9 +356,7 @@ public sealed class ShortcutCaptureBox : TextBox
             Key.OemPeriod => "OemPeriod",
             Key.OemQuestion => "OemQuestion",
             Key.Return => "Enter",
-            _ when name.Length == 2
-                && name[0] == 'D'
-                && char.IsDigit(name[1]) => name,
+            _ when name.Length == 2 && name[0] == 'D' && char.IsDigit(name[1]) => name,
             _ => name,
         };
     }

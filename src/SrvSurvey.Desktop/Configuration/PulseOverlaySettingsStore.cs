@@ -14,8 +14,7 @@ public sealed class PulseOverlaySettingsStore
     public PulseOverlayPreferences Load()
     {
         var settings = documentStore.Load()["PulseOverlay"] as JsonObject;
-        return new PulseOverlayPreferences(
-            GetBoolean(settings, "Enabled", true));
+        return new PulseOverlayPreferences(GetBoolean(settings, "Enabled", true));
     }
 
     public void Save(PulseOverlayPreferences preferences)
@@ -35,15 +34,11 @@ public sealed class PulseOverlaySettingsStore
         });
     }
 
-    private static bool GetBoolean(
-        JsonObject? settings,
-        string propertyName,
-        bool fallback)
+    private static bool GetBoolean(JsonObject? settings, string propertyName, bool fallback)
     {
-        return settings?[propertyName] is JsonValue value
-            && value.TryGetValue<bool>(out var result)
-                ? result
-                : fallback;
+        return settings?[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result)
+            ? result
+            : fallback;
     }
 }
 

@@ -5,8 +5,7 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class ColonizationProjectEditorViewModelTests
 {
-    private readonly ColonizationBuildCatalog catalog =
-        ColonizationBuildCatalog.LoadEmbedded();
+    private readonly ColonizationBuildCatalog catalog = ColonizationBuildCatalog.LoadEmbedded();
 
     [Fact]
     public async Task DoesNotReadOrWriteWithoutCompleteConsentedContext()
@@ -73,15 +72,17 @@ public sealed class ColonizationProjectEditorViewModelTests
     {
         var createdCount = 0;
         var client = new StubRavenColonialClient();
-        var editor = Create(client, _ =>
-        {
-            createdCount++;
-            return Task.CompletedTask;
-        });
+        var editor = Create(
+            client,
+            _ =>
+            {
+                createdCount++;
+                return Task.CompletedTask;
+            }
+        );
         editor.UpdateContext(ReadyContext());
         await editor.PrepareAsync();
-        editor.SelectedBuild = editor.BuildOptions.Single(option =>
-            option.Build.BuildType == "no_truss");
+        editor.SelectedBuild = editor.BuildOptions.Single(option => option.Build.BuildType == "no_truss");
         editor.SelectedLayout = "no_truss";
 
         await editor.ReviewAsync();
@@ -95,8 +96,7 @@ public sealed class ColonizationProjectEditorViewModelTests
         Assert.Equal(1, createdCount);
         Assert.False(editor.IsConfirmationPending);
         Assert.True(editor.HasCreatedProject);
-        Assert.Equal("Test Cmdr", Assert.Single(
-            client.LastCreated!.Commanders.Keys));
+        Assert.Equal("Test Cmdr", Assert.Single(client.LastCreated!.Commanders.Keys));
         Assert.Equal("no_truss", client.LastCreated.BuildType);
         Assert.Equal(42, client.LastCreated.MarketId);
     }
@@ -120,8 +120,7 @@ public sealed class ColonizationProjectEditorViewModelTests
         };
         var client = new StubRavenColonialClient
         {
-            SiteResponses = new Queue<IReadOnlyList<ColonizationSystemSite>>(
-            [
+            SiteResponses = new Queue<IReadOnlyList<ColonizationSystemSite>>([
                 [primary],
                 [primary],
                 [createdSite, primary],
@@ -129,13 +128,9 @@ public sealed class ColonizationProjectEditorViewModelTests
             ]),
         };
         var editor = Create(client);
-        editor.UpdateContext(ReadyContext() with
-        {
-            RavenApiKey = "secret-key",
-        });
+        editor.UpdateContext(ReadyContext() with { RavenApiKey = "secret-key" });
         await editor.PrepareAsync();
-        editor.SelectedBuild = editor.BuildOptions.Single(option =>
-            option.Build.BuildType == "no_truss");
+        editor.SelectedBuild = editor.BuildOptions.Single(option => option.Build.BuildType == "no_truss");
         editor.SelectedLayout = "no_truss";
         await editor.ReviewAsync();
 
@@ -143,9 +138,7 @@ public sealed class ColonizationProjectEditorViewModelTests
 
         Assert.Equal(1, client.CreateCount);
         Assert.Equal("secret-key", client.LastSiteUpdateApiKey);
-        Assert.Equal(
-            ["primary", "created-site"],
-            client.LastSiteUpdate!.OrderedSiteIds);
+        Assert.Equal(["primary", "created-site"], client.LastSiteUpdate!.OrderedSiteIds);
         Assert.Empty(client.LastSiteUpdate.UpdatedSites);
         Assert.Empty(client.LastSiteUpdate.DeletedSiteIds);
         Assert.Contains("restored", editor.StatusMessage);
@@ -169,8 +162,7 @@ public sealed class ColonizationProjectEditorViewModelTests
         var editor = Create(client);
         editor.UpdateContext(ReadyContext());
         await editor.PrepareAsync();
-        editor.SelectedBuild = editor.BuildOptions.Single(option =>
-            option.Build.BuildType == "no_truss");
+        editor.SelectedBuild = editor.BuildOptions.Single(option => option.Build.BuildType == "no_truss");
         editor.SelectedLayout = "no_truss";
         await editor.ReviewAsync();
 
@@ -248,12 +240,10 @@ public sealed class ColonizationProjectEditorViewModelTests
 
     private ColonizationProjectEditorViewModel Create(
         StubRavenColonialClient client,
-        Func<ColonizationProject, Task>? onCreated = null)
+        Func<ColonizationProject, Task>? onCreated = null
+    )
     {
-        return new ColonizationProjectEditorViewModel(
-            client,
-            catalog,
-            onCreated ?? (_ => Task.CompletedTask));
+        return new ColonizationProjectEditorViewModel(client, catalog, onCreated ?? (_ => Task.CompletedTask));
     }
 
     private static ColonizationProjectEditorContext ReadyContext()
@@ -269,28 +259,24 @@ public sealed class ColonizationProjectEditorViewModelTests
                 "Test System",
                 "Orbital Construction Site: Hope",
                 "Test Faction",
-                ["colonisationcontribution"]),
+                ["colonisationcontribution"]
+            ),
             new ColonizationConstructionDepotSnapshot(
                 DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
                 42,
                 0.25,
                 IsComplete: false,
                 IsFailed: false,
-                [
-                    new ColonizationResourceRequirement(
-                        "steel", "Steel", 100, 25, 1),
-                ]));
+                [new ColonizationResourceRequirement("steel", "Steel", 100, 25, 1)]
+            )
+        );
     }
 
     private sealed class StubRavenColonialClient : IRavenColonialClient
     {
         public IReadOnlyList<ColonizationSystemSite> Sites { get; set; } = [];
 
-        public Queue<IReadOnlyList<ColonizationSystemSite>>? SiteResponses
-        {
-            get;
-            init;
-        }
+        public Queue<IReadOnlyList<ColonizationSystemSite>>? SiteResponses { get; init; }
 
         public string? Architect { get; set; }
 
@@ -308,18 +294,13 @@ public sealed class ColonizationProjectEditorViewModelTests
 
         public Task<ColonizationCommanderProjects> GetCommanderProjectsAsync(
             string commanderName,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
-            return Task.FromResult(new ColonizationCommanderProjects(
-                [],
-                [],
-                null,
-                []));
+            return Task.FromResult(new ColonizationCommanderProjects([], [], null, []));
         }
 
-        public Task<string?> GetCommanderByApiKeyAsync(
-            string apiKey,
-            CancellationToken cancellationToken = default)
+        public Task<string?> GetCommanderByApiKeyAsync(string apiKey, CancellationToken cancellationToken = default)
         {
             throw new NotSupportedException();
         }
@@ -327,15 +308,13 @@ public sealed class ColonizationProjectEditorViewModelTests
         public Task<IReadOnlyList<string>> SaveHiddenProjectIdsAsync(
             string commanderName,
             IEnumerable<string> hiddenProjectIds,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
-            return Task.FromResult<IReadOnlyList<string>>(
-                hiddenProjectIds.ToArray());
+            return Task.FromResult<IReadOnlyList<string>>(hiddenProjectIds.ToArray());
         }
 
-        public Task<ColonizationProject?> GetProjectAsync(
-            string buildId,
-            CancellationToken cancellationToken = default)
+        public Task<ColonizationProject?> GetProjectAsync(string buildId, CancellationToken cancellationToken = default)
         {
             return Task.FromResult<ColonizationProject?>(null);
         }
@@ -343,46 +322,43 @@ public sealed class ColonizationProjectEditorViewModelTests
         public Task<ColonizationProject?> GetProjectAsync(
             long systemAddress,
             long marketId,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
         public Task<ColonizationProject> UpdateProjectAsync(
             ColonizationProjectUpdate update,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
-        public Task MarkProjectCompleteAsync(
-            string buildId,
-            CancellationToken cancellationToken = default) =>
+        public Task MarkProjectCompleteAsync(string buildId, CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
         public Task ContributeToProjectAsync(
             string buildId,
             string commanderName,
             IReadOnlyDictionary<string, int> contributions,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
         public Task SetPrimaryProjectAsync(
             string commanderName,
             string? buildId,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
         public Task<IReadOnlyList<ColonizationSystemSite>> GetSystemSitesAsync(
             string systemNameOrAddress,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             SiteReadCount++;
-            return Task.FromResult(
-                SiteResponses is { Count: > 0 }
-                    ? SiteResponses.Dequeue()
-                    : Sites);
+            return Task.FromResult(SiteResponses is { Count: > 0 } ? SiteResponses.Dequeue() : Sites);
         }
 
         public Task<string?> GetSystemArchitectAsync(
             string systemNameOrAddress,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             ArchitectReadCount++;
             return Task.FromResult(Architect);
@@ -390,27 +366,24 @@ public sealed class ColonizationProjectEditorViewModelTests
 
         public Task<ColonizationSystemRecord> GetSystemAsync(
             string systemNameOrAddress,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
         public Task<ColonizationSystemRecord> ImportSystemBodiesAsync(
             string systemNameOrAddress,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
         public Task<ColonizationSystemRecord> UpdateSystemSitesAsync(
             string systemNameOrAddress,
             ColonizationSystemSiteUpdate update,
             string apiKey,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             LastSiteUpdate = update;
             LastSiteUpdateApiKey = apiKey;
-            return Task.FromResult(new ColonizationSystemRecord
-            {
-                SystemAddress = 99,
-                Name = "Test System",
-            });
+            return Task.FromResult(new ColonizationSystemRecord { SystemAddress = 99, Name = "Test System" });
         }
 
         public Task PatchSystemSiteAsync(
@@ -418,12 +391,13 @@ public sealed class ColonizationProjectEditorViewModelTests
             string siteId,
             ColonizationSystemSitePatch patch,
             string apiKey,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
 
         public Task<ColonizationProject?> CreateProjectAsync(
             ColonizationProjectCreate project,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             CreateCount++;
             LastCreated = project;
@@ -440,12 +414,14 @@ public sealed class ColonizationProjectEditorViewModelTests
                     MaximumRequired = project.MaximumRequired,
                     RemainingRequired = project.Commodities.Values.Sum(),
                     Commodities = project.Commodities,
-                });
+                }
+            );
         }
 
         public Task<ColonizationFleetCarrier?> GetFleetCarrierAsync(
             long marketId,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             return Task.FromResult<ColonizationFleetCarrier?>(null);
         }
@@ -453,27 +429,28 @@ public sealed class ColonizationProjectEditorViewModelTests
         public Task<ColonizationFleetCarrier> PublishFleetCarrierAsync(
             ColonizationFleetCarrierRegistration carrier,
             string apiKey,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             throw new NotSupportedException();
         }
 
-        public Task<IReadOnlyDictionary<string, int>>
-            ReplaceFleetCarrierCargoAsync(
-                long marketId,
-                IReadOnlyDictionary<string, int> cargo,
-                string apiKey,
-                CancellationToken cancellationToken = default)
+        public Task<IReadOnlyDictionary<string, int>> ReplaceFleetCarrierCargoAsync(
+            long marketId,
+            IReadOnlyDictionary<string, int> cargo,
+            string apiKey,
+            CancellationToken cancellationToken = default
+        )
         {
             return Task.FromResult(cargo);
         }
 
-        public Task<IReadOnlyDictionary<string, int>>
-            AdjustFleetCarrierCargoAsync(
-                long marketId,
-                IReadOnlyDictionary<string, int> cargoChanges,
-                string apiKey,
-                CancellationToken cancellationToken = default)
+        public Task<IReadOnlyDictionary<string, int>> AdjustFleetCarrierCargoAsync(
+            long marketId,
+            IReadOnlyDictionary<string, int> cargoChanges,
+            string apiKey,
+            CancellationToken cancellationToken = default
+        )
         {
             return Task.FromResult(cargoChanges);
         }
@@ -481,7 +458,7 @@ public sealed class ColonizationProjectEditorViewModelTests
         public Task PublishCurrentShipAsync(
             ColonizationCurrentShip ship,
             string apiKey,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            CancellationToken cancellationToken = default
+        ) => throw new NotSupportedException();
     }
 }

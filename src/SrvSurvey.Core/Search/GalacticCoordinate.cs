@@ -5,13 +5,9 @@ public readonly record struct GalacticCoordinate
     [System.Text.Json.Serialization.JsonConstructor]
     public GalacticCoordinate(double x, double y, double z)
     {
-        if (!double.IsFinite(x)
-            || !double.IsFinite(y)
-            || !double.IsFinite(z))
+        if (!double.IsFinite(x) || !double.IsFinite(y) || !double.IsFinite(z))
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(x),
-                "Galactic coordinates must be finite numbers.");
+            throw new ArgumentOutOfRangeException(nameof(x), "Galactic coordinates must be finite numbers.");
         }
 
         X = x;
@@ -27,10 +23,7 @@ public readonly record struct GalacticCoordinate
 
     public double DistanceTo(GalacticCoordinate other)
     {
-        return Math.Sqrt(
-            Math.Pow(X - other.X, 2)
-                + Math.Pow(Y - other.Y, 2)
-                + Math.Pow(Z - other.Z, 2));
+        return Math.Sqrt(Math.Pow(X - other.X, 2) + Math.Pow(Y - other.Y, 2) + Math.Pow(Z - other.Z, 2));
     }
 
     public override string ToString()
@@ -39,7 +32,4 @@ public readonly record struct GalacticCoordinate
     }
 }
 
-public sealed record StarSystemReference(
-    string Name,
-    long SystemAddress,
-    GalacticCoordinate Position);
+public sealed record StarSystemReference(string Name, long SystemAddress, GalacticCoordinate Position);

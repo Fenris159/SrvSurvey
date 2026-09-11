@@ -13,18 +13,14 @@ public sealed class PriorScansOverlayViewModelTests : IDisposable
     private const string Species = "$Codex_Ent_Aleoids_01_Name;";
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        "SrvSurvey-PriorScansOverlay-" + Guid.NewGuid().ToString("N"));
+        "SrvSurvey-PriorScansOverlay-" + Guid.NewGuid().ToString("N")
+    );
 
     [Fact]
     public async Task LoadsCurrentSystemOnceAndRecalculatesSurfaceNavigation()
     {
         var survey = CreateSurvey();
-        var client = new StubClient(new CanonnSystemPoiResult(
-            "Test",
-            [
-                Signal("1", 0, 0.01),
-                Signal("2", 0, 0.02),
-            ]));
+        var client = new StubClient(new CanonnSystemPoiResult("Test", [Signal("1", 0, 0.01), Signal("2", 0, 0.02)]));
         using var viewModel = CreateViewModel(survey, client);
 
         await viewModel.RefreshAsync();
@@ -47,39 +43,25 @@ public sealed class PriorScansOverlayViewModelTests : IDisposable
         await viewModel.RefreshAsync();
 
         Assert.Equal(1, client.CallCount);
-        Assert.Equal(
-            90,
-            Assert.Single(Assert.Single(viewModel.Species).Targets)
-                .RelativeBearingDegrees,
-            6);
+        Assert.Equal(90, Assert.Single(Assert.Single(viewModel.Species).Targets).RelativeBearingDegrees, 6);
     }
 
     [Fact]
     public async Task StatusOnlyUpdatesRecalculateHeadingWithoutReloadingCanonn()
     {
         var survey = CreateSurvey();
-        var client = new StubClient(new CanonnSystemPoiResult(
-            "Test",
-            [Signal("1", 0, 0.01)]));
+        var client = new StubClient(new CanonnSystemPoiResult("Test", [Signal("1", 0, 0.01)]));
         using var viewModel = CreateViewModel(survey, client);
         await viewModel.RefreshAsync();
         Assert.Equal(1, client.CallCount);
-        Assert.Equal(
-            0,
-            Assert.Single(Assert.Single(viewModel.Species).Targets)
-                .RelativeBearingDegrees,
-            6);
+        Assert.Equal(0, Assert.Single(Assert.Single(viewModel.Species).Targets).RelativeBearingDegrees, 6);
 
         survey.ApplyUpdate([], SurfaceStatus(heading: 180));
         await viewModel.RefreshAsync();
 
         Assert.Equal(1, client.CallCount);
         // Target lies east (bearing 90°); heading 180° → relative bearing 270°.
-        Assert.Equal(
-            270,
-            Assert.Single(Assert.Single(viewModel.Species).Targets)
-                .RelativeBearingDegrees,
-            6);
+        Assert.Equal(270, Assert.Single(Assert.Single(viewModel.Species).Targets).RelativeBearingDegrees, 6);
         Assert.Equal("HEADING 180°", viewModel.HeadingText);
     }
 
@@ -87,9 +69,7 @@ public sealed class PriorScansOverlayViewModelTests : IDisposable
     public async Task LandingGearPreferenceSuppressesFlightButNotSupercruise()
     {
         var survey = CreateSurvey();
-        var client = new StubClient(new CanonnSystemPoiResult(
-            "Test",
-            [Signal("1", 0, 0.01)]));
+        var client = new StubClient(new CanonnSystemPoiResult("Test", [Signal("1", 0, 0.01)]));
         using var viewModel = CreateViewModel(survey, client);
         await viewModel.RefreshAsync();
         Assert.True(viewModel.ShouldShow);
@@ -101,14 +81,15 @@ public sealed class PriorScansOverlayViewModelTests : IDisposable
         survey.ApplyUpdate([], ShipStatus(landingGearDown: true));
         Assert.True(viewModel.ShouldShow);
 
-        survey.ApplyUpdate([], new EliteStatus
-        {
-            Flags = StatusFlags.HasLatLong
-                | StatusFlags.InMainShip
-                | StatusFlags.Supercruise,
-            BodyName = "Test 1",
-            PlanetRadius = 1_000_000,
-        });
+        survey.ApplyUpdate(
+            [],
+            new EliteStatus
+            {
+                Flags = StatusFlags.HasLatLong | StatusFlags.InMainShip | StatusFlags.Supercruise,
+                BodyName = "Test 1",
+                PlanetRadius = 1_000_000,
+            }
+        );
         Assert.True(viewModel.ShouldShow);
     }
 
@@ -116,9 +97,7 @@ public sealed class PriorScansOverlayViewModelTests : IDisposable
     public async Task PreferencesFilterRowsAndControlRadarPresentation()
     {
         var survey = CreateSurvey();
-        var client = new StubClient(new CanonnSystemPoiResult(
-            "Test",
-            [Signal("1", 0, 0.01)]));
+        var client = new StubClient(new CanonnSystemPoiResult("Test", [Signal("1", 0, 0.01)]));
         using var viewModel = CreateViewModel(survey, client);
 
         await viewModel.RefreshAsync();
@@ -143,9 +122,7 @@ public sealed class PriorScansOverlayViewModelTests : IDisposable
     {
         var survey = CreateSurvey();
         var client = new StubClient(new HttpRequestException("offline"));
-        using var viewModel = CreateViewModel(
-            survey,
-            client);
+        using var viewModel = CreateViewModel(survey, client);
 
         await viewModel.RefreshAsync();
         await viewModel.RefreshAsync();
@@ -161,9 +138,7 @@ public sealed class PriorScansOverlayViewModelTests : IDisposable
     {
         var survey = CreateSurvey();
         survey.HideOwnCanonnSignals = true;
-        var client = new StubClient(new CanonnSystemPoiResult(
-            "Test",
-            [Signal("1", 0, 0.01)]));
+        var client = new StubClient(new CanonnSystemPoiResult("Test", [Signal("1", 0, 0.01)]));
         var currentSurface = new SystemSurfaceBodySnapshot(
             1,
             "Test 1",
@@ -178,12 +153,11 @@ public sealed class PriorScansOverlayViewModelTests : IDisposable
                     Species,
                     "Abandoned",
                     2310101,
-                    "Test 1"),
-            ]);
-        using var viewModel = CreateViewModel(
-            survey,
-            client,
-            () => currentSurface);
+                    "Test 1"
+                ),
+            ]
+        );
+        using var viewModel = CreateViewModel(survey, client, () => currentSurface);
 
         await viewModel.RefreshAsync();
 
@@ -201,38 +175,44 @@ public sealed class PriorScansOverlayViewModelTests : IDisposable
 
     private SystemSurveyViewModel CreateSurvey()
     {
-        var survey = new SystemSurveyViewModel(new SystemSurveySettingsStore(
-            Path.Combine(temporaryDirectory, "ui-settings.json")));
+        var survey = new SystemSurveyViewModel(
+            new SystemSurveySettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json"))
+        );
         survey.ApplyUpdate(
-        [
-            Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
-            Parse("""{"event":"Scan","ScanType":"Detailed","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"PlanetClass":"Rocky body","Radius":1000000}"""),
-        ],
-        SurfaceStatus(heading: 90));
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse(
+                    """{"event":"Scan","ScanType":"Detailed","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"PlanetClass":"Rocky body","Radius":1000000}"""
+                ),
+            ],
+            SurfaceStatus(heading: 90)
+        );
         return survey;
     }
 
     private static PriorScansOverlayViewModel CreateViewModel(
         SystemSurveyViewModel survey,
         ICanonnSystemPoiClient client,
-        Func<SystemSurfaceBodySnapshot?>? currentSurfaceProvider = null)
+        Func<SystemSurfaceBodySnapshot?>? currentSurfaceProvider = null
+    )
     {
         return new PriorScansOverlayViewModel(
             survey,
             client,
-            new ExobiologyReferenceCatalog(
-            [
+            new ExobiologyReferenceCatalog([
                 new ExobiologyReference(
                     2310101,
                     "$Codex_Ent_Aleoids_01_B_Name;",
                     Species,
                     "Aleoida Arcus - Green",
                     7_252_500,
-                    HudCategory: "Biology"),
+                    HudCategory: "Biology"
+                ),
             ]),
             () => "CMDR Test",
             OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows),
-            currentSurfaceProvider);
+            currentSurfaceProvider
+        );
     }
 
     private static EliteStatus SurfaceStatus(int heading)
@@ -251,35 +231,29 @@ public sealed class PriorScansOverlayViewModelTests : IDisposable
     {
         return new EliteStatus
         {
-            Flags = StatusFlags.HasLatLong
+            Flags =
+                StatusFlags.HasLatLong
                 | StatusFlags.InMainShip
-                | (landingGearDown
-                    ? StatusFlags.LandingGearDown
-                    : StatusFlags.None),
+                | (landingGearDown ? StatusFlags.LandingGearDown : StatusFlags.None),
             BodyName = "Test 1",
             PlanetRadius = 1_000_000,
         };
     }
 
-    private static CanonnSurfaceBiologySignal Signal(
-        string body,
-        double latitude,
-        double longitude)
+    private static CanonnSurfaceBiologySignal Signal(string body, double latitude, double longitude)
     {
         return new CanonnSurfaceBiologySignal(
             body,
             "Aleoida Arcus - Green",
             2310101,
             new SurfaceCoordinate(latitude, longitude),
-            false);
+            false
+        );
     }
 
     private static JournalEventEnvelope Parse(string json)
     {
-        var success = JournalEventEnvelope.TryParse(
-            json,
-            out var journalEvent,
-            out var error);
+        var success = JournalEventEnvelope.TryParse(json, out var journalEvent, out var error);
         Assert.True(success, error);
         return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }
@@ -306,13 +280,12 @@ public sealed class PriorScansOverlayViewModelTests : IDisposable
         public Task<CanonnSystemPoiResult> GetAsync(
             string systemName,
             string commanderName,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             CallCount++;
             CommanderName = commanderName;
-            return exception is null
-                ? Task.FromResult(result!)
-                : Task.FromException<CanonnSystemPoiResult>(exception);
+            return exception is null ? Task.FromResult(result!) : Task.FromException<CanonnSystemPoiResult>(exception);
         }
     }
 }

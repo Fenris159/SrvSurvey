@@ -12,43 +12,46 @@ namespace SrvSurvey.Desktop.Controls;
 
 public sealed partial class SystemNameEntry : UserControl
 {
-    private static readonly ISystemNameSuggestionClient DefaultClient =
-        new FallbackSystemNameSuggestionClient(
-            new EdsmSystemNameSuggestionClient(),
-            new ArdentSystemNameSuggestionClient());
+    private static readonly ISystemNameSuggestionClient DefaultClient = new FallbackSystemNameSuggestionClient(
+        new EdsmSystemNameSuggestionClient(),
+        new ArdentSystemNameSuggestionClient()
+    );
 
-    public static readonly StyledProperty<string?> TextProperty =
-        AvaloniaProperty.Register<SystemNameEntry, string?>(
-            nameof(Text),
-            defaultBindingMode: BindingMode.TwoWay);
+    public static readonly StyledProperty<string?> TextProperty = AvaloniaProperty.Register<SystemNameEntry, string?>(
+        nameof(Text),
+        defaultBindingMode: BindingMode.TwoWay
+    );
 
-    public static readonly StyledProperty<string?> PlaceholderTextProperty =
-        AvaloniaProperty.Register<SystemNameEntry, string?>(
-            nameof(PlaceholderText));
+    public static readonly StyledProperty<string?> PlaceholderTextProperty = AvaloniaProperty.Register<
+        SystemNameEntry,
+        string?
+    >(nameof(PlaceholderText));
 
-    public static readonly StyledProperty<long?> SelectedSystemAddressProperty =
-        AvaloniaProperty.Register<SystemNameEntry, long?>(
-            nameof(SelectedSystemAddress),
-            defaultBindingMode: BindingMode.TwoWay);
+    public static readonly StyledProperty<long?> SelectedSystemAddressProperty = AvaloniaProperty.Register<
+        SystemNameEntry,
+        long?
+    >(nameof(SelectedSystemAddress), defaultBindingMode: BindingMode.TwoWay);
 
-    public static readonly DirectProperty<SystemNameEntry,
-        IReadOnlyList<SystemNameSuggestion>> SuggestionsProperty =
-        AvaloniaProperty.RegisterDirect<SystemNameEntry,
-            IReadOnlyList<SystemNameSuggestion>>(
+    public static readonly DirectProperty<SystemNameEntry, IReadOnlyList<SystemNameSuggestion>> SuggestionsProperty =
+        AvaloniaProperty.RegisterDirect<SystemNameEntry, IReadOnlyList<SystemNameSuggestion>>(
             nameof(Suggestions),
-            control => control.Suggestions);
+            control => control.Suggestions
+        );
 
-    public static readonly DirectProperty<SystemNameEntry, int> SelectedIndexProperty =
-        AvaloniaProperty.RegisterDirect<SystemNameEntry, int>(
-            nameof(SelectedIndex),
-            control => control.SelectedIndex,
-            (control, value) => control.SelectedIndex = value,
-            defaultBindingMode: BindingMode.TwoWay);
+    public static readonly DirectProperty<SystemNameEntry, int> SelectedIndexProperty = AvaloniaProperty.RegisterDirect<
+        SystemNameEntry,
+        int
+    >(
+        nameof(SelectedIndex),
+        control => control.SelectedIndex,
+        (control, value) => control.SelectedIndex = value,
+        defaultBindingMode: BindingMode.TwoWay
+    );
 
-    public static readonly DirectProperty<SystemNameEntry, string> StatusProperty =
-        AvaloniaProperty.RegisterDirect<SystemNameEntry, string>(
-            nameof(Status),
-            control => control.Status);
+    public static readonly DirectProperty<SystemNameEntry, string> StatusProperty = AvaloniaProperty.RegisterDirect<
+        SystemNameEntry,
+        string
+    >(nameof(Status), control => control.Status);
 
     private readonly ISystemNameSuggestionClient suggestionClient;
     private readonly TimeSpan suggestionDelay;
@@ -61,23 +64,17 @@ public sealed partial class SystemNameEntry : UserControl
     static SystemNameEntry()
     {
         TextProperty.Changed.AddClassHandler<SystemNameEntry>(
-            (control, eventArgs) =>
-                control.OnTextChanged(eventArgs.NewValue as string));
+            (control, eventArgs) => control.OnTextChanged(eventArgs.NewValue as string)
+        );
     }
 
     public SystemNameEntry()
-        : this(DefaultClient, TimeSpan.FromMilliseconds(450))
-    {
-    }
+        : this(DefaultClient, TimeSpan.FromMilliseconds(450)) { }
 
-    internal SystemNameEntry(
-        ISystemNameSuggestionClient suggestionClient,
-        TimeSpan suggestionDelay)
+    internal SystemNameEntry(ISystemNameSuggestionClient suggestionClient, TimeSpan suggestionDelay)
     {
         ArgumentNullException.ThrowIfNull(suggestionClient);
-        ArgumentOutOfRangeException.ThrowIfLessThan(
-            suggestionDelay,
-            TimeSpan.Zero);
+        ArgumentOutOfRangeException.ThrowIfLessThan(suggestionDelay, TimeSpan.Zero);
         this.suggestionClient = suggestionClient;
         this.suggestionDelay = suggestionDelay;
         InitializeComponent();
@@ -108,17 +105,15 @@ public sealed partial class SystemNameEntry : UserControl
         {
             var previouslyHadSuggestions = HasSuggestions;
             SetAndRaise(SuggestionsProperty, ref suggestions, value);
-            RaisePropertyChanged(
-                HasSuggestionsProperty,
-                previouslyHadSuggestions,
-                HasSuggestions);
+            RaisePropertyChanged(HasSuggestionsProperty, previouslyHadSuggestions, HasSuggestions);
         }
     }
 
     public static readonly DirectProperty<SystemNameEntry, bool> HasSuggestionsProperty =
         AvaloniaProperty.RegisterDirect<SystemNameEntry, bool>(
             nameof(HasSuggestions),
-            control => control.HasSuggestions);
+            control => control.HasSuggestions
+        );
 
     public bool HasSuggestions => Suggestions.Count > 0;
 
@@ -135,22 +130,18 @@ public sealed partial class SystemNameEntry : UserControl
         {
             var previouslyHadStatus = HasStatus;
             SetAndRaise(StatusProperty, ref status, value);
-            RaisePropertyChanged(
-                HasStatusProperty,
-                previouslyHadStatus,
-                HasStatus);
+            RaisePropertyChanged(HasStatusProperty, previouslyHadStatus, HasStatus);
         }
     }
 
-    public static readonly DirectProperty<SystemNameEntry, bool> HasStatusProperty =
-        AvaloniaProperty.RegisterDirect<SystemNameEntry, bool>(
-            nameof(HasStatus),
-            control => control.HasStatus);
+    public static readonly DirectProperty<SystemNameEntry, bool> HasStatusProperty = AvaloniaProperty.RegisterDirect<
+        SystemNameEntry,
+        bool
+    >(nameof(HasStatus), control => control.HasStatus);
 
     public bool HasStatus => !string.IsNullOrWhiteSpace(Status);
 
-    protected override void OnDetachedFromVisualTree(
-        VisualTreeAttachmentEventArgs e)
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         CancelSuggestions();
         base.OnDetachedFromVisualTree(e);
@@ -159,10 +150,7 @@ public sealed partial class SystemNameEntry : UserControl
     private void OnTextChanged(string? value)
     {
         var query = value?.Trim() ?? string.Empty;
-        if (!string.Equals(
-                query,
-                selectedSystemName,
-                StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(query, selectedSystemName, StringComparison.OrdinalIgnoreCase))
         {
             selectedSystemName = null;
             SelectedSystemAddress = null;
@@ -174,11 +162,7 @@ public sealed partial class SystemNameEntry : UserControl
     private void ScheduleSuggestions(string query)
     {
         CancelSuggestions();
-        if (query.Length < 3
-            || string.Equals(
-                query,
-                selectedSystemName,
-                StringComparison.OrdinalIgnoreCase))
+        if (query.Length < 3 || string.Equals(query, selectedSystemName, StringComparison.OrdinalIgnoreCase))
         {
             Suggestions = [];
             SelectedIndex = -1;
@@ -191,19 +175,17 @@ public sealed partial class SystemNameEntry : UserControl
         _ = LoadSuggestionsAsync(query, cancellation);
     }
 
-    private async Task LoadSuggestionsAsync(
-        string query,
-        CancellationTokenSource cancellation)
+    private async Task LoadSuggestionsAsync(string query, CancellationTokenSource cancellation)
     {
         try
         {
             Status = "Searching for system suggestions…";
             await Task.Delay(suggestionDelay, cancellation.Token);
-            var results = await suggestionClient.SearchAsync(
-                query,
-                cancellation.Token);
-            if (!ReferenceEquals(suggestionCancellation, cancellation)
-                || !string.Equals(Text?.Trim(), query, StringComparison.Ordinal))
+            var results = await suggestionClient.SearchAsync(query, cancellation.Token);
+            if (
+                !ReferenceEquals(suggestionCancellation, cancellation)
+                || !string.Equals(Text?.Trim(), query, StringComparison.Ordinal)
+            )
             {
                 return;
             }
@@ -216,10 +198,7 @@ public sealed partial class SystemNameEntry : UserControl
         {
             // A newer query superseded this one.
         }
-        catch (Exception exception) when (
-            exception is HttpRequestException
-                or InvalidDataException
-                or JsonException)
+        catch (Exception exception) when (exception is HttpRequestException or InvalidDataException or JsonException)
         {
             if (ReferenceEquals(suggestionCancellation, cancellation))
             {
@@ -239,8 +218,7 @@ public sealed partial class SystemNameEntry : UserControl
         }
     }
 
-    private static string BuildSuggestionStatus(
-        IReadOnlyList<SystemNameSuggestion> results)
+    private static string BuildSuggestionStatus(IReadOnlyList<SystemNameSuggestion> results)
     {
         if (results.Count == 0)
         {
@@ -284,15 +262,12 @@ public sealed partial class SystemNameEntry : UserControl
 
     internal bool SelectCurrentSuggestion()
     {
-        return SelectedIndex >= 0
-            && SelectedIndex < Suggestions.Count
-            && SelectSuggestion(Suggestions[SelectedIndex]);
+        return SelectedIndex >= 0 && SelectedIndex < Suggestions.Count && SelectSuggestion(Suggestions[SelectedIndex]);
     }
 
     private bool SelectSuggestion(SystemNameSuggestion suggestion)
     {
-        if (suggestion.SystemAddress <= 0
-            || string.IsNullOrWhiteSpace(suggestion.Name))
+        if (suggestion.SystemAddress <= 0 || string.IsNullOrWhiteSpace(suggestion.Name))
         {
             return false;
         }
@@ -303,9 +278,7 @@ public sealed partial class SystemNameEntry : UserControl
         Text = selectedSystemName;
         Suggestions = [];
         SelectedIndex = -1;
-        Status = $"Selected {selectedSystemName} · "
-            + SystemAddressFormatter.Format(suggestion.SystemAddress)
-            + ".";
+        Status = $"Selected {selectedSystemName} · " + SystemAddressFormatter.Format(suggestion.SystemAddress) + ".";
         return true;
     }
 

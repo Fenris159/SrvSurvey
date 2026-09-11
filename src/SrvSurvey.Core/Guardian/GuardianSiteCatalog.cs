@@ -6,12 +6,9 @@ namespace SrvSurvey.Core.Guardian;
 
 public sealed class GuardianSiteCatalog
 {
-    private const string RuinsResourceName =
-        "SrvSurvey.Core.Resources.allRuins.json";
-    private const string StructuresResourceName =
-        "SrvSurvey.Core.Resources.allStructures.json";
-    private const string BeaconsResourceName =
-        "SrvSurvey.Core.Resources.allBeacons.json";
+    private const string RuinsResourceName = "SrvSurvey.Core.Resources.allRuins.json";
+    private const string StructuresResourceName = "SrvSurvey.Core.Resources.allStructures.json";
+    private const string BeaconsResourceName = "SrvSurvey.Core.Resources.allBeacons.json";
 
     private readonly GuardianSiteReference[] sites;
     private readonly Dictionary<long, GuardianSiteReference[]> bySystemAddress;
@@ -20,8 +17,8 @@ public sealed class GuardianSiteCatalog
     {
         ArgumentNullException.ThrowIfNull(sites);
         this.sites = sites.ToArray();
-        bySystemAddress = this.sites
-            .GroupBy(site => site.SystemAddress)
+        bySystemAddress = this
+            .sites.GroupBy(site => site.SystemAddress)
             .ToDictionary(group => group.Key, group => group.ToArray());
     }
 
@@ -29,14 +26,12 @@ public sealed class GuardianSiteCatalog
 
     public int Count => sites.Length;
 
-    public IReadOnlyList<GuardianSiteReference> FindBySystemAddress(
-        long systemAddress)
+    public IReadOnlyList<GuardianSiteReference> FindBySystemAddress(long systemAddress)
     {
         return bySystemAddress.GetValueOrDefault(systemAddress) ?? [];
     }
 
-    public IReadOnlyList<GuardianSiteMatch> Search(
-        GuardianSiteQuery? query = null)
+    public IReadOnlyList<GuardianSiteMatch> Search(GuardianSiteQuery? query = null)
     {
         query ??= new GuardianSiteQuery();
         IEnumerable<GuardianSiteReference> filtered = sites;
@@ -48,12 +43,11 @@ public sealed class GuardianSiteCatalog
 
         if (query.SiteTypes is { Count: > 0 })
         {
-            filtered = filtered.Where(
-                site => query.SiteTypes.Any(
-                    siteType => string.Equals(
-                        siteType,
-                        site.SiteType,
-                        StringComparison.OrdinalIgnoreCase)));
+            filtered = filtered.Where(site =>
+                query.SiteTypes.Any(siteType =>
+                    string.Equals(siteType, site.SiteType, StringComparison.OrdinalIgnoreCase)
+                )
+            );
         }
 
         if (!string.IsNullOrWhiteSpace(query.Text))
@@ -62,12 +56,10 @@ public sealed class GuardianSiteCatalog
             filtered = filtered.Where(site => MatchesText(site, text));
         }
 
-        var matches = filtered
-            .Select(site => new GuardianSiteMatch(
-                site,
-                query.Origin is GalacticCoordinate origin
-                    ? origin.DistanceTo(site.Position)
-                    : null));
+        var matches = filtered.Select(site => new GuardianSiteMatch(
+            site,
+            query.Origin is GalacticCoordinate origin ? origin.DistanceTo(site.Position) : null
+        ));
         matches = Sort(matches, query.SortBy);
         if (query.Descending)
         {
@@ -80,50 +72,41 @@ public sealed class GuardianSiteCatalog
     public static GuardianSiteCatalog LoadEmbedded()
     {
         var assembly = typeof(GuardianSiteCatalog).Assembly;
-        using var ruins = assembly.GetManifestResourceStream(RuinsResourceName)
-            ?? throw MissingResource(RuinsResourceName);
-        using var structures = assembly.GetManifestResourceStream(
-                StructuresResourceName)
-            ?? throw MissingResource(StructuresResourceName);
-        using var beacons = assembly.GetManifestResourceStream(BeaconsResourceName)
-            ?? throw MissingResource(BeaconsResourceName);
+        using var ruins =
+            assembly.GetManifestResourceStream(RuinsResourceName) ?? throw MissingResource(RuinsResourceName);
+        using var structures =
+            assembly.GetManifestResourceStream(StructuresResourceName) ?? throw MissingResource(StructuresResourceName);
+        using var beacons =
+            assembly.GetManifestResourceStream(BeaconsResourceName) ?? throw MissingResource(BeaconsResourceName);
         return Load(ruins, structures, beacons);
     }
 
-    public static GuardianSiteCatalog LoadPublishedDirectory(
-        string publishedDataDirectory)
+    public static GuardianSiteCatalog LoadPublishedDirectory(string publishedDataDirectory)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(publishedDataDirectory);
         var directory = Path.GetFullPath(publishedDataDirectory);
         using var ruins = File.OpenRead(Path.Combine(directory, "allRuins.json"));
-        using var structures = File.OpenRead(
-            Path.Combine(directory, "allStructures.json"));
+        using var structures = File.OpenRead(Path.Combine(directory, "allStructures.json"));
         var assembly = typeof(GuardianSiteCatalog).Assembly;
-        using var beacons = assembly.GetManifestResourceStream(BeaconsResourceName)
-            ?? throw MissingResource(BeaconsResourceName);
+        using var beacons =
+            assembly.GetManifestResourceStream(BeaconsResourceName) ?? throw MissingResource(BeaconsResourceName);
         return Load(ruins, structures, beacons);
     }
 
-    public static GuardianSiteCatalog Load(
-        Stream ruins,
-        Stream structures,
-        Stream beacons)
+    public static GuardianSiteCatalog Load(Stream ruins, Stream structures, Stream beacons)
     {
         ArgumentNullException.ThrowIfNull(ruins);
         ArgumentNullException.ThrowIfNull(structures);
         ArgumentNullException.ThrowIfNull(beacons);
 
-        return new GuardianSiteCatalog(
-        [
+        return new GuardianSiteCatalog([
             .. ReadSites(ruins, GuardianSiteKind.Ruins),
             .. ReadSites(structures, GuardianSiteKind.Structure),
             .. ReadSites(beacons, GuardianSiteKind.Beacon),
         ]);
     }
 
-    private static IEnumerable<GuardianSiteMatch> Sort(
-        IEnumerable<GuardianSiteMatch> matches,
-        GuardianSiteSort sortBy)
+    private static IEnumerable<GuardianSiteMatch> Sort(IEnumerable<GuardianSiteMatch> matches, GuardianSiteSort sortBy)
     {
         return sortBy switch
         {
@@ -145,9 +128,7 @@ public sealed class GuardianSiteCatalog
             GuardianSiteSort.Survey => matches
                 .OrderBy(match => match.Site.SurveyProgress)
                 .ThenBy(match => match.Site.SystemName),
-            _ => matches
-                .OrderBy(match => match.Distance ?? double.MaxValue)
-                .ThenBy(match => match.Site.SystemName),
+            _ => matches.OrderBy(match => match.Distance ?? double.MaxValue).ThenBy(match => match.Site.SystemName),
         };
     }
 
@@ -159,20 +140,15 @@ public sealed class GuardianSiteCatalog
             || site.DisplayId.Contains(text, StringComparison.OrdinalIgnoreCase)
             || site.SystemAddress.ToString(CultureInfo.InvariantCulture)
                 .Contains(text, StringComparison.OrdinalIgnoreCase)
-            || site.RelatedStructure?.Contains(
-                text,
-                StringComparison.OrdinalIgnoreCase) == true;
+            || site.RelatedStructure?.Contains(text, StringComparison.OrdinalIgnoreCase) == true;
     }
 
-    private static List<GuardianSiteReference> ReadSites(
-        Stream stream,
-        GuardianSiteKind kind)
+    private static List<GuardianSiteReference> ReadSites(Stream stream, GuardianSiteKind kind)
     {
         using var document = JsonDocument.Parse(stream);
         if (document.RootElement.ValueKind != JsonValueKind.Array)
         {
-            throw new InvalidDataException(
-                $"The Guardian {kind} reference is not a JSON array.");
+            throw new InvalidDataException($"The Guardian {kind} reference is not a JSON array.");
         }
 
         var result = new List<GuardianSiteReference>();
@@ -180,40 +156,39 @@ public sealed class GuardianSiteCatalog
         {
             if (element.ValueKind != JsonValueKind.Object)
             {
-                throw new InvalidDataException(
-                    $"The Guardian {kind} reference contains a non-object entry.");
+                throw new InvalidDataException($"The Guardian {kind} reference contains a non-object entry.");
             }
 
-            var siteType = kind == GuardianSiteKind.Beacon
-                ? "Beacon"
-                : GetRequiredString(element, "siteType");
+            var siteType = kind == GuardianSiteKind.Beacon ? "Beacon" : GetRequiredString(element, "siteType");
             var position = GetPosition(element);
             var surveyProgress = GetInt32(element, "surveyProgress") ?? 0;
             if (surveyProgress is < 0 or > 100)
             {
-                throw new InvalidDataException(
-                    $"Guardian survey progress {surveyProgress} is outside 0-100.");
+                throw new InvalidDataException($"Guardian survey progress {surveyProgress} is outside 0-100.");
             }
 
-            result.Add(new GuardianSiteReference(
-                GetInt32(element, "siteID") ?? 0,
-                kind,
-                GetRequiredString(element, "systemName"),
-                GetRequiredInt64(element, "systemAddress"),
-                GetRequiredString(element, "bodyName"),
-                GetInt32(element, "bodyId") ?? -1,
-                siteType,
-                GetIndex(element, kind),
-                GetRequiredDouble(element, "distanceToArrival"),
-                position,
-                GetFiniteDouble(element, "latitude"),
-                GetFiniteDouble(element, "longitude"),
-                GetInt32(element, "siteHeading") ?? -1,
-                GetInt32(element, "relicTowerHeading") ?? -1,
-                surveyProgress,
-                GetDateTimeOffset(element, "lastUpdated"),
-                GetString(element, "relatedStructure"),
-                GetFiniteDouble(element, "relatedStructureDist")));
+            result.Add(
+                new GuardianSiteReference(
+                    GetInt32(element, "siteID") ?? 0,
+                    kind,
+                    GetRequiredString(element, "systemName"),
+                    GetRequiredInt64(element, "systemAddress"),
+                    GetRequiredString(element, "bodyName"),
+                    GetInt32(element, "bodyId") ?? -1,
+                    siteType,
+                    GetIndex(element, kind),
+                    GetRequiredDouble(element, "distanceToArrival"),
+                    position,
+                    GetFiniteDouble(element, "latitude"),
+                    GetFiniteDouble(element, "longitude"),
+                    GetInt32(element, "siteHeading") ?? -1,
+                    GetInt32(element, "relicTowerHeading") ?? -1,
+                    surveyProgress,
+                    GetDateTimeOffset(element, "lastUpdated"),
+                    GetString(element, "relatedStructure"),
+                    GetFiniteDouble(element, "relatedStructureDist")
+                )
+            );
         }
 
         return result;
@@ -225,7 +200,8 @@ public sealed class GuardianSiteCatalog
         return kind switch
         {
             GuardianSiteKind.Ruins when index <= 0 => throw new InvalidDataException(
-                "A Guardian ruin is missing its positive site index."),
+                "A Guardian ruin is missing its positive site index."
+            ),
             GuardianSiteKind.Structure when index <= 0 => 1,
             _ => index,
         };
@@ -233,109 +209,88 @@ public sealed class GuardianSiteCatalog
 
     private static GalacticCoordinate GetPosition(JsonElement element)
     {
-        if (!element.TryGetProperty("starPos", out var value)
-            || value.ValueKind != JsonValueKind.Array)
+        if (!element.TryGetProperty("starPos", out var value) || value.ValueKind != JsonValueKind.Array)
         {
-            throw new InvalidDataException(
-                "A Guardian reference is missing its galactic position.");
+            throw new InvalidDataException("A Guardian reference is missing its galactic position.");
         }
 
         var coordinates = value.EnumerateArray().ToArray();
         if (coordinates.Length != 3)
         {
-            throw new InvalidDataException(
-                "A Guardian galactic position must contain three coordinates.");
+            throw new InvalidDataException("A Guardian galactic position must contain three coordinates.");
         }
 
         return new GalacticCoordinate(
             GetRequiredDouble(coordinates[0]),
             GetRequiredDouble(coordinates[1]),
-            GetRequiredDouble(coordinates[2]));
+            GetRequiredDouble(coordinates[2])
+        );
     }
 
-    private static string GetRequiredString(
-        JsonElement element,
-        string propertyName)
+    private static string GetRequiredString(JsonElement element, string propertyName)
     {
         return GetString(element, propertyName) is { Length: > 0 } value
             ? value
-            : throw new InvalidDataException(
-                $"A Guardian reference is missing {propertyName}.");
+            : throw new InvalidDataException($"A Guardian reference is missing {propertyName}.");
     }
 
     private static string? GetString(JsonElement element, string propertyName)
     {
-        return element.TryGetProperty(propertyName, out var value)
-            && value.ValueKind == JsonValueKind.String
-                ? value.GetString()
-                : null;
+        return element.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+            ? value.GetString()
+            : null;
     }
 
-    private static long GetRequiredInt64(
-        JsonElement element,
-        string propertyName)
+    private static long GetRequiredInt64(JsonElement element, string propertyName)
     {
-        return element.TryGetProperty(propertyName, out var value)
-            && value.TryGetInt64(out var result)
-                ? result
-                : throw new InvalidDataException(
-                    $"A Guardian reference is missing numeric {propertyName}.");
+        return element.TryGetProperty(propertyName, out var value) && value.TryGetInt64(out var result)
+            ? result
+            : throw new InvalidDataException($"A Guardian reference is missing numeric {propertyName}.");
     }
 
     private static int? GetInt32(JsonElement element, string propertyName)
     {
-        return element.TryGetProperty(propertyName, out var value)
-            && value.TryGetInt32(out var result)
-                ? result
-                : null;
+        return element.TryGetProperty(propertyName, out var value) && value.TryGetInt32(out var result) ? result : null;
     }
 
-    private static double GetRequiredDouble(
-        JsonElement element,
-        string propertyName)
+    private static double GetRequiredDouble(JsonElement element, string propertyName)
     {
         return element.TryGetProperty(propertyName, out var value)
             ? GetRequiredDouble(value)
-            : throw new InvalidDataException(
-                $"A Guardian reference is missing numeric {propertyName}.");
+            : throw new InvalidDataException($"A Guardian reference is missing numeric {propertyName}.");
     }
 
     private static double GetRequiredDouble(JsonElement element)
     {
-        if (element.ValueKind == JsonValueKind.Number
+        if (
+            element.ValueKind == JsonValueKind.Number
             && element.TryGetDouble(out var result)
-            && double.IsFinite(result))
+            && double.IsFinite(result)
+        )
         {
             return result;
         }
 
-        throw new InvalidDataException(
-            "A Guardian reference contains an invalid numeric value.");
+        throw new InvalidDataException("A Guardian reference contains an invalid numeric value.");
     }
 
-    private static double? GetFiniteDouble(
-        JsonElement element,
-        string propertyName)
+    private static double? GetFiniteDouble(JsonElement element, string propertyName)
     {
         if (!element.TryGetProperty(propertyName, out var value))
         {
             return null;
         }
 
-        if (value.ValueKind == JsonValueKind.Number
-            && value.TryGetDouble(out var number)
-            && double.IsFinite(number))
+        if (value.ValueKind == JsonValueKind.Number && value.TryGetDouble(out var number) && double.IsFinite(number))
         {
             return number;
         }
 
-        if (value.ValueKind == JsonValueKind.String
-            && double.TryParse(
-                value.GetString(),
-                NumberStyles.Float,
-                CultureInfo.InvariantCulture,
-                out number)
-            && double.IsFinite(number))
+        if (
+            value.ValueKind == JsonValueKind.String
+            && double.TryParse(value.GetString(), NumberStyles.Float, CultureInfo.InvariantCulture, out number)
+            && double.IsFinite(number)
+        )
         {
             return number;
         }
@@ -343,24 +298,23 @@ public sealed class GuardianSiteCatalog
         return null;
     }
 
-    private static DateTimeOffset? GetDateTimeOffset(
-        JsonElement element,
-        string propertyName)
+    private static DateTimeOffset? GetDateTimeOffset(JsonElement element, string propertyName)
     {
-        return GetString(element, propertyName) is { } value
+        return
+            GetString(element, propertyName) is { } value
             && DateTimeOffset.TryParse(
                 value,
                 CultureInfo.InvariantCulture,
                 DateTimeStyles.RoundtripKind,
-                out var result)
-                    ? result
-                    : null;
+                out var result
+            )
+            ? result
+            : null;
     }
 
     private static InvalidOperationException MissingResource(string name)
     {
-        return new InvalidOperationException(
-            $"The embedded Guardian reference {name} is missing.");
+        return new InvalidOperationException($"The embedded Guardian reference {name} is missing.");
     }
 }
 
@@ -401,27 +355,23 @@ public sealed record GuardianSiteReference(
     DateTimeOffset? LastUpdated,
     string? RelatedStructure,
     double? RelatedStructureDistance,
-    bool IsCommanderOnly = false)
+    bool IsCommanderOnly = false
+)
 {
     public bool IsSurveyComplete => SurveyProgress == 100;
 
-    public string DisplayId => Kind switch
-    {
-        GuardianSiteKind.Ruins => IsCommanderOnly
-            ? $"GR L{SiteId:D2}"
-            : $"GR {SiteId}",
-        GuardianSiteKind.Structure => IsCommanderOnly
-            ? $"GS L{SiteId:D2}"
-            : $"GS {SiteId}",
-        _ => IsCommanderOnly ? "GB LOCAL" : "GB",
-    };
+    public string DisplayId =>
+        Kind switch
+        {
+            GuardianSiteKind.Ruins => IsCommanderOnly ? $"GR L{SiteId:D2}" : $"GR {SiteId}",
+            GuardianSiteKind.Structure => IsCommanderOnly ? $"GS L{SiteId:D2}" : $"GS {SiteId}",
+            _ => IsCommanderOnly ? "GB LOCAL" : "GB",
+        };
 
     public string FullBodyName => $"{SystemName} {BodyName}";
 }
 
-public sealed record GuardianSiteMatch(
-    GuardianSiteReference Site,
-    double? Distance);
+public sealed record GuardianSiteMatch(GuardianSiteReference Site, double? Distance);
 
 public sealed record GuardianSiteQuery(
     string? Text = null,
@@ -429,4 +379,5 @@ public sealed record GuardianSiteQuery(
     IReadOnlySet<string>? SiteTypes = null,
     GalacticCoordinate? Origin = null,
     GuardianSiteSort SortBy = GuardianSiteSort.Distance,
-    bool Descending = false);
+    bool Descending = false
+);

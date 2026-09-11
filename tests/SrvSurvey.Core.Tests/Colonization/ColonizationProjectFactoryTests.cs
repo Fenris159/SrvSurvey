@@ -4,16 +4,12 @@ namespace SrvSurvey.Core.Tests.Colonization;
 
 public sealed class ColonizationProjectFactoryTests
 {
-    private readonly ColonizationProjectFactory factory = new(
-        ColonizationBuildCatalog.LoadEmbedded());
+    private readonly ColonizationProjectFactory factory = new(ColonizationBuildCatalog.LoadEmbedded());
 
     [Fact]
     public void CreatesLegacyCompatiblePayloadFromLiveDepot()
     {
-        var result = factory.Create(
-            Draft(),
-            Dock(),
-            Depot());
+        var result = factory.Create(Draft(), Dock(), Depot());
 
         Assert.True(result.IsValid);
         var project = Assert.IsType<ColonizationProjectCreate>(result.Project);
@@ -37,10 +33,8 @@ public sealed class ColonizationProjectFactoryTests
         {
             Resources =
             [
-                new ColonizationResourceRequirement(
-                    "steel", "Steel", 100, 25, 1),
-                new ColonizationResourceRequirement(
-                    "STEEL", "Steel", 50, 10, 1),
+                new ColonizationResourceRequirement("steel", "Steel", 100, 25, 1),
+                new ColonizationResourceRequirement("STEEL", "Steel", 50, 10, 1),
             ],
         };
 
@@ -54,11 +48,7 @@ public sealed class ColonizationProjectFactoryTests
     [Fact]
     public void RejectsStaleDepotUnknownLayoutAndInvalidPosition()
     {
-        var draft = Draft() with
-        {
-            BuildType = "unknown-layout",
-            StarPosition = [double.NaN, 2, 3],
-        };
+        var draft = Draft() with { BuildType = "unknown-layout", StarPosition = [double.NaN, 2, 3] };
         var depot = Depot() with { MarketId = 999 };
 
         var result = factory.Create(draft, Dock(), depot);
@@ -73,10 +63,7 @@ public sealed class ColonizationProjectFactoryTests
     [Fact]
     public void RejectsMissingDockDepotAndCommander()
     {
-        var result = factory.Create(
-            Draft() with { CommanderName = string.Empty },
-            dock: null,
-            depot: null);
+        var result = factory.Create(Draft() with { CommanderName = string.Empty }, dock: null, depot: null);
 
         Assert.False(result.IsValid);
         Assert.Equal(3, result.Errors.Count);
@@ -85,10 +72,7 @@ public sealed class ColonizationProjectFactoryTests
     [Fact]
     public void RejectsCompletedOrFailedDepot()
     {
-        var result = factory.Create(
-            Draft(),
-            Dock(),
-            Depot() with { IsComplete = true, IsFailed = true });
+        var result = factory.Create(Draft(), Dock(), Depot() with { IsComplete = true, IsFailed = true });
 
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, error => error.Contains("complete"));
@@ -107,7 +91,8 @@ public sealed class ColonizationProjectFactoryTests
             " Notes ",
             BodyNumber: 3,
             BodyName: "Test System 3",
-            SystemSiteId: " site-1 ");
+            SystemSiteId: " site-1 "
+        );
     }
 
     private static ColonizationDockingSnapshot Dock()
@@ -118,7 +103,8 @@ public sealed class ColonizationProjectFactoryTests
             "Test System",
             "$EXT_PANEL_ColonisationShip; Primary",
             "Test Faction",
-            ["colonisationcontribution"]);
+            ["colonisationcontribution"]
+        );
     }
 
     private static ColonizationConstructionDepotSnapshot Depot()
@@ -130,10 +116,9 @@ public sealed class ColonizationProjectFactoryTests
             IsComplete: false,
             IsFailed: false,
             [
-                new ColonizationResourceRequirement(
-                    "steel", "Steel", 100, 25, 1),
-                new ColonizationResourceRequirement(
-                    "water", "Water", 40, 10, 1),
-            ]);
+                new ColonizationResourceRequirement("steel", "Steel", 100, 25, 1),
+                new ColonizationResourceRequirement("water", "Water", 40, 10, 1),
+            ]
+        );
     }
 }

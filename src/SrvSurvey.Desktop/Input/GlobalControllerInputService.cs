@@ -14,10 +14,12 @@ public sealed class GlobalControllerInputService : IAsyncDisposable
     private readonly GlobalInputBindingRouter router;
     private readonly ControllerChordTracker tracker = new();
     private GlobalInputSettings settings;
+
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Usage",
         "CA2213:Disposable fields should be disposed",
-        Justification = "The run observer disposes the captured source after the controller loop exits.")]
+        Justification = "The run observer disposes the captured source after the controller loop exits."
+    )]
     private CancellationTokenSource? runCancellation;
     private Task? runTask;
     private Task? disposalTask;
@@ -30,19 +32,16 @@ public sealed class GlobalControllerInputService : IAsyncDisposable
         OverlayHostKind host,
         IGameWindowTracker gameWindowTracker,
         Func<bool> isApplicationActive,
-        IControllerInputBackend? backend = null)
+        IControllerInputBackend? backend = null
+    )
     {
-        this.settings = settings
-            ?? throw new ArgumentNullException(nameof(settings));
+        this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
         this.host = host;
-        this.gameWindowTracker = gameWindowTracker
-            ?? throw new ArgumentNullException(nameof(gameWindowTracker));
-        this.isApplicationActive = isApplicationActive
-            ?? throw new ArgumentNullException(nameof(isApplicationActive));
+        this.gameWindowTracker = gameWindowTracker ?? throw new ArgumentNullException(nameof(gameWindowTracker));
+        this.isApplicationActive = isApplicationActive ?? throw new ArgumentNullException(nameof(isApplicationActive));
         this.backend = backend ?? new SdlControllerInputBackend();
         router = new GlobalInputBindingRouter(settings);
-        status = GetInactiveStatus(settings)
-            ?? "Controller input is ready to start.";
+        status = GetInactiveStatus(settings) ?? "Controller input is ready to start.";
     }
 
     public event EventHandler<GlobalInputActionTriggeredEventArgs>? ActionTriggered;
@@ -101,7 +100,8 @@ public sealed class GlobalControllerInputService : IAsyncDisposable
                 currentSettings.ControllerDeviceId!,
                 change => OnInputChanged(version, change),
                 update => OnBackendStatusChanged(version, update),
-                cancellation.Token);
+                cancellation.Token
+            );
             runTask = task;
         }
 
@@ -116,12 +116,13 @@ public sealed class GlobalControllerInputService : IAsyncDisposable
         Volatile.Write(ref settings, updatedSettings);
         router.Update(updatedSettings);
 
-        var mustRestart = previous.ControllerEnabled
-                != updatedSettings.ControllerEnabled
+        var mustRestart =
+            previous.ControllerEnabled != updatedSettings.ControllerEnabled
             || !string.Equals(
                 previous.ControllerDeviceId,
                 updatedSettings.ControllerDeviceId,
-                StringComparison.Ordinal);
+                StringComparison.Ordinal
+            );
         if (mustRestart)
         {
             var stoppedTask = StopRun();
@@ -162,10 +163,11 @@ public sealed class GlobalControllerInputService : IAsyncDisposable
 
     private bool IsPlatformSupported()
     {
-        return host is OverlayHostKind.Windows
-            or OverlayHostKind.LinuxX11
-            or OverlayHostKind.LinuxXWayland
-            or OverlayHostKind.LinuxWayland;
+        return host
+            is OverlayHostKind.Windows
+                or OverlayHostKind.LinuxX11
+                or OverlayHostKind.LinuxXWayland
+                or OverlayHostKind.LinuxWayland;
     }
 
     private string? GetInactiveStatus(GlobalInputSettings currentSettings)
@@ -209,28 +211,25 @@ public sealed class GlobalControllerInputService : IAsyncDisposable
         }
 
         var currentSettings = Volatile.Read(ref settings);
-        if (chord is null
+        if (
+            chord is null
             || !currentSettings.ControllerEnabled
             || !IsInputContextActive()
-            || !router.TryResolve(chord, out var action))
+            || !router.TryResolve(chord, out var action)
+        )
         {
             return;
         }
 
-        ActionTriggered?.Invoke(
-            this,
-            new GlobalInputActionTriggeredEventArgs(action, chord));
+        ActionTriggered?.Invoke(this, new GlobalInputActionTriggeredEventArgs(action, chord));
     }
 
     private bool IsInputContextActive()
     {
-        return isApplicationActive()
-            || gameWindowTracker.GetSnapshot().IsForeground;
+        return isApplicationActive() || gameWindowTracker.GetSnapshot().IsForeground;
     }
 
-    private void OnBackendStatusChanged(
-        long version,
-        ControllerBackendStatus update)
+    private void OnBackendStatusChanged(long version, ControllerBackendStatus update)
     {
         if (version != Volatile.Read(ref runVersion))
         {
@@ -248,10 +247,7 @@ public sealed class GlobalControllerInputService : IAsyncDisposable
         SetStatus(update.Message);
     }
 
-    private async Task ObserveRunAsync(
-        long version,
-        CancellationTokenSource cancellation,
-        Task task)
+    private async Task ObserveRunAsync(long version, CancellationTokenSource cancellation, Task task)
     {
         Exception? failure = null;
         try
@@ -267,8 +263,7 @@ public sealed class GlobalControllerInputService : IAsyncDisposable
             var isCurrent = false;
             lock (lifecycleLock)
             {
-                if (version == runVersion
-                    && ReferenceEquals(runCancellation, cancellation))
+                if (version == runVersion && ReferenceEquals(runCancellation, cancellation))
                 {
                     runCancellation = null;
                     runTask = null;
@@ -277,13 +272,11 @@ public sealed class GlobalControllerInputService : IAsyncDisposable
             }
 
             cancellation.Dispose();
-            if (isCurrent
-                && !disposed
-                && Volatile.Read(ref settings).ControllerEnabled)
+            if (isCurrent && !disposed && Volatile.Read(ref settings).ControllerEnabled)
             {
-                SetStatus(failure is null
-                    ? "Controller input stopped."
-                    : $"Controller input stopped: {failure.Message}");
+                SetStatus(
+                    failure is null ? "Controller input stopped." : $"Controller input stopped: {failure.Message}"
+                );
             }
         }
     }

@@ -16,7 +16,8 @@ public sealed class EdsmPublisherTests
         FrontierId: "F123456",
         GameVersion: "4.1.0.100",
         GameBuild: "r300000/r0",
-        IsOdyssey: true);
+        IsOdyssey: true
+    );
 
     [Fact]
     public async Task StatisticsMulticrewObjectDoesNotTriggerCrewMode()
@@ -24,9 +25,10 @@ public sealed class EdsmPublisherTests
         var handler = new EdsmResponseHandler();
         using var publisher = CreatePublisher(handler);
 
-        var result = await publisher.ApplyAsync(CreateUpdate(
-            [
-                Event("""
+        var result = await publisher.ApplyAsync(
+            CreateUpdate([
+                Event(
+                    """
                     {
                       "timestamp": "2026-08-25T12:00:00Z",
                       "event": "Statistics",
@@ -34,15 +36,19 @@ public sealed class EdsmPublisherTests
                         "Multicrew_Time_Total": 1
                       }
                     }
-                    """),
-                Event("""
+                    """
+                ),
+                Event(
+                    """
                     {
                       "timestamp": "2026-08-25T12:00:01Z",
                       "event": "FSDJump",
                       "StarSystem": "Sol"
                     }
-                    """),
-            ]));
+                    """
+                ),
+            ])
+        );
 
         Assert.Equal(["Statistics", "FSDJump"], result.QueuedEventNames);
     }
@@ -53,40 +59,52 @@ public sealed class EdsmPublisherTests
         var handler = new EdsmResponseHandler();
         using var publisher = CreatePublisher(handler);
 
-        var bootstrap = await publisher.ApplyAsync(CreateUpdate(
-            [
-                Event("""
-                    {
-                      "timestamp": "2026-08-25T12:00:00Z",
-                      "event": "Location",
-                      "StarSystem": "Sol",
-                      "SystemAddress": 10477373803,
-                      "StarPos": [0.0, 0.0, 0.0],
-                      "Docked": true,
-                      "StationName": "Galileo",
-                      "MarketID": 128666762
-                    }
-                    """),
-                Event("""
-                    {
-                      "timestamp": "2026-08-25T12:00:01Z",
-                      "event": "Loadout",
-                      "ShipID": 42
-                    }
-                    """),
-            ],
-            allowPublishing: false));
+        var bootstrap = await publisher.ApplyAsync(
+            CreateUpdate(
+                [
+                    Event(
+                        """
+                        {
+                          "timestamp": "2026-08-25T12:00:00Z",
+                          "event": "Location",
+                          "StarSystem": "Sol",
+                          "SystemAddress": 10477373803,
+                          "StarPos": [0.0, 0.0, 0.0],
+                          "Docked": true,
+                          "StationName": "Galileo",
+                          "MarketID": 128666762
+                        }
+                        """
+                    ),
+                    Event(
+                        """
+                        {
+                          "timestamp": "2026-08-25T12:00:01Z",
+                          "event": "Loadout",
+                          "ShipID": 42
+                        }
+                        """
+                    ),
+                ],
+                allowPublishing: false
+            )
+        );
         Assert.Equal(0, bootstrap.QueuedEventCount);
 
-        var live = await publisher.ApplyAsync(CreateUpdate(
-            [Event("""
-                {
-                  "timestamp": "2026-08-25T12:01:00Z",
-                  "event": "CollectCargo",
-                  "Type": "tea",
-                  "Stolen": 0
-                }
-                """)]));
+        var live = await publisher.ApplyAsync(
+            CreateUpdate([
+                Event(
+                    """
+                    {
+                      "timestamp": "2026-08-25T12:01:00Z",
+                      "event": "CollectCargo",
+                      "Type": "tea",
+                      "Stolen": 0
+                    }
+                    """
+                ),
+            ])
+        );
         Assert.Equal(1, live.QueuedEventCount);
 
         var sent = await publisher.FlushAsync();
@@ -113,19 +131,21 @@ public sealed class EdsmPublisherTests
     [Fact]
     public async Task InvalidDiscardListFailsClosedAndUsesBoundedRetryCadence()
     {
-        var handler = new EdsmResponseHandler
-        {
-            DiscardedEvents = [],
-        };
+        var handler = new EdsmResponseHandler { DiscardedEvents = [] };
         using var publisher = CreatePublisher(handler);
-        await publisher.ApplyAsync(CreateUpdate(
-            [Event("""
-                {
-                  "timestamp": "2026-08-25T12:00:00Z",
-                  "event": "FSDJump",
-                  "StarSystem": "Sol"
-                }
-                """)]));
+        await publisher.ApplyAsync(
+            CreateUpdate([
+                Event(
+                    """
+                    {
+                      "timestamp": "2026-08-25T12:00:00Z",
+                      "event": "FSDJump",
+                      "StarSystem": "Sol"
+                    }
+                    """
+                ),
+            ])
+        );
 
         var first = await publisher.FlushAsync();
         var second = await publisher.FlushAsync();
@@ -133,30 +153,30 @@ public sealed class EdsmPublisherTests
         Assert.Equal(0, handler.PostCount);
         Assert.Equal(1, handler.GetCount);
         Assert.Equal(1, first.PendingEventCount);
-        Assert.Contains(
-            first.Warnings,
-            warning => warning.Contains("discarded-event list", StringComparison.Ordinal));
+        Assert.Contains(first.Warnings, warning => warning.Contains("discarded-event list", StringComparison.Ordinal));
         Assert.Equal(1, second.PendingEventCount);
     }
 
     [Fact]
     public async Task CurrentDiscardListSilentlyFiltersUnsupportedEventsBeforePost()
     {
-        var handler = new EdsmResponseHandler
-        {
-            DiscardedEvents = ["SendText", "Screenshot"],
-        };
+        var handler = new EdsmResponseHandler { DiscardedEvents = ["SendText", "Screenshot"] };
         using var publisher = CreatePublisher(handler);
 
-        await publisher.ApplyAsync(CreateUpdate(
-            [Event("""
-                {
-                  "timestamp": "2026-08-25T12:00:00Z",
-                  "event": "SendText",
-                  "To": "local",
-                  "Message": "private text"
-                }
-                """)]));
+        await publisher.ApplyAsync(
+            CreateUpdate([
+                Event(
+                    """
+                    {
+                      "timestamp": "2026-08-25T12:00:00Z",
+                      "event": "SendText",
+                      "To": "local",
+                      "Message": "private text"
+                    }
+                    """
+                ),
+            ])
+        );
         var result = await publisher.FlushAsync();
 
         Assert.Equal(0, result.AcceptedEventCount);
@@ -169,50 +189,53 @@ public sealed class EdsmPublisherTests
     public async Task SuccessfulUploadsAreSummarizedOncePerFifteenMinuteWindow()
     {
         var handler = new EdsmResponseHandler();
-        var time = new MutableTimeProvider(
-            DateTimeOffset.Parse("2026-08-25T12:00:00Z"));
+        var time = new MutableTimeProvider(DateTimeOffset.Parse("2026-08-25T12:00:00Z"));
         var logs = new List<string>();
-        using var publisher = new EdsmPublisher(
-            "2.1.3.0",
-            new HttpClient(handler),
-            time,
-            logs.Add);
+        using var publisher = new EdsmPublisher("2.1.3.0", new HttpClient(handler), time, logs.Add);
 
-        await publisher.ApplyAsync(CreateUpdate(
-            [
-                Event("""
+        await publisher.ApplyAsync(
+            CreateUpdate([
+                Event(
+                    """
                     {
                       "timestamp": "2026-08-25T12:00:00Z",
                       "event": "FSDJump",
                       "StarSystem": "Sol"
                     }
-                    """),
-                Event("""
+                    """
+                ),
+                Event(
+                    """
                     {
                       "timestamp": "2026-08-25T12:00:01Z",
                       "event": "FSDJump",
                       "StarSystem": "Sirius"
                     }
-                    """),
-            ]));
+                    """
+                ),
+            ])
+        );
         await publisher.FlushAsync();
 
         Assert.Empty(logs);
 
         time.Advance(TimeSpan.FromMinutes(15));
-        await publisher.ApplyAsync(CreateUpdate(
-            [Event("""
-                {
-                  "timestamp": "2026-08-25T12:15:00Z",
-                  "event": "FSDJump",
-                  "StarSystem": "Achenar"
-                }
-                """)]));
+        await publisher.ApplyAsync(
+            CreateUpdate([
+                Event(
+                    """
+                    {
+                      "timestamp": "2026-08-25T12:15:00Z",
+                      "event": "FSDJump",
+                      "StarSystem": "Achenar"
+                    }
+                    """
+                ),
+            ])
+        );
         await publisher.FlushAsync();
 
-        Assert.Equal(
-            ["EDSM uploaded 2 journal events in the previous 15-minute activity window."],
-            logs);
+        Assert.Equal(["EDSM uploaded 2 journal events in the previous 15-minute activity window."], logs);
     }
 
     [Fact]
@@ -220,27 +243,21 @@ public sealed class EdsmPublisherTests
     {
         var handler = new EdsmResponseHandler();
         using var publisher = CreatePublisher(handler);
-        var journalEvent = Event("""
+        var journalEvent = Event(
+            """
             {
               "timestamp": "2026-08-25T12:00:00Z",
               "event": "FSDJump",
               "StarSystem": "Sol"
             }
-            """);
+            """
+        );
 
-        await publisher.ApplyAsync(CreateUpdate(
-            [journalEvent],
-            options: Options with { ApiKey = null }));
-        await publisher.ApplyAsync(CreateUpdate(
-            [journalEvent],
-            options: Options with
-            {
-                GameVersion = "3.8.0.0",
-                IsOdyssey = false,
-            }));
-        await publisher.ApplyAsync(CreateUpdate(
-            [journalEvent],
-            options: Options with { GameVersion = "4.1.0 beta" }));
+        await publisher.ApplyAsync(CreateUpdate([journalEvent], options: Options with { ApiKey = null }));
+        await publisher.ApplyAsync(
+            CreateUpdate([journalEvent], options: Options with { GameVersion = "3.8.0.0", IsOdyssey = false })
+        );
+        await publisher.ApplyAsync(CreateUpdate([journalEvent], options: Options with { GameVersion = "4.1.0 beta" }));
 
         Assert.Equal(0, handler.GetCount);
         Assert.Equal(0, handler.PostCount);
@@ -250,44 +267,49 @@ public sealed class EdsmPublisherTests
     [InlineData("QuitACrew")]
     [InlineData("EndCrewSession")]
     [InlineData("CrewMemberQuits")]
-    public async Task MulticrewEventsAreSuppressedUntilCrewSessionEnds(
-        string crewEndEvent)
+    public async Task MulticrewEventsAreSuppressedUntilCrewSessionEnds(string crewEndEvent)
     {
-        var handler = new EdsmResponseHandler
-        {
-            DiscardedEvents = ["JoinACrew"],
-        };
+        var handler = new EdsmResponseHandler { DiscardedEvents = ["JoinACrew"] };
         using var publisher = CreatePublisher(handler);
 
-        var result = await publisher.ApplyAsync(CreateUpdate(
-            [
-                Event("""
+        var result = await publisher.ApplyAsync(
+            CreateUpdate([
+                Event(
+                    """
                     {
                       "timestamp": "2026-08-25T12:00:00Z",
                       "event": "JoinACrew"
                     }
-                    """),
-                Event("""
+                    """
+                ),
+                Event(
+                    """
                     {
                       "timestamp": "2026-08-25T12:00:01Z",
                       "event": "FSDJump",
                       "StarSystem": "Sirius"
                     }
-                    """),
-                Event($$"""
+                    """
+                ),
+                Event(
+                    $$"""
                     {
                       "timestamp": "2026-08-25T12:00:02Z",
                       "event": "{{crewEndEvent}}"
                     }
-                    """),
-                Event("""
+                    """
+                ),
+                Event(
+                    """
                     {
                       "timestamp": "2026-08-25T12:00:03Z",
                       "event": "FSDJump",
                       "StarSystem": "Vega"
                     }
-                    """),
-            ]));
+                    """
+                ),
+            ])
+        );
         var sent = await publisher.FlushAsync();
 
         Assert.Equal([crewEndEvent, "FSDJump"], result.QueuedEventNames);
@@ -297,27 +319,27 @@ public sealed class EdsmPublisherTests
     [Fact]
     public async Task TransientFailureRetainsBatchAndRetriesWithoutImmediateLoop()
     {
-        var handler = new EdsmResponseHandler
-        {
-            PostStatusCode = HttpStatusCode.ServiceUnavailable,
-        };
+        var handler = new EdsmResponseHandler { PostStatusCode = HttpStatusCode.ServiceUnavailable };
         using var publisher = CreatePublisher(handler);
-        await publisher.ApplyAsync(CreateUpdate(
-            [Event("""
-                {
-                  "timestamp": "2026-08-25T12:00:00Z",
-                  "event": "FSDJump",
-                  "StarSystem": "Sol"
-                }
-                """)]));
+        await publisher.ApplyAsync(
+            CreateUpdate([
+                Event(
+                    """
+                    {
+                      "timestamp": "2026-08-25T12:00:00Z",
+                      "event": "FSDJump",
+                      "StarSystem": "Sol"
+                    }
+                    """
+                ),
+            ])
+        );
 
         var deferred = await publisher.FlushAsync();
 
         Assert.Equal(1, deferred.PendingEventCount);
         Assert.Equal(1, handler.PostCount);
-        Assert.Contains(
-            deferred.Warnings,
-            warning => warning.Contains("retained in memory", StringComparison.Ordinal));
+        Assert.Contains(deferred.Warnings, warning => warning.Contains("retained in memory", StringComparison.Ordinal));
 
         handler.PostStatusCode = HttpStatusCode.OK;
         var retried = await publisher.FlushAsync();
@@ -328,47 +350,61 @@ public sealed class EdsmPublisherTests
     [Fact]
     public async Task FatalCredentialResponsePausesUntilCredentialsChange()
     {
-        var handler = new EdsmResponseHandler
-        {
-            TopStatus = 203,
-            TopMessage = "Commander name/API Key not found",
-        };
+        var handler = new EdsmResponseHandler { TopStatus = 203, TopMessage = "Commander name/API Key not found" };
         using var publisher = CreatePublisher(handler);
-        await publisher.ApplyAsync(CreateUpdate(
-            [Event("""
-                {
-                  "timestamp": "2026-08-25T12:00:00Z",
-                  "event": "FSDJump",
-                  "StarSystem": "Sol"
-                }
-                """)]));
+        await publisher.ApplyAsync(
+            CreateUpdate([
+                Event(
+                    """
+                    {
+                      "timestamp": "2026-08-25T12:00:00Z",
+                      "event": "FSDJump",
+                      "StarSystem": "Sol"
+                    }
+                    """
+                ),
+            ])
+        );
         var rejected = await publisher.FlushAsync();
-        Assert.Contains(
-            rejected.Warnings,
-            warning => warning.Contains("203", StringComparison.Ordinal));
+        Assert.Contains(rejected.Warnings, warning => warning.Contains("203", StringComparison.Ordinal));
 
-        await publisher.ApplyAsync(CreateUpdate(
-            [Event("""
-                {
-                  "timestamp": "2026-08-25T12:01:00Z",
-                  "event": "FSDJump",
-                  "StarSystem": "Sirius"
-                }
-                """)]));
+        await publisher.ApplyAsync(
+            CreateUpdate([
+                Event(
+                    """
+                    {
+                      "timestamp": "2026-08-25T12:01:00Z",
+                      "event": "FSDJump",
+                      "StarSystem": "Sirius"
+                    }
+                    """
+                ),
+            ])
+        );
         await publisher.FlushAsync();
         Assert.Equal(1, handler.PostCount);
 
         handler.TopStatus = 100;
         handler.TopMessage = "OK";
-        await publisher.ApplyAsync(CreateUpdate(
-            [Event("""
+        await publisher.ApplyAsync(
+            CreateUpdate(
+                [
+                    Event(
+                        """
+                        {
+                          "timestamp": "2026-08-25T12:02:00Z",
+                          "event": "FSDJump",
+                          "StarSystem": "Achenar"
+                        }
+                        """
+                    ),
+                ],
+                options: Options with
                 {
-                  "timestamp": "2026-08-25T12:02:00Z",
-                  "event": "FSDJump",
-                  "StarSystem": "Achenar"
+                    ApiKey = "replacement-key",
                 }
-                """)],
-            options: Options with { ApiKey = "replacement-key" }));
+            )
+        );
         var accepted = await publisher.FlushAsync();
         Assert.Equal(1, accepted.AcceptedEventCount);
         Assert.Equal(2, handler.PostCount);
@@ -377,28 +413,30 @@ public sealed class EdsmPublisherTests
     [Fact]
     public async Task ApiStatus402RetriesOnlyUnknownCatalogEvent()
     {
-        var handler = new EdsmResponseHandler
-        {
-            EventStatusSelector = index => index == 0 ? 100 : 402,
-        };
+        var handler = new EdsmResponseHandler { EventStatusSelector = index => index == 0 ? 100 : 402 };
         using var publisher = CreatePublisher(handler);
-        await publisher.ApplyAsync(CreateUpdate(
-            [
-                Event("""
+        await publisher.ApplyAsync(
+            CreateUpdate([
+                Event(
+                    """
                     {
                       "timestamp": "2026-08-25T12:00:00Z",
                       "event": "FSDJump",
                       "StarSystem": "Sol"
                     }
-                    """),
-                Event("""
+                    """
+                ),
+                Event(
+                    """
                     {
                       "timestamp": "2026-08-25T12:00:01Z",
                       "event": "CollectCargo",
                       "Type": "future_item"
                     }
-                    """),
-            ]));
+                    """
+                ),
+            ])
+        );
 
         var partial = await publisher.FlushAsync();
         Assert.Equal(1, partial.AcceptedEventCount);
@@ -419,20 +457,20 @@ public sealed class EdsmPublisherTests
     private static EdsmPublicationUpdate CreateUpdate(
         IReadOnlyList<JournalEventEnvelope> events,
         bool allowPublishing = true,
-        EdsmPublicationOptions? options = null)
+        EdsmPublicationOptions? options = null
+    )
     {
         return new EdsmPublicationUpdate(
             events,
             JournalPath: "Journal.2026-08-25T120000.01.log",
             allowPublishing,
-            options ?? Options);
+            options ?? Options
+        );
     }
 
     private static JournalEventEnvelope Event(string json)
     {
-        Assert.True(
-            JournalEventEnvelope.TryParse(json, out var parsed, out var error),
-            error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out var parsed, out var error), error);
         return Assert.IsType<JournalEventEnvelope>(parsed);
     }
 
@@ -461,7 +499,8 @@ public sealed class EdsmPublisherTests
 
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
             if (request.Method == HttpMethod.Get)
             {
@@ -470,9 +509,7 @@ public sealed class EdsmPublisherTests
             }
 
             Interlocked.Increment(ref postCount);
-            var encoded = await request.Content!
-                .ReadAsStringAsync(cancellationToken)
-                .ConfigureAwait(false);
+            var encoded = await request.Content!.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             var form = ParseForm(encoded);
             Forms.Add(form);
             if (PostStatusCode != HttpStatusCode.OK)
@@ -481,40 +518,42 @@ public sealed class EdsmPublisherTests
             }
 
             var eventCount = JArray.Parse(form["message"]).Count;
-            return JsonResponse(new JObject
-            {
-                ["msgnum"] = TopStatus,
-                ["msg"] = TopMessage,
-                ["events"] = new JArray(Enumerable.Range(0, eventCount).Select(
-                    index => new JObject
-                    {
-                        ["msgnum"] = EventStatusSelector(index),
-                        ["msg"] = EventStatusSelector(index) == 100
-                            ? "OK"
-                            : "Item unknown",
-                    })),
-            });
+            return JsonResponse(
+                new JObject
+                {
+                    ["msgnum"] = TopStatus,
+                    ["msg"] = TopMessage,
+                    ["events"] = new JArray(
+                        Enumerable
+                            .Range(0, eventCount)
+                            .Select(index => new JObject
+                            {
+                                ["msgnum"] = EventStatusSelector(index),
+                                ["msg"] = EventStatusSelector(index) == 100 ? "OK" : "Item unknown",
+                            })
+                    ),
+                }
+            );
         }
 
         private static HttpResponseMessage JsonResponse(JToken body)
         {
             return new HttpResponseMessage(HttpStatusCode.OK)
             {
-                Content = new StringContent(
-                    body.ToString(Formatting.None),
-                    Encoding.UTF8,
-                    "application/json"),
+                Content = new StringContent(body.ToString(Formatting.None), Encoding.UTF8, "application/json"),
             };
         }
 
         private static Dictionary<string, string> ParseForm(string content)
         {
-            return content.Split('&', StringSplitOptions.RemoveEmptyEntries)
+            return content
+                .Split('&', StringSplitOptions.RemoveEmptyEntries)
                 .Select(item => item.Split('=', 2))
                 .ToDictionary(
                     item => Decode(item[0]),
                     item => Decode(item.Length > 1 ? item[1] : string.Empty),
-                    StringComparer.Ordinal);
+                    StringComparer.Ordinal
+                );
         }
 
         private static string Decode(string value)

@@ -13,7 +13,8 @@ public sealed class PassiveOverlayCoordinatorCharacterizationTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-passive-overlay-characterization-{Guid.NewGuid():N}");
+        $"SrvSurvey-passive-overlay-characterization-{Guid.NewGuid():N}"
+    );
 
     [AvaloniaFact]
     public async Task GroundTargetSuppressionClosesAndReopensItsWindow()
@@ -22,9 +23,7 @@ public sealed class PassiveOverlayCoordinatorCharacterizationTests : IDisposable
         var platform = new RecordingOverlayPlatform();
         var tracker = new RecordingGameWindowTracker(AvailableGameWindow);
         using var session = CreateSession(platform, tracker);
-        using var coordinator = new GroundTargetOverlayCoordinator(
-            groundTarget,
-            session);
+        using var coordinator = new GroundTargetOverlayCoordinator(groundTarget, session);
         var visibilityChanges = 0;
         coordinator.VisibilityChanged += (_, _) => visibilityChanges++;
 
@@ -55,9 +54,7 @@ public sealed class PassiveOverlayCoordinatorCharacterizationTests : IDisposable
         var platform = new RecordingOverlayPlatform();
         var tracker = new RecordingGameWindowTracker(AvailableGameWindow);
         using var session = CreateSession(platform, tracker);
-        using var coordinator = new StationInfoOverlayCoordinator(
-            stationInfo,
-            session);
+        using var coordinator = new StationInfoOverlayCoordinator(stationInfo, session);
         var visibilityChanges = 0;
         coordinator.VisibilityChanged += (_, _) => visibilityChanges++;
 
@@ -100,18 +97,17 @@ public sealed class PassiveOverlayCoordinatorCharacterizationTests : IDisposable
     private async Task<GroundTargetViewModel> CreateGroundTargetAsync()
     {
         var store = new GroundTargetSettingsStore(temporaryDirectory);
-        await store.SaveAsync(new GroundTargetSnapshot(
-            true,
-            new SurfaceCoordinate(0, 1)));
+        await store.SaveAsync(new GroundTargetSnapshot(true, new SurfaceCoordinate(0, 1)));
         var viewModel = new GroundTargetViewModel(store);
-        viewModel.UpdateStatus(new SrvSurvey.Core.Journal.EliteStatus
-        {
-            Flags = SrvSurvey.Core.Journal.StatusFlags.HasLatLong
-                | SrvSurvey.Core.Journal.StatusFlags.InMainShip,
-            Latitude = 0,
-            Longitude = 0,
-            PlanetRadius = 1_000,
-        });
+        viewModel.UpdateStatus(
+            new SrvSurvey.Core.Journal.EliteStatus
+            {
+                Flags = SrvSurvey.Core.Journal.StatusFlags.HasLatLong | SrvSurvey.Core.Journal.StatusFlags.InMainShip,
+                Latitude = 0,
+                Longitude = 0,
+                PlanetRadius = 1_000,
+            }
+        );
         Assert.True(viewModel.ShouldShow);
         return viewModel;
     }
@@ -119,43 +115,48 @@ public sealed class PassiveOverlayCoordinatorCharacterizationTests : IDisposable
     private static StationInfoViewModel CreateStationInfo()
     {
         var viewModel = new StationInfoViewModel(new EmptySystemSummaryClient());
-        viewModel.InstallEditorPreview(new StationInfoEditorPreview
-        {
-            StationName = "Raven Port",
-            StationType = "Planetary Port",
-            LargestPad = "Largest pad: Large",
-            PrimaryEconomy = "Primary economy: High Tech",
-            Faction = "Cooperative · Democracy",
-            Updated = "Spansh data updated today",
-            IsQuestTagged = false,
-            Economies = [],
-            Services = [],
-            Prohibited = [],
-        });
+        viewModel.InstallEditorPreview(
+            new StationInfoEditorPreview
+            {
+                StationName = "Raven Port",
+                StationType = "Planetary Port",
+                LargestPad = "Largest pad: Large",
+                PrimaryEconomy = "Primary economy: High Tech",
+                Faction = "Cooperative · Democracy",
+                Updated = "Spansh data updated today",
+                IsQuestTagged = false,
+                Economies = [],
+                Services = [],
+                Prohibited = [],
+            }
+        );
         Assert.True(viewModel.ShouldShow);
         return viewModel;
     }
 
-    private static GameWindowSnapshot AvailableGameWindow { get; } = new(
-        NativeHandle: (nint)1,
-        ProcessId: 42,
-        ClientBounds: new PixelRect(0, 0, 1920, 1080),
-        IsVisible: true,
-        IsForeground: true);
+    private static GameWindowSnapshot AvailableGameWindow { get; } =
+        new(
+            NativeHandle: (nint)1,
+            ProcessId: 42,
+            ClientBounds: new PixelRect(0, 0, 1920, 1080),
+            IsVisible: true,
+            IsForeground: true
+        );
 
     private static OverlayPresentationSession CreateSession(
         IOverlayPlatformService platform,
-        IGameWindowTracker tracker)
+        IGameWindowTracker tracker
+    )
     {
         return OverlayPresentationSession.CreateForAdapters(
-            new OverlayPresentationDecision(
-                OverlayPresentationMode.MultipleWindows,
-                "Characterization session"),
+            new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Characterization session"),
             new OverlayPresentationSessionDependencies(
                 () => platform,
                 () => tracker,
                 _ => new ManualHostedOverlayTimer(),
-                LegacyOverlayLayout.Empty));
+                LegacyOverlayLayout.Empty
+            )
+        );
     }
 
     private sealed class RecordingOverlayPlatform : IOverlayPlatformService
@@ -170,20 +171,12 @@ public sealed class PassiveOverlayCoordinatorCharacterizationTests : IDisposable
         public OverlayPreparationResult PreparePassiveWindow(Window window)
         {
             PreparedWindows.Add(window);
-            return new OverlayPreparationResult(
-                IsPrepared: true,
-                IsClickThrough: true,
-                Status: "Prepared");
+            return new OverlayPreparationResult(IsPrepared: true, IsClickThrough: true, Status: "Prepared");
         }
 
-        public OverlayInteractionResult SetInteractive(
-            Window window,
-            bool interactive)
+        public OverlayInteractionResult SetInteractive(Window window, bool interactive)
         {
-            return new OverlayInteractionResult(
-                IsPrepared: true,
-                IsInteractive: interactive,
-                Status: "Prepared");
+            return new OverlayInteractionResult(IsPrepared: true, IsInteractive: interactive, Status: "Prepared");
         }
 
         public void Dispose()
@@ -192,8 +185,7 @@ public sealed class PassiveOverlayCoordinatorCharacterizationTests : IDisposable
         }
     }
 
-    private sealed class RecordingGameWindowTracker(GameWindowSnapshot snapshot)
-        : IGameWindowTracker
+    private sealed class RecordingGameWindowTracker(GameWindowSnapshot snapshot) : IGameWindowTracker
     {
         public bool IsDisposed { get; private set; }
 
@@ -213,17 +205,11 @@ public sealed class PassiveOverlayCoordinatorCharacterizationTests : IDisposable
             remove { }
         }
 
-        public void Start()
-        {
-        }
+        public void Start() { }
 
-        public void Stop()
-        {
-        }
+        public void Stop() { }
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
     }
 
     private sealed class EmptySystemSummaryClient : ISystemSummaryClient
@@ -231,24 +217,29 @@ public sealed class PassiveOverlayCoordinatorCharacterizationTests : IDisposable
         public Task<SystemSummaryLoadResult> GetAsync(
             string systemName,
             long systemAddress,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
-            return Task.FromResult(new SystemSummaryLoadResult(
-                new SystemSummary(
-                    systemName,
-                    systemAddress,
-                    null,
-                    null,
-                    null,
-                    0,
-                    0,
-                    null,
-                    null,
-                    null,
-                    null,
-                    new SystemPoiSummary(0, 0, 0, 0, 0, 0, 0),
-                    []),
-                []));
+            return Task.FromResult(
+                new SystemSummaryLoadResult(
+                    new SystemSummary(
+                        systemName,
+                        systemAddress,
+                        null,
+                        null,
+                        null,
+                        0,
+                        0,
+                        null,
+                        null,
+                        null,
+                        null,
+                        new SystemPoiSummary(0, 0, 0, 0, 0, 0, 0),
+                        []
+                    ),
+                    []
+                )
+            );
         }
     }
 }

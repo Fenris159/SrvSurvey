@@ -29,13 +29,13 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
         ICommanderInstanceLauncher launcher,
         string journalDirectory,
         string? currentFrontierId = null,
-        IGameWindowSwitcher? gameWindowSwitcher = null)
+        IGameWindowSwitcher? gameWindowSwitcher = null
+    )
     {
         this.catalog = catalog;
         this.launcher = launcher;
         this.journalDirectory = journalDirectory;
-        this.gameWindowSwitcher = gameWindowSwitcher
-            ?? GameWindowSwitcher.CreateCurrent();
+        this.gameWindowSwitcher = gameWindowSwitcher ?? GameWindowSwitcher.CreateCurrent();
         this.currentFrontierId = currentFrontierId;
         launchCommand = new AsyncCommand(LaunchSelectedAsync, CanLaunchSelected);
         refreshCommand = new AsyncCommand(RefreshAsync, () => !IsBusy);
@@ -136,9 +136,7 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
 
     public void RefreshGameWindowCount()
     {
-        AvailableGameWindowCount = Math.Max(
-            0,
-            gameWindowSwitcher.GetAvailableWindowCount());
+        AvailableGameWindowCount = Math.Max(0, gameWindowSwitcher.GetAvailableWindowCount());
     }
 
     public void Dispose()
@@ -148,12 +146,8 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
 
     public void UpdateCurrent(string? frontierId, string? commanderName)
     {
-        currentFrontierId = string.IsNullOrWhiteSpace(frontierId)
-            ? currentFrontierId
-            : frontierId.Trim();
-        currentCommanderName = string.IsNullOrWhiteSpace(commanderName)
-            ? currentCommanderName
-            : commanderName.Trim();
+        currentFrontierId = string.IsNullOrWhiteSpace(frontierId) ? currentFrontierId : frontierId.Trim();
+        currentCommanderName = string.IsNullOrWhiteSpace(commanderName) ? currentCommanderName : commanderName.Trim();
         RebuildOptions();
         OnPropertyChanged(nameof(CurrentCommander));
         OnPropertyChanged(nameof(MultiGameOverlayLabel));
@@ -174,8 +168,8 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
             RebuildOptions();
             if (result.Warnings.Count > 0)
             {
-                StatusMessage = $"Found {result.Profiles.Count:N0} commander profile(s). "
-                    + string.Join(" ", result.Warnings);
+                StatusMessage =
+                    $"Found {result.Profiles.Count:N0} commander profile(s). " + string.Join(" ", result.Warnings);
             }
             else if (Directory.Exists(journalDirectory))
             {
@@ -190,20 +184,18 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
                 }
                 else
                 {
-                    StatusMessage =
-                        $"Choose one of {Commanders.Count:N0} other commander profile(s) to launch.";
+                    StatusMessage = $"Choose one of {Commanders.Count:N0} other commander profile(s) to launch.";
                 }
             }
             else
             {
-                StatusMessage = "The Elite journal folder is unavailable; configure it before launching another commander instance.";
+                StatusMessage =
+                    "The Elite journal folder is unavailable; configure it before launching another commander instance.";
             }
         }
-        catch (Exception exception) when (
-            exception is IOException or UnauthorizedAccessException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            StatusMessage = "Commander profiles could not be scanned: "
-                + exception.Message;
+            StatusMessage = "Commander profiles could not be scanned: " + exception.Message;
         }
         finally
         {
@@ -224,14 +216,15 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
             await launcher.LaunchAsync(selected.FrontierId, journalDirectory);
             StatusMessage = $"Started another SrvSurvey instance for {selected.DisplayName}.";
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidOperationException
-                or System.ComponentModel.Win32Exception)
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or UnauthorizedAccessException
+                        or InvalidOperationException
+                        or System.ComponentModel.Win32Exception
+            )
         {
-            StatusMessage = "The additional SrvSurvey instance could not start: "
-                + exception.Message;
+            StatusMessage = "The additional SrvSurvey instance could not start: " + exception.Message;
         }
         finally
         {
@@ -244,33 +237,23 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
         return !IsBusy
             && SelectedCommander is not null
             && Directory.Exists(journalDirectory)
-            && !string.Equals(
-                SelectedCommander.FrontierId,
-                currentFrontierId,
-                StringComparison.OrdinalIgnoreCase);
+            && !string.Equals(SelectedCommander.FrontierId, currentFrontierId, StringComparison.OrdinalIgnoreCase);
     }
 
     private void RebuildOptions()
     {
         var selectedFrontierId = SelectedCommander?.FrontierId;
         Commanders = catalogProfiles
-            .Where(profile => !string.Equals(
-                profile.FrontierId,
-                currentFrontierId,
-                StringComparison.OrdinalIgnoreCase))
+            .Where(profile => !string.Equals(profile.FrontierId, currentFrontierId, StringComparison.OrdinalIgnoreCase))
             .Select(profile => new CommanderInstanceOptionViewModel(profile))
             .ToArray();
-        SelectedCommander = Commanders.FirstOrDefault(option => string.Equals(
-                option.FrontierId,
-                selectedFrontierId,
-                StringComparison.OrdinalIgnoreCase))
-            ?? (Commanders.Count > 0 ? Commanders[0] : null);
+        SelectedCommander =
+            Commanders.FirstOrDefault(option =>
+                string.Equals(option.FrontierId, selectedFrontierId, StringComparison.OrdinalIgnoreCase)
+            ) ?? (Commanders.Count > 0 ? Commanders[0] : null);
     }
 
-    private bool SetField<T>(
-        ref T field,
-        T value,
-        [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
@@ -287,9 +270,7 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private sealed class AsyncCommand(
-        Func<Task> execute,
-        Func<bool> canExecute) : ICommand
+    private sealed class AsyncCommand(Func<Task> execute, Func<bool> canExecute) : ICommand
     {
         public event EventHandler? CanExecuteChanged;
 
@@ -324,19 +305,19 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
     }
 }
 
-public sealed class CommanderInstanceOptionViewModel(
-    CommanderProfileIdentity identity)
+public sealed class CommanderInstanceOptionViewModel(CommanderProfileIdentity identity)
 {
     public string FrontierId { get; } = identity.FrontierId;
 
     public string CommanderName { get; } = identity.CommanderName;
 
-    public string Modes => (identity.HasLiveProfile, identity.HasLegacyProfile) switch
-    {
-        (true, true) => "Odyssey and legacy",
-        (true, false) => "Odyssey",
-        _ => "Legacy",
-    };
+    public string Modes =>
+        (identity.HasLiveProfile, identity.HasLegacyProfile) switch
+        {
+            (true, true) => "Odyssey and legacy",
+            (true, false) => "Odyssey",
+            _ => "Legacy",
+        };
 
     public string DisplayName => $"{CommanderName} ({FrontierId})";
 }

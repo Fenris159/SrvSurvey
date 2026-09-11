@@ -12,9 +12,7 @@ public sealed class CursorVisibilitySessionTests
         int ShowCursor(bool show)
         {
             requests.Add(show);
-            return show
-                ? ++incrementCount - 3
-                : 0;
+            return show ? ++incrementCount - 3 : 0;
         }
 
         var session = CursorVisibilitySession.Begin(ShowCursor);
@@ -24,9 +22,7 @@ public sealed class CursorVisibilitySessionTests
         session.Dispose();
         session.Dispose();
 
-        Assert.Equal(
-            [true, true, true, false, false, false],
-            requests);
+        Assert.Equal([true, true, true, false, false, false], requests);
     }
 
     [Fact]
@@ -58,7 +54,6 @@ public sealed class CursorVisibilitySessionTests
     [Fact]
     public void BeginRejectsAMissingCursorCallback()
     {
-        Assert.Throws<ArgumentNullException>(() =>
-            CursorVisibilitySession.Begin(null!));
+        Assert.Throws<ArgumentNullException>(() => CursorVisibilitySession.Begin(null!));
     }
 }

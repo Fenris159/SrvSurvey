@@ -7,13 +7,13 @@ namespace SrvSurvey.Desktop.Behaviors;
 
 public static class ListBoxBringIntoViewBehavior
 {
-    private static readonly ConditionalWeakTable<ListBox, Subscription>
-        Subscriptions = new();
+    private static readonly ConditionalWeakTable<ListBox, Subscription> Subscriptions = new();
 
-    public static readonly AttachedProperty<bool> ContainProperty =
-        AvaloniaProperty.RegisterAttached<ListBox, ListBox, bool>(
-            "Contain",
-            defaultValue: false);
+    public static readonly AttachedProperty<bool> ContainProperty = AvaloniaProperty.RegisterAttached<
+        ListBox,
+        ListBox,
+        bool
+    >("Contain", defaultValue: false);
 
     static ListBoxBringIntoViewBehavior()
     {
@@ -30,15 +30,11 @@ public static class ListBoxBringIntoViewBehavior
         return target.GetValue(ContainProperty);
     }
 
-    private static void OnContainChanged(
-        ListBox listBox,
-        AvaloniaPropertyChangedEventArgs eventArgs)
+    private static void OnContainChanged(ListBox listBox, AvaloniaPropertyChangedEventArgs eventArgs)
     {
         if (eventArgs.NewValue is true)
         {
-            Subscriptions.GetValue(
-                listBox,
-                static target => new Subscription(target));
+            Subscriptions.GetValue(listBox, static target => new Subscription(target));
             return;
         }
 
@@ -56,22 +52,15 @@ public static class ListBoxBringIntoViewBehavior
         public Subscription(ListBox listBox)
         {
             this.listBox = listBox;
-            listBox.AddHandler(
-                Control.RequestBringIntoViewEvent,
-                OnRequestBringIntoView,
-                RoutingStrategies.Bubble);
+            listBox.AddHandler(Control.RequestBringIntoViewEvent, OnRequestBringIntoView, RoutingStrategies.Bubble);
         }
 
         public void Dispose()
         {
-            listBox.RemoveHandler(
-                Control.RequestBringIntoViewEvent,
-                OnRequestBringIntoView);
+            listBox.RemoveHandler(Control.RequestBringIntoViewEvent, OnRequestBringIntoView);
         }
 
-        private static void OnRequestBringIntoView(
-            object? sender,
-            RequestBringIntoViewEventArgs eventArgs)
+        private static void OnRequestBringIntoView(object? sender, RequestBringIntoViewEventArgs eventArgs)
         {
             eventArgs.Handled = true;
         }

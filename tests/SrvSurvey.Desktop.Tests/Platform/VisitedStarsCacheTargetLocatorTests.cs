@@ -18,8 +18,10 @@ public sealed class VisitedStarsCacheTargetLocatorTests
                 "Frontier Developments",
                 "Elite Dangerous",
                 "123456",
-                VisitedStarsCacheService.CacheFileName),
-            path);
+                VisitedStarsCacheService.CacheFileName
+            ),
+            path
+        );
     }
 
     [Theory]
@@ -28,8 +30,6 @@ public sealed class VisitedStarsCacheTargetLocatorTests
     [InlineData("F12/34")]
     public void RejectsUnsafeFrontierIdentity(string frontierId)
     {
-        Assert.Null(VisitedStarsCacheTargetLocator.ResolveWindows(
-            Path.GetTempPath(),
-            frontierId));
+        Assert.Null(VisitedStarsCacheTargetLocator.ResolveWindows(Path.GetTempPath(), frontierId));
     }
 }

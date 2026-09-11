@@ -9,7 +9,8 @@ public sealed class CommanderInstancesViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-commander-instance-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-commander-instance-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public async Task RefreshExcludesCurrentAndLaunchesSelectedCommander()
@@ -17,10 +18,12 @@ public sealed class CommanderInstancesViewModelTests : IDisposable
         Directory.CreateDirectory(temporaryDirectory);
         await File.WriteAllTextAsync(
             Path.Combine(temporaryDirectory, "F123-live.json"),
-            "{\"fid\":\"F123\",\"commander\":\"Drew\"}");
+            "{\"fid\":\"F123\",\"commander\":\"Drew\"}"
+        );
         await File.WriteAllTextAsync(
             Path.Combine(temporaryDirectory, "F456-live.json"),
-            "{\"fid\":\"F456\",\"commander\":\"Raven\"}");
+            "{\"fid\":\"F456\",\"commander\":\"Raven\"}"
+        );
         var launcher = new RecordingLauncher();
         var switcher = new RecordingSwitcher();
         var journalDirectory = Path.Combine(temporaryDirectory, "journals");
@@ -30,7 +33,8 @@ public sealed class CommanderInstancesViewModelTests : IDisposable
             launcher,
             journalDirectory,
             "F123",
-            switcher);
+            switcher
+        );
         Assert.Equal(2, viewModel.AvailableGameWindowCount);
         Assert.True(viewModel.HasMultipleGameWindows);
         viewModel.UpdateCurrent("F123", "Drew");
@@ -74,7 +78,8 @@ public sealed class CommanderInstancesViewModelTests : IDisposable
         public Task LaunchAsync(
             string frontierId,
             string journalDirectory,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             FrontierId = frontierId;
             JournalDirectory = journalDirectory;
@@ -101,8 +106,6 @@ public sealed class CommanderInstancesViewModelTests : IDisposable
             return true;
         }
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
     }
 }

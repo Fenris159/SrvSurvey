@@ -25,27 +25,17 @@ public sealed class OverlayEditorFolderTabTests
             preview.ApplyRuntimePresentationTheme();
             preview.Show();
 
-            Assert.Equal(
-                new Thickness(12, 4, 12, 5),
-                preview.EditorFolderTabControl.Padding);
-            Assert.Equal(
-                new Thickness(2, 2, 2, 0),
-                preview.EditorFolderTabControl.BorderThickness);
-            Assert.Equal(
-                new CornerRadius(7, 7, 0, 0),
-                preview.EditorFolderTabControl.CornerRadius);
+            Assert.Equal(new Thickness(12, 4, 12, 5), preview.EditorFolderTabControl.Padding);
+            Assert.Equal(new Thickness(2, 2, 2, 0), preview.EditorFolderTabControl.BorderThickness);
+            Assert.Equal(new CornerRadius(7, 7, 0, 0), preview.EditorFolderTabControl.CornerRadius);
 
             Assert.True(preview.EditorFolderTabControl.IsVisible);
-            Assert.Equal(
-                definition.DisplayName,
-                preview.EditorFolderTabLabelControl.Text);
+            Assert.Equal(definition.DisplayName, preview.EditorFolderTabLabelControl.Text);
             Assert.True(preview.EditorFolderTabControl.MinHeight >= 24);
             Assert.True(preview.EditorFolderTabControl.Bounds.Width >= 72);
             Assert.True(preview.EditorFolderTabControl.Bounds.Height >= 24);
             Assert.Equal(0, preview.EditorFolderTabControl.Bounds.Top);
-            Assert.True(
-                preview.PreviewBodyControl.Bounds.Top
-                    >= preview.EditorFolderTabControl.Bounds.Bottom - 2);
+            Assert.True(preview.PreviewBodyControl.Bounds.Top >= preview.EditorFolderTabControl.Bounds.Bottom - 2);
 
             AssertFolderTabBrush(preview.EditorFolderTabControl.Background);
             AssertFolderTabBrush(preview.EditorFolderTabControl.BorderBrush);
@@ -73,95 +63,85 @@ public sealed class OverlayEditorFolderTabTests
             preview.ApplyRuntimePresentationTheme();
             preview.Show();
 
-            var presentation = Assert.IsType<BiologySurveyOverlayPresentation>(
-                preview.RuntimePresentation);
+            var presentation = Assert.IsType<BiologySurveyOverlayPresentation>(preview.RuntimePresentation);
             Assert.True(preview.EditorFolderTabStateButtonControl.IsVisible);
             Assert.Equal(3, preview.EditorPreviewStateCount);
             Assert.Equal("System overview", preview.CurrentEditorPreviewStateName);
             Assert.Contains("1/3", preview.EditorFolderTabStateLabelControl.Text);
             var stateLabelBrush = Assert.IsType<ISolidColorBrush>(
                 preview.EditorFolderTabStateLabelControl.Foreground,
-                exactMatch: false);
+                exactMatch: false
+            );
             Assert.Equal(Color.Parse("#5C130D"), stateLabelBrush.Color);
 
-            var overview = Assert.IsType<SystemSurveyOverlayViewModel>(
-                presentation.DataContext);
+            var overview = Assert.IsType<SystemSurveyOverlayViewModel>(presentation.DataContext);
             Assert.True(overview.Survey.BiologySurveyDisplay.IsSystemOverview);
-            Assert.Equal(
-                "SYSTEM BIOLOGY",
-                overview.Survey.BiologySurveyDisplay.Title);
+            Assert.Equal("SYSTEM BIOLOGY", overview.Survey.BiologySurveyDisplay.Title);
             Assert.All(
                 overview.Survey.BiologySurveyDisplay.Bodies,
-                body => Assert.StartsWith(
-                    "avares://SrvSurvey.Desktop/Assets/Bodies/",
-                    body.BodyIconAssetPath,
-                    StringComparison.Ordinal));
+                body =>
+                    Assert.StartsWith(
+                        "avares://SrvSurvey.Desktop/Assets/Bodies/",
+                        body.BodyIconAssetPath,
+                        StringComparison.Ordinal
+                    )
+            );
             Assert.Equal(
                 overview.Survey.BiologySurveyDisplay.Bodies.Count,
-                overview.Survey.BiologySurveyDisplay.Bodies
-                    .Select(body => body.BodyIconAssetPath)
+                overview
+                    .Survey.BiologySurveyDisplay.Bodies.Select(body => body.BodyIconAssetPath)
                     .Distinct(StringComparer.Ordinal)
-                    .Count());
+                    .Count()
+            );
 
-            preview.EditorFolderTabStateButtonControl.RaiseEvent(
-                new RoutedEventArgs(Button.ClickEvent));
+            preview.EditorFolderTabStateButtonControl.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             Assert.Same(presentation, preview.RuntimePresentation);
             Assert.Equal("Body predictions", preview.CurrentEditorPreviewStateName);
             Assert.Contains("2/3", preview.EditorFolderTabStateLabelControl.Text);
-            var predictions = Assert.IsType<SystemSurveyOverlayViewModel>(
-                presentation.DataContext);
+            var predictions = Assert.IsType<SystemSurveyOverlayViewModel>(presentation.DataContext);
             Assert.True(predictions.Survey.BiologySurveyDisplay.IsBodyDetail);
-            Assert.Equal(
-                "BODY PREDICTIONS",
-                predictions.Survey.BiologySurveyDisplay.Title);
+            Assert.Equal("BODY PREDICTIONS", predictions.Survey.BiologySurveyDisplay.Title);
             Assert.True(predictions.Survey.BiologySurveyDisplay.RequiresDss);
             Assert.All(
                 predictions.Survey.BiologySurveyDisplay.Organisms,
-                organism => Assert.True(organism.IsPrediction));
-            Assert.Equal(
-                4,
-                predictions.Survey.BiologySurveyDisplay.OrganismGroups.Count);
+                organism => Assert.True(organism.IsPrediction)
+            );
+            Assert.Equal(4, predictions.Survey.BiologySurveyDisplay.OrganismGroups.Count);
             Assert.Equal(
                 3,
-                predictions.Survey.BiologySurveyDisplay.OrganismGroups
-                    .Single(group => group.GenusName == "Tussock")
-                    .Species.Count);
+                predictions
+                    .Survey.BiologySurveyDisplay.OrganismGroups.Single(group => group.GenusName == "Tussock")
+                    .Species.Count
+            );
+            Assert.Contains(predictions.Survey.BiologySurveyDisplay.OrganismGroups, group => group.IsCommanderFirst);
             Assert.Contains(
                 predictions.Survey.BiologySurveyDisplay.OrganismGroups,
-                group => group.IsCommanderFirst);
-            Assert.Contains(
-                predictions.Survey.BiologySurveyDisplay.OrganismGroups,
-                group => group.IsGlobalRegionalFirst);
+                group => group.IsGlobalRegionalFirst
+            );
 
             Assert.True(preview.CycleEditorPreviewState());
             Assert.Same(presentation, preview.RuntimePresentation);
             Assert.Equal("Body identified", preview.CurrentEditorPreviewStateName);
             Assert.Contains("3/3", preview.EditorFolderTabStateLabelControl.Text);
-            var identified = Assert.IsType<SystemSurveyOverlayViewModel>(
-                presentation.DataContext);
+            var identified = Assert.IsType<SystemSurveyOverlayViewModel>(presentation.DataContext);
             Assert.True(identified.Survey.BiologySurveyDisplay.IsBodyDetail);
-            Assert.Equal(
-                "IDENTIFIED BIO",
-                identified.Survey.BiologySurveyDisplay.Title);
+            Assert.Equal("IDENTIFIED BIO", identified.Survey.BiologySurveyDisplay.Title);
             Assert.False(identified.Survey.BiologySurveyDisplay.RequiresDss);
-            Assert.Contains(
-                identified.Survey.BiologySurveyDisplay.Organisms,
-                organism => organism.IsCurrentSample);
-            Assert.Contains(
-                identified.Survey.BiologySurveyDisplay.Organisms,
-                organism => organism.ShouldDim);
+            Assert.Contains(identified.Survey.BiologySurveyDisplay.Organisms, organism => organism.IsCurrentSample);
+            Assert.Contains(identified.Survey.BiologySurveyDisplay.Organisms, organism => organism.ShouldDim);
             Assert.All(
                 identified.Survey.BiologySurveyDisplay.Organisms,
-                organism => Assert.False(organism.IsPrediction));
+                organism => Assert.False(organism.IsPrediction)
+            );
             Assert.All(
                 identified.Survey.BiologySurveyDisplay.OrganismGroups,
-                group => Assert.False(group.IsPrediction));
+                group => Assert.False(group.IsPrediction)
+            );
             Assert.DoesNotContain(
                 identified.Survey.BiologySurveyDisplay.OrganismGroups,
-                group => group.IsGlobalRegionalFirst);
-            Assert.Contains(
-                identified.Survey.BiologySurveyDisplay.OrganismGroups,
-                group => group.IsAnalyzed);
+                group => group.IsGlobalRegionalFirst
+            );
+            Assert.Contains(identified.Survey.BiologySurveyDisplay.OrganismGroups, group => group.IsAnalyzed);
 
             Assert.True(preview.CycleEditorPreviewState());
             Assert.Equal("System overview", preview.CurrentEditorPreviewStateName);
@@ -177,8 +157,7 @@ public sealed class OverlayEditorFolderTabTests
     [AvaloniaFact]
     public void RuntimePreviewDoesNotRetainASecondCatalogSizedBackingLayer()
     {
-        var definition = OverlayLayoutCatalog.GetRequired(
-            "PlotGuardianSystem");
+        var definition = OverlayLayoutCatalog.GetRequired("PlotGuardianSystem");
         var preview = new OverlayPositionPreviewWindow(definition);
         try
         {
@@ -189,17 +168,14 @@ public sealed class OverlayEditorFolderTabTests
 
             Assert.Equal(1, preview.MinWidth);
             Assert.Equal(0.35, preview.PreviewBodyControl.Opacity);
-            Assert.Equal(
-                new Thickness(0),
-                preview.PreviewBodyControl.Padding);
-            Assert.Same(
-                Brushes.Transparent,
-                preview.PreviewBodyControl.Background);
+            Assert.Equal(new Thickness(0), preview.PreviewBodyControl.Padding);
+            Assert.Same(Brushes.Transparent, preview.PreviewBodyControl.Background);
             var measured = preview.GetExpectedPixelSize(1);
             Assert.True(
                 measured.Width < definition.PreviewSize.Width,
                 $"Content measured {measured.Width} against the old "
-                    + $"{definition.PreviewSize.Width}px catalog floor.");
+                    + $"{definition.PreviewSize.Width}px catalog floor."
+            );
         }
         finally
         {
@@ -210,8 +186,7 @@ public sealed class OverlayEditorFolderTabTests
     [AvaloniaFact]
     public void BiologyStatusProgressMatchesItsLabelAndStaysInsideTheHeader()
     {
-        var preview = new OverlayPositionPreviewWindow(
-            OverlayLayoutCatalog.GetRequired("PlotBioStatus"));
+        var preview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired("PlotBioStatus"));
         try
         {
             OverlayThemeResources.Apply(preview);
@@ -219,13 +194,10 @@ public sealed class OverlayEditorFolderTabTests
             preview.Show();
             Assert.NotNull(preview.CaptureRenderedFrame());
 
-            var presentation = Assert.IsType<BiologyStatusOverlayPresentation>(
-                preview.RuntimePresentation);
-            var progress = Assert.Single(
-                presentation.GetVisualDescendants().OfType<ProgressBar>());
+            var presentation = Assert.IsType<BiologyStatusOverlayPresentation>(preview.RuntimePresentation);
+            var progress = Assert.Single(presentation.GetVisualDescendants().OfType<ProgressBar>());
             var header = Assert.IsType<Grid>(progress.Parent);
-            var state = Assert.IsType<SystemSurveyOverlayViewModel>(
-                presentation.DataContext).Survey.BiologyStatus!;
+            var state = Assert.IsType<SystemSurveyOverlayViewModel>(presentation.DataContext).Survey.BiologyStatus!;
 
             Assert.Equal(state.CompletionPercent, progress.Value);
             Assert.True(header.ClipToBounds);
@@ -236,12 +208,9 @@ public sealed class OverlayEditorFolderTabTests
 
             Assert.True(preview.CycleEditorPreviewState());
             Assert.True(preview.CycleEditorPreviewState());
-            Assert.Equal(
-                "DSS required",
-                preview.CurrentEditorPreviewStateName);
+            Assert.Equal("DSS required", preview.CurrentEditorPreviewStateName);
             Assert.NotNull(preview.CaptureRenderedFrame());
-            state = Assert.IsType<SystemSurveyOverlayViewModel>(
-                presentation.DataContext).Survey.BiologyStatus!;
+            state = Assert.IsType<SystemSurveyOverlayViewModel>(presentation.DataContext).Survey.BiologyStatus!;
             Assert.Equal(0, state.CompletionPercent);
             Assert.Equal(0, progress.Value);
         }
@@ -254,17 +223,19 @@ public sealed class OverlayEditorFolderTabTests
     [AvaloniaFact]
     public void BiologyStatusDoesNotInstantiateInnerBindingsWhenStatusIsAbsent()
     {
-        var survey = new SystemSurveyViewModel(new SystemSurveySettingsStore(
-            Path.Combine(
-                Path.GetTempPath(),
-                "SrvSurvey-BiologyStatus-Null-Binding-Tests",
-                Guid.NewGuid().ToString("N"),
-                "ui-settings.json")));
+        var survey = new SystemSurveyViewModel(
+            new SystemSurveySettingsStore(
+                Path.Combine(
+                    Path.GetTempPath(),
+                    "SrvSurvey-BiologyStatus-Null-Binding-Tests",
+                    Guid.NewGuid().ToString("N"),
+                    "ui-settings.json"
+                )
+            )
+        );
         var presentation = new BiologyStatusOverlayPresentation
         {
-            DataContext = new SystemSurveyOverlayViewModel(
-                survey,
-                OverlayPlatformCapabilities.DetectCurrent()),
+            DataContext = new SystemSurveyOverlayViewModel(survey, OverlayPlatformCapabilities.DetectCurrent()),
         };
         var window = new Window { Content = presentation };
         try
@@ -272,8 +243,7 @@ public sealed class OverlayEditorFolderTabTests
             window.Show();
 
             Assert.False(survey.HasBiologyStatus);
-            Assert.Empty(
-                presentation.GetVisualDescendants().OfType<ProgressBar>());
+            Assert.Empty(presentation.GetVisualDescendants().OfType<ProgressBar>());
         }
         finally
         {
@@ -284,30 +254,21 @@ public sealed class OverlayEditorFolderTabTests
     [AvaloniaFact]
     public void CompactRuntimePreviewStartsAtTheEditorPanelOrigin()
     {
-        var preview = new OverlayPositionPreviewWindow(
-            OverlayLayoutCatalog.GetRequired("PlotPulse"));
+        var preview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired("PlotPulse"));
         try
         {
             OverlayThemeResources.Apply(preview);
             preview.ApplyRuntimePresentationTheme();
             preview.Show();
 
-            var presentation = Assert.IsType<PulseOverlayPresentation>(
-                preview.RuntimePresentation);
+            var presentation = Assert.IsType<PulseOverlayPresentation>(preview.RuntimePresentation);
             var metrics = preview.GetPanelMetrics(preview.RenderScaling);
             var translatedOrigin = presentation.TranslatePoint(default, preview);
 
-            Assert.Equal(
-                Avalonia.Layout.HorizontalAlignment.Left,
-                presentation.HorizontalAlignment);
-            Assert.Equal(
-                Avalonia.Layout.VerticalAlignment.Top,
-                presentation.VerticalAlignment);
+            Assert.Equal(Avalonia.Layout.HorizontalAlignment.Left, presentation.HorizontalAlignment);
+            Assert.Equal(Avalonia.Layout.VerticalAlignment.Top, presentation.VerticalAlignment);
             Assert.NotNull(translatedOrigin);
-            Assert.Equal(
-                (int)Math.Round(
-                    translatedOrigin.Value.X * preview.RenderScaling),
-                metrics.OriginOffset.X);
+            Assert.Equal((int)Math.Round(translatedOrigin.Value.X * preview.RenderScaling), metrics.OriginOffset.X);
             Assert.InRange(metrics.PanelSize.Width, 30, 34);
             Assert.True(preview.Bounds.Width > metrics.PanelSize.Width);
         }
@@ -319,9 +280,7 @@ public sealed class OverlayEditorFolderTabTests
 
     private static void AssertFolderTabBrush(IBrush? candidate)
     {
-        var brush = Assert.IsType<ISolidColorBrush>(
-            candidate,
-            exactMatch: false);
+        var brush = Assert.IsType<ISolidColorBrush>(candidate, exactMatch: false);
         Assert.Equal(Color.Parse("#FFCC33"), brush.Color);
     }
 }

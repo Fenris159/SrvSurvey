@@ -43,7 +43,8 @@ public sealed class GuardianCommanderDataReaderTests
                   "poiAbsent":"p2",
                   "poiEmpty":"p3"
                 }
-                """);
+                """
+            );
             await File.WriteAllTextAsync(
                 Path.Combine(folder, "IC 2391 Sector CQ-Y c16-beacon.json"),
                 """
@@ -59,37 +60,26 @@ public sealed class GuardianCommanderDataReaderTests
                     "2026-07-04T10:00:00+00:00":{"lat":1.25,"long":-2.5}
                   }
                 }
-                """);
-            await File.WriteAllTextAsync(
-                Path.Combine(folder, "bad-structure-1.json"),
-                "{not-json");
+                """
+            );
+            await File.WriteAllTextAsync(Path.Combine(folder, "bad-structure-1.json"), "{not-json");
 
-            var result = await new GuardianCommanderDataReader(root)
-                .ReadAsync("F123", isOdyssey: true);
+            var result = await new GuardianCommanderDataReader(root).ReadAsync("F123", isOdyssey: true);
 
             var survey = Assert.Single(result.Surveys);
             Assert.Equal("Drew", survey.Commander);
             Assert.Equal("survey note", survey.Notes);
-            Assert.Equal(
-                new GuardianSurfaceLocation(-46.5, 133.9),
-                survey.Survey.Location);
+            Assert.Equal(new GuardianSurfaceLocation(-46.5, 133.9), survey.Survey.Location);
             Assert.Equal(GuardianPoiStatus.Present, survey.Survey.PoiStatuses["p1"]);
             Assert.Equal(GuardianPoiStatus.Absent, survey.Survey.PoiStatuses["p2"]);
             Assert.Equal(GuardianPoiStatus.Empty, survey.Survey.PoiStatuses["p3"]);
             Assert.Equal(45, survey.Survey.RelicHeadings["t1"]);
             Assert.Equal(
-                [
-                    GuardianComponentMaterial.Cell,
-                    GuardianComponentMaterial.Conduit,
-                    GuardianComponentMaterial.Tech,
-                ],
-                survey.Survey.ComponentMaterials["c1"].Items);
-            Assert.Equal(
-                GuardianComponentMaterial.Tech,
-                survey.Survey.ComponentMaterials["d1"].GetItem(0));
-            Assert.DoesNotContain(
-                "future",
-                survey.Survey.ComponentMaterials.Keys);
+                [GuardianComponentMaterial.Cell, GuardianComponentMaterial.Conduit, GuardianComponentMaterial.Tech],
+                survey.Survey.ComponentMaterials["c1"].Items
+            );
+            Assert.Equal(GuardianComponentMaterial.Tech, survey.Survey.ComponentMaterials["d1"].GetItem(0));
+            Assert.DoesNotContain("future", survey.Survey.ComponentMaterials.Keys);
             Assert.Equal(['A', 'C', 'D'], survey.ObeliskGroups.Order());
             var obelisk = Assert.Single(survey.ActiveObelisks);
             Assert.True(obelisk.Scanned);
@@ -97,9 +87,7 @@ public sealed class GuardianCommanderDataReaderTests
 
             var beacon = Assert.Single(result.Beacons);
             Assert.Equal("beacon note", beacon.Notes);
-            Assert.Equal(
-                new GuardianSurfaceLocation(1.25, -2.5),
-                Assert.Single(beacon.ScannedLocations).Value);
+            Assert.Equal(new GuardianSurfaceLocation(1.25, -2.5), Assert.Single(beacon.ScannedLocations).Value);
             Assert.Single(result.Errors);
             Assert.Contains("bad-structure-1.json", result.Errors[0]);
         }
@@ -126,7 +114,8 @@ public sealed class GuardianCommanderDataReaderTests
                   "activeObelisks":{"A01":{"msg":"#1","scanned":true}},
                   "obeliskGroups":["A","B"]
                 }
-                """);
+                """
+            );
             await File.WriteAllTextAsync(
                 Path.Combine(folder, "two-ruins-1.json"),
                 """
@@ -134,10 +123,10 @@ public sealed class GuardianCommanderDataReaderTests
                   "type":"Alpha","index":1,"systemAddress":2,"bodyId":3,
                   "confirmedPOI":{"p3":true,"p4":false}
                 }
-                """);
+                """
+            );
 
-            var result = await new GuardianCommanderDataReader(root)
-                .ReadAsync("F123", isOdyssey: true);
+            var result = await new GuardianCommanderDataReader(root).ReadAsync("F123", isOdyssey: true);
 
             Assert.Empty(result.Errors);
             Assert.Equal(2, result.Surveys.Count);
@@ -175,10 +164,10 @@ public sealed class GuardianCommanderDataReaderTests
                   "bodyId":2,
                   "starPos":[1,"not-a-number",3]
                 }
-                """);
+                """
+            );
 
-            var result = await new GuardianCommanderDataReader(root)
-                .ReadAsync("F123", isOdyssey: true);
+            var result = await new GuardianCommanderDataReader(root).ReadAsync("F123", isOdyssey: true);
 
             Assert.Empty(result.Errors);
             Assert.Null(Assert.Single(result.Surveys).StarPosition);
@@ -202,9 +191,9 @@ public sealed class GuardianCommanderDataReaderTests
                 """
                 {"type":"Alpha","index":1,"systemAddress":1,"bodyId":2,
                  "activeObelisks":{"A01":{"msg":"CUSTOM","scanned":false}}}
-                """);
-            var published = new GuardianPublishedSiteCatalog(
-            [
+                """
+            );
+            var published = new GuardianPublishedSiteCatalog([
                 new GuardianPublishedSite(
                     99,
                     GuardianSiteKind.Ruins,
@@ -218,16 +207,13 @@ public sealed class GuardianCommanderDataReaderTests
                     new Dictionary<string, int>(),
                     [new GuardianObelisk("A01", "CUSTOM", false, ["ca", "ca"])],
                     string.Empty,
-                    "custom.json"),
+                    "custom.json"
+                ),
             ]);
 
-            var result = await new GuardianCommanderDataReader(root, published)
-                .ReadAsync("F123", isOdyssey: true);
+            var result = await new GuardianCommanderDataReader(root, published).ReadAsync("F123", isOdyssey: true);
 
-            Assert.Equal(
-                ["ca", "ca"],
-                Assert.Single(Assert.Single(result.Surveys).ActiveObelisks)
-                    .ItemCodes);
+            Assert.Equal(["ca", "ca"], Assert.Single(Assert.Single(result.Surveys).ActiveObelisks).ItemCodes);
         }
         finally
         {
@@ -244,15 +230,12 @@ public sealed class GuardianCommanderDataReaderTests
             var live = Path.Combine(root, "guardian", "F123");
             var legacy = Path.Combine(live, "legacy");
             Directory.CreateDirectory(legacy);
-            await File.WriteAllTextAsync(
-                Path.Combine(live, "live-beacon.json"),
-                "{\"systemAddress\":1}");
-            await File.WriteAllTextAsync(
-                Path.Combine(legacy, "legacy-beacon.json"),
-                "{\"systemAddress\":2}");
+            await File.WriteAllTextAsync(Path.Combine(live, "live-beacon.json"), "{\"systemAddress\":1}");
+            await File.WriteAllTextAsync(Path.Combine(legacy, "legacy-beacon.json"), "{\"systemAddress\":2}");
             await File.WriteAllTextAsync(
                 Path.Combine(legacy, "legacy-body-ruins-1.json"),
-                "{\"type\":\"Alpha\",\"index\":1,\"bodyName\":\"legacy-body\"}");
+                "{\"type\":\"Alpha\",\"index\":1,\"bodyName\":\"legacy-body\"}"
+            );
             var reader = new GuardianCommanderDataReader(root);
 
             var result = await reader.ReadAsync("F123", isOdyssey: false);
@@ -260,8 +243,7 @@ public sealed class GuardianCommanderDataReaderTests
             Assert.Equal(2, Assert.Single(result.Beacons).SystemAddress);
             Assert.True(Assert.Single(result.Beacons).Legacy);
             Assert.True(Assert.Single(result.Surveys).Legacy);
-            await Assert.ThrowsAsync<ArgumentException>(
-                () => reader.ReadAsync("../F123", isOdyssey: true));
+            await Assert.ThrowsAsync<ArgumentException>(() => reader.ReadAsync("../F123", isOdyssey: true));
         }
         finally
         {
@@ -274,11 +256,8 @@ public sealed class GuardianCommanderDataReaderTests
     {
         var references = GuardianSiteCatalog.LoadEmbedded();
         var published = GuardianPublishedSiteCatalog.LoadEmbedded();
-        var calculator = new GuardianSurveyCompletionCalculator(
-            GuardianSiteTemplateCatalog.LoadEmbedded());
-        var target = Assert.Single(
-            references.Sites,
-            site => site.Kind == GuardianSiteKind.Ruins && site.SiteId == 162);
+        var calculator = new GuardianSurveyCompletionCalculator(GuardianSiteTemplateCatalog.LoadEmbedded());
+        var target = Assert.Single(references.Sites, site => site.Kind == GuardianSiteKind.Ruins && site.SiteId == 162);
         var survey = new GuardianCommanderSiteSurvey(
             "survey.json",
             string.Empty,
@@ -299,24 +278,15 @@ public sealed class GuardianCommanderDataReaderTests
                 SiteType = target.SiteType,
                 SiteHeading = target.SiteHeading,
                 RelicTowerHeading = target.RelicTowerHeading,
-                Location = new GuardianSurfaceLocation(
-                    target.Latitude!.Value,
-                    target.Longitude!.Value),
+                Location = new GuardianSurfaceLocation(target.Latitude!.Value, target.Longitude!.Value),
             },
             [],
-            new HashSet<char>());
-        var commanderData = new GuardianCommanderDataReadResult(
-            [survey],
-            [],
-            []);
+            new HashSet<char>()
+        );
+        var commanderData = new GuardianCommanderDataReadResult([survey], [], []);
 
-        var merged = GuardianSiteVisitCatalog.Merge(
-            references,
-            commanderData,
-            published,
-            calculator);
-        var visit = merged.Visits.Single(
-            item => item.Reference == target);
+        var merged = GuardianSiteVisitCatalog.Merge(references, commanderData, published, calculator);
+        var visit = merged.Visits.Single(item => item.Reference == target);
 
         Assert.True(visit.IsVisited);
         Assert.True(visit.HasCommanderData);
@@ -352,7 +322,8 @@ public sealed class GuardianCommanderDataReaderTests
                 Location = new GuardianSurfaceLocation(1, 2),
             },
             [],
-            new HashSet<char>());
+            new HashSet<char>()
+        );
         var beacon = new GuardianCommanderBeaconVisit(
             "local-beacon.json",
             visitedAt,
@@ -363,67 +334,60 @@ public sealed class GuardianCommanderDataReaderTests
             8,
             string.Empty,
             false,
-            new Dictionary<DateTimeOffset, GuardianSurfaceLocation>
-            {
-                [visitedAt] = new GuardianSurfaceLocation(3, 4),
-            });
+            new Dictionary<DateTimeOffset, GuardianSurfaceLocation> { [visitedAt] = new GuardianSurfaceLocation(3, 4) }
+        );
 
         var merged = GuardianSiteVisitCatalog.Merge(
             new GuardianSiteCatalog([]),
             new GuardianCommanderDataReadResult([survey], [beacon], []),
             new GuardianPublishedSiteCatalog([]),
-            new GuardianSurveyCompletionCalculator(
-                GuardianSiteTemplateCatalog.LoadEmbedded()));
+            new GuardianSurveyCompletionCalculator(GuardianSiteTemplateCatalog.LoadEmbedded())
+        );
 
         Assert.Equal(2, merged.Visits.Count);
-        Assert.Contains(merged.Visits, visit =>
-            visit.Reference.DisplayId == "GR L01"
-            && visit.Reference.Index == 4
-            && visit.HasCommanderData);
-        Assert.Contains(merged.Visits, visit =>
-            visit.Reference.DisplayId == "GB LOCAL"
-            && visit.RecordedObeliskOrLocationCount == 1
-            && visit.HasCommanderData);
+        Assert.Contains(
+            merged.Visits,
+            visit => visit.Reference.DisplayId == "GR L01" && visit.Reference.Index == 4 && visit.HasCommanderData
+        );
+        Assert.Contains(
+            merged.Visits,
+            visit =>
+                visit.Reference.DisplayId == "GB LOCAL"
+                && visit.RecordedObeliskOrLocationCount == 1
+                && visit.HasCommanderData
+        );
     }
 
     [Fact]
     public void MergeAssignsStableNumberedDisplayIdsToCommanderOnlySites()
     {
         var firstVisited = DateTimeOffset.Parse("2026-08-03T12:00:00Z");
-        var first = CreateCommanderOnlySurvey(
-            "first.json",
-            firstVisited,
-            42,
-            "First System",
-            7,
-            "First System A 1");
+        var first = CreateCommanderOnlySurvey("first.json", firstVisited, 42, "First System", 7, "First System A 1");
         var second = CreateCommanderOnlySurvey(
             "second.json",
             firstVisited.AddHours(1),
             84,
             "Second System",
             8,
-            "Second System B 1");
+            "Second System B 1"
+        );
 
         var merged = GuardianSiteVisitCatalog.Merge(
             new GuardianSiteCatalog([]),
             new GuardianCommanderDataReadResult([second, first], [], []),
             new GuardianPublishedSiteCatalog([]),
-            new GuardianSurveyCompletionCalculator(
-                GuardianSiteTemplateCatalog.LoadEmbedded()));
+            new GuardianSurveyCompletionCalculator(GuardianSiteTemplateCatalog.LoadEmbedded())
+        );
 
         Assert.Equal(
             ["GR L01", "GR L02"],
-            merged.Visits
-                .OrderBy(visit => visit.FirstVisited)
-                .Select(visit => visit.Reference.DisplayId));
+            merged.Visits.OrderBy(visit => visit.FirstVisited).Select(visit => visit.Reference.DisplayId)
+        );
     }
 
     private static string CreateTemporaryDirectory()
     {
-        var path = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-guardian-reader-tests-{Guid.NewGuid():N}");
+        var path = Path.Combine(Path.GetTempPath(), $"SrvSurvey-guardian-reader-tests-{Guid.NewGuid():N}");
         Directory.CreateDirectory(path);
         return path;
     }
@@ -434,7 +398,8 @@ public sealed class GuardianCommanderDataReaderTests
         long systemAddress,
         string systemName,
         int bodyId,
-        string bodyName)
+        string bodyName
+    )
     {
         return new GuardianCommanderSiteSurvey(
             path,
@@ -458,6 +423,7 @@ public sealed class GuardianCommanderDataReaderTests
                 Location = new GuardianSurfaceLocation(1, 2),
             },
             [],
-            new HashSet<char>());
+            new HashSet<char>()
+        );
     }
 }

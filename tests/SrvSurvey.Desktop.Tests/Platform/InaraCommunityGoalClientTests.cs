@@ -15,15 +15,14 @@ public sealed class InaraCommunityGoalClientTests
         try
         {
             var now = DateTimeOffset.Parse("2026-07-31T12:00:00Z");
-            var handler = new RecordingHandler(_ => Json(
-                HttpStatusCode.OK,
-                SuccessfulResponse));
+            var handler = new RecordingHandler(_ => Json(HttpStatusCode.OK, SuccessfulResponse));
             var client = new InaraCommunityGoalClient(
                 new HttpClient(handler),
                 "application-key",
                 "2.0.95",
                 Path.Combine(root, "community-goals.json"),
-                () => now);
+                () => now
+            );
 
             var first = await client.GetRecentAsync();
             var second = await client.GetRecentAsync();
@@ -46,8 +45,8 @@ public sealed class InaraCommunityGoalClientTests
             Assert.False(header.TryGetProperty("commanderFrontierID", out _));
             Assert.Equal(
                 "getCommunityGoalsRecent",
-                request.RootElement.GetProperty("events")[0]
-                    .GetProperty("eventName").GetString());
+                request.RootElement.GetProperty("events")[0].GetProperty("eventName").GetString()
+            );
         }
         finally
         {
@@ -62,15 +61,18 @@ public sealed class InaraCommunityGoalClientTests
         try
         {
             var now = DateTimeOffset.Parse("2026-07-31T12:00:00Z");
-            var handler = new RecordingHandler(requestCount => requestCount == 1
-                ? Json(HttpStatusCode.OK, SuccessfulResponse)
-                : Json(HttpStatusCode.ServiceUnavailable, "unavailable"));
+            var handler = new RecordingHandler(requestCount =>
+                requestCount == 1
+                    ? Json(HttpStatusCode.OK, SuccessfulResponse)
+                    : Json(HttpStatusCode.ServiceUnavailable, "unavailable")
+            );
             var client = new InaraCommunityGoalClient(
                 new HttpClient(handler),
                 "application-key",
                 "2.0.95",
                 Path.Combine(root, "community-goals.json"),
-                () => now);
+                () => now
+            );
 
             var fresh = await client.GetRecentAsync();
             now = now.AddMinutes(16);
@@ -92,12 +94,14 @@ public sealed class InaraCommunityGoalClientTests
     public void TemporaryCacheCleanupDoesNotMaskPrimaryFailure()
     {
         var primaryFailure = new InvalidOperationException("primary save failure");
-        foreach (var cleanupFailure in new Exception[]
-                 {
-                     new IOException("cleanup I/O failure"),
-                     new UnauthorizedAccessException("cleanup access failure"),
-                     new System.Security.SecurityException("cleanup security failure"),
-                 })
+        foreach (
+            var cleanupFailure in new Exception[]
+            {
+                new IOException("cleanup I/O failure"),
+                new UnauthorizedAccessException("cleanup access failure"),
+                new System.Security.SecurityException("cleanup security failure"),
+            }
+        )
         {
             Exception? observed;
             try
@@ -110,7 +114,8 @@ public sealed class InaraCommunityGoalClientTests
                 InaraCommunityGoalClient.TryDeleteTemporaryFile(
                     "community-goals.tmp",
                     _ => true,
-                    _ => throw cleanupFailure);
+                    _ => throw cleanupFailure
+                );
             }
 
             Assert.Same(primaryFailure, observed);
@@ -121,17 +126,10 @@ public sealed class InaraCommunityGoalClientTests
     public void EnrichmentFillsGlobalFieldsWithoutReplacingFrontierValues()
     {
         var fetchedAt = DateTimeOffset.Parse("2026-07-31T12:00:00Z");
-        var frontier = Goal() with
-        {
-            Objective = "Frontier objective",
-            CurrentTotal = 99,
-            HasContributorData = false,
-        };
+        var frontier = Goal() with { Objective = "Frontier objective", CurrentTotal = 99, HasContributorData = false };
         var inara = InaraResult(fetchedAt);
 
-        var result = Assert.Single(InaraCommunityGoalEnricher.Enrich(
-            [frontier],
-            inara));
+        var result = Assert.Single(InaraCommunityGoalEnricher.Enrich([frontier], inara));
 
         Assert.Equal("Frontier objective", result.Objective);
         Assert.Equal(99, result.CurrentTotal);
@@ -139,8 +137,7 @@ public sealed class InaraCommunityGoalClientTests
         Assert.Equal("Tier 0 / 1", result.TierReached);
         Assert.Equal(2_913, result.Contributors);
         Assert.True(result.HasContributorData);
-        Assert.Contains(result.DataPoints!, point =>
-            point.Path == "inara.fetchedAt");
+        Assert.Contains(result.DataPoints!, point => point.Path == "inara.fetchedAt");
     }
 
     [Fact]
@@ -150,7 +147,8 @@ public sealed class InaraCommunityGoalClientTests
 
         var results = InaraCommunityGoalEnricher.Enrich(
             [frontier],
-            InaraResult(DateTimeOffset.Parse("2026-07-31T12:00:00Z")));
+            InaraResult(DateTimeOffset.Parse("2026-07-31T12:00:00Z"))
+        );
 
         Assert.Equal(2, results.Count);
         Assert.Contains(results, goal => goal.System == "Sol");
@@ -160,80 +158,75 @@ public sealed class InaraCommunityGoalClientTests
     [Fact]
     public void PriorInaraOnlyGoalsAreReplacedInsteadOfAccumulating()
     {
-        var first = InaraCommunityGoalEnricher.Enrich(
-            [],
-            InaraResult(DateTimeOffset.Parse("2026-07-31T12:00:00Z")));
+        var first = InaraCommunityGoalEnricher.Enrich([], InaraResult(DateTimeOffset.Parse("2026-07-31T12:00:00Z")));
 
         var second = InaraCommunityGoalEnricher.Enrich(
             first,
-            new InaraCommunityGoalsResult(
-                [],
-                DateTimeOffset.Parse("2026-07-31T12:16:00Z"),
-                false,
-                string.Empty));
+            new InaraCommunityGoalsResult([], DateTimeOffset.Parse("2026-07-31T12:16:00Z"), false, string.Empty)
+        );
 
         Assert.Single(first);
         Assert.Empty(second);
     }
 
-    private static FrontierCommunityGoalSnapshot Goal() => new(
-        855,
-        "Carcosa Calls for Assistance",
-        string.Empty,
-        string.Empty,
-        string.Empty,
-        "Carcosa",
-        "Robardin Rock",
-        DateTimeOffset.Parse("2026-08-06T10:00:00Z"),
-        false,
-        0,
-        34_500_000,
-        0,
-        0,
-        string.Empty,
-        null,
-        0,
-        null,
-        false);
-
-    private static InaraCommunityGoalsResult InaraResult(
-        DateTimeOffset fetchedAt) => new(
-        [new InaraCommunityGoalSnapshot(
+    private static FrontierCommunityGoalSnapshot Goal() =>
+        new(
+            855,
             "Carcosa Calls for Assistance",
-            "Expanded mission briefing",
-            "Inara objective",
-            "Credits",
+            string.Empty,
+            string.Empty,
+            string.Empty,
             "Carcosa",
             "Robardin Rock",
             DateTimeOffset.Parse("2026-08-06T10:00:00Z"),
             false,
             0,
-            1,
-            2_913,
-            2_308_981,
-            fetchedAt.AddMinutes(-2),
-            "https://inara.cz/elite/communitygoals/855/")],
-        fetchedAt,
-        false,
-        string.Empty);
+            34_500_000,
+            0,
+            0,
+            string.Empty,
+            null,
+            0,
+            null,
+            false
+        );
+
+    private static InaraCommunityGoalsResult InaraResult(DateTimeOffset fetchedAt) =>
+        new(
+            [
+                new InaraCommunityGoalSnapshot(
+                    "Carcosa Calls for Assistance",
+                    "Expanded mission briefing",
+                    "Inara objective",
+                    "Credits",
+                    "Carcosa",
+                    "Robardin Rock",
+                    DateTimeOffset.Parse("2026-08-06T10:00:00Z"),
+                    false,
+                    0,
+                    1,
+                    2_913,
+                    2_308_981,
+                    fetchedAt.AddMinutes(-2),
+                    "https://inara.cz/elite/communitygoals/855/"
+                ),
+            ],
+            fetchedAt,
+            false,
+            string.Empty
+        );
 
     private static string CreateTemporaryDirectory()
     {
-        var path = Path.Combine(
-            Path.GetTempPath(),
-            $"SrvSurvey-inara-community-goals-{Guid.NewGuid():N}");
+        var path = Path.Combine(Path.GetTempPath(), $"SrvSurvey-inara-community-goals-{Guid.NewGuid():N}");
         Directory.CreateDirectory(path);
         return path;
     }
 
     private static HttpResponseMessage Json(HttpStatusCode status, string content) =>
-        new(status)
-        {
-            Content = new StringContent(content, Encoding.UTF8, "application/json"),
-        };
+        new(status) { Content = new StringContent(content, Encoding.UTF8, "application/json") };
 
-    private sealed class RecordingHandler(
-        Func<int, HttpResponseMessage> response) : HttpMessageHandler
+    private sealed class RecordingHandler(Func<int, HttpResponseMessage> response) : HttpMessageHandler
     {
         public int RequestCount { get; private set; }
 
@@ -241,7 +234,8 @@ public sealed class InaraCommunityGoalClientTests
 
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
             RequestCount++;
             Bodies.Add(await request.Content!.ReadAsStringAsync(cancellationToken));
@@ -249,8 +243,7 @@ public sealed class InaraCommunityGoalClientTests
         }
     }
 
-    private const string SuccessfulResponse =
-        """
+    private const string SuccessfulResponse = """
         {
           "header": { "eventStatus": 200 },
           "events": [

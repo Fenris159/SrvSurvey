@@ -11,7 +11,8 @@ internal sealed record ApplicationInstanceRecord(
     int ProcessId,
     long ProcessStartTimeUtcTicks,
     string ExecutablePath,
-    string PipeName);
+    string PipeName
+);
 
 internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
 {
@@ -31,26 +32,19 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
     private readonly object disposalGate = new();
     private Task? disposalTask;
 
-    public ApplicationInstanceRegistry(
-        string dataDirectory,
-        Func<Task> requestShutdown,
-        Action<string>? log = null)
+    public ApplicationInstanceRegistry(string dataDirectory, Func<Task> requestShutdown, Action<string>? log = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
-        this.requestShutdown = requestShutdown
-            ?? throw new ArgumentNullException(nameof(requestShutdown));
+        this.requestShutdown = requestShutdown ?? throw new ArgumentNullException(nameof(requestShutdown));
         this.log = log;
-        directory = Path.GetFullPath(Path.Combine(
-            dataDirectory,
-            "updates",
-            "instances"));
+        directory = Path.GetFullPath(Path.Combine(dataDirectory, "updates", "instances"));
         Directory.CreateDirectory(directory);
         RestrictToCurrentUser(directory, isDirectory: true);
 
         using var current = Process.GetCurrentProcess();
-        var processPath = Environment.ProcessPath
-            ?? throw new InvalidOperationException(
-                "The running SrvSurvey executable path is unavailable.");
+        var processPath =
+            Environment.ProcessPath
+            ?? throw new InvalidOperationException("The running SrvSurvey executable path is unavailable.");
         var canonicalPath = ApplicationProcessPathResolver.Canonicalize(processPath);
         var startTicks = current.StartTime.ToUniversalTime().Ticks;
         var pipeName = $"SrvSurvey.XP.{current.Id}.{startTicks}.{Guid.NewGuid():N}";
@@ -60,12 +54,12 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
             current.Id,
             startTicks,
             canonicalPath,
-            pipeName);
+            pipeName
+        );
         recordPath = Path.Combine(directory, $"{current.Id}-{startTicks}.json");
         WriteRecord(Current);
         listener = ListenAsync(cancellation.Token);
-        TryLog(
-            $"Registered update instance PID {current.Id} at '{canonicalPath}'.");
+        TryLog($"Registered update instance PID {current.Id} at '{canonicalPath}'.");
     }
 
     public ApplicationInstanceRecord Current { get; }
@@ -76,15 +70,11 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
         IEnumerable<string> paths;
         try
         {
-            paths = Directory.EnumerateFiles(directory, "*.json")
-                .Take(MaximumRecords)
-                .ToArray();
+            paths = Directory.EnumerateFiles(directory, "*.json").Take(MaximumRecords).ToArray();
         }
-        catch (Exception exception) when (
-            exception is IOException or UnauthorizedAccessException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            log?.Invoke("Could not enumerate update instance registrations: "
-                + exception.Message);
+            log?.Invoke("Could not enumerate update instance registrations: " + exception.Message);
             return records;
         }
 
@@ -107,14 +97,10 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
 
     public void RemoveStale(ApplicationInstanceRecord record)
     {
-        TryDelete(Path.Combine(
-            directory,
-            $"{record.ProcessId}-{record.ProcessStartTimeUtcTicks}.json"));
+        TryDelete(Path.Combine(directory, $"{record.ProcessId}-{record.ProcessStartTimeUtcTicks}.json"));
     }
 
-    public static async Task<bool> RequestShutdownAsync(
-        string pipeName,
-        CancellationToken cancellationToken)
+    public static async Task<bool> RequestShutdownAsync(string pipeName, CancellationToken cancellationToken)
     {
         if (!IsSafePipeName(pipeName))
         {
@@ -127,15 +113,16 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
                 ".",
                 pipeName,
                 PipeDirection.InOut,
-                PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
-            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(
-                cancellationToken);
+                PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly
+            );
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             timeout.CancelAfter(TimeSpan.FromSeconds(1));
             await pipe.ConnectAsync(timeout.Token).ConfigureAwait(false);
             await using var writer = new StreamWriter(
                 pipe,
                 new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
-                leaveOpen: true)
+                leaveOpen: true
+            )
             {
                 AutoFlush = true,
             };
@@ -143,22 +130,17 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
                 pipe,
                 Encoding.UTF8,
                 detectEncodingFromByteOrderMarks: false,
-                leaveOpen: true);
-            await writer.WriteLineAsync(ShutdownCommand.AsMemory(), timeout.Token)
-                .ConfigureAwait(false);
-            var response = await reader.ReadLineAsync(timeout.Token)
-                .ConfigureAwait(false);
-            return string.Equals(
-                response,
-                AcceptedResponse,
-                StringComparison.Ordinal);
+                leaveOpen: true
+            );
+            await writer.WriteLineAsync(ShutdownCommand.AsMemory(), timeout.Token).ConfigureAwait(false);
+            var response = await reader.ReadLineAsync(timeout.Token).ConfigureAwait(false);
+            return string.Equals(response, AcceptedResponse, StringComparison.Ordinal);
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
             return false;
         }
-        catch (Exception exception) when (
-            exception is IOException or UnauthorizedAccessException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
             return false;
         }
@@ -200,36 +182,33 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
                 PipeDirection.InOut,
                 maxNumberOfServerInstances: 1,
                 PipeTransmissionMode.Byte,
-                PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
+                PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly
+            );
             try
             {
-                await pipe.WaitForConnectionAsync(cancellationToken)
-                    .ConfigureAwait(false);
+                await pipe.WaitForConnectionAsync(cancellationToken).ConfigureAwait(false);
                 using var reader = new StreamReader(
                     pipe,
                     Encoding.UTF8,
                     detectEncodingFromByteOrderMarks: false,
-                    leaveOpen: true);
+                    leaveOpen: true
+                );
                 await using var writer = new StreamWriter(
                     pipe,
                     new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
-                    leaveOpen: true)
+                    leaveOpen: true
+                )
                 {
                     AutoFlush = true,
                 };
-                var command = await reader.ReadLineAsync(cancellationToken)
-                    .ConfigureAwait(false);
+                var command = await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false);
                 if (!string.Equals(command, ShutdownCommand, StringComparison.Ordinal))
                 {
                     continue;
                 }
 
-                await writer.WriteLineAsync(
-                        AcceptedResponse.AsMemory(),
-                        cancellationToken)
-                    .ConfigureAwait(false);
-                log?.Invoke(
-                    "Accepted a verified shutdown request from another SrvSurvey instance.");
+                await writer.WriteLineAsync(AcceptedResponse.AsMemory(), cancellationToken).ConfigureAwait(false);
+                log?.Invoke("Accepted a verified shutdown request from another SrvSurvey instance.");
                 _ = RequestShutdownSafelyAsync();
                 return;
             }
@@ -237,11 +216,9 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
             {
                 return;
             }
-            catch (Exception exception) when (
-                exception is IOException or UnauthorizedAccessException)
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
             {
-                log?.Invoke("Update instance communication failed: "
-                    + exception.Message);
+                log?.Invoke("Update instance communication failed: " + exception.Message);
             }
         }
     }
@@ -251,9 +228,8 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
         return string.Equals(
             Path.GetFullPath(path),
             recordPath,
-            OperatingSystem.IsWindows()
-                ? StringComparison.OrdinalIgnoreCase
-                : StringComparison.Ordinal);
+            OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal
+        );
     }
 
     private ApplicationInstanceRecord? ReadRecord(string path)
@@ -271,7 +247,8 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
                 path,
                 FileMode.Open,
                 FileAccess.Read,
-                FileShare.ReadWrite | FileShare.Delete);
+                FileShare.ReadWrite | FileShare.Delete
+            );
             var record = JsonSerializer.Deserialize<ApplicationInstanceRecord>(stream);
             if (IsValid(record))
             {
@@ -281,13 +258,9 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
             TryDelete(path);
             return null;
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or JsonException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)
         {
-            TryLog($"Ignored unreadable update instance record '{path}': "
-                + exception.Message);
+            TryLog($"Ignored unreadable update instance record '{path}': " + exception.Message);
             return null;
         }
     }
@@ -297,11 +270,7 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
         var temporaryPath = recordPath + ".tmp-" + Guid.NewGuid().ToString("N");
         try
         {
-            using (var stream = new FileStream(
-                temporaryPath,
-                FileMode.CreateNew,
-                FileAccess.Write,
-                FileShare.None))
+            using (var stream = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
             {
                 JsonSerializer.Serialize(stream, record);
                 stream.Flush(flushToDisk: true);
@@ -322,12 +291,9 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
         {
             await requestShutdown().ConfigureAwait(false);
         }
-        catch (Exception exception) when (
-            exception is InvalidOperationException
-                or TaskCanceledException)
+        catch (Exception exception) when (exception is InvalidOperationException or TaskCanceledException)
         {
-            log?.Invoke("A cooperative instance shutdown request failed: "
-                + exception.Message);
+            log?.Invoke("A cooperative instance shutdown request failed: " + exception.Message);
         }
     }
 
@@ -346,8 +312,7 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
     {
         return !string.IsNullOrWhiteSpace(value)
             && value.Length <= 200
-            && value.All(character => char.IsAsciiLetterOrDigit(character)
-                || character is '.' or '-');
+            && value.All(character => char.IsAsciiLetterOrDigit(character) || character is '.' or '-');
     }
 
     private static void RestrictToCurrentUser(string path, bool isDirectory)
@@ -362,15 +327,12 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
             File.SetUnixFileMode(
                 path,
                 isDirectory
-                    ? UnixFileMode.UserRead
-                        | UnixFileMode.UserWrite
-                        | UnixFileMode.UserExecute
-                    : UnixFileMode.UserRead | UnixFileMode.UserWrite);
+                    ? UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute
+                    : UnixFileMode.UserRead | UnixFileMode.UserWrite
+            );
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or PlatformNotSupportedException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or PlatformNotSupportedException)
         {
             // The registration remains non-authoritative if permissions fail.
         }
@@ -382,8 +344,7 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
         {
             File.Delete(path);
         }
-        catch (Exception exception) when (
-            exception is IOException or UnauthorizedAccessException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
             // Stale records are validated before use and can be retried later.
         }
@@ -395,8 +356,7 @@ internal sealed class ApplicationInstanceRegistry : IAsyncDisposable
         {
             log?.Invoke(message);
         }
-        catch (Exception exception) when (
-            exception is IOException or InvalidOperationException)
+        catch (Exception exception) when (exception is IOException or InvalidOperationException)
         {
             // Diagnostic logging must not interrupt instance coordination.
         }

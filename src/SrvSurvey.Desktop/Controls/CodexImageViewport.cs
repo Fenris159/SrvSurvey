@@ -8,11 +8,14 @@ namespace SrvSurvey.Desktop.Controls;
 
 public sealed class CodexImageViewport : Control
 {
-    public static readonly StyledProperty<Bitmap?> SourceProperty =
-        AvaloniaProperty.Register<CodexImageViewport, Bitmap?>(nameof(Source));
-    public static readonly StyledProperty<IBrush?> ViewportBackgroundProperty =
-        AvaloniaProperty.Register<CodexImageViewport, IBrush?>(
-            nameof(ViewportBackground));
+    public static readonly StyledProperty<Bitmap?> SourceProperty = AvaloniaProperty.Register<
+        CodexImageViewport,
+        Bitmap?
+    >(nameof(Source));
+    public static readonly StyledProperty<IBrush?> ViewportBackgroundProperty = AvaloniaProperty.Register<
+        CodexImageViewport,
+        IBrush?
+    >(nameof(ViewportBackground));
 
     private double zoom = 1;
     private Vector offset;
@@ -21,11 +24,8 @@ public sealed class CodexImageViewport : Control
 
     static CodexImageViewport()
     {
-        AffectsRender<CodexImageViewport>(
-            SourceProperty,
-            ViewportBackgroundProperty);
-        SourceProperty.Changed.AddClassHandler<CodexImageViewport>(
-            (control, _) => control.ResetView());
+        AffectsRender<CodexImageViewport>(SourceProperty, ViewportBackgroundProperty);
+        SourceProperty.Changed.AddClassHandler<CodexImageViewport>((control, _) => control.ResetView());
     }
 
     public Bitmap? Source
@@ -53,22 +53,19 @@ public sealed class CodexImageViewport : Control
     {
         base.Render(context);
         var bounds = new Rect(Bounds.Size);
-        context.DrawRectangle(
-            ViewportBackground ?? Brushes.Black,
-            null,
-            bounds);
-        if (Source is not { } source
+        context.DrawRectangle(ViewportBackground ?? Brushes.Black, null, bounds);
+        if (
+            Source is not { } source
             || bounds.Width <= 0
             || bounds.Height <= 0
             || source.Size.Width <= 0
-            || source.Size.Height <= 0)
+            || source.Size.Height <= 0
+        )
         {
             return;
         }
 
-        var fit = Math.Min(
-            bounds.Width / source.Size.Width,
-            bounds.Height / source.Size.Height);
+        var fit = Math.Min(bounds.Width / source.Size.Width, bounds.Height / source.Size.Height);
         var scale = fit * zoom;
         var width = source.Size.Width * scale;
         var height = source.Size.Height * scale;
@@ -76,11 +73,9 @@ public sealed class CodexImageViewport : Control
             bounds.Center.X - width / 2 + offset.X,
             bounds.Center.Y - height / 2 + offset.Y,
             width,
-            height);
-        context.DrawImage(
-            source,
-            new Rect(source.Size),
-            destination);
+            height
+        );
+        context.DrawImage(source, new Rect(source.Size), destination);
     }
 
     protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
@@ -91,10 +86,7 @@ public sealed class CodexImageViewport : Control
             return;
         }
 
-        zoom = Math.Clamp(
-            zoom * (e.Delta.Y > 0 ? 1.1 : 0.9),
-            0.1,
-            10);
+        zoom = Math.Clamp(zoom * (e.Delta.Y > 0 ? 1.1 : 0.9), 0.1, 10);
         InvalidateVisual();
         e.Handled = true;
     }
@@ -102,8 +94,7 @@ public sealed class CodexImageViewport : Control
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
-        if (Source is null
-            || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        if (Source is null || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
         {
             return;
         }

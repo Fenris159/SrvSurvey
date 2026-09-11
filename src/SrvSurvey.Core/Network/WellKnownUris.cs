@@ -34,8 +34,7 @@ public static class WellKnownUris
     public static Uri EdGalaxyVisitedStars => RequireUri("EdGalaxyVisitedStars");
     public static Uri FrontierOAuthRedirect => RequireUri("FrontierOAuthRedirect");
     public static Uri DesktopLogoAsset => RequireUri("DesktopLogoAsset");
-    public static Uri GuardianScienceCorpsDiscord =>
-        RequireUri("GuardianScienceCorpsDiscord");
+    public static Uri GuardianScienceCorpsDiscord => RequireUri("GuardianScienceCorpsDiscord");
     public static Uri VoxStellarWebsite => RequireUri("VoxStellarWebsite");
     public static Uri VoxStellarWebhook => RequireUri("VoxStellarWebhook");
     public static Uri VoxStellarPrivacyPolicy => RequireUri("VoxStellarPrivacyPolicy");
@@ -56,8 +55,7 @@ public static class WellKnownUris
     {
         if (!Values.TryGetValue(key, out var value) || string.IsNullOrWhiteSpace(value))
         {
-            throw new InvalidOperationException(
-                $"Well-known URI key '{key}' is missing from embedded configuration.");
+            throw new InvalidOperationException($"Well-known URI key '{key}' is missing from embedded configuration.");
         }
 
         return value;
@@ -68,12 +66,12 @@ public static class WellKnownUris
     private static Dictionary<string, string> Load()
     {
         var assembly = typeof(WellKnownUris).Assembly;
-        using var stream = assembly.GetManifestResourceStream(ResourceName)
-            ?? throw new InvalidOperationException(
-                $"Embedded resource '{ResourceName}' was not found.");
-        var parsed = JsonSerializer.Deserialize<Dictionary<string, string>>(stream)
-            ?? throw new InvalidOperationException(
-                $"Embedded resource '{ResourceName}' did not contain a URI map.");
+        using var stream =
+            assembly.GetManifestResourceStream(ResourceName)
+            ?? throw new InvalidOperationException($"Embedded resource '{ResourceName}' was not found.");
+        var parsed =
+            JsonSerializer.Deserialize<Dictionary<string, string>>(stream)
+            ?? throw new InvalidOperationException($"Embedded resource '{ResourceName}' did not contain a URI map.");
         return parsed;
     }
 }

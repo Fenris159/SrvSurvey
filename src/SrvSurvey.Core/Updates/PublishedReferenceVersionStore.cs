@@ -12,17 +12,10 @@ public sealed record PublishedReferenceVersions(
     int Guardian,
     int Settlements,
     int Nicknames,
-    int GreenGasGiants)
+    int GreenGasGiants
+)
 {
-    public static PublishedReferenceVersions Empty { get; } = new(
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0);
+    public static PublishedReferenceVersions Empty { get; } = new(0, 0, 0, 0, 0, 0, 0, 0);
 }
 
 public sealed class PublishedReferenceVersionStore
@@ -34,11 +27,13 @@ public sealed class PublishedReferenceVersionStore
     [SuppressMessage(
         "Performance",
         "CA1822:Mark members as static",
-        Justification = "The instance API is injected as the published-version store contract.")]
+        Justification = "The instance API is injected as the published-version store contract."
+    )]
     [SuppressMessage(
         "Maintainability",
         "S2325:Make methods and properties static",
-        Justification = "The instance API is injected as the published-version store contract.")]
+        Justification = "The instance API is injected as the published-version store contract."
+    )]
     public PublishedReferenceVersions Load(string dataDirectory)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
@@ -48,17 +43,13 @@ public sealed class PublishedReferenceVersionStore
         {
             try
             {
-                var manifest = JsonNode.Parse(File.ReadAllText(manifestPath))
-                    as JsonObject;
-                if (manifest is not null
-                    && ReadInt(manifest, "Version") == ManifestVersion)
+                var manifest = JsonNode.Parse(File.ReadAllText(manifestPath)) as JsonObject;
+                if (manifest is not null && ReadInt(manifest, "Version") == ManifestVersion)
                 {
                     return ReadVersions(manifest);
                 }
             }
-            catch (Exception exception) when (exception is IOException
-                or UnauthorizedAccessException
-                or JsonException)
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)
             {
                 // A malformed cross-platform manifest must not hide a valid
                 // imported WinForms version record.
@@ -73,8 +64,7 @@ public sealed class PublishedReferenceVersionStore
 
         try
         {
-            var settings = JsonNode.Parse(File.ReadAllText(legacySettingsPath))
-                as JsonObject;
+            var settings = JsonNode.Parse(File.ReadAllText(legacySettingsPath)) as JsonObject;
             return settings is null
                 ? PublishedReferenceVersions.Empty
                 : new PublishedReferenceVersions(
@@ -85,11 +75,10 @@ public sealed class PublishedReferenceVersionStore
                     ReadInt(settings, "pubDataGuardian"),
                     ReadInt(settings, "pubSettlements"),
                     ReadInt(settings, "pubNicknames"),
-                    ReadInt(settings, "pubGGG"));
+                    ReadInt(settings, "pubGGG")
+                );
         }
-        catch (Exception exception) when (exception is IOException
-            or UnauthorizedAccessException
-            or JsonException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)
         {
             return PublishedReferenceVersions.Empty;
         }
@@ -98,11 +87,13 @@ public sealed class PublishedReferenceVersionStore
     [SuppressMessage(
         "Performance",
         "CA1822:Mark members as static",
-        Justification = "The instance API is injected as the published-version store contract.")]
+        Justification = "The instance API is injected as the published-version store contract."
+    )]
     public async Task WriteAsync(
         string publishedDataDirectory,
         PublishedReferenceVersions versions,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(publishedDataDirectory);
         ArgumentNullException.ThrowIfNull(versions);
@@ -127,11 +118,9 @@ public sealed class PublishedReferenceVersionStore
         {
             await File.WriteAllTextAsync(
                     temporaryPath,
-                    root.ToJsonString(new JsonSerializerOptions
-                    {
-                        WriteIndented = true,
-                    }),
-                    cancellationToken)
+                    root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }),
+                    cancellationToken
+                )
                 .ConfigureAwait(false);
             File.Move(temporaryPath, path, overwrite: true);
         }
@@ -154,15 +143,14 @@ public sealed class PublishedReferenceVersionStore
             ReadInt(root, "Guardian"),
             ReadInt(root, "Settlements"),
             ReadInt(root, "Nicknames"),
-            ReadInt(root, "GreenGasGiants"));
+            ReadInt(root, "GreenGasGiants")
+        );
     }
 
     private static int ReadInt(JsonObject root, string propertyName)
     {
-        return root[propertyName] is JsonValue value
-            && value.TryGetValue<int>(out var number)
-            && number >= 0
-                ? number
-                : 0;
+        return root[propertyName] is JsonValue value && value.TryGetValue<int>(out var number) && number >= 0
+            ? number
+            : 0;
     }
 }

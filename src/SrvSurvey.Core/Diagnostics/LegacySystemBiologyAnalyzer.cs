@@ -15,13 +15,11 @@ public sealed class LegacySystemBiologyAnalyzer
     public async Task<LegacySystemBiologyAnalysisResult> AnalyzeAsync(
         string frontierId,
         IProgress<LegacySystemBiologyAnalysisProgress>? progress = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ValidateFrontierId(frontierId);
-        var systemDirectory = Path.Combine(
-            dataDirectory,
-            "systems",
-            frontierId);
+        var systemDirectory = Path.Combine(dataDirectory, "systems", frontierId);
         if (!Directory.Exists(systemDirectory))
         {
             return LegacySystemBiologyAnalysisResult.Empty;
@@ -32,8 +30,7 @@ public sealed class LegacySystemBiologyAnalyzer
             .OrderBy(file => file.Name, StringComparer.Ordinal)
             .ToArray();
         var warnings = new List<string>();
-        var summaries = new Dictionary<string, MutableSpeciesSummary>(
-            StringComparer.Ordinal);
+        var summaries = new Dictionary<string, MutableSpeciesSummary>(StringComparer.Ordinal);
         var processedFiles = 0;
         var bodyCount = 0;
         var organismCount = 0;
@@ -41,11 +38,7 @@ public sealed class LegacySystemBiologyAnalyzer
         {
             cancellationToken.ThrowIfCancellationRequested();
             var file = files[index];
-            var analyzed = await TryAnalyzeFileAsync(
-                    file,
-                    summaries,
-                    cancellationToken)
-                .ConfigureAwait(false);
+            var analyzed = await TryAnalyzeFileAsync(file, summaries, cancellationToken).ConfigureAwait(false);
             if (analyzed.Warning is not null)
             {
                 warnings.Add(analyzed.Warning);
@@ -57,13 +50,7 @@ public sealed class LegacySystemBiologyAnalyzer
                 organismCount += analyzed.OrganismCount;
             }
 
-            Report(
-                progress,
-                index,
-                files,
-                file,
-                bodyCount,
-                organismCount);
+            Report(progress, index, files, file, bodyCount, organismCount);
         }
 
         return new LegacySystemBiologyAnalysisResult(
@@ -71,17 +58,19 @@ public sealed class LegacySystemBiologyAnalyzer
             processedFiles,
             bodyCount,
             organismCount,
-            summaries.Values
-                .OrderBy(summary => summary.Name, StringComparer.Ordinal)
+            summaries
+                .Values.OrderBy(summary => summary.Name, StringComparer.Ordinal)
                 .Select(summary => summary.Create())
                 .ToArray(),
-            warnings);
+            warnings
+        );
     }
 
     private static async Task<FileAnalysisCounts> TryAnalyzeFileAsync(
         FileInfo file,
         IDictionary<string, MutableSpeciesSummary> summaries,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         try
         {
@@ -91,43 +80,30 @@ public sealed class LegacySystemBiologyAnalyzer
                 FileAccess.Read,
                 FileShare.ReadWrite | FileShare.Delete,
                 16 * 1024,
-                FileOptions.Asynchronous | FileOptions.SequentialScan);
-            using var document = await JsonDocument.ParseAsync(
-                    stream,
-                    cancellationToken: cancellationToken)
+                FileOptions.Asynchronous | FileOptions.SequentialScan
+            );
+            using var document = await JsonDocument
+                .ParseAsync(stream, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
             if (document.RootElement.ValueKind != JsonValueKind.Object)
             {
-                return FileAnalysisCounts.Failed(
-                    $"{file.Name}: the root value is not an object.");
+                return FileAnalysisCounts.Failed($"{file.Name}: the root value is not an object.");
             }
 
             var bodyCount = 0;
             var organismCount = 0;
-            AnalyzeBodies(
-                document.RootElement,
-                summaries,
-                ref bodyCount,
-                ref organismCount,
-                cancellationToken);
+            AnalyzeBodies(document.RootElement, summaries, ref bodyCount, ref organismCount, cancellationToken);
             return new FileAnalysisCounts(bodyCount, organismCount, null);
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or JsonException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)
         {
             return FileAnalysisCounts.Failed($"{file.Name}: {exception.Message}");
         }
     }
 
-    private readonly record struct FileAnalysisCounts(
-        int BodyCount,
-        int OrganismCount,
-        string? Warning)
+    private readonly record struct FileAnalysisCounts(int BodyCount, int OrganismCount, string? Warning)
     {
-        public static FileAnalysisCounts Failed(string warning) =>
-            new(0, 0, warning);
+        public static FileAnalysisCounts Failed(string warning) => new(0, 0, warning);
     }
 
     private static void AnalyzeBodies(
@@ -135,10 +111,10 @@ public sealed class LegacySystemBiologyAnalyzer
         IDictionary<string, MutableSpeciesSummary> summaries,
         ref int bodyCount,
         ref int organismCount,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
-        if (!TryGetProperty(root, "bodies", out var bodies)
-            || bodies.ValueKind != JsonValueKind.Array)
+        if (!TryGetProperty(root, "bodies", out var bodies) || bodies.ValueKind != JsonValueKind.Array)
         {
             return;
         }
@@ -159,36 +135,32 @@ public sealed class LegacySystemBiologyAnalyzer
     private static void AnalyzeBody(
         JsonElement body,
         IDictionary<string, MutableSpeciesSummary> summaries,
-        ref int organismCount)
+        ref int organismCount
+    )
     {
-        if (!TryGetProperty(body, "organisms", out var organisms)
-            || organisms.ValueKind != JsonValueKind.Array)
+        if (!TryGetProperty(body, "organisms", out var organisms) || organisms.ValueKind != JsonValueKind.Array)
         {
             return;
         }
 
         string? atmosphereComponents = null;
-        if (TryGetProperty(
-                body,
-                "atmosphereComposition",
-                out var composition)
-            && composition.ValueKind == JsonValueKind.Object)
+        if (
+            TryGetProperty(body, "atmosphereComposition", out var composition)
+            && composition.ValueKind == JsonValueKind.Object
+        )
         {
-            atmosphereComponents = string.Join(
-                ',',
-                composition.EnumerateObject().Select(property => property.Name));
+            atmosphereComponents = string.Join(',', composition.EnumerateObject().Select(property => property.Name));
         }
 
         foreach (var organism in organisms.EnumerateArray())
         {
             organismCount++;
-            if (organism.ValueKind != JsonValueKind.Object
-                || !TryGetProperty(
-                    organism,
-                    "speciesLocalized",
-                    out var species)
+            if (
+                organism.ValueKind != JsonValueKind.Object
+                || !TryGetProperty(organism, "speciesLocalized", out var species)
                 || species.ValueKind != JsonValueKind.String
-                || string.IsNullOrWhiteSpace(species.GetString()))
+                || string.IsNullOrWhiteSpace(species.GetString())
+            )
             {
                 continue;
             }
@@ -204,16 +176,12 @@ public sealed class LegacySystemBiologyAnalyzer
             if (atmosphereComponents is not null)
             {
                 summary.AtmosphereCounts[atmosphereComponents] =
-                    summary.AtmosphereCounts.GetValueOrDefault(
-                        atmosphereComponents) + 1;
+                    summary.AtmosphereCounts.GetValueOrDefault(atmosphereComponents) + 1;
             }
         }
     }
 
-    private static bool TryGetProperty(
-        JsonElement root,
-        string name,
-        out JsonElement value)
+    private static bool TryGetProperty(JsonElement root, string name, out JsonElement value)
     {
         if (root.TryGetProperty(name, out value))
         {
@@ -221,10 +189,7 @@ public sealed class LegacySystemBiologyAnalyzer
         }
 
         var matchedValue = root.EnumerateObject()
-            .Where(property => string.Equals(
-                property.Name,
-                name,
-                StringComparison.OrdinalIgnoreCase))
+            .Where(property => string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase))
             .Select(property => (JsonElement?)property.Value)
             .FirstOrDefault();
         if (matchedValue is { } found)
@@ -243,30 +208,24 @@ public sealed class LegacySystemBiologyAnalyzer
         FileInfo[] files,
         FileInfo file,
         int bodyCount,
-        int organismCount)
+        int organismCount
+    )
     {
-        progress?.Report(new LegacySystemBiologyAnalysisProgress(
-            index + 1,
-            files.Length,
-            file.Name,
-            bodyCount,
-            organismCount));
+        progress?.Report(
+            new LegacySystemBiologyAnalysisProgress(index + 1, files.Length, file.Name, bodyCount, organismCount)
+        );
     }
 
     private static void ValidateFrontierId(string frontierId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(frontierId);
-        if (frontierId is "." or ".."
-            || !string.Equals(
-                Path.GetFileName(frontierId),
-                frontierId,
-                StringComparison.Ordinal)
-            || frontierId.IndexOfAny(
-                [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar]) >= 0)
+        if (
+            frontierId is "." or ".."
+            || !string.Equals(Path.GetFileName(frontierId), frontierId, StringComparison.Ordinal)
+            || frontierId.IndexOfAny([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar]) >= 0
+        )
         {
-            throw new ArgumentException(
-                "The Frontier ID must be a folder name, not a path.",
-                nameof(frontierId));
+            throw new ArgumentException("The Frontier ID must be a folder name, not a path.", nameof(frontierId));
         }
     }
 
@@ -276,8 +235,7 @@ public sealed class LegacySystemBiologyAnalyzer
 
         public int Count { get; set; }
 
-        public Dictionary<string, int> AtmosphereCounts { get; } =
-            new(StringComparer.Ordinal);
+        public Dictionary<string, int> AtmosphereCounts { get; } = new(StringComparer.Ordinal);
 
         public LegacySystemBiologySpeciesSummary Create()
         {
@@ -287,10 +245,9 @@ public sealed class LegacySystemBiologyAnalyzer
                 AtmosphereCounts
                     .OrderByDescending(pair => pair.Value)
                     .ThenBy(pair => pair.Key, StringComparer.Ordinal)
-                    .Select(pair => new LegacyAtmosphereCompositionSummary(
-                        pair.Key,
-                        pair.Value))
-                    .ToArray());
+                    .Select(pair => new LegacyAtmosphereCompositionSummary(pair.Key, pair.Value))
+                    .ToArray()
+            );
         }
     }
 }
@@ -300,7 +257,8 @@ public sealed record LegacySystemBiologyAnalysisProgress(
     int TotalFileCount,
     string CurrentFile,
     int BodyCount,
-    int OrganismCount);
+    int OrganismCount
+);
 
 public sealed record LegacySystemBiologyAnalysisResult(
     int CandidateFileCount,
@@ -308,17 +266,16 @@ public sealed record LegacySystemBiologyAnalysisResult(
     int BodyCount,
     int OrganismCount,
     IReadOnlyList<LegacySystemBiologySpeciesSummary> Species,
-    IReadOnlyList<string> Warnings)
+    IReadOnlyList<string> Warnings
+)
 {
-    public static LegacySystemBiologyAnalysisResult Empty { get; } =
-        new(0, 0, 0, 0, [], []);
+    public static LegacySystemBiologyAnalysisResult Empty { get; } = new(0, 0, 0, 0, [], []);
 }
 
 public sealed record LegacySystemBiologySpeciesSummary(
     string Name,
     int Count,
-    IReadOnlyList<LegacyAtmosphereCompositionSummary> AtmosphereCompositions);
+    IReadOnlyList<LegacyAtmosphereCompositionSummary> AtmosphereCompositions
+);
 
-public sealed record LegacyAtmosphereCompositionSummary(
-    string Components,
-    int Count);
+public sealed record LegacyAtmosphereCompositionSummary(string Components, int Count);

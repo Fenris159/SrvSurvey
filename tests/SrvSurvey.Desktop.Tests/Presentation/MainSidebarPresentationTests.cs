@@ -22,12 +22,9 @@ public sealed class MainSidebarPresentationTests
         try
         {
             window.Show();
-            var overview = Assert.IsType<ItemsControl>(
-                window.FindControl<ItemsControl>("OverviewNavigationShortcuts"));
-            var scroller = Assert.IsType<ScrollViewer>(
-                window.FindControl<ScrollViewer>("NavigationAccordionScroller"));
-            var utilities = Assert.IsType<ItemsControl>(
-                window.FindControl<ItemsControl>("UtilityNavigationShortcuts"));
+            var overview = Assert.IsType<ItemsControl>(window.FindControl<ItemsControl>("OverviewNavigationShortcuts"));
+            var scroller = Assert.IsType<ScrollViewer>(window.FindControl<ScrollViewer>("NavigationAccordionScroller"));
+            var utilities = Assert.IsType<ItemsControl>(window.FindControl<ItemsControl>("UtilityNavigationShortcuts"));
             using var frame = window.CaptureRenderedFrame();
 
             Assert.False(viewModel.IsSurveyNavigationExpanded);
@@ -51,15 +48,20 @@ public sealed class MainSidebarPresentationTests
     {
         var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-sidebar-{Guid.NewGuid():N}");
         using var viewModel = MainWindowViewModelTestBuilder.Create(null, _ => { });
-        var theme = new RavenThemeService(Assert.IsType<Application>(Application.Current, exactMatch: false),
-            new ThemePreferenceStore(Path.Combine(root, "theme.json")));
+        var theme = new RavenThemeService(
+            Assert.IsType<Application>(Application.Current, exactMatch: false),
+            new ThemePreferenceStore(Path.Combine(root, "theme.json"))
+        );
         var originalTheme = theme.Current.Key;
         theme.Select(themeKey);
         theme.ApplyCurrent();
-        viewModel.DesktopBehavior.SelectedApplicationWindowScale =
-            ApplicationWindowScaleCatalog.All.Single(option => option.Percent == scale);
+        viewModel.DesktopBehavior.SelectedApplicationWindowScale = ApplicationWindowScaleCatalog.All.Single(option =>
+            option.Percent == scale
+        );
         viewModel.SelectedNavigation = viewModel.NavigationItems.Single(item => item.Key == "guides");
-        viewModel.Guides.SelectedCategory = viewModel.Guides.Categories.Single(category => category.Key == "surface-mining");
+        viewModel.Guides.SelectedCategory = viewModel.Guides.Categories.Single(category =>
+            category.Key == "surface-mining"
+        );
         var selection = viewModel.SelectedNavigation;
         var chapter = viewModel.Guides.SelectedCategory;
         var window = new MainWindow(viewModel);

@@ -6,9 +6,7 @@ namespace SrvSurvey.Desktop;
 public sealed partial class QuestIndicatorOverlayWindow : Window
 {
     public QuestIndicatorOverlayWindow()
-        : this(new QuestIndicatorViewModel())
-    {
-    }
+        : this(new QuestIndicatorViewModel()) { }
 
     public QuestIndicatorOverlayWindow(QuestIndicatorViewModel viewModel)
     {

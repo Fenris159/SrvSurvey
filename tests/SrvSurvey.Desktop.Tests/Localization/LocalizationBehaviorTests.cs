@@ -26,23 +26,17 @@ public sealed class LocalizationBehaviorTests : IDisposable
         var textBlock = new TextBlock();
         textBlock.Bind(
             TextBlock.TextProperty,
-            new Binding(nameof(BoundText.Value))
-            {
-                Source = new BoundText("Bodies"),
-            });
+            new Binding(nameof(BoundText.Value)) { Source = new BoundText("Bodies") }
+        );
 
         LocalizationBehavior.SetEnabled(textBlock, true);
 
-        Assert.NotNull(BindingOperations.GetBindingExpressionBase(
-            textBlock,
-            TextBlock.TextProperty));
+        Assert.NotNull(BindingOperations.GetBindingExpressionBase(textBlock, TextBlock.TextProperty));
 
         textBlock.SetCurrentValue(TextBlock.TextProperty, "Close");
 
         Assert.Equal("Schließen", textBlock.Text);
-        Assert.NotNull(BindingOperations.GetBindingExpressionBase(
-            textBlock,
-            TextBlock.TextProperty));
+        Assert.NotNull(BindingOperations.GetBindingExpressionBase(textBlock, TextBlock.TextProperty));
     }
 
     [Fact]

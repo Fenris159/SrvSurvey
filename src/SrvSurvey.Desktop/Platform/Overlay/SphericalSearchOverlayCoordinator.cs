@@ -29,16 +29,15 @@ public sealed class SphericalSearchOverlayCoordinator : IDisposable
         RouteWorkspaceViewModel route,
         IOverlayPlatformService platform,
         IGameWindowTracker gameWindowTracker,
-        SphericalSearchOverlayCoordinatorOptions? options = null)
+        SphericalSearchOverlayCoordinatorOptions? options = null
+    )
     {
         options ??= new SphericalSearchOverlayCoordinatorOptions();
         this.sphere = sphere ?? throw new ArgumentNullException(nameof(sphere));
         this.boxel = boxel ?? throw new ArgumentNullException(nameof(boxel));
         this.route = route ?? throw new ArgumentNullException(nameof(route));
-        this.platform = platform
-            ?? throw new ArgumentNullException(nameof(platform));
-        this.gameWindowTracker = gameWindowTracker
-            ?? throw new ArgumentNullException(nameof(gameWindowTracker));
+        this.platform = platform ?? throw new ArgumentNullException(nameof(platform));
+        this.gameWindowTracker = gameWindowTracker ?? throw new ArgumentNullException(nameof(gameWindowTracker));
         overlayLayout = options.OverlayLayout ?? LegacyOverlayLayout.Empty;
         viewModel = new SphericalSearchOverlayViewModel(
             sphere,
@@ -46,14 +45,12 @@ public sealed class SphericalSearchOverlayCoordinator : IDisposable
             route,
             platform.Capabilities,
             options.SystemNicknames,
-            options.InputSettings);
+            options.InputSettings
+        );
         sphere.PropertyChanged += OnSearchPropertyChanged;
         boxel.PropertyChanged += OnSearchPropertyChanged;
         route.PropertyChanged += OnSearchPropertyChanged;
-        timer = new OverlayDispatcherTimer
-        {
-            Interval = TimeSpan.FromMilliseconds(250),
-        };
+        timer = new OverlayDispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
         timer.Tick += OnTimerTick;
         timer.Start();
         SynchronizeWindow();
@@ -103,14 +100,14 @@ public sealed class SphericalSearchOverlayCoordinator : IDisposable
         SynchronizeWindow();
     }
 
-    private void OnSearchPropertyChanged(
-        object? sender,
-        PropertyChangedEventArgs eventArgs)
+    private void OnSearchPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
     {
-        if (eventArgs.PropertyName is nameof(
-                SphereLimitViewModel.ShouldShowGalaxyMapOverlay)
-            or nameof(BoxelSearchViewModel.ShouldShowGalaxyMapOverlay)
-            or nameof(RouteWorkspaceViewModel.ShouldShowGalaxyMapOverlay))
+        if (
+            eventArgs.PropertyName
+            is nameof(SphereLimitViewModel.ShouldShowGalaxyMapOverlay)
+                or nameof(BoxelSearchViewModel.ShouldShowGalaxyMapOverlay)
+                or nameof(RouteWorkspaceViewModel.ShouldShowGalaxyMapOverlay)
+        )
         {
             SynchronizeWindow();
         }
@@ -124,14 +121,16 @@ public sealed class SphericalSearchOverlayCoordinator : IDisposable
         }
 
         gameWindow = gameWindowTracker.GetSnapshot();
-        if (isSuppressed
+        if (
+            isSuppressed
             || !ShouldShow
             || !platform.Capabilities.SupportsPassiveOverlay
             || !platform.Capabilities.SupportsClickThrough
             || !platform.Capabilities.SupportsGameWindowTracking
             || !gameWindow.IsAvailable
             || !gameWindow.IsVisible
-            || !gameWindow.IsForeground)
+            || !gameWindow.IsForeground
+        )
         {
             CloseWindow();
             return;
@@ -144,10 +143,7 @@ public sealed class SphericalSearchOverlayCoordinator : IDisposable
         }
 
         var overlay = new SphericalSearchOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(
-            overlay,
-            overlayLayout,
-            "PlotSphericalSearch");
+        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotSphericalSearch");
         overlay.Opened += (_, _) =>
         {
             PositionWindow(overlay, gameWindow.ClientBounds);
@@ -170,29 +166,21 @@ public sealed class SphericalSearchOverlayCoordinator : IDisposable
         overlay.Show();
     }
 
-    private bool ShouldShow => sphere.ShouldShowGalaxyMapOverlay
-        || boxel.ShouldShowGalaxyMapOverlay
-        || route.ShouldShowGalaxyMapOverlay;
+    private bool ShouldShow =>
+        sphere.ShouldShowGalaxyMapOverlay || boxel.ShouldShowGalaxyMapOverlay || route.ShouldShowGalaxyMapOverlay;
 
     private void PositionWindow(Window window, PixelRect gameBounds)
     {
-        OverlayThemeResources.ApplyOpacity(
-            window,
-            overlayLayout,
-            PlotterName);
-        var screen = window.Screens.ScreenFromBounds(gameBounds)
-            ?? window.Screens.Primary;
+        OverlayThemeResources.ApplyOpacity(window, overlayLayout, PlotterName);
+        var screen = window.Screens.ScreenFromBounds(gameBounds) ?? window.Screens.Primary;
         if (screen is null)
         {
             return;
         }
 
-        var size = OverlayWindowMetrics.PrepareForPlacement(
-            window, overlayLayout, PlotterName, screen.Scaling);
-        var position = overlayLayout.GetPosition(
-                PlotterName,
-                gameBounds,
-                size)
+        var size = OverlayWindowMetrics.PrepareForPlacement(window, overlayLayout, PlotterName, screen.Scaling);
+        var position =
+            overlayLayout.GetPosition(PlotterName, gameBounds, size)
             ?? OverlayWindowPlacement.TopRight(gameBounds, size, 8);
         if (window.Position != position)
         {

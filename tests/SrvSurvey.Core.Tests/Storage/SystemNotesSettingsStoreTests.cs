@@ -7,7 +7,8 @@ public sealed class SystemNotesSettingsStoreTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        $"SrvSurvey-system-notes-settings-tests-{Guid.NewGuid():N}");
+        $"SrvSurvey-system-notes-settings-tests-{Guid.NewGuid():N}"
+    );
 
     [Fact]
     public void MissingSettingsReturnDefaultsWithoutCreatingAFile()
@@ -35,7 +36,8 @@ public sealed class SystemNotesSettingsStoreTests : IDisposable
               "screenshotTargetFolder": "C:\\Elite Screenshots",
               "futureSetting": { "enabled": true }
             }
-            """);
+            """
+        );
         var store = new SystemNotesSettingsStore(temporaryDirectory);
 
         var result = store.Load();
@@ -48,9 +50,7 @@ public sealed class SystemNotesSettingsStoreTests : IDisposable
 
         var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.True(root["systemNotesTopMost"]!.GetValue<bool>());
-        Assert.Equal(
-            "C:\\Elite Screenshots",
-            root["screenshotTargetFolder"]!.GetValue<string>());
+        Assert.Equal("C:\\Elite Screenshots", root["screenshotTargetFolder"]!.GetValue<string>());
         Assert.True(root["futureSetting"]!["enabled"]!.GetValue<bool>());
     }
 
@@ -63,8 +63,7 @@ public sealed class SystemNotesSettingsStoreTests : IDisposable
         await File.WriteAllTextAsync(path, malformed);
         var store = new SystemNotesSettingsStore(temporaryDirectory);
 
-        await Assert.ThrowsAsync<InvalidDataException>(
-            () => store.SaveAlwaysOnTopAsync(true));
+        await Assert.ThrowsAsync<InvalidDataException>(() => store.SaveAlwaysOnTopAsync(true));
 
         Assert.Equal(malformed, await File.ReadAllTextAsync(path));
     }
@@ -76,7 +75,8 @@ public sealed class SystemNotesSettingsStoreTests : IDisposable
         var path = Path.Combine(temporaryDirectory, "settings.json");
         await File.WriteAllTextAsync(
             path,
-            "{\"viewJourneyTopMost\":true,\"viewJourneyGalacticTime\":true,\"futureSetting\":42}");
+            "{\"viewJourneyTopMost\":true,\"viewJourneyGalacticTime\":true,\"futureSetting\":42}"
+        );
         var store = new SystemNotesSettingsStore(temporaryDirectory);
 
         var loaded = store.Load();
@@ -97,14 +97,13 @@ public sealed class SystemNotesSettingsStoreTests : IDisposable
         Directory.CreateDirectory(temporaryDirectory);
         await File.WriteAllTextAsync(
             Path.Combine(temporaryDirectory, "settings.json"),
-            "{\"screenshotTargetFolder\":\"C:\\\\Elite Screenshots\"}");
+            "{\"screenshotTargetFolder\":\"C:\\\\Elite Screenshots\"}"
+        );
         var store = new SystemNotesSettingsStore(temporaryDirectory);
 
         var result = store.GetImagesDirectory("Test: System/One");
 
-        Assert.Equal(
-            Path.Combine("C:\\Elite Screenshots", "Test- System-One"),
-            result);
+        Assert.Equal(Path.Combine("C:\\Elite Screenshots", "Test- System-One"), result);
     }
 
     public void Dispose()

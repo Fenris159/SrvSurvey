@@ -10,9 +10,7 @@ public sealed class InputChordTests
     [InlineData("b10 b2", "B10 B2")]
     [InlineData("povur b1", "B1 PovUR")]
     [InlineData("rt lt", "LT RT")]
-    public void NormalizesLegacyKeyboardAndControllerChords(
-        string value,
-        string expected)
+    public void NormalizesLegacyKeyboardAndControllerChords(string value, string expected)
     {
         Assert.True(InputChord.TryNormalize(value, out var normalized));
         Assert.Equal(expected, normalized);

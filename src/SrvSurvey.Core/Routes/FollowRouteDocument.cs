@@ -13,23 +13,19 @@ public sealed record FollowRouteDocument(
     string? Notes = null,
     bool IsFavorite = false,
     FollowRouteKind Kind = FollowRouteKind.Standard,
-    SpanshRouteKind? SourceSpanshKind = null)
+    SpanshRouteKind? SourceSpanshKind = null
+)
 {
     public bool IsStarted => LastReachedIndex >= 0;
 
-    public bool IsComplete => Hops.Count > 0
-        && LastReachedIndex >= Hops.Count - 1;
+    public bool IsComplete => Hops.Count > 0 && LastReachedIndex >= Hops.Count - 1;
 
     public FollowRouteHop? NextHop
     {
         get
         {
             var nextIndex = LastReachedIndex + 1;
-            return IsActive
-                && nextIndex >= 0
-                && nextIndex < Hops.Count
-                    ? Hops[nextIndex]
-                    : null;
+            return IsActive && nextIndex >= 0 && nextIndex < Hops.Count ? Hops[nextIndex] : null;
         }
     }
 
@@ -44,10 +40,10 @@ public sealed record FollowRouteHop(
     bool Refuel,
     bool Neutron,
     IReadOnlyList<FollowRouteBioTarget>? Bio = null,
-    FollowRouteCarrierHop? Carrier = null)
+    FollowRouteCarrierHop? Carrier = null
+)
 {
-    public IReadOnlyList<FollowRouteBioTarget> BioTargets =>
-        Bio ?? Array.Empty<FollowRouteBioTarget>();
+    public IReadOnlyList<FollowRouteBioTarget> BioTargets => Bio ?? Array.Empty<FollowRouteBioTarget>();
 
     public double? DistanceTo(FollowRouteHop other)
     {
@@ -67,7 +63,8 @@ public sealed record FollowRouteCarrierHop(
     bool HasIcyRing,
     bool IsSystemPristine,
     bool MustRestock,
-    double? RestockAmountTonnes);
+    double? RestockAmountTonnes
+);
 
 public sealed record FollowRouteBioTarget(
     string BodyName,
@@ -80,13 +77,10 @@ public sealed record FollowRouteBioTarget(
     long? EstimatedMappingValue = null,
     long? EstimatedBiologyValue = null,
     bool IsTerraformable = false,
-    bool IsBiological = false);
+    bool IsBiological = false
+);
 
-public sealed record FollowRouteLoadResult(
-    string Path,
-    bool Exists,
-    FollowRouteDocument? Route,
-    string? Error)
+public sealed record FollowRouteLoadResult(string Path, bool Exists, FollowRouteDocument? Route, string? Error)
 {
     public bool IsSuccess => Route is not null;
 }
@@ -105,17 +99,16 @@ public sealed record FollowRouteCatalogEntry(
     DateTimeOffset LastModified,
     DateTimeOffset CreatedAt = default,
     string? Notes = null,
-    bool IsFavorite = false);
+    bool IsFavorite = false
+);
 
 public sealed record FollowRouteRenameResult(
     string PreviousPath,
     FollowRouteDocument Route,
-    FollowRouteCatalogEntry CatalogEntry);
+    FollowRouteCatalogEntry CatalogEntry
+);
 
-public sealed record FollowRouteArrivalResult(
-    FollowRouteDocument Route,
-    bool Changed,
-    int? ReachedIndex)
+public sealed record FollowRouteArrivalResult(FollowRouteDocument Route, bool Changed, int? ReachedIndex)
 {
     public bool Completed => Changed && Route.IsComplete;
 }

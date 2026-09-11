@@ -11,26 +11,19 @@ public sealed partial class MainWindow : Window
 
     private ReplayControllerViewModel ViewModel =>
         DataContext as ReplayControllerViewModel
-        ?? throw new InvalidOperationException(
-            "The replay controller view model is unavailable.");
+        ?? throw new InvalidOperationException("The replay controller view model is unavailable.");
 
     public MainWindow()
     {
         InitializeComponent();
-        var managedRoot = Path.Combine(
-            AppDataPaths.ResolveCurrent().DataDirectory,
-            "diagnostic-replays");
+        var managedRoot = Path.Combine(AppDataPaths.ResolveCurrent().DataDirectory, "diagnostic-replays");
         var viewModel = new ReplayControllerViewModel(managedRoot);
         DataContext = viewModel;
-        closeCoordinator = new ReplayControllerWindowCloseCoordinator(
-            viewModel.DisposeAsync,
-            CompleteClose);
+        closeCoordinator = new ReplayControllerWindowCloseCoordinator(viewModel.DisposeAsync, CompleteClose);
         Closing += OnClosing;
     }
 
-    private async void ImportReplay_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private async void ImportReplay_Click(object? sender, RoutedEventArgs eventArgs)
     {
         var files = await StorageProvider.OpenFilePickerAsync(
             new FilePickerOpenOptions
@@ -44,19 +37,16 @@ public sealed partial class MainWindow : Window
                         Patterns = ["*.log", "*.jsonl", "*.srvreplay"],
                     },
                 ],
-            });
-        var path = files.Count > 0
-            ? files[0].TryGetLocalPath()
-            : null;
+            }
+        );
+        var path = files.Count > 0 ? files[0].TryGetLocalPath() : null;
         if (!string.IsNullOrWhiteSpace(path))
         {
             await ViewModel.ImportAsync(path);
         }
     }
 
-    private async void ChooseExecutable_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private async void ChooseExecutable_Click(object? sender, RoutedEventArgs eventArgs)
     {
         var files = await StorageProvider.OpenFilePickerAsync(
             new FilePickerOpenOptions
@@ -72,26 +62,21 @@ public sealed partial class MainWindow : Window
                             : ["SrvSurvey.Desktop", "*"],
                     },
                 ],
-            });
-        var path = files.Count > 0
-            ? files[0].TryGetLocalPath()
-            : null;
+            }
+        );
+        var path = files.Count > 0 ? files[0].TryGetLocalPath() : null;
         if (!string.IsNullOrWhiteSpace(path))
         {
             ViewModel.SrvSurveyExecutablePath = path;
         }
     }
 
-    private async void OpenReplayFolder_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private async void OpenReplayFolder_Click(object? sender, RoutedEventArgs eventArgs)
     {
         await OpenDirectoryAsync(ViewModel.SessionDirectory);
     }
 
-    private async void OpenLogsFolder_Click(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private async void OpenLogsFolder_Click(object? sender, RoutedEventArgs eventArgs)
     {
         await OpenDirectoryAsync(ViewModel.LogsDirectory);
     }

@@ -1,19 +1,19 @@
+using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using System.Runtime.CompilerServices;
 
 namespace SrvSurvey.Desktop.Localization;
 
 public static class LocalizationBehavior
 {
-    private static readonly ConditionalWeakTable<AvaloniaObject, TranslationState>
-        States = new();
+    private static readonly ConditionalWeakTable<AvaloniaObject, TranslationState> States = new();
 
-    public static readonly AttachedProperty<bool> EnabledProperty =
-        AvaloniaProperty.RegisterAttached<AvaloniaObject, AvaloniaObject, bool>(
-            "Enabled",
-            defaultValue: false);
+    public static readonly AttachedProperty<bool> EnabledProperty = AvaloniaProperty.RegisterAttached<
+        AvaloniaObject,
+        AvaloniaObject,
+        bool
+    >("Enabled", defaultValue: false);
 
     static LocalizationBehavior()
     {
@@ -33,7 +33,8 @@ public static class LocalizationBehavior
                 {
                     DisableTranslation(target);
                 }
-            });
+            }
+        );
     }
 
     public static void SetEnabled(AvaloniaObject target, bool value)
@@ -56,34 +57,22 @@ public static class LocalizationBehavior
         var state = States.GetValue(target, _ => new TranslationState());
         if (target is TextBlock textBlock)
         {
-            WatchStringProperty(
-                textBlock,
-                TextBlock.TextProperty,
-                state);
+            WatchStringProperty(textBlock, TextBlock.TextProperty, state);
         }
 
         if (target is HeaderedContentControl headered)
         {
-            WatchObjectProperty(
-                headered,
-                HeaderedContentControl.HeaderProperty,
-                state);
+            WatchObjectProperty(headered, HeaderedContentControl.HeaderProperty, state);
         }
 
         if (target is ContentControl contentControl)
         {
-            WatchObjectProperty(
-                contentControl,
-                ContentControl.ContentProperty,
-                state);
+            WatchObjectProperty(contentControl, ContentControl.ContentProperty, state);
         }
 
         if (target is TextBox textBox)
         {
-            WatchStringProperty(
-                textBox,
-                TextBox.PlaceholderTextProperty,
-                state);
+            WatchStringProperty(textBox, TextBox.PlaceholderTextProperty, state);
         }
 
         if (target is Window window)
@@ -106,44 +95,49 @@ public static class LocalizationBehavior
     private static void WatchStringProperty(
         AvaloniaObject target,
         StyledProperty<string?> property,
-        TranslationState state)
+        TranslationState state
+    )
     {
         if (!state.WatchedProperties.Add(property))
         {
             return;
         }
 
-        state.Subscriptions.Add(target.GetObservable(property).Subscribe(
-            new PropertyObserver<string?>(value => TranslateStringProperty(
-                target,
-                property,
-                value,
-                state))));
+        state.Subscriptions.Add(
+            target
+                .GetObservable(property)
+                .Subscribe(
+                    new PropertyObserver<string?>(value => TranslateStringProperty(target, property, value, state))
+                )
+        );
     }
 
     private static void WatchObjectProperty(
         AvaloniaObject target,
         StyledProperty<object?> property,
-        TranslationState state)
+        TranslationState state
+    )
     {
         if (!state.WatchedProperties.Add(property))
         {
             return;
         }
 
-        state.Subscriptions.Add(target.GetObservable(property).Subscribe(
-            new PropertyObserver<object?>(value => TranslateObjectProperty(
-                target,
-                property,
-                value,
-                state))));
+        state.Subscriptions.Add(
+            target
+                .GetObservable(property)
+                .Subscribe(
+                    new PropertyObserver<object?>(value => TranslateObjectProperty(target, property, value, state))
+                )
+        );
     }
 
     private static void TranslateStringProperty(
         AvaloniaObject target,
         StyledProperty<string?> property,
         string? current,
-        TranslationState state)
+        TranslationState state
+    )
     {
         if (state.IsApplying || IsInvariantOverlayWindowTitle(target, property, current))
         {
@@ -168,7 +162,8 @@ public static class LocalizationBehavior
     private static bool IsInvariantOverlayWindowTitle(
         AvaloniaObject target,
         StyledProperty<string?> property,
-        string? value)
+        string? value
+    )
     {
         return target is Window
             && property == Window.TitleProperty
@@ -181,7 +176,8 @@ public static class LocalizationBehavior
         AvaloniaObject target,
         StyledProperty<object?> property,
         object? value,
-        TranslationState state)
+        TranslationState state
+    )
     {
         if (state.IsApplying || value is not string current)
         {
@@ -225,13 +221,9 @@ public static class LocalizationBehavior
 
     private sealed class PropertyObserver<T>(Action<T> onNext) : IObserver<T>
     {
-        public void OnCompleted()
-        {
-        }
+        public void OnCompleted() { }
 
-        public void OnError(Exception error)
-        {
-        }
+        public void OnError(Exception error) { }
 
         public void OnNext(T value)
         {

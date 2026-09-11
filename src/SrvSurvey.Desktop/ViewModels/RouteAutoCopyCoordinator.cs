@@ -8,10 +8,12 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
     private readonly RouteWorkspaceViewModel standardRoute;
     private readonly RouteWorkspaceViewModel fleetCarrierRoute;
     private readonly IBoxelSearchSession boxel;
+
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Usage",
         "CA2213:Disposable fields should be disposed",
-        Justification = "The gate may still be released by an in-flight clipboard operation during disposal.")]
+        Justification = "The gate may still be released by an in-flight clipboard operation during disposal."
+    )]
     private readonly SemaphoreSlim ownershipGate = new(1, 1);
     private long claimVersion;
     private bool disposed;
@@ -19,7 +21,8 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
     public RouteAutoCopyCoordinator(
         RouteWorkspaceViewModel standardRoute,
         RouteWorkspaceViewModel fleetCarrierRoute,
-        IBoxelSearchSession boxel)
+        IBoxelSearchSession boxel
+    )
     {
         this.standardRoute = standardRoute;
         this.fleetCarrierRoute = fleetCarrierRoute;
@@ -32,17 +35,12 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
     public Task ClaimAsync(RouteWorkspaceViewModel source)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
-        if (!ReferenceEquals(source, standardRoute)
-            && !ReferenceEquals(source, fleetCarrierRoute))
+        if (!ReferenceEquals(source, standardRoute) && !ReferenceEquals(source, fleetCarrierRoute))
         {
-            throw new ArgumentException(
-                "The route workspace is not managed by this coordinator.",
-                nameof(source));
+            throw new ArgumentException("The route workspace is not managed by this coordinator.", nameof(source));
         }
 
-        return ClaimRouteAsync(
-            source,
-            Interlocked.Increment(ref claimVersion));
+        return ClaimRouteAsync(source, Interlocked.Increment(ref claimVersion));
     }
 
     public Task ClaimAsync(IBoxelSearchSession source)
@@ -50,14 +48,10 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
         ObjectDisposedException.ThrowIf(disposed, this);
         if (!ReferenceEquals(source, boxel))
         {
-            throw new ArgumentException(
-                "The boxel search is not managed by this coordinator.",
-                nameof(source));
+            throw new ArgumentException("The boxel search is not managed by this coordinator.", nameof(source));
         }
 
-        return ClaimBoxelAsync(
-            source,
-            Interlocked.Increment(ref claimVersion));
+        return ClaimBoxelAsync(source, Interlocked.Increment(ref claimVersion));
     }
 
     public async Task ReconcileAsync()
@@ -124,9 +118,7 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
         boxel.Changed -= OnBoxelChanged;
     }
 
-    private async Task ClaimRouteAsync(
-        RouteWorkspaceViewModel source,
-        long version)
+    private async Task ClaimRouteAsync(RouteWorkspaceViewModel source, long version)
     {
         if (!CanOwnAutoCopy(source))
         {
@@ -136,15 +128,12 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
         await ownershipGate.WaitAsync();
         try
         {
-            if (version != Volatile.Read(ref claimVersion)
-                || !CanOwnAutoCopy(source))
+            if (version != Volatile.Read(ref claimVersion) || !CanOwnAutoCopy(source))
             {
                 return;
             }
 
-            var other = ReferenceEquals(source, standardRoute)
-                ? fleetCarrierRoute
-                : standardRoute;
+            var other = ReferenceEquals(source, standardRoute) ? fleetCarrierRoute : standardRoute;
             if (other.AutoCopy)
             {
                 await other.DisableAutoCopyForCompetingRouteAsync();
@@ -166,9 +155,7 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
         }
     }
 
-    private async Task ClaimBoxelAsync(
-        IBoxelSearchSession source,
-        long version)
+    private async Task ClaimBoxelAsync(IBoxelSearchSession source, long version)
     {
         if (!CanOwnAutoCopy(source))
         {
@@ -178,8 +165,7 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
         await ownershipGate.WaitAsync();
         try
         {
-            if (version != Volatile.Read(ref claimVersion)
-                || !CanOwnAutoCopy(source))
+            if (version != Volatile.Read(ref claimVersion) || !CanOwnAutoCopy(source))
             {
                 return;
             }
@@ -207,9 +193,7 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
 
     private async void OnRouteAutoCopySelected(object? sender, EventArgs eventArgs)
     {
-        if (disposed
-            || sender is not RouteWorkspaceViewModel source
-            || !CanOwnAutoCopy(source))
+        if (disposed || sender is not RouteWorkspaceViewModel source || !CanOwnAutoCopy(source))
         {
             return;
         }
@@ -217,14 +201,14 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
         await ClaimAfterPropertyChangeAsync(source);
     }
 
-    private async void OnBoxelChanged(
-        object? sender,
-        BoxelSearchSessionChangedEventArgs eventArgs)
+    private async void OnBoxelChanged(object? sender, BoxelSearchSessionChangedEventArgs eventArgs)
     {
-        if (disposed
+        if (
+            disposed
             || !ReferenceEquals(sender, boxel)
             || eventArgs.Previous.Search.AutoCopy
-            || !eventArgs.Current.Search.AutoCopy)
+            || !eventArgs.Current.Search.AutoCopy
+        )
         {
             return;
         }
@@ -235,12 +219,10 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
             return;
         }
 
-        Dispatcher.UIThread.Post(
-            async () => await ClaimAfterPropertyChangeAsync(boxel));
+        Dispatcher.UIThread.Post(async () => await ClaimAfterPropertyChangeAsync(boxel));
     }
 
-    internal async Task ClaimAfterPropertyChangeAsync(
-        RouteWorkspaceViewModel source)
+    internal async Task ClaimAfterPropertyChangeAsync(RouteWorkspaceViewModel source)
     {
         try
         {
@@ -254,8 +236,7 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
         }
     }
 
-    internal async Task ClaimAfterPropertyChangeAsync(
-        IBoxelSearchSession source)
+    internal async Task ClaimAfterPropertyChangeAsync(IBoxelSearchSession source)
     {
         try
         {

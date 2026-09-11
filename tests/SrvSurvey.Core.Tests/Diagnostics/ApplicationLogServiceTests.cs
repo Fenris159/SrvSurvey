@@ -4,18 +4,15 @@ namespace SrvSurvey.Core.Tests.Diagnostics;
 
 public sealed class ApplicationLogServiceTests : IDisposable
 {
-    private readonly string temporaryDirectory = Path.Combine(
-        Path.GetTempPath(),
-        $"SrvSurvey-logs-{Guid.NewGuid():N}");
+    private readonly string temporaryDirectory = Path.Combine(Path.GetTempPath(), $"SrvSurvey-logs-{Guid.NewGuid():N}");
     private readonly TimeProvider timeProvider = new FixedTimeProvider(
-        DateTimeOffset.Parse("2026-07-25T13:14:15-05:00"));
+        DateTimeOffset.Parse("2026-07-25T13:14:15-05:00")
+    );
 
     [Fact]
     public void AppendUpdatesMemoryFileAndObservers()
     {
-        var service = new ApplicationLogService(
-            temporaryDirectory,
-            timeProvider);
+        var service = new ApplicationLogService(temporaryDirectory, timeProvider);
         var changeCount = 0;
         service.Changed += (_, _) => changeCount++;
 
@@ -26,20 +23,14 @@ public sealed class ApplicationLogServiceTests : IDisposable
         Assert.Equal(line, service.Text);
         Assert.Equal(1, changeCount);
         Assert.Null(service.LastWriteError);
-        Assert.Equal(
-            line + Environment.NewLine,
-            File.ReadAllText(service.CurrentLogPath));
+        Assert.Equal(line + Environment.NewLine, File.ReadAllText(service.CurrentLogPath));
     }
 
     [Fact]
     public void SessionFileUsesLegacyNameAndAvoidsCollisions()
     {
-        var first = new ApplicationLogService(
-            temporaryDirectory,
-            timeProvider);
-        var second = new ApplicationLogService(
-            temporaryDirectory,
-            timeProvider);
+        var first = new ApplicationLogService(temporaryDirectory, timeProvider);
+        var second = new ApplicationLogService(temporaryDirectory, timeProvider);
 
         Assert.EndsWith("srvs-20260725_131415.txt", first.CurrentLogPath);
         Assert.EndsWith("srvs-20260725_131415_1.txt", second.CurrentLogPath);
@@ -50,9 +41,7 @@ public sealed class ApplicationLogServiceTests : IDisposable
     [Fact]
     public void ClearRetainsOnlyResetEntryAndAppendsItToFile()
     {
-        var service = new ApplicationLogService(
-            temporaryDirectory,
-            timeProvider);
+        var service = new ApplicationLogService(temporaryDirectory, timeProvider);
         service.Append("Before reset");
 
         service.Clear();
@@ -74,23 +63,15 @@ public sealed class ApplicationLogServiceTests : IDisposable
         {
             var path = Path.Combine(logDirectory, $"old-{index:00}.txt");
             File.WriteAllText(path, index.ToString());
-            File.SetLastWriteTimeUtc(
-                path,
-                DateTime.UnixEpoch.AddMinutes(index));
+            File.SetLastWriteTimeUtc(path, DateTime.UnixEpoch.AddMinutes(index));
         }
 
-        var service = new ApplicationLogService(
-            temporaryDirectory,
-            timeProvider);
+        var service = new ApplicationLogService(temporaryDirectory, timeProvider);
         var retained = Directory.GetFiles(logDirectory, "*.txt");
 
         Assert.Equal(10, retained.Length);
-        Assert.DoesNotContain(
-            Path.Combine(logDirectory, "old-00.txt"),
-            retained);
-        Assert.DoesNotContain(
-            Path.Combine(logDirectory, "old-01.txt"),
-            retained);
+        Assert.DoesNotContain(Path.Combine(logDirectory, "old-00.txt"), retained);
+        Assert.DoesNotContain(Path.Combine(logDirectory, "old-01.txt"), retained);
         Assert.Contains(service.CurrentLogPath, retained);
     }
 
@@ -116,15 +97,10 @@ public sealed class ApplicationLogServiceTests : IDisposable
         }
     }
 
-    private sealed class FixedTimeProvider(DateTimeOffset value)
-        : TimeProvider
+    private sealed class FixedTimeProvider(DateTimeOffset value) : TimeProvider
     {
         public override TimeZoneInfo LocalTimeZone =>
-            TimeZoneInfo.CreateCustomTimeZone(
-                "Test",
-                TimeSpan.FromHours(-5),
-                "Test",
-                "Test");
+            TimeZoneInfo.CreateCustomTimeZone("Test", TimeSpan.FromHours(-5), "Test", "Test");
 
         public override DateTimeOffset GetUtcNow() => value.ToUniversalTime();
     }

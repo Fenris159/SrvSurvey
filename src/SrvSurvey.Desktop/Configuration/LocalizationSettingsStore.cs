@@ -10,22 +10,20 @@ public sealed class LocalizationSettingsStore
     private readonly UiSettingsDocumentStore documentStore;
     private readonly string legacySettingsPath;
 
-    public LocalizationSettingsStore(
-        string uiSettingsPath,
-        string dataDirectory)
+    public LocalizationSettingsStore(string uiSettingsPath, string dataDirectory)
     {
         documentStore = new UiSettingsDocumentStore(uiSettingsPath);
-        legacySettingsPath = Path.Combine(
-            Path.GetFullPath(dataDirectory),
-            "settings.json");
+        legacySettingsPath = Path.Combine(Path.GetFullPath(dataDirectory), "settings.json");
     }
 
     public string Load()
     {
         var root = documentStore.Load();
-        if (root["Localization"] is JsonObject settings
+        if (
+            root["Localization"] is JsonObject settings
             && settings["Language"] is JsonValue language
-            && language.TryGetValue<string>(out var selected))
+            && language.TryGetValue<string>(out var selected)
+        )
         {
             return LocalizationCatalog.NormalizeLanguage(selected);
         }
@@ -37,15 +35,11 @@ public sealed class LocalizationSettingsStore
 
         try
         {
-            var legacy = JsonNode.Parse(File.ReadAllText(legacySettingsPath))
-                as JsonObject;
-            return LocalizationCatalog.NormalizeLanguage(
-                legacy?["lang"]?.GetValue<string>());
+            var legacy = JsonNode.Parse(File.ReadAllText(legacySettingsPath)) as JsonObject;
+            return LocalizationCatalog.NormalizeLanguage(legacy?["lang"]?.GetValue<string>());
         }
-        catch (Exception exception) when (exception is IOException
-            or UnauthorizedAccessException
-            or JsonException
-            or InvalidOperationException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or JsonException or InvalidOperationException)
         {
             return "en";
         }
@@ -71,9 +65,6 @@ public sealed class LocalizationSettingsStore
     public static string ResolveCurrent(AppDataPaths paths)
     {
         ArgumentNullException.ThrowIfNull(paths);
-        return new LocalizationSettingsStore(
-                paths.UiSettingsPath,
-                paths.DataDirectory)
-            .Load();
+        return new LocalizationSettingsStore(paths.UiSettingsPath, paths.DataDirectory).Load();
     }
 }

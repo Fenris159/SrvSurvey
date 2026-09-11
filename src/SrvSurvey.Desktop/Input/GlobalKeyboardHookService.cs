@@ -28,15 +28,13 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
         OverlayHostKind host,
         IGameWindowTracker gameWindowTracker,
         Func<bool> isApplicationActive,
-        Func<IGlobalHook>? hookFactory = null)
+        Func<IGlobalHook>? hookFactory = null
+    )
     {
-        this.settings = settings
-            ?? throw new ArgumentNullException(nameof(settings));
+        this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
         this.host = host;
-        this.gameWindowTracker = gameWindowTracker
-            ?? throw new ArgumentNullException(nameof(gameWindowTracker));
-        this.isApplicationActive = isApplicationActive
-            ?? throw new ArgumentNullException(nameof(isApplicationActive));
+        this.gameWindowTracker = gameWindowTracker ?? throw new ArgumentNullException(nameof(gameWindowTracker));
+        this.isApplicationActive = isApplicationActive ?? throw new ArgumentNullException(nameof(isApplicationActive));
         this.hookFactory = hookFactory ?? CreateHook;
         router = new GlobalInputBindingRouter(settings);
         status = settings.KeyboardEnabled
@@ -113,8 +111,7 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
             return;
         }
 
-        if (host is not OverlayHostKind.Windows
-            && !OverlayPlatformCapabilities.IsX11Compatible(host))
+        if (host is not OverlayHostKind.Windows && !OverlayPlatformCapabilities.IsX11Compatible(host))
         {
             SetStatus("Global keyboard input is unavailable on this platform.");
             return;
@@ -127,9 +124,7 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
         string? statusBeforeStart = null;
         lock (lifecycleLock)
         {
-            if (disposed
-                || version != lifecycleVersion
-                || hook is not null)
+            if (disposed || version != lifecycleVersion || hook is not null)
             {
                 return;
             }
@@ -164,8 +159,7 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
                         DisposeHook(pendingHook);
                     }
 
-                    pendingStatus =
-                        $"Global keyboard input could not start: {exception.Message}";
+                    pendingStatus = $"Global keyboard input could not start: {exception.Message}";
                     statusBeforeStart = null;
                 }
             }
@@ -199,40 +193,31 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
         return new EventLoopGlobalHook(
             GlobalHookType.Keyboard,
             globalHookProvider: null,
-            runAsyncOnBackgroundThread: true);
+            runAsyncOnBackgroundThread: true
+        );
     }
 
-    private void OnKeyReleased(
-        object? sender,
-        KeyboardHookEventArgs eventArgs)
+    private void OnKeyReleased(object? sender, KeyboardHookEventArgs eventArgs)
     {
         lock (callbackLock)
         {
             var currentSettings = Volatile.Read(ref settings);
-            if (disposed
-                || !currentSettings.KeyboardEnabled
-                || eventArgs.IsEventSimulated
-                || !IsInputContextActive())
+            if (disposed || !currentSettings.KeyboardEnabled || eventArgs.IsEventSimulated || !IsInputContextActive())
             {
                 return;
             }
 
-            var chord = KeyboardChordFormatter.Format(
-                eventArgs.Data.KeyCode,
-                eventArgs.RawEvent.Mask);
+            var chord = KeyboardChordFormatter.Format(eventArgs.Data.KeyCode, eventArgs.RawEvent.Mask);
             if (chord is not null && router.TryResolve(chord, out var action))
             {
-                ActionTriggered?.Invoke(
-                    this,
-                    new GlobalInputActionTriggeredEventArgs(action, chord));
+                ActionTriggered?.Invoke(this, new GlobalInputActionTriggeredEventArgs(action, chord));
             }
         }
     }
 
     private bool IsInputContextActive()
     {
-        return isApplicationActive()
-            || gameWindowTracker.GetSnapshot().IsForeground;
+        return isApplicationActive() || gameWindowTracker.GetSnapshot().IsForeground;
     }
 
     private void OnHookEnabled(object? sender, HookEventArgs eventArgs)
@@ -251,10 +236,7 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
         }
     }
 
-    private async Task ObserveRunAsync(
-        long version,
-        IGlobalHook observedHook,
-        Task task)
+    private async Task ObserveRunAsync(long version, IGlobalHook observedHook, Task task)
     {
         Exception? failure = null;
         try
@@ -267,14 +249,18 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
         }
         finally
         {
-            if (StopHook(observedHook, task)
+            if (
+                StopHook(observedHook, task)
                 && !disposed
                 && version == Volatile.Read(ref lifecycleVersion)
-                && Volatile.Read(ref settings).KeyboardEnabled)
+                && Volatile.Read(ref settings).KeyboardEnabled
+            )
             {
-                SetStatus(failure is null
-                    ? "Global keyboard input stopped."
-                    : $"Global keyboard input stopped: {failure.Message}");
+                SetStatus(
+                    failure is null
+                        ? "Global keyboard input stopped."
+                        : $"Global keyboard input stopped: {failure.Message}"
+                );
             }
         }
     }
@@ -295,8 +281,7 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
             currentTask = runTask ?? Task.CompletedTask;
             hook = null;
             runTask = null;
-            stopCompletion = new TaskCompletionSource(
-                TaskCreationOptions.RunContinuationsAsynchronously);
+            stopCompletion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             previousHookStopTask = stopCompletion.Task;
         }
 
@@ -317,8 +302,7 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
 
             hook = null;
             runTask = null;
-            stopCompletion = new TaskCompletionSource(
-                TaskCreationOptions.RunContinuationsAsynchronously);
+            stopCompletion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             previousHookStopTask = stopCompletion.Task;
         }
 
@@ -330,9 +314,7 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
     private async Task StartAfterStopAsync(long version, Task stoppedTask)
     {
         await WaitForHookToStopAsync(stoppedTask).ConfigureAwait(false);
-        if (!disposed
-            && version == Volatile.Read(ref lifecycleVersion)
-            && Volatile.Read(ref settings).KeyboardEnabled)
+        if (!disposed && version == Volatile.Read(ref lifecycleVersion) && Volatile.Read(ref settings).KeyboardEnabled)
         {
             Start(version);
         }
@@ -350,9 +332,7 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
         }
     }
 
-    private static async Task CompleteHookStopAsync(
-        Task runTask,
-        TaskCompletionSource stopCompletion)
+    private static async Task CompleteHookStopAsync(Task runTask, TaskCompletionSource stopCompletion)
     {
         await WaitForHookToStopAsync(runTask).ConfigureAwait(false);
         stopCompletion.TrySetResult();
@@ -377,12 +357,10 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
     {
         lock (statusLock)
         {
-            if ((expectedStatus is not null
-                    && !string.Equals(
-                        this.status,
-                        expectedStatus,
-                        StringComparison.Ordinal))
-                || string.Equals(this.status, status, StringComparison.Ordinal))
+            if (
+                (expectedStatus is not null && !string.Equals(this.status, expectedStatus, StringComparison.Ordinal))
+                || string.Equals(this.status, status, StringComparison.Ordinal)
+            )
             {
                 return;
             }
@@ -393,9 +371,7 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
         StatusChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    private void PublishPendingStatus(
-        string? pendingStatus,
-        string? expectedStatus)
+    private void PublishPendingStatus(string? pendingStatus, string? expectedStatus)
     {
         if (pendingStatus is not null)
         {
@@ -404,6 +380,4 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
     }
 }
 
-public sealed record GlobalInputActionTriggeredEventArgs(
-    GlobalInputAction Action,
-    string Chord);
+public sealed record GlobalInputActionTriggeredEventArgs(GlobalInputAction Action, string Chord);

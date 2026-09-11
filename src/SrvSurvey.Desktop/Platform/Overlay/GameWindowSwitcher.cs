@@ -23,11 +23,9 @@ public static class GameWindowSwitcher
             return new WindowsGameWindowSwitcher();
         }
 
-        if (OverlayPlatformCapabilities.DetectCurrent()
-            .UsesX11Compatibility)
+        if (OverlayPlatformCapabilities.DetectCurrent().UsesX11Compatibility)
         {
-            return X11GameWindowSwitcher.TryCreate()
-                ?? new UnavailableGameWindowSwitcher();
+            return X11GameWindowSwitcher.TryCreate() ?? new UnavailableGameWindowSwitcher();
         }
 
         return new UnavailableGameWindowSwitcher();
@@ -36,10 +34,7 @@ public static class GameWindowSwitcher
 
 internal static class GameWindowCycle
 {
-    public static nint SelectCurrent(
-        IReadOnlyList<nint> windows,
-        nint activeWindow,
-        nint previousWindow)
+    public static nint SelectCurrent(IReadOnlyList<nint> windows, nint activeWindow, nint previousWindow)
     {
         if (windows.Count == 0)
         {
@@ -51,15 +46,10 @@ internal static class GameWindowCycle
             return activeWindow;
         }
 
-        return IndexOf(windows, previousWindow) >= 0
-            ? previousWindow
-            : windows[0];
+        return IndexOf(windows, previousWindow) >= 0 ? previousWindow : windows[0];
     }
 
-    public static nint SelectNext(
-        IReadOnlyList<nint> windows,
-        nint activeWindow,
-        nint previousWindow)
+    public static nint SelectNext(IReadOnlyList<nint> windows, nint activeWindow, nint previousWindow)
     {
         if (windows.Count == 0)
         {
@@ -102,9 +92,7 @@ internal sealed class UnavailableGameWindowSwitcher : IGameWindowSwitcher
 
     public bool TryActivateNext() => false;
 
-    public void Dispose()
-    {
-    }
+    public void Dispose() { }
 }
 
 [SupportedOSPlatform("windows")]
@@ -118,10 +106,8 @@ internal sealed partial class WindowsGameWindowSwitcher : IGameWindowSwitcher
         {
             return GetCandidateWindows().Length;
         }
-        catch (Exception exception) when (
-            exception is InvalidOperationException
-                or NotSupportedException
-                or Win32Exception)
+        catch (Exception exception)
+            when (exception is InvalidOperationException or NotSupportedException or Win32Exception)
         {
             return 0;
         }
@@ -143,14 +129,8 @@ internal sealed partial class WindowsGameWindowSwitcher : IGameWindowSwitcher
         {
             var handles = GetCandidateWindows();
             var target = activateNext
-                ? GameWindowCycle.SelectNext(
-                    handles,
-                    GetForegroundWindow(),
-                    previousWindow)
-                : GameWindowCycle.SelectCurrent(
-                    handles,
-                    GetForegroundWindow(),
-                    previousWindow);
+                ? GameWindowCycle.SelectNext(handles, GetForegroundWindow(), previousWindow)
+                : GameWindowCycle.SelectCurrent(handles, GetForegroundWindow(), previousWindow);
             if (target == nint.Zero)
             {
                 return false;
@@ -169,10 +149,8 @@ internal sealed partial class WindowsGameWindowSwitcher : IGameWindowSwitcher
             previousWindow = target;
             return true;
         }
-        catch (Exception exception) when (
-            exception is InvalidOperationException
-                or NotSupportedException
-                or Win32Exception)
+        catch (Exception exception)
+            when (exception is InvalidOperationException or NotSupportedException or Win32Exception)
         {
             return false;
         }
@@ -183,38 +161,29 @@ internal sealed partial class WindowsGameWindowSwitcher : IGameWindowSwitcher
         using var currentProcess = Process.GetCurrentProcess();
         var currentSession = currentProcess.SessionId;
         var windows = new List<(int ProcessId, nint Handle)>();
-        foreach (var process in Process.GetProcessesByName(
-                     EliteGameWindowIdentity.WindowsProcessName))
+        foreach (var process in Process.GetProcessesByName(EliteGameWindowIdentity.WindowsProcessName))
         {
             using (process)
             {
                 try
                 {
-                    if (process.SessionId == currentSession
-                        && process.MainWindowHandle != nint.Zero)
+                    if (process.SessionId == currentSession && process.MainWindowHandle != nint.Zero)
                     {
                         windows.Add((process.Id, process.MainWindowHandle));
                     }
                 }
-                catch (Exception exception) when (
-                    exception is InvalidOperationException
-                        or NotSupportedException
-                        or Win32Exception)
+                catch (Exception exception)
+                    when (exception is InvalidOperationException or NotSupportedException or Win32Exception)
                 {
                     // Elite can exit while its process details are read.
                 }
             }
         }
 
-        return windows
-            .OrderBy(window => window.ProcessId)
-            .Select(window => window.Handle)
-            .ToArray();
+        return windows.OrderBy(window => window.ProcessId).Select(window => window.Handle).ToArray();
     }
 
-    public void Dispose()
-    {
-    }
+    public void Dispose() { }
 
     [LibraryImport("user32.dll")]
     private static partial nint GetForegroundWindow();
@@ -273,10 +242,8 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
             X11OverlayPlatformService.RegisterErrorHandledDisplay(display);
             return new X11GameWindowSwitcher(display);
         }
-        catch (Exception exception) when (
-            exception is DllNotFoundException
-                or EntryPointNotFoundException
-                or BadImageFormatException)
+        catch (Exception exception)
+            when (exception is DllNotFoundException or EntryPointNotFoundException or BadImageFormatException)
         {
             if (display != nint.Zero)
             {
@@ -286,8 +253,7 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
                 }
                 finally
                 {
-                    X11OverlayPlatformService.UnregisterErrorHandledDisplay(
-                        display);
+                    X11OverlayPlatformService.UnregisterErrorHandledDisplay(display);
                 }
             }
 
@@ -323,11 +289,13 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
             ? GameWindowCycle.SelectNext(
                 candidates,
                 unchecked((nint)ReadSingleWindow(activeWindowAtom)),
-                unchecked((nint)previousWindow))
+                unchecked((nint)previousWindow)
+            )
             : GameWindowCycle.SelectCurrent(
                 candidates,
                 unchecked((nint)ReadSingleWindow(activeWindowAtom)),
-                unchecked((nint)previousWindow));
+                unchecked((nint)previousWindow)
+            );
         if (target == nint.Zero)
         {
             return false;
@@ -335,11 +303,7 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
 
         var targetWindow = unchecked((nuint)target);
         _ = X11Native.XMapRaised(display, targetWindow);
-        _ = X11Native.XSetInputFocus(
-            display,
-            targetWindow,
-            RevertToParent,
-            0);
+        _ = X11Native.XSetInputFocus(display, targetWindow, RevertToParent, 0);
         _ = X11Native.XFlush(display);
         previousWindow = targetWindow;
         return true;
@@ -361,11 +325,7 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
             windows = ReadWindowList(clientListAtom);
         }
 
-        return windows
-            .Where(IsEliteWindow)
-            .Where(IsViewable)
-            .Select(window => unchecked((nint)window))
-            .ToArray();
+        return windows.Where(IsEliteWindow).Where(IsViewable).Select(window => unchecked((nint)window)).ToArray();
     }
 
     public void Dispose()
@@ -382,8 +342,7 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
                 }
                 finally
                 {
-                    X11OverlayPlatformService.UnregisterErrorHandledDisplay(
-                        currentDisplay);
+                    X11OverlayPlatformService.UnregisterErrorHandledDisplay(currentDisplay);
                 }
             }
         }
@@ -396,10 +355,7 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
 
     private bool IsViewable(nuint window)
     {
-        return X11Native.XGetWindowAttributes(
-                display,
-                window,
-                out var attributes) != 0
+        return X11Native.XGetWindowAttributes(display, window, out var attributes) != 0
             && attributes.MapState == X11Native.IsViewable;
     }
 
@@ -434,10 +390,7 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
             }
         }
 
-        return EliteGameWindowIdentity.MatchesX11(
-            resourceName,
-            resourceClass,
-            title);
+        return EliteGameWindowIdentity.MatchesX11(resourceName, resourceClass, title);
     }
 
     private nuint ReadSingleWindow(nuint atom)
@@ -448,7 +401,8 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
 
     private nuint[] ReadWindowList(nuint atom, nuint? window = null)
     {
-        if (atom == 0
+        if (
+            atom == 0
             || X11Native.XGetWindowProperty(
                 display,
                 window ?? rootWindow,
@@ -461,8 +415,10 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
                 out var actualFormat,
                 out var itemCount,
                 out _,
-                out var propertyData) != 0
-            || propertyData == nint.Zero)
+                out var propertyData
+            ) != 0
+            || propertyData == nint.Zero
+        )
         {
             return [];
         }
@@ -477,9 +433,7 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
             var values = new nuint[(int)itemCount];
             for (var index = 0; index < values.Length; index++)
             {
-                values[index] = unchecked((nuint)Marshal.ReadIntPtr(
-                    propertyData,
-                    index * nint.Size));
+                values[index] = unchecked((nuint)Marshal.ReadIntPtr(propertyData, index * nint.Size));
             }
 
             return values;

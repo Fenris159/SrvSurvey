@@ -16,15 +16,11 @@ public sealed class BoxelSystemActionMenuTests
     public void LauncherOpensPopupWithCommandsFromTheRow()
     {
         var row = CreateRow();
-        var control = new BoxelSystemActionMenu
-        {
-            DataContext = row,
-        };
+        var control = new BoxelSystemActionMenu { DataContext = row };
         var window = new Window { Content = control };
         window.Show();
 
-        control.FindControl<Button>("Launcher")!.RaiseEvent(
-            new RoutedEventArgs(Button.ClickEvent));
+        control.FindControl<Button>("Launcher")!.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
 
         var popup = control.FindControl<Popup>("MenuPopup");
         Assert.False(popup?.IsOpen);
@@ -36,27 +32,15 @@ public sealed class BoxelSystemActionMenuTests
         Assert.True(control.TryRevealMenu(launcherIsPointerOver: false));
         Assert.True(popup?.IsOpen);
         Assert.True(control.FindControl<Canvas>("MenuSurface")!.IsVisible);
-        Assert.DoesNotContain(
-            "open",
-            control.FindControl<Canvas>("MenuSurface")!.Classes);
+        Assert.DoesNotContain("open", control.FindControl<Canvas>("MenuSurface")!.Classes);
         control.AdvanceCommittedReveal();
-        Assert.Contains(
-            "open",
-            control.FindControl<Canvas>("MenuSurface")!.Classes);
+        Assert.Contains("open", control.FindControl<Canvas>("MenuSurface")!.Classes);
         Assert.True(control.FindControl<Canvas>("MenuHitSurface")!.IsVisible);
-        Assert.Same(
-            row.CompleteCommand,
-            control.FindControl<Button>("CompleteActionButton")?.Command);
-        Assert.Same(
-            row.ReopenCommand,
-            control.FindControl<Button>("ReopenActionButton")?.Command);
+        Assert.Same(row.CompleteCommand, control.FindControl<Button>("CompleteActionButton")?.Command);
+        Assert.Same(row.ReopenCommand, control.FindControl<Button>("ReopenActionButton")?.Command);
         Assert.False(row.ReopenCommand.CanExecute(null));
-        Assert.Same(
-            row.DeferCommand,
-            control.FindControl<Button>("DeferActionButton")?.Command);
-        Assert.Same(
-            row.StartHereCommand,
-            control.FindControl<Button>("StartHereActionButton")?.Command);
+        Assert.Same(row.DeferCommand, control.FindControl<Button>("DeferActionButton")?.Command);
+        Assert.Same(row.StartHereCommand, control.FindControl<Button>("StartHereActionButton")?.Command);
         Assert.Equal(1, control.FindControl<Button>("ReopenActionButton")!.Opacity);
         var actionButtons = new[]
         {
@@ -71,9 +55,9 @@ public sealed class BoxelSystemActionMenuTests
             {
                 Assert.Equal(HorizontalAlignment.Center, button.HorizontalContentAlignment);
                 Assert.Equal(VerticalAlignment.Center, button.VerticalContentAlignment);
-            });
-        control.FindControl<Button>("Launcher")!.RaiseEvent(
-            new RoutedEventArgs(Button.ClickEvent));
+            }
+        );
+        control.FindControl<Button>("Launcher")!.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         Assert.True(popup?.IsOpen);
 
         window.Close();
@@ -82,10 +66,7 @@ public sealed class BoxelSystemActionMenuTests
     [AvaloniaFact]
     public void FlyoutActionsHugLauncherWithDirectionalCurves()
     {
-        var control = new BoxelSystemActionMenu
-        {
-            DataContext = CreateRow(),
-        };
+        var control = new BoxelSystemActionMenu { DataContext = CreateRow() };
         var window = new Window { Content = control };
         window.Show();
 
@@ -112,18 +93,10 @@ public sealed class BoxelSystemActionMenuTests
         Assert.Equal(118, startHere.Width);
         Assert.Equal(66, startHere.Height);
 
-        Assert.Equal(
-            complete.GetValue(Canvas.LeftProperty) + 38,
-            reopen.GetValue(Canvas.LeftProperty) + 60);
-        Assert.Equal(
-            complete.GetValue(Canvas.LeftProperty) + 80,
-            defer.GetValue(Canvas.LeftProperty) + 2);
-        Assert.Equal(
-            complete.GetValue(Canvas.TopProperty) + 63,
-            reopen.GetValue(Canvas.TopProperty) + 41);
-        Assert.Equal(
-            startHere.GetValue(Canvas.TopProperty) + 3,
-            reopen.GetValue(Canvas.TopProperty) + 77);
+        Assert.Equal(complete.GetValue(Canvas.LeftProperty) + 38, reopen.GetValue(Canvas.LeftProperty) + 60);
+        Assert.Equal(complete.GetValue(Canvas.LeftProperty) + 80, defer.GetValue(Canvas.LeftProperty) + 2);
+        Assert.Equal(complete.GetValue(Canvas.TopProperty) + 63, reopen.GetValue(Canvas.TopProperty) + 41);
+        Assert.Equal(startHere.GetValue(Canvas.TopProperty) + 3, reopen.GetValue(Canvas.TopProperty) + 77);
 
         AssertDirectionalClip(complete, new Point(59, 31), new Point(59, 64));
         AssertDirectionalClip(reopen, new Point(29, 59), new Point(60, 59));
@@ -140,13 +113,7 @@ public sealed class BoxelSystemActionMenuTests
     {
         var first = new BoxelSystemActionMenu { DataContext = CreateRow() };
         var second = new BoxelSystemActionMenu { DataContext = CreateRow() };
-        var window = new Window
-        {
-            Content = new StackPanel
-            {
-                Children = { first, second },
-            },
-        };
+        var window = new Window { Content = new StackPanel { Children = { first, second } } };
         window.Show();
 
         first.BeginOpenIntent(explicitRequest: false);
@@ -178,19 +145,14 @@ public sealed class BoxelSystemActionMenuTests
     {
         var first = new BoxelSystemActionMenu { DataContext = CreateRow() };
         var second = new BoxelSystemActionMenu { DataContext = CreateRow() };
-        var window = new Window
-        {
-            Content = new StackPanel { Children = { first, second } },
-        };
+        var window = new Window { Content = new StackPanel { Children = { first, second } } };
         window.Show();
 
         first.BeginOpenIntent(explicitRequest: true);
         Assert.True(first.TryRevealMenu(launcherIsPointerOver: false));
         Assert.True(first.FindControl<Popup>("MenuPopup")!.IsOpen);
 
-        Assert.True(first.TryCloseForPointerExit(
-            launcherIsPointerOver: false,
-            menuIsPointerOver: false));
+        Assert.True(first.TryCloseForPointerExit(launcherIsPointerOver: false, menuIsPointerOver: false));
         Assert.False(first.FindControl<Popup>("MenuPopup")!.IsOpen);
 
         first.BeginOpenIntent(explicitRequest: true);
@@ -218,9 +180,7 @@ public sealed class BoxelSystemActionMenuTests
 
         Assert.False(control.FindControl<Popup>("MenuPopup")!.IsOpen);
         Assert.False(control.IsRevealPending);
-        Assert.DoesNotContain(
-            "engaged",
-            control.FindControl<Button>("Launcher")!.Classes);
+        Assert.DoesNotContain("engaged", control.FindControl<Button>("Launcher")!.Classes);
         Assert.False(BoxelSystemActionMenu.DismissActiveMenuForScroll());
 
         window.Close();
@@ -228,45 +188,38 @@ public sealed class BoxelSystemActionMenuTests
 
     private static BoxelSystemRowViewModel CreateRow()
     {
-        return new BoxelSystemRowViewModel(new BoxelSystemRowOptions
-        {
-            Name = "Praea Euq IL-P c5-0",
-            IsComplete = false,
-            IsKnown = true,
-            IsEmpty = false,
-            IsDeferred = false,
-            IsCurrent = false,
-            IsNextIncomplete = true,
-            Distance = "\u2014",
-            VisitedAt = "\u2014",
-            SpanshUpdatedAt = "\u2014",
-            Complete = () => Task.CompletedTask,
-            Reopen = () => Task.CompletedTask,
-            Defer = () => Task.CompletedTask,
-            StartHere = () => Task.CompletedTask,
-        });
+        return new BoxelSystemRowViewModel(
+            new BoxelSystemRowOptions
+            {
+                Name = "Praea Euq IL-P c5-0",
+                IsComplete = false,
+                IsKnown = true,
+                IsEmpty = false,
+                IsDeferred = false,
+                IsCurrent = false,
+                IsNextIncomplete = true,
+                Distance = "\u2014",
+                VisitedAt = "\u2014",
+                SpanshUpdatedAt = "\u2014",
+                Complete = () => Task.CompletedTask,
+                Reopen = () => Task.CompletedTask,
+                Defer = () => Task.CompletedTask,
+                StartHere = () => Task.CompletedTask,
+            }
+        );
     }
 
-    private static void AssertDirectionalClip(
-        Button button,
-        Point labelPoint,
-        Point inwardCutoutPoint)
+    private static void AssertDirectionalClip(Button button, Point labelPoint, Point inwardCutoutPoint)
     {
-        var clip = Assert.IsType<Avalonia.Media.Geometry>(
-            button.Clip,
-            exactMatch: false);
+        var clip = Assert.IsType<Avalonia.Media.Geometry>(button.Clip, exactMatch: false);
         Assert.True(clip.FillContains(labelPoint));
         Assert.False(clip.FillContains(inwardCutoutPoint));
     }
 
     private static void AssertMirroredSideGeometry(Button left, Button right)
     {
-        var leftClip = Assert.IsType<Avalonia.Media.Geometry>(
-            left.Clip,
-            exactMatch: false);
-        var rightClip = Assert.IsType<Avalonia.Media.Geometry>(
-            right.Clip,
-            exactMatch: false);
+        var leftClip = Assert.IsType<Avalonia.Media.Geometry>(left.Clip, exactMatch: false);
+        var rightClip = Assert.IsType<Avalonia.Media.Geometry>(right.Clip, exactMatch: false);
 
         for (var y = 1; y < left.Height; y += 4)
         {
@@ -274,37 +227,24 @@ public sealed class BoxelSystemActionMenuTests
             {
                 Assert.Equal(
                     leftClip.FillContains(new Point(x, y)),
-                    rightClip.FillContains(new Point(left.Width - x, y)));
+                    rightClip.FillContains(new Point(left.Width - x, y))
+                );
             }
         }
     }
 
-    private static void AssertSideButtonsFitTopWedgeRadius(
-        Button top,
-        Button left,
-        Button right)
+    private static void AssertSideButtonsFitTopWedgeRadius(Button top, Button left, Button right)
     {
-        var topClip = Assert.IsType<Avalonia.Media.Geometry>(
-            top.Clip,
-            exactMatch: false);
-        var leftClip = Assert.IsType<Avalonia.Media.Geometry>(
-            left.Clip,
-            exactMatch: false);
-        var rightClip = Assert.IsType<Avalonia.Media.Geometry>(
-            right.Clip,
-            exactMatch: false);
+        var topClip = Assert.IsType<Avalonia.Media.Geometry>(top.Clip, exactMatch: false);
+        var leftClip = Assert.IsType<Avalonia.Media.Geometry>(left.Clip, exactMatch: false);
+        var rightClip = Assert.IsType<Avalonia.Media.Geometry>(right.Clip, exactMatch: false);
         const double centerX = 165;
         const double centerY = 93;
         var topOuterX = top.GetValue(Canvas.LeftProperty) + 4;
         var topOuterY = top.GetValue(Canvas.TopProperty) + 22;
-        var guideRadius = Math.Sqrt(
-            Math.Pow(centerX - topOuterX, 2)
-            + Math.Pow(centerY - topOuterY, 2));
-        var leftReach = centerX
-            - (left.GetValue(Canvas.LeftProperty) + leftClip.Bounds.Left);
-        var rightReach = right.GetValue(Canvas.LeftProperty)
-            + rightClip.Bounds.Right
-            - centerX;
+        var guideRadius = Math.Sqrt(Math.Pow(centerX - topOuterX, 2) + Math.Pow(centerY - topOuterY, 2));
+        var leftReach = centerX - (left.GetValue(Canvas.LeftProperty) + leftClip.Bounds.Left);
+        var rightReach = right.GetValue(Canvas.LeftProperty) + rightClip.Bounds.Right - centerX;
 
         Assert.InRange(leftReach, guideRadius - 1, guideRadius);
         Assert.InRange(rightReach, guideRadius - 1, guideRadius);

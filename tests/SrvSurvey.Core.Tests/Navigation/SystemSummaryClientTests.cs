@@ -14,7 +14,8 @@ public sealed class SystemSummaryClientTests
         var client = new SystemSummaryClient(
             new HttpClient(handler),
             new Uri("https://edsm.test/"),
-            new Uri("https://spansh.test/api/"));
+            new Uri("https://spansh.test/api/")
+        );
 
         var result = await client.GetAsync("Test System", 42);
 
@@ -27,12 +28,8 @@ public sealed class SystemSummaryClientTests
         Assert.Equal(4, result.Summary.ScannedBodyCount);
         Assert.Equal(7, result.Summary.TotalBodyCount);
         Assert.Equal("Pathfinder", result.Summary.DiscoveredBy);
-        Assert.Equal(
-            DateTimeOffset.Parse("2024-01-02T03:04:05Z"),
-            result.Summary.DiscoveredAt);
-        Assert.Equal(
-            DateTimeOffset.Parse("2025-02-03T04:05:06Z"),
-            result.Summary.LastUpdatedAt);
+        Assert.Equal(DateTimeOffset.Parse("2024-01-02T03:04:05Z"), result.Summary.DiscoveredAt);
+        Assert.Equal(DateTimeOffset.Parse("2025-02-03T04:05:06Z"), result.Summary.LastUpdatedAt);
         Assert.Equal(new SystemTrafficSummary(3, 20, 100), result.Summary.Traffic);
         Assert.Equal(2, result.Summary.PointsOfInterest.Genus);
         Assert.Equal(2, result.Summary.PointsOfInterest.Starports);
@@ -42,22 +39,21 @@ public sealed class SystemSummaryClientTests
         Assert.Equal(1, result.Summary.PointsOfInterest.Wars);
         Assert.Contains(
             result.Summary.Specials,
-            special => special.Location == "Encoded Hub"
-                && special.Details.Contains("Material Trader - Encoded"));
+            special => special.Location == "Encoded Hub" && special.Details.Contains("Material Trader - Encoded")
+        );
         Assert.Contains(
             result.Summary.Specials,
-            special => special.Location == "Guardian Lab"
-                && special.Details.Contains("Technology Broker - Guardian"));
+            special => special.Location == "Guardian Lab" && special.Details.Contains("Technology Broker - Guardian")
+        );
         Assert.Contains(
             result.Summary.Specials,
-            special => special.Location == "Engineer Base"
-                && special.Details.Contains("Professor Palin Engineer"));
+            special => special.Location == "Engineer Base" && special.Details.Contains("Professor Palin Engineer")
+        );
         Assert.Equal(5, result.Summary.Stations.Count);
         Assert.Equal(2, result.Summary.Factions.Count);
         Assert.Equal("Pathfinder Cooperative", result.Summary.Factions[0].Name);
         Assert.Equal(0.62, result.Summary.Factions[0].Influence);
-        var guardianLab = result.Summary.Stations.Single(
-            station => station.Name == "Guardian Lab");
+        var guardianLab = result.Summary.Stations.Single(station => station.Name == "Guardian Lab");
         Assert.Equal("Planetary Port", guardianLab.Type);
         Assert.Equal("High Tech", guardianLab.PrimaryEconomy);
         Assert.Equal(72.5, guardianLab.Economies["High Tech"]);
@@ -66,30 +62,26 @@ public sealed class SystemSummaryClientTests
         Assert.Equal("Large", guardianLab.LandingPads?.Largest);
         Assert.Contains("Technology Broker", guardianLab.Services);
         Assert.Equal(["Narcotics", "Slaves"], guardianLab.ProhibitedCommodities);
-        Assert.Equal(
-            DateTimeOffset.Parse("2026-01-02T03:04:05Z"),
-            guardianLab.UpdatedAt);
+        Assert.Equal(DateTimeOffset.Parse("2026-01-02T03:04:05Z"), guardianLab.UpdatedAt);
         Assert.Equal(
             [
                 "https://edsm.test/api-system-v1/bodies?systemName=Test%20System",
                 "https://edsm.test/api-system-v1/traffic?systemName=Test%20System",
                 "https://spansh.test/api/dump/42/",
             ],
-            handler.Requests.Order(StringComparer.Ordinal).ToArray());
+            handler.Requests.Order(StringComparer.Ordinal).ToArray()
+        );
     }
 
     [Fact]
     public async Task IndividualProviderFailuresReturnPartialDataAndWarnings()
     {
-        var handler = new ProviderHandler
-        {
-            FailTraffic = true,
-            MalformSpansh = true,
-        };
+        var handler = new ProviderHandler { FailTraffic = true, MalformSpansh = true };
         var client = new SystemSummaryClient(
             new HttpClient(handler),
             new Uri("https://edsm.test/"),
-            new Uri("https://spansh.test/api/"));
+            new Uri("https://spansh.test/api/")
+        );
 
         var result = await client.GetAsync("Test System", 42);
 
@@ -109,18 +101,15 @@ public sealed class SystemSummaryClientTests
             new HttpClient(new ProviderHandler()),
             new Uri("https://edsm.test/"),
             new Uri("https://spansh.test/api/"),
-            () => useSpansh);
+            () => useSpansh
+        );
 
         var edsm = await client.GetAsync("Test System", 42);
         useSpansh = true;
         var spansh = await client.GetAsync("Test System", 42);
 
-        Assert.Equal(
-            DateTimeOffset.Parse("2025-02-03T04:05:06Z"),
-            edsm.Summary.LastUpdatedAt);
-        Assert.Equal(
-            DateTimeOffset.Parse("2026-03-04T05:06:07Z"),
-            spansh.Summary.LastUpdatedAt);
+        Assert.Equal(DateTimeOffset.Parse("2025-02-03T04:05:06Z"), edsm.Summary.LastUpdatedAt);
+        Assert.Equal(DateTimeOffset.Parse("2026-03-04T05:06:07Z"), spansh.Summary.LastUpdatedAt);
     }
 
     [Fact]
@@ -130,7 +119,8 @@ public sealed class SystemSummaryClientTests
         var client = new SystemSummaryClient(
             new HttpClient(handler),
             new Uri("https://edsm.test/"),
-            new Uri("https://spansh.test/api/"));
+            new Uri("https://spansh.test/api/")
+        );
 
         var result = await client.GetAsync("Test System", 0);
 
@@ -149,29 +139,27 @@ public sealed class SystemSummaryClientTests
 
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
             var uri = request.RequestUri!;
             Requests.Add(uri.AbsoluteUri);
             if (uri.AbsolutePath.EndsWith("/traffic", StringComparison.Ordinal))
             {
-                return Task.FromResult(FailTraffic
-                    ? Response("{}", HttpStatusCode.ServiceUnavailable)
-                    : Response(TrafficJson));
+                return Task.FromResult(
+                    FailTraffic ? Response("{}", HttpStatusCode.ServiceUnavailable) : Response(TrafficJson)
+                );
             }
 
             if (uri.Host == "spansh.test")
             {
-                return Task.FromResult(Response(
-                    MalformSpansh ? "{\"system\":[]}" : SpanshJson));
+                return Task.FromResult(Response(MalformSpansh ? "{\"system\":[]}" : SpanshJson));
             }
 
             return Task.FromResult(Response(BodiesJson));
         }
 
-        private static HttpResponseMessage Response(
-            string content,
-            HttpStatusCode statusCode = HttpStatusCode.OK)
+        private static HttpResponseMessage Response(string content, HttpStatusCode statusCode = HttpStatusCode.OK)
         {
             return new HttpResponseMessage(statusCode)
             {
@@ -179,8 +167,7 @@ public sealed class SystemSummaryClientTests
             };
         }
 
-        private const string BodiesJson =
-            """
+        private const string BodiesJson = """
             {
               "id64": 42,
               "name": "Test System",
@@ -201,16 +188,14 @@ public sealed class SystemSummaryClientTests
             }
             """;
 
-        private const string TrafficJson =
-            """
+        private const string TrafficJson = """
             {
               "id64": 42,
               "traffic": { "day": 3, "week": 20, "total": 100 }
             }
             """;
 
-        private const string SpanshJson =
-            """
+        private const string SpanshJson = """
             {
               "system": {
                 "id64": 42,

@@ -10,9 +10,7 @@ namespace SrvSurvey.Desktop;
 public sealed partial class RouteBioOverlayWindow : Window
 {
     public RouteBioOverlayWindow()
-        : this(CreateDesignViewModel())
-    {
-    }
+        : this(CreateDesignViewModel()) { }
 
     public RouteBioOverlayWindow(RouteBioOverlayViewModel viewModel)
     {
@@ -23,22 +21,23 @@ public sealed partial class RouteBioOverlayWindow : Window
 
     private static RouteBioOverlayViewModel CreateDesignViewModel()
     {
-        var temporaryDirectory = Path.Combine(
-            Path.GetTempPath(),
-            "SrvSurvey-Route-Bio-Overlay-Design");
+        var temporaryDirectory = Path.Combine(Path.GetTempPath(), "SrvSurvey-Route-Bio-Overlay-Design");
         return new RouteBioOverlayViewModel(
             new RouteWorkspaceViewModel(
                 new FollowRouteService(new FollowRouteStore(temporaryDirectory)),
                 new RouteNameImporter(new EmptySystemResolver()),
-                new EmptySpanshRouteClient()),
-            OverlayPlatformCapabilities.DetectCurrent());
+                new EmptySpanshRouteClient()
+            ),
+            OverlayPlatformCapabilities.DetectCurrent()
+        );
     }
 
     private sealed class EmptySystemResolver : IStarSystemResolver
     {
         public Task<IReadOnlyList<StarSystemReference>> SearchAsync(
             string query,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             return Task.FromResult<IReadOnlyList<StarSystemReference>>([]);
         }
@@ -48,7 +47,8 @@ public sealed partial class RouteBioOverlayWindow : Window
     {
         public Task<IReadOnlyList<FollowRouteHop>> GetRouteAsync(
             SpanshRouteReference route,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             return Task.FromResult<IReadOnlyList<FollowRouteHop>>([]);
         }

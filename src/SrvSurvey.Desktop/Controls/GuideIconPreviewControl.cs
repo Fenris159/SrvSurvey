@@ -9,127 +9,154 @@ namespace SrvSurvey.Desktop.Controls;
 
 public sealed class GuideIconPreviewControl : Control
 {
-    public static readonly StyledProperty<GuideIconKind> KindProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, GuideIconKind>(
-            nameof(Kind));
-    public static readonly StyledProperty<string> SymbolProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, string>(
-            nameof(Symbol),
-            string.Empty);
-    public static readonly StyledProperty<IBrush?> BackgroundBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(BackgroundBrush));
-    public static readonly StyledProperty<IBrush?> PrimaryBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PrimaryBrush));
-    public static readonly StyledProperty<IBrush?> SecondaryBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(SecondaryBrush));
-    public static readonly StyledProperty<IBrush?> MutedBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(MutedBrush));
-    public static readonly StyledProperty<IBrush?> SuccessBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(SuccessBrush));
-    public static readonly StyledProperty<IBrush?> WarningBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(WarningBrush));
-    public static readonly StyledProperty<IBrush?> DangerBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(DangerBrush));
-    public static readonly StyledProperty<IBrush?> GoldBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(GoldBrush));
-    public static readonly StyledProperty<IBrush?> PipConfirmedBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PipConfirmedBrush));
-    public static readonly StyledProperty<IBrush?> PipConfirmedDimBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PipConfirmedDimBrush));
-    public static readonly StyledProperty<IBrush?> PipPotentialBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PipPotentialBrush));
-    public static readonly StyledProperty<IBrush?> PipConfirmedDimPotentialBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PipConfirmedDimPotentialBrush));
-    public static readonly StyledProperty<IBrush?> PipPredictionBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PipPredictionBrush));
-    public static readonly StyledProperty<IBrush?> PipPredictionPotentialBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PipPredictionPotentialBrush));
-    public static readonly StyledProperty<IBrush?> PipHighlightBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PipHighlightBrush));
-    public static readonly StyledProperty<IBrush?> PipHighlightPotentialBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PipHighlightPotentialBrush));
-    public static readonly StyledProperty<IBrush?> PipGlobalRegionalBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PipGlobalRegionalBrush));
-    public static readonly StyledProperty<IBrush?> PipGlobalRegionalPotentialBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PipGlobalRegionalPotentialBrush));
-    public static readonly StyledProperty<IBrush?> PipUnknownBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PipUnknownBrush));
-    public static readonly StyledProperty<IBrush?> PipUnknownGlyphBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PipUnknownGlyphBrush));
-    public static readonly StyledProperty<IBrush?> PipHatchBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PipHatchBrush));
-    public static readonly StyledProperty<IBrush?> PipEmptyBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PipEmptyBrush));
-    public static readonly StyledProperty<IBrush?> PipConfirmedEdgeBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PipConfirmedEdgeBrush));
-    public static readonly StyledProperty<IBrush?> PipConfirmedDimEdgeBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PipConfirmedDimEdgeBrush));
-    public static readonly StyledProperty<IBrush?> PipPredictionEdgeBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PipPredictionEdgeBrush));
-    public static readonly StyledProperty<IBrush?> PipHighlightEdgeBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PipHighlightEdgeBrush));
-    public static readonly StyledProperty<IBrush?> PipGlobalRegionalEdgeBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PipGlobalRegionalEdgeBrush));
-    public static readonly StyledProperty<IBrush?> PipUnknownEdgeBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PipUnknownEdgeBrush));
-    public static readonly StyledProperty<IBrush?> PipConfirmedSegmentEdgeBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PipConfirmedSegmentEdgeBrush));
+    public static readonly StyledProperty<GuideIconKind> KindProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        GuideIconKind
+    >(nameof(Kind));
+    public static readonly StyledProperty<string> SymbolProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        string
+    >(nameof(Symbol), string.Empty);
+    public static readonly StyledProperty<IBrush?> BackgroundBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(BackgroundBrush));
+    public static readonly StyledProperty<IBrush?> PrimaryBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(PrimaryBrush));
+    public static readonly StyledProperty<IBrush?> SecondaryBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(SecondaryBrush));
+    public static readonly StyledProperty<IBrush?> MutedBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(MutedBrush));
+    public static readonly StyledProperty<IBrush?> SuccessBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(SuccessBrush));
+    public static readonly StyledProperty<IBrush?> WarningBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(WarningBrush));
+    public static readonly StyledProperty<IBrush?> DangerBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(DangerBrush));
+    public static readonly StyledProperty<IBrush?> GoldBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(GoldBrush));
+    public static readonly StyledProperty<IBrush?> PipConfirmedBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(PipConfirmedBrush));
+    public static readonly StyledProperty<IBrush?> PipConfirmedDimBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(PipConfirmedDimBrush));
+    public static readonly StyledProperty<IBrush?> PipPotentialBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(PipPotentialBrush));
+    public static readonly StyledProperty<IBrush?> PipConfirmedDimPotentialBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(PipConfirmedDimPotentialBrush));
+    public static readonly StyledProperty<IBrush?> PipPredictionBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(PipPredictionBrush));
+    public static readonly StyledProperty<IBrush?> PipPredictionPotentialBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(PipPredictionPotentialBrush));
+    public static readonly StyledProperty<IBrush?> PipHighlightBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(PipHighlightBrush));
+    public static readonly StyledProperty<IBrush?> PipHighlightPotentialBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(PipHighlightPotentialBrush));
+    public static readonly StyledProperty<IBrush?> PipGlobalRegionalBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(PipGlobalRegionalBrush));
+    public static readonly StyledProperty<IBrush?> PipGlobalRegionalPotentialBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(PipGlobalRegionalPotentialBrush));
+    public static readonly StyledProperty<IBrush?> PipUnknownBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(PipUnknownBrush));
+    public static readonly StyledProperty<IBrush?> PipUnknownGlyphBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(PipUnknownGlyphBrush));
+    public static readonly StyledProperty<IBrush?> PipHatchBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(PipHatchBrush));
+    public static readonly StyledProperty<IBrush?> PipEmptyBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(PipEmptyBrush));
+    public static readonly StyledProperty<IBrush?> PipConfirmedEdgeBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(PipConfirmedEdgeBrush));
+    public static readonly StyledProperty<IBrush?> PipConfirmedDimEdgeBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(PipConfirmedDimEdgeBrush));
+    public static readonly StyledProperty<IBrush?> PipPredictionEdgeBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(PipPredictionEdgeBrush));
+    public static readonly StyledProperty<IBrush?> PipHighlightEdgeBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(PipHighlightEdgeBrush));
+    public static readonly StyledProperty<IBrush?> PipGlobalRegionalEdgeBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(PipGlobalRegionalEdgeBrush));
+    public static readonly StyledProperty<IBrush?> PipUnknownEdgeBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(PipUnknownEdgeBrush));
+    public static readonly StyledProperty<IBrush?> PipConfirmedSegmentEdgeBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(PipConfirmedSegmentEdgeBrush));
     public static readonly StyledProperty<IBrush?> PipConfirmedPotentialSegmentEdgeBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PipConfirmedPotentialSegmentEdgeBrush));
-    public static readonly StyledProperty<IBrush?> PipConfirmedDimSegmentEdgeBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PipConfirmedDimSegmentEdgeBrush));
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(nameof(PipConfirmedPotentialSegmentEdgeBrush));
+    public static readonly StyledProperty<IBrush?> PipConfirmedDimSegmentEdgeBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(PipConfirmedDimSegmentEdgeBrush));
     public static readonly StyledProperty<IBrush?> PipConfirmedDimPotentialSegmentEdgeBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PipConfirmedDimPotentialSegmentEdgeBrush));
-    public static readonly StyledProperty<IBrush?> PipPredictionSegmentEdgeBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PipPredictionSegmentEdgeBrush));
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(nameof(PipConfirmedDimPotentialSegmentEdgeBrush));
+    public static readonly StyledProperty<IBrush?> PipPredictionSegmentEdgeBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(PipPredictionSegmentEdgeBrush));
     public static readonly StyledProperty<IBrush?> PipPredictionPotentialSegmentEdgeBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PipPredictionPotentialSegmentEdgeBrush));
-    public static readonly StyledProperty<IBrush?> PipHighlightSegmentEdgeBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PipHighlightSegmentEdgeBrush));
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(nameof(PipPredictionPotentialSegmentEdgeBrush));
+    public static readonly StyledProperty<IBrush?> PipHighlightSegmentEdgeBrushProperty = AvaloniaProperty.Register<
+        GuideIconPreviewControl,
+        IBrush?
+    >(nameof(PipHighlightSegmentEdgeBrush));
     public static readonly StyledProperty<IBrush?> PipHighlightPotentialSegmentEdgeBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PipHighlightPotentialSegmentEdgeBrush));
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(nameof(PipHighlightPotentialSegmentEdgeBrush));
     public static readonly StyledProperty<IBrush?> PipGlobalRegionalSegmentEdgeBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PipGlobalRegionalSegmentEdgeBrush));
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(nameof(PipGlobalRegionalSegmentEdgeBrush));
     public static readonly StyledProperty<IBrush?> PipGlobalRegionalPotentialSegmentEdgeBrushProperty =
-        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(
-            nameof(PipGlobalRegionalPotentialSegmentEdgeBrush));
+        AvaloniaProperty.Register<GuideIconPreviewControl, IBrush?>(nameof(PipGlobalRegionalPotentialSegmentEdgeBrush));
 
     static GuideIconPreviewControl()
     {
@@ -173,7 +200,8 @@ public sealed class GuideIconPreviewControl : Control
             PipHighlightSegmentEdgeBrushProperty,
             PipHighlightPotentialSegmentEdgeBrushProperty,
             PipGlobalRegionalSegmentEdgeBrushProperty,
-            PipGlobalRegionalPotentialSegmentEdgeBrushProperty);
+            PipGlobalRegionalPotentialSegmentEdgeBrushProperty
+        );
     }
 
     public GuideIconKind Kind
@@ -435,17 +463,13 @@ public sealed class GuideIconPreviewControl : Control
         var pipConfirmed = PipConfirmedBrush ?? primary;
         var pipConfirmedDim = PipConfirmedDimBrush ?? muted;
         var pipPotential = PipPotentialBrush ?? muted;
-        var pipConfirmedDimPotential =
-            PipConfirmedDimPotentialBrush ?? pipPotential;
+        var pipConfirmedDimPotential = PipConfirmedDimPotentialBrush ?? pipPotential;
         var pipPrediction = PipPredictionBrush ?? secondary;
-        var pipPredictionPotential =
-            PipPredictionPotentialBrush ?? muted;
+        var pipPredictionPotential = PipPredictionPotentialBrush ?? muted;
         var pipHighlight = PipHighlightBrush ?? gold;
-        var pipHighlightPotential =
-            PipHighlightPotentialBrush ?? pipHighlight;
+        var pipHighlightPotential = PipHighlightPotentialBrush ?? pipHighlight;
         var pipGlobalRegional = PipGlobalRegionalBrush ?? Brushes.White;
-        var pipGlobalRegionalPotential =
-            PipGlobalRegionalPotentialBrush ?? Brushes.Gray;
+        var pipGlobalRegionalPotential = PipGlobalRegionalPotentialBrush ?? Brushes.Gray;
         var pipUnknown = PipUnknownBrush ?? muted;
         var pipUnknownGlyph = PipUnknownGlyphBrush ?? Brushes.LightGray;
         var pipHatch = PipHatchBrush ?? muted;
@@ -454,30 +478,19 @@ public sealed class GuideIconPreviewControl : Control
         var pipConfirmedDimEdge = PipConfirmedDimEdgeBrush ?? pipConfirmedDim;
         var pipPredictionEdge = PipPredictionEdgeBrush ?? pipPrediction;
         var pipHighlightEdge = PipHighlightEdgeBrush ?? pipHighlight;
-        var pipGlobalRegionalEdge =
-            PipGlobalRegionalEdgeBrush ?? pipGlobalRegional;
+        var pipGlobalRegionalEdge = PipGlobalRegionalEdgeBrush ?? pipGlobalRegional;
         var pipUnknownEdge = PipUnknownEdgeBrush ?? pipUnknown;
-        var pipConfirmedSegmentEdge =
-            PipConfirmedSegmentEdgeBrush ?? pipConfirmed;
-        var pipConfirmedPotentialSegmentEdge =
-            PipConfirmedPotentialSegmentEdgeBrush ?? pipPotential;
-        var pipConfirmedDimSegmentEdge =
-            PipConfirmedDimSegmentEdgeBrush ?? pipConfirmedDim;
-        var pipConfirmedDimPotentialSegmentEdge =
-            PipConfirmedDimPotentialSegmentEdgeBrush ?? pipPotential;
-        var pipPredictionSegmentEdge =
-            PipPredictionSegmentEdgeBrush ?? pipPrediction;
-        var pipPredictionPotentialSegmentEdge =
-            PipPredictionPotentialSegmentEdgeBrush ?? pipPredictionPotential;
-        var pipHighlightSegmentEdge =
-            PipHighlightSegmentEdgeBrush ?? pipHighlight;
-        var pipHighlightPotentialSegmentEdge =
-            PipHighlightPotentialSegmentEdgeBrush ?? pipHighlight;
-        var pipGlobalRegionalSegmentEdge =
-            PipGlobalRegionalSegmentEdgeBrush ?? pipGlobalRegional;
+        var pipConfirmedSegmentEdge = PipConfirmedSegmentEdgeBrush ?? pipConfirmed;
+        var pipConfirmedPotentialSegmentEdge = PipConfirmedPotentialSegmentEdgeBrush ?? pipPotential;
+        var pipConfirmedDimSegmentEdge = PipConfirmedDimSegmentEdgeBrush ?? pipConfirmedDim;
+        var pipConfirmedDimPotentialSegmentEdge = PipConfirmedDimPotentialSegmentEdgeBrush ?? pipPotential;
+        var pipPredictionSegmentEdge = PipPredictionSegmentEdgeBrush ?? pipPrediction;
+        var pipPredictionPotentialSegmentEdge = PipPredictionPotentialSegmentEdgeBrush ?? pipPredictionPotential;
+        var pipHighlightSegmentEdge = PipHighlightSegmentEdgeBrush ?? pipHighlight;
+        var pipHighlightPotentialSegmentEdge = PipHighlightPotentialSegmentEdgeBrush ?? pipHighlight;
+        var pipGlobalRegionalSegmentEdge = PipGlobalRegionalSegmentEdgeBrush ?? pipGlobalRegional;
         var pipGlobalRegionalPotentialSegmentEdge =
-            PipGlobalRegionalPotentialSegmentEdgeBrush
-                ?? pipGlobalRegionalPotential;
+            PipGlobalRegionalPotentialSegmentEdgeBrush ?? pipGlobalRegionalPotential;
         var bounds = new Rect(0.5, 0.5, Bounds.Width - 1, Bounds.Height - 1);
         context.DrawRectangle(background, new Pen(muted, 1), bounds, 8, 8);
         var center = bounds.Center;
@@ -501,7 +514,9 @@ public sealed class GuideIconPreviewControl : Control
                             Warning = warning,
                             Danger = danger,
                             Gold = gold,
-                        }));
+                        }
+                    )
+                );
                 break;
             case GuideIconKind.BiologyRewardKnown:
                 DrawRewardPips(
@@ -514,8 +529,10 @@ public sealed class GuideIconPreviewControl : Control
                         pipConfirmedSegmentEdge,
                         pipConfirmedPotentialSegmentEdge,
                         pipEmpty,
-                        pipHatch),
-                    isPrediction: false);
+                        pipHatch
+                    ),
+                    isPrediction: false
+                );
                 break;
             case GuideIconKind.BiologyRewardPredicted:
                 DrawRewardPips(
@@ -528,8 +545,10 @@ public sealed class GuideIconPreviewControl : Control
                         pipPredictionSegmentEdge,
                         pipPredictionPotentialSegmentEdge,
                         pipEmpty,
-                        pipHatch),
-                    isPrediction: true);
+                        pipHatch
+                    ),
+                    isPrediction: true
+                );
                 break;
             case GuideIconKind.BiologyRewardHighlighted:
                 DrawRewardPips(
@@ -542,8 +561,10 @@ public sealed class GuideIconPreviewControl : Control
                         pipHighlightSegmentEdge,
                         pipHighlightPotentialSegmentEdge,
                         pipEmpty,
-                        pipHatch),
-                    isPrediction: false);
+                        pipHatch
+                    ),
+                    isPrediction: false
+                );
                 break;
             case GuideIconKind.BiologyRewardGlobalRegional:
                 DrawRewardPips(
@@ -556,9 +577,11 @@ public sealed class GuideIconPreviewControl : Control
                         pipGlobalRegionalSegmentEdge,
                         pipGlobalRegionalPotentialSegmentEdge,
                         pipEmpty,
-                        pipHatch),
+                        pipHatch
+                    ),
                     isPrediction: true,
-                    reinforceEdge: true);
+                    reinforceEdge: true
+                );
                 break;
             case GuideIconKind.BiologyRewardDimmed:
                 DrawRewardPips(
@@ -571,15 +594,13 @@ public sealed class GuideIconPreviewControl : Control
                         pipConfirmedDimSegmentEdge,
                         pipConfirmedDimPotentialSegmentEdge,
                         pipEmpty,
-                        pipHatch),
-                    isPrediction: false);
+                        pipHatch
+                    ),
+                    isPrediction: false
+                );
                 break;
             case GuideIconKind.BiologyRewardUnknown:
-                DrawUnknownPip(
-                    context,
-                    center,
-                    pipUnknownEdge,
-                    pipUnknownGlyph);
+                DrawUnknownPip(context, center, pipUnknownEdge, pipUnknownGlyph);
                 break;
             case GuideIconKind.CanonnSignals:
                 CanonnLogoControl.Draw(
@@ -588,7 +609,9 @@ public sealed class GuideIconPreviewControl : Control
                         center.X - CanonnLogoControl.NativeSize / 2,
                         center.Y - CanonnLogoControl.NativeSize / 2,
                         CanonnLogoControl.NativeSize,
-                        CanonnLogoControl.NativeSize));
+                        CanonnLogoControl.NativeSize
+                    )
+                );
                 break;
             case GuideIconKind.DirectionalChevron:
                 DirectionalChevronDrawing.Draw(
@@ -598,7 +621,8 @@ public sealed class GuideIconPreviewControl : Control
                     -20,
                     isFar: false,
                     secondary,
-                    2.5);
+                    2.5
+                );
                 DirectionalChevronDrawing.Draw(
                     context,
                     new Point(center.X + 15, center.Y),
@@ -606,7 +630,8 @@ public sealed class GuideIconPreviewControl : Control
                     20,
                     isFar: true,
                     secondary,
-                    2.5);
+                    2.5
+                );
                 break;
             case GuideIconKind.RadarCommander:
                 DrawRadarCommander(context, center, secondary);
@@ -620,7 +645,8 @@ public sealed class GuideIconPreviewControl : Control
                     new Pen(success, 1),
                     new Rect(center.X - 12, center.Y - 8, 24, 16),
                     4,
-                    4);
+                    4
+                );
                 break;
             case GuideIconKind.RadarSample:
                 context.DrawEllipse(null, new Pen(warning, 2), center, 21, 21);
@@ -641,52 +667,28 @@ public sealed class GuideIconPreviewControl : Control
                 DrawJumpRoute(context, center, primary, secondary, muted);
                 break;
             case GuideIconKind.GuardianRelic:
-                DrawGuardianLegacyIcon(
-                    context,
-                    center,
-                    GuardianPoiType.Relic,
-                    GuardianPoiStatus.Present);
+                DrawGuardianLegacyIcon(context, center, GuardianPoiType.Relic, GuardianPoiStatus.Present);
                 break;
             case GuideIconKind.GuardianArtifact:
                 DrawGuardianArtifactPalette(context, center);
                 break;
             case GuideIconKind.GuardianEmptyPuddle:
-                DrawGuardianLegacyIcon(
-                    context,
-                    center,
-                    GuardianPoiType.EmptyPuddle,
-                    GuardianPoiStatus.Empty);
+                DrawGuardianLegacyIcon(context, center, GuardianPoiType.EmptyPuddle, GuardianPoiStatus.Empty);
                 break;
             case GuideIconKind.GuardianObelisk:
-                DrawGuardianLegacyIcon(
-                    context,
-                    center,
-                    GuardianPoiType.Obelisk,
-                    GuardianPoiStatus.Unknown);
+                DrawGuardianLegacyIcon(context, center, GuardianPoiType.Obelisk, GuardianPoiStatus.Unknown);
                 break;
             case GuideIconKind.GuardianActiveObelisk:
                 DrawGuardianActiveObelisk(context, center);
                 break;
             case GuideIconKind.GuardianBrokenObelisk:
-                DrawGuardianLegacyIcon(
-                    context,
-                    center,
-                    GuardianPoiType.BrokenObelisk,
-                    GuardianPoiStatus.Unknown);
+                DrawGuardianLegacyIcon(context, center, GuardianPoiType.BrokenObelisk, GuardianPoiStatus.Unknown);
                 break;
             case GuideIconKind.GuardianPylon:
-                DrawGuardianLegacyIcon(
-                    context,
-                    center,
-                    GuardianPoiType.Pylon,
-                    GuardianPoiStatus.Present);
+                DrawGuardianLegacyIcon(context, center, GuardianPoiType.Pylon, GuardianPoiStatus.Present);
                 break;
             case GuideIconKind.GuardianComponent:
-                DrawGuardianLegacyIcon(
-                    context,
-                    center,
-                    GuardianPoiType.Component,
-                    GuardianPoiStatus.Present);
+                DrawGuardianLegacyIcon(context, center, GuardianPoiType.Component, GuardianPoiStatus.Present);
                 break;
             case GuideIconKind.GuardianCommander:
                 context.DrawEllipse(background, new Pen(success, 2), center, 12, 12);
@@ -694,30 +696,20 @@ public sealed class GuideIconPreviewControl : Control
                 break;
             case GuideIconKind.GuardianSiteHeading:
                 context.DrawLine(
-                    new Pen(
-                        new SolidColorBrush(
-                            GuardianLegacyMapDrawing.SiteHeading),
-                        4,
-                        dashStyle: DashStyle.Dash),
+                    new Pen(new SolidColorBrush(GuardianLegacyMapDrawing.SiteHeading), 4, dashStyle: DashStyle.Dash),
                     new Point(center.X, center.Y - 24),
-                    new Point(center.X, center.Y + 24));
+                    new Point(center.X, center.Y + 24)
+                );
                 break;
             case GuideIconKind.GuardianTowerHeading:
                 context.DrawLine(
-                    new Pen(
-                        new SolidColorBrush(
-                            GuardianLegacyMapDrawing.TowerHeading),
-                        4),
+                    new Pen(new SolidColorBrush(GuardianLegacyMapDrawing.TowerHeading), 4),
                     new Point(center.X - 20, center.Y + 20),
-                    new Point(center.X + 20, center.Y - 20));
+                    new Point(center.X + 20, center.Y - 20)
+                );
                 break;
             case GuideIconKind.GuardianSurveyNeeded:
-                GuardianSurveyMarkerDrawing.Draw(
-                    context,
-                    center,
-                    haloRadius: 20,
-                    ringRadius: 18,
-                    dotRadius: 1);
+                GuardianSurveyMarkerDrawing.Draw(context, center, haloRadius: 20, ringRadius: 18, dotRadius: 1);
                 break;
             case GuideIconKind.GuardianPoiStates:
                 DrawGuardianPoiStates(context, center);
@@ -731,7 +723,8 @@ public sealed class GuideIconPreviewControl : Control
                     new Pen(Brushes.White, 1),
                     new Rect(center.X - 18, center.Y - 5, 36, 10),
                     2,
-                    2);
+                    2
+                );
                 break;
             case GuideIconKind.HumanTerminal:
                 DrawTerminal(context, center, warning);
@@ -772,10 +765,9 @@ public sealed class GuideIconPreviewControl : Control
             FlowDirection.LeftToRight,
             Typeface.Default,
             Symbol.Length == 1 ? 30 : 26,
-            brush);
-        context.DrawText(
-            text,
-            new Point(center.X - text.Width / 2, center.Y - text.Height / 2));
+            brush
+        );
+        context.DrawText(text, new Point(center.X - text.Width / 2, center.Y - text.Height / 2));
     }
 
     private sealed class GlyphBrushPalette
@@ -819,35 +811,29 @@ public sealed class GuideIconPreviewControl : Control
         IBrush FilledEdge,
         IBrush PotentialEdge,
         IBrush Empty,
-        IBrush Hatch);
+        IBrush Hatch
+    );
 
     private static void DrawRewardPips(
         DrawingContext context,
         Point center,
         RewardPipBrushes brushes,
         bool isPrediction,
-        bool reinforceEdge = false)
+        bool reinforceEdge = false
+    )
     {
         var frame = new Rect(center.X - 12, center.Y - 25, 24, 50);
-        var edgePen = new Pen(
-            brushes.Edge,
-            1.9,
-            DashStyle.Dot,
-            PenLineCap.Round,
-            PenLineJoin.Round);
+        var edgePen = new Pen(brushes.Edge, 1.9, DashStyle.Dot, PenLineCap.Round, PenLineJoin.Round);
         for (var index = 0; index < 4; index++)
         {
-            var segment = new Rect(
-                frame.X + 4,
-                frame.Bottom - 5 - (index + 1) * 10,
-                frame.Width - 8,
-                8);
+            var segment = new Rect(frame.X + 4, frame.Bottom - 5 - (index + 1) * 10, frame.Width - 8, 8);
             var segmentBrush = GetRewardSegmentBrush(
                 index,
                 isPrediction,
                 brushes.Filled,
                 brushes.Potential,
-                brushes.Empty);
+                brushes.Empty
+            );
             Pen? segmentPen = null;
             if (!ReferenceEquals(segmentBrush, brushes.Empty))
             {
@@ -878,7 +864,8 @@ public sealed class GuideIconPreviewControl : Control
                 context.DrawLine(
                     hatchPen,
                     new Point(startX, frame.Bottom - (startX - x)),
-                    new Point(endX, frame.Bottom - (endX - x)));
+                    new Point(endX, frame.Bottom - (endX - x))
+                );
             }
         }
 
@@ -895,7 +882,8 @@ public sealed class GuideIconPreviewControl : Control
         bool isPrediction,
         IBrush filled,
         IBrush potential,
-        IBrush empty)
+        IBrush empty
+    )
     {
         var filledSegmentCount = isPrediction ? 2 : 3;
         if (index < filledSegmentCount)
@@ -903,16 +891,10 @@ public sealed class GuideIconPreviewControl : Control
             return filled;
         }
 
-        return isPrediction && index == filledSegmentCount
-            ? potential
-            : empty;
+        return isPrediction && index == filledSegmentCount ? potential : empty;
     }
 
-    private static void DrawUnknownPip(
-        DrawingContext context,
-        Point center,
-        IBrush frameBrush,
-        IBrush glyphBrush)
+    private static void DrawUnknownPip(DrawingContext context, Point center, IBrush frameBrush, IBrush glyphBrush)
     {
         var frame = new Rect(center.X - 12, center.Y - 25, 24, 50);
         context.DrawRectangle(null, new Pen(frameBrush, 1.5), frame, 3, 3);
@@ -922,16 +904,12 @@ public sealed class GuideIconPreviewControl : Control
             FlowDirection.LeftToRight,
             Typeface.Default,
             24,
-            glyphBrush);
-        context.DrawText(
-            text,
-            new Point(center.X - text.Width / 2, center.Y - text.Height / 2));
+            glyphBrush
+        );
+        context.DrawText(text, new Point(center.X - text.Width / 2, center.Y - text.Height / 2));
     }
 
-    private static void DrawRadarCommander(
-        DrawingContext context,
-        Point center,
-        IBrush brush)
+    private static void DrawRadarCommander(DrawingContext context, Point center, IBrush brush)
     {
         context.DrawEllipse(null, new Pen(brush, 1.5), center, 20, 20);
         DrawTriangle(context, center, 10, brush, fill: true);
@@ -942,17 +920,12 @@ public sealed class GuideIconPreviewControl : Control
         Point center,
         IBrush accent,
         IBrush warning,
-        IBrush muted)
+        IBrush muted
+    )
     {
         var radarCenter = new Point(center.X, center.Y - 7);
         context.DrawEllipse(null, new Pen(muted, 1), radarCenter, 22, 22);
-        RingedPointerDrawing.Draw(
-            context,
-            radarCenter,
-            15,
-            bearingDegrees: 0,
-            accent,
-            strokeThickness: 1.25);
+        RingedPointerDrawing.Draw(context, radarCenter, 15, bearingDegrees: 0, accent, strokeThickness: 1.25);
         var target = new Point(radarCenter.X + 16, radarCenter.Y - 11);
         context.DrawLine(new Pen(accent, 2), radarCenter, target);
         context.DrawEllipse(accent, null, target, 3, 3);
@@ -966,12 +939,10 @@ public sealed class GuideIconPreviewControl : Control
         Point center,
         GuardianPoiType type,
         GuardianPoiStatus status,
-        bool isActiveObelisk = false)
+        bool isActiveObelisk = false
+    )
     {
-        var style = GuardianLegacyMapDrawing.GetPointStyle(
-            type,
-            status,
-            isActiveObelisk);
+        var style = GuardianLegacyMapDrawing.GetPointStyle(type, status, isActiveObelisk);
         var stroke = new SolidColorBrush(style.Stroke);
         var fill = style.HasFill ? new SolidColorBrush(style.Fill) : null;
         var pen = new Pen(
@@ -982,7 +953,8 @@ public sealed class GuideIconPreviewControl : Control
                 GuardianLegacyStrokePattern.Dash => DashStyle.Dash,
                 GuardianLegacyStrokePattern.Dot => DashStyle.Dot,
                 _ => null,
-            });
+            }
+        );
         if (type == GuardianPoiType.EmptyPuddle)
         {
             context.DrawEllipse(fill, pen, center, 12, 12);
@@ -995,13 +967,9 @@ public sealed class GuideIconPreviewControl : Control
             GuardianPoiType.Component => -45,
             _ => 0,
         };
-        var points = GuardianLegacyMapDrawing.CreateGlyphPoints(
-                type,
-                new Point(),
-                rotation)
-            .Select(point => new Point(
-                center.X + point.X * 3,
-                center.Y + point.Y * 3))
+        var points = GuardianLegacyMapDrawing
+            .CreateGlyphPoints(type, new Point(), rotation)
+            .Select(point => new Point(center.X + point.X * 3, center.Y + point.Y * 3))
             .ToArray();
         if (type == GuardianPoiType.Relic)
         {
@@ -1016,32 +984,22 @@ public sealed class GuideIconPreviewControl : Control
         {
             context.DrawLine(
                 pen,
-                center + GuardianLegacyMapDrawing.RotateClockwise(
-                    new Point(0.6, 0),
-                    rotation),
-                center + GuardianLegacyMapDrawing.RotateClockwise(
-                    new Point(-1.5, -3.6),
-                    rotation));
+                center + GuardianLegacyMapDrawing.RotateClockwise(new Point(0.6, 0), rotation),
+                center + GuardianLegacyMapDrawing.RotateClockwise(new Point(-1.5, -3.6), rotation)
+            );
             context.DrawLine(
                 pen,
-                center + GuardianLegacyMapDrawing.RotateClockwise(
-                    new Point(0.6, 0),
-                    rotation),
-                center + GuardianLegacyMapDrawing.RotateClockwise(
-                    new Point(4.5, -2.4),
-                    rotation));
+                center + GuardianLegacyMapDrawing.RotateClockwise(new Point(0.6, 0), rotation),
+                center + GuardianLegacyMapDrawing.RotateClockwise(new Point(4.5, -2.4), rotation)
+            );
         }
         else if (type == GuardianPoiType.Pylon)
         {
-            context.DrawLine(
-                pen,
-                center,
-                new Point(center.X, center.Y + 9));
+            context.DrawLine(pen, center, new Point(center.X, center.Y + 9));
         }
         else if (type == GuardianPoiType.Component)
         {
-            var materialCenters =
-                GuardianLegacyMapDrawing.CreateComponentMaterialCenters(center);
+            var materialCenters = GuardianLegacyMapDrawing.CreateComponentMaterialCenters(center);
             var materials = new[]
             {
                 GuardianComponentMaterial.Cell,
@@ -1052,36 +1010,22 @@ public sealed class GuideIconPreviewControl : Control
             {
                 var raw = materialCenters[index] - center;
                 var dot = center + new Point(raw.X * 2.4, raw.Y * 2.4);
-                var color = GuardianLegacyMapDrawing.GetComponentMaterialColor(
-                    materials[index]);
-                context.DrawEllipse(
-                    new SolidColorBrush(color!.Value),
-                    new Pen(Brushes.Black, 1),
-                    dot,
-                    3,
-                    3);
+                var color = GuardianLegacyMapDrawing.GetComponentMaterialColor(materials[index]);
+                context.DrawEllipse(new SolidColorBrush(color!.Value), new Pen(Brushes.Black, 1), dot, 3, 3);
             }
         }
     }
 
-    private static void DrawGuardianActiveObelisk(
-        DrawingContext context,
-        Point center)
+    private static void DrawGuardianActiveObelisk(DrawingContext context, Point center)
     {
         for (var step = 0; step < 6; step++)
         {
             var color = GuardianLegacyMapDrawing.Cyan;
             context.DrawGeometry(
-                new SolidColorBrush(Color.FromArgb(
-                    (byte)(18 + step * 22),
-                    color.R,
-                    color.G,
-                    color.B)),
+                new SolidColorBrush(Color.FromArgb((byte)(18 + step * 22), color.R, color.G, color.B)),
                 null,
-                CreatePolygon(GuardianLegacyMapDrawing.CreateWedge(
-                    center,
-                    26 - step * 3.5,
-                    167.5)));
+                CreatePolygon(GuardianLegacyMapDrawing.CreateWedge(center, 26 - step * 3.5, 167.5))
+            );
         }
 
         DrawGuardianLegacyIcon(
@@ -1089,12 +1033,11 @@ public sealed class GuideIconPreviewControl : Control
             center,
             GuardianPoiType.Obelisk,
             GuardianPoiStatus.Unknown,
-            isActiveObelisk: true);
+            isActiveObelisk: true
+        );
     }
 
-    private static void DrawGuardianArtifactPalette(
-        DrawingContext context,
-        Point center)
+    private static void DrawGuardianArtifactPalette(DrawingContext context, Point center)
     {
         var types = new[]
         {
@@ -1106,29 +1049,21 @@ public sealed class GuideIconPreviewControl : Control
         };
         for (var index = 0; index < types.Length; index++)
         {
-            var style = GuardianLegacyMapDrawing.GetPointStyle(
-                types[index],
-                GuardianPoiStatus.Present);
+            var style = GuardianLegacyMapDrawing.GetPointStyle(types[index], GuardianPoiStatus.Present);
             context.DrawEllipse(
                 new SolidColorBrush(style.Fill),
                 new Pen(new SolidColorBrush(style.Stroke), 2),
                 new Point(center.X - 24 + index * 12, center.Y),
                 5,
-                8);
+                8
+            );
         }
     }
 
-    private static void DrawGuardianPoiStates(
-        DrawingContext context,
-        Point center)
+    private static void DrawGuardianPoiStates(DrawingContext context, Point center)
     {
         var unknown = new Point(center.X - 22, center.Y);
-        GuardianSurveyMarkerDrawing.Draw(
-            context,
-            unknown,
-            haloRadius: 9,
-            ringRadius: 8,
-            dotRadius: 0.7);
+        GuardianSurveyMarkerDrawing.Draw(context, unknown, haloRadius: 9, ringRadius: 8, dotRadius: 0.7);
         var states = new[]
         {
             (GuardianPoiStatus.Absent, center.X - 7),
@@ -1137,22 +1072,18 @@ public sealed class GuideIconPreviewControl : Control
         };
         foreach (var (status, x) in states)
         {
-            var style = GuardianLegacyMapDrawing.GetPointStyle(
-                GuardianPoiType.Orb,
-                status);
+            var style = GuardianLegacyMapDrawing.GetPointStyle(GuardianPoiType.Orb, status);
             context.DrawEllipse(
                 style.HasFill ? new SolidColorBrush(style.Fill) : null,
                 new Pen(new SolidColorBrush(style.Stroke), 2),
                 new Point(x, center.Y),
                 6,
-                6);
+                6
+            );
         }
     }
 
-    private static void DrawOpenPath(
-        DrawingContext context,
-        Point[] points,
-        Pen pen)
+    private static void DrawOpenPath(DrawingContext context, Point[] points, Pen pen)
     {
         if (points.Length < 2)
         {
@@ -1171,35 +1102,20 @@ public sealed class GuideIconPreviewControl : Control
         context.DrawGeometry(null, pen, geometry);
     }
 
-    private static void DrawTerminal(
-        DrawingContext context,
-        Point center,
-        IBrush brush)
+    private static void DrawTerminal(DrawingContext context, Point center, IBrush brush)
     {
         var rect = new Rect(center.X - 15, center.Y - 15, 30, 30);
         context.DrawRectangle(null, new Pen(brush, 2), rect, 5, 5);
-        context.DrawLine(
-            new Pen(brush, 1.5),
-            new Point(center.X - 8, center.Y),
-            new Point(center.X + 8, center.Y));
+        context.DrawLine(new Pen(brush, 1.5), new Point(center.X - 8, center.Y), new Point(center.X + 8, center.Y));
     }
 
-    private static void DrawHumanCommander(
-        DrawingContext context,
-        Point center,
-        IBrush brush)
+    private static void DrawHumanCommander(DrawingContext context, Point center, IBrush brush)
     {
         context.DrawEllipse(null, new Pen(brush, 2.5), center, 10, 10);
-        context.DrawLine(
-            new Pen(brush, 2.5),
-            center,
-            new Point(center.X, center.Y - 26));
+        context.DrawLine(new Pen(brush, 2.5), center, new Point(center.X, center.Y - 26));
     }
 
-    private static void DrawCheckpoint(
-        DrawingContext context,
-        Point center,
-        IBrush brush)
+    private static void DrawCheckpoint(DrawingContext context, Point center, IBrush brush)
     {
         context.DrawEllipse(null, new Pen(brush, 2.5), center, 16, 16);
         var text = new FormattedText(
@@ -1208,10 +1124,9 @@ public sealed class GuideIconPreviewControl : Control
             FlowDirection.LeftToRight,
             Typeface.Default,
             14,
-            brush);
-        context.DrawText(
-            text,
-            new Point(center.X - text.Width / 2, center.Y - text.Height / 2));
+            brush
+        );
+        context.DrawText(text, new Point(center.X - text.Width / 2, center.Y - text.Height / 2));
     }
 
     private static void DrawJumpRoute(
@@ -1219,7 +1134,8 @@ public sealed class GuideIconPreviewControl : Control
         Point center,
         IBrush primary,
         IBrush secondary,
-        IBrush muted)
+        IBrush muted
+    )
     {
         var left = new Point(center.X - 24, center.Y);
         var middle = center;
@@ -1230,24 +1146,13 @@ public sealed class GuideIconPreviewControl : Control
         context.DrawEllipse(null, new Pen(secondary, 2), right, 5, 5);
     }
 
-    private static void DrawLandingPad(
-        DrawingContext context,
-        Point center,
-        IBrush brush)
+    private static void DrawLandingPad(DrawingContext context, Point center, IBrush brush)
     {
-        context.DrawRectangle(
-            null,
-            new Pen(brush, 2),
-            new Rect(center.X - 18, center.Y - 25, 36, 50));
+        context.DrawRectangle(null, new Pen(brush, 2), new Rect(center.X - 18, center.Y - 25, 36, 50));
         DrawCenteredText(context, center, "2", brush, 18);
     }
 
-    private static void DrawVehicleLabel(
-        DrawingContext context,
-        Point center,
-        string text,
-        IBrush brush,
-        bool isCircle)
+    private static void DrawVehicleLabel(DrawingContext context, Point center, string text, IBrush brush, bool isCircle)
     {
         if (isCircle)
         {
@@ -1255,23 +1160,13 @@ public sealed class GuideIconPreviewControl : Control
         }
         else
         {
-            context.DrawRectangle(
-                null,
-                new Pen(brush, 2),
-                new Rect(center.X - 22, center.Y - 18, 44, 36),
-                4,
-                4);
+            context.DrawRectangle(null, new Pen(brush, 2), new Rect(center.X - 22, center.Y - 18, 44, 36), 4, 4);
         }
 
         DrawCenteredText(context, center, text, brush, 10);
     }
 
-    private static void DrawCenteredText(
-        DrawingContext context,
-        Point center,
-        string value,
-        IBrush brush,
-        double size)
+    private static void DrawCenteredText(DrawingContext context, Point center, string value, IBrush brush, double size)
     {
         var text = new FormattedText(
             value,
@@ -1279,16 +1174,12 @@ public sealed class GuideIconPreviewControl : Control
             FlowDirection.LeftToRight,
             Typeface.Default,
             size,
-            brush);
-        context.DrawText(
-            text,
-            new Point(center.X - text.Width / 2, center.Y - text.Height / 2));
+            brush
+        );
+        context.DrawText(text, new Point(center.X - text.Width / 2, center.Y - text.Height / 2));
     }
 
-    private static void DrawPowerPost(
-        DrawingContext context,
-        Point center,
-        IBrush brush)
+    private static void DrawPowerPost(DrawingContext context, Point center, IBrush brush)
     {
         var pen = new Pen(brush, 2.5);
         context.DrawEllipse(null, pen, center, 17, 17);
@@ -1297,15 +1188,9 @@ public sealed class GuideIconPreviewControl : Control
         context.DrawLine(pen, new Point(center.X + 5, center.Y), new Point(center.X - 5, center.Y + 14));
     }
 
-    private static void DrawTriangle(
-        DrawingContext context,
-        Point center,
-        double radius,
-        IBrush brush,
-        bool fill)
+    private static void DrawTriangle(DrawingContext context, Point center, double radius, IBrush brush, bool fill)
     {
-        var geometry = CreatePolygon(
-        [
+        var geometry = CreatePolygon([
             new Point(center.X, center.Y - radius),
             new Point(center.X + radius * 0.75, center.Y + radius),
             new Point(center.X, center.Y + radius * 0.55),

@@ -8,9 +8,7 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop;
 
-internal readonly record struct OverlayPreviewPanelMetrics(
-    PixelPoint OriginOffset,
-    PixelSize PanelSize);
+internal readonly record struct OverlayPreviewPanelMetrics(PixelPoint OriginOffset, PixelSize PanelSize);
 
 public sealed partial class OverlayPositionPreviewWindow : Window
 {
@@ -21,8 +19,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     private double scaleRenderScaling = 1d;
     private double scaleFactor = 1d;
     private readonly bool usesRuntimePresentation;
-    private readonly IReadOnlyList<OverlayEditorPreviewStateDefinition>
-        previewStates;
+    private readonly IReadOnlyList<OverlayEditorPreviewStateDefinition> previewStates;
     private Control? runtimePresentation;
     private int previewStateIndex;
 
@@ -30,8 +27,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     {
         InitializeComponent();
         Definition = OverlayLayoutCatalog.Supported[0];
-        previewStates = OverlayRuntimePresentationFactory
-            .GetEditorPreviewStates(Definition.Name);
+        previewStates = OverlayRuntimePresentationFactory.GetEditorPreviewStates(Definition.Name);
         Preview = OverlayPositionPreviewViewModel.Create(Definition);
         DataContext = Preview;
         EnsureEditorFolderTab(Definition.DisplayName);
@@ -43,8 +39,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     {
         Definition = definition ?? throw new ArgumentNullException(nameof(definition));
         InitializeComponent();
-        previewStates = OverlayRuntimePresentationFactory
-            .GetEditorPreviewStates(Definition.Name);
+        previewStates = OverlayRuntimePresentationFactory.GetEditorPreviewStates(Definition.Name);
         Preview = OverlayPositionPreviewViewModel.Create(definition);
         DataContext = Preview;
         EnsureEditorFolderTab(definition.DisplayName);
@@ -59,9 +54,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     /// </summary>
     private void EnsureEditorFolderTab(string displayName)
     {
-        var label = string.IsNullOrWhiteSpace(displayName)
-            ? Definition.Name
-            : displayName.Trim();
+        var label = string.IsNullOrWhiteSpace(displayName) ? Definition.Name : displayName.Trim();
         EditorFolderTab.IsVisible = true;
         EditorFolderTabLabel.Text = label;
         ToolTip.SetTip(EditorFolderTab, label);
@@ -81,29 +74,23 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     internal TextBlock EditorFolderTabLabelControl => EditorFolderTabLabel;
 
     /// <summary>Editor-only simulated state cycle button.</summary>
-    internal Button EditorFolderTabStateButtonControl =>
-        EditorFolderTabStateButton;
+    internal Button EditorFolderTabStateButtonControl => EditorFolderTabStateButton;
 
     /// <summary>Editor-only simulated state label.</summary>
-    internal TextBlock EditorFolderTabStateLabelControl =>
-        EditorFolderTabStateLabel;
+    internal TextBlock EditorFolderTabStateLabelControl => EditorFolderTabStateLabel;
 
     internal int EditorPreviewStateCount => previewStates.Count;
 
-    internal string CurrentEditorPreviewStateName =>
-        previewStates[previewStateIndex].DisplayName;
+    internal string CurrentEditorPreviewStateName => previewStates[previewStateIndex].DisplayName;
 
     /// <summary>Editor-only bordered preview body (tests / diagnostics).</summary>
     internal Border PreviewBodyControl => PreviewBody;
 
-    public event EventHandler<OverlayPreviewSettingsRequestedEventArgs>?
-        SettingsRequested;
+    public event EventHandler<OverlayPreviewSettingsRequestedEventArgs>? SettingsRequested;
 
     public PixelSize GetExpectedPixelSize(double scaling)
     {
-        var safeScaling = double.IsFinite(scaling) && scaling > 0
-            ? scaling
-            : 1;
+        var safeScaling = double.IsFinite(scaling) && scaling > 0 ? scaling : 1;
         if (!usesRuntimePresentation)
         {
             double unscaledHeight;
@@ -121,78 +108,56 @@ public sealed partial class OverlayPositionPreviewWindow : Window
             }
             var genericScale = safeScaling * scaleFactor;
             return new PixelSize(
-                Math.Max(
-                    1,
-                    (int)Math.Ceiling(
-                        Preview.PreferredWidth * genericScale)),
-                Math.Max(
-                    1,
-                    (int)Math.Ceiling(unscaledHeight * genericScale)));
+                Math.Max(1, (int)Math.Ceiling(Preview.PreferredWidth * genericScale)),
+                Math.Max(1, (int)Math.Ceiling(unscaledHeight * genericScale))
+            );
         }
 
         var effectiveScale = safeScaling * scaleFactor;
         var measured = MeasureRuntimePresentationSize();
         return new PixelSize(
-            Math.Max(
-                1,
-                (int)Math.Ceiling(measured.Width * effectiveScale)),
-            Math.Max(
-                1,
-                (int)Math.Ceiling(measured.Height * effectiveScale)));
+            Math.Max(1, (int)Math.Ceiling(measured.Width * effectiveScale)),
+            Math.Max(1, (int)Math.Ceiling(measured.Height * effectiveScale))
+        );
     }
 
     public PixelSize GetCurrentPixelSize(double scaling)
     {
-        var safeScaling = double.IsFinite(scaling) && scaling > 0
-            ? scaling
-            : 1;
+        var safeScaling = double.IsFinite(scaling) && scaling > 0 ? scaling : 1;
         return Bounds.Width > 0 && Bounds.Height > 0
             ? new PixelSize(
                 Math.Max(1, (int)Math.Ceiling(Bounds.Width * safeScaling)),
-                Math.Max(1, (int)Math.Ceiling(Bounds.Height * safeScaling)))
+                Math.Max(1, (int)Math.Ceiling(Bounds.Height * safeScaling))
+            )
             : GetExpectedPixelSize(safeScaling);
     }
 
     internal OverlayPreviewPanelMetrics GetPanelMetrics(double scaling)
     {
-        var safeScaling = double.IsFinite(scaling) && scaling > 0
-            ? scaling
-            : 1d;
+        var safeScaling = double.IsFinite(scaling) && scaling > 0 ? scaling : 1d;
         var panel = runtimePresentation ?? PreviewBody;
         var panelOrigin = panel.TranslatePoint(default, this);
         var origin = panelOrigin ?? default;
         var originOffset = new PixelPoint(
             (int)Math.Round(origin.X * safeScaling),
-            (int)Math.Round(origin.Y * safeScaling));
-        var panelExtent = panel.TranslatePoint(
-            new Point(panel.Bounds.Width, panel.Bounds.Height),
-            this);
+            (int)Math.Round(origin.Y * safeScaling)
+        );
+        var panelExtent = panel.TranslatePoint(new Point(panel.Bounds.Width, panel.Bounds.Height), this);
         PixelSize panelSize;
-        if (panelOrigin is { } start
-            && panelExtent is { } end
-            && end.X > start.X
-            && end.Y > start.Y)
+        if (panelOrigin is { } start && panelExtent is { } end && end.X > start.X && end.Y > start.Y)
         {
             panelSize = new PixelSize(
-                Math.Max(
-                    1,
-                    (int)Math.Ceiling((end.X - start.X) * safeScaling)),
-                Math.Max(
-                    1,
-                    (int)Math.Ceiling((end.Y - start.Y) * safeScaling)));
+                Math.Max(1, (int)Math.Ceiling((end.X - start.X) * safeScaling)),
+                Math.Max(1, (int)Math.Ceiling((end.Y - start.Y) * safeScaling))
+            );
         }
         else
         {
             var fallbackScale = safeScaling * scaleFactor;
             panelSize = new PixelSize(
-                Math.Max(
-                    1,
-                    (int)Math.Ceiling(
-                        Definition.PreviewSize.Width * fallbackScale)),
-                Math.Max(
-                    1,
-                    (int)Math.Ceiling(
-                        Definition.PreviewSize.Height * fallbackScale)));
+                Math.Max(1, (int)Math.Ceiling(Definition.PreviewSize.Width * fallbackScale)),
+                Math.Max(1, (int)Math.Ceiling(Definition.PreviewSize.Height * fallbackScale))
+            );
         }
 
         return new OverlayPreviewPanelMetrics(originOffset, panelSize);
@@ -201,27 +166,19 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     internal PixelPoint GetPanelScreenOrigin(double scaling)
     {
         var offset = GetPanelMetrics(scaling).OriginOffset;
-        return new PixelPoint(
-            Position.X + offset.X,
-            Position.Y + offset.Y);
+        return new PixelPoint(Position.X + offset.X, Position.Y + offset.Y);
     }
 
-    public void ConfigureScale(
-        int globalIndex,
-        int? overlayOverride,
-        double renderScaling)
+    public void ConfigureScale(int globalIndex, int? overlayOverride, double renderScaling)
     {
-        if (overlayOverride is { } value
-            && !OverlayScaleCatalog.IsSupported(value))
+        if (overlayOverride is { } value && !OverlayScaleCatalog.IsSupported(value))
         {
             throw new ArgumentOutOfRangeException(nameof(overlayOverride));
         }
 
         globalScaleIndex = OverlayScaleCatalog.NormalizeIndex(globalIndex);
         scaleOverride = overlayOverride;
-        scaleRenderScaling = double.IsFinite(renderScaling) && renderScaling > 0
-            ? renderScaling
-            : 1d;
+        scaleRenderScaling = double.IsFinite(renderScaling) && renderScaling > 0 ? renderScaling : 1d;
         ApplyConfiguredScale();
     }
 
@@ -275,26 +232,21 @@ public sealed partial class OverlayPositionPreviewWindow : Window
 
     private double MeasurePreviewContentHeight()
     {
-        PreviewSurface.Measure(new Size(
-            Preview.PreferredWidth,
-            double.PositiveInfinity));
+        PreviewSurface.Measure(new Size(Preview.PreferredWidth, double.PositiveInfinity));
         return Math.Max(1d, PreviewSurface.DesiredSize.Height);
     }
 
     private Size MeasureRuntimePresentationSize()
     {
-        var available = new Size(
-            double.PositiveInfinity,
-            double.PositiveInfinity);
+        var available = new Size(double.PositiveInfinity, double.PositiveInfinity);
         PreviewSurface.Measure(available);
         var desired = PreviewSurface.DesiredSize;
         // Prefer live measured content; catalog width is only a soft floor when
         // the presentation actually wants that space (MinWidth on the host).
         var width = Math.Max(
             1d,
-            double.IsFinite(desired.Width) && desired.Width > 0
-                ? desired.Width
-                : Definition.PreviewSize.Width);
+            double.IsFinite(desired.Width) && desired.Width > 0 ? desired.Width : Definition.PreviewSize.Width
+        );
         if (double.IsFinite(MinWidth) && MinWidth > 0)
         {
             width = Math.Max(width, MinWidth);
@@ -302,9 +254,8 @@ public sealed partial class OverlayPositionPreviewWindow : Window
 
         var height = Math.Max(
             1d,
-            double.IsFinite(desired.Height) && desired.Height > 0
-                ? desired.Height
-                : Definition.PreviewSize.Height);
+            double.IsFinite(desired.Height) && desired.Height > 0 ? desired.Height : Definition.PreviewSize.Height
+        );
         return new Size(width, height);
     }
 
@@ -312,20 +263,20 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     {
         if (usesRuntimePresentation)
         {
-            OverlayThemeResources.ApplyLegacyPresentation(
-                this,
-                Definition.Name);
+            OverlayThemeResources.ApplyLegacyPresentation(this, Definition.Name);
         }
     }
 
     private bool TryUseRuntimePresentation()
     {
-        if (!OverlayRuntimePresentationFactory.TryCreate(
+        if (
+            !OverlayRuntimePresentationFactory.TryCreate(
                 Definition.Name,
                 previewStateIndex,
                 out var presentation,
-                out _)
-            || presentation is null)
+                out _
+            ) || presentation is null
+        )
         {
             return false;
         }
@@ -350,10 +301,10 @@ public sealed partial class OverlayPositionPreviewWindow : Window
 
         previewStateIndex = (previewStateIndex + 1) % previewStates.Count;
         var previousDataContext = runtimePresentation.DataContext;
-        runtimePresentation.DataContext = OverlayRuntimePresentationFactory
-            .CreateEditorDataContextOnly(
-                Definition.Name,
-                previewStateIndex);
+        runtimePresentation.DataContext = OverlayRuntimePresentationFactory.CreateEditorDataContextOnly(
+            Definition.Name,
+            previewStateIndex
+        );
         DisposeEditorDataContext(previousDataContext);
         UpdateEditorPreviewStateButton();
         runtimePresentation.InvalidateMeasure();
@@ -375,16 +326,14 @@ public sealed partial class OverlayPositionPreviewWindow : Window
 
         var state = previewStates[previewStateIndex];
         var next = previewStates[(previewStateIndex + 1) % previewStates.Count];
-        EditorFolderTabStateLabel.Text =
-            $"{state.DisplayName} {previewStateIndex + 1}/{previewStates.Count}";
+        EditorFolderTabStateLabel.Text = $"{state.DisplayName} {previewStateIndex + 1}/{previewStates.Count}";
         ToolTip.SetTip(
             EditorFolderTabStateButton,
-            $"Preview state: {state.DisplayName}. Click to show {next.DisplayName}.");
+            $"Preview state: {state.DisplayName}. Click to show {next.DisplayName}."
+        );
     }
 
-    private void OnEditorFolderTabStateButtonClick(
-        object? sender,
-        RoutedEventArgs eventArgs)
+    private void OnEditorFolderTabStateButtonClick(object? sender, RoutedEventArgs eventArgs)
     {
         _ = CycleEditorPreviewState();
         eventArgs.Handled = true;
@@ -393,27 +342,18 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     private void ApplyConfiguredScale()
     {
         var scaleIndex = scaleOverride ?? globalScaleIndex;
-        scaleFactor = OverlayScaleCatalog.GetRelativeScale(
-            scaleIndex,
-            scaleRenderScaling);
-        OverlayThemeResources.ApplyScale(
-            this,
-            scaleIndex,
-            scaleRenderScaling);
+        scaleFactor = OverlayScaleCatalog.GetRelativeScale(scaleIndex, scaleRenderScaling);
+        OverlayThemeResources.ApplyScale(this, scaleIndex, scaleRenderScaling);
     }
 
-    private void OnPreviewSurfacePointerPressed(
-        object? sender,
-        PointerPressedEventArgs eventArgs)
+    private void OnPreviewSurfacePointerPressed(object? sender, PointerPressedEventArgs eventArgs)
     {
         if (!eventArgs.GetCurrentPoint(this).Properties.IsRightButtonPressed)
         {
             return;
         }
 
-        SettingsRequested?.Invoke(
-            this,
-            new OverlayPreviewSettingsRequestedEventArgs(Definition.Name));
+        SettingsRequested?.Invoke(this, new OverlayPreviewSettingsRequestedEventArgs(Definition.Name));
         eventArgs.Handled = true;
     }
 
@@ -421,9 +361,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     {
         if (!double.IsFinite(opacity) || opacity is < 0 or > 1)
         {
-            throw new ArgumentOutOfRangeException(
-                parameterName,
-                "Overlay opacity must be from 0 to 1.");
+            throw new ArgumentOutOfRangeException(parameterName, "Overlay opacity must be from 0 to 1.");
         }
     }
 

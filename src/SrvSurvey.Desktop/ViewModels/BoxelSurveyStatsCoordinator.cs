@@ -16,22 +16,24 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable, IAsyncDisposable
     private readonly List<string> recents = [];
     private readonly HashSet<string> retainPrefixes = new(StringComparer.Ordinal);
     private readonly object gate = new();
+
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Usage",
         "CA2213:Disposable fields should be disposed",
-        Justification = "SemaphoreSlim does not allocate a wait handle here and may still have shutdown waiters.")]
+        Justification = "SemaphoreSlim does not allocate a wait handle here and may still have shutdown waiters."
+    )]
     private readonly SemaphoreSlim operationLock = new(1, 1);
     private string? frontierId;
+
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Usage",
         "CA2213:Disposable fields should be disposed",
-        Justification = "Every scheduled source is atomically cancelled and disposed by CancelScheduledFlush.")]
+        Justification = "Every scheduled source is atomically cancelled and disposed by CancelScheduledFlush."
+    )]
     private CancellationTokenSource? flushCancellation;
     private bool disposed;
 
-    public BoxelSurveyStatsCoordinator(
-        BoxelSurveyStatsStore store,
-        TimeSpan? flushDelay = null)
+    public BoxelSurveyStatsCoordinator(BoxelSurveyStatsStore store, TimeSpan? flushDelay = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
         this.flushDelay = flushDelay ?? DefaultFlushDelay;
@@ -94,18 +96,14 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable, IAsyncDisposable
         }
     }
 
-    public async Task SwitchCommanderAsync(
-        string? nextFrontierId,
-        CancellationToken cancellationToken = default)
+    public async Task SwitchCommanderAsync(string? nextFrontierId, CancellationToken cancellationToken = default)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         await operationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             ObjectDisposedException.ThrowIf(disposed, this);
-            var normalized = string.IsNullOrWhiteSpace(nextFrontierId)
-                ? null
-                : nextFrontierId.Trim();
+            var normalized = string.IsNullOrWhiteSpace(nextFrontierId) ? null : nextFrontierId.Trim();
             lock (gate)
             {
                 if (string.Equals(frontierId, normalized, StringComparison.OrdinalIgnoreCase))
@@ -118,8 +116,7 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable, IAsyncDisposable
             BoxelSurveyStatsCatalog? catalog = null;
             if (normalized is not null)
             {
-                catalog = await store.LoadCatalogAsync(normalized, cancellationToken)
-                    .ConfigureAwait(false);
+                catalog = await store.LoadCatalogAsync(normalized, cancellationToken).ConfigureAwait(false);
             }
 
             lock (gate)
@@ -140,18 +137,17 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable, IAsyncDisposable
 
     public Task ApplyJournalEventsAsync(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        return ApplyJournalEventsAsync(
-            journalEvents,
-            bootstrapContextOnly: false,
-            cancellationToken);
+        return ApplyJournalEventsAsync(journalEvents, bootstrapContextOnly: false, cancellationToken);
     }
 
     public async Task ApplyJournalEventsAsync(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         bool bootstrapContextOnly,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -163,14 +159,12 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable, IAsyncDisposable
             foreach (var journalEvent in journalEvents)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                if (bootstrapContextOnly
-                    && journalEvent.EventName is not ("Fileheader" or "LoadGame"))
+                if (bootstrapContextOnly && journalEvent.EventName is not ("Fileheader" or "LoadGame"))
                 {
                     continue;
                 }
 
-                await EnsureLoadedForEventAsync(journalEvent, cancellationToken)
-                    .ConfigureAwait(false);
+                await EnsureLoadedForEventAsync(journalEvent, cancellationToken).ConfigureAwait(false);
                 lock (gate)
                 {
                     var version = state.Version;
@@ -197,18 +191,17 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable, IAsyncDisposable
 
     public Task ApplyBootstrapContextAsync(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        return ApplyJournalEventsAsync(
-            journalEvents,
-            bootstrapContextOnly: true,
-            cancellationToken);
+        return ApplyJournalEventsAsync(journalEvents, bootstrapContextOnly: true, cancellationToken);
     }
 
     public async Task IngestSnapshotAsync(
         SystemScanSnapshot snapshot,
         DateTimeOffset? visitedAt = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -217,18 +210,15 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable, IAsyncDisposable
         try
         {
             ObjectDisposedException.ThrowIf(disposed, this);
-            if (BoxelAddress.TryParse(snapshot.SystemName, out var boxel)
-                && boxel is not null)
+            if (BoxelAddress.TryParse(snapshot.SystemName, out var boxel) && boxel is not null)
             {
-                await EnsurePrefixLoadedAsync(boxel.Prefix, cancellationToken)
-                    .ConfigureAwait(false);
+                await EnsurePrefixLoadedAsync(boxel.Prefix, cancellationToken).ConfigureAwait(false);
             }
 
             lock (gate)
             {
                 var version = state.Version;
-                if (state.IngestSnapshot(snapshot, visitedAt)
-                    && state.Version != version)
+                if (state.IngestSnapshot(snapshot, visitedAt) && state.Version != version)
                 {
                     RememberCurrentUnlocked();
                     ScheduleFlush();
@@ -247,9 +237,7 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable, IAsyncDisposable
         }
     }
 
-    public async Task<BoxelSurveyBoxelSnapshot?> GetAsync(
-        string prefix,
-        CancellationToken cancellationToken = default)
+    public async Task<BoxelSurveyBoxelSnapshot?> GetAsync(string prefix, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(prefix);
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -271,7 +259,8 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable, IAsyncDisposable
 
     public async Task<BoxelSurveyBoxelDocument?> GetDocumentAsync(
         string prefix,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(prefix);
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -282,9 +271,7 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable, IAsyncDisposable
             await EnsurePrefixLoadedAsync(prefix, cancellationToken).ConfigureAwait(false);
             lock (gate)
             {
-                return state.TryCreateDocument(prefix, out var document)
-                    ? document
-                    : null;
+                return state.TryCreateDocument(prefix, out var document) ? document : null;
             }
         }
         finally
@@ -295,7 +282,8 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable, IAsyncDisposable
 
     public async Task<BoxelSurveyBoxelSnapshot> RollupAsync(
         IEnumerable<string> prefixes,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentNullException.ThrowIfNull(prefixes);
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -309,8 +297,7 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable, IAsyncDisposable
                 .ToArray();
             foreach (var prefix in list)
             {
-                await EnsurePrefixLoadedAsync(prefix, cancellationToken)
-                    .ConfigureAwait(false);
+                await EnsurePrefixLoadedAsync(prefix, cancellationToken).ConfigureAwait(false);
             }
 
             BoxelSurveyBoxelSnapshot rollup;
@@ -336,7 +323,8 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable, IAsyncDisposable
         string journalDirectory,
         string? currentJournalPath = null,
         IProgress<BoxelSurveyRebuildProgress>? progress = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         await operationLock.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -356,15 +344,9 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable, IAsyncDisposable
                 rebuiltState = state.CreateWorkingCopy();
             }
 
-            var service = new BoxelSurveyRebuildService(
-                store.DataDirectory,
-                journalDirectory);
-            var result = await service.RebuildAsync(
-                    commanderId,
-                    rebuiltState,
-                    currentJournalPath,
-                    progress,
-                    cancellationToken)
+            var service = new BoxelSurveyRebuildService(store.DataDirectory, journalDirectory);
+            var result = await service
+                .RebuildAsync(commanderId, rebuiltState, currentJournalPath, progress, cancellationToken)
                 .ConfigureAwait(false);
             lock (gate)
             {
@@ -417,25 +399,20 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable, IAsyncDisposable
         var saved = new List<string>();
         try
         {
-            await store.SaveBoxelsAsync(
-                    commanderId,
-                    pending.Select(item => item.Document).ToArray(),
-                    cancellationToken)
+            await store
+                .SaveBoxelsAsync(commanderId, pending.Select(item => item.Document).ToArray(), cancellationToken)
                 .ConfigureAwait(false);
             saved.AddRange(pending.Select(item => item.Prefix));
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
             PersistenceFailed?.Invoke(this, exception);
         }
 
         lock (gate)
         {
-            if (state.Version != epoch
-                || !string.Equals(frontierId, commanderId, StringComparison.Ordinal))
+            if (state.Version != epoch || !string.Equals(frontierId, commanderId, StringComparison.Ordinal))
             {
                 return;
             }
@@ -457,7 +434,8 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable, IAsyncDisposable
                 prefixes
                     .Where(prefix => !string.IsNullOrWhiteSpace(prefix))
                     .Distinct(StringComparer.Ordinal)
-                    .Take(MaximumRetainedDocuments));
+                    .Take(MaximumRetainedDocuments)
+            );
         }
     }
 
@@ -469,9 +447,7 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable, IAsyncDisposable
             index = state.GetIndex();
         }
 
-        var byPrefix = index.ToDictionary(
-            entry => entry.Prefix,
-            StringComparer.Ordinal);
+        var byPrefix = index.ToDictionary(entry => entry.Prefix, StringComparer.Ordinal);
         var recent = new List<BoxelSurveyIndexEntry>();
         lock (gate)
         {
@@ -491,15 +467,13 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable, IAsyncDisposable
 
         if (recent.Count < count)
         {
-            foreach (var entry in index
-                         .OrderByDescending(entry => entry.LastVisited)
-                         .ThenBy(entry => entry.Prefix, StringComparer.Ordinal))
+            foreach (
+                var entry in index
+                    .OrderByDescending(entry => entry.LastVisited)
+                    .ThenBy(entry => entry.Prefix, StringComparer.Ordinal)
+            )
             {
-                if (recent.Exists(existing =>
-                        string.Equals(
-                            existing.Prefix,
-                            entry.Prefix,
-                            StringComparison.Ordinal)))
+                if (recent.Exists(existing => string.Equals(existing.Prefix, entry.Prefix, StringComparison.Ordinal)))
                 {
                     continue;
                 }
@@ -529,12 +503,14 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable, IAsyncDisposable
         {
             FlushAsync(timeout.Token).GetAwaiter().GetResult();
         }
-        catch (Exception exception) when (
-            exception is OperationCanceledException
-                or IOException
-                or UnauthorizedAccessException
-                or InvalidDataException
-                or AggregateException)
+        catch (Exception exception)
+            when (exception
+                    is OperationCanceledException
+                        or IOException
+                        or UnauthorizedAccessException
+                        or InvalidDataException
+                        or AggregateException
+            )
         {
             // Shutdown must not throw or wait indefinitely on file I/O.
         }
@@ -553,36 +529,28 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable, IAsyncDisposable
         {
             await FlushAsync(CancellationToken.None).ConfigureAwait(false);
         }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
             PersistenceFailed?.Invoke(this, exception);
         }
     }
 
-    private async Task EnsureLoadedForEventAsync(
-        JournalEventEnvelope journalEvent,
-        CancellationToken cancellationToken)
+    private async Task EnsureLoadedForEventAsync(JournalEventEnvelope journalEvent, CancellationToken cancellationToken)
     {
         if (journalEvent.EventName is not ("FSDJump" or "Location" or "CarrierJump"))
         {
             return;
         }
 
-        var name = GetString(journalEvent.Payload, "StarSystem")
-            ?? GetString(journalEvent.Payload, "SystemName");
+        var name = GetString(journalEvent.Payload, "StarSystem") ?? GetString(journalEvent.Payload, "SystemName");
         if (BoxelAddress.TryParse(name, out var boxel) && boxel is not null)
         {
-            await EnsurePrefixLoadedAsync(boxel.Prefix, cancellationToken)
-                .ConfigureAwait(false);
+            await EnsurePrefixLoadedAsync(boxel.Prefix, cancellationToken).ConfigureAwait(false);
         }
     }
 
-    private async Task EnsurePrefixLoadedAsync(
-        string prefix,
-        CancellationToken cancellationToken)
+    private async Task EnsurePrefixLoadedAsync(string prefix, CancellationToken cancellationToken)
     {
         string? commanderId;
         lock (gate)
@@ -594,8 +562,7 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable, IAsyncDisposable
             }
         }
 
-        var document = await store.LoadBoxelAsync(commanderId, prefix, cancellationToken)
-            .ConfigureAwait(false);
+        var document = await store.LoadBoxelAsync(commanderId, prefix, cancellationToken).ConfigureAwait(false);
         if (document is null)
         {
             return;
@@ -603,8 +570,7 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable, IAsyncDisposable
 
         lock (gate)
         {
-            if (string.Equals(frontierId, commanderId, StringComparison.Ordinal)
-                && !state.HasLoadedDocument(prefix))
+            if (string.Equals(frontierId, commanderId, StringComparison.Ordinal) && !state.HasLoadedDocument(prefix))
             {
                 state.ImportDocument(document);
             }
@@ -632,11 +598,12 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable, IAsyncDisposable
                 keep.Add(prefix);
             }
 
-            foreach (var prefix in state.GetIndex()
-                         .Select(entry => entry.Prefix)
-                         .Where(prefix =>
-                             !keep.Contains(prefix)
-                             && state.HasLoadedDocument(prefix)))
+            foreach (
+                var prefix in state
+                    .GetIndex()
+                    .Select(entry => entry.Prefix)
+                    .Where(prefix => !keep.Contains(prefix) && state.HasLoadedDocument(prefix))
+            )
             {
                 state.UnloadDocument(prefix);
             }
@@ -651,8 +618,7 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable, IAsyncDisposable
             return;
         }
 
-        recents.RemoveAll(existing =>
-            string.Equals(existing, prefix, StringComparison.Ordinal));
+        recents.RemoveAll(existing => string.Equals(existing, prefix, StringComparison.Ordinal));
         recents.Insert(0, prefix);
         if (recents.Count > RecentPrefixLimit)
         {
@@ -705,9 +671,8 @@ public sealed class BoxelSurveyStatsCoordinator : IDisposable, IAsyncDisposable
 
     private void RaiseChanged() => Changed?.Invoke(this, EventArgs.Empty);
 
-    private static string? GetString(System.Text.Json.JsonElement root, string propertyName)
-        => root.TryGetProperty(propertyName, out var value)
-            && value.ValueKind == System.Text.Json.JsonValueKind.String
-                ? value.GetString()
-                : null;
+    private static string? GetString(System.Text.Json.JsonElement root, string propertyName) =>
+        root.TryGetProperty(propertyName, out var value) && value.ValueKind == System.Text.Json.JsonValueKind.String
+            ? value.GetString()
+            : null;
 }

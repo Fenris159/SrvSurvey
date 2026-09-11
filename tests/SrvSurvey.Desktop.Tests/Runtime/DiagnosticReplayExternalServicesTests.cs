@@ -22,10 +22,8 @@ public sealed class DiagnosticReplayExternalServicesTests
         var refreshTask = service.RefreshAsync();
         Assert.True(connectTask.IsFaulted);
         Assert.True(refreshTask.IsFaulted);
-        var connect = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => connectTask);
-        var refresh = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => refreshTask);
+        var connect = await Assert.ThrowsAsync<InvalidOperationException>(() => connectTask);
+        var refresh = await Assert.ThrowsAsync<InvalidOperationException>(() => refreshTask);
         Assert.Contains("unavailable", connect.Message);
         Assert.Equal(connect.Message, refresh.Message);
     }
@@ -44,20 +42,11 @@ public sealed class DiagnosticReplayExternalServicesTests
     public async Task ScreenshotProcessingReportsOnlyTriggeredEnabledWork()
     {
         var processor = new DiagnosticReplayScreenshotProcessingService();
-        Assert.True(JournalEventEnvelope.TryParse(
-            "{\"event\":\"Screenshot\"}",
-            out var screenshot,
-            out _));
+        Assert.True(JournalEventEnvelope.TryParse("{\"event\":\"Screenshot\"}", out var screenshot, out _));
         var disabled = ScreenshotProcessingPreferences.CreateDefaults();
 
-        var noWork = await processor.ProcessAsync(
-            [screenshot!],
-            disabled,
-            "Replay Cmdr");
-        var warning = await processor.ProcessAsync(
-            [screenshot!],
-            disabled with { Enabled = true },
-            "Replay Cmdr");
+        var noWork = await processor.ProcessAsync([screenshot!], disabled, "Replay Cmdr");
+        var warning = await processor.ProcessAsync([screenshot!], disabled with { Enabled = true }, "Replay Cmdr");
 
         Assert.Empty(noWork.Conversions);
         Assert.Empty(noWork.Warnings);

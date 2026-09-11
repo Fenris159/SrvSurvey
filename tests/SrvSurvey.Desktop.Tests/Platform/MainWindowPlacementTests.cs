@@ -12,7 +12,8 @@ public sealed class MainWindowPlacementTests
         new PixelRect(0, 0, 1920, 1080),
         new PixelRect(0, 0, 1920, 1040),
         1,
-        true);
+        true
+    );
 
     private static readonly MainWindowMonitor Secondary = new(
         "DISPLAY2",
@@ -20,15 +21,13 @@ public sealed class MainWindowPlacementTests
         new PixelRect(-2560, 120, 2560, 1440),
         new PixelRect(-2560, 120, 2560, 1400),
         1,
-        false);
+        false
+    );
 
     [Fact]
     public void PreferredMonitorCentersScaledWindowInItsWorkingArea()
     {
-        var result = MainWindowPlacement.Resolve(
-            [Primary, Secondary],
-            "DISPLAY2",
-            125);
+        var result = MainWindowPlacement.Resolve([Primary, Secondary], "DISPLAY2", 125);
 
         Assert.Same(Secondary, result.Monitor);
         Assert.True(result.UsedPreferredMonitor);
@@ -41,10 +40,7 @@ public sealed class MainWindowPlacementTests
     [Fact]
     public void MissingPreferredMonitorFallsBackToPrimaryAndStaysVisible()
     {
-        var result = MainWindowPlacement.Resolve(
-            [Secondary, Primary],
-            "DISPLAY3",
-            100);
+        var result = MainWindowPlacement.Resolve([Secondary, Primary], "DISPLAY3", 100);
 
         Assert.Same(Primary, result.Monitor);
         Assert.False(result.UsedPreferredMonitor);
@@ -58,10 +54,8 @@ public sealed class MainWindowPlacementTests
             [Primary, Secondary],
             preferredMonitorId: "DISPLAY1",
             applicationScalePercent: 100,
-            lastPosition: new ApplicationWindowPosition(
-                -2200,
-                200,
-                "DISPLAY2"));
+            lastPosition: new ApplicationWindowPosition(-2200, 200, "DISPLAY2")
+        );
 
         Assert.Same(Secondary, result.Monitor);
         Assert.Equal(new PixelPoint(-2200, 200), result.Position);
@@ -75,10 +69,8 @@ public sealed class MainWindowPlacementTests
             [Primary],
             preferredMonitorId: null,
             applicationScalePercent: 100,
-            lastPosition: new ApplicationWindowPosition(
-                1800,
-                1000,
-                "DISPLAY1"));
+            lastPosition: new ApplicationWindowPosition(1800, 1000, "DISPLAY1")
+        );
 
         Assert.Equal(new PixelPoint(740, 280), result.Position);
     }
@@ -90,10 +82,8 @@ public sealed class MainWindowPlacementTests
             [Primary],
             preferredMonitorId: "DISPLAY1",
             applicationScalePercent: 100,
-            lastPosition: new ApplicationWindowPosition(
-                -2200,
-                200,
-                "DISPLAY2"));
+            lastPosition: new ApplicationWindowPosition(-2200, 200, "DISPLAY2")
+        );
 
         Assert.Same(Primary, result.Monitor);
         Assert.Equal(new PixelPoint(370, 140), result.Position);
@@ -107,10 +97,8 @@ public sealed class MainWindowPlacementTests
             [Primary],
             preferredMonitorId: null,
             applicationScalePercent: 100,
-            lastPosition: new ApplicationWindowPosition(
-                -2200,
-                200,
-                "DISPLAY2"));
+            lastPosition: new ApplicationWindowPosition(-2200, 200, "DISPLAY2")
+        );
 
         Assert.Same(Primary, result.Monitor);
         Assert.Equal(new PixelPoint(370, 140), result.Position);
@@ -123,7 +111,8 @@ public sealed class MainWindowPlacementTests
             [Primary, Secondary],
             preferredMonitorId: null,
             applicationScalePercent: 110,
-            automaticMonitorId: "DISPLAY2");
+            automaticMonitorId: "DISPLAY2"
+        );
 
         Assert.Same(Secondary, result.Monitor);
         Assert.Null(result.Position);
@@ -139,10 +128,7 @@ public sealed class MainWindowPlacementTests
             WorkingArea = new PixelRect(0, 0, 1280, 680),
         };
 
-        var result = MainWindowPlacement.Resolve(
-            [smallMonitor],
-            "DISPLAY1",
-            150);
+        var result = MainWindowPlacement.Resolve([smallMonitor], "DISPLAY1", 150);
 
         Assert.Equal(632.0 / 760.0, result.ApplicationScale, precision: 10);
         Assert.Equal(new PixelPoint(149, 24), result.Position);
@@ -153,10 +139,7 @@ public sealed class MainWindowPlacementTests
     [Fact]
     public void MissingScreenDataStillAppliesRequestedApplicationScale()
     {
-        var result = MainWindowPlacement.Resolve(
-            [],
-            "DISPLAY2",
-            90);
+        var result = MainWindowPlacement.Resolve([], "DISPLAY2", 90);
 
         Assert.Null(result.Monitor);
         Assert.Null(result.Position);

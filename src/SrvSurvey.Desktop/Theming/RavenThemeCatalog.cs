@@ -22,7 +22,8 @@ public static class RavenThemeCatalog
             White,
             "#323130",
             "#605E5C",
-            "#E5E5E5")
+            "#E5E5E5"
+        )
         {
             MapGridColor = "#858382",
         },
@@ -40,7 +41,8 @@ public static class RavenThemeCatalog
             "#000012",
             "#E5E5E5",
             "#C8C8C8",
-            "#195494")
+            "#195494"
+        )
         {
             MapGridColor = "#68808D",
         },
@@ -58,7 +60,8 @@ public static class RavenThemeCatalog
             "#000000",
             "#F4E1C8",
             "#D8C7B0",
-            "#824500")
+            "#824500"
+        )
         {
             MapGridColor = "#98825F",
         },
@@ -76,7 +79,8 @@ public static class RavenThemeCatalog
             White,
             "#163D08",
             "#4D6745",
-            "#B7DAAA")
+            "#B7DAAA"
+        )
         {
             MapGridColor = "#738A6C",
         },
@@ -94,7 +98,8 @@ public static class RavenThemeCatalog
             "#1E3533",
             White,
             "#D0D0D0",
-            "#83A377")
+            "#83A377"
+        )
         {
             MapGridColor = "#9AA7A5",
         },
@@ -112,7 +117,8 @@ public static class RavenThemeCatalog
             "#0A0A0A",
             "#EDEDED",
             "#A3A3A3",
-            "#2A2A2A")
+            "#2A2A2A"
+        )
         {
             HighestSurfaceColor = "#242424",
             StrongBorderColor = "#3A3A3A",
@@ -133,8 +139,7 @@ public static class RavenThemeCatalog
 
     public static RavenThemeDefinition Get(string? key)
     {
-        return All.FirstOrDefault(
-                theme => theme.Key.Equals(key, StringComparison.OrdinalIgnoreCase))
+        return All.FirstOrDefault(theme => theme.Key.Equals(key, StringComparison.OrdinalIgnoreCase))
             ?? All.Single(theme => theme.Key == DefaultThemeKey);
     }
 }

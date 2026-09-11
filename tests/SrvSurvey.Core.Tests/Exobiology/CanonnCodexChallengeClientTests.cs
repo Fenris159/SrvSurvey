@@ -8,29 +8,31 @@ public sealed class CanonnCodexChallengeClientTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
-        "SrvSurvey-CanonnCodex-" + Guid.NewGuid().ToString("N"));
+        "SrvSurvey-CanonnCodex-" + Guid.NewGuid().ToString("N")
+    );
 
     [Fact]
     public async Task ParsesChallengeGroupsAndEscapesCommanderName()
     {
         Uri? requestedUri = null;
-        using var client = new HttpClient(new StubHandler(request =>
-        {
-            requestedUri = request.RequestUri;
-            return JsonResponse(
-                """
-                {
-                  "Aleoids":{
-                    "hud_category":"Biology",
-                    "types_found":["Aleoida Arcus - Green","Aleoida Arcus - Green"]
-                  },
-                  "Empty":{"hud_category":"Biology","types_found":null}
-                }
-                """);
-        }));
-        var challengeClient = new CanonnCodexChallengeClient(
-            client,
-            new Uri("https://example.test/challenge/status"));
+        using var client = new HttpClient(
+            new StubHandler(request =>
+            {
+                requestedUri = request.RequestUri;
+                return JsonResponse(
+                    """
+                    {
+                      "Aleoids":{
+                        "hud_category":"Biology",
+                        "types_found":["Aleoida Arcus - Green","Aleoida Arcus - Green"]
+                      },
+                      "Empty":{"hud_category":"Biology","types_found":null}
+                    }
+                    """
+                );
+            })
+        );
+        var challengeClient = new CanonnCodexChallengeClient(client, new Uri("https://example.test/challenge/status"));
 
         var result = await challengeClient.GetAsync("Cmdr Test/One");
 
@@ -44,47 +46,51 @@ public sealed class CanonnCodexChallengeClientTests : IDisposable
     [Fact]
     public async Task ImportMatchesReferenceAndIsIdempotent()
     {
-        var catalog = new ExobiologyReferenceCatalog(
-        [
+        var catalog = new ExobiologyReferenceCatalog([
             new ExobiologyReference(
                 2310101,
                 "$Codex_Ent_Aleoids_01_B_Name;",
                 "$Codex_Ent_Aleoids_01_Name;",
                 "Aleoida Arcus - Green",
                 1,
-                HudCategory: "Biology"),
+                HudCategory: "Biology"
+            ),
             new ExobiologyReference(
                 2310206,
                 "$Codex_Ent_Aleoids_02_L_Name;",
                 "$Codex_Ent_Aleoids_02_Name;",
                 "Aleoida Coronamus - Lime",
                 2,
-                HudCategory: "Biology"),
+                HudCategory: "Biology"
+            ),
         ]);
         var store = new CommanderCodexStore(temporaryDirectory);
-        await store.TrackAsync(new CommanderCodexTrackRequest
-        {
-            FrontierId = "F123",
-            CommanderName = "Cmdr Test",
-            EntryId = 2310101,
-            Timestamp = DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
-            SystemAddress = 42,
-            BodyId = 3
-        });
+        await store.TrackAsync(
+            new CommanderCodexTrackRequest
+            {
+                FrontierId = "F123",
+                CommanderName = "Cmdr Test",
+                EntryId = 2310101,
+                Timestamp = DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
+                SystemAddress = 42,
+                BodyId = 3,
+            }
+        );
         var importer = new CanonnCodexChallengeImporter(
-            new StubChallengeClient(new CanonnCodexChallengeLoadResult(
-            [
-                new CanonnCodexChallengeGroup(
-                    "Biology",
+            new StubChallengeClient(
+                new CanonnCodexChallengeLoadResult(
                     [
-                        "Aleoida Arcus - Green",
-                        "Aleoida Coronamus - Lime",
-                        "Unknown organism",
-                    ]),
-            ],
-            null)),
+                        new CanonnCodexChallengeGroup(
+                            "Biology",
+                            ["Aleoida Arcus - Green", "Aleoida Coronamus - Lime", "Unknown organism"]
+                        ),
+                    ],
+                    null
+                )
+            ),
             store,
-            catalog);
+            catalog
+        );
 
         var first = await importer.ImportAsync("F123", "Cmdr Test");
         var second = await importer.ImportAsync("F123", "Cmdr Test");
@@ -106,7 +112,8 @@ public sealed class CanonnCodexChallengeClientTests : IDisposable
         var challengeClient = new CanonnCodexChallengeClient(
             client,
             new Uri("https://example.test/challenge/status"),
-            TimeSpan.FromMilliseconds(25));
+            TimeSpan.FromMilliseconds(25)
+        );
 
         var result = await challengeClient.GetAsync("Cmdr Test");
 
@@ -130,25 +137,23 @@ public sealed class CanonnCodexChallengeClientTests : IDisposable
         };
     }
 
-    private sealed class StubHandler(
-        Func<HttpRequestMessage, HttpResponseMessage> responder)
-        : HttpMessageHandler
+    private sealed class StubHandler(Func<HttpRequestMessage, HttpResponseMessage> responder) : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
             return Task.FromResult(responder(request));
         }
     }
 
-    private sealed class StubChallengeClient(
-        CanonnCodexChallengeLoadResult result)
-        : ICanonnCodexChallengeClient
+    private sealed class StubChallengeClient(CanonnCodexChallengeLoadResult result) : ICanonnCodexChallengeClient
     {
         public Task<CanonnCodexChallengeLoadResult> GetAsync(
             string commanderName,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             return Task.FromResult(result);
         }
@@ -158,7 +163,8 @@ public sealed class CanonnCodexChallengeClientTests : IDisposable
     {
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
             await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
             throw new InvalidOperationException("Cancellation did not stop the request.");
