@@ -33,7 +33,13 @@ public static class OverlaySettingsCategoryCatalog
             "mining",
             "Mining",
             "MINING",
-            "Configure the Rhino surface mining overlay and rig location shortcuts."),
+            "Configure ship mining notifications and session behavior."),
+        new(
+            OverlaySettingsCategory.MineMap,
+            "mine-map",
+            "Surface Mining",
+            "SURFACE MINING",
+            "Configure the surface map, Rhino radar, rig tracking, shortcuts, and boarded-vessel exceptions."),
         new(
             OverlaySettingsCategory.Guardian,
             "guardian",
@@ -79,6 +85,7 @@ public enum OverlaySettingsCategory
     Quests,
     Colonization,
     Mining,
+    MineMap,
     Firegroups,
 }
 

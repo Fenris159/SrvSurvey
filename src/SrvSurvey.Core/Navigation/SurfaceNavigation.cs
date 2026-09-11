@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace SrvSurvey.Core.Navigation;
 
 public static class SurfaceNavigation
@@ -69,6 +71,7 @@ public static class SurfaceNavigation
 
 public readonly record struct SurfaceCoordinate
 {
+    [JsonConstructor]
     public SurfaceCoordinate(double latitude, double longitude)
     {
         if (!double.IsFinite(latitude) || latitude is < -90 or > 90)

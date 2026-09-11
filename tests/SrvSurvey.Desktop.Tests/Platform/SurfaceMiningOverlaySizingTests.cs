@@ -51,7 +51,11 @@ public sealed class SurfaceMiningOverlaySizingTests
             OverlayThemeResources.Apply(preview);
             preview.ApplyRuntimePresentationTheme();
             preview.ConfigureScale(0, 13, 1);
-            OverlayThemeResources.Apply(live, LegacyOverlayLayout.Empty, "PlotSurfaceMining");
+            OverlayThemeResources.Apply(
+                live,
+                LegacyOverlayLayout.Empty,
+                "PlotSurfaceMining",
+                new OverlayWindowRegistry());
             OverlayThemeResources.ApplyScale(live, 13, 1);
             preview.Show();
             live.Show();
@@ -108,7 +112,11 @@ public sealed class SurfaceMiningOverlaySizingTests
             OverlayThemeResources.Apply(preview);
             preview.ApplyRuntimePresentationTheme();
             preview.ConfigureScale(0, scaleIndex, renderScaling);
-            OverlayThemeResources.Apply(live, LegacyOverlayLayout.Empty, "PlotSurfaceMining");
+            OverlayThemeResources.Apply(
+                live,
+                LegacyOverlayLayout.Empty,
+                "PlotSurfaceMining",
+                new OverlayWindowRegistry());
             OverlayThemeResources.ApplyScale(live, scaleIndex, renderScaling);
             preview.Show();
             live.Show();

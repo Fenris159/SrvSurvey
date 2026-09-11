@@ -21,6 +21,14 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     private string presetName = "Laser mining";
     private readonly IStarSystemResolver resolver;
     private readonly BookmarksViewModel bookmarks;
+    private readonly WorkspaceTableSorter cargoSorter = new();
+    private readonly WorkspaceTableSorter materialsSorter = new();
+    private readonly WorkspaceTableSorter prospectsSorter = new();
+    private readonly WorkspaceTableSorter engineeringSorter = new();
+    private readonly WorkspaceTableSorter noticesSorter = new();
+    private readonly WorkspaceTableSorter historySorter = new();
+    private readonly WorkspaceTableSorter missionsSorter = new();
+    private readonly WorkspaceTableSorter ringsSorter = new();
     private MiningWorkspaceState state = new(new MiningCommanderData());
     private string? commander;
     private bool storageAvailable;
@@ -61,6 +69,14 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
         MissionHotspotsCommand = new WorkspaceCommand(() => { if (SelectedMission is { } mission) { Filter = mission.Commodity; Search.Mineral = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(mission.Commodity); SelectedTab = 3; } });
         AddAsteroidCommand = new WorkspaceCommand(() => AdjustAsteroids(1));
         RemoveAsteroidCommand = new WorkspaceCommand(() => AdjustAsteroids(-1));
+        CargoSortCommand = CreateSortCommand(cargoSorter, nameof(Cargo), nameof(CargoSortIndicators));
+        MaterialsSortCommand = CreateSortCommand(materialsSorter, nameof(Materials), nameof(MaterialsSortIndicators));
+        ProspectsSortCommand = CreateSortCommand(prospectsSorter, nameof(Prospects), nameof(ProspectsSortIndicators));
+        EngineeringSortCommand = CreateSortCommand(engineeringSorter, nameof(EngineeringMaterials), nameof(EngineeringSortIndicators));
+        NoticesSortCommand = CreateSortCommand(noticesSorter, nameof(Notices), nameof(NoticesSortIndicators));
+        HistorySortCommand = CreateSortCommand(historySorter, nameof(History), nameof(HistorySortIndicators));
+        MissionsSortCommand = CreateSortCommand(missionsSorter, nameof(Missions), nameof(MissionsSortIndicators));
+        RingsSortCommand = CreateSortCommand(ringsSorter, nameof(Rings), nameof(RingsSortIndicators));
     }
 
     public string CommunityStatus => community.Status;
@@ -79,6 +95,22 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     public ICommand MissionHotspotsCommand { get; }
     public ICommand AddAsteroidCommand { get; }
     public ICommand RemoveAsteroidCommand { get; }
+    public ICommand CargoSortCommand { get; }
+    public ICommand MaterialsSortCommand { get; }
+    public ICommand ProspectsSortCommand { get; }
+    public ICommand EngineeringSortCommand { get; }
+    public ICommand NoticesSortCommand { get; }
+    public ICommand HistorySortCommand { get; }
+    public ICommand MissionsSortCommand { get; }
+    public ICommand RingsSortCommand { get; }
+    public WorkspaceSortIndicators CargoSortIndicators => new(cargoSorter.Indicator);
+    public WorkspaceSortIndicators MaterialsSortIndicators => new(materialsSorter.Indicator);
+    public WorkspaceSortIndicators ProspectsSortIndicators => new(prospectsSorter.Indicator);
+    public WorkspaceSortIndicators EngineeringSortIndicators => new(engineeringSorter.Indicator);
+    public WorkspaceSortIndicators NoticesSortIndicators => new(noticesSorter.Indicator);
+    public WorkspaceSortIndicators HistorySortIndicators => new(historySorter.Indicator);
+    public WorkspaceSortIndicators MissionsSortIndicators => new(missionsSorter.Indicator);
+    public WorkspaceSortIndicators RingsSortIndicators => new(ringsSorter.Indicator);
     public MiningPreferences Settings => state.Data.Settings;
     public double RefineryTons { get => refineryTons; set => Set(ref refineryTons, value); }
     public string RefineryMineral { get => refineryMineral; set => Set(ref refineryMineral, value); }
@@ -91,22 +123,22 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     private static string SessionStateLabel(MiningSession session) => session.PausedAt is null ? "Active" : "Paused";
     private string CapacityLabel => capacity > 0 ? capacity.ToString("N0") : "unknown";
     public string CargoSummary => cargo is null ? "Cargo unavailable" : $"Cargo: {cargo.Count:N0} / {CapacityLabel} t · Limpets: {cargo.GetCount("drones")}";
-    public IReadOnlyList<CargoItem> Cargo => cargo?.Inventory ?? [];
-    public IReadOnlyList<MiningMaterialSummary> Materials => Current?.Summarize(Settings.Thresholds) ?? [];
+    public IReadOnlyList<CargoItem> Cargo => cargoSorter.Apply(cargo?.Inventory ?? []);
+    public IReadOnlyList<MiningMaterialSummary> Materials => materialsSorter.Apply(Current?.Summarize(Settings.Thresholds) ?? []);
     private IReadOnlyList<MiningCollection>? cachedEngineeringMaterials;
-    public IReadOnlyList<MiningCollection> EngineeringMaterials => cachedEngineeringMaterials ??= ReadEngineeringMaterials();
+    public IReadOnlyList<MiningCollection> EngineeringMaterials => engineeringSorter.Apply(cachedEngineeringMaterials ??= ReadEngineeringMaterials());
     private MiningCollection[] ReadEngineeringMaterials() => Current?.Collections.Where(c => c.Engineering).ToArray() ?? [];
     private IReadOnlyList<MiningProspect>? cachedProspects;
-    public IReadOnlyList<MiningProspect> Prospects => cachedProspects ??= ReadProspects();
+    public IReadOnlyList<MiningProspect> Prospects => prospectsSorter.Apply(cachedProspects ??= ReadProspects());
     private MiningProspect[] ReadProspects() => Current?.Prospects.AsEnumerable().Reverse().ToArray() ?? [];
     private IReadOnlyList<MiningMission>? cachedMissions;
-    public IReadOnlyList<MiningMission> Missions => cachedMissions ??= ReadMissions();
+    public IReadOnlyList<MiningMission> Missions => missionsSorter.Apply(cachedMissions ??= ReadMissions());
     private MiningMission[] ReadMissions() => state.Missions.Missions.Select(m => m with { }).ToArray();
-    public IReadOnlyList<MiningNotice> Notices => state.Notices;
+    public IReadOnlyList<MiningNotice> Notices => noticesSorter.Apply(state.Notices);
     public IReadOnlyList<string> ReportScreenshots => SelectedSession?.Screenshots.ToArray() ?? [];
-    public IReadOnlyList<MiningSession> History => state.Data.History;
+    public IReadOnlyList<MiningSession> History => historySorter.Apply(state.Data.History);
     private IReadOnlyList<MiningRing>? cachedRings;
-    public IReadOnlyList<MiningRing> Rings => cachedRings ??= ReadRings();
+    public IReadOnlyList<MiningRing> Rings => ringsSorter.Apply(cachedRings ??= ReadRings());
     private MiningRing[] ReadRings() => state.Data.Rings.Where(r => $"{r.System} {r.Body} {r.RingType} {r.Minerals}".Contains(Filter, StringComparison.OrdinalIgnoreCase)).OrderBy(r => r.Position is { } p && position is { } current ? p.DistanceTo(current) : double.MaxValue).ToArray();
     public string HistorySummary => $"{History.Count} sessions · {History.Sum(s => s.RefinedTons):N0} t refined · {History.Sum(s => s.ActiveDuration.TotalHours):0.0} active hours";
     public string ThresholdSummary => Settings.Thresholds.Count == 0 ? "All minerals are announced." : string.Join(" · ", Settings.Thresholds.Select(p => $"{p.Key} ≥ {p.Value:0.0}%"));
@@ -122,6 +154,16 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     public MiningSession? SelectedSession { get => selectedSession; set { if (Set(ref selectedSession, value)) { Notes = value?.Notes ?? ""; Changed(nameof(RefinerySummary)); Changed(nameof(ReportScreenshots)); } } }
     public MiningRing? SelectedRing { get => selectedRing; set => Set(ref selectedRing, value); }
     public MiningMission? SelectedMission { get => selectedMission; set => Set(ref selectedMission, value); }
+
+    private WorkspaceParameterCommand CreateSortCommand(
+        WorkspaceTableSorter tableSorter,
+        string rowsProperty,
+        string indicatorsProperty) => new WorkspaceParameterCommand(parameter =>
+        {
+            tableSorter.Toggle(parameter);
+            Changed(rowsProperty);
+            Changed(indicatorsProperty);
+        });
     public string CurrentProspectText => state.CurrentProspectText ?? "";
     public bool HasCurrentProspect => CurrentProspectText.Length > 0;
     public bool ShouldShowNotifications => CanShowShipOverlays && (HasCurrentProspect || VisibleNotices.Count > 0);
@@ -340,14 +382,114 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     {
         var targetCommander = commander;
         if (targetCommander is null || !storageAvailable) { Status = "Connect a commander before restoring."; return; }
-        var contents = await Task.Run(() => MiningBackup.Read(bytes, attachmentDirectory));
+        MiningBackupContents contents;
+        try
+        {
+            contents = await Task.Run(() => MiningBackup.Read(bytes, attachmentDirectory));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+        {
+            Status = "Mining backup could not be read: " + ex.Message;
+            return;
+        }
         if (commander != targetCommander) { Status = "Commander changed; backup was not applied."; return; }
-        if (contents.Firegroups is not null && firegroups is not null && !firegroups.Restore(targetCommander, contents.Firegroups))
-        { Status = firegroups.Status; return; }
-        if (!Restore(MiningStore.Export(contents.Data))) return;
-        bookmarks.Restore(contents.Bookmarks);
+
+        var originalMining = Backup();
+        if (!TryRestoreFiregroups(
+                targetCommander,
+                contents,
+                out var originalFiregroups,
+                out var firegroupsRestored))
+        {
+            return;
+        }
+
+        if (!Restore(MiningStore.Export(contents.Data)))
+        {
+            ReportMiningRestoreFailure(
+                targetCommander,
+                originalFiregroups,
+                firegroupsRestored);
+            return;
+        }
+
+        if (!bookmarks.Restore(contents.Bookmarks))
+        {
+            ReportBookmarkRestoreFailure(
+                targetCommander,
+                originalMining,
+                originalFiregroups,
+                firegroupsRestored);
+            return;
+        }
+
         Status += " " + bookmarks.Status;
         if (contents.Firegroups is not null && firegroups is not null) Status += " " + firegroups.Status;
+    }
+
+    private bool TryRestoreFiregroups(
+        string targetCommander,
+        MiningBackupContents contents,
+        out string? originalFiregroups,
+        out bool firegroupsRestored)
+    {
+        originalFiregroups = firegroups?.Backup(targetCommander);
+        firegroupsRestored = false;
+        if (contents.Firegroups is null || firegroups is null)
+        {
+            return true;
+        }
+
+        if (!firegroups.Restore(targetCommander, contents.Firegroups))
+        {
+            Status = firegroups.Status;
+            return false;
+        }
+
+        firegroupsRestored = true;
+        return true;
+    }
+
+    private void ReportMiningRestoreFailure(
+        string targetCommander,
+        string? originalFiregroups,
+        bool firegroupsRestored)
+    {
+        var failure = Status;
+        var rolledBack = RestorePreviousFiregroups(
+            targetCommander,
+            originalFiregroups,
+            firegroupsRestored);
+        Status = failure + (rolledBack
+            ? " Previous Firegroups were restored."
+            : " Firegroups rollback also failed; use the before-restore file to recover them.");
+    }
+
+    private void ReportBookmarkRestoreFailure(
+        string targetCommander,
+        string originalMining,
+        string? originalFiregroups,
+        bool firegroupsRestored)
+    {
+        var failure = bookmarks.Status;
+        var miningRolledBack = Restore(originalMining);
+        var firegroupsRolledBack = RestorePreviousFiregroups(
+            targetCommander,
+            originalFiregroups,
+            firegroupsRestored);
+        Status = failure + (miningRolledBack && firegroupsRolledBack
+            ? " Previous Mining and Firegroups data were restored."
+            : " Automatic rollback was incomplete; use the before-restore files to recover the previous data.");
+    }
+
+    private bool RestorePreviousFiregroups(
+        string targetCommander,
+        string? originalFiregroups,
+        bool firegroupsRestored)
+    {
+        return !firegroupsRestored
+            || originalFiregroups is not null
+                && firegroups!.Restore(targetCommander, originalFiregroups);
     }
     public string Backup() { state.Synchronize(); return MiningStore.Export(state.Data); }
     public bool Restore(string json)
@@ -388,7 +530,17 @@ public sealed class MiningWorkspaceViewModel : WorkspaceObservable, IDisposable
     private void BookmarkRing()
     {
         if (SelectedRing is not { } ring) return;
-        bookmarks.AddMiningLocation(new GalacticBookmark { System = ring.System, Body = ring.Body, Position = ring.Position, Category = "Mining", Minerals = ring.Minerals, RingType = ring.RingType, Reserve = ring.Reserve });
+        bookmarks.AddMiningLocation(new GalacticBookmark
+        {
+            System = ring.System,
+            Body = ring.Body,
+            Position = ring.Position,
+            Category = BookmarkCategoryCatalog.Mining,
+            CategoryAssignments = [BookmarkCategoryCatalog.Mining],
+            Minerals = ring.Minerals,
+            RingType = ring.RingType,
+            Reserve = ring.Reserve,
+        });
         Status = bookmarks.Status;
     }
     private void Save()

@@ -21,7 +21,7 @@
             <Button Content="Save home system" Command="{Binding SaveSettingsCommand}" HorizontalAlignment="Left"/>
           </StackPanel>
         </ScrollViewer>
-      
+
     <TextBlock Grid.Row="1" Classes="muted" Text="{Binding Status}" TextWrapping="Wrap" Margin="4,8,4,16"/>
   </Grid>
 </UserControl>

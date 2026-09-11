@@ -169,10 +169,6 @@
                      IsVisible="{Binding DesktopBehavior.HasStatusMessage}"
                      TextWrapping="Wrap"
                      Text="{Binding DesktopBehavior.StatusMessage}" />
-          <TextBlock Classes="muted"
-                     FontSize="11"
-                     TextWrapping="Wrap"
-                     Text="Passive overlays are click-through and never activate, replacing the legacy force-refocus workaround." />
         </StackPanel>
       </Border>
 
@@ -395,6 +391,41 @@
                    TextWrapping="Wrap"
                    Text="All publication remains off unless you explicitly enable it. Imported profiles retain the original choices." />
       </StackPanel>
+
+      <Border x:Name="SharingConflictWarning"
+              Classes="card"
+              IsVisible="{Binding SettingsWorkspace.IsPrivacySelected}"
+              Background="{DynamicResource RavenRaisedSurfaceBrush}"
+              BorderBrush="{DynamicResource RavenWarningBrush}"
+              BorderThickness="1"
+              CornerRadius="12"
+              Padding="16">
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+          <Border Width="30"
+                  Height="30"
+                  CornerRadius="15"
+                  BorderBrush="{DynamicResource RavenWarningBrush}"
+                  BorderThickness="2">
+            <TextBlock HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource RavenWarningBrush}"
+                       FontSize="18"
+                       FontWeight="Bold"
+                       Text="!" />
+          </Border>
+          <StackPanel Grid.Column="1" Spacing="4">
+            <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                       FontWeight="Bold"
+                       Text="Avoid duplicate sharing" />
+            <TextBlock TextWrapping="Wrap"
+                       Text="Enable journal and companion-data sharing in only one Elite Dangerous third-party application at a time. If another companion already publishes the same data, leave the equivalent SrvSurvey sharing feature disabled to prevent duplicate entries and conflicting updates." />
+            <TextBlock Classes="muted"
+                       FontSize="11"
+                       TextWrapping="Wrap"
+                       Text="Read-only lookups are unaffected." />
+          </StackPanel>
+        </Grid>
+      </Border>
 
       <Border x:Name="NetworkPrivacyCard"
               Classes="card raised"

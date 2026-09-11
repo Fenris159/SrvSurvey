@@ -20,6 +20,8 @@ public sealed record RavenThemeDefinition(
 
     public string StrongBorderColor { get; init; } = BorderColor;
 
+    public string MapGridColor { get; init; } = BorderColor;
+
     public string TertiaryTextColor { get; init; } = MutedTextColor;
 
     public string SecondaryFillColor { get; init; } = SurfaceColor;

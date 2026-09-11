@@ -20,9 +20,11 @@ public sealed partial class OverlayCoverageInventoryTests
             ["PlotFSSInfo"] = "FssInfoOverlayWindow.axaml",
             ["PlotGalMap"] = "GalaxyMapOverlayWindow.axaml",
             ["PlotMiningNotifications"] = "MiningActivityOverlayWindow.axaml",
+            ["PlotMiningReference"] = "MiningReferenceOverlayWindow.axaml",
             ["PlotMiningFiregroups"] = "MiningActivityOverlayWindow.axaml",
             ["PlotMiningWarning"] = "MiningWarningOverlayWindow.axaml",
             ["PlotSurfaceMining"] = "SurfaceMiningOverlayWindow.axaml",
+            ["PlotMineMap"] = "MineMapOverlayWindow.axaml",
             ["PlotGrounded"] = "SurfaceSurveyOverlayWindow.axaml",
             ["PlotGuardians"] = "GuardianOverlayWindow.axaml",
             ["PlotGuardianStatus"] = "GuardianStatusOverlayWindow.axaml",
@@ -146,6 +148,16 @@ public sealed partial class OverlayCoverageInventoryTests
             "src/SrvSurvey.Desktop/SurfaceMiningOverlayPresentation.axaml"], [
             "tests/SrvSurvey.Desktop.Tests/ViewModels/SurfaceMiningViewModelTests.cs",
         ]),
+        Map("PlotMineMap", ["src/SrvSurvey.Desktop/MineMapOverlayWindow.axaml",
+            "src/SrvSurvey.Desktop/MineMapOverlayPresentation.axaml"], [
+            "tests/SrvSurvey.Desktop.Tests/ViewModels/MineMapViewModelTests.cs",
+        ]),
+        Map("PlotMiningReference", [
+            "src/SrvSurvey.Desktop/MiningReferenceOverlayWindow.axaml",
+            "src/SrvSurvey.Desktop/MiningReferenceOverlayPresentation.axaml",
+        ], [
+            "tests/SrvSurvey.Desktop.Tests/ViewModels/MineMapViewModelTests.cs",
+        ]),
         Map("PlotMiniTrack", ["src/SrvSurvey.Desktop/MiniTrackOverlayWindow.axaml"], [
             "tests/SrvSurvey.Desktop.Tests/ViewModels/SurfaceSurveyViewModelTests.cs",
         ]),
@@ -189,7 +201,7 @@ public sealed partial class OverlayCoverageInventoryTests
     [Fact]
     public void InventoryContainsEverySupportedOverlayExactlyOnce()
     {
-        Assert.Equal(35, Mappings.Length);
+        Assert.Equal(37, Mappings.Length);
         Assert.Equal(
             Mappings.Length,
             Mappings.Select(mapping => mapping.ContractName).Distinct().Count());
@@ -316,6 +328,7 @@ public sealed partial class OverlayCoverageInventoryTests
         {
             "CombinedOverlayWindow.axaml",
             "GuardianZoomOverlayWindow.axaml",
+            "MineMapZoomOverlayWindow.axaml",
             "StreamOverlayWindow.axaml",
         };
         var runtimePanels = Directory.GetFiles(

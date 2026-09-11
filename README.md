@@ -1,6 +1,6 @@
 # SrvSurvey-XP Cross-Platform
 
-Current release candidate version: **2.1.3.0-rc.45.7**
+Current release candidate version: **2.1.3.0-rc.46**
 
 In-app **Guides > Chat Commands** provides an activity-by-activity reference for
 surface bookmarks, mining, exobiology, ground targets, Guardian surveys, settlement
@@ -16,24 +16,25 @@ tests, packaging, and development tools. Existing SrvSurvey profiles remain
 supported through a verified, backup-first import; the imported source is never
 modified.
 
-## RC45.7 highlights
+## RC46 highlights
 
-- Resumes a paused mining session when a live prospector limpet is launched and
-  auto-start is enabled; the same trigger starts a missing session.
-- Adds Surface Scanner and the built-in D-Scanner, SC-Suite and Data Link Scanner
-  to Firegroups, plus supported mercgear modules from the current FDevIDs catalog.
-- Prevents a transient Xvfb cleanup race from failing an otherwise successful
-  Linux AppImage validation job.
-- Experimental [Rhino HUD rig tracking](docs/SURFACE_MINING.md): calibrate the six
-  deployment bars, choose your HUD color, and automatically set or clear rig
-  trackers with movement and uncertainty safeguards.
-- Surface mining width and placement match the overlay editor across live states.
-- Next-jump lookup failures use compact notices, retain detailed logs, and no
-  longer stretch the panel.
-- Retains the RC43/44 mining, shared tracker shortcuts, chat-command guide,
-  Monochrome Companion theme, and exploration improvements.
+- Adds [Surface Mining maps](docs/SURFACE_MINING.md) built from validated chat
+  commands, live planetary coordinates, shared bookmarks, deposit markers and
+  a fixed-upright map shared by the workspace and overlay.
+- Adds sortable Hotspot List and Surface Hunt references plus the compact Mining
+  Ref overlay for selected commodities, body types and average prices.
+- Keeps map rings, deposits and the live player marker readable through zoom and
+  across all six application themes.
+- Adds horizontal table scrolling at narrow window sizes. Precision trackpads,
+  horizontal mouse wheels and Shift+wheel now reach the nearest horizontal pane
+  throughout the desktop application.
+- Keeps the primary workspace shortcuts fixed while only the accordion navigation
+  scrolls, and starts its activity groups collapsed.
+- Strengthens shared bookmark migration, map validation, sort-state isolation,
+  Linux overlay hosting and Privacy & Sharing guidance.
+- Retains the RC45.7 mining-session activation fix and all earlier RC45 features.
 
-See the [complete RC45.7 release notes](CurrentReleaseNotes.md).
+See the [complete RC46 release notes](CurrentReleaseNotes.md).
 
 ## Install
 

@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:mining="using:SrvSurvey.Core.Mining" xmlns:journal="using:SrvSurvey.Core.Journal" xmlns:views="using:SrvSurvey.Desktop.Views" xmlns:controls="using:SrvSurvey.Desktop.Controls" xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors" x:Class="SrvSurvey.Desktop.Views.MiningView" x:Name="MiningRoot" x:DataType="vm:MainWindowViewModel">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:SrvSurvey.Desktop.ViewModels" xmlns:mining="using:SrvSurvey.Core.Mining" xmlns:journal="using:SrvSurvey.Core.Journal" xmlns:views="using:SrvSurvey.Desktop.Views" xmlns:controls="using:SrvSurvey.Desktop.Controls" xmlns:behaviors="using:SrvSurvey.Desktop.Behaviors" Grid.IsSharedSizeScope="True" x:Class="SrvSurvey.Desktop.Views.MiningView" x:Name="MiningRoot" x:DataType="vm:MainWindowViewModel">
   <Grid DataContext="{Binding MiningWorkspace}" x:DataType="vm:MiningWorkspaceViewModel" RowDefinitions="Auto,*,Auto" Margin="24">
     <StackPanel Spacing="6" Margin="0,0,0,16">
       <TextBlock Classes="eyebrow" Text="ACTIVITIES"/>
@@ -28,18 +28,25 @@
               </StackPanel>
             </Border>
             <TextBlock Text="{Binding CargoSummary}" TextWrapping="Wrap" Classes="card-title"/>
-            <Grid x:Name="CargoHeader" Classes="table-header" ColumnDefinitions="4*,*" ColumnSpacing="12">
-              <TextBlock Text="CARGO"/><TextBlock Grid.Column="1" Text="TONS"/>
+            <ScrollViewer x:Name="CargoHorizontalScroller"
+              HorizontalScrollBarVisibility="Auto"
+              VerticalScrollBarVisibility="Disabled"
+              IsScrollChainingEnabled="True">
+              <Grid RowDefinitions="Auto,*">
+                <Grid x:Name="CargoHeader" Classes="table-header" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="Cargo0" /><ColumnDefinition Width="Auto" SharedSizeGroup="Cargo1" /></Grid.ColumnDefinitions>
+              <Button Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding CargoSortCommand}" CommandParameter="Name"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="CARGO" /><TextBlock Classes="table-heading" Text="{Binding CargoSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Name}" /></StackPanel></Button><Button Grid.Column="1" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding CargoSortCommand}" CommandParameter="Count"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="TONS" /><TextBlock Classes="table-heading" Text="{Binding CargoSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Count}" /></StackPanel></Button>
             </Grid>
-            <ListBox x:Name="CargoRows" Classes="table-rows" ItemsSource="{Binding Cargo}" MinHeight="60" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListBox Grid.Row="1" x:Name="CargoRows" Classes="table-rows" ItemsSource="{Binding Cargo}" MinHeight="60" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
               <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="journal:CargoItem">
-                  <Grid Classes="table-row" RowDefinitions="Auto" ColumnDefinitions="4*,*" ColumnSpacing="12">
+                  <Grid Classes="table-row" RowDefinitions="Auto" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="Cargo0" /><ColumnDefinition Width="Auto" SharedSizeGroup="Cargo1" /></Grid.ColumnDefinitions>
                     <TextBlock Text="{Binding Name}"/><TextBlock Grid.Column="1" Text="{Binding Count}"/>
                   </Grid>
                 </DataTemplate>
               </ListBox.ItemTemplate>
             </ListBox>
+              </Grid>
+            </ScrollViewer>
             <Expander Header="Refinery contents (manual)">
               <StackPanel Spacing="8">
                 <TextBlock Text="The journal does not report refinery bins. Pending tons are manual estimates, separate from refined cargo and efficiency. Set zero to remove an estimate." TextWrapping="Wrap"/>
@@ -51,14 +58,19 @@
               </StackPanel>
             </Expander>
             <TextBlock Text="Prospecting yields" TextWrapping="Wrap" Classes="card-title"/>
-            <Grid x:Name="MaterialsHeader" Classes="table-header" ColumnDefinitions="2*,*,*,*,*,*" ColumnSpacing="12">
-              <TextBlock Text="MINERAL"/><TextBlock Grid.Column="1" Text="FINDS"/><TextBlock Grid.Column="2" Text="QUALITY HITS"/>
-              <TextBlock Grid.Column="3" Text="AVERAGE"/><TextBlock Grid.Column="4" Text="BEST"/><TextBlock Grid.Column="5" Text="TONS"/>
+            <ScrollViewer x:Name="MaterialsHorizontalScroller"
+              HorizontalScrollBarVisibility="Auto"
+              VerticalScrollBarVisibility="Disabled"
+              IsScrollChainingEnabled="True">
+              <Grid RowDefinitions="Auto,*">
+                <Grid x:Name="MaterialsHeader" Classes="table-header" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="Materials0" /><ColumnDefinition Width="Auto" SharedSizeGroup="Materials1" /><ColumnDefinition Width="Auto" SharedSizeGroup="Materials2" /><ColumnDefinition Width="Auto" SharedSizeGroup="Materials3" /><ColumnDefinition Width="Auto" SharedSizeGroup="Materials4" /><ColumnDefinition Width="Auto" SharedSizeGroup="Materials5" /></Grid.ColumnDefinitions>
+              <Button Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding MaterialsSortCommand}" CommandParameter="Name"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="MINERAL" /><TextBlock Classes="table-heading" Text="{Binding MaterialsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Name}" /></StackPanel></Button><Button Grid.Column="1" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding MaterialsSortCommand}" CommandParameter="Finds"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="FINDS" /><TextBlock Classes="table-heading" Text="{Binding MaterialsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Finds}" /></StackPanel></Button><Button Grid.Column="2" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding MaterialsSortCommand}" CommandParameter="QualityHits"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="QUALITY HITS" /><TextBlock Classes="table-heading" Text="{Binding MaterialsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=QualityHits}" /></StackPanel></Button>
+              <Button Grid.Column="3" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding MaterialsSortCommand}" CommandParameter="Average"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="AVERAGE" /><TextBlock Classes="table-heading" Text="{Binding MaterialsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Average}" /></StackPanel></Button><Button Grid.Column="4" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding MaterialsSortCommand}" CommandParameter="Best"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="BEST" /><TextBlock Classes="table-heading" Text="{Binding MaterialsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Best}" /></StackPanel></Button><Button Grid.Column="5" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding MaterialsSortCommand}" CommandParameter="Tons"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="TONS" /><TextBlock Classes="table-heading" Text="{Binding MaterialsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Tons}" /></StackPanel></Button>
             </Grid>
-            <ListBox x:Name="MaterialsRows" Classes="table-rows" ItemsSource="{Binding Materials}" MinHeight="60" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListBox Grid.Row="1" x:Name="MaterialsRows" Classes="table-rows" ItemsSource="{Binding Materials}" MinHeight="60" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
               <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="mining:MiningMaterialSummary">
-                  <Grid Classes="table-row" RowDefinitions="Auto" ColumnDefinitions="2*,*,*,*,*,*" ColumnSpacing="12">
+                  <Grid Classes="table-row" RowDefinitions="Auto" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="Materials0" /><ColumnDefinition Width="Auto" SharedSizeGroup="Materials1" /><ColumnDefinition Width="Auto" SharedSizeGroup="Materials2" /><ColumnDefinition Width="Auto" SharedSizeGroup="Materials3" /><ColumnDefinition Width="Auto" SharedSizeGroup="Materials4" /><ColumnDefinition Width="Auto" SharedSizeGroup="Materials5" /></Grid.ColumnDefinitions>
                     <TextBlock Text="{Binding Name}"/><TextBlock Grid.Column="1" Text="{Binding Finds}"/><TextBlock Grid.Column="2" Text="{Binding QualityHits}"/>
                     <TextBlock Grid.Column="3" Text="{Binding Average, StringFormat={}{0:0.0}%}"/><TextBlock Grid.Column="4" Text="{Binding Best, StringFormat={}{0:0.0}%}"/>
                     <TextBlock Grid.Column="5" Text="{Binding Tons}"/>
@@ -66,6 +78,8 @@
                 </DataTemplate>
               </ListBox.ItemTemplate>
             </ListBox>
+              </Grid>
+            </ScrollViewer>
             <Expander Header="Compare mineral yields">
               <StackPanel Spacing="8">
                 <ItemsControl ItemsSource="{Binding Materials}">
@@ -98,51 +112,72 @@
             </Expander>
             <Expander Header="Prospecting timeline">
               <StackPanel Spacing="8">
-                <Grid x:Name="ProspectsHeader" Classes="table-header" ColumnDefinitions="1.2*,4*,2*" ColumnSpacing="12">
-                  <TextBlock Text="TIME"/><TextBlock Grid.Column="1" Text="MINERALS"/><TextBlock Grid.Column="2" Text="CORE"/>
+                <ScrollViewer x:Name="ProspectsHorizontalScroller"
+                  HorizontalScrollBarVisibility="Auto"
+                  VerticalScrollBarVisibility="Disabled"
+                  IsScrollChainingEnabled="True">
+                  <Grid RowDefinitions="Auto,*">
+                    <Grid x:Name="ProspectsHeader" Classes="table-header" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="Prospects0" /><ColumnDefinition Width="Auto" SharedSizeGroup="Prospects1" /><ColumnDefinition Width="Auto" SharedSizeGroup="Prospects2" /></Grid.ColumnDefinitions>
+                  <Button Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding ProspectsSortCommand}" CommandParameter="Time"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="TIME" /><TextBlock Classes="table-heading" Text="{Binding ProspectsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Time}" /></StackPanel></Button><Button Grid.Column="1" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding ProspectsSortCommand}" CommandParameter="MineralSummary"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="MINERALS" /><TextBlock Classes="table-heading" Text="{Binding ProspectsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=MineralSummary}" /></StackPanel></Button><Button Grid.Column="2" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding ProspectsSortCommand}" CommandParameter="Core"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="CORE" /><TextBlock Classes="table-heading" Text="{Binding ProspectsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Core}" /></StackPanel></Button>
                 </Grid>
-                <ListBox x:Name="ProspectRows" Classes="table-rows" ItemsSource="{Binding Prospects}" MinHeight="60" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox Grid.Row="1" x:Name="ProspectRows" Classes="table-rows" ItemsSource="{Binding Prospects}" MinHeight="60" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                   <ListBox.ItemTemplate>
                     <DataTemplate x:DataType="mining:MiningProspect">
-                      <Grid Classes="table-row" RowDefinitions="Auto" ColumnDefinitions="1.2*,4*,2*" ColumnSpacing="12">
+                      <Grid Classes="table-row" RowDefinitions="Auto" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="Prospects0" /><ColumnDefinition Width="Auto" SharedSizeGroup="Prospects1" /><ColumnDefinition Width="Auto" SharedSizeGroup="Prospects2" /></Grid.ColumnDefinitions>
                         <TextBlock Text="{Binding Time}"/><TextBlock Grid.Column="1" Text="{Binding MineralSummary}" ToolTip.Tip="{Binding MineralSummary}"/>
                         <TextBlock Grid.Column="2" Text="{Binding Core}" ToolTip.Tip="{Binding Core}"/>
                       </Grid>
                     </DataTemplate>
                   </ListBox.ItemTemplate>
                 </ListBox>
+                  </Grid>
+                </ScrollViewer>
               </StackPanel>
             </Expander>
             <Expander Header="Engineering materials collected">
               <StackPanel Spacing="8">
-                <Grid x:Name="EngineeringMaterialsHeader" Classes="table-header" ColumnDefinitions="4*,*,*" ColumnSpacing="12">
-                  <TextBlock Text="MATERIAL"/><TextBlock Grid.Column="1" Text="GRADE"/><TextBlock Grid.Column="2" Text="COUNT"/>
+                <ScrollViewer x:Name="EngineeringMaterialsHorizontalScroller"
+                  HorizontalScrollBarVisibility="Auto"
+                  VerticalScrollBarVisibility="Disabled"
+                  IsScrollChainingEnabled="True">
+                  <Grid RowDefinitions="Auto,*">
+                    <Grid x:Name="EngineeringMaterialsHeader" Classes="table-header" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="EngineeringMaterials0" /><ColumnDefinition Width="Auto" SharedSizeGroup="EngineeringMaterials1" /><ColumnDefinition Width="Auto" SharedSizeGroup="EngineeringMaterials2" /></Grid.ColumnDefinitions>
+                  <Button Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding EngineeringSortCommand}" CommandParameter="Name"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="MATERIAL" /><TextBlock Classes="table-heading" Text="{Binding EngineeringSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Name}" /></StackPanel></Button><Button Grid.Column="1" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding EngineeringSortCommand}" CommandParameter="Grade"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="GRADE" /><TextBlock Classes="table-heading" Text="{Binding EngineeringSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Grade}" /></StackPanel></Button><Button Grid.Column="2" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding EngineeringSortCommand}" CommandParameter="Count"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="COUNT" /><TextBlock Classes="table-heading" Text="{Binding EngineeringSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Count}" /></StackPanel></Button>
                 </Grid>
-                <ListBox x:Name="EngineeringMaterialRows" Classes="table-rows" ItemsSource="{Binding EngineeringMaterials}" MinHeight="60" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox Grid.Row="1" x:Name="EngineeringMaterialRows" Classes="table-rows" ItemsSource="{Binding EngineeringMaterials}" MinHeight="60" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                   <ListBox.ItemTemplate>
                     <DataTemplate x:DataType="mining:MiningCollection">
-                      <Grid Classes="table-row" RowDefinitions="Auto" ColumnDefinitions="4*,*,*" ColumnSpacing="12">
+                      <Grid Classes="table-row" RowDefinitions="Auto" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="EngineeringMaterials0" /><ColumnDefinition Width="Auto" SharedSizeGroup="EngineeringMaterials1" /><ColumnDefinition Width="Auto" SharedSizeGroup="EngineeringMaterials2" /></Grid.ColumnDefinitions>
                         <TextBlock Text="{Binding Name}"/><TextBlock Grid.Column="1" Text="{Binding Grade}"/><TextBlock Grid.Column="2" Text="{Binding Count}"/>
                       </Grid>
                     </DataTemplate>
                   </ListBox.ItemTemplate>
                 </ListBox>
+                  </Grid>
+                </ScrollViewer>
               </StackPanel>
             </Expander>
             <Expander Header="Recent notifications">
               <StackPanel Spacing="8">
-                <Grid x:Name="NoticesHeader" Classes="table-header" ColumnDefinitions="1.2*,1.2*,4*" ColumnSpacing="12">
-                  <TextBlock Text="TIME"/><TextBlock Grid.Column="1" Text="KIND"/><TextBlock Grid.Column="2" Text="NOTIFICATION"/>
+                <ScrollViewer x:Name="NoticesHorizontalScroller"
+                  HorizontalScrollBarVisibility="Auto"
+                  VerticalScrollBarVisibility="Disabled"
+                  IsScrollChainingEnabled="True">
+                  <Grid RowDefinitions="Auto,*">
+                    <Grid x:Name="NoticesHeader" Classes="table-header" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="Notices0" /><ColumnDefinition Width="Auto" SharedSizeGroup="Notices1" /><ColumnDefinition Width="Auto" SharedSizeGroup="Notices2" /></Grid.ColumnDefinitions>
+                  <Button Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding NoticesSortCommand}" CommandParameter="Time"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="TIME" /><TextBlock Classes="table-heading" Text="{Binding NoticesSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Time}" /></StackPanel></Button><Button Grid.Column="1" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding NoticesSortCommand}" CommandParameter="Kind"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="KIND" /><TextBlock Classes="table-heading" Text="{Binding NoticesSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Kind}" /></StackPanel></Button><Button Grid.Column="2" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding NoticesSortCommand}" CommandParameter="Text"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="NOTIFICATION" /><TextBlock Classes="table-heading" Text="{Binding NoticesSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Text}" /></StackPanel></Button>
                 </Grid>
-                <ListBox x:Name="NoticeRows" Classes="table-rows" ItemsSource="{Binding Notices}" MinHeight="60" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox Grid.Row="1" x:Name="NoticeRows" Classes="table-rows" ItemsSource="{Binding Notices}" MinHeight="60" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                   <ListBox.ItemTemplate>
                     <DataTemplate x:DataType="mining:MiningNotice">
-                      <Grid Classes="table-row" RowDefinitions="Auto" ColumnDefinitions="1.2*,1.2*,4*" ColumnSpacing="12">
+                      <Grid Classes="table-row" RowDefinitions="Auto" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="Notices0" /><ColumnDefinition Width="Auto" SharedSizeGroup="Notices1" /><ColumnDefinition Width="Auto" SharedSizeGroup="Notices2" /></Grid.ColumnDefinitions>
                         <TextBlock Text="{Binding Time}"/><TextBlock Grid.Column="1" Text="{Binding Kind}"/><TextBlock Grid.Column="2" Text="{Binding Text}" ToolTip.Tip="{Binding Text}"/>
                       </Grid>
                     </DataTemplate>
                   </ListBox.ItemTemplate>
                 </ListBox>
+                  </Grid>
+                </ScrollViewer>
               </StackPanel>
             </Expander>
           </StackPanel>
@@ -161,11 +196,16 @@
               <Button Content="Delete selected" Click="DeleteReport_Click" Margin="0,0,8,8"/>
               <Button Content="Undo delete" Click="UndoReport_Click" Margin="0,0,8,8"/>
             </WrapPanel>
-            <Grid x:Name="HistoryHeader" Classes="table-header" ColumnDefinitions="1.4*,1.5*,2.5*,*,*" ColumnSpacing="12">
-              <TextBlock Text="STARTED"/><TextBlock Grid.Column="1" Text="SYSTEM"/><TextBlock Grid.Column="2" Text="RING"/>
-              <TextBlock Grid.Column="3" Text="TONS"/><TextBlock Grid.Column="4" Text="TONS / HOUR"/>
+            <ScrollViewer x:Name="HistoryHorizontalScroller"
+              HorizontalScrollBarVisibility="Auto"
+              VerticalScrollBarVisibility="Disabled"
+              IsScrollChainingEnabled="True">
+              <Grid RowDefinitions="Auto,*">
+                <Grid x:Name="HistoryHeader" Classes="table-header" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="History0" /><ColumnDefinition Width="Auto" SharedSizeGroup="History1" /><ColumnDefinition Width="Auto" SharedSizeGroup="History2" /><ColumnDefinition Width="Auto" SharedSizeGroup="History3" /><ColumnDefinition Width="Auto" SharedSizeGroup="History4" /></Grid.ColumnDefinitions>
+              <Button Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding HistorySortCommand}" CommandParameter="Started"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="STARTED" /><TextBlock Classes="table-heading" Text="{Binding HistorySortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Started}" /></StackPanel></Button><Button Grid.Column="1" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding HistorySortCommand}" CommandParameter="System"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="SYSTEM" /><TextBlock Classes="table-heading" Text="{Binding HistorySortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=System}" /></StackPanel></Button><Button Grid.Column="2" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding HistorySortCommand}" CommandParameter="Ring"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="RING" /><TextBlock Classes="table-heading" Text="{Binding HistorySortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Ring}" /></StackPanel></Button>
+              <Button Grid.Column="3" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding HistorySortCommand}" CommandParameter="RefinedTons"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="TONS" /><TextBlock Classes="table-heading" Text="{Binding HistorySortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=RefinedTons}" /></StackPanel></Button><Button Grid.Column="4" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding HistorySortCommand}" CommandParameter="TonsPerHour"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="TONS / HOUR" /><TextBlock Classes="table-heading" Text="{Binding HistorySortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=TonsPerHour}" /></StackPanel></Button>
             </Grid>
-            <ListBox x:Name="HistoryRows" Classes="table-rows" ItemsSource="{Binding History}" SelectedItem="{Binding SelectedSession}" MinHeight="60" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListBox Grid.Row="1" x:Name="HistoryRows" Classes="table-rows" ItemsSource="{Binding History}" SelectedItem="{Binding SelectedSession}" MinHeight="60" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
               <ListBox.ContextMenu>
                 <ContextMenu>
                   <MenuItem Header="Export HTML report…" Click="ExportReport_Click" Tag="html"/>
@@ -175,7 +215,7 @@
               </ListBox.ContextMenu>
               <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="mining:MiningSession">
-                  <Grid Classes="table-row" RowDefinitions="Auto" ColumnDefinitions="1.4*,1.5*,2.5*,*,*" ColumnSpacing="12">
+                  <Grid Classes="table-row" RowDefinitions="Auto" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="History0" /><ColumnDefinition Width="Auto" SharedSizeGroup="History1" /><ColumnDefinition Width="Auto" SharedSizeGroup="History2" /><ColumnDefinition Width="Auto" SharedSizeGroup="History3" /><ColumnDefinition Width="Auto" SharedSizeGroup="History4" /></Grid.ColumnDefinitions>
                     <TextBlock Text="{Binding Started}"/><TextBlock Grid.Column="1" Text="{Binding System}" ToolTip.Tip="{Binding System}"/>
                     <TextBlock Grid.Column="2" Text="{Binding Ring}" ToolTip.Tip="{Binding Ring}"/><TextBlock Grid.Column="3" Text="{Binding RefinedTons}"/>
                     <TextBlock Grid.Column="4" Text="{Binding TonsPerHour, StringFormat={}{0:0.0}}"/>
@@ -183,6 +223,8 @@
                 </DataTemplate>
               </ListBox.ItemTemplate>
             </ListBox>
+              </Grid>
+            </ScrollViewer>
             <Expander Header="Compare session efficiency">
               <StackPanel Spacing="8">
                 <ItemsControl ItemsSource="{Binding History}">
@@ -231,11 +273,16 @@
           <StackPanel Spacing="14" Margin="4,20,4,16">
             <TextBlock Text="Mining missions" TextWrapping="Wrap" Classes="card-title"/>
             <TextBlock Text="Cargo is allocated to active missions in acceptance order. Delivered counts are cumulative. Completion, failure and abandonment follow journal events." TextWrapping="Wrap" Classes="muted"/>
-            <Grid x:Name="MissionsHeader" Classes="table-header" ColumnDefinitions="2*,*,*,*,*,2.5*,1.2*" ColumnSpacing="12">
-              <TextBlock Text="COMMODITY"/><TextBlock Grid.Column="1" Text="REQUIRED"/><TextBlock Grid.Column="2" Text="DELIVERED"/><TextBlock Grid.Column="3" Text="ON BOARD"/>
-              <TextBlock Grid.Column="4" Text="NEEDED"/><TextBlock Grid.Column="5" Text="DESTINATION"/><TextBlock Grid.Column="6" Text="STATUS"/>
+            <ScrollViewer x:Name="MissionsHorizontalScroller"
+              HorizontalScrollBarVisibility="Auto"
+              VerticalScrollBarVisibility="Disabled"
+              IsScrollChainingEnabled="True">
+              <Grid RowDefinitions="Auto,*">
+                <Grid x:Name="MissionsHeader" Classes="table-header" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="Missions0" /><ColumnDefinition Width="Auto" SharedSizeGroup="Missions1" /><ColumnDefinition Width="Auto" SharedSizeGroup="Missions2" /><ColumnDefinition Width="Auto" SharedSizeGroup="Missions3" /><ColumnDefinition Width="Auto" SharedSizeGroup="Missions4" /><ColumnDefinition Width="Auto" SharedSizeGroup="Missions5" /><ColumnDefinition Width="Auto" SharedSizeGroup="Missions6" /></Grid.ColumnDefinitions>
+              <Button Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding MissionsSortCommand}" CommandParameter="Commodity"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="COMMODITY" /><TextBlock Classes="table-heading" Text="{Binding MissionsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Commodity}" /></StackPanel></Button><Button Grid.Column="1" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding MissionsSortCommand}" CommandParameter="Required"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="REQUIRED" /><TextBlock Classes="table-heading" Text="{Binding MissionsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Required}" /></StackPanel></Button><Button Grid.Column="2" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding MissionsSortCommand}" CommandParameter="Delivered"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="DELIVERED" /><TextBlock Classes="table-heading" Text="{Binding MissionsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Delivered}" /></StackPanel></Button><Button Grid.Column="3" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding MissionsSortCommand}" CommandParameter="OnBoard"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="ON BOARD" /><TextBlock Classes="table-heading" Text="{Binding MissionsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=OnBoard}" /></StackPanel></Button>
+              <Button Grid.Column="4" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding MissionsSortCommand}" CommandParameter="Remaining"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="NEEDED" /><TextBlock Classes="table-heading" Text="{Binding MissionsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Remaining}" /></StackPanel></Button><Button Grid.Column="5" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding MissionsSortCommand}" CommandParameter="Destination"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="DESTINATION" /><TextBlock Classes="table-heading" Text="{Binding MissionsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Destination}" /></StackPanel></Button><Button Grid.Column="6" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding MissionsSortCommand}" CommandParameter="Status"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="STATUS" /><TextBlock Classes="table-heading" Text="{Binding MissionsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Status}" /></StackPanel></Button>
             </Grid>
-            <ListBox x:Name="MissionRows" Classes="table-rows" ItemsSource="{Binding Missions}" SelectedItem="{Binding SelectedMission}" MinHeight="60" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListBox Grid.Row="1" x:Name="MissionRows" Classes="table-rows" ItemsSource="{Binding Missions}" SelectedItem="{Binding SelectedMission}" MinHeight="60" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
               <ListBox.ContextMenu>
                 <ContextMenu>
                   <MenuItem Header="Find hotspots for this commodity" Command="{Binding MissionHotspotsCommand}"/>
@@ -243,7 +290,7 @@
               </ListBox.ContextMenu>
               <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="mining:MiningMission">
-                  <Grid Classes="table-row" RowDefinitions="Auto" ColumnDefinitions="2*,*,*,*,*,2.5*,1.2*" ColumnSpacing="12">
+                  <Grid Classes="table-row" RowDefinitions="Auto" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="Missions0" /><ColumnDefinition Width="Auto" SharedSizeGroup="Missions1" /><ColumnDefinition Width="Auto" SharedSizeGroup="Missions2" /><ColumnDefinition Width="Auto" SharedSizeGroup="Missions3" /><ColumnDefinition Width="Auto" SharedSizeGroup="Missions4" /><ColumnDefinition Width="Auto" SharedSizeGroup="Missions5" /><ColumnDefinition Width="Auto" SharedSizeGroup="Missions6" /></Grid.ColumnDefinitions>
                     <TextBlock Text="{Binding Commodity}"/><TextBlock Grid.Column="1" Text="{Binding Required}"/><TextBlock Grid.Column="2" Text="{Binding Delivered}"/>
                     <TextBlock Grid.Column="3" Text="{Binding OnBoard}"/><TextBlock Grid.Column="4" Text="{Binding Remaining}"/>
                     <TextBlock Grid.Column="5" Text="{Binding Destination}" ToolTip.Tip="{Binding Destination}"/><TextBlock Grid.Column="6" Text="{Binding Status}"/>
@@ -251,6 +298,8 @@
                 </DataTemplate>
               </ListBox.ItemTemplate>
             </ListBox>
+              </Grid>
+            </ScrollViewer>
             <Button Content="Find hotspots" Command="{Binding MissionHotspotsCommand}" Margin="0,0,8,8"/>
           </StackPanel>
         </ScrollViewer>
@@ -276,11 +325,16 @@
                 <TextBlock Text="Filter local discoveries" TextWrapping="Wrap"/>
                 <TextBox Text="{Binding Filter}"/>
               </StackPanel>
-              <Grid x:Name="LocalRingsHeader" Grid.Row="1" Classes="table-header" ColumnDefinitions="1.4*,2*,*,*,1.5*,.8*" ColumnSpacing="12">
-                <TextBlock Text="SYSTEM"/><TextBlock Grid.Column="1" Text="RING"/><TextBlock Grid.Column="2" Text="TYPE"/><TextBlock Grid.Column="3" Text="RESERVE"/>
-                <TextBlock Grid.Column="4" Text="HOTSPOTS"/><TextBlock Grid.Column="5" Text="ARRIVAL"/>
+              <ScrollViewer x:Name="LocalRingsHorizontalScroller" Grid.Row="1" Grid.RowSpan="2"
+                HorizontalScrollBarVisibility="Auto"
+                VerticalScrollBarVisibility="Disabled"
+                IsScrollChainingEnabled="True">
+                <Grid RowDefinitions="Auto,*">
+                  <Grid x:Name="LocalRingsHeader" Classes="table-header" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="LocalRings0" /><ColumnDefinition Width="Auto" SharedSizeGroup="LocalRings1" /><ColumnDefinition Width="Auto" SharedSizeGroup="LocalRings2" /><ColumnDefinition Width="Auto" SharedSizeGroup="LocalRings3" /><ColumnDefinition Width="Auto" SharedSizeGroup="LocalRings4" /><ColumnDefinition Width="Auto" SharedSizeGroup="LocalRings5" /></Grid.ColumnDefinitions>
+                <Button Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding RingsSortCommand}" CommandParameter="System"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="SYSTEM" /><TextBlock Classes="table-heading" Text="{Binding RingsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=System}" /></StackPanel></Button><Button Grid.Column="1" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding RingsSortCommand}" CommandParameter="Body"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="RING" /><TextBlock Classes="table-heading" Text="{Binding RingsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Body}" /></StackPanel></Button><Button Grid.Column="2" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding RingsSortCommand}" CommandParameter="RingType"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="TYPE" /><TextBlock Classes="table-heading" Text="{Binding RingsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=RingType}" /></StackPanel></Button><Button Grid.Column="3" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding RingsSortCommand}" CommandParameter="Reserve"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="RESERVE" /><TextBlock Classes="table-heading" Text="{Binding RingsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Reserve}" /></StackPanel></Button>
+                <Button Grid.Column="4" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding RingsSortCommand}" CommandParameter="Minerals"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="HOTSPOTS" /><TextBlock Classes="table-heading" Text="{Binding RingsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=Minerals}" /></StackPanel></Button><Button Grid.Column="5" Classes="link" Padding="0" HorizontalContentAlignment="Left" Command="{Binding RingsSortCommand}" CommandParameter="ArrivalLs"><StackPanel Orientation="Horizontal" Spacing="4"><TextBlock Classes="table-heading" Text="ARRIVAL" /><TextBlock Classes="table-heading" Text="{Binding RingsSortIndicators, Converter={x:Static vm:WorkspaceSortIndicatorConverter.Instance}, ConverterParameter=ArrivalLs}" /></StackPanel></Button>
               </Grid>
-              <ListBox x:Name="LocalRingRows" Grid.Row="2" Classes="table-rows" ItemsSource="{Binding Rings}" SelectedItem="{Binding SelectedRing}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                  <ListBox x:Name="LocalRingRows" Grid.Row="1" Classes="table-rows" ItemsSource="{Binding Rings}" SelectedItem="{Binding SelectedRing}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                 <ListBox.ContextMenu>
                   <ContextMenu>
                     <MenuItem Header="Bookmark ring" Command="{Binding BookmarkRingCommand}"/>
@@ -288,7 +342,7 @@
                 </ListBox.ContextMenu>
                 <ListBox.ItemTemplate>
                   <DataTemplate x:DataType="mining:MiningRing">
-                    <Grid Classes="table-row" RowDefinitions="Auto" ColumnDefinitions="1.4*,2*,*,*,1.5*,.8*" ColumnSpacing="12">
+                    <Grid Classes="table-row" RowDefinitions="Auto" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="LocalRings0" /><ColumnDefinition Width="Auto" SharedSizeGroup="LocalRings1" /><ColumnDefinition Width="Auto" SharedSizeGroup="LocalRings2" /><ColumnDefinition Width="Auto" SharedSizeGroup="LocalRings3" /><ColumnDefinition Width="Auto" SharedSizeGroup="LocalRings4" /><ColumnDefinition Width="Auto" SharedSizeGroup="LocalRings5" /></Grid.ColumnDefinitions>
                       <TextBlock Text="{Binding System}" ToolTip.Tip="{Binding System}"/><TextBlock Grid.Column="1" Text="{Binding Body}" ToolTip.Tip="{Binding Body}"/>
                       <TextBlock Grid.Column="2" Text="{Binding RingType}"/><TextBlock Grid.Column="3" Text="{Binding Reserve}"/>
                       <TextBlock Grid.Column="4" Text="{Binding Minerals}" ToolTip.Tip="{Binding Minerals}"/><TextBlock Grid.Column="5" Text="{Binding ArrivalLs, StringFormat='{}{0:N0} ls'}"/>
@@ -296,6 +350,8 @@
                   </DataTemplate>
                 </ListBox.ItemTemplate>
               </ListBox>
+                </Grid>
+              </ScrollViewer>
               <Button Grid.Row="3" Content="Bookmark selected ring" Command="{Binding BookmarkRingCommand}" Margin="0,8,8,8"/>
             </Grid>
           </Border>

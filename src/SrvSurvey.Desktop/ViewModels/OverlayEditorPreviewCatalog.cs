@@ -122,8 +122,10 @@ internal static class OverlayEditorPreviewCatalog
             "PlotFootCombat" or "PlotMassacre" => CreateCombatPreview(),
             "PlotGalMap" => CreateGalaxyMapPreview(),
             "PlotMiningNotifications" => new MiningActivityOverlayViewModel(null, false),
+            "PlotMiningReference" => CreateMiningReferencePreview(),
             "PlotMiningFiregroups" => new MiningActivityOverlayViewModel(null, true),
             "PlotSurfaceMining" or "PlotMiningWarning" => OverlayEditorPreviewFactories.CreateSurfaceMining(),
+            "PlotMineMap" => CreateMineMapPreview(),
             "PlotGrounded" or "PlotMiniTrack" => CreateSurfaceSurveyPreview(),
             "PlotHumanSite" => CreateHumanSitePreview(),
             "PlotJumpInfo" => CreateJumpInfoPreview(),
@@ -139,6 +141,23 @@ internal static class OverlayEditorPreviewCatalog
             _ => throw new InvalidOperationException(
                 $"No editor preview data context is defined for {plotterName}."),
         };
+
+    private static MineMapViewModel CreateMineMapPreview()
+    {
+        return MineMapViewModel.CreateEditorPreview();
+    }
+
+    private static MineMapViewModel CreateMiningReferencePreview()
+    {
+        var preview = MineMapViewModel.CreateEditorPreview();
+        foreach (var row in preview.HotspotRows.Where(row =>
+                     row.Name is "Gold" or "Ruby" or "Monazite"))
+        {
+            row.IsInOverlay = true;
+        }
+
+        return preview;
+    }
 
     private static SystemSurveyOverlayViewModel CreateSystemSurveyPreview(
         string plotterName,

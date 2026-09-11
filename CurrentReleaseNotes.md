@@ -1,4 +1,4 @@
-# SrvSurvey-XP 2.1.3.0-rc.45.7
+# SrvSurvey-XP 2.1.3.0-rc.46
 
 - Replaces the Mining workspace placeholder with session accounting, prospecting
   yields, core and raw-material tracking, cargo, mining missions, historical
@@ -15,10 +15,57 @@
   import, offline HTML reports with print/PDF output, and ZIP backups containing
   shared bookmarks and screenshot attachments. Guides documents the new tools.
 
-RC45.7 restores automatic mining-session activation from live prospector
-launches. It retains the RC45.6 notification and prospector-report fixes, the
-RC45.5 Linux release and Firegroups fixes, the RC45 changes, and the combined
-RC43, RC44, and RC44.5 features summarized below.
+RC46 adds the Surface Mining mapping workflow, shared surface-map bookmarks,
+reference overlays and desktop-wide scroll improvements. It retains the RC45.7
+session activation fix, the RC45.6 notification and prospector-report fixes,
+the RC45.5 Linux release and Firegroups fixes, the RC45 changes, and the
+combined RC43, RC44, and RC44.5 features summarized below.
+
+## New in RC46
+
+- Adds Activities > Surface Mining for saving 2.47 km surface mining locations and
+  deposit markers from case-insensitive chat commands. The workspace includes
+  a fixed-upright survey map with Guardian-style zoom and pan controls, dynamic
+  filters backed by the shared Navigation → Bookmarks catalog and the community surface-hotspot
+  commodity/body/price table with distinct map-marker colors. Invalid map
+  commands now explain the rejected value through Status notifications. Surface
+  map rows open the map from any column and provide copy-system and edit-bookmark
+  context actions; Rhino controls now live in Surface Mining overlay settings.
+- Fixes shared Surface Mining bookmarks losing center and deposit coordinates
+  after reload. Reopening the same bookmark now reliably returns to its survey,
+  marker filters refresh immediately, and Selected Map shows the system, body,
+  signal, mineral amount and density.
+- Adds a persisted Overlay checkbox to each Hotspot List commodity and a compact,
+  theme-aware Mining Ref overlay showing the selected commodity, compatible body
+  types and average CR/t. The panel has its own Mining settings entry, position
+  editor preview and visibility shortcut.
+- Adds a sortable Surface Hunt reference after Hotspot List with preferred and
+  alternate body types, geology, stellar clues, and market prices. The same
+  decoded reference now corrects Hotspot List availability and canonical names
+  while preserving existing command aliases and Mining Ref selections. Both
+  reference tables scroll horizontally when the workspace is too narrow for
+  their aligned columns. Horizontal trackpad gestures, horizontal mouse wheels,
+  and Shift+wheel now reach the nearest horizontally scrollable pane throughout
+  the desktop application, including from inside nested result rows.
+- Improves Surface Mining map legibility across all six application themes with
+  dedicated grid contrast, theme-correct labels and adaptive marker outlines in
+  both the workspace survey map and its overlay.
+- Keeps the Surface Mining map's distance grid fixed at 1, 2, 3 and 4 km while
+  its rings, location boundary, deposit markers and live player marker enlarge
+  together during zoom. Marker labels grow conservatively so nearby deposits
+  remain readable.
+- Keeps Overview, Fleet Carrier, Firegroups and utility shortcuts fixed in the
+  sidebar while only the accordion navigation scrolls. Accordion groups now
+  start collapsed, and obsolete overlay migration copy is removed from Desktop
+  settings.
+- Adds a prominent Privacy & Sharing warning to keep equivalent journal and
+  companion-data publication enabled in only one Elite Dangerous third-party
+  application, preventing duplicate entries and conflicting updates.
+- Hardens the new mining tools by keeping each results table's sort state
+  independent, accepting distinct surface signals during bookmark imports,
+  validating nested map data, resuming interrupted legacy-map migrations, and
+  keeping the overlay zoom controls in the shared host on Linux. Surface-map
+  rows respond on every click, and startup no longer creates sample bookmarks.
 
 ## New in RC45.7
 
@@ -156,7 +203,7 @@ RC43, RC44, and RC44.5 features summarized below.
   **Tracker (8)**. Defaults are **Ctrl+Alt+F1** through **Ctrl+Alt+F8**.
 - Slots 1–6 toggle rigs while aboard the Rhino and surface trackers outside
   Rhino mining. Slots 7 and 8 remain regular surface trackers.
-- Mining overlay settings retains six **Mining rig** entries linked to the
+- Surface Mining overlay settings retains six **Mining rig** entries linked to the
   first six Input bindings, so edits in either location stay synchronized.
 - Preserves custom tracker chords. A customized RC43 rig chord carries over
   when the corresponding tracker still uses its default; an explicit tracker
@@ -250,11 +297,11 @@ The candidate also retains the preceding Guardian, controller, and sharing work:
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.45.7`
-- Tag: `xp-v2.1.3.0-rc.45.7`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.45.7-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.45.7-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.45.7-x86_64.AppImage`
+- Version: `2.1.3.0-rc.46`
+- Tag: `xp-v2.1.3.0-rc.46`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.46-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.46-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.46-x86_64.AppImage`
 
 Windows and Linux packages are self-contained. Linux packaging tools and the
 AppImage runtime use versioned, checksum-verified downloads. AppImages are updated

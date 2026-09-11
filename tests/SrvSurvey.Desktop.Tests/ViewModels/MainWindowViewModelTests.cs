@@ -5,6 +5,7 @@ using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Inara;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Network;
 using SrvSurvey.Core.Routes;
@@ -24,7 +25,7 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class MainWindowViewModelTests
 {
     [Fact]
-    public async Task MiningNavigationAndSettingsShareInputBindings()
+    public async Task SurfaceMiningSettingsOwnRhinoOverlayAndShareInputBindings()
     {
         using var viewModel = new MainWindowViewModel(
             Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
@@ -32,9 +33,16 @@ public sealed class MainWindowViewModelTests
         Assert.True(viewModel.IsMiningSelected);
         Assert.True(viewModel.IsActivitiesNavigationExpanded);
         var panels = viewModel.OverlayPanelVisibility.ForCategory(OverlaySettingsCategory.Mining);
-        Assert.Equal(3, panels.Count);
-        Assert.Contains(panels, item => item.PlotterName == "PlotMiningWarning");
-        var panel = Assert.Single(panels, item => item.PlotterName == "PlotSurfaceMining");
+        Assert.Equal(2, panels.Count);
+        Assert.Contains(panels, item => item.PlotterName == "PlotMiningNotifications");
+        Assert.Contains(panels, item => item.PlotterName == "PlotMiningReference");
+        Assert.DoesNotContain(panels, item => item.PlotterName == "PlotMiningWarning");
+        Assert.DoesNotContain(panels, item => item.PlotterName == "PlotSurfaceMining");
+        var surfacePanels = viewModel.OverlayPanelVisibility.ForCategory(
+            OverlaySettingsCategory.MineMap);
+        Assert.Equal(3, surfacePanels.Count);
+        Assert.Contains(surfacePanels, item => item.PlotterName == "PlotMiningWarning");
+        var panel = Assert.Single(surfacePanels, item => item.PlotterName == "PlotSurfaceMining");
         Assert.Equal("PlotSurfaceMining", panel.PlotterName);
         Assert.Same(viewModel.InputSettings.Bindings.Single(binding =>
             binding.Definition.OverlayPlotterName == "PlotSurfaceMining"), panel.Shortcut);
@@ -55,7 +63,7 @@ public sealed class MainWindowViewModelTests
         var viewModel = new MainWindowViewModel(
             Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
 
-        Assert.Equal(17, viewModel.NavigationItems.Count);
+        Assert.Equal(18, viewModel.NavigationItems.Count);
         Assert.Equal(
             [
                 "Overview",
@@ -68,6 +76,7 @@ public sealed class MainWindowViewModelTests
                 "Search",
                 "Bookmarks",
                 "Mining",
+                "Surface Mining",
                 "Guardian",
                 "Quests",
                 "Colonization",
@@ -85,6 +94,7 @@ public sealed class MainWindowViewModelTests
                 "travel",
                 "boxel",
                 "mining",
+                "mine-map",
                 "guardian",
                 "quests",
                 "colonisation",
@@ -109,12 +119,12 @@ public sealed class MainWindowViewModelTests
             ["Travel", "Search", "Bookmarks"],
             viewModel.NavigationWorkspaceItems.Select(item => item.Label));
         Assert.Equal(
-            ["Mining", "Guardian", "Quests", "Colonization"],
+            ["Mining", "Surface Mining", "Guardian", "Quests", "Colonization"],
             viewModel.ActivityNavigationItems.Select(item => item.Label));
         Assert.Equal(
             ["Settings", "Theme", "Guides", "Diagnostics"],
             viewModel.UtilityNavigationItems.Select(item => item.Label));
-        Assert.True(viewModel.IsSurveyNavigationExpanded);
+        Assert.False(viewModel.IsSurveyNavigationExpanded);
         Assert.False(viewModel.IsNavigationNavigationExpanded);
         Assert.False(viewModel.IsActivitiesNavigationExpanded);
 
@@ -169,6 +179,72 @@ public sealed class MainWindowViewModelTests
 
         Assert.True(viewModel.IsGuidesSelected);
         Assert.True(viewModel.IsActivitiesNavigationExpanded);
+    }
+
+    [Fact]
+    public void OpeningSharedSurfaceMiningBookmarkLoadsItsSurveyWorkspace()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-surface-bookmark-{Guid.NewGuid():N}");
+        try
+        {
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "data"),
+                Path.Combine(root, "cache"),
+                []);
+            var id = Guid.NewGuid();
+            var map = new MineMapSurvey
+            {
+                Id = id,
+                FrontierId = "F123",
+                SystemName = "Wille",
+                SystemAddress = 42,
+                SystemPosition = new GalacticCoordinate(1, 2, 3),
+                BodyId = 2,
+                BodyName = "Wille 2 d",
+                BodyType = "Rocky body",
+                LocationSignal = 4,
+                PlanetRadiusMeters = 855_573,
+                Center = new SurfaceCoordinate(1, 2),
+            };
+            new BookmarkCatalog(paths.DataDirectory).Save(new GalacticBookmark
+            {
+                Id = id,
+                System = map.SystemName,
+                Body = map.BodyName,
+                Position = map.SystemPosition,
+                CategoryAssignments = [BookmarkCategoryCatalog.SurfaceMining],
+                SurfaceMiningMap = map,
+            });
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                null,
+                builder => builder.WithAppDataPaths(paths));
+            viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
+                item => item.Key == "bookmarks");
+            viewModel.Bookmarks.Selected = Assert.Single(
+                viewModel.Bookmarks.Items,
+                bookmark => bookmark.IsSurfaceMiningMap);
+
+            Assert.True(viewModel.Bookmarks.OpenSelectedSurfaceMiningMap());
+
+            Assert.True(viewModel.IsMineMapSelected);
+            Assert.Equal(1, viewModel.MineMap.SelectedTab);
+            Assert.Equal(
+                viewModel.Bookmarks.Selected.Id,
+                viewModel.MineMap.ActiveSurvey?.Id);
+
+            viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
+                item => item.Key == "bookmarks");
+            Assert.True(viewModel.Bookmarks.OpenSelectedSurfaceMiningMap());
+            Assert.True(viewModel.IsMineMapSelected);
+            Assert.Equal(1, viewModel.MineMap.SelectedTab);
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
     }
 
     [Fact]
@@ -1067,7 +1143,7 @@ public sealed class MainWindowViewModelTests
             Assert.True(File.Exists(Path.Combine(data, "settings.json")));
             Assert.True(File.Exists(Path.Combine(data, "logs", "startup.txt")));
             Assert.Contains("Imported 1 legacy files", viewModel.ProfileStatusMessage);
-            Assert.Contains("retained 1 current-only files", viewModel.ProfileStatusMessage);
+            Assert.Contains("current-only files", viewModel.ProfileStatusMessage);
             Assert.Contains("Translated 2 legacy UI preferences", viewModel.ProfileStatusMessage);
             Assert.Contains("Restart SrvSurvey", viewModel.ProfileStatusMessage);
             Assert.Equal(
@@ -4045,6 +4121,60 @@ public sealed class MainWindowViewModelTests
             {
                 Directory.Delete(root, true);
             }
+        }
+    }
+
+    [Fact]
+    public async Task MineMapContextRejectsInvalidSurfaceCoordinates()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "SrvSurvey-invalid-mine-map-position-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            Directory.CreateDirectory(root);
+            await File.WriteAllTextAsync(
+                Path.Combine(root, "Journal.2026-09-11T010000.01.log"),
+                "{\"timestamp\":\"2026-09-11T01:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + "{\"timestamp\":\"2026-09-11T01:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Test System\",\"SystemAddress\":42,\"StarPos\":[1,2,3],\"Body\":\"Test System 1\",\"BodyID\":7,\"BodyType\":\"Planet\"}\n"
+                    + "{\"timestamp\":\"2026-09-11T01:00:02Z\",\"event\":\"Scan\",\"ScanType\":\"Detailed\",\"SystemAddress\":42,\"BodyName\":\"Test System 1\",\"BodyID\":7,\"PlanetClass\":\"Rocky body\",\"Landable\":true,\"Radius\":1000}\n");
+            await File.WriteAllTextAsync(
+                Path.Combine(root, StatusFileReader.FileName),
+                "{\"event\":\"Status\",\"Flags\":69206016,\"Flags2\":0,\"Latitude\":1,\"Longitude\":2,\"Heading\":0,\"Altitude\":0,\"BodyName\":\"Test System 1\",\"PlanetRadius\":1000}");
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "profile"),
+                Path.Combine(root, "cache"),
+                []);
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                root,
+                builder => builder.WithAppDataPaths(paths));
+
+            await viewModel.RefreshAsync();
+            var statusField = typeof(MainWindowViewModel).GetField(
+                "latestStatus",
+                System.Reflection.BindingFlags.Instance
+                    | System.Reflection.BindingFlags.NonPublic);
+            Assert.NotNull(statusField);
+            statusField.SetValue(viewModel, new EliteStatus
+            {
+                Flags = (StatusFlags)69206016,
+                Latitude = 91,
+                Longitude = 2,
+                BodyName = "Test System 1",
+                PlanetRadius = 1000,
+            });
+            var createContext = typeof(MainWindowViewModel).GetMethod(
+                "CreateMineMapCommandContext",
+                System.Reflection.BindingFlags.Instance
+                    | System.Reflection.BindingFlags.NonPublic);
+            Assert.NotNull(createContext);
+
+            Assert.Null(createContext.Invoke(viewModel, null));
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
         }
     }
 

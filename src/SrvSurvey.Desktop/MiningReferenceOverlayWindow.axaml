@@ -1,0 +1,13 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:SrvSurvey.Desktop"
+        xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        x:Class="SrvSurvey.Desktop.MiningReferenceOverlayWindow"
+        x:DataType="vm:MineMapViewModel"
+        SizeToContent="WidthAndHeight" MinWidth="1" MinHeight="1"
+        CanResize="False" ShowActivated="False" ShowInTaskbar="False"
+        WindowDecorations="None" Topmost="True" Background="Transparent"
+        TransparencyBackgroundFallback="Transparent" TransparencyLevelHint="Transparent"
+        Title="SrvSurvey Mining Ref overlay">
+  <local:MiningReferenceOverlayPresentation />
+</Window>

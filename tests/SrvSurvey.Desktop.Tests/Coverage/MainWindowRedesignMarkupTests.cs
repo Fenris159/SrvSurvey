@@ -106,6 +106,34 @@ public sealed class MainWindowRedesignMarkupTests
     }
 
     [Fact]
+    public void OnlyAccordionNavigationLivesInsideTheSidebarScroller()
+    {
+        var mainWindow = LoadDesktopFile("MainWindow.axaml");
+        var scroller = mainWindow.Descendants().Single(element =>
+            element.Name.LocalName == "ScrollViewer"
+            && element.Attributes().Any(attribute =>
+                attribute.Name.LocalName == "Name"
+                && attribute.Value == "NavigationAccordionScroller"));
+        var overview = mainWindow.Descendants().Single(element =>
+            element.Name.LocalName == "ItemsControl"
+            && element.Attribute("ItemsSource")?.Value
+                == "{Binding OverviewNavigationItems}");
+        var utilities = mainWindow.Descendants().Single(element =>
+            element.Name.LocalName == "ItemsControl"
+            && element.Attribute("ItemsSource")?.Value
+                == "{Binding UtilityNavigationItems}");
+
+        Assert.DoesNotContain(scroller, overview.Ancestors());
+        Assert.DoesNotContain(scroller, utilities.Ancestors());
+        Assert.Equal(
+            ["Survey", "Navigation", "Activities"],
+            scroller.Descendants()
+                .Where(element => element.Name.LocalName == "Button"
+                    && element.Attribute("Classes")?.Value == "nav-group-heading")
+                .Select(element => element.Attribute("Content")?.Value));
+    }
+
+    [Fact]
     public void OverviewPreservesCommanderAndMultipleCommanderContracts()
     {
         var overview = LoadView("OverviewView.axaml");

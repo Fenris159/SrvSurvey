@@ -84,7 +84,12 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
         if (commander is null || !storageAvailable) { NotifyLive(); return; }
 
         var loadouts = ReadLoadouts(update.JournalEvents, previousCommander);
-        var changed = UpdateLoadouts(loadouts);
+        var updatedDocument = UpdateLoadouts(loadouts);
+        if (updatedDocument is not null
+            && Persist(updatedDocument, "Equipped loadout updated."))
+        {
+            document = updatedDocument;
+        }
         var nextShip = document.Ships.LastOrDefault(s => s.Type.Equals(journal.ShipType, StringComparison.OrdinalIgnoreCase)
             && (journal.ShipId is null || s.Id == journal.ShipId));
         if (liveShip?.Key != nextShip?.Key)
@@ -98,20 +103,22 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
             liveShip = nextShip;
             if (editorShip?.Key == nextShip.Key) { editorShip = nextShip; RefreshOptions(); NotifyEditor(); }
         }
-        if (changed) Persist(document, "Equipped loadout updated.");
         NotifyLive();
     }
 
-    private bool UpdateLoadouts(List<FiregroupShip> loadouts)
+    private FiregroupDocument? UpdateLoadouts(List<FiregroupShip> loadouts)
     {
-        var changed = false;
+        var ships = document.Ships.ToList();
         foreach (var ship in loadouts)
         {
-            var old = document.Ships.FirstOrDefault(s => s.Key == ship.Key);
+            var old = ships.FirstOrDefault(s => s.Key == ship.Key);
             if (old is not null && old.Name == ship.Name && old.Modules.SequenceEqual(ship.Modules)) continue;
-            document.Ships.RemoveAll(s => s.Key == ship.Key); document.Ships.Add(ship); changed = true;
+            ships.RemoveAll(s => s.Key == ship.Key);
+            ships.Add(ship);
         }
-        return changed;
+        return ships.SequenceEqual(document.Ships)
+            ? null
+            : document with { Ships = ships };
     }
 
     private void ChangeCommander(string? nextCommander)
@@ -287,7 +294,7 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
         var candidate = document with { Profiles = document.Profiles.Where(p => p.Id != profile.Id).Append(profile).ToList(), ActiveProfiles = new(document.ActiveProfiles) { [editorShip.Key] = profile.Id } };
         if (!Persist(candidate, $"Saved {name} for {editorShip.Display}.")) return;
         drafts.Remove(DraftKey); document = candidate; profileId = profile.Id;
-        drafts.Remove(DraftKey); RefreshSaved(); NotifyLive();
+        RefreshSaved(); NotifyLive();
     }
     private void Remove()
     {

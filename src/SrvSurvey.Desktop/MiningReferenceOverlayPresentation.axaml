@@ -1,0 +1,46 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Class="SrvSurvey.Desktop.MiningReferenceOverlayPresentation"
+             x:DataType="vm:MineMapViewModel">
+  <Border Classes="overlay-panel" Padding="10"
+          Background="{DynamicResource RavenWindowBrush}"
+          BorderBrush="{DynamicResource RavenBorderBrush}"
+          BorderThickness="1" CornerRadius="6"
+          Grid.IsSharedSizeScope="True">
+    <StackPanel Spacing="8">
+      <TextBlock Classes="overlay-header" Text="MINING REF" />
+      <Grid ColumnSpacing="8">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" SharedSizeGroup="MiningRefCommodity" />
+          <ColumnDefinition Width="Auto" SharedSizeGroup="MiningRefBodies" />
+          <ColumnDefinition Width="Auto" SharedSizeGroup="MiningRefPrice" />
+        </Grid.ColumnDefinitions>
+        <TextBlock Classes="table-heading" Text="COMMODITY" />
+        <TextBlock Grid.Column="1" Classes="table-heading" Text="BODIES" />
+        <TextBlock Grid.Column="2" Classes="table-heading"
+                   HorizontalAlignment="Right" Text="AVG CR/T" />
+      </Grid>
+      <ItemsControl ItemsSource="{Binding MiningReferenceRows}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:SurfaceMiningCommodityRowViewModel">
+            <Grid ColumnSpacing="8" Margin="0,2">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" SharedSizeGroup="MiningRefCommodity" />
+                <ColumnDefinition Width="Auto" SharedSizeGroup="MiningRefBodies" />
+                <ColumnDefinition Width="Auto" SharedSizeGroup="MiningRefPrice" />
+              </Grid.ColumnDefinitions>
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <TextBlock Foreground="{Binding ColorHex}" Text="●" />
+                <TextBlock Text="{Binding Name}" />
+              </StackPanel>
+              <TextBlock Grid.Column="1" Classes="muted" Text="{Binding BodyTypes}" />
+              <TextBlock Grid.Column="2" HorizontalAlignment="Right"
+                         Text="{Binding AverageSellPrice}" />
+            </Grid>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </StackPanel>
+  </Border>
+</UserControl>

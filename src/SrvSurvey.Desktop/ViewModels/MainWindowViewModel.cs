@@ -15,6 +15,7 @@ using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Inara;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Journeys;
+using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Network;
 using SrvSurvey.Core.Quests;
@@ -47,6 +48,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private const string Unavailable = "—";
     private const string ExplorationNavigationKey = "exploration";
     private const string MiningNavigationKey = "mining";
+    private const string MineMapNavigationKey = "mine-map";
     private const string ExobiologyNavigationKey = "exobiology";
     private const string TravelNavigationKey = "travel";
     private const string BoxelNavigationKey = "boxel";
@@ -57,6 +59,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private const string ColonisationNavigationKey = "colonisation";
     private const string DiagnosticsNavigationKey = "diagnostics";
     private const string SettingsNavigationKey = "settings";
+    private const string GuidesNavigationKey = "guides";
     private const string SurveyNavigationGroup = "survey";
     private const string NavigationNavigationGroup = "navigation";
     private const string ActivitiesNavigationGroup = "activities";
@@ -170,7 +173,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private string? activeProfileCommanderName;
     private bool activeProfileIsOdyssey = true;
     private NavigationItemViewModel? selectedNavigation;
-    private string? expandedNavigationGroup = SurveyNavigationGroup;
+    private string? expandedNavigationGroup;
     private DiagnosticsWorkspaceTab selectedDiagnosticsTab =
         DiagnosticsWorkspaceTab.Source;
     private bool isProfileSelected;
@@ -540,7 +543,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             rollback.Add(FleetCarrierWorkspace.Dispose);
             var sharedSystemResolver = new SpanshStarSystemResolver(
                 externalNetworkClient);
-            Bookmarks = new BookmarksViewModel(AppDataPaths.DataDirectory);
+            Bookmarks = new BookmarksViewModel(
+                AppDataPaths.DataDirectory,
+                ShowSurfaceMiningMap);
             Firegroups = new FiregroupsWorkspaceViewModel(AppDataPaths.DataDirectory);
             MiningWorkspace = new MiningWorkspaceViewModel(AppDataPaths.DataDirectory, sharedSystemResolver, Bookmarks, externalNetworkClient, firegroups: Firegroups);
             rollback.Add(MiningWorkspace.Dispose);
@@ -722,6 +727,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 Path.Combine(AppDataPaths.DataDirectory, "mining")),
                 new SurfaceMiningSettingsStore(AppDataPaths.UiSettingsPath));
             rollback.Add(Mining.Dispose);
+            MineMap = new MineMapViewModel(
+                AppDataPaths.DataDirectory,
+                new MineMapSettingsStore(AppDataPaths.UiSettingsPath),
+                Notifications.ShowMessage,
+                ShowSurfaceMiningGuide,
+                ShowBookmarkEditor,
+                Bookmarks.Catalog);
+            rollback.Add(MineMap.Dispose);
             OverlayInteraction.MiningDetection = Mining.Detection;
             BiologyPredictions = new BiologyPredictionsViewModel(
                 SystemSurvey,
@@ -906,8 +919,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                     SearchNavigationKey,
                     "Search",
                     "Spherical limits and nearby biology"),
-                new(BookmarksNavigationKey, "Bookmarks", "Categorized systems and mining locations"),
+                new(BookmarksNavigationKey, "Bookmarks", "Systems, mining rings, and surface mining maps"),
                 new(MiningNavigationKey, "Mining", "Mining sessions, locations, missions and reports", true),
+                new(MineMapNavigationKey, "Surface Mining", "Saved surface mining locations and deposit maps", true),
                 new(
                     GuardianNavigationKey,
                     "Guardian",
@@ -929,7 +943,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                     "Journal source and parsed state"),
                 new(SettingsNavigationKey, "Settings", "Application and integration options"),
                 new("theme", "Theme", "Application and in-game appearance"),
-                new("guides", "Guides", "Help documentation and overlay icon glossary"),
+                new(GuidesNavigationKey, "Guides", "Help documentation and overlay icon glossary"),
             ];
             selectedNavigation = NavigationItems[0];
             selectedNavigation.IsSelected = true;
@@ -947,7 +961,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                     or BookmarksNavigationKey)
                 .ToArray();
             ActivityNavigationItems = NavigationItems
-                .Where(item => item.Key is MiningNavigationKey or GuardianNavigationKey
+                .Where(item => item.Key is MiningNavigationKey or MineMapNavigationKey or GuardianNavigationKey
                     or QuestsNavigationKey
                     or ColonisationNavigationKey)
                 .ToArray();
@@ -955,7 +969,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             {
                 SettingsNavigationKey,
                 "theme",
-                "guides",
+                GuidesNavigationKey,
                 DiagnosticsNavigationKey,
             }
                 .Select(key => NavigationItems.Single(item => item.Key == key))
@@ -1137,6 +1151,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     public SurfaceSurveyViewModel SurfaceSurvey { get; }
 
     public SurfaceMiningViewModel Mining { get; }
+
+    public MineMapViewModel MineMap { get; }
 
     public MiningWorkspaceViewModel MiningWorkspace { get; }
     public FiregroupsWorkspaceViewModel Firegroups { get; }
@@ -1375,6 +1391,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
 
     public bool IsMiningSelected => SelectedNavigation?.Key == MiningNavigationKey && !IsProfileSelected;
 
+    public bool IsMineMapSelected => SelectedNavigation?.Key == MineMapNavigationKey && !IsProfileSelected;
+
     public bool IsExobiologySelected =>
         SelectedNavigation?.Key == ExobiologyNavigationKey
         && !IsProfileSelected;
@@ -1498,7 +1516,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     public bool IsThemeSelected => SelectedNavigation?.Key == "theme"
         && !IsProfileSelected;
 
-    public bool IsGuidesSelected => SelectedNavigation?.Key == "guides"
+    public bool IsGuidesSelected => SelectedNavigation?.Key == GuidesNavigationKey
         && !IsProfileSelected;
 
     public async Task ShowProfileAsync()
@@ -1537,7 +1555,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 or BoxelNavigationKey => SurveyNavigationGroup,
             TravelNavigationKey
                 or SearchNavigationKey or BookmarksNavigationKey => NavigationNavigationGroup,
-            MiningNavigationKey or GuardianNavigationKey
+            MiningNavigationKey or MineMapNavigationKey or GuardianNavigationKey
                 or QuestsNavigationKey
                 or ColonisationNavigationKey =>
                 ActivitiesNavigationGroup,
@@ -1568,6 +1586,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         OnPropertyChanged(nameof(IsOverviewSelected));
         OnPropertyChanged(nameof(IsExplorationSelected));
         OnPropertyChanged(nameof(IsMiningSelected));
+        OnPropertyChanged(nameof(IsMineMapSelected));
         OnPropertyChanged(nameof(IsFleetCarrierSelected));
         OnPropertyChanged(nameof(IsFiregroupsSelected));
         OnPropertyChanged(nameof(IsBookmarksSelected));
@@ -1599,6 +1618,32 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     {
         SelectedNavigation = NavigationItems.Single(
             item => item.Key == SettingsNavigationKey);
+    }
+
+    private void ShowSurfaceMiningGuide()
+    {
+        Guides.SelectedCategory = Guides.Categories.Single(
+            category => category.Key == "surface-mining");
+        SelectedNavigation = NavigationItems.Single(
+            item => item.Key == GuidesNavigationKey);
+    }
+
+    private void ShowBookmarkEditor(Guid bookmarkId)
+    {
+        SelectedNavigation = NavigationItems.Single(
+            item => item.Key == BookmarksNavigationKey);
+        Bookmarks.SelectBookmark(bookmarkId);
+    }
+
+    private void ShowSurfaceMiningMap(Guid bookmarkId)
+    {
+        if (!MineMap.SelectSurvey(bookmarkId))
+        {
+            return;
+        }
+
+        SelectedNavigation = NavigationItems.Single(
+            item => item.Key == MineMapNavigationKey);
     }
 
     public bool BeginVrAdjustment()
@@ -3209,6 +3254,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             SurfaceSurvey.RadarMarkers,
             latestCargo,
             isSessionActive ? journalState.ParkedSrvType : null);
+        await MineMap.ApplyUpdateAsync(
+            update.JournalEvents,
+            CreateMineMapCommandContext(),
+            latestStatus,
+            allowCommands: !skipPersistedBootstrapEvents);
         if (!skipPersistedBootstrapEvents && isSessionActive)
         {
             await Mining.ClearRigsFromChatAsync(update.JournalEvents, journalState.FrontierId);
@@ -3274,6 +3324,65 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 : surfaceBody?.RadiusMeters ?? 0,
             journalState.KnownNomadVehicleId);
     }
+
+    private MineMapCommandContext? CreateMineMapCommandContext()
+    {
+        var currentFrontierId = activeProfileFrontierId ?? journalState.FrontierId;
+        if (string.IsNullOrWhiteSpace(currentFrontierId)
+            || string.IsNullOrWhiteSpace(journalState.SystemName)
+            || journalState.SystemAddress is not > 0
+            || journalState.StarPosition is not { } systemPosition
+            || latestStatus is not { HasLatitudeLongitude: true } currentStatus
+            || currentStatus.PlanetRadius is not > 0)
+        {
+            return null;
+        }
+
+        var body = SystemSurvey.Snapshot.CurrentBodyId is { } bodyId
+            ? SystemSurvey.Snapshot.Bodies.FirstOrDefault(candidate => candidate.BodyId == bodyId)
+            : null;
+        body ??= currentStatus.BodyName is { Length: > 0 } statusBodyName
+            ? SystemSurvey.Snapshot.Bodies.FirstOrDefault(candidate => string.Equals(
+                candidate.Name,
+                statusBodyName,
+                StringComparison.OrdinalIgnoreCase))
+            : null;
+        if (body is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            return new MineMapCommandContext(
+                currentFrontierId,
+                activeProfileCommanderName ?? journalState.CommanderName ?? string.Empty,
+                journalState.SystemName,
+                journalState.SystemAddress.Value,
+                systemPosition,
+                body.BodyId,
+                body.Name,
+                NormalizeMineMapBodyType(body.PlanetClass),
+                body.DistanceFromArrivalLs,
+                (double)currentStatus.PlanetRadius,
+                new SurfaceCoordinate(currentStatus.Latitude, currentStatus.Longitude));
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return null;
+        }
+    }
+
+    private static string NormalizeMineMapBodyType(string? planetClass) => planetClass switch
+    {
+        "Rocky body" => "Rocky",
+        "Icy body" => "Ice",
+        "High metal content body" => "HMC",
+        "Rocky ice body" => "Rocky Ice",
+        "Metal rich body" => "Metal Rich",
+        { Length: > 0 } value => value,
+        _ => "Unknown",
+    };
 
     private void ApplyMonitorStatusMessages(
         JournalMonitorUpdate update,
@@ -5487,6 +5596,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         TryDispose(BiologyPredictions.Dispose);
         TryDispose(BiologyCodex.Dispose);
         TryDispose(Mining.Dispose);
+        TryDispose(MineMap.Dispose);
         TryDispose(SurfaceSurvey.Dispose);
         TryDispose(CodexBingo.Dispose);
         TryDispose(StationInfo.Dispose);

@@ -234,7 +234,7 @@ public static class GuideCatalog
                         "Experimental rig bar detection",
                         "Track the six rigs automatically from their HUD bars. Detection adds a missing tracker immediately and clears its location only after three continuous seconds of empty readings.",
                         [
-                            "Open Mining overlay settings and enable Automatically track rigs from the Rhino HUD. Deployment bar color defaults to the bright green game HUD; use the color picker if your HUD mod changes it. Open Edit Overlay Positions and choose Mining to show the calibration frame.",
+                            "Open Surface Mining overlay settings and enable Automatically track rigs from the Rhino HUD. Deployment bar color defaults to the bright green game HUD; use the color picker if your HUD mod changes it. Open Edit Overlay Positions and choose Mining to show the calibration frame.",
                             "Drag the frame over the six HUD circles. Resize it from the lower-right corner, leaving room for cockpit movement; resizing changes the capture area without stretching or moving the guides inside it. Drag each numbered red dot onto its matching circle centre. Keep all six circles and their complete bars inside the frame; the small numbers are not read.",
                             "Use Size−/Size+ for circle diameter, Height−/Height+ for oval proportions, and R−/R+ for outline rotation. Gap−/Gap+ move the cyan bar curves closer to or farther below the circles without changing the outlines. Align them with the middle of the deployed rig's segmented bar. The curves show the expected bar shape; detection groups matching colored segments and ignores neutral circle outlines. Each circle centre can be positioned independently to match the sloping cockpit HUD.",
                             "Search−/Search+ adjust the movement search allowance in pixels. The readout and optional Search bounds outline show its extent; this does not move or rotate the guides. Keep the search area inside the capture frame. After changing size, height, rotation or alignment, select Test again. No label learning is required.",
@@ -258,9 +258,9 @@ public static class GuideCatalog
                         [
                             "These shortcuts record or clear locations; they do not deploy or collect rigs in the game.",
                             "Input settings lists Tracker/Mining Rig (1) through Tracker/Mining Rig (6), followed by regular Tracker (7) and Tracker (8) bindings. Defaults are Ctrl+Alt+F1 through Ctrl+Alt+F8. Outside Rhino mining these toggle surface trackers; slots 7 and 8 do not place rigs.",
-                            "Edit the first six shared bindings in Settings > Input or in Mining's overlay settings, where they retain the Mining rig labels. Both locations edit the same bindings, including any replacement keyboard or controller chords.",
+                            "Edit the first six shared bindings in Settings > Input or in Surface Mining overlay settings, where they retain the Mining rig labels. Both locations edit the same bindings, including any replacement keyboard or controller chords.",
                             "Locations are saved for the current Commander and body separately from biology bookmarks. Placement accounts for the Rhino cockpit and deployment offsets and requires being aboard the Rhino.",
-                            "By default, returning to your own ship on foot or docking the Rhino automatically clears all six rig locations because the game destroys deployed rigs then. Turn off Clear rigs automatically when boarding your ship in Mining overlay settings to keep your saved markers; this preference persists between sessions. Re-entering the Rhino on foot keeps the locations; boarding a taxi or another Commander's ship does not clear them.",
+                            "By default, returning to your own ship on foot or docking the Rhino automatically clears all six rig locations because the game destroys deployed rigs then. Turn off Clear rigs automatically when boarding your ship in Surface Mining overlay settings to keep your saved markers; this preference persists between sessions. Re-entering the Rhino on foot keeps the locations; boarding a taxi or another Commander's ship does not clear them.",
                             "Send --- in game chat to clear all rigs and surface bookmarks on the current body, including resource, biology, and regular tracker bookmarks. This works even when automatic rig clearing is disabled and does not erase scan history or bookmarks on other bodies.",
                         ]),
                     Section(
@@ -277,7 +277,7 @@ public static class GuideCatalog
                         [],
                         [
                             "TOO FAR FROM RIGS uses the high-risk flight warning colors and the reminder: Moving beyond 4.5Km will Destroy Rigs. Only saved rig bookmarks count; resource bookmarks do not.",
-                            "Mining overlay settings provides an independent visibility toggle and optional shortcut. Its initial placement copies your saved Flight Warning placement; you can move it separately in the overlay editor.",
+                            "Surface Mining overlay settings provides an independent visibility toggle and optional shortcut. Its initial placement copies your saved Flight Warning placement; you can move it separately in the overlay editor.",
                             "The warning is hidden when you leave the Rhino. Flight warnings are also hidden on foot and in ground vehicles, with the Nomad retaining its flight warnings.",
                         ]),
                     Section(
@@ -292,6 +292,19 @@ public static class GuideCatalog
                             "Within 150 meters, the name and distance use the theme's near-target color and the chevron becomes a single arrow. Farther targets use the normal accent and double chevron; kilometers are shown for longer distances.",
                             "Resource bookmarks also appear as 70-meter circles on the mining radar. Long lists scroll in the resource area using overlay interaction mode. Biological bookmarks and numbered quick trackers are excluded from these rows.",
                             "Named resources use the existing Commander/body surface bookmarks. Boarding your own ship clears the six rig slots but preserves these resource locations.",
+                        ]),
+                    Section(
+                        "Surface Mining maps",
+                        "Save a surface mining location's center and map its deposits with case-insensitive chat commands.",
+                        [
+                            "Stand on the yellow location border, face the center marker, and send .mining <heading> <location number> <high|low>/<high|low>. Example: .mining 120 4 high/low.",
+                            "From the saved center, send .mine <heading> <commodity> <distance km>. Example: .mine 15 ruby 1.24.",
+                            "At a deposit, send .mine <commodity> here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
+                        ],
+                        [
+                            "Mineral amount and density accept only high or low. Deposit names must match a commodity in Activities > Surface Mining > Hotspot List; rejected commands explain the problem in Status notifications.",
+                            "Surface maps use the shared Navigation > Bookmarks catalog. Edit their system, body, category, notes, signal, body type, arrival distance, mineral amount, or density there; deleting the bookmark also removes the map. Contains and Body Type filters populate automatically from those saved maps.",
+                            "The fixed-upright map shows 1 km rings, the 2.47 km location border, saved deposits, and your live position. Use the mouse wheel, slider, or minus and plus controls to zoom; drag to pan after zooming in.",
                         ]),
                     Section(
                         "Ship, Rhino, and cargo",

@@ -1,6 +1,7 @@
 using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Search;
+using System.Windows.Input;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
@@ -18,6 +19,12 @@ public sealed class MiningSearchViewModel(MiningSearchClient client, BookmarksVi
     private MiningMarketResult? selectedMarket;
     private MiningSystemResult? selectedSystem;
     private bool busy;
+    private readonly WorkspaceTableSorter ringSorter = new();
+    private readonly WorkspaceTableSorter marketSorter = new();
+    private readonly WorkspaceTableSorter traderSorter = new();
+    private readonly WorkspaceTableSorter systemSorter = new();
+    private ICommand? sortCommand;
+    public WorkspaceSortIndicators SortIndicators => new(ActiveSorter.Indicator);
     public static IReadOnlyList<string> CommodityCategories { get; } = MiningReferenceData.Commodities.Keys.ToArray();
     public IReadOnlyList<string> CommodityOptions => MiningReferenceData.Commodities.GetValueOrDefault(CommodityCategory) ?? [];
     public string CommodityCategory { get => options.CommodityCategory; set { Set(ref options, options with { CommodityCategory = value ?? "Mining" }); Changed(nameof(CommodityOptions)); } }
@@ -59,14 +66,21 @@ public sealed class MiningSearchViewModel(MiningSearchClient client, BookmarksVi
     private IReadOnlyList<MiningMarketResult> traders = [];
     private MiningMarketResult? selectedTrader;
     public int Page { get => page; set => Set(ref page, Math.Max(0, value)); }
-    public int Destination { get => destination; set => Set(ref destination, value); }
+    public int Destination
+    {
+        get => destination;
+        set
+        {
+            if (Set(ref destination, value)) Changed(nameof(SortIndicators));
+        }
+    }
     public bool SystemOnly { get => systemOnly; set => Set(ref systemOnly, value); }
     public string Objective { get => objective; set => Set(ref objective, value); }
     public string PledgedPower { get => pledgedPower; set => Set(ref pledgedPower, value ?? ""); }
     public static IReadOnlyList<string> Objectives { get; } = [AllSystems, "Reinforce", "Undermine", "Acquire"];
     public static IReadOnlyList<string> Powers { get; } = ["", "Aisling Duval", "Archon Delaine", "Arissa Lavigny-Duval", "Denton Patreus", "Edmund Mahon", "Felicia Winters", "Li Yong-Rui", "Nakato Kaine", "Pranav Antal", "Yuri Grom", "Jerome Archer", "Zemina Torval"];
     public static IReadOnlyList<string> PowerStates { get; } = ["", "Exploited", "Fortified", "Stronghold", "Unoccupied", ExpansionState, "Contested"];
-    public IReadOnlyList<MiningMarketResult> Traders { get => traders; private set => Set(ref traders, value); }
+    public IReadOnlyList<MiningMarketResult> Traders { get => traderSorter.Apply(traders); private set => Set(ref traders, value); }
     public MiningMarketResult? SelectedTrader { get => selectedTrader; set => Set(ref selectedTrader, value); }
     public string TradeMode { get => Buying ? "Buy supplies" : "Sell mined cargo"; set { Buying = value == "Buy supplies"; Changed(nameof(TradeMode)); } }
     public static IReadOnlyList<string> TradeModes { get; } = ["Sell mined cargo", "Buy supplies"];
@@ -75,12 +89,31 @@ public sealed class MiningSearchViewModel(MiningSearchClient client, BookmarksVi
     public static IReadOnlyList<string> TraderTypes { get; } = ["Raw", "Manufactured", "Encoded"];
     public string Status { get => status; private set => Set(ref status, value); }
     public bool IsBusy { get => busy; private set => Set(ref busy, value); }
-    public IReadOnlyList<MiningRing> Rings { get => rings; private set => Set(ref rings, value); }
-    public IReadOnlyList<MiningMarketResult> Markets { get => markets; private set => Set(ref markets, value); }
-    public IReadOnlyList<MiningSystemResult> Systems { get => systems; private set => Set(ref systems, value); }
+    public ICommand SortCommand => sortCommand ??= new WorkspaceParameterCommand(parameter =>
+    {
+        ActiveSorter.Toggle(parameter);
+        Changed(Destination switch
+        {
+            0 => nameof(Rings),
+            1 => nameof(Markets),
+            2 => nameof(Traders),
+            _ => nameof(Systems),
+        });
+        Changed(nameof(SortIndicators));
+    });
+    public IReadOnlyList<MiningRing> Rings { get => ringSorter.Apply(rings); private set => Set(ref rings, value); }
+    public IReadOnlyList<MiningMarketResult> Markets { get => marketSorter.Apply(markets); private set => Set(ref markets, value); }
+    public IReadOnlyList<MiningSystemResult> Systems { get => systemSorter.Apply(systems); private set => Set(ref systems, value); }
     public MiningRing? SelectedRing { get => selectedRing; set => Set(ref selectedRing, value); }
     public MiningMarketResult? SelectedMarket { get => selectedMarket; set => Set(ref selectedMarket, value); }
     public MiningSystemResult? SelectedSystem { get => selectedSystem; set => Set(ref selectedSystem, value); }
+    private WorkspaceTableSorter ActiveSorter => Destination switch
+    {
+        0 => ringSorter,
+        1 => marketSorter,
+        2 => traderSorter,
+        _ => systemSorter,
+    };
     public Task SearchRingsAsync() => Run(async token =>
     {
         var candidates = new List<MiningRing>();
@@ -145,7 +178,10 @@ public sealed class MiningSearchViewModel(MiningSearchClient client, BookmarksVi
     }
     private MiningRing AnnotateRing(MiningRing ring)
     {
-        var bookmark = bookmarks.All.FirstOrDefault(b => Same(b.System, ring.System) && Same(b.Body, ring.Body));
+        var bookmark = bookmarks.All.FirstOrDefault(b =>
+            b.HasCategory(BookmarkCategoryCatalog.Mining)
+            && Same(b.System, ring.System)
+            && Same(b.CombinedBodyAndRing, ring.Body));
         var power = community?.Power(ring.System);
         return ring with
         {
@@ -194,7 +230,19 @@ public sealed class MiningSearchViewModel(MiningSearchClient client, BookmarksVi
     public void Bookmark()
     {
         if (SelectedRing is not { } ring) return;
-        bookmarks.AddMiningLocation(new GalacticBookmark { System = ring.System, Body = ring.Body, Position = ring.Position, Minerals = ring.Minerals, RingType = ring.RingType, Reserve = ring.Reserve, Overlaps = ring.Overlaps, ResourceExtractionSites = ring.ResourceExtractionSites });
+        bookmarks.AddMiningLocation(new GalacticBookmark
+        {
+            System = ring.System,
+            Body = ring.Body,
+            Position = ring.Position,
+            Category = BookmarkCategoryCatalog.Mining,
+            CategoryAssignments = [BookmarkCategoryCatalog.Mining],
+            Minerals = ring.Minerals,
+            RingType = ring.RingType,
+            Reserve = ring.Reserve,
+            Overlaps = ring.Overlaps,
+            ResourceExtractionSites = ring.ResourceExtractionSites,
+        });
         Status = bookmarks.Status;
     }
     public void CacheSelectedRing() { if (SelectedRing is { } ring) { cacheRing(ring); Status = "Ring saved to your local discoveries."; } }

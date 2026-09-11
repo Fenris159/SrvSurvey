@@ -77,6 +77,7 @@ public sealed class OverlayPresentationContractTests
             "BodyInformationOverlayPresentation",
         ]),
         Contract("PlotMiningNotifications", ["src/SrvSurvey.Desktop/MiningActivityOverlayWindow.axaml", "src/SrvSurvey.Desktop/MiningActivityOverlayPresentation.axaml"], ["Refined", "RavenWindowBrush"]),
+        Contract("PlotMiningReference", ["src/SrvSurvey.Desktop/MiningReferenceOverlayWindow.axaml", "src/SrvSurvey.Desktop/MiningReferenceOverlayPresentation.axaml"], ["MINING REF", "MiningReferenceRows", "BodyTypes", "AverageSellPrice", "RavenWindowBrush"]),
         Contract("PlotMiningFiregroups", ["src/SrvSurvey.Desktop/MiningActivityOverlayWindow.axaml", "src/SrvSurvey.Desktop/MiningActivityOverlayPresentation.axaml"], ["Firegroup", "RavenWindowBrush"]),
         Contract("PlotMiningWarning", ["src/SrvSurvey.Desktop/MiningWarningOverlayWindow.axaml", "src/SrvSurvey.Desktop/MiningWarningOverlayPresentation.axaml"], [
             "WARNING", "TOO FAR FROM RIGS", "Moving beyond 4.5Km will Destroy Rigs", "#FF4500", "#4CFF4500",
@@ -191,7 +192,7 @@ public sealed class OverlayPresentationContractTests
     public void EveryOverlayHasItsInformationGroupsInProductionMarkup()
     {
         var root = FindRepositoryRoot();
-        Assert.Equal(27, Contracts.Length);
+        Assert.Equal(28, Contracts.Length);
         foreach (var contract in Contracts)
         {
             var production = string.Join(
@@ -216,12 +217,18 @@ public sealed class OverlayPresentationContractTests
             SearchOption.TopDirectoryOnly);
 
         Assert.NotEmpty(overlayFiles);
+        var titles = new List<string>();
         foreach (var overlayFile in overlayFiles)
         {
             var title = XDocument.Load(overlayFile).Root?.Attribute("Title")?.Value;
             Assert.NotNull(title);
             Assert.Matches(KdeOverlayTitlePattern, title);
+            titles.Add(title);
         }
+
+        Assert.Equal(
+            titles.Count,
+            titles.Distinct(StringComparer.Ordinal).Count());
 
         var troubleshooting = File.ReadAllText(Path.Combine(
             root,
