@@ -20,7 +20,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     private readonly WorkspaceTableSorter surfaceHuntSorter = new();
     private readonly IReadOnlyList<SurfaceMiningCommodityRowViewModel> hotspotRows;
     private readonly IReadOnlyList<SurfaceMiningHuntRowViewModel> surfaceHuntRows;
-    private IReadOnlyList<SurfaceMiningCommodityRowViewModel> miningReferenceRows = [];
+    private IReadOnlyList<SurfaceMiningCommodityRowViewModel> miningReferenceRows;
     private MineMapCommandContext? context;
     private EliteStatus? status;
     private IReadOnlyList<MineMapSurveyRowViewModel> filteredSurveys = [];
