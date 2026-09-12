@@ -688,7 +688,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             );
             rollback.Add(CodexBingo.Dispose);
             JournalPostProcessor = new JournalPostProcessorViewModel(
-                new CommanderProfileCatalog(AppDataPaths.DataDirectory),
+                new CommanderProfileCatalog(AppDataPaths.DataDirectory, folderResolution.AvailablePaths),
                 new JournalHistoryAnalyzer(journalImportDirectory),
                 new LegacySystemBiologyAnalyzer(AppDataPaths.DataDirectory),
                 new HistoricalSystemRebuildService(
@@ -764,6 +764,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             (visitedStarsHttpClient, VisitedStarsCache) = CreateVisitedStarsCache(
                 provided: null,
                 appDataPaths: AppDataPaths,
+                journalDirectories: folderResolution.AvailablePaths,
                 externalNetworkClient,
                 externalEffectsAllowed: !IsDiagnosticReplay
             );
@@ -2157,6 +2158,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
     private static (HttpClient? Client, VisitedStarsCacheViewModel Cache) CreateVisitedStarsCache(
         VisitedStarsCacheViewModel? provided,
         AppDataPaths appDataPaths,
+        IReadOnlyList<string> journalDirectories,
         HttpClient? externalNetworkClient,
         bool externalEffectsAllowed
     )
@@ -2173,7 +2175,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             : static _ => null;
         var client = externalNetworkClient ?? new HttpClient { Timeout = TimeSpan.FromSeconds(45) };
         var cache = new VisitedStarsCacheViewModel(
-            new CommanderProfileCatalog(appDataPaths.DataDirectory),
+            new CommanderProfileCatalog(appDataPaths.DataDirectory, journalDirectories),
             new VisitedStarsCacheService(
                 client,
                 Path.Combine(appDataPaths.CacheDirectory, "star-cache"),

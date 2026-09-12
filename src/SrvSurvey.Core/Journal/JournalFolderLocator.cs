@@ -158,6 +158,7 @@ public static class JournalFolderLocator
         }
 
         var home = Path.GetFullPath(userProfile);
+        DiscoverGamePrefixJournalDirectories(Path.Combine(home, "Games"), AddCandidate);
         foreach (var root in GetLinuxPrefixRoots(home))
         {
             DiscoverJournalDirectories(root.Path, root.MaximumDepth, AddCandidate);
@@ -197,9 +198,39 @@ public static class JournalFolderLocator
     private static IEnumerable<(string Path, int MaximumDepth)> GetLinuxPrefixRoots(string home)
     {
         yield return (Path.Combine(home, ".wine"), 2);
-        yield return (Path.Combine(home, "Games"), 6);
         yield return (Path.Combine(home, ".local", "share", "bottles", "bottles"), 3);
         yield return (Path.Combine(home, ".var", "app", "com.usebottles.bottles", "data", "bottles", "bottles"), 3);
+    }
+
+    private static void DiscoverGamePrefixJournalDirectories(string gamesRoot, Action<string> addCandidate)
+    {
+        if (!Directory.Exists(gamesRoot))
+        {
+            return;
+        }
+
+        try
+        {
+            foreach (var prefix in Directory.EnumerateDirectories(gamesRoot))
+            {
+                try
+                {
+                    var attributes = File.GetAttributes(prefix);
+                    if ((attributes & FileAttributes.ReparsePoint) == 0)
+                    {
+                        DiscoverJournalDirectories(prefix, maximumDepth: 5, addCandidate);
+                    }
+                }
+                catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+                {
+                    // Continue with the remaining launcher prefixes.
+                }
+            }
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            // The Games root itself is unavailable or changed while it was enumerated.
+        }
     }
 
     private static void DiscoverJournalDirectories(string root, int maximumDepth, Action<string> addCandidate)

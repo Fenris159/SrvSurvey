@@ -121,6 +121,46 @@ public sealed class JournalFolderLocatorTests
     }
 
     [Fact]
+    public void LinuxCandidatesGiveSiblingGamePrefixesIndependentDirectoryBudgets()
+    {
+        var home = Path.Combine(Path.GetTempPath(), $"SrvSurvey-linux-prefix-budget-{Guid.NewGuid():N}");
+        try
+        {
+            var heroic = CreateJournalDirectory(
+                home,
+                "Games",
+                "Heroic",
+                "Prefixes",
+                "default",
+                "Elite Dangerous",
+                "pfx",
+                "drive_c",
+                "users",
+                "steamuser"
+            );
+            var unrelated = Path.Combine(home, "Games", "Unrelated");
+            for (var group = 0; group < 65; group++)
+            {
+                for (var leaf = 0; leaf < 65; leaf++)
+                {
+                    Directory.CreateDirectory(Path.Combine(unrelated, $"group-{group:D2}", $"leaf-{leaf:D2}"));
+                }
+            }
+
+            var candidates = JournalFolderLocator.GetPlatformCandidates(home, DesktopPlatform.Linux);
+
+            Assert.Contains(heroic, candidates);
+        }
+        finally
+        {
+            if (Directory.Exists(home))
+            {
+                Directory.Delete(home, true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task LinuxCandidatesReadCustomLauncherAndSteamLibraryPrefixes()
     {
         var home = Path.Combine(Path.GetTempPath(), $"SrvSurvey-linux-launcher-config-{Guid.NewGuid():N}");

@@ -25,6 +25,48 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class MainWindowViewModelTests
 {
     [Fact]
+    public async Task SecondaryCommanderListsIncludeJournalOnlyProfiles()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-main-journal-commanders-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            await File.WriteAllTextAsync(
+                Path.Combine(journals, "Journal.2026-09-12T120000.01.log"),
+                """
+                {"timestamp":"2026-09-12T12:00:00Z","event":"Fileheader","Odyssey":true}
+                {"timestamp":"2026-09-12T12:00:01Z","event":"Commander","Name":"Epic Commander","FID":"F456"}
+
+                """
+            );
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "profiles"),
+                Path.Combine(root, "cache"),
+                []
+            );
+            using var viewModel = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder => builder.WithAppDataPaths(paths)
+            );
+
+            await viewModel.JournalPostProcessor.RefreshCommandersAsync();
+            await viewModel.VisitedStarsCache.RefreshAsync();
+
+            Assert.Contains(viewModel.JournalPostProcessor.Commanders, commander => commander.FrontierId == "F456");
+            Assert.Contains(viewModel.VisitedStarsCache.Commanders, commander => commander.FrontierId == "F456");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task SurfaceMiningSettingsOwnRhinoOverlayAndShareInputBindings()
     {
         using var viewModel = MainWindowViewModelTestBuilder.Create(
