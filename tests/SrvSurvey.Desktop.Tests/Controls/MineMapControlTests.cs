@@ -1,4 +1,6 @@
 using Avalonia;
+using SrvSurvey.Core.Mining;
+using SrvSurvey.Core.Navigation;
 using SrvSurvey.Desktop.Controls;
 
 namespace SrvSurvey.Desktop.Tests.Controls;
@@ -42,20 +44,31 @@ public sealed class MineMapControlTests
     }
 
     [Theory]
-    [InlineData(1, 50, 200)]
-    [InlineData(4, 200, 800)]
-    [InlineData(15, 750, 3000)]
+    [InlineData(1, 62.5, 250)]
+    [InlineData(4, 250, 1000)]
+    [InlineData(15, 937.5, 3750)]
     public void DistanceRingsRetainFixedKilometerLabelsAndGrowWithZoom(
         double zoom,
         double expectedFirstRadius,
         double expectedLastRadius
     )
     {
-        var rings = MineMapControl.CreateDistanceRings(250, zoom);
+        var rings = MineMapControl.CreateDistanceRings(250, zoom, 4);
 
         Assert.Equal([1d, 2d, 3d, 4d], rings.Select(ring => ring.Kilometers));
         Assert.Equal(expectedFirstRadius, rings[0].RadiusPixels);
         Assert.Equal(expectedLastRadius, rings[^1].RadiusPixels);
+    }
+
+    [Fact]
+    public void MapRingsExtendToTheWholeKilometerThatEnclosesTheLocationBorder()
+    {
+        var mapRadius = MineMapControl.GetMapRadiusKilometers(6_340);
+        var rings = MineMapControl.CreateDistanceRings(350, 1, mapRadius);
+
+        Assert.Equal(7, mapRadius);
+        Assert.Equal([1d, 2d, 3d, 4d, 5d, 6d, 7d], rings.Select(ring => ring.Kilometers));
+        Assert.Equal(350, rings[^1].RadiusPixels);
     }
 
     [Fact]
@@ -69,5 +82,25 @@ public sealed class MineMapControlTests
         Assert.True(mediumScale > fitScale);
         Assert.True(maximumScale > mediumScale);
         Assert.InRange(maximumScale, 2, 4);
+    }
+
+    [Fact]
+    public void PlanningCircleUsesFixedRadiusAndConvertsMapPointToSurfaceCoordinate()
+    {
+        var survey = new MineMapSurvey
+        {
+            Center = new SurfaceCoordinate(14.2609, -79.3291),
+            PlanetRadiusMeters = 855_573.1875,
+        };
+
+        var location = MineMapControl.ToSurfaceCoordinate(survey, new Point(300, 200), new Point(200, 200), 0.1);
+
+        Assert.Equal(4_500, MineMapControl.PlanningCircleRadiusMeters);
+        Assert.InRange(
+            SurfaceNavigation.GetDistance(survey.Center, location, survey.PlanetRadiusMeters),
+            999.9,
+            1_000.1
+        );
+        Assert.InRange(SurfaceNavigation.GetBearing(survey.Center, location), 89.99, 90.01);
     }
 }

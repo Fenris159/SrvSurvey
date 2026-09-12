@@ -21,7 +21,10 @@ public sealed class MineMapSettingsStore(string path)
                     .Cast<string>()
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToArray()
-                : []
+                : [],
+            ShowMarkerLabelsInOverviewMap: settings?["ShowMarkerLabelsInOverviewMap"] is not JsonValue labelsValue
+                || !labelsValue.TryGetValue<bool>(out var showLabels)
+                || showLabels
         );
     }
 
@@ -35,6 +38,7 @@ public sealed class MineMapSettingsStore(string path)
             }
 
             settings["OnlyShowWhileOnGround"] = preferences.OnlyShowWhileOnGround;
+            settings["ShowMarkerLabelsInOverviewMap"] = preferences.ShowMarkerLabelsInOverviewMap;
             settings["MiningReferenceCommodities"] = new JsonArray(
                 preferences
                     .EffectiveMiningReferenceCommodities.Select(item => (JsonNode?)JsonValue.Create(item))
@@ -45,7 +49,8 @@ public sealed class MineMapSettingsStore(string path)
 
 public sealed record MineMapPreferences(
     bool OnlyShowWhileOnGround,
-    IReadOnlyList<string>? MiningReferenceCommodities = null
+    IReadOnlyList<string>? MiningReferenceCommodities = null,
+    bool ShowMarkerLabelsInOverviewMap = true
 )
 {
     public IReadOnlyList<string> EffectiveMiningReferenceCommodities => MiningReferenceCommodities ?? [];

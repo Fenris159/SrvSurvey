@@ -1,6 +1,6 @@
 # SrvSurvey-XP Cross-Platform
 
-Current release candidate version: **2.1.3.0-rc.46**
+Current release candidate version: **2.1.3.0-rc.46.5**
 
 In-app **Guides > Chat Commands** provides an activity-by-activity reference for
 surface bookmarks, mining, exobiology, ground targets, Guardian surveys, settlement
@@ -16,15 +16,16 @@ tests, packaging, and development tools. Existing SrvSurvey profiles remain
 supported through a verified, backup-first import; the imported source is never
 modified.
 
-## RC46 highlights
+## RC46.5 highlights
 
-- Adds [Surface Mining maps](docs/SURFACE_MINING.md) built from validated chat
-  commands, live planetary coordinates, shared bookmarks, deposit markers and
-  a fixed-upright map shared by the workspace and overlay.
+- Completes [Surface Mining maps](docs/SURFACE_MINING.md) with measured site
+  borders, deposit-specific Low, Medium or High ratings, live-position placement,
+  center correction and automatic map selection when entering a saved site.
 - Adds sortable Hotspot List and Surface Hunt references plus the compact Mining
   Ref overlay for selected commodities, body types and average prices.
-- Keeps map rings, deposits and the live player marker readable through zoom and
-  across all six application themes.
+- Adds expandable deposit details, bookmark favorites, amount and density
+  filters, a planning circle, optional Overview Map labels and a compact
+  resolution-aware alignment helper.
 - Adds horizontal table scrolling at narrow window sizes. Precision trackpads,
   horizontal mouse wheels and Shift+wheel now reach the nearest horizontal pane
   throughout the desktop application.
@@ -32,9 +33,11 @@ modified.
   scrolls, and starts its activity groups collapsed.
 - Strengthens shared bookmark migration, map validation, sort-state isolation,
   Linux overlay hosting and Privacy & Sharing guidance.
-- Retains the RC45.7 mining-session activation fix and all earlier RC45 features.
+- Verifies complete Surface Mining bookmark export and import, including the map
+  center, radius, markers, ratings, notes and favorite state.
+- Retains RC46 and all earlier release-candidate features.
 
-See the [complete RC46 release notes](CurrentReleaseNotes.md).
+See the [complete RC46.5 release notes](CurrentReleaseNotes.md).
 
 ## Install
 

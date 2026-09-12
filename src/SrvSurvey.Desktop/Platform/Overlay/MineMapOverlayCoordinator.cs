@@ -11,10 +11,14 @@ public sealed class MineMapOverlayCoordinator : IDisposable
     private readonly HostedOverlayWindow hostedWindow;
     private readonly HostedOverlayWindow referenceWindow;
     private readonly IOverlayPlatformService zoomPlatform;
+    private readonly IOverlayPlatformService alignmentPlatform;
+    private readonly IGameWindowTracker alignmentGameWindowTracker;
     private readonly OverlayPresentationSession presentationSession;
     private readonly OverlayDispatcherTimer timer;
     private MineMapZoomOverlayWindow? zoomWindow;
+    private SurfaceMiningAlignmentOverlayWindow? alignmentWindow;
     private bool zoomUnavailable;
+    private bool alignmentUnavailable;
     private bool suppressed;
     private bool disposed;
 
@@ -24,6 +28,8 @@ public sealed class MineMapOverlayCoordinator : IDisposable
         ArgumentNullException.ThrowIfNull(presentationSession);
         this.presentationSession = presentationSession;
         zoomPlatform = presentationSession.CreatePlatformService();
+        alignmentPlatform = presentationSession.CreatePlatformService();
+        alignmentGameWindowTracker = presentationSession.CreateGameWindowTracker();
         hostedWindow = presentationSession.HostPassiveWindow(
             new PassiveOverlayWindowDefinition(
                 "PlotMineMap",
@@ -72,9 +78,12 @@ public sealed class MineMapOverlayCoordinator : IDisposable
         mineMap.PropertyChanged -= OnMineMapPropertyChanged;
         hostedWindow.VisibilityChanged -= OnHostedWindowVisibilityChanged;
         CloseZoomWindow();
+        CloseAlignmentWindow();
         hostedWindow.Dispose();
         referenceWindow.Dispose();
         zoomPlatform.Dispose();
+        alignmentGameWindowTracker.Dispose();
+        alignmentPlatform.Dispose();
     }
 
     private void OnMineMapPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
@@ -84,6 +93,7 @@ public sealed class MineMapOverlayCoordinator : IDisposable
             is null
                 or nameof(MineMapViewModel.ShouldShowOverlay)
                 or nameof(MineMapViewModel.ShouldShowMiningReference)
+                or nameof(MineMapViewModel.ShouldShowAlignmentHelper)
         )
         {
             Synchronize();
@@ -100,6 +110,7 @@ public sealed class MineMapOverlayCoordinator : IDisposable
         hostedWindow.Reconcile(!suppressed && mineMap.ShouldShowOverlay);
         referenceWindow.Reconcile(!suppressed && mineMap.ShouldShowMiningReference);
         SynchronizeZoomWindow();
+        SynchronizeAlignmentWindow();
     }
 
     private void OnHostedWindowVisibilityChanged(object? sender, EventArgs eventArgs)
@@ -110,11 +121,108 @@ public sealed class MineMapOverlayCoordinator : IDisposable
     private void OnTimerTick(object? sender, EventArgs eventArgs)
     {
         SynchronizeZoomWindow();
+        SynchronizeAlignmentWindow();
+    }
+
+    private void SynchronizeAlignmentWindow()
+    {
+        if (disposed || suppressed || !mineMap.ShouldShowAlignmentHelper || alignmentUnavailable)
+        {
+            CloseAlignmentWindow();
+            return;
+        }
+
+        var gameWindow = alignmentGameWindowTracker.GetSnapshot();
+        if (
+            !alignmentPlatform.Capabilities.SupportsPassiveOverlay
+            || !alignmentPlatform.Capabilities.SupportsClickThrough
+            || !alignmentPlatform.Capabilities.SupportsGameWindowTracking
+            || !gameWindow.IsAvailable
+            || !gameWindow.IsVisible
+            || !gameWindow.IsForeground
+        )
+        {
+            CloseAlignmentWindow();
+            return;
+        }
+
+        if (alignmentWindow is not null)
+        {
+            PositionAlignmentWindow(alignmentWindow, gameWindow.ClientBounds);
+            return;
+        }
+
+        var overlay = new SurfaceMiningAlignmentOverlayWindow();
+        presentationSession.ConfigureAuxiliaryWindow(overlay, "PlotMineMap", applyOpacity: false);
+        overlay.Opened += OnAlignmentWindowOpened;
+        overlay.Closed += OnAlignmentWindowClosed;
+        alignmentWindow = overlay;
+        PositionAlignmentWindow(overlay, gameWindow.ClientBounds);
+        overlay.Show();
+    }
+
+    private void OnAlignmentWindowOpened(object? sender, EventArgs eventArgs)
+    {
+        if (sender is not SurfaceMiningAlignmentOverlayWindow opened || !ReferenceEquals(alignmentWindow, opened))
+        {
+            return;
+        }
+
+        var gameWindow = alignmentGameWindowTracker.GetSnapshot();
+        if (gameWindow.IsAvailable)
+        {
+            PositionAlignmentWindow(opened, gameWindow.ClientBounds);
+        }
+
+        var preparation = alignmentPlatform.PreparePassiveWindow(opened);
+        if (!preparation.IsClickThrough)
+        {
+            alignmentUnavailable = true;
+            CloseAlignmentWindow();
+        }
+    }
+
+    private void OnAlignmentWindowClosed(object? sender, EventArgs eventArgs)
+    {
+        if (sender is SurfaceMiningAlignmentOverlayWindow closed && ReferenceEquals(alignmentWindow, closed))
+        {
+            alignmentWindow = null;
+        }
+    }
+
+    private static void PositionAlignmentWindow(Window overlay, PixelRect gameBounds)
+    {
+        var screen = overlay.Screens.ScreenFromBounds(gameBounds) ?? overlay.Screens.Primary;
+        if (screen is null)
+        {
+            return;
+        }
+
+        var bounds = GetAlignmentHelperBounds(gameBounds);
+        overlay.Width = bounds.Width / screen.Scaling;
+        overlay.Height = bounds.Height / screen.Scaling;
+        if (overlay.Position != bounds.Position)
+        {
+            overlay.Position = bounds.Position;
+        }
+    }
+
+    internal static PixelRect GetAlignmentHelperBounds(PixelRect gameBounds)
+    {
+        const int lineWidth = 4;
+        const double heightRatio = 0.3;
+        var lineHeight = Math.Max(1, (int)Math.Round(gameBounds.Height * heightRatio));
+        return new PixelRect(
+            gameBounds.X + (gameBounds.Width - lineWidth) / 2,
+            gameBounds.Y + (gameBounds.Height - lineHeight) / 2,
+            lineWidth,
+            lineHeight
+        );
     }
 
     private void SynchronizeZoomWindow()
     {
-        if (disposed || !hostedWindow.IsVisible || hostedWindow.CurrentWindow is null || zoomUnavailable)
+        if (disposed || !hostedWindow.IsVisible || hostedWindow.CurrentWindow is not { } mapWindow || zoomUnavailable)
         {
             CloseZoomWindow();
             return;
@@ -122,7 +230,7 @@ public sealed class MineMapOverlayCoordinator : IDisposable
 
         if (zoomWindow is not null)
         {
-            PositionZoomWindow(zoomWindow, hostedWindow.CurrentWindow);
+            PositionZoomWindow(zoomWindow, mapWindow);
             return;
         }
 
@@ -132,7 +240,7 @@ public sealed class MineMapOverlayCoordinator : IDisposable
         overlay.Opened += OnZoomWindowOpened;
         overlay.Closed += OnZoomWindowClosed;
         zoomWindow = overlay;
-        overlay.Show();
+        overlay.Show(mapWindow);
     }
 
     private void OnZoomWindowOpened(object? sender, EventArgs eventArgs)
@@ -199,6 +307,20 @@ public sealed class MineMapOverlayCoordinator : IDisposable
         zoomWindow = null;
         closing.Opened -= OnZoomWindowOpened;
         closing.Closed -= OnZoomWindowClosed;
+        closing.Close();
+    }
+
+    private void CloseAlignmentWindow()
+    {
+        var closing = alignmentWindow;
+        if (closing is null)
+        {
+            return;
+        }
+
+        alignmentWindow = null;
+        closing.Opened -= OnAlignmentWindowOpened;
+        closing.Closed -= OnAlignmentWindowClosed;
         closing.Close();
     }
 }

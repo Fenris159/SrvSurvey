@@ -130,6 +130,12 @@ public sealed class OverlayPresentationSession : IDisposable
             : new CombinedOverlayPlatformService(combinedController);
     }
 
+    internal IGameWindowTracker CreateGameWindowTracker()
+    {
+        ObjectDisposedException.ThrowIf(disposed, this);
+        return hostDependencies.CreateGameWindowTracker();
+    }
+
     internal HostedOverlayWindow HostPassiveWindow(PassiveOverlayWindowDefinition definition)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -139,12 +145,15 @@ public sealed class OverlayPresentationSession : IDisposable
         return hosted;
     }
 
-    internal void ConfigureAuxiliaryWindow(Window window, string plotterName)
+    internal void ConfigureAuxiliaryWindow(Window window, string plotterName, bool applyOpacity = true)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         ArgumentNullException.ThrowIfNull(window);
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
-        OverlayThemeResources.ApplyOpacity(window, hostDependencies.OverlayLayout, plotterName);
+        if (applyOpacity)
+        {
+            OverlayThemeResources.ApplyOpacity(window, hostDependencies.OverlayLayout, plotterName);
+        }
         (hostDependencies.WindowRegistry ?? OverlayWindowRegistry.Shared).Register(
             window,
             plotterName,

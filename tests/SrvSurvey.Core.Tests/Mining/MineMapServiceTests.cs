@@ -63,18 +63,17 @@ public sealed class MineMapServiceTests
         var context = Context(new SurfaceCoordinate(0, 0));
         var service = new MineMapService(directory.Path);
 
-        var result = await service.ExecuteAsync(".mining 90 4 high/low", context);
+        var result = await service.ExecuteAsync(".mining 90 6.44 4", context);
 
         Assert.True(result.Succeeded);
         var survey = Assert.Single(service.Surveys);
         Assert.Equal("Mining Location Signal 4", survey.Name);
-        Assert.Equal(MineMapRating.High, survey.MineralAmount);
-        Assert.Equal(MineMapRating.Low, survey.Density);
+        Assert.Equal(6_440, survey.LocationRadiusMeters);
         Assert.InRange(survey.Center.Latitude, -0.000001, 0.000001);
         Assert.InRange(
             SurfaceNavigation.GetDistance(context.PlayerLocation!.Value, survey.Center, context.PlanetRadiusMeters),
-            2469.99,
-            2470.01
+            6439.99,
+            6440.01
         );
         Assert.Contains("center saved", result.Message, StringComparison.OrdinalIgnoreCase);
 
@@ -90,43 +89,209 @@ public sealed class MineMapServiceTests
     }
 
     [Fact]
+    public async Task ContextActivatesSurveyInsideItsBorderAndUnloadsItAfterExit()
+    {
+        using var directory = new TemporaryDirectory();
+        var border = Context(new SurfaceCoordinate(0, 0));
+        using var service = new MineMapService(directory.Path);
+        Assert.True((await service.ExecuteAsync(".mining 90 6.44 4", border)).Succeeded);
+        var survey = Assert.Single(service.Surveys);
+
+        service.UpdateContext(null);
+        Assert.Null(service.ActiveSurvey);
+
+        service.UpdateContext(border with { PlayerLocation = survey.Center });
+        Assert.Equal(survey.Id, service.ActiveSurvey?.Id);
+
+        var outside = MineMapService.GetDestination(
+            survey.Center,
+            270,
+            survey.LocationRadiusMeters + 100,
+            survey.PlanetRadiusMeters
+        );
+        service.UpdateContext(border with { PlayerLocation = outside });
+        Assert.Null(service.ActiveSurvey);
+    }
+
+    [Fact]
+    public async Task MiningCenterHereMovesOnlyTheSurveyCenterAndPersistsIt()
+    {
+        using var directory = new TemporaryDirectory();
+        var border = Context(new SurfaceCoordinate(1, 2));
+        using var service = new MineMapService(directory.Path);
+        Assert.True((await service.ExecuteAsync(".mining 180 3.25 7", border)).Succeeded);
+        var original = service.ActiveSurvey!;
+        Assert.True(
+            (
+                await service.ExecuteAsync(".mine ruby high/low here", border with { PlayerLocation = original.Center })
+            ).Succeeded
+        );
+        original = service.ActiveSurvey!;
+        var marker = Assert.Single(original.Markers);
+        var newCenter = MineMapService.GetDestination(original.Center, 90, 500, original.PlanetRadiusMeters);
+
+        var result = await service.ExecuteAsync(".MiNiNg CeNtEr HeRe", border with { PlayerLocation = newCenter });
+
+        Assert.True(result.Succeeded);
+        Assert.Contains("preserved", result.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(original.Id, service.ActiveSurvey?.Id);
+        Assert.Equal(original.LocationRadiusMeters, service.ActiveSurvey?.LocationRadiusMeters);
+        Assert.Equal(newCenter, service.ActiveSurvey?.Center);
+        var preserved = Assert.Single(service.ActiveSurvey!.Markers);
+        Assert.Equal(marker.Id, preserved.Id);
+        Assert.Equal(marker.Location, preserved.Location);
+
+        using var reloaded = new MineMapService(directory.Path);
+        var persisted = Assert.Single(reloaded.Surveys);
+        Assert.Equal(newCenter, persisted.Center);
+        Assert.Equal(marker.Location, Assert.Single(persisted.Markers).Location);
+    }
+
+    [Fact]
     public async Task MineCommandsAddRelativeAndHereMarkersAndDeleteNearestHere()
     {
         using var directory = new TemporaryDirectory();
         var border = Context(new SurfaceCoordinate(1, 2));
         var service = new MineMapService(directory.Path);
-        Assert.True((await service.ExecuteAsync(".mining 180 7 low/high", border)).Succeeded);
+        Assert.True((await service.ExecuteAsync(".mining 180 3.25 7", border)).Succeeded);
+        var center = service.ActiveSurvey!.Center;
+        var observationPoint = MineMapService.GetDestination(center, 90, 500, border.PlanetRadiusMeters);
 
         var relative = await service.ExecuteAsync(
-            ".mine 15 ruby 1.24",
+            ".mine 15 ruby 1.24 medium/low",
             border with
             {
-                PlayerLocation = service.ActiveSurvey!.Center,
+                PlayerLocation = observationPoint,
             }
         );
         Assert.True(relative.Succeeded);
         var first = Assert.Single(service.ActiveSurvey!.Markers);
         Assert.Equal("Ruby", first.Material);
+        Assert.Equal(MineMapRating.Medium, first.MineralAmount);
+        Assert.Equal(MineMapRating.Low, first.Density);
         Assert.InRange(
-            SurfaceNavigation.GetDistance(service.ActiveSurvey.Center, first.Location, border.PlanetRadiusMeters),
+            SurfaceNavigation.GetDistance(observationPoint, first.Location, border.PlanetRadiusMeters),
             1239.99,
             1240.01
         );
-        Assert.InRange(SurfaceNavigation.GetBearing(service.ActiveSurvey.Center, first.Location), 14.99, 15.01);
+        Assert.InRange(SurfaceNavigation.GetBearing(observationPoint, first.Location), 14.99, 15.01);
+        Assert.Contains("from your position", relative.Message, StringComparison.OrdinalIgnoreCase);
 
         var here = first.Location;
         Assert.True(
             (
-                await service.ExecuteAsync(".mine low temperature diamonds here", border with { PlayerLocation = here })
+                await service.ExecuteAsync(
+                    ".mine low temperature diamonds low/high here",
+                    border with
+                    {
+                        PlayerLocation = here,
+                    }
+                )
             ).Succeeded
         );
         Assert.Equal(2, service.ActiveSurvey.Markers.Count);
-        Assert.Contains(service.ActiveSurvey.Markers, marker => marker.Material == "Low Temperature Diamonds");
+        var second = Assert.Single(
+            service.ActiveSurvey.Markers,
+            marker => marker.Material == "Low Temperature Diamonds"
+        );
+        Assert.Equal(MineMapRating.Low, second.MineralAmount);
+        Assert.Equal(MineMapRating.High, second.Density);
 
         var deleted = await service.ExecuteAsync(".mine delete here", border with { PlayerLocation = here });
         Assert.True(deleted.Succeeded);
         Assert.Single(service.ActiveSurvey.Markers);
         Assert.Contains("removed", deleted.Message, StringComparison.OrdinalIgnoreCase);
+
+        var outside = MineMapService.GetDestination(center, 270, 3_500, border.PlanetRadiusMeters);
+        var outsideResult = await service.ExecuteAsync(
+            ".mine 15 ruby 1.24 high/medium",
+            border with
+            {
+                PlayerLocation = outside,
+            }
+        );
+        Assert.False(outsideResult.Succeeded);
+        Assert.Contains("inside", outsideResult.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task BearingPlacementRejectsNearbyDuplicateMaterialWhileHereAllowsOverlap()
+    {
+        using var directory = new TemporaryDirectory();
+        var context = Context(new SurfaceCoordinate(1, 2));
+        using var service = new MineMapService(directory.Path);
+        Assert.True((await service.ExecuteAsync(".mining 180 3.25 7", context)).Succeeded);
+        Assert.True((await service.ExecuteAsync(".mine 180 ruby 1.00 high/low", context)).Succeeded);
+
+        var duplicate = await service.ExecuteAsync(".mine 180 ruby 1.05 medium/high", context);
+
+        Assert.False(duplicate.Succeeded);
+        Assert.Contains("100 m", duplicate.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("here", duplicate.Message, StringComparison.OrdinalIgnoreCase);
+        var first = Assert.Single(service.ActiveSurvey!.Markers);
+
+        var differentCommodity = await service.ExecuteAsync(".mine 180 gold 1.05 medium/high", context);
+        Assert.True(differentCommodity.Succeeded);
+
+        var overlap = await service.ExecuteAsync(
+            ".mine ruby low/medium here",
+            context with
+            {
+                PlayerLocation = first.Location,
+            }
+        );
+
+        Assert.True(overlap.Succeeded);
+        Assert.Equal(3, service.ActiveSurvey.Markers.Count);
+        Assert.Equal(2, service.ActiveSurvey.Markers.Count(marker => marker.Material == "Ruby"));
+    }
+
+    [Fact]
+    public async Task MoveMarkerHereMovesNearestMatchingCommodityWithinTwoHundredMetersAndPersistsIt()
+    {
+        using var directory = new TemporaryDirectory();
+        var context = Context(new SurfaceCoordinate(1, 2));
+        using var service = new MineMapService(directory.Path);
+        Assert.True((await service.ExecuteAsync(".mining 180 3.25 7", context)).Succeeded);
+        Assert.True((await service.ExecuteAsync(".mine 180 haematite 1.00 high/low", context)).Succeeded);
+        Assert.True((await service.ExecuteAsync(".mine 180 haematite 1.50 medium/high", context)).Succeeded);
+        var first = service.ActiveSurvey!.Markers[0];
+        var second = service.ActiveSurvey.Markers[1];
+        var playerLocation = MineMapService.GetDestination(
+            first.Location,
+            90,
+            50,
+            service.ActiveSurvey.PlanetRadiusMeters
+        );
+
+        var moved = await service.ExecuteAsync(
+            ".MiNe MoVe HaEmAtItE HeRe",
+            context with
+            {
+                PlayerLocation = playerLocation,
+            }
+        );
+
+        Assert.True(moved.Succeeded);
+        Assert.Contains("50 m", moved.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(playerLocation, service.ActiveSurvey.Markers[0].Location);
+        Assert.Equal(first.Id, service.ActiveSurvey.Markers[0].Id);
+        Assert.Equal(second.Location, service.ActiveSurvey.Markers[1].Location);
+
+        var tooFar = await service.ExecuteAsync(
+            ".mine move haematite here",
+            context with
+            {
+                PlayerLocation = service.ActiveSurvey.Center,
+            }
+        );
+        Assert.False(tooFar.Succeeded);
+        Assert.Contains("200 m", tooFar.Message, StringComparison.OrdinalIgnoreCase);
+
+        using var reloaded = new MineMapService(directory.Path);
+        var persisted = Assert.Single(reloaded.Surveys);
+        Assert.Equal(playerLocation, persisted.Markers[0].Location);
+        Assert.Equal(second.Location, persisted.Markers[1].Location);
     }
 
     [Fact]
@@ -136,7 +301,7 @@ public sealed class MineMapServiceTests
         var service = new MineMapService(directory.Path);
         Assert.True(
             JournalEventEnvelope.TryParse(
-                """{"event":"SendText","Message":".mining 120 4 high/low"}""",
+                """{"event":"SendText","Message":".mining 120 6.44 4"}""",
                 out var command,
                 out _
             )
@@ -160,13 +325,15 @@ public sealed class MineMapServiceTests
     }
 
     [Theory]
-    [InlineData(".mining 360 4 high/low")]
-    [InlineData(".mining 120 0 high/low")]
-    [InlineData(".mining 120 4 medium/low")]
-    [InlineData(".mining 120 4 1/0")]
-    [InlineData(".mine 15 ruby -1")]
-    [InlineData(".mine ruby somewhere")]
-    [InlineData(".mine 15 unobtainium 1.2")]
+    [InlineData(".mining 360 6.44 4")]
+    [InlineData(".mining 120 0 4")]
+    [InlineData(".mining 120 wide 4")]
+    [InlineData(".mining 120 6.44 0")]
+    [InlineData(".mining center elsewhere")]
+    [InlineData(".mine 15 ruby -1 high/low")]
+    [InlineData(".mine ruby high/low somewhere")]
+    [InlineData(".mine 15 ruby 1.2 very-high/low")]
+    [InlineData(".mine 15 unobtainium 1.2 high/low")]
     public async Task InvalidCommandsReturnActionableFeedback(string command)
     {
         using var directory = new TemporaryDirectory();
@@ -184,13 +351,15 @@ public sealed class MineMapServiceTests
         using var directory = new TemporaryDirectory();
         var context = Context(new SurfaceCoordinate(10, 20));
         var service = new MineMapService(directory.Path);
-        Assert.True((await service.ExecuteAsync(".MINING 120 4 HIGH/LOW", context)).Succeeded);
+        Assert.True((await service.ExecuteAsync(".MINING 120 6.44 4", context)).Succeeded);
 
-        var accepted = await service.ExecuteAsync(".MINE 15 pErIcLaSe DuNiTe 1.24", context);
-        var rejected = await service.ExecuteAsync(".mine 15 unobtainium 1.24", context);
+        var accepted = await service.ExecuteAsync(".MINE 15 pErIcLaSe DuNiTe 1.24 HIGH/MEDIUM", context);
+        var rejected = await service.ExecuteAsync(".mine 15 unobtainium 1.24 high/low", context);
 
         Assert.True(accepted.Succeeded);
-        Assert.Equal("Periclase Dunite", Assert.Single(service.ActiveSurvey!.Markers).Material);
+        var marker = Assert.Single(service.ActiveSurvey!.Markers);
+        Assert.Equal("Periclase Dunite", marker.Material);
+        Assert.Equal(MineMapRating.Medium, marker.Density);
         Assert.False(rejected.Succeeded);
         Assert.Contains("Hotspot List", rejected.Message, StringComparison.OrdinalIgnoreCase);
     }
@@ -283,8 +452,7 @@ public sealed class MineMapServiceTests
             BodyType = "Rocky Ice body",
             ArrivalDistanceLs = 129.5,
             LocationSignal = signal,
-            MineralAmount = MineMapRating.High,
-            Density = MineMapRating.Low,
+            LocationRadiusMeters = 6_440,
             PlanetRadiusMeters = 855_573.1875,
             Center = new SurfaceCoordinate(1, 2),
             CreatedAt = now,

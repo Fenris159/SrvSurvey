@@ -322,14 +322,18 @@ public static class GuideCatalog
                         "Surface Mining maps",
                         "Save a surface mining location's center and map its deposits with case-insensitive chat commands.",
                         [
-                            "Stand on the yellow location border, face the center marker, and send .mining <heading> <location number> <high|low>/<high|low>. Example: .mining 120 4 high/low.",
-                            "From the saved center, send .mine <heading> <commodity> <distance km>. Example: .mine 15 ruby 1.24.",
-                            "At a deposit, send .mine <commodity> here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
+                            "Drive to the orange location border, face the center marker, and send .mining <heading> <border radius km> <location number>. Example: .mining 120 6.44 4.",
+                            "From the true center, send .mining center here to correct the saved center and ring alignment without moving any deposit markers.",
+                            "Send .alignment to toggle a red guide at the exact center of the Elite window. In the Rhino driving view, place a distant location circle under the guide before reading the visible compass heading for .mine. Turret mode does not show the required heading.",
+                            "From anywhere inside the saved border, face a deposit and send .mine <heading> <commodity> <distance km> <low|medium|high>/<low|medium|high>. The bearing and distance start at your live position. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 15 ruby 1.24 high/medium.",
+                            "At a deposit, send .mine <commodity> <low|medium|high>/<low|medium|high> here. Precise here placement may overlap an existing marker. Example: .mine ruby medium/low here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
+                            "To correct a marker, stand at its true position and send .mine move <commodity> here. The nearest marker matching that commodity must be within 200 m. Example: .mine move haematite here.",
                         ],
                         [
-                            "Mineral amount and density accept only high or low. Deposit names must match a commodity in Activities > Surface Mining > Hotspot List; rejected commands explain the problem in Status notifications.",
-                            "Surface maps use the shared Navigation > Bookmarks catalog. Edit their system, body, category, notes, signal, body type, arrival distance, mineral amount, or density there; deleting the bookmark also removes the map. Contains and Body Type filters populate automatically from those saved maps.",
-                            "The fixed-upright map shows 1 km rings, the 2.47 km location border, saved deposits, and your live position. Use the mouse wheel, slider, or minus and plus controls to zoom; drag to pan after zooming in.",
+                            "Mineral amount and density describe each deposit and accept low, medium, or high. Deposit names must match a commodity in Activities > Surface Mining > Hotspot List; rejected commands explain the problem in Status notifications.",
+                            "Surface maps use the shared Navigation > Bookmarks catalog. Edit their system, body, category, notes, signal, body type, arrival distance, or border radius there; deleting the bookmark also removes the map. Contains and Body Type filters populate automatically from those saved maps.",
+                            "A bookmarked map loads automatically when your live surface position enters its saved border and unloads when you leave the area.",
+                            "The fixed-upright map shows 1 km rings through the whole-kilometer ring that encloses the saved border, mapped deposits, and your live position. Use the mouse wheel, slider, or minus and plus controls to zoom; drag to pan after zooming in.",
                         ]
                     ),
                     Section(

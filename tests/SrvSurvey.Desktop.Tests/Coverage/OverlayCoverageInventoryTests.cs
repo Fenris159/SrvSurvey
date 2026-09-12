@@ -432,6 +432,7 @@ public sealed partial class OverlayCoverageInventoryTests
             "CombinedOverlayWindow.axaml",
             "GuardianZoomOverlayWindow.axaml",
             "MineMapZoomOverlayWindow.axaml",
+            "SurfaceMiningAlignmentOverlayWindow.axaml",
             "StreamOverlayWindow.axaml",
         };
         var runtimePanels = Directory

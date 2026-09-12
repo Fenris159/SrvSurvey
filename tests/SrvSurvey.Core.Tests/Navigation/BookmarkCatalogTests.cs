@@ -8,6 +8,49 @@ namespace SrvSurvey.Core.Tests.Navigation;
 public sealed class BookmarkCatalogTests
 {
     [Fact]
+    public void StoredPreReleaseSurfaceMapIsIgnoredWithoutHidingValidBookmarks()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        try
+        {
+            Directory.CreateDirectory(directory);
+            var valid = new GalacticBookmark { System = "Sol" };
+            var stale = SurfaceBookmark(Guid.NewGuid(), 4, new SurfaceCoordinate(1, 2));
+            stale = stale with { SurfaceMiningMap = stale.SurfaceMiningMap! with { LocationRadiusMeters = 0 } };
+            File.WriteAllText(
+                Path.Combine(directory, "bookmarks.json"),
+                JsonSerializer.Serialize(new[] { valid, stale })
+            );
+
+            var restored = new BookmarkCatalog(directory);
+
+            Assert.Equal(valid.Id, Assert.Single(restored.Items).Id);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
+
+    [Fact]
+    public void SurfaceMiningDetailsShowSignalAndTwoMostValuableUniqueDeposits()
+    {
+        var bookmark = SurfaceBookmark(Guid.NewGuid(), 4, new SurfaceCoordinate(1, 2));
+        bookmark = bookmark with
+        {
+            SurfaceMiningMap = bookmark.SurfaceMiningMap! with
+            {
+                Markers = [Marker("Silver"), Marker("Monazite"), Marker("Alexandrite"), Marker("Monazite")],
+            },
+        };
+
+        Assert.Equal("Signal 4 · Monazite · Alexandrite", bookmark.DisplayDetails);
+    }
+
+    [Fact]
     public void DisplayBodyOmitsRepeatedSystemPrefix()
     {
         var bookmark = new GalacticBookmark { System = "LTT 4428", Body = "LTT 4428 E 5 a" };
@@ -31,6 +74,7 @@ public sealed class BookmarkCatalogTests
                     Id = id,
                     System = "Wille",
                     Body = "Wille 2 d",
+                    IsFavorite = true,
                     CategoryAssignments = [BookmarkCategoryCatalog.SurfaceMining],
                     SurfaceMiningMap = new MineMapSurvey
                     {
@@ -43,24 +87,132 @@ public sealed class BookmarkCatalogTests
                         BodyName = "Wille 2 d",
                         BodyType = "Rocky body",
                         LocationSignal = 4,
+                        LocationRadiusMeters = 6_440,
                         PlanetRadiusMeters = 855_573,
                         Center = center,
-                        Markers = [new MineMapMarker { Material = "Ruby", Location = markerLocation }],
+                        Markers =
+                        [
+                            new MineMapMarker
+                            {
+                                Material = "Ruby",
+                                MineralAmount = MineMapRating.High,
+                                Density = MineMapRating.Low,
+                                Location = markerLocation,
+                            },
+                        ],
                     },
                 }
             );
 
-            var restored = Assert.Single(new BookmarkCatalog(directory).Items).SurfaceMiningMap!;
+            var restoredBookmark = Assert.Single(new BookmarkCatalog(directory).Items);
+            var restored = restoredBookmark.SurfaceMiningMap!;
+            Assert.True(restoredBookmark.IsFavorite);
             Assert.Equal(center, restored.Center);
             Assert.Equal(markerLocation, Assert.Single(restored.Markers).Location);
             var json = File.ReadAllText(Path.Combine(directory, "bookmarks.json"));
-            Assert.Contains("\"MineralAmount\": \"Low\"", json);
+            Assert.Contains("\"MineralAmount\": \"High\"", json);
+            Assert.Contains("\"LocationRadiusMeters\": 6440", json);
+            Assert.Contains("\"IsFavorite\": true", json);
         }
         finally
         {
             if (Directory.Exists(directory))
             {
                 Directory.Delete(directory, true);
+            }
+        }
+    }
+
+    [Fact]
+    public void ExportAndImportPreserveCompleteSurfaceMiningBookmark()
+    {
+        var sourceDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        var destinationDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        try
+        {
+            var center = new SurfaceCoordinate(14.2609, -79.3291);
+            var markerLocation = new SurfaceCoordinate(14.265, -79.32);
+            var id = Guid.NewGuid();
+            var source = new BookmarkCatalog(sourceDirectory);
+            source.Save(
+                new GalacticBookmark
+                {
+                    Id = id,
+                    System = "LTT 4428",
+                    Body = "LTT 4428 D 5 a",
+                    Position = new GalacticCoordinate(83.6, -4.2, 1.5),
+                    IsFavorite = true,
+                    Notes = "Return with the Rhino.",
+                    CategoryAssignments = [BookmarkCategoryCatalog.SurfaceMining],
+                    SurfaceMiningMap = new MineMapSurvey
+                    {
+                        Id = id,
+                        FrontierId = "F123",
+                        CommanderName = "Fenris",
+                        SystemName = "LTT 4428",
+                        SystemAddress = 42,
+                        SystemPosition = new GalacticCoordinate(83.6, -4.2, 1.5),
+                        BodyId = 5,
+                        BodyName = "LTT 4428 D 5 a",
+                        BodyType = "Rocky body",
+                        ArrivalDistanceLs = 19_797,
+                        LocationSignal = 20,
+                        LocationRadiusMeters = 6_380,
+                        PlanetRadiusMeters = 855_573,
+                        Center = center,
+                        Notes = "Return with the Rhino.",
+                        Markers =
+                        [
+                            new MineMapMarker
+                            {
+                                Material = "Grandiderite",
+                                MineralAmount = MineMapRating.High,
+                                Density = MineMapRating.Medium,
+                                Location = markerLocation,
+                            },
+                        ],
+                    },
+                }
+            );
+
+            var exported = source.Export();
+            var destination = new BookmarkCatalog(destinationDirectory);
+            destination.Import(exported);
+            destination.Import(exported);
+
+            var importedBookmark = Assert.Single(destination.Items);
+            Assert.Equal(id, importedBookmark.Id);
+            Assert.Equal("LTT 4428", importedBookmark.System);
+            Assert.Equal("LTT 4428 D 5 a", importedBookmark.Body);
+            Assert.Equal(new GalacticCoordinate(83.6, -4.2, 1.5), importedBookmark.Position);
+            Assert.True(importedBookmark.IsFavorite);
+            Assert.Equal("Return with the Rhino.", importedBookmark.Notes);
+            Assert.Contains(BookmarkCategoryCatalog.SurfaceMining, importedBookmark.EffectiveCategoryAssignments);
+
+            var importedMap = Assert.IsType<MineMapSurvey>(importedBookmark.SurfaceMiningMap);
+            Assert.Equal("Fenris", importedMap.CommanderName);
+            Assert.Equal(20, importedMap.LocationSignal);
+            Assert.Equal(6_380, importedMap.LocationRadiusMeters);
+            Assert.Equal(855_573, importedMap.PlanetRadiusMeters);
+            Assert.Equal(19_797, importedMap.ArrivalDistanceLs);
+            Assert.Equal(center, importedMap.Center);
+            Assert.Equal("Return with the Rhino.", importedMap.Notes);
+            var importedMarker = Assert.Single(importedMap.Markers);
+            Assert.Equal("Grandiderite", importedMarker.Material);
+            Assert.Equal(MineMapRating.High, importedMarker.MineralAmount);
+            Assert.Equal(MineMapRating.Medium, importedMarker.Density);
+            Assert.Equal(markerLocation, importedMarker.Location);
+        }
+        finally
+        {
+            if (Directory.Exists(sourceDirectory))
+            {
+                Directory.Delete(sourceDirectory, true);
+            }
+
+            if (Directory.Exists(destinationDirectory))
+            {
+                Directory.Delete(destinationDirectory, true);
             }
         }
     }
@@ -293,6 +445,7 @@ public sealed class BookmarkCatalogTests
             BodyName = "Wille 2 d",
             BodyType = "Rocky body",
             LocationSignal = signal,
+            LocationRadiusMeters = 2_470,
             PlanetRadiusMeters = 855_573,
             Center = center,
             CreatedAt = DateTimeOffset.UtcNow,
@@ -308,4 +461,13 @@ public sealed class BookmarkCatalogTests
             SurfaceMiningMap = map,
         };
     }
+
+    private static MineMapMarker Marker(string material) =>
+        new()
+        {
+            Material = material,
+            MineralAmount = MineMapRating.High,
+            Density = MineMapRating.Low,
+            Location = new SurfaceCoordinate(1, 2),
+        };
 }

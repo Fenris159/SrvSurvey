@@ -25,6 +25,9 @@ public sealed record GalacticBookmark
     public string Reserve { get; init; } = "";
     public string Overlaps { get; init; } = "";
     public string ResourceExtractionSites { get; init; } = "";
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool IsFavorite { get; init; }
     public MineMapSurvey? SurfaceMiningMap { get; init; }
     public DateTimeOffset Updated { get; init; } = DateTimeOffset.UtcNow;
 
@@ -58,10 +61,29 @@ public sealed record GalacticBookmark
         EffectiveCategoryAssignments.Contains(category, StringComparer.OrdinalIgnoreCase);
 
     [JsonIgnore]
-    public string DisplayDetails =>
-        SurfaceMiningMap is { } map
-            ? $"Signal {map.LocationSignal} · {map.MineralAmount} amount · {map.Density} density"
-            : Minerals;
+    public string DisplayDetails => SurfaceMiningMap is { } map ? BuildSurfaceMiningDetails(map) : Minerals;
+
+    private static string BuildSurfaceMiningDetails(MineMapSurvey map)
+    {
+        var mostValuable = map
+            .Markers.Select(marker => marker.Material)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Select(name => new
+            {
+                Name = name,
+                Value = SurfaceMiningCommodityCatalog.TryResolve(name, out var commodity)
+                    ? commodity.AverageSellPrice
+                    : 0,
+            })
+            .OrderByDescending(item => item.Value)
+            .ThenBy(item => item.Name, StringComparer.OrdinalIgnoreCase)
+            .Take(2)
+            .Select(item => item.Name)
+            .ToArray();
+        return mostValuable.Length == 0
+            ? $"Signal {map.LocationSignal}"
+            : $"Signal {map.LocationSignal} · {string.Join(" · ", mostValuable)}";
+    }
 
     public static (string Body, string Ring) SplitBodyAndRing(string? body, string? ring = null)
     {
@@ -120,7 +142,7 @@ public sealed class BookmarkCatalog
     public BookmarkCatalog(string directory)
     {
         path = Path.Combine(directory, "bookmarks.json");
-        items = File.Exists(path) ? Parse(File.ReadAllText(path)) : [];
+        items = File.Exists(path) ? Parse(File.ReadAllText(path), skipInvalidSurfaceMiningMaps: true) : [];
     }
 
     public IReadOnlyList<GalacticBookmark> Items => items;
@@ -225,7 +247,9 @@ public sealed class BookmarkCatalog
         Converters = { new JsonStringEnumConverter() },
     };
 
-    public static List<GalacticBookmark> Parse(string json)
+    public static List<GalacticBookmark> Parse(string json) => Parse(json, skipInvalidSurfaceMiningMaps: false);
+
+    private static List<GalacticBookmark> Parse(string json, bool skipInvalidSurfaceMiningMaps)
     {
         try
         {
@@ -254,12 +278,21 @@ public sealed class BookmarkCatalog
                     );
                 }
             }
+            var valid = new List<GalacticBookmark>(parsed.Count);
             foreach (var bookmark in parsed)
             {
-                Validate(bookmark);
+                try
+                {
+                    Validate(bookmark);
+                    valid.Add(bookmark);
+                }
+                catch (JsonException) when (skipInvalidSurfaceMiningMaps && bookmark.IsSurfaceMiningMap)
+                {
+                    // Surface Mining is unreleased; discard stale development-schema maps without hiding other bookmarks.
+                }
             }
 
-            return parsed;
+            return valid;
         }
         catch (ArgumentOutOfRangeException exception)
         {
@@ -366,13 +399,17 @@ public sealed class BookmarkCatalog
             || !double.IsFinite(map.ArrivalDistanceLs)
             || map.ArrivalDistanceLs < 0
             || map.LocationSignal <= 0
-            || !Enum.IsDefined(map.MineralAmount)
-            || !Enum.IsDefined(map.Density)
+            || !double.IsFinite(map.LocationRadiusMeters)
+            || map.LocationRadiusMeters <= 0
             || !double.IsFinite(map.PlanetRadiusMeters)
             || map.PlanetRadiusMeters <= 0
             || map.Markers is null
             || map.Markers.Any(marker =>
-                marker is null || marker.Id == Guid.Empty || string.IsNullOrWhiteSpace(marker.Material)
+                marker is null
+                || marker.Id == Guid.Empty
+                || string.IsNullOrWhiteSpace(marker.Material)
+                || !Enum.IsDefined(marker.MineralAmount)
+                || !Enum.IsDefined(marker.Density)
             )
         )
         {
