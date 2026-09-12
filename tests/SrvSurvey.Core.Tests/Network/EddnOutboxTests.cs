@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IO.Compression;
 using System.Net;
 using Newtonsoft.Json;
@@ -377,7 +378,7 @@ public sealed class EddnOutboxTests
         using var folder = new TemporaryFolder();
         var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
         var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
-        var transport = EddnTransportTests.createTransport(_ =>
+        EddnTransport transport = EddnTransportTests.createTransport(_ =>
             Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK))
         );
         var logs = new List<string>();
@@ -385,7 +386,7 @@ public sealed class EddnOutboxTests
         disabled.setEnabled(false, discardPendingWhenDisabled: true);
         Assert.False(disabled.hasExclusiveOwnership);
 
-        using (var currentOwner = outbox(path, transport, () => now))
+        using (EddnOutbox currentOwner = outbox(path, transport, () => now))
         {
             Assert.True(currentOwner.hasExclusiveOwnership);
             disabled.setEnabled(false, discardPendingWhenDisabled: true);
@@ -402,8 +403,8 @@ public sealed class EddnOutboxTests
     public async Task OptOutFromNonOwnerCancelsOwnerAndDiscardsSharedQueue()
     {
         using var folder = new TemporaryFolder();
-        var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
-        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        string path = Path.Combine(folder.path, "eddn-outbox-v1.json");
+        DateTimeOffset now = DateTimeOffset.Parse("2026-07-28T12:00:00Z", CultureInfo.InvariantCulture);
         var handler = new CancelThenSucceedHandler();
         using var client = new HttpClient(handler);
         var transport = new EddnTransport(client, new Uri("https://live.example.test/upload/"));

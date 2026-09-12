@@ -10,7 +10,7 @@ public sealed class DiagnosticsUpdateNavigationTests
     [AvaloniaFact]
     public void UpdateNavigationSelectsUpdatesTabBeforeShowingDiagnostics()
     {
-        using var viewModel = MainWindowViewModelTestBuilder.Create(
+        using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
             Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}")
         );
         var window = new MainWindow(viewModel);

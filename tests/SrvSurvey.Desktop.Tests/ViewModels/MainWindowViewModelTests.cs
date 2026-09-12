@@ -3500,7 +3500,7 @@ public sealed class MainWindowViewModelTests
                 []
             );
             var switcher = new MutableGameWindowSwitcher { AvailableWindowCount = 1 };
-            using var viewModel = MainWindowViewModelTestBuilder.Create(
+            using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
                 builder => builder.WithAppDataPaths(paths).WithGameWindowSwitcher(switcher)
             );
@@ -3581,7 +3581,7 @@ public sealed class MainWindowViewModelTests
                 []
             );
             var publisher = new RecordingEddnPublisher();
-            using var viewModel = MainWindowViewModelTestBuilder.Create(
+            using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
                 builder => builder.WithAppDataPaths(paths).WithEddnPublisher(publisher)
             );
@@ -3626,7 +3626,7 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "cache"),
                 []
             );
-            using var viewModel = MainWindowViewModelTestBuilder.Create(
+            using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
                 builder => builder.WithAppDataPaths(paths)
             );
@@ -3701,7 +3701,7 @@ public sealed class MainWindowViewModelTests
                 {"timestamp":"2026-07-25T12:00:02Z","event":"ShipLocker","Items":[{"Name":"healthmonitor","Count":2}],"Components":[],"Consumables":[],"Data":[]}
                 """
             );
-            using var viewModel = MainWindowViewModelTestBuilder.Create(
+            using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
                 builder =>
                     builder.WithAppDataPaths(
@@ -3786,7 +3786,7 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "cache"),
                 []
             );
-            using var viewModel = MainWindowViewModelTestBuilder.Create(
+            using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 root,
                 builder => builder.WithAppDataPaths(paths)
             );
