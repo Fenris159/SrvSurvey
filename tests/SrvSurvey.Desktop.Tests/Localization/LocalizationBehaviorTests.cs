@@ -1,3 +1,4 @@
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Headless.XUnit;
@@ -48,6 +49,31 @@ public sealed class LocalizationBehaviorTests : IDisposable
         LocalizationBehavior.SetEnabled(button, true);
 
         Assert.Equal("Schließen", button.Content);
+    }
+
+    [Fact]
+    public void EnabledBehaviorTranslatesContextMenuHeaders()
+    {
+        LocalizationCatalog.Initialize("de");
+        var menuItem = new MenuItem { Header = "New bookmark" };
+
+        LocalizationBehavior.SetEnabled(menuItem, true);
+
+        Assert.Equal("Neues Lesezeichen", menuItem.Header);
+    }
+
+    [Fact]
+    public void EnabledBehaviorTranslatesTooltipsAndAccessibilityNames()
+    {
+        LocalizationCatalog.Initialize("de");
+        var button = new Button();
+        ToolTip.SetTip(button, "Open category overlay settings");
+        AutomationProperties.SetName(button, "Open category overlay settings");
+
+        LocalizationBehavior.SetEnabled(button, true);
+
+        Assert.Equal("Öffnen Sie die Kategorie-Overlay-Einstellungen", ToolTip.GetTip(button));
+        Assert.Equal("Öffnen Sie die Kategorie-Overlay-Einstellungen", AutomationProperties.GetName(button));
     }
 
     [AvaloniaFact]

@@ -156,14 +156,10 @@
     <StyleInclude Source="avares://SrvSurvey.Desktop/Styles/RavenStyles.axaml" />
     <StyleInclude Source="avares://SrvSurvey.Desktop/Styles/GuardianLegacyOverlayStyles.axaml" />
     <StyleInclude Source="avares://SrvSurvey.Desktop/Styles/OverlayTypographyStyles.axaml" />
-    <Style Selector="TextBlock">
-      <Setter Property="localization:LocalizationBehavior.Enabled" Value="True" />
-    </Style>
-    <Style Selector="Button, CheckBox, RadioButton, Expander, TabItem">
+    <Style Selector="Control">
       <Setter Property="localization:LocalizationBehavior.Enabled" Value="True" />
     </Style>
     <Style Selector="TextBox">
-      <Setter Property="localization:LocalizationBehavior.Enabled" Value="True" />
       <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="False" />
     </Style>
     <Style Selector="ListBox">

@@ -25,11 +25,18 @@ The supported solution is `SrvSurvey.slnx` and requires the .NET
 dotnet tool restore
 dotnet restore SrvSurvey.slnx
 dotnet csharpier check .
+./tools/Generate-AvaloniaLocalization.ps1 -Verify
 dotnet build SrvSurvey.slnx --configuration Release --no-restore
 dotnet test SrvSurvey.slnx --configuration Release --no-build --no-restore
 ```
 
 Run `dotnet csharpier format .` to format C# before committing.
+
+The desktop language selector supports English, German, Spanish, French,
+Brazilian Portuguese, Russian, Simplified Chinese, and pseudo-localization.
+When user-facing desktop text changes, run
+`./tools/Generate-AvaloniaLocalization.ps1 -TranslateMissing`; the verification
+command above rejects stale, incomplete, or structurally invalid catalogs.
 
 The Docker build runs the same solution build and test before exporting a
 self-contained `linux-x64` publish directory. GitHub Actions additionally
