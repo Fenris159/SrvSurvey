@@ -25,7 +25,7 @@
                                VisibleMaterials="{Binding VisibleMaterials}"
                                VisibleMarkerIds="{Binding VisibleMarkerIds}"
                                ShowMarkerLabels="{Binding ShowMarkerLabelsInOverviewMap}"
-                               PlanningCircleCenter="{Binding PlanningCircleCenter}"
+                               PlanningCircleCenter="{Binding PlanningCircleCenter, Mode=TwoWay}"
                                GridBrush="{DynamicResource RavenMapGridBrush}"
                                AccentBrush="{DynamicResource RavenAccentBrush}"
                                PlayerBrush="{DynamicResource RavenSuccessBrush}"

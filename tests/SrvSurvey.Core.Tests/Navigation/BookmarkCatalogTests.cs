@@ -51,6 +51,18 @@ public sealed class BookmarkCatalogTests
     }
 
     [Fact]
+    public void SurfaceMiningDetailsFallBackToSignalWhenNoMaterialsResolve()
+    {
+        var bookmark = SurfaceBookmark(Guid.NewGuid(), 4, new SurfaceCoordinate(1, 2));
+        bookmark = bookmark with
+        {
+            SurfaceMiningMap = bookmark.SurfaceMiningMap! with { Markers = [Marker("Unresolved material")] },
+        };
+
+        Assert.Equal("Signal 4", bookmark.DisplayDetails);
+    }
+
+    [Fact]
     public void DisplayBodyOmitsRepeatedSystemPrefix()
     {
         var bookmark = new GalacticBookmark { System = "LTT 4428", Body = "LTT 4428 E 5 a" };

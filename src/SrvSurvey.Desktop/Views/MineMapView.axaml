@@ -103,6 +103,10 @@
                          ItemsSource="{Binding FilteredSurveys}"
                          SelectedItem="{Binding SelectedSurveyRow, Mode=TwoWay}"
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                  <ListBox.KeyBindings>
+                    <KeyBinding Gesture="Enter" Command="{Binding ActivateSelectedSurveyCommand}" />
+                    <KeyBinding Gesture="Space" Command="{Binding ActivateSelectedSurveyCommand}" />
+                  </ListBox.KeyBindings>
                   <ListBox.ContextMenu>
                     <ContextMenu>
                       <MenuItem Header="Copy system name"
@@ -271,10 +275,10 @@
                         Background="{DynamicResource RavenBorderBrush}" />
                 <StackPanel Grid.Column="2" Spacing="8">
                   <TextBlock FontWeight="SemiBold" Text="Mineral&#10;Amount:" />
-                  <ComboBox ItemsSource="{Binding MarkerRatingFilterOptions}"
+                  <ComboBox ItemsSource="{x:Static vm:MineMapViewModel.MarkerRatingFilterOptions}"
                             SelectedItem="{Binding SelectedMineralAmountFilter, Mode=TwoWay}" />
                   <TextBlock Margin="0,6,0,0" FontWeight="SemiBold" Text="Density" />
-                  <ComboBox ItemsSource="{Binding MarkerRatingFilterOptions}"
+                  <ComboBox ItemsSource="{x:Static vm:MineMapViewModel.MarkerRatingFilterOptions}"
                             SelectedItem="{Binding SelectedDensityFilter, Mode=TwoWay}" />
                 </StackPanel>
               </Grid>

@@ -106,6 +106,13 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
                 this.editBookmark(row.Id);
             }
         });
+        ActivateSelectedSurveyCommand = new WorkspaceCommand(() =>
+        {
+            if (SelectedSurveyRow is { } row)
+            {
+                SelectSurvey(row);
+            }
+        });
         RefreshCatalog();
     }
 
@@ -189,7 +196,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         private set => Set(ref markerFilters, value);
     }
 
-    public IReadOnlyList<string> MarkerRatingFilterOptions => MarkerRatingFilters;
+    public static IReadOnlyList<string> MarkerRatingFilterOptions => MarkerRatingFilters;
 
     public string SelectedMineralAmountFilter
     {
@@ -419,6 +426,8 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     public ICommand OpenSurfaceMiningGuideCommand { get; }
 
     public ICommand EditSelectedBookmarkCommand { get; }
+
+    public ICommand ActivateSelectedSurveyCommand { get; }
 
     public async Task ApplyUpdateAsync(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
@@ -785,7 +794,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
             survey.BodyName,
             survey.BodyType,
             survey.Name,
-            survey.LocationRadiusMeters.ToString(CultureInfo.InvariantCulture),
+            (survey.LocationRadiusMeters / 1000).ToString("0.##", CultureInfo.InvariantCulture),
             string.Join(
                 ' ',
                 survey.Markers.Select(marker => $"{marker.Material} {marker.MineralAmount} {marker.Density}")

@@ -3,12 +3,14 @@ using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
+using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Controls;
 using SrvSurvey.Desktop.Tests.ViewModels;
 using SrvSurvey.Desktop.ViewModels;
 using SrvSurvey.Desktop.Views;
@@ -18,6 +20,118 @@ namespace SrvSurvey.Desktop.Tests.Presentation;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class MineMapViewInteractionTests
 {
+    [AvaloniaFact]
+    public void MineMapControlPropertiesRoundTripAndRenderACompleteMap()
+    {
+        var survey = RenderedSurvey();
+        var playerLocation = new SurfaceCoordinate(14.261, -79.329);
+        var planningCenter = new SurfaceCoordinate(14.262, -79.328);
+        IReadOnlySet<string> materials = new HashSet<string>(["Ruby"], StringComparer.OrdinalIgnoreCase);
+        IReadOnlySet<Guid> markerIds = new HashSet<Guid>(survey.Markers.Select(marker => marker.Id));
+        var control = new MineMapControl
+        {
+            Survey = survey,
+            PlayerLocation = playerLocation,
+            PlayerHeading = 120,
+            ViewportZoom = 2,
+            AllowViewportInteraction = true,
+            ShowMarkerLabels = true,
+            VisibleMaterials = materials,
+            VisibleMarkerIds = markerIds,
+            PlanningCircleCenter = planningCenter,
+            MapBackground = Brushes.Black,
+            GridBrush = Brushes.Gray,
+            AccentBrush = Brushes.Cyan,
+            PlayerBrush = Brushes.LimeGreen,
+            TextBrush = Brushes.White,
+            ZoneBrush = Brushes.Gold,
+        };
+        var window = new Window
+        {
+            Content = control,
+            Width = 500,
+            Height = 500,
+        };
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            using var frame = window.CaptureRenderedFrame();
+
+            Assert.NotNull(frame);
+            Assert.Same(survey, control.Survey);
+            Assert.Equal(playerLocation, control.PlayerLocation);
+            Assert.Equal(120, control.PlayerHeading);
+            Assert.Equal(2, control.ViewportZoom);
+            Assert.True(control.AllowViewportInteraction);
+            Assert.True(control.ShowMarkerLabels);
+            Assert.Same(materials, control.VisibleMaterials);
+            Assert.Same(markerIds, control.VisibleMarkerIds);
+            Assert.Equal(planningCenter, control.PlanningCircleCenter);
+            Assert.Same(Brushes.Black, control.MapBackground);
+            Assert.Same(Brushes.Gray, control.GridBrush);
+            Assert.Same(Brushes.Cyan, control.AccentBrush);
+            Assert.Same(Brushes.LimeGreen, control.PlayerBrush);
+            Assert.Same(Brushes.White, control.TextBrush);
+            Assert.Same(Brushes.Gold, control.ZoneBrush);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void MineMapControlSupportsWheelPanAndPlanningCirclePointerInteractions()
+    {
+        var control = new MineMapControl
+        {
+            Survey = RenderedSurvey(),
+            AllowViewportInteraction = true,
+            Width = 500,
+            Height = 500,
+        };
+        var window = new Window
+        {
+            Content = control,
+            Width = 500,
+            Height = 500,
+        };
+        var center = new Point(250, 250);
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            window.MouseWheel(center, new Vector(0, 1));
+            Dispatcher.UIThread.RunJobs();
+            Assert.True(control.ViewportZoom > 1);
+
+            window.MouseDown(center, MouseButton.Left, RawInputModifiers.None);
+            window.MouseMove(new Point(300, 275), RawInputModifiers.None);
+            window.MouseUp(new Point(300, 275), MouseButton.Left, RawInputModifiers.None);
+            Dispatcher.UIThread.RunJobs();
+
+            window.MouseDown(center, MouseButton.Right, RawInputModifiers.None);
+            Assert.NotNull(control.PlanningCircleCenter);
+            var initialPlanningCenter = control.PlanningCircleCenter;
+            window.MouseMove(new Point(320, 250), RawInputModifiers.None);
+            window.MouseUp(new Point(320, 250), MouseButton.Right, RawInputModifiers.None);
+            Dispatcher.UIThread.RunJobs();
+            Assert.NotEqual(initialPlanningCenter, control.PlanningCircleCenter);
+
+            window.MouseDown(center, MouseButton.Right, RawInputModifiers.None);
+            window.MouseUp(center, MouseButton.Right, RawInputModifiers.None);
+            Dispatcher.UIThread.RunJobs();
+            Assert.Null(control.PlanningCircleCenter);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     [AvaloniaFact]
     public void ClickingSurfaceMapStarPersistsFavoriteAndRefreshesToSolidGlyph()
     {
@@ -70,6 +184,30 @@ public sealed class MineMapViewInteractionTests
             button =>
                 string.Equals(ToolTip.GetTip(button)?.ToString(), "Add or remove favorite", StringComparison.Ordinal)
         );
+
+    private static MineMapSurvey RenderedSurvey()
+    {
+        var center = new SurfaceCoordinate(14.2609, -79.3291);
+        return new MineMapSurvey
+        {
+            SystemName = "LTT 4428",
+            BodyName = "LTT 4428 D 5 a",
+            LocationSignal = 20,
+            LocationRadiusMeters = 6_380,
+            PlanetRadiusMeters = 855_573.1875,
+            Center = center,
+            Markers =
+            [
+                new MineMapMarker
+                {
+                    Material = "Ruby",
+                    MineralAmount = MineMapRating.High,
+                    Density = MineMapRating.Medium,
+                    Location = MineMapService.GetDestination(center, 45, 1_000, 855_573.1875),
+                },
+            ],
+        };
+    }
 
     private static void SeedSurvey(string directory)
     {

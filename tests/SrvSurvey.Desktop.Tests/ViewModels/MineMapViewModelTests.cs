@@ -26,6 +26,9 @@ public sealed class MineMapViewModelTests
         Assert.Equal(37, viewModel.HotspotRows.Count);
         Assert.Equal(37, viewModel.SurfaceHuntRows.Count);
         Assert.Empty(new BookmarkCatalog(directory.Path).Items);
+
+        viewModel.ActivateSelectedSurveyCommand.Execute(null);
+        Assert.Null(viewModel.ActiveSurvey);
     }
 
     [Fact]
@@ -44,6 +47,42 @@ public sealed class MineMapViewModelTests
 
         Assert.Equal(row.Id, viewModel.ActiveSurvey?.Id);
         Assert.Equal(1, viewModel.SelectedTab);
+    }
+
+    [Fact]
+    public void ActivateSelectedSurveyCommandOpensKeyboardSelectedSurvey()
+    {
+        using var directory = new TemporaryDirectory();
+        SeedSurvey(directory.Path);
+        using var viewModel = new MineMapViewModel(
+            directory.Path,
+            new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
+            _ => { }
+        );
+        viewModel.SelectedSurveyRow = Assert.Single(viewModel.FilteredSurveys);
+
+        viewModel.ActivateSelectedSurveyCommand.Execute(null);
+
+        Assert.Equal(viewModel.SelectedSurveyRow.Id, viewModel.ActiveSurvey?.Id);
+        Assert.Equal(1, viewModel.SelectedTab);
+    }
+
+    [Fact]
+    public void RadiusSearchUsesTheDisplayedKilometerValue()
+    {
+        using var directory = new TemporaryDirectory();
+        SeedSurvey(directory.Path);
+        using var viewModel = new MineMapViewModel(
+            directory.Path,
+            new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
+            _ => { }
+        );
+
+        viewModel.SearchText = "6.44";
+
+        Assert.Single(viewModel.FilteredSurveys);
+        viewModel.SearchText = "6440";
+        Assert.Empty(viewModel.FilteredSurveys);
     }
 
     [Fact]
@@ -145,7 +184,7 @@ public sealed class MineMapViewModelTests
                 && marker.Density == MineMapRating.High
         );
 
-        Assert.Equal(["ALL", "HIGH", "MEDIUM", "LOW"], viewModel.MarkerRatingFilterOptions);
+        Assert.Equal(["ALL", "HIGH", "MEDIUM", "LOW"], MineMapViewModel.MarkerRatingFilterOptions);
         Assert.True(viewModel.VisibleMarkerIds.SetEquals(survey.Markers.Select(marker => marker.Id)));
 
         viewModel.SelectedMineralAmountFilter = "medium";

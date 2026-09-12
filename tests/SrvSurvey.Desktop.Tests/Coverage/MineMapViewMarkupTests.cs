@@ -22,6 +22,18 @@ public sealed class MineMapViewMarkupTests
         Assert.Contains("ViewportZoom", map.Attribute("ViewportZoom")?.Value);
         Assert.Equal("{Binding VisibleMarkerIds}", map.Attribute("VisibleMarkerIds")?.Value);
         Assert.Equal("{Binding PlanningCircleCenter, Mode=TwoWay}", map.Attribute("PlanningCircleCenter")?.Value);
+        var surfaceMapsResults = Assert.Single(
+            document.Descendants(avalonia + "ListBox"),
+            list =>
+                list.Attributes()
+                    .Any(attribute => attribute.Name.LocalName == "Name" && attribute.Value == "SurfaceMapsResults")
+        );
+        var activationBindings = surfaceMapsResults.Descendants(avalonia + "KeyBinding").ToArray();
+        Assert.Equal(["Enter", "Space"], activationBindings.Select(binding => binding.Attribute("Gesture")?.Value));
+        Assert.All(
+            activationBindings,
+            binding => Assert.Equal("{Binding ActivateSelectedSurveyCommand}", binding.Attribute("Command")?.Value)
+        );
         var slider = Assert.Single(document.Descendants(avalonia + "Slider"));
         Assert.Equal("1", slider.Attribute("Minimum")?.Value);
         Assert.Equal("15", slider.Attribute("Maximum")?.Value);
@@ -246,13 +258,13 @@ public sealed class MineMapViewMarkupTests
         Assert.Contains(
             document.Descendants(avalonia + "ComboBox"),
             comboBox =>
-                comboBox.Attribute("ItemsSource")?.Value == "{Binding MarkerRatingFilterOptions}"
+                comboBox.Attribute("ItemsSource")?.Value == "{x:Static vm:MineMapViewModel.MarkerRatingFilterOptions}"
                 && comboBox.Attribute("SelectedItem")?.Value == "{Binding SelectedMineralAmountFilter, Mode=TwoWay}"
         );
         Assert.Contains(
             document.Descendants(avalonia + "ComboBox"),
             comboBox =>
-                comboBox.Attribute("ItemsSource")?.Value == "{Binding MarkerRatingFilterOptions}"
+                comboBox.Attribute("ItemsSource")?.Value == "{x:Static vm:MineMapViewModel.MarkerRatingFilterOptions}"
                 && comboBox.Attribute("SelectedItem")?.Value == "{Binding SelectedDensityFilter, Mode=TwoWay}"
         );
         foreach (
@@ -405,7 +417,7 @@ public sealed class MineMapViewMarkupTests
                 && map.Attribute("PlayerLocation")?.Value == "{Binding PlayerLocation}"
                 && map.Attribute("PlayerHeading")?.Value == "{Binding PlayerHeading}"
                 && map.Attribute("VisibleMarkerIds")?.Value == "{Binding VisibleMarkerIds}"
-                && map.Attribute("PlanningCircleCenter")?.Value == "{Binding PlanningCircleCenter}"
+                && map.Attribute("PlanningCircleCenter")?.Value == "{Binding PlanningCircleCenter, Mode=TwoWay}"
                 && map.Attribute("PlayerBrush")?.Value == "{DynamicResource RavenSuccessBrush}"
         );
         var workspace = XDocument.Load(Path.Combine(root, "src", "SrvSurvey.Desktop", "Views", "MineMapView.axaml"));

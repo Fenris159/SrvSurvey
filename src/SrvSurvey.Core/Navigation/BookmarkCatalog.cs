@@ -68,17 +68,12 @@ public sealed record GalacticBookmark
         var mostValuable = map
             .Markers.Select(marker => marker.Material)
             .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Select(name => new
-            {
-                Name = name,
-                Value = SurfaceMiningCommodityCatalog.TryResolve(name, out var commodity)
-                    ? commodity.AverageSellPrice
-                    : 0,
-            })
-            .OrderByDescending(item => item.Value)
-            .ThenBy(item => item.Name, StringComparer.OrdinalIgnoreCase)
+            .Select(name => SurfaceMiningCommodityCatalog.TryResolve(name, out var commodity) ? commodity : null)
+            .OfType<SurfaceMiningCommodity>()
+            .OrderByDescending(commodity => commodity.AverageSellPrice)
+            .ThenBy(commodity => commodity.Name, StringComparer.OrdinalIgnoreCase)
             .Take(2)
-            .Select(item => item.Name)
+            .Select(commodity => commodity.Name)
             .ToArray();
         return mostValuable.Length == 0
             ? $"Signal {map.LocationSignal}"

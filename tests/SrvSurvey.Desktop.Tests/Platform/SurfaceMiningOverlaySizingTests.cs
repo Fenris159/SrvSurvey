@@ -42,11 +42,11 @@ public sealed class SurfaceMiningOverlaySizingTests
 
         Assert.Equal(
             Avalonia.Media.Colors.Red,
-            Assert.IsAssignableFrom<Avalonia.Media.ISolidColorBrush>(window.Background).Color
+            Assert.IsType<Avalonia.Media.ISolidColorBrush>(window.Background, exactMatch: false).Color
         );
         Assert.Equal(
             Avalonia.Media.Colors.Red,
-            Assert.IsAssignableFrom<Avalonia.Media.ISolidColorBrush>(line.Background).Color
+            Assert.IsType<Avalonia.Media.ISolidColorBrush>(line.Background, exactMatch: false).Color
         );
         Assert.Equal(1, window.Opacity);
         Assert.Equal(1, line.Opacity);

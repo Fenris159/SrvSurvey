@@ -346,6 +346,26 @@ public sealed class MineMapServiceTests
     }
 
     [Fact]
+    public async Task ExtremeFiniteKilometerValuesAreRejectedBeforeProjection()
+    {
+        using var directory = new TemporaryDirectory();
+        var context = Context(new SurfaceCoordinate(10, 20));
+        var service = new MineMapService(directory.Path);
+        var extreme = double.MaxValue.ToString("R", System.Globalization.CultureInfo.InvariantCulture);
+
+        var surveyResult = await service.ExecuteAsync($".mining 120 {extreme} 4", context);
+
+        Assert.False(surveyResult.Succeeded);
+        Assert.Empty(service.Surveys);
+        Assert.True((await service.ExecuteAsync(".mining 120 6.44 4", context)).Succeeded);
+
+        var markerResult = await service.ExecuteAsync($".mine 15 ruby {extreme} high/low", context);
+
+        Assert.False(markerResult.Succeeded);
+        Assert.Empty(service.ActiveSurvey!.Markers);
+    }
+
+    [Fact]
     public async Task MineCommandCanonicalizesCaseAndRejectsNamesOutsideHotspotList()
     {
         using var directory = new TemporaryDirectory();
