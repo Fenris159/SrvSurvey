@@ -36,6 +36,7 @@ public sealed class FrontierCapiSnapshotParserTests
         Assert.Equal(100, Assert.Single(carrier.SellOrders).Quantity);
         Assert.Equal(150, Assert.Single(carrier.BuyOrders).Remaining);
         Assert.Contains("Refuel", carrier.Services);
+        Assert.Equal("Honoto", carrier.CurrentJump);
         Assert.Equal(fetchedAt, snapshot.FetchedAt);
     }
 
@@ -93,6 +94,24 @@ public sealed class FrontierCapiSnapshotParserTests
         var sale = Assert.Single(snapshot.Carrier!.SellOrders);
         Assert.Equal("Health Monitor", sale.Name);
         Assert.Equal("Microresource", sale.Category);
+    }
+
+    [Fact]
+    public void ParsesObjectShapedCarrierCurrentJumpDefensively()
+    {
+        const string profile = """
+            {"commander":{"name":"Drew","rank":{}},"ships":[]}
+            """;
+        const string carrier = """
+            {
+              "name":{"callsign":"ABC-123"},
+              "itinerary":{"currentJump":{"starsystem":"Honoto"}}
+            }
+            """;
+
+        var snapshot = FrontierCapiSnapshotParser.Parse(profile, carrier, DateTimeOffset.UnixEpoch);
+
+        Assert.Equal("Honoto", snapshot.Carrier!.CurrentJump);
     }
 
     [Fact]
@@ -328,6 +347,10 @@ public sealed class FrontierCapiSnapshotParserTests
             "cargoTotalValue":70000000,
             "allTimeProfit":123000000,
             "balanceAllocForPurchaseOrders":45000000
+          },
+          "itinerary": {
+            "totalDistanceJumpedLY":1420,
+            "currentJump":"Honoto"
           },
           "cargo": [
             {"commodity":"tritium","locName":"Tritium","qty":20,"value":1000000},

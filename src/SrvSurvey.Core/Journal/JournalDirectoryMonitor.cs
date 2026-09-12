@@ -11,7 +11,7 @@ public sealed class JournalDirectoryMonitor
 {
     private const int StatusReadFailureReportThreshold = 2;
 
-    private readonly string journalDirectory;
+    private readonly string[] journalDirectories;
     private readonly string? targetFrontierId;
     private readonly Dictionary<string, JournalIdentityCacheEntry> journalIdentityCache;
     private readonly Func<string, CompanionFileStampReadResult> companionFileStampReader;
@@ -35,19 +35,40 @@ public sealed class JournalDirectoryMonitor
     private bool hasCompletedFirstPoll;
     private bool isAwaitingCommanderIdentity;
     private bool lastReportedAwaitingCommanderIdentity;
+    private string? activeJournalDirectory;
 
     public JournalDirectoryMonitor(string journalDirectory, string? targetFrontierId = null)
-        : this(journalDirectory, targetFrontierId, ReadCompanionFileStamp) { }
+        : this([journalDirectory], targetFrontierId, ReadCompanionFileStamp) { }
+
+    public JournalDirectoryMonitor(IReadOnlyList<string> journalDirectories, string? targetFrontierId = null)
+        : this(journalDirectories, targetFrontierId, ReadCompanionFileStamp) { }
 
     internal JournalDirectoryMonitor(
         string journalDirectory,
         string? targetFrontierId,
         Func<string, CompanionFileStampReadResult> companionFileStampReader
     )
+        : this([journalDirectory], targetFrontierId, companionFileStampReader) { }
+
+    internal JournalDirectoryMonitor(
+        IReadOnlyList<string> journalDirectories,
+        string? targetFrontierId,
+        Func<string, CompanionFileStampReadResult> companionFileStampReader
+    )
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(journalDirectory);
+        ArgumentNullException.ThrowIfNull(journalDirectories);
         ArgumentNullException.ThrowIfNull(companionFileStampReader);
-        this.journalDirectory = Path.GetFullPath(journalDirectory);
+        var pathComparer = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+        this.journalDirectories = journalDirectories
+            .Where(path => !string.IsNullOrWhiteSpace(path))
+            .Select(Path.GetFullPath)
+            .Distinct(pathComparer)
+            .ToArray();
+        if (this.journalDirectories.Length == 0)
+        {
+            throw new ArgumentException("At least one journal directory is required.", nameof(journalDirectories));
+        }
+
         this.targetFrontierId = string.IsNullOrWhiteSpace(targetFrontierId) ? null : targetFrontierId.Trim();
         this.companionFileStampReader = companionFileStampReader;
         journalIdentityCache = new Dictionary<string, JournalIdentityCacheEntry>(
@@ -101,9 +122,11 @@ public sealed class JournalDirectoryMonitor
 
     private async Task<JournalMonitorUpdate> PollLockedAsync(CancellationToken cancellationToken)
     {
-        if (!Directory.Exists(journalDirectory))
+        if (!journalDirectories.Any(Directory.Exists))
         {
-            throw new DirectoryNotFoundException($"The journal folder does not exist: {journalDirectory}");
+            throw new DirectoryNotFoundException(
+                $"None of the journal folders exist: {string.Join(", ", journalDirectories)}"
+            );
         }
 
         var events = new List<JournalEventEnvelope>();
@@ -148,6 +171,7 @@ public sealed class JournalDirectoryMonitor
         if (!PathsEqual(latestJournal.FullName, currentJournalPath))
         {
             FlushPendingLine(events, errors);
+            SetActiveJournalDirectory(latestJournal.DirectoryName);
             currentJournalPath = latestJournal.FullName;
             currentJournalOffset = 0;
             pendingJournalBytes = [];
@@ -243,10 +267,12 @@ public sealed class JournalDirectoryMonitor
 
     private async Task<FileInfo?> FindLatestJournalAsync(CancellationToken cancellationToken)
     {
-        var journals = new DirectoryInfo(journalDirectory)
-            .EnumerateFiles("Journal.*.log", SearchOption.TopDirectoryOnly)
+        var journals = journalDirectories
+            .Where(Directory.Exists)
+            .SelectMany(EnumerateJournalFiles)
             .OrderByDescending(file => file.LastWriteTimeUtc)
             .ThenByDescending(file => file.Name, StringComparer.Ordinal)
+            .ThenByDescending(file => file.FullName, StringComparer.Ordinal)
             .ToArray();
         if (targetFrontierId is null)
         {
@@ -304,7 +330,8 @@ public sealed class JournalDirectoryMonitor
             {
                 if (
                     !JournalEventEnvelope.TryParse(line, out var journalEvent, out _)
-                    || journalEvent?.EventName != "Commander"
+                    || journalEvent is null
+                    || (journalEvent.EventName != "Commander" && journalEvent.EventName != "LoadGame")
                     || !journalEvent.Payload.TryGetProperty("FID", out var value)
                     || value.ValueKind != System.Text.Json.JsonValueKind.String
                 )
@@ -328,6 +355,20 @@ public sealed class JournalDirectoryMonitor
             frontierId
         );
         return frontierId;
+    }
+
+    private static FileInfo[] EnumerateJournalFiles(string journalDirectory)
+    {
+        try
+        {
+            return new DirectoryInfo(journalDirectory)
+                .EnumerateFiles("Journal.*.log", SearchOption.TopDirectoryOnly)
+                .ToArray();
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            return [];
+        }
     }
 
     private async Task ReadJournalAppendAsync(
@@ -446,7 +487,7 @@ public sealed class JournalDirectoryMonitor
     {
         EliteStatus? status = null;
         var readErrorRecovered = false;
-        var statusPath = Path.Combine(journalDirectory, StatusFileReader.FileName);
+        var statusPath = Path.Combine(GetCompanionDirectory(), StatusFileReader.FileName);
         var statusStampState = GetCompanionFileStamp(statusPath, errors, out var nextStatusFileStamp);
         if (statusStampState == CompanionFileStampState.Available && nextStatusFileStamp != statusFileStamp)
         {
@@ -499,7 +540,7 @@ public sealed class JournalDirectoryMonitor
     )
     {
         NavRouteSnapshot? navRoute = null;
-        var navRoutePath = Path.Combine(journalDirectory, NavRouteFileReader.FileName);
+        var navRoutePath = Path.Combine(GetCompanionDirectory(), NavRouteFileReader.FileName);
         var navRouteStampState = GetCompanionFileStamp(navRoutePath, errors, out var nextNavRouteFileStamp);
         if (navRouteStampState == CompanionFileStampState.Available && nextNavRouteFileStamp != navRouteFileStamp)
         {
@@ -532,7 +573,7 @@ public sealed class JournalDirectoryMonitor
     private async Task<CargoSnapshot?> PollCargoCompanionAsync(List<string> errors, CancellationToken cancellationToken)
     {
         CargoSnapshot? cargo = null;
-        var cargoPath = Path.Combine(journalDirectory, CargoFileReader.FileName);
+        var cargoPath = Path.Combine(GetCompanionDirectory(), CargoFileReader.FileName);
         var cargoStampState = GetCompanionFileStamp(cargoPath, errors, out var nextCargoFileStamp);
         if (cargoStampState == CompanionFileStampState.Available && nextCargoFileStamp != cargoFileStamp)
         {
@@ -568,7 +609,7 @@ public sealed class JournalDirectoryMonitor
     )
     {
         ShipLockerSnapshot? shipLocker = null;
-        var shipLockerPath = Path.Combine(journalDirectory, ShipLockerFileReader.FileName);
+        var shipLockerPath = Path.Combine(GetCompanionDirectory(), ShipLockerFileReader.FileName);
         var shipLockerStampState = GetCompanionFileStamp(shipLockerPath, errors, out var nextShipLockerFileStamp);
         if (shipLockerStampState == CompanionFileStampState.Available && nextShipLockerFileStamp != shipLockerFileStamp)
         {
@@ -604,7 +645,7 @@ public sealed class JournalDirectoryMonitor
     )
     {
         MarketSnapshot? market = null;
-        var marketPath = Path.Combine(journalDirectory, MarketFileReader.FileName);
+        var marketPath = Path.Combine(GetCompanionDirectory(), MarketFileReader.FileName);
         var marketStampState = GetCompanionFileStamp(marketPath, errors, out var nextMarketFileStamp);
         if (marketStampState == CompanionFileStampState.Available && nextMarketFileStamp != marketFileStamp)
         {
@@ -632,6 +673,38 @@ public sealed class JournalDirectoryMonitor
         }
 
         return market;
+    }
+
+    private string GetCompanionDirectory()
+    {
+        return activeJournalDirectory ?? journalDirectories.FirstOrDefault(Directory.Exists) ?? journalDirectories[0];
+    }
+
+    private void SetActiveJournalDirectory(string? journalDirectory)
+    {
+        if (journalDirectory is null || PathsEqual(journalDirectory, activeJournalDirectory))
+        {
+            return;
+        }
+
+        activeJournalDirectory = journalDirectory;
+        statusContentHash = null;
+        navRouteContentHash = null;
+        cargoContentHash = null;
+        shipLockerContentHash = null;
+        marketContentHash = null;
+        statusFileStamp = null;
+        navRouteFileStamp = null;
+        cargoFileStamp = null;
+        shipLockerFileStamp = null;
+        marketFileStamp = null;
+        CurrentStatus = null;
+        CurrentNavRoute = null;
+        CurrentCargo = null;
+        CurrentShipLocker = null;
+        CurrentMarket = null;
+        ResetStatusReadFailure();
+        companionFileStampErrors.Clear();
     }
 
     private CompanionFileStampState GetCompanionFileStamp(

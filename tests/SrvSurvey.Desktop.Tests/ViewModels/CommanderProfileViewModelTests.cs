@@ -258,6 +258,159 @@ public sealed class CommanderProfileViewModelTests
     }
 
     [Fact]
+    public async Task JournalCarrierJumpRequestOverridesOlderCapiAndCancellationClearsIt()
+    {
+        var fetchedAt = DateTimeOffset.Parse("2026-09-12T15:50:00Z");
+        var snapshot = CreateSnapshot(fetchedAt) with
+        {
+            Carrier = CreateSnapshot(fetchedAt).Carrier! with { CurrentJump = "None" },
+            CarrierFetchedAt = fetchedAt,
+        };
+        using var viewModel = new CommanderProfileViewModel(
+            new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt))
+        );
+        await viewModel.OpenAsync();
+
+        viewModel.UpdateJournalCarrierJump(
+            "Fenris",
+            [
+                ParseJournalEvent(
+                    """
+                    {"timestamp":"2026-09-12T15:57:43Z","event":"CarrierJumpRequest","CarrierID":3710879232,"SystemName":"Honoto","Body":"Honoto","DepartureTime":"2026-09-12T16:14:10Z"}
+                    """
+                ),
+            ]
+        );
+
+        Assert.Equal("Honoto", viewModel.CarrierOperations.Single(row => row.Label == "Current jump").Value);
+
+        viewModel.UpdateJournalCarrierJump(
+            "Fenris",
+            [
+                ParseJournalEvent(
+                    """
+                    {"timestamp":"2026-09-12T15:58:15Z","event":"CarrierJumpCancelled","CarrierID":3710879232}
+                    """
+                ),
+            ]
+        );
+
+        Assert.Equal("None plotted", viewModel.CarrierOperations.Single(row => row.Label == "Current jump").Value);
+    }
+
+    [Fact]
+    public async Task JournalCarrierJumpCompletionClearsOnlyTheMatchingCarrierRequest()
+    {
+        var fetchedAt = DateTimeOffset.Parse("2026-09-12T15:50:00Z");
+        var snapshot = CreateSnapshot(fetchedAt) with { CarrierFetchedAt = fetchedAt };
+        using var viewModel = new CommanderProfileViewModel(
+            new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt))
+        );
+        await viewModel.OpenAsync();
+        viewModel.UpdateJournalCarrierJump(
+            "Fenris",
+            [
+                ParseJournalEvent(
+                    """
+                    {"timestamp":"2026-09-12T15:57:43Z","event":"CarrierJumpRequest","CarrierID":3710879232,"SystemName":"Honoto","DepartureTime":"2026-09-12T16:14:10Z"}
+                    """
+                ),
+            ]
+        );
+
+        viewModel.UpdateJournalCarrierJump(
+            "Fenris",
+            [
+                ParseJournalEvent(
+                    """
+                    {"timestamp":"2026-09-12T16:14:12Z","event":"CarrierJump","MarketID":123,"StarSystem":"Elsewhere"}
+                    """
+                ),
+            ]
+        );
+        Assert.Equal("Honoto", viewModel.CarrierOperations.Single(row => row.Label == "Current jump").Value);
+
+        viewModel.UpdateJournalCarrierJump(
+            "Fenris",
+            [
+                ParseJournalEvent(
+                    """
+                    {"timestamp":"2026-09-12T16:14:15Z","event":"CarrierJump","MarketID":3710879232,"StarSystem":"Honoto"}
+                    """
+                ),
+            ]
+        );
+        Assert.Equal("None plotted", viewModel.CarrierOperations.Single(row => row.Label == "Current jump").Value);
+    }
+
+    [Fact]
+    public async Task CarrierLocationClearsARequestedJumpOnlyAfterItsDepartureTime()
+    {
+        var fetchedAt = DateTimeOffset.Parse("2026-09-12T15:50:00Z");
+        var snapshot = CreateSnapshot(fetchedAt) with { CarrierFetchedAt = fetchedAt };
+        using var viewModel = new CommanderProfileViewModel(
+            new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt))
+        );
+        await viewModel.OpenAsync();
+        viewModel.UpdateJournalCarrierJump(
+            "Fenris",
+            [
+                ParseJournalEvent(
+                    """
+                    {"timestamp":"2026-09-12T15:57:43Z","event":"CarrierJumpRequest","CarrierID":3710879232,"SystemName":"Honoto","DepartureTime":"2026-09-12T16:14:10Z"}
+                    """
+                ),
+                ParseJournalEvent(
+                    """
+                    {"timestamp":"2026-09-12T16:00:00Z","event":"CarrierLocation","CarrierID":3710879232,"StarSystem":"LTT 4428"}
+                    """
+                ),
+            ]
+        );
+        Assert.Equal("Honoto", viewModel.CarrierOperations.Single(row => row.Label == "Current jump").Value);
+
+        viewModel.UpdateJournalCarrierJump(
+            "Fenris",
+            [
+                ParseJournalEvent(
+                    """
+                    {"timestamp":"2026-09-12T16:14:15Z","event":"CarrierLocation","CarrierID":3710879232,"StarSystem":"Honoto"}
+                    """
+                ),
+            ]
+        );
+        Assert.Equal("None plotted", viewModel.CarrierOperations.Single(row => row.Label == "Current jump").Value);
+    }
+
+    [Fact]
+    public async Task NewerCapiCarrierJumpWinsOverOlderJournalState()
+    {
+        var fetchedAt = DateTimeOffset.Parse("2026-09-12T15:50:00Z");
+        var snapshot = CreateSnapshot(fetchedAt) with
+        {
+            Carrier = CreateSnapshot(fetchedAt).Carrier! with { CurrentJump = "Achenar" },
+            CarrierFetchedAt = fetchedAt,
+        };
+        using var viewModel = new CommanderProfileViewModel(
+            new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt))
+        );
+        await viewModel.OpenAsync();
+
+        viewModel.UpdateJournalCarrierJump(
+            "Fenris",
+            [
+                ParseJournalEvent(
+                    """
+                    {"timestamp":"2026-09-12T15:49:00Z","event":"CarrierJumpCancelled","CarrierID":3710879232}
+                    """
+                ),
+            ]
+        );
+
+        Assert.Equal("Achenar", viewModel.CarrierOperations.Single(row => row.Label == "Current jump").Value);
+    }
+
+    [Fact]
     public async Task JournalAddsPersonalGoalProgressWithoutLosingInaraDetails()
     {
         var fetchedAt = DateTimeOffset.Parse("2026-07-31T12:00:00Z");
@@ -744,6 +897,27 @@ public sealed class CommanderProfileViewModelTests
     }
 
     [Fact]
+    public async Task ManualProfileRefreshForcesFreshCarrierData()
+    {
+        var cached = CreateSnapshot(DateTimeOffset.UtcNow);
+        var refreshed = CreateSnapshot(cached.FetchedAt.AddMinutes(1));
+        var account = new StubAccountService(new FrontierAccountState(true, cached, cached.FetchedAt), refreshed);
+        var pending = new TaskCompletionSource<FrontierAccountSnapshot>(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
+        account.PendingRefresh = pending.Task;
+        using var viewModel = new CommanderProfileViewModel(account);
+        await viewModel.OpenAsync();
+
+        viewModel.RefreshCommand.Execute(null);
+        Assert.True(SpinWait.SpinUntil(() => account.RefreshCount == 1, TimeSpan.FromSeconds(3)));
+        Assert.True(account.LastForceCarrierRefresh);
+
+        pending.SetResult(refreshed);
+        Assert.True(SpinWait.SpinUntil(() => !viewModel.IsBusy, TimeSpan.FromSeconds(3)));
+    }
+
+    [Fact]
     public async Task CommanderCardNavigationSelectsProfileOutsideCategoryList()
     {
         var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-profile-navigation-{Guid.NewGuid():N}");
@@ -971,6 +1145,72 @@ public sealed class CommanderProfileViewModelTests
         }
     }
 
+    [Fact]
+    public async Task MainJournalRefreshUpdatesAndClearsCurrentCarrierJumpImmediately()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-profile-carrier-jump-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            var journalPath = Path.Combine(journals, "Journal.2026-09-12T150000.01.log");
+            await File.WriteAllTextAsync(
+                journalPath,
+                """
+                {"timestamp":"2026-09-12T15:00:00Z","event":"Commander","Name":"Fenris","FID":"F123"}
+                {"timestamp":"2026-09-12T15:00:01Z","event":"LoadGame","Commander":"Fenris","FID":"F123","Odyssey":true}
+                {"timestamp":"2026-09-12T15:57:43Z","event":"CarrierJumpRequest","CarrierID":3710879232,"SystemName":"Honoto","Body":"Honoto","DepartureTime":"2026-09-12T16:14:10Z"}
+
+                """
+            );
+            var fetchedAt = DateTimeOffset.Parse("2026-09-12T15:50:00Z");
+            var cached = CreateSnapshot(fetchedAt) with
+            {
+                Carrier = CreateSnapshot(fetchedAt).Carrier! with { CurrentJump = string.Empty },
+                CarrierFetchedAt = fetchedAt,
+            };
+            var profile = new CommanderProfileViewModel(
+                new StubAccountService(new FrontierAccountState(true, cached, cached.FetchedAt))
+            );
+            await profile.OpenAsync();
+            using var main = MainWindowViewModelTestBuilder.Create(
+                journals,
+                builder =>
+                    builder
+                        .WithAppDataPaths(
+                            new AppDataPaths(
+                                Path.Combine(root, "config"),
+                                Path.Combine(root, "profile"),
+                                Path.Combine(root, "cache"),
+                                []
+                            )
+                        )
+                        .WithFrontierProfile(profile)
+            );
+
+            await main.RefreshAsync();
+            Assert.Equal("Honoto", profile.CarrierOperations.Single(row => row.Label == "Current jump").Value);
+
+            await File.AppendAllTextAsync(
+                journalPath,
+                """
+                {"timestamp":"2026-09-12T15:58:15Z","event":"CarrierJumpCancelled","CarrierID":3710879232}
+
+                """
+            );
+            await main.RefreshAsync();
+
+            Assert.Equal("None plotted", profile.CarrierOperations.Single(row => row.Label == "Current jump").Value);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
     private static FrontierAccountSnapshot CreateSnapshot(DateTimeOffset fetchedAt)
     {
         var ship = new FrontierShipSnapshot(
@@ -1108,6 +1348,7 @@ public sealed class CommanderProfileViewModelTests
         }
 
         public int RefreshCount { get; private set; }
+        public bool LastForceCarrierRefresh { get; private set; }
         public Task<FrontierAccountSnapshot>? PendingRefresh { get; set; }
         public Action<CancellationToken>? StateRequested { get; set; }
 
@@ -1166,6 +1407,15 @@ public sealed class CommanderProfileViewModelTests
 
         public Task<FrontierAccountSnapshot> RefreshAsync(CancellationToken cancellationToken = default)
         {
+            return RefreshAsync(forceCarrierRefresh: false, cancellationToken);
+        }
+
+        public Task<FrontierAccountSnapshot> RefreshAsync(
+            bool forceCarrierRefresh,
+            CancellationToken cancellationToken = default
+        )
+        {
+            LastForceCarrierRefresh = forceCarrierRefresh;
             RefreshCount++;
             if (PendingRefresh is not null)
             {

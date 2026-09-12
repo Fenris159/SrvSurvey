@@ -243,6 +243,59 @@ public sealed class FrontierAccountServiceTests
     }
 
     [Fact]
+    public async Task ForcedCarrierRefreshBypassesFifteenMinuteCarrierCadence()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-carrier-force-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        try
+        {
+            var now = DateTimeOffset.Parse("2026-09-12T15:50:00Z");
+            var store = new MemoryCredentialStore { Document = LinkedCredential(now) };
+            var currentJump = "None";
+            var requests = new List<string>();
+            using var service = CreateService(
+                store,
+                request =>
+                {
+                    requests.Add(request.RequestUri!.AbsolutePath);
+                    return request.RequestUri.AbsolutePath switch
+                    {
+                        "/profile" => Json(
+                            HttpStatusCode.OK,
+                            "{\"commander\":{\"name\":\"Fenris\",\"rank\":{}},\"ships\":[]}"
+                        ),
+                        "/fleetcarrier" => Json(
+                            HttpStatusCode.OK,
+                            "{\"name\":{\"callsign\":\"N4W-T0Z\"},\"itinerary\":{\"currentJump\":\""
+                                + currentJump
+                                + "\"}}"
+                        ),
+                        _ => Json(HttpStatusCode.NoContent, string.Empty),
+                    };
+                },
+                root,
+                () => now
+            );
+
+            var first = await service.RefreshAsync();
+            Assert.Empty(first.Carrier!.CurrentJump);
+
+            now = now.AddMinutes(2);
+            currentJump = "Honoto";
+            requests.Clear();
+            var second = await service.RefreshAsync(forceCarrierRefresh: true);
+
+            Assert.Equal("Honoto", second.Carrier!.CurrentJump);
+            Assert.Contains("/fleetcarrier", requests);
+            Assert.Equal(now, second.CarrierFetchedAt);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task CarrierEnvelopeMetadataIsCachedWithoutInventingCarrier()
     {
         var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-carrier-envelope-{Guid.NewGuid():N}");

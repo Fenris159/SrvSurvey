@@ -282,6 +282,36 @@ public sealed class JournalDirectoryMonitorTests : IDisposable
         Assert.Equal(["Fileheader", "Commander"], afterIdentity.JournalEvents.Select(entry => entry.EventName));
     }
 
+    [Fact]
+    public async Task PollSelectsRequestedCommanderAcrossJournalDirectories()
+    {
+        var steam = Path.Combine(temporaryDirectory, "steam");
+        var epic = Path.Combine(temporaryDirectory, "epic");
+        Directory.CreateDirectory(steam);
+        Directory.CreateDirectory(epic);
+        var steamJournal = Path.Combine(steam, "Journal.2026-07-24T100000.01.log");
+        var epicJournal = Path.Combine(epic, "Journal.2026-07-24T110000.01.log");
+        await File.WriteAllTextAsync(steamJournal, "{\"event\":\"Commander\",\"Name\":\"Steam\",\"FID\":\"F123\"}\n");
+        await File.WriteAllTextAsync(epicJournal, "{\"event\":\"Commander\",\"Name\":\"Epic\",\"FID\":\"F456\"}\n");
+        await File.WriteAllTextAsync(
+            Path.Combine(steam, StatusFileReader.FileName),
+            "{\"event\":\"Status\",\"Flags\":0,\"GuiFocus\":0}"
+        );
+        await File.WriteAllTextAsync(
+            Path.Combine(epic, StatusFileReader.FileName),
+            "{\"event\":\"Status\",\"Flags\":0,\"GuiFocus\":1}"
+        );
+        File.SetLastWriteTimeUtc(steamJournal, new DateTime(2026, 7, 24, 10, 0, 0, DateTimeKind.Utc));
+        File.SetLastWriteTimeUtc(epicJournal, new DateTime(2026, 7, 24, 11, 0, 0, DateTimeKind.Utc));
+        var monitor = new JournalDirectoryMonitor([steam, epic], "F456");
+
+        var update = await monitor.PollAsync();
+
+        Assert.Equal(epicJournal, update.JournalPath);
+        Assert.Equal("Epic", Assert.Single(update.JournalEvents).Payload.GetProperty("Name").GetString());
+        Assert.Equal(GuiFocus.InternalPanel, update.Status?.GuiFocus);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

@@ -101,6 +101,12 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     private string? journalCommunityGoalCommanderName;
     private DateTimeOffset? journalCommunityGoalsUpdatedAt;
     private string journalCommunityGoalHistoryError = string.Empty;
+    private string? journalCarrierJumpCommanderName;
+    private string? journalCarrierId;
+    private string journalCarrierJumpDestination = string.Empty;
+    private DateTimeOffset? journalCarrierJumpDepartureAt;
+    private DateTimeOffset? journalCarrierJumpUpdatedAt;
+    private bool hasJournalCarrierJumpState;
     private string? detectedFrontierId;
     private string? detectedCommanderName;
     private string? activeFrontierId;
@@ -601,6 +607,93 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         journalReputationUpdatedAt = latest.Timestamp;
         commanderReputationRows = null;
         OnPropertyChanged(nameof(CommanderReputation));
+    }
+
+    public void UpdateJournalCarrierJump(string? commanderName, IReadOnlyList<JournalEventEnvelope> journalEvents)
+    {
+        ArgumentNullException.ThrowIfNull(journalEvents);
+        var normalizedCommander = commanderName?.Trim();
+        var commanderChanged = !string.Equals(
+            journalCarrierJumpCommanderName,
+            normalizedCommander,
+            StringComparison.OrdinalIgnoreCase
+        );
+        if (commanderChanged)
+        {
+            journalCarrierJumpCommanderName = normalizedCommander;
+            journalCarrierId = null;
+            journalCarrierJumpDestination = string.Empty;
+            journalCarrierJumpDepartureAt = null;
+            journalCarrierJumpUpdatedAt = null;
+            hasJournalCarrierJumpState = false;
+        }
+
+        var changed = commanderChanged;
+        foreach (var journalEvent in journalEvents)
+        {
+            var observedAt = journalEvent.Timestamp ?? now().ToUniversalTime();
+            switch (journalEvent.EventName)
+            {
+                case "CarrierJumpRequest":
+                    journalCarrierId = ReadJournalIdentifier(journalEvent.Payload, "CarrierID");
+                    journalCarrierJumpDestination = FirstNonEmpty(
+                        ReadJournalString(journalEvent.Payload, "SystemName"),
+                        ReadJournalString(journalEvent.Payload, "StarSystem"),
+                        ReadJournalString(journalEvent.Payload, "Body")
+                    );
+                    journalCarrierJumpDepartureAt = ReadJournalDateTimeOffset(journalEvent.Payload, "DepartureTime");
+                    journalCarrierJumpUpdatedAt = observedAt;
+                    hasJournalCarrierJumpState = true;
+                    changed = true;
+                    break;
+                case "CarrierJumpCancelled":
+                    if (MatchesJournalCarrier(journalEvent.Payload))
+                    {
+                        journalCarrierJumpDestination = string.Empty;
+                        journalCarrierJumpDepartureAt = null;
+                        journalCarrierJumpUpdatedAt = observedAt;
+                        hasJournalCarrierJumpState = true;
+                        changed = true;
+                    }
+
+                    break;
+                case "CarrierJump":
+                    if (
+                        hasJournalCarrierJumpState
+                        && !string.IsNullOrWhiteSpace(journalCarrierJumpDestination)
+                        && MatchesJournalCarrier(journalEvent.Payload)
+                    )
+                    {
+                        journalCarrierJumpDestination = string.Empty;
+                        journalCarrierJumpDepartureAt = null;
+                        journalCarrierJumpUpdatedAt = observedAt;
+                        changed = true;
+                    }
+
+                    break;
+                case "CarrierLocation":
+                    if (
+                        hasJournalCarrierJumpState
+                        && !string.IsNullOrWhiteSpace(journalCarrierJumpDestination)
+                        && MatchesJournalCarrier(journalEvent.Payload)
+                        && (journalCarrierJumpDepartureAt is null || observedAt >= journalCarrierJumpDepartureAt)
+                    )
+                    {
+                        journalCarrierJumpDestination = string.Empty;
+                        journalCarrierJumpDepartureAt = null;
+                        journalCarrierJumpUpdatedAt = observedAt;
+                        changed = true;
+                    }
+
+                    break;
+            }
+        }
+
+        if (changed)
+        {
+            carrierOperationRows = null;
+            OnPropertyChanged(nameof(CarrierOperations));
+        }
     }
 
     public void UpdateJournalCommunityGoals(string? commanderName, IReadOnlyList<JournalEventEnvelope> journalEvents)
@@ -1279,6 +1372,14 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             journalCommunityGoalHistory = [];
             journalCommunityGoalsUpdatedAt = null;
             journalCommunityGoalHistoryError = string.Empty;
+            journalCarrierJumpCommanderName = normalizedName;
+            journalCarrierId = null;
+            journalCarrierJumpDestination = string.Empty;
+            journalCarrierJumpDepartureAt = null;
+            journalCarrierJumpUpdatedAt = null;
+            hasJournalCarrierJumpState = false;
+            carrierOperationRows = null;
+            OnPropertyChanged(nameof(CarrierOperations));
             UpdateLocalInventory(null, null, isSuppressed: false);
             await LoadJournalCommunityGoalHistoryAsync(normalizedId, normalizedName, cancellationToken);
         }
@@ -1664,7 +1765,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         {
             IsBusy = true;
             StatusMessage = "Refreshing commander data from Frontier...";
-            var refreshed = await accountService.RefreshAsync(CancellationToken.None);
+            var refreshed = await accountService.RefreshAsync(forceCarrierRefresh: true, CancellationToken.None);
             if (contextVersion != Interlocked.Read(ref commanderContextVersion))
             {
                 return;
@@ -2265,8 +2366,28 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             new("Notorious access", carrier.NotoriousAccess ? "Allowed" : "Denied"),
             new("Tritium reserve", $"{carrier.Tritium:N0} t"),
             new("Distance jumped", $"{carrier.TotalDistanceJumped:N1} ly"),
-            new("Current jump", FirstNonEmpty(carrier.CurrentJump, "None plotted")),
+            new("Current jump", FirstNonEmpty(EffectiveCarrierCurrentJump(), "None plotted")),
         ];
+    }
+
+    private string EffectiveCarrierCurrentJump()
+    {
+        if (
+            !hasJournalCarrierJumpState
+            || Snapshot is null
+            || !string.Equals(
+                Snapshot.CommanderName,
+                journalCarrierJumpCommanderName,
+                StringComparison.OrdinalIgnoreCase
+            )
+            || journalCarrierJumpUpdatedAt is null
+            || Snapshot.CarrierFetchedAt is { } carrierFetchedAt && journalCarrierJumpUpdatedAt < carrierFetchedAt
+        )
+        {
+            return NormalizeCurrentJump(Carrier?.CurrentJump);
+        }
+
+        return journalCarrierJumpDestination;
     }
 
     private IReadOnlyList<FrontierDetailRowViewModel> BuildCarrierFinances()
@@ -2765,6 +2886,59 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             && double.TryParse(value.GetString(), NumberStyles.Float, CultureInfo.InvariantCulture, out number)
             ? number
             : null;
+    }
+
+    private bool MatchesJournalCarrier(JsonElement payload)
+    {
+        var candidate = FirstNonEmpty(
+            ReadJournalIdentifier(payload, "CarrierID"),
+            ReadJournalIdentifier(payload, "MarketID")
+        );
+        return string.IsNullOrWhiteSpace(journalCarrierId)
+            || string.IsNullOrWhiteSpace(candidate)
+            || string.Equals(journalCarrierId, candidate, StringComparison.Ordinal);
+    }
+
+    private static string ReadJournalString(JsonElement payload, string name)
+    {
+        return payload.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String
+            ? value.GetString()?.Trim() ?? string.Empty
+            : string.Empty;
+    }
+
+    private static string ReadJournalIdentifier(JsonElement payload, string name)
+    {
+        if (!payload.TryGetProperty(name, out var value))
+        {
+            return string.Empty;
+        }
+
+        return value.ValueKind switch
+        {
+            JsonValueKind.String => value.GetString()?.Trim() ?? string.Empty,
+            JsonValueKind.Number => value.GetRawText(),
+            _ => string.Empty,
+        };
+    }
+
+    private static DateTimeOffset? ReadJournalDateTimeOffset(JsonElement payload, string name)
+    {
+        var value = ReadJournalString(payload, name);
+        return DateTimeOffset.TryParse(
+            value,
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+            out var parsed
+        )
+            ? parsed
+            : null;
+    }
+
+    private static string NormalizeCurrentJump(string? value)
+    {
+        return string.Equals(value?.Trim(), "None", StringComparison.OrdinalIgnoreCase)
+            ? string.Empty
+            : value?.Trim() ?? string.Empty;
     }
 
     private static string FormatCredits(long value)

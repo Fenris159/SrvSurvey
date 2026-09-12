@@ -1,6 +1,6 @@
 # SrvSurvey-XP Cross-Platform
 
-Current release candidate version: **2.1.3.0-rc.46.5**
+Current release candidate version: **2.1.3.0-rc.47**
 
 In-app **Guides > Chat Commands** provides an activity-by-activity reference for
 surface bookmarks, mining, exobiology, ground targets, Guardian surveys, settlement
@@ -16,28 +16,22 @@ tests, packaging, and development tools. Existing SrvSurvey profiles remain
 supported through a verified, backup-first import; the imported source is never
 modified.
 
-## RC46.5 highlights
+## RC47 highlights
 
-- Completes [Surface Mining maps](docs/SURFACE_MINING.md) with measured site
-  borders, deposit-specific Low, Medium or High ratings, live-position placement,
-  center correction and automatic map selection when entering a saved site.
-- Adds sortable Hotspot List and Surface Hunt references plus the compact Mining
-  Ref overlay for selected commodities, body types and average prices.
-- Adds expandable deposit details, bookmark favorites, amount and density
-  filters, a planning circle, optional Overview Map labels and a compact
-  resolution-aware alignment helper.
-- Adds horizontal table scrolling at narrow window sizes. Precision trackpads,
-  horizontal mouse wheels and Shift+wheel now reach the nearest horizontal pane
-  throughout the desktop application.
-- Keeps the primary workspace shortcuts fixed while only the accordion navigation
-  scrolls, and starts its activity groups collapsed.
-- Strengthens shared bookmark migration, map validation, sort-state isolation,
-  Linux overlay hosting and Privacy & Sharing guidance.
-- Verifies complete Surface Mining bookmark export and import, including the map
-  center, radius, markers, ratings, notes and favorite state.
-- Retains RC46 and all earlier release-candidate features.
+- Detects journal folders from simultaneous Steam, Epic/Heroic, Frontier/Wine,
+  Lutris and Bottles installations on Linux so each Commander remains selectable.
+- Keeps launcher-prefix scans independent, preventing a large unrelated game tree
+  from hiding a valid sibling Elite Dangerous installation.
+- Includes journal-only Commanders in the main, post-processing and visited-stars
+  Commander lists across every discovered installation.
+- Loads a Fleet Carrier's plotted jump from the Frontier companion API on refresh
+  and updates it immediately from live request, cancellation, completion and
+  location journal events.
+- Bounds launcher configuration parsing so malformed or adversarial configuration
+  text cannot stall journal-folder discovery.
+- Retains the RC46.5 and RC46 release history.
 
-See the [complete RC46.5 release notes](CurrentReleaseNotes.md).
+See the [complete RC47 release notes](CurrentReleaseNotes.md).
 
 ## Install
 

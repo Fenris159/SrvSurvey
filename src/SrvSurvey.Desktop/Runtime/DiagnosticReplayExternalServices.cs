@@ -48,6 +48,15 @@ internal sealed class DiagnosticReplayFrontierAccountService : IFrontierAccountS
         return ConnectAsync(cancellationToken);
     }
 
+    public Task<FrontierAccountSnapshot> RefreshAsync(
+        bool forceCarrierRefresh,
+        CancellationToken cancellationToken = default
+    )
+    {
+        _ = forceCarrierRefresh;
+        return ConnectAsync(cancellationToken);
+    }
+
     public Task UnlinkAsync(CancellationToken cancellationToken = default)
     {
         return CancelConnectionAsync(cancellationToken);
