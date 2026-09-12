@@ -61,6 +61,41 @@ public sealed class CommanderInstancesViewModelTests : IDisposable
         Assert.False(viewModel.HasMultipleGameWindows);
     }
 
+    [Fact]
+    public async Task LaunchesJournalDiscoveredCommanderFromItsOwnPrefix()
+    {
+        var profileDirectory = Path.Combine(temporaryDirectory, "profiles");
+        var steam = Path.Combine(temporaryDirectory, "steam");
+        var epic = Path.Combine(temporaryDirectory, "epic");
+        Directory.CreateDirectory(profileDirectory);
+        Directory.CreateDirectory(steam);
+        Directory.CreateDirectory(epic);
+        await File.WriteAllTextAsync(
+            Path.Combine(steam, "Journal.2026-09-01T100000.01.log"),
+            "{\"event\":\"Commander\",\"Name\":\"Steam Cmdr\",\"FID\":\"F123\"}\n"
+        );
+        await File.WriteAllTextAsync(
+            Path.Combine(epic, "Journal.2026-09-01T110000.01.log"),
+            "{\"event\":\"Commander\",\"Name\":\"Epic Cmdr\",\"FID\":\"F456\"}\n"
+        );
+        var launcher = new RecordingLauncher();
+        var viewModel = new CommanderInstancesViewModel(
+            new CommanderProfileCatalog(profileDirectory, [steam, epic]),
+            launcher,
+            steam,
+            "F123",
+            new RecordingSwitcher()
+        );
+
+        await viewModel.RefreshAsync();
+        await viewModel.LaunchSelectedAsync();
+
+        var option = Assert.Single(viewModel.Commanders);
+        Assert.Equal("F456", option.FrontierId);
+        Assert.Equal(epic, option.JournalDirectory);
+        Assert.Equal(epic, launcher.JournalDirectory);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

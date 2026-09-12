@@ -738,7 +738,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             JournalFolderPath = ResolvePrimaryJournalPath(folderResolution) ?? "No journal location is configured.";
             CandidatePaths = FormatCandidatePathsDisplay(folderResolution);
             TargetFrontierId = NormalizeOptionalId(targetFrontierId);
-            var commanderProfileCatalog = new CommanderProfileCatalog(AppDataPaths.DataDirectory);
+            var commanderProfileCatalog = new CommanderProfileCatalog(
+                AppDataPaths.DataDirectory,
+                folderResolution.AvailablePaths
+            );
             CommanderPreference = new CommanderPreferenceViewModel(
                 commanderPreferenceSettingsStore ?? new CommanderPreferenceSettingsStore(AppDataPaths.UiSettingsPath),
                 commanderProfileCatalog,
@@ -2147,7 +2150,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
         JournalFolderResolution resolution,
         string? targetFrontierId
     ) =>
-        resolution.SelectedPath is null ? null : new JournalDirectoryMonitor(resolution.SelectedPath, targetFrontierId);
+        resolution.AvailablePaths.Count == 0
+            ? null
+            : new JournalDirectoryMonitor(resolution.AvailablePaths, targetFrontierId);
 
     private static (HttpClient? Client, VisitedStarsCacheViewModel Cache) CreateVisitedStarsCache(
         VisitedStarsCacheViewModel? provided,

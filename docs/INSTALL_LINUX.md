@@ -130,6 +130,29 @@ session so it can see the game window and the Gamescope environment. If it
 cannot detect Elite there, first test both programs in the same normal
 X11/XWayland desktop session.
 
+## Elite journal discovery
+
+SrvSurvey detects every existing Elite journal folder it can find, rather than
+stopping at the first Steam prefix. The automatic Linux search covers:
+
+- Steam and Flatpak Steam's default `359320` Proton prefixes, plus additional
+  Steam libraries listed in `libraryfolders.vdf`;
+- Heroic's native and Flatpak game configuration, including its usual
+  `~/Games/Heroic/Prefixes` tree;
+- Lutris game configuration and the usual prefixes under `~/Games`;
+- native and Flatpak Bottles prefixes; and
+- a conventional `~/.wine` prefix.
+
+The Multiple commanders card combines commander identities found in all of
+those journal folders. Launching another SrvSurvey instance passes that
+commander's own journal folder to the new process, so Steam and Epic/Heroic
+clients can be monitored at the same time without mixing their companion files.
+
+Launcher prefixes remain configurable and can live elsewhere. If an unusual
+layout is not detected, set `SRVSURVEY_JOURNAL_DIR` or pass
+`--journal-directory` with the folder containing `Journal.*.log` and
+`Status.json`.
+
 ## Distribution prerequisites
 
 Most full GNOME, KDE, Cinnamon, and Xfce installations already contain the

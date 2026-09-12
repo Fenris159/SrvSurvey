@@ -46,7 +46,14 @@ Enable XWayland or log into an Xorg session. This build uses Avalonia’s X11 ba
 
 ## Journal files not found
 
-Override the journal directory with the environment variable or CLI flag:
+Current builds search Steam (including extra Steam libraries), Heroic/Epic,
+Lutris, Bottles, and conventional Wine prefixes. In **Diagnostics**, inspect
+the journal candidate list to confirm which folders exist. Heroic and Lutris
+prefixes are also read from their per-game configuration, so custom locations
+normally do not need to be copied into a Steam prefix.
+
+If the launcher uses an unusual or unavailable configuration location,
+override the journal directory with the environment variable or CLI flag:
 
 ```bash
 export SRVSURVEY_JOURNAL_DIR="/path/to/your/journals"
