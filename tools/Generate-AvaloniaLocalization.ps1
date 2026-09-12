@@ -7,14 +7,22 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$script:SurfaceMiningCommandPattern =
+    '(?<!\w)(?:' +
+    '\.alignment' +
+    '|\.mining\s+(?:center\s+here|(?:<heading>|\d{1,3})\s+(?:<radius km>|<border radius km>|\d+(?:\.\d+)?)\s+(?:<number>|<location number>|\d+))' +
+    '|\.mine\s+(?:delete\s+here|move\s+(?:<commodity>|[A-Za-z]+(?:[ -][A-Za-z]+)*?)\s+here|(?:<heading>|\d{1,3})\s+(?:<commodity>|[A-Za-z]+(?:[ -][A-Za-z]+)*?)\s+(?:<distance km>|\d+(?:\.\d+)?)\s+(?:<low\|medium\|high>|low|medium|high)/(?:<low\|medium\|high>|low|medium|high)|(?:<commodity>|[A-Za-z]+(?:[ -][A-Za-z]+)*?)\s+(?:<low\|medium\|high>|low|medium|high)/(?:<low\|medium\|high>|low|medium|high)\s+here)' +
+    ')'
 $script:TechnicalTokenPattern = [regex]::new(
-    '(?i)(?:\b(?:Alt|Ctrl|Shift)(?:\s*\+\s*[A-Z0-9]+)+' +
+    '(?:' + $script:SurfaceMiningCommandPattern +
+    '|\b(?:Alt|Ctrl|Shift)(?:\s*\+\s*[A-Z0-9]+)+' +
     '|(?<!\w)\.[A-Za-z][A-Za-z0-9_-]*' +
     '|(?<!\w)\+[A-Za-z][A-Za-z0-9_-]*' +
     '|(?<!-)---(?!-)' +
     '|\b[A-Za-z0-9_{}-]+\.(?:json|zip|txt|csv|png|jpe?g|gif|exe|dll|axaml|xml|lock|log|tmp|bak|db|toml|md|html?|svg)\b' +
     '|\b(?:SrvSurvey|Spansh|EDSM|Canonn|Bioforge|Inara|Raven Colonial|Frontier|Elite Dangerous|Discord|VoxStellar|EDMC|EDDN|HMAC-SHA256|GPL-3\.0)\b)',
-    [Text.RegularExpressions.RegexOptions]::CultureInvariant)
+    [Text.RegularExpressions.RegexOptions]::IgnoreCase -bor
+        [Text.RegularExpressions.RegexOptions]::CultureInvariant)
 
 function Invoke-Generation {
     $paths = Get-LocalizationPaths
@@ -284,9 +292,10 @@ function Convert-TranslationsToSortedArray {
 function Save-OrVerifyCatalog {
     param($Paths, $Result)
 
-    $json = $Result | ConvertTo-Json -Depth 5
+    $json = ($Result | ConvertTo-Json -Depth 5).
+        Replace("`r`n", "`n").Replace("`r", "`n")
     if ($Verify) {
-        $expectedJson = $json + [Environment]::NewLine
+        $expectedJson = $json + "`n"
         $currentJson = if (Test-Path -LiteralPath $Paths.OutputPath) {
             [IO.File]::ReadAllText($Paths.OutputPath)
         }
@@ -308,7 +317,7 @@ function Save-OrVerifyCatalog {
 
     [IO.File]::WriteAllText(
         $Paths.OutputPath,
-        $json + [Environment]::NewLine,
+        $json + "`n",
         [Text.UTF8Encoding]::new($false))
 }
 function Invoke-GoogleTranslationBatch {

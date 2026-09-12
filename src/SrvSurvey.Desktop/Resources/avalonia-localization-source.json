@@ -584,20 +584,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
-    "Text": "1x fits the full 5 km map. Zoom in, then drag the map to pan.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
-  },
-  {
     "Text": "1x fits the full map. Zoom in, then drag the map to pan.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
+  },
+  {
+    "Text": "1x fits the full saved location map. Zoom in, then drag the map to pan.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
     "Text": "2 / 10 | System Authority",
@@ -1241,6 +1241,14 @@
   },
   {
     "Text": "A body row can contain more prediction PIPs than its reported biological-signal count when several genera remain plausible. Those additional hatched PIPs are alternative candidates, not extra signals or additive rewards.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "A bookmarked map loads automatically when your live surface position enters its saved border and unloads when you leave the area.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -1983,6 +1991,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "ALL",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
   },
   {
     "Text": "ALLEGIANCE",
@@ -2962,6 +2978,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchLibraryViewModel.cs"
   },
   {
+    "Text": "Added {0} {1} Signal {2} to favorites.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
+  },
+  {
     "Text": "Adder",
     "IsFormat": false,
     "SourceKinds": [
@@ -2978,7 +3002,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NotificationViewModel.cs"
   },
   {
-    "Text": "Adds a listed Hotspot List commodity at a bearing and distance from the saved center. Example: .mine 15 ruby 1.24",
+    "Text": "Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit\u0027s mineral amount and density. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 15 ruby 1.24 high/medium",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -2986,7 +3010,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
-    "Text": "Adds a listed commodity at your current surface coordinates. Example: .mine monazite here",
+    "Text": "Adds a listed commodity and its mineral amount and density at your current surface coordinates. This precise placement may overlap an existing marker. Example: .mine monazite medium/high here",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -3120,6 +3144,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Alignment helper hidden.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
+  },
+  {
+    "Text": "Alignment helper shown at the center of the Elite window.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
   },
   {
     "Text": "All",
@@ -4267,7 +4307,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Presentation/RouteBodyAssetResolver.cs"
   },
   {
-    "Text": "At a deposit, send .mine \u003Ccommodity\u003E here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
+    "Text": "At a deposit, send .mine \u003Ccommodity\u003E \u003Clow|medium|high\u003E/\u003Clow|medium|high\u003E here. Precise here placement may overlap an existing marker. Example: .mine ruby medium/low here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -5401,6 +5441,22 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/FootCombatOverlayPresentation.axaml"
+  },
+  {
+    "Text": "BORDER",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
+    "Text": "BORDER RADIUS",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
     "Text": "BOXEL",
@@ -6751,6 +6807,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayThemeResources.cs"
+  },
+  {
+    "Text": "Border radius (km)",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
   },
   {
     "Text": "Borderless or windowed Elite modes provide the most predictable desktop overlay stacking. Exclusive fullscreen behavior depends on the operating system and compositor.",
@@ -10503,7 +10567,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/CommanderPreferenceSettingsStore.cs"
   },
   {
-    "Text": "Commands and commodity names are case insensitive. Accepted commodity names are listed in Hotspot List. Every accepted or declined command reports its result through Status notifications.",
+    "Text": "Commands and commodity names are case insensitive. Accepted commodity names are listed in Hotspot List. A saved map loads automatically while you are inside its border and unloads after you leave. Every accepted or declined command reports its result through Status notifications.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -11434,7 +11498,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Behaviors/ListBoxBringIntoViewBehavior.cs"
   },
   {
-    "Text": "Contains and Body Type are built automatically from your saved surface mining bookmarks.",
+    "Text": "Contains and Body Type are built automatically from your saved surface mining bookmarks. Use Favorites to show only starred maps.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -12276,7 +12340,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.cs"
   },
   {
-    "Text": "Creates or updates the current Mining Location Signal. Heading must be 0\u2013359, the location number must be positive, and mineral amount and density each accept only high or low.",
+    "Text": "Creates or updates the current Mining Location Signal. Heading must be 0\u2013359, border radius is the measured distance from the border to the center in kilometers, and the location number must be positive.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -13413,7 +13477,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
     "Text": "Denton Patreus",
@@ -14643,6 +14707,38 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
+  },
+  {
+    "Text": "Drive to a mining-location border, face its center, and send .mining \u003Cheading\u003E \u003Cradius km\u003E \u003Cnumber\u003E, i.e. .mining 120 6.44 4.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
+  },
+  {
+    "Text": "Drive to the orange location border, face the center marker, and send .mining \u003Cheading\u003E \u003Cborder radius km\u003E \u003Clocation number\u003E. Example: .mining 120 6.44 4.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Drive to the orange mining-location border and face its center, then use .mining \u003Cheading\u003E \u003Cradius km\u003E \u003Cnumber\u003E, i.e. .mining 120 6.44 4. Use .mining center here from the true center to correct it later.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
+  },
+  {
+    "Text": "Drive to the orange mining-location border and face the center marker.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
     "Text": "DssDistanceLimitLs",
@@ -17447,6 +17543,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
   },
   {
+    "Text": "Favorite",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
+    "Text": "Favorites",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
     "Text": "Favorites first",
     "IsFormat": false,
     "SourceKinds": [
@@ -18522,7 +18634,23 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
-    "Text": "From the saved center, send .mine \u003Cheading\u003E \u003Ccommodity\u003E \u003Cdistance km\u003E. Example: .mine 15 ruby 1.24.",
+    "Text": "From anywhere inside the saved border, face a deposit and add its marker, mineral amount, and density with .mine.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
+    "Text": "From anywhere inside the saved border, face a deposit and send .mine \u003Cheading\u003E \u003Ccommodity\u003E \u003Cdistance km\u003E \u003Clow|medium|high\u003E/\u003Clow|medium|high\u003E. The bearing and distance start at your live position. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 15 ruby 1.24 high/medium.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "From the true center, send .mining center here to correct the saved center and ring alignment without moving any deposit markers.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -20553,6 +20681,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSurveyStatsViewModel.cs"
   },
   {
+    "Text": "HIGH",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
+  },
+  {
     "Text": "HIGH-GRAVITY APPROACH",
     "IsFormat": false,
     "SourceKinds": [
@@ -21017,14 +21153,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "High",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BookmarksViewModel.cs"
   },
   {
     "Text": "High Tech",
@@ -23856,6 +23984,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
   },
   {
+    "Text": "LOW",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
+  },
+  {
     "Text": "LOWEST MASS CODE",
     "IsFormat": false,
     "SourceKinds": [
@@ -25355,14 +25491,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceSurveyViewModel.cs"
   },
   {
-    "Text": "Low",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BookmarksViewModel.cs"
-  },
-  {
     "Text": "Low, regular, High and Hazardous identify extraction sites with differing security presence and combat risk. Hazardous sites have no security response. Save RES categories in shared Mining bookmarks, then filter Hotspots with RES sites only. Multiple hotspots in a ring do not themselves prove an overlap.",
     "IsFormat": false,
     "SourceKinds": [
@@ -25539,6 +25667,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
+    "Text": "MEDIUM",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
+  },
+  {
     "Text": "METAL RICH",
     "IsFormat": false,
     "SourceKinds": [
@@ -25553,6 +25689,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
+    "Text": "MINERAL AMOUNT",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
     "Text": "MINERALS",
@@ -26654,15 +26798,15 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningSearchView.axaml"
   },
   {
-    "Text": "Mineral amount",
+    "Text": "Mineral Amount:",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
-    "Text": "Mineral amount and density accept only high or low. Deposit names must match a commodity in Activities \u003E Surface Mining \u003E Hotspot List; rejected commands explain the problem in Status notifications.",
+    "Text": "Mineral amount and density describe each deposit and accept low, medium, or high. Deposit names must match a commodity in Activities \u003E Surface Mining \u003E Hotspot List; rejected commands explain the problem in Status notifications.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -27295,14 +27439,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GroundTargetViewModel.cs"
   },
   {
-    "Text": "Move to the saved center, face each deposit, and add its marker with .mine.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
-  },
-  {
     "Text": "Move to the site centre and align the map origin.",
     "IsFormat": false,
     "SourceKinds": [
@@ -27373,6 +27509,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+  },
+  {
+    "Text": "Moves the current map center to your live surface coordinates while preserving the location radius and every existing deposit marker. Use it from the true center to correct the border and ring alignment.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
+    "Text": "Moves the nearest marker matching the commodity to your current surface coordinates. The matching marker must be within 200 m. Example: .mine move haematite here",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
     "Text": "Moving beyond 4.5Km will Destroy Rigs",
@@ -31972,6 +32124,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
   },
   {
+    "Text": "Overview Map marker-label setting changed for this session but could not be saved: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
+  },
+  {
     "Text": "Overview and journals",
     "IsFormat": false,
     "SourceKinds": [
@@ -36492,7 +36652,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Record the location with the .mining command.",
+    "Text": "Record the border radius and location with the .mining command.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -37395,6 +37555,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
+  },
+  {
+    "Text": "Removed {0} {1} Signal {2} from favorites.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
   },
   {
     "Text": "Removed {0}.",
@@ -39272,14 +39440,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
-  },
-  {
-    "Text": "SIGNAL",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
     "Text": "SIGNAL #",
@@ -41547,6 +41707,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Send .alignment to toggle a red guide at the exact center of the Elite window. In the Rhino driving view, place a distant location circle under the guide before reading the visible compass heading for .mine. Turret mode does not show the required heading.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "Send .target off or clear the target in Travel when finished.",
     "IsFormat": false,
     "SourceKinds": [
@@ -42520,6 +42688,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Show Marker Labels in Overview Map",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
     "Text": "Show Only Deferred",
     "IsFormat": false,
     "SourceKinds": [
@@ -42726,6 +42902,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
+  },
+  {
+    "Text": "Show mapped deposits",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
     "Text": "Show mining, Guardian, quest, and colonization workspaces",
@@ -43070,6 +43254,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/GuardianOverlaySettingsStore.cs"
+  },
+  {
+    "Text": "ShowMarkerLabelsInOverviewMap",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Configuration/MineMapSettingsStore.cs"
   },
   {
     "Text": "ShowMedkits",
@@ -44321,6 +44513,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/CommanderProfileView.axaml"
   },
   {
+    "Text": "SrvSurvey surface mining alignment helper overlay",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/SurfaceMiningAlignmentOverlayWindow.axaml"
+  },
+  {
     "Text": "SrvSurvey surface mining overlay",
     "IsFormat": false,
     "SourceKinds": [
@@ -44671,38 +44871,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
-  },
-  {
-    "Text": "Stand on a mining-location border, face its center, and send .mining \u003Cheading\u003E \u003Cnumber\u003E \u003Camount\u003E/\u003Cdensity\u003E, i.e. .mining 120 4 high/low.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
-  },
-  {
-    "Text": "Stand on the mining-location border and face its center, then use .mining \u003Cheading\u003E \u003Cnumber\u003E \u003Camount\u003E/\u003Cdensity\u003E, i.e. .mining 120 4 high/low.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
-  },
-  {
-    "Text": "Stand on the yellow location border, face the center marker, and send .mining \u003Cheading\u003E \u003Clocation number\u003E \u003Chigh|low\u003E/\u003Chigh|low\u003E. Example: .mining 120 4 high/low.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "Stand on the yellow mining-location border and face the center marker.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
     "Text": "Standard",
@@ -45611,7 +45779,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
-    "Text": "Surface maps use the shared Navigation \u003E Bookmarks catalog. Edit their system, body, category, notes, signal, body type, arrival distance, mineral amount, or density there; deleting the bookmark also removes the map. Contains and Body Type filters populate automatically from those saved maps.",
+    "Text": "Surface maps use the shared Navigation \u003E Bookmarks catalog. Edit their system, body, category, notes, signal, body type, arrival distance, or border radius there; deleting the bookmark also removes the map. Contains and Body Type filters populate automatically from those saved maps.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -46238,7 +46406,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
-    "Text": "System, body, signal, rating, or address",
+    "Text": "System, body, signal, deposit, rating, radius, or address",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -48410,7 +48578,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "The fixed-upright map shows 1 km rings, the 2.47 km location border, saved deposits, and your live position. Use the mouse wheel, slider, or minus and plus controls to zoom; drag to pan after zooming in.",
+    "Text": "The fixed-upright map shows 1 km rings through the whole-kilometer ring that encloses the saved border, mapped deposits, and your live position. Use the mouse wheel, slider, or minus and plus controls to zoom; drag to pan after zooming in.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -48930,7 +49098,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/DiagnosticsLogViewModel.cs"
   },
   {
-    "Text": "The map follows the active saved mining location and shows its fixed 2.47 km border, mapped deposits, and your live surface position. Use the panel control below to assign its visibility hotkey.",
+    "Text": "The map follows the active saved mining location and shows its measured border, mapped deposits, and your live surface position. Use the panel control below to assign its visibility hotkey.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -50290,6 +50458,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
+    "Text": "The surface mining bookmark could not be found.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
+  },
+  {
     "Text": "The survey bundle path could not be copied: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -51099,6 +51275,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "To correct a marker, stand at its true position and send .mine move \u003Ccommodity\u003E here. The nearest marker matching that commodity must be within 200 m. Example: .mine move haematite here.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
     "Text": "To move an existing marker, clear it first, drive to the new position, and press its chord again to set it there.",
     "IsFormat": false,
     "SourceKinds": [
@@ -51233,6 +51417,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
+    "Text": "Toggles a thin red vertical guide at the exact center of the Elite window. Use the Rhino driving view, place a distant mining-location circle under the guide, then read the visible game compass heading for the .mine command. Turret mode does not show the required heading. Run the command again to hide the guide.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
     "Text": "Tolerance",
@@ -53208,7 +53400,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
   },
   {
-    "Text": "Use the mouse wheel or \u2212 / \u002B controls to zoom. Drag the map to pan after zooming in.",
+    "Text": "Use the mouse wheel or \u2212 / \u002B controls to zoom. Drag the map to pan after zooming in. Right-click to place or remove a 4.5 km planning circle; hold the right button and drag to move it.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -57908,6 +58100,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlaySettingsCategoryCatalog.cs"
   },
   {
+    "Text": "mine-map-v2",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
+  },
+  {
     "Text": "mining",
     "IsFormat": false,
     "SourceKinds": [
@@ -61805,7 +62005,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
-    "Text": "{0} \u00B7 {1} \u00B7 {2} mineral amount \u00B7 {3} density",
+    "Text": "{0} \u00B7 {1} \u00B7 {2} km border",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -62197,7 +62397,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
-    "Text": "\u25CE Mining location border (2.47 km radius)",
+    "Text": "\u25CE Mining location border (saved site radius)",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"

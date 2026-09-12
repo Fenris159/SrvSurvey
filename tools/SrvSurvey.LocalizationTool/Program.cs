@@ -35,7 +35,8 @@ var entries = extractor.Extract();
 Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
 await File.WriteAllTextAsync(
     outputPath,
-    JsonSerializer.Serialize(entries, new JsonSerializerOptions { WriteIndented = true }) + Environment.NewLine
+    JsonSerializer.Serialize(entries, new JsonSerializerOptions { WriteIndented = true }).ReplaceLineEndings("\n")
+        + "\n"
 );
 Console.WriteLine($"Extracted {entries.Count:N0} localizable strings to {outputPath}.");
 return 0;
@@ -75,7 +76,7 @@ static async Task MergeSourcesAsync(
 
     await File.WriteAllTextAsync(
         Path.GetFullPath(outputPath),
-        JsonSerializer.Serialize(merged, options) + Environment.NewLine,
+        JsonSerializer.Serialize(merged, options).ReplaceLineEndings("\n") + "\n",
         new UTF8Encoding(false)
     );
     Console.WriteLine(
@@ -115,7 +116,8 @@ static async Task NormalizeCatalogAsync(string inputPath, string outputPath)
 
     await File.WriteAllTextAsync(
         Path.GetFullPath(outputPath),
-        JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true }) + Environment.NewLine,
+        JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true }).ReplaceLineEndings("\n")
+            + "\n",
         new UTF8Encoding(false)
     );
 }
