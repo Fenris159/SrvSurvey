@@ -89,6 +89,87 @@ public sealed class MineMapServiceTests
     }
 
     [Fact]
+    public async Task GuidedSurveyWalksFromBorderThroughCenterAndEveryScanWaypoint()
+    {
+        using var directory = new TemporaryDirectory();
+        MineMapCommandContext border = Context(new SurfaceCoordinate(0, 0));
+        using var service = new MineMapService(directory.Path);
+
+        MineMapCommandResult started = await service.ExecuteAsync(".MiNiNg SuRvEy", border);
+
+        Assert.True(started.Succeeded);
+        Assert.Equal(MineMapSurveyGuidePhase.Border, service.SurveyGuide?.Phase);
+
+        Assert.True((await service.ExecuteAsync(".mining 90 6.44 4", border)).Succeeded);
+        MineMapSurvey survey = service.ActiveSurvey!;
+        Assert.Equal(MineMapSurveyGuidePhase.Center, service.SurveyGuide?.Phase);
+
+        service.UpdateContext(border with { PlayerLocation = survey.Center });
+        Assert.Equal(MineMapSurveyGuidePhase.ConfirmCenter, service.SurveyGuide?.Phase);
+
+        Assert.True(
+            (
+                await service.ExecuteAsync(".mining center here", border with { PlayerLocation = survey.Center })
+            ).Succeeded
+        );
+        Assert.Equal(MineMapSurveyGuidePhase.Waypoint, service.SurveyGuide?.Phase);
+        Assert.NotEmpty(service.SurveyGuide!.Waypoints!);
+
+        while (service.SurveyGuide is { Phase: MineMapSurveyGuidePhase.Waypoint, CurrentWaypoint: { } waypoint })
+        {
+            service.UpdateContext(border with { PlayerLocation = waypoint });
+        }
+
+        Assert.Equal(MineMapSurveyGuidePhase.Complete, service.SurveyGuide?.Phase);
+        service.DismissSurveyGuide();
+        Assert.Null(service.SurveyGuide);
+    }
+
+    [Fact]
+    public void GuidedSurveySpiralCoversTheSavedAreaWithTwoKilometerScannerRange()
+    {
+        MineMapSurvey survey = LegacySurvey(Guid.NewGuid(), signal: 4);
+        IReadOnlyList<SurfaceCoordinate> waypoints = MineMapService.CreateSurveyWaypoints(survey);
+        SurfaceCoordinate[] scanLocations = [survey.Center, .. waypoints];
+
+        Assert.NotEmpty(waypoints);
+        Assert.All(
+            waypoints,
+            waypoint =>
+                Assert.InRange(
+                    SurfaceNavigation.GetDistance(survey.Center, waypoint, survey.PlanetRadiusMeters),
+                    0,
+                    survey.LocationRadiusMeters + 0.01
+                )
+        );
+        for (int index = 1; index < waypoints.Count; index++)
+        {
+            Assert.InRange(
+                SurfaceNavigation.GetDistance(waypoints[index - 1], waypoints[index], survey.PlanetRadiusMeters),
+                0,
+                1_900
+            );
+        }
+
+        for (double radius = 0; radius <= survey.LocationRadiusMeters; radius += 250)
+        {
+            for (int bearing = 0; bearing < 360; bearing += 5)
+            {
+                SurfaceCoordinate sample = MineMapService.GetDestination(
+                    survey.Center,
+                    bearing,
+                    radius,
+                    survey.PlanetRadiusMeters
+                );
+                double nearest = scanLocations.Min(location =>
+                    SurfaceNavigation.GetDistance(sample, location, survey.PlanetRadiusMeters)
+                );
+                Assert.InRange(nearest, 0, MineMapService.SurveyScannerRadiusMeters);
+            }
+        }
+    }
+
+    [Fact]
     public async Task ContextActivatesSurveyInsideItsBorderAndUnloadsItAfterExit()
     {
         using var directory = new TemporaryDirectory();

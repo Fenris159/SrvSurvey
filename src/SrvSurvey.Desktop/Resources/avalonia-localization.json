@@ -7341,6 +7341,14 @@
       "translation": "Fahren Sie zur Grenze eines Bergbaustandorts, schauen Sie sich dessen Mitte an und senden Sie .mining <heading> <radius km> <number>, d. h. .mining 120 6.44 4."
     },
     {
+      "source": "Drive to the next scan point",
+      "translation": "Fahren Sie zum nächsten Scanpunkt"
+    },
+    {
+      "source": "Drive to the orange border and face the location center.",
+      "translation": "Fahren Sie zum orangefarbenen Rand und blicken Sie auf das Standortzentrum."
+    },
+    {
       "source": "Drive to the orange location border, face the center marker, and send .mining <heading> <border radius km> <location number>. Example: .mining 120 6.44 4.",
       "translation": "Fahren Sie zur orangefarbenen Standortgrenze, schauen Sie auf die mittlere Markierung und senden Sie .mining <heading> <border radius km> <location number>. Beispiel: .mining 120 6.44 4."
     },
@@ -7351,6 +7359,10 @@
     {
       "source": "Drive to the orange mining-location border and face the center marker.",
       "translation": "Fahren Sie zur orangefarbenen Grenze des Bergbaustandorts und blicken Sie auf die mittlere Markierung."
+    },
+    {
+      "source": "Drive to the saved center",
+      "translation": "Fahren Sie zum gespeicherten Zentrum"
     },
     {
       "source": "DssDistanceLimitLs",
@@ -11787,6 +11799,10 @@
     {
       "source": "Keep progress",
       "translation": "Machen Sie Fortschritte"
+    },
+    {
+      "source": "Keep surface scanning; the next point advances automatically.",
+      "translation": "Scannen Sie weiterhin die Oberfläche. Der nächste Punkt rückt automatisch vor."
     },
     {
       "source": "Keep travelling",
@@ -19813,6 +19829,26 @@
       "translation": "Tagebau"
     },
     {
+      "source": "SURFACE MINING SURVEY · BORDER",
+      "translation": "SURFACE MINING UMFRAGE · GRENZE"
+    },
+    {
+      "source": "SURFACE MINING SURVEY · CENTER",
+      "translation": "SURFACE MINING UMFRAGE · ZENTRUM"
+    },
+    {
+      "source": "SURFACE MINING SURVEY · CENTER REACHED",
+      "translation": "SURFACE MINING UMFRAGE · ZENTRUM ERREICHT"
+    },
+    {
+      "source": "SURFACE MINING SURVEY · COMPLETE",
+      "translation": "SURFACE MINING-UMFRAGE · ABGESCHLOSSEN"
+    },
+    {
+      "source": "SURFACE MINING SURVEY · {0} OF {1}",
+      "translation": "SURFACE MINING UMFRAGE · {0} oder {1}"
+    },
+    {
       "source": "SURFACE RADAR",
       "translation": "OBERFLÄCHENRADAR"
     },
@@ -22213,6 +22249,10 @@
       "translation": "SrvSurvey Surface-Mining-Overlay"
     },
     {
+      "source": "SrvSurvey surface mining survey overlay",
+      "translation": "SrvSurvey Overlay für die Vermessung des Tagebaus"
+    },
+    {
       "source": "SrvSurvey surface survey overlay",
       "translation": "SrvSurvey Oberflächenvermessungs-Overlay"
     },
@@ -22525,6 +22565,10 @@
       "translation": "Download des verifizierten Pakets wird gestartet..."
     },
     {
+      "source": "Starts guided survey mode. The compact top-center overlay walks you from the orange border to the saved center, then through automatically advancing scan waypoints in an outward spiral. Waypoints stay no more than 2 km apart for complete surface-scanner coverage. The guide closes 10 seconds after its final rig-capacity reminder.",
+      "translation": "Startet den geführten Umfragemodus. Das kompakte Overlay in der oberen Mitte führt Sie vom orangefarbenen Rand zur gespeicherten Mitte und dann durch automatisch fortschreitende Scan-Wegpunkte in einer Spirale nach außen. Für eine vollständige Abdeckung durch den Oberflächenscanner bleiben Wegpunkte nicht weiter als 2 km voneinander entfernt. Der Guide wird 10 Sekunden nach der letzten Erinnerung an die Rig-Kapazität geschlossen."
+    },
+    {
       "source": "Startup failed at {0}.",
       "translation": "Der Start ist bei {0} fehlgeschlagen."
     },
@@ -22631,6 +22675,10 @@
     {
       "source": "Stop",
       "translation": "Stopp"
+    },
+    {
+      "source": "Stop at the true center and correct the map alignment.",
+      "translation": "Halten Sie in der wahren Mitte an und korrigieren Sie die Kartenausrichtung."
     },
     {
       "source": "Stop chapter",
@@ -22871,6 +22919,10 @@
     {
       "source": "Surface radar and bookmarks",
       "translation": "Oberflächenradar und Lesezeichen"
+    },
+    {
+      "source": "Surface scan route complete.",
+      "translation": "Oberflächen-Scan-Route abgeschlossen."
     },
     {
       "source": "Surface signals: {0}",
@@ -27351,6 +27403,10 @@
     {
       "source": "While an active boxel search and the Galaxy Map are open, show the current boxel, completion progress, next system or prefix, destination validity, and clipboard state.",
       "translation": "Während eine aktive Boxelsuche und die Galaxiekarte geöffnet sind, werden das aktuelle Boxel, der Abschlussfortschritt, das nächste System oder Präfix, die Zielgültigkeit und der Zwischenablagestatus angezeigt."
+    },
+    {
+      "source": "While mining, use .mine rigs <number> to record each deposit's rig capacity.",
+      "translation": "Verwenden Sie während des Bergbaus .mine rigs <number>, um die Bohrkapazität jeder Lagerstätte aufzuzeichnen."
     },
     {
       "source": "While standing near a mapped deposit, send .mine rigs <number> to record its positive rig capacity on the nearest marker. The count remains visible in brackets when marker names are hidden. Example: .mine rigs 4.",
@@ -38519,6 +38575,14 @@
       "translation": "Conduzca hasta el límite de una ubicación minera, mire hacia su centro y envíe .mining <heading> <radius km> <number>, es decir, .mining 120 6.44 4."
     },
     {
+      "source": "Drive to the next scan point",
+      "translation": "Conduzca hasta el siguiente punto de escaneo"
+    },
+    {
+      "source": "Drive to the orange border and face the location center.",
+      "translation": "Conduzca hasta el borde naranja y mire hacia el centro de ubicación."
+    },
+    {
       "source": "Drive to the orange location border, face the center marker, and send .mining <heading> <border radius km> <location number>. Example: .mining 120 6.44 4.",
       "translation": "Conduzca hasta el borde de ubicación naranja, mire hacia el marcador central y envíe .mining <heading> <border radius km> <location number>. Ejemplo: .mining 120 6.44 4."
     },
@@ -38529,6 +38593,10 @@
     {
       "source": "Drive to the orange mining-location border and face the center marker.",
       "translation": "Conduzca hasta el borde naranja de la ubicación minera y mire hacia el marcador central."
+    },
+    {
+      "source": "Drive to the saved center",
+      "translation": "Conducir al centro guardado"
     },
     {
       "source": "DssDistanceLimitLs",
@@ -42965,6 +43033,10 @@
     {
       "source": "Keep progress",
       "translation": "mantener el progreso"
+    },
+    {
+      "source": "Keep surface scanning; the next point advances automatically.",
+      "translation": "Mantenga el escaneo de la superficie; el siguiente punto avanza automáticamente."
     },
     {
       "source": "Keep travelling",
@@ -50991,6 +51063,26 @@
       "translation": "Minería a cielo abierto"
     },
     {
+      "source": "SURFACE MINING SURVEY · BORDER",
+      "translation": "ESTUDIO MINERO DE SUPERFICIE · FRONTERA"
+    },
+    {
+      "source": "SURFACE MINING SURVEY · CENTER",
+      "translation": "ESTUDIO MINERO DE SUPERFICIE · CENTRO"
+    },
+    {
+      "source": "SURFACE MINING SURVEY · CENTER REACHED",
+      "translation": "ESTUDIO MINERO DE SUPERFICIE · CENTRO ALCANZADO"
+    },
+    {
+      "source": "SURFACE MINING SURVEY · COMPLETE",
+      "translation": "ESTUDIO DE MINERÍA DE SUPERFICIE · COMPLETO"
+    },
+    {
+      "source": "SURFACE MINING SURVEY · {0} OF {1}",
+      "translation": "ENCUESTA DE MINERÍA DE SUPERFICIE · {0} DE {1}"
+    },
+    {
       "source": "SURFACE RADAR",
       "translation": "RADAR DE SUPERFICIE"
     },
@@ -53391,6 +53483,10 @@
       "translation": "SrvSurvey superposición de minería a cielo abierto"
     },
     {
+      "source": "SrvSurvey surface mining survey overlay",
+      "translation": "SrvSurvey superposición de levantamiento de minería a cielo abierto"
+    },
+    {
       "source": "SrvSurvey surface survey overlay",
       "translation": "SrvSurvey superposición de levantamiento de superficie"
     },
@@ -53703,6 +53799,10 @@
       "translation": "Iniciando la descarga del paquete verificado..."
     },
     {
+      "source": "Starts guided survey mode. The compact top-center overlay walks you from the orange border to the saved center, then through automatically advancing scan waypoints in an outward spiral. Waypoints stay no more than 2 km apart for complete surface-scanner coverage. The guide closes 10 seconds after its final rig-capacity reminder.",
+      "translation": "Inicia el modo de encuesta guiada. La superposición compacta superior central lo guía desde el borde naranja hasta el centro guardado y luego a través de los puntos de ruta de escaneo que avanzan automáticamente en una espiral hacia afuera. Los puntos de referencia no se mantienen a más de 2 km de distancia para una cobertura completa del escáner de superficie. La guía se cierra 10 segundos después del último recordatorio de capacidad del equipo."
+    },
+    {
       "source": "Startup failed at {0}.",
       "translation": "El inicio falló en {0}."
     },
@@ -53809,6 +53909,10 @@
     {
       "source": "Stop",
       "translation": "Detener"
+    },
+    {
+      "source": "Stop at the true center and correct the map alignment.",
+      "translation": "Deténgase en el verdadero centro y corrija la alineación del mapa."
     },
     {
       "source": "Stop chapter",
@@ -54049,6 +54153,10 @@
     {
       "source": "Surface radar and bookmarks",
       "translation": "Radar de superficie y marcadores."
+    },
+    {
+      "source": "Surface scan route complete.",
+      "translation": "Ruta de escaneo de superficie completa."
     },
     {
       "source": "Surface signals: {0}",
@@ -58529,6 +58637,10 @@
     {
       "source": "While an active boxel search and the Galaxy Map are open, show the current boxel, completion progress, next system or prefix, destination validity, and clipboard state.",
       "translation": "Mientras una búsqueda de cuadro activo y el mapa Galaxy están abiertos, muestra el cuadro actual, el progreso de finalización, el siguiente sistema o prefijo, la validez del destino y el estado del portapapeles."
+    },
+    {
+      "source": "While mining, use .mine rigs <number> to record each deposit's rig capacity.",
+      "translation": "Mientras extrae, utilice .mine rigs <number> para registrar la capacidad de la plataforma de cada depósito."
     },
     {
       "source": "While standing near a mapped deposit, send .mine rigs <number> to record its positive rig capacity on the nearest marker. The count remains visible in brackets when marker names are hidden. Example: .mine rigs 4.",
@@ -69697,6 +69809,14 @@
       "translation": "Conduisez jusqu'à la frontière d'un emplacement minier, faites face à son centre et envoyez .mining <heading> <radius km> <number>, c'est-à-dire .mining 120 6.44 4."
     },
     {
+      "source": "Drive to the next scan point",
+      "translation": "Conduisez jusqu'au prochain point de numérisation"
+    },
+    {
+      "source": "Drive to the orange border and face the location center.",
+      "translation": "Conduisez jusqu'à la bordure orange et faites face au centre de localisation."
+    },
+    {
       "source": "Drive to the orange location border, face the center marker, and send .mining <heading> <border radius km> <location number>. Example: .mining 120 6.44 4.",
       "translation": "Conduisez jusqu'à la bordure orange de l'emplacement, faites face au marqueur central et envoyez .mining <heading> <border radius km> <location number>. Exemple : .mining 120 6.44 4."
     },
@@ -69707,6 +69827,10 @@
     {
       "source": "Drive to the orange mining-location border and face the center marker.",
       "translation": "Conduisez jusqu’à la frontière orange de l’emplacement minier et faites face au marqueur central."
+    },
+    {
+      "source": "Drive to the saved center",
+      "translation": "Conduisez jusqu'au centre enregistré"
     },
     {
       "source": "DssDistanceLimitLs",
@@ -74143,6 +74267,10 @@
     {
       "source": "Keep progress",
       "translation": "Continuer à progresser"
+    },
+    {
+      "source": "Keep surface scanning; the next point advances automatically.",
+      "translation": "Continuez à scanner la surface ; le point suivant avance automatiquement."
     },
     {
       "source": "Keep travelling",
@@ -82169,6 +82297,26 @@
       "translation": "Exploitation minière à ciel ouvert"
     },
     {
+      "source": "SURFACE MINING SURVEY · BORDER",
+      "translation": "ENQUÊTE SUR LES MINIÈRES DE SURFACE · FRONTIÈRE"
+    },
+    {
+      "source": "SURFACE MINING SURVEY · CENTER",
+      "translation": "CENTRE D'ENQUÊTE SUR LES MINIÈRES DE SURFACE ·"
+    },
+    {
+      "source": "SURFACE MINING SURVEY · CENTER REACHED",
+      "translation": "ENQUÊTE SURFACE MINING · CENTRE ATTEINT"
+    },
+    {
+      "source": "SURFACE MINING SURVEY · COMPLETE",
+      "translation": "ENQUÊTE SUR LES MINIÈRES DE SURFACE · COMPLÈTE"
+    },
+    {
+      "source": "SURFACE MINING SURVEY · {0} OF {1}",
+      "translation": "ENQUÊTE SUR LES MINIÈRES DE SURFACE · {0} DE {1}"
+    },
+    {
       "source": "SURFACE RADAR",
       "translation": "RADAR DE SURFACE"
     },
@@ -84569,6 +84717,10 @@
       "translation": "SrvSurvey superposition d'exploitation minière à ciel ouvert"
     },
     {
+      "source": "SrvSurvey surface mining survey overlay",
+      "translation": "SrvSurvey superposition d'enquêtes minières à ciel ouvert"
+    },
+    {
       "source": "SrvSurvey surface survey overlay",
       "translation": "SrvSurvey superposition d'enquête de surface"
     },
@@ -84881,6 +85033,10 @@
       "translation": "Démarrage du téléchargement du package vérifié..."
     },
     {
+      "source": "Starts guided survey mode. The compact top-center overlay walks you from the orange border to the saved center, then through automatically advancing scan waypoints in an outward spiral. Waypoints stay no more than 2 km apart for complete surface-scanner coverage. The guide closes 10 seconds after its final rig-capacity reminder.",
+      "translation": "Démarre le mode d'enquête guidée. La superposition compacte en haut au centre vous guide de la bordure orange au centre enregistré, puis à travers les points de cheminement d'analyse qui avancent automatiquement dans une spirale vers l'extérieur. Les waypoints ne restent pas espacés de plus de 2 km pour une couverture complète du scanner de surface. Le guide ferme 10 secondes après son dernier rappel de capacité de forage."
+    },
+    {
       "source": "Startup failed at {0}.",
       "translation": "Le démarrage a échoué sur {0}."
     },
@@ -84987,6 +85143,10 @@
     {
       "source": "Stop",
       "translation": "Arrêter"
+    },
+    {
+      "source": "Stop at the true center and correct the map alignment.",
+      "translation": "Arrêtez-vous au vrai centre et corrigez l’alignement de la carte."
     },
     {
       "source": "Stop chapter",
@@ -85227,6 +85387,10 @@
     {
       "source": "Surface radar and bookmarks",
       "translation": "Radar de surface et signets"
+    },
+    {
+      "source": "Surface scan route complete.",
+      "translation": "Itinéraire de numérisation de surface terminé."
     },
     {
       "source": "Surface signals: {0}",
@@ -89707,6 +89871,10 @@
     {
       "source": "While an active boxel search and the Galaxy Map are open, show the current boxel, completion progress, next system or prefix, destination validity, and clipboard state.",
       "translation": "Pendant qu'une recherche de boxel active et la Galaxy Map sont ouvertes, affichez le boxel actuel, la progression de l'achèvement, le prochain système ou préfixe, la validité de la destination et l'état du presse-papiers."
+    },
+    {
+      "source": "While mining, use .mine rigs <number> to record each deposit's rig capacity.",
+      "translation": "Pendant l'exploitation minière, utilisez .mine rigs <number> pour enregistrer la capacité de forage de chaque gisement."
     },
     {
       "source": "While standing near a mapped deposit, send .mine rigs <number> to record its positive rig capacity on the nearest marker. The count remains visible in brackets when marker names are hidden. Example: .mine rigs 4.",
@@ -100875,6 +101043,14 @@
       "translation": "Dirija até a fronteira de um local de mineração, fique de frente para seu centro e envie .mining <heading> <radius km> <number>, ou seja, .mining 120 6.44 4."
     },
     {
+      "source": "Drive to the next scan point",
+      "translation": "Dirija até o próximo ponto de verificação"
+    },
+    {
+      "source": "Drive to the orange border and face the location center.",
+      "translation": "Dirija até a borda laranja e fique de frente para o centro de localização."
+    },
+    {
       "source": "Drive to the orange location border, face the center marker, and send .mining <heading> <border radius km> <location number>. Example: .mining 120 6.44 4.",
       "translation": "Dirija até a borda laranja do local, fique de frente para o marcador central e envie .mining <heading> <border radius km> <location number>. Exemplo: .mining 120 6.44 4."
     },
@@ -100885,6 +101061,10 @@
     {
       "source": "Drive to the orange mining-location border and face the center marker.",
       "translation": "Dirija até a fronteira laranja do local de mineração e fique de frente para o marcador central."
+    },
+    {
+      "source": "Drive to the saved center",
+      "translation": "Dirija até o centro salvo"
     },
     {
       "source": "DssDistanceLimitLs",
@@ -105321,6 +105501,10 @@
     {
       "source": "Keep progress",
       "translation": "Mantenha o progresso"
+    },
+    {
+      "source": "Keep surface scanning; the next point advances automatically.",
+      "translation": "Mantenha a digitalização da superfície; o próximo ponto avança automaticamente."
     },
     {
       "source": "Keep travelling",
@@ -113347,6 +113531,26 @@
       "translation": "Mineração de superfície"
     },
     {
+      "source": "SURFACE MINING SURVEY · BORDER",
+      "translation": "PESQUISA DE MINERAÇÃO DE SUPERFÍCIE · FRONTEIRA"
+    },
+    {
+      "source": "SURFACE MINING SURVEY · CENTER",
+      "translation": "PESQUISA DE MINERAÇÃO DE SUPERFÍCIE · CENTRO"
+    },
+    {
+      "source": "SURFACE MINING SURVEY · CENTER REACHED",
+      "translation": "PESQUISA DE MINERAÇÃO DE SUPERFÍCIE · CENTRO ALCANÇADO"
+    },
+    {
+      "source": "SURFACE MINING SURVEY · COMPLETE",
+      "translation": "PESQUISA DE MINERAÇÃO DE SUPERFÍCIE · COMPLETA"
+    },
+    {
+      "source": "SURFACE MINING SURVEY · {0} OF {1}",
+      "translation": "PESQUISA DE MINERAÇÃO DE SUPERFÍCIE · {0} DE {1}"
+    },
+    {
       "source": "SURFACE RADAR",
       "translation": "RADAR DE SUPERFÍCIE"
     },
@@ -115747,6 +115951,10 @@
       "translation": "SrvSurvey sobreposição de mineração de superfície"
     },
     {
+      "source": "SrvSurvey surface mining survey overlay",
+      "translation": "SrvSurvey sobreposição de pesquisa de mineração de superfície"
+    },
+    {
       "source": "SrvSurvey surface survey overlay",
       "translation": "SrvSurvey sobreposição de levantamento de superfície"
     },
@@ -116059,6 +116267,10 @@
       "translation": "Iniciando download de pacote verificado..."
     },
     {
+      "source": "Starts guided survey mode. The compact top-center overlay walks you from the orange border to the saved center, then through automatically advancing scan waypoints in an outward spiral. Waypoints stay no more than 2 km apart for complete surface-scanner coverage. The guide closes 10 seconds after its final rig-capacity reminder.",
+      "translation": "Inicia o modo de pesquisa guiada. A sobreposição compacta superior central orienta você da borda laranja até o centro salvo e, em seguida, avança automaticamente pelos waypoints de varredura em uma espiral externa. Os waypoints não ficam separados por mais de 2 km para uma cobertura completa do scanner de superfície. O guia fecha 10 segundos após o lembrete final da capacidade da plataforma."
+    },
+    {
       "source": "Startup failed at {0}.",
       "translation": "A inicialização falhou em {0}."
     },
@@ -116165,6 +116377,10 @@
     {
       "source": "Stop",
       "translation": "Pare"
+    },
+    {
+      "source": "Stop at the true center and correct the map alignment.",
+      "translation": "Pare no centro verdadeiro e corrija o alinhamento do mapa."
     },
     {
       "source": "Stop chapter",
@@ -116405,6 +116621,10 @@
     {
       "source": "Surface radar and bookmarks",
       "translation": "Radar de superfície e marcadores"
+    },
+    {
+      "source": "Surface scan route complete.",
+      "translation": "Rota de varredura de superfície concluída."
     },
     {
       "source": "Surface signals: {0}",
@@ -120885,6 +121105,10 @@
     {
       "source": "While an active boxel search and the Galaxy Map are open, show the current boxel, completion progress, next system or prefix, destination validity, and clipboard state.",
       "translation": "Enquanto uma pesquisa de boxel ativa e o Mapa da Galáxia estiverem abertos, mostre o boxel atual, o progresso da conclusão, o próximo sistema ou prefixo, a validade do destino e o estado da área de transferência."
+    },
+    {
+      "source": "While mining, use .mine rigs <number> to record each deposit's rig capacity.",
+      "translation": "Durante a mineração, use .mine rigs <number> para registrar a capacidade da plataforma de cada depósito."
     },
     {
       "source": "While standing near a mapped deposit, send .mine rigs <number> to record its positive rig capacity on the nearest marker. The count remains visible in brackets when marker names are hidden. Example: .mine rigs 4.",
@@ -132053,6 +132277,14 @@
       "translation": "Подъезжайте к границе места добычи, встаньте лицом к его центру и отправьте .mining <heading> <radius km> <number>, то есть .mining 120 6.44 4."
     },
     {
+      "source": "Drive to the next scan point",
+      "translation": "Поездка к следующей точке сканирования"
+    },
+    {
+      "source": "Drive to the orange border and face the location center.",
+      "translation": "Подъезжайте к оранжевой границе и встаньте лицом к центру локации."
+    },
+    {
       "source": "Drive to the orange location border, face the center marker, and send .mining <heading> <border radius km> <location number>. Example: .mining 120 6.44 4.",
       "translation": "Подъезжайте к оранжевой границе локации, встаньте лицом к центральному маркеру и отправьте .mining <heading> <border radius km> <location number>. Пример: .mining 120 6.44 4."
     },
@@ -132063,6 +132295,10 @@
     {
       "source": "Drive to the orange mining-location border and face the center marker.",
       "translation": "Подъезжайте к оранжевой границе места добычи и встаньте лицом к центральному маркеру."
+    },
+    {
+      "source": "Drive to the saved center",
+      "translation": "Поездка в сохраненный центр"
     },
     {
       "source": "DssDistanceLimitLs",
@@ -136499,6 +136735,10 @@
     {
       "source": "Keep progress",
       "translation": "Продолжайте прогресс"
+    },
+    {
+      "source": "Keep surface scanning; the next point advances automatically.",
+      "translation": "Продолжайте сканирование поверхности; следующая точка продвигается автоматически."
     },
     {
       "source": "Keep travelling",
@@ -144525,6 +144765,26 @@
       "translation": "Открытая добыча полезных ископаемых"
     },
     {
+      "source": "SURFACE MINING SURVEY · BORDER",
+      "translation": "ОБСЛЕДОВАНИЕ ГОРНЫХ ГОРНЫХ ПУТЕЙ · ГРАНИЦА"
+    },
+    {
+      "source": "SURFACE MINING SURVEY · CENTER",
+      "translation": "ГОРНЫЕ ОБСЛЕДОВАНИЯ · ЦЕНТР"
+    },
+    {
+      "source": "SURFACE MINING SURVEY · CENTER REACHED",
+      "translation": "ОБСЛЕДОВАНИЕ НАВЕРХНЫХ ГОРНЫХ ПУТЕЙ · ЦЕНТР ДОСТИГНУТ"
+    },
+    {
+      "source": "SURFACE MINING SURVEY · COMPLETE",
+      "translation": "ОБСЛЕДОВАНИЕ ГОРНЫХ ДОБРОВ · ЗАВЕРШЕНО"
+    },
+    {
+      "source": "SURFACE MINING SURVEY · {0} OF {1}",
+      "translation": "ОБСЛЕДОВАНИЕ ПОВЕРХНЫХ ГОРНЫХ ДОБРОВ · {0} ИЗ {1}"
+    },
+    {
       "source": "SURFACE RADAR",
       "translation": "НАЗЕМНЫЙ РАДАР"
     },
@@ -146925,6 +147185,10 @@
       "translation": "SrvSurvey наложение для открытых горных работ"
     },
     {
+      "source": "SrvSurvey surface mining survey overlay",
+      "translation": "SrvSurvey наложение съемки открытых горных работ"
+    },
+    {
       "source": "SrvSurvey surface survey overlay",
       "translation": "SrvSurvey наложение съемки поверхности"
     },
@@ -147237,6 +147501,10 @@
       "translation": "Начинаем загрузку проверенного пакета..."
     },
     {
+      "source": "Starts guided survey mode. The compact top-center overlay walks you from the orange border to the saved center, then through automatically advancing scan waypoints in an outward spiral. Waypoints stay no more than 2 km apart for complete surface-scanner coverage. The guide closes 10 seconds after its final rig-capacity reminder.",
+      "translation": "Запускает режим управляемой съемки. Компактное верхнее центральное наложение проведет вас от оранжевой границы к сохраненному центру, а затем автоматически продвинет путевые точки сканирования по внешней спирали. Путевые точки располагаются на расстоянии не более 2 км друг от друга для обеспечения полного покрытия поверхности сканером. Руководство закрывается через 10 секунд после последнего напоминания о мощности буровой установки."
+    },
+    {
       "source": "Startup failed at {0}.",
       "translation": "Ошибка запуска по адресу {0}."
     },
@@ -147343,6 +147611,10 @@
     {
       "source": "Stop",
       "translation": "Стоп"
+    },
+    {
+      "source": "Stop at the true center and correct the map alignment.",
+      "translation": "Остановитесь в истинном центре и исправьте выравнивание карты."
     },
     {
       "source": "Stop chapter",
@@ -147583,6 +147855,10 @@
     {
       "source": "Surface radar and bookmarks",
       "translation": "Надводный радар и закладки"
+    },
+    {
+      "source": "Surface scan route complete.",
+      "translation": "Маршрут сканирования поверхности завершен."
     },
     {
       "source": "Surface signals: {0}",
@@ -152063,6 +152339,10 @@
     {
       "source": "While an active boxel search and the Galaxy Map are open, show the current boxel, completion progress, next system or prefix, destination validity, and clipboard state.",
       "translation": "Когда активный поиск по боксу и карта Галактики открыты, отобразите текущий ящик, ход выполнения, следующую систему или префикс, срок действия пункта назначения и состояние буфера обмена."
+    },
+    {
+      "source": "While mining, use .mine rigs <number> to record each deposit's rig capacity.",
+      "translation": "Во время добычи используйте .mine rigs <number>, чтобы записать мощность установки каждого месторождения."
     },
     {
       "source": "While standing near a mapped deposit, send .mine rigs <number> to record its positive rig capacity on the nearest marker. The count remains visible in brackets when marker names are hidden. Example: .mine rigs 4.",
@@ -163231,6 +163511,14 @@
       "translation": "开车到采矿地点边界，面向其中心，发送.mining <heading> <radius km> <number>，即.mining 120 6.44 4。"
     },
     {
+      "source": "Drive to the next scan point",
+      "translation": "行驶至下一个扫描点"
+    },
+    {
+      "source": "Drive to the orange border and face the location center.",
+      "translation": "行驶至橙色边界并面向位置中心。"
+    },
+    {
       "source": "Drive to the orange location border, face the center marker, and send .mining <heading> <border radius km> <location number>. Example: .mining 120 6.44 4.",
       "translation": "行驶至橙色位置边界，面向中心标记，然后发送 .mining <heading> <border radius km> <location number>。示例：.mining 120 6.44 4。"
     },
@@ -163241,6 +163529,10 @@
     {
       "source": "Drive to the orange mining-location border and face the center marker.",
       "translation": "开车到橙色采矿地点边界并面向中心标记。"
+    },
+    {
+      "source": "Drive to the saved center",
+      "translation": "开车前往保存的中心"
     },
     {
       "source": "DssDistanceLimitLs",
@@ -167677,6 +167969,10 @@
     {
       "source": "Keep progress",
       "translation": "保持进步"
+    },
+    {
+      "source": "Keep surface scanning; the next point advances automatically.",
+      "translation": "保持表面扫描；下一个点会自动前进。"
     },
     {
       "source": "Keep travelling",
@@ -175703,6 +175999,26 @@
       "translation": "露天采矿"
     },
     {
+      "source": "SURFACE MINING SURVEY · BORDER",
+      "translation": "露天采矿调查·边境"
+    },
+    {
+      "source": "SURFACE MINING SURVEY · CENTER",
+      "translation": "露天采矿调查·中心"
+    },
+    {
+      "source": "SURFACE MINING SURVEY · CENTER REACHED",
+      "translation": "露天采矿调查·已达到中心"
+    },
+    {
+      "source": "SURFACE MINING SURVEY · COMPLETE",
+      "translation": "露天采矿调查·已完成"
+    },
+    {
+      "source": "SURFACE MINING SURVEY · {0} OF {1}",
+      "translation": "露天采矿调查 · {0} of {1}"
+    },
+    {
       "source": "SURFACE RADAR",
       "translation": "地面雷达"
     },
@@ -178103,6 +178419,10 @@
       "translation": "SrvSurvey 露天采矿覆盖层"
     },
     {
+      "source": "SrvSurvey surface mining survey overlay",
+      "translation": "SrvSurvey 露天采矿调查叠加"
+    },
+    {
       "source": "SrvSurvey surface survey overlay",
       "translation": "SrvSurvey 表面测量叠加"
     },
@@ -178415,6 +178735,10 @@
       "translation": "正在开始下载经过验证的包..."
     },
     {
+      "source": "Starts guided survey mode. The compact top-center overlay walks you from the orange border to the saved center, then through automatically advancing scan waypoints in an outward spiral. Waypoints stay no more than 2 km apart for complete surface-scanner coverage. The guide closes 10 seconds after its final rig-capacity reminder.",
+      "translation": "启动引导调查模式。紧凑的顶部中心覆盖将引导您从橙色边框到保存的中心，然后以向外螺旋的方式自动前进扫描路径点。航路点之间的距离不超过 2 公里，以实现表面扫描仪的完整覆盖。该指南在最后一次设备容量提醒后 10 秒关闭。"
+    },
+    {
       "source": "Startup failed at {0}.",
       "translation": "{0} 启动失败。"
     },
@@ -178521,6 +178845,10 @@
     {
       "source": "Stop",
       "translation": "停止"
+    },
+    {
+      "source": "Stop at the true center and correct the map alignment.",
+      "translation": "停在真正的中心并纠正地图对齐。"
     },
     {
       "source": "Stop chapter",
@@ -178761,6 +179089,10 @@
     {
       "source": "Surface radar and bookmarks",
       "translation": "地面雷达和书签"
+    },
+    {
+      "source": "Surface scan route complete.",
+      "translation": "表面扫描路线完成。"
     },
     {
       "source": "Surface signals: {0}",
@@ -183241,6 +183573,10 @@
     {
       "source": "While an active boxel search and the Galaxy Map are open, show the current boxel, completion progress, next system or prefix, destination validity, and clipboard state.",
       "translation": "当活动框搜索和 Galaxy 地图打开时，显示当前框、完成进度、下一个系统或前缀、目的地有效性和剪贴板状态。"
+    },
+    {
+      "source": "While mining, use .mine rigs <number> to record each deposit's rig capacity.",
+      "translation": "采矿时，使用.mine rigs <number>记录每个矿床的钻机容量。"
     },
     {
       "source": "While standing near a mapped deposit, send .mine rigs <number> to record its positive rig capacity on the nearest marker. The count remains visible in brackets when marker names are hidden. Example: .mine rigs 4.",
@@ -194409,6 +194745,14 @@
       "translation": "* DRIVE TO A MINING-LOCATION BORDER, FACE ITS CENTER, AND SEND .MINING <HEADING> <RADIUS KM> <NUMBER>, I.E. .MINING 120 6.44 4. >>>!"
     },
     {
+      "source": "Drive to the next scan point",
+      "translation": "* DRIVE TO THE NEXT SCAN POINT >>>!"
+    },
+    {
+      "source": "Drive to the orange border and face the location center.",
+      "translation": "* DRIVE TO THE ORANGE BORDER AND FACE THE LOCATION CENTER. >>>!"
+    },
+    {
       "source": "Drive to the orange location border, face the center marker, and send .mining <heading> <border radius km> <location number>. Example: .mining 120 6.44 4.",
       "translation": "* DRIVE TO THE ORANGE LOCATION BORDER, FACE THE CENTER MARKER, AND SEND .MINING <HEADING> <BORDER RADIUS KM> <LOCATION NUMBER>. EXAMPLE: .MINING 120 6.44 4. >>>!"
     },
@@ -194419,6 +194763,10 @@
     {
       "source": "Drive to the orange mining-location border and face the center marker.",
       "translation": "* DRIVE TO THE ORANGE MINING-LOCATION BORDER AND FACE THE CENTER MARKER. >>>!"
+    },
+    {
+      "source": "Drive to the saved center",
+      "translation": "* DRIVE TO THE SAVED CENTER >>>!"
     },
     {
       "source": "DssDistanceLimitLs",
@@ -198855,6 +199203,10 @@
     {
       "source": "Keep progress",
       "translation": "* KEEP PROGRESS >>>!"
+    },
+    {
+      "source": "Keep surface scanning; the next point advances automatically.",
+      "translation": "* KEEP SURFACE SCANNING; THE NEXT POINT ADVANCES AUTOMATICALLY. >>>!"
     },
     {
       "source": "Keep travelling",
@@ -206881,6 +207233,26 @@
       "translation": "* SURFACE MINING >>>!"
     },
     {
+      "source": "SURFACE MINING SURVEY · BORDER",
+      "translation": "* SURFACE MINING SURVEY · BORDER >>>!"
+    },
+    {
+      "source": "SURFACE MINING SURVEY · CENTER",
+      "translation": "* SURFACE MINING SURVEY · CENTER >>>!"
+    },
+    {
+      "source": "SURFACE MINING SURVEY · CENTER REACHED",
+      "translation": "* SURFACE MINING SURVEY · CENTER REACHED >>>!"
+    },
+    {
+      "source": "SURFACE MINING SURVEY · COMPLETE",
+      "translation": "* SURFACE MINING SURVEY · COMPLETE >>>!"
+    },
+    {
+      "source": "SURFACE MINING SURVEY · {0} OF {1}",
+      "translation": "* SURFACE MINING SURVEY · {0} OF {1} >>>!"
+    },
+    {
       "source": "SURFACE RADAR",
       "translation": "* SURFACE RADAR >>>!"
     },
@@ -209281,6 +209653,10 @@
       "translation": "* SRVSURVEY SURFACE MINING OVERLAY >>>!"
     },
     {
+      "source": "SrvSurvey surface mining survey overlay",
+      "translation": "* SRVSURVEY SURFACE MINING SURVEY OVERLAY >>>!"
+    },
+    {
       "source": "SrvSurvey surface survey overlay",
       "translation": "* SRVSURVEY SURFACE SURVEY OVERLAY >>>!"
     },
@@ -209593,6 +209969,10 @@
       "translation": "* STARTING VERIFIED PACKAGE DOWNLOAD... >>>!"
     },
     {
+      "source": "Starts guided survey mode. The compact top-center overlay walks you from the orange border to the saved center, then through automatically advancing scan waypoints in an outward spiral. Waypoints stay no more than 2 km apart for complete surface-scanner coverage. The guide closes 10 seconds after its final rig-capacity reminder.",
+      "translation": "* STARTS GUIDED SURVEY MODE. THE COMPACT TOP-CENTER OVERLAY WALKS YOU FROM THE ORANGE BORDER TO THE SAVED CENTER, THEN THROUGH AUTOMATICALLY ADVANCING SCAN WAYPOINTS IN AN OUTWARD SPIRAL. WAYPOINTS STAY NO MORE THAN 2 KM APART FOR COMPLETE SURFACE-SCANNER COVERAGE. THE GUIDE CLOSES 10 SECONDS AFTER ITS FINAL RIG-CAPACITY REMINDER. >>>!"
+    },
+    {
       "source": "Startup failed at {0}.",
       "translation": "* STARTUP FAILED AT {0}. >>>!"
     },
@@ -209699,6 +210079,10 @@
     {
       "source": "Stop",
       "translation": "* STOP >>>!"
+    },
+    {
+      "source": "Stop at the true center and correct the map alignment.",
+      "translation": "* STOP AT THE TRUE CENTER AND CORRECT THE MAP ALIGNMENT. >>>!"
     },
     {
       "source": "Stop chapter",
@@ -209939,6 +210323,10 @@
     {
       "source": "Surface radar and bookmarks",
       "translation": "* SURFACE RADAR AND BOOKMARKS >>>!"
+    },
+    {
+      "source": "Surface scan route complete.",
+      "translation": "* SURFACE SCAN ROUTE COMPLETE. >>>!"
     },
     {
       "source": "Surface signals: {0}",
@@ -214419,6 +214807,10 @@
     {
       "source": "While an active boxel search and the Galaxy Map are open, show the current boxel, completion progress, next system or prefix, destination validity, and clipboard state.",
       "translation": "* WHILE AN ACTIVE BOXEL SEARCH AND THE GALAXY MAP ARE OPEN, SHOW THE CURRENT BOXEL, COMPLETION PROGRESS, NEXT SYSTEM OR PREFIX, DESTINATION VALIDITY, AND CLIPBOARD STATE. >>>!"
+    },
+    {
+      "source": "While mining, use .mine rigs <number> to record each deposit's rig capacity.",
+      "translation": "* WHILE MINING, USE .MINE RIGS <NUMBER> TO RECORD EACH DEPOSIT'S RIG CAPACITY. >>>!"
     },
     {
       "source": "While standing near a mapped deposit, send .mine rigs <number> to record its positive rig capacity on the nearest marker. The count remains visible in brackets when marker names are hidden. Example: .mine rigs 4.",

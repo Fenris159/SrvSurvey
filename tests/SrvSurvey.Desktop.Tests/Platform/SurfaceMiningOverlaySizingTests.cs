@@ -17,6 +17,15 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class SurfaceMiningOverlaySizingTests
 {
+    [Fact]
+    public void GuidedSurveyCompletionReminderExpiresAfterTenSeconds()
+    {
+        var started = new DateTimeOffset(2026, 9, 12, 12, 0, 0, TimeSpan.Zero);
+
+        Assert.False(MineMapOverlayCoordinator.IsSurveyGuideReminderExpired(started, started.AddSeconds(9.99)));
+        Assert.True(MineMapOverlayCoordinator.IsSurveyGuideReminderExpired(started, started.AddSeconds(10)));
+    }
+
     [Theory]
     [InlineData(1280, 720, 216)]
     [InlineData(1920, 1080, 324)]

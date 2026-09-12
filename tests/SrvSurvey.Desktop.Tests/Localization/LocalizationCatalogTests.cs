@@ -21,8 +21,8 @@ public sealed class LocalizationCatalogTests : IDisposable
 
         Assert.Equal("de", LocalizationCatalog.CurrentLanguage);
         Assert.Equal(1_090, LocalizationCatalog.LegacyTranslationCount);
-        Assert.Equal(7_794, LocalizationCatalog.ApplicationTranslationCount);
-        Assert.Equal(7_794, LocalizationCatalog.SourceCount);
+        Assert.Equal(7_808, LocalizationCatalog.ApplicationTranslationCount);
+        Assert.Equal(7_808, LocalizationCatalog.SourceCount);
         Assert.Equal("Himmelskörper", LocalizationCatalog.Translate("Bodies"));
         Assert.Equal("Neues Lesezeichen", LocalizationCatalog.Translate("New bookmark"));
     }
@@ -86,6 +86,7 @@ public sealed class LocalizationCatalogTests : IDisposable
                 "While standing near a mapped deposit, send .mine rigs <number> to record its positive rig capacity on the nearest marker. The count remains visible in brackets when marker names are hidden. Example: .mine rigs 4.",
                 [".mine rigs <number>", ".mine rigs 4"]
             ),
+            new(".mining survey", [".mining survey"]),
         ];
 
         foreach (

@@ -34,6 +34,23 @@ saved maps, and the table can be sorted from its column headings. Select the sta
 after **Updated** to favorite a map, then enable **Favorites** in the search panel
 to show only starred maps.
 
+For an on-screen walkthrough, send:
+
+```text
+.mining survey
+```
+
+The compact **Surface Mining Survey** overlay appears at the top center of the
+Elite window. It first prompts for the border command, directs the player to the
+calculated center, and asks for `.mining center here`. It then advances
+automatically through an outward spiral of scan waypoints. Waypoints and adjacent
+spiral turns are at most 2 km apart so the 2 km surface scanner covers the
+saved area through its outer edge. After the last waypoint, the overlay reminds the
+player to use `.mine rigs <number>` while mining and closes after 10 seconds.
+
+Running `.mining survey` while already inside a saved map starts at that map's
+center step.
+
 Drive to the orange border of a mining-location signal and face the marker at its
 center. Send this case-insensitive chat command using your current heading, the
 measured border radius in kilometers, and the signal's number:

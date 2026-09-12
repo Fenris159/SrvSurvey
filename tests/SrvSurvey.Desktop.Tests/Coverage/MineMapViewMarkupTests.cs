@@ -119,6 +119,10 @@ public sealed class MineMapViewMarkupTests
         );
         Assert.Contains(
             document.Descendants(avalonia + "TextBlock"),
+            text => text.Attribute("Text")?.Value == ".mining survey"
+        );
+        Assert.Contains(
+            document.Descendants(avalonia + "TextBlock"),
             text => text.Attribute("Text")?.Value == ".mining center here"
         );
         Assert.Contains(
@@ -455,6 +459,40 @@ public sealed class MineMapViewMarkupTests
             guardianButtons.Select(button => button.Attribute("BorderBrush")?.Value),
             mineButtons.Select(button => button.Attribute("BorderBrush")?.Value)
         );
+    }
+
+    [Fact]
+    public void GuidedSurveyOverlayUsesThreeCompactTopCenterRowsAndBothMapsShareItsTarget()
+    {
+        var root = FindRepositoryRoot();
+        var guide = XDocument.Load(
+            Path.Combine(root, "src", "SrvSurvey.Desktop", "SurfaceMiningSurveyOverlayPresentation.axaml")
+        );
+        XNamespace avalonia = "https://github.com/avaloniaui";
+        XElement grid = Assert.Single(guide.Descendants(avalonia + "Grid"));
+
+        Assert.Equal("Auto,Auto,Auto", grid.Attribute("RowDefinitions")?.Value);
+        Assert.Equal("108", guide.Root?.Attribute("MaxHeight")?.Value);
+
+        string coordinator = File.ReadAllText(
+            Path.Combine(root, "src", "SrvSurvey.Desktop", "Platform", "Overlay", "MineMapOverlayCoordinator.cs")
+        );
+        Assert.Contains("OverlayWindowPlacement.TopCenter", coordinator, StringComparison.Ordinal);
+
+        foreach (
+            string path in new[]
+            {
+                Path.Combine(root, "src", "SrvSurvey.Desktop", "MineMapOverlayPresentation.axaml"),
+                Path.Combine(root, "src", "SrvSurvey.Desktop", "Views", "MineMapView.axaml"),
+            }
+        )
+        {
+            XElement map = Assert.Single(
+                XDocument.Load(path).Descendants(),
+                element => element.Name.LocalName == "MineMapControl"
+            );
+            Assert.Equal("{Binding SurveyGuideTarget}", map.Attribute("SurveyGuideTarget")?.Value);
+        }
     }
 
     [Fact]

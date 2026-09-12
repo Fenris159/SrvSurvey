@@ -1,3 +1,4 @@
+using System.Text.Json;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Navigation;
@@ -358,6 +359,43 @@ public sealed class MineMapViewModelTests
         Assert.True(viewModel.ShouldShowOverlay);
         Assert.Contains(messages, message => message.Contains("center saved", StringComparison.OrdinalIgnoreCase));
         Assert.Equal("Mining Location Signal 4", viewModel.LiveMapTitle);
+    }
+
+    [Fact]
+    public async Task GuidedSurveyPublishesCompactDirectionsAndMapTargets()
+    {
+        using var directory = new TemporaryDirectory();
+        using var viewModel = new MineMapViewModel(
+            directory.Path,
+            new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
+            _ => { }
+        );
+        var border = new SurfaceCoordinate(1, 2);
+        MineMapCommandContext context = Context(border);
+        var status = new EliteStatus
+        {
+            Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
+            PlanetRadius = 855_573.1875m,
+        };
+
+        await viewModel.ApplyUpdateAsync([Command(".mining survey")], context, status, allowCommands: true);
+
+        Assert.True(viewModel.ShouldShowSurveyGuideOverlay);
+        Assert.EndsWith("BORDER", viewModel.SurveyGuideTitle, StringComparison.Ordinal);
+        Assert.Contains(".mining <heading>", viewModel.SurveyGuideCommandHint, StringComparison.Ordinal);
+
+        await viewModel.ApplyUpdateAsync([Command(".mining 90 6.44 4")], context, status, allowCommands: true);
+        Assert.EndsWith("CENTER", viewModel.SurveyGuideTitle, StringComparison.Ordinal);
+        Assert.NotNull(viewModel.SurveyGuideTarget);
+
+        context = context with { PlayerLocation = viewModel.ActiveSurvey!.Center };
+        await viewModel.ApplyUpdateAsync([], context, status, allowCommands: true);
+        Assert.EndsWith("CENTER REACHED", viewModel.SurveyGuideTitle, StringComparison.Ordinal);
+
+        await viewModel.ApplyUpdateAsync([Command(".mining center here")], context, status, allowCommands: true);
+        Assert.Contains(" OF ", viewModel.SurveyGuideTitle, StringComparison.Ordinal);
+        Assert.NotNull(viewModel.SurveyGuideTarget);
+        Assert.Contains("advances automatically", viewModel.SurveyGuideCommandHint, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -770,6 +808,13 @@ public sealed class MineMapViewModelTests
             855_573.1875,
             location
         );
+
+    private static JournalEventEnvelope Command(string message)
+    {
+        string json = JsonSerializer.Serialize(new { @event = "SendText", Message = message });
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? command, out _));
+        return command!;
+    }
 
     private static void SeedSurvey(string directory)
     {

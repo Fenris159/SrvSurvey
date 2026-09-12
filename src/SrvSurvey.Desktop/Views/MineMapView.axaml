@@ -197,6 +197,7 @@
                                        VisibleMaterials="{Binding VisibleMaterials}"
                                        VisibleMarkerIds="{Binding VisibleMarkerIds}"
                                        PlanningCircleCenter="{Binding PlanningCircleCenter, Mode=TwoWay}"
+                                       SurveyGuideTarget="{Binding SurveyGuideTarget}"
                                        MapBackground="{DynamicResource RavenRaisedSurfaceBrush}"
                                        GridBrush="{DynamicResource RavenMapGridBrush}"
                                        AccentBrush="{DynamicResource RavenAccentBrush}"
@@ -455,6 +456,7 @@
                         BorderBrush="{DynamicResource RavenBorderBrush}"
                         BorderThickness="1" CornerRadius="8" Padding="12,9">
                   <StackPanel Spacing="5">
+                    <TextBlock Classes="monospace" Text=".mining survey" />
                     <TextBlock Classes="monospace" Text=".mining 120 6.44 4" />
                     <TextBlock Classes="monospace" Text=".mining center here" />
                     <TextBlock Classes="monospace" Text=".mine 15 ruby 1.24 high/medium" />
@@ -469,6 +471,9 @@
             <Border Classes="card">
               <StackPanel Spacing="12">
                 <TextBlock Classes="card-title" Text="Surface Mining map commands" />
+                <TextBlock FontWeight="SemiBold" Text=".mining survey" />
+                <TextBlock Classes="muted" TextWrapping="Wrap"
+                           Text="Starts guided survey mode. The compact top-center overlay walks you from the orange border to the saved center, then through automatically advancing scan waypoints in an outward spiral. Waypoints stay no more than 2 km apart for complete surface-scanner coverage. The guide closes 10 seconds after its final rig-capacity reminder." />
                 <TextBlock FontWeight="SemiBold" Text=".mining &lt;heading&gt; &lt;border radius km&gt; &lt;location number&gt;" />
                 <TextBlock Classes="muted" TextWrapping="Wrap"
                            Text="Creates or updates the current Mining Location Signal. Heading must be 0–359, border radius is the measured distance from the border to the center in kilometers, and the location number must be positive." />

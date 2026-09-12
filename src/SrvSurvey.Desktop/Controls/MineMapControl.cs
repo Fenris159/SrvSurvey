@@ -48,6 +48,10 @@ public sealed class MineMapControl : Control
         MineMapControl,
         SurfaceCoordinate?
     >(nameof(PlanningCircleCenter));
+    public static readonly StyledProperty<SurfaceCoordinate?> SurveyGuideTargetProperty = AvaloniaProperty.Register<
+        MineMapControl,
+        SurfaceCoordinate?
+    >(nameof(SurveyGuideTarget));
     public static readonly StyledProperty<IBrush?> MapBackgroundProperty = AvaloniaProperty.Register<
         MineMapControl,
         IBrush?
@@ -97,6 +101,7 @@ public sealed class MineMapControl : Control
             VisibleMaterialsProperty,
             VisibleMarkerIdsProperty,
             PlanningCircleCenterProperty,
+            SurveyGuideTargetProperty,
             MapBackgroundProperty,
             GridBrushProperty,
             AccentBrushProperty,
@@ -161,6 +166,11 @@ public sealed class MineMapControl : Control
     {
         get => GetValue(PlanningCircleCenterProperty);
         set => SetValue(PlanningCircleCenterProperty, value);
+    }
+    public SurfaceCoordinate? SurveyGuideTarget
+    {
+        get => GetValue(SurveyGuideTargetProperty);
+        set => SetValue(SurveyGuideTargetProperty, value);
     }
     public IBrush? MapBackground
     {
@@ -227,11 +237,34 @@ public sealed class MineMapControl : Control
             context.DrawEllipse(accent, null, center, 2.5, 2.5);
 
             DrawPlanningCircle(context, survey, center, scale, accent);
+            DrawSurveyGuideTarget(context, survey, center, scale, zone, text);
 
             var markerScale = GetMarkerScale(zoom);
             DrawMarkers(context, survey, center, scale, markerScale, localBounds, text);
             DrawPlayer(context, survey, center, scale, markerScale, localBounds);
         }
+    }
+
+    private void DrawSurveyGuideTarget(
+        DrawingContext context,
+        MineMapSurvey survey,
+        Point mapCenter,
+        double scale,
+        IBrush brush,
+        IBrush outline
+    )
+    {
+        if (SurveyGuideTarget is not { } target)
+        {
+            return;
+        }
+
+        Point point = ToPoint(survey, target, mapCenter, scale);
+        var pen = new Pen(brush, 2);
+        context.DrawEllipse(null, new Pen(outline, 4), point, 10, 10);
+        context.DrawEllipse(null, pen, point, 10, 10);
+        context.DrawLine(pen, new Point(point.X - 14, point.Y), new Point(point.X + 14, point.Y));
+        context.DrawLine(pen, new Point(point.X, point.Y - 14), new Point(point.X, point.Y + 14));
     }
 
     private static void DrawDistanceGrid(

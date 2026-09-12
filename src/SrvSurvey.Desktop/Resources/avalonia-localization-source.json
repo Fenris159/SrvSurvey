@@ -14717,6 +14717,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
   },
   {
+    "Text": "Drive to the next scan point",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
+  },
+  {
+    "Text": "Drive to the orange border and face the location center.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
+  },
+  {
     "Text": "Drive to the orange location border, face the center marker, and send .mining \u003Cheading\u003E \u003Cborder radius km\u003E \u003Clocation number\u003E. Example: .mining 120 6.44 4.",
     "IsFormat": false,
     "SourceKinds": [
@@ -14739,6 +14755,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
+    "Text": "Drive to the saved center",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
   },
   {
     "Text": "DssDistanceLimitLs",
@@ -23645,6 +23669,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
+  },
+  {
+    "Text": "Keep surface scanning; the next point advances automatically.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
   },
   {
     "Text": "Keep travelling",
@@ -39732,6 +39764,46 @@
     "FirstSource": "src/SrvSurvey.Desktop/SurfaceMiningOverlayPresentation.axaml"
   },
   {
+    "Text": "SURFACE MINING SURVEY \u00B7 BORDER",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
+  },
+  {
+    "Text": "SURFACE MINING SURVEY \u00B7 CENTER",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
+  },
+  {
+    "Text": "SURFACE MINING SURVEY \u00B7 CENTER REACHED",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
+  },
+  {
+    "Text": "SURFACE MINING SURVEY \u00B7 COMPLETE",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
+  },
+  {
+    "Text": "SURFACE MINING SURVEY \u00B7 {0} OF {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
+  },
+  {
     "Text": "SURFACE RADAR",
     "IsFormat": false,
     "SourceKinds": [
@@ -44545,6 +44617,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/SurfaceMiningOverlayWindow.axaml"
   },
   {
+    "Text": "SrvSurvey surface mining survey overlay",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/SurfaceMiningSurveyOverlayWindow.axaml"
+  },
+  {
     "Text": "SrvSurvey surface survey overlay",
     "IsFormat": false,
     "SourceKinds": [
@@ -45169,6 +45249,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
   },
   {
+    "Text": "Starts guided survey mode. The compact top-center overlay walks you from the orange border to the saved center, then through automatically advancing scan waypoints in an outward spiral. Waypoints stay no more than 2 km apart for complete surface-scanner coverage. The guide closes 10 seconds after its final rig-capacity reminder.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
     "Text": "Startup failed at {0}.",
     "IsFormat": true,
     "SourceKinds": [
@@ -45384,6 +45472,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
+  },
+  {
+    "Text": "Stop at the true center and correct the map alignment.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
   },
   {
     "Text": "Stop chapter",
@@ -45865,6 +45961,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Surface scan route complete.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
   },
   {
     "Text": "Surface signals: {0}",
@@ -54841,6 +54945,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "While mining, use .mine rigs \u003Cnumber\u003E to record each deposit\u0027s rig capacity.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
   },
   {
     "Text": "While standing near a mapped deposit, send .mine rigs \u003Cnumber\u003E to record its positive rig capacity on the nearest marker. The count remains visible in brackets when marker names are hidden. Example: .mine rigs 4.",

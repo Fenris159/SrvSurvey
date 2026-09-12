@@ -185,6 +185,63 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
 
     public bool ShouldShowAlignmentHelper => isAlignmentHelperVisible;
 
+    public bool ShouldShowSurveyGuideOverlay =>
+        service.SurveyGuide is { } guide
+        && context is { } current
+        && guide.FrontierId == current.FrontierId
+        && guide.SystemAddress == current.SystemAddress
+        && guide.BodyId == current.BodyId
+        && status is { HasLatitudeLongitude: true }
+        && IsOnGround(status);
+
+    public bool IsSurveyGuideComplete => service.SurveyGuide is { Phase: MineMapSurveyGuidePhase.Complete };
+
+    public string SurveyGuideTitle =>
+        service.SurveyGuide switch
+        {
+            { Phase: MineMapSurveyGuidePhase.Border } => "SURFACE MINING SURVEY · BORDER",
+            { Phase: MineMapSurveyGuidePhase.Center } => "SURFACE MINING SURVEY · CENTER",
+            { Phase: MineMapSurveyGuidePhase.ConfirmCenter } => "SURFACE MINING SURVEY · CENTER REACHED",
+            { Phase: MineMapSurveyGuidePhase.Waypoint } guide =>
+                $"SURFACE MINING SURVEY · {guide.WaypointIndex + 1:N0} OF {guide.Waypoints?.Count ?? 0:N0}",
+            { Phase: MineMapSurveyGuidePhase.Complete } => "SURFACE MINING SURVEY · COMPLETE",
+            _ => string.Empty,
+        };
+
+    public string SurveyGuideInstruction =>
+        service.SurveyGuide switch
+        {
+            { Phase: MineMapSurveyGuidePhase.Border } => "Drive to the orange border and face the location center.",
+            { Phase: MineMapSurveyGuidePhase.Center } => FormatSurveyGuideTarget("Drive to the saved center"),
+            { Phase: MineMapSurveyGuidePhase.ConfirmCenter } =>
+                "Stop at the true center and correct the map alignment.",
+            { Phase: MineMapSurveyGuidePhase.Waypoint } => FormatSurveyGuideTarget("Drive to the next scan point"),
+            { Phase: MineMapSurveyGuidePhase.Complete } => "Surface scan route complete.",
+            _ => string.Empty,
+        };
+
+    public string SurveyGuideCommandHint =>
+        service.SurveyGuide?.Phase switch
+        {
+            MineMapSurveyGuidePhase.Border => ".mining <heading> <radius km> <signal #>",
+            MineMapSurveyGuidePhase.Center or MineMapSurveyGuidePhase.ConfirmCenter => ".mining center here",
+            MineMapSurveyGuidePhase.Waypoint => "Keep surface scanning; the next point advances automatically.",
+            MineMapSurveyGuidePhase.Complete =>
+                "While mining, use .mine rigs <number> to record each deposit's rig capacity.",
+            _ => string.Empty,
+        };
+
+    public SurfaceCoordinate? SurveyGuideTarget =>
+        service.SurveyGuide switch
+        {
+            {
+                Phase: MineMapSurveyGuidePhase.Center or MineMapSurveyGuidePhase.ConfirmCenter,
+                SurveyId: { } surveyId
+            } => service.Surveys.FirstOrDefault(survey => survey.Id == surveyId)?.Center,
+            { Phase: MineMapSurveyGuidePhase.Waypoint } guide => guide.CurrentWaypoint,
+            _ => null,
+        };
+
     public IReadOnlyList<MineMapSurveyRowViewModel> FilteredSurveys
     {
         get => filteredSurveys;
@@ -518,6 +575,11 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         service.Dispose();
     }
 
+    public void DismissSurveyGuide()
+    {
+        service.DismissSurveyGuide();
+    }
+
     internal static MineMapViewModel CreateEditorPreview()
     {
         string root = Path.Combine(Path.GetTempPath(), "SrvSurvey-OverlayEditorPreview", "mine-map-v2");
@@ -770,7 +832,27 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         Changed(nameof(PlayerLocation));
         Changed(nameof(PlayerHeading));
         Changed(nameof(ShouldShowOverlay));
+        Changed(nameof(ShouldShowSurveyGuideOverlay));
+        Changed(nameof(IsSurveyGuideComplete));
+        Changed(nameof(SurveyGuideTitle));
+        Changed(nameof(SurveyGuideInstruction));
+        Changed(nameof(SurveyGuideCommandHint));
+        Changed(nameof(SurveyGuideTarget));
         RefreshMarkerFilters();
+    }
+
+    private string FormatSurveyGuideTarget(string action)
+    {
+        if (context?.PlayerLocation is not { } player || SurveyGuideTarget is not { } target)
+        {
+            return action + ".";
+        }
+
+        double radius = ActiveSurvey?.PlanetRadiusMeters ?? context.PlanetRadiusMeters;
+        double bearing = SurfaceNavigation.GetBearing(player, target);
+        double distance = SurfaceNavigation.GetDistance(player, target, radius);
+        string distanceText = distance >= 1_000 ? $"{distance / 1_000:0.00} km" : $"{distance:0} m";
+        return $"{action}: {bearing:000}° · {distanceText}.";
     }
 
     private void ClearPlanningCircleForInactiveSurvey()
