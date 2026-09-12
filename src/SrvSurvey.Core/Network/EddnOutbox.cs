@@ -182,7 +182,7 @@ internal sealed class EddnOutbox : IDisposable
                 return;
             }
 
-            if (value || discardPendingWhenDisabled)
+            if (value || (discardPendingWhenDisabled && enabled))
             {
                 var hadOwnership = ownershipLease is not null;
                 tryAcquireOwnershipLocked(ownershipLogs);
