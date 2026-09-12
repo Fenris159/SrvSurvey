@@ -683,7 +683,7 @@ public static partial class FrontierCapiSnapshotParser
             GetInt64(finance, "jumpsCost") ?? 0,
             GetInt32(finance, "numJumps") ?? 0,
             GetDouble(itinerary, "totalDistanceJumpedLY") ?? 0,
-            ReadNamedValue(GetProperty(itinerary, "currentJump")),
+            ParseCarrierCurrentJump(GetProperty(itinerary, "currentJump")),
             ParseCarrierFinances(blackMarketFinances),
             ParseCarrierFinances(bartenderFinances),
             ParseNamedValues(GetProperty(finance, "service_taxation")),
@@ -713,6 +713,14 @@ public static partial class FrontierCapiSnapshotParser
             GetInt32(finances, "numCommodsPurchaseOrders") ?? GetInt32(finances, "microresourcesPurchaseOrders") ?? 0,
             GetInt64(finances, "balanceAllocForPurchaseOrders") ?? 0
         );
+    }
+
+    private static string ParseCarrierCurrentJump(JsonElement? value)
+    {
+        var currentJump = value is { ValueKind: JsonValueKind.Object } jump
+            ? FirstNonEmpty(GetString(jump, "starsystem"), GetString(jump, "systemName"), ReadNamedValue(jump))
+            : ReadNamedValue(value);
+        return string.Equals(currentJump, "None", StringComparison.OrdinalIgnoreCase) ? string.Empty : currentJump;
     }
 
     private static FrontierCarrierCrewSnapshot[] ParseCarrierCrew(JsonElement? services)

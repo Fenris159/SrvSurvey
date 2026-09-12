@@ -1,6 +1,6 @@
 # Install SrvSurvey on Windows
 
-Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.46.5**.
+Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.47**.
 
 > [!IMPORTANT]
 > If RC4 or earlier is installed under a protected folder such as
@@ -48,6 +48,12 @@ itself to the Desktop or another directory: the executable requires the DLLs
 and self-contained runtime beside it. If you want desktop access, create a
 shortcut to the executable and leave the executable in its container folder.
 Set the shortcut's **Start in** field to that same folder.
+
+Steam, Epic, and the standalone Frontier launcher all write Elite journals to
+the same Windows user folder by default:
+`%USERPROFILE%\Saved Games\Frontier Developments\Elite Dangerous`. SrvSurvey
+uses that storefront-neutral location, so mixed Windows installations do not
+need separate path configuration.
 
 The review build is unsigned. If Windows marks the download as coming from the
 Internet, right-click the package ZIP, select **Properties**, and use
