@@ -213,7 +213,7 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
         try
         {
             IsBusy = true;
-            await launcher.LaunchAsync(selected.FrontierId, journalDirectory);
+            await launcher.LaunchAsync(selected.FrontierId, GetJournalDirectory(selected));
             StatusMessage = $"Started another SrvSurvey instance for {selected.DisplayName}.";
         }
         catch (Exception exception)
@@ -236,9 +236,12 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
     {
         return !IsBusy
             && SelectedCommander is not null
-            && Directory.Exists(journalDirectory)
+            && Directory.Exists(GetJournalDirectory(SelectedCommander))
             && !string.Equals(SelectedCommander.FrontierId, currentFrontierId, StringComparison.OrdinalIgnoreCase);
     }
+
+    private string GetJournalDirectory(CommanderInstanceOptionViewModel commander) =>
+        commander.JournalDirectory ?? journalDirectory;
 
     private void RebuildOptions()
     {
@@ -310,6 +313,8 @@ public sealed class CommanderInstanceOptionViewModel(CommanderProfileIdentity id
     public string FrontierId { get; } = identity.FrontierId;
 
     public string CommanderName { get; } = identity.CommanderName;
+
+    public string? JournalDirectory { get; } = identity.JournalDirectory;
 
     public string Modes =>
         (identity.HasLiveProfile, identity.HasLegacyProfile) switch

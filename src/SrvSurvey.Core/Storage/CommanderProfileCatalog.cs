@@ -1,27 +1,39 @@
 using System.Text.Json;
+using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Core.Storage;
 
-public sealed class CommanderProfileCatalog(string profileDirectory)
+public sealed class CommanderProfileCatalog
 {
-    public string ProfileDirectory { get; } = Path.GetFullPath(profileDirectory);
+    private readonly IReadOnlyList<string> journalDirectories;
+
+    public CommanderProfileCatalog(string profileDirectory, IReadOnlyList<string>? journalDirectories = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(profileDirectory);
+        ProfileDirectory = Path.GetFullPath(profileDirectory);
+        var pathComparer = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+        this.journalDirectories = (journalDirectories ?? [])
+            .Where(path => !string.IsNullOrWhiteSpace(path))
+            .Select(Path.GetFullPath)
+            .Distinct(pathComparer)
+            .ToArray();
+    }
+
+    public string ProfileDirectory { get; }
 
     public async Task<CommanderProfileCatalogResult> LoadAsync(CancellationToken cancellationToken = default)
     {
-        if (!Directory.Exists(ProfileDirectory))
-        {
-            return new CommanderProfileCatalogResult([], []);
-        }
-
         var candidates = new List<ProfileCandidate>();
         var warnings = new List<string>();
         var pathComparer = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
-        var paths = Directory
-            .EnumerateFiles(ProfileDirectory, "F*-live.json", SearchOption.TopDirectoryOnly)
-            .Concat(Directory.EnumerateFiles(ProfileDirectory, "F*-legacy.json", SearchOption.TopDirectoryOnly))
-            .Distinct(pathComparer)
-            .Order(StringComparer.Ordinal)
-            .ToArray();
+        var paths = Directory.Exists(ProfileDirectory)
+            ? Directory
+                .EnumerateFiles(ProfileDirectory, "F*-live.json", SearchOption.TopDirectoryOnly)
+                .Concat(Directory.EnumerateFiles(ProfileDirectory, "F*-legacy.json", SearchOption.TopDirectoryOnly))
+                .Distinct(pathComparer)
+                .Order(StringComparer.Ordinal)
+                .ToArray()
+            : [];
 
         foreach (var path in paths)
         {
@@ -44,25 +56,69 @@ public sealed class CommanderProfileCatalog(string profileDirectory)
             }
         }
 
+        foreach (var journalDirectory in journalDirectories.Where(Directory.Exists))
+        {
+            foreach (var journalPath in EnumerateJournals(journalDirectory, warnings))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                try
+                {
+                    var candidate = await ReadJournalCandidateAsync(journalPath, cancellationToken)
+                        .ConfigureAwait(false);
+                    if (candidate is not null)
+                    {
+                        candidates.Add(candidate);
+                    }
+                }
+                catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+                {
+                    warnings.Add($"Could not read {Path.GetFileName(journalPath)}: {exception.Message}");
+                }
+            }
+        }
+
         var profiles = candidates
             .GroupBy(candidate => candidate.FrontierId, StringComparer.OrdinalIgnoreCase)
             .Select(group =>
             {
                 var preferred = group
-                    .OrderByDescending(candidate => candidate.IsOdyssey)
+                    .OrderByDescending(candidate => candidate.JournalDirectory is not null)
+                    .ThenByDescending(candidate => candidate.IsOdyssey)
                     .ThenByDescending(candidate => candidate.LastWriteTimeUtc)
                     .First();
+                var source = group
+                    .Where(candidate => candidate.JournalDirectory is not null)
+                    .OrderByDescending(candidate => candidate.LastWriteTimeUtc)
+                    .FirstOrDefault();
                 return new CommanderProfileIdentity(
                     preferred.FrontierId,
-                    preferred.CommanderName,
+                    source?.CommanderName ?? preferred.CommanderName,
                     group.Any(candidate => candidate.IsOdyssey),
-                    group.Any(candidate => !candidate.IsOdyssey)
+                    group.Any(candidate => !candidate.IsOdyssey),
+                    source?.JournalDirectory
                 );
             })
             .OrderBy(profile => profile.CommanderName, StringComparer.OrdinalIgnoreCase)
             .ThenBy(profile => profile.FrontierId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
         return new CommanderProfileCatalogResult(profiles, warnings);
+    }
+
+    private static string[] EnumerateJournals(string journalDirectory, List<string> warnings)
+    {
+        try
+        {
+            return Directory
+                .EnumerateFiles(journalDirectory, "Journal.*.log", SearchOption.TopDirectoryOnly)
+                .OrderByDescending(File.GetLastWriteTimeUtc)
+                .ThenByDescending(Path.GetFileName, StringComparer.Ordinal)
+                .ToArray();
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            warnings.Add($"Could not inspect {journalDirectory}: {exception.Message}");
+            return [];
+        }
     }
 
     private static async Task<ProfileCandidate?> ReadCandidateAsync(string path, CancellationToken cancellationToken)
@@ -102,8 +158,68 @@ public sealed class CommanderProfileCatalog(string profileDirectory)
             frontierId.ToUpperInvariant(),
             commanderName.Trim(),
             isOdyssey,
-            File.GetLastWriteTimeUtc(path)
+            File.GetLastWriteTimeUtc(path),
+            JournalDirectory: null
         );
+    }
+
+    private static async Task<ProfileCandidate?> ReadJournalCandidateAsync(
+        string path,
+        CancellationToken cancellationToken
+    )
+    {
+        var isOdyssey = true;
+        await using var stream = new FileStream(
+            path,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete,
+            16 * 1024,
+            FileOptions.Asynchronous | FileOptions.SequentialScan
+        );
+        using var reader = new StreamReader(stream, detectEncodingFromByteOrderMarks: true);
+        while (await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false) is { } line)
+        {
+            if (!JournalEventEnvelope.TryParse(line, out var journalEvent, out _) || journalEvent is null)
+            {
+                continue;
+            }
+
+            if (
+                journalEvent.EventName == "Fileheader"
+                && journalEvent.Payload.TryGetProperty("Odyssey", out var odysseyValue)
+                && odysseyValue.ValueKind is JsonValueKind.True or JsonValueKind.False
+            )
+            {
+                isOdyssey = odysseyValue.GetBoolean();
+                continue;
+            }
+
+            if (journalEvent.EventName is not ("Commander" or "LoadGame"))
+            {
+                continue;
+            }
+
+            var frontierId = GetString(journalEvent.Payload, "FID");
+            var commanderName = GetString(
+                journalEvent.Payload,
+                journalEvent.EventName == "Commander" ? "Name" : "Commander"
+            );
+            if (!IsFrontierId(frontierId) || string.IsNullOrWhiteSpace(commanderName))
+            {
+                continue;
+            }
+
+            return new ProfileCandidate(
+                frontierId!.ToUpperInvariant(),
+                commanderName.Trim(),
+                isOdyssey,
+                File.GetLastWriteTimeUtc(path),
+                Path.GetDirectoryName(path)
+            );
+        }
+
+        return null;
     }
 
     private static string? GetString(JsonElement root, string propertyName)
@@ -137,7 +253,8 @@ public sealed class CommanderProfileCatalog(string profileDirectory)
         string FrontierId,
         string CommanderName,
         bool IsOdyssey,
-        DateTime LastWriteTimeUtc
+        DateTime LastWriteTimeUtc,
+        string? JournalDirectory
     );
 }
 
@@ -150,5 +267,6 @@ public sealed record CommanderProfileIdentity(
     string FrontierId,
     string CommanderName,
     bool HasLiveProfile,
-    bool HasLegacyProfile
+    bool HasLegacyProfile,
+    string? JournalDirectory = null
 );
