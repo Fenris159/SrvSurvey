@@ -356,6 +356,7 @@ internal sealed class HostedOverlayWindow : IDisposable
         if (window is not null)
         {
             PositionWindow(window, gameWindow.ClientBounds);
+            SetVisible(window.IsVisible);
             return;
         }
 
@@ -394,7 +395,7 @@ internal sealed class HostedOverlayWindow : IDisposable
             return;
         }
 
-        SetVisible(true);
+        SetVisible(opened.IsVisible);
     }
 
     private void OnWindowClosed(object? sender, EventArgs eventArgs)
