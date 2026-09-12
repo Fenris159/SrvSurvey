@@ -169,7 +169,11 @@ namespace SrvSurvey.LocalizationTool
         private void ExtractXaml(IDictionary<string, LocalizationSourceEntry> entries)
         {
             var root = Path.Combine(repositoryRoot, "src", "SrvSurvey.Desktop");
-            foreach (var path in Directory.EnumerateFiles(root, "*.axaml", SearchOption.AllDirectories))
+            foreach (
+                var path in Directory
+                    .EnumerateFiles(root, "*.axaml", SearchOption.AllDirectories)
+                    .OrderBy(path => Path.GetRelativePath(root, path).Replace('\\', '/'), StringComparer.Ordinal)
+            )
             {
                 var document = XDocument.Load(path, LoadOptions.PreserveWhitespace);
                 foreach (var attribute in document.Descendants().Attributes())
@@ -195,6 +199,7 @@ namespace SrvSurvey.LocalizationTool
                 var path in Directory
                     .EnumerateFiles(root, "*.cs", SearchOption.AllDirectories)
                     .Where(path => !IsBuildOutput(path))
+                    .OrderBy(path => Path.GetRelativePath(root, path).Replace('\\', '/'), StringComparer.Ordinal)
             )
             {
                 var syntaxTree = CSharpSyntaxTree.ParseText(File.ReadAllText(path));

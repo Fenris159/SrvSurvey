@@ -2262,7 +2262,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
   },
   {
     "Text": "APPLICATION UPDATE",
@@ -12964,7 +12964,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayThemeResources.cs"
   },
   {
     "Text": "Danger (dim)",
@@ -18759,7 +18759,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs"
   },
   {
     "Text": "Frontier authorization was not completed.",
@@ -20847,7 +20847,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayThemeResources.cs"
   },
   {
     "Text": "Header / title",
@@ -36345,7 +36345,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Theming/RavenThemeService.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayThemeResources.cs"
   },
   {
     "Text": "RavenWarningInsetShadow",
@@ -36361,7 +36361,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Theming/RavenThemeService.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayThemeResources.cs"
   },
   {
     "Text": "Raw",
@@ -44038,7 +44038,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/MiniTrackOverlayWindow.axaml.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Localization/LocalizationBehavior.cs"
   },
   {
     "Text": "SrvSurvey - click to show",
@@ -44574,7 +44574,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Program.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OpenVrRuntime.cs"
   },
   {
     "Text": "SrvSurvey {0} could not start: {1}",
@@ -45295,7 +45295,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayExceptionsViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
   },
   {
     "Text": "Status.json does not currently contain surface coordinates.",
@@ -45503,7 +45503,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayThemeResources.cs"
   },
   {
     "Text": "Success (dim)",
@@ -48327,7 +48327,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/VoxStellarInformationWindow.axaml.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml.cs"
   },
   {
     "Text": "The desktop clipboard is not available.",
@@ -48367,7 +48367,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/VoxStellarInformationWindow.axaml.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NearestSystemsViewModel.cs"
   },
   {
     "Text": "The desktop runtime already has a main window.",
@@ -54015,7 +54015,7 @@
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/VoxStellarInformationWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BoxelView.axaml"
   },
   {
     "Text": "VoxStellar is an independent boxel-surveying service. SrvSurvey can send selected new exploration journal events to it only after you opt in from the top of the Boxel workspace.",
@@ -54432,7 +54432,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/StreamOverlayViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/StreamOverlayCoordinator.cs"
   },
   {
     "Text": "Waiting for the commander journal session.",
@@ -54488,7 +54488,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayThemeResources.cs"
   },
   {
     "Text": "Warning / alignment",
@@ -55537,7 +55537,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierCredentialStore.cs"
   },
   {
     "Text": "application minimize",
@@ -55561,7 +55561,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs"
   },
   {
     "Text": "application/zip",
@@ -56561,7 +56561,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
   },
   {
     "Text": "descending",
@@ -57513,7 +57513,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Theming/LegacyOverlayThemeStore.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Inara/InaraCommunityGoalClient.cs"
   },
   {
     "Text": "heading",
@@ -58065,7 +58065,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs"
   },
   {
     "Text": "metal rich",
@@ -59145,7 +59145,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
   },
   {
     "Text": "settings-migration",
@@ -59993,7 +59993,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Program.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Inara/InaraCommunityGoalEnricher.cs"
   },
   {
     "Text": "tungsten",
