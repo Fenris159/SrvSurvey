@@ -407,6 +407,7 @@ public sealed class BookmarkCatalog
                 || string.IsNullOrWhiteSpace(marker.Material)
                 || !Enum.IsDefined(marker.MineralAmount)
                 || !Enum.IsDefined(marker.Density)
+                || marker.RigCount is <= 0
             )
         )
         {

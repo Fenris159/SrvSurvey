@@ -327,6 +327,7 @@ public static class GuideCatalog
                             "Send .alignment to toggle a red guide at the exact center of the Elite window. In the Rhino driving view, place a distant location circle under the guide before reading the visible compass heading for .mine. Turret mode does not show the required heading.",
                             "From anywhere inside the saved border, face a deposit and send .mine <heading> <commodity> <distance km> <low|medium|high>/<low|medium|high>. The bearing and distance start at your live position. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 15 ruby 1.24 high/medium.",
                             "At a deposit, send .mine <commodity> <low|medium|high>/<low|medium|high> here. Precise here placement may overlap an existing marker. Example: .mine ruby medium/low here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
+                            "While standing near a mapped deposit, send .mine rigs <number> to record its positive rig capacity on the nearest marker. The count remains visible in brackets when marker names are hidden. Example: .mine rigs 4.",
                             "To correct a marker, stand at its true position and send .mine move <commodity> here. The nearest marker matching that commodity must be within 200 m. Example: .mine move haematite here.",
                         ],
                         [

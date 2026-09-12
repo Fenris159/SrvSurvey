@@ -310,17 +310,32 @@ public sealed class MineMapControl : Control
 
             var brush = new SolidColorBrush(ColorFor(marker.Material));
             context.DrawEllipse(brush, new Pen(text, 0.75 * markerScale), point, 5 * markerScale, 5 * markerScale);
-            if (ShowMarkerLabels)
+            string markerLabel = BuildMarkerLabel(marker, ShowMarkerLabels);
+            if (markerLabel.Length > 0)
             {
                 DrawText(
                     context,
-                    marker.Material,
+                    markerLabel,
                     new Point(point.X + 8 * markerScale, point.Y - 8 * markerScale),
                     text,
                     10 * markerLabelScale
                 );
             }
         }
+    }
+
+    internal static string BuildMarkerLabel(MineMapMarker marker, bool showMaterial)
+    {
+        string rigs = marker.RigCount is { } rigCount
+            ? $"[{rigCount.ToString(CultureInfo.InvariantCulture)}]"
+            : string.Empty;
+        return (showMaterial, rigs.Length > 0) switch
+        {
+            (true, true) => $"{marker.Material} {rigs}",
+            (true, false) => marker.Material,
+            (false, true) => rigs,
+            _ => string.Empty,
+        };
     }
 
     private void DrawPlanningCircle(

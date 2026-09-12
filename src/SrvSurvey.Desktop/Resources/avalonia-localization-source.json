@@ -35100,6 +35100,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/MiningCalibrationWindow.cs"
   },
   {
+    "Text": "RIGS",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
     "Text": "RING",
     "IsFormat": false,
     "SourceKinds": [
@@ -42018,6 +42026,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "Sets how many rigs fit at the mapped deposit nearest to your current surface position. The positive rig count appears in brackets beside the deposit on the map, even when marker names are hidden. Example: .mine rigs 4",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
     "Text": "Setting shortcut bindings",
@@ -54825,6 +54841,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "While standing near a mapped deposit, send .mine rigs \u003Cnumber\u003E to record its positive rig capacity on the nearest marker. The count remains visible in brackets when marker names are hidden. Example: .mine rigs 4.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
     "Text": "White",

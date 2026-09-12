@@ -309,6 +309,77 @@ public sealed class MineMapServiceTests
     }
 
     [Fact]
+    public async Task MineRigsSetsNearestMarkerCapacityAndPersistsIt()
+    {
+        using var directory = new TemporaryDirectory();
+        MineMapCommandContext context = Context(new SurfaceCoordinate(1, 2));
+        using var service = new MineMapService(directory.Path);
+        Assert.True((await service.ExecuteAsync(".mining 180 3.25 7", context)).Succeeded);
+        Assert.True((await service.ExecuteAsync(".mine 180 ruby 0.50 high/low", context)).Succeeded);
+        Assert.True((await service.ExecuteAsync(".mine 180 gold 1.00 medium/high", context)).Succeeded);
+        MineMapMarker ruby = service.ActiveSurvey!.Markers[0];
+        MineMapMarker gold = service.ActiveSurvey.Markers[1];
+        SurfaceCoordinate playerLocation = MineMapService.GetDestination(
+            gold.Location,
+            90,
+            25,
+            service.ActiveSurvey.PlanetRadiusMeters
+        );
+
+        MineMapCommandResult result = await service.ExecuteAsync(
+            ".MiNe RiGs 4",
+            context with
+            {
+                PlayerLocation = playerLocation,
+            }
+        );
+
+        Assert.True(result.Succeeded);
+        Assert.Contains("Gold", result.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("4 rigs", result.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Null(service.ActiveSurvey.Markers.Single(marker => marker.Id == ruby.Id).RigCount);
+        Assert.Equal(4, service.ActiveSurvey.Markers.Single(marker => marker.Id == gold.Id).RigCount);
+
+        using var reloaded = new MineMapService(directory.Path);
+        MineMapSurvey persisted = Assert.Single(reloaded.Surveys);
+        Assert.Equal(4, persisted.Markers.Single(marker => marker.Id == gold.Id).RigCount);
+    }
+
+    [Theory]
+    [InlineData(".mine rigs 0")]
+    [InlineData(".mine rigs -1")]
+    [InlineData(".mine rigs many")]
+    [InlineData(".mine rigs 2 extra")]
+    public async Task MineRigsRejectsInvalidCounts(string command)
+    {
+        using var directory = new TemporaryDirectory();
+        MineMapCommandContext context = Context(new SurfaceCoordinate(1, 2));
+        using var service = new MineMapService(directory.Path);
+        Assert.True((await service.ExecuteAsync(".mining 180 3.25 7", context)).Succeeded);
+        Assert.True((await service.ExecuteAsync(".mine ruby high/low here", context)).Succeeded);
+
+        MineMapCommandResult result = await service.ExecuteAsync(command, context);
+
+        Assert.False(result.Succeeded);
+        Assert.Contains("positive number", result.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Null(Assert.Single(service.ActiveSurvey!.Markers).RigCount);
+    }
+
+    [Fact]
+    public async Task MineRigsRequiresAnExistingMarker()
+    {
+        using var directory = new TemporaryDirectory();
+        MineMapCommandContext context = Context(new SurfaceCoordinate(1, 2));
+        using var service = new MineMapService(directory.Path);
+        Assert.True((await service.ExecuteAsync(".mining 180 3.25 7", context)).Succeeded);
+
+        MineMapCommandResult result = await service.ExecuteAsync(".mine rigs 2", context);
+
+        Assert.False(result.Succeeded);
+        Assert.Contains("Add a mine marker", result.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task JournalCommandsReturnFeedbackAndIgnoreBootstrapMutations()
     {
         using var directory = new TemporaryDirectory();

@@ -180,6 +180,7 @@ public sealed class BookmarkCatalogTests
                                 Material = "Grandiderite",
                                 MineralAmount = MineMapRating.High,
                                 Density = MineMapRating.Medium,
+                                RigCount = 4,
                                 Location = markerLocation,
                             },
                         ],
@@ -213,6 +214,7 @@ public sealed class BookmarkCatalogTests
             Assert.Equal("Grandiderite", importedMarker.Material);
             Assert.Equal(MineMapRating.High, importedMarker.MineralAmount);
             Assert.Equal(MineMapRating.Medium, importedMarker.Density);
+            Assert.Equal(4, importedMarker.RigCount);
             Assert.Equal(markerLocation, importedMarker.Location);
         }
         finally

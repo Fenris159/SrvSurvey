@@ -834,7 +834,8 @@ public sealed class MineMapSurveyRowViewModel : WorkspaceObservable
             .Select(marker => new MineMapDepositRowViewModel(
                 marker.Material,
                 marker.MineralAmount.ToString(),
-                marker.Density.ToString()
+                marker.Density.ToString(),
+                marker.RigCount?.ToString(CultureInfo.InvariantCulture) ?? string.Empty
             ))
             .ToArray();
         ToggleExpandedCommand = new WorkspaceCommand(() => IsExpanded = !IsExpanded);
@@ -885,7 +886,7 @@ public sealed class MineMapSurveyRowViewModel : WorkspaceObservable
     public DateTime UpdatedValue => DateTime.Parse(UpdatedText, CultureInfo.CurrentCulture);
 }
 
-public sealed record MineMapDepositRowViewModel(string Material, string MineralAmount, string Density);
+public sealed record MineMapDepositRowViewModel(string Material, string MineralAmount, string Density, string Rigs);
 
 public sealed class SurfaceMiningCommodityRowViewModel : WorkspaceObservable
 {

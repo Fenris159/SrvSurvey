@@ -66,6 +66,7 @@
       ".alignment — Toggle a red guide at the exact center of the Elite window. Use the Rhino driving view to align a distant location circle, then read its visible compass heading; turret mode does not show the required heading.",
       ".mine <heading> <material> <distance km> <amount>/<density> — From anywhere inside the saved border, add a deposit using the true heading and distance from your live position. Same-commodity placements within 100 m are declined as likely duplicates. Example: .mine 15 ruby 1.24 high/medium.",
       ".mine <material> <amount>/<density> here — Add a deposit at your current surface position, including an intentional overlap. Example: .mine ruby medium/low here.",
+      ".mine rigs <number> — Set the positive rig capacity on the mapped deposit nearest to your current surface position. The count appears in brackets even when marker names are hidden. Example: .mine rigs 4.",
       ".mine move <material> here — Move the nearest matching marker within 200 m to your current surface position. Example: .mine move haematite here.",
       ".mine delete here — Remove the closest deposit marker within 0.5 km of your current position."
     ],

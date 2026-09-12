@@ -84,6 +84,22 @@ public sealed class MineMapControlTests
         Assert.InRange(maximumScale, 2, 4);
     }
 
+    [Theory]
+    [InlineData(true, null, "Ruby")]
+    [InlineData(true, 4, "Ruby [4]")]
+    [InlineData(false, 4, "[4]")]
+    [InlineData(false, null, "")]
+    public void RigCountRemainsInMarkerLabelWhenMaterialNamesAreHidden(
+        bool showMaterial,
+        int? rigCount,
+        string expected
+    )
+    {
+        var marker = new MineMapMarker { Material = "Ruby", RigCount = rigCount };
+
+        Assert.Equal(expected, MineMapControl.BuildMarkerLabel(marker, showMaterial));
+    }
+
     [Fact]
     public void PlanningCircleUsesFixedRadiusAndConvertsMapPointToSurfaceCoordinate()
     {

@@ -11,7 +11,7 @@ $script:SurfaceMiningCommandPattern =
     '(?<!\w)(?:' +
     '\.alignment' +
     '|\.mining\s+(?:center\s+here|(?:<heading>|\d{1,3})\s+(?:<radius km>|<border radius km>|\d+(?:\.\d+)?)\s+(?:<number>|<location number>|\d+))' +
-    '|\.mine\s+(?:delete\s+here|move\s+(?:<commodity>|[A-Za-z]+(?:[ -][A-Za-z]+)*?)\s+here|(?:<heading>|\d{1,3})\s+(?:<commodity>|[A-Za-z]+(?:[ -][A-Za-z]+)*?)\s+(?:<distance km>|\d+(?:\.\d+)?)\s+(?:<low\|medium\|high>|low|medium|high)/(?:<low\|medium\|high>|low|medium|high)|(?:<commodity>|[A-Za-z]+(?:[ -][A-Za-z]+)*?)\s+(?:<low\|medium\|high>|low|medium|high)/(?:<low\|medium\|high>|low|medium|high)\s+here)' +
+    '|\.mine\s+(?:delete\s+here|rigs\s+(?:<number>|\d+)|move\s+(?:<commodity>|[A-Za-z]+(?:[ -][A-Za-z]+)*?)\s+here|(?:<heading>|\d{1,3})\s+(?:<commodity>|[A-Za-z]+(?:[ -][A-Za-z]+)*?)\s+(?:<distance km>|\d+(?:\.\d+)?)\s+(?:<low\|medium\|high>|low|medium|high)/(?:<low\|medium\|high>|low|medium|high)|(?:<commodity>|[A-Za-z]+(?:[ -][A-Za-z]+)*?)\s+(?:<low\|medium\|high>|low|medium|high)/(?:<low\|medium\|high>|low|medium|high)\s+here)' +
     ')'
 $script:TechnicalTokenPattern = [regex]::new(
     '(?:' + $script:SurfaceMiningCommandPattern +

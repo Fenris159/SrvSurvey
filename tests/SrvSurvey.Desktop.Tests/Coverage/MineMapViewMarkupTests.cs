@@ -126,6 +126,11 @@ public sealed class MineMapViewMarkupTests
             text => text.Attribute("Text")?.Value == ".mine move <commodity> here"
         );
         Assert.Contains(
+            document.Descendants(avalonia + "TextBlock"),
+            text => text.Attribute("Text")?.Value == ".mine rigs <number>"
+        );
+        Assert.Contains(document.Descendants(avalonia + "TextBlock"), text => text.Attribute("Text")?.Value == "RIGS");
+        Assert.Contains(
             document.Descendants(avalonia + "MenuItem"),
             item => item.Attribute("Header")?.Value == "Copy system name"
         );

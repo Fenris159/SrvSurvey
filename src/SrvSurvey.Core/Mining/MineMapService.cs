@@ -24,6 +24,8 @@ public sealed record MineMapMarker
 
     public MineMapRating Density { get; init; }
 
+    public int? RigCount { get; init; }
+
     public SurfaceCoordinate Location { get; init; }
 
     public DateTimeOffset CreatedAt { get; init; }
@@ -389,7 +391,7 @@ public sealed class MineMapService : IDisposable
         if (parts.Length < 3 || !parts[0].Equals(".mine", StringComparison.OrdinalIgnoreCase))
         {
             return Failure(
-                "Use .mine <heading> <material> <distance km> <low|medium|high>/<low|medium|high>, .mine <material> <low|medium|high>/<low|medium|high> here, .mine move <commodity> here, or .mine delete here."
+                "Use .mine <heading> <material> <distance km> <low|medium|high>/<low|medium|high>, .mine <material> <low|medium|high>/<low|medium|high> here, .mine rigs <number>, .mine move <commodity> here, or .mine delete here."
             );
         }
 
@@ -493,6 +495,16 @@ public sealed class MineMapService : IDisposable
             return DeleteMarkerHere(active, context, cancellationToken);
         }
 
+        if (parts[1].Equals("rigs", StringComparison.OrdinalIgnoreCase))
+        {
+            return
+                parts.Length != 3
+                || !int.TryParse(parts[2], NumberStyles.None, CultureInfo.InvariantCulture, out int rigCount)
+                || rigCount <= 0
+                ? Failure("Use .mine rigs <positive number>.")
+                : SetNearestMarkerRigCount(active, rigCount, context, cancellationToken);
+        }
+
         if (!parts[1].Equals("move", StringComparison.OrdinalIgnoreCase))
         {
             return null;
@@ -501,6 +513,46 @@ public sealed class MineMapService : IDisposable
         return parts.Length < 4 || !parts[^1].Equals("here", StringComparison.OrdinalIgnoreCase)
             ? Failure("Use .mine move <commodity> here.")
             : MoveMarkerHere(active, string.Join(' ', parts[2..^1]), context, cancellationToken);
+    }
+
+    private MineMapCommandResult SetNearestMarkerRigCount(
+        MineMapSurvey active,
+        int rigCount,
+        MineMapCommandContext context,
+        CancellationToken cancellationToken
+    )
+    {
+        if (context.PlayerLocation is not { } current)
+        {
+            return Failure("A live surface position is required for .mine rigs <number>.");
+        }
+
+        var nearest = active
+            .Markers.Select(marker => new
+            {
+                Marker = marker,
+                Distance = SurfaceNavigation.GetDistance(current, marker.Location, active.PlanetRadiusMeters),
+            })
+            .OrderBy(candidate => candidate.Distance)
+            .FirstOrDefault();
+        if (nearest is null)
+        {
+            return Failure("Add a mine marker before setting its rig count.");
+        }
+
+        MineMapMarker updatedMarker = nearest.Marker with { RigCount = rigCount };
+        MineMapSurvey updated = active with
+        {
+            Markers = active.Markers.Select(marker => marker.Id == updatedMarker.Id ? updatedMarker : marker).ToArray(),
+            UpdatedAt = DateTimeOffset.UtcNow,
+        };
+        SaveAndReplace(updated, cancellationToken);
+        ActiveSurvey = updated;
+        Changed?.Invoke(this, EventArgs.Empty);
+        return Success(
+            $"Set the nearest {updatedMarker.Material} marker to {rigCount:N0} rig{(rigCount == 1 ? string.Empty : "s")} ({nearest.Distance:0} m away).",
+            updated
+        );
     }
 
     private static (MarkerPlacement? Placement, MineMapCommandResult? Failure) ParseMarkerPlacement(

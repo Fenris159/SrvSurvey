@@ -17501,6 +17501,10 @@
       "translation": "RIG-KALIBRIERUNG"
     },
     {
+      "source": "RIGS",
+      "translation": "RIGS"
+    },
+    {
       "source": "RING",
       "translation": "Ring"
     },
@@ -20951,6 +20955,10 @@
     {
       "source": "Set the Guardian site heading before opening its map.",
       "translation": "Legen Sie die Überschrift der Guardian-Site fest, bevor Sie die Karte öffnen."
+    },
+    {
+      "source": "Sets how many rigs fit at the mapped deposit nearest to your current surface position. The positive rig count appears in brackets beside the deposit on the map, even when marker names are hidden. Example: .mine rigs 4",
+      "translation": "Legt fest, wie viele Bohrinseln in die kartierte Lagerstätte passen, die Ihrer aktuellen Oberflächenposition am nächsten liegt. Die positive Anzahl der Bohrinseln wird in Klammern neben der Lagerstätte auf der Karte angezeigt, auch wenn die Markierungsnamen ausgeblendet sind. Beispiel: .mine rigs 4"
     },
     {
       "source": "Setting shortcut bindings",
@@ -27343,6 +27351,10 @@
     {
       "source": "While an active boxel search and the Galaxy Map are open, show the current boxel, completion progress, next system or prefix, destination validity, and clipboard state.",
       "translation": "Während eine aktive Boxelsuche und die Galaxiekarte geöffnet sind, werden das aktuelle Boxel, der Abschlussfortschritt, das nächste System oder Präfix, die Zielgültigkeit und der Zwischenablagestatus angezeigt."
+    },
+    {
+      "source": "While standing near a mapped deposit, send .mine rigs <number> to record its positive rig capacity on the nearest marker. The count remains visible in brackets when marker names are hidden. Example: .mine rigs 4.",
+      "translation": "Wenn Sie in der Nähe einer kartierten Lagerstätte stehen, senden Sie .mine rigs <number>, um die positive Bohrkapazität auf der nächstgelegenen Markierung aufzuzeichnen. Die Anzahl bleibt in Klammern sichtbar, wenn Markierungsnamen ausgeblendet sind. Beispiel: .mine rigs 4."
     },
     {
       "source": "White",
@@ -48667,6 +48679,10 @@
       "translation": "CALIBRACIÓN DEL APARATO"
     },
     {
+      "source": "RIGS",
+      "translation": "plataformas"
+    },
+    {
       "source": "RING",
       "translation": "anillo"
     },
@@ -52117,6 +52133,10 @@
     {
       "source": "Set the Guardian site heading before opening its map.",
       "translation": "Establezca el rumbo del sitio Guardian antes de abrir su mapa."
+    },
+    {
+      "source": "Sets how many rigs fit at the mapped deposit nearest to your current surface position. The positive rig count appears in brackets beside the deposit on the map, even when marker names are hidden. Example: .mine rigs 4",
+      "translation": "Establece cuántos equipos caben en el depósito mapeado más cercano a su posición actual en la superficie. El recuento positivo de plataformas aparece entre paréntesis junto al depósito en el mapa, incluso cuando los nombres de los marcadores están ocultos. Ejemplo: .mine rigs 4"
     },
     {
       "source": "Setting shortcut bindings",
@@ -58509,6 +58529,10 @@
     {
       "source": "While an active boxel search and the Galaxy Map are open, show the current boxel, completion progress, next system or prefix, destination validity, and clipboard state.",
       "translation": "Mientras una búsqueda de cuadro activo y el mapa Galaxy están abiertos, muestra el cuadro actual, el progreso de finalización, el siguiente sistema o prefijo, la validez del destino y el estado del portapapeles."
+    },
+    {
+      "source": "While standing near a mapped deposit, send .mine rigs <number> to record its positive rig capacity on the nearest marker. The count remains visible in brackets when marker names are hidden. Example: .mine rigs 4.",
+      "translation": "Mientras se encuentra cerca de un depósito mapeado, envíe .mine rigs <number> para registrar su capacidad positiva de plataforma en el marcador más cercano. El recuento permanece visible entre paréntesis cuando los nombres de los marcadores están ocultos. Ejemplo: .mine rigs 4."
     },
     {
       "source": "White",
@@ -79833,6 +79857,10 @@
       "translation": "CALIBRAGE DES APPAREILS"
     },
     {
+      "source": "RIGS",
+      "translation": "GRÉEMENTS"
+    },
+    {
       "source": "RING",
       "translation": "anneau"
     },
@@ -83283,6 +83311,10 @@
     {
       "source": "Set the Guardian site heading before opening its map.",
       "translation": "Définissez le titre du site Guardian avant d’ouvrir sa carte."
+    },
+    {
+      "source": "Sets how many rigs fit at the mapped deposit nearest to your current surface position. The positive rig count appears in brackets beside the deposit on the map, even when marker names are hidden. Example: .mine rigs 4",
+      "translation": "Définit le nombre d'équipements adaptés au gisement cartographié le plus proche de votre position actuelle en surface. Le nombre positif de plates-formes apparaît entre parenthèses à côté du gisement sur la carte, même lorsque les noms des marqueurs sont masqués. Exemple : .mine rigs 4"
     },
     {
       "source": "Setting shortcut bindings",
@@ -89675,6 +89707,10 @@
     {
       "source": "While an active boxel search and the Galaxy Map are open, show the current boxel, completion progress, next system or prefix, destination validity, and clipboard state.",
       "translation": "Pendant qu'une recherche de boxel active et la Galaxy Map sont ouvertes, affichez le boxel actuel, la progression de l'achèvement, le prochain système ou préfixe, la validité de la destination et l'état du presse-papiers."
+    },
+    {
+      "source": "While standing near a mapped deposit, send .mine rigs <number> to record its positive rig capacity on the nearest marker. The count remains visible in brackets when marker names are hidden. Example: .mine rigs 4.",
+      "translation": "En vous tenant à proximité d'un gisement cartographié, envoyez .mine rigs <number> pour enregistrer sa capacité positive de forage sur le marqueur le plus proche. Le décompte reste visible entre parenthèses lorsque les noms de marqueurs sont masqués. Exemple : .mine rigs 4."
     },
     {
       "source": "White",
@@ -110999,6 +111035,10 @@
       "translation": "CALIBRAÇÃO DA PLATAFORMA"
     },
     {
+      "source": "RIGS",
+      "translation": "PLATAFORMAS"
+    },
+    {
       "source": "RING",
       "translation": "anel"
     },
@@ -114449,6 +114489,10 @@
     {
       "source": "Set the Guardian site heading before opening its map.",
       "translation": "Defina o título do site do Guardian antes de abrir seu mapa."
+    },
+    {
+      "source": "Sets how many rigs fit at the mapped deposit nearest to your current surface position. The positive rig count appears in brackets beside the deposit on the map, even when marker names are hidden. Example: .mine rigs 4",
+      "translation": "Define quantas plataformas cabem no depósito mapeado mais próximo da sua posição de superfície atual. A contagem positiva de plataformas aparece entre colchetes ao lado do depósito no mapa, mesmo quando os nomes dos marcadores estão ocultos. Exemplo: .mine rigs 4"
     },
     {
       "source": "Setting shortcut bindings",
@@ -120841,6 +120885,10 @@
     {
       "source": "While an active boxel search and the Galaxy Map are open, show the current boxel, completion progress, next system or prefix, destination validity, and clipboard state.",
       "translation": "Enquanto uma pesquisa de boxel ativa e o Mapa da Galáxia estiverem abertos, mostre o boxel atual, o progresso da conclusão, o próximo sistema ou prefixo, a validade do destino e o estado da área de transferência."
+    },
+    {
+      "source": "While standing near a mapped deposit, send .mine rigs <number> to record its positive rig capacity on the nearest marker. The count remains visible in brackets when marker names are hidden. Example: .mine rigs 4.",
+      "translation": "Enquanto estiver perto de um depósito mapeado, envie .mine rigs <number> para registrar a capacidade positiva da plataforma no marcador mais próximo. A contagem permanece visível entre colchetes quando os nomes dos marcadores estão ocultos. Exemplo: .mine rigs 4."
     },
     {
       "source": "White",
@@ -142165,6 +142213,10 @@
       "translation": "КАЛИБРОВКА УСТАНОВКИ"
     },
     {
+      "source": "RIGS",
+      "translation": "УСТАНОВКИ"
+    },
+    {
       "source": "RING",
       "translation": "кольцо"
     },
@@ -145615,6 +145667,10 @@
     {
       "source": "Set the Guardian site heading before opening its map.",
       "translation": "Установите заголовок сайта Guardian, прежде чем открывать его карту."
+    },
+    {
+      "source": "Sets how many rigs fit at the mapped deposit nearest to your current surface position. The positive rig count appears in brackets beside the deposit on the map, even when marker names are hidden. Example: .mine rigs 4",
+      "translation": "Устанавливает, сколько буровых установок помещается на нанесенном на карту месторождении, ближайшем к вашему текущему положению на поверхности. Положительное количество буровых установок отображается в скобках рядом с месторождением на карте, даже если имена маркеров скрыты. Пример: .mine rigs 4"
     },
     {
       "source": "Setting shortcut bindings",
@@ -152007,6 +152063,10 @@
     {
       "source": "While an active boxel search and the Galaxy Map are open, show the current boxel, completion progress, next system or prefix, destination validity, and clipboard state.",
       "translation": "Когда активный поиск по боксу и карта Галактики открыты, отобразите текущий ящик, ход выполнения, следующую систему или префикс, срок действия пункта назначения и состояние буфера обмена."
+    },
+    {
+      "source": "While standing near a mapped deposit, send .mine rigs <number> to record its positive rig capacity on the nearest marker. The count remains visible in brackets when marker names are hidden. Example: .mine rigs 4.",
+      "translation": "Находясь рядом с нанесенным на карту месторождением, отправьте .mine rigs <number>, чтобы записать положительную мощность буровой установки на ближайшем маркере. Счетчик остается видимым в скобках, когда имена маркеров скрыты. Пример: .mine rigs 4."
     },
     {
       "source": "White",
@@ -173331,6 +173391,10 @@
       "translation": "钻机校准"
     },
     {
+      "source": "RIGS",
+      "translation": "钻机"
+    },
+    {
       "source": "RING",
       "translation": "戒指"
     },
@@ -176781,6 +176845,10 @@
     {
       "source": "Set the Guardian site heading before opening its map.",
       "translation": "在打开地图之前设置 Guardian 站点标题。"
+    },
+    {
+      "source": "Sets how many rigs fit at the mapped deposit nearest to your current surface position. The positive rig count appears in brackets beside the deposit on the map, even when marker names are hidden. Example: .mine rigs 4",
+      "translation": "设置最接近当前地面位置的映射矿床可容纳多少台钻机。即使标记名称被隐藏，正钻机数量也会显示在地图上矿床旁边的括号中。示例：.mine rigs 4"
     },
     {
       "source": "Setting shortcut bindings",
@@ -183173,6 +183241,10 @@
     {
       "source": "While an active boxel search and the Galaxy Map are open, show the current boxel, completion progress, next system or prefix, destination validity, and clipboard state.",
       "translation": "当活动框搜索和 Galaxy 地图打开时，显示当前框、完成进度、下一个系统或前缀、目的地有效性和剪贴板状态。"
+    },
+    {
+      "source": "While standing near a mapped deposit, send .mine rigs <number> to record its positive rig capacity on the nearest marker. The count remains visible in brackets when marker names are hidden. Example: .mine rigs 4.",
+      "translation": "站在地图矿床附近时，发送 .mine rigs <number> 以在最近的标记上记录其正钻机容量。当标记名称隐藏时，计数在括号中保持可见。示例：.mine rigs 4。"
     },
     {
       "source": "White",
@@ -204497,6 +204569,10 @@
       "translation": "* RIG CALIBRATION >>>!"
     },
     {
+      "source": "RIGS",
+      "translation": "* RIGS >>>!"
+    },
+    {
       "source": "RING",
       "translation": "* RING >>>!"
     },
@@ -207947,6 +208023,10 @@
     {
       "source": "Set the Guardian site heading before opening its map.",
       "translation": "* SET THE GUARDIAN SITE HEADING BEFORE OPENING ITS MAP. >>>!"
+    },
+    {
+      "source": "Sets how many rigs fit at the mapped deposit nearest to your current surface position. The positive rig count appears in brackets beside the deposit on the map, even when marker names are hidden. Example: .mine rigs 4",
+      "translation": "* SETS HOW MANY RIGS FIT AT THE MAPPED DEPOSIT NEAREST TO YOUR CURRENT SURFACE POSITION. THE POSITIVE RIG COUNT APPEARS IN BRACKETS BESIDE THE DEPOSIT ON THE MAP, EVEN WHEN MARKER NAMES ARE HIDDEN. EXAMPLE: .MINE RIGS 4 >>>!"
     },
     {
       "source": "Setting shortcut bindings",
@@ -214339,6 +214419,10 @@
     {
       "source": "While an active boxel search and the Galaxy Map are open, show the current boxel, completion progress, next system or prefix, destination validity, and clipboard state.",
       "translation": "* WHILE AN ACTIVE BOXEL SEARCH AND THE GALAXY MAP ARE OPEN, SHOW THE CURRENT BOXEL, COMPLETION PROGRESS, NEXT SYSTEM OR PREFIX, DESTINATION VALIDITY, AND CLIPBOARD STATE. >>>!"
+    },
+    {
+      "source": "While standing near a mapped deposit, send .mine rigs <number> to record its positive rig capacity on the nearest marker. The count remains visible in brackets when marker names are hidden. Example: .mine rigs 4.",
+      "translation": "* WHILE STANDING NEAR A MAPPED DEPOSIT, SEND .MINE RIGS <NUMBER> TO RECORD ITS POSITIVE RIG CAPACITY ON THE NEAREST MARKER. THE COUNT REMAINS VISIBLE IN BRACKETS WHEN MARKER NAMES ARE HIDDEN. EXAMPLE: .MINE RIGS 4. >>>!"
     },
     {
       "source": "White",

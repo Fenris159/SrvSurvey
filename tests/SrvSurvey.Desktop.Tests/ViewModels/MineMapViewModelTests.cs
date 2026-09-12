@@ -154,6 +154,7 @@ public sealed class MineMapViewModelTests
         Assert.Equal("Ruby", deposit.Material);
         Assert.Equal("High", deposit.MineralAmount);
         Assert.Equal("Low", deposit.Density);
+        Assert.Equal("4", deposit.Rigs);
     }
 
     [Fact]
@@ -799,6 +800,7 @@ public sealed class MineMapViewModelTests
                     Material = "Ruby",
                     MineralAmount = MineMapRating.High,
                     Density = MineMapRating.Low,
+                    RigCount = 4,
                     Location = MineMapService.GetDestination(center, 15, 1240, 855_573.1875),
                     CreatedAt = now,
                 },
