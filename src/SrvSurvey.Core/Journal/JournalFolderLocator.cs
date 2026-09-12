@@ -16,6 +16,7 @@ public static class JournalFolderLocator
     public const string EnvironmentVariableName = "SRVSURVEY_JOURNAL_DIR";
 
     private static readonly string[] JournalSegments = ["Saved Games", "Frontier Developments", "Elite Dangerous"];
+    private static readonly TimeSpan RegexTimeout = TimeSpan.FromSeconds(1);
 
     public static JournalFolderResolution ResolveCurrent(string? configuredPath = null)
     {
@@ -401,7 +402,12 @@ public static class JournalFolderLocator
 
                 foreach (var line in lines)
                 {
-                    var match = Regex.Match(line, "^\\s*prefix:\\s*(?<path>.+?)\\s*$", RegexOptions.CultureInvariant);
+                    var match = Regex.Match(
+                        line,
+                        "^\\s*prefix:\\s*(?<path>.+?)\\s*$",
+                        RegexOptions.CultureInvariant,
+                        RegexTimeout
+                    );
                     if (!match.Success)
                     {
                         continue;
@@ -450,7 +456,8 @@ public static class JournalFolderLocator
                 Match match in Regex.Matches(
                     text,
                     "\\\"path\\\"\\s+\\\"(?<path>(?:\\\\\\\\|[^\\\"])*)\\\"",
-                    RegexOptions.CultureInvariant | RegexOptions.IgnoreCase
+                    RegexOptions.CultureInvariant | RegexOptions.IgnoreCase,
+                    RegexTimeout
                 )
             )
             {
