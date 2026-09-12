@@ -27,6 +27,8 @@ public interface IFrontierAccountService : IDisposable
 
     Task<FrontierAccountSnapshot> RefreshAsync(CancellationToken cancellationToken = default);
 
+    Task<FrontierAccountSnapshot> RefreshAsync(bool forceCarrierRefresh, CancellationToken cancellationToken = default);
+
     Task UnlinkAsync(CancellationToken cancellationToken = default);
 }
 
@@ -335,7 +337,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
         {
             await openBrowser(authorizationUri, cancellationToken).ConfigureAwait(false);
             await WaitForAuthorizationAsync(state, cancellationToken).ConfigureAwait(false);
-            return await RefreshAsync(commander, cancellationToken).ConfigureAwait(false);
+            return await RefreshAsync(commander, forceCarrierRefresh: false, cancellationToken).ConfigureAwait(false);
         }
         catch
         {
@@ -376,14 +378,24 @@ public sealed class FrontierAccountService : IFrontierAccountService
             .ConfigureAwait(false);
     }
 
-    public async Task<FrontierAccountSnapshot> RefreshAsync(CancellationToken cancellationToken = default)
+    public Task<FrontierAccountSnapshot> RefreshAsync(CancellationToken cancellationToken = default)
+    {
+        return RefreshAsync(forceCarrierRefresh: false, cancellationToken);
+    }
+
+    public async Task<FrontierAccountSnapshot> RefreshAsync(
+        bool forceCarrierRefresh,
+        CancellationToken cancellationToken = default
+    )
     {
         ThrowIfDisposed();
-        return await RefreshAsync(RequireActiveCommander(), cancellationToken).ConfigureAwait(false);
+        return await RefreshAsync(RequireActiveCommander(), forceCarrierRefresh, cancellationToken)
+            .ConfigureAwait(false);
     }
 
     private async Task<FrontierAccountSnapshot> RefreshAsync(
         FrontierCommanderIdentity commander,
+        bool forceCarrierRefresh,
         CancellationToken cancellationToken
     )
     {
@@ -459,7 +471,8 @@ public sealed class FrontierAccountService : IFrontierAccountService
         }
 
         var carrierDue =
-            previousSnapshot?.CarrierFetchedAt is not { } carrierFetched
+            forceCarrierRefresh
+            || previousSnapshot?.CarrierFetchedAt is not { } carrierFetched
             || now - carrierFetched >= MinimumCarrierRefreshInterval;
         var carrier = carrierDue
             ? await TryRequestOptionalCapiAsync(

@@ -2451,6 +2451,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
 
         FrontierProfile.UpdateJournalReputation(journalState.CommanderName, update.JournalEvents);
         FrontierProfile.UpdateJournalCommunityGoals(journalState.CommanderName, update.JournalEvents);
+        FrontierProfile.UpdateJournalCarrierJump(journalState.CommanderName, update.JournalEvents);
     }
 
     private void ApplyOverlayAndJournalPostProcessorContext()
