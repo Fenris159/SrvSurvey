@@ -404,7 +404,7 @@ public sealed class EddnOutboxTests
     {
         using var folder = new TemporaryFolder();
         string path = Path.Combine(folder.path, "eddn-outbox-v1.json");
-        DateTimeOffset now = DateTimeOffset.Parse("2026-07-28T12:00:00Z", CultureInfo.InvariantCulture);
+        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z", CultureInfo.InvariantCulture);
         var handler = new CancelThenSucceedHandler();
         using var client = new HttpClient(handler);
         var transport = new EddnTransport(client, new Uri("https://live.example.test/upload/"));
