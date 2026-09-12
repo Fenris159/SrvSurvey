@@ -7,8 +7,8 @@ public sealed partial class TestIsolationContractTests
     [Fact]
     public void DesktopTestsDoNotConstructMainWindowViewModelWithProductionAppData()
     {
-        var testRoot = Path.Combine(FindRepositoryRoot(), "tests", "SrvSurvey.Desktop.Tests");
-        var offenders = Directory
+        string testRoot = Path.Combine(FindRepositoryRoot(), "tests", "SrvSurvey.Desktop.Tests");
+        string[] offenders = Directory
             .EnumerateFiles(testRoot, "*.cs", SearchOption.AllDirectories)
             .Where(path => ProductionConstructorPattern().IsMatch(File.ReadAllText(path)))
             .Select(path => Path.GetRelativePath(testRoot, path))
