@@ -23,7 +23,7 @@ public sealed class MineMapSettingsStore(string path)
                     .ToArray()
                 : [],
             ShowMarkerLabelsInOverviewMap: settings?["ShowMarkerLabelsInOverviewMap"] is not JsonValue labelsValue
-                || !labelsValue.TryGetValue<bool>(out var showLabels)
+                || !labelsValue.TryGetValue<bool>(out bool showLabels)
                 || showLabels
         );
     }

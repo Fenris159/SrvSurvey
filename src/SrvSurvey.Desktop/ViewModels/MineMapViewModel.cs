@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.Json;
 using System.Windows.Input;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Mining;
@@ -272,7 +273,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         get => planningCircleSurveyId == ActiveSurvey?.Id ? planningCircleCenter : null;
         set
         {
-            var surveyId = value is null ? null : ActiveSurvey?.Id;
+            Guid? surveyId = value is null ? null : ActiveSurvey?.Id;
             if (planningCircleSurveyId == surveyId && planningCircleCenter == value)
             {
                 return;
@@ -466,11 +467,11 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
             return;
         }
 
-        foreach (var journalEvent in journalEvents)
+        foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
             if (
                 !string.Equals(journalEvent.EventName, "SendText", StringComparison.Ordinal)
-                || !journalEvent.Payload.TryGetProperty("Message", out var messageProperty)
+                || !journalEvent.Payload.TryGetProperty("Message", out JsonElement messageProperty)
                 || messageProperty.ValueKind != System.Text.Json.JsonValueKind.String
                 || !string.Equals(messageProperty.GetString()?.Trim(), ".alignment", StringComparison.OrdinalIgnoreCase)
             )
@@ -480,7 +481,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
 
             isAlignmentHelperVisible = !isAlignmentHelperVisible;
             Changed(nameof(ShouldShowAlignmentHelper));
-            var message = isAlignmentHelperVisible
+            string message = isAlignmentHelperVisible
                 ? "Alignment helper shown at the center of the Elite window."
                 : "Alignment helper hidden.";
             StatusText = message;
@@ -519,7 +520,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
 
     internal static MineMapViewModel CreateEditorPreview()
     {
-        var root = Path.Combine(Path.GetTempPath(), "SrvSurvey-OverlayEditorPreview", "mine-map-v2");
+        string root = Path.Combine(Path.GetTempPath(), "SrvSurvey-OverlayEditorPreview", "mine-map-v2");
         var viewModel = new MineMapViewModel(
             root,
             new MineMapSettingsStore(Path.Combine(root, "ui-settings.json")),
@@ -669,7 +670,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
 
     private void ToggleFavorite(MineMapSurveyRowViewModel row)
     {
-        var favorite = !row.IsFavorite;
+        bool favorite = !row.IsFavorite;
         try
         {
             if (!service.SetFavorite(row.Id, favorite))
@@ -733,7 +734,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
                 return new HashSet<Guid>();
             }
 
-            var visibleMaterials = VisibleMaterials;
+            IReadOnlySet<string> visibleMaterials = VisibleMaterials;
             return survey
                 .Markers.Where(marker =>
                     visibleMaterials.Contains(marker.Material)

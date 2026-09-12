@@ -10,12 +10,12 @@ public sealed class BookmarkCatalogTests
     [Fact]
     public void StoredPreReleaseSurfaceMapIsIgnoredWithoutHidingValidBookmarks()
     {
-        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         try
         {
             Directory.CreateDirectory(directory);
             var valid = new GalacticBookmark { System = "Sol" };
-            var stale = SurfaceBookmark(Guid.NewGuid(), 4, new SurfaceCoordinate(1, 2));
+            GalacticBookmark stale = SurfaceBookmark(Guid.NewGuid(), 4, new SurfaceCoordinate(1, 2));
             stale = stale with { SurfaceMiningMap = stale.SurfaceMiningMap! with { LocationRadiusMeters = 0 } };
             File.WriteAllText(
                 Path.Combine(directory, "bookmarks.json"),
@@ -38,7 +38,7 @@ public sealed class BookmarkCatalogTests
     [Fact]
     public void SurfaceMiningDetailsShowSignalAndTwoMostValuableUniqueDeposits()
     {
-        var bookmark = SurfaceBookmark(Guid.NewGuid(), 4, new SurfaceCoordinate(1, 2));
+        GalacticBookmark bookmark = SurfaceBookmark(Guid.NewGuid(), 4, new SurfaceCoordinate(1, 2));
         bookmark = bookmark with
         {
             SurfaceMiningMap = bookmark.SurfaceMiningMap! with
@@ -53,7 +53,7 @@ public sealed class BookmarkCatalogTests
     [Fact]
     public void SurfaceMiningDetailsFallBackToSignalWhenNoMaterialsResolve()
     {
-        var bookmark = SurfaceBookmark(Guid.NewGuid(), 4, new SurfaceCoordinate(1, 2));
+        GalacticBookmark bookmark = SurfaceBookmark(Guid.NewGuid(), 4, new SurfaceCoordinate(1, 2));
         bookmark = bookmark with
         {
             SurfaceMiningMap = bookmark.SurfaceMiningMap! with { Markers = [Marker("Unresolved material")] },
@@ -116,8 +116,8 @@ public sealed class BookmarkCatalogTests
                 }
             );
 
-            var restoredBookmark = Assert.Single(new BookmarkCatalog(directory).Items);
-            var restored = restoredBookmark.SurfaceMiningMap!;
+            GalacticBookmark restoredBookmark = Assert.Single(new BookmarkCatalog(directory).Items);
+            MineMapSurvey restored = restoredBookmark.SurfaceMiningMap!;
             Assert.True(restoredBookmark.IsFavorite);
             Assert.Equal(center, restored.Center);
             Assert.Equal(markerLocation, Assert.Single(restored.Markers).Location);
@@ -138,8 +138,8 @@ public sealed class BookmarkCatalogTests
     [Fact]
     public void ExportAndImportPreserveCompleteSurfaceMiningBookmark()
     {
-        var sourceDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        var destinationDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        string sourceDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        string destinationDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         try
         {
             var center = new SurfaceCoordinate(14.2609, -79.3291);
@@ -187,12 +187,12 @@ public sealed class BookmarkCatalogTests
                 }
             );
 
-            var exported = source.Export();
+            string exported = source.Export();
             var destination = new BookmarkCatalog(destinationDirectory);
             destination.Import(exported);
             destination.Import(exported);
 
-            var importedBookmark = Assert.Single(destination.Items);
+            GalacticBookmark importedBookmark = Assert.Single(destination.Items);
             Assert.Equal(id, importedBookmark.Id);
             Assert.Equal("LTT 4428", importedBookmark.System);
             Assert.Equal("LTT 4428 D 5 a", importedBookmark.Body);
@@ -201,7 +201,7 @@ public sealed class BookmarkCatalogTests
             Assert.Equal("Return with the Rhino.", importedBookmark.Notes);
             Assert.Contains(BookmarkCategoryCatalog.SurfaceMining, importedBookmark.EffectiveCategoryAssignments);
 
-            var importedMap = Assert.IsType<MineMapSurvey>(importedBookmark.SurfaceMiningMap);
+            MineMapSurvey importedMap = Assert.IsType<MineMapSurvey>(importedBookmark.SurfaceMiningMap);
             Assert.Equal("Fenris", importedMap.CommanderName);
             Assert.Equal(20, importedMap.LocationSignal);
             Assert.Equal(6_380, importedMap.LocationRadiusMeters);
@@ -209,7 +209,7 @@ public sealed class BookmarkCatalogTests
             Assert.Equal(19_797, importedMap.ArrivalDistanceLs);
             Assert.Equal(center, importedMap.Center);
             Assert.Equal("Return with the Rhino.", importedMap.Notes);
-            var importedMarker = Assert.Single(importedMap.Markers);
+            MineMapMarker importedMarker = Assert.Single(importedMap.Markers);
             Assert.Equal("Grandiderite", importedMarker.Material);
             Assert.Equal(MineMapRating.High, importedMarker.MineralAmount);
             Assert.Equal(MineMapRating.Medium, importedMarker.Density);

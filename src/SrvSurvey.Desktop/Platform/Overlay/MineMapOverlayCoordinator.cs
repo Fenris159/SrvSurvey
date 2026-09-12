@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Platform;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
@@ -132,7 +133,7 @@ public sealed class MineMapOverlayCoordinator : IDisposable
             return;
         }
 
-        var gameWindow = alignmentGameWindowTracker.GetSnapshot();
+        GameWindowSnapshot gameWindow = alignmentGameWindowTracker.GetSnapshot();
         if (
             !alignmentPlatform.Capabilities.SupportsPassiveOverlay
             || !alignmentPlatform.Capabilities.SupportsClickThrough
@@ -168,13 +169,13 @@ public sealed class MineMapOverlayCoordinator : IDisposable
             return;
         }
 
-        var gameWindow = alignmentGameWindowTracker.GetSnapshot();
+        GameWindowSnapshot gameWindow = alignmentGameWindowTracker.GetSnapshot();
         if (gameWindow.IsAvailable)
         {
             PositionAlignmentWindow(opened, gameWindow.ClientBounds);
         }
 
-        var preparation = alignmentPlatform.PreparePassiveWindow(opened);
+        OverlayPreparationResult preparation = alignmentPlatform.PreparePassiveWindow(opened);
         if (!preparation.IsClickThrough)
         {
             alignmentUnavailable = true;
@@ -192,13 +193,13 @@ public sealed class MineMapOverlayCoordinator : IDisposable
 
     private static void PositionAlignmentWindow(Window overlay, PixelRect gameBounds)
     {
-        var screen = overlay.Screens.ScreenFromBounds(gameBounds) ?? overlay.Screens.Primary;
+        Screen? screen = overlay.Screens.ScreenFromBounds(gameBounds) ?? overlay.Screens.Primary;
         if (screen is null)
         {
             return;
         }
 
-        var bounds = GetAlignmentHelperBounds(gameBounds);
+        PixelRect bounds = GetAlignmentHelperBounds(gameBounds);
         overlay.Width = bounds.Width / screen.Scaling;
         overlay.Height = bounds.Height / screen.Scaling;
         if (overlay.Position != bounds.Position)
@@ -211,7 +212,7 @@ public sealed class MineMapOverlayCoordinator : IDisposable
     {
         const int lineWidth = 4;
         const double heightRatio = 0.3;
-        var lineHeight = Math.Max(1, (int)Math.Round(gameBounds.Height * heightRatio));
+        int lineHeight = Math.Max(1, (int)Math.Round(gameBounds.Height * heightRatio));
         return new PixelRect(
             gameBounds.X + (gameBounds.Width - lineWidth) / 2,
             gameBounds.Y + (gameBounds.Height - lineHeight) / 2,
@@ -312,7 +313,7 @@ public sealed class MineMapOverlayCoordinator : IDisposable
 
     private void CloseAlignmentWindow()
     {
-        var closing = alignmentWindow;
+        SurfaceMiningAlignmentOverlayWindow? closing = alignmentWindow;
         if (closing is null)
         {
             return;

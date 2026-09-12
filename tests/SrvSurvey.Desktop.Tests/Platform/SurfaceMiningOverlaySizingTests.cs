@@ -27,7 +27,7 @@ public sealed class SurfaceMiningOverlaySizingTests
     {
         var gameBounds = new PixelRect(100, 200, width, height);
 
-        var bounds = MineMapOverlayCoordinator.GetAlignmentHelperBounds(gameBounds);
+        PixelRect bounds = MineMapOverlayCoordinator.GetAlignmentHelperBounds(gameBounds);
 
         Assert.Equal(new PixelSize(4, expectedHeight), bounds.Size);
         Assert.Equal(gameBounds.Center.X, bounds.Center.X);
@@ -38,7 +38,7 @@ public sealed class SurfaceMiningOverlaySizingTests
     public void AlignmentHelperUsesOpaquePureRedIndependentOfOverlayThemes()
     {
         var window = new SurfaceMiningAlignmentOverlayWindow();
-        var line = Assert.IsType<Border>(window.Content);
+        Border line = Assert.IsType<Border>(window.Content);
 
         Assert.Equal(
             Avalonia.Media.Colors.Red,

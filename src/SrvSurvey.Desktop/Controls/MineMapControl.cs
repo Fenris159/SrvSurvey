@@ -209,11 +209,11 @@ public sealed class MineMapControl : Control
         var viewportCenter = new Point(Bounds.Width / 2, Bounds.Height / 2);
         var center = viewportCenter + viewportOffset;
         var zoom = NormalizeViewportZoom(ViewportZoom);
-        var mapRadiusKilometers = GetMapRadiusKilometers(survey.LocationRadiusMeters);
-        var scale = radiusPixels / (mapRadiusKilometers * 1000) * zoom;
-        var grid = GridBrush ?? Brushes.Gray;
-        var accent = AccentBrush ?? Brushes.Cyan;
-        var zone = ZoneBrush ?? Brushes.Gold;
+        int mapRadiusKilometers = GetMapRadiusKilometers(survey.LocationRadiusMeters);
+        double scale = radiusPixels / (mapRadiusKilometers * 1000) * zoom;
+        IBrush grid = GridBrush ?? Brushes.Gray;
+        IBrush accent = AccentBrush ?? Brushes.Cyan;
+        IBrush zone = ZoneBrush ?? Brushes.Gold;
         var gridPen = new Pen(grid, 1.15);
 
         var localBounds = new Rect(Bounds.Size);
@@ -221,7 +221,7 @@ public sealed class MineMapControl : Control
         {
             DrawDistanceGrid(context, center, radiusPixels, zoom, mapRadiusKilometers, gridPen, text);
 
-            var locationRadius = survey.LocationRadiusMeters * scale;
+            double locationRadius = survey.LocationRadiusMeters * scale;
             context.DrawEllipse(null, new Pen(zone, 2), center, locationRadius, locationRadius);
             context.DrawEllipse(null, new Pen(accent, 2), center, 7, 7);
             context.DrawEllipse(accent, null, center, 2.5, 2.5);
@@ -244,7 +244,7 @@ public sealed class MineMapControl : Control
         IBrush text
     )
     {
-        foreach (var ring in CreateDistanceRings(radiusPixels, zoom, mapRadiusKilometers))
+        foreach (DistanceRing ring in CreateDistanceRings(radiusPixels, zoom, mapRadiusKilometers))
         {
             context.DrawEllipse(null, gridPen, center, ring.RadiusPixels, ring.RadiusPixels);
             DrawText(
@@ -336,8 +336,8 @@ public sealed class MineMapControl : Control
             return;
         }
 
-        var center = ToPoint(survey, planningCenter, mapCenter, scale);
-        var radius = PlanningCircleRadiusMeters * scale;
+        Point center = ToPoint(survey, planningCenter, mapCenter, scale);
+        double radius = PlanningCircleRadiusMeters * scale;
         context.DrawEllipse(null, new Pen(brush, 2, DashStyle.Dash), center, radius, radius);
     }
 
@@ -414,7 +414,7 @@ public sealed class MineMapControl : Control
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
-        var point = e.GetCurrentPoint(this);
+        PointerPoint point = e.GetCurrentPoint(this);
         if (CanInteractWithViewport && point.Properties.IsRightButtonPressed)
         {
             BeginPlanningCircleInteraction(e);
@@ -443,8 +443,8 @@ public sealed class MineMapControl : Control
         base.OnPointerMoved(e);
         if (planningDragOrigin is { } planningOrigin)
         {
-            var point = e.GetPosition(this);
-            var delta = point - planningOrigin;
+            Point point = e.GetPosition(this);
+            Point delta = point - planningOrigin;
             if (!planningCircleMoved && delta.X * delta.X + delta.Y * delta.Y < 9)
             {
                 return;
@@ -578,7 +578,7 @@ public sealed class MineMapControl : Control
         }
 
         StopDragging(null);
-        var pointerPosition = e.GetPosition(this);
+        Point pointerPosition = e.GetPosition(this);
         planningDragOrigin = pointerPosition;
         planningCircleExistedAtPress = PlanningCircleCenter is not null;
         planningCircleMoved = false;
@@ -627,7 +627,7 @@ public sealed class MineMapControl : Control
 
     private double GetMapScale(MineMapSurvey survey)
     {
-        var radiusPixels = Math.Max(1, Math.Min(Bounds.Width, Bounds.Height) / 2 - 28);
+        double radiusPixels = Math.Max(1, Math.Min(Bounds.Width, Bounds.Height) / 2 - 28);
         return radiusPixels
             / (GetMapRadiusKilometers(survey.LocationRadiusMeters) * 1000)
             * NormalizeViewportZoom(ViewportZoom);
@@ -645,9 +645,9 @@ public sealed class MineMapControl : Control
 
     internal static SurfaceCoordinate ToSurfaceCoordinate(MineMapSurvey survey, Point point, Point center, double scale)
     {
-        var offset = point - center;
-        var distance = Math.Sqrt(offset.X * offset.X + offset.Y * offset.Y) / scale;
-        var bearing = SurfaceNavigation.NormalizeDegrees(Math.Atan2(offset.X, -offset.Y) * 180 / Math.PI);
+        Point offset = point - center;
+        double distance = Math.Sqrt(offset.X * offset.X + offset.Y * offset.Y) / scale;
+        double bearing = SurfaceNavigation.NormalizeDegrees(Math.Atan2(offset.X, -offset.Y) * 180 / Math.PI);
         return MineMapService.GetDestination(survey.Center, bearing, distance, survey.PlanetRadiusMeters);
     }
 

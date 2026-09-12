@@ -4,6 +4,7 @@ using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using SrvSurvey.Core.Mining;
@@ -23,7 +24,7 @@ public sealed class MineMapViewInteractionTests
     [AvaloniaFact]
     public void MineMapControlPropertiesRoundTripAndRenderACompleteMap()
     {
-        var survey = RenderedSurvey();
+        MineMapSurvey survey = RenderedSurvey();
         var playerLocation = new SurfaceCoordinate(14.261, -79.329);
         var planningCenter = new SurfaceCoordinate(14.262, -79.328);
         IReadOnlySet<string> materials = new HashSet<string>(["Ruby"], StringComparer.OrdinalIgnoreCase);
@@ -57,7 +58,7 @@ public sealed class MineMapViewInteractionTests
         {
             window.Show();
             Dispatcher.UIThread.RunJobs();
-            using var frame = window.CaptureRenderedFrame();
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
 
             Assert.NotNull(frame);
             Assert.Same(survey, control.Survey);
@@ -115,7 +116,7 @@ public sealed class MineMapViewInteractionTests
 
             window.MouseDown(center, MouseButton.Right, RawInputModifiers.None);
             Assert.NotNull(control.PlanningCircleCenter);
-            var initialPlanningCenter = control.PlanningCircleCenter;
+            SurfaceCoordinate? initialPlanningCenter = control.PlanningCircleCenter;
             window.MouseMove(new Point(320, 250), RawInputModifiers.None);
             window.MouseUp(new Point(320, 250), MouseButton.Right, RawInputModifiers.None);
             Dispatcher.UIThread.RunJobs();
@@ -143,7 +144,10 @@ public sealed class MineMapViewInteractionTests
             []
         );
         SeedSurvey(paths.DataDirectory);
-        using var main = MainWindowViewModelTestBuilder.Create(null, builder => builder.WithAppDataPaths(paths));
+        using MainWindowViewModel main = MainWindowViewModelTestBuilder.Create(
+            null,
+            builder => builder.WithAppDataPaths(paths)
+        );
         var view = new MineMapView { DataContext = main };
         var window = new Window
         {
@@ -156,8 +160,8 @@ public sealed class MineMapViewInteractionTests
         {
             window.Show();
             Dispatcher.UIThread.RunJobs();
-            var button = FindFavoriteButton(view);
-            var clickPoint =
+            Button button = FindFavoriteButton(view);
+            Point clickPoint =
                 button.TranslatePoint(new Point(button.Bounds.Width / 2, button.Bounds.Height / 2), window)
                 ?? throw new InvalidOperationException("The favorite button was not arranged in the test window.");
             window.MouseMove(clickPoint, RawInputModifiers.None);
@@ -212,7 +216,7 @@ public sealed class MineMapViewInteractionTests
     private static void SeedSurvey(string directory)
     {
         var id = Guid.NewGuid();
-        var now = DateTimeOffset.UtcNow;
+        DateTimeOffset now = DateTimeOffset.UtcNow;
         var survey = new MineMapSurvey
         {
             Id = id,

@@ -22,13 +22,13 @@ public sealed class MineMapViewMarkupTests
         Assert.Contains("ViewportZoom", map.Attribute("ViewportZoom")?.Value);
         Assert.Equal("{Binding VisibleMarkerIds}", map.Attribute("VisibleMarkerIds")?.Value);
         Assert.Equal("{Binding PlanningCircleCenter, Mode=TwoWay}", map.Attribute("PlanningCircleCenter")?.Value);
-        var surfaceMapsResults = Assert.Single(
+        XElement surfaceMapsResults = Assert.Single(
             document.Descendants(avalonia + "ListBox"),
             list =>
                 list.Attributes()
                     .Any(attribute => attribute.Name.LocalName == "Name" && attribute.Value == "SurfaceMapsResults")
         );
-        var activationBindings = surfaceMapsResults.Descendants(avalonia + "KeyBinding").ToArray();
+        XElement[] activationBindings = surfaceMapsResults.Descendants(avalonia + "KeyBinding").ToArray();
         Assert.Equal(["Enter", "Space"], activationBindings.Select(binding => binding.Attribute("Gesture")?.Value));
         Assert.All(
             activationBindings,
@@ -91,7 +91,7 @@ public sealed class MineMapViewMarkupTests
         Assert.Equal("Auto", surfaceMapsScroller.Attribute("HorizontalScrollBarVisibility")?.Value);
         Assert.Equal("Disabled", surfaceMapsScroller.Attribute("VerticalScrollBarVisibility")?.Value);
         Assert.Contains(document.Descendants(), element => element.Attribute("Tapped")?.Value == "OnSurveyRowTapped");
-        var expandButton = Assert.Single(
+        XElement expandButton = Assert.Single(
             document.Descendants(avalonia + "Button"),
             button => button.Attribute("Command")?.Value == "{Binding ToggleExpandedCommand}"
         );
@@ -176,7 +176,7 @@ public sealed class MineMapViewMarkupTests
             document.Descendants(avalonia + "Button"),
             button => button.Attribute("Content")?.Value is "−" or "+"
         );
-        var favoriteButton = Assert.Single(
+        XElement favoriteButton = Assert.Single(
             document.Descendants(avalonia + "Button"),
             button => button.Attribute("Command")?.Value == "{Binding ToggleFavoriteCommand}"
         );
@@ -237,7 +237,7 @@ public sealed class MineMapViewMarkupTests
             .Select(text => text.Attribute("Text")?.Value ?? string.Empty)
             .ToArray();
         Assert.True(Array.IndexOf(cardTitles, "Selected map") < Array.IndexOf(cardTitles, "Marker visibility"));
-        var markerVisibilityLayout = Assert.Single(
+        XElement markerVisibilityLayout = Assert.Single(
             document.Descendants(avalonia + "Grid"),
             grid =>
                 grid.Attribute(XName.Get("Name", "http://schemas.microsoft.com/winfx/2006/xaml"))?.Value
@@ -406,7 +406,7 @@ public sealed class MineMapViewMarkupTests
             presentation.Descendants(),
             element => element.Name.LocalName == "MineMapZoomOverlayPresentation"
         );
-        var coordinator = File.ReadAllText(
+        string coordinator = File.ReadAllText(
             Path.Combine(root, "src", "SrvSurvey.Desktop", "Platform", "Overlay", "MineMapOverlayCoordinator.cs")
         );
         Assert.Contains("overlay.Show(mapWindow);", coordinator, StringComparison.Ordinal);

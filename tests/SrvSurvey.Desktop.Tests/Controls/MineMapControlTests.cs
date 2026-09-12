@@ -53,7 +53,7 @@ public sealed class MineMapControlTests
         double expectedLastRadius
     )
     {
-        var rings = MineMapControl.CreateDistanceRings(250, zoom, 4);
+        IReadOnlyList<MineMapControl.DistanceRing> rings = MineMapControl.CreateDistanceRings(250, zoom, 4);
 
         Assert.Equal([1d, 2d, 3d, 4d], rings.Select(ring => ring.Kilometers));
         Assert.Equal(expectedFirstRadius, rings[0].RadiusPixels);
@@ -63,8 +63,8 @@ public sealed class MineMapControlTests
     [Fact]
     public void MapRingsExtendToTheWholeKilometerThatEnclosesTheLocationBorder()
     {
-        var mapRadius = MineMapControl.GetMapRadiusKilometers(6_340);
-        var rings = MineMapControl.CreateDistanceRings(350, 1, mapRadius);
+        int mapRadius = MineMapControl.GetMapRadiusKilometers(6_340);
+        IReadOnlyList<MineMapControl.DistanceRing> rings = MineMapControl.CreateDistanceRings(350, 1, mapRadius);
 
         Assert.Equal(7, mapRadius);
         Assert.Equal([1d, 2d, 3d, 4d, 5d, 6d, 7d], rings.Select(ring => ring.Kilometers));

@@ -65,10 +65,12 @@ public sealed record GalacticBookmark
 
     private static string BuildSurfaceMiningDetails(MineMapSurvey map)
     {
-        var mostValuable = map
+        string[] mostValuable = map
             .Markers.Select(marker => marker.Material)
             .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Select(name => SurfaceMiningCommodityCatalog.TryResolve(name, out var commodity) ? commodity : null)
+            .Select(name =>
+                SurfaceMiningCommodityCatalog.TryResolve(name, out SurfaceMiningCommodity? commodity) ? commodity : null
+            )
             .OfType<SurfaceMiningCommodity>()
             .OrderByDescending(commodity => commodity.AverageSellPrice)
             .ThenBy(commodity => commodity.Name, StringComparer.OrdinalIgnoreCase)

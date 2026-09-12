@@ -510,7 +510,7 @@ public sealed class HostedOverlayWindowTests
     public void VisibleNotificationIsDeferredUntilTheWindowCanOwnAChild()
     {
         var timer = new ManualHostedOverlayTimer();
-        var hideDuringFirstPreparation = true;
+        bool hideDuringFirstPreparation = true;
         var platform = new RecordingOverlayPlatform
         {
             PrepareAction = window =>
@@ -533,7 +533,7 @@ public sealed class HostedOverlayWindowTests
                 diagnostics.Add
             )
         );
-        using var hosted = session.HostPassiveWindow(CreateDefinition());
+        using HostedOverlayWindow hosted = session.HostPassiveWindow(CreateDefinition());
         Window? child = null;
         hosted.VisibilityChanged += (_, _) =>
         {
