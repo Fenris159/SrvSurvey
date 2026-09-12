@@ -333,7 +333,7 @@ public sealed class MineMapService : IDisposable
 
         if (
             parts.Length != 4
-            || !TryHeading(parts[1], out var heading)
+            || !TryBearing(parts[1], out var bearing)
             || !double.TryParse(parts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out double radiusKm)
             || !double.IsFinite(radiusKm)
             || radiusKm <= 0
@@ -342,7 +342,7 @@ public sealed class MineMapService : IDisposable
         )
         {
             return Failure(
-                "Use .mining survey, .mining <heading 0-359> <border radius km> <location number>, or .mining center here."
+                "Use .mining survey, .mining <bearing 0-359> <border radius km> <location number>, or .mining center here."
             );
         }
 
@@ -350,7 +350,7 @@ public sealed class MineMapService : IDisposable
         if (!double.IsFinite(radiusMeters) || radiusMeters <= 0)
         {
             return Failure(
-                "Use .mining survey, .mining <heading 0-359> <border radius km> <location number>, or .mining center here."
+                "Use .mining survey, .mining <bearing 0-359> <border radius km> <location number>, or .mining center here."
             );
         }
 
@@ -367,7 +367,7 @@ public sealed class MineMapService : IDisposable
         );
         SurfaceCoordinate center = GetDestination(
             context.PlayerLocation!.Value,
-            heading,
+            bearing,
             radiusMeters,
             context.PlanetRadiusMeters
         );
@@ -401,7 +401,7 @@ public sealed class MineMapService : IDisposable
             };
         }
         Changed?.Invoke(this, EventArgs.Empty);
-        return Success($"{survey.Name} center saved at heading {heading:0}° with a {radiusKm:0.##} km border.", survey);
+        return Success($"{survey.Name} center saved at bearing {bearing:0}° with a {radiusKm:0.##} km border.", survey);
     }
 
     private MineMapCommandResult RecenterSurvey(MineMapCommandContext context, CancellationToken cancellationToken)
@@ -533,7 +533,7 @@ public sealed class MineMapService : IDisposable
         return active is null
             ? new MineMapCommandResult(
                 true,
-                "Guided survey started. Drive to the orange border, face the center, then record the heading, radius, and signal number."
+                "Guided survey started. Drive to the orange border, face the center, then record the bearing, radius, and signal number."
             )
             : Success($"Guided survey started for {active.Name}. Drive to its saved center.", active);
     }
@@ -624,7 +624,7 @@ public sealed class MineMapService : IDisposable
         if (parts.Length < 3 || !parts[0].Equals(".mine", StringComparison.OrdinalIgnoreCase))
         {
             return Failure(
-                "Use .mine <heading> <material> <distance km> <low|medium|high>/<low|medium|high>, .mine <material> <low|medium|high>/<low|medium|high> here, .mine rigs <number>, .mine move <commodity> here, or .mine delete here."
+                "Use .mine <bearing> <material> <distance km> <low|medium|high>/<low|medium|high>, .mine <material> <low|medium|high>/<low|medium|high> here, .mine rigs <number>, .mine move <commodity> here, or .mine delete here."
             );
         }
 
@@ -822,7 +822,7 @@ public sealed class MineMapService : IDisposable
 
         if (
             parts.Length < 5
-            || !TryHeading(parts[1], out double heading)
+            || !TryBearing(parts[1], out double bearing)
             || !double.TryParse(parts[^2], NumberStyles.Float, CultureInfo.InvariantCulture, out double distanceKm)
             || !double.IsFinite(distanceKm)
             || distanceKm < 0
@@ -845,9 +845,9 @@ public sealed class MineMapService : IDisposable
 
         return (
             new MarkerPlacement(
-                GetDestination(origin, heading, distanceMeters, active.PlanetRadiusMeters),
+                GetDestination(origin, bearing, distanceMeters, active.PlanetRadiusMeters),
                 string.Join(' ', parts[2..^2]).Trim(),
-                $"at {heading:0}°, {distanceKm:0.00} km from your position",
+                $"at bearing {bearing:0}°, {distanceKm:0.00} km from your position",
                 mineralAmount,
                 density,
                 false
@@ -858,7 +858,7 @@ public sealed class MineMapService : IDisposable
 
     private static MineMapCommandResult InvalidMarkerPlacement() =>
         Failure(
-            "Use .mine <heading 0-359> <material> <distance km> <low|medium|high>/<low|medium|high> or .mine <material> <low|medium|high>/<low|medium|high> here."
+            "Use .mine <bearing 0-359> <material> <distance km> <low|medium|high>/<low|medium|high> or .mine <material> <low|medium|high>/<low|medium|high> here."
         );
 
     private MineMapCommandResult DeleteMarkerHere(
@@ -1203,10 +1203,10 @@ public sealed class MineMapService : IDisposable
     private static string[] Split(string command) =>
         command.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-    private static bool TryHeading(string value, out double heading) =>
-        double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out heading)
-        && double.IsFinite(heading)
-        && heading is >= 0 and < 360;
+    private static bool TryBearing(string value, out double bearing) =>
+        double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out bearing)
+        && double.IsFinite(bearing)
+        && bearing is >= 0 and < 360;
 
     private static bool TryRatings(string value, out MineMapRating mineralAmount, out MineMapRating density)
     {

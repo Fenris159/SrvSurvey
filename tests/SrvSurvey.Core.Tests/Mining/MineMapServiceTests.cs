@@ -76,6 +76,7 @@ public sealed class MineMapServiceTests
             6440.01
         );
         Assert.Contains("center saved", result.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("bearing 90°", result.Message, StringComparison.OrdinalIgnoreCase);
 
         var reloaded = new MineMapService(directory.Path);
         var persisted = Assert.Single(reloaded.Surveys);

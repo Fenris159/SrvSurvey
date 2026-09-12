@@ -382,7 +382,7 @@ public sealed class MineMapViewModelTests
 
         Assert.True(viewModel.ShouldShowSurveyGuideOverlay);
         Assert.EndsWith("BORDER", viewModel.SurveyGuideTitle, StringComparison.Ordinal);
-        Assert.Contains(".mining <heading>", viewModel.SurveyGuideCommandHint, StringComparison.Ordinal);
+        Assert.Contains(".mining <bearing>", viewModel.SurveyGuideCommandHint, StringComparison.Ordinal);
 
         await viewModel.ApplyUpdateAsync([Command(".mining 90 6.44 4")], context, status, allowCommands: true);
         Assert.EndsWith("CENTER", viewModel.SurveyGuideTitle, StringComparison.Ordinal);

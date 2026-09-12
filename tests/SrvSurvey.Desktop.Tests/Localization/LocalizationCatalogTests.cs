@@ -75,8 +75,8 @@ public sealed class LocalizationCatalogTests : IDisposable
                 [".mine 15 ruby 1.24 high/medium"]
             ),
             new(
-                "Drive to the orange location border, face the center marker, and send .mining <heading> <border radius km> <location number>. Example: .mining 120 6.44 4.",
-                [".mining <heading> <border radius km> <location number>", ".mining 120 6.44 4"]
+                "Drive to the orange location border, face the center marker, and send .mining <bearing> <border radius km> <location number>. Example: .mining 120 6.44 4.",
+                [".mining <bearing> <border radius km> <location number>", ".mining 120 6.44 4"]
             ),
             new(
                 "To correct a marker, stand at its true position and send .mine move <commodity> here. The nearest marker matching that commodity must be within 200 m. Example: .mine move haematite here.",

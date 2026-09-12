@@ -223,7 +223,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     public string SurveyGuideCommandHint =>
         service.SurveyGuide?.Phase switch
         {
-            MineMapSurveyGuidePhase.Border => ".mining <heading> <radius km> <signal #>",
+            MineMapSurveyGuidePhase.Border => ".mining <bearing> <radius km> <signal #>",
             MineMapSurveyGuidePhase.Center or MineMapSurveyGuidePhase.ConfirmCenter => ".mining center here",
             MineMapSurveyGuidePhase.Waypoint => "Keep surface scanning; the next point advances automatically.",
             MineMapSurveyGuidePhase.Complete =>
@@ -289,10 +289,10 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     public string LiveMapDescription =>
         ActiveSurvey is { } survey
             ? $"{survey.SystemName} · {survey.BodyName} · {survey.LocationRadiusMeters / 1000:0.##} km border"
-            : "Drive to a mining-location border, face its center, and send .mining <heading> <radius km> <number>, i.e. .mining 120 6.44 4.";
+            : "Drive to a mining-location border, face its center, and send .mining <bearing> <radius km> <number>, i.e. .mining 120 6.44 4.";
 
     public static string LiveMapCommandHelp =>
-        "Drive to the orange mining-location border and face its center, then use .mining <heading> <radius km> <number>, i.e. .mining 120 6.44 4. Use .mining center here from the true center to correct it later.";
+        "Drive to the orange mining-location border and face its center, then use .mining <bearing> <radius km> <number>, i.e. .mining 120 6.44 4. Use .mining center here from the true center to correct it later.";
 
     public string LiveMapLocation =>
         ActiveSurvey is { } survey ? $"{survey.Center.Latitude:0.000000}, {survey.Center.Longitude:0.000000}" : "—";

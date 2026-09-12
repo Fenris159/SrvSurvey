@@ -52,11 +52,11 @@ Running `.mining survey` while already inside a saved map starts at that map's
 center step.
 
 Drive to the orange border of a mining-location signal and face the marker at its
-center. Send this case-insensitive chat command using your current heading, the
+center. Send this case-insensitive chat command using the current bearing, the
 measured border radius in kilometers, and the signal's number:
 
 ```text
-.mining <heading 0-359> <border radius km> <signal number>
+.mining <bearing 0-359> <border radius km> <signal number>
 ```
 
 For example, `.mining 120 6.44 4` saves **Mining Location Signal 4** with a
@@ -78,11 +78,11 @@ remain unchanged.
 For a precise distant bearing, send `.alignment` to toggle a thin red vertical
 guide at the exact center of the Elite game window. It spans the clear HUD area
 below the heading box and above the lower radar. Use the Rhino driving view,
-place the distant mining-location circle under the guide, then read the visible
-in-game compass heading for the `.mine` command. Turret mode does not show the
-required heading. Send `.alignment` again to hide the session-only guide.
+place the distant mining-location circle under the guide, then read its bearing
+from the visible in-game compass for the `.mine` command. Turret mode does not
+show the required bearing. Send `.alignment` again to hide the session-only guide.
 
-From anywhere inside the saved border, add a deposit by heading and distance.
+From anywhere inside the saved border, add a deposit by bearing and distance.
 The projection starts at your live position, so you do not need to return to the
 map center:
 
@@ -103,7 +103,7 @@ within 0.5 km:
 The amount/density pair belongs to that individual deposit, and each value may be
 Low, Medium, or High. Commodity names must
 match **Hotspot List** and may contain spaces. The command parser rejects unknown
-commodities, headings outside 0–359, non-positive border radii, negative deposit
+commodities, bearings outside 0–359, non-positive border radii, negative deposit
 distances, invalid signal numbers, and unrecognized amount or density values.
 Bearing-and-distance placement also rejects a same-commodity marker within 100 m
 as a likely duplicate. Precise `here` placement remains available for genuinely

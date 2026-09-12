@@ -12340,7 +12340,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.cs"
   },
   {
-    "Text": "Creates or updates the current Mining Location Signal. Heading must be 0\u2013359, border radius is the measured distance from the border to the center in kilometers, and the location number must be positive.",
+    "Text": "Creates or updates the current Mining Location Signal. Bearing must be 0\u2013359, border radius is the measured distance from the border to the center in kilometers, and the location number must be positive.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -14709,7 +14709,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
   },
   {
-    "Text": "Drive to a mining-location border, face its center, and send .mining \u003Cheading\u003E \u003Cradius km\u003E \u003Cnumber\u003E, i.e. .mining 120 6.44 4.",
+    "Text": "Drive to a mining-location border, face its center, and send .mining \u003Cbearing\u003E \u003Cradius km\u003E \u003Cnumber\u003E, i.e. .mining 120 6.44 4.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -14733,7 +14733,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
   },
   {
-    "Text": "Drive to the orange location border, face the center marker, and send .mining \u003Cheading\u003E \u003Cborder radius km\u003E \u003Clocation number\u003E. Example: .mining 120 6.44 4.",
+    "Text": "Drive to the orange location border, face the center marker, and send .mining \u003Cbearing\u003E \u003Cborder radius km\u003E \u003Clocation number\u003E. Example: .mining 120 6.44 4.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -14741,7 +14741,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Drive to the orange mining-location border and face its center, then use .mining \u003Cheading\u003E \u003Cradius km\u003E \u003Cnumber\u003E, i.e. .mining 120 6.44 4. Use .mining center here from the true center to correct it later.",
+    "Text": "Drive to the orange mining-location border and face its center, then use .mining \u003Cbearing\u003E \u003Cradius km\u003E \u003Cnumber\u003E, i.e. .mining 120 6.44 4. Use .mining center here from the true center to correct it later.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -18666,7 +18666,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
-    "Text": "From anywhere inside the saved border, face a deposit and send .mine \u003Cheading\u003E \u003Ccommodity\u003E \u003Cdistance km\u003E \u003Clow|medium|high\u003E/\u003Clow|medium|high\u003E. The bearing and distance start at your live position. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 15 ruby 1.24 high/medium.",
+    "Text": "From anywhere inside the saved border, face a deposit and send .mine \u003Cbearing\u003E \u003Ccommodity\u003E \u003Cdistance km\u003E \u003Clow|medium|high\u003E/\u003Clow|medium|high\u003E. The bearing and distance start at your live position. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 15 ruby 1.24 high/medium.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -41787,7 +41787,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Send .alignment to toggle a red guide at the exact center of the Elite window. In the Rhino driving view, place a distant location circle under the guide before reading the visible compass heading for .mine. Turret mode does not show the required heading.",
+    "Text": "Send .alignment to toggle a red guide at the exact center of the Elite window. In the Rhino driving view, place a distant location circle under the guide before reading its bearing from the visible compass for .mine. Turret mode does not show the required bearing.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -50570,7 +50570,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModelFactory.cs"
   },
   {
-    "Text": "The surface map is fixed north-up. Heading lines, deposits, the survey center, and the live player position share the stored planetary coordinates.",
+    "Text": "The surface map is fixed north-up. Bearing lines, deposits, the survey center, and the live player position share the stored planetary coordinates.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -51539,7 +51539,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
   },
   {
-    "Text": "Toggles a thin red vertical guide at the exact center of the Elite window. Use the Rhino driving view, place a distant mining-location circle under the guide, then read the visible game compass heading for the .mine command. Turret mode does not show the required heading. Run the command again to hide the guide.",
+    "Text": "Toggles a thin red vertical guide at the exact center of the Elite window. Use the Rhino driving view, place a distant mining-location circle under the guide, then read its bearing from the visible game compass for the .mine command. Turret mode does not show the required bearing. Run the command again to hide the guide.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
