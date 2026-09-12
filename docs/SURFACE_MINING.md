@@ -1,6 +1,6 @@
 # Surface mining
 
-Available in **SrvSurvey-XP 2.1.3.0-rc.46**. Surface Mining combines Rhino rig
+Available in **SrvSurvey-XP 2.1.3.0-rc.46.5**. Surface Mining combines Rhino rig
 guidance with reusable maps of planetary mining-location signals and their
 deposits. The same workflow is covered inside the application under
 **Guides > Surface mining**.
@@ -28,52 +28,97 @@ pairs with the main application's dark **Monochrome** theme.
 ## Map a mining location
 
 The **Surface Maps** tab lists saved surface-mining bookmarks. Select any row to
-open it in **Survey Map**. The Contains and Body Type filters are populated from
-the saved maps, and the table can be sorted from its column headings.
+open it in **Survey Map**, or expand its chevron to review each deposit's mineral
+amount and density. The Contains and Body Type filters are populated from the
+saved maps, and the table can be sorted from its column headings. Select the star
+after **Updated** to favorite a map, then enable **Favorites** in the search panel
+to show only starred maps.
 
-Stand on the yellow border of a mining-location signal and face the marker at its
-center. Send this case-insensitive chat command, using your current heading and
-the signal's number:
+Drive to the orange border of a mining-location signal and face the marker at its
+center. Send this case-insensitive chat command using your current heading, the
+measured border radius in kilometers, and the signal's number:
 
 ```text
-.mining <heading 0-359> <signal number> <high|low>/<high|low>
+.mining <heading 0-359> <border radius km> <signal number>
 ```
 
-For example, `.mining 120 4 high/low` saves **Mining Location Signal 4** with
-High Mineral Amount and Low Density. SrvSurvey uses the body's journal radius,
-your latitude and longitude, and the known 2.47 km location radius to calculate
-the center. The command requires live surface coordinates and reports acceptance
-or a validation error through Status notifications.
+For example, `.mining 120 6.44 4` saves **Mining Location Signal 4** with a
+6.44 km radius. SrvSurvey uses the body's journal radius, your latitude and
+longitude, and the supplied location radius to calculate the center. The command
+requires live surface coordinates and reports acceptance or a validation error
+through Status notifications.
 
-From the saved center, add a deposit by heading and distance:
+If the calculated center needs correction, drive to the true center and send:
 
 ```text
-.mine 15 ruby 1.24
+.mining center here
+```
+
+This moves the map center to the player's current surface coordinates and realigns
+the border and distance rings. The saved radius and every existing deposit marker
+remain unchanged.
+
+For a precise distant bearing, send `.alignment` to toggle a thin red vertical
+guide at the exact center of the Elite game window. It spans the clear HUD area
+below the heading box and above the lower radar. Use the Rhino driving view,
+place the distant mining-location circle under the guide, then read the visible
+in-game compass heading for the `.mine` command. Turret mode does not show the
+required heading. Send `.alignment` again to hide the session-only guide.
+
+From anywhere inside the saved border, add a deposit by heading and distance.
+The projection starts at your live position, so you do not need to return to the
+map center:
+
+```text
+.mine 15 ruby 1.24 high/medium
 ```
 
 At a deposit, save your current position directly or remove the nearest marker
 within 0.5 km:
 
 ```text
-.mine ruby here
+.mine ruby medium/low here
+.mine move haematite here
 .mine delete here
+.alignment
 ```
 
-Commodity names must match **Hotspot List** and may contain spaces. The command
-parser rejects unknown commodities, headings outside 0–359, non-positive
-distances, invalid signal numbers, and amount or density values other than High
-or Low.
+The amount/density pair belongs to that individual deposit, and each value may be
+Low, Medium, or High. Commodity names must
+match **Hotspot List** and may contain spaces. The command parser rejects unknown
+commodities, headings outside 0–359, non-positive border radii, negative deposit
+distances, invalid signal numbers, and unrecognized amount or density values.
+Bearing-and-distance placement also rejects a same-commodity marker within 100 m
+as a likely duplicate. Precise `here` placement remains available for genuinely
+overlapping deposits.
+
+To correct an existing marker, stand at its true position and send `.mine move
+<commodity> here`. SrvSurvey moves only the nearest marker matching that commodity,
+and only when it is within 200 m. Success and failure are reported through Status
+notifications.
 
 The **Survey Map** and Overview Map overlay share the selected bookmark, live
-player position, fixed 1–4 km rings, the 2.47 km location boundary and saved
-deposit markers. Use the mouse wheel, slider, or minus and plus controls to zoom;
+player position, 1 km rings extending through the whole-kilometer ring that
+encloses the saved boundary, and saved deposit markers. Use the mouse wheel,
+slider, or minus and plus controls to zoom;
 drag the map to pan after zooming in. Marker visibility can be filtered by
-commodity without changing the saved map.
+commodity, mineral amount, and density without changing the saved map. The
+workspace Survey Map and Overview Map overlay use the same active filters.
+Right-click the application map to place or remove a temporary 4.5 km-radius
+planning circle. Hold the right button and drag to reposition it; the Overview
+Map overlay mirrors the circle. Marker names are shown in the Overview Map by
+default; clear **Show Marker Labels in Overview Map** in Surface Mining overlay
+settings to show the colored marker dots without labels. This setting does not
+remove labels from the application Survey Map.
+
+A saved Surface Mining map is selected automatically when the player's live
+surface position enters its border. It is unloaded when the player leaves the
+saved radius, so the map and overlay follow the location currently being visited.
 
 Surface maps use the shared **Navigation > Bookmarks** catalog. They are assigned
 the Surface Mining category automatically and store the Commander, system, body,
-body type, distance from Sol, arrival distance, signal number, ratings, center
-coordinates, notes and deposit metadata. Editing or deleting the shared bookmark
+body type, distance from Sol, arrival distance, signal number, border radius,
+center coordinates, notes, and deposit-specific ratings. Editing or deleting the shared bookmark
 updates the Surface Mining workspace.
 
 ## Reference tabs

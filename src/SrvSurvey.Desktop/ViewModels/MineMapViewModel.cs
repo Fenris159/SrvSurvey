@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.Json;
 using System.Windows.Input;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Mining;
@@ -11,6 +12,8 @@ namespace SrvSurvey.Desktop.ViewModels;
 public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
 {
     private const double DefaultViewportZoom = 1;
+    private const string AllMarkerRatings = "ALL";
+    private static readonly IReadOnlyList<string> MarkerRatingFilters = [AllMarkerRatings, "HIGH", "MEDIUM", "LOW"];
     private readonly MineMapService service;
     private readonly MineMapSettingsStore settingsStore;
     private readonly Action<string> notify;
@@ -28,12 +31,19 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     private string searchText = string.Empty;
     private string selectedContains = "All";
     private string selectedBodyType = "All";
+    private bool favoritesOnly;
+    private string selectedMineralAmountFilter = AllMarkerRatings;
+    private string selectedDensityFilter = AllMarkerRatings;
     private int selectedTab;
     private double viewportZoom = DefaultViewportZoom;
     private bool onlyShowWhileOnGround;
+    private bool showMarkerLabelsInOverviewMap;
     private MineMapSurveyRowViewModel? selectedSurveyRow;
     private MineMapSurvey? editorSurvey;
+    private SurfaceCoordinate? planningCircleCenter;
+    private Guid? planningCircleSurveyId;
     private string statusText = string.Empty;
+    private bool isAlignmentHelperVisible;
 
     public MineMapViewModel(
         string dataDirectory,
@@ -50,6 +60,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         this.editBookmark = editBookmark ?? (_ => { });
         var preferences = settingsStore.Load();
         onlyShowWhileOnGround = preferences.OnlyShowWhileOnGround;
+        showMarkerLabelsInOverviewMap = preferences.ShowMarkerLabelsInOverviewMap;
         var selectedReferenceCommodities = preferences
             .EffectiveMiningReferenceCommodities.Select(name =>
                 SurfaceMiningCommodityCatalog.TryResolve(name, out var commodity) ? commodity.Name : name
@@ -94,6 +105,13 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
             if (SelectedSurveyRow is { } row)
             {
                 this.editBookmark(row.Id);
+            }
+        });
+        ActivateSelectedSurveyCommand = new WorkspaceCommand(() =>
+        {
+            if (SelectedSurveyRow is { } row)
+            {
+                SelectSurvey(row);
             }
         });
         RefreshCatalog();
@@ -141,6 +159,18 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         }
     }
 
+    public bool FavoritesOnly
+    {
+        get => favoritesOnly;
+        set
+        {
+            if (Set(ref favoritesOnly, value))
+            {
+                RefreshFilteredSurveys();
+            }
+        }
+    }
+
     public IReadOnlyList<string> ContainsOptions { get; private set; } = ["All"];
 
     public IReadOnlyList<string> BodyTypeOptions { get; private set; } = ["All"];
@@ -152,6 +182,8 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     public IReadOnlyList<SurfaceMiningCommodityRowViewModel> MiningReferenceRows => miningReferenceRows;
 
     public bool ShouldShowMiningReference => MiningReferenceRows.Count > 0;
+
+    public bool ShouldShowAlignmentHelper => isAlignmentHelperVisible;
 
     public IReadOnlyList<MineMapSurveyRowViewModel> FilteredSurveys
     {
@@ -165,6 +197,32 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         private set => Set(ref markerFilters, value);
     }
 
+    public static IReadOnlyList<string> MarkerRatingFilterOptions => MarkerRatingFilters;
+
+    public string SelectedMineralAmountFilter
+    {
+        get => selectedMineralAmountFilter;
+        set
+        {
+            if (Set(ref selectedMineralAmountFilter, NormalizeMarkerRatingFilter(value)))
+            {
+                Changed(nameof(VisibleMarkerIds));
+            }
+        }
+    }
+
+    public string SelectedDensityFilter
+    {
+        get => selectedDensityFilter;
+        set
+        {
+            if (Set(ref selectedDensityFilter, NormalizeMarkerRatingFilter(value)))
+            {
+                Changed(nameof(VisibleMarkerIds));
+            }
+        }
+    }
+
     public MineMapSurvey? ActiveSurvey => editorSurvey ?? service.ActiveSurvey;
 
     public bool HasActiveSurvey => ActiveSurvey is not null;
@@ -173,11 +231,11 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
 
     public string LiveMapDescription =>
         ActiveSurvey is { } survey
-            ? $"{survey.SystemName} · {survey.BodyName} · {survey.MineralAmount} mineral amount · {survey.Density} density"
-            : "Stand on a mining-location border, face its center, and send .mining <heading> <number> <amount>/<density>, i.e. .mining 120 4 high/low.";
+            ? $"{survey.SystemName} · {survey.BodyName} · {survey.LocationRadiusMeters / 1000:0.##} km border"
+            : "Drive to a mining-location border, face its center, and send .mining <heading> <radius km> <number>, i.e. .mining 120 6.44 4.";
 
     public static string LiveMapCommandHelp =>
-        "Stand on the mining-location border and face its center, then use .mining <heading> <number> <amount>/<density>, i.e. .mining 120 4 high/low.";
+        "Drive to the orange mining-location border and face its center, then use .mining <heading> <radius km> <number>, i.e. .mining 120 6.44 4. Use .mining center here from the true center to correct it later.";
 
     public string LiveMapLocation =>
         ActiveSurvey is { } survey ? $"{survey.Center.Latitude:0.000000}, {survey.Center.Longitude:0.000000}" : "—";
@@ -189,9 +247,8 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
 
     public string SelectedMapSignal => ActiveSurvey?.LocationSignal.ToString(CultureInfo.InvariantCulture) ?? "—";
 
-    public string SelectedMapAmount => ActiveSurvey?.MineralAmount.ToString() ?? "—";
-
-    public string SelectedMapDensity => ActiveSurvey?.Density.ToString() ?? "—";
+    public string SelectedMapRadius =>
+        ActiveSurvey is { } survey ? $"{survey.LocationRadiusMeters / 1000:0.##} km" : "—";
 
     public string MarkerCountText
     {
@@ -210,6 +267,23 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     public SurfaceCoordinate? PlayerLocation => IsActiveSurveyCurrentContext ? context?.PlayerLocation : null;
 
     public double PlayerHeading => IsActiveSurveyCurrentContext ? status?.NormalizedHeading ?? 0 : 0;
+
+    public SurfaceCoordinate? PlanningCircleCenter
+    {
+        get => planningCircleSurveyId == ActiveSurvey?.Id ? planningCircleCenter : null;
+        set
+        {
+            Guid? surveyId = value is null ? null : ActiveSurvey?.Id;
+            if (planningCircleSurveyId == surveyId && planningCircleCenter == value)
+            {
+                return;
+            }
+
+            planningCircleSurveyId = surveyId;
+            planningCircleCenter = value;
+            Changed();
+        }
+    }
 
     public double ViewportZoom
     {
@@ -248,6 +322,31 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
                     "Surface Mining map setting changed for this session but could not be saved: " + exception.Message;
             }
             Changed(nameof(ShouldShowOverlay));
+        }
+    }
+
+    public bool ShowMarkerLabelsInOverviewMap
+    {
+        get => showMarkerLabelsInOverviewMap;
+        set
+        {
+            if (!Set(ref showMarkerLabelsInOverviewMap, value))
+            {
+                return;
+            }
+
+            try
+            {
+                SavePreferences();
+                StatusText = string.Empty;
+            }
+            catch (Exception exception)
+                when (exception is IOException or UnauthorizedAccessException or InvalidOperationException)
+            {
+                StatusText =
+                    "Overview Map marker-label setting changed for this session but could not be saved: "
+                    + exception.Message;
+            }
         }
     }
 
@@ -290,20 +389,15 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         settingsStore.Save(
             new MineMapPreferences(
                 OnlyShowWhileOnGround,
-                hotspotRows.Where(row => row.IsInOverlay).Select(row => row.Name).ToArray()
+                hotspotRows.Where(row => row.IsInOverlay).Select(row => row.Name).ToArray(),
+                ShowMarkerLabelsInOverviewMap
             )
         );
 
     public MineMapSurveyRowViewModel? SelectedSurveyRow
     {
         get => selectedSurveyRow;
-        set
-        {
-            if (Set(ref selectedSurveyRow, value) && value is { } row)
-            {
-                SelectSurvey(row);
-            }
-        }
+        set => Set(ref selectedSurveyRow, value);
     }
 
     public string StatusText
@@ -334,6 +428,8 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
 
     public ICommand EditSelectedBookmarkCommand { get; }
 
+    public ICommand ActivateSelectedSurveyCommand { get; }
+
     public async Task ApplyUpdateAsync(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         MineMapCommandContext? nextContext,
@@ -343,6 +439,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     {
         context = nextContext;
         status = latestStatus;
+        ApplyAlignmentCommands(journalEvents, allowCommands);
         service.UpdateContext(nextContext);
         var results = await service.ApplyJournalEventsAsync(
             journalEvents,
@@ -363,6 +460,35 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         RaiseLiveState();
     }
 
+    private void ApplyAlignmentCommands(IReadOnlyList<JournalEventEnvelope> journalEvents, bool allowCommands)
+    {
+        if (!allowCommands)
+        {
+            return;
+        }
+
+        foreach (JournalEventEnvelope journalEvent in journalEvents)
+        {
+            if (
+                !string.Equals(journalEvent.EventName, "SendText", StringComparison.Ordinal)
+                || !journalEvent.Payload.TryGetProperty("Message", out JsonElement messageProperty)
+                || messageProperty.ValueKind != System.Text.Json.JsonValueKind.String
+                || !string.Equals(messageProperty.GetString()?.Trim(), ".alignment", StringComparison.OrdinalIgnoreCase)
+            )
+            {
+                continue;
+            }
+
+            isAlignmentHelperVisible = !isAlignmentHelperVisible;
+            Changed(nameof(ShouldShowAlignmentHelper));
+            string message = isAlignmentHelperVisible
+                ? "Alignment helper shown at the center of the Elite window."
+                : "Alignment helper hidden.";
+            StatusText = message;
+            notify(message);
+        }
+    }
+
     public void SelectSurvey(MineMapSurveyRowViewModel row)
     {
         SelectSurvey(row.Id);
@@ -378,7 +504,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         editorSurvey = null;
         selectedSurveyRow = CatalogSurveys
             .Where(survey => survey.Id == surveyId)
-            .Select(survey => new MineMapSurveyRowViewModel(survey))
+            .Select(survey => CreateSurveyRow(survey))
             .SingleOrDefault();
         Changed(nameof(SelectedSurveyRow));
         SelectedTab = 1;
@@ -394,7 +520,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
 
     internal static MineMapViewModel CreateEditorPreview()
     {
-        var root = Path.Combine(Path.GetTempPath(), "SrvSurvey-OverlayEditorPreview", "mine-map");
+        string root = Path.Combine(Path.GetTempPath(), "SrvSurvey-OverlayEditorPreview", "mine-map-v2");
         var viewModel = new MineMapViewModel(
             root,
             new MineMapSettingsStore(Path.Combine(root, "ui-settings.json")),
@@ -415,8 +541,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
             BodyType = "Rocky Ice body",
             ArrivalDistanceLs = 129,
             LocationSignal = 4,
-            MineralAmount = MineMapRating.High,
-            Density = MineMapRating.Low,
+            LocationRadiusMeters = 4_200,
             PlanetRadiusMeters = radius,
             Center = center,
             CreatedAt = now,
@@ -426,18 +551,24 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
                 new MineMapMarker
                 {
                     Material = "Ruby",
+                    MineralAmount = MineMapRating.High,
+                    Density = MineMapRating.Low,
                     Location = MineMapService.GetDestination(center, 15, 1240, radius),
                     CreatedAt = now,
                 },
                 new MineMapMarker
                 {
                     Material = "Gold",
+                    MineralAmount = MineMapRating.Low,
+                    Density = MineMapRating.High,
                     Location = MineMapService.GetDestination(center, 90, 2100, radius),
                     CreatedAt = now,
                 },
                 new MineMapMarker
                 {
                     Material = "Thortveitite",
+                    MineralAmount = MineMapRating.High,
+                    Density = MineMapRating.High,
                     Location = MineMapService.GetDestination(center, 225, 3400, radius),
                     CreatedAt = now,
                 },
@@ -512,6 +643,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     private void RefreshFilteredSurveys()
     {
         var query = SearchText.Trim();
+        var expanded = FilteredSurveys.Where(row => row.IsExpanded).Select(row => row.Id).ToHashSet();
         FilteredSurveys = surveySorter.Apply(
             CatalogSurveys
                 .Where(survey =>
@@ -527,9 +659,35 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
                 .Where(survey =>
                     query.Length == 0 || Searchable(survey).Contains(query, StringComparison.OrdinalIgnoreCase)
                 )
-                .Select(survey => new MineMapSurveyRowViewModel(survey))
+                .Where(survey => !FavoritesOnly || service.IsFavorite(survey.Id))
+                .Select(survey => CreateSurveyRow(survey, expanded.Contains(survey.Id)))
                 .ToArray()
         );
+    }
+
+    private MineMapSurveyRowViewModel CreateSurveyRow(MineMapSurvey survey, bool isExpanded = false) =>
+        new(survey, service.IsFavorite(survey.Id), ToggleFavorite) { IsExpanded = isExpanded };
+
+    private void ToggleFavorite(MineMapSurveyRowViewModel row)
+    {
+        bool favorite = !row.IsFavorite;
+        try
+        {
+            if (!service.SetFavorite(row.Id, favorite))
+            {
+                StatusText = "The surface mining bookmark could not be found.";
+                return;
+            }
+
+            StatusText = favorite
+                ? $"Added {row.SystemName} {row.DisplayBodyName} Signal {row.SignalNumber} to favorites."
+                : $"Removed {row.SystemName} {row.DisplayBodyName} Signal {row.SignalNumber} from favorites.";
+        }
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidOperationException)
+        {
+            StatusText = "The favorite could not be updated: " + exception.Message;
+        }
     }
 
     private void RefreshMarkerFilters()
@@ -552,11 +710,13 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
                 .ToArray()
             ?? [];
         Changed(nameof(VisibleMaterials));
+        Changed(nameof(VisibleMarkerIds));
     }
 
     private void RaiseMapState()
     {
         Changed(nameof(VisibleMaterials));
+        Changed(nameof(VisibleMarkerIds));
     }
 
     public IReadOnlySet<string> VisibleMaterials =>
@@ -565,8 +725,38 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
             .Select(filter => filter.Name)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
+    public IReadOnlySet<Guid> VisibleMarkerIds
+    {
+        get
+        {
+            if (ActiveSurvey is not { } survey)
+            {
+                return new HashSet<Guid>();
+            }
+
+            IReadOnlySet<string> visibleMaterials = VisibleMaterials;
+            return survey
+                .Markers.Where(marker =>
+                    visibleMaterials.Contains(marker.Material)
+                    && MatchesMarkerRating(marker.MineralAmount, SelectedMineralAmountFilter)
+                    && MatchesMarkerRating(marker.Density, SelectedDensityFilter)
+                )
+                .Select(marker => marker.Id)
+                .ToHashSet();
+        }
+    }
+
+    private static string NormalizeMarkerRatingFilter(string? value) =>
+        MarkerRatingFilters.FirstOrDefault(option => string.Equals(option, value, StringComparison.OrdinalIgnoreCase))
+        ?? AllMarkerRatings;
+
+    private static bool MatchesMarkerRating(MineMapRating rating, string filter) =>
+        string.Equals(filter, AllMarkerRatings, StringComparison.Ordinal)
+        || string.Equals(rating.ToString(), filter, StringComparison.OrdinalIgnoreCase);
+
     private void RaiseLiveState()
     {
+        ClearPlanningCircleForInactiveSurvey();
         Changed(nameof(ActiveSurvey));
         Changed(nameof(HasActiveSurvey));
         Changed(nameof(LiveMapTitle));
@@ -575,13 +765,24 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         Changed(nameof(SelectedMapSystem));
         Changed(nameof(SelectedMapBody));
         Changed(nameof(SelectedMapSignal));
-        Changed(nameof(SelectedMapAmount));
-        Changed(nameof(SelectedMapDensity));
+        Changed(nameof(SelectedMapRadius));
         Changed(nameof(MarkerCountText));
         Changed(nameof(PlayerLocation));
         Changed(nameof(PlayerHeading));
         Changed(nameof(ShouldShowOverlay));
         RefreshMarkerFilters();
+    }
+
+    private void ClearPlanningCircleForInactiveSurvey()
+    {
+        if (planningCircleSurveyId is null || planningCircleSurveyId == ActiveSurvey?.Id)
+        {
+            return;
+        }
+
+        planningCircleSurveyId = null;
+        planningCircleCenter = null;
+        Changed(nameof(PlanningCircleCenter));
     }
 
     private static bool IsOnGround(EliteStatus current) =>
@@ -594,8 +795,11 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
             survey.BodyName,
             survey.BodyType,
             survey.Name,
-            survey.MineralAmount.ToString(),
-            survey.Density.ToString(),
+            (survey.LocationRadiusMeters / 1000).ToString("0.##", CultureInfo.InvariantCulture),
+            string.Join(
+                ' ',
+                survey.Markers.Select(marker => $"{marker.Material} {marker.MineralAmount} {marker.Density}")
+            ),
             survey.Notes,
             survey.SystemAddress.ToString(CultureInfo.InvariantCulture)
         );
@@ -603,36 +807,70 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     private IReadOnlyList<MineMapSurvey> CatalogSurveys => service.Surveys;
 }
 
-public sealed record MineMapSurveyRowViewModel(
-    Guid Id,
-    string SignalNumber,
-    string SystemName,
-    string BodyName,
-    string BodyType,
-    string DistanceText,
-    string ArrivalText,
-    string MineralAmount,
-    string Density,
-    string UpdatedText,
-    string Notes
-)
+public sealed class MineMapSurveyRowViewModel : WorkspaceObservable
 {
     private static readonly SrvSurvey.Core.Search.GalacticCoordinate Sol = new(0, 0, 0);
+    private bool isExpanded;
 
-    public MineMapSurveyRowViewModel(MineMapSurvey survey)
-        : this(
-            survey.Id,
-            survey.LocationSignal.ToString(CultureInfo.InvariantCulture),
-            survey.SystemName,
-            survey.BodyName,
-            survey.BodyType,
-            $"{Sol.DistanceTo(survey.SystemPosition):0.0} ly",
-            $"{survey.ArrivalDistanceLs:0} ls",
-            survey.MineralAmount.ToString(),
-            survey.Density.ToString(),
-            survey.UpdatedAt.ToLocalTime().ToString("d", CultureInfo.CurrentCulture),
-            survey.Notes
-        ) { }
+    public MineMapSurveyRowViewModel(
+        MineMapSurvey survey,
+        bool isFavorite = false,
+        Action<MineMapSurveyRowViewModel>? toggleFavorite = null
+    )
+    {
+        Id = survey.Id;
+        SignalNumber = survey.LocationSignal.ToString(CultureInfo.InvariantCulture);
+        SystemName = survey.SystemName;
+        BodyName = survey.BodyName;
+        BodyType = survey.BodyType;
+        DistanceText = $"{Sol.DistanceTo(survey.SystemPosition):0.0} ly";
+        ArrivalText = $"{survey.ArrivalDistanceLs:0} ls";
+        RadiusText = $"{survey.LocationRadiusMeters / 1000:0.##} km";
+        UpdatedText = survey.UpdatedAt.ToLocalTime().ToString("d", CultureInfo.CurrentCulture);
+        Notes = survey.Notes;
+        IsFavorite = isFavorite;
+        Deposits = survey
+            .Markers.OrderBy(marker => marker.Material, StringComparer.OrdinalIgnoreCase)
+            .Select(marker => new MineMapDepositRowViewModel(
+                marker.Material,
+                marker.MineralAmount.ToString(),
+                marker.Density.ToString()
+            ))
+            .ToArray();
+        ToggleExpandedCommand = new WorkspaceCommand(() => IsExpanded = !IsExpanded);
+        ToggleFavoriteCommand = new WorkspaceCommand(() => toggleFavorite?.Invoke(this));
+    }
+
+    public Guid Id { get; }
+    public string SignalNumber { get; }
+    public string SystemName { get; }
+    public string BodyName { get; }
+    public string BodyType { get; }
+    public string DistanceText { get; }
+    public string ArrivalText { get; }
+    public string RadiusText { get; }
+    public string UpdatedText { get; }
+    public string Notes { get; }
+    public bool IsFavorite { get; }
+    public string FavoriteGlyph => IsFavorite ? "\u2605" : "\u2606";
+    public IReadOnlyList<MineMapDepositRowViewModel> Deposits { get; }
+    public ICommand ToggleExpandedCommand { get; }
+    public ICommand ToggleFavoriteCommand { get; }
+    public bool HasDeposits => Deposits.Count > 0;
+
+    public bool IsExpanded
+    {
+        get => isExpanded;
+        set
+        {
+            if (Set(ref isExpanded, value))
+            {
+                Changed(nameof(ExpandGlyph));
+            }
+        }
+    }
+
+    public string ExpandGlyph => IsExpanded ? "▼" : "▶";
 
     public int SignalValue => int.Parse(SignalNumber, CultureInfo.InvariantCulture);
 
@@ -642,8 +880,12 @@ public sealed record MineMapSurveyRowViewModel(
 
     public double ArrivalValue => double.Parse(ArrivalText[..ArrivalText.IndexOf(' ')], CultureInfo.CurrentCulture);
 
+    public double RadiusValue => double.Parse(RadiusText[..RadiusText.IndexOf(' ')], CultureInfo.CurrentCulture);
+
     public DateTime UpdatedValue => DateTime.Parse(UpdatedText, CultureInfo.CurrentCulture);
 }
+
+public sealed record MineMapDepositRowViewModel(string Material, string MineralAmount, string Density);
 
 public sealed class SurfaceMiningCommodityRowViewModel : WorkspaceObservable
 {

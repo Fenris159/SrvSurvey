@@ -1,0 +1,11 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="SrvSurvey.Desktop.SurfaceMiningAlignmentOverlayWindow"
+        Width="4" Height="420" MinWidth="1" MinHeight="1"
+        CanResize="False" ShowActivated="False" ShowInTaskbar="False"
+        WindowDecorations="None" Topmost="True" Background="#FFFF0000" Opacity="1"
+        TransparencyBackgroundFallback="Transparent" TransparencyLevelHint="Transparent"
+        IsHitTestVisible="False"
+        Title="SrvSurvey surface mining alignment helper overlay">
+  <Border Background="#FFFF0000" Opacity="1" />
+</Window>

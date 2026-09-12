@@ -59,15 +59,19 @@
   },
   {
     "Title": "Surface Mining — locations and deposits",
-    "Summary": "Create a saved surface mining-location map from its known 2.47 km border, then mark mineral or metal deposits from the center or your live position.",
+    "Summary": "Create a saved surface mining-location map from its measured border, then mark mineral or metal deposits from anywhere inside it.",
     "Steps": [
-      ".mining <heading> <location number> <amount>/<density> — While standing on the yellow border and facing the location marker at its center, save the center and location details. Example: .mining 120 4 high/low.",
-      ".mine <heading> <material> <distance km> — From the saved center, add a deposit at the supplied true heading and distance. Example: .mine 15 ruby 1.24.",
-      ".mine <material> here — Add a deposit at your current surface position. Example: .mine ruby here.",
+      ".mining <heading> <border radius km> <location number> — From the orange border while facing the location marker, save the measured radius and calculated center. Example: .mining 120 6.44 4.",
+      ".mining center here — Move the selected map center to your live coordinates without moving its deposit markers.",
+      ".alignment — Toggle a red guide at the exact center of the Elite window. Use the Rhino driving view to align a distant location circle, then read its visible compass heading; turret mode does not show the required heading.",
+      ".mine <heading> <material> <distance km> <amount>/<density> — From anywhere inside the saved border, add a deposit using the true heading and distance from your live position. Same-commodity placements within 100 m are declined as likely duplicates. Example: .mine 15 ruby 1.24 high/medium.",
+      ".mine <material> <amount>/<density> here — Add a deposit at your current surface position, including an intentional overlap. Example: .mine ruby medium/low here.",
+      ".mine move <material> here — Move the nearest matching marker within 200 m to your current surface position. Example: .mine move haematite here.",
       ".mine delete here — Remove the closest deposit marker within 0.5 km of your current position."
     ],
     "Details": [
-      "The .mining command uses the current body's exact journal radius and your latitude/longitude to project the center 2.47 km along the heading. The first rating is Mineral Amount and the second is Density; each must be high or low.",
+      "The .mining command uses the current body's journal radius, your latitude/longitude, and the measured location radius to calculate the center.",
+      "The .mine rating pair belongs to the individual deposit. The first rating is Mineral Amount and the second is Density; each may be low, medium, or high.",
       "A surface map JSON stores Commander, system, body, body type, arrival distance, signal number, ratings, center coordinates, and deposit markers. Commands require the current body and live surface coordinates.",
       "Commodity names are case insensitive but must match an entry in Activities > Surface Mining > Hotspot List. Invalid headings, ratings, distances, or commodity names are declined with an explanation in the status notification overlay.",
       "Recognized commands report their result through the status notification overlay. Open Activities > Surface Mining to search saved locations, filter by contained material or body type, and review the fixed-upright survey map. Surface maps are managed with the shared Navigation > Bookmarks catalog; Contains and Body Type choices populate from those saved maps."

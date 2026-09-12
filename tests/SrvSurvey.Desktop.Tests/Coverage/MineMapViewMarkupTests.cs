@@ -20,6 +20,20 @@ public sealed class MineMapViewMarkupTests
         var map = Assert.Single(document.Descendants(), element => element.Name.LocalName == "MineMapControl");
         Assert.Equal("True", map.Attribute("AllowViewportInteraction")?.Value);
         Assert.Contains("ViewportZoom", map.Attribute("ViewportZoom")?.Value);
+        Assert.Equal("{Binding VisibleMarkerIds}", map.Attribute("VisibleMarkerIds")?.Value);
+        Assert.Equal("{Binding PlanningCircleCenter, Mode=TwoWay}", map.Attribute("PlanningCircleCenter")?.Value);
+        XElement surfaceMapsResults = Assert.Single(
+            document.Descendants(avalonia + "ListBox"),
+            list =>
+                list.Attributes()
+                    .Any(attribute => attribute.Name.LocalName == "Name" && attribute.Value == "SurfaceMapsResults")
+        );
+        XElement[] activationBindings = surfaceMapsResults.Descendants(avalonia + "KeyBinding").ToArray();
+        Assert.Equal(["Enter", "Space"], activationBindings.Select(binding => binding.Attribute("Gesture")?.Value));
+        Assert.All(
+            activationBindings,
+            binding => Assert.Equal("{Binding ActivateSelectedSurveyCommand}", binding.Attribute("Command")?.Value)
+        );
         var slider = Assert.Single(document.Descendants(avalonia + "Slider"));
         Assert.Equal("1", slider.Attribute("Minimum")?.Value);
         Assert.Equal("15", slider.Attribute("Maximum")?.Value);
@@ -38,6 +52,10 @@ public sealed class MineMapViewMarkupTests
         Assert.Contains(
             document.Descendants(avalonia + "CheckBox"),
             checkBox => checkBox.Attribute("IsChecked")?.Value == "{Binding IsInOverlay, Mode=TwoWay}"
+        );
+        Assert.Contains(
+            document.Descendants(avalonia + "CheckBox"),
+            checkBox => checkBox.Attribute("IsChecked")?.Value == "{Binding FavoritesOnly, Mode=TwoWay}"
         );
         Assert.Contains(
             document.Descendants(avalonia + "Button"),
@@ -72,9 +90,40 @@ public sealed class MineMapViewMarkupTests
         );
         Assert.Equal("Auto", surfaceMapsScroller.Attribute("HorizontalScrollBarVisibility")?.Value);
         Assert.Equal("Disabled", surfaceMapsScroller.Attribute("VerticalScrollBarVisibility")?.Value);
+        Assert.Contains(document.Descendants(), element => element.Attribute("Tapped")?.Value == "OnSurveyRowTapped");
+        XElement expandButton = Assert.Single(
+            document.Descendants(avalonia + "Button"),
+            button => button.Attribute("Command")?.Value == "{Binding ToggleExpandedCommand}"
+        );
+        Assert.Equal("link survey-expand", expandButton.Attribute("Classes")?.Value);
+        Assert.Equal("36", expandButton.Attribute("Height")?.Value);
+        Assert.DoesNotContain(
+            document.Descendants(avalonia + "ToggleButton"),
+            toggle => toggle.Attribute("IsChecked")?.Value?.Contains("IsExpanded", StringComparison.Ordinal) == true
+        );
         Assert.Contains(
-            document.Descendants(avalonia + "Grid"),
-            row => row.Attribute("Tapped")?.Value == "OnSurveyRowTapped"
+            document.Descendants(avalonia + "ItemsControl"),
+            control => control.Attribute("ItemsSource")?.Value == "{Binding Deposits}"
+        );
+        Assert.Contains(
+            document.Descendants(avalonia + "Image"),
+            image =>
+                image.Attribute("Source")?.Value
+                == "avares://SrvSurvey.Desktop/Assets/SurfaceMining/surface-mining-command-examples.png"
+        );
+        Assert.Contains(
+            document.Descendants(avalonia + "TextBlock"),
+            text =>
+                text.Attribute("Text")?.Value
+                == "Drive to the orange mining-location border and face the center marker."
+        );
+        Assert.Contains(
+            document.Descendants(avalonia + "TextBlock"),
+            text => text.Attribute("Text")?.Value == ".mining center here"
+        );
+        Assert.Contains(
+            document.Descendants(avalonia + "TextBlock"),
+            text => text.Attribute("Text")?.Value == ".mine move <commodity> here"
         );
         Assert.Contains(
             document.Descendants(avalonia + "MenuItem"),
@@ -107,6 +156,16 @@ public sealed class MineMapViewMarkupTests
             Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "MineMapOverlayPresentation.axaml")
         );
         var overlayMap = Assert.Single(overlay.Descendants(), element => element.Name.LocalName == "MineMapControl");
+        Assert.Equal("{Binding ShowMarkerLabelsInOverviewMap}", overlayMap.Attribute("ShowMarkerLabels")?.Value);
+        var overlaySettings = XDocument.Load(
+            Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "Views", "OverlaySettingsView.axaml")
+        );
+        Assert.Contains(
+            overlaySettings.Descendants(avalonia + "CheckBox"),
+            checkBox =>
+                checkBox.Attribute("IsChecked")?.Value == "{Binding MineMap.ShowMarkerLabelsInOverviewMap, Mode=TwoWay}"
+                && checkBox.Attribute("Content")?.Value == "Show Marker Labels in Overview Map"
+        );
         Assert.Equal("{DynamicResource RavenMapGridBrush}", overlayMap.Attribute("GridBrush")?.Value);
         Assert.Equal("{DynamicResource RavenTextBrush}", overlayMap.Attribute("TextBrush")?.Value);
         Assert.Contains("ElementName=MineSurveyMap", slider.Attribute("Value")?.Value);
@@ -117,6 +176,12 @@ public sealed class MineMapViewMarkupTests
             document.Descendants(avalonia + "Button"),
             button => button.Attribute("Content")?.Value is "−" or "+"
         );
+        XElement favoriteButton = Assert.Single(
+            document.Descendants(avalonia + "Button"),
+            button => button.Attribute("Command")?.Value == "{Binding ToggleFavoriteCommand}"
+        );
+        Assert.Equal("9", favoriteButton.Attribute("Grid.Column")?.Value);
+        Assert.Equal("favorite-star", favoriteButton.Attribute("Classes")?.Value);
         Assert.All(
             document
                 .Descendants(avalonia + "Grid")
@@ -172,14 +237,43 @@ public sealed class MineMapViewMarkupTests
             .Select(text => text.Attribute("Text")?.Value ?? string.Empty)
             .ToArray();
         Assert.True(Array.IndexOf(cardTitles, "Selected map") < Array.IndexOf(cardTitles, "Marker visibility"));
+        XElement markerVisibilityLayout = Assert.Single(
+            document.Descendants(avalonia + "Grid"),
+            grid =>
+                grid.Attribute(XName.Get("Name", "http://schemas.microsoft.com/winfx/2006/xaml"))?.Value
+                == "MarkerVisibilityLayout"
+        );
+        Assert.Equal("*,Auto,Auto", markerVisibilityLayout.Attribute("ColumnDefinitions")?.Value);
+        Assert.Contains(
+            markerVisibilityLayout.Descendants(avalonia + "TextBlock"),
+            text => text.Attribute("Text")?.Value == "Mineral\nAmount:"
+        );
+        Assert.Contains(
+            document.Descendants(avalonia + "Border"),
+            border =>
+                border.Attribute(XName.Get("Name", "http://schemas.microsoft.com/winfx/2006/xaml"))?.Value
+                    == "MarkerRatingFilterDivider"
+                && border.Attribute("Width")?.Value == "1"
+        );
+        Assert.Contains(
+            document.Descendants(avalonia + "ComboBox"),
+            comboBox =>
+                comboBox.Attribute("ItemsSource")?.Value == "{x:Static vm:MineMapViewModel.MarkerRatingFilterOptions}"
+                && comboBox.Attribute("SelectedItem")?.Value == "{Binding SelectedMineralAmountFilter, Mode=TwoWay}"
+        );
+        Assert.Contains(
+            document.Descendants(avalonia + "ComboBox"),
+            comboBox =>
+                comboBox.Attribute("ItemsSource")?.Value == "{x:Static vm:MineMapViewModel.MarkerRatingFilterOptions}"
+                && comboBox.Attribute("SelectedItem")?.Value == "{Binding SelectedDensityFilter, Mode=TwoWay}"
+        );
         foreach (
             var binding in new[]
             {
                 "{Binding SelectedMapSystem}",
                 "{Binding SelectedMapBody}",
                 "{Binding SelectedMapSignal}",
-                "{Binding SelectedMapAmount}",
-                "{Binding SelectedMapDensity}",
+                "{Binding SelectedMapRadius}",
             }
         )
         {
@@ -216,6 +310,10 @@ public sealed class MineMapViewMarkupTests
         Assert.Contains(
             document.Descendants(avalonia + "NumericUpDown"),
             input => input.Attribute("Value")?.Value == "{Binding SurfaceSignal}"
+        );
+        Assert.Contains(
+            document.Descendants(avalonia + "NumericUpDown"),
+            input => input.Attribute("Value")?.Value == "{Binding SurfaceLocationRadiusKm}"
         );
         Assert.Contains(
             document.Descendants(avalonia + "TextBox"),
@@ -293,7 +391,7 @@ public sealed class MineMapViewMarkupTests
     }
 
     [Fact]
-    public void LiveOverlayEmbedsAndHostsTheSameMinusPlusControls()
+    public void LiveOverlayHostsOneOwnedMinusPlusControlSet()
     {
         var root = FindRepositoryRoot();
         var presentation = XDocument.Load(
@@ -304,16 +402,22 @@ public sealed class MineMapViewMarkupTests
         );
         XNamespace avalonia = "https://github.com/avaloniaui";
 
-        Assert.Single(
+        Assert.DoesNotContain(
             presentation.Descendants(),
             element => element.Name.LocalName == "MineMapZoomOverlayPresentation"
         );
+        string coordinator = File.ReadAllText(
+            Path.Combine(root, "src", "SrvSurvey.Desktop", "Platform", "Overlay", "MineMapOverlayCoordinator.cs")
+        );
+        Assert.Contains("overlay.Show(mapWindow);", coordinator, StringComparison.Ordinal);
         Assert.Contains(
             presentation.Descendants().Where(element => element.Name.LocalName == "MineMapControl"),
             map =>
                 map.Attribute("ViewportZoom")?.Value?.Contains("ViewportZoom") == true
                 && map.Attribute("PlayerLocation")?.Value == "{Binding PlayerLocation}"
                 && map.Attribute("PlayerHeading")?.Value == "{Binding PlayerHeading}"
+                && map.Attribute("VisibleMarkerIds")?.Value == "{Binding VisibleMarkerIds}"
+                && map.Attribute("PlanningCircleCenter")?.Value == "{Binding PlanningCircleCenter, Mode=TwoWay}"
                 && map.Attribute("PlayerBrush")?.Value == "{DynamicResource RavenSuccessBrush}"
         );
         var workspace = XDocument.Load(Path.Combine(root, "src", "SrvSurvey.Desktop", "Views", "MineMapView.axaml"));
@@ -322,6 +426,8 @@ public sealed class MineMapViewMarkupTests
             map =>
                 map.Attribute("PlayerLocation")?.Value == "{Binding PlayerLocation}"
                 && map.Attribute("PlayerHeading")?.Value == "{Binding PlayerHeading}"
+                && map.Attribute("VisibleMarkerIds")?.Value == "{Binding VisibleMarkerIds}"
+                && map.Attribute("PlanningCircleCenter")?.Value == "{Binding PlanningCircleCenter, Mode=TwoWay}"
                 && map.Attribute("PlayerBrush")?.Value == "{DynamicResource RavenSuccessBrush}"
         );
         Assert.Equal(

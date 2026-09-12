@@ -199,6 +199,7 @@ public sealed class MainWindowViewModelTests
                 BodyName = "Wille 2 d",
                 BodyType = "Rocky body",
                 LocationSignal = 4,
+                LocationRadiusMeters = 6_380,
                 PlanetRadiusMeters = 855_573,
                 Center = new SurfaceCoordinate(1, 2),
             };

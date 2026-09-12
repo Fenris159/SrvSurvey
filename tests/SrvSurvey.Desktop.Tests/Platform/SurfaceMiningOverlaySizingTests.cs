@@ -17,6 +17,41 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class SurfaceMiningOverlaySizingTests
 {
+    [Theory]
+    [InlineData(1280, 720, 216)]
+    [InlineData(1920, 1080, 324)]
+    [InlineData(2560, 1440, 432)]
+    [InlineData(3440, 1440, 432)]
+    [InlineData(3840, 2160, 648)]
+    public void AlignmentHelperUsesTheShortCentralHudSpan(int width, int height, int expectedHeight)
+    {
+        var gameBounds = new PixelRect(100, 200, width, height);
+
+        PixelRect bounds = MineMapOverlayCoordinator.GetAlignmentHelperBounds(gameBounds);
+
+        Assert.Equal(new PixelSize(4, expectedHeight), bounds.Size);
+        Assert.Equal(gameBounds.Center.X, bounds.Center.X);
+        Assert.Equal(gameBounds.Center.Y, bounds.Center.Y);
+    }
+
+    [AvaloniaFact]
+    public void AlignmentHelperUsesOpaquePureRedIndependentOfOverlayThemes()
+    {
+        var window = new SurfaceMiningAlignmentOverlayWindow();
+        Border line = Assert.IsType<Border>(window.Content);
+
+        Assert.Equal(
+            Avalonia.Media.Colors.Red,
+            Assert.IsType<Avalonia.Media.ISolidColorBrush>(window.Background, exactMatch: false).Color
+        );
+        Assert.Equal(
+            Avalonia.Media.Colors.Red,
+            Assert.IsType<Avalonia.Media.ISolidColorBrush>(line.Background, exactMatch: false).Color
+        );
+        Assert.Equal(1, window.Opacity);
+        Assert.Equal(1, line.Opacity);
+    }
+
     [AvaloniaTheory]
     [InlineData("Wille 2 d")]
     [InlineData("Synuefe NL-N c23-4 B 3 with a much longer body name")]

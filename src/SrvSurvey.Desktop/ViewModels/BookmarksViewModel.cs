@@ -34,10 +34,9 @@ public sealed class BookmarksViewModel : WorkspaceObservable
         hotspot = "",
         averageYield = "";
     private int surfaceSignal = 1;
-    private string surfaceBodyType = "",
-        surfaceMineralAmount = "High",
-        surfaceDensity = "Low";
-    private double surfaceArrivalDistanceLs;
+    private string surfaceBodyType = "";
+    private double surfaceArrivalDistanceLs,
+        surfaceLocationRadiusKm = 1;
     private string status = "Save systems and mining rings in your own categories.";
 
     public BookmarksViewModel(string directory, Action<Guid>? openSurfaceMiningMap = null)
@@ -70,8 +69,7 @@ public sealed class BookmarksViewModel : WorkspaceObservable
             Rating = 0;
             SurfaceSignal = 1;
             SurfaceArrivalDistanceLs = 0;
-            SurfaceMineralAmount = "High";
-            SurfaceDensity = "Low";
+            SurfaceLocationRadiusKm = 1;
         });
         SaveCommand = new WorkspaceCommand(() =>
             Run(() =>
@@ -86,8 +84,7 @@ public sealed class BookmarksViewModel : WorkspaceObservable
                         BodyType = SurfaceBodyType,
                         ArrivalDistanceLs = SurfaceArrivalDistanceLs,
                         LocationSignal = SurfaceSignal,
-                        MineralAmount = ParseSurfaceRating(SurfaceMineralAmount),
-                        Density = ParseSurfaceRating(SurfaceDensity),
+                        LocationRadiusMeters = SurfaceLocationRadiusKm * 1000,
                         Notes = Notes,
                         UpdatedAt = DateTimeOffset.UtcNow,
                     };
@@ -112,6 +109,7 @@ public sealed class BookmarksViewModel : WorkspaceObservable
                     Position = selected?.Position,
                     RingType = selected?.RingType ?? "",
                     Reserve = selected?.Reserve ?? "",
+                    IsFavorite = selected?.IsFavorite ?? false,
                     SurfaceMiningMap = surfaceMap,
                     Updated = DateTimeOffset.UtcNow,
                 };
@@ -283,17 +281,11 @@ public sealed class BookmarksViewModel : WorkspaceObservable
         get => surfaceArrivalDistanceLs;
         set => Set(ref surfaceArrivalDistanceLs, Math.Max(0, value));
     }
-    public string SurfaceMineralAmount
+    public double SurfaceLocationRadiusKm
     {
-        get => surfaceMineralAmount;
-        set => Set(ref surfaceMineralAmount, value);
+        get => surfaceLocationRadiusKm;
+        set => Set(ref surfaceLocationRadiusKm, Math.Max(0.01, value));
     }
-    public string SurfaceDensity
-    {
-        get => surfaceDensity;
-        set => Set(ref surfaceDensity, value);
-    }
-    public IReadOnlyList<string> SurfaceRatingOptions { get; } = ["Low", "High"];
     public bool IsSurfaceMiningMap => Selected?.SurfaceMiningMap is not null;
     public string Status
     {
@@ -334,8 +326,7 @@ public sealed class BookmarksViewModel : WorkspaceObservable
                 SurfaceSignal = map.LocationSignal;
                 SurfaceBodyType = map.BodyType;
                 SurfaceArrivalDistanceLs = map.ArrivalDistanceLs;
-                SurfaceMineralAmount = map.MineralAmount.ToString();
-                SurfaceDensity = map.Density.ToString();
+                SurfaceLocationRadiusKm = map.LocationRadiusMeters / 1000;
             }
         }
     }
@@ -486,9 +477,6 @@ public sealed class BookmarksViewModel : WorkspaceObservable
             Changed(nameof(IsSurfaceMiningMap));
         }
     }
-
-    private static MineMapRating ParseSurfaceRating(string value) =>
-        value.Equals("Low", StringComparison.OrdinalIgnoreCase) ? MineMapRating.Low : MineMapRating.High;
 
     private bool HasCategory(string value) => categoryAssignments.Contains(value);
 
