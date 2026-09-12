@@ -39,6 +39,9 @@ internal sealed class MainWindowViewModelTestBuilder
     private string? diagnosticReplayStatus;
     private Action<MainWindowViewModelConstructionCheckpoint>? checkpoint;
 
+    public static MainWindowViewModel Create(string? configuredJournalDirectory) =>
+        new MainWindowViewModelTestBuilder().Build(configuredJournalDirectory);
+
     public static MainWindowViewModel Create(
         string? configuredJournalDirectory,
         Action<MainWindowViewModelTestBuilder> configure

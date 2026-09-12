@@ -71,7 +71,7 @@
           <Border Classes="card raised" IsVisible="{Binding IsSurfaceMiningMap}">
             <StackPanel Spacing="10">
               <TextBlock Classes="card-title" Text="Surface mining map"/>
-              <Grid ColumnDefinitions=".7*,1.4*,1*,1*" ColumnSpacing="10">
+              <Grid ColumnDefinitions=".7*,1.4*,1*" ColumnSpacing="10">
                 <StackPanel Spacing="4">
                   <TextBlock Text="Signal #"/>
                   <NumericUpDown Minimum="1" Maximum="9999" Value="{Binding SurfaceSignal}" FormatString="0"/>
@@ -81,12 +81,8 @@
                   <TextBox Text="{Binding SurfaceBodyType}"/>
                 </StackPanel>
                 <StackPanel Grid.Column="2" Spacing="4">
-                  <TextBlock Text="Mineral amount"/>
-                  <ComboBox ItemsSource="{Binding SurfaceRatingOptions}" SelectedItem="{Binding SurfaceMineralAmount}"/>
-                </StackPanel>
-                <StackPanel Grid.Column="3" Spacing="4">
-                  <TextBlock Text="Density"/>
-                  <ComboBox ItemsSource="{Binding SurfaceRatingOptions}" SelectedItem="{Binding SurfaceDensity}"/>
+                  <TextBlock Text="Border radius (km)"/>
+                  <NumericUpDown Minimum="0.01" Maximum="1000" Increment="0.01" Value="{Binding SurfaceLocationRadiusKm}" FormatString="0.00"/>
                 </StackPanel>
               </Grid>
               <StackPanel Spacing="4" MaxWidth="260" HorizontalAlignment="Left">

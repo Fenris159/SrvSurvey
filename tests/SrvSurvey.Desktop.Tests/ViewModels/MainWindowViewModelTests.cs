@@ -27,7 +27,9 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public async Task SurfaceMiningSettingsOwnRhinoOverlayAndShareInputBindings()
     {
-        using var viewModel = new MainWindowViewModel(Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
+        using var viewModel = MainWindowViewModelTestBuilder.Create(
+            Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}")
+        );
         viewModel.SelectedNavigation = viewModel.NavigationItems.Single(item => item.Key == "mining");
         Assert.True(viewModel.IsMiningSelected);
         Assert.True(viewModel.IsActivitiesNavigationExpanded);
@@ -66,7 +68,9 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public void NavigationContainsEveryImplementedSurface()
     {
-        var viewModel = new MainWindowViewModel(Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
+        using var viewModel = MainWindowViewModelTestBuilder.Create(
+            Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}")
+        );
 
         Assert.Equal(18, viewModel.NavigationItems.Count);
         Assert.Equal(
@@ -199,6 +203,7 @@ public sealed class MainWindowViewModelTests
                 BodyName = "Wille 2 d",
                 BodyType = "Rocky body",
                 LocationSignal = 4,
+                LocationRadiusMeters = 6_380,
                 PlanetRadiusMeters = 855_573,
                 Center = new SurfaceCoordinate(1, 2),
             };
@@ -246,7 +251,9 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public void NavigationAccordionIsExclusiveAndCanCollapseWithoutChevrons()
     {
-        var viewModel = new MainWindowViewModel(Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
+        using var viewModel = MainWindowViewModelTestBuilder.Create(
+            Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}")
+        );
 
         viewModel.ToggleNavigationGroup("navigation");
 
@@ -270,7 +277,9 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public void ThemeGalleryContainsEveryRavenTheme()
     {
-        var viewModel = new MainWindowViewModel(Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
+        using var viewModel = MainWindowViewModelTestBuilder.Create(
+            Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}")
+        );
 
         Assert.Equal(6, viewModel.ThemeOptions.Count);
         Assert.Contains(viewModel.ThemeOptions, option => option.Definition.Key == "monochrome-dark");
@@ -286,7 +295,9 @@ public sealed class MainWindowViewModelTests
     [Fact]
     public void SettingsLinkResultReportsSuccessAndFailureWithoutChangingData()
     {
-        var viewModel = new MainWindowViewModel(Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
+        using var viewModel = MainWindowViewModelTestBuilder.Create(
+            Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}")
+        );
 
         viewModel.ReportSettingsLinkResult("the guide", true);
         Assert.Equal("Opened the guide in the default browser.", viewModel.SettingsLinkStatusMessage);
@@ -3489,7 +3500,7 @@ public sealed class MainWindowViewModelTests
                 []
             );
             var switcher = new MutableGameWindowSwitcher { AvailableWindowCount = 1 };
-            using var viewModel = MainWindowViewModelTestBuilder.Create(
+            using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
                 builder => builder.WithAppDataPaths(paths).WithGameWindowSwitcher(switcher)
             );
@@ -3570,7 +3581,7 @@ public sealed class MainWindowViewModelTests
                 []
             );
             var publisher = new RecordingEddnPublisher();
-            using var viewModel = MainWindowViewModelTestBuilder.Create(
+            using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
                 builder => builder.WithAppDataPaths(paths).WithEddnPublisher(publisher)
             );
@@ -3615,7 +3626,7 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "cache"),
                 []
             );
-            using var viewModel = MainWindowViewModelTestBuilder.Create(
+            using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
                 builder => builder.WithAppDataPaths(paths)
             );
@@ -3690,7 +3701,7 @@ public sealed class MainWindowViewModelTests
                 {"timestamp":"2026-07-25T12:00:02Z","event":"ShipLocker","Items":[{"Name":"healthmonitor","Count":2}],"Components":[],"Consumables":[],"Data":[]}
                 """
             );
-            using var viewModel = MainWindowViewModelTestBuilder.Create(
+            using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 journals,
                 builder =>
                     builder.WithAppDataPaths(
@@ -3775,7 +3786,7 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "cache"),
                 []
             );
-            using var viewModel = MainWindowViewModelTestBuilder.Create(
+            using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
                 root,
                 builder => builder.WithAppDataPaths(paths)
             );

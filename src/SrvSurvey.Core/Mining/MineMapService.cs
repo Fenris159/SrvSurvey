@@ -10,6 +10,7 @@ namespace SrvSurvey.Core.Mining;
 public enum MineMapRating
 {
     Low,
+    Medium,
     High,
 }
 
@@ -18,6 +19,10 @@ public sealed record MineMapMarker
     public Guid Id { get; init; } = Guid.NewGuid();
 
     public string Material { get; init; } = string.Empty;
+
+    public MineMapRating MineralAmount { get; init; }
+
+    public MineMapRating Density { get; init; }
 
     public SurfaceCoordinate Location { get; init; }
 
@@ -50,9 +55,7 @@ public sealed record MineMapSurvey
 
     public string Name => $"Mining Location Signal {LocationSignal}";
 
-    public MineMapRating MineralAmount { get; init; }
-
-    public MineMapRating Density { get; init; }
+    public double LocationRadiusMeters { get; init; }
 
     public double PlanetRadiusMeters { get; init; }
 
@@ -90,8 +93,19 @@ public sealed record MineMapCommandResult(bool Succeeded, string Message, MineMa
 /// </summary>
 public sealed class MineMapService : IDisposable
 {
-    public const double LocationRadiusMeters = 2_470;
+    private sealed record MarkerPlacement(
+        SurfaceCoordinate Location,
+        string Material,
+        string Description,
+        MineMapRating MineralAmount,
+        MineMapRating Density,
+        bool IsHere
+    );
+
     public const double MarkerDeleteRadiusMeters = 500;
+    public const double DuplicateMarkerRadiusMeters = 100;
+    public const double MarkerMoveRadiusMeters = 200;
+    private const double LocationBoundaryToleranceMeters = 1;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -120,6 +134,25 @@ public sealed class MineMapService : IDisposable
     public IReadOnlyList<MineMapSurvey> Surveys => surveys;
 
     public MineMapSurvey? ActiveSurvey { get; private set; }
+
+    public bool IsFavorite(Guid surveyId) =>
+        bookmarks.Items.FirstOrDefault(bookmark => bookmark.Id == surveyId)?.IsFavorite == true;
+
+    public bool SetFavorite(Guid surveyId, bool isFavorite)
+    {
+        GalacticBookmark? bookmark = bookmarks.Items.FirstOrDefault(candidate => candidate.Id == surveyId);
+        if (bookmark is null)
+        {
+            return false;
+        }
+
+        if (bookmark.IsFavorite != isFavorite)
+        {
+            bookmarks.Save(bookmark with { IsFavorite = isFavorite });
+        }
+
+        return true;
+    }
 
     public void Dispose()
     {
@@ -194,17 +227,7 @@ public sealed class MineMapService : IDisposable
 
     public void UpdateContext(MineMapCommandContext? context)
     {
-        MineMapSurvey? next = null;
-        if (context is not null)
-        {
-            next =
-                ActiveSurvey is { } active && MatchesContext(active, context)
-                    ? surveys.FirstOrDefault(survey => survey.Id == active.Id) ?? active
-                    : surveys
-                        .Where(survey => MatchesContext(survey, context))
-                        .OrderByDescending(survey => survey.UpdatedAt)
-                        .FirstOrDefault();
-        }
+        MineMapSurvey? next = ResolveSurveyAtLocation(context);
         if (ReferenceEquals(ActiveSurvey, next))
         {
             return;
@@ -259,14 +282,32 @@ public sealed class MineMapService : IDisposable
     {
         var parts = Split(command);
         if (
-            parts.Length != 4
-            || !TryHeading(parts[1], out var heading)
-            || !int.TryParse(parts[2], NumberStyles.None, CultureInfo.InvariantCulture, out var signal)
-            || signal <= 0
-            || !TryRatings(parts[3], out var mineralAmount, out var density)
+            parts.Length == 3
+            && parts[0].Equals(".mining", StringComparison.OrdinalIgnoreCase)
+            && parts[1].Equals("center", StringComparison.OrdinalIgnoreCase)
+            && parts[2].Equals("here", StringComparison.OrdinalIgnoreCase)
         )
         {
-            return Failure("Use .mining <heading 0-359> <location number> <high|low>/<high|low>.");
+            return RecenterSurvey(context, cancellationToken);
+        }
+
+        if (
+            parts.Length != 4
+            || !TryHeading(parts[1], out var heading)
+            || !double.TryParse(parts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out double radiusKm)
+            || !double.IsFinite(radiusKm)
+            || radiusKm <= 0
+            || !int.TryParse(parts[3], NumberStyles.None, CultureInfo.InvariantCulture, out int signal)
+            || signal <= 0
+        )
+        {
+            return Failure("Use .mining <heading 0-359> <border radius km> <location number> or .mining center here.");
+        }
+
+        double radiusMeters = radiusKm * 1000;
+        if (!double.IsFinite(radiusMeters) || radiusMeters <= 0)
+        {
+            return Failure("Use .mining <heading 0-359> <border radius km> <location number> or .mining center here.");
         }
 
         if (!HasSurfaceContext(context))
@@ -280,13 +321,13 @@ public sealed class MineMapService : IDisposable
         var existing = surveys.FirstOrDefault(survey =>
             MatchesContext(survey, context) && survey.LocationSignal == signal
         );
-        var center = GetDestination(
+        SurfaceCoordinate center = GetDestination(
             context.PlayerLocation!.Value,
             heading,
-            LocationRadiusMeters,
+            radiusMeters,
             context.PlanetRadiusMeters
         );
-        var survey = (existing ?? new MineMapSurvey { Id = Guid.NewGuid(), CreatedAt = now }) with
+        MineMapSurvey survey = (existing ?? new MineMapSurvey { Id = Guid.NewGuid(), CreatedAt = now }) with
         {
             FrontierId = context.FrontierId,
             CommanderName = context.CommanderName,
@@ -298,8 +339,7 @@ public sealed class MineMapService : IDisposable
             BodyType = context.BodyType,
             ArrivalDistanceLs = context.ArrivalDistanceLs,
             LocationSignal = signal,
-            MineralAmount = mineralAmount,
-            Density = density,
+            LocationRadiusMeters = radiusMeters,
             PlanetRadiusMeters = context.PlanetRadiusMeters,
             Center = center,
             UpdatedAt = now,
@@ -307,10 +347,35 @@ public sealed class MineMapService : IDisposable
         SaveAndReplace(survey, cancellationToken);
         ActiveSurvey = survey;
         Changed?.Invoke(this, EventArgs.Empty);
+        return Success($"{survey.Name} center saved at heading {heading:0}° with a {radiusKm:0.##} km border.", survey);
+    }
+
+    private MineMapCommandResult RecenterSurvey(MineMapCommandContext context, CancellationToken cancellationToken)
+    {
+        if (!HasSurfaceContext(context))
+        {
+            return Failure(
+                "A current body, planet radius, and surface position are required to recenter a mining map."
+            );
+        }
+
+        MineMapSurvey? active = ResolveSurveyForRecenter(context);
+        if (active is null)
+        {
+            return Failure("Enter or select a saved Surface Mining map before using .mining center here.");
+        }
+
+        MineMapSurvey updated = active with
+        {
+            Center = context.PlayerLocation!.Value,
+            UpdatedAt = DateTimeOffset.UtcNow,
+        };
+        SaveAndReplace(updated, cancellationToken);
+        ActiveSurvey = updated;
+        Changed?.Invoke(this, EventArgs.Empty);
         return Success(
-            $"{survey.Name} center saved at heading {heading:0}°. "
-                + $"Mineral amount {mineralAmount}; density {density}.",
-            survey
+            $"{updated.Name} center moved to your current position. Existing markers were preserved.",
+            updated
         );
     }
 
@@ -324,53 +389,39 @@ public sealed class MineMapService : IDisposable
         if (parts.Length < 3 || !parts[0].Equals(".mine", StringComparison.OrdinalIgnoreCase))
         {
             return Failure(
-                "Use .mine <heading> <material> <distance km>, .mine <material> here, or .mine delete here."
+                "Use .mine <heading> <material> <distance km> <low|medium|high>/<low|medium|high>, .mine <material> <low|medium|high>/<low|medium|high> here, .mine move <commodity> here, or .mine delete here."
             );
         }
 
         var active = ResolveActiveSurvey(context);
         if (active is null)
         {
-            return Failure("Create or select a mining location with .mining before adding map markers.");
+            return Failure("Move inside a saved Surface Mining map or create one with .mining before adding markers.");
         }
 
-        if (
-            parts.Length == 3
-            && parts[1].Equals("delete", StringComparison.OrdinalIgnoreCase)
-            && parts[2].Equals("here", StringComparison.OrdinalIgnoreCase)
-        )
+        MineMapCommandResult? managementResult = ApplyMarkerManagementCommand(
+            parts,
+            active,
+            context,
+            cancellationToken
+        );
+        if (managementResult is not null)
         {
-            return DeleteMarkerHere(active, context, cancellationToken);
+            return managementResult;
         }
 
-        SurfaceCoordinate location;
-        string material;
-        if (parts.Length >= 3 && parts[^1].Equals("here", StringComparison.OrdinalIgnoreCase))
+        (MarkerPlacement? placement, MineMapCommandResult? placementFailure) = ParseMarkerPlacement(
+            parts,
+            active,
+            context
+        );
+        if (placementFailure is not null)
         {
-            if (context.PlayerLocation is not { } current)
-            {
-                return Failure("A live surface position is required for .mine <material> here.");
-            }
-
-            material = string.Join(' ', parts[1..^1]).Trim();
-            location = current;
-        }
-        else if (
-            parts.Length >= 4
-            && TryHeading(parts[1], out var heading)
-            && double.TryParse(parts[^1], NumberStyles.Float, CultureInfo.InvariantCulture, out var distanceKm)
-            && double.IsFinite(distanceKm)
-            && distanceKm >= 0
-        )
-        {
-            material = string.Join(' ', parts[2..^1]).Trim();
-            location = GetDestination(active.Center, heading, distanceKm * 1000, active.PlanetRadiusMeters);
-        }
-        else
-        {
-            return Failure("Use .mine <heading 0-359> <material> <distance km> or .mine <material> here.");
+            return placementFailure;
         }
 
+        MarkerPlacement markerPlacement = placement!;
+        string material = markerPlacement.Material;
         if (material.Length == 0)
         {
             return Failure("Enter a mineral or metal name for the map marker.");
@@ -384,20 +435,146 @@ public sealed class MineMapService : IDisposable
 
         material = commodity.Name;
 
+        if (!markerPlacement.IsHere)
+        {
+            var duplicate = active
+                .Markers.Where(marker => string.Equals(marker.Material, material, StringComparison.OrdinalIgnoreCase))
+                .Select(marker => new
+                {
+                    Marker = marker,
+                    Distance = SurfaceNavigation.GetDistance(
+                        markerPlacement.Location,
+                        marker.Location,
+                        active.PlanetRadiusMeters
+                    ),
+                })
+                .Where(candidate => candidate.Distance <= DuplicateMarkerRadiusMeters)
+                .OrderBy(candidate => candidate.Distance)
+                .FirstOrDefault();
+            if (duplicate is not null)
+            {
+                return Failure(
+                    $"A {duplicate.Marker.Material} marker is already {duplicate.Distance:0} m from that position. Bearing-and-distance placements must be more than {DuplicateMarkerRadiusMeters:0} m apart; use the 'here' command to deliberately record an overlapping deposit."
+                );
+            }
+        }
+
         var marker = new MineMapMarker
         {
             Material = material,
-            Location = location,
+            MineralAmount = markerPlacement.MineralAmount,
+            Density = markerPlacement.Density,
+            Location = markerPlacement.Location,
             CreatedAt = DateTimeOffset.UtcNow,
         };
         var updated = active with { Markers = [.. active.Markers, marker], UpdatedAt = DateTimeOffset.UtcNow };
         SaveAndReplace(updated, cancellationToken);
         ActiveSurvey = updated;
         Changed?.Invoke(this, EventArgs.Empty);
-        var distance = SurfaceNavigation.GetDistance(updated.Center, location, updated.PlanetRadiusMeters);
-        var bearing = SurfaceNavigation.GetBearing(updated.Center, location);
-        return Success($"Added {material} to {updated.Name} at {bearing:0}°, {distance / 1000:0.00} km.", updated);
+        return Success(
+            $"Added {material} ({markerPlacement.MineralAmount} amount, {markerPlacement.Density} density) to {updated.Name} {markerPlacement.Description}.",
+            updated
+        );
     }
+
+    private MineMapCommandResult? ApplyMarkerManagementCommand(
+        string[] parts,
+        MineMapSurvey active,
+        MineMapCommandContext context,
+        CancellationToken cancellationToken
+    )
+    {
+        if (
+            parts.Length == 3
+            && parts[1].Equals("delete", StringComparison.OrdinalIgnoreCase)
+            && parts[2].Equals("here", StringComparison.OrdinalIgnoreCase)
+        )
+        {
+            return DeleteMarkerHere(active, context, cancellationToken);
+        }
+
+        if (!parts[1].Equals("move", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        return parts.Length < 4 || !parts[^1].Equals("here", StringComparison.OrdinalIgnoreCase)
+            ? Failure("Use .mine move <commodity> here.")
+            : MoveMarkerHere(active, string.Join(' ', parts[2..^1]), context, cancellationToken);
+    }
+
+    private static (MarkerPlacement? Placement, MineMapCommandResult? Failure) ParseMarkerPlacement(
+        string[] parts,
+        MineMapSurvey active,
+        MineMapCommandContext context
+    )
+    {
+        if (
+            parts.Length >= 4
+            && parts[^1].Equals("here", StringComparison.OrdinalIgnoreCase)
+            && TryRatings(parts[^2], out MineMapRating mineralAmount, out MineMapRating density)
+        )
+        {
+            return context.PlayerLocation is not { } current
+                ? (
+                    null,
+                    Failure(
+                        "A live surface position is required for .mine <material> <low|medium|high>/<low|medium|high> here."
+                    )
+                )
+                : (
+                    new MarkerPlacement(
+                        current,
+                        string.Join(' ', parts[1..^2]).Trim(),
+                        "at your current position",
+                        mineralAmount,
+                        density,
+                        true
+                    ),
+                    null
+                );
+        }
+
+        if (
+            parts.Length < 5
+            || !TryHeading(parts[1], out double heading)
+            || !double.TryParse(parts[^2], NumberStyles.Float, CultureInfo.InvariantCulture, out double distanceKm)
+            || !double.IsFinite(distanceKm)
+            || distanceKm < 0
+            || !TryRatings(parts[^1], out mineralAmount, out density)
+        )
+        {
+            return (null, InvalidMarkerPlacement());
+        }
+
+        if (context.PlayerLocation is not { } origin)
+        {
+            return (null, Failure("A live surface position is required for a bearing-and-distance marker."));
+        }
+
+        double distanceMeters = distanceKm * 1000;
+        if (!double.IsFinite(distanceMeters) || distanceMeters < 0)
+        {
+            return (null, InvalidMarkerPlacement());
+        }
+
+        return (
+            new MarkerPlacement(
+                GetDestination(origin, heading, distanceMeters, active.PlanetRadiusMeters),
+                string.Join(' ', parts[2..^2]).Trim(),
+                $"at {heading:0}°, {distanceKm:0.00} km from your position",
+                mineralAmount,
+                density,
+                false
+            ),
+            null
+        );
+    }
+
+    private static MineMapCommandResult InvalidMarkerPlacement() =>
+        Failure(
+            "Use .mine <heading 0-359> <material> <distance km> <low|medium|high>/<low|medium|high> or .mine <material> <low|medium|high>/<low|medium|high> here."
+        );
 
     private MineMapCommandResult DeleteMarkerHere(
         MineMapSurvey active,
@@ -434,18 +611,119 @@ public sealed class MineMapService : IDisposable
         return Success($"Removed the nearest {nearest.Marker.Material} marker ({nearest.Distance:0} m away).", updated);
     }
 
+    private MineMapCommandResult MoveMarkerHere(
+        MineMapSurvey active,
+        string material,
+        MineMapCommandContext context,
+        CancellationToken cancellationToken
+    )
+    {
+        if (context.PlayerLocation is not { } current)
+        {
+            return Failure("A live surface position is required for .mine move <commodity> here.");
+        }
+
+        material = material.Trim();
+        if (material.Length == 0)
+        {
+            return Failure("Use .mine move <commodity> here.");
+        }
+
+        if (!SurfaceMiningCommodityCatalog.TryResolve(material, out SurfaceMiningCommodity? commodity))
+        {
+            return Failure(
+                $"'{material}' is not a supported surface-mining commodity. See Surface Mining > Hotspot List for accepted names."
+            );
+        }
+
+        var nearest = active
+            .Markers.Where(marker => string.Equals(marker.Material, commodity.Name, StringComparison.OrdinalIgnoreCase))
+            .Select(marker => new
+            {
+                Marker = marker,
+                Distance = SurfaceNavigation.GetDistance(current, marker.Location, active.PlanetRadiusMeters),
+            })
+            .OrderBy(candidate => candidate.Distance)
+            .FirstOrDefault();
+        if (nearest is null || nearest.Distance > MarkerMoveRadiusMeters)
+        {
+            return Failure(
+                $"No {commodity.Name} marker is within {MarkerMoveRadiusMeters:0} m of your current position."
+            );
+        }
+
+        MineMapMarker movedMarker = nearest.Marker with { Location = current };
+        MineMapSurvey updated = active with
+        {
+            Markers = active.Markers.Select(marker => marker.Id == movedMarker.Id ? movedMarker : marker).ToArray(),
+            UpdatedAt = DateTimeOffset.UtcNow,
+        };
+        SaveAndReplace(updated, cancellationToken);
+        ActiveSurvey = updated;
+        Changed?.Invoke(this, EventArgs.Empty);
+        return Success(
+            $"Moved the nearest {movedMarker.Material} marker {nearest.Distance:0} m to your current position.",
+            updated
+        );
+    }
+
     private MineMapSurvey? ResolveActiveSurvey(MineMapCommandContext context)
+    {
+        ActiveSurvey = ResolveSurveyAtLocation(context);
+        return ActiveSurvey;
+    }
+
+    private MineMapSurvey? ResolveSurveyForRecenter(MineMapCommandContext context)
     {
         if (ActiveSurvey is { } current && MatchesContext(current, context))
         {
-            return current;
+            return surveys.FirstOrDefault(survey => survey.Id == current.Id) ?? current;
         }
 
-        ActiveSurvey = surveys
-            .Where(survey => MatchesContext(survey, context))
-            .OrderByDescending(survey => survey.UpdatedAt)
+        MineMapSurvey? atLocation = ResolveSurveyAtLocation(context);
+        if (atLocation is not null)
+        {
+            return atLocation;
+        }
+
+        MineMapSurvey[] matching = surveys.Where(survey => MatchesContext(survey, context)).Take(2).ToArray();
+        return matching.Length == 1 ? matching[0] : null;
+    }
+
+    private MineMapSurvey? ResolveSurveyAtLocation(MineMapCommandContext? context)
+    {
+        if (context?.PlayerLocation is not { } playerLocation)
+        {
+            return null;
+        }
+
+        var candidates = surveys
+            .Where(survey =>
+                MatchesContext(survey, context) && survey.PlanetRadiusMeters > 0 && survey.LocationRadiusMeters > 0
+            )
+            .Select(survey => new
+            {
+                Survey = survey,
+                Distance = SurfaceNavigation.GetDistance(survey.Center, playerLocation, survey.PlanetRadiusMeters),
+            })
+            .Where(candidate =>
+                candidate.Distance <= candidate.Survey.LocationRadiusMeters + LocationBoundaryToleranceMeters
+            )
+            .ToArray();
+        if (ActiveSurvey is { } active)
+        {
+            var retained = candidates.FirstOrDefault(candidate => candidate.Survey.Id == active.Id);
+            if (retained is not null)
+            {
+                return retained.Survey;
+            }
+        }
+
+        return candidates
+            .OrderBy(candidate => candidate.Distance / candidate.Survey.LocationRadiusMeters)
+            .ThenByDescending(candidate => candidate.Survey.UpdatedAt)
+            .Select(candidate => candidate.Survey)
             .FirstOrDefault();
-        return ActiveSurvey;
     }
 
     private void SaveAndReplace(MineMapSurvey survey, CancellationToken cancellationToken)
@@ -484,6 +762,7 @@ public sealed class MineMapService : IDisposable
                 Reserve = existing?.Reserve ?? string.Empty,
                 Overlaps = existing?.Overlaps ?? string.Empty,
                 ResourceExtractionSites = existing?.ResourceExtractionSites ?? string.Empty,
+                IsFavorite = existing?.IsFavorite ?? false,
                 SurfaceMiningMap = survey with { Notes = existing?.Notes ?? survey.Notes },
                 Updated = survey.UpdatedAt,
             }
@@ -657,6 +936,11 @@ public sealed class MineMapService : IDisposable
         if (value.Equals("low", StringComparison.OrdinalIgnoreCase))
         {
             rating = MineMapRating.Low;
+            return true;
+        }
+        if (value.Equals("medium", StringComparison.OrdinalIgnoreCase))
+        {
+            rating = MineMapRating.Medium;
             return true;
         }
         if (value.Equals("high", StringComparison.OrdinalIgnoreCase))

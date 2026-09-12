@@ -34,9 +34,11 @@
       <StackPanel Spacing="12">
         <TextBlock Classes="card-title" Text="Surface mining overview map" />
         <TextBlock Classes="muted" TextWrapping="Wrap"
-                   Text="The map follows the active saved mining location and shows its fixed 2.47 km border, mapped deposits, and your live surface position. Use the panel control below to assign its visibility hotkey." />
+                   Text="The map follows the active saved mining location and shows its measured border, mapped deposits, and your live surface position. Use the panel control below to assign its visibility hotkey." />
         <CheckBox IsChecked="{Binding MineMap.OnlyShowWhileOnGround, Mode=TwoWay}"
                   Content="Only show while on the ground" />
+        <CheckBox IsChecked="{Binding MineMap.ShowMarkerLabelsInOverviewMap, Mode=TwoWay}"
+                  Content="Show Marker Labels in Overview Map" />
         <TextBlock Classes="muted" TextWrapping="Wrap"
                    Text="Overlay Exceptions for Surface Mining are limited to medium and large ships, Rhino, and on foot. Uncheck every ship there to keep the map out of airborne gameplay." />
         <TextBlock Foreground="{DynamicResource RavenWarningBrush}"

@@ -507,6 +507,59 @@ public sealed class HostedOverlayWindowTests
     }
 
     [AvaloniaFact]
+    public void VisibleNotificationIsDeferredUntilTheWindowCanOwnAChild()
+    {
+        var timer = new ManualHostedOverlayTimer();
+        bool hideDuringFirstPreparation = true;
+        var platform = new RecordingOverlayPlatform
+        {
+            PrepareAction = window =>
+            {
+                if (hideDuringFirstPreparation)
+                {
+                    hideDuringFirstPreparation = false;
+                    window.Hide();
+                }
+            },
+        };
+        var diagnostics = new List<OverlayHostDiagnostic>();
+        using var session = OverlayPresentationSession.CreateForAdapters(
+            new OverlayPresentationDecision(OverlayPresentationMode.MultipleWindows, "Test session"),
+            new OverlayPresentationSessionDependencies(
+                () => platform,
+                () => new RecordingGameWindowTracker(AvailableGameWindow),
+                _ => timer,
+                LegacyOverlayLayout.Empty,
+                diagnostics.Add
+            )
+        );
+        using HostedOverlayWindow hosted = session.HostPassiveWindow(CreateDefinition());
+        Window? child = null;
+        hosted.VisibilityChanged += (_, _) =>
+        {
+            if (hosted.IsVisible)
+            {
+                child = new Window { Width = 64, Height = 64 };
+                child.Show(hosted.CurrentWindow!);
+            }
+        };
+
+        hosted.Reconcile(wantsWindow: true);
+
+        Assert.Equal(OverlayHostHealth.Healthy, hosted.Health);
+        Assert.False(hosted.IsVisible);
+        Assert.Null(child);
+        Assert.Empty(diagnostics);
+
+        hosted.CurrentWindow!.Show();
+        timer.Pulse();
+
+        Assert.True(hosted.IsVisible);
+        Assert.True(child?.IsVisible);
+        child?.Close();
+    }
+
+    [AvaloniaFact]
     public void PassivePreparationFailureLatchesWithoutPublishingVisibility()
     {
         var platform = new RecordingOverlayPlatform
@@ -776,8 +829,11 @@ public sealed class HostedOverlayWindowTests
 
         public Exception? DisposeException { get; init; }
 
+        public Action<Window>? PrepareAction { get; init; }
+
         public OverlayPreparationResult PreparePassiveWindow(Window window)
         {
+            PrepareAction?.Invoke(window);
             PreparedWindows.Add(window);
             return PreparationResult;
         }

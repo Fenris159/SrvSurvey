@@ -87,6 +87,7 @@ public sealed class BookmarksViewModelTests
                     BodyName = "LTT 4428 E 5 a",
                     BodyType = "Rocky body",
                     LocationSignal = 4,
+                    LocationRadiusMeters = 6_380,
                     PlanetRadiusMeters = 855_573,
                 },
             };

@@ -1,4 +1,4 @@
-# SrvSurvey-XP 2.1.3.0-rc.46
+# SrvSurvey-XP 2.1.3.0-rc.46.5
 
 - Replaces the Mining workspace placeholder with session accounting, prospecting
   yields, core and raw-material tracking, cargo, mining missions, historical
@@ -15,11 +15,28 @@
   import, offline HTML reports with print/PDF output, and ZIP backups containing
   shared bookmarks and screenshot attachments. Guides documents the new tools.
 
-RC46 adds the Surface Mining mapping workflow, shared surface-map bookmarks,
-reference overlays and desktop-wide scroll improvements. It retains the RC45.7
-session activation fix, the RC45.6 notification and prospector-report fixes,
-the RC45.5 Linux release and Firegroups fixes, the RC45 changes, and the
-combined RC43, RC44, and RC44.5 features summarized below.
+RC46.5 completes the Surface Mining mapping workflow with variable site borders,
+deposit-specific ratings, automatic map selection, bookmark favorites and more
+precise map and overlay tools. It retains the full RC46 feature set and the prior
+release-candidate changes summarized below.
+
+## New in RC46.5
+
+- Updates `.mining` to record each site's measured border radius and moves mineral
+  amount and density to each `.mine` deposit. Low, Medium and High are accepted
+  for both deposit values, and map rings extend in 1 km steps far enough to
+  enclose the saved border.
+- Adds center correction, marker movement, duplicate protection and deposit
+  placement from the player's live position anywhere inside the selected map.
+  Saved maps now load automatically on entry and unload after leaving the site.
+- Adds expandable deposit details, favorites and a favorites-only filter to
+  Surface Maps. Shared bookmark export and import preserve the complete Surface
+  Mining map, including its center, radius, markers, ratings, notes and favorite.
+- Adds amount and density marker filters, a draggable 4.5 km planning circle,
+  optional marker labels in the Overview Map and a compact alignment helper sized
+  consistently across common game resolutions.
+- Refreshes the Surface Mining workflow guide and its in-app examples for the
+  revised commands and HUD procedure.
 
 ## New in RC46
 
@@ -297,11 +314,11 @@ The candidate also retains the preceding Guardian, controller, and sharing work:
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.46`
-- Tag: `xp-v2.1.3.0-rc.46`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.46-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.46-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.46-x86_64.AppImage`
+- Version: `2.1.3.0-rc.46.5`
+- Tag: `xp-v2.1.3.0-rc.46.5`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.46.5-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.46.5-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.46.5-x86_64.AppImage`
 
 Windows and Linux packages are self-contained. Linux packaging tools and the
 AppImage runtime use versioned, checksum-verified downloads. AppImages are updated
