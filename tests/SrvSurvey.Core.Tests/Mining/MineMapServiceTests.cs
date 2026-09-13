@@ -241,6 +241,117 @@ public sealed class MineMapServiceTests
     }
 
     [Fact]
+    public async Task SplatTraceClosesAtItsStartAndCreatesSeparatedRigSuggestions()
+    {
+        using var directory = new TemporaryDirectory();
+        MineMapCommandContext border = Context(new SurfaceCoordinate(1, 2));
+        using var service = new MineMapService(directory.Path);
+        Assert.True((await service.ExecuteAsync(".mining 180 3.25 7", border)).Succeeded);
+        SurfaceCoordinate deposit = service.ActiveSurvey!.Center;
+        Assert.True(
+            (
+                await service.ExecuteAsync(".mine ruby high/medium here", border with { PlayerLocation = deposit })
+            ).Succeeded
+        );
+        const double splatRadius = 100;
+        SurfaceCoordinate start = MineMapService.GetDestination(deposit, 0, splatRadius, border.PlanetRadiusMeters);
+        string? notification = null;
+        service.NotificationRequested += message => notification = message;
+
+        MineMapCommandResult started = await service.ExecuteAsync(
+            ".MiNe SpLaT",
+            border with
+            {
+                PlayerLocation = start,
+            }
+        );
+
+        Assert.True(started.Succeeded);
+        Assert.True(Assert.Single(service.ActiveSurvey!.Markers).IsSplatTraceActive);
+        for (int bearing = 30; bearing <= 360; bearing += 30)
+        {
+            SurfaceCoordinate point = MineMapService.GetDestination(
+                deposit,
+                bearing % 360,
+                splatRadius,
+                border.PlanetRadiusMeters
+            );
+            service.UpdateContext(border with { PlayerLocation = point });
+        }
+
+        MineMapMarker traced = Assert.Single(service.ActiveSurvey!.Markers);
+        Assert.False(traced.IsSplatTraceActive);
+        Assert.True(traced.SplatBoundary.Count >= 8);
+        Assert.NotEmpty(traced.SuggestedRigLocations);
+        Assert.Contains("boundary complete", notification, StringComparison.OrdinalIgnoreCase);
+        for (int first = 0; first < traced.SuggestedRigLocations.Count; first++)
+        {
+            for (int second = first + 1; second < traced.SuggestedRigLocations.Count; second++)
+            {
+                Assert.InRange(
+                    SurfaceNavigation.GetDistance(
+                        traced.SuggestedRigLocations[first],
+                        traced.SuggestedRigLocations[second],
+                        border.PlanetRadiusMeters
+                    ),
+                    SurfaceMiningGeometry.ExclusionDistanceMeters - 0.01,
+                    double.MaxValue
+                );
+            }
+        }
+
+        using var reloaded = new MineMapService(directory.Path);
+        MineMapMarker persisted = Assert.Single(Assert.Single(reloaded.Surveys).Markers);
+        Assert.Equal(traced.SplatBoundary, persisted.SplatBoundary);
+        Assert.Equal(traced.SuggestedRigLocations, persisted.SuggestedRigLocations);
+    }
+
+    [Fact]
+    public async Task SplatTraceCanBeCancelledWithoutChangingTheDepositOrRigCount()
+    {
+        using var directory = new TemporaryDirectory();
+        MineMapCommandContext context = Context(new SurfaceCoordinate(1, 2));
+        using var service = new MineMapService(directory.Path);
+        Assert.True((await service.ExecuteAsync(".mining 180 3.25 7", context)).Succeeded);
+        SurfaceCoordinate deposit = service.ActiveSurvey!.Center;
+        context = context with { PlayerLocation = deposit };
+        Assert.True((await service.ExecuteAsync(".mine ruby high/medium here", context)).Succeeded);
+        Assert.True((await service.ExecuteAsync(".mine rigs 3", context)).Succeeded);
+        Assert.True((await service.ExecuteAsync(".mine splat", context)).Succeeded);
+
+        MineMapCommandResult cancelled = await service.ExecuteAsync(".mine splat cancel", context);
+
+        Assert.True(cancelled.Succeeded);
+        MineMapMarker marker = Assert.Single(service.ActiveSurvey!.Markers);
+        Assert.Equal(deposit, marker.Location);
+        Assert.Equal(3, marker.RigCount);
+        Assert.False(marker.IsSplatTraceActive);
+        Assert.Empty(marker.SplatBoundary);
+        Assert.Empty(marker.SuggestedRigLocations);
+    }
+
+    [Fact]
+    public void SplatPlannerRejectsAnUnreasonablyLargeBoundary()
+    {
+        const double planetRadiusMeters = 1_000_000;
+        var origin = new SurfaceCoordinate(0, 0);
+        SurfaceCoordinate[] boundary =
+        [
+            origin,
+            MineMapService.GetDestination(origin, 90, 30_000, planetRadiusMeters),
+            MineMapService.GetDestination(origin, 180, 30_000, planetRadiusMeters),
+        ];
+
+        IReadOnlyList<SurfaceCoordinate> suggestions = SurfaceMiningSplatPlanner.CreateRigLayout(
+            boundary,
+            planetRadiusMeters,
+            SurfaceMiningGeometry.ExclusionDistanceMeters
+        );
+
+        Assert.Empty(suggestions);
+    }
+
+    [Fact]
     public async Task MineCommandsAddRelativeAndHereMarkersAndDeleteNearestHere()
     {
         using var directory = new TemporaryDirectory();

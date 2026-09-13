@@ -78,6 +78,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
             .HuntReferences.Select(reference => new SurfaceMiningHuntRowViewModel(reference))
             .ToArray();
         service.Changed += OnServiceChanged;
+        service.NotificationRequested += OnServiceNotificationRequested;
         ZoomInCommand = new WorkspaceCommand(() => ViewportZoom = Math.Min(15, ViewportZoom + 0.5));
         ZoomOutCommand = new WorkspaceCommand(() => ViewportZoom = Math.Max(1, ViewportZoom - 0.5));
         ResetZoomCommand = new WorkspaceCommand(() => ViewportZoom = DefaultViewportZoom);
@@ -281,6 +282,8 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     }
 
     public MineMapSurvey? ActiveSurvey => editorSurvey ?? service.ActiveSurvey;
+
+    public MineMapSurvey? ActiveLiveSurvey => service.ActiveSurvey;
 
     public bool HasActiveSurvey => ActiveSurvey is not null;
 
@@ -572,7 +575,14 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     public void Dispose()
     {
         service.Changed -= OnServiceChanged;
+        service.NotificationRequested -= OnServiceNotificationRequested;
         service.Dispose();
+    }
+
+    private void OnServiceNotificationRequested(string message)
+    {
+        StatusText = message;
+        notify(message);
     }
 
     public void DismissSurveyGuide()
@@ -657,6 +667,17 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         };
         viewModel.RaiseLiveState();
         return viewModel;
+    }
+
+    internal void InstallSurveyGuideEditorPreview()
+    {
+        if (context is null)
+        {
+            return;
+        }
+
+        _ = service.ExecuteAsync(".mining survey", context).GetAwaiter().GetResult();
+        RaiseLiveState();
     }
 
     private void OnServiceChanged(object? sender, EventArgs eventArgs)
@@ -820,6 +841,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     {
         ClearPlanningCircleForInactiveSurvey();
         Changed(nameof(ActiveSurvey));
+        Changed(nameof(ActiveLiveSurvey));
         Changed(nameof(HasActiveSurvey));
         Changed(nameof(LiveMapTitle));
         Changed(nameof(LiveMapDescription));

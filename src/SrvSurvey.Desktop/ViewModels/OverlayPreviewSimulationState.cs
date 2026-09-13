@@ -187,6 +187,12 @@ internal static class OverlayPreviewSimulationProjector
                 Row("gold", "090 degrees | 2.10 km", glyph: "●", glyphTone: OverlayPreviewGlyphTone.Gold),
                 Row("thorveitite", "225 degrees | 3.40 km", glyph: "●", glyphTone: OverlayPreviewGlyphTone.Information)
             ),
+            "PlotSurfaceMiningSurvey" => Content(
+                "Surface mining survey",
+                "Waypoint 3 of 12",
+                "Drive to the next survey waypoint",
+                Row("Target", "084 degrees | 1.80 km")
+            ),
             "PlotMiningReference" => Content(
                 "Mining Ref",
                 "Selected surface commodities",

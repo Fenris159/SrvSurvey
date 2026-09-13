@@ -82,8 +82,9 @@ public sealed class MainWindowViewModelTests
         Assert.DoesNotContain(panels, item => item.PlotterName == "PlotMiningWarning");
         Assert.DoesNotContain(panels, item => item.PlotterName == "PlotSurfaceMining");
         var surfacePanels = viewModel.OverlayPanelVisibility.ForCategory(OverlaySettingsCategory.MineMap);
-        Assert.Equal(3, surfacePanels.Count);
+        Assert.Equal(4, surfacePanels.Count);
         Assert.Contains(surfacePanels, item => item.PlotterName == "PlotMiningWarning");
+        Assert.Contains(surfacePanels, item => item.PlotterName == "PlotSurfaceMiningSurvey");
         var panel = Assert.Single(surfacePanels, item => item.PlotterName == "PlotSurfaceMining");
         Assert.Equal("PlotSurfaceMining", panel.PlotterName);
         Assert.Same(

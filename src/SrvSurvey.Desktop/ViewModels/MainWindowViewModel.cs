@@ -2951,6 +2951,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             cancellationToken: CancellationToken.None
         );
         var isSessionActive = !journalState.IsShutdown && !journalState.IsAtMainMenu;
+        await MineMap.ApplyUpdateAsync(
+            update.JournalEvents,
+            CreateMineMapCommandContext(),
+            latestStatus,
+            allowCommands: !skipPersistedBootstrapEvents
+        );
         await Mining.ApplyUpdateAsync(
             surfaceSession,
             SystemSurvey.Snapshot,
@@ -2958,13 +2964,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             isSessionActive ? journalState.ActiveSrvType : null,
             SurfaceSurvey.RadarMarkers,
             latestCargo,
-            isSessionActive ? journalState.ParkedSrvType : null
-        );
-        await MineMap.ApplyUpdateAsync(
-            update.JournalEvents,
-            CreateMineMapCommandContext(),
-            latestStatus,
-            allowCommands: !skipPersistedBootstrapEvents
+            isSessionActive ? journalState.ParkedSrvType : null,
+            MineMap.ActiveLiveSurvey
         );
         if (!skipPersistedBootstrapEvents && isSessionActive)
         {

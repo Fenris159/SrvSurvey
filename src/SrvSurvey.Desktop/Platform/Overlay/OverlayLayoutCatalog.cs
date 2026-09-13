@@ -175,6 +175,15 @@ public static class OverlayLayoutCatalog
             )
         ),
         Define(
+            "PlotSurfaceMiningSurvey",
+            "Surface mining survey guide",
+            "MineMap.ShouldShowSurveyGuideOverlay",
+            OverlayLayoutCategory.Mining,
+            OverlaySettingsCategory.MineMap,
+            new(520, 108),
+            new(LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Top, 8)
+        ),
+        Define(
             "PlotSurfaceMining",
             "Surface mining",
             "Mining.ShouldShow",

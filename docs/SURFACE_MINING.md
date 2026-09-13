@@ -96,6 +96,7 @@ within 0.5 km:
 ```text
 .mine ruby medium/low here
 .mine move haematite here
+.mine splat
 .mine delete here
 .alignment
 ```
@@ -113,6 +114,15 @@ To correct an existing marker, stand at its true position and send `.mine move
 <commodity> here`. SrvSurvey moves only the nearest marker matching that commodity,
 and only when it is within 200 m. Success and failure are reported through Status
 notifications.
+
+To plan rig placement for a mapped deposit, drive to its edge and send `.mine
+splat`. SrvSurvey selects the nearest deposit within 0.5 km and records the
+Rhino's path as you drive around the boundary. Returning within 12 m of the
+starting point after at least 50 m of travel closes the trace. The compact
+Surface Mining radar shows the trace as a dotted line and square suggested rig
+positions. Suggestions use the 78 m rig exclusion distance and remain separate
+from actual tracked rigs. Send `.mine splat cancel` to discard an unfinished
+trace.
 
 The **Survey Map** and Overview Map overlay share the selected bookmark, live
 player position, 1 km rings extending through the whole-kilometer ring that

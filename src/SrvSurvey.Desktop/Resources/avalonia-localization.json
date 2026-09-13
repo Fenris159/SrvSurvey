@@ -113,6 +113,10 @@
       "translation": "015 Grad | 1,24 km"
     },
     {
+      "source": "084 degrees | 1.80 km",
+      "translation": "084 Grad | 1,80 km"
+    },
+    {
       "source": "090 degrees | 2.10 km",
       "translation": "090 Grad | 2,10 km"
     },
@@ -7345,6 +7349,10 @@
       "translation": "Fahren Sie zum nächsten Scanpunkt"
     },
     {
+      "source": "Drive to the next survey waypoint",
+      "translation": "Fahren Sie zum nächsten Vermessungswegpunkt"
+    },
+    {
       "source": "Drive to the orange border and face the location center.",
       "translation": "Fahren Sie zum orangefarbenen Rand und blicken Sie auf das Standortzentrum."
     },
@@ -13369,6 +13377,10 @@
       "translation": "MineMap.ShouldShowOverlay"
     },
     {
+      "source": "MineMap.ShouldShowSurveyGuideOverlay",
+      "translation": "MineMap.ShouldShowSurveyGuideOverlay"
+    },
+    {
       "source": "Mineral",
       "translation": "Mineral"
     },
@@ -16475,6 +16487,10 @@
     {
       "source": "PlotSurfaceMining",
       "translation": "PlotSurfaceMining"
+    },
+    {
+      "source": "PlotSurfaceMiningSurvey",
+      "translation": "PlotSurfaceMiningSurvey"
     },
     {
       "source": "PlotSysStatus",
@@ -22913,6 +22929,14 @@
       "translation": "Übersichtskarte des Tagebaus"
     },
     {
+      "source": "Surface mining survey",
+      "translation": "Untersuchung des Tagebaus"
+    },
+    {
+      "source": "Surface mining survey guide",
+      "translation": "Leitfaden zur Vermessung des Tagebaus"
+    },
+    {
       "source": "Surface navigation",
       "translation": "Oberflächennavigation"
     },
@@ -23451,6 +23475,10 @@
     {
       "source": "Tail",
       "translation": "Schwanz"
+    },
+    {
+      "source": "Target",
+      "translation": "Ziel"
     },
     {
       "source": "Target A01 and scan with the required artifacts aboard.",
@@ -27287,6 +27315,10 @@
     {
       "source": "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
       "translation": "Wayland-Overlay-Positionierung, Transparenz, Click-through und globale Eingabe erfordern Compositor-Unterstützung und sind nicht aktiviert."
+    },
+    {
+      "source": "Waypoint 3 of 12",
+      "translation": "Wegpunkt 3 von 12"
     },
     {
       "source": "Waypoint A",
@@ -31345,6 +31377,10 @@
     {
       "source": "015 degrees | 1.24 km",
       "translation": "015 grados | 1,24 kilómetros"
+    },
+    {
+      "source": "084 degrees | 1.80 km",
+      "translation": "084 grados | 1,80 kilometros"
     },
     {
       "source": "090 degrees | 2.10 km",
@@ -38579,6 +38615,10 @@
       "translation": "Conduzca hasta el siguiente punto de escaneo"
     },
     {
+      "source": "Drive to the next survey waypoint",
+      "translation": "Conduzca hasta el siguiente punto de ruta de la encuesta"
+    },
+    {
       "source": "Drive to the orange border and face the location center.",
       "translation": "Conduzca hasta el borde naranja y mire hacia el centro de ubicación."
     },
@@ -44603,6 +44643,10 @@
       "translation": "MineMap.ShouldShowOverlay"
     },
     {
+      "source": "MineMap.ShouldShowSurveyGuideOverlay",
+      "translation": "MineMap.ShouldShowSurveyGuideOverlay"
+    },
+    {
       "source": "Mineral",
       "translation": "Mineral"
     },
@@ -47709,6 +47753,10 @@
     {
       "source": "PlotSurfaceMining",
       "translation": "TramaSuperficieMinería"
+    },
+    {
+      "source": "PlotSurfaceMiningSurvey",
+      "translation": "ParcelaSuperficieMineríaEncuesta"
     },
     {
       "source": "PlotSysStatus",
@@ -54147,6 +54195,14 @@
       "translation": "Mapa general de minería a cielo abierto"
     },
     {
+      "source": "Surface mining survey",
+      "translation": "Estudio de minería a cielo abierto"
+    },
+    {
+      "source": "Surface mining survey guide",
+      "translation": "guía de estudio de minería a cielo abierto"
+    },
+    {
       "source": "Surface navigation",
       "translation": "Navegación de superficie"
     },
@@ -54685,6 +54741,10 @@
     {
       "source": "Tail",
       "translation": "cola"
+    },
+    {
+      "source": "Target",
+      "translation": "Objetivo"
     },
     {
       "source": "Target A01 and scan with the required artifacts aboard.",
@@ -58521,6 +58581,10 @@
     {
       "source": "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
       "translation": "El posicionamiento de superposición de Wayland, la transparencia, los clics y la entrada global requieren compatibilidad con el compositor y no están habilitados."
+    },
+    {
+      "source": "Waypoint 3 of 12",
+      "translation": "Punto de referencia 3 de 12"
     },
     {
       "source": "Waypoint A",
@@ -62579,6 +62643,10 @@
     {
       "source": "015 degrees | 1.24 km",
       "translation": "015 degrés | 1,24km"
+    },
+    {
+      "source": "084 degrees | 1.80 km",
+      "translation": "084 degrés | 1,80km"
     },
     {
       "source": "090 degrees | 2.10 km",
@@ -69813,6 +69881,10 @@
       "translation": "Conduisez jusqu'au prochain point de numérisation"
     },
     {
+      "source": "Drive to the next survey waypoint",
+      "translation": "Conduisez jusqu'au prochain point de cheminement de l'enquête"
+    },
+    {
       "source": "Drive to the orange border and face the location center.",
       "translation": "Conduisez jusqu'à la bordure orange et faites face au centre de localisation."
     },
@@ -75837,6 +75909,10 @@
       "translation": "MineMap.ShouldShowOverlay"
     },
     {
+      "source": "MineMap.ShouldShowSurveyGuideOverlay",
+      "translation": "MineMap.ShouldShowSurveyGuideOverlay"
+    },
+    {
       "source": "Mineral",
       "translation": "Minéral"
     },
@@ -78943,6 +79019,10 @@
     {
       "source": "PlotSurfaceMining",
       "translation": "PlotSurfaceMining"
+    },
+    {
+      "source": "PlotSurfaceMiningSurvey",
+      "translation": "PlotSurfaceMiningEnquête"
     },
     {
       "source": "PlotSysStatus",
@@ -85381,6 +85461,14 @@
       "translation": "Carte générale de l’exploitation minière à ciel ouvert"
     },
     {
+      "source": "Surface mining survey",
+      "translation": "Enquête sur les mines à ciel ouvert"
+    },
+    {
+      "source": "Surface mining survey guide",
+      "translation": "Guide d'enquête sur les mines à ciel ouvert"
+    },
+    {
       "source": "Surface navigation",
       "translation": "Navigation superficielle"
     },
@@ -85919,6 +86007,10 @@
     {
       "source": "Tail",
       "translation": "Queue"
+    },
+    {
+      "source": "Target",
+      "translation": "Cible"
     },
     {
       "source": "Target A01 and scan with the required artifacts aboard.",
@@ -89755,6 +89847,10 @@
     {
       "source": "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
       "translation": "Le positionnement de la superposition Wayland, la transparence, le clic et la saisie globale nécessitent la prise en charge du compositeur et ne sont pas activés."
+    },
+    {
+      "source": "Waypoint 3 of 12",
+      "translation": "Waypoint 3 sur 12"
     },
     {
       "source": "Waypoint A",
@@ -93813,6 +93909,10 @@
     {
       "source": "015 degrees | 1.24 km",
       "translation": "015 graus | 1,24 km"
+    },
+    {
+      "source": "084 degrees | 1.80 km",
+      "translation": "084 graus | 1,80 km"
     },
     {
       "source": "090 degrees | 2.10 km",
@@ -101047,6 +101147,10 @@
       "translation": "Dirija até o próximo ponto de verificação"
     },
     {
+      "source": "Drive to the next survey waypoint",
+      "translation": "Dirija até o próximo waypoint de pesquisa"
+    },
+    {
       "source": "Drive to the orange border and face the location center.",
       "translation": "Dirija até a borda laranja e fique de frente para o centro de localização."
     },
@@ -107071,6 +107175,10 @@
       "translation": "MineMap.ShouldShowOverlay"
     },
     {
+      "source": "MineMap.ShouldShowSurveyGuideOverlay",
+      "translation": "MineMap.ShouldShowSurveyGuideOverlay"
+    },
+    {
       "source": "Mineral",
       "translation": "Mineral"
     },
@@ -110177,6 +110285,10 @@
     {
       "source": "PlotSurfaceMining",
       "translation": "PlotSurfaceMining"
+    },
+    {
+      "source": "PlotSurfaceMiningSurvey",
+      "translation": "PlotSurfaceMiningSurvey"
     },
     {
       "source": "PlotSysStatus",
@@ -116615,6 +116727,14 @@
       "translation": "Mapa geral da mineração de superfície"
     },
     {
+      "source": "Surface mining survey",
+      "translation": "Levantamento de mineração de superfície"
+    },
+    {
+      "source": "Surface mining survey guide",
+      "translation": "Guia de pesquisa de mineração de superfície"
+    },
+    {
       "source": "Surface navigation",
       "translation": "Navegação de superfície"
     },
@@ -117153,6 +117273,10 @@
     {
       "source": "Tail",
       "translation": "Cauda"
+    },
+    {
+      "source": "Target",
+      "translation": "Alvo"
     },
     {
       "source": "Target A01 and scan with the required artifacts aboard.",
@@ -120989,6 +121113,10 @@
     {
       "source": "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
       "translation": "Posicionamento de sobreposição de Wayland, transparência, clique e entrada global requerem suporte de compositor e não estão habilitados."
+    },
+    {
+      "source": "Waypoint 3 of 12",
+      "translation": "Ponto de referência 3 de 12"
     },
     {
       "source": "Waypoint A",
@@ -125047,6 +125175,10 @@
     {
       "source": "015 degrees | 1.24 km",
       "translation": "015 градусов | 1,24 км"
+    },
+    {
+      "source": "084 degrees | 1.80 km",
+      "translation": "084 градуса | 1,80 км"
     },
     {
       "source": "090 degrees | 2.10 km",
@@ -132281,6 +132413,10 @@
       "translation": "Поездка к следующей точке сканирования"
     },
     {
+      "source": "Drive to the next survey waypoint",
+      "translation": "Поездка к следующей путевой точке съемки"
+    },
+    {
       "source": "Drive to the orange border and face the location center.",
       "translation": "Подъезжайте к оранжевой границе и встаньте лицом к центру локации."
     },
@@ -138305,6 +138441,10 @@
       "translation": "MineMap.ShouldShowOverlay"
     },
     {
+      "source": "MineMap.ShouldShowSurveyGuideOverlay",
+      "translation": "MineMap.ShouldShowSurveyGuideOverlay"
+    },
+    {
       "source": "Mineral",
       "translation": "Минерал"
     },
@@ -141411,6 +141551,10 @@
     {
       "source": "PlotSurfaceMining",
       "translation": "УчастокПоверхностьГорное дело"
+    },
+    {
+      "source": "PlotSurfaceMiningSurvey",
+      "translation": "УчастокПоверхностьГорное делоОбследование"
     },
     {
       "source": "PlotSysStatus",
@@ -147849,6 +147993,14 @@
       "translation": "Обзорная карта открытых горных работ"
     },
     {
+      "source": "Surface mining survey",
+      "translation": "Исследование открытых горных работ"
+    },
+    {
+      "source": "Surface mining survey guide",
+      "translation": "Руководство по изысканиям на открытых горных работах"
+    },
+    {
       "source": "Surface navigation",
       "translation": "Наземная навигация"
     },
@@ -148387,6 +148539,10 @@
     {
       "source": "Tail",
       "translation": "Хвост"
+    },
+    {
+      "source": "Target",
+      "translation": "Цель"
     },
     {
       "source": "Target A01 and scan with the required artifacts aboard.",
@@ -152223,6 +152379,10 @@
     {
       "source": "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
       "translation": "Позиционирование наложения Wayland, прозрачность, переход по щелчку и глобальный ввод требуют поддержки композитора и не включены."
+    },
+    {
+      "source": "Waypoint 3 of 12",
+      "translation": "Путевая точка 3 из 12"
     },
     {
       "source": "Waypoint A",
@@ -156281,6 +156441,10 @@
     {
       "source": "015 degrees | 1.24 km",
       "translation": "015度| 1.24 公里"
+    },
+    {
+      "source": "084 degrees | 1.80 km",
+      "translation": "084度| 1.80 公里"
     },
     {
       "source": "090 degrees | 2.10 km",
@@ -163515,6 +163679,10 @@
       "translation": "行驶至下一个扫描点"
     },
     {
+      "source": "Drive to the next survey waypoint",
+      "translation": "行驶至下一个测量航路点"
+    },
+    {
       "source": "Drive to the orange border and face the location center.",
       "translation": "行驶至橙色边界并面向位置中心。"
     },
@@ -169539,6 +169707,10 @@
       "translation": "MineMap.ShouldShowOverlay"
     },
     {
+      "source": "MineMap.ShouldShowSurveyGuideOverlay",
+      "translation": "MineMap.ShouldShowSurveyGuideOverlay"
+    },
+    {
       "source": "Mineral",
       "translation": "矿物"
     },
@@ -172645,6 +172817,10 @@
     {
       "source": "PlotSurfaceMining",
       "translation": "地块地表采矿"
+    },
+    {
+      "source": "PlotSurfaceMiningSurvey",
+      "translation": "地块地表采矿勘测"
     },
     {
       "source": "PlotSysStatus",
@@ -179083,6 +179259,14 @@
       "translation": "露天采矿概览图"
     },
     {
+      "source": "Surface mining survey",
+      "translation": "露天采矿调查"
+    },
+    {
+      "source": "Surface mining survey guide",
+      "translation": "露天采矿调查指南"
+    },
+    {
       "source": "Surface navigation",
       "translation": "地面导航"
     },
@@ -179621,6 +179805,10 @@
     {
       "source": "Tail",
       "translation": "尾巴"
+    },
+    {
+      "source": "Target",
+      "translation": "目标"
     },
     {
       "source": "Target A01 and scan with the required artifacts aboard.",
@@ -183457,6 +183645,10 @@
     {
       "source": "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
       "translation": "Wayland 叠加定位、透明度、点击率和全局输入需要合成器支持，并且未启用。"
+    },
+    {
+      "source": "Waypoint 3 of 12",
+      "translation": "航点 3（共 12 个）"
     },
     {
       "source": "Waypoint A",
@@ -187515,6 +187707,10 @@
     {
       "source": "015 degrees | 1.24 km",
       "translation": "* 015 DEGREES | 1.24 KM >>>!"
+    },
+    {
+      "source": "084 degrees | 1.80 km",
+      "translation": "* 084 DEGREES | 1.80 KM >>>!"
     },
     {
       "source": "090 degrees | 2.10 km",
@@ -194749,6 +194945,10 @@
       "translation": "* DRIVE TO THE NEXT SCAN POINT >>>!"
     },
     {
+      "source": "Drive to the next survey waypoint",
+      "translation": "* DRIVE TO THE NEXT SURVEY WAYPOINT >>>!"
+    },
+    {
       "source": "Drive to the orange border and face the location center.",
       "translation": "* DRIVE TO THE ORANGE BORDER AND FACE THE LOCATION CENTER. >>>!"
     },
@@ -200773,6 +200973,10 @@
       "translation": "* MINEMAP.SHOULDSHOWOVERLAY >>>!"
     },
     {
+      "source": "MineMap.ShouldShowSurveyGuideOverlay",
+      "translation": "* MINEMAP.SHOULDSHOWSURVEYGUIDEOVERLAY >>>!"
+    },
+    {
       "source": "Mineral",
       "translation": "* MINERAL >>>!"
     },
@@ -203879,6 +204083,10 @@
     {
       "source": "PlotSurfaceMining",
       "translation": "* PLOTSURFACEMINING >>>!"
+    },
+    {
+      "source": "PlotSurfaceMiningSurvey",
+      "translation": "* PLOTSURFACEMININGSURVEY >>>!"
     },
     {
       "source": "PlotSysStatus",
@@ -210317,6 +210525,14 @@
       "translation": "* SURFACE MINING OVERVIEW MAP >>>!"
     },
     {
+      "source": "Surface mining survey",
+      "translation": "* SURFACE MINING SURVEY >>>!"
+    },
+    {
+      "source": "Surface mining survey guide",
+      "translation": "* SURFACE MINING SURVEY GUIDE >>>!"
+    },
+    {
       "source": "Surface navigation",
       "translation": "* SURFACE NAVIGATION >>>!"
     },
@@ -210855,6 +211071,10 @@
     {
       "source": "Tail",
       "translation": "* TAIL >>>!"
+    },
+    {
+      "source": "Target",
+      "translation": "* TARGET >>>!"
     },
     {
       "source": "Target A01 and scan with the required artifacts aboard.",
@@ -214691,6 +214911,10 @@
     {
       "source": "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
       "translation": "* WAYLAND OVERLAY POSITIONING, TRANSPARENCY, CLICK-THROUGH, AND GLOBAL INPUT REQUIRE COMPOSITOR SUPPORT AND ARE NOT ENABLED. >>>!"
+    },
+    {
+      "source": "Waypoint 3 of 12",
+      "translation": "* WAYPOINT 3 OF 12 >>>!"
     },
     {
       "source": "Waypoint A",

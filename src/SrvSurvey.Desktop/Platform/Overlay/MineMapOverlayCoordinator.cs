@@ -11,19 +11,17 @@ public sealed class MineMapOverlayCoordinator : IDisposable
     private readonly MineMapViewModel mineMap;
     private readonly HostedOverlayWindow hostedWindow;
     private readonly HostedOverlayWindow referenceWindow;
+    private readonly HostedOverlayWindow surveyGuideWindow;
     private readonly IOverlayPlatformService zoomPlatform;
     private readonly IOverlayPlatformService alignmentPlatform;
-    private readonly IOverlayPlatformService surveyGuidePlatform;
     private readonly IGameWindowTracker alignmentGameWindowTracker;
     private readonly OverlayPresentationSession presentationSession;
     private readonly OverlayDispatcherTimer timer;
     private MineMapZoomOverlayWindow? zoomWindow;
     private SurfaceMiningAlignmentOverlayWindow? alignmentWindow;
-    private SurfaceMiningSurveyOverlayWindow? surveyGuideWindow;
     private DateTimeOffset? surveyGuideCompletionStartedAt;
     private bool zoomUnavailable;
     private bool alignmentUnavailable;
-    private bool surveyGuideUnavailable;
     private bool suppressed;
     private bool disposed;
 
@@ -34,7 +32,6 @@ public sealed class MineMapOverlayCoordinator : IDisposable
         this.presentationSession = presentationSession;
         zoomPlatform = presentationSession.CreatePlatformService();
         alignmentPlatform = presentationSession.CreatePlatformService();
-        surveyGuidePlatform = presentationSession.CreatePlatformService();
         alignmentGameWindowTracker = presentationSession.CreateGameWindowTracker();
         hostedWindow = presentationSession.HostPassiveWindow(
             new PassiveOverlayWindowDefinition(
@@ -48,6 +45,13 @@ public sealed class MineMapOverlayCoordinator : IDisposable
                 "PlotMiningReference",
                 _ => new MiningReferenceOverlayWindow(mineMap),
                 (gameBounds, windowSize) => OverlayWindowPlacement.TopRight(gameBounds, windowSize)
+            )
+        );
+        surveyGuideWindow = presentationSession.HostPassiveWindow(
+            new PassiveOverlayWindowDefinition(
+                "PlotSurfaceMiningSurvey",
+                _ => new SurfaceMiningSurveyOverlayWindow(mineMap),
+                (gameBounds, windowSize) => OverlayWindowPlacement.TopCenter(gameBounds, windowSize, margin: 8)
             )
         );
         hostedWindow.VisibilityChanged += OnHostedWindowVisibilityChanged;
@@ -85,13 +89,12 @@ public sealed class MineMapOverlayCoordinator : IDisposable
         hostedWindow.VisibilityChanged -= OnHostedWindowVisibilityChanged;
         CloseZoomWindow();
         CloseAlignmentWindow();
-        CloseSurveyGuideWindow();
         hostedWindow.Dispose();
         referenceWindow.Dispose();
+        surveyGuideWindow.Dispose();
         zoomPlatform.Dispose();
         alignmentGameWindowTracker.Dispose();
         alignmentPlatform.Dispose();
-        surveyGuidePlatform.Dispose();
     }
 
     private void OnMineMapPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)
@@ -145,7 +148,7 @@ public sealed class MineMapOverlayCoordinator : IDisposable
             if (IsSurveyGuideReminderExpired(surveyGuideCompletionStartedAt.Value, DateTimeOffset.UtcNow))
             {
                 mineMap.DismissSurveyGuide();
-                CloseSurveyGuideWindow();
+                surveyGuideWindow.Reconcile(false);
                 return;
             }
         }
@@ -154,94 +157,11 @@ public sealed class MineMapOverlayCoordinator : IDisposable
             surveyGuideCompletionStartedAt = null;
         }
 
-        if (disposed || suppressed || !mineMap.ShouldShowSurveyGuideOverlay || surveyGuideUnavailable)
-        {
-            CloseSurveyGuideWindow();
-            return;
-        }
-
-        GameWindowSnapshot gameWindow = alignmentGameWindowTracker.GetSnapshot();
-        if (
-            !surveyGuidePlatform.Capabilities.SupportsPassiveOverlay
-            || !surveyGuidePlatform.Capabilities.SupportsClickThrough
-            || !surveyGuidePlatform.Capabilities.SupportsGameWindowTracking
-            || !gameWindow.IsAvailable
-            || !gameWindow.IsVisible
-            || !gameWindow.IsForeground
-        )
-        {
-            CloseSurveyGuideWindow();
-            return;
-        }
-
-        if (surveyGuideWindow is not null)
-        {
-            PositionSurveyGuideWindow(surveyGuideWindow, gameWindow.ClientBounds);
-            return;
-        }
-
-        var overlay = new SurfaceMiningSurveyOverlayWindow(mineMap);
-        OverlayThemeResources.Apply(overlay);
-        presentationSession.ConfigureAuxiliaryWindow(overlay, "PlotMineMap");
-        overlay.Opened += OnSurveyGuideWindowOpened;
-        overlay.Closed += OnSurveyGuideWindowClosed;
-        surveyGuideWindow = overlay;
-        PositionSurveyGuideWindow(overlay, gameWindow.ClientBounds);
-        overlay.Show();
+        surveyGuideWindow.Reconcile(!disposed && !suppressed && mineMap.ShouldShowSurveyGuideOverlay);
     }
 
     internal static bool IsSurveyGuideReminderExpired(DateTimeOffset startedAt, DateTimeOffset now) =>
         now - startedAt >= TimeSpan.FromSeconds(10);
-
-    private void OnSurveyGuideWindowOpened(object? sender, EventArgs eventArgs)
-    {
-        if (sender is not SurfaceMiningSurveyOverlayWindow opened || !ReferenceEquals(surveyGuideWindow, opened))
-        {
-            return;
-        }
-
-        GameWindowSnapshot gameWindow = alignmentGameWindowTracker.GetSnapshot();
-        if (gameWindow.IsAvailable)
-        {
-            PositionSurveyGuideWindow(opened, gameWindow.ClientBounds);
-        }
-
-        OverlayPreparationResult preparation = surveyGuidePlatform.PreparePassiveWindow(opened);
-        if (!preparation.IsClickThrough)
-        {
-            surveyGuideUnavailable = true;
-            CloseSurveyGuideWindow();
-        }
-    }
-
-    private void OnSurveyGuideWindowClosed(object? sender, EventArgs eventArgs)
-    {
-        if (sender is SurfaceMiningSurveyOverlayWindow closed && ReferenceEquals(surveyGuideWindow, closed))
-        {
-            surveyGuideWindow = null;
-        }
-    }
-
-    private static void PositionSurveyGuideWindow(Window overlay, PixelRect gameBounds)
-    {
-        Screen? screen = overlay.Screens.ScreenFromBounds(gameBounds) ?? overlay.Screens.Primary;
-        if (screen is null)
-        {
-            return;
-        }
-
-        double logicalWidth = overlay.Bounds.Width > 0 ? overlay.Bounds.Width : 520;
-        double logicalHeight = overlay.Bounds.Height > 0 ? overlay.Bounds.Height : 108;
-        var size = new PixelSize(
-            Math.Max(1, (int)Math.Ceiling(logicalWidth * screen.Scaling)),
-            Math.Max(1, (int)Math.Ceiling(logicalHeight * screen.Scaling))
-        );
-        PixelPoint position = OverlayWindowPlacement.TopCenter(gameBounds, size, margin: 8);
-        if (overlay.Position != position)
-        {
-            overlay.Position = position;
-        }
-    }
 
     private void SynchronizeAlignmentWindow()
     {
@@ -440,20 +360,6 @@ public sealed class MineMapOverlayCoordinator : IDisposable
         alignmentWindow = null;
         closing.Opened -= OnAlignmentWindowOpened;
         closing.Closed -= OnAlignmentWindowClosed;
-        closing.Close();
-    }
-
-    private void CloseSurveyGuideWindow()
-    {
-        SurfaceMiningSurveyOverlayWindow? closing = surveyGuideWindow;
-        if (closing is null)
-        {
-            return;
-        }
-
-        surveyGuideWindow = null;
-        closing.Opened -= OnSurveyGuideWindowOpened;
-        closing.Closed -= OnSurveyGuideWindowClosed;
         closing.Close();
     }
 }

@@ -59,6 +59,12 @@ release-candidate changes summarized below.
 - Adds amount and density marker filters, a draggable 4.5 km planning circle,
   optional marker labels in the Overview Map and a compact alignment helper sized
   consistently across common game resolutions.
+- Adds `.mine splat` boundary tracing for mapped deposits. Returning to the start
+  completes the trace and plots separate square rig-placement suggestions at the
+  same 78 m minimum spacing used by rig tracking.
+- Gives the compact Surface Mining radar a clearer ring-and-dot player marker,
+  dotted deposit outlines and distinct planning pins. The guided survey overlay
+  is now previewable and configurable in the Mining overlay editor.
 - Refreshes the Surface Mining workflow guide and its in-app examples for the
   revised commands and HUD procedure.
 

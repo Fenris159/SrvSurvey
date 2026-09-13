@@ -119,6 +119,7 @@ internal static class OverlayEditorPreviewCatalog
             "PlotMiningFiregroups" => new MiningActivityOverlayViewModel(null, true),
             "PlotSurfaceMining" or "PlotMiningWarning" => OverlayEditorPreviewFactories.CreateSurfaceMining(),
             "PlotMineMap" => CreateMineMapPreview(),
+            "PlotSurfaceMiningSurvey" => CreateSurfaceMiningSurveyPreview(),
             "PlotGrounded" or "PlotMiniTrack" => CreateSurfaceSurveyPreview(),
             "PlotHumanSite" => CreateHumanSitePreview(),
             "PlotJumpInfo" => CreateJumpInfoPreview(),
@@ -136,6 +137,13 @@ internal static class OverlayEditorPreviewCatalog
     private static MineMapViewModel CreateMineMapPreview()
     {
         return MineMapViewModel.CreateEditorPreview();
+    }
+
+    private static MineMapViewModel CreateSurfaceMiningSurveyPreview()
+    {
+        MineMapViewModel preview = MineMapViewModel.CreateEditorPreview();
+        preview.InstallSurveyGuideEditorPreview();
+        return preview;
     }
 
     private static MineMapViewModel CreateMiningReferencePreview()

@@ -224,6 +224,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "084 degrees | 1.80 km",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
     "Text": "090 degrees | 2.10 km",
     "IsFormat": false,
     "SourceKinds": [
@@ -14725,6 +14733,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
   },
   {
+    "Text": "Drive to the next survey waypoint",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
     "Text": "Drive to the orange border and face the location center.",
     "IsFormat": false,
     "SourceKinds": [
@@ -26814,6 +26830,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
   },
   {
+    "Text": "MineMap.ShouldShowSurveyGuideOverlay",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+  },
+  {
     "Text": "Mineral",
     "IsFormat": false,
     "SourceKinds": [
@@ -33038,6 +33062,14 @@
   },
   {
     "Text": "PlotSurfaceMining",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
+    "Text": "PlotSurfaceMiningSurvey",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -45947,6 +45979,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Surface mining survey",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "Surface mining survey guide",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Input/GlobalInputActionCatalog.cs"
+  },
+  {
     "Text": "Surface navigation",
     "IsFormat": false,
     "SourceKinds": [
@@ -47031,6 +47079,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "Target",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
     "Text": "Target A01 and scan with the required artifacts aboard.",
@@ -54713,6 +54769,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPlatformCapabilities.cs"
+  },
+  {
+    "Text": "Waypoint 3 of 12",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
     "Text": "Waypoint A",

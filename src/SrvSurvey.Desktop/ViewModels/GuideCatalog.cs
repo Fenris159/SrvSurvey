@@ -328,6 +328,7 @@ public static class GuideCatalog
                             "From anywhere inside the saved border, face a deposit and send .mine <bearing> <commodity> <distance km> <low|medium|high>/<low|medium|high>. The bearing and distance start at your live position. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 15 ruby 1.24 high/medium.",
                             "At a deposit, send .mine <commodity> <low|medium|high>/<low|medium|high> here. Precise here placement may overlap an existing marker. Example: .mine ruby medium/low here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
                             "While standing near a mapped deposit, send .mine rigs <number> to record its positive rig capacity on the nearest marker. The count remains visible in brackets when marker names are hidden. Example: .mine rigs 4.",
+                            "Drive to a mapped deposit edge and send .mine splat. SrvSurvey traces the Rhino path until you return within 12 m of the start, then shows separate square rig-position suggestions spaced at least 78 m apart. Send .mine splat cancel to discard an unfinished trace.",
                             "To correct a marker, stand at its true position and send .mine move <commodity> here. The nearest marker matching that commodity must be within 200 m. Example: .mine move haematite here.",
                         ],
                         [

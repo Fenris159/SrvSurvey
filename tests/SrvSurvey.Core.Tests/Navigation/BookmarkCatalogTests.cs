@@ -144,6 +144,13 @@ public sealed class BookmarkCatalogTests
         {
             var center = new SurfaceCoordinate(14.2609, -79.3291);
             var markerLocation = new SurfaceCoordinate(14.265, -79.32);
+            SurfaceCoordinate[] splatBoundary =
+            [
+                new(14.2651, -79.3201),
+                new(14.2652, -79.3202),
+                new(14.2653, -79.3201),
+            ];
+            SurfaceCoordinate[] suggestedRigs = [new(14.2652, -79.32015)];
             var id = Guid.NewGuid();
             var source = new BookmarkCatalog(sourceDirectory);
             source.Save(
@@ -182,6 +189,8 @@ public sealed class BookmarkCatalogTests
                                 Density = MineMapRating.Medium,
                                 RigCount = 4,
                                 Location = markerLocation,
+                                SplatBoundary = splatBoundary,
+                                SuggestedRigLocations = suggestedRigs,
                             },
                         ],
                     },
@@ -216,6 +225,8 @@ public sealed class BookmarkCatalogTests
             Assert.Equal(MineMapRating.Medium, importedMarker.Density);
             Assert.Equal(4, importedMarker.RigCount);
             Assert.Equal(markerLocation, importedMarker.Location);
+            Assert.Equal(splatBoundary, importedMarker.SplatBoundary);
+            Assert.Equal(suggestedRigs, importedMarker.SuggestedRigLocations);
         }
         finally
         {

@@ -3,6 +3,7 @@ using System.Text.Json;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Configuration;
@@ -24,6 +25,7 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
     private bool isRhinoParked;
     private bool disposed;
     private IReadOnlyList<SurfaceRadarMarkerViewModel> navigation = [];
+    private MineMapSurvey? mineMapSurvey;
     private double cargoUsed;
     private readonly TimeProvider detectionTime;
     private SurfaceCoordinate? detectionPosition;
@@ -90,6 +92,8 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
     }
 
     public IReadOnlyList<SurfaceRadarMarkerViewModel> RadarMarkers { get; private set; } = [];
+    public IReadOnlyList<SurfaceRadarPathViewModel> SplatBoundaries { get; private set; } = [];
+    public IReadOnlyList<SurfaceRadarPointViewModel> SuggestedRigLocations { get; private set; } = [];
     public IReadOnlyList<MiningRigViewModel> Rigs { get; private set; } = EmptyRigs();
     public IReadOnlyList<MiningResourceViewModel> Resources { get; private set; } = [];
     public bool HasResources => Resources.Count > 0;
@@ -129,7 +133,8 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         string? srvType,
         IReadOnlyList<SurfaceRadarMarkerViewModel>? surfaceMarkers = null,
         CargoSnapshot? cargo = null,
-        string? parkedSrvType = null
+        string? parkedSrvType = null,
+        MineMapSurvey? activeMineMap = null
     )
     {
         await updateLock.WaitAsync().ConfigureAwait(true);
@@ -142,6 +147,7 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
                     : status?.Cargo ?? 0;
             cargoUsed = double.IsFinite(count) ? Math.Max(0, count) : 0;
             navigation = surfaceMarkers ?? [];
+            mineMapSurvey = activeMineMap;
             isRhino = EliteSrvTypes.IsRhino(srvType);
             isRhinoParked = EliteSrvTypes.IsRhino(parkedSrvType);
             var body = snapshot.Bodies.FirstOrDefault(candidate =>
@@ -480,7 +486,66 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
             Rigs = rigs;
         }
 
+        (SplatBoundaries, SuggestedRigLocations) = validPosition ? CreateSplatPresentation() : ([], []);
+
         Notify();
+    }
+
+    private (
+        IReadOnlyList<SurfaceRadarPathViewModel> Boundaries,
+        IReadOnlyList<SurfaceRadarPointViewModel> Suggestions
+    ) CreateSplatPresentation()
+    {
+        if (
+            mineMapSurvey is null
+            || context is null
+            || status is null
+            || mineMapSurvey.SystemAddress != context.SystemAddress
+            || mineMapSurvey.BodyId != context.BodyId
+            || !TryGetPosition(out SurfaceCoordinate cockpit)
+        )
+        {
+            return ([], []);
+        }
+
+        SurfaceCoordinate current = status.InSrv
+            ? SurfaceMiningGeometry.VehicleCenter(cockpit, status.NormalizedHeading, context.RadiusMeters)
+            : cockpit;
+        var boundaries = new List<SurfaceRadarPathViewModel>();
+        var suggestions = new List<SurfaceRadarPointViewModel>();
+        foreach (MineMapMarker marker in mineMapSurvey.Markers)
+        {
+            if (marker.SplatBoundary.Count >= 2)
+            {
+                boundaries.Add(
+                    new SurfaceRadarPathViewModel(
+                        marker
+                            .SplatBoundary.Select(point => CreateSplatPoint(current, point, context.RadiusMeters))
+                            .ToArray(),
+                        !marker.IsSplatTraceActive
+                    )
+                );
+            }
+
+            suggestions.AddRange(
+                marker.SuggestedRigLocations.Select(point => CreateSplatPoint(current, point, context.RadiusMeters))
+            );
+        }
+
+        return (boundaries, suggestions);
+    }
+
+    private SurfaceRadarPointViewModel CreateSplatPoint(
+        SurfaceCoordinate current,
+        SurfaceCoordinate target,
+        double planetRadiusMeters
+    )
+    {
+        double bearing = SurfaceNavigation.GetBearing(current, target);
+        return new SurfaceRadarPointViewModel(
+            SurfaceNavigation.GetDistance(current, target, planetRadiusMeters),
+            SurfaceNavigation.NormalizeDegrees(bearing - status!.NormalizedHeading)
+        );
     }
 
     private SurfaceRadarMarkerViewModel? CreateRigMarker(int number)
@@ -635,6 +700,10 @@ public sealed record MiningResourceViewModel(SurfaceRadarMarkerViewModel Marker)
     public double Bearing => Marker.RelativeBearingDegrees;
     public bool IsNear => Marker.DistanceMeters < 150;
 }
+
+public sealed record SurfaceRadarPointViewModel(double DistanceMeters, double RelativeBearingDegrees);
+
+public sealed record SurfaceRadarPathViewModel(IReadOnlyList<SurfaceRadarPointViewModel> Points, bool IsClosed);
 
 public sealed record MiningRigViewModel(int Number, SurfaceRadarMarkerViewModel? Marker)
 {

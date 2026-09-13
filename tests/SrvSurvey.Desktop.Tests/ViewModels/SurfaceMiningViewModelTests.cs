@@ -1,6 +1,7 @@
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Platform.Overlay;
@@ -570,6 +571,42 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
         using var reopened = new SurfaceMiningViewModel(store);
         await reopened.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino");
         Assert.All(reopened.Rigs, rig => Assert.False(rig.IsSet));
+    }
+
+    [Fact]
+    public async Task ActiveMineMapSplatIsProjectedOntoTheCompactRadarWithoutBecomingRigMarkers()
+    {
+        using var mining = new SurfaceMiningViewModel(new SystemSurfaceStore(root));
+        var center = new SurfaceCoordinate(0, 0);
+        var marker = new MineMapMarker
+        {
+            Material = "Ruby",
+            Location = center,
+            SplatBoundary =
+            [
+                MineMapService.GetDestination(center, 0, 100, 1_000_000),
+                MineMapService.GetDestination(center, 90, 100, 1_000_000),
+                MineMapService.GetDestination(center, 180, 100, 1_000_000),
+            ],
+            SuggestedRigLocations = [MineMapService.GetDestination(center, 45, 40, 1_000_000)],
+        };
+        var map = new MineMapSurvey
+        {
+            SystemAddress = 42,
+            BodyId = 1,
+            PlanetRadiusMeters = 1_000_000,
+            Center = center,
+            LocationRadiusMeters = 1_000,
+            Markers = [marker],
+        };
+
+        await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino", activeMineMap: map);
+
+        SurfaceRadarPathViewModel boundary = Assert.Single(mining.SplatBoundaries);
+        Assert.True(boundary.IsClosed);
+        Assert.Equal(3, boundary.Points.Count);
+        Assert.Single(mining.SuggestedRigLocations);
+        Assert.DoesNotContain(mining.RadarMarkers, candidate => candidate.Name == "Ruby");
     }
 
     private static EliteStatus Status() =>

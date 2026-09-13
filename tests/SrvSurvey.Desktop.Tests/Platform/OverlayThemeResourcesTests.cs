@@ -34,6 +34,7 @@ public sealed class OverlayThemeResourcesTests
         ["PlotMiningWarning"] = "Mining.ShouldShowRigWarning",
         ["PlotSurfaceMining"] = "Mining.ShouldShow",
         ["PlotMineMap"] = "MineMap.ShouldShowOverlay",
+        ["PlotSurfaceMiningSurvey"] = "MineMap.ShouldShowSurveyGuideOverlay",
         ["PlotGrounded"] = "SystemSurvey.AutoShowSurfaceRadar",
         ["PlotGuardians"] = "Guardian.EnableGuardianSites",
         ["PlotGuardianStatus"] = "Guardian.EnableGuardianSites",
@@ -388,7 +389,7 @@ public sealed class OverlayThemeResourcesTests
     [Fact]
     public void EveryRuntimeOverlayUsesItsEditorCatalogWidth()
     {
-        Assert.Equal(35, OverlayLayoutCatalog.Supported.Count);
+        Assert.Equal(36, OverlayLayoutCatalog.Supported.Count);
         Assert.All(
             OverlayLayoutCatalog.Supported,
             definition =>

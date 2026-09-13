@@ -29,6 +29,7 @@ internal static class OverlayRuntimePresentationFactory
                 or "PlotMiningWarning"
                 or "PlotSurfaceMining"
                 or "PlotMineMap"
+                or "PlotSurfaceMiningSurvey"
                 or "PlotGrounded"
                 or "PlotGuardians"
                 or "PlotGuardianStatus"
@@ -119,6 +120,7 @@ internal static class OverlayRuntimePresentationFactory
             "PlotMiningWarning" => new MiningWarningOverlayPresentation(),
             "PlotSurfaceMining" => new SurfaceMiningOverlayPresentation(),
             "PlotMineMap" => new MineMapOverlayPresentation(),
+            "PlotSurfaceMiningSurvey" => new SurfaceMiningSurveyOverlayPresentation(),
             "PlotGrounded" => new SurfaceSurveyOverlayPresentation(),
             "PlotGuardians" => new GuardianSiteOverlayPresentation(),
             "PlotGuardianStatus" => new GuardianStatusOverlayPresentation(),

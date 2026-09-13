@@ -26,6 +26,12 @@ public sealed record MineMapMarker
 
     public int? RigCount { get; init; }
 
+    public IReadOnlyList<SurfaceCoordinate> SplatBoundary { get; init; } = [];
+
+    public IReadOnlyList<SurfaceCoordinate> SuggestedRigLocations { get; init; } = [];
+
+    public bool IsSplatTraceActive { get; init; }
+
     public SurfaceCoordinate Location { get; init; }
 
     public DateTimeOffset CreatedAt { get; init; }
@@ -132,6 +138,11 @@ public sealed class MineMapService : IDisposable
     public const double MarkerMoveRadiusMeters = 200;
     public const double SurveyScannerRadiusMeters = 2_000;
     public const double SurveyWaypointArrivalRadiusMeters = 200;
+    public const double SplatMarkerSelectionRadiusMeters = 500;
+    public const double SplatTraceSampleSpacingMeters = 5;
+    public const double SplatTraceClosureRadiusMeters = 12;
+    public const double SplatTraceMinimumTravelMeters = 50;
+    public const int SplatTraceMinimumPointCount = 8;
     private const double LocationBoundaryToleranceMeters = 1;
     private const double SurveyWaypointSpacingMeters = 1_800;
 
@@ -158,6 +169,8 @@ public sealed class MineMapService : IDisposable
     }
 
     public event EventHandler? Changed;
+
+    public event Action<string>? NotificationRequested;
 
     public IReadOnlyList<MineMapSurvey> Surveys => surveys;
 
@@ -257,9 +270,20 @@ public sealed class MineMapService : IDisposable
 
     public void UpdateContext(MineMapCommandContext? context)
     {
+        bool splatChanged;
+        try
+        {
+            splatChanged = UpdateSplatTrace(context);
+        }
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or JsonException or InvalidOperationException)
+        {
+            splatChanged = false;
+            NotificationRequested?.Invoke("The deposit boundary trace could not be saved: " + exception.Message);
+        }
         MineMapSurvey? next = ResolveSurveyAtLocation(context);
         bool guideChanged = UpdateSurveyGuide(context);
-        if (ReferenceEquals(ActiveSurvey, next) && !guideChanged)
+        if (ReferenceEquals(ActiveSurvey, next) && !guideChanged && !splatChanged)
         {
             return;
         }
@@ -621,10 +645,10 @@ public sealed class MineMapService : IDisposable
     )
     {
         var parts = Split(command);
-        if (parts.Length < 3 || !parts[0].Equals(".mine", StringComparison.OrdinalIgnoreCase))
+        if (parts.Length < 2 || !parts[0].Equals(".mine", StringComparison.OrdinalIgnoreCase))
         {
             return Failure(
-                "Use .mine <bearing> <material> <distance km> <low|medium|high>/<low|medium|high>, .mine <material> <low|medium|high>/<low|medium|high> here, .mine rigs <number>, .mine move <commodity> here, or .mine delete here."
+                "Use .mine <bearing> <material> <distance km> <low|medium|high>/<low|medium|high>, .mine <material> <low|medium|high>/<low|medium|high> here, .mine splat, .mine splat cancel, .mine rigs <number>, .mine move <commodity> here, or .mine delete here."
             );
         }
 
@@ -719,6 +743,19 @@ public sealed class MineMapService : IDisposable
         CancellationToken cancellationToken
     )
     {
+        if (parts[1].Equals("splat", StringComparison.OrdinalIgnoreCase))
+        {
+            return parts.Length switch
+            {
+                2 => StartSplatTrace(active, context, cancellationToken),
+                3 when parts[2].Equals("cancel", StringComparison.OrdinalIgnoreCase) => CancelSplatTrace(
+                    active,
+                    cancellationToken
+                ),
+                _ => Failure("Use .mine splat or .mine splat cancel."),
+            };
+        }
+
         if (
             parts.Length == 3
             && parts[1].Equals("delete", StringComparison.OrdinalIgnoreCase)
@@ -746,6 +783,159 @@ public sealed class MineMapService : IDisposable
         return parts.Length < 4 || !parts[^1].Equals("here", StringComparison.OrdinalIgnoreCase)
             ? Failure("Use .mine move <commodity> here.")
             : MoveMarkerHere(active, string.Join(' ', parts[2..^1]), context, cancellationToken);
+    }
+
+    private MineMapCommandResult StartSplatTrace(
+        MineMapSurvey active,
+        MineMapCommandContext context,
+        CancellationToken cancellationToken
+    )
+    {
+        if (context.PlayerLocation is not { } current)
+        {
+            return Failure("A live surface position is required for .mine splat.");
+        }
+
+        var nearest = active
+            .Markers.Select(marker => new
+            {
+                Marker = marker,
+                Distance = SurfaceNavigation.GetDistance(current, marker.Location, active.PlanetRadiusMeters),
+            })
+            .OrderBy(candidate => candidate.Distance)
+            .FirstOrDefault();
+        if (nearest is null || nearest.Distance > SplatMarkerSelectionRadiusMeters)
+        {
+            return Failure(
+                $"No mine marker is within {SplatMarkerSelectionRadiusMeters:0} m. Move to the edge of the deposit before using .mine splat."
+            );
+        }
+
+        MineMapMarker tracing = nearest.Marker with
+        {
+            SplatBoundary = [current],
+            SuggestedRigLocations = [],
+            IsSplatTraceActive = true,
+        };
+        MineMapSurvey updated = active with
+        {
+            Markers = active
+                .Markers.Select(marker =>
+                    marker.Id == tracing.Id ? tracing
+                    : marker.IsSplatTraceActive ? marker with { IsSplatTraceActive = false }
+                    : marker
+                )
+                .ToArray(),
+            UpdatedAt = DateTimeOffset.UtcNow,
+        };
+        SaveAndReplace(updated, cancellationToken);
+        ActiveSurvey = updated;
+        Changed?.Invoke(this, EventArgs.Empty);
+        return Success(
+            $"Tracing the {tracing.Material} deposit boundary. Drive its edge and return within {SplatTraceClosureRadiusMeters:0} m of the starting point to finish.",
+            updated
+        );
+    }
+
+    private MineMapCommandResult CancelSplatTrace(MineMapSurvey active, CancellationToken cancellationToken)
+    {
+        MineMapMarker? tracing = active.Markers.FirstOrDefault(marker => marker.IsSplatTraceActive);
+        if (tracing is null)
+        {
+            return Failure("No deposit boundary trace is active.");
+        }
+
+        MineMapSurvey updated = active with
+        {
+            Markers = active
+                .Markers.Select(marker =>
+                    marker.Id == tracing.Id
+                        ? marker with
+                        {
+                            SplatBoundary = [],
+                            SuggestedRigLocations = [],
+                            IsSplatTraceActive = false,
+                        }
+                        : marker
+                )
+                .ToArray(),
+            UpdatedAt = DateTimeOffset.UtcNow,
+        };
+        SaveAndReplace(updated, cancellationToken);
+        ActiveSurvey = updated;
+        Changed?.Invoke(this, EventArgs.Empty);
+        return Success($"Cancelled the {tracing.Material} deposit boundary trace.", updated);
+    }
+
+    private bool UpdateSplatTrace(MineMapCommandContext? context)
+    {
+        if (context?.PlayerLocation is not { } current)
+        {
+            return false;
+        }
+
+        MineMapSurvey? active = ResolveSurveyAtLocation(context);
+        MineMapMarker? tracing = active?.Markers.FirstOrDefault(marker => marker.IsSplatTraceActive);
+        if (active is null || tracing is null || tracing.SplatBoundary.Count == 0)
+        {
+            return false;
+        }
+
+        IReadOnlyList<SurfaceCoordinate> boundary = tracing.SplatBoundary;
+        double distanceFromLast = SurfaceNavigation.GetDistance(boundary[^1], current, active.PlanetRadiusMeters);
+        if (distanceFromLast < SplatTraceSampleSpacingMeters)
+        {
+            return false;
+        }
+
+        var points = new List<SurfaceCoordinate>(boundary.Count + 1);
+        points.AddRange(boundary);
+        points.Add(current);
+        double travel = GetPathLength(points, active.PlanetRadiusMeters);
+        double distanceFromStart = SurfaceNavigation.GetDistance(points[0], current, active.PlanetRadiusMeters);
+        bool completed =
+            points.Count >= SplatTraceMinimumPointCount
+            && travel >= SplatTraceMinimumTravelMeters
+            && distanceFromStart <= SplatTraceClosureRadiusMeters;
+        IReadOnlyList<SurfaceCoordinate> suggestions = completed
+            ? SurfaceMiningSplatPlanner.CreateRigLayout(
+                points,
+                active.PlanetRadiusMeters,
+                SurfaceMiningGeometry.ExclusionDistanceMeters
+            )
+            : [];
+        MineMapMarker updatedMarker = tracing with
+        {
+            SplatBoundary = points,
+            SuggestedRigLocations = suggestions,
+            IsSplatTraceActive = !completed,
+        };
+        MineMapSurvey updated = active with
+        {
+            Markers = active.Markers.Select(marker => marker.Id == tracing.Id ? updatedMarker : marker).ToArray(),
+            UpdatedAt = DateTimeOffset.UtcNow,
+        };
+        SaveAndReplace(updated, CancellationToken.None);
+        ActiveSurvey = updated;
+        if (completed)
+        {
+            NotificationRequested?.Invoke(
+                $"{tracing.Material} boundary complete. {suggestions.Count:N0} suggested rig position{(suggestions.Count == 1 ? string.Empty : "s")} mapped."
+            );
+        }
+
+        return true;
+    }
+
+    private static double GetPathLength(List<SurfaceCoordinate> points, double planetRadiusMeters)
+    {
+        double length = 0;
+        for (int index = 1; index < points.Count; index++)
+        {
+            length += SurfaceNavigation.GetDistance(points[index - 1], points[index], planetRadiusMeters);
+        }
+
+        return length;
     }
 
     private MineMapCommandResult SetNearestMarkerRigCount(

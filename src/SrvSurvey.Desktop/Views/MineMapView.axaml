@@ -463,6 +463,7 @@
                     <TextBlock Classes="monospace" Text=".mine ruby medium/low here" />
                     <TextBlock Classes="monospace" Text=".mine rigs 4" />
                     <TextBlock Classes="monospace" Text=".mine move haematite here" />
+                    <TextBlock Classes="monospace" Text=".mine splat" />
                     <TextBlock Classes="monospace" Text=".alignment" />
                   </StackPanel>
                 </Border>
@@ -492,6 +493,9 @@
                 <TextBlock FontWeight="SemiBold" Text=".mine rigs &lt;number&gt;" />
                 <TextBlock Classes="muted" TextWrapping="Wrap"
                            Text="Sets how many rigs fit at the mapped deposit nearest to your current surface position. The positive rig count appears in brackets beside the deposit on the map, even when marker names are hidden. Example: .mine rigs 4" />
+                <TextBlock FontWeight="SemiBold" Text=".mine splat" />
+                <TextBlock Classes="muted" TextWrapping="Wrap"
+                           Text="Starts tracing the nearest mapped deposit within 0.5 km from your current position. Drive the deposit edge and return within 12 m of the starting point after at least 50 m of travel. The compact Surface Mining radar draws the boundary as a dotted line and places separate square suggestions at least 78 m apart. Use .mine splat cancel to discard an unfinished trace." />
                 <TextBlock FontWeight="SemiBold" Text=".mine delete here" />
                 <TextBlock Classes="muted" TextWrapping="Wrap"
                            Text="Removes the nearest mapped deposit within 0.5 km of your current position." />
