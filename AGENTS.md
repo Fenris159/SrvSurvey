@@ -19,3 +19,7 @@ and analyzer warnings fail the build. CSharpier is the repository formatter.
 After changing C# code, run `dotnet csharpier check .` and the appropriate
 Release build. Do not suppress or fix unrelated analyzer findings unless the
 user asks; report them separately.
+
+Tests that assert `IProgress<T>` callbacks must use a synchronous test recorder.
+Do not use `System.Progress<T>` for those assertions because it schedules
+callbacks asynchronously and can race differently on Windows and Linux.

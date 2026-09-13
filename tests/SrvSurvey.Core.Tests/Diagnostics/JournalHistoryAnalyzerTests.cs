@@ -134,7 +134,7 @@ public sealed class JournalHistoryAnalyzerTests : IDisposable
         var result = await analyzer.AnalyzeAsync(
             "F123",
             new DateTimeOffset(2026, 7, 1, 0, 0, 0, TimeSpan.Zero),
-            new Progress<JournalHistoryAnalysisProgress>(progress.Add)
+            new CallbackProgress<JournalHistoryAnalysisProgress>(progress.Add)
         );
 
         Assert.Equal(1, result.CandidateFileCount);
@@ -225,5 +225,10 @@ public sealed class JournalHistoryAnalyzerTests : IDisposable
         var path = Path.Combine(temporaryDirectory, fileName);
         File.WriteAllText(path, content.ReplaceLineEndings("\n") + "\n");
         File.SetLastWriteTimeUtc(path, now.UtcDateTime.AddDays(-3));
+    }
+
+    private sealed class CallbackProgress<T>(Action<T> callback) : IProgress<T>
+    {
+        public void Report(T value) => callback(value);
     }
 }
