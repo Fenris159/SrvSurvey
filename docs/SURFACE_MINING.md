@@ -109,22 +109,22 @@ The projection starts at your live position, so you do not need to return to the
 map center:
 
 ```text
-.mine 15 ruby 1.24 high/medium
+.mine 342 jadeite 1.87 h/m
 ```
 
 At a deposit, save your current position directly or remove the nearest marker
 within 0.5 km:
 
 ```text
-.mine ruby medium/low here
+.mine ruby m/l here
 .mine move haematite here
 .mine splat
 .mine delete here
 .alignment
 ```
 
-The amount/density pair belongs to that individual deposit, and each value may be
-Low, Medium, or High. Commodity names must
+The amount/density pair belongs to that individual deposit. Use `l`, `m`, or `h`
+for Low, Medium, or High; the full words remain accepted. Commodity names must
 match **Hotspot List** and may contain spaces. The command parser rejects unknown
 commodities, bearings outside 0–359, non-positive border radii, negative deposit
 distances, invalid signal numbers, and unrecognized amount or density values.

@@ -889,7 +889,7 @@ public sealed class MineMapService : IDisposable
         if (parts.Length < 2 || !parts[0].Equals(".mine", StringComparison.OrdinalIgnoreCase))
         {
             return Failure(
-                "Use .mine <bearing> <material> <distance km> <low|medium|high>/<low|medium|high>, .mine <material> <low|medium|high>/<low|medium|high> here, .mine splat, .mine splat cancel, .mine rigs <number>, .mine move <commodity> here, or .mine delete here."
+                "Use .mine <bearing> <material> <distance km> <l|m|h>/<l|m|h>, .mine <material> <l|m|h>/<l|m|h> here, .mine splat, .mine splat cancel, .mine rigs <number>, .mine move <commodity> here, or .mine delete here."
             );
         }
 
@@ -1236,12 +1236,7 @@ public sealed class MineMapService : IDisposable
         )
         {
             return context.PlayerLocation is not { } current
-                ? (
-                    null,
-                    Failure(
-                        "A live surface position is required for .mine <material> <low|medium|high>/<low|medium|high> here."
-                    )
-                )
+                ? (null, Failure("A live surface position is required for .mine <material> <l|m|h>/<l|m|h> here."))
                 : (
                     new MarkerPlacement(
                         current,
@@ -1293,7 +1288,7 @@ public sealed class MineMapService : IDisposable
 
     private static MineMapCommandResult InvalidMarkerPlacement() =>
         Failure(
-            "Use .mine <bearing 0-359> <material> <distance km> <low|medium|high>/<low|medium|high> or .mine <material> <low|medium|high>/<low|medium|high> here."
+            "Use .mine <bearing 0-359> <material> <distance km> <l|m|h>/<l|m|h> or .mine <material> <l|m|h>/<l|m|h> here. Ratings also accept low, medium, and high in full."
         );
 
     private MineMapCommandResult DeleteMarkerHere(
@@ -1783,17 +1778,26 @@ public sealed class MineMapService : IDisposable
 
     private static bool TryRating(string value, out MineMapRating rating)
     {
-        if (value.Equals("low", StringComparison.OrdinalIgnoreCase))
+        if (
+            value.Equals("low", StringComparison.OrdinalIgnoreCase)
+            || value.Equals("l", StringComparison.OrdinalIgnoreCase)
+        )
         {
             rating = MineMapRating.Low;
             return true;
         }
-        if (value.Equals("medium", StringComparison.OrdinalIgnoreCase))
+        if (
+            value.Equals("medium", StringComparison.OrdinalIgnoreCase)
+            || value.Equals("m", StringComparison.OrdinalIgnoreCase)
+        )
         {
             rating = MineMapRating.Medium;
             return true;
         }
-        if (value.Equals("high", StringComparison.OrdinalIgnoreCase))
+        if (
+            value.Equals("high", StringComparison.OrdinalIgnoreCase)
+            || value.Equals("h", StringComparison.OrdinalIgnoreCase)
+        )
         {
             rating = MineMapRating.High;
             return true;
