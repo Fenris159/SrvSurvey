@@ -255,6 +255,10 @@
                 </Grid>
                 <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap"
                            Text="Use the mouse wheel or − / + controls to zoom. Drag the map to pan after zooming in. Right-click to place or remove a 4.5 km planning circle; hold the right button and drag to move it." />
+                <Button HorizontalAlignment="Left"
+                        Content="Export as CSV" IsEnabled="{Binding HasActiveSurvey}"
+                        Click="ExportSurveyCsv_Click"
+                        ToolTip.Tip="Export the selected map and one self-contained row for each deposit." />
               </StackPanel>
             </Border>
             <Border Classes="card">

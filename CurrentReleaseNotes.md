@@ -65,6 +65,9 @@ release-candidate changes summarized below.
 - Gives the compact Surface Mining radar a clearer ring-and-dot player marker,
   dotted deposit outlines and distinct planning pins. The guided survey overlay
   is now previewable and configurable in the Mining overlay editor.
+- Adds a UTF-8 CSV export for the selected Surface Mining map, with one
+  self-contained row per deposit containing its survey identity, map notes,
+  ratings, rig count, coordinates, traced boundary and suggested rig positions.
 - Refreshes the Surface Mining workflow guide and its in-app examples for the
   revised commands and HUD procedure.
 

@@ -61,6 +61,12 @@ public sealed class MineMapViewMarkupTests
             document.Descendants(avalonia + "Button"),
             button => button.Attribute("Content")?.Value == "For Rig tracking and full command details click here"
         );
+        XElement csvExport = Assert.Single(
+            document.Descendants(avalonia + "Button"),
+            button => button.Attribute("Content")?.Value == "Export as CSV"
+        );
+        Assert.Equal("{Binding HasActiveSurvey}", csvExport.Attribute("IsEnabled")?.Value);
+        Assert.Equal("ExportSurveyCsv_Click", csvExport.Attribute("Click")?.Value);
         Assert.Contains(
             document.Descendants(avalonia + "TextBlock"),
             text => text.Attribute("Text")?.Value == "SIGNAL #"

@@ -3813,6 +3813,10 @@
       "translation": "CSV-Export"
     },
     {
+      "source": "CSV table",
+      "translation": "CSV-Tabelle"
+    },
+    {
       "source": "CTRL",
       "translation": "STRG"
     },
@@ -8309,8 +8313,16 @@
       "translation": "JSON + CSV exportieren…"
     },
     {
+      "source": "Export Surface Mining survey",
+      "translation": "Exportieren Sie eine Surface-Mining-Umfrage"
+    },
+    {
       "source": "Export all CSV…",
       "translation": "Alle CSV exportieren…"
+    },
+    {
+      "source": "Export as CSV",
+      "translation": "Als CSV exportieren"
     },
     {
       "source": "Export backup…",
@@ -8373,6 +8385,10 @@
       "translation": "Text exportieren…"
     },
     {
+      "source": "Export the selected map and one self-contained row for each deposit.",
+      "translation": "Exportieren Sie die ausgewählte Karte und eine eigenständige Zeile für jede Lagerstätte."
+    },
+    {
       "source": "Export the settlement template catalog",
       "translation": "Exportieren Sie den Abrechnungsvorlagenkatalog"
     },
@@ -8395,6 +8411,10 @@
     {
       "source": "Exported and verified {0} settlement templates; the previous file was backed up.",
       "translation": "Exportierte und überprüfte {0} Abrechnungsvorlagen; Die vorherige Datei wurde gesichert."
+    },
+    {
+      "source": "Exported the selected Surface Mining map to {0}.",
+      "translation": "Die ausgewählte Surface Mining-Karte wurde nach {0} exportiert."
     },
     {
       "source": "Exported to {0}.",
@@ -22845,6 +22865,10 @@
       "translation": "Tagebau"
     },
     {
+      "source": "Surface Mining CSV export failed: {0}",
+      "translation": "Der CSV-Export von Surface Mining ist fehlgeschlagen: {0}"
+    },
+    {
       "source": "Surface Mining map commands",
       "translation": "Befehle für Surface Mining-Karten"
     },
@@ -29857,6 +29881,10 @@
       "translation": "testbuggy"
     },
     {
+      "source": "text/csv",
+      "translation": "Text/CSV"
+    },
+    {
       "source": "text/plain",
       "translation": "Text/einfach"
     },
@@ -35079,6 +35107,10 @@
       "translation": "Exportación CSV"
     },
     {
+      "source": "CSV table",
+      "translation": "tabla CSV"
+    },
+    {
       "source": "CTRL",
       "translation": "CTRL"
     },
@@ -39575,8 +39607,16 @@
       "translation": "Exportar JSON + CSV…"
     },
     {
+      "source": "Export Surface Mining survey",
+      "translation": "Encuesta de exportación de minería a cielo abierto"
+    },
+    {
       "source": "Export all CSV…",
       "translation": "Exportar todo CSV…"
+    },
+    {
+      "source": "Export as CSV",
+      "translation": "Exportar como CSV"
     },
     {
       "source": "Export backup…",
@@ -39639,6 +39679,10 @@
       "translation": "Exportar texto…"
     },
     {
+      "source": "Export the selected map and one self-contained row for each deposit.",
+      "translation": "Exporte el mapa seleccionado y una fila independiente para cada depósito."
+    },
+    {
       "source": "Export the settlement template catalog",
       "translation": "Exportar el catálogo de plantillas de liquidación"
     },
@@ -39661,6 +39705,10 @@
     {
       "source": "Exported and verified {0} settlement templates; the previous file was backed up.",
       "translation": "{0} plantillas de liquidación exportadas y verificadas; se realizó una copia de seguridad del archivo anterior."
+    },
+    {
+      "source": "Exported the selected Surface Mining map to {0}.",
+      "translation": "Exportó el mapa de Surface Mining seleccionado a {0}."
     },
     {
       "source": "Exported to {0}.",
@@ -54111,6 +54159,10 @@
       "translation": "Minería a cielo abierto"
     },
     {
+      "source": "Surface Mining CSV export failed: {0}",
+      "translation": "Error al exportar CSV de Surface Mining: {0}"
+    },
+    {
       "source": "Surface Mining map commands",
       "translation": "Comandos del mapa de minería de superficie"
     },
@@ -61123,6 +61175,10 @@
       "translation": "error de prueba"
     },
     {
+      "source": "text/csv",
+      "translation": "texto/csv"
+    },
+    {
       "source": "text/plain",
       "translation": "texto/sin formato"
     },
@@ -66345,6 +66401,10 @@
       "translation": "Exportation CSV"
     },
     {
+      "source": "CSV table",
+      "translation": "Tableau CSV"
+    },
+    {
       "source": "CTRL",
       "translation": "CTRL"
     },
@@ -70841,8 +70901,16 @@
       "translation": "Exporter JSON + CSV…"
     },
     {
+      "source": "Export Surface Mining survey",
+      "translation": "Enquête sur l'exportation à ciel ouvert"
+    },
+    {
       "source": "Export all CSV…",
       "translation": "Exporter tous les CSV…"
+    },
+    {
+      "source": "Export as CSV",
+      "translation": "Exporter au format CSV"
     },
     {
       "source": "Export backup…",
@@ -70905,6 +70973,10 @@
       "translation": "Exporter le texte…"
     },
     {
+      "source": "Export the selected map and one self-contained row for each deposit.",
+      "translation": "Exportez la carte sélectionnée et une ligne autonome pour chaque gisement."
+    },
+    {
       "source": "Export the settlement template catalog",
       "translation": "Exporter le catalogue de modèles de règlement"
     },
@@ -70927,6 +70999,10 @@
     {
       "source": "Exported and verified {0} settlement templates; the previous file was backed up.",
       "translation": "Modèles de règlement {0} exportés et vérifiés ; le fichier précédent a été sauvegardé."
+    },
+    {
+      "source": "Exported the selected Surface Mining map to {0}.",
+      "translation": "Exportation de la carte Surface Mining sélectionnée vers {0}."
     },
     {
       "source": "Exported to {0}.",
@@ -85377,6 +85453,10 @@
       "translation": "Exploitation minière à ciel ouvert"
     },
     {
+      "source": "Surface Mining CSV export failed: {0}",
+      "translation": "Échec de l'exportation CSV Surface Mining : {0}"
+    },
+    {
       "source": "Surface Mining map commands",
       "translation": "Commandes de carte Surface Mining"
     },
@@ -92389,6 +92469,10 @@
       "translation": "buggy de test"
     },
     {
+      "source": "text/csv",
+      "translation": "texte/csv"
+    },
+    {
       "source": "text/plain",
       "translation": "texte/plain"
     },
@@ -97611,6 +97695,10 @@
       "translation": "Exportação CSV"
     },
     {
+      "source": "CSV table",
+      "translation": "Tabela CSV"
+    },
+    {
       "source": "CTRL",
       "translation": "CTRL"
     },
@@ -102107,8 +102195,16 @@
       "translation": "Exportar JSON + CSV…"
     },
     {
+      "source": "Export Surface Mining survey",
+      "translation": "Pesquisa de exportação de mineração de superfície"
+    },
+    {
       "source": "Export all CSV…",
       "translation": "Exportar todo o CSV…"
+    },
+    {
+      "source": "Export as CSV",
+      "translation": "Exportar como CSV"
     },
     {
       "source": "Export backup…",
@@ -102171,6 +102267,10 @@
       "translation": "Exportar texto…"
     },
     {
+      "source": "Export the selected map and one self-contained row for each deposit.",
+      "translation": "Exporte o mapa selecionado e uma linha independente para cada depósito."
+    },
+    {
       "source": "Export the settlement template catalog",
       "translation": "Exportar o catálogo de modelos de liquidação"
     },
@@ -102193,6 +102293,10 @@
     {
       "source": "Exported and verified {0} settlement templates; the previous file was backed up.",
       "translation": "Modelos de liquidação {0} exportados e verificados; o arquivo anterior foi copiado."
+    },
+    {
+      "source": "Exported the selected Surface Mining map to {0}.",
+      "translation": "Exportou o mapa de Mineração de Superfície selecionado para {0}."
     },
     {
       "source": "Exported to {0}.",
@@ -116643,6 +116747,10 @@
       "translation": "Mineração de superfície"
     },
     {
+      "source": "Surface Mining CSV export failed: {0}",
+      "translation": "Falha na exportação de CSV de mineração de superfície: {0}"
+    },
+    {
       "source": "Surface Mining map commands",
       "translation": "Comandos do mapa de mineração de superfície"
     },
@@ -123655,6 +123763,10 @@
       "translation": "teste de erros"
     },
     {
+      "source": "text/csv",
+      "translation": "texto/csv"
+    },
+    {
       "source": "text/plain",
       "translation": "texto/simples"
     },
@@ -128877,6 +128989,10 @@
       "translation": "CSV-экспорт"
     },
     {
+      "source": "CSV table",
+      "translation": "CSV-таблица"
+    },
+    {
       "source": "CTRL",
       "translation": "CTRL"
     },
@@ -133373,8 +133489,16 @@
       "translation": "Экспортировать JSON + CSV…"
     },
     {
+      "source": "Export Surface Mining survey",
+      "translation": "Экспортное обследование открытых горных работ"
+    },
+    {
       "source": "Export all CSV…",
       "translation": "Экспортировать все CSV…"
+    },
+    {
+      "source": "Export as CSV",
+      "translation": "Экспортировать в формате CSV"
     },
     {
       "source": "Export backup…",
@@ -133437,6 +133561,10 @@
       "translation": "Экспортировать текст…"
     },
     {
+      "source": "Export the selected map and one self-contained row for each deposit.",
+      "translation": "Экспортируйте выбранную карту и одну отдельную строку для каждого месторождения."
+    },
+    {
       "source": "Export the settlement template catalog",
       "translation": "Экспорт каталога шаблонов расчетов"
     },
@@ -133459,6 +133587,10 @@
     {
       "source": "Exported and verified {0} settlement templates; the previous file was backed up.",
       "translation": "Экспортированы и проверены {0} шаблоны расчетов; предыдущий файл был скопирован."
+    },
+    {
+      "source": "Exported the selected Surface Mining map to {0}.",
+      "translation": "Выбранная карта Surface Mining экспортирована в {0}."
     },
     {
       "source": "Exported to {0}.",
@@ -147909,6 +148041,10 @@
       "translation": "Открытая добыча полезных ископаемых"
     },
     {
+      "source": "Surface Mining CSV export failed: {0}",
+      "translation": "Не удалось экспортировать CSV-файл Surface Mining: {0}."
+    },
+    {
       "source": "Surface Mining map commands",
       "translation": "Команды карты Surface Mining"
     },
@@ -154921,6 +155057,10 @@
       "translation": "тестбагги"
     },
     {
+      "source": "text/csv",
+      "translation": "текст/CSV"
+    },
+    {
       "source": "text/plain",
       "translation": "текстовый/обычный"
     },
@@ -160143,6 +160283,10 @@
       "translation": "CSV 导出"
     },
     {
+      "source": "CSV table",
+      "translation": "CSV表"
+    },
+    {
       "source": "CTRL",
       "translation": "控制键"
     },
@@ -164639,8 +164783,16 @@
       "translation": "导出 JSON + CSV..."
     },
     {
+      "source": "Export Surface Mining survey",
+      "translation": "出口露天采矿调查"
+    },
+    {
       "source": "Export all CSV…",
       "translation": "导出所有 CSV..."
+    },
+    {
+      "source": "Export as CSV",
+      "translation": "导出为 CSV"
     },
     {
       "source": "Export backup…",
@@ -164703,6 +164855,10 @@
       "translation": "导出文本..."
     },
     {
+      "source": "Export the selected map and one self-contained row for each deposit.",
+      "translation": "导出所选地图和每个存款的一个独立行。"
+    },
+    {
       "source": "Export the settlement template catalog",
       "translation": "导出结算模板目录"
     },
@@ -164725,6 +164881,10 @@
     {
       "source": "Exported and verified {0} settlement templates; the previous file was backed up.",
       "translation": "导出并验证{0}结算模板；之前的文件已备份。"
+    },
+    {
+      "source": "Exported the selected Surface Mining map to {0}.",
+      "translation": "将选定的露天采矿地图导出到 {0}。"
     },
     {
       "source": "Exported to {0}.",
@@ -179175,6 +179335,10 @@
       "translation": "露天采矿"
     },
     {
+      "source": "Surface Mining CSV export failed: {0}",
+      "translation": "露天采矿 CSV 导出失败：{0}"
+    },
+    {
       "source": "Surface Mining map commands",
       "translation": "露天采矿地图命令"
     },
@@ -186187,6 +186351,10 @@
       "translation": "测试车"
     },
     {
+      "source": "text/csv",
+      "translation": "文本/csv"
+    },
+    {
       "source": "text/plain",
       "translation": "文本/纯文本"
     },
@@ -191409,6 +191577,10 @@
       "translation": "* CSV EXPORT >>>!"
     },
     {
+      "source": "CSV table",
+      "translation": "* CSV TABLE >>>!"
+    },
+    {
       "source": "CTRL",
       "translation": "* CTRL >>>!"
     },
@@ -195905,8 +196077,16 @@
       "translation": "* EXPORT JSON + CSV… >>>!"
     },
     {
+      "source": "Export Surface Mining survey",
+      "translation": "* EXPORT SURFACE MINING SURVEY >>>!"
+    },
+    {
       "source": "Export all CSV…",
       "translation": "* EXPORT ALL CSV… >>>!"
+    },
+    {
+      "source": "Export as CSV",
+      "translation": "* EXPORT AS CSV >>>!"
     },
     {
       "source": "Export backup…",
@@ -195969,6 +196149,10 @@
       "translation": "* EXPORT TEXT… >>>!"
     },
     {
+      "source": "Export the selected map and one self-contained row for each deposit.",
+      "translation": "* EXPORT THE SELECTED MAP AND ONE SELF-CONTAINED ROW FOR EACH DEPOSIT. >>>!"
+    },
+    {
       "source": "Export the settlement template catalog",
       "translation": "* EXPORT THE SETTLEMENT TEMPLATE CATALOG >>>!"
     },
@@ -195991,6 +196175,10 @@
     {
       "source": "Exported and verified {0} settlement templates; the previous file was backed up.",
       "translation": "* EXPORTED AND VERIFIED {0} SETTLEMENT TEMPLATES; THE PREVIOUS FILE WAS BACKED UP. >>>!"
+    },
+    {
+      "source": "Exported the selected Surface Mining map to {0}.",
+      "translation": "* EXPORTED THE SELECTED SURFACE MINING MAP TO {0}. >>>!"
     },
     {
       "source": "Exported to {0}.",
@@ -210441,6 +210629,10 @@
       "translation": "* SURFACE MINING >>>!"
     },
     {
+      "source": "Surface Mining CSV export failed: {0}",
+      "translation": "* SURFACE MINING CSV EXPORT FAILED: {0} >>>!"
+    },
+    {
       "source": "Surface Mining map commands",
       "translation": "* SURFACE MINING MAP COMMANDS >>>!"
     },
@@ -217451,6 +217643,10 @@
     {
       "source": "testbuggy",
       "translation": "* TESTBUGGY >>>!"
+    },
+    {
+      "source": "text/csv",
+      "translation": "* TEXT/CSV >>>!"
     },
     {
       "source": "text/plain",

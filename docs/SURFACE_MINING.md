@@ -148,6 +148,17 @@ body type, distance from Sol, arrival distance, signal number, border radius,
 center coordinates, notes, and deposit-specific ratings. Editing or deleting the shared bookmark
 updates the Surface Mining workspace.
 
+### Export a survey map
+
+Select a map and choose **Export as CSV** in the **Selected map** panel. The UTF-8
+CSV contains one self-contained row per mapped deposit. Each row repeats the
+system, body, planetary mining-location signal, map notes, center and border
+details, followed by the deposit's commodity, amount, density, rig count,
+coordinates, distance, bearing, timestamps, traced boundary and suggested rig
+positions. Maps without deposits still export one row containing their survey
+details. Numeric values use invariant formatting and coordinate collections are
+JSON arrays so other third-party tools can import them consistently.
+
 ## Reference tabs
 
 **Hotspot List** shows the supported surface commodities, compatible body types

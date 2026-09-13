@@ -490,6 +490,19 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
 
     public ICommand ActivateSelectedSurveyCommand { get; }
 
+    internal void ReportCsvExported(string fileName)
+    {
+        string message = $"Exported the selected Surface Mining map to {fileName}.";
+        StatusText = message;
+        notify(message);
+    }
+
+    internal void ReportCsvExportFailed(string message)
+    {
+        StatusText = "Surface Mining CSV export failed: " + message;
+        notify(StatusText);
+    }
+
     public async Task ApplyUpdateAsync(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         MineMapCommandContext? nextContext,

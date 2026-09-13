@@ -7635,6 +7635,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml.cs"
   },
   {
+    "Text": "CSV table",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml.cs"
+  },
+  {
     "Text": "CTRL",
     "IsFormat": false,
     "SourceKinds": [
@@ -16659,12 +16667,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/BoxelStatsWindow.axaml"
   },
   {
+    "Text": "Export Surface Mining survey",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml.cs"
+  },
+  {
     "Text": "Export all CSV\u2026",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
+    "Text": "Export as CSV",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
     "Text": "Export backup\u2026",
@@ -16787,6 +16811,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
   },
   {
+    "Text": "Export the selected map and one self-contained row for each deposit.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
     "Text": "Export the settlement template catalog",
     "IsFormat": false,
     "SourceKinds": [
@@ -16833,6 +16865,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/HumanSiteTemplateAuthoringViewModel.cs"
+  },
+  {
+    "Text": "Exported the selected Surface Mining map to {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
   },
   {
     "Text": "Exported to {0}.",
@@ -45811,6 +45851,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
   },
   {
+    "Text": "Surface Mining CSV export failed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
+  },
+  {
     "Text": "Surface Mining map commands",
     "IsFormat": false,
     "SourceKinds": [
@@ -56689,7 +56737,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml.cs"
   },
   {
     "Text": "culture",
@@ -59850,6 +59898,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
+  },
+  {
+    "Text": "text/csv",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml.cs"
   },
   {
     "Text": "text/plain",
