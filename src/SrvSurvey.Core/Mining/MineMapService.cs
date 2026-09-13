@@ -126,6 +126,10 @@ public sealed record MineMapSurveyGuideState(
 public sealed class MineMapService : IDisposable
 {
     private const string MiningCommand = ".mining";
+    private const string MiningCommandUsage =
+        "Use .mining survey, .mining survey complete, .mining waypoint <next|prev>, .mining <bearing 0-359> <border radius km> <location number>, or .mining center here.";
+    private const string SurveyCompleteMessage =
+        "Surface scan route complete. While mining, use .mine rigs <number> to record each deposit's rig capacity.";
 
     private sealed record SurveyGuideProgress(
         MineMapSurveyGuidePhase Phase,
@@ -367,6 +371,25 @@ public sealed class MineMapService : IDisposable
         if (
             parts.Length == 3
             && parts[0].Equals(MiningCommand, StringComparison.OrdinalIgnoreCase)
+            && parts[1].Equals("survey", StringComparison.OrdinalIgnoreCase)
+            && parts[2].Equals("complete", StringComparison.OrdinalIgnoreCase)
+        )
+        {
+            return CompleteSurveyGuide(context);
+        }
+
+        if (
+            parts.Length == 3
+            && parts[0].Equals(MiningCommand, StringComparison.OrdinalIgnoreCase)
+            && parts[1].Equals("waypoint", StringComparison.OrdinalIgnoreCase)
+        )
+        {
+            return MoveSurveyWaypoint(parts[2], context);
+        }
+
+        if (
+            parts.Length == 3
+            && parts[0].Equals(MiningCommand, StringComparison.OrdinalIgnoreCase)
             && parts[1].Equals("center", StringComparison.OrdinalIgnoreCase)
             && parts[2].Equals("here", StringComparison.OrdinalIgnoreCase)
         )
@@ -384,17 +407,13 @@ public sealed class MineMapService : IDisposable
             || signal <= 0
         )
         {
-            return Failure(
-                "Use .mining survey, .mining <bearing 0-359> <border radius km> <location number>, or .mining center here."
-            );
+            return Failure(MiningCommandUsage);
         }
 
         double radiusMeters = radiusKm * 1000;
         if (!double.IsFinite(radiusMeters) || radiusMeters <= 0)
         {
-            return Failure(
-                "Use .mining survey, .mining <bearing 0-359> <border radius km> <location number>, or .mining center here."
-            );
+            return Failure(MiningCommandUsage);
         }
 
         if (!HasSurfaceContext(context))
@@ -657,6 +676,124 @@ public sealed class MineMapService : IDisposable
             true,
             "Guided survey restarted from border setup. Drive to the orange border, face the center, then record the bearing, radius, and signal number."
         );
+    }
+
+    private MineMapCommandResult CompleteSurveyGuide(MineMapCommandContext context)
+    {
+        if (SurveyGuide is not { } guide || !MatchesContext(guide, context))
+        {
+            return Failure("Start guided survey mode with .mining survey before completing it.");
+        }
+
+        MineMapSurvey? survey = guide.SurveyId is { } surveyId
+            ? surveys.FirstOrDefault(candidate => candidate.Id == surveyId)
+            : null;
+        IReadOnlyList<SurfaceCoordinate> waypoints =
+            guide.Waypoints ?? (survey is null ? [] : CreateSurveyWaypoints(survey));
+        SetSurveyGuide(
+            guide with
+            {
+                Phase = MineMapSurveyGuidePhase.Complete,
+                Waypoints = waypoints,
+                WaypointIndex = waypoints.Count,
+            }
+        );
+        if (survey is not null)
+        {
+            ActiveSurvey = survey;
+        }
+        Changed?.Invoke(this, EventArgs.Empty);
+        return new MineMapCommandResult(true, SurveyCompleteMessage, survey);
+    }
+
+    private MineMapCommandResult MoveSurveyWaypoint(string direction, MineMapCommandContext context)
+    {
+        if (SurveyGuide is not { } guide || !MatchesContext(guide, context))
+        {
+            return Failure("Start guided survey mode with .mining survey before changing waypoints.");
+        }
+
+        if (guide.Phase is not (MineMapSurveyGuidePhase.Waypoint or MineMapSurveyGuidePhase.Complete))
+        {
+            return Failure("Finish the border and center setup before moving between survey waypoints.");
+        }
+
+        MineMapSurvey? survey = guide.SurveyId is { } surveyId
+            ? surveys.FirstOrDefault(candidate => candidate.Id == surveyId)
+            : null;
+        if (survey is null)
+        {
+            return Failure("The guided survey map is no longer available.");
+        }
+
+        IReadOnlyList<SurfaceCoordinate> waypoints = guide.Waypoints ?? CreateSurveyWaypoints(survey);
+        if (waypoints.Count == 0)
+        {
+            return CompleteSurveyGuide(context);
+        }
+
+        if (direction.Equals("next", StringComparison.OrdinalIgnoreCase))
+        {
+            return MoveToNextSurveyWaypoint(guide, survey, waypoints, context);
+        }
+
+        if (direction.Equals("prev", StringComparison.OrdinalIgnoreCase))
+        {
+            return MoveToPreviousSurveyWaypoint(guide, survey, waypoints);
+        }
+
+        return Failure("Use .mining waypoint next or .mining waypoint prev.");
+    }
+
+    private MineMapCommandResult MoveToNextSurveyWaypoint(
+        MineMapSurveyGuideState guide,
+        MineMapSurvey survey,
+        IReadOnlyList<SurfaceCoordinate> waypoints,
+        MineMapCommandContext context
+    )
+    {
+        if (guide.Phase == MineMapSurveyGuidePhase.Complete)
+        {
+            return Failure("The guided survey is already complete.");
+        }
+
+        int waypointIndex = guide.WaypointIndex + 1;
+        return waypointIndex >= waypoints.Count
+            ? CompleteSurveyGuide(context)
+            : SetSurveyWaypoint(guide, survey, waypoints, waypointIndex);
+    }
+
+    private MineMapCommandResult MoveToPreviousSurveyWaypoint(
+        MineMapSurveyGuideState guide,
+        MineMapSurvey survey,
+        IReadOnlyList<SurfaceCoordinate> waypoints
+    )
+    {
+        int waypointIndex =
+            guide.Phase == MineMapSurveyGuidePhase.Complete ? waypoints.Count - 1 : guide.WaypointIndex - 1;
+        return waypointIndex < 0
+            ? Failure($"The guided survey is already at waypoint 1 of {waypoints.Count}.")
+            : SetSurveyWaypoint(guide, survey, waypoints, waypointIndex);
+    }
+
+    private MineMapCommandResult SetSurveyWaypoint(
+        MineMapSurveyGuideState guide,
+        MineMapSurvey survey,
+        IReadOnlyList<SurfaceCoordinate> waypoints,
+        int waypointIndex
+    )
+    {
+        SetSurveyGuide(
+            guide with
+            {
+                Phase = MineMapSurveyGuidePhase.Waypoint,
+                Waypoints = waypoints,
+                WaypointIndex = waypointIndex,
+            }
+        );
+        ActiveSurvey = survey;
+        Changed?.Invoke(this, EventArgs.Empty);
+        return Success($"Guided survey moved to waypoint {waypointIndex + 1} of {waypoints.Count}.", survey);
     }
 
     private bool UpdateSurveyGuide(MineMapCommandContext? context, MineMapSurvey? surveyAtLocation)

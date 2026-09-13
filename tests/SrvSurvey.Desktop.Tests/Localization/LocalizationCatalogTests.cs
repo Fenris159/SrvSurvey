@@ -21,8 +21,8 @@ public sealed class LocalizationCatalogTests : IDisposable
 
         Assert.Equal("de", LocalizationCatalog.CurrentLanguage);
         Assert.Equal(1_090, LocalizationCatalog.LegacyTranslationCount);
-        Assert.Equal(7_837, LocalizationCatalog.ApplicationTranslationCount);
-        Assert.Equal(7_837, LocalizationCatalog.SourceCount);
+        Assert.Equal(7_838, LocalizationCatalog.ApplicationTranslationCount);
+        Assert.Equal(7_838, LocalizationCatalog.SourceCount);
         Assert.Equal("Himmelskörper", LocalizationCatalog.Translate("Bodies"));
         Assert.Equal("Neues Lesezeichen", LocalizationCatalog.Translate("New bookmark"));
     }
@@ -87,6 +87,10 @@ public sealed class LocalizationCatalogTests : IDisposable
                 [".mine rigs <number>", ".mine rigs 4"]
             ),
             new(".mining survey", [".mining survey"]),
+            new(".mining waypoint <next|prev>", [".mining waypoint <next|prev>"]),
+            new(".mining waypoint next", [".mining waypoint next"]),
+            new(".mining waypoint prev", [".mining waypoint prev"]),
+            new(".mining survey complete", [".mining survey complete"]),
             new(".mine splat", [".mine splat"]),
             new(".mine splat cancel", [".mine splat cancel"]),
         ];

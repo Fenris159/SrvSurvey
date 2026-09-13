@@ -58,6 +58,21 @@ Running `.mining survey` while already inside a saved map starts at that map's
 center step. Running it again before the center workflow is complete restarts at
 the border. Running it again during the waypoint route returns to waypoint 1.
 
+While following scan waypoints, these commands let you correct the route without
+driving to the active target:
+
+```text
+.mining waypoint next
+.mining waypoint prev
+.mining survey complete
+```
+
+`next` skips to the following waypoint and completes the route when used at the
+last waypoint. `prev` returns to the preceding waypoint; from the completion
+reminder it reopens the last waypoint. `complete` ends any active guided-survey
+phase immediately and shows the same final reminder to record each deposit's rig
+capacity with `.mine rigs <number>`.
+
 Drive to the orange border of a mining-location signal and face the marker at its
 center. Send this case-insensitive chat command using the current bearing, the
 measured border radius in kilometers, and the signal's number:

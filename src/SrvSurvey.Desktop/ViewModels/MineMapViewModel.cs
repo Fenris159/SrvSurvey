@@ -259,7 +259,8 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         {
             MineMapSurveyGuidePhase.Border => ".mining <bearing> <radius km> <signal #>",
             MineMapSurveyGuidePhase.Center or MineMapSurveyGuidePhase.ConfirmCenter => ".mining center here",
-            MineMapSurveyGuidePhase.Waypoint => "Keep surface scanning; the next point advances automatically.",
+            MineMapSurveyGuidePhase.Waypoint =>
+                ".mining waypoint <next|prev> to adjust the route · .mining survey complete to finish early",
             MineMapSurveyGuidePhase.Complete =>
                 "While mining, use .mine rigs <number> to record each deposit's rig capacity.",
             _ => string.Empty,

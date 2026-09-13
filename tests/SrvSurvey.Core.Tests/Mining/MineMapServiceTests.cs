@@ -180,6 +180,63 @@ public sealed class MineMapServiceTests
     }
 
     [Fact]
+    public async Task GuidedSurveyCommandsMoveBetweenWaypointsAndCompleteEarly()
+    {
+        using var directory = new TemporaryDirectory();
+        MineMapCommandContext border = Context(new SurfaceCoordinate(0, 0));
+        using var service = new MineMapService(directory.Path);
+        Assert.True((await service.ExecuteAsync(".mining survey", border)).Succeeded);
+        Assert.True((await service.ExecuteAsync(".mining 90 6.44 4", border)).Succeeded);
+        MineMapSurvey survey = service.ActiveSurvey!;
+        MineMapCommandContext center = border with { PlayerLocation = survey.Center };
+        Assert.True((await service.ExecuteAsync(".mining center here", center)).Succeeded);
+        int waypointCount = service.SurveyGuide!.Waypoints!.Count;
+        Assert.True(waypointCount > 1);
+
+        MineMapCommandResult next = await service.ExecuteAsync(".mining waypoint next", center);
+        Assert.True(next.Succeeded);
+        Assert.Equal(1, service.SurveyGuide?.WaypointIndex);
+        Assert.Contains("waypoint 2", next.Message, StringComparison.OrdinalIgnoreCase);
+
+        MineMapCommandResult previous = await service.ExecuteAsync(".mining waypoint prev", center);
+        Assert.True(previous.Succeeded);
+        Assert.Equal(0, service.SurveyGuide?.WaypointIndex);
+        Assert.False((await service.ExecuteAsync(".mining waypoint prev", center)).Succeeded);
+        Assert.False((await service.ExecuteAsync(".mining waypoint stay", center)).Succeeded);
+
+        MineMapCommandResult completed = await service.ExecuteAsync(".mining survey complete", center);
+        Assert.True(completed.Succeeded);
+        Assert.Equal(MineMapSurveyGuidePhase.Complete, service.SurveyGuide?.Phase);
+        Assert.Equal(waypointCount, service.SurveyGuide?.WaypointIndex);
+        Assert.Contains(".mine rigs", completed.Message, StringComparison.OrdinalIgnoreCase);
+
+        previous = await service.ExecuteAsync(".mining waypoint prev", center);
+        Assert.True(previous.Succeeded);
+        Assert.Equal(MineMapSurveyGuidePhase.Waypoint, service.SurveyGuide?.Phase);
+        Assert.Equal(waypointCount - 1, service.SurveyGuide?.WaypointIndex);
+
+        next = await service.ExecuteAsync(".mining waypoint next", center);
+        Assert.True(next.Succeeded);
+        Assert.Equal(MineMapSurveyGuidePhase.Complete, service.SurveyGuide?.Phase);
+    }
+
+    [Fact]
+    public async Task GuidedSurveyCanCompleteBeforeMapSetup()
+    {
+        using var directory = new TemporaryDirectory();
+        MineMapCommandContext context = Context(new SurfaceCoordinate(0, 0));
+        using var service = new MineMapService(directory.Path);
+        Assert.True((await service.ExecuteAsync(".mining survey", context)).Succeeded);
+
+        MineMapCommandResult completed = await service.ExecuteAsync(".mining survey complete", context);
+
+        Assert.True(completed.Succeeded);
+        Assert.Null(completed.Survey);
+        Assert.Equal(MineMapSurveyGuidePhase.Complete, service.SurveyGuide?.Phase);
+        Assert.Contains(".mine rigs", completed.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task GuidedSurveyProgressResumesAfterServiceRestart()
     {
         using var directory = new TemporaryDirectory();

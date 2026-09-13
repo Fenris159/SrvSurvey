@@ -18040,6 +18040,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
+    "Text": "Finishes any active guided-survey phase early and shows the same final reminder to record rig capacity at each deposit.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
     "Text": "Firegroups",
     "IsFormat": false,
     "SourceKinds": [
@@ -23767,14 +23775,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
-    "Text": "Keep surface scanning; the next point advances automatically.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
-  },
-  {
     "Text": "Keep travelling",
     "IsFormat": false,
     "SourceKinds": [
@@ -27645,6 +27645,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
+  },
+  {
+    "Text": "Moves the active guide to the next or previous scan waypoint. Next completes the route when used at its final waypoint. Previous reopens the last waypoint from the completion reminder.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
     "Text": "Moves the current map center to your live surface coordinates while preserving the location radius and every existing deposit marker. Use it from the true center to correct the border and ring alignment.",

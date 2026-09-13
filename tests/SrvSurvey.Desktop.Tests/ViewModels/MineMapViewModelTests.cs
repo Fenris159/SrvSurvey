@@ -398,11 +398,22 @@ public sealed class MineMapViewModelTests
         await viewModel.ApplyUpdateAsync([Command(".mining center here")], context, status, allowCommands: true);
         Assert.Contains(" OF ", viewModel.SurveyGuideTitle, StringComparison.Ordinal);
         Assert.NotNull(viewModel.SurveyGuideTarget);
-        Assert.Contains("advances automatically", viewModel.SurveyGuideCommandHint, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(".mining waypoint", viewModel.SurveyGuideCommandHint, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("survey complete", viewModel.SurveyGuideCommandHint, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("center moved", viewModel.SurveyGuideFooter, StringComparison.OrdinalIgnoreCase);
         viewModel.ExpireSurveyGuideFeedback(DateTimeOffset.MaxValue);
         Assert.Contains(".mine <bearing>", viewModel.SurveyGuideFooter, StringComparison.Ordinal);
         Assert.Contains(".mine <commodity>", viewModel.SurveyGuideFooter, StringComparison.Ordinal);
+
+        await viewModel.ApplyUpdateAsync([Command(".mining waypoint next")], context, status, allowCommands: true);
+        Assert.Contains("2 OF", viewModel.SurveyGuideTitle, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("moved to waypoint 2", viewModel.SurveyGuideFeedback, StringComparison.OrdinalIgnoreCase);
+        Assert.Empty(notifications);
+
+        await viewModel.ApplyUpdateAsync([Command(".mining survey complete")], context, status, allowCommands: true);
+        Assert.True(viewModel.IsSurveyGuideComplete);
+        Assert.Contains(".mine rigs", viewModel.SurveyGuideFeedback, StringComparison.OrdinalIgnoreCase);
+        Assert.Empty(notifications);
     }
 
     [Fact]

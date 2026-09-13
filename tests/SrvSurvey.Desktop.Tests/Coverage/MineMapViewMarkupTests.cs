@@ -142,6 +142,18 @@ public sealed class MineMapViewMarkupTests
         );
         Assert.Contains(
             document.Descendants(avalonia + "TextBlock"),
+            text => text.Attribute("Text")?.Value == ".mining waypoint next"
+        );
+        Assert.Contains(
+            document.Descendants(avalonia + "TextBlock"),
+            text => text.Attribute("Text")?.Value == ".mining waypoint prev"
+        );
+        Assert.Contains(
+            document.Descendants(avalonia + "TextBlock"),
+            text => text.Attribute("Text")?.Value == ".mining survey complete"
+        );
+        Assert.Contains(
+            document.Descendants(avalonia + "TextBlock"),
             text => text.Attribute("Text")?.Value == ".mining center here"
         );
         Assert.Contains(

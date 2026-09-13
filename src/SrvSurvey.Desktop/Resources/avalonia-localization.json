@@ -8997,6 +8997,10 @@
       "translation": "Passen Sie die kommandantspezifische Markierung an, nachdem Sie sie auf der Karte ausgewählt haben."
     },
     {
+      "source": "Finishes any active guided-survey phase early and shows the same final reminder to record rig capacity at each deposit.",
+      "translation": "Beendet jede aktive Phase der geführten Vermessung vorzeitig und zeigt die gleiche letzte Erinnerung an, um die Bohrinselkapazität bei jeder Lagerstätte aufzuzeichnen."
+    },
+    {
       "source": "Firegroups",
       "translation": "Feuergruppen"
     },
@@ -11849,10 +11853,6 @@
       "translation": "Machen Sie Fortschritte"
     },
     {
-      "source": "Keep surface scanning; the next point advances automatically.",
-      "translation": "Scannen Sie weiterhin die Oberfläche. Der nächste Punkt rückt automatisch vor."
-    },
-    {
       "source": "Keep travelling",
       "translation": "Reisen Sie weiter"
     },
@@ -13783,6 +13783,10 @@
     {
       "source": "Moved {0}. Use ✓ to save all changes or ✕ to cancel them.",
       "translation": "Verschoben {0}. Verwenden Sie ✓, um alle Änderungen zu speichern, oder ✕, um sie abzubrechen."
+    },
+    {
+      "source": "Moves the active guide to the next or previous scan waypoint. Next completes the route when used at its final waypoint. Previous reopens the last waypoint from the completion reminder.",
+      "translation": "Verschiebt den aktiven Guide zum nächsten oder vorherigen Scan-Wegpunkt. „Next“ vervollständigt die Route, wenn sie am letzten Wegpunkt verwendet wird. „Zurück“ öffnet den letzten Wegpunkt aus der Abschlusserinnerung erneut."
     },
     {
       "source": "Moves the current map center to your live surface coordinates while preserving the location radius and every existing deposit marker. Use it from the true center to correct the border and ring alignment.",
@@ -40347,6 +40351,10 @@
       "translation": "Ajusta el marcador específico del comandante después de seleccionarlo en el mapa."
     },
     {
+      "source": "Finishes any active guided-survey phase early and shows the same final reminder to record rig capacity at each deposit.",
+      "translation": "Finaliza anticipadamente cualquier fase activa de encuesta guiada y muestra el mismo recordatorio final para registrar la capacidad de la plataforma en cada depósito."
+    },
+    {
       "source": "Firegroups",
       "translation": "grupos de fuego"
     },
@@ -43199,10 +43207,6 @@
       "translation": "mantener el progreso"
     },
     {
-      "source": "Keep surface scanning; the next point advances automatically.",
-      "translation": "Mantenga el escaneo de la superficie; el siguiente punto avanza automáticamente."
-    },
-    {
       "source": "Keep travelling",
       "translation": "sigue viajando"
     },
@@ -45133,6 +45137,10 @@
     {
       "source": "Moved {0}. Use ✓ to save all changes or ✕ to cancel them.",
       "translation": "Movido {0}. Utilice ✓ para guardar todos los cambios o ✕ para cancelarlos."
+    },
+    {
+      "source": "Moves the active guide to the next or previous scan waypoint. Next completes the route when used at its final waypoint. Previous reopens the last waypoint from the completion reminder.",
+      "translation": "Mueve la guía activa al punto de ruta de escaneo anterior o siguiente. A continuación, completa la ruta cuando se utiliza en su punto final. Anterior vuelve a abrir el último waypoint desde el recordatorio de finalización."
     },
     {
       "source": "Moves the current map center to your live surface coordinates while preserving the location radius and every existing deposit marker. Use it from the true center to correct the border and ring alignment.",
@@ -71697,6 +71705,10 @@
       "translation": "Affinez le marqueur spécifique au commandant après l’avoir sélectionné sur la carte."
     },
     {
+      "source": "Finishes any active guided-survey phase early and shows the same final reminder to record rig capacity at each deposit.",
+      "translation": "Termine toute phase d'enquête guidée active plus tôt et affiche le même rappel final pour enregistrer la capacité de forage à chaque gisement."
+    },
+    {
       "source": "Firegroups",
       "translation": "groupes de pompiers"
     },
@@ -74549,10 +74561,6 @@
       "translation": "Continuer à progresser"
     },
     {
-      "source": "Keep surface scanning; the next point advances automatically.",
-      "translation": "Continuez à scanner la surface ; le point suivant avance automatiquement."
-    },
-    {
       "source": "Keep travelling",
       "translation": "Continuez à voyager"
     },
@@ -76483,6 +76491,10 @@
     {
       "source": "Moved {0}. Use ✓ to save all changes or ✕ to cancel them.",
       "translation": "{0} déplacé. Utilisez ✓ pour enregistrer toutes les modifications ou ✕ pour les annuler."
+    },
+    {
+      "source": "Moves the active guide to the next or previous scan waypoint. Next completes the route when used at its final waypoint. Previous reopens the last waypoint from the completion reminder.",
+      "translation": "Déplace le guide actif vers le waypoint de numérisation suivant ou précédent. Next termine l'itinéraire lorsqu'il est utilisé à son waypoint final. Précédent rouvre le dernier waypoint du rappel d'achèvement."
     },
     {
       "source": "Moves the current map center to your live surface coordinates while preserving the location radius and every existing deposit marker. Use it from the true center to correct the border and ring alignment.",
@@ -103047,6 +103059,10 @@
       "translation": "Ajuste o marcador específico do comandante após selecioná-lo no mapa."
     },
     {
+      "source": "Finishes any active guided-survey phase early and shows the same final reminder to record rig capacity at each deposit.",
+      "translation": "Termina qualquer fase ativa de pesquisa guiada antecipadamente e mostra o mesmo lembrete final para registrar a capacidade da plataforma em cada depósito."
+    },
+    {
       "source": "Firegroups",
       "translation": "grupos de fogo"
     },
@@ -105899,10 +105915,6 @@
       "translation": "Mantenha o progresso"
     },
     {
-      "source": "Keep surface scanning; the next point advances automatically.",
-      "translation": "Mantenha a digitalização da superfície; o próximo ponto avança automaticamente."
-    },
-    {
       "source": "Keep travelling",
       "translation": "Continue viajando"
     },
@@ -107833,6 +107845,10 @@
     {
       "source": "Moved {0}. Use ✓ to save all changes or ✕ to cancel them.",
       "translation": "Movido {0}. Use ✓ para salvar todas as alterações ou ✕ para cancelá-las."
+    },
+    {
+      "source": "Moves the active guide to the next or previous scan waypoint. Next completes the route when used at its final waypoint. Previous reopens the last waypoint from the completion reminder.",
+      "translation": "Move o guia ativo para o waypoint de varredura seguinte ou anterior. Em seguida, completa a rota quando usado em seu waypoint final. Anterior reabre o último waypoint do lembrete de conclusão."
     },
     {
       "source": "Moves the current map center to your live surface coordinates while preserving the location radius and every existing deposit marker. Use it from the true center to correct the border and ring alignment.",
@@ -134397,6 +134413,10 @@
       "translation": "Точная настройка маркера командира после его выбора на карте."
     },
     {
+      "source": "Finishes any active guided-survey phase early and shows the same final reminder to record rig capacity at each deposit.",
+      "translation": "Досрочное завершение любого активного этапа управляемого исследования и отображение одного и того же последнего напоминания о необходимости записи мощности буровой установки на каждом месторождении."
+    },
+    {
       "source": "Firegroups",
       "translation": "огневые группы"
     },
@@ -137249,10 +137269,6 @@
       "translation": "Продолжайте прогресс"
     },
     {
-      "source": "Keep surface scanning; the next point advances automatically.",
-      "translation": "Продолжайте сканирование поверхности; следующая точка продвигается автоматически."
-    },
-    {
       "source": "Keep travelling",
       "translation": "Продолжайте путешествовать"
     },
@@ -139183,6 +139199,10 @@
     {
       "source": "Moved {0}. Use ✓ to save all changes or ✕ to cancel them.",
       "translation": "Перемещено {0}. Используйте ✓, чтобы сохранить все изменения, или ✕, чтобы отменить их."
+    },
+    {
+      "source": "Moves the active guide to the next or previous scan waypoint. Next completes the route when used at its final waypoint. Previous reopens the last waypoint from the completion reminder.",
+      "translation": "Перемещает активную направляющую к следующей или предыдущей путевой точке сканирования. Next завершает маршрут при использовании в конечной точке маршрута. Предыдущий повторно открывает последнюю путевую точку из напоминания о завершении."
     },
     {
       "source": "Moves the current map center to your live surface coordinates while preserving the location radius and every existing deposit marker. Use it from the true center to correct the border and ring alignment.",
@@ -165747,6 +165767,10 @@
       "translation": "在地图上选择指挥官特定标记后对其进行微调。"
     },
     {
+      "source": "Finishes any active guided-survey phase early and shows the same final reminder to record rig capacity at each deposit.",
+      "translation": "尽早完成任何活动的引导调查阶段，并显示相同的最终提醒，以记录每次沉积的钻机容量。"
+    },
+    {
       "source": "Firegroups",
       "translation": "火力组"
     },
@@ -168599,10 +168623,6 @@
       "translation": "保持进步"
     },
     {
-      "source": "Keep surface scanning; the next point advances automatically.",
-      "translation": "保持表面扫描；下一个点会自动前进。"
-    },
-    {
       "source": "Keep travelling",
       "translation": "继续旅行"
     },
@@ -170533,6 +170553,10 @@
     {
       "source": "Moved {0}. Use ✓ to save all changes or ✕ to cancel them.",
       "translation": "已移动 {0}。使用 ✓ 保存所有更改或使用 ✕ 取消它们。"
+    },
+    {
+      "source": "Moves the active guide to the next or previous scan waypoint. Next completes the route when used at its final waypoint. Previous reopens the last waypoint from the completion reminder.",
+      "translation": "将活动指南移动到下一个或上一个扫描航路点。 Next 在最终航路点使用时完成路线。上一个重新打开完成提醒中的最后一个航点。"
     },
     {
       "source": "Moves the current map center to your live surface coordinates while preserving the location radius and every existing deposit marker. Use it from the true center to correct the border and ring alignment.",
@@ -197097,6 +197121,10 @@
       "translation": "* FINE-TUNE THE COMMANDER-SPECIFIC MARKER AFTER SELECTING IT ON THE MAP. >>>!"
     },
     {
+      "source": "Finishes any active guided-survey phase early and shows the same final reminder to record rig capacity at each deposit.",
+      "translation": "* FINISHES ANY ACTIVE GUIDED-SURVEY PHASE EARLY AND SHOWS THE SAME FINAL REMINDER TO RECORD RIG CAPACITY AT EACH DEPOSIT. >>>!"
+    },
+    {
       "source": "Firegroups",
       "translation": "* FIREGROUPS >>>!"
     },
@@ -199949,10 +199977,6 @@
       "translation": "* KEEP PROGRESS >>>!"
     },
     {
-      "source": "Keep surface scanning; the next point advances automatically.",
-      "translation": "* KEEP SURFACE SCANNING; THE NEXT POINT ADVANCES AUTOMATICALLY. >>>!"
-    },
-    {
       "source": "Keep travelling",
       "translation": "* KEEP TRAVELLING >>>!"
     },
@@ -201883,6 +201907,10 @@
     {
       "source": "Moved {0}. Use ✓ to save all changes or ✕ to cancel them.",
       "translation": "* MOVED {0}. USE ✓ TO SAVE ALL CHANGES OR ✕ TO CANCEL THEM. >>>!"
+    },
+    {
+      "source": "Moves the active guide to the next or previous scan waypoint. Next completes the route when used at its final waypoint. Previous reopens the last waypoint from the completion reminder.",
+      "translation": "* MOVES THE ACTIVE GUIDE TO THE NEXT OR PREVIOUS SCAN WAYPOINT. NEXT COMPLETES THE ROUTE WHEN USED AT ITS FINAL WAYPOINT. PREVIOUS REOPENS THE LAST WAYPOINT FROM THE COMPLETION REMINDER. >>>!"
     },
     {
       "source": "Moves the current map center to your live surface coordinates while preserving the location radius and every existing deposit marker. Use it from the true center to correct the border and ring alignment.",
