@@ -6,7 +6,7 @@
 [![SonarCloud coverage](https://sonarcloud.io/api/project_badges/measure?project=Fenris159_SrvSurvey&metric=coverage)](https://sonarcloud.io/component_measures?id=Fenris159_SrvSurvey&metric=coverage)
 [![License](https://img.shields.io/github/license/Fenris159/SrvSurvey)](LICENSE)
 
-[![GitHub languages](https://img.shields.io/github/languages/count/Fenris159/SrvSurvey?label=languages)](https://github.com/Fenris159/SrvSurvey)
+[![Application language](https://img.shields.io/badge/application-C%23-512BD4?logo=dotnet)](https://github.com/Fenris159/SrvSurvey/tree/SrvSurvey-Avalonia/src)
 [![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
 [![Avalonia 12.1](https://img.shields.io/badge/Avalonia-12.1.0-8B44AC)](https://avaloniaui.net/)
 [![SkiaSharp 3.119](https://img.shields.io/badge/SkiaSharp-3.119.4-00AEEF)](https://github.com/mono/SkiaSharp)
@@ -14,7 +14,7 @@
 [![CSharpier 1.3](https://img.shields.io/badge/formatter-CSharpier%201.3.0-2E7D32)](https://csharpier.com/)
 [![Windows x64](https://img.shields.io/badge/Windows-x64-0078D4?logo=windows11)](docs/INSTALL_WINDOWS.md)
 [![Linux x64](https://img.shields.io/badge/Linux-x64-FCC624?logo=linux&logoColor=black)](docs/INSTALL_LINUX.md)
-[![Languages](https://img.shields.io/badge/interface_languages-8-0B7285)](#themes-overlays-and-accessibility)
+[![Interface languages](https://img.shields.io/badge/UI_languages-7-0B7285)](#themes-overlays-and-accessibility)
 
 SrvSurvey-XP is a cross-platform companion for **Elite Dangerous**. It reads the
 game's journal and auxiliary files and turns them into live exploration,
