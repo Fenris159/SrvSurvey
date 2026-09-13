@@ -602,6 +602,29 @@ public sealed class MineMapServiceTests
     }
 
     [Fact]
+    public async Task MineCommandsAcceptShortRatingNames()
+    {
+        using var directory = new TemporaryDirectory();
+        MineMapCommandContext context = Context(new SurfaceCoordinate(1, 2));
+        using var service = new MineMapService(directory.Path);
+        Assert.True((await service.ExecuteAsync(".mining 180 3.25 7", context)).Succeeded);
+        MineMapCommandContext center = context with { PlayerLocation = service.ActiveSurvey!.Center };
+
+        Assert.True((await service.ExecuteAsync(".mine 15 ruby 0.50 h/M", center)).Succeeded);
+        Assert.True((await service.ExecuteAsync(".mine low temperature diamonds L/h here", center)).Succeeded);
+
+        MineMapMarker ruby = Assert.Single(service.ActiveSurvey.Markers, marker => marker.Material == "Ruby");
+        Assert.Equal(MineMapRating.High, ruby.MineralAmount);
+        Assert.Equal(MineMapRating.Medium, ruby.Density);
+        MineMapMarker diamonds = Assert.Single(
+            service.ActiveSurvey.Markers,
+            marker => marker.Material == "Low Temperature Diamonds"
+        );
+        Assert.Equal(MineMapRating.Low, diamonds.MineralAmount);
+        Assert.Equal(MineMapRating.High, diamonds.Density);
+    }
+
+    [Fact]
     public async Task BearingPlacementRejectsNearbyDuplicateMaterialWhileHereAllowsOverlap()
     {
         using var directory = new TemporaryDirectory();

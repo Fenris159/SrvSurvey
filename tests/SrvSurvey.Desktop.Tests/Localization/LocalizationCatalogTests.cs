@@ -21,8 +21,8 @@ public sealed class LocalizationCatalogTests : IDisposable
 
         Assert.Equal("de", LocalizationCatalog.CurrentLanguage);
         Assert.Equal(1_090, LocalizationCatalog.LegacyTranslationCount);
-        Assert.Equal(7_838, LocalizationCatalog.ApplicationTranslationCount);
-        Assert.Equal(7_838, LocalizationCatalog.SourceCount);
+        Assert.Equal(7_839, LocalizationCatalog.ApplicationTranslationCount);
+        Assert.Equal(7_839, LocalizationCatalog.SourceCount);
         Assert.Equal("Himmelskörper", LocalizationCatalog.Translate("Bodies"));
         Assert.Equal("Neues Lesezeichen", LocalizationCatalog.Translate("New bookmark"));
     }
@@ -71,8 +71,12 @@ public sealed class LocalizationCatalogTests : IDisposable
         KeyValuePair<string, string[]>[] examples =
         [
             new(
-                "Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit's mineral amount and density. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 15 ruby 1.24 high/medium",
-                [".mine 15 ruby 1.24 high/medium"]
+                "Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit's mineral amount and density. Use l, m, or h for Low, Medium, or High; full words also work. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 342 jadeite 1.87 h/m",
+                [".mine 342 jadeite 1.87 h/m"]
+            ),
+            new(
+                "Adds a listed commodity and its mineral amount and density at your current surface coordinates. Use l, m, or h for Low, Medium, or High; full words also work. This precise placement may overlap an existing marker. Example: .mine monazite m/h here",
+                [".mine monazite m/h here"]
             ),
             new(
                 "Drive to the orange location border, face the center marker, and send .mining <bearing> <border radius km> <location number>. Example: .mining 120 6.44 4.",

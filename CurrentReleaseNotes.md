@@ -1,4 +1,4 @@
-# SrvSurvey-XP 2.1.3.0-rc.48
+# SrvSurvey-XP 2.1.3.0-rc.48.1
 
 - Replaces the Mining workspace placeholder with session accounting, prospecting
   yields, core and raw-material tracking, cargo, mining missions, historical
@@ -14,6 +14,20 @@
 - Adds announcement filters/presets and optional Windows speech, CSV history
   import, offline HTML reports with print/PDF output, and ZIP backups containing
   shared bookmarks and screenshot attachments. Guides documents the new tools.
+
+RC48.1 corrects Surface Mining bookmark export and streamlines deposit-rating
+commands. It retains the full RC48 feature set and the prior release-candidate
+changes summarized below.
+
+## New in RC48.1
+
+- Exports only the selected planetary mining-location bookmark instead of every
+  saved location on the same body.
+- Keeps a bookmark row's left click focused on viewing and editing its details.
+  Surface Mining bookmarks can be opened explicitly through the new **Open in
+  Workspace** context-menu action, while Surface Maps rows still open directly.
+- Accepts `l`, `m` and `h` as case-insensitive shorthand for Low, Medium and High
+  in both `.mine` deposit command forms. The full rating words remain supported.
 
 RC48 expands the Surface Mining workflow with resumable survey guidance, rig
 capacity, traced deposit boundaries, automatic rig-fitting suggestions and
@@ -147,11 +161,11 @@ release-candidate changes summarized below.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.48`
-- Tag: `xp-v2.1.3.0-rc.48`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.48-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.48-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.48-x86_64.AppImage`
+- Version: `2.1.3.0-rc.48.1`
+- Tag: `xp-v2.1.3.0-rc.48.1`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.48.1-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.48.1-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.48.1-x86_64.AppImage`
 
 Windows and Linux packages are self-contained. Linux packaging tools and the
 AppImage runtime use versioned, checksum-verified downloads. AppImages are updated

@@ -3010,7 +3010,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/NotificationViewModel.cs"
   },
   {
-    "Text": "Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit\u0027s mineral amount and density. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 15 ruby 1.24 high/medium",
+    "Text": "Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit\u0027s mineral amount and density. Use l, m, or h for Low, Medium, or High; full words also work. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 342 jadeite 1.87 h/m",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -3018,7 +3018,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
-    "Text": "Adds a listed commodity and its mineral amount and density at your current surface coordinates. This precise placement may overlap an existing marker. Example: .mine monazite medium/high here",
+    "Text": "Adds a listed commodity and its mineral amount and density at your current surface coordinates. Use l, m, or h for Low, Medium, or High; full words also work. This precise placement may overlap an existing marker. Example: .mine monazite m/h here",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -4323,7 +4323,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Presentation/RouteBodyAssetResolver.cs"
   },
   {
-    "Text": "At a deposit, send .mine \u003Ccommodity\u003E \u003Clow|medium|high\u003E/\u003Clow|medium|high\u003E here. Precise here placement may overlap an existing marker. Example: .mine ruby medium/low here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
+    "Text": "At a deposit, send .mine \u003Ccommodity\u003E \u003Cl|m|h\u003E/\u003Cl|m|h\u003E here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -18770,7 +18770,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
-    "Text": "From anywhere inside the saved border, face a deposit and send .mine \u003Cbearing\u003E \u003Ccommodity\u003E \u003Cdistance km\u003E \u003Clow|medium|high\u003E/\u003Clow|medium|high\u003E. The bearing and distance start at your live position. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 15 ruby 1.24 high/medium.",
+    "Text": "From anywhere inside the saved border, face a deposit and send .mine \u003Cbearing\u003E \u003Ccommodity\u003E \u003Cdistance km\u003E \u003Cl|m|h\u003E/\u003Cl|m|h\u003E. The bearing and distance start at your live position. Use l, m, or h for Low, Medium, or High; full words also work. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 342 jadeite 1.87 h/m.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -26934,7 +26934,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
-    "Text": "Mineral amount and density describe each deposit and accept low, medium, or high. Deposit names must match a commodity in Activities \u003E Surface Mining \u003E Hotspot List; rejected commands explain the problem in Status notifications.",
+    "Text": "Mineral amount and density describe each deposit and accept l, m, or h as shorthand for low, medium, or high. Deposit names must match a commodity in Activities \u003E Surface Mining \u003E Hotspot List; rejected commands explain the problem in Status notifications.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -31047,6 +31047,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
+  },
+  {
+    "Text": "Open in Workspace",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
   },
   {
     "Text": "Open journal",

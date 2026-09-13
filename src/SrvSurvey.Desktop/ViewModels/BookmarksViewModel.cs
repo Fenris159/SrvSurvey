@@ -12,6 +12,7 @@ public sealed class BookmarksViewModel : WorkspaceObservable
         : StringComparer.Ordinal;
     private readonly BookmarkCatalog? catalog;
     private readonly Action<Guid> openSurfaceMiningMap;
+    private readonly WorkspaceCommand openInWorkspaceCommand;
     private readonly WorkspaceTableSorter sorter = new();
     private GalacticBookmark? selected;
     private GalacticBookmark? deleted;
@@ -130,6 +131,10 @@ public sealed class BookmarksViewModel : WorkspaceObservable
                 Status = "Bookmark removed.";
             })
         );
+        openInWorkspaceCommand = new WorkspaceCommand(
+            () => OpenSelectedSurfaceMiningMap(),
+            () => Selected?.IsSurfaceMiningMap == true
+        );
         SortCommand = new WorkspaceParameterCommand(parameter =>
         {
             sorter.Toggle(parameter);
@@ -145,6 +150,7 @@ public sealed class BookmarksViewModel : WorkspaceObservable
     public ICommand NewCommand { get; }
     public ICommand SaveCommand { get; }
     public ICommand DeleteCommand { get; }
+    public ICommand OpenInWorkspaceCommand => openInWorkspaceCommand;
     public ICommand SortCommand { get; }
     public WorkspaceSortIndicators SortIndicators => new(sorter.Indicator);
     public IReadOnlyList<GalacticBookmark> All => catalog?.Items ?? [];
@@ -304,6 +310,7 @@ public sealed class BookmarksViewModel : WorkspaceObservable
 
             Changed(nameof(SelectedScreenshots));
             Changed(nameof(IsSurfaceMiningMap));
+            openInWorkspaceCommand.Refresh();
             if (value is null)
             {
                 return;
@@ -406,7 +413,15 @@ public sealed class BookmarksViewModel : WorkspaceObservable
             Status = "Mining location bookmarked.";
         });
 
-    public string Export() => catalog?.Export() ?? throw new InvalidOperationException(Status);
+    public string Export()
+    {
+        if (catalog is null)
+        {
+            throw new InvalidOperationException(Status);
+        }
+
+        return Selected is { IsSurfaceMiningMap: true } bookmark ? catalog.Export(bookmark.Id) : catalog.Export();
+    }
 
     public bool Restore(string json)
     {

@@ -389,11 +389,14 @@ public sealed class MineMapViewMarkupTests
                 list.Attribute(XName.Get("Name", "http://schemas.microsoft.com/winfx/2006/xaml"))?.Value
                 == "BookmarkRows"
         );
+        Assert.DoesNotContain(
+            rows.Descendants(),
+            element => element.Attribute("PointerPressed")?.Value == "BookmarkRow_PointerPressed"
+        );
+        Assert.Equal("{Binding Selected}", rows.Attribute("SelectedItem")?.Value);
         Assert.Contains(
-            rows.Descendants(avalonia + "Grid"),
-            grid =>
-                grid.Attribute("PointerPressed")?.Value == "BookmarkRow_PointerPressed"
-                && grid.Attribute("Tag")?.Value == "{Binding Id}"
+            rows.Descendants(avalonia + "MenuItem"),
+            item => item.Attribute("Header")?.Value == "Open in Workspace"
         );
         Assert.Contains(
             rows.Descendants(avalonia + "TextBlock"),

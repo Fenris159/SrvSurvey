@@ -191,6 +191,14 @@ public sealed class BookmarkCatalog
 
     public string Export() => JsonSerializer.Serialize(items, JsonOptions);
 
+    public string Export(Guid id)
+    {
+        GalacticBookmark bookmark =
+            items.FirstOrDefault(candidate => candidate.Id == id)
+            ?? throw new InvalidOperationException("The selected bookmark is no longer available.");
+        return JsonSerializer.Serialize(new[] { bookmark }, JsonOptions);
+    }
+
     public static void ValidateImport(string json) => Parse(json);
 
     public void Restore(string json)

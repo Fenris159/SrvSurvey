@@ -1505,12 +1505,12 @@
       "translation": "Eingebettetes Banner zu zukünftigen Screenshots hinzufügen"
     },
     {
-      "source": "Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit's mineral amount and density. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 15 ruby 1.24 high/medium",
-      "translation": "Fügt einen aufgelisteten Rohstoff aus der Hotspot-Liste in einer Peilung und Entfernung von Ihrer Live-Position irgendwo innerhalb der gespeicherten Kartengrenze hinzu, gefolgt von der Mineralmenge und -dichte dieser Lagerstätte. Eine Markierung derselben Ware im Umkreis von 100 m wird als wahrscheinliches Duplikat abgelehnt. Beispiel: .mine 15 ruby 1.24 high/medium"
+      "source": "Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit's mineral amount and density. Use l, m, or h for Low, Medium, or High; full words also work. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 342 jadeite 1.87 h/m",
+      "translation": "Fügt einen aufgelisteten Rohstoff aus der Hotspot-Liste in einer Peilung und Entfernung von Ihrer Live-Position irgendwo innerhalb der gespeicherten Kartengrenze hinzu, gefolgt von der Mineralmenge und -dichte dieser Lagerstätte. Verwenden Sie l, m oder h für Niedrig, Mittel oder Hoch; Ganze Wörter funktionieren auch. Eine Markierung derselben Ware im Umkreis von 100 m wird als wahrscheinliches Duplikat abgelehnt. Beispiel: .mine 342 jadeite 1.87 h/m"
     },
     {
-      "source": "Adds a listed commodity and its mineral amount and density at your current surface coordinates. This precise placement may overlap an existing marker. Example: .mine monazite medium/high here",
-      "translation": "Fügt einen aufgelisteten Rohstoff und seine Mineralmenge und -dichte an Ihren aktuellen Oberflächenkoordinaten hinzu. Diese genaue Platzierung kann eine vorhandene Markierung überlappen. Beispiel: .mine monazite medium/high here"
+      "source": "Adds a listed commodity and its mineral amount and density at your current surface coordinates. Use l, m, or h for Low, Medium, or High; full words also work. This precise placement may overlap an existing marker. Example: .mine monazite m/h here",
+      "translation": "Fügt einen aufgelisteten Rohstoff und seine Mineralmenge und -dichte an Ihren aktuellen Oberflächenkoordinaten hinzu. Verwenden Sie l, m oder h für Niedrig, Mittel oder Hoch; Ganze Wörter funktionieren auch. Diese genaue Platzierung kann eine vorhandene Markierung überlappen. Beispiel: .mine monazite m/h here"
     },
     {
       "source": "Adjust Header, Title, Value, Body, Detail, and Caption font sizes in half-point increments. These shared roles keep related overlays consistent instead of resizing individual labels independently.",
@@ -2161,8 +2161,8 @@
       "translation": "Asteroidenhaufen"
     },
     {
-      "source": "At a deposit, send .mine <commodity> <low|medium|high>/<low|medium|high> here. Precise here placement may overlap an existing marker. Example: .mine ruby medium/low here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
-      "translation": "Bei einer Einzahlung senden Sie .mine <commodity> <low|medium|high>/<low|medium|high> here. Bei einer präzisen Platzierung kann es sein, dass eine vorhandene Markierung überlappt. Beispiel: .mine ruby medium/low here. Entfernen Sie die nächstgelegene kartierte Lagerstätte im Umkreis von 0,5 km mit .mine delete here."
+      "source": "At a deposit, send .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
+      "translation": "Bei einer Einzahlung senden Sie .mine <commodity> <l|m|h>/<l|m|h> here. Verwenden Sie l, m oder h für Niedrig, Mittel oder Hoch; Ganze Wörter funktionieren auch. Bei einer präzisen Platzierung kann es sein, dass eine vorhandene Markierung überlappt. Beispiel: .mine ruby m/l here. Entfernen Sie die nächstgelegene kartierte Lagerstätte im Umkreis von 0,5 km mit .mine delete here."
     },
     {
       "source": "At a resource location, send +helium or +thortveitite in game chat to save your current position under that name. These are manual bookmarks; the overlay does not automatically detect mineral deposits.",
@@ -9361,8 +9361,8 @@
       "translation": "Von einer beliebigen Stelle innerhalb der gespeicherten Grenze aus blicken Sie auf eine Lagerstätte und fügen deren Markierung, Mineralmenge und Dichte mit .mine hinzu."
     },
     {
-      "source": "From anywhere inside the saved border, face a deposit and send .mine <bearing> <commodity> <distance km> <low|medium|high>/<low|medium|high>. The bearing and distance start at your live position. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 15 ruby 1.24 high/medium.",
-      "translation": "Nehmen Sie von überall innerhalb der gespeicherten Grenze eine Einzahlung vor und senden Sie .mine <bearing> <commodity> <distance km> <low|medium|high>/<low|medium|high>. Peilung und Entfernung beginnen an Ihrer Live-Position. Eine Markierung derselben Ware im Umkreis von 100 m wird als wahrscheinliches Duplikat abgelehnt. Beispiel: .mine 15 ruby 1.24 high/medium."
+      "source": "From anywhere inside the saved border, face a deposit and send .mine <bearing> <commodity> <distance km> <l|m|h>/<l|m|h>. The bearing and distance start at your live position. Use l, m, or h for Low, Medium, or High; full words also work. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 342 jadeite 1.87 h/m.",
+      "translation": "Nehmen Sie von überall innerhalb der gespeicherten Grenze eine Einzahlung vor und senden Sie .mine <bearing> <commodity> <distance km> <l|m|h>/<l|m|h>. Peilung und Entfernung beginnen an Ihrer Live-Position. Verwenden Sie l, m oder h für Niedrig, Mittel oder Hoch; Ganze Wörter funktionieren auch. Eine Markierung derselben Ware im Umkreis von 100 m wird als wahrscheinliches Duplikat abgelehnt. Beispiel: .mine 342 jadeite 1.87 h/m."
     },
     {
       "source": "From the true center, send .mining center here to correct the saved center and ring alignment without moving any deposit markers.",
@@ -13429,8 +13429,8 @@
       "translation": "Mineralstoffmenge:"
     },
     {
-      "source": "Mineral amount and density describe each deposit and accept low, medium, or high. Deposit names must match a commodity in Activities > Surface Mining > Hotspot List; rejected commands explain the problem in Status notifications.",
-      "translation": "Mineralmenge und -dichte beschreiben jede Lagerstätte und können niedrig, mittel oder hoch sein. Lagerstättennamen müssen mit einem Rohstoff in Aktivitäten > Tagebau > Hotspot-Liste übereinstimmen; Abgelehnte Befehle erklären das Problem in den Statusbenachrichtigungen."
+      "source": "Mineral amount and density describe each deposit and accept l, m, or h as shorthand for low, medium, or high. Deposit names must match a commodity in Activities > Surface Mining > Hotspot List; rejected commands explain the problem in Status notifications.",
+      "translation": "Mineralmenge und -dichte beschreiben jede Lagerstätte und akzeptieren l, m oder h als Abkürzung für niedrig, mittel oder hoch. Lagerstättennamen müssen mit einem Rohstoff in Aktivitäten > Tagebau > Hotspot-Liste übereinstimmen; Abgelehnte Befehle erklären das Problem in den Statusbenachrichtigungen."
     },
     {
       "source": "Mineral availability follows ring composition. Prices vary; check current market observations before selling.",
@@ -15479,6 +15479,10 @@
     {
       "source": "Open images folder",
       "translation": "Öffnen Sie den Bilderordner"
+    },
+    {
+      "source": "Open in Workspace",
+      "translation": "Im Arbeitsbereich öffnen"
     },
     {
       "source": "Open journal",
@@ -32859,12 +32863,12 @@
       "translation": "Agregar un banner incrustado a futuras capturas de pantalla"
     },
     {
-      "source": "Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit's mineral amount and density. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 15 ruby 1.24 high/medium",
-      "translation": "Agrega un producto de la lista de puntos de acceso a un rumbo y distancia desde su posición en vivo en cualquier lugar dentro del borde del mapa guardado, seguido de la cantidad y densidad del mineral de ese depósito. Un marcador del mismo producto dentro de un radio de 100 m se rechaza como probable duplicado. Ejemplo: .mine 15 ruby 1.24 high/medium"
+      "source": "Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit's mineral amount and density. Use l, m, or h for Low, Medium, or High; full words also work. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 342 jadeite 1.87 h/m",
+      "translation": "Agrega un producto de la lista de puntos de acceso a un rumbo y distancia desde su posición en vivo en cualquier lugar dentro del borde del mapa guardado, seguido de la cantidad y densidad del mineral de ese depósito. Utilice l, m o h para Bajo, Medio o Alto; Las palabras completas también funcionan. Un marcador del mismo producto dentro de un radio de 100 m se rechaza como probable duplicado. Ejemplo: .mine 342 jadeite 1.87 h/m"
     },
     {
-      "source": "Adds a listed commodity and its mineral amount and density at your current surface coordinates. This precise placement may overlap an existing marker. Example: .mine monazite medium/high here",
-      "translation": "Agrega un producto incluido en la lista y su cantidad y densidad de minerales en las coordenadas de superficie actuales. Esta ubicación precisa puede superponerse a un marcador existente. Ejemplo: .mine monazite medium/high here"
+      "source": "Adds a listed commodity and its mineral amount and density at your current surface coordinates. Use l, m, or h for Low, Medium, or High; full words also work. This precise placement may overlap an existing marker. Example: .mine monazite m/h here",
+      "translation": "Agrega un producto incluido en la lista y su cantidad y densidad de minerales en las coordenadas de superficie actuales. Utilice l, m o h para Bajo, Medio o Alto; Las palabras completas también funcionan. Esta ubicación precisa puede superponerse a un marcador existente. Ejemplo: .mine monazite m/h here"
     },
     {
       "source": "Adjust Header, Title, Value, Body, Detail, and Caption font sizes in half-point increments. These shared roles keep related overlays consistent instead of resizing individual labels independently.",
@@ -33515,8 +33519,8 @@
       "translation": "Cúmulo de asteroides"
     },
     {
-      "source": "At a deposit, send .mine <commodity> <low|medium|high>/<low|medium|high> here. Precise here placement may overlap an existing marker. Example: .mine ruby medium/low here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
-      "translation": "En un depósito, envíe .mine <commodity> <low|medium|high>/<low|medium|high> here. La colocación precisa aquí puede superponerse a un marcador existente. Ejemplo: .mine ruby medium/low here. Elimine el depósito mapeado más cercano dentro de 0,5 km con .mine delete here."
+      "source": "At a deposit, send .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
+      "translation": "En un depósito, envíe .mine <commodity> <l|m|h>/<l|m|h> here. Utilice l, m o h para Bajo, Medio o Alto; Las palabras completas también funcionan. La colocación precisa aquí puede superponerse a un marcador existente. Ejemplo: .mine ruby m/l here. Elimine el depósito mapeado más cercano dentro de 0,5 km con .mine delete here."
     },
     {
       "source": "At a resource location, send +helium or +thortveitite in game chat to save your current position under that name. These are manual bookmarks; the overlay does not automatically detect mineral deposits.",
@@ -40715,8 +40719,8 @@
       "translation": "Desde cualquier lugar dentro del borde guardado, enfrente un depósito y agregue su marcador, cantidad de mineral y densidad con .mine."
     },
     {
-      "source": "From anywhere inside the saved border, face a deposit and send .mine <bearing> <commodity> <distance km> <low|medium|high>/<low|medium|high>. The bearing and distance start at your live position. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 15 ruby 1.24 high/medium.",
-      "translation": "Desde cualquier lugar dentro del límite guardado, haga un depósito y envíe .mine <bearing> <commodity> <distance km> <low|medium|high>/<low|medium|high>. El rumbo y la distancia comienzan en su posición en vivo. Un marcador del mismo producto dentro de un radio de 100 m se rechaza como probable duplicado. Ejemplo: .mine 15 ruby 1.24 high/medium."
+      "source": "From anywhere inside the saved border, face a deposit and send .mine <bearing> <commodity> <distance km> <l|m|h>/<l|m|h>. The bearing and distance start at your live position. Use l, m, or h for Low, Medium, or High; full words also work. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 342 jadeite 1.87 h/m.",
+      "translation": "Desde cualquier lugar dentro del límite guardado, haga un depósito y envíe .mine <bearing> <commodity> <distance km> <l|m|h>/<l|m|h>. El rumbo y la distancia comienzan en su posición en vivo. Utilice l, m o h para Bajo, Medio o Alto; Las palabras completas también funcionan. Un marcador del mismo producto dentro de un radio de 100 m se rechaza como probable duplicado. Ejemplo: .mine 342 jadeite 1.87 h/m."
     },
     {
       "source": "From the true center, send .mining center here to correct the saved center and ring alignment without moving any deposit markers.",
@@ -44783,8 +44787,8 @@
       "translation": "Cantidad de minerales:"
     },
     {
-      "source": "Mineral amount and density describe each deposit and accept low, medium, or high. Deposit names must match a commodity in Activities > Surface Mining > Hotspot List; rejected commands explain the problem in Status notifications.",
-      "translation": "La cantidad y densidad del mineral describen cada depósito y se aceptan bajos, medios o altos. Los nombres de los depósitos deben coincidir con un producto en Actividades > Minería a cielo abierto > Lista de puntos críticos; Los comandos rechazados explican el problema en Notificaciones de estado."
+      "source": "Mineral amount and density describe each deposit and accept l, m, or h as shorthand for low, medium, or high. Deposit names must match a commodity in Activities > Surface Mining > Hotspot List; rejected commands explain the problem in Status notifications.",
+      "translation": "La cantidad y densidad del mineral describen cada depósito y aceptan l, m o h como abreviatura de bajo, medio o alto. Los nombres de los depósitos deben coincidir con un producto en Actividades > Minería a cielo abierto > Lista de puntos críticos; Los comandos rechazados explican el problema en Notificaciones de estado."
     },
     {
       "source": "Mineral availability follows ring composition. Prices vary; check current market observations before selling.",
@@ -46833,6 +46837,10 @@
     {
       "source": "Open images folder",
       "translation": "Abrir carpeta de imágenes"
+    },
+    {
+      "source": "Open in Workspace",
+      "translation": "Abrir en el espacio de trabajo"
     },
     {
       "source": "Open journal",
@@ -64213,12 +64221,12 @@
       "translation": "Ajout d'une bannière intégrée aux futures captures d'écran"
     },
     {
-      "source": "Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit's mineral amount and density. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 15 ruby 1.24 high/medium",
-      "translation": "Ajoute un produit répertorié dans la liste des points chauds à un relèvement et à une distance de votre position en direct n'importe où à l'intérieur de la bordure de la carte enregistrée, suivi de la quantité et de la densité minérale de ce gisement. Un marqueur de même produit dans un rayon de 100 m est décliné comme un doublon probable. Exemple : .mine 15 ruby 1.24 high/medium"
+      "source": "Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit's mineral amount and density. Use l, m, or h for Low, Medium, or High; full words also work. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 342 jadeite 1.87 h/m",
+      "translation": "Ajoute un produit répertorié dans la liste des points chauds à un relèvement et à une distance de votre position en direct n'importe où à l'intérieur de la bordure de la carte enregistrée, suivi de la quantité et de la densité minérale de ce gisement. Utilisez l, m ou h pour Faible, Moyen ou Élevé ; les mots complets fonctionnent également. Un marqueur de même produit dans un rayon de 100 m est décliné comme un doublon probable. Exemple : .mine 342 jadeite 1.87 h/m"
     },
     {
-      "source": "Adds a listed commodity and its mineral amount and density at your current surface coordinates. This precise placement may overlap an existing marker. Example: .mine monazite medium/high here",
-      "translation": "Ajoute un produit répertorié ainsi que sa quantité et sa densité minérale à vos coordonnées de surface actuelles. Ce placement précis peut chevaucher un marqueur existant. Exemple : .mine monazite medium/high here"
+      "source": "Adds a listed commodity and its mineral amount and density at your current surface coordinates. Use l, m, or h for Low, Medium, or High; full words also work. This precise placement may overlap an existing marker. Example: .mine monazite m/h here",
+      "translation": "Ajoute un produit répertorié ainsi que sa quantité et sa densité minérale à vos coordonnées de surface actuelles. Utilisez l, m ou h pour Faible, Moyen ou Élevé ; les mots complets fonctionnent également. Ce placement précis peut chevaucher un marqueur existant. Exemple : .mine monazite m/h here"
     },
     {
       "source": "Adjust Header, Title, Value, Body, Detail, and Caption font sizes in half-point increments. These shared roles keep related overlays consistent instead of resizing individual labels independently.",
@@ -64869,8 +64877,8 @@
       "translation": "Amas d'astéroïdes"
     },
     {
-      "source": "At a deposit, send .mine <commodity> <low|medium|high>/<low|medium|high> here. Precise here placement may overlap an existing marker. Example: .mine ruby medium/low here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
-      "translation": "Lors d'un dépôt, envoyez .mine <commodity> <low|medium|high>/<low|medium|high> here. Un placement précis ici peut chevaucher un marqueur existant. Exemple : .mine ruby medium/low here. Supprimez le gisement cartographié le plus proche dans un rayon de 0,5 km avec .mine delete here."
+      "source": "At a deposit, send .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
+      "translation": "Lors d'un dépôt, envoyez .mine <commodity> <l|m|h>/<l|m|h> here. Utilisez l, m ou h pour Faible, Moyen ou Élevé ; les mots complets fonctionnent également. Un placement précis ici peut chevaucher un marqueur existant. Exemple : .mine ruby m/l here. Supprimez le gisement cartographié le plus proche dans un rayon de 0,5 km avec .mine delete here."
     },
     {
       "source": "At a resource location, send +helium or +thortveitite in game chat to save your current position under that name. These are manual bookmarks; the overlay does not automatically detect mineral deposits.",
@@ -72069,8 +72077,8 @@
       "translation": "Depuis n'importe où à l'intérieur de la bordure enregistrée, faites face à un gisement et ajoutez son marqueur, sa quantité de minéraux et sa densité avec .mine."
     },
     {
-      "source": "From anywhere inside the saved border, face a deposit and send .mine <bearing> <commodity> <distance km> <low|medium|high>/<low|medium|high>. The bearing and distance start at your live position. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 15 ruby 1.24 high/medium.",
-      "translation": "De n'importe où à l'intérieur de la frontière enregistrée, faites face à un dépôt et envoyez-le .mine <bearing> <commodity> <distance km> <low|medium|high>/<low|medium|high>. Le relèvement et la distance commencent à votre position réelle. Un marqueur de même produit dans un rayon de 100 m est décliné comme un doublon probable. Exemple : .mine 15 ruby 1.24 high/medium."
+      "source": "From anywhere inside the saved border, face a deposit and send .mine <bearing> <commodity> <distance km> <l|m|h>/<l|m|h>. The bearing and distance start at your live position. Use l, m, or h for Low, Medium, or High; full words also work. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 342 jadeite 1.87 h/m.",
+      "translation": "De n'importe où à l'intérieur de la frontière enregistrée, faites face à un dépôt et envoyez-le .mine <bearing> <commodity> <distance km> <l|m|h>/<l|m|h>. Le relèvement et la distance commencent à votre position réelle. Utilisez l, m ou h pour Faible, Moyen ou Élevé ; les mots complets fonctionnent également. Un marqueur de même produit dans un rayon de 100 m est décliné comme un doublon probable. Exemple : .mine 342 jadeite 1.87 h/m."
     },
     {
       "source": "From the true center, send .mining center here to correct the saved center and ring alignment without moving any deposit markers.",
@@ -76137,8 +76145,8 @@
       "translation": "Quantité minérale :"
     },
     {
-      "source": "Mineral amount and density describe each deposit and accept low, medium, or high. Deposit names must match a commodity in Activities > Surface Mining > Hotspot List; rejected commands explain the problem in Status notifications.",
-      "translation": "La quantité et la densité minérales décrivent chaque gisement et acceptent des valeurs faibles, moyennes ou élevées. Les noms de gisements doivent correspondre à une matière première dans Activités > Surface Mining > Hotspot List ; les commandes rejetées expliquent le problème dans les notifications d'état."
+      "source": "Mineral amount and density describe each deposit and accept l, m, or h as shorthand for low, medium, or high. Deposit names must match a commodity in Activities > Surface Mining > Hotspot List; rejected commands explain the problem in Status notifications.",
+      "translation": "La quantité et la densité minérales décrivent chaque gisement et acceptent l, m ou h comme raccourci pour faible, moyen ou élevé. Les noms de gisements doivent correspondre à une matière première dans Activités > Surface Mining > Hotspot List ; les commandes rejetées expliquent le problème dans les notifications d'état."
     },
     {
       "source": "Mineral availability follows ring composition. Prices vary; check current market observations before selling.",
@@ -78187,6 +78195,10 @@
     {
       "source": "Open images folder",
       "translation": "Ouvrir le dossier images"
+    },
+    {
+      "source": "Open in Workspace",
+      "translation": "Ouvrir dans l'espace de travail"
     },
     {
       "source": "Open journal",
@@ -95567,12 +95579,12 @@
       "translation": "Adicionando banner incorporado a capturas de tela futuras"
     },
     {
-      "source": "Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit's mineral amount and density. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 15 ruby 1.24 high/medium",
-      "translation": "Adiciona uma mercadoria listada de Hotspot List a uma orientação e distância de sua posição ao vivo em qualquer lugar dentro da borda do mapa salvo, seguida pela quantidade e densidade mineral desse depósito. Um marcador da mesma mercadoria dentro de 100 m é recusado como uma provável duplicata. Exemplo: .mine 15 ruby 1.24 high/medium"
+      "source": "Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit's mineral amount and density. Use l, m, or h for Low, Medium, or High; full words also work. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 342 jadeite 1.87 h/m",
+      "translation": "Adiciona uma mercadoria listada de Hotspot List a uma orientação e distância de sua posição ao vivo em qualquer lugar dentro da borda do mapa salvo, seguida pela quantidade e densidade mineral desse depósito. Use l, m ou h para Baixo, Médio ou Alto; palavras completas também funcionam. Um marcador da mesma mercadoria dentro de 100 m é recusado como uma provável duplicata. Exemplo: .mine 342 jadeite 1.87 h/m"
     },
     {
-      "source": "Adds a listed commodity and its mineral amount and density at your current surface coordinates. This precise placement may overlap an existing marker. Example: .mine monazite medium/high here",
-      "translation": "Adiciona uma mercadoria listada e sua quantidade e densidade mineral nas coordenadas atuais da superfície. Este posicionamento preciso pode sobrepor um marcador existente. Exemplo: .mine monazite medium/high here"
+      "source": "Adds a listed commodity and its mineral amount and density at your current surface coordinates. Use l, m, or h for Low, Medium, or High; full words also work. This precise placement may overlap an existing marker. Example: .mine monazite m/h here",
+      "translation": "Adiciona uma mercadoria listada e sua quantidade e densidade mineral nas coordenadas atuais da superfície. Use l, m ou h para Baixo, Médio ou Alto; palavras completas também funcionam. Este posicionamento preciso pode sobrepor um marcador existente. Exemplo: .mine monazite m/h here"
     },
     {
       "source": "Adjust Header, Title, Value, Body, Detail, and Caption font sizes in half-point increments. These shared roles keep related overlays consistent instead of resizing individual labels independently.",
@@ -96223,8 +96235,8 @@
       "translation": "Aglomerado de asteróides"
     },
     {
-      "source": "At a deposit, send .mine <commodity> <low|medium|high>/<low|medium|high> here. Precise here placement may overlap an existing marker. Example: .mine ruby medium/low here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
-      "translation": "Em um depósito, envie .mine <commodity> <low|medium|high>/<low|medium|high> here. O posicionamento preciso aqui pode sobrepor um marcador existente. Exemplo: .mine ruby medium/low here. Remova o depósito mapeado mais próximo dentro de 0,5 km com .mine delete here."
+      "source": "At a deposit, send .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
+      "translation": "Em um depósito, envie .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m ou h para Baixo, Médio ou Alto; palavras completas também funcionam. O posicionamento preciso aqui pode sobrepor um marcador existente. Exemplo: .mine ruby m/l here. Remova o depósito mapeado mais próximo dentro de 0,5 km com .mine delete here."
     },
     {
       "source": "At a resource location, send +helium or +thortveitite in game chat to save your current position under that name. These are manual bookmarks; the overlay does not automatically detect mineral deposits.",
@@ -103423,8 +103435,8 @@
       "translation": "De qualquer lugar dentro da borda salva, fique de frente para um depósito e adicione seu marcador, quantidade mineral e densidade com .mine."
     },
     {
-      "source": "From anywhere inside the saved border, face a deposit and send .mine <bearing> <commodity> <distance km> <low|medium|high>/<low|medium|high>. The bearing and distance start at your live position. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 15 ruby 1.24 high/medium.",
-      "translation": "De qualquer lugar dentro da borda salva, faça um depósito e envie .mine <bearing> <commodity> <distance km> <low|medium|high>/<low|medium|high>. O rumo e a distância começam na sua posição ativa. Um marcador da mesma mercadoria dentro de 100 m é recusado como uma provável duplicata. Exemplo: .mine 15 ruby 1.24 high/medium."
+      "source": "From anywhere inside the saved border, face a deposit and send .mine <bearing> <commodity> <distance km> <l|m|h>/<l|m|h>. The bearing and distance start at your live position. Use l, m, or h for Low, Medium, or High; full words also work. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 342 jadeite 1.87 h/m.",
+      "translation": "De qualquer lugar dentro da borda salva, faça um depósito e envie .mine <bearing> <commodity> <distance km> <l|m|h>/<l|m|h>. O rumo e a distância começam na sua posição ativa. Use l, m ou h para Baixo, Médio ou Alto; palavras completas também funcionam. Um marcador da mesma mercadoria dentro de 100 m é recusado como uma provável duplicata. Exemplo: .mine 342 jadeite 1.87 h/m."
     },
     {
       "source": "From the true center, send .mining center here to correct the saved center and ring alignment without moving any deposit markers.",
@@ -107491,8 +107503,8 @@
       "translation": "Quantidade Mineral:"
     },
     {
-      "source": "Mineral amount and density describe each deposit and accept low, medium, or high. Deposit names must match a commodity in Activities > Surface Mining > Hotspot List; rejected commands explain the problem in Status notifications.",
-      "translation": "A quantidade e densidade mineral descrevem cada depósito e são baixas, médias ou altas. Os nomes dos depósitos devem corresponder a uma mercadoria em Atividades > Mineração de Superfície > Lista de Pontos de Acesso; comandos rejeitados explicam o problema nas notificações de status."
+      "source": "Mineral amount and density describe each deposit and accept l, m, or h as shorthand for low, medium, or high. Deposit names must match a commodity in Activities > Surface Mining > Hotspot List; rejected commands explain the problem in Status notifications.",
+      "translation": "A quantidade e densidade mineral descrevem cada depósito e aceitam l, m ou h como abreviatura para baixo, médio ou alto. Os nomes dos depósitos devem corresponder a uma mercadoria em Atividades > Mineração de Superfície > Lista de Pontos de Acesso; comandos rejeitados explicam o problema nas notificações de status."
     },
     {
       "source": "Mineral availability follows ring composition. Prices vary; check current market observations before selling.",
@@ -109541,6 +109553,10 @@
     {
       "source": "Open images folder",
       "translation": "Abra a pasta de imagens"
+    },
+    {
+      "source": "Open in Workspace",
+      "translation": "Abrir no espaço de trabalho"
     },
     {
       "source": "Open journal",
@@ -126921,12 +126937,12 @@
       "translation": "Добавление встроенного баннера в будущие скриншоты"
     },
     {
-      "source": "Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit's mineral amount and density. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 15 ruby 1.24 high/medium",
-      "translation": "Добавляет указанный в списке горячих точек товар по азимуту и ​​расстоянию от вашего текущего положения в любом месте внутри сохраненной границы карты, а затем количество полезных ископаемых и плотность этого месторождения. Маркер того же товара в радиусе 100 м отклоняется как вероятный дубликат. Пример: .mine 15 ruby 1.24 high/medium"
+      "source": "Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit's mineral amount and density. Use l, m, or h for Low, Medium, or High; full words also work. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 342 jadeite 1.87 h/m",
+      "translation": "Добавляет указанный в списке горячих точек товар по азимуту и ​​расстоянию от вашего текущего положения в любом месте внутри сохраненной границы карты, а затем количество полезных ископаемых и плотность этого месторождения. Используйте l, m или h для обозначения «Низкий», «Средний» или «Высокий»; полные слова также работают. Маркер того же товара в радиусе 100 м отклоняется как вероятный дубликат. Пример: .mine 342 jadeite 1.87 h/m"
     },
     {
-      "source": "Adds a listed commodity and its mineral amount and density at your current surface coordinates. This precise placement may overlap an existing marker. Example: .mine monazite medium/high here",
-      "translation": "Добавляет указанный товар, а также количество и плотность его минералов в текущих координатах поверхности. Такое точное размещение может перекрывать существующий маркер. Пример: .mine monazite medium/high here"
+      "source": "Adds a listed commodity and its mineral amount and density at your current surface coordinates. Use l, m, or h for Low, Medium, or High; full words also work. This precise placement may overlap an existing marker. Example: .mine monazite m/h here",
+      "translation": "Добавляет указанный товар, а также количество и плотность его минералов в текущих координатах поверхности. Используйте l, m или h для обозначения «Низкий», «Средний» или «Высокий»; полные слова также работают. Такое точное размещение может перекрывать существующий маркер. Пример: .mine monazite m/h here"
     },
     {
       "source": "Adjust Header, Title, Value, Body, Detail, and Caption font sizes in half-point increments. These shared roles keep related overlays consistent instead of resizing individual labels independently.",
@@ -127577,8 +127593,8 @@
       "translation": "Скопление астероидов"
     },
     {
-      "source": "At a deposit, send .mine <commodity> <low|medium|high>/<low|medium|high> here. Precise here placement may overlap an existing marker. Example: .mine ruby medium/low here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
-      "translation": "При депозите отправьте .mine <commodity> <low|medium|high>/<low|medium|high> here. Точное размещение здесь может перекрывать существующий маркер. Пример: .mine ruby medium/low here. Удалите ближайшее обнаруженное месторождение в радиусе 0,5 км с помощью .mine delete here."
+      "source": "At a deposit, send .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
+      "translation": "При депозите отправьте .mine <commodity> <l|m|h>/<l|m|h> here. Используйте l, m или h для обозначения «Низкий», «Средний» или «Высокий»; полные слова также работают. Точное размещение здесь может перекрывать существующий маркер. Пример: .mine ruby m/l here. Удалите ближайшее обнаруженное месторождение в радиусе 0,5 км с помощью .mine delete here."
     },
     {
       "source": "At a resource location, send +helium or +thortveitite in game chat to save your current position under that name. These are manual bookmarks; the overlay does not automatically detect mineral deposits.",
@@ -134777,8 +134793,8 @@
       "translation": "Из любого места внутри сохраненной границы найдите месторождение и добавьте его маркер, количество минералов и плотность с помощью .mine."
     },
     {
-      "source": "From anywhere inside the saved border, face a deposit and send .mine <bearing> <commodity> <distance km> <low|medium|high>/<low|medium|high>. The bearing and distance start at your live position. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 15 ruby 1.24 high/medium.",
-      "translation": "Из любой точки внутри сохраненной границы внесите депозит и отправьте .mine <bearing> <commodity> <distance km> <low|medium|high>/<low|medium|high>. Направление и расстояние начинаются с вашего текущего положения. Маркер того же товара в радиусе 100 м отклоняется как вероятный дубликат. Пример: .mine 15 ruby 1.24 high/medium."
+      "source": "From anywhere inside the saved border, face a deposit and send .mine <bearing> <commodity> <distance km> <l|m|h>/<l|m|h>. The bearing and distance start at your live position. Use l, m, or h for Low, Medium, or High; full words also work. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 342 jadeite 1.87 h/m.",
+      "translation": "Из любой точки внутри сохраненной границы внесите депозит и отправьте .mine <bearing> <commodity> <distance km> <l|m|h>/<l|m|h>. Направление и расстояние начинаются с вашего текущего положения. Используйте l, m или h для обозначения «Низкий», «Средний» или «Высокий»; полные слова также работают. Маркер того же товара в радиусе 100 м отклоняется как вероятный дубликат. Пример: .mine 342 jadeite 1.87 h/m."
     },
     {
       "source": "From the true center, send .mining center here to correct the saved center and ring alignment without moving any deposit markers.",
@@ -138845,8 +138861,8 @@
       "translation": "Минеральное количество:"
     },
     {
-      "source": "Mineral amount and density describe each deposit and accept low, medium, or high. Deposit names must match a commodity in Activities > Surface Mining > Hotspot List; rejected commands explain the problem in Status notifications.",
-      "translation": "Количество и плотность минералов описывают каждое месторождение и принимают низкие, средние или высокие. Названия месторождений должны соответствовать товару в разделе «Действия» > «Поверхностная добыча» > «Список горячих точек»; отклоненные команды объясняют проблему в уведомлениях о состоянии."
+      "source": "Mineral amount and density describe each deposit and accept l, m, or h as shorthand for low, medium, or high. Deposit names must match a commodity in Activities > Surface Mining > Hotspot List; rejected commands explain the problem in Status notifications.",
+      "translation": "Количество и плотность минералов описывают каждое месторождение и принимают l, m или h как сокращение для низких, средних или высоких значений. Названия месторождений должны соответствовать товару в разделе «Действия» > «Поверхностная добыча» > «Список горячих точек»; отклоненные команды объясняют проблему в уведомлениях о состоянии."
     },
     {
       "source": "Mineral availability follows ring composition. Prices vary; check current market observations before selling.",
@@ -140895,6 +140911,10 @@
     {
       "source": "Open images folder",
       "translation": "Открыть папку с изображениями"
+    },
+    {
+      "source": "Open in Workspace",
+      "translation": "Открыть в рабочей области"
     },
     {
       "source": "Open journal",
@@ -158275,12 +158295,12 @@
       "translation": "将嵌入的横幅添加到未来的屏幕截图中"
     },
     {
-      "source": "Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit's mineral amount and density. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 15 ruby 1.24 high/medium",
-      "translation": "添加列出的热点列表商品，该商品位于已保存地图边界内任意位置距您当前位置的方位和距离处，然后是该矿床的矿物量和密度。 100 m 内的相同商品标记将被视为可能的重复标记而被拒绝。示例：.mine 15 ruby 1.24 high/medium"
+      "source": "Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit's mineral amount and density. Use l, m, or h for Low, Medium, or High; full words also work. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 342 jadeite 1.87 h/m",
+      "translation": "添加列出的热点列表商品，该商品位于已保存地图边界内任意位置距您当前位置的方位和距离处，然后是该矿床的矿物量和密度。使用 l、m 或 h 表示低、中或高；完整的单词也有效。 100 m 内的相同商品标记将被视为可能的重复标记而被拒绝。示例：.mine 342 jadeite 1.87 h/m"
     },
     {
-      "source": "Adds a listed commodity and its mineral amount and density at your current surface coordinates. This precise placement may overlap an existing marker. Example: .mine monazite medium/high here",
-      "translation": "在您当前的表面坐标处添加列出的商品及其矿物质含量和密度。这种精确的放置可能会与现有标记重叠。示例：.mine monazite medium/high here"
+      "source": "Adds a listed commodity and its mineral amount and density at your current surface coordinates. Use l, m, or h for Low, Medium, or High; full words also work. This precise placement may overlap an existing marker. Example: .mine monazite m/h here",
+      "translation": "在您当前的表面坐标处添加列出的商品及其矿物质含量和密度。使用 l、m 或 h 表示低、中或高；完整的单词也有效。这种精确的放置可能会与现有标记重叠。示例：.mine monazite m/h here"
     },
     {
       "source": "Adjust Header, Title, Value, Body, Detail, and Caption font sizes in half-point increments. These shared roles keep related overlays consistent instead of resizing individual labels independently.",
@@ -158931,8 +158951,8 @@
       "translation": "小行星团"
     },
     {
-      "source": "At a deposit, send .mine <commodity> <low|medium|high>/<low|medium|high> here. Precise here placement may overlap an existing marker. Example: .mine ruby medium/low here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
-      "translation": "存款后，发送.mine <commodity> <low|medium|high>/<low|medium|high> here。此处的精确放置可能会与现有标记重叠。示例：.mine ruby medium/low here。使用 .mine delete here 移除 0.5 公里内最近的地图沉积物。"
+      "source": "At a deposit, send .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
+      "translation": "存款后，发送.mine <commodity> <l|m|h>/<l|m|h> here。使用 l、m 或 h 表示低、中或高；完整的单词也有效。此处的精确放置可能会与现有标记重叠。示例：.mine ruby m/l here。使用 .mine delete here 移除 0.5 公里内最近的地图沉积物。"
     },
     {
       "source": "At a resource location, send +helium or +thortveitite in game chat to save your current position under that name. These are manual bookmarks; the overlay does not automatically detect mineral deposits.",
@@ -166131,8 +166151,8 @@
       "translation": "从保存的边界内的任何位置，面对矿床并使用 .mine 添加其标记、矿物量和密度。"
     },
     {
-      "source": "From anywhere inside the saved border, face a deposit and send .mine <bearing> <commodity> <distance km> <low|medium|high>/<low|medium|high>. The bearing and distance start at your live position. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 15 ruby 1.24 high/medium.",
-      "translation": "从保存的边界内的任何地方，面对存款并发送.mine <bearing> <commodity> <distance km> <low|medium|high>/<low|medium|high>。方位和距离从您的实时位置开始。 100 m 内的相同商品标记将被视为可能的重复标记而被拒绝。示例：.mine 15 ruby 1.24 high/medium。"
+      "source": "From anywhere inside the saved border, face a deposit and send .mine <bearing> <commodity> <distance km> <l|m|h>/<l|m|h>. The bearing and distance start at your live position. Use l, m, or h for Low, Medium, or High; full words also work. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 342 jadeite 1.87 h/m.",
+      "translation": "从保存的边界内的任何地方，面对存款并发送.mine <bearing> <commodity> <distance km> <l|m|h>/<l|m|h>。方位和距离从您的实时位置开始。使用 l、m 或 h 表示低、中或高；完整的单词也有效。 100 m 内的相同商品标记将被视为可能的重复标记而被拒绝。示例：.mine 342 jadeite 1.87 h/m。"
     },
     {
       "source": "From the true center, send .mining center here to correct the saved center and ring alignment without moving any deposit markers.",
@@ -170199,8 +170219,8 @@
       "translation": "矿物质含量："
     },
     {
-      "source": "Mineral amount and density describe each deposit and accept low, medium, or high. Deposit names must match a commodity in Activities > Surface Mining > Hotspot List; rejected commands explain the problem in Status notifications.",
-      "translation": "矿物量和密度描述了每个矿床并接受低、中或高。矿床名称必须与“活动”>“露天采矿”>“热点列表”中的商品匹配；被拒绝的命令解释了状态通知中的问题。"
+      "source": "Mineral amount and density describe each deposit and accept l, m, or h as shorthand for low, medium, or high. Deposit names must match a commodity in Activities > Surface Mining > Hotspot List; rejected commands explain the problem in Status notifications.",
+      "translation": "矿物量和密度描述了每个矿床，并接受 l、m 或 h 作为低、中或高的简写。矿床名称必须与“活动”>“露天采矿”>“热点列表”中的商品匹配；被拒绝的命令解释了状态通知中的问题。"
     },
     {
       "source": "Mineral availability follows ring composition. Prices vary; check current market observations before selling.",
@@ -172249,6 +172269,10 @@
     {
       "source": "Open images folder",
       "translation": "打开图像文件夹"
+    },
+    {
+      "source": "Open in Workspace",
+      "translation": "在工作区中打开"
     },
     {
       "source": "Open journal",
@@ -189629,12 +189653,12 @@
       "translation": "* ADDING EMBEDDED BANNER TO FUTURE SCREENSHOTS >>>!"
     },
     {
-      "source": "Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit's mineral amount and density. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 15 ruby 1.24 high/medium",
-      "translation": "* ADDS A LISTED HOTSPOT LIST COMMODITY AT A BEARING AND DISTANCE FROM YOUR LIVE POSITION ANYWHERE INSIDE THE SAVED MAP BORDER, FOLLOWED BY THAT DEPOSIT'S MINERAL AMOUNT AND DENSITY. A SAME-COMMODITY MARKER WITHIN 100 M IS DECLINED AS A LIKELY DUPLICATE. EXAMPLE: .MINE 15 RUBY 1.24 HIGH/MEDIUM >>>!"
+      "source": "Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit's mineral amount and density. Use l, m, or h for Low, Medium, or High; full words also work. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 342 jadeite 1.87 h/m",
+      "translation": "* ADDS A LISTED HOTSPOT LIST COMMODITY AT A BEARING AND DISTANCE FROM YOUR LIVE POSITION ANYWHERE INSIDE THE SAVED MAP BORDER, FOLLOWED BY THAT DEPOSIT'S MINERAL AMOUNT AND DENSITY. USE L, M, OR H FOR LOW, MEDIUM, OR HIGH; FULL WORDS ALSO WORK. A SAME-COMMODITY MARKER WITHIN 100 M IS DECLINED AS A LIKELY DUPLICATE. EXAMPLE: .MINE 342 JADEITE 1.87 H/M >>>!"
     },
     {
-      "source": "Adds a listed commodity and its mineral amount and density at your current surface coordinates. This precise placement may overlap an existing marker. Example: .mine monazite medium/high here",
-      "translation": "* ADDS A LISTED COMMODITY AND ITS MINERAL AMOUNT AND DENSITY AT YOUR CURRENT SURFACE COORDINATES. THIS PRECISE PLACEMENT MAY OVERLAP AN EXISTING MARKER. EXAMPLE: .MINE MONAZITE MEDIUM/HIGH HERE >>>!"
+      "source": "Adds a listed commodity and its mineral amount and density at your current surface coordinates. Use l, m, or h for Low, Medium, or High; full words also work. This precise placement may overlap an existing marker. Example: .mine monazite m/h here",
+      "translation": "* ADDS A LISTED COMMODITY AND ITS MINERAL AMOUNT AND DENSITY AT YOUR CURRENT SURFACE COORDINATES. USE L, M, OR H FOR LOW, MEDIUM, OR HIGH; FULL WORDS ALSO WORK. THIS PRECISE PLACEMENT MAY OVERLAP AN EXISTING MARKER. EXAMPLE: .MINE MONAZITE M/H HERE >>>!"
     },
     {
       "source": "Adjust Header, Title, Value, Body, Detail, and Caption font sizes in half-point increments. These shared roles keep related overlays consistent instead of resizing individual labels independently.",
@@ -190285,8 +190309,8 @@
       "translation": "* ASTEROID CLUSTER >>>!"
     },
     {
-      "source": "At a deposit, send .mine <commodity> <low|medium|high>/<low|medium|high> here. Precise here placement may overlap an existing marker. Example: .mine ruby medium/low here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
-      "translation": "* AT A DEPOSIT, SEND .MINE <COMMODITY> <LOW|MEDIUM|HIGH>/<LOW|MEDIUM|HIGH> HERE. PRECISE HERE PLACEMENT MAY OVERLAP AN EXISTING MARKER. EXAMPLE: .MINE RUBY MEDIUM/LOW HERE. REMOVE THE NEAREST MAPPED DEPOSIT WITHIN 0.5 KM WITH .MINE DELETE HERE. >>>!"
+      "source": "At a deposit, send .mine <commodity> <l|m|h>/<l|m|h> here. Use l, m, or h for Low, Medium, or High; full words also work. Precise here placement may overlap an existing marker. Example: .mine ruby m/l here. Remove the nearest mapped deposit within 0.5 km with .mine delete here.",
+      "translation": "* AT A DEPOSIT, SEND .MINE <COMMODITY> <L|M|H>/<L|M|H> HERE. USE L, M, OR H FOR LOW, MEDIUM, OR HIGH; FULL WORDS ALSO WORK. PRECISE HERE PLACEMENT MAY OVERLAP AN EXISTING MARKER. EXAMPLE: .MINE RUBY M/L HERE. REMOVE THE NEAREST MAPPED DEPOSIT WITHIN 0.5 KM WITH .MINE DELETE HERE. >>>!"
     },
     {
       "source": "At a resource location, send +helium or +thortveitite in game chat to save your current position under that name. These are manual bookmarks; the overlay does not automatically detect mineral deposits.",
@@ -197485,8 +197509,8 @@
       "translation": "* FROM ANYWHERE INSIDE THE SAVED BORDER, FACE A DEPOSIT AND ADD ITS MARKER, MINERAL AMOUNT, AND DENSITY WITH .MINE. >>>!"
     },
     {
-      "source": "From anywhere inside the saved border, face a deposit and send .mine <bearing> <commodity> <distance km> <low|medium|high>/<low|medium|high>. The bearing and distance start at your live position. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 15 ruby 1.24 high/medium.",
-      "translation": "* FROM ANYWHERE INSIDE THE SAVED BORDER, FACE A DEPOSIT AND SEND .MINE <BEARING> <COMMODITY> <DISTANCE KM> <LOW|MEDIUM|HIGH>/<LOW|MEDIUM|HIGH>. THE BEARING AND DISTANCE START AT YOUR LIVE POSITION. A SAME-COMMODITY MARKER WITHIN 100 M IS DECLINED AS A LIKELY DUPLICATE. EXAMPLE: .MINE 15 RUBY 1.24 HIGH/MEDIUM. >>>!"
+      "source": "From anywhere inside the saved border, face a deposit and send .mine <bearing> <commodity> <distance km> <l|m|h>/<l|m|h>. The bearing and distance start at your live position. Use l, m, or h for Low, Medium, or High; full words also work. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 342 jadeite 1.87 h/m.",
+      "translation": "* FROM ANYWHERE INSIDE THE SAVED BORDER, FACE A DEPOSIT AND SEND .MINE <BEARING> <COMMODITY> <DISTANCE KM> <L|M|H>/<L|M|H>. THE BEARING AND DISTANCE START AT YOUR LIVE POSITION. USE L, M, OR H FOR LOW, MEDIUM, OR HIGH; FULL WORDS ALSO WORK. A SAME-COMMODITY MARKER WITHIN 100 M IS DECLINED AS A LIKELY DUPLICATE. EXAMPLE: .MINE 342 JADEITE 1.87 H/M. >>>!"
     },
     {
       "source": "From the true center, send .mining center here to correct the saved center and ring alignment without moving any deposit markers.",
@@ -201553,8 +201577,8 @@
       "translation": "* MINERAL AMOUNT: >>>!"
     },
     {
-      "source": "Mineral amount and density describe each deposit and accept low, medium, or high. Deposit names must match a commodity in Activities > Surface Mining > Hotspot List; rejected commands explain the problem in Status notifications.",
-      "translation": "* MINERAL AMOUNT AND DENSITY DESCRIBE EACH DEPOSIT AND ACCEPT LOW, MEDIUM, OR HIGH. DEPOSIT NAMES MUST MATCH A COMMODITY IN ACTIVITIES > SURFACE MINING > HOTSPOT LIST; REJECTED COMMANDS EXPLAIN THE PROBLEM IN STATUS NOTIFICATIONS. >>>!"
+      "source": "Mineral amount and density describe each deposit and accept l, m, or h as shorthand for low, medium, or high. Deposit names must match a commodity in Activities > Surface Mining > Hotspot List; rejected commands explain the problem in Status notifications.",
+      "translation": "* MINERAL AMOUNT AND DENSITY DESCRIBE EACH DEPOSIT AND ACCEPT L, M, OR H AS SHORTHAND FOR LOW, MEDIUM, OR HIGH. DEPOSIT NAMES MUST MATCH A COMMODITY IN ACTIVITIES > SURFACE MINING > HOTSPOT LIST; REJECTED COMMANDS EXPLAIN THE PROBLEM IN STATUS NOTIFICATIONS. >>>!"
     },
     {
       "source": "Mineral availability follows ring composition. Prices vary; check current market observations before selling.",
@@ -203603,6 +203627,10 @@
     {
       "source": "Open images folder",
       "translation": "* OPEN IMAGES FOLDER >>>!"
+    },
+    {
+      "source": "Open in Workspace",
+      "translation": "* OPEN IN WORKSPACE >>>!"
     },
     {
       "source": "Open journal",

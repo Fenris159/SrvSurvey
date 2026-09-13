@@ -94,10 +94,38 @@ public sealed class BookmarksViewModelTests
             vm.AddMiningLocation(bookmark);
             vm.Selected = Assert.Single(vm.Items);
 
-            Assert.True(vm.OpenSelectedSurfaceMiningMap());
-            Assert.True(vm.OpenSelectedSurfaceMiningMap());
+            Assert.True(vm.OpenInWorkspaceCommand.CanExecute(null));
+            vm.OpenInWorkspaceCommand.Execute(null);
+            vm.OpenInWorkspaceCommand.Execute(null);
 
             Assert.Equal([bookmark.Id, bookmark.Id], opened);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
+
+    [Fact]
+    public void ExportingSelectedSurfaceMiningBookmarkExcludesAdjacentLocations()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        try
+        {
+            var vm = new BookmarksViewModel(directory);
+            GalacticBookmark selected = CreateSurfaceMiningBookmark(Guid.NewGuid(), 4);
+            GalacticBookmark adjacent = CreateSurfaceMiningBookmark(Guid.NewGuid(), 5);
+            vm.AddMiningLocation(selected);
+            vm.AddMiningLocation(adjacent);
+            vm.Selected = vm.Items.Single(bookmark => bookmark.Id == selected.Id);
+
+            GalacticBookmark exported = Assert.Single(BookmarkCatalog.Parse(vm.Export()));
+
+            Assert.Equal(selected.Id, exported.Id);
+            Assert.Equal(4, exported.SurfaceMiningMap?.LocationSignal);
         }
         finally
         {
@@ -136,4 +164,27 @@ public sealed class BookmarksViewModelTests
             }
         }
     }
+
+    private static GalacticBookmark CreateSurfaceMiningBookmark(Guid id, int signal) =>
+        new()
+        {
+            Id = id,
+            System = "LTT 4428",
+            Body = "LTT 4428 E 5 a",
+            Category = BookmarkCategoryCatalog.SurfaceMining,
+            SurfaceMiningMap = new MineMapSurvey
+            {
+                Id = id,
+                FrontierId = "F123",
+                SystemName = "LTT 4428",
+                SystemAddress = 42,
+                SystemPosition = new SrvSurvey.Core.Search.GalacticCoordinate(1, 2, 3),
+                BodyId = 5,
+                BodyName = "LTT 4428 E 5 a",
+                BodyType = "Rocky body",
+                LocationSignal = signal,
+                LocationRadiusMeters = 6_380,
+                PlanetRadiusMeters = 855_573,
+            },
+        };
 }

@@ -466,8 +466,8 @@
                     <TextBlock Classes="monospace" Text=".mining survey complete" />
                     <TextBlock Classes="monospace" Text=".mining 120 6.44 4" />
                     <TextBlock Classes="monospace" Text=".mining center here" />
-                    <TextBlock Classes="monospace" Text=".mine 15 ruby 1.24 high/medium" />
-                    <TextBlock Classes="monospace" Text=".mine ruby medium/low here" />
+                    <TextBlock Classes="monospace" Text=".mine 342 jadeite 1.87 h/m" />
+                    <TextBlock Classes="monospace" Text=".mine ruby m/l here" />
                     <TextBlock Classes="monospace" Text=".mine rigs 4" />
                     <TextBlock Classes="monospace" Text=".mine move haematite here" />
                     <TextBlock Classes="monospace" Text=".mine splat" />
@@ -494,12 +494,12 @@
                 <TextBlock FontWeight="SemiBold" Text=".mining center here" />
                 <TextBlock Classes="muted" TextWrapping="Wrap"
                            Text="Moves the current map center to your live surface coordinates while preserving the location radius and every existing deposit marker. Use it from the true center to correct the border and ring alignment." />
-                <TextBlock FontWeight="SemiBold" Text=".mine &lt;bearing&gt; &lt;commodity&gt; &lt;distance km&gt; &lt;low|medium|high&gt;/&lt;low|medium|high&gt;" />
+                <TextBlock FontWeight="SemiBold" Text=".mine &lt;bearing&gt; &lt;commodity&gt; &lt;distance km&gt; &lt;l|m|h&gt;/&lt;l|m|h&gt;" />
                 <TextBlock Classes="muted" TextWrapping="Wrap"
-                           Text="Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit's mineral amount and density. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 15 ruby 1.24 high/medium" />
-                <TextBlock FontWeight="SemiBold" Text=".mine &lt;commodity&gt; &lt;low|medium|high&gt;/&lt;low|medium|high&gt; here" />
+                           Text="Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit's mineral amount and density. Use l, m, or h for Low, Medium, or High; full words also work. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 342 jadeite 1.87 h/m" />
+                <TextBlock FontWeight="SemiBold" Text=".mine &lt;commodity&gt; &lt;l|m|h&gt;/&lt;l|m|h&gt; here" />
                 <TextBlock Classes="muted" TextWrapping="Wrap"
-                           Text="Adds a listed commodity and its mineral amount and density at your current surface coordinates. This precise placement may overlap an existing marker. Example: .mine monazite medium/high here" />
+                           Text="Adds a listed commodity and its mineral amount and density at your current surface coordinates. Use l, m, or h for Low, Medium, or High; full words also work. This precise placement may overlap an existing marker. Example: .mine monazite m/h here" />
                 <TextBlock FontWeight="SemiBold" Text=".mine move &lt;commodity&gt; here" />
                 <TextBlock Classes="muted" TextWrapping="Wrap"
                            Text="Moves the nearest marker matching the commodity to your current surface coordinates. The matching marker must be within 200 m. Example: .mine move haematite here" />
