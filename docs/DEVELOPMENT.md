@@ -130,7 +130,9 @@ Automated builds do not replace native testing with a live Elite Dangerous
 session. Before promoting a release, verify on clean supported systems:
 
 1. Windows portable startup, upgrade, rollback, and removal.
-2. Linux AppImage startup on native X11 and XWayland.
+2. Linux AppImage startup on native X11 and XWayland. On Wayland, force an X11
+   capture failure and verify the ScreenCast picker, Elite-window selection,
+   restored selection, cancellation message, and rig-calibration **Test** path.
 3. Journal attachment, game-window tracking, click-through overlays, global
    input, capture-dependent features, and overlay update cost during play.
 4. Backup/import/restart using a representative existing profile.

@@ -13,6 +13,8 @@ public interface IGameScreenCapture : IDisposable
     string? UnavailableReason { get; }
 
     CapturedPixelBuffer Capture(PixelRect bounds);
+
+    CapturedPixelBuffer Capture(PixelRect bounds, PixelRect sourceBounds) => Capture(bounds);
 }
 
 public sealed class CapturedPixelBuffer : IFssPixelSource
@@ -57,17 +59,27 @@ public sealed class CapturedPixelBuffer : IFssPixelSource
 
 public static class GameScreenCapture
 {
-    public static IGameScreenCapture CreateCurrent()
+    public static IGameScreenCapture CreateCurrent(bool enableWaylandPortalFallback = false)
     {
         if (OperatingSystem.IsWindows())
         {
             return new WindowsGameScreenCapture();
         }
 
-        if (OverlayPlatformCapabilities.DetectCurrent().UsesX11Compatibility)
+        var capabilities = OverlayPlatformCapabilities.DetectCurrent();
+        if (capabilities.UsesX11Compatibility)
         {
-            return X11GameScreenCapture.TryCreate()
+            IGameScreenCapture x11Capture =
+                X11GameScreenCapture.TryCreate()
                 ?? new UnavailableGameScreenCapture("X11 screen capture could not connect to the display.");
+            return enableWaylandPortalFallback && OperatingSystem.IsLinux() && IsWaylandSession()
+                ? new FallbackGameScreenCapture(x11Capture, new WaylandPortalGameScreenCapture())
+                : x11Capture;
+        }
+
+        if (enableWaylandPortalFallback && OperatingSystem.IsLinux() && IsWaylandSession())
+        {
+            return new WaylandPortalGameScreenCapture();
         }
 
         return new UnavailableGameScreenCapture(
@@ -76,6 +88,14 @@ public static class GameScreenCapture
                 : "FSS tuning detection is not supported on this platform."
         );
     }
+
+    private static bool IsWaylandSession() =>
+        !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("WAYLAND_DISPLAY"))
+        || string.Equals(
+            Environment.GetEnvironmentVariable("XDG_SESSION_TYPE"),
+            "wayland",
+            StringComparison.OrdinalIgnoreCase
+        );
 }
 
 public sealed class UnavailableGameScreenCapture : IGameScreenCapture
@@ -95,6 +115,84 @@ public sealed class UnavailableGameScreenCapture : IGameScreenCapture
     }
 
     public void Dispose() { }
+}
+
+internal sealed class FallbackGameScreenCapture : IGameScreenCapture
+{
+    private readonly object gate = new();
+    private IGameScreenCapture? primary;
+    private IGameScreenCapture? fallback;
+
+    public FallbackGameScreenCapture(IGameScreenCapture primary, IGameScreenCapture fallback)
+    {
+        ArgumentNullException.ThrowIfNull(primary);
+        ArgumentNullException.ThrowIfNull(fallback);
+        this.primary = primary;
+        this.fallback = fallback;
+    }
+
+    public bool IsAvailable
+    {
+        get
+        {
+            lock (gate)
+            {
+                return primary?.IsAvailable == true || fallback?.IsAvailable == true;
+            }
+        }
+    }
+
+    public string? UnavailableReason
+    {
+        get
+        {
+            lock (gate)
+            {
+                return primary?.UnavailableReason ?? fallback?.UnavailableReason;
+            }
+        }
+    }
+
+    public CapturedPixelBuffer Capture(PixelRect bounds) => CaptureCore(capture => capture.Capture(bounds));
+
+    public CapturedPixelBuffer Capture(PixelRect bounds, PixelRect sourceBounds) =>
+        CaptureCore(capture => capture.Capture(bounds, sourceBounds));
+
+    public void Dispose()
+    {
+        lock (gate)
+        {
+            primary?.Dispose();
+            fallback?.Dispose();
+            primary = null;
+            fallback = null;
+        }
+    }
+
+    private CapturedPixelBuffer CaptureCore(Func<IGameScreenCapture, CapturedPixelBuffer> captureFrame)
+    {
+        lock (gate)
+        {
+            ObjectDisposedException.ThrowIf(primary is null && fallback is null, this);
+            if (primary is not null && primary.IsAvailable)
+            {
+                try
+                {
+                    return captureFrame(primary);
+                }
+                catch (Exception exception) when (IsCaptureFailure(exception))
+                {
+                    primary.Dispose();
+                    primary = null;
+                }
+            }
+
+            return captureFrame(fallback ?? throw new ObjectDisposedException(nameof(FallbackGameScreenCapture)));
+        }
+    }
+
+    private static bool IsCaptureFailure(Exception exception) =>
+        exception is InvalidOperationException or NotSupportedException or Win32Exception;
 }
 
 [SupportedOSPlatform("windows")]

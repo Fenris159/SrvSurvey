@@ -32,6 +32,7 @@
          explicit patched-version override until the OpenVR binding is replaced. -->
     <PackageReference Include="System.Drawing.Common" Version="10.0.10" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.0" />
+    <PackageReference Include="Tmds.DBus" Version="0.95.1" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)' == 'Debug'">
@@ -51,6 +52,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SrvSurvey.Core\SrvSurvey.Core.csproj" />
+    <ProjectReference Include="..\ThirdParty\PipeWire.NET\PipeWire.NET.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(InaraApplicationApiKey)' != ''">

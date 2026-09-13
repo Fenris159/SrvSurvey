@@ -81,3 +81,11 @@ The relevant source is `src/views/SystemView2/SitesBodyView.tsx` in that
 repository. RavenColonialWeb and SrvSurvey are distributed under the GNU
 General Public License version 3, so these adaptations remain available under
 SrvSurvey's GPL-3.0 license.
+
+# PipeWire.NET
+
+SrvSurvey includes source derived from PipeWire.NET at commit
+`58355f0e5b26d1c27391fbeab722775e69eb87b5`, with a local addition for XDG
+desktop portal file-descriptor connections and CPU-readable capture
+buffers. PipeWire.NET is distributed under the MIT License. Its license is
+included at `src/ThirdParty/PipeWire.NET/LICENSE`.

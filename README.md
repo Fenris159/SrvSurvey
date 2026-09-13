@@ -277,8 +277,9 @@ installation is not required for packaged builds.
 
 Linux overlays support native X11 and XWayland. A Wayland desktop must expose an
 X11 `DISPLAY` through XWayland for game-window tracking, click-through overlays,
-screen capture and global input. Pure native Wayland is not currently a
-full-functionality overlay target.
+and global input. Rig detection can use the desktop ScreenCast portal and
+PipeWire when the compositor blocks X11 screen capture. Pure native Wayland is
+not currently a full-functionality overlay target.
 
 ## Build and validation
 

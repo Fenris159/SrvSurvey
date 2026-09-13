@@ -91,7 +91,9 @@ printf 'session=%s\nDISPLAY=%s\nWAYLAND_DISPLAY=%s\n' \
   global-input path. XWayland is not required.
 - **Wayland with XWayland:** `XDG_SESSION_TYPE` is normally `wayland`, while
   both `WAYLAND_DISPLAY` and `DISPLAY` are set. SrvSurvey runs through XWayland
-  and uses the same complete X11-compatible feature path.
+  for its windows and overlays. If X11 cannot read the game pixels needed by
+  rig detection, SrvSurvey asks the desktop ScreenCast portal to share the
+  Elite Dangerous window through PipeWire.
 - **Pure Wayland without XWayland:** `WAYLAND_DISPLAY` is set but `DISPLAY` is
   empty. This is not a supported full-functionality mode and the application
   may fail to open because this build uses Avalonia's X11 backend. Install or
@@ -130,6 +132,23 @@ session so it can see the game window and the Gamescope environment. If it
 cannot detect Elite there, first test both programs in the same normal
 X11/XWayland desktop session.
 
+### Rig detection on Wayland
+
+When rig detection or the calibration panel's **Test** option first needs
+pixels that XWayland cannot provide, the desktop opens its normal screen-sharing
+picker. Select only the **Elite Dangerous** window. SrvSurvey applies the
+existing normalized rig calibration to that stream, so the calibration controls
+and saved position work the same way as they do on Xorg. The desktop may
+remember the selection; it can ask again after a restart or when its permission
+token expires.
+
+The fallback requires PipeWire, WirePlumber (or another PipeWire session
+manager), `xdg-desktop-portal`, and the portal backend for the active desktop,
+such as `xdg-desktop-portal-gnome` or `xdg-desktop-portal-kde`. Full GNOME and
+KDE installations normally provide these. If the picker is canceled or the
+wrong source is shared, restart SrvSurvey and use **Test** again to start a new
+capture session.
+
 ## Elite journal discovery
 
 SrvSurvey detects every existing Elite journal folder it can find, rather than
@@ -163,7 +182,7 @@ native Xorg desktop, omit the XWayland package.
 
 ```bash
 sudo apt update
-sudo apt install libx11-6 libxext6 libice6 libsm6 libfontconfig1
+sudo apt install libx11-6 libxext6 libice6 libsm6 libfontconfig1 libpipewire-0.3-0
 sudo apt install xwayland  # Wayland sessions only
 ```
 

@@ -26,7 +26,7 @@ public sealed class MiningDetectionCoordinator : IDisposable
     {
         this.mining = mining;
         this.tracker = tracker;
-        this.capture = capture ?? GameScreenCapture.CreateCurrent();
+        this.capture = capture ?? GameScreenCapture.CreateCurrent(enableWaylandPortalFallback: true);
         timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(350) };
         timer.Tick += OnTick;
         timer.Start();
@@ -65,7 +65,7 @@ public sealed class MiningDetectionCoordinator : IDisposable
         {
             MiningBarAnalysis result = await Task.Run(() =>
             {
-                CapturedPixelBuffer pixels = capture.Capture(bounds);
+                CapturedPixelBuffer pixels = capture.Capture(bounds, game.ClientBounds);
                 return MiningBarDetector.Analyze(pixels, settings, previous);
             });
             await ApplyResultAsync(result, model, settings, context, game);

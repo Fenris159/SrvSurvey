@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using Avalonia;
+using PipeWire.NET;
 using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.Tests.Platform.Overlay;
@@ -64,6 +65,76 @@ public sealed class GameScreenCaptureTests
     }
 
     [Fact]
+    public void X11CaptureFailureFallsBackToWaylandPortal()
+    {
+        var expected = new CapturedPixelBuffer(1, 1, [51, 34, 17, 255]);
+        using var capture = new FallbackGameScreenCapture(
+            new StubCapture(_ =>
+                throw new InvalidOperationException("X11 could not capture the Elite Dangerous window.")
+            ),
+            new StubCapture(_ => expected)
+        );
+
+        CapturedPixelBuffer actual = capture.Capture(new PixelRect(0, 0, 1, 1));
+
+        Assert.Same(expected, actual);
+    }
+
+    [Fact]
+    public void PortalWindowCaptureUsesGameRelativeCalibrationBounds()
+    {
+        byte[] pixels = Enumerable.Range(0, 4 * 4).SelectMany(index => new byte[] { (byte)index, 0, 0, 255 }).ToArray();
+        VideoFrame frame = new(pixels, stride: 16, width: 4, height: 4, PixelFormat.Bgra, sequenceNumber: 1);
+
+        CapturedPixelBuffer capture = PortalFrameCropper.Crop(
+            frame,
+            new PortalStreamInfo(42, SourceType: 2, Position: null, Size: null),
+            new PixelRect(150, 250, 100, 100),
+            new PixelRect(100, 200, 200, 200)
+        );
+
+        Assert.Equal(2, capture.Width);
+        Assert.Equal(2, capture.Height);
+        Assert.Equal(new FssRgbPixel(0, 0, 5), capture.GetPixel(0, 0));
+        Assert.Equal(new FssRgbPixel(0, 0, 10), capture.GetPixel(1, 1));
+    }
+
+    [Fact]
+    public void PortalMonitorCaptureUsesPortalPositionAndScaling()
+    {
+        byte[] pixels = Enumerable.Range(0, 8 * 4).SelectMany(index => new byte[] { (byte)index, 0, 0, 255 }).ToArray();
+        VideoFrame frame = new(pixels, stride: 32, width: 8, height: 4, PixelFormat.Bgrx, sequenceNumber: 1);
+
+        CapturedPixelBuffer capture = PortalFrameCropper.Crop(
+            frame,
+            new PortalStreamInfo(42, SourceType: 1, new PixelPoint(100, 200), new PixelSize(400, 200)),
+            new PixelRect(200, 250, 100, 50),
+            new PixelRect(200, 250, 100, 50)
+        );
+
+        Assert.Equal(2, capture.Width);
+        Assert.Equal(1, capture.Height);
+        Assert.Equal(new FssRgbPixel(0, 0, 10), capture.GetPixel(0, 0));
+        Assert.Equal(new FssRgbPixel(0, 0, 11), capture.GetPixel(1, 0));
+    }
+
+    [Fact]
+    public void PortalCaptureConvertsRgbaToBgra()
+    {
+        VideoFrame frame = new([17, 34, 51, 0], stride: 4, width: 1, height: 1, PixelFormat.Rgba, sequenceNumber: 1);
+
+        CapturedPixelBuffer capture = PortalFrameCropper.Crop(
+            frame,
+            new PortalStreamInfo(42, SourceType: 2, Position: null, Size: null),
+            new PixelRect(0, 0, 1, 1),
+            new PixelRect(0, 0, 1, 1)
+        );
+
+        Assert.Equal(new FssRgbPixel(17, 34, 51), capture.GetPixel(0, 0));
+        Assert.Equal((byte)255, capture.BgraPixels.Span[3]);
+    }
+
+    [Fact]
     public void DiagnosticWriterCreatesAPortablePng()
     {
         string directory = Path.Combine(Path.GetTempPath(), "SrvSurvey-fss-diagnostic-" + Guid.NewGuid().ToString("N"));
@@ -110,5 +181,16 @@ public sealed class GameScreenCaptureTests
         {
             Marshal.FreeHGlobal(pointer);
         }
+    }
+
+    private sealed class StubCapture(Func<PixelRect, CapturedPixelBuffer> capture) : IGameScreenCapture
+    {
+        public bool IsAvailable => true;
+
+        public string? UnavailableReason => null;
+
+        public CapturedPixelBuffer Capture(PixelRect bounds) => capture(bounds);
+
+        public void Dispose() { }
     }
 }

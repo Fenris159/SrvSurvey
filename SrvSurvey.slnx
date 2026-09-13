@@ -4,6 +4,9 @@
     <Project Path="src/SrvSurvey.Desktop/SrvSurvey.Desktop.csproj" />
     <Project Path="src/SrvSurvey.ReplayController/SrvSurvey.ReplayController.csproj" />
   </Folder>
+  <Folder Name="/src/ThirdParty/">
+    <Project Path="src/ThirdParty/PipeWire.NET/PipeWire.NET.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/SrvSurvey.Core.Tests/SrvSurvey.Core.Tests.csproj" />
     <Project Path="tests/SrvSurvey.Desktop.Tests/SrvSurvey.Desktop.Tests.csproj" />
