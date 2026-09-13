@@ -15,6 +15,7 @@
       <ListBox x:Name="BookmarkRows" Classes="table-rows" ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}" MinHeight="180" MaxHeight="360">
         <ListBox.ContextMenu>
           <ContextMenu>
+            <MenuItem Header="Open in Workspace" Command="{Binding OpenInWorkspaceCommand}"/>
             <MenuItem Header="New bookmark" Command="{Binding NewCommand}"/>
             <MenuItem Header="Delete selected bookmark" Command="{Binding DeleteCommand}"/>
             <MenuItem Header="Copy selected system" behaviors:ClipboardCopyBehavior.Text="{Binding Selected.System}"/>
@@ -22,7 +23,7 @@
         </ListBox.ContextMenu>
         <ListBox.ItemTemplate>
           <DataTemplate x:DataType="nav:GalacticBookmark">
-            <Grid Classes="table-row" Margin="10,7" RowDefinitions="Auto" ColumnSpacing="10" Tag="{Binding Id}" PointerPressed="BookmarkRow_PointerPressed"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="Bookmarks0" /><ColumnDefinition Width="Auto" SharedSizeGroup="Bookmarks1" /><ColumnDefinition Width="Auto" SharedSizeGroup="Bookmarks2" /><ColumnDefinition Width="Auto" SharedSizeGroup="Bookmarks3" /><ColumnDefinition Width="Auto" SharedSizeGroup="Bookmarks4" /><ColumnDefinition Width="180" /></Grid.ColumnDefinitions>
+            <Grid Classes="table-row" Margin="10,7" RowDefinitions="Auto" ColumnSpacing="10"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="Bookmarks0" /><ColumnDefinition Width="Auto" SharedSizeGroup="Bookmarks1" /><ColumnDefinition Width="Auto" SharedSizeGroup="Bookmarks2" /><ColumnDefinition Width="Auto" SharedSizeGroup="Bookmarks3" /><ColumnDefinition Width="Auto" SharedSizeGroup="Bookmarks4" /><ColumnDefinition Width="180" /></Grid.ColumnDefinitions>
               <TextBlock Text="{Binding System}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding System}"/>
               <TextBlock Grid.Column="1" Text="{Binding DisplayBody}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding DisplayBody}"/>
               <TextBlock Grid.Column="2" Text="{Binding DisplayRing}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding DisplayRing}"/>

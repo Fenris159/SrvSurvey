@@ -15481,6 +15481,10 @@
       "translation": "Öffnen Sie den Bilderordner"
     },
     {
+      "source": "Open in Workspace",
+      "translation": "Im Arbeitsbereich öffnen"
+    },
+    {
       "source": "Open journal",
       "translation": "Tagebuch öffnen"
     },
@@ -46833,6 +46837,10 @@
     {
       "source": "Open images folder",
       "translation": "Abrir carpeta de imágenes"
+    },
+    {
+      "source": "Open in Workspace",
+      "translation": "Abrir en el espacio de trabajo"
     },
     {
       "source": "Open journal",
@@ -78189,6 +78197,10 @@
       "translation": "Ouvrir le dossier images"
     },
     {
+      "source": "Open in Workspace",
+      "translation": "Ouvrir dans l'espace de travail"
+    },
+    {
       "source": "Open journal",
       "translation": "Journal ouvert"
     },
@@ -109541,6 +109553,10 @@
     {
       "source": "Open images folder",
       "translation": "Abra a pasta de imagens"
+    },
+    {
+      "source": "Open in Workspace",
+      "translation": "Abrir no espaço de trabalho"
     },
     {
       "source": "Open journal",
@@ -140897,6 +140913,10 @@
       "translation": "Открыть папку с изображениями"
     },
     {
+      "source": "Open in Workspace",
+      "translation": "Открыть в рабочей области"
+    },
+    {
       "source": "Open journal",
       "translation": "Открыть журнал"
     },
@@ -172251,6 +172271,10 @@
       "translation": "打开图像文件夹"
     },
     {
+      "source": "Open in Workspace",
+      "translation": "在工作区中打开"
+    },
+    {
       "source": "Open journal",
       "translation": "打开日记本"
     },
@@ -203603,6 +203627,10 @@
     {
       "source": "Open images folder",
       "translation": "* OPEN IMAGES FOLDER >>>!"
+    },
+    {
+      "source": "Open in Workspace",
+      "translation": "* OPEN IN WORKSPACE >>>!"
     },
     {
       "source": "Open journal",

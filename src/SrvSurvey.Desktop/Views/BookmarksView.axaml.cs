@@ -1,5 +1,4 @@
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using SrvSurvey.Desktop.ViewModels;
@@ -9,19 +8,6 @@ namespace SrvSurvey.Desktop.Views;
 public sealed partial class BookmarksView : UserControl
 {
     public BookmarksView() => InitializeComponent();
-
-    private void BookmarkRow_PointerPressed(object? sender, PointerPressedEventArgs e)
-    {
-        if (
-            sender is Control control
-            && e.GetCurrentPoint(control).Properties.IsLeftButtonPressed
-            && DataContext is BookmarksViewModel vm
-            && control.Tag is Guid bookmarkId
-        )
-        {
-            vm.OpenSurfaceMiningMap(bookmarkId);
-        }
-    }
 
     private void OpenScreenshot_Click(object? sender, RoutedEventArgs e)
     {

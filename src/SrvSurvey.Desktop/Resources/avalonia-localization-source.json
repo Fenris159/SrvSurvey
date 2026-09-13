@@ -31049,6 +31049,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
+    "Text": "Open in Workspace",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
+  },
+  {
     "Text": "Open journal",
     "IsFormat": false,
     "SourceKinds": [
