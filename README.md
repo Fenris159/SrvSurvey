@@ -1,12 +1,12 @@
 # SrvSurvey-XP
 
-[![Current release](https://img.shields.io/github/v/release/Fenris159/SrvSurvey?include_prereleases&sort=semver&display_name=tag&label=release)](https://github.com/Fenris159/SrvSurvey/releases)
+[![Current release](https://img.shields.io/github/v/release/Fenris159/SrvSurvey?include_prereleases&sort=date&filter=xp-v*&display_name=tag&label=release)](https://github.com/Fenris159/SrvSurvey/releases)
 [![Windows and Linux build](https://github.com/Fenris159/SrvSurvey/actions/workflows/build-srvsurvey-xp.yml/badge.svg?branch=SrvSurvey-Avalonia)](https://github.com/Fenris159/SrvSurvey/actions/workflows/build-srvsurvey-xp.yml)
 [![SonarCloud quality gate](https://sonarcloud.io/api/project_badges/measure?project=Fenris159_SrvSurvey&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Fenris159_SrvSurvey)
 [![SonarCloud coverage](https://sonarcloud.io/api/project_badges/measure?project=Fenris159_SrvSurvey&metric=coverage)](https://sonarcloud.io/component_measures?id=Fenris159_SrvSurvey&metric=coverage)
 [![License](https://img.shields.io/github/license/Fenris159/SrvSurvey)](LICENSE)
 
-[![C#](https://img.shields.io/github/languages/top/Fenris159/SrvSurvey?logo=csharp&label=language)](https://github.com/Fenris159/SrvSurvey/search?l=C%23)
+[![GitHub languages](https://img.shields.io/github/languages/count/Fenris159/SrvSurvey?label=languages)](https://github.com/Fenris159/SrvSurvey)
 [![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
 [![Avalonia 12.1](https://img.shields.io/badge/Avalonia-12.1.0-8B44AC)](https://avaloniaui.net/)
 [![SkiaSharp 3.119](https://img.shields.io/badge/SkiaSharp-3.119.4-00AEEF)](https://github.com/mono/SkiaSharp)
