@@ -1,6 +1,6 @@
 # Surface mining
 
-Available in **SrvSurvey-XP 2.1.3.0-rc.48**. Surface Mining combines Rhino rig
+Available in **SrvSurvey-XP 2.1.3.0-rc.48.1**. Surface Mining combines Rhino rig
 guidance with reusable maps of planetary mining-location signals and their
 deposits. The same workflow is covered inside the application under
 **Guides > Surface mining**.

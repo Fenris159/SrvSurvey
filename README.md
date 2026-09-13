@@ -1,6 +1,6 @@
 # SrvSurvey-XP Cross-Platform
 
-Current release candidate version: **2.1.3.0-rc.48**
+Current release candidate version: **2.1.3.0-rc.48.1**
 
 In-app **Guides > Chat Commands** provides an activity-by-activity reference for
 surface bookmarks, mining, exobiology, ground targets, Guardian surveys, settlement
@@ -16,21 +16,17 @@ tests, packaging, and development tools. Existing SrvSurvey profiles remain
 supported through a verified, backup-first import; the imported source is never
 modified.
 
-## RC48 highlights
+## RC48.1 highlights
 
-- Adds a resumable `.mining survey` guide with efficient scan waypoints and a
-  compact configurable overlay.
-- Tracks deposit rig capacity with `.mine rigs <number>` and preserves the value
-  in map details, labels, bookmarks and CSV exports.
-- Traces deposit boundaries with `.mine splat`, calculates square rig-placement
-  suggestions and automatically zooms the compact radar near the active work.
-- Adds selected-map CSV export with survey, deposit, rating, rig and traced-splat
-  metadata for third-party tools.
-- Uses bearing terminology throughout the Surface Mining workflow and restores
-  the Overview Map automatically when a `.mining` command is used.
-- Retains the RC47, RC46.5 and RC46 release history.
+- Exports only the selected planetary mining-location bookmark instead of every
+  saved location on that body.
+- Keeps bookmark-row clicks focused on viewing and editing, with an explicit
+  **Open in Workspace** context action for Surface Mining bookmarks.
+- Accepts `l`, `m` and `h` as shorthand for Low, Medium and High in `.mine`
+  deposit commands while retaining the full words.
+- Retains the RC48, RC47, RC46.5 and RC46 release history.
 
-See the [complete RC48 release notes](CurrentReleaseNotes.md).
+See the [complete RC48.1 release notes](CurrentReleaseNotes.md).
 
 ## Install
 
