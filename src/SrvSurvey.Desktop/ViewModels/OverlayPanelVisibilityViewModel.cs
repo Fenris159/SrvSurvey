@@ -82,6 +82,20 @@ public sealed class OverlayPanelVisibilityViewModel : INotifyPropertyChanged
         return true;
     }
 
+    public bool EnsureVisible(string plotterName)
+    {
+        OverlayPanelVisibilityEntryViewModel? panel = Panels.FirstOrDefault(candidate =>
+            string.Equals(candidate.PlotterName, plotterName, StringComparison.Ordinal)
+        );
+        if (panel is null)
+        {
+            return false;
+        }
+
+        panel.IsEnabled = true;
+        return true;
+    }
+
     private void Save(OverlayPanelVisibilityEntryViewModel changed)
     {
         registry.SetUserVisibility(changed.PlotterName, changed.IsEnabled);

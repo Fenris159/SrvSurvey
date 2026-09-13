@@ -426,6 +426,25 @@ public sealed class MineMapViewModelTests
     }
 
     [Fact]
+    public async Task MiningCommandsRequestTheOverviewMapWithoutTreatingMineCommandsAsVisibilityRequests()
+    {
+        using var directory = new TemporaryDirectory();
+        var visibilityRequests = 0;
+        using var viewModel = new MineMapViewModel(
+            directory.Path,
+            new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
+            _ => { },
+            requestOverviewMapVisibility: () => visibilityRequests++
+        );
+
+        await viewModel.ApplyUpdateAsync([Command(".mine rigs 2")], null, null, allowCommands: true);
+        await viewModel.ApplyUpdateAsync([Command(".mining invalid")], null, null, allowCommands: true);
+        await viewModel.ApplyUpdateAsync([Command(".mining survey")], null, null, allowCommands: false);
+
+        Assert.Equal(1, visibilityRequests);
+    }
+
+    [Fact]
     public async Task LivePositionAndHeadingRefreshForBothMapPresentations()
     {
         using var directory = new TemporaryDirectory();

@@ -66,6 +66,24 @@ public sealed class OverlayPanelVisibilityViewModelTests : IDisposable
     }
 
     [Fact]
+    public void EnsureVisibleUpdatesThePanelRegistryAndStoredPreference()
+    {
+        var registry = new OverlayWindowRegistry();
+        OverlayPanelVisibilityViewModel viewModel = Create(registry);
+        OverlayPanelVisibilityEntryViewModel panel = Assert.Single(
+            viewModel.Panels,
+            candidate => candidate.PlotterName == "PlotMineMap"
+        );
+        panel.IsEnabled = false;
+
+        Assert.True(viewModel.EnsureVisible("PlotMineMap"));
+
+        Assert.True(panel.IsEnabled);
+        Assert.True(registry.IsUserVisible("PlotMineMap"));
+        Assert.True(new OverlayPanelVisibilitySettingsStore(GetSettingsPath()).Load()["PlotMineMap"]);
+    }
+
+    [Fact]
     public void SettingsCategoriesPreserveEstablishedPanelGroups()
     {
         var expected = new Dictionary<OverlaySettingsCategory, string[]>
@@ -132,7 +150,7 @@ public sealed class OverlayPanelVisibilityViewModelTests : IDisposable
     private OverlayPanelVisibilityViewModel Create(OverlayWindowRegistry registry)
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui.json");
+        var path = GetSettingsPath();
         var input = new GlobalInputSettingsViewModel(
             new GlobalInputSettingsStore(path),
             OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows),
@@ -140,6 +158,8 @@ public sealed class OverlayPanelVisibilityViewModelTests : IDisposable
         );
         return new OverlayPanelVisibilityViewModel(new OverlayPanelVisibilitySettingsStore(path), input, registry);
     }
+
+    private string GetSettingsPath() => Path.Combine(temporaryDirectory, "ui.json");
 
     private sealed class EmptyControllerDeviceProvider : IControllerDeviceProvider
     {

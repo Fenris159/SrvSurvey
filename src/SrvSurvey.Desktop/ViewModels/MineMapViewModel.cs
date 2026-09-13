@@ -19,6 +19,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     private readonly MineMapSettingsStore settingsStore;
     private readonly Action<string> notify;
     private readonly Action<Guid> editBookmark;
+    private readonly Action requestOverviewMapVisibility;
     private readonly WorkspaceTableSorter surveySorter = new();
     private readonly WorkspaceTableSorter hotspotSorter = new();
     private readonly WorkspaceTableSorter surfaceHuntSorter = new();
@@ -54,13 +55,15 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         Action<string> notify,
         Action? openSurfaceMiningGuide = null,
         Action<Guid>? editBookmark = null,
-        BookmarkCatalog? bookmarkCatalog = null
+        BookmarkCatalog? bookmarkCatalog = null,
+        Action? requestOverviewMapVisibility = null
     )
     {
         service = new MineMapService(dataDirectory, bookmarkCatalog);
         this.settingsStore = settingsStore;
         this.notify = notify;
         this.editBookmark = editBookmark ?? (_ => { });
+        this.requestOverviewMapVisibility = requestOverviewMapVisibility ?? (() => { });
         var preferences = settingsStore.Load();
         onlyShowWhileOnGround = preferences.OnlyShowWhileOnGround;
         showMarkerLabelsInOverviewMap = preferences.ShowMarkerLabelsInOverviewMap;
@@ -521,6 +524,11 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     )
     {
         bool startsSurveyGuide = ContainsSurveyGuideCommand(journalEvents);
+        if (allowCommands && ContainsMiningCommand(journalEvents))
+        {
+            requestOverviewMapVisibility();
+        }
+
         context = nextContext;
         status = latestStatus;
         ApplyAlignmentCommands(journalEvents, allowCommands);
@@ -670,6 +678,18 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
             && journalEvent.Payload.TryGetProperty("Message", out JsonElement message)
             && message.ValueKind == JsonValueKind.String
             && string.Equals(message.GetString()?.Trim(), ".mining survey", StringComparison.OrdinalIgnoreCase)
+        );
+
+    private static bool ContainsMiningCommand(IReadOnlyList<JournalEventEnvelope> journalEvents) =>
+        journalEvents.Any(journalEvent =>
+            string.Equals(journalEvent.EventName, "SendText", StringComparison.Ordinal)
+            && journalEvent.Payload.TryGetProperty("Message", out JsonElement message)
+            && message.ValueKind == JsonValueKind.String
+            && message.GetString()?.Trim() is { } command
+            && (
+                command.Equals(".mining", StringComparison.OrdinalIgnoreCase)
+                || command.StartsWith(".mining ", StringComparison.OrdinalIgnoreCase)
+            )
         );
 
     internal static MineMapViewModel CreateEditorPreview()

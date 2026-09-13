@@ -654,7 +654,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 Notifications.ShowMessage,
                 ShowSurfaceMiningGuide,
                 ShowBookmarkEditor,
-                Bookmarks.Catalog
+                Bookmarks.Catalog,
+                requestOverviewMapVisibility: () => OverlayPanelVisibility.EnsureVisible("PlotMineMap")
             );
             rollback.Add(MineMap.Dispose);
             OverlayInteraction.MiningDetection = Mining.Detection;
