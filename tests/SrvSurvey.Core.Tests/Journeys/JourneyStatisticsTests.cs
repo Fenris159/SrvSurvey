@@ -73,9 +73,9 @@ public sealed class JourneyStatisticsTests
             "Test",
             string.Empty,
             "Journal.test.log",
-            DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+            DateTimeOffset.Parse("2026-07-01T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
             null,
-            DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+            DateTimeOffset.Parse("2026-07-01T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
             visits
         );
     }
@@ -92,7 +92,7 @@ public sealed class JourneyStatisticsTests
     {
         return new JourneySystemVisit(
             new JourneySystemReference(name, address, position),
-            DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+            DateTimeOffset.Parse("2026-07-01T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
             null,
             counts,
             landedOn,

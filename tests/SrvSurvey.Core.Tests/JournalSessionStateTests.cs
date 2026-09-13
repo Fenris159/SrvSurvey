@@ -121,7 +121,10 @@ public sealed class JournalSessionStateTests
         Assert.Equal(5, snapshot.ValidLineCount);
         Assert.Equal(4, snapshot.RecognizedEventCount);
         Assert.Equal(1, state.UnhandledEventCount);
-        Assert.Equal(DateTimeOffset.Parse("2026-07-24T10:00:03Z"), snapshot.LastEventTimestamp);
+        Assert.Equal(
+            DateTimeOffset.Parse("2026-07-24T10:00:03Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            snapshot.LastEventTimestamp
+        );
     }
 
     [Fact]

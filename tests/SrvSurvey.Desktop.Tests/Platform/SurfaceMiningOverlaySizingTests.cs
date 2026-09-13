@@ -7,6 +7,7 @@ using Avalonia.VisualTree;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Controls;
 using SrvSurvey.Desktop.Platform.Overlay;
@@ -17,6 +18,15 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 [Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class SurfaceMiningOverlaySizingTests
 {
+    [Fact]
+    public void GuidedSurveyCompletionReminderExpiresAfterTenSeconds()
+    {
+        var started = new DateTimeOffset(2026, 9, 12, 12, 0, 0, TimeSpan.Zero);
+
+        Assert.False(MineMapOverlayCoordinator.IsSurveyGuideReminderExpired(started, started.AddSeconds(9.99)));
+        Assert.True(MineMapOverlayCoordinator.IsSurveyGuideReminderExpired(started, started.AddSeconds(10)));
+    }
+
     [Theory]
     [InlineData(1280, 720, 216)]
     [InlineData(1920, 1080, 324)]
@@ -50,6 +60,36 @@ public sealed class SurfaceMiningOverlaySizingTests
         );
         Assert.Equal(1, window.Opacity);
         Assert.Equal(1, line.Opacity);
+    }
+
+    [AvaloniaFact]
+    public void LiveSurveyGuideResizesAroundItsTopCenterAnchor()
+    {
+        using var viewModel = MineMapViewModel.CreateEditorPreview();
+        viewModel.InstallSurveyGuideEditorPreview(MineMapSurveyGuidePhase.Border);
+        var window = new SurfaceMiningSurveyOverlayWindow(viewModel) { Position = new PixelPoint(400, 100) };
+        try
+        {
+            OverlayThemeResources.Apply(
+                window,
+                LegacyOverlayLayout.Empty,
+                "PlotSurfaceMiningSurvey",
+                new OverlayWindowRegistry()
+            );
+            window.Show();
+            Assert.NotNull(window.CaptureRenderedFrame());
+            double initialCenter = window.Position.X + (window.Bounds.Width * window.RenderScaling / 2d);
+
+            viewModel.InstallSurveyGuideEditorPreview(MineMapSurveyGuidePhase.Complete);
+            Assert.NotNull(window.CaptureRenderedFrame());
+            double finalCenter = window.Position.X + (window.Bounds.Width * window.RenderScaling / 2d);
+
+            Assert.InRange(Math.Abs(finalCenter - initialCenter), 0, 1);
+        }
+        finally
+        {
+            window.Close();
+        }
     }
 
     [AvaloniaTheory]

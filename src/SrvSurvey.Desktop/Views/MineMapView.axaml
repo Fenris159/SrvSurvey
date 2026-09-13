@@ -143,18 +143,20 @@
                       </Grid>
                       <Border Margin="32,2,0,4" Padding="10,8" Classes="card raised" IsVisible="{Binding IsExpanded}">
                         <StackPanel Spacing="5">
-                          <Grid ColumnDefinitions="2*,*,*" ColumnSpacing="12">
+                          <Grid ColumnDefinitions="2*,*,*,Auto" ColumnSpacing="12">
                             <TextBlock Classes="table-heading" Text="MATERIAL" />
                             <TextBlock Grid.Column="1" Classes="table-heading" Text="MINERAL AMOUNT" />
                             <TextBlock Grid.Column="2" Classes="table-heading" Text="DENSITY" />
+                            <TextBlock Grid.Column="3" Classes="table-heading" Text="RIGS" />
                           </Grid>
                           <ItemsControl ItemsSource="{Binding Deposits}">
                             <ItemsControl.ItemTemplate>
                               <DataTemplate x:DataType="vm:MineMapDepositRowViewModel">
-                                <Grid ColumnDefinitions="2*,*,*" ColumnSpacing="12" Margin="0,3">
+                                <Grid ColumnDefinitions="2*,*,*,Auto" ColumnSpacing="12" Margin="0,3">
                                   <TextBlock Text="{Binding Material}" />
                                   <TextBlock Grid.Column="1" Text="{Binding MineralAmount}" />
                                   <TextBlock Grid.Column="2" Text="{Binding Density}" />
+                                  <TextBlock Grid.Column="3" Text="{Binding Rigs}" />
                                 </Grid>
                               </DataTemplate>
                             </ItemsControl.ItemTemplate>
@@ -195,6 +197,7 @@
                                        VisibleMaterials="{Binding VisibleMaterials}"
                                        VisibleMarkerIds="{Binding VisibleMarkerIds}"
                                        PlanningCircleCenter="{Binding PlanningCircleCenter, Mode=TwoWay}"
+                                       SurveyGuideTarget="{Binding SurveyGuideTarget}"
                                        MapBackground="{DynamicResource RavenRaisedSurfaceBrush}"
                                        GridBrush="{DynamicResource RavenMapGridBrush}"
                                        AccentBrush="{DynamicResource RavenAccentBrush}"
@@ -214,7 +217,7 @@
                   <TextBlock Classes="muted" VerticalAlignment="Center" Text="Orientation" />
                   <Button Classes="link" Width="18" Height="18" Padding="2" VerticalAlignment="Center"
                           AutomationProperties.Name="Surface Mining map orientation information"
-                          ToolTip.Tip="The surface map is fixed north-up. Heading lines, deposits, the survey center, and the live player position share the stored planetary coordinates.">
+                          ToolTip.Tip="The surface map is fixed north-up. Bearing lines, deposits, the survey center, and the live player position share the stored planetary coordinates.">
                     <PathIcon Width="14" Height="14" Data="{StaticResource question_circle_regular}" />
                   </Button>
                 </StackPanel>
@@ -252,6 +255,10 @@
                 </Grid>
                 <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap"
                            Text="Use the mouse wheel or − / + controls to zoom. Drag the map to pan after zooming in. Right-click to place or remove a 4.5 km planning circle; hold the right button and drag to move it." />
+                <Button HorizontalAlignment="Left"
+                        Content="Export as CSV" IsEnabled="{Binding HasActiveSurvey}"
+                        Click="ExportSurveyCsv_Click"
+                        ToolTip.Tip="Export the selected map and one self-contained row for each deposit." />
               </StackPanel>
             </Border>
             <Border Classes="card">
@@ -453,11 +460,17 @@
                         BorderBrush="{DynamicResource RavenBorderBrush}"
                         BorderThickness="1" CornerRadius="8" Padding="12,9">
                   <StackPanel Spacing="5">
+                    <TextBlock Classes="monospace" Text=".mining survey" />
+                    <TextBlock Classes="monospace" Text=".mining waypoint next" />
+                    <TextBlock Classes="monospace" Text=".mining waypoint prev" />
+                    <TextBlock Classes="monospace" Text=".mining survey complete" />
                     <TextBlock Classes="monospace" Text=".mining 120 6.44 4" />
                     <TextBlock Classes="monospace" Text=".mining center here" />
                     <TextBlock Classes="monospace" Text=".mine 15 ruby 1.24 high/medium" />
                     <TextBlock Classes="monospace" Text=".mine ruby medium/low here" />
+                    <TextBlock Classes="monospace" Text=".mine rigs 4" />
                     <TextBlock Classes="monospace" Text=".mine move haematite here" />
+                    <TextBlock Classes="monospace" Text=".mine splat" />
                     <TextBlock Classes="monospace" Text=".alignment" />
                   </StackPanel>
                 </Border>
@@ -466,13 +479,22 @@
             <Border Classes="card">
               <StackPanel Spacing="12">
                 <TextBlock Classes="card-title" Text="Surface Mining map commands" />
-                <TextBlock FontWeight="SemiBold" Text=".mining &lt;heading&gt; &lt;border radius km&gt; &lt;location number&gt;" />
+                <TextBlock FontWeight="SemiBold" Text=".mining survey" />
                 <TextBlock Classes="muted" TextWrapping="Wrap"
-                           Text="Creates or updates the current Mining Location Signal. Heading must be 0–359, border radius is the measured distance from the border to the center in kilometers, and the location number must be positive." />
+                           Text="Starts guided survey mode. Run it again before center setup is complete to restart at the border, or during the scan route to return to waypoint 1. The compact top-center overlay keeps deposit commands visible while it advances through an outward spiral of scan waypoints. Waypoints stay no more than 2 km apart for complete surface-scanner coverage. The guide closes 10 seconds after its final rig-capacity reminder." />
+                <TextBlock FontWeight="SemiBold" Text=".mining waypoint &lt;next|prev&gt;" />
+                <TextBlock Classes="muted" TextWrapping="Wrap"
+                           Text="Moves the active guide to the next or previous scan waypoint. Next completes the route when used at its final waypoint. Previous reopens the last waypoint from the completion reminder." />
+                <TextBlock FontWeight="SemiBold" Text=".mining survey complete" />
+                <TextBlock Classes="muted" TextWrapping="Wrap"
+                           Text="Finishes any active guided-survey phase early and shows the same final reminder to record rig capacity at each deposit." />
+                <TextBlock FontWeight="SemiBold" Text=".mining &lt;bearing&gt; &lt;border radius km&gt; &lt;location number&gt;" />
+                <TextBlock Classes="muted" TextWrapping="Wrap"
+                           Text="Creates or updates the current Mining Location Signal. Bearing must be 0–359, border radius is the measured distance from the border to the center in kilometers, and the location number must be positive." />
                 <TextBlock FontWeight="SemiBold" Text=".mining center here" />
                 <TextBlock Classes="muted" TextWrapping="Wrap"
                            Text="Moves the current map center to your live surface coordinates while preserving the location radius and every existing deposit marker. Use it from the true center to correct the border and ring alignment." />
-                <TextBlock FontWeight="SemiBold" Text=".mine &lt;heading&gt; &lt;commodity&gt; &lt;distance km&gt; &lt;low|medium|high&gt;/&lt;low|medium|high&gt;" />
+                <TextBlock FontWeight="SemiBold" Text=".mine &lt;bearing&gt; &lt;commodity&gt; &lt;distance km&gt; &lt;low|medium|high&gt;/&lt;low|medium|high&gt;" />
                 <TextBlock Classes="muted" TextWrapping="Wrap"
                            Text="Adds a listed Hotspot List commodity at a bearing and distance from your live position anywhere inside the saved map border, followed by that deposit's mineral amount and density. A same-commodity marker within 100 m is declined as a likely duplicate. Example: .mine 15 ruby 1.24 high/medium" />
                 <TextBlock FontWeight="SemiBold" Text=".mine &lt;commodity&gt; &lt;low|medium|high&gt;/&lt;low|medium|high&gt; here" />
@@ -481,14 +503,62 @@
                 <TextBlock FontWeight="SemiBold" Text=".mine move &lt;commodity&gt; here" />
                 <TextBlock Classes="muted" TextWrapping="Wrap"
                            Text="Moves the nearest marker matching the commodity to your current surface coordinates. The matching marker must be within 200 m. Example: .mine move haematite here" />
+                <TextBlock FontWeight="SemiBold" Text=".mine rigs &lt;number&gt;" />
+                <TextBlock Classes="muted" TextWrapping="Wrap"
+                           Text="Sets how many rigs fit at the mapped deposit nearest to your current surface position. The positive rig count appears in brackets beside the deposit on the map, even when marker names are hidden. Example: .mine rigs 4" />
+                <TextBlock FontWeight="SemiBold" Text=".mine splat" />
+                <TextBlock Classes="muted" TextWrapping="Wrap"
+                           Text="Starts tracing the nearest mapped deposit within 0.5 km from your current position. Drive the deposit edge and return within 12 m of the starting point after at least 50 m of travel. The compact Surface Mining radar draws the boundary as a dotted line and places separate square suggestions at least 78 m apart. Use .mine splat cancel to discard an unfinished trace." />
                 <TextBlock FontWeight="SemiBold" Text=".mine delete here" />
                 <TextBlock Classes="muted" TextWrapping="Wrap"
                            Text="Removes the nearest mapped deposit within 0.5 km of your current position." />
                 <TextBlock FontWeight="SemiBold" Text=".alignment" />
                 <TextBlock Classes="muted" TextWrapping="Wrap"
-                           Text="Toggles a thin red vertical guide at the exact center of the Elite window. Use the Rhino driving view, place a distant mining-location circle under the guide, then read the visible game compass heading for the .mine command. Turret mode does not show the required heading. Run the command again to hide the guide." />
+                           Text="Toggles a thin red vertical guide at the exact center of the Elite window. Use the Rhino driving view, place a distant mining-location circle under the guide, then read its bearing from the visible game compass for the .mine command. Turret mode does not show the required bearing. Run the command again to hide the guide." />
                 <TextBlock Classes="muted" TextWrapping="Wrap"
                            Text="Commands and commodity names are case insensitive. Accepted commodity names are listed in Hotspot List. A saved map loads automatically while you are inside its border and unloads after you leave. Every accepted or declined command reports its result through Status notifications." />
+              </StackPanel>
+            </Border>
+            <Border Classes="card">
+              <StackPanel Spacing="12">
+                <TextBlock Classes="card-title" Text="Auto Fitting Rigs to a Splat" />
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                  <TextBlock FontWeight="Bold" Text="1." />
+                  <TextBlock Grid.Column="1" TextWrapping="Wrap"
+                             Text="Position the Rhino so the center of its chassis sits directly over the visible deposit border. HUD colors vary." />
+                </Grid>
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                  <TextBlock FontWeight="Bold" Text="2." />
+                  <TextBlock Grid.Column="1" TextWrapping="Wrap"
+                             Text="Switch to turret mode and send .mine splat in chat. Keep the mineral scanner active, then drive slowly around the visible edge until SrvSurvey reports that the full circuit is complete." />
+                </Grid>
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                  <TextBlock FontWeight="Bold" Text="3." />
+                  <TextBlock Grid.Column="1" TextWrapping="Wrap"
+                             Text="Use the square recommendations on the compact Surface Mining radar to line up and place each rig. The radar zooms automatically as you approach the deposit and its suggested positions." />
+                </Grid>
+                <Grid ColumnDefinitions="*,*,*" RowDefinitions="160,Auto" ColumnSpacing="10" RowSpacing="6">
+                  <Border Background="{DynamicResource RavenRaisedSurfaceBrush}" CornerRadius="8" ClipToBounds="True">
+                    <Image Stretch="Uniform"
+                           Source="avares://SrvSurvey.Desktop/Assets/SurfaceMining/splat-align-border.png" />
+                  </Border>
+                  <Border Grid.Column="1" Background="{DynamicResource RavenRaisedSurfaceBrush}"
+                          CornerRadius="8" ClipToBounds="True">
+                    <Image Stretch="Uniform"
+                           Source="avares://SrvSurvey.Desktop/Assets/SurfaceMining/splat-tracing.png" />
+                  </Border>
+                  <Border Grid.Column="2" Background="{DynamicResource RavenRaisedSurfaceBrush}"
+                          CornerRadius="8" ClipToBounds="True">
+                    <Image Stretch="Uniform"
+                           Source="avares://SrvSurvey.Desktop/Assets/SurfaceMining/splat-rig-layout.png" />
+                  </Border>
+                  <TextBlock Grid.Row="1" Classes="muted" TextAlignment="Center" TextWrapping="Wrap"
+                             Text="Center the Rhino on the edge (HUD colors vary)." />
+                  <TextBlock Grid.Row="1" Grid.Column="1" Classes="muted" TextAlignment="Center"
+                             TextWrapping="Wrap" Text="Trace the complete splat border." />
+                  <TextBlock Grid.Row="1" Grid.Column="2" Classes="muted" TextAlignment="Center"
+                             TextWrapping="Wrap" Text="Align with the squares and place the rigs." />
+                </Grid>
               </StackPanel>
             </Border>
           </StackPanel>

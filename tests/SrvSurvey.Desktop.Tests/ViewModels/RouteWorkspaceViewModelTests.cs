@@ -209,7 +209,10 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     [Fact]
     public async Task FleetCarrierCountdownUsesJournalLifecycleAndResetsForCommander()
     {
-        var now = DateTimeOffset.Parse("2026-08-01T12:00:00Z");
+        var now = DateTimeOffset.Parse(
+            "2026-08-01T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var viewModel = CreateViewModel(routeKind: FollowRouteKind.FleetCarrier, utcNow: () => now);
         await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
 

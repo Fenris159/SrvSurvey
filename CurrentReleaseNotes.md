@@ -1,4 +1,4 @@
-# SrvSurvey-XP 2.1.3.0-rc.47
+# SrvSurvey-XP 2.1.3.0-rc.48
 
 - Replaces the Mining workspace placeholder with session accounting, prospecting
   yields, core and raw-material tracking, cargo, mining missions, historical
@@ -14,6 +14,34 @@
 - Adds announcement filters/presets and optional Windows speech, CSV history
   import, offline HTML reports with print/PDF output, and ZIP backups containing
   shared bookmarks and screenshot attachments. Guides documents the new tools.
+
+RC48 expands the Surface Mining workflow with resumable survey guidance, rig
+capacity, traced deposit boundaries, automatic rig-fitting suggestions and
+portable CSV exports. It retains the full RC47 feature set and the prior
+release-candidate changes summarized below.
+
+## New in RC48
+
+- Adds a resumable `.mining survey` guide that walks through border and center
+  setup before following an efficient outward scan route. Progress survives game
+  or application restarts, and the dedicated overlay remains available in the
+  Mining overlay editor.
+- Adds `.mine rigs <number>` to record the capacity of the nearest deposit. Rig
+  counts appear in map labels even when commodity names are hidden, in expanded
+  Surface Map details and in exported bookmark data.
+- Adds `.mine splat` boundary tracing from the Rhino. Completing the circuit
+  draws the traced outline and calculates separate square rig-placement
+  suggestions using the 78 m exclusion distance.
+- Automatically zooms the compact Surface Mining radar while tracing and when
+  approaching a suggested rig position, making final placement alignment easier.
+- Adds UTF-8 CSV export for a selected Surface Mining survey, with one
+  import-friendly row per deposit containing survey identity, ratings, rig
+  capacity, coordinates, traced boundary and suggested positions.
+- Standardizes Surface Mining commands and instructions on bearing terminology,
+  keeps the guided command hints visible, and restores a hidden Overview Map
+  whenever a `.mining` command is used.
+- Adds an illustrated in-app walkthrough for aligning the Rhino, tracing a splat
+  and placing rigs at the calculated recommendations.
 
 RC47 improves multi-install Commander discovery on Linux and keeps a Fleet
 Carrier's plotted jump synchronized between Frontier companion data and the live
@@ -59,6 +87,15 @@ release-candidate changes summarized below.
 - Adds amount and density marker filters, a draggable 4.5 km planning circle,
   optional marker labels in the Overview Map and a compact alignment helper sized
   consistently across common game resolutions.
+- Adds `.mine splat` boundary tracing for mapped deposits. Returning to the start
+  completes the trace and plots separate square rig-placement suggestions at the
+  same 78 m minimum spacing used by rig tracking.
+- Gives the compact Surface Mining radar a clearer ring-and-dot player marker,
+  dotted deposit outlines and distinct planning pins. The guided survey overlay
+  is now previewable and configurable in the Mining overlay editor.
+- Adds a UTF-8 CSV export for the selected Surface Mining map, with one
+  self-contained row per deposit containing its survey identity, map notes,
+  ratings, rig count, coordinates, traced boundary and suggested rig positions.
 - Refreshes the Surface Mining workflow guide and its in-app examples for the
   revised commands and HUD procedure.
 
@@ -110,11 +147,11 @@ release-candidate changes summarized below.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.47`
-- Tag: `xp-v2.1.3.0-rc.47`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.47-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.47-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.47-x86_64.AppImage`
+- Version: `2.1.3.0-rc.48`
+- Tag: `xp-v2.1.3.0-rc.48`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.48-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.48-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.48-x86_64.AppImage`
 
 Windows and Linux packages are self-contained. Linux packaging tools and the
 AppImage runtime use versioned, checksum-verified downloads. AppImages are updated

@@ -165,7 +165,10 @@ public sealed class CommanderCodexStoreTests : IDisposable
                 FrontierId = "F123",
                 CommanderName = "Cmdr Test",
                 EntryId = 2310101,
-                Timestamp = DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
+                Timestamp = DateTimeOffset.Parse(
+                    "2026-07-24T12:00:00Z",
+                    global::System.Globalization.CultureInfo.InvariantCulture
+                ),
                 SystemAddress = 42,
                 BodyId = 1,
                 RegionId = 18,
@@ -198,7 +201,10 @@ public sealed class CommanderCodexStoreTests : IDisposable
             """
         );
         var store = new CommanderCodexStore(temporaryDirectory);
-        var timestamp = DateTimeOffset.Parse("2026-07-24T12:00:00Z");
+        var timestamp = DateTimeOffset.Parse(
+            "2026-07-24T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
 
         var added = await store.SetManualDiscoveryAsync("F123", "Cmdr Test", 2310206, true, timestamp);
         var protectedFirst = await store.SetManualDiscoveryAsync("F123", "Cmdr Test", 2310101, false);

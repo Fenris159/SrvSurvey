@@ -253,11 +253,12 @@ public sealed class FollowRouteStoreTests : IDisposable
             }
         );
 
-        var reloaded = await store.ReloadAsync(saved);
-        Assert.Equal(0, reloaded.Route!.LastReachedIndex);
-        Assert.False(reloaded.Route.AutoCopy);
-        Assert.Equal("Keep this note", reloaded.Route.Notes);
-        Assert.Equal(["Sol", "Achenar"], reloaded.Route.Hops.Select(hop => hop.Name));
+        FollowRouteLoadResult reloaded = await store.ReloadAsync(saved);
+        FollowRouteDocument route = Assert.IsType<FollowRouteDocument>(reloaded.Route);
+        Assert.Equal(0, route.LastReachedIndex);
+        Assert.False(route.AutoCopy);
+        Assert.Equal("Keep this note", route.Notes);
+        Assert.Equal(["Sol", "Achenar"], route.Hops.Select(hop => hop.Name));
     }
 
     [Fact]
@@ -528,7 +529,7 @@ public sealed class FollowRouteStoreTests : IDisposable
     public async Task FleetCarrierSpanshExportPreservesNotesOnlyRestockGuidance()
     {
         var store = new FollowRouteStore(temporaryDirectory, FollowRouteKind.FleetCarrier);
-        var saved = await store.SaveAsAsync(
+        await store.SaveAsAsync(
             (await store.CreateNewAsync("F456")) with
             {
                 SourceSpanshKind = SpanshRouteKind.FleetCarrier,

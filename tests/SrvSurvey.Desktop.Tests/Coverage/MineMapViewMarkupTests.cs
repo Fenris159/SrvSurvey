@@ -61,6 +61,12 @@ public sealed class MineMapViewMarkupTests
             document.Descendants(avalonia + "Button"),
             button => button.Attribute("Content")?.Value == "For Rig tracking and full command details click here"
         );
+        XElement csvExport = Assert.Single(
+            document.Descendants(avalonia + "Button"),
+            button => button.Attribute("Content")?.Value == "Export as CSV"
+        );
+        Assert.Equal("{Binding HasActiveSurvey}", csvExport.Attribute("IsEnabled")?.Value);
+        Assert.Equal("ExportSurveyCsv_Click", csvExport.Attribute("Click")?.Value);
         Assert.Contains(
             document.Descendants(avalonia + "TextBlock"),
             text => text.Attribute("Text")?.Value == "SIGNAL #"
@@ -113,9 +119,38 @@ public sealed class MineMapViewMarkupTests
         );
         Assert.Contains(
             document.Descendants(avalonia + "TextBlock"),
+            text => text.Attribute("Text")?.Value == "Auto Fitting Rigs to a Splat"
+        );
+        Assert.Equal(
+            ["splat-align-border.png", "splat-tracing.png", "splat-rig-layout.png"],
+            document
+                .Descendants(avalonia + "Image")
+                .Select(image => image.Attribute("Source")?.Value ?? string.Empty)
+                .Where(source => source.Contains("/Assets/SurfaceMining/splat-", StringComparison.Ordinal))
+                .Select(source => Path.GetFileName(source) ?? string.Empty)
+                .ToArray()
+        );
+        Assert.Contains(
+            document.Descendants(avalonia + "TextBlock"),
             text =>
                 text.Attribute("Text")?.Value
                 == "Drive to the orange mining-location border and face the center marker."
+        );
+        Assert.Contains(
+            document.Descendants(avalonia + "TextBlock"),
+            text => text.Attribute("Text")?.Value == ".mining survey"
+        );
+        Assert.Contains(
+            document.Descendants(avalonia + "TextBlock"),
+            text => text.Attribute("Text")?.Value == ".mining waypoint next"
+        );
+        Assert.Contains(
+            document.Descendants(avalonia + "TextBlock"),
+            text => text.Attribute("Text")?.Value == ".mining waypoint prev"
+        );
+        Assert.Contains(
+            document.Descendants(avalonia + "TextBlock"),
+            text => text.Attribute("Text")?.Value == ".mining survey complete"
         );
         Assert.Contains(
             document.Descendants(avalonia + "TextBlock"),
@@ -126,6 +161,11 @@ public sealed class MineMapViewMarkupTests
             text => text.Attribute("Text")?.Value == ".mine move <commodity> here"
         );
         Assert.Contains(
+            document.Descendants(avalonia + "TextBlock"),
+            text => text.Attribute("Text")?.Value == ".mine rigs <number>"
+        );
+        Assert.Contains(document.Descendants(avalonia + "TextBlock"), text => text.Attribute("Text")?.Value == "RIGS");
+        Assert.Contains(
             document.Descendants(avalonia + "MenuItem"),
             item => item.Attribute("Header")?.Value == "Copy system name"
         );
@@ -134,7 +174,7 @@ public sealed class MineMapViewMarkupTests
             item => item.Attribute("Header")?.Value == "Edit bookmark"
         );
         Assert.Equal(
-            ["1.", "2.", "3."],
+            ["1.", "2.", "3.", "1.", "2.", "3."],
             document
                 .Descendants(avalonia + "TextBlock")
                 .Select(text => text.Attribute("Text")?.Value ?? string.Empty)
@@ -393,7 +433,7 @@ public sealed class MineMapViewMarkupTests
     [Fact]
     public void LiveOverlayHostsOneOwnedMinusPlusControlSet()
     {
-        var root = FindRepositoryRoot();
+        string root = FindRepositoryRoot();
         var presentation = XDocument.Load(
             Path.Combine(root, "src", "SrvSurvey.Desktop", "MineMapOverlayPresentation.axaml")
         );
@@ -450,6 +490,49 @@ public sealed class MineMapViewMarkupTests
             guardianButtons.Select(button => button.Attribute("BorderBrush")?.Value),
             mineButtons.Select(button => button.Attribute("BorderBrush")?.Value)
         );
+    }
+
+    [Fact]
+    public void GuidedSurveyOverlayUsesFourCompactTopCenterRowsAndBothMapsShareItsTarget()
+    {
+        string root = FindRepositoryRoot();
+        var guide = XDocument.Load(
+            Path.Combine(root, "src", "SrvSurvey.Desktop", "SurfaceMiningSurveyOverlayPresentation.axaml")
+        );
+        XNamespace avalonia = "https://github.com/avaloniaui";
+        XElement grid = Assert.Single(guide.Descendants(avalonia + "Grid"));
+
+        Assert.Equal("Auto,Auto,Auto,Auto", grid.Attribute("RowDefinitions")?.Value);
+        Assert.Null(guide.Root?.Attribute("MaxHeight"));
+        Assert.Contains(
+            guide.Descendants(avalonia + "TextBlock"),
+            text => text.Attribute("Text")?.Value == "{Binding SurveyGuideFooter}"
+        );
+
+        string coordinator = File.ReadAllText(
+            Path.Combine(root, "src", "SrvSurvey.Desktop", "Platform", "Overlay", "MineMapOverlayCoordinator.cs")
+        );
+        Assert.Contains("OverlayWindowPlacement.TopCenter", coordinator, StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "ConfigureAuxiliaryWindow(overlay, \"PlotMineMap\", applyOpacity: false)",
+            coordinator,
+            StringComparison.Ordinal
+        );
+
+        foreach (
+            string path in new[]
+            {
+                Path.Combine(root, "src", "SrvSurvey.Desktop", "MineMapOverlayPresentation.axaml"),
+                Path.Combine(root, "src", "SrvSurvey.Desktop", "Views", "MineMapView.axaml"),
+            }
+        )
+        {
+            XElement map = Assert.Single(
+                XDocument.Load(path).Descendants(),
+                element => element.Name.LocalName == "MineMapControl"
+            );
+            Assert.Equal("{Binding SurveyGuideTarget}", map.Attribute("SurveyGuideTarget")?.Value);
+        }
     }
 
     [Fact]

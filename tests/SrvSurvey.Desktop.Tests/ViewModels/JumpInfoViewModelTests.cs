@@ -167,7 +167,9 @@ public sealed class JumpInfoViewModelTests : IDisposable
     [Fact]
     public async Task WitchspaceKeepsKnownStarClassUntilArrival()
     {
-        var time = new MutableTimeProvider(DateTimeOffset.Parse("2026-08-13T12:00:00Z"));
+        var time = new MutableTimeProvider(
+            DateTimeOffset.Parse("2026-08-13T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+        );
         var client = new FakeSummaryClient(CreateSummary() with { StarClass = null });
         using var viewModel = CreateViewModel(client, time);
 
@@ -544,7 +546,9 @@ public sealed class JumpInfoViewModelTests : IDisposable
     [Fact]
     public async Task ActivePresentationKeepsTargetWhenRouteAdvancesBeforeArrival()
     {
-        var time = new MutableTimeProvider(DateTimeOffset.Parse("2026-08-25T12:00:00Z"));
+        var time = new MutableTimeProvider(
+            DateTimeOffset.Parse("2026-08-25T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+        );
         var client = new FakeSummaryClient(CreateSummary());
         using var viewModel = CreateViewModel(client, time);
 
@@ -637,7 +641,9 @@ public sealed class JumpInfoViewModelTests : IDisposable
     [InlineData("CarrierJump")]
     public async Task CompletedJumpQueuesNextContentUntilNextPresentation(string eventName)
     {
-        var time = new MutableTimeProvider(DateTimeOffset.Parse("2026-08-12T12:00:00Z"));
+        var time = new MutableTimeProvider(
+            DateTimeOffset.Parse("2026-08-12T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+        );
         var client = new FakeSummaryClient(CreateSummary());
         using var viewModel = CreateViewModel(client, time);
 
@@ -717,7 +723,9 @@ public sealed class JumpInfoViewModelTests : IDisposable
     [Fact]
     public async Task CompletedJumpQueuesWithoutAnActivePresentation()
     {
-        var time = new MutableTimeProvider(DateTimeOffset.Parse("2026-08-13T12:00:00Z"));
+        var time = new MutableTimeProvider(
+            DateTimeOffset.Parse("2026-08-13T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+        );
         using var viewModel = CreateViewModel(new FakeSummaryClient(CreateSummary()), time);
 
         viewModel.ApplyUpdate(
@@ -770,7 +778,9 @@ public sealed class JumpInfoViewModelTests : IDisposable
     [Fact]
     public async Task QueuedTargetCanLeaveAndThenResumeFollowedRoute()
     {
-        var time = new MutableTimeProvider(DateTimeOffset.Parse("2026-08-12T12:00:00Z"));
+        var time = new MutableTimeProvider(
+            DateTimeOffset.Parse("2026-08-12T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+        );
         var client = new FakeSummaryClient(CreateSummary());
         using var viewModel = CreateViewModel(client, time);
         var followedRoute = new FollowRouteDocument(
@@ -874,7 +884,9 @@ public sealed class JumpInfoViewModelTests : IDisposable
     [Fact]
     public async Task FinalFollowedRouteJumpShowsFinishedForThreeSeconds()
     {
-        var time = new MutableTimeProvider(DateTimeOffset.Parse("2026-08-12T12:00:00Z"));
+        var time = new MutableTimeProvider(
+            DateTimeOffset.Parse("2026-08-12T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+        );
         using var viewModel = CreateViewModel(new FakeSummaryClient(CreateSummary()), time);
         var followedRoute = new FollowRouteDocument(
             "F123",
@@ -1033,8 +1045,8 @@ public sealed class JumpInfoViewModelTests : IDisposable
             5,
             7,
             "Pathfinder",
-            DateTimeOffset.Parse("2024-01-02T03:04:05Z"),
-            DateTimeOffset.Parse("2025-02-03T04:05:06Z"),
+            DateTimeOffset.Parse("2024-01-02T03:04:05Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            DateTimeOffset.Parse("2025-02-03T04:05:06Z", global::System.Globalization.CultureInfo.InvariantCulture),
             new SystemTrafficSummary(3, 20, 100),
             new SystemPoiSummary(7, 2, 1, 1, 0, 0, 1),
             [new SystemSpecialSummary("Encoded Hub", ["Material Trader - Encoded"])]

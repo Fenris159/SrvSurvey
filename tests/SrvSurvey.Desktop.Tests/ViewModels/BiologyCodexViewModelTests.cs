@@ -82,13 +82,13 @@ public sealed class BiologyCodexViewModelTests : IDisposable
             ],
             null
         );
-        Assert.Equal(BiologyCodexDiscoveryStatus.Reported, viewModel.SelectedOrganism!.Status);
+        Assert.Equal(BiologyCodexDiscoveryStatus.Reported, viewModel.SelectedOrganism.Status);
 
         survey.ApplyUpdate([Parse(OrganicLog)], null);
-        Assert.Equal(BiologyCodexDiscoveryStatus.Confirmed, viewModel.SelectedOrganism!.Status);
+        Assert.Equal(BiologyCodexDiscoveryStatus.Confirmed, viewModel.SelectedOrganism.Status);
 
         survey.ApplyUpdate([Parse(OrganicAnalyse)], null);
-        Assert.Equal(BiologyCodexDiscoveryStatus.Analyzed, viewModel.SelectedOrganism!.Status);
+        Assert.Equal(BiologyCodexDiscoveryStatus.Analyzed, viewModel.SelectedOrganism.Status);
     }
 
     [Fact]

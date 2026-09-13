@@ -78,7 +78,9 @@ public sealed class MiningSearchClientTests
         };
         var rows = candidates
             .Select(c =>
-                spansh
+            {
+                int maxLandingPadSize = c.Pad ? 3 : 2;
+                return spansh
                     ? (object)
                         new
                         {
@@ -105,15 +107,15 @@ public sealed class MiningSearchClientTests
                         systemName = "Sol",
                         stationName = c.Name,
                         stationType = c.Type,
-                        maxLandingPadSize = c.Pad ? 3 : 2,
+                        maxLandingPadSize,
                         updatedAt = c.Age,
                         marketId = 42,
                         buyPrice = c.Price,
                         sellPrice = c.Price,
                         stock = c.Supply,
                         demand = c.Demand,
-                    }
-            )
+                    };
+            })
             .ToArray();
         var payload = spansh
             ? System.Text.Json.JsonSerializer.Serialize(new { results = rows })

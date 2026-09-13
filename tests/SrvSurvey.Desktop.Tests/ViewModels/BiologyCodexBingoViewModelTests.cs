@@ -25,7 +25,10 @@ public sealed class BiologyCodexBingoViewModelTests : IDisposable
                 FrontierId = "F123",
                 CommanderName = "Cmdr Test",
                 EntryId = 2310101,
-                Timestamp = DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
+                Timestamp = DateTimeOffset.Parse(
+                    "2026-01-01T00:00:00Z",
+                    global::System.Globalization.CultureInfo.InvariantCulture
+                ),
                 SystemAddress = 42,
                 BodyId = 3,
             }
@@ -36,7 +39,10 @@ public sealed class BiologyCodexBingoViewModelTests : IDisposable
                 FrontierId = "F123",
                 CommanderName = "Cmdr Test",
                 EntryId = 2310101,
-                Timestamp = DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
+                Timestamp = DateTimeOffset.Parse(
+                    "2026-01-01T00:00:00Z",
+                    global::System.Globalization.CultureInfo.InvariantCulture
+                ),
                 SystemAddress = 42,
                 BodyId = 3,
                 RegionId = 18,
@@ -48,7 +54,7 @@ public sealed class BiologyCodexBingoViewModelTests : IDisposable
             "Cmdr Test",
             2320101,
             true,
-            DateTimeOffset.Parse("2026-02-01T00:00:00Z")
+            DateTimeOffset.Parse("2026-02-01T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
         );
         var catalog = CreateCatalog();
         using var viewModel = CreateViewModel(store, catalog, journalDirectory);

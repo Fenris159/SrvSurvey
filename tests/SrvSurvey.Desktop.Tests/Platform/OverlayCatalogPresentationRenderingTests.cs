@@ -51,9 +51,9 @@ public sealed class OverlayCatalogPresentationRenderingTests
             Assert.Contains(
                 mining.GetVisualDescendants().OfType<Border>(),
                 border =>
-                    border.Width == 24
-                    && border.Height == 24
-                    && border.CornerRadius.TopLeft == 12
+                    Math.Abs(border.Width - 24) < 0.001
+                    && Math.Abs(border.Height - 24) < 0.001
+                    && Math.Abs(border.CornerRadius.TopLeft - 12) < 0.001
                     && border.Background is ISolidColorBrush brush
                     && brush.Color == Color.Parse("#FF4500")
             );

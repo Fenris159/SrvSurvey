@@ -189,7 +189,9 @@ public sealed class EdsmPublisherTests
     public async Task SuccessfulUploadsAreSummarizedOncePerFifteenMinuteWindow()
     {
         var handler = new EdsmResponseHandler();
-        var time = new MutableTimeProvider(DateTimeOffset.Parse("2026-08-25T12:00:00Z"));
+        var time = new MutableTimeProvider(
+            DateTimeOffset.Parse("2026-08-25T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+        );
         var logs = new List<string>();
         using var publisher = new EdsmPublisher("2.1.3.0", new HttpClient(handler), time, logs.Add);
 

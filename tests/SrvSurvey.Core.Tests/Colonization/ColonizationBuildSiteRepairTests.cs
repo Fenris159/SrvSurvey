@@ -87,7 +87,7 @@ public sealed class ColonizationBuildSiteRepairTests
             4_310_999_999
         );
 
-        Assert.False(site!.HasExplicitStatus);
+        Assert.False(site.HasExplicitStatus);
         Assert.Equal(ColonizationBuildSiteRepairField.MarketId, plan?.Field);
     }
 

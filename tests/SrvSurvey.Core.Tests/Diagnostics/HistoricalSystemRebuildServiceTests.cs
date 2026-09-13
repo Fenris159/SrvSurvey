@@ -35,7 +35,8 @@ public sealed class HistoricalSystemRebuildServiceTests : IDisposable
             paths.Data,
             paths.Journals,
             paths.Backups,
-            () => DateTimeOffset.Parse("2026-07-25T12:00:00Z")
+            () =>
+                DateTimeOffset.Parse("2026-07-25T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
         );
 
         var result = await service.RebuildAsync("F123", "Drew", JournalHistoryAnalyzer.EliteReleaseDate);
@@ -77,7 +78,8 @@ public sealed class HistoricalSystemRebuildServiceTests : IDisposable
             paths.Data,
             paths.Journals,
             paths.Backups,
-            () => DateTimeOffset.Parse("2026-07-25T12:00:00Z"),
+            () =>
+                DateTimeOffset.Parse("2026-07-25T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
             _ => ++activationCount == 2 ? new IOException("Injected activation failure.") : null
         );
 
@@ -104,7 +106,8 @@ public sealed class HistoricalSystemRebuildServiceTests : IDisposable
             paths.Data,
             paths.Journals,
             paths.Backups,
-            () => DateTimeOffset.Parse("2026-07-25T12:00:00Z")
+            () =>
+                DateTimeOffset.Parse("2026-07-25T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
         );
 
         var result = await service.RebuildAsync("F123", "Drew", JournalHistoryAnalyzer.EliteReleaseDate);

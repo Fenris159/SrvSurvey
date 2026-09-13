@@ -169,7 +169,7 @@ public sealed class ApplicationInstanceManagerTests
 
         Assert.True(resolved, error);
         Assert.NotNull(path);
-        Assert.True(Path.IsPathFullyQualified(path!));
+        Assert.True(Path.IsPathFullyQualified(path));
         Assert.False(string.IsNullOrWhiteSpace(method));
     }
 

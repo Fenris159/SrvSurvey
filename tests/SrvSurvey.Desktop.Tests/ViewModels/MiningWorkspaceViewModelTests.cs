@@ -455,7 +455,8 @@ public sealed class MiningWorkspaceViewModelTests
 
     private sealed class Clock : TimeProvider
     {
-        public DateTimeOffset Now { get; set; } = DateTimeOffset.Parse("2026-09-06T12:00:00Z");
+        public DateTimeOffset Now { get; set; } =
+            DateTimeOffset.Parse("2026-09-06T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture);
 
         public override DateTimeOffset GetUtcNow() => Now;
     }

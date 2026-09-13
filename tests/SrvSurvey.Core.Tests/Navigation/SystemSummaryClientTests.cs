@@ -28,8 +28,14 @@ public sealed class SystemSummaryClientTests
         Assert.Equal(4, result.Summary.ScannedBodyCount);
         Assert.Equal(7, result.Summary.TotalBodyCount);
         Assert.Equal("Pathfinder", result.Summary.DiscoveredBy);
-        Assert.Equal(DateTimeOffset.Parse("2024-01-02T03:04:05Z"), result.Summary.DiscoveredAt);
-        Assert.Equal(DateTimeOffset.Parse("2025-02-03T04:05:06Z"), result.Summary.LastUpdatedAt);
+        Assert.Equal(
+            DateTimeOffset.Parse("2024-01-02T03:04:05Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            result.Summary.DiscoveredAt
+        );
+        Assert.Equal(
+            DateTimeOffset.Parse("2025-02-03T04:05:06Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            result.Summary.LastUpdatedAt
+        );
         Assert.Equal(new SystemTrafficSummary(3, 20, 100), result.Summary.Traffic);
         Assert.Equal(2, result.Summary.PointsOfInterest.Genus);
         Assert.Equal(2, result.Summary.PointsOfInterest.Starports);
@@ -62,7 +68,10 @@ public sealed class SystemSummaryClientTests
         Assert.Equal("Large", guardianLab.LandingPads?.Largest);
         Assert.Contains("Technology Broker", guardianLab.Services);
         Assert.Equal(["Narcotics", "Slaves"], guardianLab.ProhibitedCommodities);
-        Assert.Equal(DateTimeOffset.Parse("2026-01-02T03:04:05Z"), guardianLab.UpdatedAt);
+        Assert.Equal(
+            DateTimeOffset.Parse("2026-01-02T03:04:05Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            guardianLab.UpdatedAt
+        );
         Assert.Equal(
             [
                 "https://edsm.test/api-system-v1/bodies?systemName=Test%20System",
@@ -108,8 +117,14 @@ public sealed class SystemSummaryClientTests
         useSpansh = true;
         var spansh = await client.GetAsync("Test System", 42);
 
-        Assert.Equal(DateTimeOffset.Parse("2025-02-03T04:05:06Z"), edsm.Summary.LastUpdatedAt);
-        Assert.Equal(DateTimeOffset.Parse("2026-03-04T05:06:07Z"), spansh.Summary.LastUpdatedAt);
+        Assert.Equal(
+            DateTimeOffset.Parse("2025-02-03T04:05:06Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            edsm.Summary.LastUpdatedAt
+        );
+        Assert.Equal(
+            DateTimeOffset.Parse("2026-03-04T05:06:07Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            spansh.Summary.LastUpdatedAt
+        );
     }
 
     [Fact]

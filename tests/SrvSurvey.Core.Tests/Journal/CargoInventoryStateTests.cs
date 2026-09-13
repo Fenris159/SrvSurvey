@@ -195,7 +195,7 @@ public sealed class CargoInventoryStateTests
     private static CargoSnapshot Snapshot(string vessel, params CargoItem[] items)
     {
         return new CargoSnapshot(
-            DateTimeOffset.Parse("2026-07-25T12:00:00Z"),
+            DateTimeOffset.Parse("2026-07-25T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
             "Cargo",
             vessel,
             items.Sum(item => item.Count),

@@ -68,6 +68,7 @@ public enum GlobalInputAction
     ToggleMiningReferenceVisibility,
     ToggleMiningFiregroupsVisibility,
     ToggleMineMapVisibility,
+    ToggleSurfaceMiningSurveyVisibility,
 }
 
 public sealed record GlobalInputActionDefinition(
@@ -253,6 +254,12 @@ public static class GlobalInputActionCatalog
             "toggleMineMapVisibility",
             "mining overview map",
             "PlotMineMap"
+        ),
+        DefineOverlayToggle(
+            GlobalInputAction.ToggleSurfaceMiningSurveyVisibility,
+            "toggleSurfaceMiningSurveyVisibility",
+            "Surface mining survey guide",
+            "PlotSurfaceMiningSurvey"
         ),
         Define(
             GlobalInputAction.Track1,

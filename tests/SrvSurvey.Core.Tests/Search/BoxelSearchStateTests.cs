@@ -175,7 +175,10 @@ public sealed class BoxelSearchStateTests
             {
                 TopBoxel = BoxelAddress.Parse("Praea Euq RS-U d2-0"),
                 LowMassCode = 'b',
-                StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                StartedOn = DateTimeOffset.Parse(
+                    "2026-07-01T00:00:00Z",
+                    global::System.Globalization.CultureInfo.InvariantCulture
+                ),
                 SkipAlreadyVisited = false,
                 SkipKnownToSpansh = false,
                 CompletionMode = BoxelCompletionMode.EnterSystem,
@@ -236,7 +239,10 @@ public sealed class BoxelSearchStateTests
             {
                 TopBoxel = BoxelAddress.Parse("Wregoe BU-Y b2-0"),
                 LowMassCode = 'b',
-                StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                StartedOn = DateTimeOffset.Parse(
+                    "2026-07-01T00:00:00Z",
+                    global::System.Globalization.CultureInfo.InvariantCulture
+                ),
                 SkipAlreadyVisited = false,
                 SkipKnownToSpansh = false,
                 CompletionMode = BoxelCompletionMode.EnterSystem,
@@ -307,7 +313,10 @@ public sealed class BoxelSearchStateTests
                 {
                     TopBoxel = top,
                     LowMassCode = 'c',
-                    StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                    StartedOn = DateTimeOffset.Parse(
+                        "2026-07-01T00:00:00Z",
+                        global::System.Globalization.CultureInfo.InvariantCulture
+                    ),
                     SortDescending = true,
                 },
                 out _
@@ -594,7 +603,10 @@ public sealed class BoxelSearchStateTests
             {
                 TopBoxel = BoxelAddress.Parse("Praea Euq IL-P c5-0"),
                 LowMassCode = 'c',
-                StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                StartedOn = DateTimeOffset.Parse(
+                    "2026-07-01T00:00:00Z",
+                    global::System.Globalization.CultureInfo.InvariantCulture
+                ),
                 SkipAlreadyVisited = false,
                 SkipKnownToSpansh = true,
                 CompletionMode = BoxelCompletionMode.FssAllBodies,
@@ -604,8 +616,22 @@ public sealed class BoxelSearchStateTests
         );
 
         state.MergeSpanshSystems([
-            Observation("Praea Euq IL-P c5-0", spansh: DateTimeOffset.Parse("2026-06-01T00:00:00Z"), hasBodies: true),
-            Observation("Praea Euq IL-P c5-1", spansh: DateTimeOffset.Parse("2026-06-01T00:00:00Z"), hasBodies: false),
+            Observation(
+                "Praea Euq IL-P c5-0",
+                spansh: DateTimeOffset.Parse(
+                    "2026-06-01T00:00:00Z",
+                    global::System.Globalization.CultureInfo.InvariantCulture
+                ),
+                hasBodies: true
+            ),
+            Observation(
+                "Praea Euq IL-P c5-1",
+                spansh: DateTimeOffset.Parse(
+                    "2026-06-01T00:00:00Z",
+                    global::System.Globalization.CultureInfo.InvariantCulture
+                ),
+                hasBodies: false
+            ),
         ]);
 
         Assert.True(state.Systems.Single(system => system.Boxel.N2 == 0).IsComplete);
@@ -621,7 +647,10 @@ public sealed class BoxelSearchStateTests
             {
                 TopBoxel = BoxelAddress.Parse("Praea Euq IL-P c5-0"),
                 LowMassCode = 'c',
-                StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                StartedOn = DateTimeOffset.Parse(
+                    "2026-07-01T00:00:00Z",
+                    global::System.Globalization.CultureInfo.InvariantCulture
+                ),
                 SkipAlreadyVisited = true,
                 SkipKnownToSpansh = true,
                 CompletionMode = BoxelCompletionMode.EnterSystem,
@@ -631,11 +660,31 @@ public sealed class BoxelSearchStateTests
         );
 
         state.MergeLocalSystems([
-            Observation("Praea Euq IL-P c5-0", visited: DateTimeOffset.Parse("2026-06-01T00:00:00Z")),
+            Observation(
+                "Praea Euq IL-P c5-0",
+                visited: DateTimeOffset.Parse(
+                    "2026-06-01T00:00:00Z",
+                    global::System.Globalization.CultureInfo.InvariantCulture
+                )
+            ),
         ]);
         state.MergeSpanshSystems([
-            Observation("Praea Euq IL-P c5-1", spansh: DateTimeOffset.Parse("2026-06-01T00:00:00Z"), hasBodies: true),
-            Observation("Praea Euq IL-P c5-2", spansh: DateTimeOffset.Parse("2026-06-01T00:00:00Z"), hasBodies: false),
+            Observation(
+                "Praea Euq IL-P c5-1",
+                spansh: DateTimeOffset.Parse(
+                    "2026-06-01T00:00:00Z",
+                    global::System.Globalization.CultureInfo.InvariantCulture
+                ),
+                hasBodies: true
+            ),
+            Observation(
+                "Praea Euq IL-P c5-2",
+                spansh: DateTimeOffset.Parse(
+                    "2026-06-01T00:00:00Z",
+                    global::System.Globalization.CultureInfo.InvariantCulture
+                ),
+                hasBodies: false
+            ),
         ]);
 
         Assert.True(state.Systems.Single(system => system.Boxel.N2 == 0).IsComplete);
@@ -652,7 +701,10 @@ public sealed class BoxelSearchStateTests
             {
                 TopBoxel = BoxelAddress.Parse("Praea Euq RS-U d2-0"),
                 LowMassCode = 'c',
-                StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                StartedOn = DateTimeOffset.Parse(
+                    "2026-07-01T00:00:00Z",
+                    global::System.Globalization.CultureInfo.InvariantCulture
+                ),
                 SkipAlreadyVisited = false,
                 SkipKnownToSpansh = false,
                 CompletionMode = BoxelCompletionMode.EnterSystem,
@@ -679,7 +731,10 @@ public sealed class BoxelSearchStateTests
             {
                 TopBoxel = BoxelAddress.Parse("Praea Euq IL-P c5-0"),
                 LowMassCode = 'c',
-                StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                StartedOn = DateTimeOffset.Parse(
+                    "2026-07-01T00:00:00Z",
+                    global::System.Globalization.CultureInfo.InvariantCulture
+                ),
                 SkipAlreadyVisited = false,
                 SkipKnownToSpansh = false,
                 CompletionMode = BoxelCompletionMode.EnterSystem,
@@ -720,7 +775,10 @@ public sealed class BoxelSearchStateTests
             {
                 TopBoxel = BoxelAddress.Parse("Praea Euq IL-P c5-0"),
                 LowMassCode = 'c',
-                StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                StartedOn = DateTimeOffset.Parse(
+                    "2026-07-01T00:00:00Z",
+                    global::System.Globalization.CultureInfo.InvariantCulture
+                ),
                 SkipAlreadyVisited = false,
                 SkipKnownToSpansh = false,
                 CompletionMode = BoxelCompletionMode.EnterSystem,
@@ -749,7 +807,10 @@ public sealed class BoxelSearchStateTests
             {
                 TopBoxel = BoxelAddress.Parse("Praea Euq RS-U d2-0"),
                 LowMassCode = 'c',
-                StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                StartedOn = DateTimeOffset.Parse(
+                    "2026-07-01T00:00:00Z",
+                    global::System.Globalization.CultureInfo.InvariantCulture
+                ),
                 SkipAlreadyVisited = false,
                 SkipKnownToSpansh = false,
                 CompletionMode = BoxelCompletionMode.EnterSystem,
@@ -779,7 +840,10 @@ public sealed class BoxelSearchStateTests
                 {
                     TopBoxel = sol,
                     LowMassCode = sol!.MassCode,
-                    StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                    StartedOn = DateTimeOffset.Parse(
+                        "2026-07-01T00:00:00Z",
+                        global::System.Globalization.CultureInfo.InvariantCulture
+                    ),
                     SkipAlreadyVisited = false,
                     SkipKnownToSpansh = false,
                     CompletionMode = BoxelCompletionMode.EnterSystem,
@@ -812,7 +876,10 @@ public sealed class BoxelSearchStateTests
             {
                 TopBoxel = BoxelAddress.Parse("Praea Euq RS-U d2-0"),
                 LowMassCode = 'c',
-                StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                StartedOn = DateTimeOffset.Parse(
+                    "2026-07-01T00:00:00Z",
+                    global::System.Globalization.CultureInfo.InvariantCulture
+                ),
                 SkipAlreadyVisited = false,
                 SkipKnownToSpansh = false,
                 CompletionMode = BoxelCompletionMode.EnterSystem,
@@ -845,7 +912,10 @@ public sealed class BoxelSearchStateTests
             {
                 TopBoxel = BoxelAddress.Parse("Praea Euq IL-P c5-0"),
                 LowMassCode = 'c',
-                StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                StartedOn = DateTimeOffset.Parse(
+                    "2026-07-01T00:00:00Z",
+                    global::System.Globalization.CultureInfo.InvariantCulture
+                ),
                 SkipAlreadyVisited = false,
                 SkipKnownToSpansh = false,
                 CompletionMode = mode,

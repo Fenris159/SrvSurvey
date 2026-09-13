@@ -61,19 +61,23 @@
     "Title": "Surface Mining — locations and deposits",
     "Summary": "Create a saved surface mining-location map from its measured border, then mark mineral or metal deposits from anywhere inside it.",
     "Steps": [
-      ".mining <heading> <border radius km> <location number> — From the orange border while facing the location marker, save the measured radius and calculated center. Example: .mining 120 6.44 4.",
+      ".mining survey — Start the guided border, center, and surface-scanner workflow. Run it again before center setup is complete to restart at the border, or during the scan route to return to waypoint 1. The overlay keeps deposit commands visible while scanning and closes 10 seconds after its final rig reminder.",
+      ".mining <bearing> <border radius km> <location number> — From the orange border while facing the location marker, save the measured radius and calculated center. Example: .mining 120 6.44 4.",
       ".mining center here — Move the selected map center to your live coordinates without moving its deposit markers.",
-      ".alignment — Toggle a red guide at the exact center of the Elite window. Use the Rhino driving view to align a distant location circle, then read its visible compass heading; turret mode does not show the required heading.",
-      ".mine <heading> <material> <distance km> <amount>/<density> — From anywhere inside the saved border, add a deposit using the true heading and distance from your live position. Same-commodity placements within 100 m are declined as likely duplicates. Example: .mine 15 ruby 1.24 high/medium.",
+      ".alignment — Toggle a red guide at the exact center of the Elite window. Use the Rhino driving view to align a distant location circle, then read its bearing from the visible compass; turret mode does not show the required bearing.",
+      ".mine <bearing> <material> <distance km> <amount>/<density> — From anywhere inside the saved border, add a deposit using the true bearing and distance from your live position. Same-commodity placements within 100 m are declined as likely duplicates. Example: .mine 15 ruby 1.24 high/medium.",
       ".mine <material> <amount>/<density> here — Add a deposit at your current surface position, including an intentional overlap. Example: .mine ruby medium/low here.",
+      ".mine rigs <number> — Set the positive rig capacity on the mapped deposit nearest to your current surface position. The count appears in brackets even when marker names are hidden. Example: .mine rigs 4.",
+      ".mine splat — Center the Rhino chassis on the nearest mapped deposit edge, switch to turret mode, keep the mineral scanner active, and trace the full visible circuit. Returning within 12 m of the start after at least 50 m of travel closes the trace and adds square rig-position suggestions. The compact radar zooms automatically near the deposit and recommendations. Use .mine splat cancel to discard an unfinished trace.",
       ".mine move <material> here — Move the nearest matching marker within 200 m to your current surface position. Example: .mine move haematite here.",
       ".mine delete here — Remove the closest deposit marker within 0.5 km of your current position."
     ],
     "Details": [
       "The .mining command uses the current body's journal radius, your latitude/longitude, and the measured location radius to calculate the center.",
+      "Guided survey waypoints use no more than 2 km between samples and spiral turns so the 2 km surface scanner covers the saved map through its outer edge.",
       "The .mine rating pair belongs to the individual deposit. The first rating is Mineral Amount and the second is Density; each may be low, medium, or high.",
       "A surface map JSON stores Commander, system, body, body type, arrival distance, signal number, ratings, center coordinates, and deposit markers. Commands require the current body and live surface coordinates.",
-      "Commodity names are case insensitive but must match an entry in Activities > Surface Mining > Hotspot List. Invalid headings, ratings, distances, or commodity names are declined with an explanation in the status notification overlay.",
+      "Commodity names are case insensitive but must match an entry in Activities > Surface Mining > Hotspot List. Invalid bearings, ratings, distances, or commodity names are declined with an explanation in the status notification overlay.",
       "Recognized commands report their result through the status notification overlay. Open Activities > Surface Mining to search saved locations, filter by contained material or body type, and review the fixed-upright survey map. Surface maps are managed with the shared Navigation > Bookmarks catalog; Contains and Body Type choices populate from those saved maps."
     ]
   },

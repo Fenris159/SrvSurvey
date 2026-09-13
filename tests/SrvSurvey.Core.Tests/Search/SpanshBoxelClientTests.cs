@@ -65,7 +65,10 @@ public sealed class SpanshBoxelClientTests
         Assert.Equal(1000, systems[0].Boxel.SystemAddress);
         Assert.Equal(new GalacticCoordinate(0, 2, 3), systems[0].Position);
         Assert.True(systems[0].HasKnownBodies);
-        Assert.Equal(DateTimeOffset.Parse("2026-07-01T12:00:00Z"), systems[0].SpanshUpdatedAt);
+        Assert.Equal(
+            DateTimeOffset.Parse("2026-07-01T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            systems[0].SpanshUpdatedAt
+        );
         Assert.False(systems[^1].HasKnownBodies);
         Assert.Equal(2, handler.Requests.Count);
         Assert.All(

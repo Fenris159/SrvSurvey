@@ -1,6 +1,6 @@
 # Surface mining
 
-Available in **SrvSurvey-XP 2.1.3.0-rc.46.5**. Surface Mining combines Rhino rig
+Available in **SrvSurvey-XP 2.1.3.0-rc.48**. Surface Mining combines Rhino rig
 guidance with reusable maps of planetary mining-location signals and their
 deposits. The same workflow is covered inside the application under
 **Guides > Surface mining**.
@@ -34,12 +34,51 @@ saved maps, and the table can be sorted from its column headings. Select the sta
 after **Updated** to favorite a map, then enable **Favorites** in the search panel
 to show only starred maps.
 
+For an on-screen walkthrough, send:
+
+```text
+.mining survey
+```
+
+The compact **Surface Mining Survey** overlay appears at the top center of the
+Elite window. It first prompts for the border command, directs the player to the
+calculated center, and asks for `.mining center here`. It then advances
+automatically through an outward spiral of scan waypoints. Waypoints and adjacent
+spiral turns are at most 2 km apart so the 2 km surface scanner covers the
+saved area through its outer edge. While following waypoints, the fourth row keeps
+both deposit-marking forms visible; command results temporarily replace that hint.
+After the last waypoint, the overlay reminds the player to use `.mine rigs <number>`
+while mining and closes after 10 seconds.
+
+Guided-survey progress is saved after every phase and waypoint change. If the
+game or SrvSurvey closes, reopening SrvSurvey resumes the active guide at the
+same waypoint once the matching Commander and mining location are loaded.
+
+Running `.mining survey` while already inside a saved map starts at that map's
+center step. Running it again before the center workflow is complete restarts at
+the border. Running it again during the waypoint route returns to waypoint 1.
+
+While following scan waypoints, these commands let you correct the route without
+driving to the active target:
+
+```text
+.mining waypoint next
+.mining waypoint prev
+.mining survey complete
+```
+
+`next` skips to the following waypoint and completes the route when used at the
+last waypoint. `prev` returns to the preceding waypoint; from the completion
+reminder it reopens the last waypoint. `complete` ends any active guided-survey
+phase immediately and shows the same final reminder to record each deposit's rig
+capacity with `.mine rigs <number>`.
+
 Drive to the orange border of a mining-location signal and face the marker at its
-center. Send this case-insensitive chat command using your current heading, the
+center. Send this case-insensitive chat command using the current bearing, the
 measured border radius in kilometers, and the signal's number:
 
 ```text
-.mining <heading 0-359> <border radius km> <signal number>
+.mining <bearing 0-359> <border radius km> <signal number>
 ```
 
 For example, `.mining 120 6.44 4` saves **Mining Location Signal 4** with a
@@ -61,11 +100,11 @@ remain unchanged.
 For a precise distant bearing, send `.alignment` to toggle a thin red vertical
 guide at the exact center of the Elite game window. It spans the clear HUD area
 below the heading box and above the lower radar. Use the Rhino driving view,
-place the distant mining-location circle under the guide, then read the visible
-in-game compass heading for the `.mine` command. Turret mode does not show the
-required heading. Send `.alignment` again to hide the session-only guide.
+place the distant mining-location circle under the guide, then read its bearing
+from the visible in-game compass for the `.mine` command. Turret mode does not
+show the required bearing. Send `.alignment` again to hide the session-only guide.
 
-From anywhere inside the saved border, add a deposit by heading and distance.
+From anywhere inside the saved border, add a deposit by bearing and distance.
 The projection starts at your live position, so you do not need to return to the
 map center:
 
@@ -79,6 +118,7 @@ within 0.5 km:
 ```text
 .mine ruby medium/low here
 .mine move haematite here
+.mine splat
 .mine delete here
 .alignment
 ```
@@ -86,7 +126,7 @@ within 0.5 km:
 The amount/density pair belongs to that individual deposit, and each value may be
 Low, Medium, or High. Commodity names must
 match **Hotspot List** and may contain spaces. The command parser rejects unknown
-commodities, headings outside 0–359, non-positive border radii, negative deposit
+commodities, bearings outside 0–359, non-positive border radii, negative deposit
 distances, invalid signal numbers, and unrecognized amount or density values.
 Bearing-and-distance placement also rejects a same-commodity marker within 100 m
 as a likely duplicate. Precise `here` placement remains available for genuinely
@@ -96,6 +136,21 @@ To correct an existing marker, stand at its true position and send `.mine move
 <commodity> here`. SrvSurvey moves only the nearest marker matching that commodity,
 and only when it is within 200 m. Success and failure are reported through Status
 notifications.
+
+To plan rig placement for a mapped deposit, position the Rhino so the center of
+its chassis sits on the visible deposit border. HUD colors vary. Switch to turret
+mode, keep the mineral scanner active, and send `.mine splat`. SrvSurvey selects
+the nearest deposit within 0.5 km and records the Rhino's path as you drive slowly
+around the visible boundary. Returning within 12 m of the starting point after at
+least 50 m of travel closes the trace.
+
+The compact Surface Mining radar draws the trace as a dotted line and places
+separate square rig suggestions using the 78 m exclusion distance. It zooms to
+2× within 100 m of a suggestion, 4× within 50 m and 6× within 25 m so the player
+marker and target can be aligned precisely. Active traces receive the same local
+zoom from their nearby path points. The suggestions remain separate from actual
+tracked rigs; use them to position the Rhino, then deploy and track each rig as
+normal. Send `.mine splat cancel` to discard an unfinished trace.
 
 The **Survey Map** and Overview Map overlay share the selected bookmark, live
 player position, 1 km rings extending through the whole-kilometer ring that
@@ -120,6 +175,17 @@ the Surface Mining category automatically and store the Commander, system, body,
 body type, distance from Sol, arrival distance, signal number, border radius,
 center coordinates, notes, and deposit-specific ratings. Editing or deleting the shared bookmark
 updates the Surface Mining workspace.
+
+### Export a survey map
+
+Select a map and choose **Export as CSV** in the **Selected map** panel. The UTF-8
+CSV contains one self-contained row per mapped deposit. Each row repeats the
+system, body, planetary mining-location signal, map notes, center and border
+details, followed by the deposit's commodity, amount, density, rig count,
+coordinates, distance, bearing, timestamps, traced boundary and suggested rig
+positions. Maps without deposits still export one row containing their survey
+details. Numeric values use invariant formatting and coordinate collections are
+JSON arrays so other third-party tools can import them consistently.
 
 ## Reference tabs
 

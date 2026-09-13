@@ -1,6 +1,6 @@
 # SrvSurvey-XP Cross-Platform
 
-Current release candidate version: **2.1.3.0-rc.47**
+Current release candidate version: **2.1.3.0-rc.48**
 
 In-app **Guides > Chat Commands** provides an activity-by-activity reference for
 surface bookmarks, mining, exobiology, ground targets, Guardian surveys, settlement
@@ -16,22 +16,21 @@ tests, packaging, and development tools. Existing SrvSurvey profiles remain
 supported through a verified, backup-first import; the imported source is never
 modified.
 
-## RC47 highlights
+## RC48 highlights
 
-- Detects journal folders from simultaneous Steam, Epic/Heroic, Frontier/Wine,
-  Lutris and Bottles installations on Linux so each Commander remains selectable.
-- Keeps launcher-prefix scans independent, preventing a large unrelated game tree
-  from hiding a valid sibling Elite Dangerous installation.
-- Includes journal-only Commanders in the main, post-processing and visited-stars
-  Commander lists across every discovered installation.
-- Loads a Fleet Carrier's plotted jump from the Frontier companion API on refresh
-  and updates it immediately from live request, cancellation, completion and
-  location journal events.
-- Bounds launcher configuration parsing so malformed or adversarial configuration
-  text cannot stall journal-folder discovery.
-- Retains the RC46.5 and RC46 release history.
+- Adds a resumable `.mining survey` guide with efficient scan waypoints and a
+  compact configurable overlay.
+- Tracks deposit rig capacity with `.mine rigs <number>` and preserves the value
+  in map details, labels, bookmarks and CSV exports.
+- Traces deposit boundaries with `.mine splat`, calculates square rig-placement
+  suggestions and automatically zooms the compact radar near the active work.
+- Adds selected-map CSV export with survey, deposit, rating, rig and traced-splat
+  metadata for third-party tools.
+- Uses bearing terminology throughout the Surface Mining workflow and restores
+  the Overview Map automatically when a `.mining` command is used.
+- Retains the RC47, RC46.5 and RC46 release history.
 
-See the [complete RC47 release notes](CurrentReleaseNotes.md).
+See the [complete RC48 release notes](CurrentReleaseNotes.md).
 
 ## Install
 

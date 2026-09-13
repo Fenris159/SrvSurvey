@@ -235,7 +235,7 @@ public sealed class BoxelSystemActionMenuTests
 
     private static void AssertSideButtonsFitTopWedgeRadius(Button top, Button left, Button right)
     {
-        var topClip = Assert.IsType<Avalonia.Media.Geometry>(top.Clip, exactMatch: false);
+        Assert.IsType<Avalonia.Media.Geometry>(top.Clip, exactMatch: false);
         var leftClip = Assert.IsType<Avalonia.Media.Geometry>(left.Clip, exactMatch: false);
         var rightClip = Assert.IsType<Avalonia.Media.Geometry>(right.Clip, exactMatch: false);
         const double centerX = 165;

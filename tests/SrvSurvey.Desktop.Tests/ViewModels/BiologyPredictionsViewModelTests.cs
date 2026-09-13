@@ -99,9 +99,9 @@ public sealed class BiologyPredictionsViewModelTests : IDisposable
         Assert.True(await viewModel.OpenCanonnAsync());
         Assert.Contains("system=Test", launchedUri!.AbsoluteUri);
         Assert.True(await viewModel.OpenSpanshAsync());
-        Assert.EndsWith("/42", launchedUri!.AbsoluteUri);
+        Assert.EndsWith("/42", launchedUri.AbsoluteUri);
         Assert.True(await viewModel.OpenEdsmAsync());
-        Assert.Contains("systemID64=42", launchedUri!.AbsoluteUri);
+        Assert.Contains("systemID64=42", launchedUri.AbsoluteUri);
     }
 
     [Fact]

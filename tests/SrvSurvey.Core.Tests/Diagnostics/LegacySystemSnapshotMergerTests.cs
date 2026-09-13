@@ -59,8 +59,8 @@ public sealed class LegacySystemSnapshotMergerTests
             existing,
             state.CreateSnapshot(),
             "Drew",
-            DateTimeOffset.Parse("2026-07-19T00:00:00Z"),
-            DateTimeOffset.Parse("2026-07-22T00:00:00Z")
+            DateTimeOffset.Parse("2026-07-19T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            DateTimeOffset.Parse("2026-07-22T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
         );
 
         Assert.NotSame(existing, merged);

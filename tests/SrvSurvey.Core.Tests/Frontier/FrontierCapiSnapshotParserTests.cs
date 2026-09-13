@@ -7,7 +7,10 @@ public sealed class FrontierCapiSnapshotParserTests
     [Fact]
     public void ParsesCommanderFleetRanksAndCarrierDetails()
     {
-        var fetchedAt = DateTimeOffset.Parse("2026-07-29T12:00:00Z");
+        var fetchedAt = DateTimeOffset.Parse(
+            "2026-07-29T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
 
         var snapshot = FrontierCapiSnapshotParser.Parse(ProfileJson, CarrierJson, fetchedAt);
 
@@ -177,7 +180,10 @@ public sealed class FrontierCapiSnapshotParserTests
               "futureShipyardValue":"available"
             }
             """;
-        var fetchedAt = DateTimeOffset.Parse("2026-07-29T12:00:00Z");
+        var fetchedAt = DateTimeOffset.Parse(
+            "2026-07-29T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
 
         var parsedMarket = FrontierCapiSnapshotParser.ParseMarket(market, fetchedAt);
         var parsedShipyard = FrontierCapiSnapshotParser.ParseShipyard(shipyard, fetchedAt);

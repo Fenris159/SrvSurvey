@@ -40,7 +40,9 @@ public sealed class DiagnosticReplayOverlayIntegrationTests : IDisposable
         var context = await DiagnosticReplayContext.LoadAsync(session.ManifestPath, CancellationToken.None);
         var player = new JournalReplayPlayer(session);
         var monitor = new JournalDirectoryMonitor(context.JournalDirectory, context.Commander.FrontierId);
-        var time = new MutableTimeProvider(DateTimeOffset.Parse("2026-08-21T18:00:00Z"));
+        var time = new MutableTimeProvider(
+            DateTimeOffset.Parse("2026-08-21T18:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+        );
         var notification = new NotificationViewModel(
             new NotificationSettingsStore(context.AppDataPaths.UiSettingsPath),
             time

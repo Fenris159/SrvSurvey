@@ -201,7 +201,11 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
                 dataDirectory,
                 journalDirectory,
                 Path.Combine(temporaryDirectory, "rebuild-backups"),
-                () => DateTimeOffset.Parse("2026-07-25T12:00:00Z")
+                () =>
+                    DateTimeOffset.Parse(
+                        "2026-07-25T12:00:00Z",
+                        global::System.Globalization.CultureInfo.InvariantCulture
+                    )
             ),
             new CommanderCodexJournalImporter(journalDirectory, store),
             greenGasGiantClient,

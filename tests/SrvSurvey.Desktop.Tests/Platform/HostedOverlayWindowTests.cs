@@ -848,7 +848,7 @@ public sealed class HostedOverlayWindowTests
             DisposeCalls++;
             if (DisposeException is not null)
             {
-                throw DisposeException;
+                System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(DisposeException).Throw();
             }
         }
     }

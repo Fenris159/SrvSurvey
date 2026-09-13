@@ -14,7 +14,10 @@ public sealed class InaraCommunityGoalClientTests
         var root = CreateTemporaryDirectory();
         try
         {
-            var now = DateTimeOffset.Parse("2026-07-31T12:00:00Z");
+            var now = DateTimeOffset.Parse(
+                "2026-07-31T12:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            );
             var handler = new RecordingHandler(_ => Json(HttpStatusCode.OK, SuccessfulResponse));
             var client = new InaraCommunityGoalClient(
                 new HttpClient(handler),
@@ -60,7 +63,10 @@ public sealed class InaraCommunityGoalClientTests
         var root = CreateTemporaryDirectory();
         try
         {
-            var now = DateTimeOffset.Parse("2026-07-31T12:00:00Z");
+            var now = DateTimeOffset.Parse(
+                "2026-07-31T12:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            );
             var handler = new RecordingHandler(requestCount =>
                 requestCount == 1
                     ? Json(HttpStatusCode.OK, SuccessfulResponse)
@@ -103,20 +109,15 @@ public sealed class InaraCommunityGoalClientTests
             }
         )
         {
-            Exception? observed;
-            try
+            Exception? observed = Record.Exception(() =>
             {
-                throw primaryFailure;
-            }
-            catch (Exception exception)
-            {
-                observed = exception;
                 InaraCommunityGoalClient.TryDeleteTemporaryFile(
                     "community-goals.tmp",
                     _ => true,
                     _ => throw cleanupFailure
                 );
-            }
+                System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(primaryFailure).Throw();
+            });
 
             Assert.Same(primaryFailure, observed);
         }
@@ -125,7 +126,10 @@ public sealed class InaraCommunityGoalClientTests
     [Fact]
     public void EnrichmentFillsGlobalFieldsWithoutReplacingFrontierValues()
     {
-        var fetchedAt = DateTimeOffset.Parse("2026-07-31T12:00:00Z");
+        var fetchedAt = DateTimeOffset.Parse(
+            "2026-07-31T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var frontier = Goal() with { Objective = "Frontier objective", CurrentTotal = 99, HasContributorData = false };
         var inara = InaraResult(fetchedAt);
 
@@ -147,7 +151,9 @@ public sealed class InaraCommunityGoalClientTests
 
         var results = InaraCommunityGoalEnricher.Enrich(
             [frontier],
-            InaraResult(DateTimeOffset.Parse("2026-07-31T12:00:00Z"))
+            InaraResult(
+                DateTimeOffset.Parse("2026-07-31T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+            )
         );
 
         Assert.Equal(2, results.Count);
@@ -158,11 +164,21 @@ public sealed class InaraCommunityGoalClientTests
     [Fact]
     public void PriorInaraOnlyGoalsAreReplacedInsteadOfAccumulating()
     {
-        var first = InaraCommunityGoalEnricher.Enrich([], InaraResult(DateTimeOffset.Parse("2026-07-31T12:00:00Z")));
+        IReadOnlyList<FrontierCommunityGoalSnapshot> first = InaraCommunityGoalEnricher.Enrich(
+            [],
+            InaraResult(
+                DateTimeOffset.Parse("2026-07-31T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+            )
+        );
 
         var second = InaraCommunityGoalEnricher.Enrich(
             first,
-            new InaraCommunityGoalsResult([], DateTimeOffset.Parse("2026-07-31T12:16:00Z"), false, string.Empty)
+            new InaraCommunityGoalsResult(
+                [],
+                DateTimeOffset.Parse("2026-07-31T12:16:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
+                false,
+                string.Empty
+            )
         );
 
         Assert.Single(first);
@@ -178,7 +194,7 @@ public sealed class InaraCommunityGoalClientTests
             string.Empty,
             "Carcosa",
             "Robardin Rock",
-            DateTimeOffset.Parse("2026-08-06T10:00:00Z"),
+            DateTimeOffset.Parse("2026-08-06T10:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
             false,
             0,
             34_500_000,
@@ -201,7 +217,10 @@ public sealed class InaraCommunityGoalClientTests
                     "Credits",
                     "Carcosa",
                     "Robardin Rock",
-                    DateTimeOffset.Parse("2026-08-06T10:00:00Z"),
+                    DateTimeOffset.Parse(
+                        "2026-08-06T10:00:00Z",
+                        global::System.Globalization.CultureInfo.InvariantCulture
+                    ),
                     false,
                     0,
                     1,

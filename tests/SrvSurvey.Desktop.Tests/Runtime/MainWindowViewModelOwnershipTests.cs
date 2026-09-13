@@ -217,7 +217,7 @@ public sealed class MainWindowViewModelOwnershipTests
             disposalOrder.Add("first-footfall");
             if (disposeFailure is not null)
             {
-                throw disposeFailure;
+                System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(disposeFailure).Throw();
             }
         }
     }

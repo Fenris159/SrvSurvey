@@ -26,6 +26,7 @@ public sealed partial class OverlayCoverageInventoryTests
         ["PlotMiningWarning"] = "MiningWarningOverlayWindow.axaml",
         ["PlotSurfaceMining"] = "SurfaceMiningOverlayWindow.axaml",
         ["PlotMineMap"] = "MineMapOverlayWindow.axaml",
+        ["PlotSurfaceMiningSurvey"] = "SurfaceMiningSurveyOverlayWindow.axaml",
         ["PlotGrounded"] = "SurfaceSurveyOverlayWindow.axaml",
         ["PlotGuardians"] = "GuardianOverlayWindow.axaml",
         ["PlotGuardianStatus"] = "GuardianStatusOverlayWindow.axaml",
@@ -243,6 +244,14 @@ public sealed partial class OverlayCoverageInventoryTests
             ["tests/SrvSurvey.Desktop.Tests/ViewModels/MineMapViewModelTests.cs"]
         ),
         Map(
+            "PlotSurfaceMiningSurvey",
+            [
+                "src/SrvSurvey.Desktop/SurfaceMiningSurveyOverlayWindow.axaml",
+                "src/SrvSurvey.Desktop/SurfaceMiningSurveyOverlayPresentation.axaml",
+            ],
+            ["tests/SrvSurvey.Desktop.Tests/ViewModels/MineMapViewModelTests.cs"]
+        ),
+        Map(
             "PlotMiningReference",
             [
                 "src/SrvSurvey.Desktop/MiningReferenceOverlayWindow.axaml",
@@ -322,7 +331,7 @@ public sealed partial class OverlayCoverageInventoryTests
     [Fact]
     public void InventoryContainsEverySupportedOverlayExactlyOnce()
     {
-        Assert.Equal(37, Mappings.Length);
+        Assert.Equal(38, Mappings.Length);
         Assert.Equal(Mappings.Length, Mappings.Select(mapping => mapping.ContractName).Distinct().Count());
     }
 
@@ -397,7 +406,7 @@ public sealed partial class OverlayCoverageInventoryTests
             var expected = OverlayLayoutCatalog.GetRequired(pair.Key).PreviewSize.Width;
             Assert.Equal(
                 expected,
-                int.Parse(match.Groups["width"].Value, System.Globalization.CultureInfo.InvariantCulture)
+                int.Parse(match.Groups["width"].Value, global::System.Globalization.CultureInfo.InvariantCulture)
             );
         }
     }

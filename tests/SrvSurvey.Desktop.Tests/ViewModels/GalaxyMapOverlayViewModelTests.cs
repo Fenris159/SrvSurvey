@@ -115,7 +115,7 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
         viewModel.ApplyUpdate("Sol", 1, null, [Event("FSDTarget", "\"Name\":\"Gamma\",\"SystemAddress\":4")], null);
         await viewModel.PendingLoad;
 
-        Assert.Equal("SELECTED", viewModel.PrimarySystem!.Label);
+        Assert.Equal("SELECTED", viewModel.PrimarySystem.Label);
         Assert.Equal("Gamma", viewModel.PrimarySystem.Name);
         Assert.False(viewModel.HasSecondarySystem);
         Assert.False(viewModel.HasRouteFooter);
@@ -123,7 +123,7 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
         viewModel.ApplyUpdate("Sol", 1, CreateRoute(), [], null);
         await viewModel.PendingLoad;
 
-        Assert.Equal("DESTINATION", viewModel.PrimarySystem!.Label);
+        Assert.Equal("DESTINATION", viewModel.PrimarySystem.Label);
         Assert.Equal("Beta", viewModel.PrimarySystem.Name);
         Assert.True(viewModel.HasRouteFooter);
     }
@@ -209,7 +209,7 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
     private static NavRouteSnapshot CreateRoute()
     {
         return new NavRouteSnapshot(
-            DateTimeOffset.Parse("2026-07-25T12:00:00Z"),
+            DateTimeOffset.Parse("2026-07-25T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
             "NavRoute",
             [
                 new NavRouteEntry("Sol", 1, new GalacticCoordinate(0, 0, 0), "G"),
@@ -253,8 +253,8 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
                 4,
                 7,
                 "Pathfinder",
-                DateTimeOffset.Parse("2024-01-02T03:04:05Z"),
-                DateTimeOffset.Parse("2025-02-03T04:05:06Z"),
+                DateTimeOffset.Parse("2024-01-02T03:04:05Z", global::System.Globalization.CultureInfo.InvariantCulture),
+                DateTimeOffset.Parse("2025-02-03T04:05:06Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 null,
                 new SystemPoiSummary(7, systemName == "Beta" ? 2 : 0, 0, 0, 0, 0, 0),
                 []

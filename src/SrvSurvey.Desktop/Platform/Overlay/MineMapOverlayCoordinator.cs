@@ -11,6 +11,7 @@ public sealed class MineMapOverlayCoordinator : IDisposable
     private readonly MineMapViewModel mineMap;
     private readonly HostedOverlayWindow hostedWindow;
     private readonly HostedOverlayWindow referenceWindow;
+    private readonly HostedOverlayWindow surveyGuideWindow;
     private readonly IOverlayPlatformService zoomPlatform;
     private readonly IOverlayPlatformService alignmentPlatform;
     private readonly IGameWindowTracker alignmentGameWindowTracker;
@@ -18,6 +19,7 @@ public sealed class MineMapOverlayCoordinator : IDisposable
     private readonly OverlayDispatcherTimer timer;
     private MineMapZoomOverlayWindow? zoomWindow;
     private SurfaceMiningAlignmentOverlayWindow? alignmentWindow;
+    private DateTimeOffset? surveyGuideCompletionStartedAt;
     private bool zoomUnavailable;
     private bool alignmentUnavailable;
     private bool suppressed;
@@ -43,6 +45,13 @@ public sealed class MineMapOverlayCoordinator : IDisposable
                 "PlotMiningReference",
                 _ => new MiningReferenceOverlayWindow(mineMap),
                 (gameBounds, windowSize) => OverlayWindowPlacement.TopRight(gameBounds, windowSize)
+            )
+        );
+        surveyGuideWindow = presentationSession.HostPassiveWindow(
+            new PassiveOverlayWindowDefinition(
+                "PlotSurfaceMiningSurvey",
+                _ => new SurfaceMiningSurveyOverlayWindow(mineMap),
+                (gameBounds, windowSize) => OverlayWindowPlacement.TopCenter(gameBounds, windowSize, margin: 8)
             )
         );
         hostedWindow.VisibilityChanged += OnHostedWindowVisibilityChanged;
@@ -82,6 +91,7 @@ public sealed class MineMapOverlayCoordinator : IDisposable
         CloseAlignmentWindow();
         hostedWindow.Dispose();
         referenceWindow.Dispose();
+        surveyGuideWindow.Dispose();
         zoomPlatform.Dispose();
         alignmentGameWindowTracker.Dispose();
         alignmentPlatform.Dispose();
@@ -95,6 +105,9 @@ public sealed class MineMapOverlayCoordinator : IDisposable
                 or nameof(MineMapViewModel.ShouldShowOverlay)
                 or nameof(MineMapViewModel.ShouldShowMiningReference)
                 or nameof(MineMapViewModel.ShouldShowAlignmentHelper)
+                or nameof(MineMapViewModel.ShouldShowSurveyGuideOverlay)
+                or nameof(MineMapViewModel.IsSurveyGuideComplete)
+                or nameof(MineMapViewModel.SurveyGuideTitle)
         )
         {
             Synchronize();
@@ -112,6 +125,7 @@ public sealed class MineMapOverlayCoordinator : IDisposable
         referenceWindow.Reconcile(!suppressed && mineMap.ShouldShowMiningReference);
         SynchronizeZoomWindow();
         SynchronizeAlignmentWindow();
+        SynchronizeSurveyGuideWindow();
     }
 
     private void OnHostedWindowVisibilityChanged(object? sender, EventArgs eventArgs)
@@ -121,9 +135,34 @@ public sealed class MineMapOverlayCoordinator : IDisposable
 
     private void OnTimerTick(object? sender, EventArgs eventArgs)
     {
+        mineMap.ExpireSurveyGuideFeedback(DateTimeOffset.UtcNow);
         SynchronizeZoomWindow();
         SynchronizeAlignmentWindow();
+        SynchronizeSurveyGuideWindow();
     }
+
+    private void SynchronizeSurveyGuideWindow()
+    {
+        if (mineMap.IsSurveyGuideComplete)
+        {
+            surveyGuideCompletionStartedAt ??= DateTimeOffset.UtcNow;
+            if (IsSurveyGuideReminderExpired(surveyGuideCompletionStartedAt.Value, DateTimeOffset.UtcNow))
+            {
+                mineMap.DismissSurveyGuide();
+                surveyGuideWindow.Reconcile(false);
+                return;
+            }
+        }
+        else
+        {
+            surveyGuideCompletionStartedAt = null;
+        }
+
+        surveyGuideWindow.Reconcile(!disposed && !suppressed && mineMap.ShouldShowSurveyGuideOverlay);
+    }
+
+    internal static bool IsSurveyGuideReminderExpired(DateTimeOffset startedAt, DateTimeOffset now) =>
+        now - startedAt >= TimeSpan.FromSeconds(10);
 
     private void SynchronizeAlignmentWindow()
     {
@@ -154,7 +193,6 @@ public sealed class MineMapOverlayCoordinator : IDisposable
         }
 
         var overlay = new SurfaceMiningAlignmentOverlayWindow();
-        presentationSession.ConfigureAuxiliaryWindow(overlay, "PlotMineMap", applyOpacity: false);
         overlay.Opened += OnAlignmentWindowOpened;
         overlay.Closed += OnAlignmentWindowClosed;
         alignmentWindow = overlay;

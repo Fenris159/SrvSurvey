@@ -951,16 +951,6 @@ public sealed class BiologySurveyViewModel
             );
     }
 
-    private static string FormatKnownReward(long reward, bool hasUnknown)
-    {
-        if (reward <= 0)
-        {
-            return hasUnknown ? "Reward pending identification" : string.Empty;
-        }
-
-        return hasUnknown ? $"Known reward: {FormatCredits(reward)}" : $"Total reward: {FormatCredits(reward)}";
-    }
-
     private static string FormatCompactKnownReward(long reward, bool hasUnknown)
     {
         if (reward <= 0)
@@ -979,11 +969,6 @@ public sealed class BiologySurveyViewModel
                 ? FormatCompactCredits(minimum)
                 : $"{FormatCompactCredits(minimum)} – {FormatCompactCredits(maximum)}";
         return "Estimated reward:\n" + (hasUnknown ? range + PendingRewardSuffix : range);
-    }
-
-    private static string FormatEstimatedReward(long minimum, long maximum, bool hasUnknown)
-    {
-        return "Estimated reward: " + FormatRewardRange(minimum, maximum, hasUnknown);
     }
 
     private static string FormatRewardRange(long minimum, long maximum, bool hasUnknown)

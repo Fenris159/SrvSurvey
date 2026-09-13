@@ -48,6 +48,10 @@ public sealed class MineMapControl : Control
         MineMapControl,
         SurfaceCoordinate?
     >(nameof(PlanningCircleCenter));
+    public static readonly StyledProperty<SurfaceCoordinate?> SurveyGuideTargetProperty = AvaloniaProperty.Register<
+        MineMapControl,
+        SurfaceCoordinate?
+    >(nameof(SurveyGuideTarget));
     public static readonly StyledProperty<IBrush?> MapBackgroundProperty = AvaloniaProperty.Register<
         MineMapControl,
         IBrush?
@@ -97,6 +101,7 @@ public sealed class MineMapControl : Control
             VisibleMaterialsProperty,
             VisibleMarkerIdsProperty,
             PlanningCircleCenterProperty,
+            SurveyGuideTargetProperty,
             MapBackgroundProperty,
             GridBrushProperty,
             AccentBrushProperty,
@@ -161,6 +166,11 @@ public sealed class MineMapControl : Control
     {
         get => GetValue(PlanningCircleCenterProperty);
         set => SetValue(PlanningCircleCenterProperty, value);
+    }
+    public SurfaceCoordinate? SurveyGuideTarget
+    {
+        get => GetValue(SurveyGuideTargetProperty);
+        set => SetValue(SurveyGuideTargetProperty, value);
     }
     public IBrush? MapBackground
     {
@@ -227,11 +237,35 @@ public sealed class MineMapControl : Control
             context.DrawEllipse(accent, null, center, 2.5, 2.5);
 
             DrawPlanningCircle(context, survey, center, scale, accent);
+            DrawSurveyGuideTarget(context, survey, center, scale, zone, text);
 
             var markerScale = GetMarkerScale(zoom);
+            DrawPlayerSightLine(context, survey, center, scale, markerScale, radiusPixels * zoom, localBounds);
             DrawMarkers(context, survey, center, scale, markerScale, localBounds, text);
             DrawPlayer(context, survey, center, scale, markerScale, localBounds);
         }
+    }
+
+    private void DrawSurveyGuideTarget(
+        DrawingContext context,
+        MineMapSurvey survey,
+        Point mapCenter,
+        double scale,
+        IBrush brush,
+        IBrush outline
+    )
+    {
+        if (SurveyGuideTarget is not { } target)
+        {
+            return;
+        }
+
+        Point point = ToPoint(survey, target, mapCenter, scale);
+        var pen = new Pen(brush, 2);
+        context.DrawEllipse(null, new Pen(outline, 4), point, 10, 10);
+        context.DrawEllipse(null, pen, point, 10, 10);
+        context.DrawLine(pen, new Point(point.X - 14, point.Y), new Point(point.X + 14, point.Y));
+        context.DrawLine(pen, new Point(point.X, point.Y - 14), new Point(point.X, point.Y + 14));
     }
 
     private static void DrawDistanceGrid(
@@ -244,6 +278,7 @@ public sealed class MineMapControl : Control
         IBrush text
     )
     {
+        double bearingSpokeRadius = GetBearingSpokeRadius(radiusPixels, zoom);
         foreach (DistanceRing ring in CreateDistanceRings(radiusPixels, zoom, mapRadiusKilometers))
         {
             context.DrawEllipse(null, gridPen, center, ring.RadiusPixels, ring.RadiusPixels);
@@ -260,8 +295,8 @@ public sealed class MineMapControl : Control
         {
             var radians = heading * Math.PI / 180d;
             var edge = new Point(
-                center.X + Math.Sin(radians) * radiusPixels,
-                center.Y - Math.Cos(radians) * radiusPixels
+                center.X + Math.Sin(radians) * bearingSpokeRadius,
+                center.Y - Math.Cos(radians) * bearingSpokeRadius
             );
             context.DrawLine(gridPen, center, edge);
             var label = heading.ToString(CultureInfo.InvariantCulture) + "°";
@@ -310,17 +345,32 @@ public sealed class MineMapControl : Control
 
             var brush = new SolidColorBrush(ColorFor(marker.Material));
             context.DrawEllipse(brush, new Pen(text, 0.75 * markerScale), point, 5 * markerScale, 5 * markerScale);
-            if (ShowMarkerLabels)
+            string markerLabel = BuildMarkerLabel(marker, ShowMarkerLabels);
+            if (markerLabel.Length > 0)
             {
                 DrawText(
                     context,
-                    marker.Material,
+                    markerLabel,
                     new Point(point.X + 8 * markerScale, point.Y - 8 * markerScale),
                     text,
                     10 * markerLabelScale
                 );
             }
         }
+    }
+
+    internal static string BuildMarkerLabel(MineMapMarker marker, bool showMaterial)
+    {
+        string rigs = marker.RigCount is { } rigCount
+            ? $"[{rigCount.ToString(CultureInfo.InvariantCulture)}]"
+            : string.Empty;
+        return (showMaterial, rigs.Length > 0) switch
+        {
+            (true, true) => $"{marker.Material} {rigs}",
+            (true, false) => marker.Material,
+            (false, true) => rigs,
+            _ => string.Empty,
+        };
     }
 
     private void DrawPlanningCircle(
@@ -362,6 +412,39 @@ public sealed class MineMapControl : Control
         }
 
         DrawCommander(context, point, PlayerHeading, PlayerBrush ?? Brushes.LimeGreen, markerScale);
+    }
+
+    private void DrawPlayerSightLine(
+        DrawingContext context,
+        MineMapSurvey survey,
+        Point mapCenter,
+        double scale,
+        double markerScale,
+        double outerRingRadius,
+        Rect localBounds
+    )
+    {
+        if (PlayerLocation is not { } player)
+        {
+            return;
+        }
+
+        Point position = ToPoint(survey, player, mapCenter, scale);
+        if (!localBounds.Inflate(12).Contains(position))
+        {
+            return;
+        }
+
+        double commanderRadius = 6 * markerScale;
+        Point start = GetCommanderHeadingEnd(position, commanderRadius, PlayerHeading);
+        Point? end = GetSightLineEnd(start, mapCenter, outerRingRadius, PlayerHeading);
+        if (end is null)
+        {
+            return;
+        }
+
+        Pen pen = CreateSightLinePen(PlayerBrush ?? Brushes.LimeGreen, markerScale);
+        context.DrawLine(pen, start, end.Value);
     }
 
     public static Color ColorFor(string material)
@@ -515,6 +598,12 @@ public sealed class MineMapControl : Control
 
     internal static double GetMarkerScale(double zoom) => Math.Clamp(Math.Sqrt(NormalizeViewportZoom(zoom)), 1, 3);
 
+    internal static double GetBearingSpokeRadius(double radiusPixels, double zoom) =>
+        Math.Max(0, radiusPixels) * NormalizeViewportZoom(zoom);
+
+    internal static Pen CreateSightLinePen(IBrush brush, double markerScale) =>
+        new(brush, 1.25 * markerScale, DashStyle.Dot, PenLineCap.Round);
+
     internal static double GetMarkerLabelScale(double zoom) =>
         Math.Clamp(Math.Pow(NormalizeViewportZoom(zoom), 0.25), 1, 1.8);
 
@@ -661,6 +750,32 @@ public sealed class MineMapControl : Control
 
     internal static Point GetCommanderHeadingEnd(Point location, double radius, double heading = 0) =>
         GuardianSiteMapControl.GetCommanderHeadingEnd(location, radius, heading);
+
+    internal static Point? GetSightLineEnd(Point start, Point mapCenter, double outerRingRadius, double heading)
+    {
+        if (!double.IsFinite(outerRingRadius) || outerRingRadius <= 0)
+        {
+            return null;
+        }
+
+        double normalizedHeading = double.IsFinite(heading) ? heading : 0;
+        double radians = normalizedHeading * Math.PI / 180d;
+        var direction = new Vector(Math.Sin(radians), -Math.Cos(radians));
+        Vector offset = start - mapCenter;
+        double projection = (offset.X * direction.X) + (offset.Y * direction.Y);
+        double discriminant =
+            (projection * projection)
+            + (outerRingRadius * outerRingRadius)
+            - (offset.X * offset.X)
+            - (offset.Y * offset.Y);
+        if (discriminant < 0)
+        {
+            return null;
+        }
+
+        double distance = -projection + Math.Sqrt(discriminant);
+        return distance > 0 ? start + (direction * distance) : null;
+    }
 
     internal readonly record struct DistanceRing(double Kilometers, double RadiusPixels);
 

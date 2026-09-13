@@ -401,12 +401,21 @@ public sealed class BookmarkCatalog
             || !double.IsFinite(map.PlanetRadiusMeters)
             || map.PlanetRadiusMeters <= 0
             || map.Markers is null
+            || map.Markers.Count(marker => marker?.IsSplatTraceActive == true) > 1
             || map.Markers.Any(marker =>
                 marker is null
                 || marker.Id == Guid.Empty
                 || string.IsNullOrWhiteSpace(marker.Material)
                 || !Enum.IsDefined(marker.MineralAmount)
                 || !Enum.IsDefined(marker.Density)
+                || marker.RigCount is <= 0
+                || marker.SplatBoundary is null
+                || marker.SuggestedRigLocations is null
+                || marker.SplatBoundary.Count > 20_000
+                || marker.SuggestedRigLocations.Count > 500
+                || marker.IsSplatTraceActive && marker.SplatBoundary.Count == 0
+                || marker.IsSplatTraceActive && marker.SuggestedRigLocations.Count > 0
+                || !marker.IsSplatTraceActive && marker.SplatBoundary.Count is 1 or 2
             )
         )
         {

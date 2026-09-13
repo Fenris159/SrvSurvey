@@ -155,6 +155,56 @@ public sealed class OverlayEditorFolderTabTests
     }
 
     [AvaloniaFact]
+    public void SurfaceMiningSurveyPreviewCyclesEveryStateAroundItsTopCenterAnchor()
+    {
+        var preview = new OverlayPositionPreviewWindow(OverlayLayoutCatalog.GetRequired("PlotSurfaceMiningSurvey"));
+        try
+        {
+            OverlayThemeResources.Apply(preview);
+            preview.ApplyRuntimePresentationTheme();
+            preview.Position = new PixelPoint(400, 100);
+            preview.Show();
+            Assert.NotNull(preview.CaptureRenderedFrame());
+
+            SurfaceMiningSurveyOverlayPresentation presentation = Assert.IsType<SurfaceMiningSurveyOverlayPresentation>(
+                preview.RuntimePresentation
+            );
+            OverlayPreviewPanelMetrics initialMetrics = preview.GetPanelMetrics(preview.RenderScaling);
+            double initialCenter =
+                preview.Position.X + initialMetrics.OriginOffset.X + (initialMetrics.PanelSize.Width / 2d);
+
+            Assert.Equal(
+                Avalonia.Layout.HorizontalAlignment.Center,
+                preview.EditorFolderTabControl.HorizontalAlignment
+            );
+            Assert.True(preview.EditorFolderTabStateButtonControl.IsVisible);
+            Assert.Equal(5, preview.EditorPreviewStateCount);
+            Assert.All(
+                presentation.GetVisualDescendants().OfType<TextBlock>(),
+                text => Assert.Equal(TextTrimming.None, text.TextTrimming)
+            );
+
+            for (int stateIndex = 1; stateIndex < preview.EditorPreviewStateCount; stateIndex++)
+            {
+                Assert.True(preview.CycleEditorPreviewState());
+                Assert.NotNull(preview.CaptureRenderedFrame());
+                MineMapViewModel viewModel = Assert.IsType<MineMapViewModel>(presentation.DataContext);
+                Assert.False(string.IsNullOrWhiteSpace(viewModel.SurveyGuideTitle));
+                Assert.False(string.IsNullOrWhiteSpace(viewModel.SurveyGuideInstruction));
+                Assert.False(string.IsNullOrWhiteSpace(viewModel.SurveyGuideCommandHint));
+            }
+
+            OverlayPreviewPanelMetrics finalMetrics = preview.GetPanelMetrics(preview.RenderScaling);
+            double finalCenter = preview.Position.X + finalMetrics.OriginOffset.X + (finalMetrics.PanelSize.Width / 2d);
+            Assert.InRange(Math.Abs(finalCenter - initialCenter), 0, 1);
+        }
+        finally
+        {
+            preview.Close();
+        }
+    }
+
+    [AvaloniaFact]
     public void RuntimePreviewDoesNotRetainASecondCatalogSizedBackingLayer()
     {
         var definition = OverlayLayoutCatalog.GetRequired("PlotGuardianSystem");

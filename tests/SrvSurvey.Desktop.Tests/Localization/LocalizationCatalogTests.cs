@@ -21,8 +21,8 @@ public sealed class LocalizationCatalogTests : IDisposable
 
         Assert.Equal("de", LocalizationCatalog.CurrentLanguage);
         Assert.Equal(1_090, LocalizationCatalog.LegacyTranslationCount);
-        Assert.Equal(7_791, LocalizationCatalog.ApplicationTranslationCount);
-        Assert.Equal(7_791, LocalizationCatalog.SourceCount);
+        Assert.Equal(7_838, LocalizationCatalog.ApplicationTranslationCount);
+        Assert.Equal(7_838, LocalizationCatalog.SourceCount);
         Assert.Equal("Himmelskörper", LocalizationCatalog.Translate("Bodies"));
         Assert.Equal("Neues Lesezeichen", LocalizationCatalog.Translate("New bookmark"));
     }
@@ -75,13 +75,24 @@ public sealed class LocalizationCatalogTests : IDisposable
                 [".mine 15 ruby 1.24 high/medium"]
             ),
             new(
-                "Drive to the orange location border, face the center marker, and send .mining <heading> <border radius km> <location number>. Example: .mining 120 6.44 4.",
-                [".mining <heading> <border radius km> <location number>", ".mining 120 6.44 4"]
+                "Drive to the orange location border, face the center marker, and send .mining <bearing> <border radius km> <location number>. Example: .mining 120 6.44 4.",
+                [".mining <bearing> <border radius km> <location number>", ".mining 120 6.44 4"]
             ),
             new(
                 "To correct a marker, stand at its true position and send .mine move <commodity> here. The nearest marker matching that commodity must be within 200 m. Example: .mine move haematite here.",
                 [".mine move <commodity> here", ".mine move haematite here"]
             ),
+            new(
+                "While standing near a mapped deposit, send .mine rigs <number> to record its positive rig capacity on the nearest marker. The count remains visible in brackets when marker names are hidden. Example: .mine rigs 4.",
+                [".mine rigs <number>", ".mine rigs 4"]
+            ),
+            new(".mining survey", [".mining survey"]),
+            new(".mining waypoint <next|prev>", [".mining waypoint <next|prev>"]),
+            new(".mining waypoint next", [".mining waypoint next"]),
+            new(".mining waypoint prev", [".mining waypoint prev"]),
+            new(".mining survey complete", [".mining survey complete"]),
+            new(".mine splat", [".mine splat"]),
+            new(".mine splat cancel", [".mine splat cancel"]),
         ];
 
         foreach (
@@ -110,7 +121,9 @@ public sealed class LocalizationCatalogTests : IDisposable
     {
         LocalizationCatalog.Initialize("de");
 
-        Assert.Equal(expected, LocalizationCatalog.Translate(source));
+        string translated = LocalizationCatalog.Translate(source);
+        Assert.Equal(expected, translated);
+        Assert.NotEqual(source, translated);
     }
 
     [Fact]

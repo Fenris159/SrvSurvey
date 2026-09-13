@@ -212,7 +212,10 @@ public sealed class RouteAutoCopyCoordinatorTests : IAsyncLifetime
                 Active = active,
                 TopBoxel = top,
                 Current = top,
-                StartedOn = DateTimeOffset.Parse("2026-08-01T00:00:00Z"),
+                StartedOn = DateTimeOffset.Parse(
+                    "2026-08-01T00:00:00Z",
+                    global::System.Globalization.CultureInfo.InvariantCulture
+                ),
                 CurrentCount = 1,
                 LowMassCode = 'c',
                 AutoCopy = autoCopy,

@@ -124,14 +124,17 @@ public sealed class JournalHistoryAnalyzerTests : IDisposable
             {"event":"Shutdown"}
             """
         );
-        File.WriteAllText(Path.Combine(temporaryDirectory, "Journal.invalid.01.log"), "{\"event\":\"Shutdown\"}\n");
+        await File.WriteAllTextAsync(
+            Path.Combine(temporaryDirectory, "Journal.invalid.01.log"),
+            "{\"event\":\"Shutdown\"}\n"
+        );
         var progress = new List<JournalHistoryAnalysisProgress>();
         var analyzer = new JournalHistoryAnalyzer(temporaryDirectory, () => now);
 
         var result = await analyzer.AnalyzeAsync(
             "F123",
             new DateTimeOffset(2026, 7, 1, 0, 0, 0, TimeSpan.Zero),
-            new Progress<JournalHistoryAnalysisProgress>(progress.Add)
+            new CallbackProgress<JournalHistoryAnalysisProgress>(progress.Add)
         );
 
         Assert.Equal(1, result.CandidateFileCount);
@@ -164,7 +167,10 @@ public sealed class JournalHistoryAnalyzerTests : IDisposable
         Assert.Equal(1.5, match.StarPosition.X);
         Assert.Equal(-2, match.StarPosition.Y);
         Assert.Equal(3, match.StarPosition.Z);
-        Assert.Equal(DateTimeOffset.Parse("2026-07-20T12:01:00Z"), match.Timestamp);
+        Assert.Equal(
+            DateTimeOffset.Parse("2026-07-20T12:01:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            match.Timestamp
+        );
         Assert.Contains("\"event\":\"Scan\"", match.RawJournalJson);
     }
 
@@ -219,5 +225,10 @@ public sealed class JournalHistoryAnalyzerTests : IDisposable
         var path = Path.Combine(temporaryDirectory, fileName);
         File.WriteAllText(path, content.ReplaceLineEndings("\n") + "\n");
         File.SetLastWriteTimeUtc(path, now.UtcDateTime.AddDays(-3));
+    }
+
+    private sealed class CallbackProgress<T>(Action<T> callback) : IProgress<T>
+    {
+        public void Report(T value) => callback(value);
     }
 }

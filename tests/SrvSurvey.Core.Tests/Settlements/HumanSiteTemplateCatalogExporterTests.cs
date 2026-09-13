@@ -46,7 +46,7 @@ public sealed class HumanSiteTemplateCatalogExporterTests : IDisposable
         var result = await new HumanSiteTemplateCatalogExporter().ExportAsync(catalog, path);
 
         Assert.NotNull(result.BackupPath);
-        Assert.Equal(original, await File.ReadAllBytesAsync(result.BackupPath!));
+        Assert.Equal(original, await File.ReadAllBytesAsync(result.BackupPath));
         await using var stream = File.OpenRead(path);
         Assert.Equal(catalog.Count, HumanSiteTemplateCatalog.Load(stream).Count);
     }

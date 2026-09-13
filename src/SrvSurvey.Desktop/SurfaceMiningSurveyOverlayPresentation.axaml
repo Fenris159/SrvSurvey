@@ -1,0 +1,31 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Class="SrvSurvey.Desktop.SurfaceMiningSurveyOverlayPresentation"
+             x:DataType="vm:MineMapViewModel"
+             MinWidth="360">
+  <Border Classes="overlay-panel"
+          Padding="10,8"
+          Background="{DynamicResource RavenWindowBrush}"
+          BorderBrush="{DynamicResource RavenBorderBrush}"
+          BorderThickness="1"
+          CornerRadius="6">
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="3">
+      <TextBlock Classes="overlay-header"
+                 Text="{Binding SurveyGuideTitle}" />
+      <TextBlock Grid.Row="1"
+                 FontSize="12"
+                 Text="{Binding SurveyGuideInstruction}" />
+      <TextBlock Grid.Row="2"
+                 Classes="monospace"
+                 Foreground="{DynamicResource RavenAccentBrush}"
+                 FontSize="11"
+                 Text="{Binding SurveyGuideCommandHint}" />
+      <TextBlock Grid.Row="3"
+                 Classes="muted"
+                 FontSize="11"
+                 IsVisible="{Binding HasSurveyGuideFooter}"
+                 Text="{Binding SurveyGuideFooter}" />
+    </Grid>
+  </Border>
+</UserControl>

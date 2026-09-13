@@ -234,7 +234,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
         var status = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
         Assert.NotNull(status.CodexNotification);
         Assert.True(status.ShowCodexImageIndicator);
-        Assert.Equal(status.CodexNotification!.HasImage, status.HasCodexImage);
+        Assert.Equal(status.CodexNotification.HasImage, status.HasCodexImage);
         Assert.False(status.IsStaleActiveSample);
         Assert.False(status.HasActiveSample);
     }
@@ -327,7 +327,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
         Assert.Equal(70, temperature.LivePositionPercent);
 
         viewModel.ShowTemperatureRangeDebug = false;
-        Assert.False(viewModel.BiologyStatus!.HasTemperatureRange);
+        Assert.False(viewModel.BiologyStatus.HasTemperatureRange);
     }
 
     [Fact]
@@ -529,7 +529,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
         Assert.NotNull(firstDistance);
 
         viewModel.ApplyUpdate([], surface with { Longitude = 0.002 });
-        var secondDistance = viewModel.BiologyStatus!.ActiveSample!.NearestDistanceMeters;
+        double? secondDistance = viewModel.BiologyStatus.ActiveSample.NearestDistanceMeters;
         Assert.NotNull(secondDistance);
         Assert.True(secondDistance > firstDistance);
 

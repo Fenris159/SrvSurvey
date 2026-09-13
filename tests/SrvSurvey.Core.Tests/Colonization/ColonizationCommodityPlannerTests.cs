@@ -36,7 +36,7 @@ public sealed class ColonizationCommodityPlannerTests
         var tracked = Project("tracked", 42, 99, new Dictionary<string, int> { ["steel"] = 900 });
         var construction = Construction(
             new ColonizationConstructionDepotSnapshot(
-                DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
+                DateTimeOffset.Parse("2026-07-24T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 42,
                 0.5,
                 IsComplete: false,
@@ -81,7 +81,7 @@ public sealed class ColonizationCommodityPlannerTests
             LinkedFleetCarriers = [new ColonizationProjectFleetCarrier { MarketId = 10 }],
         };
         var cargo = new CargoSnapshot(
-            DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
+            DateTimeOffset.Parse("2026-07-24T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
             "Cargo",
             "Ship",
             110,
@@ -209,7 +209,7 @@ public sealed class ColonizationCommodityPlannerTests
                 "Untracked Carrier",
                 "Test Faction",
                 ["squadronBank"],
-                DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
+                DateTimeOffset.Parse("2026-07-24T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 "FleetCarrier"
             ),
         };
@@ -256,7 +256,7 @@ public sealed class ColonizationCommodityPlannerTests
                 ShipCargo = null,
                 Construction = construction with
                 {
-                    CurrentDock = construction.CurrentDock! with { StationType = "Coriolis" },
+                    CurrentDock = construction.CurrentDock with { StationType = "Coriolis" },
                 },
             }
         );
@@ -299,7 +299,10 @@ public sealed class ColonizationCommodityPlannerTests
     [Fact]
     public void UsesOnlyCurrentPostDockMarketStockForCarrierLoadGuidance()
     {
-        var dockedAt = DateTimeOffset.Parse("2026-07-24T12:00:00Z");
+        var dockedAt = DateTimeOffset.Parse(
+            "2026-07-24T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var project = Project("tracked", 42, 99, new Dictionary<string, int> { ["steel"] = 100, ["water"] = 50 }) with
         {
             LinkedFleetCarriers = [new ColonizationProjectFleetCarrier { MarketId = 500 }],

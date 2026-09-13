@@ -654,7 +654,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
                 Notifications.ShowMessage,
                 ShowSurfaceMiningGuide,
                 ShowBookmarkEditor,
-                Bookmarks.Catalog
+                Bookmarks.Catalog,
+                requestOverviewMapVisibility: () => OverlayPanelVisibility.EnsureVisible("PlotMineMap")
             );
             rollback.Add(MineMap.Dispose);
             OverlayInteraction.MiningDetection = Mining.Detection;
@@ -2951,20 +2952,20 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             cancellationToken: CancellationToken.None
         );
         var isSessionActive = !journalState.IsShutdown && !journalState.IsAtMainMenu;
-        await Mining.ApplyUpdateAsync(
-            surfaceSession,
-            SystemSurvey.Snapshot,
-            SystemSurvey.CurrentStatus,
-            isSessionActive ? journalState.ActiveSrvType : null,
-            SurfaceSurvey.RadarMarkers,
-            latestCargo,
-            isSessionActive ? journalState.ParkedSrvType : null
-        );
         await MineMap.ApplyUpdateAsync(
             update.JournalEvents,
             CreateMineMapCommandContext(),
             latestStatus,
             allowCommands: !skipPersistedBootstrapEvents
+        );
+        await Mining.ApplyUpdateAsync(
+            surfaceSession,
+            SystemSurvey.Snapshot,
+            SystemSurvey.CurrentStatus,
+            isSessionActive ? journalState.ActiveSrvType : null,
+            new SurfaceMiningMapPresentation(SurfaceSurvey.RadarMarkers, MineMap.ActiveLiveSurvey),
+            latestCargo,
+            isSessionActive ? journalState.ParkedSrvType : null
         );
         if (!skipPersistedBootstrapEvents && isSessionActive)
         {

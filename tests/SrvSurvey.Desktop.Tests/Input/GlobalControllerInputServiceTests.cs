@@ -250,8 +250,8 @@ public sealed class GlobalControllerInputServiceTests
         );
 
         service.Start();
-        var firstDisposal = service.DisposeAsync().AsTask();
-        var secondDisposal = service.DisposeAsync().AsTask();
+        Task firstDisposal = DisposeAsTask(service);
+        Task secondDisposal = DisposeAsTask(service);
 
         await backend.CancellationObserved.WaitAsync(TimeSpan.FromSeconds(2));
         Assert.Same(firstDisposal, secondDisposal);
@@ -262,6 +262,8 @@ public sealed class GlobalControllerInputServiceTests
         await Task.WhenAll(firstDisposal, secondDisposal).WaitAsync(TimeSpan.FromSeconds(2));
         Assert.Equal(1, tracker.DisposeCount);
     }
+
+    private static Task DisposeAsTask(GlobalControllerInputService service) => service.DisposeAsync().AsTask();
 
     [Fact]
     public async Task DisposalPreventsAQueuedRestart()
@@ -308,8 +310,8 @@ public sealed class GlobalControllerInputServiceTests
 
         public Task RunAsync(
             string deviceId,
-            Action<ControllerInputChange> inputChanged,
-            Action<ControllerBackendStatus> statusChanged,
+            Action<ControllerInputChange> onInputChanged,
+            Action<ControllerBackendStatus> onStatusChanged,
             CancellationToken cancellationToken
         )
         {
@@ -319,9 +321,9 @@ public sealed class GlobalControllerInputServiceTests
                 startChanged.TrySetResult();
                 startChanged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             }
-            onInputChanged = inputChanged;
-            onStatusChanged = statusChanged;
-            statusChanged(new ControllerBackendStatus(IsConnected: true, "Controller connected for testing."));
+            this.onInputChanged = onInputChanged;
+            this.onStatusChanged = onStatusChanged;
+            onStatusChanged(new ControllerBackendStatus(IsConnected: true, "Controller connected for testing."));
             return Task.Delay(Timeout.Infinite, cancellationToken);
         }
 

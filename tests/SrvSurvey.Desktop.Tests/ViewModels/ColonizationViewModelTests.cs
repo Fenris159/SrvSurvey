@@ -858,7 +858,7 @@ public sealed class ColonizationViewModelTests : IDisposable
         ]);
         await viewModel.UpdateMarketAsync(
             new MarketSnapshot(
-                DateTimeOffset.Parse("2026-07-24T12:00:01Z"),
+                DateTimeOffset.Parse("2026-07-24T12:00:01Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 "Market",
                 900,
                 "Supply Station",
@@ -1002,7 +1002,7 @@ public sealed class ColonizationViewModelTests : IDisposable
             ),
         ]);
         var market = new MarketSnapshot(
-            DateTimeOffset.Parse("2026-07-24T12:00:01Z"),
+            DateTimeOffset.Parse("2026-07-24T12:00:01Z", global::System.Globalization.CultureInfo.InvariantCulture),
             "Market",
             42,
             "Supply carrier ABC-123",
@@ -1177,7 +1177,7 @@ public sealed class ColonizationViewModelTests : IDisposable
         var cargo = new CargoInventoryState();
         cargo.Reset(
             new CargoSnapshot(
-                DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
+                DateTimeOffset.Parse("2026-07-24T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 "Cargo",
                 "Ship",
                 50,
@@ -1268,7 +1268,15 @@ public sealed class ColonizationViewModelTests : IDisposable
         viewModel.UpdateStatus(new EliteStatus { Flags = StatusFlags.InMainShip });
 
         var cargo = new CargoInventoryState();
-        cargo.Reset(new CargoSnapshot(DateTimeOffset.Parse("2026-07-24T12:00:00Z"), "Cargo", "Ship", 0, []));
+        cargo.Reset(
+            new CargoSnapshot(
+                DateTimeOffset.Parse("2026-07-24T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
+                "Cargo",
+                "Ship",
+                0,
+                []
+            )
+        );
         cargo.Apply(Event("MarketBuy", "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5"));
 
         await viewModel.SynchronizeLiveProjectsAsync(
@@ -1349,7 +1357,7 @@ public sealed class ColonizationViewModelTests : IDisposable
         var cargo = new CargoInventoryState();
         cargo.Reset(
             new CargoSnapshot(
-                DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
+                DateTimeOffset.Parse("2026-07-24T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 "Cargo",
                 "Ship",
                 50,
@@ -1425,7 +1433,7 @@ public sealed class ColonizationViewModelTests : IDisposable
         var cargo = new CargoInventoryState();
         cargo.Reset(
             new CargoSnapshot(
-                DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
+                DateTimeOffset.Parse("2026-07-24T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 "Cargo",
                 "Ship",
                 50,
@@ -1569,7 +1577,7 @@ public sealed class ColonizationViewModelTests : IDisposable
         var cargo = new CargoInventoryState();
         cargo.Reset(
             new CargoSnapshot(
-                DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
+                DateTimeOffset.Parse("2026-07-24T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 "Cargo",
                 "Ship",
                 50,
@@ -1613,7 +1621,7 @@ public sealed class ColonizationViewModelTests : IDisposable
         // already synced transfer (the snapshot replay is now rebased from 40).
         cargo.Reset(
             new CargoSnapshot(
-                DateTimeOffset.Parse("2026-07-24T12:00:01Z"),
+                DateTimeOffset.Parse("2026-07-24T12:00:01Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 "Cargo",
                 "Ship",
                 40,
@@ -1659,7 +1667,7 @@ public sealed class ColonizationViewModelTests : IDisposable
         await viewModel.SetCommanderAsync("Test Cmdr");
         await viewModel.UpdateMarketAsync(
             new MarketSnapshot(
-                DateTimeOffset.Parse("2026-07-24T12:00:01Z"),
+                DateTimeOffset.Parse("2026-07-24T12:00:01Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 "Market",
                 42,
                 "ABC-123",

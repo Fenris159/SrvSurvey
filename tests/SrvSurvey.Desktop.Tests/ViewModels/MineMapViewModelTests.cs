@@ -1,3 +1,4 @@
+using System.Text.Json;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Navigation;
@@ -154,6 +155,7 @@ public sealed class MineMapViewModelTests
         Assert.Equal("Ruby", deposit.Material);
         Assert.Equal("High", deposit.MineralAmount);
         Assert.Equal("Low", deposit.Density);
+        Assert.Equal("4", deposit.Rigs);
     }
 
     [Fact]
@@ -357,6 +359,185 @@ public sealed class MineMapViewModelTests
         Assert.True(viewModel.ShouldShowOverlay);
         Assert.Contains(messages, message => message.Contains("center saved", StringComparison.OrdinalIgnoreCase));
         Assert.Equal("Mining Location Signal 4", viewModel.LiveMapTitle);
+    }
+
+    [Fact]
+    public async Task GuidedSurveyPublishesCompactDirectionsAndMapTargets()
+    {
+        using var directory = new TemporaryDirectory();
+        var notifications = new List<string>();
+        using var viewModel = new MineMapViewModel(
+            directory.Path,
+            new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
+            notifications.Add
+        );
+        var border = new SurfaceCoordinate(1, 2);
+        MineMapCommandContext context = Context(border);
+        var status = new EliteStatus
+        {
+            Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
+            PlanetRadius = 855_573.1875m,
+        };
+
+        await viewModel.ApplyUpdateAsync([Command(".mining survey")], context, status, allowCommands: true);
+
+        Assert.True(viewModel.ShouldShowSurveyGuideOverlay);
+        Assert.EndsWith("BORDER", viewModel.SurveyGuideTitle, StringComparison.Ordinal);
+        Assert.Contains(".mining <bearing>", viewModel.SurveyGuideCommandHint, StringComparison.Ordinal);
+        Assert.Contains("Guided survey started", viewModel.SurveyGuideFeedback, StringComparison.OrdinalIgnoreCase);
+        Assert.Empty(notifications);
+
+        await viewModel.ApplyUpdateAsync([Command(".mining 90 6.44 4")], context, status, allowCommands: true);
+        Assert.EndsWith("CENTER", viewModel.SurveyGuideTitle, StringComparison.Ordinal);
+        Assert.NotNull(viewModel.SurveyGuideTarget);
+
+        context = context with { PlayerLocation = viewModel.ActiveSurvey!.Center };
+        await viewModel.ApplyUpdateAsync([], context, status, allowCommands: true);
+        Assert.EndsWith("CENTER REACHED", viewModel.SurveyGuideTitle, StringComparison.Ordinal);
+
+        await viewModel.ApplyUpdateAsync([Command(".mining center here")], context, status, allowCommands: true);
+        Assert.Contains(" OF ", viewModel.SurveyGuideTitle, StringComparison.Ordinal);
+        Assert.NotNull(viewModel.SurveyGuideTarget);
+        Assert.Contains(".mining waypoint", viewModel.SurveyGuideCommandHint, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("survey complete", viewModel.SurveyGuideCommandHint, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("center moved", viewModel.SurveyGuideFooter, StringComparison.OrdinalIgnoreCase);
+        viewModel.ExpireSurveyGuideFeedback(DateTimeOffset.MaxValue);
+        Assert.Contains(".mine <bearing>", viewModel.SurveyGuideFooter, StringComparison.Ordinal);
+        Assert.Contains(".mine <commodity>", viewModel.SurveyGuideFooter, StringComparison.Ordinal);
+
+        await viewModel.ApplyUpdateAsync([Command(".mining waypoint next")], context, status, allowCommands: true);
+        Assert.Contains("2 OF", viewModel.SurveyGuideTitle, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("moved to waypoint 2", viewModel.SurveyGuideFeedback, StringComparison.OrdinalIgnoreCase);
+        Assert.Empty(notifications);
+
+        await viewModel.ApplyUpdateAsync([Command(".mining survey complete")], context, status, allowCommands: true);
+        Assert.True(viewModel.IsSurveyGuideComplete);
+        Assert.Contains(".mine rigs", viewModel.SurveyGuideFeedback, StringComparison.OrdinalIgnoreCase);
+        Assert.Empty(notifications);
+    }
+
+    [Fact]
+    public async Task GuidedSurveyRemainsVisibleWhenBoardedAndEndsAfterLeavingTheMappedArea()
+    {
+        using var directory = new TemporaryDirectory();
+        using var viewModel = new MineMapViewModel(
+            directory.Path,
+            new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
+            _ => { }
+        );
+        var border = new SurfaceCoordinate(1, 2);
+        MineMapCommandContext context = Context(border);
+        var surfaceStatus = new EliteStatus
+        {
+            Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
+            PlanetRadius = 855_573.1875m,
+        };
+        await viewModel.ApplyUpdateAsync([Command(".mining survey")], context, surfaceStatus, allowCommands: true);
+        await viewModel.ApplyUpdateAsync([Command(".mining 90 6.44 4")], context, surfaceStatus, allowCommands: true);
+        MineMapSurvey survey = Assert.IsType<MineMapSurvey>(viewModel.ActiveSurvey);
+        viewModel.ExpireSurveyGuideFeedback(DateTimeOffset.MaxValue);
+
+        await viewModel.ApplyUpdateAsync(
+            [],
+            null,
+            new EliteStatus { Flags = StatusFlags.InMainShip },
+            allowCommands: true
+        );
+
+        Assert.True(viewModel.ShouldShowSurveyGuideOverlay);
+        Assert.EndsWith("CENTER", viewModel.SurveyGuideTitle, StringComparison.Ordinal);
+
+        SurfaceCoordinate outside = MineMapService.GetDestination(
+            survey.Center,
+            90,
+            survey.LocationRadiusMeters + 1_000,
+            survey.PlanetRadiusMeters
+        );
+        await viewModel.ApplyUpdateAsync(
+            [],
+            context with
+            {
+                PlayerLocation = outside,
+            },
+            new EliteStatus { Flags = StatusFlags.InMainShip | StatusFlags.HasLatLong, PlanetRadius = 855_573.1875m },
+            allowCommands: true
+        );
+
+        Assert.False(viewModel.ShouldShowSurveyGuideOverlay);
+        Assert.Empty(viewModel.SurveyGuideTitle);
+    }
+
+    [Fact]
+    public async Task GuidedSurveyEndsWhenTheShipLeavesForSupercruise()
+    {
+        using var directory = new TemporaryDirectory();
+        using var viewModel = new MineMapViewModel(
+            directory.Path,
+            new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
+            _ => { }
+        );
+        MineMapCommandContext context = Context(new SurfaceCoordinate(1, 2));
+        var surfaceStatus = new EliteStatus
+        {
+            Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
+            PlanetRadius = 855_573.1875m,
+        };
+        await viewModel.ApplyUpdateAsync([Command(".mining survey")], context, surfaceStatus, allowCommands: true);
+        await viewModel.ApplyUpdateAsync([Command(".mining 90 6.44 4")], context, surfaceStatus, allowCommands: true);
+        viewModel.ExpireSurveyGuideFeedback(DateTimeOffset.MaxValue);
+
+        await viewModel.ApplyUpdateAsync(
+            [],
+            null,
+            new EliteStatus { Flags = StatusFlags.InMainShip | StatusFlags.Supercruise },
+            allowCommands: true
+        );
+
+        Assert.False(viewModel.ShouldShowSurveyGuideOverlay);
+        Assert.Empty(viewModel.SurveyGuideTitle);
+    }
+
+    [Fact]
+    public async Task GuidedSurveyFailureAppearsTemporarilyInItsOwnOverlay()
+    {
+        using var directory = new TemporaryDirectory();
+        var notifications = new List<string>();
+        using var viewModel = new MineMapViewModel(
+            directory.Path,
+            new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
+            notifications.Add
+        );
+
+        await viewModel.ApplyUpdateAsync([Command(".mining survey")], null, null, allowCommands: true);
+
+        Assert.True(viewModel.ShouldShowSurveyGuideOverlay);
+        Assert.Equal("SURFACE MINING SURVEY", viewModel.SurveyGuideTitle);
+        Assert.Contains("surface position", viewModel.SurveyGuideFeedback, StringComparison.OrdinalIgnoreCase);
+        Assert.Empty(notifications);
+
+        viewModel.ExpireSurveyGuideFeedback(DateTimeOffset.MaxValue);
+
+        Assert.False(viewModel.ShouldShowSurveyGuideOverlay);
+        Assert.Empty(viewModel.SurveyGuideFeedback);
+    }
+
+    [Fact]
+    public async Task MiningCommandsRequestTheOverviewMapWithoutTreatingMineCommandsAsVisibilityRequests()
+    {
+        using var directory = new TemporaryDirectory();
+        int visibilityRequests = 0;
+        using var viewModel = new MineMapViewModel(
+            directory.Path,
+            new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
+            _ => { },
+            requestOverviewMapVisibility: () => visibilityRequests++
+        );
+
+        await viewModel.ApplyUpdateAsync([Command(".mine rigs 2")], null, null, allowCommands: true);
+        await viewModel.ApplyUpdateAsync([Command(".mining invalid")], null, null, allowCommands: true);
+        await viewModel.ApplyUpdateAsync([Command(".mining survey")], null, null, allowCommands: false);
+
+        Assert.Equal(1, visibilityRequests);
     }
 
     [Fact]
@@ -740,7 +921,7 @@ public sealed class MineMapViewModelTests
             [moveCommand!],
             border with
             {
-                PlayerLocation = viewModel.ActiveSurvey!.Center,
+                PlayerLocation = viewModel.ActiveSurvey.Center,
             },
             status,
             allowCommands: true
@@ -769,6 +950,13 @@ public sealed class MineMapViewModelTests
             855_573.1875,
             location
         );
+
+    private static JournalEventEnvelope Command(string message)
+    {
+        string json = JsonSerializer.Serialize(new { @event = "SendText", Message = message });
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? command, out _));
+        return command!;
+    }
 
     private static void SeedSurvey(string directory)
     {
@@ -799,6 +987,7 @@ public sealed class MineMapViewModelTests
                     Material = "Ruby",
                     MineralAmount = MineMapRating.High,
                     Density = MineMapRating.Low,
+                    RigCount = 4,
                     Location = MineMapService.GetDestination(center, 15, 1240, 855_573.1875),
                     CreatedAt = now,
                 },

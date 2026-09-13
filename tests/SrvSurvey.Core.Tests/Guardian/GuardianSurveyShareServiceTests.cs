@@ -45,7 +45,6 @@ public sealed class GuardianSurveyShareServiceTests : IDisposable
             siteHeading: 90,
             poiStatuses: new Dictionary<string, GuardianPoiStatus> { ["P1"] = GuardianPoiStatus.Present }
         );
-        var service = new GuardianSurveyShareService(temporaryDirectory, new GuardianPublishedSiteCatalog([published]));
         var changedPath = SurveyPath("Body A-ruins-1.json");
         var unchangedPath = SurveyPath("Body B-ruins-1.json");
         Directory.CreateDirectory(Path.GetDirectoryName(changedPath)!);
@@ -74,7 +73,7 @@ public sealed class GuardianSurveyShareServiceTests : IDisposable
             LocalizedName = "Guardian Ruins B",
         };
         var catalog = new GuardianPublishedSiteCatalog([published, published with { FullBodyName = "Body B" }]);
-        service = new GuardianSurveyShareService(temporaryDirectory, catalog);
+        var service = new GuardianSurveyShareService(temporaryDirectory, catalog);
 
         var result = await service.PrepareAsync(
             FrontierId,
@@ -87,8 +86,8 @@ public sealed class GuardianSurveyShareServiceTests : IDisposable
         Assert.Contains("Point-of-interest status", site.Reasons);
         Assert.True(File.Exists(result.ArchivePath));
         Assert.StartsWith($"surveys-{FrontierId}-", Path.GetFileName(result.ArchivePath));
-        using var archive = ZipFile.OpenRead(result.ArchivePath);
-        var entry = Assert.Single(archive.Entries);
+        using ZipArchive archive = await ZipFile.OpenReadAsync(result.ArchivePath);
+        ZipArchiveEntry entry = Assert.Single(archive.Entries);
         Assert.Equal(Path.GetFileName(changedPath), entry.FullName);
     }
 
@@ -101,8 +100,8 @@ public sealed class GuardianSurveyShareServiceTests : IDisposable
             "$Ancient_Tiny_001:#index=1;",
             "Guardian Structure",
             "Tester",
-            DateTimeOffset.Parse("2026-08-20T12:00:00Z"),
-            DateTimeOffset.Parse("2026-08-20T13:00:00Z"),
+            DateTimeOffset.Parse("2026-08-20T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            DateTimeOffset.Parse("2026-08-20T13:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
             "Lacrosse",
             1,
             42,
@@ -175,11 +174,11 @@ public sealed class GuardianSurveyShareServiceTests : IDisposable
         Assert.Contains("Raw points of interest", shared.Reasons);
         Assert.Contains("Component materials", shared.Reasons);
         Assert.Contains("Map alignment offset", shared.Reasons);
-        using var archive = ZipFile.OpenRead(result.ArchivePath);
-        var entry = Assert.Single(archive.Entries);
-        await using var entryStream = entry.Open();
-        using var document = await JsonDocument.ParseAsync(entryStream);
-        var root = document.RootElement;
+        using ZipArchive archive = await ZipFile.OpenReadAsync(result.ArchivePath);
+        ZipArchiveEntry entry = Assert.Single(archive.Entries);
+        await using Stream entryStream = await entry.OpenAsync();
+        using JsonDocument document = await JsonDocument.ParseAsync(entryStream);
+        JsonElement root = document.RootElement;
         Assert.Equal("Tester", root.GetProperty("commander").GetString());
         Assert.Equal("Lacrosse", root.GetProperty("type").GetString());
         Assert.Equal(45, root.GetProperty("siteHeading").GetInt32());
@@ -225,12 +224,12 @@ public sealed class GuardianSurveyShareServiceTests : IDisposable
 
         var shared = Assert.Single(result.Sites);
         Assert.Equal(["Map alignment offset"], shared.Reasons);
-        using (var archive = ZipFile.OpenRead(result.ArchivePath))
+        using (ZipArchive archive = await ZipFile.OpenReadAsync(result.ArchivePath))
         {
             var entry = Assert.Single(archive.Entries);
             var destinationDirectory = Path.Combine(temporaryDirectory, "guardian", otherFrontierId);
             Directory.CreateDirectory(destinationDirectory);
-            entry.ExtractToFile(Path.Combine(destinationDirectory, entry.Name));
+            await entry.ExtractToFileAsync(Path.Combine(destinationDirectory, entry.Name));
         }
 
         var loaded = await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync(otherFrontierId, true);
@@ -313,8 +312,8 @@ public sealed class GuardianSurveyShareServiceTests : IDisposable
             "GR 1",
             "Guardian Ruins A",
             "Tester",
-            DateTimeOffset.Parse("2026-07-25T12:00:00Z"),
-            DateTimeOffset.Parse("2026-07-25T13:00:00Z"),
+            DateTimeOffset.Parse("2026-07-25T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            DateTimeOffset.Parse("2026-07-25T13:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
             "Alpha",
             1,
             42,

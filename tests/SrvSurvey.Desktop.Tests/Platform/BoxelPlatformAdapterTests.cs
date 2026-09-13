@@ -110,7 +110,13 @@ public sealed class BoxelPlatformAdapterTests : IDisposable
                 Directory.Delete(temporaryDirectory, recursive: true);
             }
         }
-        catch (IOException) { }
-        catch (UnauthorizedAccessException) { }
+        catch (IOException)
+        {
+            // Test cleanup is best effort when a temporary file is still in use.
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // Test cleanup is best effort when the temporary directory cannot be removed.
+        }
     }
 }

@@ -13,6 +13,14 @@ public sealed class SurfaceSurveyRadarControl : Control
         AvaloniaProperty.Register<SurfaceSurveyRadarControl, IReadOnlyList<SurfaceRadarMarkerViewModel>?>(
             nameof(Markers)
         );
+    public static readonly StyledProperty<IReadOnlyList<SurfaceRadarPathViewModel>?> SplatBoundariesProperty =
+        AvaloniaProperty.Register<SurfaceSurveyRadarControl, IReadOnlyList<SurfaceRadarPathViewModel>?>(
+            nameof(SplatBoundaries)
+        );
+    public static readonly StyledProperty<IReadOnlyList<SurfaceRadarPointViewModel>?> SuggestedRigLocationsProperty =
+        AvaloniaProperty.Register<SurfaceSurveyRadarControl, IReadOnlyList<SurfaceRadarPointViewModel>?>(
+            nameof(SuggestedRigLocations)
+        );
     public static readonly StyledProperty<IBrush?> BackgroundBrushProperty = AvaloniaProperty.Register<
         SurfaceSurveyRadarControl,
         IBrush?
@@ -41,6 +49,10 @@ public sealed class SurfaceSurveyRadarControl : Control
         SurfaceSurveyRadarControl,
         IBrush?
     >(nameof(DangerBrush));
+    public static readonly StyledProperty<IBrush?> SuggestionBrushProperty = AvaloniaProperty.Register<
+        SurfaceSurveyRadarControl,
+        IBrush?
+    >(nameof(SuggestionBrush));
     public static readonly StyledProperty<double> ScaleMultiplierProperty = AvaloniaProperty.Register<
         SurfaceSurveyRadarControl,
         double
@@ -50,6 +62,8 @@ public sealed class SurfaceSurveyRadarControl : Control
     {
         AffectsRender<SurfaceSurveyRadarControl>(
             MarkersProperty,
+            SplatBoundariesProperty,
+            SuggestedRigLocationsProperty,
             BackgroundBrushProperty,
             GridBrushProperty,
             AccentBrushProperty,
@@ -57,6 +71,7 @@ public sealed class SurfaceSurveyRadarControl : Control
             SuccessBrushProperty,
             WarningBrushProperty,
             DangerBrushProperty,
+            SuggestionBrushProperty,
             ScaleMultiplierProperty
         );
     }
@@ -70,6 +85,18 @@ public sealed class SurfaceSurveyRadarControl : Control
     {
         get => GetValue(MarkersProperty);
         set => SetValue(MarkersProperty, value);
+    }
+
+    public IReadOnlyList<SurfaceRadarPathViewModel>? SplatBoundaries
+    {
+        get => GetValue(SplatBoundariesProperty);
+        set => SetValue(SplatBoundariesProperty, value);
+    }
+
+    public IReadOnlyList<SurfaceRadarPointViewModel>? SuggestedRigLocations
+    {
+        get => GetValue(SuggestedRigLocationsProperty);
+        set => SetValue(SuggestedRigLocationsProperty, value);
     }
 
     public IBrush? BackgroundBrush
@@ -114,6 +141,12 @@ public sealed class SurfaceSurveyRadarControl : Control
         set => SetValue(DangerBrushProperty, value);
     }
 
+    public IBrush? SuggestionBrush
+    {
+        get => GetValue(SuggestionBrushProperty);
+        set => SetValue(SuggestionBrushProperty, value);
+    }
+
     public double ScaleMultiplier
     {
         get => GetValue(ScaleMultiplierProperty);
@@ -139,13 +172,63 @@ public sealed class SurfaceSurveyRadarControl : Control
         using (context.PushClip(bounds))
         {
             DrawGrid(context, bounds, center, grid);
+            DrawSplatBoundaries(context, center);
+            DrawSuggestedRigLocations(context, bounds, center);
             foreach (var marker in Markers ?? [])
             {
                 DrawMarker(context, bounds, center, marker);
             }
 
-            DrawCommander(context, center, accent);
+            DrawCommander(context, center, accent, background);
         }
+    }
+
+    private void DrawSplatBoundaries(DrawingContext context, Point center)
+    {
+        var pen = new Pen(SuggestionBrush ?? Brushes.Magenta, 1.5, DashStyle.Dot, PenLineCap.Round);
+        foreach (SurfaceRadarPathViewModel boundary in SplatBoundaries ?? [])
+        {
+            if (boundary.Points.Count < 2)
+            {
+                continue;
+            }
+
+            Point previous = ToPoint(center, boundary.Points[0]);
+            for (int index = 1; index < boundary.Points.Count; index++)
+            {
+                Point current = ToPoint(center, boundary.Points[index]);
+                context.DrawLine(pen, previous, current);
+                previous = current;
+            }
+
+            if (boundary.IsClosed)
+            {
+                context.DrawLine(pen, previous, ToPoint(center, boundary.Points[0]));
+            }
+        }
+    }
+
+    private void DrawSuggestedRigLocations(DrawingContext context, Rect bounds, Point center)
+    {
+        IBrush brush = SuggestionBrush ?? Brushes.Magenta;
+        foreach (SurfaceRadarPointViewModel suggestion in SuggestedRigLocations ?? [])
+        {
+            Point point = ToPoint(center, suggestion);
+            if (bounds.Inflate(4).Contains(point))
+            {
+                context.DrawRectangle(brush, null, new Rect(point.X - 3.5, point.Y - 3.5, 7, 7));
+            }
+        }
+    }
+
+    private Point ToPoint(Point center, SurfaceRadarPointViewModel point)
+    {
+        double radians = point.RelativeBearingDegrees * Math.PI / 180;
+        double scale = double.IsFinite(ScaleMultiplier) ? Math.Clamp(ScaleMultiplier, 0.25, 10) : 1;
+        return new Point(
+            center.X + Math.Sin(radians) * point.DistanceMeters / MetersPerPixel * scale,
+            center.Y - Math.Cos(radians) * point.DistanceMeters / MetersPerPixel * scale
+        );
     }
 
     private static void DrawGrid(DrawingContext context, Rect bounds, Point center, IBrush brush)
@@ -264,10 +347,13 @@ public sealed class SurfaceSurveyRadarControl : Control
         };
     }
 
-    private static void DrawCommander(DrawingContext context, Point center, IBrush brush)
+    private static void DrawCommander(DrawingContext context, Point center, IBrush brush, IBrush background)
     {
-        DrawTriangle(context, center, brush, 9);
-        context.DrawEllipse(null, new Pen(brush, 1), center, 13, 13);
+        const double radius = 7;
+        var pen = new Pen(brush, 2);
+        context.DrawEllipse(background, pen, center, radius, radius);
+        context.DrawEllipse(brush, null, center, 2, 2);
+        context.DrawLine(pen, center, new Point(center.X, center.Y - radius));
     }
 
     private static void DrawTriangle(DrawingContext context, Point center, IBrush brush, double radius)

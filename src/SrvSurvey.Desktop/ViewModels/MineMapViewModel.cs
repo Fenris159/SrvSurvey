@@ -13,11 +13,13 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
 {
     private const double DefaultViewportZoom = 1;
     private const string AllMarkerRatings = "ALL";
+    private static readonly TimeSpan SurveyGuideFeedbackDuration = TimeSpan.FromSeconds(6);
     private static readonly IReadOnlyList<string> MarkerRatingFilters = [AllMarkerRatings, "HIGH", "MEDIUM", "LOW"];
     private readonly MineMapService service;
     private readonly MineMapSettingsStore settingsStore;
     private readonly Action<string> notify;
     private readonly Action<Guid> editBookmark;
+    private readonly Action requestOverviewMapVisibility;
     private readonly WorkspaceTableSorter surveySorter = new();
     private readonly WorkspaceTableSorter hotspotSorter = new();
     private readonly WorkspaceTableSorter surfaceHuntSorter = new();
@@ -34,6 +36,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     private bool favoritesOnly;
     private string selectedMineralAmountFilter = AllMarkerRatings;
     private string selectedDensityFilter = AllMarkerRatings;
+    private MineMapSurveyGuideState? editorSurveyGuide;
     private int selectedTab;
     private double viewportZoom = DefaultViewportZoom;
     private bool onlyShowWhileOnGround;
@@ -44,6 +47,8 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     private Guid? planningCircleSurveyId;
     private string statusText = string.Empty;
     private bool isAlignmentHelperVisible;
+    private string surveyGuideFeedback = string.Empty;
+    private DateTimeOffset? surveyGuideFeedbackExpiresAt;
 
     public MineMapViewModel(
         string dataDirectory,
@@ -51,13 +56,15 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         Action<string> notify,
         Action? openSurfaceMiningGuide = null,
         Action<Guid>? editBookmark = null,
-        BookmarkCatalog? bookmarkCatalog = null
+        BookmarkCatalog? bookmarkCatalog = null,
+        Action? requestOverviewMapVisibility = null
     )
     {
         service = new MineMapService(dataDirectory, bookmarkCatalog);
         this.settingsStore = settingsStore;
         this.notify = notify;
         this.editBookmark = editBookmark ?? (_ => { });
+        this.requestOverviewMapVisibility = requestOverviewMapVisibility ?? (() => { });
         var preferences = settingsStore.Load();
         onlyShowWhileOnGround = preferences.OnlyShowWhileOnGround;
         showMarkerLabelsInOverviewMap = preferences.ShowMarkerLabelsInOverviewMap;
@@ -78,6 +85,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
             .HuntReferences.Select(reference => new SurfaceMiningHuntRowViewModel(reference))
             .ToArray();
         service.Changed += OnServiceChanged;
+        service.NotificationRequested += OnServiceNotificationRequested;
         ZoomInCommand = new WorkspaceCommand(() => ViewportZoom = Math.Min(15, ViewportZoom + 0.5));
         ZoomOutCommand = new WorkspaceCommand(() => ViewportZoom = Math.Max(1, ViewportZoom - 0.5));
         ResetZoomCommand = new WorkspaceCommand(() => ViewportZoom = DefaultViewportZoom);
@@ -185,6 +193,90 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
 
     public bool ShouldShowAlignmentHelper => isAlignmentHelperVisible;
 
+    public bool ShouldShowSurveyGuideOverlay =>
+        HasSurveyGuideFeedback
+        || (
+            CurrentSurveyGuide is { } guide
+            && (
+                context is { } current
+                    && guide.FrontierId == current.FrontierId
+                    && guide.SystemAddress == current.SystemAddress
+                    && guide.BodyId == current.BodyId
+                || context is null && status is not null && !HasLeftSurfaceLocation(status)
+            )
+        );
+
+    public bool HasSurveyGuideFeedback => !string.IsNullOrWhiteSpace(surveyGuideFeedback);
+
+    public string SurveyGuideFeedback => surveyGuideFeedback;
+
+    public bool HasSurveyGuideFooter =>
+        HasSurveyGuideFeedback || CurrentSurveyGuide is { Phase: MineMapSurveyGuidePhase.Waypoint };
+
+    public string SurveyGuideFooter
+    {
+        get
+        {
+            if (HasSurveyGuideFeedback)
+            {
+                return SurveyGuideFeedback;
+            }
+
+            return CurrentSurveyGuide is { Phase: MineMapSurveyGuidePhase.Waypoint }
+                ? ".mine <bearing> <commodity> <km> <amount>/<density>  ·  .mine <commodity> <amount>/<density> here"
+                : string.Empty;
+        }
+    }
+
+    public bool IsSurveyGuideComplete => CurrentSurveyGuide is { Phase: MineMapSurveyGuidePhase.Complete };
+
+    public string SurveyGuideTitle =>
+        CurrentSurveyGuide switch
+        {
+            { Phase: MineMapSurveyGuidePhase.Border } => "SURFACE MINING SURVEY · BORDER",
+            { Phase: MineMapSurveyGuidePhase.Center } => "SURFACE MINING SURVEY · CENTER",
+            { Phase: MineMapSurveyGuidePhase.ConfirmCenter } => "SURFACE MINING SURVEY · CENTER REACHED",
+            { Phase: MineMapSurveyGuidePhase.Waypoint } guide =>
+                $"SURFACE MINING SURVEY · {guide.WaypointIndex + 1:N0} OF {guide.Waypoints?.Count ?? 0:N0}",
+            { Phase: MineMapSurveyGuidePhase.Complete } => "SURFACE MINING SURVEY · COMPLETE",
+            _ => HasSurveyGuideFeedback ? "SURFACE MINING SURVEY" : string.Empty,
+        };
+
+    public string SurveyGuideInstruction =>
+        CurrentSurveyGuide switch
+        {
+            { Phase: MineMapSurveyGuidePhase.Border } => "Drive to the orange border and face the location center.",
+            { Phase: MineMapSurveyGuidePhase.Center } => FormatSurveyGuideTarget("Drive to the saved center"),
+            { Phase: MineMapSurveyGuidePhase.ConfirmCenter } =>
+                "Stop at the true center and correct the map alignment.",
+            { Phase: MineMapSurveyGuidePhase.Waypoint } => FormatSurveyGuideTarget("Drive to the next scan point"),
+            { Phase: MineMapSurveyGuidePhase.Complete } => "Surface scan route complete.",
+            _ => string.Empty,
+        };
+
+    public string SurveyGuideCommandHint =>
+        CurrentSurveyGuide?.Phase switch
+        {
+            MineMapSurveyGuidePhase.Border => ".mining <bearing> <radius km> <signal #>",
+            MineMapSurveyGuidePhase.Center or MineMapSurveyGuidePhase.ConfirmCenter => ".mining center here",
+            MineMapSurveyGuidePhase.Waypoint =>
+                ".mining waypoint <next|prev> to adjust the route · .mining survey complete to finish early",
+            MineMapSurveyGuidePhase.Complete =>
+                "While mining, use .mine rigs <number> to record each deposit's rig capacity.",
+            _ => string.Empty,
+        };
+
+    public SurfaceCoordinate? SurveyGuideTarget =>
+        CurrentSurveyGuide switch
+        {
+            {
+                Phase: MineMapSurveyGuidePhase.Center or MineMapSurveyGuidePhase.ConfirmCenter,
+                SurveyId: { } surveyId
+            } => service.Surveys.FirstOrDefault(survey => survey.Id == surveyId)?.Center,
+            { Phase: MineMapSurveyGuidePhase.Waypoint } guide => guide.CurrentWaypoint,
+            _ => null,
+        };
+
     public IReadOnlyList<MineMapSurveyRowViewModel> FilteredSurveys
     {
         get => filteredSurveys;
@@ -225,6 +317,8 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
 
     public MineMapSurvey? ActiveSurvey => editorSurvey ?? service.ActiveSurvey;
 
+    public MineMapSurvey? ActiveLiveSurvey => service.ActiveSurvey;
+
     public bool HasActiveSurvey => ActiveSurvey is not null;
 
     public string LiveMapTitle => ActiveSurvey?.Name ?? "No live mining map";
@@ -232,10 +326,10 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     public string LiveMapDescription =>
         ActiveSurvey is { } survey
             ? $"{survey.SystemName} · {survey.BodyName} · {survey.LocationRadiusMeters / 1000:0.##} km border"
-            : "Drive to a mining-location border, face its center, and send .mining <heading> <radius km> <number>, i.e. .mining 120 6.44 4.";
+            : "Drive to a mining-location border, face its center, and send .mining <bearing> <radius km> <number>, i.e. .mining 120 6.44 4.";
 
     public static string LiveMapCommandHelp =>
-        "Drive to the orange mining-location border and face its center, then use .mining <heading> <radius km> <number>, i.e. .mining 120 6.44 4. Use .mining center here from the true center to correct it later.";
+        "Drive to the orange mining-location border and face its center, then use .mining <bearing> <radius km> <number>, i.e. .mining 120 6.44 4. Use .mining center here from the true center to correct it later.";
 
     public string LiveMapLocation =>
         ActiveSurvey is { } survey ? $"{survey.Center.Latitude:0.000000}, {survey.Center.Longitude:0.000000}" : "—";
@@ -430,6 +524,19 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
 
     public ICommand ActivateSelectedSurveyCommand { get; }
 
+    internal void ReportCsvExported(string fileName)
+    {
+        string message = $"Exported the selected Surface Mining map to {fileName}.";
+        StatusText = message;
+        notify(message);
+    }
+
+    internal void ReportCsvExportFailed(string message)
+    {
+        StatusText = "Surface Mining CSV export failed: " + message;
+        notify(StatusText);
+    }
+
     public async Task ApplyUpdateAsync(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         MineMapCommandContext? nextContext,
@@ -437,20 +544,38 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         bool allowCommands
     )
     {
+        bool startsSurveyGuide = ContainsSurveyGuideCommand(journalEvents);
+        if (allowCommands && ContainsMiningCommand(journalEvents))
+        {
+            requestOverviewMapVisibility();
+        }
+
         context = nextContext;
         status = latestStatus;
         ApplyAlignmentCommands(journalEvents, allowCommands);
         service.UpdateContext(nextContext);
+        if (latestStatus is not null && HasLeftSurfaceLocation(latestStatus))
+        {
+            service.DismissSurveyGuide();
+            ClearSurveyGuideFeedback();
+        }
         var results = await service.ApplyJournalEventsAsync(
             journalEvents,
             nextContext,
             allowCommands,
             CancellationToken.None
         );
-        foreach (var message in results.Select(result => result.Message))
+        foreach (string message in results.Select(result => result.Message))
         {
             StatusText = message;
-            notify(message);
+            if (startsSurveyGuide || service.SurveyGuide is not null)
+            {
+                ShowSurveyGuideFeedback(message);
+            }
+            else
+            {
+                notify(message);
+            }
         }
         if (results.Any(result => result.Succeeded && result.Survey is not null))
         {
@@ -515,8 +640,90 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     public void Dispose()
     {
         service.Changed -= OnServiceChanged;
+        service.NotificationRequested -= OnServiceNotificationRequested;
         service.Dispose();
     }
+
+    private void OnServiceNotificationRequested(string message)
+    {
+        StatusText = message;
+        if (service.SurveyGuide is not null)
+        {
+            ShowSurveyGuideFeedback(message);
+        }
+        else
+        {
+            notify(message);
+        }
+    }
+
+    public void DismissSurveyGuide()
+    {
+        service.DismissSurveyGuide();
+        ClearSurveyGuideFeedback();
+    }
+
+    internal void ExpireSurveyGuideFeedback(DateTimeOffset now)
+    {
+        if (surveyGuideFeedbackExpiresAt is null || now < surveyGuideFeedbackExpiresAt)
+        {
+            return;
+        }
+
+        ClearSurveyGuideFeedback();
+    }
+
+    private void ShowSurveyGuideFeedback(string message)
+    {
+        surveyGuideFeedback = message;
+        surveyGuideFeedbackExpiresAt = DateTimeOffset.UtcNow + SurveyGuideFeedbackDuration;
+        Changed(nameof(SurveyGuideFeedback));
+        Changed(nameof(HasSurveyGuideFeedback));
+        Changed(nameof(SurveyGuideFooter));
+        Changed(nameof(HasSurveyGuideFooter));
+        Changed(nameof(ShouldShowSurveyGuideOverlay));
+        Changed(nameof(SurveyGuideTitle));
+    }
+
+    private void ClearSurveyGuideFeedback()
+    {
+        if (!HasSurveyGuideFeedback && surveyGuideFeedbackExpiresAt is null)
+        {
+            return;
+        }
+
+        surveyGuideFeedback = string.Empty;
+        surveyGuideFeedbackExpiresAt = null;
+        Changed(nameof(SurveyGuideFeedback));
+        Changed(nameof(HasSurveyGuideFeedback));
+        Changed(nameof(SurveyGuideFooter));
+        Changed(nameof(HasSurveyGuideFooter));
+        Changed(nameof(ShouldShowSurveyGuideOverlay));
+        Changed(nameof(SurveyGuideTitle));
+    }
+
+    private static bool ContainsSurveyGuideCommand(IReadOnlyList<JournalEventEnvelope> journalEvents) =>
+        journalEvents.Any(journalEvent =>
+            string.Equals(journalEvent.EventName, "SendText", StringComparison.Ordinal)
+            && journalEvent.Payload.TryGetProperty("Message", out JsonElement message)
+            && message.ValueKind == JsonValueKind.String
+            && string.Equals(message.GetString()?.Trim(), ".mining survey", StringComparison.OrdinalIgnoreCase)
+        );
+
+    private static bool HasLeftSurfaceLocation(EliteStatus currentStatus) =>
+        (currentStatus.Flags & (StatusFlags.Supercruise | StatusFlags.FsdJump)) != 0;
+
+    private static bool ContainsMiningCommand(IReadOnlyList<JournalEventEnvelope> journalEvents) =>
+        journalEvents.Any(journalEvent =>
+            string.Equals(journalEvent.EventName, "SendText", StringComparison.Ordinal)
+            && journalEvent.Payload.TryGetProperty("Message", out JsonElement message)
+            && message.ValueKind == JsonValueKind.String
+            && message.GetString()?.Trim() is { } command
+            && (
+                command.Equals(".mining", StringComparison.OrdinalIgnoreCase)
+                || command.StartsWith(".mining ", StringComparison.OrdinalIgnoreCase)
+            )
+        );
 
     internal static MineMapViewModel CreateEditorPreview()
     {
@@ -595,6 +802,28 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         };
         viewModel.RaiseLiveState();
         return viewModel;
+    }
+
+    internal void InstallSurveyGuideEditorPreview(MineMapSurveyGuidePhase phase)
+    {
+        if (context is null || editorSurvey is null)
+        {
+            return;
+        }
+
+        IReadOnlyList<SurfaceCoordinate>? waypoints =
+            phase == MineMapSurveyGuidePhase.Waypoint
+                ? [MineMapService.GetDestination(editorSurvey.Center, 35, 1_800, editorSurvey.PlanetRadiusMeters)]
+                : null;
+        editorSurveyGuide = new MineMapSurveyGuideState(
+            phase,
+            context.FrontierId,
+            context.SystemAddress,
+            context.BodyId,
+            phase == MineMapSurveyGuidePhase.Border ? null : editorSurvey.Id,
+            waypoints
+        );
+        RaiseLiveState();
     }
 
     private void OnServiceChanged(object? sender, EventArgs eventArgs)
@@ -758,6 +987,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     {
         ClearPlanningCircleForInactiveSurvey();
         Changed(nameof(ActiveSurvey));
+        Changed(nameof(ActiveLiveSurvey));
         Changed(nameof(HasActiveSurvey));
         Changed(nameof(LiveMapTitle));
         Changed(nameof(LiveMapDescription));
@@ -770,7 +1000,31 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         Changed(nameof(PlayerLocation));
         Changed(nameof(PlayerHeading));
         Changed(nameof(ShouldShowOverlay));
+        Changed(nameof(ShouldShowSurveyGuideOverlay));
+        Changed(nameof(IsSurveyGuideComplete));
+        Changed(nameof(SurveyGuideTitle));
+        Changed(nameof(SurveyGuideInstruction));
+        Changed(nameof(SurveyGuideCommandHint));
+        Changed(nameof(SurveyGuideFooter));
+        Changed(nameof(HasSurveyGuideFooter));
+        Changed(nameof(SurveyGuideTarget));
         RefreshMarkerFilters();
+    }
+
+    private MineMapSurveyGuideState? CurrentSurveyGuide => editorSurveyGuide ?? service.SurveyGuide;
+
+    private string FormatSurveyGuideTarget(string action)
+    {
+        if (context?.PlayerLocation is not { } player || SurveyGuideTarget is not { } target)
+        {
+            return action + ".";
+        }
+
+        double radius = ActiveSurvey?.PlanetRadiusMeters ?? context.PlanetRadiusMeters;
+        double bearing = SurfaceNavigation.GetBearing(player, target);
+        double distance = SurfaceNavigation.GetDistance(player, target, radius);
+        string distanceText = distance >= 1_000 ? $"{distance / 1_000:0.00} km" : $"{distance:0} m";
+        return $"{action}: {bearing:000}° · {distanceText}.";
     }
 
     private void ClearPlanningCircleForInactiveSurvey()
@@ -834,7 +1088,8 @@ public sealed class MineMapSurveyRowViewModel : WorkspaceObservable
             .Select(marker => new MineMapDepositRowViewModel(
                 marker.Material,
                 marker.MineralAmount.ToString(),
-                marker.Density.ToString()
+                marker.Density.ToString(),
+                marker.RigCount?.ToString(CultureInfo.InvariantCulture) ?? string.Empty
             ))
             .ToArray();
         ToggleExpandedCommand = new WorkspaceCommand(() => IsExpanded = !IsExpanded);
@@ -885,7 +1140,7 @@ public sealed class MineMapSurveyRowViewModel : WorkspaceObservable
     public DateTime UpdatedValue => DateTime.Parse(UpdatedText, CultureInfo.CurrentCulture);
 }
 
-public sealed record MineMapDepositRowViewModel(string Material, string MineralAmount, string Density);
+public sealed record MineMapDepositRowViewModel(string Material, string MineralAmount, string Density, string Rigs);
 
 public sealed class SurfaceMiningCommodityRowViewModel : WorkspaceObservable
 {

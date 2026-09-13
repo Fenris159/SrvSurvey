@@ -52,7 +52,8 @@ public sealed class BoxelSearchLibraryViewModelTests : IAsyncLifetime
     [Fact]
     public async Task LibraryCommandsManageSavedSearchesAndKeepStateConsistent()
     {
-        var (store, boxel, library) = await CreateLibraryAsync(("Zulu", null, 1, 4), ("Alpha", "Original notes", 3, 4));
+        (SavedBoxelSearchStore? store, BoxelSearchViewModel _, BoxelSearchLibraryViewModel? library) =
+            await CreateLibraryAsync(("Zulu", null, 1, 4), ("Alpha", "Original notes", 3, 4));
         var propertyChanges = new List<string?>();
         var renameDialogVisibleWhenCompleted = true;
         var notesDialogVisibleWhenCompleted = true;
@@ -397,7 +398,7 @@ public sealed class BoxelSearchLibraryViewModelTests : IAsyncLifetime
         Assert.True(item.OpenStatisticsCommand.CanExecute(null));
         item.OpenStatisticsCommand.Execute(null);
         Assert.NotNull(requested);
-        Assert.Contains(top.Prefix, requested!.Prefixes);
+        Assert.Contains(top.Prefix, requested.Prefixes);
         Assert.Equal('c', requested.LowMassCode);
     }
 
@@ -450,17 +451,6 @@ public sealed class BoxelSearchLibraryViewModelTests : IAsyncLifetime
         }
 
         Assert.True(completed());
-    }
-
-    private static async Task WaitUntilAsync(Func<bool> condition)
-    {
-        var timeout = DateTimeOffset.UtcNow.AddSeconds(2);
-        while (!condition() && DateTimeOffset.UtcNow < timeout)
-        {
-            await Task.Delay(10);
-        }
-
-        Assert.True(condition());
     }
 
     public ValueTask InitializeAsync() => ValueTask.CompletedTask;

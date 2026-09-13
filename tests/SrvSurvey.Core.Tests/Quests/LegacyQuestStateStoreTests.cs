@@ -253,8 +253,8 @@ public sealed class LegacyQuestStateStoreTests : IDisposable
             }
             """
         );
-        File.WriteAllBytes(statePath, stateBytes);
-        File.WriteAllBytes(definitionPath, definitionBytes);
+        await File.WriteAllBytesAsync(statePath, stateBytes);
+        await File.WriteAllBytesAsync(definitionPath, definitionBytes);
         var store = new LegacyQuestStateStore(temporaryDirectory);
         var loaded = store.Load("F123");
         var legacy = Assert.IsType<LegacyQuestProgress>(loaded.Data?.DevelopmentQuest);
@@ -269,9 +269,9 @@ public sealed class LegacyQuestStateStoreTests : IDisposable
 
         Assert.Equal(statePath, saved.Path);
         var backupPath = Assert.IsType<string>(saved.BackupPath);
-        Assert.Equal(stateBytes, File.ReadAllBytes(backupPath));
-        Assert.Equal(definitionBytes, File.ReadAllBytes(definitionPath));
-        var root = Assert.IsType<JsonObject>(JsonNode.Parse(File.ReadAllText(statePath)));
+        Assert.Equal(stateBytes, await File.ReadAllBytesAsync(backupPath));
+        Assert.Equal(definitionBytes, await File.ReadAllBytesAsync(definitionPath));
+        JsonObject root = Assert.IsType<JsonObject>(JsonNode.Parse(await File.ReadAllTextAsync(statePath)));
         Assert.Equal("keep", root["futureRoot"]?.GetValue<string>());
         var quest = Assert.IsType<JsonObject>(root["devQuest"]);
         Assert.True(quest["futureQuest"]?["keep"]?.GetValue<bool>());
@@ -345,7 +345,7 @@ public sealed class LegacyQuestStateStoreTests : IDisposable
         Directory.CreateDirectory(questDirectory);
         var path = Path.Combine(questDirectory, "F123.json");
         var malformed = Encoding.UTF8.GetBytes("{\"devQuest\":[");
-        File.WriteAllBytes(path, malformed);
+        await File.WriteAllBytesAsync(path, malformed);
 
         await Assert.ThrowsAnyAsync<InvalidDataException>(() =>
             new LegacyQuestStateStore(temporaryDirectory).SaveDevelopmentQuestAsync(
@@ -355,7 +355,7 @@ public sealed class LegacyQuestStateStoreTests : IDisposable
             )
         );
 
-        Assert.Equal(malformed, File.ReadAllBytes(path));
+        Assert.Equal(malformed, await File.ReadAllBytesAsync(path));
         Assert.False(Directory.Exists(Path.Combine(questDirectory, "quest-state-backups")));
     }
 
@@ -370,12 +370,12 @@ public sealed class LegacyQuestStateStoreTests : IDisposable
             {"fid":"F123","cmdr":"Cmdr","devRef":"publisher|sample|1","devQuest":{},"future":42}
             """
         );
-        File.WriteAllBytes(path, original);
+        await File.WriteAllBytesAsync(path, original);
 
         var saved = await new LegacyQuestStateStore(temporaryDirectory).SaveDevelopmentQuestAsync("F123", "Cmdr", null);
 
-        Assert.Equal(original, File.ReadAllBytes(saved.BackupPath!));
-        var root = Assert.IsType<JsonObject>(JsonNode.Parse(File.ReadAllText(path)));
+        Assert.Equal(original, await File.ReadAllBytesAsync(saved.BackupPath!));
+        JsonObject root = Assert.IsType<JsonObject>(JsonNode.Parse(await File.ReadAllTextAsync(path)));
         Assert.Null(root["devRef"]);
         Assert.Null(root["devQuest"]);
         Assert.Equal(42, root["future"]?.GetValue<int>());

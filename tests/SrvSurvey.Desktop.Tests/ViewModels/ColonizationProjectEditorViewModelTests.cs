@@ -262,7 +262,7 @@ public sealed class ColonizationProjectEditorViewModelTests
                 ["colonisationcontribution"]
             ),
             new ColonizationConstructionDepotSnapshot(
-                DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
+                DateTimeOffset.Parse("2026-07-24T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 42,
                 0.25,
                 IsComplete: false,

@@ -606,7 +606,7 @@ public sealed class BoxelSurveyStatsStateTests
                 Parse(
                     $$"""
                     {"event":"Scan","SystemAddress":{{address}},"BodyID":{{bodyId}},"PlanetClass":"{{planetClass}}","MassEM":{{mass.ToString(
-                        System.Globalization.CultureInfo.InvariantCulture
+                        global::System.Globalization.CultureInfo.InvariantCulture
                     )}},"TerraformState":"{{tf}}","WasDiscovered":false,"WasMapped":false}
                     """
                 )

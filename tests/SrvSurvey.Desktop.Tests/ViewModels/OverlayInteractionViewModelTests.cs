@@ -820,8 +820,8 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
 
         public event EventHandler? Closed
         {
-            add { }
-            remove { }
+            add => _ = value;
+            remove => _ = value;
         }
 
         public bool IsOpen { get; private set; }

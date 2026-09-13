@@ -1143,7 +1143,10 @@ public sealed class GuardianViewModelTests
                 ],
                 "Drew"
             );
-            var started = DateTimeOffset.Parse("2026-08-27T12:00:00Z");
+            var started = DateTimeOffset.Parse(
+                "2026-08-27T12:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            );
             var normal = StatusNorthOfSite(10);
             var analysis = normal with { Flags = normal.Flags | StatusFlags.HudInAnalysisMode };
 
@@ -1202,7 +1205,10 @@ public sealed class GuardianViewModelTests
                 ],
                 "Drew"
             );
-            var started = DateTimeOffset.Parse("2026-08-27T12:00:00Z");
+            var started = DateTimeOffset.Parse(
+                "2026-08-27T12:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            );
             var normal = StatusNorthOfSite(10) with
             {
                 Flags = StatusFlags.HasLatLong,
@@ -1842,9 +1848,9 @@ public sealed class GuardianViewModelTests
 
             viewModel.SurveyEditor.SurfaceLatitude = (decimal)status.Latitude;
 
-            Assert.Equal(0d, viewModel.Proximity!.DistanceFromSite, 3);
+            Assert.Equal(0d, viewModel.Proximity.DistanceFromSite, 3);
             viewModel.SurveyEditor.ResetCoordinatesCommand.Execute(null);
-            Assert.Equal(10d, viewModel.Proximity!.DistanceFromSite, 3);
+            Assert.Equal(10d, viewModel.Proximity.DistanceFromSite, 3);
         }
         finally
         {
@@ -1877,7 +1883,10 @@ public sealed class GuardianViewModelTests
                     Templates = new GuardianSiteTemplateCatalog([template]),
                 }
             );
-            var visitedAt = DateTimeOffset.Parse("2026-08-23T12:00:00Z");
+            var visitedAt = DateTimeOffset.Parse(
+                "2026-08-23T12:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            );
             await new GuardianCommanderSurveyStore(root).SaveAsync(
                 "F123",
                 isOdyssey: true,
@@ -1915,7 +1924,10 @@ public sealed class GuardianViewModelTests
 
             viewModel.SurveyEditor.SelectedPointName = null;
 
-            Assert.Contains(viewModel.MapProjection!.Points, point => point.Name == "p1" && point.Distance == 10);
+            Assert.Contains(
+                viewModel.MapProjection!.Points,
+                point => point.Name == "p1" && Math.Abs(point.Distance - 10) < 0.001
+            );
             Assert.DoesNotContain(viewModel.MapProjection.Points, point => point.Name == "p1-edited");
 
             viewModel.SurveyEditor.SelectedPointName = "p1";
@@ -2134,7 +2146,10 @@ public sealed class GuardianViewModelTests
         try
         {
             var store = new GuardianCommanderBeaconStore(root);
-            var firstScan = DateTimeOffset.Parse("2026-08-01T10:00:00Z");
+            var firstScan = DateTimeOffset.Parse(
+                "2026-08-01T10:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            );
             await store.SaveAsync(
                 "F123",
                 true,

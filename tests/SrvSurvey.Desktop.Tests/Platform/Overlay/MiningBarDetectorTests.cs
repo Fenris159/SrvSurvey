@@ -962,7 +962,7 @@ public sealed class MiningBarDetectorTests
     }
 
     private static CapturedPixelBuffer Load(int frame) =>
-        Load(frame.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        Load(frame.ToString(global::System.Globalization.CultureInfo.InvariantCulture));
 
     private static CapturedPixelBuffer Load(string frame)
     {

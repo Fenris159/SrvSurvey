@@ -31,7 +31,7 @@ public sealed class ScreenshotProcessingServiceTests : IDisposable
             """
         );
         var recent = new ScreenshotNavigationContext(
-            DateTimeOffset.Parse("2026-08-03T12:00:05Z"),
+            DateTimeOffset.Parse("2026-08-03T12:00:05Z", global::System.Globalization.CultureInfo.InvariantCulture),
             12.5,
             -42.25,
             180,
@@ -46,7 +46,10 @@ public sealed class ScreenshotProcessingServiceTests : IDisposable
                 screenshot,
                 recent with
                 {
-                    ObservedAt = DateTimeOffset.Parse("2026-08-03T12:00:10Z"),
+                    ObservedAt = DateTimeOffset.Parse(
+                        "2026-08-03T12:00:10Z",
+                        global::System.Globalization.CultureInfo.InvariantCulture
+                    ),
                 }
             )
         );
@@ -230,7 +233,7 @@ public sealed class ScreenshotProcessingServiceTests : IDisposable
         Directory.CreateDirectory(systemDirectory);
         var sourcePath = Path.Combine(sourceDirectory, "Screenshot_0003.bmp");
         CreateBitmap(sourcePath, SKColors.Red);
-        File.WriteAllText(Path.Combine(systemDirectory, "Earth (2026-07-25 010203).png"), "existing file");
+        await File.WriteAllTextAsync(Path.Combine(systemDirectory, "Earth (2026-07-25 010203).png"), "existing file");
 
         var result = await new ScreenshotProcessingService().ProcessAsync(
             [
@@ -248,7 +251,10 @@ public sealed class ScreenshotProcessingServiceTests : IDisposable
         );
 
         Assert.EndsWith("Earth (2026-07-25 010203) (2).png", Assert.Single(result.Conversions).OutputPath);
-        Assert.Equal("existing file", File.ReadAllText(Path.Combine(systemDirectory, "Earth (2026-07-25 010203).png")));
+        Assert.Equal(
+            "existing file",
+            await File.ReadAllTextAsync(Path.Combine(systemDirectory, "Earth (2026-07-25 010203).png"))
+        );
     }
 
     [Fact]
@@ -301,7 +307,7 @@ public sealed class ScreenshotProcessingServiceTests : IDisposable
         );
         Assert.True(File.Exists(conversion.OutputPath));
         Assert.True(File.Exists(conversion.AerialOutputPath));
-        using var aerial = SKBitmap.Decode(File.ReadAllBytes(conversion.AerialOutputPath));
+        using var aerial = SKBitmap.Decode(await File.ReadAllBytesAsync(conversion.AerialOutputPath));
         Assert.NotNull(aerial);
         Assert.Equal(180, aerial.Width);
         Assert.Equal(233, aerial.Height);

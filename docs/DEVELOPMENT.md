@@ -1,6 +1,6 @@
 # Development and Validation
 
-Last updated: 2026-09-11
+Last updated: 2026-09-13
 
 ## Branch purpose
 
@@ -11,9 +11,9 @@ full porting audit remain recoverable on `cross-platform-development`.
 
 ## Current release candidate
 
-The branch is versioned as **SrvSurvey-XP 2.1.3.0-rc.47**. Its development tag
-is `xp-v2.1.3.0-rc.47`, package manifests use `SrvSurvey.XP`, and distributable
-filenames begin with `SrvSurvey-XP-2.1.3.0-rc.47`. The assembly `FileVersion`
+The branch is versioned as **SrvSurvey-XP 2.1.3.0-rc.48**. Its development tag
+is `xp-v2.1.3.0-rc.48`, package manifests use `SrvSurvey.XP`, and distributable
+filenames begin with `SrvSurvey-XP-2.1.3.0-rc.48`. The assembly `FileVersion`
 remains numeric at `2.1.3.0` for Windows compatibility.
 
 ## Build contract
@@ -24,6 +24,7 @@ The supported solution is `SrvSurvey.slnx` and requires the .NET
 ```console
 dotnet tool restore
 dotnet restore SrvSurvey.slnx
+pwsh ./tools/Test-ChangedCodeQuality.ps1
 dotnet csharpier check .
 ./tools/Generate-AvaloniaLocalization.ps1 -Verify
 dotnet build SrvSurvey.slnx --configuration Release --no-restore
@@ -31,6 +32,14 @@ dotnet test SrvSurvey.slnx --configuration Release --no-build --no-restore
 ```
 
 Run `dotnet csharpier format .` to format C# before committing.
+
+`SonarAnalyzer.CSharp` is referenced centrally by `Directory.Build.props`, so
+it runs in editors and every `dotnet build`. Analyzer warnings are treated as
+build errors. Rule-specific exceptions belong in `.editorconfig` and require a
+short rationale. `tools/SonarCloud.ruleset` mirrors the current SonarCloud C#
+quality profile; `Test-ChangedCodeQuality.ps1` enables that full profile and
+the `.editorconfig` type-style rules, then reports only findings on changed
+lines so existing legacy findings do not block unrelated work.
 
 The desktop language selector supports English, German, Spanish, French,
 Brazilian Portuguese, Russian, Simplified Chinese, and pseudo-localization.

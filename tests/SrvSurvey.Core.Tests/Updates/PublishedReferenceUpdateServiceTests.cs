@@ -35,15 +35,19 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
         Assert.Equal(9, result.UpdatedCatalogs.Count);
         Assert.True(result.RestartRequired);
         Assert.NotNull(result.BackupDirectory);
-        Assert.Equal("keep me", File.ReadAllText(Path.Combine(root, "pub", "keep.txt")));
-        Assert.Equal("keep me", File.ReadAllText(Path.Combine(result.BackupDirectory!, "pub", "keep.txt")));
+        Assert.Equal("keep me", await File.ReadAllTextAsync(Path.Combine(root, "pub", "keep.txt")));
+        Assert.Equal("keep me", await File.ReadAllTextAsync(Path.Combine(result.BackupDirectory, "pub", "keep.txt")));
         Assert.Equal(
             LegacyRegionalCatalog,
-            File.ReadAllText(Path.Combine(result.BackupDirectory!, RegionalCodexCandidateCatalog.LegacyFileName))
+            await File.ReadAllTextAsync(
+                Path.Combine(result.BackupDirectory, RegionalCodexCandidateCatalog.LegacyFileName)
+            )
         );
         Assert.Equal(
             LegacyKnownSystemsCatalog,
-            File.ReadAllText(Path.Combine(result.BackupDirectory!, "pub", KnownSystemAddressCatalog.LegacyFileName))
+            await File.ReadAllTextAsync(
+                Path.Combine(result.BackupDirectory, "pub", KnownSystemAddressCatalog.LegacyFileName)
+            )
         );
         var active = LegacyReferenceCatalogLoader.Load(root);
         Assert.Equal(7, active.LocalCatalogCount);
@@ -75,16 +79,16 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
     public async Task RefreshAsyncRejectsMalformedArchiveBeforeTouchingLiveFiles()
     {
         WriteExistingReferences();
-        var originalCodex = File.ReadAllBytes(Path.Combine(root, "codexRef.json"));
-        var originalSentinel = File.ReadAllBytes(Path.Combine(root, "pub", "keep.txt"));
+        byte[] originalCodex = await File.ReadAllBytesAsync(Path.Combine(root, "codexRef.json"));
+        byte[] originalSentinel = await File.ReadAllBytesAsync(Path.Combine(root, "pub", "keep.txt"));
         var payloads = CreatePayloads();
         payloads[uris.BiologyCriteriaArchive] = new byte[] { 1, 2, 3, 4 };
         var service = CreateService(payloads);
 
         await Assert.ThrowsAsync<InvalidDataException>(() => service.RefreshAsync(root));
 
-        Assert.Equal(originalCodex, File.ReadAllBytes(Path.Combine(root, "codexRef.json")));
-        Assert.Equal(originalSentinel, File.ReadAllBytes(Path.Combine(root, "pub", "keep.txt")));
+        Assert.Equal(originalCodex, await File.ReadAllBytesAsync(Path.Combine(root, "codexRef.json")));
+        Assert.Equal(originalSentinel, await File.ReadAllBytesAsync(Path.Combine(root, "pub", "keep.txt")));
         Assert.False(File.Exists(Path.Combine(root, "pub", PublishedReferenceVersionStore.ManifestFileName)));
         Assert.Empty(FindOperationDirectories(".reference-update-"));
         Assert.Empty(FindOperationDirectories(".reference-rollback-"));
@@ -95,7 +99,7 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
     {
         WriteExistingReferences();
         var regionalPath = Path.Combine(root, RegionalCodexCandidateCatalog.LegacyFileName);
-        var originalRegional = File.ReadAllBytes(regionalPath);
+        byte[] originalRegional = await File.ReadAllBytesAsync(regionalPath);
         var payloads = CreatePayloads();
         payloads[uris.RegionalCodexCandidatesCsv] = Encoding.UTF8.GetBytes(
             "\"RegionID\",\"RegionName\",\"EnglishName\",\"Found\",\"NotExpectedToBeFound\",\"EntryID\",\"Name\",\"Varient\"\r\n"
@@ -105,8 +109,8 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
 
         await Assert.ThrowsAsync<InvalidDataException>(() => service.RefreshAsync(root));
 
-        Assert.Equal(originalRegional, File.ReadAllBytes(regionalPath));
-        Assert.Equal("keep me", File.ReadAllText(Path.Combine(root, "pub", "keep.txt")));
+        Assert.Equal(originalRegional, await File.ReadAllBytesAsync(regionalPath));
+        Assert.Equal("keep me", await File.ReadAllTextAsync(Path.Combine(root, "pub", "keep.txt")));
         Assert.Empty(FindOperationDirectories(".reference-update-"));
         Assert.Empty(FindOperationDirectories(".reference-rollback-"));
     }
@@ -116,7 +120,7 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
     {
         WriteExistingReferences();
         var knownSystemsPath = Path.Combine(root, "pub", KnownSystemAddressCatalog.LegacyFileName);
-        var originalKnownSystems = File.ReadAllBytes(knownSystemsPath);
+        byte[] originalKnownSystems = await File.ReadAllBytesAsync(knownSystemsPath);
         var payloads = CreatePayloads();
         payloads[uris.KnownSystemAddresses] = Encoding.UTF8.GetBytes(
             "known_systems = {\n  \"sol\": 10477373803,\n}\nknown_missing = ["
@@ -125,8 +129,8 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
 
         await Assert.ThrowsAsync<InvalidDataException>(() => service.RefreshAsync(root));
 
-        Assert.Equal(originalKnownSystems, File.ReadAllBytes(knownSystemsPath));
-        Assert.Equal("keep me", File.ReadAllText(Path.Combine(root, "pub", "keep.txt")));
+        Assert.Equal(originalKnownSystems, await File.ReadAllBytesAsync(knownSystemsPath));
+        Assert.Equal("keep me", await File.ReadAllTextAsync(Path.Combine(root, "pub", "keep.txt")));
         Assert.Empty(FindOperationDirectories(".reference-update-"));
         Assert.Empty(FindOperationDirectories(".reference-rollback-"));
     }
@@ -135,9 +139,11 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
     public async Task RefreshAsyncRollsBackAfterPostActivationFailure()
     {
         WriteExistingReferences();
-        var originalCodex = File.ReadAllBytes(Path.Combine(root, "codexRef.json"));
-        var originalRegional = File.ReadAllBytes(Path.Combine(root, RegionalCodexCandidateCatalog.LegacyFileName));
-        var originalSentinel = File.ReadAllBytes(Path.Combine(root, "pub", "keep.txt"));
+        byte[] originalCodex = await File.ReadAllBytesAsync(Path.Combine(root, "codexRef.json"));
+        byte[] originalRegional = await File.ReadAllBytesAsync(
+            Path.Combine(root, RegionalCodexCandidateCatalog.LegacyFileName)
+        );
+        byte[] originalSentinel = await File.ReadAllBytesAsync(Path.Combine(root, "pub", "keep.txt"));
         var service = CreateService(
             CreatePayloads(),
             checkpoint =>
@@ -151,12 +157,12 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
 
         await Assert.ThrowsAsync<InjectedFailureException>(() => service.RefreshAsync(root));
 
-        Assert.Equal(originalCodex, File.ReadAllBytes(Path.Combine(root, "codexRef.json")));
+        Assert.Equal(originalCodex, await File.ReadAllBytesAsync(Path.Combine(root, "codexRef.json")));
         Assert.Equal(
             originalRegional,
-            File.ReadAllBytes(Path.Combine(root, RegionalCodexCandidateCatalog.LegacyFileName))
+            await File.ReadAllBytesAsync(Path.Combine(root, RegionalCodexCandidateCatalog.LegacyFileName))
         );
-        Assert.Equal(originalSentinel, File.ReadAllBytes(Path.Combine(root, "pub", "keep.txt")));
+        Assert.Equal(originalSentinel, await File.ReadAllBytesAsync(Path.Combine(root, "pub", "keep.txt")));
         Assert.False(File.Exists(Path.Combine(root, "pub", PublishedReferenceVersionStore.ManifestFileName)));
         Assert.Empty(FindOperationDirectories(".reference-update-"));
         Assert.Empty(FindOperationDirectories(".reference-rollback-"));
@@ -225,7 +231,7 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
 
         Assert.Contains("no nicknames", exception.Message);
         Assert.False(File.Exists(Path.Combine(root, "pub", "nicknames.json")));
-        Assert.Equal("keep me", File.ReadAllText(Path.Combine(root, "pub", "keep.txt")));
+        Assert.Equal("keep me", await File.ReadAllTextAsync(Path.Combine(root, "pub", "keep.txt")));
     }
 
     [Fact]
@@ -451,7 +457,7 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
         }
     }
 
-    private sealed class InjectedFailureException : Exception;
+    public sealed class InjectedFailureException : Exception;
 
     private const string LegacyRegionalCatalog = "{\"Inner Orion Spur\":[\"2310101_old\"]}";
 

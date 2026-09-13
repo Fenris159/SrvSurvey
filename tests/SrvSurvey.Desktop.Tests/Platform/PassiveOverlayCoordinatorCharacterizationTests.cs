@@ -201,8 +201,8 @@ public sealed class PassiveOverlayCoordinatorCharacterizationTests : IDisposable
     {
         public event EventHandler? Tick
         {
-            add { }
-            remove { }
+            add => _ = value;
+            remove => _ = value;
         }
 
         public void Start() { }

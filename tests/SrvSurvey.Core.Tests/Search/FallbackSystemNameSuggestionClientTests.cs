@@ -40,7 +40,7 @@ public sealed class FallbackSystemNameSuggestionClientTests
     public async Task UserCancellationDoesNotQueryFallback()
     {
         using var cancellation = new CancellationTokenSource();
-        cancellation.Cancel();
+        await cancellation.CancelAsync();
         var primary = new StubClient(token => Task.FromCanceled<IReadOnlyList<SystemNameSuggestion>>(token));
         var fallback = new StubClient(_ => Task.FromResult<IReadOnlyList<SystemNameSuggestion>>([]));
         var client = new FallbackSystemNameSuggestionClient(primary, fallback);

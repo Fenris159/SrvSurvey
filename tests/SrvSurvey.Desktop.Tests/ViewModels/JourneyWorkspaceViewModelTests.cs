@@ -116,7 +116,7 @@ public sealed class JourneyWorkspaceViewModelTests : IDisposable
         viewModel.SelectedSystem = new JourneySystemItemViewModel(
             new JourneySystemVisit(
                 new JourneySystemReference("Sol", 42, new GalacticCoordinate(0, 0, 0)),
-                DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                DateTimeOffset.Parse("2026-07-01T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 null,
                 JourneyCounts.Empty,
                 null,

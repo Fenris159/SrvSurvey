@@ -432,7 +432,10 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
                 new RavenQuestMessage
                 {
                     Id = "welcome",
-                    Received = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                    Received = DateTimeOffset.Parse(
+                        "2026-07-01T00:00:00Z",
+                        global::System.Globalization.CultureInfo.InvariantCulture
+                    ),
                     Chapter = "start",
                     Actions = ["go"],
                 },
@@ -564,7 +567,7 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
             {
               "publisher":"Raven",
               "id":"{{id}}",
-              "ver":{{version.ToString(System.Globalization.CultureInfo.InvariantCulture)}},
+              "ver":{{version.ToString(global::System.Globalization.CultureInfo.InvariantCulture)}},
               "title":"{{title}}",
               "firstChapter":"start",
               "objectives":{},
@@ -587,10 +590,20 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
             Id = quest?.Id ?? "sample",
             Version = quest?.Version ?? 1,
             Quest = quest,
-            StartTime = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+            StartTime = DateTimeOffset.Parse(
+                "2026-07-01T00:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            ),
             Chapters =
             [
-                new RavenQuestChapterState { Id = "start", StartTime = DateTimeOffset.Parse("2026-07-01T00:00:00Z") },
+                new RavenQuestChapterState
+                {
+                    Id = "start",
+                    StartTime = DateTimeOffset.Parse(
+                        "2026-07-01T00:00:00Z",
+                        global::System.Globalization.CultureInfo.InvariantCulture
+                    ),
+                },
             ],
         };
     }

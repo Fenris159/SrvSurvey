@@ -263,8 +263,8 @@ public sealed class GuardianCommanderDataReaderTests
             string.Empty,
             string.Empty,
             "Drew",
-            DateTimeOffset.Parse("2026-07-01T10:00:00Z"),
-            DateTimeOffset.Parse("2026-07-02T10:00:00Z"),
+            DateTimeOffset.Parse("2026-07-01T10:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            DateTimeOffset.Parse("2026-07-02T10:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
             target.SiteType,
             target.Index,
             target.SystemAddress,
@@ -299,7 +299,10 @@ public sealed class GuardianCommanderDataReaderTests
     [Fact]
     public void MergeIncludesCommanderOnlySitesAndBeacons()
     {
-        var visitedAt = DateTimeOffset.Parse("2026-08-03T12:00:00Z");
+        var visitedAt = DateTimeOffset.Parse(
+            "2026-08-03T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var survey = new GuardianCommanderSiteSurvey(
             "local-ruins.json",
             "$Ancient:#index=4;",
@@ -361,7 +364,10 @@ public sealed class GuardianCommanderDataReaderTests
     [Fact]
     public void MergeAssignsStableNumberedDisplayIdsToCommanderOnlySites()
     {
-        var firstVisited = DateTimeOffset.Parse("2026-08-03T12:00:00Z");
+        var firstVisited = DateTimeOffset.Parse(
+            "2026-08-03T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var first = CreateCommanderOnlySurvey("first.json", firstVisited, 42, "First System", 7, "First System A 1");
         var second = CreateCommanderOnlySurvey(
             "second.json",

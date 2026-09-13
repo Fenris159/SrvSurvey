@@ -11,3 +11,20 @@ Triage uses the five default canonical labels. See `docs/agents/triage-labels.md
 ### Domain docs
 
 Domain documentation uses the single-context layout. See `docs/agents/domain.md`.
+
+## C# quality checks
+
+`SonarAnalyzer.CSharp` is applied to every C# project from `Directory.Build.props`,
+and analyzer warnings fail the build. CSharpier is the repository formatter.
+After changing C# code, run `dotnet csharpier check .` and the appropriate
+Release build. Do not suppress or fix unrelated analyzer findings unless the
+user asks; report them separately.
+
+Before the formatter and build, run
+`pwsh ./tools/Test-ChangedCodeQuality.ps1` to enforce the `.editorconfig`
+`var` rules and the checked-in SonarCloud quality-profile snapshot on changed
+lines, using the same new-code scope as SonarCloud.
+
+Tests that assert `IProgress<T>` callbacks must use a synchronous test recorder.
+Do not use `System.Progress<T>` for those assertions because it schedules
+callbacks asynchronously and can race differently on Windows and Linux.

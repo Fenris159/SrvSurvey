@@ -162,7 +162,7 @@ public sealed class ColonizationFleetCarrierCargoSynchronizerTests
     private static MarketSnapshot Market(long marketId, IReadOnlyList<MarketItem> items)
     {
         return new MarketSnapshot(
-            DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
+            DateTimeOffset.Parse("2026-07-24T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
             "Market",
             marketId,
             "Test Carrier",
@@ -187,7 +187,7 @@ public sealed class ColonizationFleetCarrierCargoSynchronizerTests
             "Supply carrier",
             null,
             stationServices,
-            DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
+            DateTimeOffset.Parse("2026-07-24T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
             "FleetCarrier"
         );
     }

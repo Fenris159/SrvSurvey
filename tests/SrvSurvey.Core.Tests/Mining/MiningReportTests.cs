@@ -9,8 +9,14 @@ public sealed class MiningReportTests
     {
         var session = new MiningSession
         {
-            Started = DateTimeOffset.Parse("2026-09-06T12:00:00Z"),
-            Ended = DateTimeOffset.Parse("2026-09-06T13:00:00Z"),
+            Started = DateTimeOffset.Parse(
+                "2026-09-06T12:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            ),
+            Ended = DateTimeOffset.Parse(
+                "2026-09-06T13:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            ),
             System = "=1+1",
             Notes = "<script>alert(1)</script>",
         };
@@ -26,7 +32,10 @@ public sealed class MiningReportTests
     [Fact]
     public void ChartsUseTimedObservationsAndCompareMaterialsAcrossSessions()
     {
-        var start = DateTimeOffset.Parse("2026-09-06T12:00:00Z");
+        var start = DateTimeOffset.Parse(
+            "2026-09-06T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var first = new MiningSession
         {
             Started = start,

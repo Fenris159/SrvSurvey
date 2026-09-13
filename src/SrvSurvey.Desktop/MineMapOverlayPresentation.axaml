@@ -26,6 +26,7 @@
                                VisibleMarkerIds="{Binding VisibleMarkerIds}"
                                ShowMarkerLabels="{Binding ShowMarkerLabelsInOverviewMap}"
                                PlanningCircleCenter="{Binding PlanningCircleCenter, Mode=TwoWay}"
+                               SurveyGuideTarget="{Binding SurveyGuideTarget}"
                                GridBrush="{DynamicResource RavenMapGridBrush}"
                                AccentBrush="{DynamicResource RavenAccentBrush}"
                                PlayerBrush="{DynamicResource RavenSuccessBrush}"

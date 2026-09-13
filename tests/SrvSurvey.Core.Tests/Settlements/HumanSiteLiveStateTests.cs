@@ -24,7 +24,10 @@ public sealed class HumanSiteLiveStateTests
         Assert.Equal("Raven Colonial", site.FactionName);
         Assert.Equal("War", site.FactionState);
         Assert.Equal(["dock", "refuel"], site.Services);
-        Assert.Equal(DateTimeOffset.Parse("2026-07-25T03:00:00Z"), site.FirstApproached);
+        Assert.Equal(
+            DateTimeOffset.Parse("2026-07-25T03:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            site.FirstApproached
+        );
     }
 
     [Fact]
@@ -169,8 +172,14 @@ public sealed class HumanSiteLiveStateTests
 
         Assert.Equal(4, state.CurrentSite!.SubType);
         Assert.Equal("Fornax", state.CurrentSite.Template!.Name);
-        Assert.Equal(DateTimeOffset.Parse("2026-07-25T03:00:00Z"), state.CurrentSite.FirstApproached);
-        Assert.Equal(DateTimeOffset.Parse("2026-07-25T03:10:00Z"), state.CurrentSite.LastUpdated);
+        Assert.Equal(
+            DateTimeOffset.Parse("2026-07-25T03:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            state.CurrentSite.FirstApproached
+        );
+        Assert.Equal(
+            DateTimeOffset.Parse("2026-07-25T03:10:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            state.CurrentSite.LastUpdated
+        );
     }
 
     [Fact]

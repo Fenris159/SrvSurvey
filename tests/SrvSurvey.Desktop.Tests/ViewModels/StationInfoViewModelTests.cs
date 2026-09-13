@@ -123,7 +123,10 @@ public sealed class StationInfoViewModelTests
                     ["Market", "Material Trader", "Shipyard", "Dock"],
                     new StationLandingPadSummary(2, 1, 1),
                     ["Narcotics"],
-                    DateTimeOffset.Parse("2026-07-25T00:00:00Z")
+                    DateTimeOffset.Parse(
+                        "2026-07-25T00:00:00Z",
+                        global::System.Globalization.CultureInfo.InvariantCulture
+                    )
                 ),
             ],
         };

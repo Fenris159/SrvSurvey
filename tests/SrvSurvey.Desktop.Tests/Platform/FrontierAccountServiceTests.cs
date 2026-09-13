@@ -44,7 +44,7 @@ public sealed class FrontierAccountServiceTests
         Assert.Contains("code_verifier=verifier-value", tokenBody);
         Assert.Contains("client_id=" + FrontierAccountService.ClientId, tokenBody);
         Assert.DoesNotContain("client_secret", tokenBody);
-        var account = store.Document!.Accounts["F123"];
+        FrontierAccountCredential account = store.Document.Accounts["F123"];
         Assert.Equal("access", account.AccessToken);
         Assert.Equal("refresh", account.RefreshToken);
         Assert.Null(store.Document.PendingAuthorization);
@@ -82,7 +82,7 @@ public sealed class FrontierAccountServiceTests
         );
 
         Assert.Equal(0, requestCount);
-        Assert.NotNull(store.Document!.PendingAuthorization);
+        Assert.NotNull(store.Document.PendingAuthorization);
     }
 
     [Fact]
@@ -92,7 +92,10 @@ public sealed class FrontierAccountServiceTests
         Directory.CreateDirectory(root);
         try
         {
-            var now = DateTimeOffset.Parse("2026-07-29T12:00:00Z");
+            var now = DateTimeOffset.Parse(
+                "2026-07-29T12:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            );
             var store = new MemoryCredentialStore { Document = LinkedCredential(now) };
             var requests = new List<string>();
             using var service = CreateService(
@@ -116,7 +119,7 @@ public sealed class FrontierAccountServiceTests
 
             Assert.Equal("Fenris", snapshot.CommanderName);
             Assert.Equal(["/profile", "/fleetcarrier", "/market", "/shipyard", "/communitygoals"], requests);
-            var credential = store.Document!.Accounts["F123"];
+            FrontierAccountCredential credential = store.Document.Accounts["F123"];
             Assert.NotNull(credential.LastCapiRefreshAt);
             Assert.NotNull(credential.LastCapiAttemptAt);
             var cooldown = await Assert.ThrowsAsync<FrontierRefreshCooldownException>(() => service.RefreshAsync());
@@ -136,7 +139,10 @@ public sealed class FrontierAccountServiceTests
         Directory.CreateDirectory(root);
         try
         {
-            var now = DateTimeOffset.Parse("2026-07-31T12:00:00Z");
+            var now = DateTimeOffset.Parse(
+                "2026-07-31T12:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            );
             var store = new MemoryCredentialStore { Document = LinkedCredential(now) };
             var inara = new StubInaraCommunityGoalClient(
                 new(
@@ -207,7 +213,10 @@ public sealed class FrontierAccountServiceTests
         Directory.CreateDirectory(root);
         try
         {
-            var now = DateTimeOffset.Parse("2026-07-29T12:00:00Z");
+            var now = DateTimeOffset.Parse(
+                "2026-07-29T12:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            );
             var store = new MemoryCredentialStore { Document = LinkedCredential(now) };
             var requests = new List<string>();
             using var service = CreateService(
@@ -249,7 +258,10 @@ public sealed class FrontierAccountServiceTests
         Directory.CreateDirectory(root);
         try
         {
-            var now = DateTimeOffset.Parse("2026-09-12T15:50:00Z");
+            var now = DateTimeOffset.Parse(
+                "2026-09-12T15:50:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            );
             var store = new MemoryCredentialStore { Document = LinkedCredential(now) };
             var currentJump = "None";
             var requests = new List<string>();
@@ -302,7 +314,10 @@ public sealed class FrontierAccountServiceTests
         Directory.CreateDirectory(root);
         try
         {
-            var now = DateTimeOffset.Parse("2026-07-29T12:00:00Z");
+            var now = DateTimeOffset.Parse(
+                "2026-07-29T12:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            );
             var store = new MemoryCredentialStore { Document = LinkedCredential(now) };
             using var service = CreateService(
                 store,
@@ -353,7 +368,10 @@ public sealed class FrontierAccountServiceTests
         Directory.CreateDirectory(root);
         try
         {
-            var now = DateTimeOffset.Parse("2026-07-29T12:00:00Z");
+            var now = DateTimeOffset.Parse(
+                "2026-07-29T12:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            );
             const string profile = "{\"commander\":{\"name\":\"Fenris\",\"rank\":{}},\"ships\":[]}";
             var cache = new FrontierProfileCacheStore(Path.Combine(root, "cache.json"));
             await cache.SaveAsync(
@@ -402,7 +420,10 @@ public sealed class FrontierAccountServiceTests
         Directory.CreateDirectory(root);
         try
         {
-            var now = DateTimeOffset.Parse("2026-07-29T12:00:00Z");
+            var now = DateTimeOffset.Parse(
+                "2026-07-29T12:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            );
             var store = new MemoryCredentialStore { Document = LinkedCredential(now) };
             using var service = CreateService(
                 store,
@@ -439,7 +460,10 @@ public sealed class FrontierAccountServiceTests
         Directory.CreateDirectory(root);
         try
         {
-            var now = DateTimeOffset.Parse("2026-07-29T12:00:00Z");
+            var now = DateTimeOffset.Parse(
+                "2026-07-29T12:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            );
             var store = new MemoryCredentialStore { Document = LinkedCredential(now) };
             var requestCount = 0;
             using var service = CreateService(
@@ -454,7 +478,7 @@ public sealed class FrontierAccountServiceTests
             );
 
             await Assert.ThrowsAsync<HttpRequestException>(() => service.RefreshAsync());
-            Assert.Equal(now, store.Document!.LastCapiAttemptAt);
+            Assert.Equal(now, store.Document.LastCapiAttemptAt);
 
             await Assert.ThrowsAsync<FrontierRefreshCooldownException>(() => service.RefreshAsync());
             Assert.Equal(1, requestCount);
@@ -472,7 +496,10 @@ public sealed class FrontierAccountServiceTests
         Directory.CreateDirectory(root);
         try
         {
-            var now = DateTimeOffset.Parse("2026-07-30T12:00:00Z");
+            var now = DateTimeOffset.Parse(
+                "2026-07-30T12:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            );
             var store = new MemoryCredentialStore
             {
                 Document = new FrontierCredentialDocument
@@ -566,7 +593,10 @@ public sealed class FrontierAccountServiceTests
         Directory.CreateDirectory(root);
         try
         {
-            var now = DateTimeOffset.Parse("2026-07-30T12:00:00Z");
+            var now = DateTimeOffset.Parse(
+                "2026-07-30T12:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            );
             var store = new MemoryCredentialStore
             {
                 Document = new FrontierCredentialDocument
@@ -601,7 +631,7 @@ public sealed class FrontierAccountServiceTests
             var snapshot = await service.RefreshAsync();
 
             Assert.Equal(739749, snapshot.CommanderId);
-            Assert.True(store.Document!.Accounts.ContainsKey("F472567"));
+            Assert.True(store.Document.Accounts.ContainsKey("F472567"));
             Assert.False(store.Document.Accounts.ContainsKey("F739749"));
             Assert.True(File.Exists(Path.Combine(root, "F472567.json")));
         }
@@ -618,7 +648,10 @@ public sealed class FrontierAccountServiceTests
         Directory.CreateDirectory(root);
         try
         {
-            var now = DateTimeOffset.Parse("2026-07-30T12:00:00Z");
+            var now = DateTimeOffset.Parse(
+                "2026-07-30T12:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            );
             var store = new MemoryCredentialStore
             {
                 Document = new FrontierCredentialDocument
@@ -682,7 +715,7 @@ public sealed class FrontierAccountServiceTests
                     Assert.Equal("Second", commander.CommanderName);
                 }
             );
-            Assert.Equal("correct", store.Document!.Accounts["F472567"].AccessToken);
+            Assert.Equal("correct", store.Document.Accounts["F472567"].AccessToken);
             Assert.False(store.Document.Accounts.ContainsKey("F739749"));
             Assert.True(store.Document.Accounts.ContainsKey("F831234"));
             Assert.False(File.Exists(Path.Combine(root, "F739749.json")));
@@ -701,7 +734,10 @@ public sealed class FrontierAccountServiceTests
         Directory.CreateDirectory(root);
         try
         {
-            var now = DateTimeOffset.Parse("2026-07-30T12:00:00Z");
+            var now = DateTimeOffset.Parse(
+                "2026-07-30T12:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            );
             var snapshot = FrontierCapiSnapshotParser.Parse(
                 "{\"commander\":{\"id\":739749,\"name\":\"Fenris Nihilus\",\"rank\":{}},\"ships\":[]}",
                 null,
@@ -737,7 +773,7 @@ public sealed class FrontierAccountServiceTests
 
             var commander = Assert.Single(linked);
             Assert.Equal("F739749", commander.FrontierId);
-            Assert.True(store.Document!.Accounts.ContainsKey("F739749"));
+            Assert.True(store.Document.Accounts.ContainsKey("F739749"));
             Assert.False(store.Document.Accounts.ContainsKey("F472567"));
             Assert.True(File.Exists(Path.Combine(root, "F739749.json")));
         }
@@ -754,7 +790,10 @@ public sealed class FrontierAccountServiceTests
         Directory.CreateDirectory(root);
         try
         {
-            var now = DateTimeOffset.Parse("2026-07-30T12:00:00Z");
+            var now = DateTimeOffset.Parse(
+                "2026-07-30T12:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            );
             var store = new MemoryCredentialStore
             {
                 Document = new FrontierCredentialDocument
@@ -804,7 +843,10 @@ public sealed class FrontierAccountServiceTests
         Directory.CreateDirectory(root);
         try
         {
-            var now = DateTimeOffset.Parse("2026-07-30T12:00:00Z");
+            var now = DateTimeOffset.Parse(
+                "2026-07-30T12:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            );
             var store = new MemoryCredentialStore
             {
                 Document = new FrontierCredentialDocument
@@ -838,7 +880,7 @@ public sealed class FrontierAccountServiceTests
 
             Assert.True(state.IsLinked);
             Assert.Equal("Fenris Nihilus", state.Snapshot!.CommanderName);
-            Assert.Equal("alias", store.Document!.Accounts["F472567"].AccessToken);
+            Assert.Equal("alias", store.Document.Accounts["F472567"].AccessToken);
             Assert.False(store.Document.Accounts.ContainsKey("F739749"));
             Assert.True(File.Exists(Path.Combine(root, "F472567.json")));
             Assert.False(File.Exists(Path.Combine(root, "F739749.json")));
@@ -852,7 +894,10 @@ public sealed class FrontierAccountServiceTests
     [Fact]
     public async Task MismatchedOAuthIsRejectedWithoutReplacingAnotherCommander()
     {
-        var now = DateTimeOffset.Parse("2026-07-30T12:00:00Z");
+        var now = DateTimeOffset.Parse(
+            "2026-07-30T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var store = new MemoryCredentialStore
         {
             Document = new FrontierCredentialDocument
@@ -885,7 +930,7 @@ public sealed class FrontierAccountServiceTests
         var error = await Assert.ThrowsAsync<InvalidOperationException>(() => service.RefreshAsync());
 
         Assert.Contains("active journal", error.Message);
-        Assert.True(store.Document!.Accounts.ContainsKey("F123"));
+        Assert.True(store.Document.Accounts.ContainsKey("F123"));
         Assert.False(store.Document.Accounts.ContainsKey("F456"));
         Assert.Equal("existing-a", store.Document.Accounts["F123"].AccessToken);
     }
@@ -910,7 +955,7 @@ public sealed class FrontierAccountServiceTests
 
         await service.UnlinkAsync();
 
-        Assert.True(store.Document!.Accounts.ContainsKey("F123"));
+        Assert.True(store.Document.Accounts.ContainsKey("F123"));
         Assert.False(store.Document.Accounts.ContainsKey("F456"));
     }
 
@@ -921,7 +966,10 @@ public sealed class FrontierAccountServiceTests
         Directory.CreateDirectory(root);
         try
         {
-            var now = DateTimeOffset.Parse("2026-07-30T12:00:00Z");
+            var now = DateTimeOffset.Parse(
+                "2026-07-30T12:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            );
             var legacyCache = new FrontierProfileCacheStore(Path.Combine(root, "frontier-profile-cache.json"));
             var snapshot = FrontierCapiSnapshotParser.Parse(
                 "{\"commander\":{\"id\":739749,\"name\":\"Fenris\",\"rank\":{}},\"ships\":[]}",
@@ -949,7 +997,7 @@ public sealed class FrontierAccountServiceTests
 
             Assert.True(state.IsLinked);
             Assert.Equal("Fenris", state.Snapshot!.CommanderName);
-            Assert.False(store.Document!.IsLinked);
+            Assert.False(store.Document.IsLinked);
             Assert.True(store.Document.Accounts.ContainsKey("F123"));
             Assert.False(File.Exists(Path.Combine(root, "frontier-profile-cache.json")));
             Assert.True(File.Exists(Path.Combine(root, "frontier-profile-cache", "F123.json")));

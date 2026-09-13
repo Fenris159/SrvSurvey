@@ -44,7 +44,7 @@ public sealed class PublishedReferenceVersionStoreTests : IDisposable
         Directory.CreateDirectory(root);
         var settingsPath = Path.Combine(root, "settings.json");
         const string legacy = "{\"pubCodexRef\":1,\"unknown\":42}";
-        File.WriteAllText(settingsPath, legacy);
+        await File.WriteAllTextAsync(settingsPath, legacy);
         var versions = new PublishedReferenceVersions(10, 7, 4, 48, 68, 15, 2, 3);
         var store = new PublishedReferenceVersionStore();
 
@@ -52,7 +52,7 @@ public sealed class PublishedReferenceVersionStoreTests : IDisposable
         var result = store.Load(root);
 
         Assert.Equal(versions, result);
-        Assert.Equal(legacy, File.ReadAllText(settingsPath));
+        Assert.Equal(legacy, await File.ReadAllTextAsync(settingsPath));
     }
 
     public void Dispose()

@@ -206,7 +206,7 @@ public sealed class BoxelSurveyStatsViewModelTests : IDisposable
             {
                 for (var index = 0; index < 20; index++)
                 {
-                    raiseChanged!.Invoke(coordinator, null);
+                    raiseChanged.Invoke(coordinator, null);
                 }
             })
             .GetAwaiter()

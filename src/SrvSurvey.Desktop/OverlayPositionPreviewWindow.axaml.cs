@@ -22,6 +22,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     private readonly IReadOnlyList<OverlayEditorPreviewStateDefinition> previewStates;
     private Control? runtimePresentation;
     private int previewStateIndex;
+    private Point? pendingPanelTopCenter;
 
     public OverlayPositionPreviewWindow()
     {
@@ -30,6 +31,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         previewStates = OverlayRuntimePresentationFactory.GetEditorPreviewStates(Definition.Name);
         Preview = OverlayPositionPreviewViewModel.Create(Definition);
         DataContext = Preview;
+        PreviewSurface.LayoutUpdated += OnPreviewSurfaceLayoutUpdated;
         EnsureEditorFolderTab(Definition.DisplayName);
         usesRuntimePresentation = TryUseRuntimePresentation();
         ApplyContentSize();
@@ -42,6 +44,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         previewStates = OverlayRuntimePresentationFactory.GetEditorPreviewStates(Definition.Name);
         Preview = OverlayPositionPreviewViewModel.Create(definition);
         DataContext = Preview;
+        PreviewSurface.LayoutUpdated += OnPreviewSurfaceLayoutUpdated;
         EnsureEditorFolderTab(definition.DisplayName);
         usesRuntimePresentation = TryUseRuntimePresentation();
         ApplyContentSize();
@@ -55,7 +58,17 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     private void EnsureEditorFolderTab(string displayName)
     {
         var label = string.IsNullOrWhiteSpace(displayName) ? Definition.Name : displayName.Trim();
+        bool usesCenteredTopAnchor = string.Equals(
+            Definition.Name,
+            "PlotSurfaceMiningSurvey",
+            StringComparison.Ordinal
+        );
         EditorFolderTab.IsVisible = true;
+        EditorFolderTab.HorizontalAlignment = usesCenteredTopAnchor
+            ? Avalonia.Layout.HorizontalAlignment.Center
+            : Avalonia.Layout.HorizontalAlignment.Left;
+        EditorFolderTab.Margin = usesCenteredTopAnchor ? new Thickness(0) : new Thickness(10, 0, 16, 0);
+        PreviewBody.CornerRadius = usesCenteredTopAnchor ? new CornerRadius(7) : new CornerRadius(0, 7, 7, 7);
         EditorFolderTabLabel.Text = label;
         ToolTip.SetTip(EditorFolderTab, label);
         UpdateEditorPreviewStateButton();
@@ -299,6 +312,12 @@ public sealed partial class OverlayPositionPreviewWindow : Window
             return false;
         }
 
+        double scaling = double.IsFinite(RenderScaling) && RenderScaling > 0 ? RenderScaling : 1d;
+        OverlayPreviewPanelMetrics currentMetrics = GetPanelMetrics(scaling);
+        pendingPanelTopCenter = new Point(
+            Position.X + currentMetrics.OriginOffset.X + (currentMetrics.PanelSize.Width / 2d),
+            Position.Y + currentMetrics.OriginOffset.Y
+        );
         previewStateIndex = (previewStateIndex + 1) % previewStates.Count;
         var previousDataContext = runtimePresentation.DataContext;
         runtimePresentation.DataContext = OverlayRuntimePresentationFactory.CreateEditorDataContextOnly(
@@ -311,6 +330,21 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         PreviewSurface.InvalidateMeasure();
         InvalidateMeasure();
         return true;
+    }
+
+    private void OnPreviewSurfaceLayoutUpdated(object? sender, EventArgs eventArgs)
+    {
+        if (pendingPanelTopCenter is not { } anchor)
+        {
+            return;
+        }
+
+        OverlayPreviewPanelMetrics metrics = GetPanelMetrics(RenderScaling);
+        Position = new PixelPoint(
+            (int)Math.Round(anchor.X - metrics.OriginOffset.X - (metrics.PanelSize.Width / 2d)),
+            (int)Math.Round(anchor.Y - metrics.OriginOffset.Y)
+        );
+        pendingPanelTopCenter = null;
     }
 
     private void UpdateEditorPreviewStateButton()

@@ -119,7 +119,7 @@ public sealed class CommanderProfileStoreTests : IDisposable
         var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.True(root["futureSetting"]!.GetValue<bool>());
         Assert.Equal(1000, root["explRewardsBySystem"]!["Alpha"]!.GetValue<long>());
-        Assert.Equal("explRewardsBySystem", root.Last().Key);
+        Assert.Equal("explRewardsBySystem", root.GetAt(root.Count - 1).Key);
 
         await store.SaveExplorationAsync("F123", "Drew", isOdyssey: true, ExplorationSnapshot.Empty);
 
@@ -152,7 +152,7 @@ public sealed class CommanderProfileStoreTests : IDisposable
         Assert.Equal(ledgerJson is not null, saved.ContainsKey("explRewardsBySystem"));
         if (ledgerJson is not null)
         {
-            Assert.Equal("explRewardsBySystem", saved.Last().Key);
+            Assert.Equal("explRewardsBySystem", saved.GetAt(saved.Count - 1).Key);
             Assert.True(JsonNode.DeepEquals(original["explRewardsBySystem"], saved["explRewardsBySystem"]));
         }
     }

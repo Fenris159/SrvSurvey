@@ -41,7 +41,7 @@ public sealed class QuestProgressMapperTests
         var progress = new LegacyQuestProgress(
             new LegacyQuestReference("publisher", "sample", 1.5),
             definition,
-            DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+            DateTimeOffset.Parse("2026-07-01T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
             null,
             false,
             new Dictionary<string, LegacyQuestObjective>
@@ -54,7 +54,10 @@ public sealed class QuestProgressMapperTests
             [
                 new LegacyQuestChapter(
                     "start",
-                    DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                    DateTimeOffset.Parse(
+                        "2026-07-01T00:00:00Z",
+                        global::System.Globalization.CultureInfo.InvariantCulture
+                    ),
                     null,
                     new Dictionary<string, JsonElement> { ["visits"] = JsonSerializer.SerializeToElement(2) }
                 ),
@@ -62,7 +65,10 @@ public sealed class QuestProgressMapperTests
             [
                 new LegacyQuestMessage(
                     "welcome",
-                    DateTimeOffset.Parse("2026-07-01T00:01:00Z"),
+                    DateTimeOffset.Parse(
+                        "2026-07-01T00:01:00Z",
+                        global::System.Globalization.CultureInfo.InvariantCulture
+                    ),
                     "Raven",
                     "Hello",
                     "Welcome",

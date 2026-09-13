@@ -360,7 +360,10 @@ public sealed class BoxelSearchSessionTests : IDisposable
         {
             TopBoxel = BoxelAddress.Parse("Praea Euq IL-P c5-2"),
             LowMassCode = 'z',
-            StartedOn = DateTimeOffset.Parse("2026-08-20T00:00:00Z"),
+            StartedOn = DateTimeOffset.Parse(
+                "2026-08-20T00:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            ),
         };
         Assert.Equal(
             BoxelSearchMessageCode.SearchInvalid,
@@ -456,8 +459,14 @@ public sealed class BoxelSearchSessionTests : IDisposable
                 Directory.Delete(temporaryDirectory, recursive: true);
             }
         }
-        catch (IOException) { }
-        catch (UnauthorizedAccessException) { }
+        catch (IOException)
+        {
+            // Temporary files may still be in use during best-effort test cleanup.
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // The test environment may deny cleanup after the assertions have completed.
+        }
     }
 
     private BoxelSearchSession CreateSession(
@@ -498,7 +507,10 @@ public sealed class BoxelSearchSessionTests : IDisposable
         {
             TopBoxel = BoxelAddress.Parse(name),
             LowMassCode = 'c',
-            StartedOn = DateTimeOffset.Parse("2026-08-20T00:00:00Z"),
+            StartedOn = DateTimeOffset.Parse(
+                "2026-08-20T00:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            ),
             AutoCopy = autoCopy,
         };
     }
@@ -512,7 +524,7 @@ public sealed class BoxelSearchSessionTests : IDisposable
             },
             new GalacticCoordinate(address, 0, 0),
             null,
-            DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+            DateTimeOffset.Parse("2026-06-01T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
             HasKnownBodies: true
         );
     }

@@ -30,7 +30,10 @@ public sealed class JournalSnapshotReaderTests
         Assert.Equal(10477373803, snapshot.SystemAddress);
         Assert.Equal("Earth", snapshot.BodyName);
         Assert.False(snapshot.IsShutdown);
-        Assert.Equal(DateTimeOffset.Parse("2026-07-24T10:00:05Z"), snapshot.LastEventTimestamp);
+        Assert.Equal(
+            DateTimeOffset.Parse("2026-07-24T10:00:05Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            snapshot.LastEventTimestamp
+        );
         Assert.Equal(6, snapshot.ValidLineCount);
         Assert.Equal(5, snapshot.RecognizedEventCount);
         Assert.Equal(1, snapshot.MalformedLineCount);

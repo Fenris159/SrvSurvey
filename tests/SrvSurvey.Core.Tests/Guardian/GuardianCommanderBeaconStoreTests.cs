@@ -17,7 +17,10 @@ public sealed class GuardianCommanderBeaconStoreTests : IDisposable
         var path = store.GetBeaconPath("F123", true, "Test System");
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         await File.WriteAllTextAsync(path, """{"futureOption":42}""");
-        var scannedAt = DateTimeOffset.Parse("2026-08-03T10:15:00Z");
+        var scannedAt = DateTimeOffset.Parse(
+            "2026-08-03T10:15:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var beacon = new GuardianCommanderBeaconVisit(
             string.Empty,
             scannedAt,

@@ -121,7 +121,9 @@ public sealed class FleetCarrierRouteOverlayViewModelTests : IDisposable
             Hops = [Hop("Sol", null, 1), Hop("Second", null, 2), Hop("Colonia", null, 3)],
         };
         await store.SaveAsAsync(document, "Carrier Finish");
-        var time = new MutableTimeProvider(DateTimeOffset.Parse("2026-08-12T12:00:00Z"));
+        var time = new MutableTimeProvider(
+            DateTimeOffset.Parse("2026-08-12T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+        );
         var route = new RouteWorkspaceViewModel(
             new FollowRouteService(store),
             new RouteNameImporter(new EmptyResolver()),
