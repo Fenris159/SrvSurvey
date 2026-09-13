@@ -149,7 +149,7 @@ internal static class OverlayEditorPreviewCatalog
 
     private static MineMapViewModel CreateSurfaceMiningSurveyPreview(MineMapSurveyGuidePhase phase)
     {
-        MineMapViewModel preview = MineMapViewModel.CreateEditorPreview();
+        var preview = MineMapViewModel.CreateEditorPreview();
         preview.InstallSurveyGuideEditorPreview(phase);
         return preview;
     }

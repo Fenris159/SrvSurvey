@@ -150,7 +150,7 @@ public sealed class OverlayPanelVisibilityViewModelTests : IDisposable
     private OverlayPanelVisibilityViewModel Create(OverlayWindowRegistry registry)
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = GetSettingsPath();
+        string path = GetSettingsPath();
         var input = new GlobalInputSettingsViewModel(
             new GlobalInputSettingsStore(path),
             OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows),

@@ -11,6 +11,11 @@ using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
+public sealed record SurfaceMiningMapPresentation(
+    IReadOnlyList<SurfaceRadarMarkerViewModel>? Markers = null,
+    MineMapSurvey? ActiveSurvey = null
+);
+
 public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
 {
     private readonly SystemSurfaceStore store;
@@ -132,10 +137,9 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         SystemScanSnapshot snapshot,
         EliteStatus? currentStatus,
         string? srvType,
-        IReadOnlyList<SurfaceRadarMarkerViewModel>? surfaceMarkers = null,
+        SurfaceMiningMapPresentation? mapPresentation = null,
         CargoSnapshot? cargo = null,
-        string? parkedSrvType = null,
-        MineMapSurvey? activeMineMap = null
+        string? parkedSrvType = null
     )
     {
         await updateLock.WaitAsync().ConfigureAwait(true);
@@ -147,8 +151,8 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
                     ? cargo.Count
                     : status?.Cargo ?? 0;
             cargoUsed = double.IsFinite(count) ? Math.Max(0, count) : 0;
-            navigation = surfaceMarkers ?? [];
-            mineMapSurvey = activeMineMap;
+            navigation = mapPresentation?.Markers ?? [];
+            mineMapSurvey = mapPresentation?.ActiveSurvey;
             isRhino = EliteSrvTypes.IsRhino(srvType);
             isRhinoParked = EliteSrvTypes.IsRhino(parkedSrvType);
             var body = snapshot.Bodies.FirstOrDefault(candidate =>
@@ -442,18 +446,8 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
     private void Recalculate()
     {
         var markers = new List<SurfaceRadarMarkerViewModel>();
-        var rigs = new List<MiningRigViewModel>();
-        var validPosition = ShouldShow && TryGetPosition(out _);
-        for (var number = 1; number <= 6; number++)
-        {
-            var marker = validPosition ? CreateRigMarker(number) : null;
-            if (marker is not null)
-            {
-                markers.Add(marker);
-            }
-
-            rigs.Add(new MiningRigViewModel(number, marker));
-        }
+        bool validPosition = ShouldShow && TryGetPosition(out _);
+        List<MiningRigViewModel> rigs = CreateRigs(validPosition, markers);
 
         var resources = validPosition ? CreateResourceMarkers() : [];
         if (!SameMarkers(Resources.Select(resource => resource.Marker).ToArray(), resources))
@@ -491,6 +485,23 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         RadarScale = GetSplatRadarScale(SplatBoundaries, SuggestedRigLocations);
 
         Notify();
+    }
+
+    private List<MiningRigViewModel> CreateRigs(bool validPosition, List<SurfaceRadarMarkerViewModel> markers)
+    {
+        var rigs = new List<MiningRigViewModel>();
+        for (int number = 1; number <= 6; number++)
+        {
+            SurfaceRadarMarkerViewModel? marker = validPosition ? CreateRigMarker(number) : null;
+            if (marker is not null)
+            {
+                markers.Add(marker);
+            }
+
+            rigs.Add(new MiningRigViewModel(number, marker));
+        }
+
+        return rigs;
     }
 
     private static double GetSplatRadarScale(

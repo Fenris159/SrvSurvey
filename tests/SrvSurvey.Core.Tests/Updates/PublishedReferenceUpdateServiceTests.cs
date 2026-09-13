@@ -79,8 +79,8 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
     public async Task RefreshAsyncRejectsMalformedArchiveBeforeTouchingLiveFiles()
     {
         WriteExistingReferences();
-        var originalCodex = await File.ReadAllBytesAsync(Path.Combine(root, "codexRef.json"));
-        var originalSentinel = await File.ReadAllBytesAsync(Path.Combine(root, "pub", "keep.txt"));
+        byte[] originalCodex = await File.ReadAllBytesAsync(Path.Combine(root, "codexRef.json"));
+        byte[] originalSentinel = await File.ReadAllBytesAsync(Path.Combine(root, "pub", "keep.txt"));
         var payloads = CreatePayloads();
         payloads[uris.BiologyCriteriaArchive] = new byte[] { 1, 2, 3, 4 };
         var service = CreateService(payloads);
@@ -99,7 +99,7 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
     {
         WriteExistingReferences();
         var regionalPath = Path.Combine(root, RegionalCodexCandidateCatalog.LegacyFileName);
-        var originalRegional = await File.ReadAllBytesAsync(regionalPath);
+        byte[] originalRegional = await File.ReadAllBytesAsync(regionalPath);
         var payloads = CreatePayloads();
         payloads[uris.RegionalCodexCandidatesCsv] = Encoding.UTF8.GetBytes(
             "\"RegionID\",\"RegionName\",\"EnglishName\",\"Found\",\"NotExpectedToBeFound\",\"EntryID\",\"Name\",\"Varient\"\r\n"
@@ -120,7 +120,7 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
     {
         WriteExistingReferences();
         var knownSystemsPath = Path.Combine(root, "pub", KnownSystemAddressCatalog.LegacyFileName);
-        var originalKnownSystems = await File.ReadAllBytesAsync(knownSystemsPath);
+        byte[] originalKnownSystems = await File.ReadAllBytesAsync(knownSystemsPath);
         var payloads = CreatePayloads();
         payloads[uris.KnownSystemAddresses] = Encoding.UTF8.GetBytes(
             "known_systems = {\n  \"sol\": 10477373803,\n}\nknown_missing = ["
@@ -139,11 +139,11 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
     public async Task RefreshAsyncRollsBackAfterPostActivationFailure()
     {
         WriteExistingReferences();
-        var originalCodex = await File.ReadAllBytesAsync(Path.Combine(root, "codexRef.json"));
-        var originalRegional = await File.ReadAllBytesAsync(
+        byte[] originalCodex = await File.ReadAllBytesAsync(Path.Combine(root, "codexRef.json"));
+        byte[] originalRegional = await File.ReadAllBytesAsync(
             Path.Combine(root, RegionalCodexCandidateCatalog.LegacyFileName)
         );
-        var originalSentinel = await File.ReadAllBytesAsync(Path.Combine(root, "pub", "keep.txt"));
+        byte[] originalSentinel = await File.ReadAllBytesAsync(Path.Combine(root, "pub", "keep.txt"));
         var service = CreateService(
             CreatePayloads(),
             checkpoint =>

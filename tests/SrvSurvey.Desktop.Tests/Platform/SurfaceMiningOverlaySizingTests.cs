@@ -78,11 +78,11 @@ public sealed class SurfaceMiningOverlaySizingTests
             );
             window.Show();
             Assert.NotNull(window.CaptureRenderedFrame());
-            var initialCenter = window.Position.X + (window.Bounds.Width * window.RenderScaling / 2d);
+            double initialCenter = window.Position.X + (window.Bounds.Width * window.RenderScaling / 2d);
 
             viewModel.InstallSurveyGuideEditorPreview(MineMapSurveyGuidePhase.Complete);
             Assert.NotNull(window.CaptureRenderedFrame());
-            var finalCenter = window.Position.X + (window.Bounds.Width * window.RenderScaling / 2d);
+            double finalCenter = window.Position.X + (window.Bounds.Width * window.RenderScaling / 2d);
 
             Assert.InRange(Math.Abs(finalCenter - initialCenter), 0, 1);
         }

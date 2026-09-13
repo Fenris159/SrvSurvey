@@ -38,8 +38,8 @@ public sealed class JournalReplayExporterTests
 
         Assert.Equal(5, result.EventCount);
         Assert.Equal(4, result.BootstrapEventCount);
-        using var archive = await ZipFile.OpenReadAsync(destination);
-        var journalEntry = archive.GetEntry("journal.jsonl");
+        using ZipArchive archive = await ZipFile.OpenReadAsync(destination);
+        ZipArchiveEntry? journalEntry = archive.GetEntry("journal.jsonl");
         Assert.NotNull(journalEntry);
         using var reader = new StreamReader(await journalEntry.OpenAsync());
         var lines = (await reader.ReadToEndAsync()).Split('\n', StringSplitOptions.RemoveEmptyEntries);
@@ -72,7 +72,7 @@ public sealed class JournalReplayExporterTests
             CancellationToken.None
         );
 
-        using var archive = await ZipFile.OpenReadAsync(destination);
+        using ZipArchive archive = await ZipFile.OpenReadAsync(destination);
         using var reader = new StreamReader(await archive.GetEntry("journal.jsonl")!.OpenAsync());
         var journal = await reader.ReadToEndAsync();
         Assert.DoesNotContain("do-not-share", journal, StringComparison.Ordinal);
@@ -123,7 +123,7 @@ public sealed class JournalReplayExporterTests
             CancellationToken.None
         );
 
-        using (var archive = await ZipFile.OpenReadAsync(destination))
+        using (ZipArchive archive = await ZipFile.OpenReadAsync(destination))
         using (var reader = new StreamReader(await archive.GetEntry("journal.jsonl")!.OpenAsync()))
         {
             var journal = await reader.ReadToEndAsync();
@@ -174,7 +174,7 @@ public sealed class JournalReplayExporterTests
             CancellationToken.None
         );
 
-        using var archive = await ZipFile.OpenReadAsync(destination);
+        using ZipArchive archive = await ZipFile.OpenReadAsync(destination);
         using var reader = new StreamReader(await archive.GetEntry("journal.jsonl")!.OpenAsync());
         var journal = await reader.ReadToEndAsync();
         Assert.Contains("\"Raw\":[{\"Name\":\"iron\",\"Count\":12}]", journal);
@@ -216,7 +216,7 @@ public sealed class JournalReplayExporterTests
 
         Assert.Equal(2, result.EventCount);
         Assert.Equal(1, result.BootstrapEventCount);
-        using var archive = await ZipFile.OpenReadAsync(destination);
+        using ZipArchive archive = await ZipFile.OpenReadAsync(destination);
         using var reader = new StreamReader(await archive.GetEntry("journal.jsonl")!.OpenAsync());
         Assert.Equal(
             ["Commander", "Location"],
@@ -250,7 +250,7 @@ public sealed class JournalReplayExporterTests
             CancellationToken.None
         );
 
-        using var archive = await ZipFile.OpenReadAsync(destination);
+        using ZipArchive archive = await ZipFile.OpenReadAsync(destination);
         using var reader = new StreamReader(await archive.GetEntry("journal.jsonl")!.OpenAsync());
         var events = (await reader.ReadToEndAsync())
             .Split('\n', StringSplitOptions.RemoveEmptyEntries)
@@ -297,7 +297,7 @@ public sealed class JournalReplayExporterTests
             CancellationToken.None
         );
 
-        using var archive = await ZipFile.OpenReadAsync(destination);
+        using ZipArchive archive = await ZipFile.OpenReadAsync(destination);
         using var reader = new StreamReader(await archive.GetEntry("journal.jsonl")!.OpenAsync());
         var lines = (await reader.ReadToEndAsync()).Split('\n', StringSplitOptions.RemoveEmptyEntries);
         using var first = System.Text.Json.JsonDocument.Parse(lines[0]);
@@ -337,7 +337,7 @@ public sealed class JournalReplayExporterTests
             CancellationToken.None
         );
 
-        using var archive = await ZipFile.OpenReadAsync(destination);
+        using ZipArchive archive = await ZipFile.OpenReadAsync(destination);
         using var reader = new StreamReader(await archive.GetEntry("journal.jsonl")!.OpenAsync());
         var journal = await reader.ReadToEndAsync();
         Assert.DoesNotContain("First Cmdr", journal, StringComparison.Ordinal);
@@ -375,7 +375,7 @@ public sealed class JournalReplayExporterTests
             CancellationToken.None
         );
 
-        using var archive = await ZipFile.OpenReadAsync(destination);
+        using ZipArchive archive = await ZipFile.OpenReadAsync(destination);
         using var reader = new StreamReader(await archive.GetEntry("journal.jsonl")!.OpenAsync());
         var journal = await reader.ReadToEndAsync();
         Assert.DoesNotContain("First System", journal, StringComparison.Ordinal);
@@ -413,7 +413,7 @@ public sealed class JournalReplayExporterTests
             CancellationToken.None
         );
 
-        using (var archive = await ZipFile.OpenReadAsync(destination))
+        using (ZipArchive archive = await ZipFile.OpenReadAsync(destination))
         using (var reader = new StreamReader(await archive.GetEntry("replay-package.json")!.OpenAsync()))
         {
             var manifest = await reader.ReadToEndAsync();

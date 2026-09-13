@@ -113,7 +113,9 @@ public sealed class GuardianTemplateAuthoringViewModelTests : IDisposable
         viewModel.PointRotation += 0.1m;
         viewModel.ApplySelectedPointCommand.Execute(null);
 
-        var updated = viewModel.PreviewTemplate.PointsOfInterest.Single(point => point.Name == "p2-edited");
+        GuardianPointOfInterest updated = viewModel.PreviewTemplate.PointsOfInterest.Single(point =>
+            point.Name == "p2-edited"
+        );
         Assert.Equal("p2-edited", viewModel.SelectedPoint?.Name);
         Assert.Equal(90.1, updated.Angle);
         Assert.Equal(20.1, updated.Distance);

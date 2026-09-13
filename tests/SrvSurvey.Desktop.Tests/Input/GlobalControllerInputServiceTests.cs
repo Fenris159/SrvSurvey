@@ -250,8 +250,8 @@ public sealed class GlobalControllerInputServiceTests
         );
 
         service.Start();
-        var firstDisposal = DisposeAsTask(service);
-        var secondDisposal = DisposeAsTask(service);
+        Task firstDisposal = DisposeAsTask(service);
+        Task secondDisposal = DisposeAsTask(service);
 
         await backend.CancellationObserved.WaitAsync(TimeSpan.FromSeconds(2));
         Assert.Same(firstDisposal, secondDisposal);

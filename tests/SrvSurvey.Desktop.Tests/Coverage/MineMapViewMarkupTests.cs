@@ -421,7 +421,7 @@ public sealed class MineMapViewMarkupTests
     [Fact]
     public void LiveOverlayHostsOneOwnedMinusPlusControlSet()
     {
-        var root = FindRepositoryRoot();
+        string root = FindRepositoryRoot();
         var presentation = XDocument.Load(
             Path.Combine(root, "src", "SrvSurvey.Desktop", "MineMapOverlayPresentation.axaml")
         );
@@ -483,7 +483,7 @@ public sealed class MineMapViewMarkupTests
     [Fact]
     public void GuidedSurveyOverlayUsesFourCompactTopCenterRowsAndBothMapsShareItsTarget()
     {
-        var root = FindRepositoryRoot();
+        string root = FindRepositoryRoot();
         var guide = XDocument.Load(
             Path.Combine(root, "src", "SrvSurvey.Desktop", "SurfaceMiningSurveyOverlayPresentation.axaml")
         );

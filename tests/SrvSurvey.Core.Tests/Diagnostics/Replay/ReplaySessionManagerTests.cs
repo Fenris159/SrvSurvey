@@ -336,7 +336,7 @@ public sealed class ReplaySessionManagerTests
             new JournalReplayExportRequest(null, null, ReplayPrivacyMode.Raw, "test"),
             CancellationToken.None
         );
-        using (var archive = await ZipFile.OpenAsync(packagePath, ZipArchiveMode.Update))
+        using (ZipArchive archive = await ZipFile.OpenAsync(packagePath, ZipArchiveMode.Update))
         {
             var entry = archive.GetEntry("replay-package.json")!;
             JsonObject manifest;
@@ -346,8 +346,8 @@ public sealed class ReplaySessionManagerTests
             }
 
             entry.Delete();
-            var replacement = archive.CreateEntry("replay-package.json");
-            await using var output = await replacement.OpenAsync();
+            ZipArchiveEntry replacement = archive.CreateEntry("replay-package.json");
+            await using Stream output = await replacement.OpenAsync();
             await using var writer = new StreamWriter(output);
             manifest["commander"] = null;
             await writer.WriteAsync(manifest.ToJsonString());

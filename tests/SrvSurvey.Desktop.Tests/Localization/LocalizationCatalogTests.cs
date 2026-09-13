@@ -117,7 +117,7 @@ public sealed class LocalizationCatalogTests : IDisposable
     {
         LocalizationCatalog.Initialize("de");
 
-        var translated = LocalizationCatalog.Translate(source);
+        string translated = LocalizationCatalog.Translate(source);
         Assert.Equal(expected, translated);
         Assert.NotEqual(source, translated);
     }

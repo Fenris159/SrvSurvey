@@ -83,7 +83,7 @@ public sealed class MineMapControlTests
     [Fact]
     public void PlayerSightLineUsesVisibleRoundDots()
     {
-        var pen = MineMapControl.CreateSightLinePen(Brushes.White, markerScale: 2);
+        Pen pen = MineMapControl.CreateSightLinePen(Brushes.White, markerScale: 2);
 
         Assert.Equal(DashStyle.Dot, pen.DashStyle);
         Assert.Equal(PenLineCap.Round, pen.LineCap);

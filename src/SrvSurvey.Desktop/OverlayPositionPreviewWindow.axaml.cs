@@ -58,7 +58,11 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     private void EnsureEditorFolderTab(string displayName)
     {
         var label = string.IsNullOrWhiteSpace(displayName) ? Definition.Name : displayName.Trim();
-        var usesCenteredTopAnchor = string.Equals(Definition.Name, "PlotSurfaceMiningSurvey", StringComparison.Ordinal);
+        bool usesCenteredTopAnchor = string.Equals(
+            Definition.Name,
+            "PlotSurfaceMiningSurvey",
+            StringComparison.Ordinal
+        );
         EditorFolderTab.IsVisible = true;
         EditorFolderTab.HorizontalAlignment = usesCenteredTopAnchor
             ? Avalonia.Layout.HorizontalAlignment.Center
@@ -308,8 +312,8 @@ public sealed partial class OverlayPositionPreviewWindow : Window
             return false;
         }
 
-        var scaling = double.IsFinite(RenderScaling) && RenderScaling > 0 ? RenderScaling : 1d;
-        var currentMetrics = GetPanelMetrics(scaling);
+        double scaling = double.IsFinite(RenderScaling) && RenderScaling > 0 ? RenderScaling : 1d;
+        OverlayPreviewPanelMetrics currentMetrics = GetPanelMetrics(scaling);
         pendingPanelTopCenter = new Point(
             Position.X + currentMetrics.OriginOffset.X + (currentMetrics.PanelSize.Width / 2d),
             Position.Y + currentMetrics.OriginOffset.Y
@@ -335,7 +339,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
             return;
         }
 
-        var metrics = GetPanelMetrics(RenderScaling);
+        OverlayPreviewPanelMetrics metrics = GetPanelMetrics(RenderScaling);
         Position = new PixelPoint(
             (int)Math.Round(anchor.X - metrics.OriginOffset.X - (metrics.PanelSize.Width / 2d)),
             (int)Math.Round(anchor.Y - metrics.OriginOffset.Y)

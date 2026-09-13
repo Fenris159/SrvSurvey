@@ -36,7 +36,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
             survey.Snapshot,
             status,
             "mev_rhino",
-            surfaceMarkers: surface.RadarMarkers
+            mapPresentation: new SurfaceMiningMapPresentation(surface.RadarMarkers)
         );
         Assert.False(surface.ShouldShow);
         Assert.Equal("helium", Assert.Single(mining.Resources).Name);
@@ -50,7 +50,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
             survey.Snapshot,
             status,
             "mev_rhino",
-            surfaceMarkers: surface.RadarMarkers
+            mapPresentation: new SurfaceMiningMapPresentation(surface.RadarMarkers)
         );
         var moved = Assert.Single(mining.Resources);
         Assert.InRange(moved.Marker.DistanceMeters, 174, 175);
@@ -68,7 +68,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
             survey.Snapshot,
             status,
             "mev_rhino",
-            surfaceMarkers: surface.RadarMarkers
+            mapPresentation: new SurfaceMiningMapPresentation(surface.RadarMarkers)
         );
         Assert.Empty(mining.Resources);
     }
@@ -90,7 +90,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
             survey.Snapshot,
             status,
             "mev_rhino",
-            surfaceMarkers: surface.RadarMarkers
+            mapPresentation: new SurfaceMiningMapPresentation(surface.RadarMarkers)
         );
         for (var number = 1; number <= 6; number++)
         {

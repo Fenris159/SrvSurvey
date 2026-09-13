@@ -271,7 +271,7 @@ public sealed class LegacyQuestStateStoreTests : IDisposable
         var backupPath = Assert.IsType<string>(saved.BackupPath);
         Assert.Equal(stateBytes, await File.ReadAllBytesAsync(backupPath));
         Assert.Equal(definitionBytes, await File.ReadAllBytesAsync(definitionPath));
-        var root = Assert.IsType<JsonObject>(JsonNode.Parse(await File.ReadAllTextAsync(statePath)));
+        JsonObject root = Assert.IsType<JsonObject>(JsonNode.Parse(await File.ReadAllTextAsync(statePath)));
         Assert.Equal("keep", root["futureRoot"]?.GetValue<string>());
         var quest = Assert.IsType<JsonObject>(root["devQuest"]);
         Assert.True(quest["futureQuest"]?["keep"]?.GetValue<bool>());
@@ -375,7 +375,7 @@ public sealed class LegacyQuestStateStoreTests : IDisposable
         var saved = await new LegacyQuestStateStore(temporaryDirectory).SaveDevelopmentQuestAsync("F123", "Cmdr", null);
 
         Assert.Equal(original, await File.ReadAllBytesAsync(saved.BackupPath!));
-        var root = Assert.IsType<JsonObject>(JsonNode.Parse(await File.ReadAllTextAsync(path)));
+        JsonObject root = Assert.IsType<JsonObject>(JsonNode.Parse(await File.ReadAllTextAsync(path)));
         Assert.Null(root["devRef"]);
         Assert.Null(root["devQuest"]);
         Assert.Equal(42, root["future"]?.GetValue<int>());

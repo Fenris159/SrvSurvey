@@ -529,7 +529,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
         Assert.NotNull(firstDistance);
 
         viewModel.ApplyUpdate([], surface with { Longitude = 0.002 });
-        var secondDistance = viewModel.BiologyStatus.ActiveSample.NearestDistanceMeters;
+        double? secondDistance = viewModel.BiologyStatus.ActiveSample.NearestDistanceMeters;
         Assert.NotNull(secondDistance);
         Assert.True(secondDistance > firstDistance);
 

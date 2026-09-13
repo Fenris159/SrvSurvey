@@ -36,7 +36,7 @@ public sealed partial class MineMapView : UserControl
 
         try
         {
-            var file = await storage.SaveFilePickerAsync(
+            IStorageFile? file = await storage.SaveFilePickerAsync(
                 new FilePickerSaveOptions
                 {
                     Title = "Export Surface Mining survey",
@@ -53,7 +53,7 @@ public sealed partial class MineMapView : UserControl
                 return;
             }
 
-            await using var stream = await file.OpenWriteAsync();
+            await using Stream stream = await file.OpenWriteAsync();
             stream.SetLength(0);
             await using var writer = new StreamWriter(stream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
             await writer.WriteAsync(MineMapCsvExporter.Write(survey));

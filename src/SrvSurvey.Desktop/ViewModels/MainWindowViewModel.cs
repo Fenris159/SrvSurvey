@@ -2963,10 +2963,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable, I
             SystemSurvey.Snapshot,
             SystemSurvey.CurrentStatus,
             isSessionActive ? journalState.ActiveSrvType : null,
-            SurfaceSurvey.RadarMarkers,
+            new SurfaceMiningMapPresentation(SurfaceSurvey.RadarMarkers, MineMap.ActiveLiveSurvey),
             latestCargo,
-            isSessionActive ? journalState.ParkedSrvType : null,
-            MineMap.ActiveLiveSurvey
+            isSessionActive ? journalState.ParkedSrvType : null
         );
         if (!skipPersistedBootstrapEvents && isSessionActive)
         {

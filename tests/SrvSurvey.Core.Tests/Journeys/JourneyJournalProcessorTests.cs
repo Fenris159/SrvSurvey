@@ -149,7 +149,7 @@ public sealed class JourneyJournalProcessorTests
             BodiesScanned = new HashSet<int> { 4 },
             Counts = JourneyCounts.Empty with { BodyScans = 1, ExplorationRewards = scanReward },
         };
-        var journey = CreateJourney([visit]) with
+        JourneyDocument journey = CreateJourney([visit]) with
         {
             Watermark = DateTimeOffset.Parse(
                 "2026-07-01T00:01:00Z",
@@ -195,8 +195,8 @@ public sealed class JourneyJournalProcessorTests
     [Fact]
     public void LiveProcessingAcceptsEqualWatermarkAndRejectsOlderEvents()
     {
-        var visit = CreateVisit();
-        var journey = CreateJourney([visit]) with
+        JourneySystemVisit visit = CreateVisit();
+        JourneyDocument journey = CreateJourney([visit]) with
         {
             Watermark = DateTimeOffset.Parse(
                 "2026-07-01T00:01:00Z",

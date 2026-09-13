@@ -52,7 +52,8 @@ public sealed class BoxelSearchLibraryViewModelTests : IAsyncLifetime
     [Fact]
     public async Task LibraryCommandsManageSavedSearchesAndKeepStateConsistent()
     {
-        var (store, _, library) = await CreateLibraryAsync(("Zulu", null, 1, 4), ("Alpha", "Original notes", 3, 4));
+        (SavedBoxelSearchStore? store, BoxelSearchViewModel _, BoxelSearchLibraryViewModel? library) =
+            await CreateLibraryAsync(("Zulu", null, 1, 4), ("Alpha", "Original notes", 3, 4));
         var propertyChanges = new List<string?>();
         var renameDialogVisibleWhenCompleted = true;
         var notesDialogVisibleWhenCompleted = true;

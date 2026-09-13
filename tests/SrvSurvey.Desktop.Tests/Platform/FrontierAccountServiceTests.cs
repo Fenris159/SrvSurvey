@@ -44,7 +44,7 @@ public sealed class FrontierAccountServiceTests
         Assert.Contains("code_verifier=verifier-value", tokenBody);
         Assert.Contains("client_id=" + FrontierAccountService.ClientId, tokenBody);
         Assert.DoesNotContain("client_secret", tokenBody);
-        var account = store.Document.Accounts["F123"];
+        FrontierAccountCredential account = store.Document.Accounts["F123"];
         Assert.Equal("access", account.AccessToken);
         Assert.Equal("refresh", account.RefreshToken);
         Assert.Null(store.Document.PendingAuthorization);
@@ -119,7 +119,7 @@ public sealed class FrontierAccountServiceTests
 
             Assert.Equal("Fenris", snapshot.CommanderName);
             Assert.Equal(["/profile", "/fleetcarrier", "/market", "/shipyard", "/communitygoals"], requests);
-            var credential = store.Document.Accounts["F123"];
+            FrontierAccountCredential credential = store.Document.Accounts["F123"];
             Assert.NotNull(credential.LastCapiRefreshAt);
             Assert.NotNull(credential.LastCapiAttemptAt);
             var cooldown = await Assert.ThrowsAsync<FrontierRefreshCooldownException>(() => service.RefreshAsync());

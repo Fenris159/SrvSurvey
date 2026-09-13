@@ -20,8 +20,8 @@ public sealed partial class SurfaceMiningSurveyOverlayWindow : Window
 
     private void OnLayoutUpdated(object? sender, EventArgs eventArgs)
     {
-        var scaling = double.IsFinite(RenderScaling) && RenderScaling > 0 ? RenderScaling : 1d;
-        var currentPixelWidth = Bounds.Width * scaling;
+        double scaling = double.IsFinite(RenderScaling) && RenderScaling > 0 ? RenderScaling : 1d;
+        double currentPixelWidth = Bounds.Width * scaling;
         if (!(currentPixelWidth > 0))
         {
             return;

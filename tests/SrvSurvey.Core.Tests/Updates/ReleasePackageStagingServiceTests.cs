@@ -159,21 +159,21 @@ public sealed class ReleasePackageStagingServiceTests : IDisposable
         {
             foreach (var file in files)
             {
-                var entry = archive.CreateEntry(file.Key, CompressionLevel.Optimal);
-                await using var output = await entry.OpenAsync();
+                ZipArchiveEntry entry = archive.CreateEntry(file.Key, CompressionLevel.Optimal);
+                await using Stream output = await entry.OpenAsync();
                 await output.WriteAsync(file.Value);
             }
 
-            var manifestEntry = archive.CreateEntry("release-package.json");
-            await using (var output = await manifestEntry.OpenAsync())
+            ZipArchiveEntry manifestEntry = archive.CreateEntry("release-package.json");
+            await using (Stream output = await manifestEntry.OpenAsync())
             {
                 await output.WriteAsync(manifest);
             }
 
             if (extraEntry is not null)
             {
-                var entry = archive.CreateEntry(extraEntry);
-                await using var output = await entry.OpenAsync();
+                ZipArchiveEntry entry = archive.CreateEntry(extraEntry);
+                await using Stream output = await entry.OpenAsync();
                 await output.WriteAsync(new byte[] { 9 });
             }
         }

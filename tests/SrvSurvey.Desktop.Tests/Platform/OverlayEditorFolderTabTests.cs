@@ -166,9 +166,11 @@ public sealed class OverlayEditorFolderTabTests
             preview.Show();
             Assert.NotNull(preview.CaptureRenderedFrame());
 
-            var presentation = Assert.IsType<SurfaceMiningSurveyOverlayPresentation>(preview.RuntimePresentation);
-            var initialMetrics = preview.GetPanelMetrics(preview.RenderScaling);
-            var initialCenter =
+            SurfaceMiningSurveyOverlayPresentation presentation = Assert.IsType<SurfaceMiningSurveyOverlayPresentation>(
+                preview.RuntimePresentation
+            );
+            OverlayPreviewPanelMetrics initialMetrics = preview.GetPanelMetrics(preview.RenderScaling);
+            double initialCenter =
                 preview.Position.X + initialMetrics.OriginOffset.X + (initialMetrics.PanelSize.Width / 2d);
 
             Assert.Equal(
@@ -182,18 +184,18 @@ public sealed class OverlayEditorFolderTabTests
                 text => Assert.Equal(TextTrimming.None, text.TextTrimming)
             );
 
-            for (var stateIndex = 1; stateIndex < preview.EditorPreviewStateCount; stateIndex++)
+            for (int stateIndex = 1; stateIndex < preview.EditorPreviewStateCount; stateIndex++)
             {
                 Assert.True(preview.CycleEditorPreviewState());
                 Assert.NotNull(preview.CaptureRenderedFrame());
-                var viewModel = Assert.IsType<MineMapViewModel>(presentation.DataContext);
+                MineMapViewModel viewModel = Assert.IsType<MineMapViewModel>(presentation.DataContext);
                 Assert.False(string.IsNullOrWhiteSpace(viewModel.SurveyGuideTitle));
                 Assert.False(string.IsNullOrWhiteSpace(viewModel.SurveyGuideInstruction));
                 Assert.False(string.IsNullOrWhiteSpace(viewModel.SurveyGuideCommandHint));
             }
 
-            var finalMetrics = preview.GetPanelMetrics(preview.RenderScaling);
-            var finalCenter = preview.Position.X + finalMetrics.OriginOffset.X + (finalMetrics.PanelSize.Width / 2d);
+            OverlayPreviewPanelMetrics finalMetrics = preview.GetPanelMetrics(preview.RenderScaling);
+            double finalCenter = preview.Position.X + finalMetrics.OriginOffset.X + (finalMetrics.PanelSize.Width / 2d);
             Assert.InRange(Math.Abs(finalCenter - initialCenter), 0, 1);
         }
         finally

@@ -1029,7 +1029,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
             ),
         ]);
 
-        var entry = Assert.Single(await savedStore.ListAsync("F123"));
+        SavedBoxelSearchCatalogEntry entry = Assert.Single(await savedStore.ListAsync("F123"));
         Assert.Equal(1, entry.CompletedSystems);
         Assert.Equal("Test notes", entry.Notes);
         Assert.Equal(SaveBoxelProgressResult.Saved, await viewModel.SaveProgressAsync());

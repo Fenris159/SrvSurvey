@@ -253,8 +253,8 @@ public sealed class FollowRouteStoreTests : IDisposable
             }
         );
 
-        var reloaded = await store.ReloadAsync(saved);
-        var route = Assert.IsType<FollowRouteDocument>(reloaded.Route);
+        FollowRouteLoadResult reloaded = await store.ReloadAsync(saved);
+        FollowRouteDocument route = Assert.IsType<FollowRouteDocument>(reloaded.Route);
         Assert.Equal(0, route.LastReachedIndex);
         Assert.False(route.AutoCopy);
         Assert.Equal("Keep this note", route.Notes);

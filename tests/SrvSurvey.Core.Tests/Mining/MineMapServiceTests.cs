@@ -495,7 +495,7 @@ public sealed class MineMapServiceTests
             }
         );
         Assert.True(relative.Succeeded);
-        var first = Assert.Single(service.ActiveSurvey.Markers);
+        MineMapMarker first = Assert.Single(service.ActiveSurvey.Markers);
         Assert.Equal("Ruby", first.Material);
         Assert.Equal(MineMapRating.Medium, first.MineralAmount);
         Assert.Equal(MineMapRating.Low, first.Density);

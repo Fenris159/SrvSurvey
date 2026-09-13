@@ -162,7 +162,7 @@ public sealed class EddnOutboxTests
             schemaRef = JObject.Parse(await reader.ReadToEndAsync()).Value<string>("$schemaRef");
             return new HttpResponseMessage(HttpStatusCode.OK);
         });
-        using var queue = outbox(
+        using EddnOutbox queue = outbox(
             path,
             transport,
             () =>

@@ -11,6 +11,7 @@ namespace SrvSurvey.Core.Mining;
 public static class MineMapCsvExporter
 {
     public const int SchemaVersion = 1;
+    private const string CoordinateFormat = "0.########";
 
     private static readonly string[] Headers =
     [
@@ -109,8 +110,8 @@ public static class MineMapCsvExporter
             Text(survey.Notes),
             FormatDouble(survey.LocationRadiusMeters / 1000, "0.###"),
             FormatDouble(survey.PlanetRadiusMeters / 1000, "0.###"),
-            FormatDouble(survey.Center.Latitude, "0.########"),
-            FormatDouble(survey.Center.Longitude, "0.########"),
+            FormatDouble(survey.Center.Latitude, CoordinateFormat),
+            FormatDouble(survey.Center.Longitude, CoordinateFormat),
             Format(survey.CreatedAt),
             Format(survey.UpdatedAt),
             FormatOptional(markerIndex),
@@ -119,8 +120,8 @@ public static class MineMapCsvExporter
             marker?.MineralAmount.ToString(),
             marker?.Density.ToString(),
             FormatOptional(marker?.RigCount),
-            FormatOptionalDouble(marker?.Location.Latitude, "0.########"),
-            FormatOptionalDouble(marker?.Location.Longitude, "0.########"),
+            FormatOptionalDouble(marker?.Location.Latitude, CoordinateFormat),
+            FormatOptionalDouble(marker?.Location.Longitude, CoordinateFormat),
             FormatOptionalDouble(markerDistance, "0.###"),
             FormatOptionalDouble(markerBearing, "0.##"),
             marker is null ? null : Format(marker.CreatedAt),
@@ -137,7 +138,7 @@ public static class MineMapCsvExporter
         + string.Join(
             ',',
             coordinates.Select(point =>
-                $"[{FormatDouble(point.Latitude, "0.########")},{FormatDouble(point.Longitude, "0.########")}]"
+                $"[{FormatDouble(point.Latitude, CoordinateFormat)},{FormatDouble(point.Longitude, CoordinateFormat)}]"
             )
         )
         + "]";

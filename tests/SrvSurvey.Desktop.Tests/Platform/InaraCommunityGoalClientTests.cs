@@ -109,7 +109,7 @@ public sealed class InaraCommunityGoalClientTests
             }
         )
         {
-            var observed = Record.Exception(() =>
+            Exception? observed = Record.Exception(() =>
             {
                 InaraCommunityGoalClient.TryDeleteTemporaryFile(
                     "community-goals.tmp",
@@ -164,7 +164,7 @@ public sealed class InaraCommunityGoalClientTests
     [Fact]
     public void PriorInaraOnlyGoalsAreReplacedInsteadOfAccumulating()
     {
-        var first = InaraCommunityGoalEnricher.Enrich(
+        IReadOnlyList<FrontierCommunityGoalSnapshot> first = InaraCommunityGoalEnricher.Enrich(
             [],
             InaraResult(
                 DateTimeOffset.Parse("2026-07-31T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)

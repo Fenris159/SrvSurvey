@@ -98,7 +98,7 @@ public sealed class JourneyServiceTests : IDisposable
         var live = await service.ApplyLiveAsync([
             Parse("""{"timestamp":"2026-07-01T00:07:00Z","event":"Screenshot"}"""),
         ]);
-        var concluded = await service.ConcludeActiveAsync(
+        JourneyDocument? concluded = await service.ConcludeActiveAsync(
             "Drew",
             DateTimeOffset.Parse("2026-07-01T00:08:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
         );

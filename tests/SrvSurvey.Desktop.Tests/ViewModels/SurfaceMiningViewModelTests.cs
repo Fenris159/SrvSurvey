@@ -195,7 +195,13 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
             Resource("Bacterium", 45),
             Resource("organic", 50, kind: SurfaceRadarMarkerKind.ActiveSample),
         ];
-        await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino", surfaceMarkers: bookmarks);
+        await mining.ApplyUpdateAsync(
+            Session,
+            Snapshot(),
+            Status(),
+            "mev_rhino",
+            mapPresentation: new SurfaceMiningMapPresentation(bookmarks)
+        );
         Assert.Equal(ExpectedResourceNames, mining.Resources.Select(resource => resource.Name));
         Assert.Equal(ExpectedResourceDistances, mining.Resources.Select(resource => resource.Marker.DistanceMeters));
         Assert.Equal(ExpectedResourceNearStates, mining.Resources.Select(resource => resource.IsNear));
@@ -210,7 +216,13 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
             }
         );
         var original = mining.Resources;
-        await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino", surfaceMarkers: bookmarks);
+        await mining.ApplyUpdateAsync(
+            Session,
+            Snapshot(),
+            Status(),
+            "mev_rhino",
+            mapPresentation: new SurfaceMiningMapPresentation(bookmarks)
+        );
         Assert.Same(original, mining.Resources);
 
         await mining.ToggleRigAsync(1);
@@ -226,14 +238,20 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
             Snapshot(),
             Status(),
             "mev_rhino",
-            surfaceMarkers: [Resource("helium", 10, 270)]
+            mapPresentation: new SurfaceMiningMapPresentation([Resource("helium", 10, 270)])
         );
         var updated = Assert.Single(mining.Resources);
         Assert.True(updated.IsNear);
         Assert.Equal("10 m", updated.DistanceText);
         Assert.Equal(270, updated.Bearing);
 
-        await mining.ApplyUpdateAsync(null, Snapshot(), Status(), "mev_rhino", surfaceMarkers: bookmarks);
+        await mining.ApplyUpdateAsync(
+            null,
+            Snapshot(),
+            Status(),
+            "mev_rhino",
+            mapPresentation: new SurfaceMiningMapPresentation(bookmarks)
+        );
         Assert.Empty(mining.Resources);
         Assert.False(mining.HasResources);
     }
@@ -395,7 +413,14 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
             Flags = StatusFlags.HasLatLong,
             Flags2 = StatusFlags2.OnFoot | StatusFlags2.OnFootOnPlanet,
         };
-        await mining.ApplyUpdateAsync(Session, Snapshot(), onFoot, null, [parked], parkedSrvType: "mev_rhino");
+        await mining.ApplyUpdateAsync(
+            Session,
+            Snapshot(),
+            onFoot,
+            null,
+            new SurfaceMiningMapPresentation([parked]),
+            parkedSrvType: "mev_rhino"
+        );
         Assert.True(mining.ShouldShow);
         Assert.True(mining.HasRhinoTracker);
         Assert.Equal(270, mining.RhinoBearing);
@@ -406,13 +431,33 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
         Assert.False(await mining.ToggleRigAsync(1));
         Assert.True(mining.Rigs[0].IsSet);
 
-        await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino", [parked]);
+        await mining.ApplyUpdateAsync(
+            Session,
+            Snapshot(),
+            Status(),
+            "mev_rhino",
+            new SurfaceMiningMapPresentation([parked])
+        );
         Assert.True(mining.ShouldShow);
         Assert.False(mining.HasRhinoTracker);
         Assert.DoesNotContain(parked, mining.RadarMarkers);
-        await mining.ApplyUpdateAsync(Session, Snapshot(), onFoot, null, [parked], parkedSrvType: "testbuggy");
+        await mining.ApplyUpdateAsync(
+            Session,
+            Snapshot(),
+            onFoot,
+            null,
+            new SurfaceMiningMapPresentation([parked]),
+            parkedSrvType: "testbuggy"
+        );
         Assert.False(mining.ShouldShow);
-        await mining.ApplyUpdateAsync(Session, Snapshot(), onFoot, null, [], parkedSrvType: "mev_rhino");
+        await mining.ApplyUpdateAsync(
+            Session,
+            Snapshot(),
+            onFoot,
+            null,
+            new SurfaceMiningMapPresentation([]),
+            parkedSrvType: "mev_rhino"
+        );
         Assert.False(mining.ShouldShow);
     }
 
@@ -600,7 +645,13 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
             Markers = [marker],
         };
 
-        await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino", activeMineMap: map);
+        await mining.ApplyUpdateAsync(
+            Session,
+            Snapshot(),
+            Status(),
+            "mev_rhino",
+            mapPresentation: new SurfaceMiningMapPresentation(ActiveSurvey: map)
+        );
 
         SurfaceRadarPathViewModel boundary = Assert.Single(mining.SplatBoundaries);
         Assert.True(boundary.IsClosed);
@@ -640,7 +691,13 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
                 ],
             };
 
-        await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino", activeMineMap: MapWithSuggestion(10));
+        await mining.ApplyUpdateAsync(
+            Session,
+            Snapshot(),
+            Status(),
+            "mev_rhino",
+            mapPresentation: new SurfaceMiningMapPresentation(ActiveSurvey: MapWithSuggestion(10))
+        );
         Assert.Equal(6, mining.RadarScale);
 
         await mining.ApplyUpdateAsync(
@@ -648,7 +705,7 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
             Snapshot(),
             Status(),
             "mev_rhino",
-            activeMineMap: MapWithSuggestion(150)
+            mapPresentation: new SurfaceMiningMapPresentation(ActiveSurvey: MapWithSuggestion(150))
         );
         Assert.Equal(1, mining.RadarScale);
 

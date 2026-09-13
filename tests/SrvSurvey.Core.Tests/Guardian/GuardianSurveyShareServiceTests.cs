@@ -86,8 +86,8 @@ public sealed class GuardianSurveyShareServiceTests : IDisposable
         Assert.Contains("Point-of-interest status", site.Reasons);
         Assert.True(File.Exists(result.ArchivePath));
         Assert.StartsWith($"surveys-{FrontierId}-", Path.GetFileName(result.ArchivePath));
-        using var archive = await ZipFile.OpenReadAsync(result.ArchivePath);
-        var entry = Assert.Single(archive.Entries);
+        using ZipArchive archive = await ZipFile.OpenReadAsync(result.ArchivePath);
+        ZipArchiveEntry entry = Assert.Single(archive.Entries);
         Assert.Equal(Path.GetFileName(changedPath), entry.FullName);
     }
 
@@ -174,11 +174,11 @@ public sealed class GuardianSurveyShareServiceTests : IDisposable
         Assert.Contains("Raw points of interest", shared.Reasons);
         Assert.Contains("Component materials", shared.Reasons);
         Assert.Contains("Map alignment offset", shared.Reasons);
-        using var archive = await ZipFile.OpenReadAsync(result.ArchivePath);
-        var entry = Assert.Single(archive.Entries);
-        await using var entryStream = await entry.OpenAsync();
-        using var document = await JsonDocument.ParseAsync(entryStream);
-        var root = document.RootElement;
+        using ZipArchive archive = await ZipFile.OpenReadAsync(result.ArchivePath);
+        ZipArchiveEntry entry = Assert.Single(archive.Entries);
+        await using Stream entryStream = await entry.OpenAsync();
+        using JsonDocument document = await JsonDocument.ParseAsync(entryStream);
+        JsonElement root = document.RootElement;
         Assert.Equal("Tester", root.GetProperty("commander").GetString());
         Assert.Equal("Lacrosse", root.GetProperty("type").GetString());
         Assert.Equal(45, root.GetProperty("siteHeading").GetInt32());
@@ -224,7 +224,7 @@ public sealed class GuardianSurveyShareServiceTests : IDisposable
 
         var shared = Assert.Single(result.Sites);
         Assert.Equal(["Map alignment offset"], shared.Reasons);
-        using (var archive = await ZipFile.OpenReadAsync(result.ArchivePath))
+        using (ZipArchive archive = await ZipFile.OpenReadAsync(result.ArchivePath))
         {
             var entry = Assert.Single(archive.Entries);
             var destinationDirectory = Path.Combine(temporaryDirectory, "guardian", otherFrontierId);

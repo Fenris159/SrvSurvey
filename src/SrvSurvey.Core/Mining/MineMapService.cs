@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -124,6 +125,8 @@ public sealed record MineMapSurveyGuideState(
 /// </summary>
 public sealed class MineMapService : IDisposable
 {
+    private const string MiningCommand = ".mining";
+
     private sealed record SurveyGuideProgress(
         MineMapSurveyGuidePhase Phase,
         string FrontierId,
@@ -265,7 +268,7 @@ public sealed class MineMapService : IDisposable
         await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            return command.Trim().StartsWith(".mining", StringComparison.OrdinalIgnoreCase)
+            return command.Trim().StartsWith(MiningCommand, StringComparison.OrdinalIgnoreCase)
                 ? CreateSurvey(command, context, cancellationToken)
                 : ApplyMarker(command, context, cancellationToken);
         }
@@ -354,7 +357,7 @@ public sealed class MineMapService : IDisposable
         var parts = Split(command);
         if (
             parts.Length == 2
-            && parts[0].Equals(".mining", StringComparison.OrdinalIgnoreCase)
+            && parts[0].Equals(MiningCommand, StringComparison.OrdinalIgnoreCase)
             && parts[1].Equals("survey", StringComparison.OrdinalIgnoreCase)
         )
         {
@@ -363,7 +366,7 @@ public sealed class MineMapService : IDisposable
 
         if (
             parts.Length == 3
-            && parts[0].Equals(".mining", StringComparison.OrdinalIgnoreCase)
+            && parts[0].Equals(MiningCommand, StringComparison.OrdinalIgnoreCase)
             && parts[1].Equals("center", StringComparison.OrdinalIgnoreCase)
             && parts[2].Equals("here", StringComparison.OrdinalIgnoreCase)
         )
@@ -373,7 +376,7 @@ public sealed class MineMapService : IDisposable
 
         if (
             parts.Length != 4
-            || !TryBearing(parts[1], out var bearing)
+            || !TryBearing(parts[1], out double bearing)
             || !double.TryParse(parts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out double radiusKm)
             || !double.IsFinite(radiusKm)
             || radiusKm <= 0
@@ -585,48 +588,7 @@ public sealed class MineMapService : IDisposable
 
         if (SurveyGuide is { } currentGuide && MatchesContext(currentGuide, context))
         {
-            MineMapSurvey? guidedSurvey = currentGuide.SurveyId is { } surveyId
-                ? surveys.FirstOrDefault(candidate => candidate.Id == surveyId)
-                : null;
-            if (
-                currentGuide.Phase is MineMapSurveyGuidePhase.Waypoint or MineMapSurveyGuidePhase.Complete
-                && guidedSurvey is not null
-            )
-            {
-                IReadOnlyList<SurfaceCoordinate> waypoints =
-                    currentGuide.Waypoints ?? CreateSurveyWaypoints(guidedSurvey);
-                SetSurveyGuide(
-                    currentGuide with
-                    {
-                        Phase =
-                            waypoints.Count == 0 ? MineMapSurveyGuidePhase.Complete : MineMapSurveyGuidePhase.Waypoint,
-                        Waypoints = waypoints,
-                        WaypointIndex = 0,
-                    }
-                );
-                ActiveSurvey = guidedSurvey;
-                Changed?.Invoke(this, EventArgs.Empty);
-                return Success(
-                    waypoints.Count == 0
-                        ? $"Guided survey restarted for {guidedSurvey.Name}; its saved area needs no scan waypoints."
-                        : $"Guided survey restarted at waypoint 1 of {waypoints.Count} for {guidedSurvey.Name}.",
-                    guidedSurvey
-                );
-            }
-
-            SetSurveyGuide(
-                new MineMapSurveyGuideState(
-                    MineMapSurveyGuidePhase.Border,
-                    context.FrontierId,
-                    context.SystemAddress,
-                    context.BodyId
-                )
-            );
-            Changed?.Invoke(this, EventArgs.Empty);
-            return new MineMapCommandResult(
-                true,
-                "Guided survey restarted from border setup. Drive to the orange border, face the center, then record the bearing, radius, and signal number."
-            );
+            return RestartSurveyGuide(currentGuide, context);
         }
 
         MineMapSurvey? active = ResolveSurveyAtLocation(context);
@@ -651,6 +613,50 @@ public sealed class MineMapService : IDisposable
                 "Guided survey started. Drive to the orange border, face the center, then record the bearing, radius, and signal number."
             )
             : Success($"Guided survey started for {active.Name}. Drive to its saved center.", active);
+    }
+
+    private MineMapCommandResult RestartSurveyGuide(MineMapSurveyGuideState currentGuide, MineMapCommandContext context)
+    {
+        MineMapSurvey? guidedSurvey = currentGuide.SurveyId is { } surveyId
+            ? surveys.FirstOrDefault(candidate => candidate.Id == surveyId)
+            : null;
+        if (
+            currentGuide.Phase is MineMapSurveyGuidePhase.Waypoint or MineMapSurveyGuidePhase.Complete
+            && guidedSurvey is not null
+        )
+        {
+            IReadOnlyList<SurfaceCoordinate> waypoints = currentGuide.Waypoints ?? CreateSurveyWaypoints(guidedSurvey);
+            SetSurveyGuide(
+                currentGuide with
+                {
+                    Phase = waypoints.Count == 0 ? MineMapSurveyGuidePhase.Complete : MineMapSurveyGuidePhase.Waypoint,
+                    Waypoints = waypoints,
+                    WaypointIndex = 0,
+                }
+            );
+            ActiveSurvey = guidedSurvey;
+            Changed?.Invoke(this, EventArgs.Empty);
+            return Success(
+                waypoints.Count == 0
+                    ? $"Guided survey restarted for {guidedSurvey.Name}; its saved area needs no scan waypoints."
+                    : $"Guided survey restarted at waypoint 1 of {waypoints.Count} for {guidedSurvey.Name}.",
+                guidedSurvey
+            );
+        }
+
+        SetSurveyGuide(
+            new MineMapSurveyGuideState(
+                MineMapSurveyGuidePhase.Border,
+                context.FrontierId,
+                context.SystemAddress,
+                context.BodyId
+            )
+        );
+        Changed?.Invoke(this, EventArgs.Empty);
+        return new MineMapCommandResult(
+            true,
+            "Guided survey restarted from border setup. Drive to the orange border, face the center, then record the bearing, radius, and signal number."
+        );
     }
 
     private bool UpdateSurveyGuide(MineMapCommandContext? context, MineMapSurvey? surveyAtLocation)
@@ -1424,14 +1430,7 @@ public sealed class MineMapService : IDisposable
                 File.ReadAllText(surveyGuidePath),
                 JsonOptions
             );
-            if (
-                progress is null
-                || !Enum.IsDefined(progress.Phase)
-                || string.IsNullOrWhiteSpace(progress.FrontierId)
-                || progress.SystemAddress <= 0
-                || progress.BodyId < 0
-                || progress.WaypointIndex < 0
-            )
+            if (!IsValidSurveyGuideProgress(progress))
             {
                 return null;
             }
@@ -1490,6 +1489,14 @@ public sealed class MineMapService : IDisposable
         }
     }
 
+    private static bool IsValidSurveyGuideProgress([NotNullWhen(true)] SurveyGuideProgress? progress) =>
+        progress is not null
+        && Enum.IsDefined(progress.Phase)
+        && !string.IsNullOrWhiteSpace(progress.FrontierId)
+        && progress.SystemAddress > 0
+        && progress.BodyId >= 0
+        && progress.WaypointIndex >= 0;
+
     private void PersistSurveyGuide()
     {
         if (SurveyGuide is not { } guide)
@@ -1499,7 +1506,7 @@ public sealed class MineMapService : IDisposable
         }
 
         Directory.CreateDirectory(Path.GetDirectoryName(surveyGuidePath)!);
-        var temporary = surveyGuidePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
+        string temporary = surveyGuidePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try
         {
             var progress = new SurveyGuideProgress(
@@ -1615,7 +1622,7 @@ public sealed class MineMapService : IDisposable
     private static bool IsMineMapCommand(string command)
     {
         var trimmed = command.Trim();
-        return trimmed.Equals(".mining", StringComparison.OrdinalIgnoreCase)
+        return trimmed.Equals(MiningCommand, StringComparison.OrdinalIgnoreCase)
             || trimmed.StartsWith(".mining ", StringComparison.OrdinalIgnoreCase)
             || trimmed.Equals(".mine", StringComparison.OrdinalIgnoreCase)
             || trimmed.StartsWith(".mine ", StringComparison.OrdinalIgnoreCase);

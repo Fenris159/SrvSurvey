@@ -640,7 +640,7 @@ public sealed class MiningWorkspacePresentationTests
                     if (output is not null && theme.Key is "monochrome-dark" or "blue-light")
                     {
                         Directory.CreateDirectory(output);
-                        using var stream = File.Create(Path.Combine(output, $"mining-{theme.Key}-{tab}.png"));
+                        using FileStream stream = File.Create(Path.Combine(output, $"mining-{theme.Key}-{tab}.png"));
                         frame.Save(stream, PngBitmapEncoderOptions.Default);
                     }
                 }

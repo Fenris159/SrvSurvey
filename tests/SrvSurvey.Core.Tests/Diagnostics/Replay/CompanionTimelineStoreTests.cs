@@ -145,7 +145,7 @@ public sealed class CompanionTimelineStoreTests
         );
 
         Assert.Equal(6, result.CompanionEventCount);
-        using (var archive = await ZipFile.OpenReadAsync(packagePath))
+        using (ZipArchive archive = await ZipFile.OpenReadAsync(packagePath))
         {
             Assert.NotNull(archive.GetEntry("companions.jsonl"));
         }

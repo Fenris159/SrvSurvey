@@ -514,7 +514,7 @@ public sealed class MineMapViewModelTests
     public async Task MiningCommandsRequestTheOverviewMapWithoutTreatingMineCommandsAsVisibilityRequests()
     {
         using var directory = new TemporaryDirectory();
-        var visibilityRequests = 0;
+        int visibilityRequests = 0;
         using var viewModel = new MineMapViewModel(
             directory.Path,
             new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),

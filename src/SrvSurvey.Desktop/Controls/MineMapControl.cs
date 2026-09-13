@@ -278,7 +278,7 @@ public sealed class MineMapControl : Control
         IBrush text
     )
     {
-        var bearingSpokeRadius = GetBearingSpokeRadius(radiusPixels, zoom);
+        double bearingSpokeRadius = GetBearingSpokeRadius(radiusPixels, zoom);
         foreach (DistanceRing ring in CreateDistanceRings(radiusPixels, zoom, mapRadiusKilometers))
         {
             context.DrawEllipse(null, gridPen, center, ring.RadiusPixels, ring.RadiusPixels);
@@ -443,7 +443,7 @@ public sealed class MineMapControl : Control
             return;
         }
 
-        var pen = CreateSightLinePen(PlayerBrush ?? Brushes.LimeGreen, markerScale);
+        Pen pen = CreateSightLinePen(PlayerBrush ?? Brushes.LimeGreen, markerScale);
         context.DrawLine(pen, start, end.Value);
     }
 

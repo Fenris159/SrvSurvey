@@ -79,7 +79,7 @@ public sealed class MiningSearchClientTests
         var rows = candidates
             .Select(c =>
             {
-                var maxLandingPadSize = c.Pad ? 3 : 2;
+                int maxLandingPadSize = c.Pad ? 3 : 2;
                 return spansh
                     ? (object)
                         new

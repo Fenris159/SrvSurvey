@@ -43,7 +43,7 @@ public sealed class ErrorReportViewModelTests : IDisposable
         var exception = CaptureException();
         var viewModel = new ErrorReportViewModel(exception, "2.0.0") { Steps = "Jumped to Sol & opened the map" };
 
-        var uri = viewModel.BuildIssueUri(
+        Uri uri = viewModel.BuildIssueUri(
             DateTimeOffset.Parse("2026-07-25T13:14:15-05:00", global::System.Globalization.CultureInfo.InvariantCulture)
         );
         var decodedQuery = WebUtility.UrlDecode(uri.Query);

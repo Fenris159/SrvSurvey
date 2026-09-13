@@ -1715,7 +1715,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             new EliteStatus { GuiFocus = GuiFocus.Fss }
         );
 
-        var confirmed = Assert.Single(viewModel.BiologySurvey.Organisms);
+        BiologyOrganismRowViewModel confirmed = Assert.Single(viewModel.BiologySurvey.Organisms);
         Assert.False(confirmed.IsPrediction);
         Assert.False(confirmed.IsGlobalRegionalFirst);
         Assert.False(confirmed.IsCommanderFirst);
@@ -1776,7 +1776,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         );
         viewModel.UpdateCommanderCodexContext(globalOtherLocation, emptyRegional);
 
-        var regional = Assert.Single(viewModel.BiologySurvey.Organisms);
+        BiologyOrganismRowViewModel regional = Assert.Single(viewModel.BiologySurvey.Organisms);
         Assert.False(regional.IsGlobalRegionalFirst);
         Assert.False(regional.IsCommanderFirst);
         Assert.True(regional.IsRegionalFirst);
@@ -1801,7 +1801,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         };
         viewModel.UpdateCommanderCodexContext(globalCurrentLocation, emptyRegional);
 
-        var commander = Assert.Single(viewModel.BiologySurvey.Organisms);
+        BiologyOrganismRowViewModel commander = Assert.Single(viewModel.BiologySurvey.Organisms);
         Assert.False(commander.IsGlobalRegionalFirst);
         Assert.True(commander.IsCommanderFirst);
         Assert.False(commander.IsRegionalFirst);
@@ -2103,7 +2103,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
 
         viewModel.ApplyUpdate([], new EliteStatus { Flags = StatusFlags.Supercruise });
 
-        var rows = viewModel.BiologySurvey.Bodies;
+        IReadOnlyList<BiologyBodyRowViewModel> rows = viewModel.BiologySurvey.Bodies;
         Assert.False(rows.Single(row => row.BodyId == 1).HasCanonnSignals);
         Assert.True(rows.Single(row => row.BodyId == 2).HasCanonnSignals);
 
@@ -2204,7 +2204,9 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.True(prediction.IsHighlightedFirst);
 
         viewModel.ApplyUpdate([], new EliteStatus { GuiFocus = GuiFocus.SystemMap });
-        var candidateBand = Assert.Single(Assert.Single(viewModel.BiologySurvey.Bodies).RewardBands);
+        BiologySignalRewardBandViewModel candidateBand = Assert.Single(
+            Assert.Single(viewModel.BiologySurvey.Bodies).RewardBands
+        );
         Assert.True(candidateBand.IsPrediction);
         Assert.True(candidateBand.IsHighlighted);
         Assert.True(candidateBand.IsGlobalRegionalFirst);
@@ -2213,7 +2215,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
 
         viewModel.DisableBioPredictions = true;
 
-        var genus = Assert.Single(viewModel.BiologySurvey.Organisms);
+        BiologyOrganismRowViewModel genus = Assert.Single(viewModel.BiologySurvey.Organisms);
         Assert.Equal("Aleoida", genus.DisplayName);
         Assert.False(genus.IsPrediction);
         Assert.True(genus.IsGenusIdentified);
