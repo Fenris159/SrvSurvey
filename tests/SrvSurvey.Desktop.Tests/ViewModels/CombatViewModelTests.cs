@@ -223,7 +223,7 @@ public sealed class CombatViewModelTests : IDisposable
             missionId,
             "Giver",
             "Enemy",
-            DateTimeOffset.Parse("2026-07-26T01:00:00Z"),
+            DateTimeOffset.Parse("2026-07-26T01:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
             5,
             remaining
         );

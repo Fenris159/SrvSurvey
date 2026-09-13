@@ -142,7 +142,7 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
         Assert.Equal(typography, loaded.EffectiveTypography);
         Assert.NotNull(result.BackupPath);
         Assert.True(File.Exists(result.BackupPath));
-        Assert.Equal("{\"orange\":[1,2,3]}", File.ReadAllText(result.BackupPath!));
+        Assert.Equal("{\"orange\":[1,2,3]}", File.ReadAllText(result.BackupPath));
     }
 
     [Fact]

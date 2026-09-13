@@ -75,11 +75,19 @@ public sealed class DiagnosticReplayCommanderIntegrationTests
         using (
             var store = new CompanionTimelineStore(
                 history,
-                new FixedTimeProvider(DateTimeOffset.Parse("2026-08-21T18:01:00Z"))
+                new FixedTimeProvider(
+                    DateTimeOffset.Parse(
+                        "2026-08-21T18:01:00Z",
+                        global::System.Globalization.CultureInfo.InvariantCulture
+                    )
+                )
             )
         )
         {
-            var timestamp = DateTimeOffset.Parse("2026-08-21T17:59:00Z");
+            var timestamp = DateTimeOffset.Parse(
+                "2026-08-21T17:59:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            );
             await store.AppendAsync(
                 new JournalMonitorUpdate(
                     null,
@@ -133,8 +141,8 @@ public sealed class DiagnosticReplayCommanderIntegrationTests
             history,
             packagePath,
             new JournalReplayExportRequest(
-                DateTimeOffset.Parse("2026-08-21T18:00:00Z"),
-                DateTimeOffset.Parse("2026-08-21T18:01:00Z"),
+                DateTimeOffset.Parse("2026-08-21T18:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
+                DateTimeOffset.Parse("2026-08-21T18:01:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 ReplayPrivacyMode.Raw,
                 "test"
             ),

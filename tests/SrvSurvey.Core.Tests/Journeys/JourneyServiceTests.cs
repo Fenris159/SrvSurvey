@@ -98,11 +98,17 @@ public sealed class JourneyServiceTests : IDisposable
         var live = await service.ApplyLiveAsync([
             Parse("""{"timestamp":"2026-07-01T00:07:00Z","event":"Screenshot"}"""),
         ]);
-        var concluded = await service.ConcludeActiveAsync("Drew", DateTimeOffset.Parse("2026-07-01T00:08:00Z"));
+        var concluded = await service.ConcludeActiveAsync(
+            "Drew",
+            DateTimeOffset.Parse("2026-07-01T00:08:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+        );
 
         Assert.Equal(1, live.ProcessedEventCount);
         Assert.Equal(1, concluded!.CurrentSystem!.Counts.Screenshots);
-        Assert.Equal(DateTimeOffset.Parse("2026-07-01T00:08:00Z"), concluded.EndTime);
+        Assert.Equal(
+            DateTimeOffset.Parse("2026-07-01T00:08:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            concluded.EndTime
+        );
         Assert.Null(service.ActiveJourney);
         var stored = await new JourneyStore(DataDirectory).LoadAsync("F123", begun.Journey!.FileName);
         Assert.Equal(concluded.EndTime, stored.Journey!.EndTime);
@@ -162,17 +168,26 @@ public sealed class JourneyServiceTests : IDisposable
                 "Historic",
                 string.Empty,
                 "Journal.2026-07-01T000000.01.log",
-                DateTimeOffset.Parse("2026-07-01T00:05:00Z")
+                DateTimeOffset.Parse("2026-07-01T00:05:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
             )
         );
-        created = created with { EndTime = DateTimeOffset.Parse("2026-07-01T00:07:00Z") };
+        created = created with
+        {
+            EndTime = DateTimeOffset.Parse(
+                "2026-07-01T00:07:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            ),
+        };
         await store.SaveAsync(created);
 
         var result = await CreateService().ReprocessAsync(created, true);
 
         Assert.NotNull(result.Journey);
         Assert.Equal(1, result.Journey.CurrentSystem!.Counts.Screenshots);
-        Assert.Equal(DateTimeOffset.Parse("2026-07-01T00:06:00Z"), result.Journey.Watermark);
+        Assert.Equal(
+            DateTimeOffset.Parse("2026-07-01T00:06:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            result.Journey.Watermark
+        );
     }
 
     [Fact]

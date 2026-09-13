@@ -182,7 +182,10 @@ public sealed class HumanSiteViewModelTests
             CreateQuestSnapshot(
                 new Dictionary<string, string>
                 {
-                    ["Target"] = FormattableString.Invariant($"{origin.Latitude:R},{origin.Longitude:R},500"),
+                    ["Target"] = string.Create(
+                        global::System.Globalization.CultureInfo.InvariantCulture,
+                        $"{origin.Latitude:R},{origin.Longitude:R},500"
+                    ),
                     ["Invalid"] = "not-a-location",
                 },
                 [
@@ -576,7 +579,10 @@ public sealed class HumanSiteViewModelTests
         var cockpitLocation = HumanSiteNavigation.GetSurfaceLocation(origin, pad.Offset, radius, siteHeading);
         var status = new EliteStatus
         {
-            Timestamp = DateTimeOffset.Parse("2026-07-25T12:00:00Z"),
+            Timestamp = DateTimeOffset.Parse(
+                "2026-07-25T12:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            ),
             Flags = StatusFlags.HasLatLong | StatusFlags.Docked | StatusFlags.InMainShip,
             Latitude = cockpitLocation.Latitude,
             Longitude = cockpitLocation.Longitude,

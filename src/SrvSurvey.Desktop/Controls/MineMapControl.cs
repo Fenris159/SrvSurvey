@@ -240,6 +240,7 @@ public sealed class MineMapControl : Control
             DrawSurveyGuideTarget(context, survey, center, scale, zone, text);
 
             var markerScale = GetMarkerScale(zoom);
+            DrawPlayerSightLine(context, survey, center, scale, markerScale, radiusPixels * zoom, localBounds);
             DrawMarkers(context, survey, center, scale, markerScale, localBounds, text);
             DrawPlayer(context, survey, center, scale, markerScale, localBounds);
         }
@@ -277,6 +278,7 @@ public sealed class MineMapControl : Control
         IBrush text
     )
     {
+        var bearingSpokeRadius = GetBearingSpokeRadius(radiusPixels, zoom);
         foreach (DistanceRing ring in CreateDistanceRings(radiusPixels, zoom, mapRadiusKilometers))
         {
             context.DrawEllipse(null, gridPen, center, ring.RadiusPixels, ring.RadiusPixels);
@@ -293,8 +295,8 @@ public sealed class MineMapControl : Control
         {
             var radians = heading * Math.PI / 180d;
             var edge = new Point(
-                center.X + Math.Sin(radians) * radiusPixels,
-                center.Y - Math.Cos(radians) * radiusPixels
+                center.X + Math.Sin(radians) * bearingSpokeRadius,
+                center.Y - Math.Cos(radians) * bearingSpokeRadius
             );
             context.DrawLine(gridPen, center, edge);
             var label = heading.ToString(CultureInfo.InvariantCulture) + "°";
@@ -410,6 +412,39 @@ public sealed class MineMapControl : Control
         }
 
         DrawCommander(context, point, PlayerHeading, PlayerBrush ?? Brushes.LimeGreen, markerScale);
+    }
+
+    private void DrawPlayerSightLine(
+        DrawingContext context,
+        MineMapSurvey survey,
+        Point mapCenter,
+        double scale,
+        double markerScale,
+        double outerRingRadius,
+        Rect localBounds
+    )
+    {
+        if (PlayerLocation is not { } player)
+        {
+            return;
+        }
+
+        Point position = ToPoint(survey, player, mapCenter, scale);
+        if (!localBounds.Inflate(12).Contains(position))
+        {
+            return;
+        }
+
+        double commanderRadius = 6 * markerScale;
+        Point start = GetCommanderHeadingEnd(position, commanderRadius, PlayerHeading);
+        Point? end = GetSightLineEnd(start, mapCenter, outerRingRadius, PlayerHeading);
+        if (end is null)
+        {
+            return;
+        }
+
+        var pen = CreateSightLinePen(PlayerBrush ?? Brushes.LimeGreen, markerScale);
+        context.DrawLine(pen, start, end.Value);
     }
 
     public static Color ColorFor(string material)
@@ -563,6 +598,12 @@ public sealed class MineMapControl : Control
 
     internal static double GetMarkerScale(double zoom) => Math.Clamp(Math.Sqrt(NormalizeViewportZoom(zoom)), 1, 3);
 
+    internal static double GetBearingSpokeRadius(double radiusPixels, double zoom) =>
+        Math.Max(0, radiusPixels) * NormalizeViewportZoom(zoom);
+
+    internal static Pen CreateSightLinePen(IBrush brush, double markerScale) =>
+        new(brush, 1.25 * markerScale, DashStyle.Dot, PenLineCap.Round);
+
     internal static double GetMarkerLabelScale(double zoom) =>
         Math.Clamp(Math.Pow(NormalizeViewportZoom(zoom), 0.25), 1, 1.8);
 
@@ -709,6 +750,32 @@ public sealed class MineMapControl : Control
 
     internal static Point GetCommanderHeadingEnd(Point location, double radius, double heading = 0) =>
         GuardianSiteMapControl.GetCommanderHeadingEnd(location, radius, heading);
+
+    internal static Point? GetSightLineEnd(Point start, Point mapCenter, double outerRingRadius, double heading)
+    {
+        if (!double.IsFinite(outerRingRadius) || outerRingRadius <= 0)
+        {
+            return null;
+        }
+
+        double normalizedHeading = double.IsFinite(heading) ? heading : 0;
+        double radians = normalizedHeading * Math.PI / 180d;
+        var direction = new Vector(Math.Sin(radians), -Math.Cos(radians));
+        Vector offset = start - mapCenter;
+        double projection = (offset.X * direction.X) + (offset.Y * direction.Y);
+        double discriminant =
+            (projection * projection)
+            + (outerRingRadius * outerRingRadius)
+            - (offset.X * offset.X)
+            - (offset.Y * offset.Y);
+        if (discriminant < 0)
+        {
+            return null;
+        }
+
+        double distance = -projection + Math.Sqrt(discriminant);
+        return distance > 0 ? start + (direction * distance) : null;
+    }
 
     internal readonly record struct DistanceRing(double Kilometers, double RadiusPixels);
 

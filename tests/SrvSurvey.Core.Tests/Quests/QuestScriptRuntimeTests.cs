@@ -192,7 +192,10 @@ public sealed class QuestScriptRuntimeTests
             new RavenQuestMessage
             {
                 Id = "manual",
-                Received = DateTimeOffset.Parse("2026-07-25T12:00:00Z"),
+                Received = DateTimeOffset.Parse(
+                    "2026-07-25T12:00:00Z",
+                    global::System.Globalization.CultureInfo.InvariantCulture
+                ),
                 Body = "Test",
             },
         ]);
@@ -241,7 +244,13 @@ public sealed class QuestScriptRuntimeTests
             end
             """
         );
-        progress = progress with { StartTime = DateTimeOffset.Parse("2026-07-01T00:00:00Z") };
+        progress = progress with
+        {
+            StartTime = DateTimeOffset.Parse(
+                "2026-07-01T00:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            ),
+        };
         progress.Chapters.Add(
             new RavenQuestChapterState
             {
@@ -264,7 +273,13 @@ public sealed class QuestScriptRuntimeTests
     {
         var progress = CreateProgress(string.Empty);
         progress.Quest!.Chapters.Clear();
-        progress = progress with { StartTime = DateTimeOffset.Parse("2026-07-01T00:00:00Z") };
+        progress = progress with
+        {
+            StartTime = DateTimeOffset.Parse(
+                "2026-07-01T00:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            ),
+        };
         progress.Chapters.Add(new RavenQuestChapterState { Id = "start", StartTime = progress.StartTime });
         var requests = 0;
         await using var runtime = new QuestScriptRuntime(

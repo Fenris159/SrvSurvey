@@ -1115,6 +1115,6 @@ public sealed class EddnPublisherTests
 
     private sealed class NonPumpingSynchronizationContext : SynchronizationContext
     {
-        public override void Post(SendOrPostCallback callback, object? state) { }
+        public override void Post(SendOrPostCallback d, object? state) { }
     }
 }

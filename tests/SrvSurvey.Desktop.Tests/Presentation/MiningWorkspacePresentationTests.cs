@@ -639,8 +639,8 @@ public sealed class MiningWorkspacePresentationTests
                     var output = Environment.GetEnvironmentVariable("SRVSURVEY_MINING_RENDER_OUTPUT");
                     if (output is not null && theme.Key is "monochrome-dark" or "blue-light")
                     {
-                        Directory.CreateDirectory(output!);
-                        using var stream = File.Create(Path.Combine(output!, $"mining-{theme.Key}-{tab}.png"));
+                        Directory.CreateDirectory(output);
+                        using var stream = File.Create(Path.Combine(output, $"mining-{theme.Key}-{tab}.png"));
                         frame.Save(stream, PngBitmapEncoderOptions.Default);
                     }
                 }

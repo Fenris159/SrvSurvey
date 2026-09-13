@@ -119,6 +119,19 @@ public sealed class MineMapViewMarkupTests
         );
         Assert.Contains(
             document.Descendants(avalonia + "TextBlock"),
+            text => text.Attribute("Text")?.Value == "Auto Fitting Rigs to a Splat"
+        );
+        Assert.Equal(
+            ["splat-align-border.png", "splat-tracing.png", "splat-rig-layout.png"],
+            document
+                .Descendants(avalonia + "Image")
+                .Select(image => image.Attribute("Source")?.Value ?? string.Empty)
+                .Where(source => source.Contains("/Assets/SurfaceMining/splat-", StringComparison.Ordinal))
+                .Select(source => Path.GetFileName(source) ?? string.Empty)
+                .ToArray()
+        );
+        Assert.Contains(
+            document.Descendants(avalonia + "TextBlock"),
             text =>
                 text.Attribute("Text")?.Value
                 == "Drive to the orange mining-location border and face the center marker."
@@ -149,7 +162,7 @@ public sealed class MineMapViewMarkupTests
             item => item.Attribute("Header")?.Value == "Edit bookmark"
         );
         Assert.Equal(
-            ["1.", "2.", "3."],
+            ["1.", "2.", "3.", "1.", "2.", "3."],
             document
                 .Descendants(avalonia + "TextBlock")
                 .Select(text => text.Attribute("Text")?.Value ?? string.Empty)
@@ -478,10 +491,10 @@ public sealed class MineMapViewMarkupTests
         XElement grid = Assert.Single(guide.Descendants(avalonia + "Grid"));
 
         Assert.Equal("Auto,Auto,Auto,Auto", grid.Attribute("RowDefinitions")?.Value);
-        Assert.Equal("126", guide.Root?.Attribute("MaxHeight")?.Value);
+        Assert.Null(guide.Root?.Attribute("MaxHeight"));
         Assert.Contains(
             guide.Descendants(avalonia + "TextBlock"),
-            text => text.Attribute("Text")?.Value == "{Binding SurveyGuideFeedback}"
+            text => text.Attribute("Text")?.Value == "{Binding SurveyGuideFooter}"
         );
 
         string coordinator = File.ReadAllText(

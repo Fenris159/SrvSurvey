@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Media;
 using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Desktop.Controls;
@@ -44,6 +45,52 @@ public sealed class MineMapControlTests
     }
 
     [Theory]
+    [InlineData(100, 120, 0, 100, 20)]
+    [InlineData(80, 100, 90, 180, 100)]
+    [InlineData(100, 80, 180, 100, 180)]
+    [InlineData(120, 100, 270, 20, 100)]
+    public void PlayerSightLineEndsAtTheOutermostMapRing(
+        double playerX,
+        double playerY,
+        double heading,
+        double expectedX,
+        double expectedY
+    )
+    {
+        var mapCenter = new Point(100, 100);
+        var player = new Point(playerX, playerY);
+        Point start = MineMapControl.GetCommanderHeadingEnd(player, radius: 6, heading);
+
+        Point end = Assert.IsType<Point>(MineMapControl.GetSightLineEnd(start, mapCenter, 80, heading));
+
+        Assert.Equal(expectedX, end.X, precision: 6);
+        Assert.Equal(expectedY, end.Y, precision: 6);
+    }
+
+    [Fact]
+    public void PlayerSightLineIsOmittedWhenTheFacingTipPointsAwayFromOutsideTheMapRing()
+    {
+        Point? end = MineMapControl.GetSightLineEnd(
+            new Point(190, 100),
+            new Point(100, 100),
+            outerRingRadius: 80,
+            heading: 90
+        );
+
+        Assert.Null(end);
+    }
+
+    [Fact]
+    public void PlayerSightLineUsesVisibleRoundDots()
+    {
+        var pen = MineMapControl.CreateSightLinePen(Brushes.White, markerScale: 2);
+
+        Assert.Equal(DashStyle.Dot, pen.DashStyle);
+        Assert.Equal(PenLineCap.Round, pen.LineCap);
+        Assert.Equal(2.5, pen.Thickness);
+    }
+
+    [Theory]
     [InlineData(1, 62.5, 250)]
     [InlineData(4, 250, 1000)]
     [InlineData(15, 937.5, 3750)]
@@ -69,6 +116,19 @@ public sealed class MineMapControlTests
         Assert.Equal(7, mapRadius);
         Assert.Equal([1d, 2d, 3d, 4d, 5d, 6d, 7d], rings.Select(ring => ring.Kilometers));
         Assert.Equal(350, rings[^1].RadiusPixels);
+    }
+
+    [Theory]
+    [InlineData(1, 250)]
+    [InlineData(4, 1000)]
+    [InlineData(15, 3750)]
+    public void BearingSpokesReachTheOutermostDistanceRingAtEveryZoom(double zoom, double expectedRadius)
+    {
+        Assert.Equal(expectedRadius, MineMapControl.GetBearingSpokeRadius(250, zoom));
+        Assert.Equal(
+            MineMapControl.CreateDistanceRings(250, zoom, mapRadiusKilometers: 4)[^1].RadiusPixels,
+            MineMapControl.GetBearingSpokeRadius(250, zoom)
+        );
     }
 
     [Fact]

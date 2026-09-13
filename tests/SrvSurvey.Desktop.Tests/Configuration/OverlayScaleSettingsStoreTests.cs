@@ -83,7 +83,7 @@ public sealed class OverlayScaleSettingsStoreTests : IDisposable
 
         store.Save(new OverlayScalePreferences(7));
 
-        var root = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
+        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.True(root["FutureRoot"]!.GetValue<bool>());
         Assert.Equal("keep", root["OverlayScale"]!["FutureScale"]!.GetValue<string>());
         Assert.Equal(7, root["OverlayScale"]!["Index"]!.GetValue<int>());

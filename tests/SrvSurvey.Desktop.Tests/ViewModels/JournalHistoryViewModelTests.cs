@@ -33,15 +33,21 @@ public sealed class JournalHistoryViewModelTests
         using var temp = new TemporaryDirectory();
         using var viewModel = new JournalHistoryViewModel(temp.Path, "test-build");
 
-        viewModel.RangeFrom = DateTimeOffset.Parse("2026-08-21T00:30:45+02:00");
+        viewModel.RangeFrom = DateTimeOffset.Parse(
+            "2026-08-21T00:30:45+02:00",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
 
-        Assert.Equal(new DateTime(2026, 8, 20), viewModel.RangeFromDate);
+        Assert.Equal(new DateTime(2026, 8, 20, 0, 0, 0, DateTimeKind.Unspecified), viewModel.RangeFromDate);
         Assert.Equal(new TimeSpan(22, 30, 45), viewModel.RangeFromTime);
 
-        viewModel.RangeFromDate = new DateTime(2026, 8, 19);
+        viewModel.RangeFromDate = new DateTime(2026, 8, 19, 0, 0, 0, DateTimeKind.Unspecified);
         viewModel.RangeFromTime = new TimeSpan(10, 11, 12);
 
-        Assert.Equal(DateTimeOffset.Parse("2026-08-19T10:11:12Z"), viewModel.RangeFrom);
+        Assert.Equal(
+            DateTimeOffset.Parse("2026-08-19T10:11:12Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            viewModel.RangeFrom
+        );
     }
 
     [Fact]
@@ -58,7 +64,10 @@ public sealed class JournalHistoryViewModelTests
         Assert.Null(viewModel.SelectedEventTimestamp);
         Assert.Equal(string.Empty, viewModel.SelectedEventRawJson);
 
-        var timestamp = DateTimeOffset.Parse("2026-08-21T18:01:00Z", System.Globalization.CultureInfo.InvariantCulture);
+        var timestamp = DateTimeOffset.Parse(
+            "2026-08-21T18:01:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         viewModel.SelectedEvent = new JournalHistoryEvent(
             0,
             "Journal.01.log",
@@ -119,8 +128,14 @@ public sealed class JournalHistoryViewModelTests
         );
         var viewModel = new JournalHistoryViewModel(temp.Path, "test-build");
         await viewModel.RefreshAsync();
-        viewModel.RangeFrom = DateTimeOffset.Parse("2026-08-21T18:00:30Z");
-        viewModel.RangeTo = DateTimeOffset.Parse("2026-08-21T18:01:30Z");
+        viewModel.RangeFrom = DateTimeOffset.Parse(
+            "2026-08-21T18:00:30Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
+        viewModel.RangeTo = DateTimeOffset.Parse(
+            "2026-08-21T18:01:30Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var packagePath = Path.Combine(temp.Path, "incident.srvreplay");
 
         Assert.Contains("1 selected event", viewModel.ExportPreview, StringComparison.OrdinalIgnoreCase);
@@ -139,7 +154,10 @@ public sealed class JournalHistoryViewModelTests
     [Fact]
     public async Task ReplayRangeDefaultsToTodayAndYesterdayAndClampsBroadSelections()
     {
-        var now = DateTimeOffset.Parse("2026-08-23T10:31:44Z");
+        var now = DateTimeOffset.Parse(
+            "2026-08-23T10:31:44Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         using var temp = new TemporaryDirectory();
         await File.WriteAllLinesAsync(
             Path.Combine(temp.Path, "Journal.2026-08-21T180000.01.log"),
@@ -156,12 +174,18 @@ public sealed class JournalHistoryViewModelTests
 
         await viewModel.RefreshAsync();
 
-        Assert.Equal(DateTimeOffset.Parse("2026-08-22T10:31:44Z"), viewModel.RangeFrom);
+        Assert.Equal(
+            DateTimeOffset.Parse("2026-08-22T10:31:44Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            viewModel.RangeFrom
+        );
         Assert.Equal(now, viewModel.RangeTo);
 
-        viewModel.RangeFromDate = DateTime.Parse("2026-06-01");
+        viewModel.RangeFromDate = DateTime.Parse(
+            "2026-06-01",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         viewModel.RangeFromTime = TimeSpan.FromHours(12);
-        viewModel.RangeToDate = DateTime.Parse("2026-08-21");
+        viewModel.RangeToDate = DateTime.Parse("2026-08-21", global::System.Globalization.CultureInfo.InvariantCulture);
         viewModel.RangeToTime = TimeSpan.FromHours(18);
 
         Assert.Equal(viewModel.RangeFrom + JournalHistoryViewModel.MaximumExportRange, viewModel.RangeTo);
@@ -171,7 +195,10 @@ public sealed class JournalHistoryViewModelTests
     [Fact]
     public async Task ReplayRangeDefaultsWithoutJournalEvents()
     {
-        var now = DateTimeOffset.Parse("2026-08-23T10:31:44Z");
+        var now = DateTimeOffset.Parse(
+            "2026-08-23T10:31:44Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         using var temp = new TemporaryDirectory();
         using var viewModel = new JournalHistoryViewModel(
             temp.Path,
@@ -183,14 +210,17 @@ public sealed class JournalHistoryViewModelTests
 
         Assert.Equal(now.AddDays(-1), viewModel.RangeFrom);
         Assert.Equal(now, viewModel.RangeTo);
-        Assert.Equal(new DateTime(2026, 8, 22), viewModel.RangeMinimumDate);
-        Assert.Equal(new DateTime(2026, 8, 23), viewModel.RangeMaximumDate);
+        Assert.Equal(new DateTime(2026, 8, 22, 0, 0, 0, DateTimeKind.Unspecified), viewModel.RangeMinimumDate);
+        Assert.Equal(new DateTime(2026, 8, 23, 0, 0, 0, DateTimeKind.Unspecified), viewModel.RangeMaximumDate);
     }
 
     [Fact]
     public async Task ReplayCalendarBoundsIncludeFutureJournalEventsWithinTheRangeCap()
     {
-        var now = DateTimeOffset.Parse("2026-08-23T10:31:44Z");
+        var now = DateTimeOffset.Parse(
+            "2026-08-23T10:31:44Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         using var temp = new TemporaryDirectory();
         await File.WriteAllTextAsync(
             Path.Combine(temp.Path, "Journal.2026-10-01T120000.01.log"),
@@ -204,12 +234,15 @@ public sealed class JournalHistoryViewModelTests
 
         await viewModel.RefreshAsync();
 
-        Assert.Equal(new DateTime(2026, 8, 22), viewModel.RangeMinimumDate);
-        Assert.Equal(new DateTime(2026, 10, 1), viewModel.RangeMaximumDate);
+        Assert.Equal(new DateTime(2026, 8, 22, 0, 0, 0, DateTimeKind.Unspecified), viewModel.RangeMinimumDate);
+        Assert.Equal(new DateTime(2026, 10, 1, 0, 0, 0, DateTimeKind.Unspecified), viewModel.RangeMaximumDate);
 
-        viewModel.RangeFrom = DateTimeOffset.Parse("2026-08-23T00:00:00Z");
+        viewModel.RangeFrom = DateTimeOffset.Parse(
+            "2026-08-23T00:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
 
-        Assert.Equal(new DateTime(2026, 9, 23), viewModel.RangeToMaximumDate);
+        Assert.Equal(new DateTime(2026, 9, 23, 0, 0, 0, DateTimeKind.Unspecified), viewModel.RangeToMaximumDate);
     }
 
     [Fact]
@@ -260,8 +293,14 @@ public sealed class JournalHistoryViewModelTests
         );
 
         await viewModel.RefreshAsync();
-        viewModel.RangeFrom = DateTimeOffset.Parse("2026-08-21T18:01:00Z");
-        viewModel.RangeTo = DateTimeOffset.Parse("2026-08-21T18:01:00Z");
+        viewModel.RangeFrom = DateTimeOffset.Parse(
+            "2026-08-21T18:01:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
+        viewModel.RangeTo = DateTimeOffset.Parse(
+            "2026-08-21T18:01:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var packagePath = Path.Combine(temp.Path, "older.srvreplay");
 
         Assert.Equal(4, viewModel.TotalEventCount);
@@ -290,16 +329,28 @@ public sealed class JournalHistoryViewModelTests
         );
         using var populated = new JournalHistoryViewModel(temp.Path, "test-build");
         await populated.RefreshAsync();
-        populated.RangeFrom = DateTimeOffset.Parse("2026-08-21T18:00:00Z");
-        populated.RangeTo = DateTimeOffset.Parse("2026-08-21T18:00:00Z");
+        populated.RangeFrom = DateTimeOffset.Parse(
+            "2026-08-21T18:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
+        populated.RangeTo = DateTimeOffset.Parse(
+            "2026-08-21T18:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         populated.RedactExport = false;
         Assert.Contains("remain raw", populated.ExportPreview);
         populated.SelectedEvent = populated.Events[0];
         populated.SearchText = "not present";
         Assert.Null(populated.SelectedEvent);
 
-        populated.RangeFrom = DateTimeOffset.Parse("2026-08-21T18:01:00Z");
-        populated.RangeTo = DateTimeOffset.Parse("2026-08-21T18:00:00Z");
+        populated.RangeFrom = DateTimeOffset.Parse(
+            "2026-08-21T18:01:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
+        populated.RangeTo = DateTimeOffset.Parse(
+            "2026-08-21T18:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         Assert.Equal(populated.RangeFrom, populated.RangeTo);
     }
 

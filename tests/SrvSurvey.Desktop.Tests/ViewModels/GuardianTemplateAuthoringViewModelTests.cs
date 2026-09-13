@@ -103,7 +103,7 @@ public sealed class GuardianTemplateAuthoringViewModelTests : IDisposable
         Assert.Equal(45.1, livePreview.Rotation);
 
         viewModel.SelectPoint("p1");
-        Assert.Contains(viewModel.PreviewTemplate!.PointsOfInterest, point => point.Name == "p2");
+        Assert.Contains(viewModel.PreviewTemplate.PointsOfInterest, point => point.Name == "p2");
         Assert.DoesNotContain(viewModel.PreviewTemplate.PointsOfInterest, point => point.Name == "p2-edited");
 
         viewModel.SelectPoint("p2");
@@ -113,7 +113,7 @@ public sealed class GuardianTemplateAuthoringViewModelTests : IDisposable
         viewModel.PointRotation += 0.1m;
         viewModel.ApplySelectedPointCommand.Execute(null);
 
-        var updated = viewModel.PreviewTemplate!.PointsOfInterest.Single(point => point.Name == "p2-edited");
+        var updated = viewModel.PreviewTemplate.PointsOfInterest.Single(point => point.Name == "p2-edited");
         Assert.Equal("p2-edited", viewModel.SelectedPoint?.Name);
         Assert.Equal(90.1, updated.Angle);
         Assert.Equal(20.1, updated.Distance);
@@ -143,7 +143,7 @@ public sealed class GuardianTemplateAuthoringViewModelTests : IDisposable
         viewModel.EditCommand.Execute(null);
 
         Assert.False(viewModel.IsNewMapDraft);
-        Assert.Equal(template.PointsOfInterest, viewModel.PreviewTemplate!.PointsOfInterest);
+        Assert.Equal(template.PointsOfInterest, viewModel.PreviewTemplate.PointsOfInterest);
         Assert.Equal(template.ObeliskGroupNameLocations["A"], viewModel.PreviewTemplate.ObeliskGroupNameLocations["A"]);
     }
 

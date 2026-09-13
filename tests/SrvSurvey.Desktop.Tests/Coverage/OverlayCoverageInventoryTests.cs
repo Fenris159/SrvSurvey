@@ -406,7 +406,7 @@ public sealed partial class OverlayCoverageInventoryTests
             var expected = OverlayLayoutCatalog.GetRequired(pair.Key).PreviewSize.Width;
             Assert.Equal(
                 expected,
-                int.Parse(match.Groups["width"].Value, System.Globalization.CultureInfo.InvariantCulture)
+                int.Parse(match.Groups["width"].Value, global::System.Globalization.CultureInfo.InvariantCulture)
             );
         }
     }

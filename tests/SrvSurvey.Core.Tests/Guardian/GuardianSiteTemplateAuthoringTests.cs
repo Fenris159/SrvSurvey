@@ -58,7 +58,7 @@ public sealed class GuardianSiteTemplateAuthoringTests : IDisposable
         var result = await new GuardianSiteTemplateCatalogExporter().ExportAsync(updated, path);
 
         Assert.NotNull(result.BackupPath);
-        Assert.Equal(original, await File.ReadAllBytesAsync(result.BackupPath!));
+        Assert.Equal(original, await File.ReadAllBytesAsync(result.BackupPath));
         Assert.Equal(result.Sha256, Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(path))));
         await using var stream = File.OpenRead(path);
         var roundTrip = GuardianSiteTemplateCatalog.Load(stream);

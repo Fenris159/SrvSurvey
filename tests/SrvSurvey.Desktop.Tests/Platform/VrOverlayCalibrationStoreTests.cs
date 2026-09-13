@@ -54,7 +54,7 @@ public sealed class VrOverlayCalibrationStoreTests : IDisposable
 
         Assert.Equal(plottersPath, result.Path);
         Assert.NotNull(result.BackupPath);
-        Assert.Equal(original, File.ReadAllText(result.BackupPath!));
+        Assert.Equal(original, File.ReadAllText(result.BackupPath));
         var saved = File.ReadAllText(plottersPath);
         Assert.Contains("center:0, top:8", saved);
         Assert.Contains("\"FutureOverlay\"", saved);

@@ -699,7 +699,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
         Assert.True(viewModel.ShouldShowMiniTrack);
 
         Assert.True(await viewModel.ToggleQuickTrackerAsync(1));
-        Assert.Empty(viewModel.CurrentSurface!.Bookmarks);
+        Assert.Empty(viewModel.CurrentSurface.Bookmarks);
         Assert.Contains("removed", viewModel.StatusText);
     }
 

@@ -32,7 +32,7 @@ public sealed class FrontierCommunityGoalOrderingTests
             string.Empty,
             string.Empty,
             string.Empty,
-            DateTimeOffset.Parse(lastUpdated).AddDays(1),
+            DateTimeOffset.Parse(lastUpdated, global::System.Globalization.CultureInfo.InvariantCulture).AddDays(1),
             complete,
             0,
             null,

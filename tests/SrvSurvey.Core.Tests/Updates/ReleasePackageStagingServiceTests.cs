@@ -160,12 +160,12 @@ public sealed class ReleasePackageStagingServiceTests : IDisposable
             foreach (var file in files)
             {
                 var entry = archive.CreateEntry(file.Key, CompressionLevel.Optimal);
-                await using var output = entry.Open();
+                await using var output = await entry.OpenAsync();
                 await output.WriteAsync(file.Value);
             }
 
             var manifestEntry = archive.CreateEntry("release-package.json");
-            await using (var output = manifestEntry.Open())
+            await using (var output = await manifestEntry.OpenAsync())
             {
                 await output.WriteAsync(manifest);
             }
@@ -173,7 +173,7 @@ public sealed class ReleasePackageStagingServiceTests : IDisposable
             if (extraEntry is not null)
             {
                 var entry = archive.CreateEntry(extraEntry);
-                await using var output = entry.Open();
+                await using var output = await entry.OpenAsync();
                 await output.WriteAsync(new byte[] { 9 });
             }
         }
@@ -193,7 +193,7 @@ public sealed class ReleasePackageStagingServiceTests : IDisposable
         await using (var gzip = new GZipStream(stream, CompressionLevel.Optimal))
         using (var writer = new TarWriter(gzip, leaveOpen: false))
         {
-            writer.WriteEntry(new PaxTarEntry(TarEntryType.Directory, "./"));
+            await writer.WriteEntryAsync(new PaxTarEntry(TarEntryType.Directory, "./"));
             foreach (var file in files)
             {
                 using var data = new MemoryStream(file.Value, writable: false);
@@ -205,12 +205,12 @@ public sealed class ReleasePackageStagingServiceTests : IDisposable
                             ? UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute
                             : UnixFileMode.UserRead | UnixFileMode.UserWrite,
                 };
-                writer.WriteEntry(entry);
+                await writer.WriteEntryAsync(entry);
             }
 
             using (var data = new MemoryStream(manifest, writable: false))
             {
-                writer.WriteEntry(
+                await writer.WriteEntryAsync(
                     new PaxTarEntry(TarEntryType.RegularFile, "./release-package.json")
                     {
                         DataStream = data,
@@ -221,7 +221,7 @@ public sealed class ReleasePackageStagingServiceTests : IDisposable
 
             if (includeSymbolicLink)
             {
-                writer.WriteEntry(
+                await writer.WriteEntryAsync(
                     new PaxTarEntry(TarEntryType.SymbolicLink, "linked-entry") { LinkName = "SrvSurvey.Desktop" }
                 );
             }

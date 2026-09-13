@@ -6,7 +6,7 @@ public sealed class ApplicationLogServiceTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(Path.GetTempPath(), $"SrvSurvey-logs-{Guid.NewGuid():N}");
     private readonly TimeProvider timeProvider = new FixedTimeProvider(
-        DateTimeOffset.Parse("2026-07-25T13:14:15-05:00")
+        DateTimeOffset.Parse("2026-07-25T13:14:15-05:00", global::System.Globalization.CultureInfo.InvariantCulture)
     );
 
     [Fact]

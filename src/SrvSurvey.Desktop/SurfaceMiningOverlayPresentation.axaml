@@ -54,7 +54,7 @@
         </Border>
       </Grid>
       <controls:SurfaceSurveyRadarControl Grid.Row="1" MinHeight="140"
-          Markers="{Binding SurfaceMining.RadarMarkers}" ScaleMultiplier="1"
+          Markers="{Binding SurfaceMining.RadarMarkers}" ScaleMultiplier="{Binding SurfaceMining.RadarScale}"
           SplatBoundaries="{Binding SurfaceMining.SplatBoundaries}"
           SuggestedRigLocations="{Binding SurfaceMining.SuggestedRigLocations}"
           BackgroundBrush="{DynamicResource RavenRaisedSurfaceBrush}"

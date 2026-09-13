@@ -58,7 +58,9 @@ public sealed class HumanSiteMaterialStoreTests : IDisposable
             oldPath,
             """{"completed":true,"totalMatCount":1,"matLocations":["old_Data_1_2"]}"""
         );
-        var time = new FixedTimeProvider(DateTimeOffset.Parse("2026-07-25T13:14:15Z"));
+        var time = new FixedTimeProvider(
+            DateTimeOffset.Parse("2026-07-25T13:14:15Z", global::System.Globalization.CultureInfo.InvariantCulture)
+        );
         var store = new HumanSiteMaterialStore(temporaryDirectory, time);
 
         var result = await store.AppendAsync(Context(), [Material("new", "Component", 5, 6)]);

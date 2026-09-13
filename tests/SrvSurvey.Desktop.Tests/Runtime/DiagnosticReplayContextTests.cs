@@ -109,7 +109,7 @@ public sealed class DiagnosticReplayContextTests
             Path.Combine(temp.Path, "managed"),
             CancellationToken.None
         );
-        var context = await DiagnosticReplayContext.LoadAsync(session.ManifestPath, CancellationToken.None);
+        await DiagnosticReplayContext.LoadAsync(session.ManifestPath, CancellationToken.None);
         using var client = DiagnosticReplayContext.CreateNetworkClient();
 
         var exception = await Assert.ThrowsAsync<HttpRequestException>(() =>
@@ -133,7 +133,7 @@ public sealed class DiagnosticReplayContextTests
             Path.Combine(temp.Path, "managed"),
             CancellationToken.None
         );
-        var context = await DiagnosticReplayContext.LoadAsync(session.ManifestPath, CancellationToken.None);
+        await DiagnosticReplayContext.LoadAsync(session.ManifestPath, CancellationToken.None);
         using var client = DiagnosticReplayContext.CreateNetworkClient();
         var viewModel = new NearestSystemsViewModel(new NearestSystemsClient(client), new EmptySystemResolver());
         viewModel.UpdateContext("Replay System", new GalacticCoordinate(1, 2, 3), "Imported");

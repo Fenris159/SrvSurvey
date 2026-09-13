@@ -18,7 +18,7 @@ public sealed class ReplayControllerViewModelTests
 
         viewModel.SelectedEvent = new JournalReplayEvent(
             0,
-            DateTimeOffset.Parse("2026-08-21T18:01:00Z", System.Globalization.CultureInfo.InvariantCulture),
+            DateTimeOffset.Parse("2026-08-21T18:01:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
             "FSDJump",
             "{\"event\":\"FSDJump\"}"
         );

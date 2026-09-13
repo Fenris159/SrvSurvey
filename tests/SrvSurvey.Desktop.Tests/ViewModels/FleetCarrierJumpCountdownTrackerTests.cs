@@ -9,7 +9,10 @@ public sealed class FleetCarrierJumpCountdownTrackerTests
     public void JumpRequestMovesThroughInitiationLockdownAndCooldownPhases()
     {
         var tracker = new FleetCarrierJumpCountdownTracker();
-        var start = DateTimeOffset.Parse("2026-08-01T12:00:00Z");
+        var start = DateTimeOffset.Parse(
+            "2026-08-01T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
 
         Assert.True(
             tracker.Apply(
@@ -50,7 +53,10 @@ public sealed class FleetCarrierJumpCountdownTrackerTests
     public void CancellationUsesJournalTimeAndIgnoresAnotherCarrier()
     {
         var tracker = new FleetCarrierJumpCountdownTracker();
-        var start = DateTimeOffset.Parse("2026-08-01T12:00:00Z");
+        var start = DateTimeOffset.Parse(
+            "2026-08-01T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         tracker.Apply(
             Parse(
                 """
@@ -91,7 +97,10 @@ public sealed class FleetCarrierJumpCountdownTrackerTests
     public void CarrierJumpStartsPostJumpCooldownWithoutPriorRequest()
     {
         var tracker = new FleetCarrierJumpCountdownTracker();
-        var observed = DateTimeOffset.Parse("2026-08-01T12:15:25Z");
+        var observed = DateTimeOffset.Parse(
+            "2026-08-01T12:15:25Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
 
         tracker.Apply(
             Parse(

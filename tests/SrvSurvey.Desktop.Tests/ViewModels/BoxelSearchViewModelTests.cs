@@ -41,7 +41,10 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
     [Fact]
     public async Task ResumingSavedProgressRestoresItsOriginalSearchStartDate()
     {
-        var originalStart = DateTimeOffset.Parse("2026-05-04T00:00:00-05:00");
+        var originalStart = DateTimeOffset.Parse(
+            "2026-05-04T00:00:00-05:00",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var profileStore = new CommanderProfileStore(temporaryDirectory);
         var savedStore = new SavedBoxelSearchStore(temporaryDirectory);
         var first = CreateTrackedViewModel(
@@ -158,7 +161,10 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
         await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
         viewModel.TopBoxelText = "Praea Euq IL-P c5-0";
         viewModel.LowMassCode = "c";
-        viewModel.StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z");
+        viewModel.StartedOn = DateTimeOffset.Parse(
+            "2026-07-01T00:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         viewModel.SkipAlreadyVisited = true;
 
         await viewModel.ActivateAsync();
@@ -259,7 +265,10 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
         await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
         viewModel.TopBoxelText = "Praea Euq IL-P c5-0";
         viewModel.LowMassCode = "c";
-        viewModel.StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z");
+        viewModel.StartedOn = DateTimeOffset.Parse(
+            "2026-07-01T00:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         viewModel.SkipKnownToSpansh = true;
         viewModel.CompleteOnFssAllBodies = true;
         await viewModel.ActivateAsync();
@@ -296,7 +305,10 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
         await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
         viewModel.TopBoxelText = "Praea Euq IL-P c5-0";
         viewModel.LowMassCode = "c";
-        viewModel.StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z");
+        viewModel.StartedOn = DateTimeOffset.Parse(
+            "2026-07-01T00:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         viewModel.SkipKnownToSpansh = true;
         viewModel.CompleteOnFssAllBodies = true;
 
@@ -727,7 +739,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
         await viewModel.ActivateAsync();
         await viewModel.UpdateRouteAsync(
             new NavRouteSnapshot(
-                DateTimeOffset.Parse("2026-07-25T01:00:00Z"),
+                DateTimeOffset.Parse("2026-07-25T01:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 "NavRoute",
                 [
                     new NavRouteEntry("Praea Euq IL-P c5-0", 0, null, "K"),
@@ -744,7 +756,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
 
         await viewModel.UpdateRouteAsync(
             new NavRouteSnapshot(
-                DateTimeOffset.Parse("2026-07-25T01:01:00Z"),
+                DateTimeOffset.Parse("2026-07-25T01:01:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 "NavRoute",
                 [
                     new NavRouteEntry("Praea Euq IL-P c5-0", 0, null, "K"),
@@ -938,7 +950,10 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
                         },
                         new GalacticCoordinate(index, 0, 0),
                         null,
-                        DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+                        DateTimeOffset.Parse(
+                            "2026-06-01T00:00:00Z",
+                            global::System.Globalization.CultureInfo.InvariantCulture
+                        ),
                         true
                     )
             )
@@ -947,7 +962,10 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
         await viewModel.LoadProfileAsync("F123", "Drew", true, BoxelSearchSnapshot.Empty);
         viewModel.TopBoxelText = top.Name;
         viewModel.LowMassCode = "c";
-        viewModel.StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z");
+        viewModel.StartedOn = DateTimeOffset.Parse(
+            "2026-07-01T00:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         viewModel.SkipKnownToSpansh = true;
         await viewModel.ActivateAsync();
 
@@ -1003,7 +1021,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
         Assert.False(viewModel.CanSaveProgress);
         Assert.True(viewModel.IsSavedToLibrary);
         Assert.Equal("Saved to Library", viewModel.LibrarySaveButtonText);
-        var entry = Assert.Single(await savedStore.ListAsync("F123"));
+        Assert.Single(await savedStore.ListAsync("F123"));
 
         await viewModel.ApplyJournalEventsAsync([
             Parse(
@@ -1011,7 +1029,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
             ),
         ]);
 
-        entry = Assert.Single(await savedStore.ListAsync("F123"));
+        var entry = Assert.Single(await savedStore.ListAsync("F123"));
         Assert.Equal(1, entry.CompletedSystems);
         Assert.Equal("Test notes", entry.Notes);
         Assert.Equal(SaveBoxelProgressResult.Saved, await viewModel.SaveProgressAsync());
@@ -1238,8 +1256,14 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
                 Directory.Delete(temporaryDirectory, true);
             }
         }
-        catch (IOException) { }
-        catch (UnauthorizedAccessException) { }
+        catch (IOException)
+        {
+            // Test cleanup is best effort when a temporary file is still in use.
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // Test cleanup is best effort when the temporary directory cannot be removed.
+        }
     }
 
     private BoxelSearchViewModel CreateTrackedViewModel(
@@ -1299,7 +1323,7 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
             },
             new GalacticCoordinate(address, 0, 0),
             null,
-            DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+            DateTimeOffset.Parse("2026-06-01T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
             hasKnownBodies
         );
     }
@@ -1409,17 +1433,6 @@ public sealed class BoxelSearchViewModelTests : IAsyncLifetime
         }
 
         Assert.True(condition(), "Timed out waiting for the asynchronous suggestion request.");
-    }
-
-    private static async Task WaitUntilAsync(Func<Task<bool>> condition)
-    {
-        var deadline = DateTimeOffset.UtcNow.AddSeconds(5);
-        while (!await condition() && DateTimeOffset.UtcNow < deadline)
-        {
-            await Task.Delay(10);
-        }
-
-        Assert.True(await condition(), "Timed out waiting for asynchronous persistence.");
     }
 
     private sealed class StubSuggestionClient(IReadOnlyList<SystemNameSuggestion> suggestions)

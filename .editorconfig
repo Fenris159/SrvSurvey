@@ -56,6 +56,8 @@ dotnet_style_prefer_is_null_check_over_reference_equality_method = true:suggesti
 dotnet_style_operator_placement_when_wrapping = beginning_of_line
 
 # Existing repository diagnostics
+# SonarAnalyzer.CSharp uses its enabled-by-default rule profile. Configure any
+# intentional Sonar exception here by rule ID (S####) with a short rationale.
 dotnet_diagnostic.IDE1006.severity = none
 dotnet_diagnostic.CA2213.severity = suggestion
 dotnet_diagnostic.CA1001.severity = suggestion

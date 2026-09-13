@@ -33,7 +33,11 @@ public sealed class SystemScanPersistenceStoreTests : IDisposable
         var store = new SystemScanPersistenceStore(temporaryDirectory);
 
         await store.SaveFirstFootfallCorrectionAsync(
-            new SystemScanPersistenceContext("F123", "Drew", DateTimeOffset.Parse("2026-07-25T00:00:00Z")),
+            new SystemScanPersistenceContext(
+                "F123",
+                "Drew",
+                DateTimeOffset.Parse("2026-07-25T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+            ),
             snapshot,
             1,
             false
@@ -80,7 +84,11 @@ public sealed class SystemScanPersistenceStoreTests : IDisposable
         var store = new SystemScanPersistenceStore(temporaryDirectory);
 
         var result = await store.SaveAsync(
-            new SystemScanPersistenceContext("F123", "Drew", DateTimeOffset.Parse("2026-07-22T00:00:00Z")),
+            new SystemScanPersistenceContext(
+                "F123",
+                "Drew",
+                DateTimeOffset.Parse("2026-07-22T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+            ),
             snapshot
         );
 
@@ -117,7 +125,11 @@ public sealed class SystemScanPersistenceStoreTests : IDisposable
         var store = new SystemScanPersistenceStore(temporaryDirectory);
 
         var result = await store.SaveAsync(
-            new SystemScanPersistenceContext("F123", "Drew", DateTimeOffset.Parse("2026-07-22T00:00:00Z")),
+            new SystemScanPersistenceContext(
+                "F123",
+                "Drew",
+                DateTimeOffset.Parse("2026-07-22T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+            ),
             CreateSnapshot("""{"event":"Location","StarSystem":"Test","SystemAddress":42}""")
         );
 
@@ -135,7 +147,14 @@ public sealed class SystemScanPersistenceStoreTests : IDisposable
 
         var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
             store.SaveAsync(
-                new SystemScanPersistenceContext("F123", "Drew", DateTimeOffset.Parse("2026-07-22T00:00:00Z")),
+                new SystemScanPersistenceContext(
+                    "F123",
+                    "Drew",
+                    DateTimeOffset.Parse(
+                        "2026-07-22T00:00:00Z",
+                        global::System.Globalization.CultureInfo.InvariantCulture
+                    )
+                ),
                 CreateSnapshot("""{"event":"Location","StarSystem":"Test","SystemAddress":42}""")
             )
         );

@@ -3138,6 +3138,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Controls/HumanSiteMapControl.cs"
   },
   {
+    "Text": "Align with the squares and place the rigs.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
+  },
+  {
     "Text": "Align with the survey origin and rise to {0} m.",
     "IsFormat": true,
     "SourceKinds": [
@@ -4529,6 +4537,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Auto Fitting Rigs to a Splat",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
     "Text": "Auto add tracker location when Composition scanning organisms.",
@@ -6825,6 +6841,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/BookmarksView.axaml"
   },
   {
+    "Text": "Border setup",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
+  },
+  {
     "Text": "Borderless or windowed Elite modes provide the most predictable desktop overlay stacking. Exclusive fullscreen behavior depends on the operating system and compositor.",
     "IsFormat": false,
     "SourceKinds": [
@@ -8530,6 +8554,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
+  },
+  {
+    "Text": "Center the Rhino chassis on a mapped deposit edge, switch to turret mode, keep the mineral scanner active, and send .mine splat. Drive the full visible circuit until SrvSurvey closes the trace, then use the square rig-position suggestions to line up each deployment. The compact radar zooms automatically near the deposit and recommendations. Send .mine splat cancel to discard an unfinished trace.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Center the Rhino on the edge (HUD colors vary).",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
     "Text": "Century Gothic, Segoe UI, sans-serif",
@@ -11111,6 +11151,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Confirm center",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
     "Text": "Confirm clear",
@@ -16273,14 +16321,6 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverviewView.axaml"
-  },
-  {
-    "Text": "Estimated reward: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologySurveyViewModel.cs"
   },
   {
     "Text": "Every Raven site requires a name.",
@@ -23839,14 +23879,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologySurveyViewModel.cs"
   },
   {
-    "Text": "Known reward: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologySurveyViewModel.cs"
-  },
-  {
     "Text": "Known system \u00B7 body count unavailable",
     "IsFormat": false,
     "SourceKinds": [
@@ -27533,6 +27565,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GroundTargetViewModel.cs"
+  },
+  {
+    "Text": "Move to center",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
     "Text": "Move to the site centre and align the map origin.",
@@ -33228,6 +33268,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Localization/LocalizationCatalog.cs"
+  },
+  {
+    "Text": "Position the Rhino so the center of its chassis sits directly over the visible deposit border. HUD colors vary.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
     "Text": "Position unavailable",
@@ -40822,6 +40870,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "Scan waypoint",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
+  },
+  {
     "Text": "Scan {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -45329,14 +45385,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReleaseUpdateViewModel.cs"
   },
   {
-    "Text": "Starts guided survey mode. The compact top-center overlay walks you from the orange border to the saved center, then through automatically advancing scan waypoints in an outward spiral. Waypoints stay no more than 2 km apart for complete surface-scanner coverage. The guide closes 10 seconds after its final rig-capacity reminder.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
-  },
-  {
     "Text": "Startup failed at {0}.",
     "IsFormat": true,
     "SourceKinds": [
@@ -46156,6 +46204,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/MainWindow.axaml"
   },
   {
+    "Text": "Survey complete",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
+  },
+  {
     "Text": "Survey groups Exploration, Exobiology, and Boxel; Navigation groups Travel, Search, and Bookmarks; Activities groups Mining, Guardian, Quests, and Colonization. Expanding one group collapses the previous group.",
     "IsFormat": false,
     "SourceKinds": [
@@ -46274,6 +46330,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/MiningView.axaml"
+  },
+  {
+    "Text": "Switch to turret mode and send .mine splat in chat. Keep the mineral scanner active, then drive slowly around the visible edge until SrvSurvey reports that the full circuit is complete.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
     "Text": "Switched to the {0} release channel; checking now.",
@@ -51747,14 +51811,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologySurveyViewModel.cs"
   },
   {
-    "Text": "Total reward: {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologySurveyViewModel.cs"
-  },
-  {
     "Text": "TotalItemsToDeliver",
     "IsFormat": false,
     "SourceKinds": [
@@ -51825,6 +51881,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Theming/OverlayThemePresetCatalog.cs"
+  },
+  {
+    "Text": "Trace the complete splat border.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
     "Text": "Track Guardian component materials",
@@ -53718,6 +53782,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Use the square recommendations on the compact Surface Mining radar to line up and place each rig. The radar zooms automatically as you approach the deposit and its suggested positions.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/MineMapView.axaml"
   },
   {
     "Text": "UseDevelopmentReleases",
@@ -56260,6 +56332,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "border",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
+  },
+  {
     "Text": "bottom",
     "IsFormat": false,
     "SourceKinds": [
@@ -56660,12 +56740,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs"
   },
   {
+    "Text": "complete",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
+  },
+  {
     "Text": "components",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "confirm-center",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
     "Text": "consumables",
@@ -60611,6 +60707,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPlatformCapabilities.cs"
+  },
+  {
+    "Text": "waypoint",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewCatalog.cs"
   },
   {
     "Text": "weaponcolour",

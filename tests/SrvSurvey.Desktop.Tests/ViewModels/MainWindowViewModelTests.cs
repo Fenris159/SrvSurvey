@@ -2584,7 +2584,10 @@ public sealed class MainWindowViewModelTests
                 {
                     Active = true,
                     TopBoxel = top,
-                    StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                    StartedOn = DateTimeOffset.Parse(
+                        "2026-07-01T00:00:00Z",
+                        global::System.Globalization.CultureInfo.InvariantCulture
+                    ),
                     Current = top,
                     CurrentCount = 2,
                     LowMassCode = 'c',
@@ -3063,8 +3066,14 @@ public sealed class MainWindowViewModelTests
                     0,
                     null,
                     false,
-                    DateTimeOffset.Parse("2026-07-25T12:00:04Z"),
-                    DateTimeOffset.Parse("2026-07-25T12:00:04Z")
+                    DateTimeOffset.Parse(
+                        "2026-07-25T12:00:04Z",
+                        global::System.Globalization.CultureInfo.InvariantCulture
+                    ),
+                    DateTimeOffset.Parse(
+                        "2026-07-25T12:00:04Z",
+                        global::System.Globalization.CultureInfo.InvariantCulture
+                    )
                 ),
                 HumanSiteGeometrySource.ManualFoot
             );
@@ -3283,7 +3292,7 @@ public sealed class MainWindowViewModelTests
             await File.AppendAllTextAsync(journalPath, "{\"event\":\"Died\"}\n");
             await viewModel.RefreshAsync();
 
-            Assert.All(viewModel.SurfaceSurvey.CurrentSurface!.BioScans, scan => Assert.Equal("Died", scan.Status));
+            Assert.All(viewModel.SurfaceSurvey.CurrentSurface.BioScans, scan => Assert.Equal("Died", scan.Status));
             var savedProfile = await new CommanderProfileStore(profile).LoadAsync("F123", true);
             Assert.Empty(savedProfile.Data!.Exobiology.ScannedBioEntryIds);
             viewModel.SurfaceSurvey.Dispose();
@@ -3890,7 +3899,7 @@ public sealed class MainWindowViewModelTests
             },
             new GalacticCoordinate(address, 0, 0),
             null,
-            DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+            DateTimeOffset.Parse("2026-06-01T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
             true
         );
     }
@@ -4153,7 +4162,7 @@ public sealed class MainWindowViewModelTests
         {
             if (disposeException is not null)
             {
-                throw disposeException;
+                System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(disposeException).Throw();
             }
 
             return Task.FromResult(InaraPublicationResult.Empty);
@@ -4310,7 +4319,7 @@ public sealed class MainWindowViewModelTests
         {
             if (disposeException is not null)
             {
-                throw disposeException;
+                System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(disposeException).Throw();
             }
         }
     }

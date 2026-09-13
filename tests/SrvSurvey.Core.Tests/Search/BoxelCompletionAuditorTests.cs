@@ -16,14 +16,20 @@ public sealed class BoxelCompletionAuditorTests : IDisposable
         var localBoxel = top.Children[0];
         var spanshBoxel = top.Children[1];
         var emptyBoxel = top.Children[2];
-        await WriteLocalSystemAsync(localBoxel.WithSystemNumber(3), DateTimeOffset.Parse("2026-06-01T00:00:00Z"));
+        await WriteLocalSystemAsync(
+            localBoxel.WithSystemNumber(3),
+            DateTimeOffset.Parse("2026-06-01T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+        );
         var resolver = new StubResolver(boxel =>
             string.Equals(boxel.Prefix, spanshBoxel.Prefix, StringComparison.Ordinal)
                 ?
                 [
                     Observation(
                         spanshBoxel.WithSystemNumber(5),
-                        spanshUpdated: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+                        spanshUpdated: DateTimeOffset.Parse(
+                            "2026-06-01T00:00:00Z",
+                            global::System.Globalization.CultureInfo.InvariantCulture
+                        ),
                         hasKnownBodies: true
                     ),
                 ]
@@ -37,7 +43,7 @@ public sealed class BoxelCompletionAuditorTests : IDisposable
                 [top, localBoxel, spanshBoxel, emptyBoxel],
                 new HashSet<string>(StringComparer.Ordinal) { emptyBoxel.Prefix },
                 top.Prefix,
-                DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                DateTimeOffset.Parse("2026-07-01T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 true,
                 true,
                 BoxelCompletionMode.EnterSystem,
@@ -86,7 +92,7 @@ public sealed class BoxelCompletionAuditorTests : IDisposable
                 boxels,
                 new HashSet<string>(StringComparer.Ordinal),
                 null,
-                DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                DateTimeOffset.Parse("2026-07-01T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 false,
                 false,
                 BoxelCompletionMode.EnterSystem,
@@ -105,7 +111,10 @@ public sealed class BoxelCompletionAuditorTests : IDisposable
     public async Task AuditRetainsLocalResultWhenSpanshFails()
     {
         var boxel = BoxelAddress.Parse("Praea Euq IL-P c5-0");
-        await WriteLocalSystemAsync(boxel, DateTimeOffset.Parse("2026-07-20T00:00:00Z"));
+        await WriteLocalSystemAsync(
+            boxel,
+            DateTimeOffset.Parse("2026-07-20T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+        );
         var auditor = new BoxelCompletionAuditor(
             new LegacySystemDataReader(temporaryDirectory),
             new StubResolver(_ => throw new HttpRequestException("offline"))
@@ -117,7 +126,7 @@ public sealed class BoxelCompletionAuditorTests : IDisposable
                 [boxel],
                 new HashSet<string>(StringComparer.Ordinal),
                 null,
-                DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                DateTimeOffset.Parse("2026-07-01T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 false,
                 false,
                 BoxelCompletionMode.EnterSystem,
@@ -152,7 +161,7 @@ public sealed class BoxelCompletionAuditorTests : IDisposable
                 [invalidBoxel, validBoxel],
                 new HashSet<string>(StringComparer.Ordinal),
                 null,
-                DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                DateTimeOffset.Parse("2026-07-01T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 false,
                 false,
                 BoxelCompletionMode.EnterSystem,
@@ -175,8 +184,16 @@ public sealed class BoxelCompletionAuditorTests : IDisposable
         var top = BoxelAddress.Parse("Praea Euq RS-U d2-0");
         var beforeStart = top.Children[0];
         var afterStart = top.Children[1];
-        await WriteLocalSystemAsync(beforeStart, DateTimeOffset.Parse("2026-06-01T00:00:00Z"), true);
-        await WriteLocalSystemAsync(afterStart, DateTimeOffset.Parse("2026-07-20T00:00:00Z"), true);
+        await WriteLocalSystemAsync(
+            beforeStart,
+            DateTimeOffset.Parse("2026-06-01T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            true
+        );
+        await WriteLocalSystemAsync(
+            afterStart,
+            DateTimeOffset.Parse("2026-07-20T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            true
+        );
         var auditor = new BoxelCompletionAuditor(
             new LegacySystemDataReader(temporaryDirectory),
             new StubResolver(_ => [])
@@ -188,7 +205,7 @@ public sealed class BoxelCompletionAuditorTests : IDisposable
                 [beforeStart, afterStart],
                 new HashSet<string>(StringComparer.Ordinal),
                 null,
-                DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                DateTimeOffset.Parse("2026-07-01T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 true,
                 false,
                 BoxelCompletionMode.FssAllBodies,
@@ -207,7 +224,16 @@ public sealed class BoxelCompletionAuditorTests : IDisposable
         var auditor = new BoxelCompletionAuditor(
             new LegacySystemDataReader(temporaryDirectory),
             new StubResolver(_ =>
-                [Observation(boxel, DateTimeOffset.Parse("2026-06-01T00:00:00Z"), hasKnownBodies: true)]
+                [
+                    Observation(
+                        boxel,
+                        DateTimeOffset.Parse(
+                            "2026-06-01T00:00:00Z",
+                            global::System.Globalization.CultureInfo.InvariantCulture
+                        ),
+                        hasKnownBodies: true
+                    ),
+                ]
             )
         );
 
@@ -217,7 +243,7 @@ public sealed class BoxelCompletionAuditorTests : IDisposable
                 [boxel],
                 new HashSet<string>(StringComparer.Ordinal),
                 null,
-                DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                DateTimeOffset.Parse("2026-07-01T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 false,
                 true,
                 BoxelCompletionMode.FssAllBodies,

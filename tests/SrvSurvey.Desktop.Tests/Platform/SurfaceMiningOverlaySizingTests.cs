@@ -7,6 +7,7 @@ using Avalonia.VisualTree;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Controls;
 using SrvSurvey.Desktop.Platform.Overlay;
@@ -59,6 +60,36 @@ public sealed class SurfaceMiningOverlaySizingTests
         );
         Assert.Equal(1, window.Opacity);
         Assert.Equal(1, line.Opacity);
+    }
+
+    [AvaloniaFact]
+    public void LiveSurveyGuideResizesAroundItsTopCenterAnchor()
+    {
+        using var viewModel = MineMapViewModel.CreateEditorPreview();
+        viewModel.InstallSurveyGuideEditorPreview(MineMapSurveyGuidePhase.Border);
+        var window = new SurfaceMiningSurveyOverlayWindow(viewModel) { Position = new PixelPoint(400, 100) };
+        try
+        {
+            OverlayThemeResources.Apply(
+                window,
+                LegacyOverlayLayout.Empty,
+                "PlotSurfaceMiningSurvey",
+                new OverlayWindowRegistry()
+            );
+            window.Show();
+            Assert.NotNull(window.CaptureRenderedFrame());
+            var initialCenter = window.Position.X + (window.Bounds.Width * window.RenderScaling / 2d);
+
+            viewModel.InstallSurveyGuideEditorPreview(MineMapSurveyGuidePhase.Complete);
+            Assert.NotNull(window.CaptureRenderedFrame());
+            var finalCenter = window.Position.X + (window.Bounds.Width * window.RenderScaling / 2d);
+
+            Assert.InRange(Math.Abs(finalCenter - initialCenter), 0, 1);
+        }
+        finally
+        {
+            window.Close();
+        }
     }
 
     [AvaloniaTheory]

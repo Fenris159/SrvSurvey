@@ -124,7 +124,10 @@ public sealed class JournalHistoryAnalyzerTests : IDisposable
             {"event":"Shutdown"}
             """
         );
-        File.WriteAllText(Path.Combine(temporaryDirectory, "Journal.invalid.01.log"), "{\"event\":\"Shutdown\"}\n");
+        await File.WriteAllTextAsync(
+            Path.Combine(temporaryDirectory, "Journal.invalid.01.log"),
+            "{\"event\":\"Shutdown\"}\n"
+        );
         var progress = new List<JournalHistoryAnalysisProgress>();
         var analyzer = new JournalHistoryAnalyzer(temporaryDirectory, () => now);
 
@@ -164,7 +167,10 @@ public sealed class JournalHistoryAnalyzerTests : IDisposable
         Assert.Equal(1.5, match.StarPosition.X);
         Assert.Equal(-2, match.StarPosition.Y);
         Assert.Equal(3, match.StarPosition.Z);
-        Assert.Equal(DateTimeOffset.Parse("2026-07-20T12:01:00Z"), match.Timestamp);
+        Assert.Equal(
+            DateTimeOffset.Parse("2026-07-20T12:01:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            match.Timestamp
+        );
         Assert.Contains("\"event\":\"Scan\"", match.RawJournalJson);
     }
 

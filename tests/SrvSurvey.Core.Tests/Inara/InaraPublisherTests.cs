@@ -22,7 +22,7 @@ public sealed class InaraPublisherTests
         var handler = new InaraResponseHandler();
         using var publisher = new InaraPublisher("2.0.95.0", new HttpClient(handler));
         var cargo = new CargoSnapshot(
-            DateTimeOffset.Parse("2026-07-28T12:00:01Z"),
+            DateTimeOffset.Parse("2026-07-28T12:00:01Z", global::System.Globalization.CultureInfo.InvariantCulture),
             "Cargo",
             "Ship",
             7,
@@ -118,7 +118,7 @@ public sealed class InaraPublisherTests
     {
         using var publisher = new InaraPublisher("2.0.95.0", new HttpClient(new InaraResponseHandler()));
         var cargo = new CargoSnapshot(
-            DateTimeOffset.Parse("2026-07-28T12:00:01Z"),
+            DateTimeOffset.Parse("2026-07-28T12:00:01Z", global::System.Globalization.CultureInfo.InvariantCulture),
             "Cargo",
             "Ship",
             7,
@@ -398,7 +398,7 @@ public sealed class InaraPublisherTests
 
         using var cancellation = new CancellationTokenSource();
         var cancelledWait = publisher.StopAsync(cancellation.Token);
-        cancellation.Cancel();
+        await cancellation.CancelAsync();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => cancelledWait);
         Assert.False(handler.RequestCancelled.Task.IsCompleted);
 
@@ -1012,7 +1012,9 @@ public sealed class InaraPublisherTests
     [Fact]
     public async Task RetryAfterExtendsAutomaticRetryWindow()
     {
-        var time = new MutableTimeProvider(DateTimeOffset.Parse("2026-07-28T12:00:00Z"));
+        var time = new MutableTimeProvider(
+            DateTimeOffset.Parse("2026-07-28T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+        );
         var handler = new InaraResponseHandler(HttpStatusCode.TooManyRequests) { RetryAfter = TimeSpan.FromMinutes(2) };
         using var publisher = new InaraPublisher("2.0.95.0", new HttpClient(handler), time);
         await publisher.ApplyAsync(
@@ -1249,7 +1251,7 @@ public sealed class InaraPublisherTests
 
     private sealed class NonPumpingSynchronizationContext : SynchronizationContext
     {
-        public override void Post(SendOrPostCallback callback, object? state) { }
+        public override void Post(SendOrPostCallback d, object? state) { }
     }
 
     private sealed class MutableTimeProvider(DateTimeOffset utcNow) : TimeProvider

@@ -46,7 +46,7 @@ public sealed class CommanderProfileViewModelTests
         finally
         {
             release.Set();
-            registration.Dispose();
+            await registration.DisposeAsync();
         }
     }
 
@@ -157,7 +157,10 @@ public sealed class CommanderProfileViewModelTests
     [Fact]
     public async Task CachedRawGoalFieldsUpgradeWithoutNetworkRefresh()
     {
-        var fetchedAt = DateTimeOffset.Parse("2026-07-30T12:00:00Z");
+        var fetchedAt = DateTimeOffset.Parse(
+            "2026-07-30T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var snapshot = CreateSnapshot(fetchedAt);
         var cachedGoal = Assert.Single(snapshot.CommunityGoals!) with
         {
@@ -201,7 +204,10 @@ public sealed class CommanderProfileViewModelTests
     [Fact]
     public async Task JournalReputationPopulatesCommanderWithoutFleetCarrier()
     {
-        var fetchedAt = DateTimeOffset.Parse("2026-07-29T12:00:00Z");
+        var fetchedAt = DateTimeOffset.Parse(
+            "2026-07-29T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var snapshot = CreateSnapshot(fetchedAt) with
         {
             Carrier = null,
@@ -236,7 +242,10 @@ public sealed class CommanderProfileViewModelTests
     [Fact]
     public async Task OlderJournalReputationDoesNotOverrideNewerCapiData()
     {
-        var fetchedAt = DateTimeOffset.Parse("2026-07-29T12:00:00Z");
+        var fetchedAt = DateTimeOffset.Parse(
+            "2026-07-29T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var snapshot = CreateSnapshot(fetchedAt) with { Carrier = null };
         using var viewModel = new CommanderProfileViewModel(
             new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt))
@@ -260,7 +269,10 @@ public sealed class CommanderProfileViewModelTests
     [Fact]
     public async Task JournalCarrierJumpRequestOverridesOlderCapiAndCancellationClearsIt()
     {
-        var fetchedAt = DateTimeOffset.Parse("2026-09-12T15:50:00Z");
+        var fetchedAt = DateTimeOffset.Parse(
+            "2026-09-12T15:50:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var snapshot = CreateSnapshot(fetchedAt) with
         {
             Carrier = CreateSnapshot(fetchedAt).Carrier! with { CurrentJump = "None" },
@@ -301,7 +313,10 @@ public sealed class CommanderProfileViewModelTests
     [Fact]
     public async Task JournalCarrierJumpCompletionClearsOnlyTheMatchingCarrierRequest()
     {
-        var fetchedAt = DateTimeOffset.Parse("2026-09-12T15:50:00Z");
+        var fetchedAt = DateTimeOffset.Parse(
+            "2026-09-12T15:50:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var snapshot = CreateSnapshot(fetchedAt) with { CarrierFetchedAt = fetchedAt };
         using var viewModel = new CommanderProfileViewModel(
             new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt))
@@ -346,7 +361,10 @@ public sealed class CommanderProfileViewModelTests
     [Fact]
     public async Task CarrierLocationClearsARequestedJumpOnlyAfterItsDepartureTime()
     {
-        var fetchedAt = DateTimeOffset.Parse("2026-09-12T15:50:00Z");
+        var fetchedAt = DateTimeOffset.Parse(
+            "2026-09-12T15:50:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var snapshot = CreateSnapshot(fetchedAt) with { CarrierFetchedAt = fetchedAt };
         using var viewModel = new CommanderProfileViewModel(
             new StubAccountService(new FrontierAccountState(true, snapshot, snapshot.FetchedAt))
@@ -385,7 +403,10 @@ public sealed class CommanderProfileViewModelTests
     [Fact]
     public async Task NewerCapiCarrierJumpWinsOverOlderJournalState()
     {
-        var fetchedAt = DateTimeOffset.Parse("2026-09-12T15:50:00Z");
+        var fetchedAt = DateTimeOffset.Parse(
+            "2026-09-12T15:50:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var snapshot = CreateSnapshot(fetchedAt) with
         {
             Carrier = CreateSnapshot(fetchedAt).Carrier! with { CurrentJump = "Achenar" },
@@ -413,7 +434,10 @@ public sealed class CommanderProfileViewModelTests
     [Fact]
     public async Task JournalAddsPersonalGoalProgressWithoutLosingInaraDetails()
     {
-        var fetchedAt = DateTimeOffset.Parse("2026-07-31T12:00:00Z");
+        var fetchedAt = DateTimeOffset.Parse(
+            "2026-07-31T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var accountGoal = Assert.Single(CreateSnapshot(fetchedAt).CommunityGoals!) with
         {
             Description = "Expanded global briefing",
@@ -488,12 +512,18 @@ public sealed class CommanderProfileViewModelTests
     [Fact]
     public async Task HistoricalJournalProgressSupplementsCompletedInaraGoal()
     {
-        var fetchedAt = DateTimeOffset.Parse("2026-07-31T12:00:00Z");
+        var fetchedAt = DateTimeOffset.Parse(
+            "2026-07-31T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var accountGoal = Assert.Single(CreateSnapshot(fetchedAt).CommunityGoals!) with
         {
             Id = null,
             Title = "Vista Genomics Exobiology Initiative",
-            ExpiresAt = DateTimeOffset.Parse("2026-07-09T10:00:00Z"),
+            ExpiresAt = DateTimeOffset.Parse(
+                "2026-07-09T10:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            ),
             IsComplete = true,
             PlayerContribution = 0,
             PlayerPercentile = null,
@@ -543,7 +573,10 @@ public sealed class CommanderProfileViewModelTests
     [Fact]
     public async Task CompletedGoalsArePresentedNewestFirst()
     {
-        var fetchedAt = DateTimeOffset.Parse("2026-07-31T12:00:00Z");
+        var fetchedAt = DateTimeOffset.Parse(
+            "2026-07-31T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var template = Assert.Single(CreateSnapshot(fetchedAt).CommunityGoals!);
         FrontierCommunityGoalSnapshot Completed(string title, string lastUpdate) =>
             template with
@@ -551,7 +584,9 @@ public sealed class CommanderProfileViewModelTests
                 Id = null,
                 Title = title,
                 IsComplete = true,
-                ExpiresAt = DateTimeOffset.Parse(lastUpdate).AddHours(1),
+                ExpiresAt = DateTimeOffset
+                    .Parse(lastUpdate, global::System.Globalization.CultureInfo.InvariantCulture)
+                    .AddHours(1),
                 DataPoints = [new("inara.lastUpdate", lastUpdate)],
             };
         var snapshot = CreateSnapshot(fetchedAt) with
@@ -625,7 +660,10 @@ public sealed class CommanderProfileViewModelTests
         using var viewModel = new CommanderProfileViewModel(
             new StubAccountService(new FrontierAccountState(false, null, null))
         );
-        var timestamp = DateTimeOffset.Parse("2026-07-29T12:00:00Z");
+        var timestamp = DateTimeOffset.Parse(
+            "2026-07-29T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var cargo = new CargoSnapshot(timestamp, "Cargo", "Ship", 3, [new CargoItem("gold", "Gold", 3, 1)]);
         var locker = new ShipLockerSnapshot(
             timestamp,
@@ -1103,7 +1141,10 @@ public sealed class CommanderProfileViewModelTests
 
                 """
             );
-            var fetchedAt = DateTimeOffset.Parse("2026-07-29T12:00:00Z");
+            var fetchedAt = DateTimeOffset.Parse(
+                "2026-07-29T12:00:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            );
             var snapshot = CreateSnapshot(fetchedAt) with
             {
                 Carrier = null,
@@ -1163,7 +1204,10 @@ public sealed class CommanderProfileViewModelTests
 
                 """
             );
-            var fetchedAt = DateTimeOffset.Parse("2026-09-12T15:50:00Z");
+            var fetchedAt = DateTimeOffset.Parse(
+                "2026-09-12T15:50:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            );
             var cached = CreateSnapshot(fetchedAt) with
             {
                 Carrier = CreateSnapshot(fetchedAt).Carrier! with { CurrentJump = string.Empty },

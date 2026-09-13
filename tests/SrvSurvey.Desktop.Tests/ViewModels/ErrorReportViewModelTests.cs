@@ -12,7 +12,7 @@ public sealed class ErrorReportViewModelTests : IDisposable
     );
 
     [Fact]
-    public void CapturesErrorRecentLogsAndExistingJournalAtCreationTime()
+    public async Task CapturesErrorRecentLogsAndExistingJournalAtCreationTime()
     {
         var log = new ApplicationLogService(temporaryDirectory);
         for (var index = 0; index < 25; index++)
@@ -22,7 +22,7 @@ public sealed class ErrorReportViewModelTests : IDisposable
 
         var journalPath = Path.Combine(temporaryDirectory, "Journal.test.log");
         Directory.CreateDirectory(temporaryDirectory);
-        File.WriteAllText(journalPath, "journal");
+        await File.WriteAllTextAsync(journalPath, "journal");
         var exception = CaptureException();
 
         var viewModel = new ErrorReportViewModel(exception, "2.0.0", log, journalPath);
@@ -43,7 +43,9 @@ public sealed class ErrorReportViewModelTests : IDisposable
         var exception = CaptureException();
         var viewModel = new ErrorReportViewModel(exception, "2.0.0") { Steps = "Jumped to Sol & opened the map" };
 
-        var uri = viewModel.BuildIssueUri(DateTimeOffset.Parse("2026-07-25T13:14:15-05:00"));
+        var uri = viewModel.BuildIssueUri(
+            DateTimeOffset.Parse("2026-07-25T13:14:15-05:00", global::System.Globalization.CultureInfo.InvariantCulture)
+        );
         var decodedQuery = WebUtility.UrlDecode(uri.Query);
 
         Assert.Equal("github.com", uri.Host);
@@ -64,7 +66,7 @@ public sealed class ErrorReportViewModelTests : IDisposable
     {
         var journalPath = Path.Combine(temporaryDirectory, "Journal.test.log");
         Directory.CreateDirectory(temporaryDirectory);
-        File.WriteAllText(journalPath, "journal");
+        await File.WriteAllTextAsync(journalPath, "journal");
         var viewModel = new ErrorReportViewModel(CaptureException(), "2.0.0", journalPath: journalPath);
         string? copied = null;
         Uri? launchedUri = null;

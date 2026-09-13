@@ -172,7 +172,7 @@ public sealed class LegacyProfileImporterTests : IDisposable
         Assert.False(Directory.Exists(backups));
         Assert.Equal(
             ["empty"],
-            Directory.EnumerateDirectories(source).Select(path => Path.GetFileName(path)!).ToArray()
+            Directory.EnumerateDirectories(source).Select(path => Path.GetFileName(path)).ToArray()
         );
     }
 

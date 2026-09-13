@@ -336,7 +336,7 @@ public sealed class MiningSearchViewModelTests
             using var registration = cancellationToken.Register(() =>
             {
                 CancellationEntered.TrySetResult();
-                Release.Wait(TimeSpan.FromSeconds(10));
+                Release.Wait(TimeSpan.FromSeconds(10), CancellationToken.None);
             });
             await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
             throw new InvalidOperationException("Canceled request must not complete.");

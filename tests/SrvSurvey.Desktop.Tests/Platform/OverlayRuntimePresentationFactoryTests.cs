@@ -28,6 +28,14 @@ public sealed class OverlayRuntimePresentationFactoryTests
             ],
             ["PlotFleetCarrierRoute"] = ["Jump cooldown", "Jump scheduled", "Route only"],
             ["PlotPulse"] = ["SCO cooling", "SCO active", "SCO ready", "Journal pulse"],
+            ["PlotSurfaceMiningSurvey"] =
+            [
+                "Border setup",
+                "Move to center",
+                "Confirm center",
+                "Scan waypoint",
+                "Survey complete",
+            ],
         };
 
         foreach (var (plotterName, stateNames) in expected)

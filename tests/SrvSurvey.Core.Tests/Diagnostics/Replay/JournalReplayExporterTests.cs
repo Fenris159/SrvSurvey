@@ -38,10 +38,10 @@ public sealed class JournalReplayExporterTests
 
         Assert.Equal(5, result.EventCount);
         Assert.Equal(4, result.BootstrapEventCount);
-        using var archive = ZipFile.OpenRead(destination);
+        using var archive = await ZipFile.OpenReadAsync(destination);
         var journalEntry = archive.GetEntry("journal.jsonl");
         Assert.NotNull(journalEntry);
-        using var reader = new StreamReader(journalEntry.Open());
+        using var reader = new StreamReader(await journalEntry.OpenAsync());
         var lines = (await reader.ReadToEndAsync()).Split('\n', StringSplitOptions.RemoveEmptyEntries);
         Assert.Equal(["Fileheader", "Commander", "LoadGame", "Location", "FSDJump"], lines.Select(GetEventName));
         Assert.NotNull(archive.GetEntry("replay-package.json"));
@@ -72,8 +72,8 @@ public sealed class JournalReplayExporterTests
             CancellationToken.None
         );
 
-        using var archive = ZipFile.OpenRead(destination);
-        using var reader = new StreamReader(archive.GetEntry("journal.jsonl")!.Open());
+        using var archive = await ZipFile.OpenReadAsync(destination);
+        using var reader = new StreamReader(await archive.GetEntry("journal.jsonl")!.OpenAsync());
         var journal = await reader.ReadToEndAsync();
         Assert.DoesNotContain("do-not-share", journal, StringComparison.Ordinal);
         Assert.DoesNotContain("also-secret", journal, StringComparison.Ordinal);
@@ -123,8 +123,8 @@ public sealed class JournalReplayExporterTests
             CancellationToken.None
         );
 
-        using (var archive = ZipFile.OpenRead(destination))
-        using (var reader = new StreamReader(archive.GetEntry("journal.jsonl")!.Open()))
+        using (var archive = await ZipFile.OpenReadAsync(destination))
+        using (var reader = new StreamReader(await archive.GetEntry("journal.jsonl")!.OpenAsync()))
         {
             var journal = await reader.ReadToEndAsync();
             Assert.Contains("\"Name\":", journal, StringComparison.Ordinal);
@@ -174,8 +174,8 @@ public sealed class JournalReplayExporterTests
             CancellationToken.None
         );
 
-        using var archive = ZipFile.OpenRead(destination);
-        using var reader = new StreamReader(archive.GetEntry("journal.jsonl")!.Open());
+        using var archive = await ZipFile.OpenReadAsync(destination);
+        using var reader = new StreamReader(await archive.GetEntry("journal.jsonl")!.OpenAsync());
         var journal = await reader.ReadToEndAsync();
         Assert.Contains("\"Raw\":[{\"Name\":\"iron\",\"Count\":12}]", journal);
     }
@@ -206,8 +206,8 @@ public sealed class JournalReplayExporterTests
             journals,
             destination,
             new JournalReplayExportRequest(
-                DateTimeOffset.Parse("2026-08-21T18:00:01Z"),
-                DateTimeOffset.Parse("2026-08-21T18:00:01Z"),
+                DateTimeOffset.Parse("2026-08-21T18:00:01Z", global::System.Globalization.CultureInfo.InvariantCulture),
+                DateTimeOffset.Parse("2026-08-21T18:00:01Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 ReplayPrivacyMode.Raw,
                 "test"
             ),
@@ -216,8 +216,8 @@ public sealed class JournalReplayExporterTests
 
         Assert.Equal(2, result.EventCount);
         Assert.Equal(1, result.BootstrapEventCount);
-        using var archive = ZipFile.OpenRead(destination);
-        using var reader = new StreamReader(archive.GetEntry("journal.jsonl")!.Open());
+        using var archive = await ZipFile.OpenReadAsync(destination);
+        using var reader = new StreamReader(await archive.GetEntry("journal.jsonl")!.OpenAsync());
         Assert.Equal(
             ["Commander", "Location"],
             (await reader.ReadToEndAsync()).Split('\n', StringSplitOptions.RemoveEmptyEntries).Select(GetEventName)
@@ -250,8 +250,8 @@ public sealed class JournalReplayExporterTests
             CancellationToken.None
         );
 
-        using var archive = ZipFile.OpenRead(destination);
-        using var reader = new StreamReader(archive.GetEntry("journal.jsonl")!.Open());
+        using var archive = await ZipFile.OpenReadAsync(destination);
+        using var reader = new StreamReader(await archive.GetEntry("journal.jsonl")!.OpenAsync());
         var events = (await reader.ReadToEndAsync())
             .Split('\n', StringSplitOptions.RemoveEmptyEntries)
             .Select(json => System.Text.Json.JsonDocument.Parse(json))
@@ -297,8 +297,8 @@ public sealed class JournalReplayExporterTests
             CancellationToken.None
         );
 
-        using var archive = ZipFile.OpenRead(destination);
-        using var reader = new StreamReader(archive.GetEntry("journal.jsonl")!.Open());
+        using var archive = await ZipFile.OpenReadAsync(destination);
+        using var reader = new StreamReader(await archive.GetEntry("journal.jsonl")!.OpenAsync());
         var lines = (await reader.ReadToEndAsync()).Split('\n', StringSplitOptions.RemoveEmptyEntries);
         using var first = System.Text.Json.JsonDocument.Parse(lines[0]);
         using var second = System.Text.Json.JsonDocument.Parse(lines[1]);
@@ -329,16 +329,16 @@ public sealed class JournalReplayExporterTests
             journals,
             destination,
             new JournalReplayExportRequest(
-                DateTimeOffset.Parse("2026-08-21T18:10:02Z"),
-                DateTimeOffset.Parse("2026-08-21T18:10:02Z"),
+                DateTimeOffset.Parse("2026-08-21T18:10:02Z", global::System.Globalization.CultureInfo.InvariantCulture),
+                DateTimeOffset.Parse("2026-08-21T18:10:02Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 ReplayPrivacyMode.Raw,
                 "test"
             ),
             CancellationToken.None
         );
 
-        using var archive = ZipFile.OpenRead(destination);
-        using var reader = new StreamReader(archive.GetEntry("journal.jsonl")!.Open());
+        using var archive = await ZipFile.OpenReadAsync(destination);
+        using var reader = new StreamReader(await archive.GetEntry("journal.jsonl")!.OpenAsync());
         var journal = await reader.ReadToEndAsync();
         Assert.DoesNotContain("First Cmdr", journal, StringComparison.Ordinal);
         Assert.DoesNotContain("F111111", journal, StringComparison.Ordinal);
@@ -367,16 +367,16 @@ public sealed class JournalReplayExporterTests
             journals,
             destination,
             new JournalReplayExportRequest(
-                DateTimeOffset.Parse("2026-08-21T18:10:01Z"),
-                DateTimeOffset.Parse("2026-08-21T18:10:01Z"),
+                DateTimeOffset.Parse("2026-08-21T18:10:01Z", global::System.Globalization.CultureInfo.InvariantCulture),
+                DateTimeOffset.Parse("2026-08-21T18:10:01Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 ReplayPrivacyMode.Raw,
                 "test"
             ),
             CancellationToken.None
         );
 
-        using var archive = ZipFile.OpenRead(destination);
-        using var reader = new StreamReader(archive.GetEntry("journal.jsonl")!.Open());
+        using var archive = await ZipFile.OpenReadAsync(destination);
+        using var reader = new StreamReader(await archive.GetEntry("journal.jsonl")!.OpenAsync());
         var journal = await reader.ReadToEndAsync();
         Assert.DoesNotContain("First System", journal, StringComparison.Ordinal);
         Assert.DoesNotContain("\"event\":\"Location\"", journal, StringComparison.Ordinal);
@@ -413,8 +413,8 @@ public sealed class JournalReplayExporterTests
             CancellationToken.None
         );
 
-        using (var archive = ZipFile.OpenRead(destination))
-        using (var reader = new StreamReader(archive.GetEntry("replay-package.json")!.Open()))
+        using (var archive = await ZipFile.OpenReadAsync(destination))
+        using (var reader = new StreamReader(await archive.GetEntry("replay-package.json")!.OpenAsync()))
         {
             var manifest = await reader.ReadToEndAsync();
             Assert.Contains("missingCompanionTimelines", manifest);

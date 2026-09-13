@@ -70,10 +70,16 @@ public sealed class JourneyJournalProcessorTests
         var replay = processor.ApplyCatchUp(events);
 
         Assert.Equal(events.Length - 1, replay.ProcessedEventCount);
-        Assert.Equal(DateTimeOffset.Parse("2026-07-01T00:00:18Z"), replay.Journey.Watermark);
+        Assert.Equal(
+            DateTimeOffset.Parse("2026-07-01T00:00:18Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            replay.Journey.Watermark
+        );
         Assert.Equal(2, replay.Journey.VisitedSystems.Count);
         var sol = replay.Journey.VisitedSystems[0];
-        Assert.Equal(DateTimeOffset.Parse("2026-07-01T00:00:17Z"), sol.Departed);
+        Assert.Equal(
+            DateTimeOffset.Parse("2026-07-01T00:00:17Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            sol.Departed
+        );
         Assert.Equal(2, sol.Counts.BodyScans);
         Assert.Equal(1, sol.Counts.Stars);
         Assert.Equal(1, sol.Counts.DetailedSurfaceScans);
@@ -143,7 +149,13 @@ public sealed class JourneyJournalProcessorTests
             BodiesScanned = new HashSet<int> { 4 },
             Counts = JourneyCounts.Empty with { BodyScans = 1, ExplorationRewards = scanReward },
         };
-        var journey = CreateJourney([visit]) with { Watermark = DateTimeOffset.Parse("2026-07-01T00:01:00Z") };
+        var journey = CreateJourney([visit]) with
+        {
+            Watermark = DateTimeOffset.Parse(
+                "2026-07-01T00:01:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            ),
+        };
         var processor = new JourneyJournalProcessor(journey, Catalog, true);
 
         var result = processor.ApplyCatchUp([
@@ -184,7 +196,13 @@ public sealed class JourneyJournalProcessorTests
     public void LiveProcessingAcceptsEqualWatermarkAndRejectsOlderEvents()
     {
         var visit = CreateVisit();
-        var journey = CreateJourney([visit]) with { Watermark = DateTimeOffset.Parse("2026-07-01T00:01:00Z") };
+        var journey = CreateJourney([visit]) with
+        {
+            Watermark = DateTimeOffset.Parse(
+                "2026-07-01T00:01:00Z",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            ),
+        };
         var processor = new JourneyJournalProcessor(journey, Catalog, true);
 
         var older = processor.Apply(Parse("""{"timestamp":"2026-07-01T00:00:59Z","event":"Screenshot"}"""));
@@ -210,7 +228,10 @@ public sealed class JourneyJournalProcessorTests
         );
 
         Assert.Empty(processor.Journey.VisitedSystems);
-        Assert.Equal(DateTimeOffset.Parse("2026-07-01T00:00:02Z"), processor.Journey.Watermark);
+        Assert.Equal(
+            DateTimeOffset.Parse("2026-07-01T00:00:02Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            processor.Journey.Watermark
+        );
     }
 
     private static JourneyDocument CreateJourney(IReadOnlyList<JourneySystemVisit>? visits = null)
@@ -223,9 +244,9 @@ public sealed class JourneyJournalProcessorTests
             "Test journey",
             string.Empty,
             "Journal.2026-07-01T000000.01.log",
-            DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+            DateTimeOffset.Parse("2026-07-01T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
             null,
-            DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+            DateTimeOffset.Parse("2026-07-01T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
             visits ?? []
         );
     }
@@ -234,7 +255,7 @@ public sealed class JourneyJournalProcessorTests
     {
         return new JourneySystemVisit(
             new JourneySystemReference("Sol", 42, new SrvSurvey.Core.Search.GalacticCoordinate(0, 0, 0)),
-            DateTimeOffset.Parse("2026-07-01T00:00:01Z"),
+            DateTimeOffset.Parse("2026-07-01T00:00:01Z", global::System.Globalization.CultureInfo.InvariantCulture),
             null,
             JourneyCounts.Empty,
             null,

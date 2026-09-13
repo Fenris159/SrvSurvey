@@ -94,6 +94,7 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
     public IReadOnlyList<SurfaceRadarMarkerViewModel> RadarMarkers { get; private set; } = [];
     public IReadOnlyList<SurfaceRadarPathViewModel> SplatBoundaries { get; private set; } = [];
     public IReadOnlyList<SurfaceRadarPointViewModel> SuggestedRigLocations { get; private set; } = [];
+    public double RadarScale { get; private set; } = 1;
     public IReadOnlyList<MiningRigViewModel> Rigs { get; private set; } = EmptyRigs();
     public IReadOnlyList<MiningResourceViewModel> Resources { get; private set; } = [];
     public bool HasResources => Resources.Count > 0;
@@ -487,8 +488,30 @@ public sealed class SurfaceMiningViewModel : INotifyPropertyChanged, IDisposable
         }
 
         (SplatBoundaries, SuggestedRigLocations) = validPosition ? CreateSplatPresentation() : ([], []);
+        RadarScale = GetSplatRadarScale(SplatBoundaries, SuggestedRigLocations);
 
         Notify();
+    }
+
+    private static double GetSplatRadarScale(
+        IReadOnlyList<SurfaceRadarPathViewModel> boundaries,
+        IReadOnlyList<SurfaceRadarPointViewModel> suggestions
+    )
+    {
+        IEnumerable<double> focusDistances = suggestions.Select(suggestion => suggestion.DistanceMeters);
+        foreach (SurfaceRadarPathViewModel boundary in boundaries.Where(boundary => !boundary.IsClosed))
+        {
+            focusDistances = focusDistances.Concat(boundary.Points.Select(point => point.DistanceMeters));
+        }
+
+        double nearest = focusDistances.DefaultIfEmpty(double.PositiveInfinity).Min();
+        return nearest switch
+        {
+            <= 25 => 6,
+            <= 50 => 4,
+            <= 100 => 2,
+            _ => 1,
+        };
     }
 
     private (

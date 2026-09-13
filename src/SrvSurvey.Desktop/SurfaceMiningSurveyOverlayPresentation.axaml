@@ -3,10 +3,7 @@
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:Class="SrvSurvey.Desktop.SurfaceMiningSurveyOverlayPresentation"
              x:DataType="vm:MineMapViewModel"
-             MinWidth="360"
-             MaxWidth="720"
-             MaxHeight="126"
-             ClipToBounds="True">
+             MinWidth="360">
   <Border Classes="overlay-panel"
           Padding="10,8"
           Background="{DynamicResource RavenWindowBrush}"
@@ -15,24 +12,20 @@
           CornerRadius="6">
     <Grid RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="3">
       <TextBlock Classes="overlay-header"
-                 Text="{Binding SurveyGuideTitle}"
-                 TextTrimming="CharacterEllipsis" />
+                 Text="{Binding SurveyGuideTitle}" />
       <TextBlock Grid.Row="1"
                  FontSize="12"
-                 Text="{Binding SurveyGuideInstruction}"
-                 TextTrimming="CharacterEllipsis" />
+                 Text="{Binding SurveyGuideInstruction}" />
       <TextBlock Grid.Row="2"
                  Classes="monospace"
                  Foreground="{DynamicResource RavenAccentBrush}"
                  FontSize="11"
-                 Text="{Binding SurveyGuideCommandHint}"
-                 TextTrimming="CharacterEllipsis" />
+                 Text="{Binding SurveyGuideCommandHint}" />
       <TextBlock Grid.Row="3"
                  Classes="muted"
                  FontSize="11"
-                 IsVisible="{Binding HasSurveyGuideFeedback}"
-                 Text="{Binding SurveyGuideFeedback}"
-                 TextTrimming="CharacterEllipsis" />
+                 IsVisible="{Binding HasSurveyGuideFooter}"
+                 Text="{Binding SurveyGuideFooter}" />
     </Grid>
   </Border>
 </UserControl>

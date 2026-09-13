@@ -112,7 +112,7 @@ public sealed class HumanSiteVehicleTrackerTests
         using var document = JsonDocument.Parse(json);
         return new JournalEventEnvelope(
             eventName,
-            DateTimeOffset.Parse("2026-07-25T12:00:00Z"),
+            DateTimeOffset.Parse("2026-07-25T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
             json,
             document.RootElement.Clone()
         );

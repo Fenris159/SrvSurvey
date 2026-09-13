@@ -1201,7 +1201,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         );
 
         Assert.True(viewModel.HasTimedBiologySelection);
-        Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
+        Assert.True(viewModel.BiologySurvey.IsBodyDetail);
         Assert.Equal("Test 2", viewModel.BiologySurvey.Heading);
         Assert.Equal(100, viewModel.TimedBiologySelectionProgressPercent);
 
@@ -1215,7 +1215,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         );
 
         Assert.True(viewModel.HasTimedBiologySelection);
-        Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
+        Assert.True(viewModel.BiologySurvey.IsBodyDetail);
 
         now = now.AddSeconds(3);
         Assert.False(viewModel.RefreshTransientState());
@@ -1224,13 +1224,13 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         now = now.AddSeconds(3);
         Assert.True(viewModel.RefreshTransientState());
         Assert.False(viewModel.HasTimedBiologySelection);
-        Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
+        Assert.True(viewModel.BiologySurvey.IsSystemOverview);
 
         viewModel.BodyPredictionPreviewExtensionSeconds = 5;
         viewModel.ApplyUpdate([], firstStatus);
 
         Assert.True(viewModel.HasTimedBiologySelection);
-        Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
+        Assert.True(viewModel.BiologySurvey.IsBodyDetail);
 
         now = now.AddSeconds(8);
         Assert.False(viewModel.RefreshTransientState());
@@ -1239,7 +1239,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         now = now.AddSeconds(1);
         Assert.True(viewModel.RefreshTransientState());
         Assert.False(viewModel.HasTimedBiologySelection);
-        Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
+        Assert.True(viewModel.BiologySurvey.IsSystemOverview);
     }
 
     [Fact]
@@ -1319,7 +1319,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
 
         viewModel.ApplyUpdate([], nearBodyStatus with { Flags = StatusFlags.InMainShip });
 
-        Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
+        Assert.True(viewModel.BiologySurvey.IsSystemOverview);
         Assert.Null(viewModel.BiologyStatus);
         Assert.False(viewModel.ShouldShowBioSystem);
     }
@@ -1432,7 +1432,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         now = now.AddSeconds(121);
 
         Assert.True(viewModel.RefreshTransientState());
-        Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
+        Assert.True(viewModel.BiologySurvey.IsSystemOverview);
         Assert.Null(viewModel.BiologyStatus);
     }
 
@@ -1479,7 +1479,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         );
 
         Assert.True(viewModel.IsWithinPostDssBiologyWindow);
-        Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
+        Assert.True(viewModel.BiologySurvey.IsBodyDetail);
         Assert.Equal("Test 1", viewModel.BiologySurvey.Heading);
         Assert.Equal("DSS Scan Complete\nExact Organisms Identified", viewModel.BiologySurvey.PredictionStatus);
         Assert.NotNull(viewModel.BiologyStatus);
@@ -1487,7 +1487,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         now = now.AddSeconds(121);
 
         Assert.True(viewModel.RefreshTransientState());
-        Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
+        Assert.True(viewModel.BiologySurvey.IsSystemOverview);
         Assert.Null(viewModel.BiologyStatus);
     }
 
@@ -1527,7 +1527,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
 
         viewModel.KeepBioPlottersVisibleAfterDss = false;
 
-        Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
+        Assert.True(viewModel.BiologySurvey.IsSystemOverview);
         Assert.Null(viewModel.BiologyStatus);
 
         var visibilityChanges = 0;
@@ -1541,20 +1541,20 @@ public sealed class SystemSurveyViewModelTests : IDisposable
 
         viewModel.KeepBioPlottersVisibleAfterDss = true;
 
-        Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
+        Assert.True(viewModel.BiologySurvey.IsBodyDetail);
         Assert.NotNull(viewModel.BiologyStatus);
         Assert.True(visibilityChanges > 0);
         Assert.False(viewModel.ShouldShowBioStatus);
 
         viewModel.BioPlotterDssDurationSeconds = 0;
 
-        Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
+        Assert.True(viewModel.BiologySurvey.IsSystemOverview);
         Assert.Null(viewModel.BiologyStatus);
 
         visibilityChanges = 0;
         viewModel.BioPlotterDssDurationSeconds = 120;
 
-        Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
+        Assert.True(viewModel.BiologySurvey.IsBodyDetail);
         Assert.NotNull(viewModel.BiologyStatus);
         Assert.True(visibilityChanges > 0);
         Assert.False(viewModel.ShouldShowBioStatus);
@@ -1621,9 +1621,9 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.Equal("Silicate Vapour Fumarole", Assert.Single(biology.GeologicalSignals));
 
         viewModel.HideGeoCountInBioSystem = true;
-        Assert.False(viewModel.BiologySurvey!.HasGeologicalSignals);
+        Assert.False(viewModel.BiologySurvey.HasGeologicalSignals);
         viewModel.HighlightRegionalFirsts = true;
-        Assert.True(Assert.Single(viewModel.BiologySurvey!.Organisms).IsHighlightedFirst);
+        Assert.True(Assert.Single(viewModel.BiologySurvey.Organisms).IsHighlightedFirst);
     }
 
     [Fact]
@@ -1687,7 +1687,11 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         );
         var previouslyDiscovered = new Dictionary<long, CommanderCodexFirst>
         {
-            [reference.EntryId] = new(DateTimeOffset.Parse("2026-01-01T00:00:00Z"), 99, 7),
+            [reference.EntryId] = new(
+                DateTimeOffset.Parse("2026-01-01T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
+                99,
+                7
+            ),
         };
         viewModel.UpdateCommanderCodexContext(
             new CommanderCodexData("fid", "Cmdr Test", 0, null, previouslyDiscovered),
@@ -1711,7 +1715,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             new EliteStatus { GuiFocus = GuiFocus.Fss }
         );
 
-        var confirmed = Assert.Single(viewModel.BiologySurvey!.Organisms);
+        var confirmed = Assert.Single(viewModel.BiologySurvey.Organisms);
         Assert.False(confirmed.IsPrediction);
         Assert.False(confirmed.IsGlobalRegionalFirst);
         Assert.False(confirmed.IsCommanderFirst);
@@ -1753,7 +1757,14 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             null,
             new Dictionary<long, CommanderCodexFirst>
             {
-                [2310101] = new(DateTimeOffset.Parse("2026-01-01T00:00:00Z"), 99, 7),
+                [2310101] = new(
+                    DateTimeOffset.Parse(
+                        "2026-01-01T00:00:00Z",
+                        global::System.Globalization.CultureInfo.InvariantCulture
+                    ),
+                    99,
+                    7
+                ),
             }
         );
         var emptyRegional = new CommanderCodexData(
@@ -1765,25 +1776,32 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         );
         viewModel.UpdateCommanderCodexContext(globalOtherLocation, emptyRegional);
 
-        var regional = Assert.Single(viewModel.BiologySurvey!.Organisms);
+        var regional = Assert.Single(viewModel.BiologySurvey.Organisms);
         Assert.False(regional.IsGlobalRegionalFirst);
         Assert.False(regional.IsCommanderFirst);
         Assert.True(regional.IsRegionalFirst);
         Assert.False(regional.IsHighlightedFirst);
 
         viewModel.HighlightRegionalFirsts = true;
-        Assert.True(Assert.Single(viewModel.BiologySurvey!.Organisms).IsHighlightedFirst);
+        Assert.True(Assert.Single(viewModel.BiologySurvey.Organisms).IsHighlightedFirst);
 
         var globalCurrentLocation = globalOtherLocation with
         {
             Firsts = new Dictionary<long, CommanderCodexFirst>
             {
-                [2310101] = new(DateTimeOffset.Parse("2026-01-01T00:00:00Z"), 42, 1),
+                [2310101] = new(
+                    DateTimeOffset.Parse(
+                        "2026-01-01T00:00:00Z",
+                        global::System.Globalization.CultureInfo.InvariantCulture
+                    ),
+                    42,
+                    1
+                ),
             },
         };
         viewModel.UpdateCommanderCodexContext(globalCurrentLocation, emptyRegional);
 
-        var commander = Assert.Single(viewModel.BiologySurvey!.Organisms);
+        var commander = Assert.Single(viewModel.BiologySurvey.Organisms);
         Assert.False(commander.IsGlobalRegionalFirst);
         Assert.True(commander.IsCommanderFirst);
         Assert.False(commander.IsRegionalFirst);
@@ -1822,7 +1840,14 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             null,
             new Dictionary<long, CommanderCodexFirst>
             {
-                [2310101] = new(DateTimeOffset.Parse("2026-01-01T00:00:00Z"), 99, 7),
+                [2310101] = new(
+                    DateTimeOffset.Parse(
+                        "2026-01-01T00:00:00Z",
+                        global::System.Globalization.CultureInfo.InvariantCulture
+                    ),
+                    99,
+                    7
+                ),
             }
         );
         var emptyRegional = new CommanderCodexData(
@@ -1849,7 +1874,14 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             {
                 Firsts = new Dictionary<long, CommanderCodexFirst>
                 {
-                    [2310101] = new(DateTimeOffset.Parse("2026-02-01T00:00:00Z"), 88, 6),
+                    [2310101] = new(
+                        DateTimeOffset.Parse(
+                            "2026-02-01T00:00:00Z",
+                            global::System.Globalization.CultureInfo.InvariantCulture
+                        ),
+                        88,
+                        6
+                    ),
                 },
             },
             18
@@ -1886,7 +1918,14 @@ public sealed class SystemSurveyViewModelTests : IDisposable
                 null,
                 new Dictionary<long, CommanderCodexFirst>
                 {
-                    [reference.EntryId] = new(DateTimeOffset.Parse("2026-01-01T00:00:00Z"), 99, 7),
+                    [reference.EntryId] = new(
+                        DateTimeOffset.Parse(
+                            "2026-01-01T00:00:00Z",
+                            global::System.Globalization.CultureInfo.InvariantCulture
+                        ),
+                        99,
+                        7
+                    ),
                 }
             ),
             new CommanderCodexData(
@@ -1959,7 +1998,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
 
         viewModel.DrawBodyBiosOnlyWhenNear = false;
 
-        Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
+        Assert.True(viewModel.BiologySurvey.IsBodyDetail);
         Assert.Equal("Test 2", viewModel.BiologySurvey.Heading);
         Assert.True(viewModel.ShouldShowBioSystem);
         Assert.True(notifiedVisible);
@@ -2007,7 +2046,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             new EliteStatus { Flags = StatusFlags.InMainShip | StatusFlags.Supercruise, Destination = destination }
         );
 
-        Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
+        Assert.True(viewModel.BiologySurvey.IsSystemOverview);
         Assert.True(viewModel.ShouldShowBioSystem);
     }
 
@@ -2064,19 +2103,19 @@ public sealed class SystemSurveyViewModelTests : IDisposable
 
         viewModel.ApplyUpdate([], new EliteStatus { Flags = StatusFlags.Supercruise });
 
-        var rows = viewModel.BiologySurvey!.Bodies;
+        var rows = viewModel.BiologySurvey.Bodies;
         Assert.False(rows.Single(row => row.BodyId == 1).HasCanonnSignals);
         Assert.True(rows.Single(row => row.BodyId == 2).HasCanonnSignals);
 
         viewModel.UseExternalData = false;
-        Assert.All(viewModel.BiologySurvey!.Bodies, row => Assert.False(row.HasCanonnSignals));
+        Assert.All(viewModel.BiologySurvey.Bodies, row => Assert.False(row.HasCanonnSignals));
         viewModel.UseExternalData = true;
-        Assert.True(viewModel.BiologySurvey!.Bodies.Single(row => row.BodyId == 2).HasCanonnSignals);
+        Assert.True(viewModel.BiologySurvey.Bodies.Single(row => row.BodyId == 2).HasCanonnSignals);
 
         viewModel.AutoShowPriorScans = false;
-        Assert.All(viewModel.BiologySurvey!.Bodies, row => Assert.False(row.HasCanonnSignals));
+        Assert.All(viewModel.BiologySurvey.Bodies, row => Assert.False(row.HasCanonnSignals));
         viewModel.AutoShowPriorScans = true;
-        Assert.True(viewModel.BiologySurvey!.Bodies.Single(row => row.BodyId == 2).HasCanonnSignals);
+        Assert.True(viewModel.BiologySurvey.Bodies.Single(row => row.BodyId == 2).HasCanonnSignals);
 
         viewModel.ApplyUpdate([], new EliteStatus { Flags = StatusFlags.InMainShip, BodyName = "Test 2" });
 
@@ -2158,14 +2197,14 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             ),
             18
         );
-        prediction = Assert.Single(viewModel.BiologySurvey!.Organisms);
+        prediction = Assert.Single(viewModel.BiologySurvey.Organisms);
         Assert.True(prediction.IsGlobalRegionalFirst);
         Assert.False(prediction.IsCommanderFirst);
         Assert.False(prediction.IsRegionalFirst);
         Assert.True(prediction.IsHighlightedFirst);
 
         viewModel.ApplyUpdate([], new EliteStatus { GuiFocus = GuiFocus.SystemMap });
-        var candidateBand = Assert.Single(Assert.Single(viewModel.BiologySurvey!.Bodies).RewardBands);
+        var candidateBand = Assert.Single(Assert.Single(viewModel.BiologySurvey.Bodies).RewardBands);
         Assert.True(candidateBand.IsPrediction);
         Assert.True(candidateBand.IsHighlighted);
         Assert.True(candidateBand.IsGlobalRegionalFirst);
@@ -2174,7 +2213,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
 
         viewModel.DisableBioPredictions = true;
 
-        var genus = Assert.Single(viewModel.BiologySurvey!.Organisms);
+        var genus = Assert.Single(viewModel.BiologySurvey.Organisms);
         Assert.Equal("Aleoida", genus.DisplayName);
         Assert.False(genus.IsPrediction);
         Assert.True(genus.IsGenusIdentified);

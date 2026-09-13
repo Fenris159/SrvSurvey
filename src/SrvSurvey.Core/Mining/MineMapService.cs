@@ -124,6 +124,15 @@ public sealed record MineMapSurveyGuideState(
 /// </summary>
 public sealed class MineMapService : IDisposable
 {
+    private sealed record SurveyGuideProgress(
+        MineMapSurveyGuidePhase Phase,
+        string FrontierId,
+        long SystemAddress,
+        int BodyId,
+        Guid? SurveyId,
+        int WaypointIndex
+    );
+
     private sealed record MarkerPlacement(
         SurfaceCoordinate Location,
         string Material,
@@ -155,6 +164,7 @@ public sealed class MineMapService : IDisposable
 
     private readonly BookmarkCatalog bookmarks;
     private readonly string legacyDirectory;
+    private readonly string surveyGuidePath;
     private readonly SemaphoreSlim gate = new(1, 1);
     private IReadOnlyList<MineMapSurvey> surveys;
 
@@ -163,8 +173,10 @@ public sealed class MineMapService : IDisposable
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
         bookmarks = bookmarkCatalog ?? new BookmarkCatalog(dataDirectory);
         legacyDirectory = Path.Combine(dataDirectory, "mine-maps");
+        surveyGuidePath = Path.Combine(dataDirectory, "surface-mining-survey-progress.json");
         MigrateLegacySurveys();
         surveys = ReadSurveys();
+        SurveyGuide = ReadSurveyGuide();
         bookmarks.Changed += OnBookmarksChanged;
     }
 
@@ -282,7 +294,7 @@ public sealed class MineMapService : IDisposable
             NotificationRequested?.Invoke("The deposit boundary trace could not be saved: " + exception.Message);
         }
         MineMapSurvey? next = ResolveSurveyAtLocation(context);
-        bool guideChanged = UpdateSurveyGuide(context);
+        bool guideChanged = UpdateSurveyGuide(context, next);
         if (ReferenceEquals(ActiveSurvey, next) && !guideChanged && !splatChanged)
         {
             return;
@@ -320,6 +332,10 @@ public sealed class MineMapService : IDisposable
             if (ActiveSurvey?.Id == surveyId)
             {
                 ActiveSurvey = null;
+            }
+            if (SurveyGuide?.SurveyId == surveyId)
+            {
+                SetSurveyGuide(null);
             }
             return true;
         }
@@ -416,13 +432,15 @@ public sealed class MineMapService : IDisposable
         ActiveSurvey = survey;
         if (SurveyGuide is { Phase: MineMapSurveyGuidePhase.Border } guide && MatchesContext(guide, context))
         {
-            SurveyGuide = guide with
-            {
-                Phase = MineMapSurveyGuidePhase.Center,
-                SurveyId = survey.Id,
-                Waypoints = null,
-                WaypointIndex = 0,
-            };
+            SetSurveyGuide(
+                guide with
+                {
+                    Phase = MineMapSurveyGuidePhase.Center,
+                    SurveyId = survey.Id,
+                    Waypoints = null,
+                    WaypointIndex = 0,
+                }
+            );
         }
         Changed?.Invoke(this, EventArgs.Empty);
         return Success($"{survey.Name} center saved at bearing {bearing:0}° with a {radiusKm:0.##} km border.", survey);
@@ -458,13 +476,15 @@ public sealed class MineMapService : IDisposable
         )
         {
             IReadOnlyList<SurfaceCoordinate> waypoints = CreateSurveyWaypoints(updated);
-            SurveyGuide = guide with
-            {
-                Phase = waypoints.Count == 0 ? MineMapSurveyGuidePhase.Complete : MineMapSurveyGuidePhase.Waypoint,
-                SurveyId = updated.Id,
-                Waypoints = waypoints,
-                WaypointIndex = 0,
-            };
+            SetSurveyGuide(
+                guide with
+                {
+                    Phase = waypoints.Count == 0 ? MineMapSurveyGuidePhase.Complete : MineMapSurveyGuidePhase.Waypoint,
+                    SurveyId = updated.Id,
+                    Waypoints = waypoints,
+                    WaypointIndex = 0,
+                }
+            );
         }
         Changed?.Invoke(this, EventArgs.Empty);
         return Success(
@@ -480,7 +500,7 @@ public sealed class MineMapService : IDisposable
             return;
         }
 
-        SurveyGuide = null;
+        SetSurveyGuide(null);
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
@@ -497,12 +517,19 @@ public sealed class MineMapService : IDisposable
             return [];
         }
 
+        if (survey.LocationRadiusMeters < SurveyScannerRadiusMeters * 2)
+        {
+            return CreateInsetSurveySweep(survey);
+        }
+
         var result = new List<SurfaceCoordinate>();
         double spiralGrowth = SurveyScannerRadiusMeters / (2 * Math.PI);
         double angle = 2 * Math.PI;
         double radius = SurveyScannerRadiusMeters;
+        double lastWaypointRadius = radius;
         while (radius < survey.LocationRadiusMeters)
         {
+            lastWaypointRadius = radius;
             result.Add(
                 GetDestination(
                     survey.Center,
@@ -517,15 +544,31 @@ public sealed class MineMapService : IDisposable
         }
 
         double finalBearing = SurfaceNavigation.NormalizeDegrees(angle * 180 / Math.PI);
-        AddWaypointIfSeparated(result, survey, finalBearing, survey.LocationRadiusMeters);
-        int perimeterCount = Math.Max(
-            1,
-            (int)Math.Ceiling(2 * Math.PI * survey.LocationRadiusMeters / SurveyWaypointSpacingMeters)
-        );
-        for (int index = 1; index < perimeterCount; index++)
+        AddWaypointIfSeparated(result, survey, finalBearing, lastWaypointRadius);
+        return result;
+    }
+
+    private static List<SurfaceCoordinate> CreateInsetSurveySweep(MineMapSurvey survey)
+    {
+        var result = new List<SurfaceCoordinate>();
+        double sweepRadius = survey.LocationRadiusMeters - (SurveyScannerRadiusMeters / 2);
+        for (
+            double distance = SurveyWaypointSpacingMeters;
+            distance < sweepRadius;
+            distance += SurveyWaypointSpacingMeters
+        )
         {
-            double bearing = finalBearing + (360d * index / perimeterCount);
-            AddWaypointIfSeparated(result, survey, bearing, survey.LocationRadiusMeters);
+            result.Add(GetDestination(survey.Center, 0, distance, survey.PlanetRadiusMeters));
+        }
+
+        int sweepWaypointCount = Math.Max(
+            3,
+            (int)Math.Ceiling(2 * Math.PI * sweepRadius / SurveyWaypointSpacingMeters)
+        );
+        for (int index = 0; index <= sweepWaypointCount; index++)
+        {
+            double bearing = 360d * index / sweepWaypointCount;
+            result.Add(GetDestination(survey.Center, bearing, sweepRadius, survey.PlanetRadiusMeters));
         }
 
         return result;
@@ -540,13 +583,61 @@ public sealed class MineMapService : IDisposable
             );
         }
 
+        if (SurveyGuide is { } currentGuide && MatchesContext(currentGuide, context))
+        {
+            MineMapSurvey? guidedSurvey = currentGuide.SurveyId is { } surveyId
+                ? surveys.FirstOrDefault(candidate => candidate.Id == surveyId)
+                : null;
+            if (
+                currentGuide.Phase is MineMapSurveyGuidePhase.Waypoint or MineMapSurveyGuidePhase.Complete
+                && guidedSurvey is not null
+            )
+            {
+                IReadOnlyList<SurfaceCoordinate> waypoints =
+                    currentGuide.Waypoints ?? CreateSurveyWaypoints(guidedSurvey);
+                SetSurveyGuide(
+                    currentGuide with
+                    {
+                        Phase =
+                            waypoints.Count == 0 ? MineMapSurveyGuidePhase.Complete : MineMapSurveyGuidePhase.Waypoint,
+                        Waypoints = waypoints,
+                        WaypointIndex = 0,
+                    }
+                );
+                ActiveSurvey = guidedSurvey;
+                Changed?.Invoke(this, EventArgs.Empty);
+                return Success(
+                    waypoints.Count == 0
+                        ? $"Guided survey restarted for {guidedSurvey.Name}; its saved area needs no scan waypoints."
+                        : $"Guided survey restarted at waypoint 1 of {waypoints.Count} for {guidedSurvey.Name}.",
+                    guidedSurvey
+                );
+            }
+
+            SetSurveyGuide(
+                new MineMapSurveyGuideState(
+                    MineMapSurveyGuidePhase.Border,
+                    context.FrontierId,
+                    context.SystemAddress,
+                    context.BodyId
+                )
+            );
+            Changed?.Invoke(this, EventArgs.Empty);
+            return new MineMapCommandResult(
+                true,
+                "Guided survey restarted from border setup. Drive to the orange border, face the center, then record the bearing, radius, and signal number."
+            );
+        }
+
         MineMapSurvey? active = ResolveSurveyAtLocation(context);
-        SurveyGuide = new MineMapSurveyGuideState(
-            active is null ? MineMapSurveyGuidePhase.Border : MineMapSurveyGuidePhase.Center,
-            context.FrontierId,
-            context.SystemAddress,
-            context.BodyId,
-            active?.Id
+        SetSurveyGuide(
+            new MineMapSurveyGuideState(
+                active is null ? MineMapSurveyGuidePhase.Border : MineMapSurveyGuidePhase.Center,
+                context.FrontierId,
+                context.SystemAddress,
+                context.BodyId,
+                active?.Id
+            )
         );
         if (active is not null)
         {
@@ -562,7 +653,7 @@ public sealed class MineMapService : IDisposable
             : Success($"Guided survey started for {active.Name}. Drive to its saved center.", active);
     }
 
-    private bool UpdateSurveyGuide(MineMapCommandContext? context)
+    private bool UpdateSurveyGuide(MineMapCommandContext? context, MineMapSurvey? surveyAtLocation)
     {
         if (SurveyGuide is not { } guide || context is null)
         {
@@ -571,7 +662,17 @@ public sealed class MineMapService : IDisposable
 
         if (!MatchesContext(guide, context))
         {
-            SurveyGuide = null;
+            SetSurveyGuide(null);
+            return true;
+        }
+
+        if (
+            guide.SurveyId is { } guidedSurveyId
+            && context.PlayerLocation is not null
+            && surveyAtLocation?.Id != guidedSurveyId
+        )
+        {
+            SetSurveyGuide(null);
             return true;
         }
 
@@ -593,7 +694,7 @@ public sealed class MineMapService : IDisposable
             double distance = SurfaceNavigation.GetDistance(player, survey.Center, survey.PlanetRadiusMeters);
             if (distance <= SurveyWaypointArrivalRadiusMeters)
             {
-                SurveyGuide = guide with { Phase = MineMapSurveyGuidePhase.ConfirmCenter };
+                SetSurveyGuide(guide with { Phase = MineMapSurveyGuidePhase.ConfirmCenter });
                 return true;
             }
         }
@@ -605,14 +706,16 @@ public sealed class MineMapService : IDisposable
         )
         {
             int nextIndex = guide.WaypointIndex + 1;
-            SurveyGuide = guide with
-            {
-                Phase =
-                    nextIndex >= (guide.Waypoints?.Count ?? 0)
-                        ? MineMapSurveyGuidePhase.Complete
-                        : MineMapSurveyGuidePhase.Waypoint,
-                WaypointIndex = nextIndex,
-            };
+            SetSurveyGuide(
+                guide with
+                {
+                    Phase =
+                        nextIndex >= (guide.Waypoints?.Count ?? 0)
+                            ? MineMapSurveyGuidePhase.Complete
+                            : MineMapSurveyGuidePhase.Waypoint,
+                    WaypointIndex = nextIndex,
+                }
+            );
             return true;
         }
 
@@ -632,11 +735,6 @@ public sealed class MineMapService : IDisposable
             result.Add(waypoint);
         }
     }
-
-    private static bool MatchesContext(MineMapSurveyGuideState guide, MineMapCommandContext context) =>
-        guide.FrontierId == context.FrontierId
-        && guide.SystemAddress == context.SystemAddress
-        && guide.BodyId == context.BodyId;
 
     private MineMapCommandResult ApplyMarker(
         string command,
@@ -821,10 +919,14 @@ public sealed class MineMapService : IDisposable
         {
             Markers = active
                 .Markers.Select(marker =>
-                    marker.Id == tracing.Id ? tracing
-                    : marker.IsSplatTraceActive ? marker with { IsSplatTraceActive = false }
-                    : marker
-                )
+                {
+                    if (marker.Id == tracing.Id)
+                    {
+                        return tracing;
+                    }
+
+                    return marker.IsSplatTraceActive ? marker with { IsSplatTraceActive = false } : marker;
+                })
                 .ToArray(),
             UpdatedAt = DateTimeOffset.UtcNow,
         };
@@ -1288,7 +1390,136 @@ public sealed class MineMapService : IDisposable
         var activeId = ActiveSurvey?.Id;
         surveys = ReadSurveys();
         ActiveSurvey = activeId is { } id ? surveys.FirstOrDefault(survey => survey.Id == id) : ActiveSurvey;
+        if (SurveyGuide?.SurveyId is { } guidedSurveyId && !surveys.Any(survey => survey.Id == guidedSurveyId))
+        {
+            SetSurveyGuide(null);
+        }
         Changed?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void SetSurveyGuide(MineMapSurveyGuideState? guide)
+    {
+        SurveyGuide = guide;
+        try
+        {
+            PersistSurveyGuide();
+        }
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or JsonException or InvalidOperationException)
+        {
+            NotificationRequested?.Invoke("Guided survey progress could not be saved: " + exception.Message);
+        }
+    }
+
+    private MineMapSurveyGuideState? ReadSurveyGuide()
+    {
+        if (!File.Exists(surveyGuidePath))
+        {
+            return null;
+        }
+
+        try
+        {
+            SurveyGuideProgress? progress = JsonSerializer.Deserialize<SurveyGuideProgress>(
+                File.ReadAllText(surveyGuidePath),
+                JsonOptions
+            );
+            if (
+                progress is null
+                || !Enum.IsDefined(progress.Phase)
+                || string.IsNullOrWhiteSpace(progress.FrontierId)
+                || progress.SystemAddress <= 0
+                || progress.BodyId < 0
+                || progress.WaypointIndex < 0
+            )
+            {
+                return null;
+            }
+
+            if (progress.SurveyId is not { } surveyId)
+            {
+                return progress.Phase == MineMapSurveyGuidePhase.Border
+                    ? new MineMapSurveyGuideState(
+                        progress.Phase,
+                        progress.FrontierId,
+                        progress.SystemAddress,
+                        progress.BodyId
+                    )
+                    : null;
+            }
+
+            MineMapSurvey? survey = surveys.FirstOrDefault(candidate => candidate.Id == surveyId);
+            if (
+                survey is null
+                || !string.Equals(survey.FrontierId, progress.FrontierId, StringComparison.OrdinalIgnoreCase)
+                || survey.SystemAddress != progress.SystemAddress
+                || survey.BodyId != progress.BodyId
+            )
+            {
+                return null;
+            }
+
+            IReadOnlyList<SurfaceCoordinate>? waypoints = progress.Phase
+                is MineMapSurveyGuidePhase.Waypoint
+                    or MineMapSurveyGuidePhase.Complete
+                ? CreateSurveyWaypoints(survey)
+                : null;
+            if (
+                progress.Phase == MineMapSurveyGuidePhase.Waypoint
+                && (waypoints is null || progress.WaypointIndex >= waypoints.Count)
+            )
+            {
+                return null;
+            }
+
+            int waypointIndex =
+                progress.Phase == MineMapSurveyGuidePhase.Complete ? waypoints?.Count ?? 0 : progress.WaypointIndex;
+            return new MineMapSurveyGuideState(
+                progress.Phase,
+                progress.FrontierId,
+                progress.SystemAddress,
+                progress.BodyId,
+                surveyId,
+                waypoints,
+                waypointIndex
+            );
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)
+        {
+            return null;
+        }
+    }
+
+    private void PersistSurveyGuide()
+    {
+        if (SurveyGuide is not { } guide)
+        {
+            File.Delete(surveyGuidePath);
+            return;
+        }
+
+        Directory.CreateDirectory(Path.GetDirectoryName(surveyGuidePath)!);
+        var temporary = surveyGuidePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
+        try
+        {
+            var progress = new SurveyGuideProgress(
+                guide.Phase,
+                guide.FrontierId,
+                guide.SystemAddress,
+                guide.BodyId,
+                guide.SurveyId,
+                guide.WaypointIndex
+            );
+            File.WriteAllText(temporary, JsonSerializer.Serialize(progress, JsonOptions));
+            File.Move(temporary, surveyGuidePath, true);
+        }
+        finally
+        {
+            if (File.Exists(temporary))
+            {
+                File.Delete(temporary);
+            }
+        }
     }
 
     private MineMapSurvey[] ReadSurveys() =>
@@ -1441,6 +1672,11 @@ public sealed class MineMapService : IDisposable
         string.Equals(survey.FrontierId, context.FrontierId, StringComparison.OrdinalIgnoreCase)
         && survey.SystemAddress == context.SystemAddress
         && survey.BodyId == context.BodyId;
+
+    private static bool MatchesContext(MineMapSurveyGuideState guide, MineMapCommandContext context) =>
+        guide.FrontierId == context.FrontierId
+        && guide.SystemAddress == context.SystemAddress
+        && guide.BodyId == context.BodyId;
 
     private static MineMapCommandResult Success(string message, MineMapSurvey survey) => new(true, message, survey);
 

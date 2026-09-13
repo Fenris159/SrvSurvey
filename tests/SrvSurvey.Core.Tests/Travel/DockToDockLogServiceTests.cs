@@ -44,7 +44,7 @@ public sealed class DockToDockLogServiceTests : IDisposable
         Assert.False(File.Exists(path));
 
         var cargo = new CargoSnapshot(
-            DateTimeOffset.Parse("2026-07-25T11:59:00Z"),
+            DateTimeOffset.Parse("2026-07-25T11:59:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
             "Cargo",
             "Ship",
             3,
@@ -172,7 +172,10 @@ public sealed class DockToDockLogServiceTests : IDisposable
 
     private static DockToDockLogEntry CreateEntry()
     {
-        var started = DateTimeOffset.Parse("2026-07-25T12:00:00Z");
+        var started = DateTimeOffset.Parse(
+            "2026-07-25T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         return new DockToDockLogEntry
         {
             StartedAt = started,

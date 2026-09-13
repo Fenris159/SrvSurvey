@@ -127,31 +127,136 @@ public sealed class MineMapServiceTests
     }
 
     [Fact]
-    public void GuidedSurveySpiralCoversTheSavedAreaWithTwoKilometerScannerRange()
+    public async Task RestartingGuidedSurveyBeforeCenterReturnsToBorderSetup()
+    {
+        using var directory = new TemporaryDirectory();
+        MineMapCommandContext border = Context(new SurfaceCoordinate(0, 0));
+        using var service = new MineMapService(directory.Path);
+        Assert.True((await service.ExecuteAsync(".mining survey", border)).Succeeded);
+        Assert.True((await service.ExecuteAsync(".mining 90 6.44 4", border)).Succeeded);
+        Assert.Equal(MineMapSurveyGuidePhase.Center, service.SurveyGuide?.Phase);
+
+        MineMapCommandResult restarted = await service.ExecuteAsync(".mining survey", border);
+
+        Assert.True(restarted.Succeeded);
+        Assert.Equal(MineMapSurveyGuidePhase.Border, service.SurveyGuide?.Phase);
+        Assert.Null(service.SurveyGuide?.SurveyId);
+        Assert.Contains("border setup", restarted.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.True((await service.ExecuteAsync(".mining 90 6.44 4", border)).Succeeded);
+        Assert.Single(service.Surveys);
+    }
+
+    [Fact]
+    public async Task RestartingGuidedSurveyDuringWaypointsReturnsToFirstWaypoint()
+    {
+        using var directory = new TemporaryDirectory();
+        MineMapCommandContext border = Context(new SurfaceCoordinate(0, 0));
+        using var service = new MineMapService(directory.Path);
+        Assert.True((await service.ExecuteAsync(".mining survey", border)).Succeeded);
+        Assert.True((await service.ExecuteAsync(".mining 90 6.44 4", border)).Succeeded);
+        MineMapSurvey survey = service.ActiveSurvey!;
+        Assert.True(
+            (
+                await service.ExecuteAsync(".mining center here", border with { PlayerLocation = survey.Center })
+            ).Succeeded
+        );
+        SurfaceCoordinate firstWaypoint = Assert.IsType<SurfaceCoordinate>(service.SurveyGuide?.CurrentWaypoint);
+        service.UpdateContext(border with { PlayerLocation = firstWaypoint });
+        Assert.Equal(1, service.SurveyGuide?.WaypointIndex);
+
+        MineMapCommandResult restarted = await service.ExecuteAsync(
+            ".mining survey",
+            border with
+            {
+                PlayerLocation = firstWaypoint,
+            }
+        );
+
+        Assert.True(restarted.Succeeded);
+        Assert.Equal(MineMapSurveyGuidePhase.Waypoint, service.SurveyGuide?.Phase);
+        Assert.Equal(0, service.SurveyGuide?.WaypointIndex);
+        Assert.Equal(firstWaypoint, service.SurveyGuide?.CurrentWaypoint);
+        Assert.Contains("waypoint 1", restarted.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task GuidedSurveyProgressResumesAfterServiceRestart()
+    {
+        using var directory = new TemporaryDirectory();
+        MineMapCommandContext border = Context(new SurfaceCoordinate(0, 0));
+        SurfaceCoordinate resumeLocation;
+        SurfaceCoordinate expectedWaypoint;
+
+        using (var service = new MineMapService(directory.Path))
+        {
+            Assert.True((await service.ExecuteAsync(".mining survey", border)).Succeeded);
+            Assert.True((await service.ExecuteAsync(".mining 90 6.44 4", border)).Succeeded);
+            MineMapSurvey survey = service.ActiveSurvey!;
+            Assert.True(
+                (
+                    await service.ExecuteAsync(".mining center here", border with { PlayerLocation = survey.Center })
+                ).Succeeded
+            );
+            SurfaceCoordinate firstWaypoint = Assert.IsType<SurfaceCoordinate>(service.SurveyGuide?.CurrentWaypoint);
+            service.UpdateContext(border with { PlayerLocation = firstWaypoint });
+            Assert.Equal(1, service.SurveyGuide?.WaypointIndex);
+            resumeLocation = firstWaypoint;
+            expectedWaypoint = Assert.IsType<SurfaceCoordinate>(service.SurveyGuide?.CurrentWaypoint);
+        }
+
+        using var restored = new MineMapService(directory.Path);
+        Assert.Equal(MineMapSurveyGuidePhase.Waypoint, restored.SurveyGuide?.Phase);
+        Assert.Equal(1, restored.SurveyGuide?.WaypointIndex);
+        Assert.Equal(expectedWaypoint, restored.SurveyGuide?.CurrentWaypoint);
+
+        restored.UpdateContext(border with { PlayerLocation = resumeLocation });
+
+        Assert.Equal(MineMapSurveyGuidePhase.Waypoint, restored.SurveyGuide?.Phase);
+        Assert.Equal(1, restored.SurveyGuide?.WaypointIndex);
+        Assert.Equal(expectedWaypoint, restored.SurveyGuide?.CurrentWaypoint);
+    }
+
+    [Fact]
+    public void GuidedSurveySpiralCoversTheSavedAreaWhileDriving()
     {
         MineMapSurvey survey = LegacySurvey(Guid.NewGuid(), signal: 4);
         IReadOnlyList<SurfaceCoordinate> waypoints = MineMapService.CreateSurveyWaypoints(survey);
-        SurfaceCoordinate[] scanLocations = [survey.Center, .. waypoints];
 
         Assert.NotEmpty(waypoints);
         Assert.All(
             waypoints,
             waypoint =>
-                Assert.InRange(
-                    SurfaceNavigation.GetDistance(survey.Center, waypoint, survey.PlanetRadiusMeters),
-                    0,
-                    survey.LocationRadiusMeters + 0.01
+                Assert.True(
+                    SurfaceNavigation.GetDistance(survey.Center, waypoint, survey.PlanetRadiusMeters)
+                        < survey.LocationRadiusMeters
                 )
         );
-        for (int index = 1; index < waypoints.Count; index++)
+        AssertSurveyRouteCoverage(survey, waypoints);
+    }
+
+    [Fact]
+    public void GuidedSurveyUsesAnImmediateInsetSweepWhenTheSiteIsTooSmallForAFullSpiralTurn()
+    {
+        MineMapSurvey survey = LegacySurvey(Guid.NewGuid(), signal: 4) with { LocationRadiusMeters = 3_000 };
+        IReadOnlyList<SurfaceCoordinate> waypoints = MineMapService.CreateSurveyWaypoints(survey);
+
+        Assert.NotEmpty(waypoints);
+        AssertSurveyRouteCoverage(survey, waypoints);
+    }
+
+    private static void AssertSurveyRouteCoverage(MineMapSurvey survey, IReadOnlyList<SurfaceCoordinate> waypoints)
+    {
+        SurfaceCoordinate[] route = [survey.Center, .. waypoints];
+        for (int index = 1; index < route.Length; index++)
         {
             Assert.InRange(
-                SurfaceNavigation.GetDistance(waypoints[index - 1], waypoints[index], survey.PlanetRadiusMeters),
+                SurfaceNavigation.GetDistance(route[index - 1], route[index], survey.PlanetRadiusMeters),
                 0,
-                1_900
+                MineMapService.SurveyScannerRadiusMeters + 0.01
             );
         }
 
+        List<SurfaceCoordinate> scanLocations = SampleDrivenRoute(route, survey.PlanetRadiusMeters);
         for (double radius = 0; radius <= survey.LocationRadiusMeters; radius += 250)
         {
             for (int bearing = 0; bearing < 360; bearing += 5)
@@ -168,6 +273,27 @@ public sealed class MineMapServiceTests
                 Assert.InRange(nearest, 0, MineMapService.SurveyScannerRadiusMeters);
             }
         }
+    }
+
+    private static List<SurfaceCoordinate> SampleDrivenRoute(SurfaceCoordinate[] route, double planetRadiusMeters)
+    {
+        var samples = new List<SurfaceCoordinate> { route[0] };
+        for (int index = 1; index < route.Length; index++)
+        {
+            SurfaceCoordinate start = route[index - 1];
+            SurfaceCoordinate end = route[index];
+            double distance = SurfaceNavigation.GetDistance(start, end, planetRadiusMeters);
+            double bearing = SurfaceNavigation.GetBearing(start, end);
+            int segmentCount = Math.Max(1, (int)Math.Ceiling(distance / 50));
+            for (int segment = 1; segment <= segmentCount; segment++)
+            {
+                samples.Add(
+                    MineMapService.GetDestination(start, bearing, distance * segment / segmentCount, planetRadiusMeters)
+                );
+            }
+        }
+
+        return samples;
     }
 
     [Fact]
@@ -267,7 +393,7 @@ public sealed class MineMapServiceTests
         );
 
         Assert.True(started.Succeeded);
-        Assert.True(Assert.Single(service.ActiveSurvey!.Markers).IsSplatTraceActive);
+        Assert.True(Assert.Single(service.ActiveSurvey.Markers).IsSplatTraceActive);
         for (int bearing = 30; bearing <= 360; bearing += 30)
         {
             SurfaceCoordinate point = MineMapService.GetDestination(
@@ -279,7 +405,7 @@ public sealed class MineMapServiceTests
             service.UpdateContext(border with { PlayerLocation = point });
         }
 
-        MineMapMarker traced = Assert.Single(service.ActiveSurvey!.Markers);
+        MineMapMarker traced = Assert.Single(service.ActiveSurvey.Markers);
         Assert.False(traced.IsSplatTraceActive);
         Assert.True(traced.SplatBoundary.Count >= 8);
         Assert.NotEmpty(traced.SuggestedRigLocations);
@@ -322,7 +448,7 @@ public sealed class MineMapServiceTests
         MineMapCommandResult cancelled = await service.ExecuteAsync(".mine splat cancel", context);
 
         Assert.True(cancelled.Succeeded);
-        MineMapMarker marker = Assert.Single(service.ActiveSurvey!.Markers);
+        MineMapMarker marker = Assert.Single(service.ActiveSurvey.Markers);
         Assert.Equal(deposit, marker.Location);
         Assert.Equal(3, marker.RigCount);
         Assert.False(marker.IsSplatTraceActive);
@@ -369,7 +495,7 @@ public sealed class MineMapServiceTests
             }
         );
         Assert.True(relative.Succeeded);
-        var first = Assert.Single(service.ActiveSurvey!.Markers);
+        var first = Assert.Single(service.ActiveSurvey.Markers);
         Assert.Equal("Ruby", first.Material);
         Assert.Equal(MineMapRating.Medium, first.MineralAmount);
         Assert.Equal(MineMapRating.Low, first.Density);
@@ -629,7 +755,7 @@ public sealed class MineMapServiceTests
         using var directory = new TemporaryDirectory();
         MineMapCommandContext context = Context(new SurfaceCoordinate(10, 20));
         var service = new MineMapService(directory.Path);
-        string extreme = double.MaxValue.ToString("R", System.Globalization.CultureInfo.InvariantCulture);
+        string extreme = double.MaxValue.ToString("R", global::System.Globalization.CultureInfo.InvariantCulture);
 
         MineMapCommandResult surveyResult = await service.ExecuteAsync($".mining 120 {extreme} 4", context);
 

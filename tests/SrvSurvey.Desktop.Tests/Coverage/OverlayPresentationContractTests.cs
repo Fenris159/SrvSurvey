@@ -734,10 +734,9 @@ public sealed class OverlayPresentationContractTests
         var lowerDivider = XDocument
             .Parse(fss)
             .Descendants()
-            .Where(element =>
+            .Last(element =>
                 element.Name.LocalName == "Border" && element.Attribute("Classes")?.Value == "overlay-divider"
-            )
-            .Last();
+            );
         Assert.Equal("StackPanel", lowerDivider.Parent?.Name.LocalName);
         Assert.Equal("0", lowerDivider.Parent?.Attribute("Spacing")?.Value);
         Assert.Equal("ScrollViewer", lowerDivider.Parent?.Elements().First().Name.LocalName);

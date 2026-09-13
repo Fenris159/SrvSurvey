@@ -606,7 +606,54 @@ public sealed class SurfaceMiningViewModelTests : IDisposable
         Assert.True(boundary.IsClosed);
         Assert.Equal(3, boundary.Points.Count);
         Assert.Single(mining.SuggestedRigLocations);
+        Assert.Equal(4, mining.RadarScale);
         Assert.DoesNotContain(mining.RadarMarkers, candidate => candidate.Name == "Ruby");
+    }
+
+    [Fact]
+    public async Task CompactRadarZoomsCloserToSuggestedRigLocationsAndResetsOutsideTheirWorkingArea()
+    {
+        using var mining = new SurfaceMiningViewModel(new SystemSurfaceStore(root));
+        var center = new SurfaceCoordinate(0, 0);
+        MineMapSurvey MapWithSuggestion(double distanceMeters) =>
+            new()
+            {
+                SystemAddress = 42,
+                BodyId = 1,
+                PlanetRadiusMeters = 1_000_000,
+                Center = center,
+                LocationRadiusMeters = 1_000,
+                Markers =
+                [
+                    new MineMapMarker
+                    {
+                        Material = "Ruby",
+                        Location = center,
+                        SplatBoundary =
+                        [
+                            MineMapService.GetDestination(center, 0, 100, 1_000_000),
+                            MineMapService.GetDestination(center, 120, 100, 1_000_000),
+                            MineMapService.GetDestination(center, 240, 100, 1_000_000),
+                        ],
+                        SuggestedRigLocations = [MineMapService.GetDestination(center, 0, distanceMeters, 1_000_000)],
+                    },
+                ],
+            };
+
+        await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino", activeMineMap: MapWithSuggestion(10));
+        Assert.Equal(6, mining.RadarScale);
+
+        await mining.ApplyUpdateAsync(
+            Session,
+            Snapshot(),
+            Status(),
+            "mev_rhino",
+            activeMineMap: MapWithSuggestion(150)
+        );
+        Assert.Equal(1, mining.RadarScale);
+
+        await mining.ApplyUpdateAsync(Session, Snapshot(), Status(), "mev_rhino");
+        Assert.Equal(1, mining.RadarScale);
     }
 
     private static EliteStatus Status() =>

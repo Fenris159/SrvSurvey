@@ -37,7 +37,7 @@ public sealed partial class OverlaySettingsView : UserControl
     private void ApplyCategory(OverlaySettingsCategory category)
     {
         var isGlobal = category == OverlaySettingsCategory.Global;
-        MiningActivityCard.IsVisible = category is OverlaySettingsCategory.Mining or OverlaySettingsCategory.Global;
+        MiningActivityCard.IsVisible = category == OverlaySettingsCategory.Mining;
         MineMapOverlayCard.IsVisible = category == OverlaySettingsCategory.MineMap;
         MiningShortcutsCard.IsVisible = category == OverlaySettingsCategory.MineMap;
         PassiveNotificationCard.IsVisible = isGlobal;

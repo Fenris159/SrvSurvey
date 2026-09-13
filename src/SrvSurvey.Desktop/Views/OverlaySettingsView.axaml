@@ -19,158 +19,6 @@
                  Text="Control passive Galaxy Map, route, survey, and status surfaces." />
     </StackPanel>
 
-    <Border x:Name="MiningActivityCard" Classes="card raised">
-      <StackPanel Spacing="12">
-        <TextBlock Classes="card-title" Text="Ship mining overlays" />
-        <TextBlock Classes="muted" Text="Mining notifications appear only aboard your main ship. Use the panel visibility controls below to show or hide each overlay." TextWrapping="Wrap" />
-        <CheckBox Content="Hide mining notifications in supercruise" IsChecked="{Binding MiningWorkspace.Settings.HideInSupercruise}" />
-        <CheckBox Content="Show only during a mining session" IsChecked="{Binding MiningWorkspace.Settings.OverlaysOnlyDuringSession}" />
-        <TextBlock Text="Notification duration (seconds)" />
-        <NumericUpDown Value="{Binding MiningWorkspace.Settings.NotificationSeconds}" Minimum="3" Maximum="120" />
-        <Button Content="Save mining overlay settings" Command="{Binding MiningWorkspace.SaveSettingsCommand}" HorizontalAlignment="Left" />
-      </StackPanel>
-    </Border>
-    <Border x:Name="MineMapOverlayCard" Classes="card raised">
-      <StackPanel Spacing="12">
-        <TextBlock Classes="card-title" Text="Surface mining overview map" />
-        <TextBlock Classes="muted" TextWrapping="Wrap"
-                   Text="The map follows the active saved mining location and shows its measured border, mapped deposits, and your live surface position. Use the panel control below to assign its visibility hotkey." />
-        <CheckBox IsChecked="{Binding MineMap.OnlyShowWhileOnGround, Mode=TwoWay}"
-                  Content="Only show while on the ground" />
-        <CheckBox IsChecked="{Binding MineMap.ShowMarkerLabelsInOverviewMap, Mode=TwoWay}"
-                  Content="Show Marker Labels in Overview Map" />
-        <TextBlock Classes="muted" TextWrapping="Wrap"
-                   Text="Overlay Exceptions for Surface Mining are limited to medium and large ships, Rhino, and on foot. Uncheck every ship there to keep the map out of airborne gameplay." />
-        <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                   Text="{Binding MineMap.StatusText}" TextWrapping="Wrap" />
-      </StackPanel>
-    </Border>
-    <Border x:Name="MiningShortcutsCard" Classes="card raised">
-      <StackPanel Spacing="12">
-        <TextBlock Classes="muted" TextWrapping="Wrap"
-                   Text="Automatically clear saved rigs when you board your own ship or dock the Rhino. Send --- in game chat to clear all bookmarks and rigs on the current body at any time." />
-        <CheckBox IsChecked="{Binding Mining.AutoClearRigsOnShipBoarding, Mode=TwoWay}"
-                  Content="Clear rigs automatically when boarding your ship" />
-        <TextBlock Classes="card-title" Text="Rig bar detection (experimental)" />
-        <TextBlock Classes="muted" TextWrapping="Wrap"
-                   Text="Automatic tracker changes pause while your surface position or heading changes and resume after one second of stillness. HUD movement or reacquisition also waits for one steady second. Stop before deploying. Once steady, a detected bar saves its rig tracker immediately; three continuous seconds empty removes that specific tracker. Unknown readings leave trackers unchanged and restart the removal delay. Calibration Test previews detection without changing trackers. Open Edit Overlay Positions and choose Mining. Move and resize the capture frame over all six HUD circles, then align the red dots with their centres. Size, Height and R adjust the circle outlines and curved bar guides; Gap adjusts bar spacing independently; Search adjusts movement allowance with a pixel readout and optional bounds. Select Test while looking forward, starting with rig 1 deployed first. No label learning is required. Use the editor's save or cancel button when finished. Choose the deployment bar color below (bright green by default). Matching colored groups are tracked relative to the calibrated rig positions; gray, white and black do not count as bars." />
-        <CheckBox IsChecked="{Binding Mining.Detection.Enabled, Mode=TwoWay}"
-                  Content="Automatically track rigs from the Rhino HUD" />
-        <TextBlock Text="Deployment bar color" />
-        <ColorPicker Color="{Binding Mining.Detection.BarColor, Mode=TwoWay}"
-                     Width="100" HorizontalAlignment="Left" IsAlphaEnabled="False" IsAlphaVisible="False"
-                     ToolTip.Tip="Choose the bright color of the deployment bars on your game HUD." />
-        <TextBlock Text="{Binding Mining.Detection.SlotsText}" TextWrapping="Wrap" />
-        <TextBlock Classes="muted" Text="{Binding Mining.Detection.StatusText}" TextWrapping="Wrap" />
-        <TextBlock Classes="card-title" Text="Rig location shortcuts" />
-        <TextBlock Classes="muted" TextWrapping="Wrap"
-                   Text="In a Rhino, set or clear each rig at its deployment position. These are the same bindings shown in Input settings. Hold a combination and release to save; Escape cancels; Backspace or Delete clears." />
-        <ItemsControl ItemsSource="{Binding InputSettings.MiningBindings}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate x:DataType="vm:InputBindingViewModel">
-              <Grid ColumnDefinitions="*,260" ColumnSpacing="24" Margin="0,4">
-                <TextBlock Text="{Binding MiningDisplayName}" VerticalAlignment="Center" />
-                <StackPanel Grid.Column="1">
-                  <controls:ShortcutCaptureBox Chord="{Binding Chord, Mode=TwoWay}"
-                                               PlaceholderText="Click, then hold shortcut keys" />
-                  <TextBlock Foreground="{DynamicResource RavenWarningBrush}" IsVisible="{Binding HasValidationError}"
-                             Text="{Binding ValidationMessage}" FontSize="10" />
-                </StackPanel>
-              </Grid>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-      </StackPanel>
-    </Border>
-    <Border x:Name="PassiveNotificationCard" Classes="card raised">
-      <StackPanel Spacing="14">
-        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
-          <StackPanel Spacing="4">
-            <TextBlock Classes="card-title" Text="Passive notification overlay" />
-            <TextBlock Classes="muted"
-                       TextWrapping="Wrap"
-                       Text="Show the original six-second PlotFloatie messages without taking focus from Elite. Messages are de-duplicated, expire automatically, and never replay from startup journal history." />
-          </StackPanel>
-          <CheckBox Grid.Column="1"
-                    VerticalAlignment="Center"
-                    IsChecked="{Binding Notifications.Enabled, Mode=TwoWay}"
-                    Content="Allow timed notification messages" />
-        </Grid>
-        <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
-          <StackPanel Spacing="10">
-            <CheckBox IsChecked="{Binding Notifications.MaterialCountAfterPickup, Mode=TwoWay}"
-                      Content="Materials count after pickup" />
-            <CheckBox IsChecked="{Binding Notifications.CargoMissionRemaining, Mode=TwoWay}"
-                      Content="Mission remaining cargo count" />
-            <CheckBox IsChecked="{Binding Notifications.ShowScreenshot, Mode=TwoWay}"
-                      Content="Screenshot taken" />
-          </StackPanel>
-          <StackPanel Grid.Column="1" Spacing="10">
-            <TextBlock Classes="muted"
-                       TextWrapping="Wrap"
-                       Text="Successful Green Gas Giant uploads and the screenshot-banner shortcut use this overlay when it is enabled." />
-          </StackPanel>
-        </Grid>
-        <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                   IsVisible="{Binding Notifications.HasSettingsStatus}"
-                   TextWrapping="Wrap"
-                   Text="{Binding Notifications.SettingsStatus}" />
-      </StackPanel>
-    </Border>
-
-    <Border x:Name="BoxelOverlayCard" Classes="card raised">
-      <StackPanel Spacing="14">
-        <StackPanel Spacing="4">
-          <TextBlock Classes="card-title" Text="Galaxy Map boxel guidance" />
-          <TextBlock Classes="muted"
-                     TextWrapping="Wrap"
-                     Text="While an active boxel search and the Galaxy Map are open, show the current boxel, completion progress, next system or prefix, destination validity, and clipboard state." />
-        </StackPanel>
-        <CheckBox IsChecked="{Binding BoxelSearch.AutoCopy, Mode=TwoWay}"
-                  Content="Auto-copy next system in Galaxy Map" />
-        <TextBlock Classes="muted"
-                   TextWrapping="Wrap"
-                   Text="Auto-copy is mutually exclusive with Route Manager and FC Routes so only one Galaxy Map destination source can control the clipboard." />
-        <Separator />
-        <StackPanel Spacing="4">
-          <TextBlock Classes="card-title" Text="Boxel completion notifications" />
-          <TextBlock Classes="muted"
-                     TextWrapping="Wrap"
-                     Text="Choose the six-second messages shown after FSS completes a system. Timed messages also require the global passive notification overlay in Settings." />
-        </StackPanel>
-        <CheckBox IsChecked="{Binding Notifications.CurrentBoxelSearchStatus, Mode=TwoWay}"
-                  Content="Show current boxel completion percentage" />
-        <CheckBox IsChecked="{Binding Notifications.ShowNextBoxelToSearch, Mode=TwoWay}"
-                  Content="Show the next boxel when the current one is complete" />
-        <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                   IsVisible="{Binding Notifications.HasSettingsStatus}"
-                   TextWrapping="Wrap"
-                   Text="{Binding Notifications.SettingsStatus}" />
-      </StackPanel>
-    </Border>
-
-    <Border x:Name="GalaxyMapCard" Classes="card raised">
-      <StackPanel Spacing="12">
-        <StackPanel Spacing="4">
-          <TextBlock Classes="card-title" Text="Galaxy Map intelligence" />
-          <TextBlock Classes="muted"
-                     TextWrapping="Wrap"
-                     Text="Show the selected destination, next jump, discovery progress, biological signal count, route distance, and optional faction influence while the Galaxy Map is open." />
-        </StackPanel>
-        <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
-          <CheckBox IsChecked="{Binding GalaxyMap.AutoShow, Mode=TwoWay}"
-                    Content="Show exploration preview in Galaxy Map (uses external data)" />
-          <CheckBox Grid.Column="1"
-                    IsChecked="{Binding GalaxyMap.ShowFactions, Mode=TwoWay}"
-                    Content="Show factions in gal-map" />
-        </Grid>
-        <TextBlock IsVisible="{Binding GalaxyMap.HasSettingsStatus}"
-                   Foreground="{DynamicResource RavenWarningBrush}"
-                   Text="{Binding GalaxyMap.SettingsStatus}"
-                   TextWrapping="Wrap" />
-      </StackPanel>
-    </Border>
-
     <Border x:Name="GlobalOverlayBehaviorCard" Classes="card raised">
       <StackPanel Spacing="12">
         <StackPanel Spacing="4">
@@ -313,6 +161,159 @@
         <TextBlock IsVisible="{Binding OverlayBehavior.HasSettingsStatus}"
                    Foreground="{DynamicResource RavenWarningBrush}"
                    Text="{Binding OverlayBehavior.SettingsStatus}"
+                   TextWrapping="Wrap" />
+      </StackPanel>
+    </Border>
+
+    <Border x:Name="MiningActivityCard" Classes="card raised">
+      <StackPanel Spacing="12">
+        <TextBlock Classes="card-title" Text="Ship mining overlays" />
+        <TextBlock Classes="muted" Text="Mining notifications appear only aboard your main ship. Use the panel visibility controls below to show or hide each overlay." TextWrapping="Wrap" />
+        <CheckBox Content="Hide mining notifications in supercruise" IsChecked="{Binding MiningWorkspace.Settings.HideInSupercruise}" />
+        <CheckBox Content="Show only during a mining session" IsChecked="{Binding MiningWorkspace.Settings.OverlaysOnlyDuringSession}" />
+        <TextBlock Text="Notification duration (seconds)" />
+        <NumericUpDown Value="{Binding MiningWorkspace.Settings.NotificationSeconds}" Minimum="3" Maximum="120" />
+        <Button Content="Save mining overlay settings" Command="{Binding MiningWorkspace.SaveSettingsCommand}" HorizontalAlignment="Left" />
+      </StackPanel>
+    </Border>
+
+    <Border x:Name="MineMapOverlayCard" Classes="card raised">
+      <StackPanel Spacing="12">
+        <TextBlock Classes="card-title" Text="Surface mining overview map" />
+        <TextBlock Classes="muted" TextWrapping="Wrap"
+                   Text="The map follows the active saved mining location and shows its measured border, mapped deposits, and your live surface position. Use the panel control below to assign its visibility hotkey." />
+        <CheckBox IsChecked="{Binding MineMap.OnlyShowWhileOnGround, Mode=TwoWay}"
+                  Content="Only show while on the ground" />
+        <CheckBox IsChecked="{Binding MineMap.ShowMarkerLabelsInOverviewMap, Mode=TwoWay}"
+                  Content="Show Marker Labels in Overview Map" />
+        <TextBlock Classes="muted" TextWrapping="Wrap"
+                   Text="Overlay Exceptions for Surface Mining are limited to medium and large ships, Rhino, and on foot. Uncheck every ship there to keep the map out of airborne gameplay." />
+        <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                   Text="{Binding MineMap.StatusText}" TextWrapping="Wrap" />
+      </StackPanel>
+    </Border>
+    <Border x:Name="MiningShortcutsCard" Classes="card raised">
+      <StackPanel Spacing="12">
+        <TextBlock Classes="muted" TextWrapping="Wrap"
+                   Text="Automatically clear saved rigs when you board your own ship or dock the Rhino. Send --- in game chat to clear all bookmarks and rigs on the current body at any time." />
+        <CheckBox IsChecked="{Binding Mining.AutoClearRigsOnShipBoarding, Mode=TwoWay}"
+                  Content="Clear rigs automatically when boarding your ship" />
+        <TextBlock Classes="card-title" Text="Rig bar detection (experimental)" />
+        <TextBlock Classes="muted" TextWrapping="Wrap"
+                   Text="Automatic tracker changes pause while your surface position or heading changes and resume after one second of stillness. HUD movement or reacquisition also waits for one steady second. Stop before deploying. Once steady, a detected bar saves its rig tracker immediately; three continuous seconds empty removes that specific tracker. Unknown readings leave trackers unchanged and restart the removal delay. Calibration Test previews detection without changing trackers. Open Edit Overlay Positions and choose Mining. Move and resize the capture frame over all six HUD circles, then align the red dots with their centres. Size, Height and R adjust the circle outlines and curved bar guides; Gap adjusts bar spacing independently; Search adjusts movement allowance with a pixel readout and optional bounds. Select Test while looking forward, starting with rig 1 deployed first. No label learning is required. Use the editor's save or cancel button when finished. Choose the deployment bar color below (bright green by default). Matching colored groups are tracked relative to the calibrated rig positions; gray, white and black do not count as bars." />
+        <CheckBox IsChecked="{Binding Mining.Detection.Enabled, Mode=TwoWay}"
+                  Content="Automatically track rigs from the Rhino HUD" />
+        <TextBlock Text="Deployment bar color" />
+        <ColorPicker Color="{Binding Mining.Detection.BarColor, Mode=TwoWay}"
+                     Width="100" HorizontalAlignment="Left" IsAlphaEnabled="False" IsAlphaVisible="False"
+                     ToolTip.Tip="Choose the bright color of the deployment bars on your game HUD." />
+        <TextBlock Text="{Binding Mining.Detection.SlotsText}" TextWrapping="Wrap" />
+        <TextBlock Classes="muted" Text="{Binding Mining.Detection.StatusText}" TextWrapping="Wrap" />
+        <TextBlock Classes="card-title" Text="Rig location shortcuts" />
+        <TextBlock Classes="muted" TextWrapping="Wrap"
+                   Text="In a Rhino, set or clear each rig at its deployment position. These are the same bindings shown in Input settings. Hold a combination and release to save; Escape cancels; Backspace or Delete clears." />
+        <ItemsControl ItemsSource="{Binding InputSettings.MiningBindings}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:InputBindingViewModel">
+              <Grid ColumnDefinitions="*,260" ColumnSpacing="24" Margin="0,4">
+                <TextBlock Text="{Binding MiningDisplayName}" VerticalAlignment="Center" />
+                <StackPanel Grid.Column="1">
+                  <controls:ShortcutCaptureBox Chord="{Binding Chord, Mode=TwoWay}"
+                                               PlaceholderText="Click, then hold shortcut keys" />
+                  <TextBlock Foreground="{DynamicResource RavenWarningBrush}" IsVisible="{Binding HasValidationError}"
+                             Text="{Binding ValidationMessage}" FontSize="10" />
+                </StackPanel>
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </Border>
+    <Border x:Name="PassiveNotificationCard" Classes="card raised">
+      <StackPanel Spacing="14">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="card-title" Text="Passive notification overlay" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Show the original six-second PlotFloatie messages without taking focus from Elite. Messages are de-duplicated, expire automatically, and never replay from startup journal history." />
+          </StackPanel>
+          <CheckBox Grid.Column="1"
+                    VerticalAlignment="Center"
+                    IsChecked="{Binding Notifications.Enabled, Mode=TwoWay}"
+                    Content="Allow timed notification messages" />
+        </Grid>
+        <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
+          <StackPanel Spacing="10">
+            <CheckBox IsChecked="{Binding Notifications.MaterialCountAfterPickup, Mode=TwoWay}"
+                      Content="Materials count after pickup" />
+            <CheckBox IsChecked="{Binding Notifications.CargoMissionRemaining, Mode=TwoWay}"
+                      Content="Mission remaining cargo count" />
+            <CheckBox IsChecked="{Binding Notifications.ShowScreenshot, Mode=TwoWay}"
+                      Content="Screenshot taken" />
+          </StackPanel>
+          <StackPanel Grid.Column="1" Spacing="10">
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Successful Green Gas Giant uploads and the screenshot-banner shortcut use this overlay when it is enabled." />
+          </StackPanel>
+        </Grid>
+        <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                   IsVisible="{Binding Notifications.HasSettingsStatus}"
+                   TextWrapping="Wrap"
+                   Text="{Binding Notifications.SettingsStatus}" />
+      </StackPanel>
+    </Border>
+
+    <Border x:Name="BoxelOverlayCard" Classes="card raised">
+      <StackPanel Spacing="14">
+        <StackPanel Spacing="4">
+          <TextBlock Classes="card-title" Text="Galaxy Map boxel guidance" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="While an active boxel search and the Galaxy Map are open, show the current boxel, completion progress, next system or prefix, destination validity, and clipboard state." />
+        </StackPanel>
+        <CheckBox IsChecked="{Binding BoxelSearch.AutoCopy, Mode=TwoWay}"
+                  Content="Auto-copy next system in Galaxy Map" />
+        <TextBlock Classes="muted"
+                   TextWrapping="Wrap"
+                   Text="Auto-copy is mutually exclusive with Route Manager and FC Routes so only one Galaxy Map destination source can control the clipboard." />
+        <Separator />
+        <StackPanel Spacing="4">
+          <TextBlock Classes="card-title" Text="Boxel completion notifications" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="Choose the six-second messages shown after FSS completes a system. Timed messages also require the global passive notification overlay in Settings." />
+        </StackPanel>
+        <CheckBox IsChecked="{Binding Notifications.CurrentBoxelSearchStatus, Mode=TwoWay}"
+                  Content="Show current boxel completion percentage" />
+        <CheckBox IsChecked="{Binding Notifications.ShowNextBoxelToSearch, Mode=TwoWay}"
+                  Content="Show the next boxel when the current one is complete" />
+        <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                   IsVisible="{Binding Notifications.HasSettingsStatus}"
+                   TextWrapping="Wrap"
+                   Text="{Binding Notifications.SettingsStatus}" />
+      </StackPanel>
+    </Border>
+
+    <Border x:Name="GalaxyMapCard" Classes="card raised">
+      <StackPanel Spacing="12">
+        <StackPanel Spacing="4">
+          <TextBlock Classes="card-title" Text="Galaxy Map intelligence" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="Show the selected destination, next jump, discovery progress, biological signal count, route distance, and optional faction influence while the Galaxy Map is open." />
+        </StackPanel>
+        <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
+          <CheckBox IsChecked="{Binding GalaxyMap.AutoShow, Mode=TwoWay}"
+                    Content="Show exploration preview in Galaxy Map (uses external data)" />
+          <CheckBox Grid.Column="1"
+                    IsChecked="{Binding GalaxyMap.ShowFactions, Mode=TwoWay}"
+                    Content="Show factions in gal-map" />
+        </Grid>
+        <TextBlock IsVisible="{Binding GalaxyMap.HasSettingsStatus}"
+                   Foreground="{DynamicResource RavenWarningBrush}"
+                   Text="{Binding GalaxyMap.SettingsStatus}"
                    TextWrapping="Wrap" />
       </StackPanel>
     </Border>

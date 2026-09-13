@@ -12,7 +12,9 @@ public sealed class CompanionTimelineStoreTests
     public async Task RollingHistoryKeepsOneDayAndSuppressesTimestampOnlyChanges()
     {
         using var temp = new TemporaryDirectory();
-        var earlyTime = new MutableTimeProvider(DateTimeOffset.Parse("2026-08-22T10:00:00Z"));
+        var earlyTime = new MutableTimeProvider(
+            DateTimeOffset.Parse("2026-08-22T10:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+        );
         using (var earlyStore = new CompanionTimelineStore(temp.Path, earlyTime))
         {
             await earlyStore.AppendAsync(
@@ -28,7 +30,9 @@ public sealed class CompanionTimelineStoreTests
             );
         }
 
-        var currentTime = new MutableTimeProvider(DateTimeOffset.Parse("2026-08-23T12:00:00Z"));
+        var currentTime = new MutableTimeProvider(
+            DateTimeOffset.Parse("2026-08-23T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+        );
         using (var store = new CompanionTimelineStore(temp.Path, currentTime))
         {
             await store.AppendAsync(
@@ -66,7 +70,10 @@ public sealed class CompanionTimelineStoreTests
 
         var status = Assert.Single(entries);
         Assert.Equal(ReplayInputKind.Status, status.Kind);
-        Assert.Equal(DateTimeOffset.Parse("2026-08-23T12:00:00Z"), status.Timestamp);
+        Assert.Equal(
+            DateTimeOffset.Parse("2026-08-23T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            status.Timestamp
+        );
         Assert.Contains(
             "2026-08-23T12:00:00.000Z",
             CompanionTimelineCodec.SerializeEntry(status),
@@ -91,14 +98,19 @@ public sealed class CompanionTimelineStoreTests
                 "{\"timestamp\":\"2026-08-23T10:00:00Z\",\"event\":\"Music\",\"MusicTrack\":\"Exploration\"}",
             ]
         );
-        var time = new MutableTimeProvider(DateTimeOffset.Parse("2026-08-23T10:05:00Z"));
+        var time = new MutableTimeProvider(
+            DateTimeOffset.Parse("2026-08-23T10:05:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+        );
         using (var store = new CompanionTimelineStore(history, time))
         {
             await store.AppendAsync(
                 CreateUpdate(
                     new EliteStatus
                     {
-                        Timestamp = DateTimeOffset.Parse("2026-08-23T09:59:00Z"),
+                        Timestamp = DateTimeOffset.Parse(
+                            "2026-08-23T09:59:00Z",
+                            global::System.Globalization.CultureInfo.InvariantCulture
+                        ),
                         EventName = "Status",
                         Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
                         Latitude = 12.3,
@@ -108,7 +120,14 @@ public sealed class CompanionTimelineStoreTests
                     }
                 )
             );
-            await store.AppendAsync(CreateCompleteUpdate(DateTimeOffset.Parse("2026-08-23T10:01:00Z")));
+            await store.AppendAsync(
+                CreateCompleteUpdate(
+                    DateTimeOffset.Parse(
+                        "2026-08-23T10:01:00Z",
+                        global::System.Globalization.CultureInfo.InvariantCulture
+                    )
+                )
+            );
         }
 
         var packagePath = Path.Combine(temp.Path, "incident.srvreplay");
@@ -117,8 +136,8 @@ public sealed class CompanionTimelineStoreTests
             history,
             packagePath,
             new JournalReplayExportRequest(
-                DateTimeOffset.Parse("2026-08-23T10:00:00Z"),
-                DateTimeOffset.Parse("2026-08-23T10:02:00Z"),
+                DateTimeOffset.Parse("2026-08-23T10:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
+                DateTimeOffset.Parse("2026-08-23T10:02:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 ReplayPrivacyMode.Redacted,
                 "test"
             ),
@@ -126,7 +145,7 @@ public sealed class CompanionTimelineStoreTests
         );
 
         Assert.Equal(6, result.CompanionEventCount);
-        using (var archive = ZipFile.OpenRead(packagePath))
+        using (var archive = await ZipFile.OpenReadAsync(packagePath))
         {
             Assert.NotNull(archive.GetEntry("companions.jsonl"));
         }

@@ -1,5 +1,6 @@
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
+using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Routes;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.Configuration;
@@ -62,6 +63,13 @@ internal static class OverlayEditorPreviewCatalog
             ("ready", "SCO ready"),
             ("journal", "Journal pulse")
         ),
+        ["PlotSurfaceMiningSurvey"] = CreatePreviewStates(
+            ("border", "Border setup"),
+            ("center", "Move to center"),
+            ("confirm-center", "Confirm center"),
+            ("waypoint", "Scan waypoint"),
+            ("complete", "Survey complete")
+        ),
     };
 
     private static readonly OverlayPreviewSimulationState State = OverlayPreviewSimulationState.Default;
@@ -119,7 +127,7 @@ internal static class OverlayEditorPreviewCatalog
             "PlotMiningFiregroups" => new MiningActivityOverlayViewModel(null, true),
             "PlotSurfaceMining" or "PlotMiningWarning" => OverlayEditorPreviewFactories.CreateSurfaceMining(),
             "PlotMineMap" => CreateMineMapPreview(),
-            "PlotSurfaceMiningSurvey" => CreateSurfaceMiningSurveyPreview(),
+            "PlotSurfaceMiningSurvey" => CreateSurfaceMiningSurveyPreview(ParseSurfaceMiningSurveyPhase(previewState)),
             "PlotGrounded" or "PlotMiniTrack" => CreateSurfaceSurveyPreview(),
             "PlotHumanSite" => CreateHumanSitePreview(),
             "PlotJumpInfo" => CreateJumpInfoPreview(),
@@ -139,12 +147,22 @@ internal static class OverlayEditorPreviewCatalog
         return MineMapViewModel.CreateEditorPreview();
     }
 
-    private static MineMapViewModel CreateSurfaceMiningSurveyPreview()
+    private static MineMapViewModel CreateSurfaceMiningSurveyPreview(MineMapSurveyGuidePhase phase)
     {
         MineMapViewModel preview = MineMapViewModel.CreateEditorPreview();
-        preview.InstallSurveyGuideEditorPreview();
+        preview.InstallSurveyGuideEditorPreview(phase);
         return preview;
     }
+
+    private static MineMapSurveyGuidePhase ParseSurfaceMiningSurveyPhase(string state) =>
+        state switch
+        {
+            "center" => MineMapSurveyGuidePhase.Center,
+            "confirm-center" => MineMapSurveyGuidePhase.ConfirmCenter,
+            "waypoint" => MineMapSurveyGuidePhase.Waypoint,
+            "complete" => MineMapSurveyGuidePhase.Complete,
+            _ => MineMapSurveyGuidePhase.Border,
+        };
 
     private static MineMapViewModel CreateMiningReferencePreview()
     {

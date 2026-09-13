@@ -34,7 +34,7 @@ public sealed class RavenColonialClientTests
                 requested.Add(request.RequestUri!.AbsolutePath);
             }
 
-            return request.RequestUri!.AbsolutePath switch
+            return request.RequestUri.AbsolutePath switch
             {
                 "/root/api/cmdr/Test%20Cmdr/active" => Json("[{\"buildId\":\"build-1\",\"buildName\":\"Port\"}]"),
                 "/root/api/cmdr/Test%20Cmdr/hiddenIDs" => Json("[\"build-2\"]"),
@@ -489,7 +489,7 @@ public sealed class RavenColonialClientTests
         });
         var client = Create(handler);
         var depot = new ColonizationConstructionDepotSnapshot(
-            DateTimeOffset.Parse("2026-07-25T12:00:00Z"),
+            DateTimeOffset.Parse("2026-07-25T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
             456,
             0.25,
             IsComplete: false,

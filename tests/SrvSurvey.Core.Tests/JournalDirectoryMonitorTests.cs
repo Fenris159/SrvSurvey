@@ -158,7 +158,7 @@ public sealed class JournalDirectoryMonitorTests : IDisposable
         Directory.CreateDirectory(temporaryDirectory);
         var monitor = new JournalDirectoryMonitor(temporaryDirectory);
         using var cancellation = new CancellationTokenSource();
-        cancellation.Cancel();
+        await cancellation.CancelAsync();
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
             monitor.RunAsync(TimeSpan.FromMilliseconds(1), cancellation.Token)

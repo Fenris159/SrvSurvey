@@ -120,7 +120,7 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
         Assert.Equal(path, result.Path);
         Assert.Equal(1, result.UpdatedPlacementCount);
         Assert.NotNull(result.BackupPath);
-        Assert.Equal(original, File.ReadAllText(result.BackupPath!));
+        Assert.Equal(original, File.ReadAllText(result.BackupPath));
         var savedText = File.ReadAllText(path);
         Assert.Contains("os:-120, middle:45, 0", savedText);
         Assert.Contains("{ s: 10, p: <1, 2, 3>, r: <4, 5, 6>}", savedText);
@@ -193,7 +193,7 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
         Assert.True(result.UpdatedDefaultOpacity);
         Assert.Equal(0, result.UpdatedPlacementCount);
         Assert.NotNull(result.SettingsBackupPath);
-        Assert.Equal(original, File.ReadAllText(result.SettingsBackupPath!));
+        Assert.Equal(original, File.ReadAllText(result.SettingsBackupPath));
         Assert.Contains("\"futureSetting\": true", File.ReadAllText(settingsPath));
         Assert.Equal(0.42, store.Load().DefaultOpacity);
     }

@@ -15,7 +15,10 @@ public sealed class EddnOutboxTests
     {
         using var folder = new TemporaryFolder();
         var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
-        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        var now = DateTimeOffset.Parse(
+            "2026-07-28T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         using (
             var first = outbox(
                 path,
@@ -132,7 +135,7 @@ public sealed class EddnOutboxTests
     {
         using var folder = new TemporaryFolder();
         var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
-        File.WriteAllText(
+        await File.WriteAllTextAsync(
             path,
             $$"""
             [{
@@ -159,7 +162,12 @@ public sealed class EddnOutboxTests
             schemaRef = JObject.Parse(await reader.ReadToEndAsync()).Value<string>("$schemaRef");
             return new HttpResponseMessage(HttpStatusCode.OK);
         });
-        using var queue = outbox(path, transport, () => DateTimeOffset.Parse("2026-07-28T12:00:00Z"));
+        using var queue = outbox(
+            path,
+            transport,
+            () =>
+                DateTimeOffset.Parse("2026-07-28T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
+        );
         queue.setEnabled(true, discardPendingWhenDisabled: false);
 
         await queue.processDue();
@@ -174,7 +182,10 @@ public sealed class EddnOutboxTests
     {
         using var folder = new TemporaryFolder();
         var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
-        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        var now = DateTimeOffset.Parse(
+            "2026-07-28T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var calls = 0;
         var logs = new List<string>();
         using var queue = new EddnOutbox(
@@ -212,7 +223,10 @@ public sealed class EddnOutboxTests
     {
         using var folder = new TemporaryFolder();
         var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
-        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        var now = DateTimeOffset.Parse(
+            "2026-07-28T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var calls = 0;
         using var queue = outbox(
             path,
@@ -248,7 +262,10 @@ public sealed class EddnOutboxTests
     {
         using var folder = new TemporaryFolder();
         var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
-        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        var now = DateTimeOffset.Parse(
+            "2026-07-28T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var logs = new List<string>();
         using var queue = new EddnOutbox(
             path,
@@ -277,7 +294,10 @@ public sealed class EddnOutboxTests
     {
         using var folder = new TemporaryFolder();
         var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
-        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        var now = DateTimeOffset.Parse(
+            "2026-07-28T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var calls = 0;
         using var queue = outbox(
             path,
@@ -312,7 +332,10 @@ public sealed class EddnOutboxTests
     {
         using var folder = new TemporaryFolder();
         var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
-        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        var now = DateTimeOffset.Parse(
+            "2026-07-28T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var handler = new CancelThenSucceedHandler();
         using var client = new HttpClient(handler);
         var transport = new EddnTransport(client, new Uri("https://live.example.test/upload/"));
@@ -341,7 +364,10 @@ public sealed class EddnOutboxTests
     {
         using var folder = new TemporaryFolder();
         var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
-        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        var now = DateTimeOffset.Parse(
+            "2026-07-28T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var transport = EddnTransportTests.createTransport(_ =>
             Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK))
         );
@@ -377,7 +403,10 @@ public sealed class EddnOutboxTests
     {
         using var folder = new TemporaryFolder();
         var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
-        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        var now = DateTimeOffset.Parse(
+            "2026-07-28T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         EddnTransport transport = EddnTransportTests.createTransport(_ =>
             Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK))
         );
@@ -440,7 +469,10 @@ public sealed class EddnOutboxTests
     {
         using var folder = new TemporaryFolder();
         var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
-        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        var now = DateTimeOffset.Parse(
+            "2026-07-28T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var transport = EddnTransportTests.createTransport(_ =>
             Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK))
         );
@@ -461,7 +493,10 @@ public sealed class EddnOutboxTests
     {
         using var folder = new TemporaryFolder();
         var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
-        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        var now = DateTimeOffset.Parse(
+            "2026-07-28T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var transport = EddnTransportTests.createTransport(_ =>
             Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK))
         );
@@ -480,7 +515,10 @@ public sealed class EddnOutboxTests
     {
         using var folder = new TemporaryFolder();
         var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
-        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        var now = DateTimeOffset.Parse(
+            "2026-07-28T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var transport = EddnTransportTests.createTransport(_ =>
             Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK))
         );
@@ -506,7 +544,14 @@ public sealed class EddnOutboxTests
         Directory.CreateDirectory(messageFolder);
         File.WriteAllText(
             Path.Combine(messageFolder, "valid.json"),
-            JsonConvert.SerializeObject(queued(DateTimeOffset.Parse("2026-07-28T12:00:00Z")))
+            JsonConvert.SerializeObject(
+                queued(
+                    DateTimeOffset.Parse(
+                        "2026-07-28T12:00:00Z",
+                        global::System.Globalization.CultureInfo.InvariantCulture
+                    )
+                )
+            )
         );
         File.WriteAllText(Path.Combine(messageFolder, "corrupt.json"), "{not-json");
         var logs = new List<string>();
@@ -569,7 +614,10 @@ public sealed class EddnOutboxTests
     {
         using var folder = new TemporaryFolder();
         var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
-        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        var now = DateTimeOffset.Parse(
+            "2026-07-28T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         using var queue = outbox(
             path,
             EddnTransportTests.createTransport(_ => Task.FromResult(new HttpResponseMessage(statusCode))),
@@ -589,7 +637,10 @@ public sealed class EddnOutboxTests
     {
         using var folder = new TemporaryFolder();
         var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
-        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        var now = DateTimeOffset.Parse(
+            "2026-07-28T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         using var queue = outbox(
             path,
             EddnTransportTests.createTransport(_ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK))),
@@ -609,7 +660,10 @@ public sealed class EddnOutboxTests
     {
         using var folder = new TemporaryFolder();
         var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
-        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        var now = DateTimeOffset.Parse(
+            "2026-07-28T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var callbackCouldInspectQueue = false;
         EddnOutbox? queue = null;
         queue = new EddnOutbox(
@@ -641,7 +695,10 @@ public sealed class EddnOutboxTests
     {
         using var folder = new TemporaryFolder();
         var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
-        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        var now = DateTimeOffset.Parse(
+            "2026-07-28T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var callbackCouldInspectQueue = false;
         EddnOutbox? queue = null;
         queue = new EddnOutbox(
@@ -670,7 +727,10 @@ public sealed class EddnOutboxTests
     {
         using var folder = new TemporaryFolder();
         var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
-        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        var now = DateTimeOffset.Parse(
+            "2026-07-28T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var enteredTransport = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var releaseTransport = new TaskCompletionSource<HttpResponseMessage>(
             TaskCreationOptions.RunContinuationsAsynchronously

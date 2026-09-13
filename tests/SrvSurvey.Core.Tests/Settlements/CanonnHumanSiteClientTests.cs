@@ -86,7 +86,7 @@ public sealed class CanonnHumanSiteClientTests
             new Uri("https://example.test/publish")
         );
         var submission = new CanonnHumanSiteSubmission(
-            DateTimeOffset.Parse("2026-07-25T12:00:00Z"),
+            DateTimeOffset.Parse("2026-07-25T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
             new Version(2, 0, 95, 0),
             "Haberlandt Survey",
             12345,

@@ -102,7 +102,7 @@ public sealed class CombatStateTests
                 123,
                 "Mission Giver",
                 "Enemy Faction",
-                DateTimeOffset.Parse("2026-07-26T01:00:00Z"),
+                DateTimeOffset.Parse("2026-07-26T01:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 7,
                 7
             ),
@@ -152,7 +152,16 @@ public sealed class CombatStateTests
         var state = new CombatState();
         state.Reset(
             new CombatSnapshot([
-                Mission(1, "Giver", "Enemy", remaining: 5, expires: DateTimeOffset.Parse("2026-07-25T01:00:00Z")),
+                Mission(
+                    1,
+                    "Giver",
+                    "Enemy",
+                    remaining: 5,
+                    expires: DateTimeOffset.Parse(
+                        "2026-07-25T01:00:00Z",
+                        global::System.Globalization.CultureInfo.InvariantCulture
+                    )
+                ),
             ])
         );
 

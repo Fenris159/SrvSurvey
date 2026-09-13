@@ -82,8 +82,8 @@ public sealed class OverlayPositionPreviewViewModelTests
                     .SequenceEqual(["A 4", "Rocky body", "1,245 LS", "Bio 27.4 M CR"])
                 && row.RouteBody.InlineSegments[0].IsBodyName
                 && row.RouteBody.InlineSegments[1].IsDetail
-                && row.RouteBody.CompactDetailSegments[^1].HasSeparator == false
-                && row.RouteBody!.Species.SequenceEqual(["Tussock Stigmasis", "Recepta Conditivus"])
+                && !row.RouteBody.CompactDetailSegments[^1].HasSeparator
+                && row.RouteBody.Species.SequenceEqual(["Tussock Stigmasis", "Recepta Conditivus"])
         );
         Assert.Contains(
             preview.Rows,

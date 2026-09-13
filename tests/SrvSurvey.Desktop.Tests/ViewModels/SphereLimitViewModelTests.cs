@@ -116,7 +116,7 @@ public sealed class SphereLimitViewModelTests : IDisposable
             new SphereLimitSnapshot(true, "Sol", new GalacticCoordinate(0, 0, 0), 50)
         );
         var route = new NavRouteSnapshot(
-            DateTimeOffset.Parse("2026-07-25T01:00:00Z"),
+            DateTimeOffset.Parse("2026-07-25T01:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
             "NavRoute",
             [
                 new NavRouteEntry("Current", 1, new GalacticCoordinate(1, 0, 0), "G"),

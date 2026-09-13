@@ -52,7 +52,13 @@ public sealed class LegacySystemDataReaderTests : IDisposable
         Assert.Equal(new GalacticCoordinate(4, 5, 6), result.Systems[0].Position);
         Assert.Equal("Praea Euq IL-P c5-2", result.Systems[1].Boxel.Name);
         Assert.True(result.Systems[1].FssAllBodies);
-        Assert.Equal(DateTimeOffset.Parse("2026-07-20T12:00:00-05:00"), result.Systems[1].VisitedAt);
+        Assert.Equal(
+            DateTimeOffset.Parse(
+                "2026-07-20T12:00:00-05:00",
+                global::System.Globalization.CultureInfo.InvariantCulture
+            ),
+            result.Systems[1].VisitedAt
+        );
         Assert.Single(result.Errors);
         Assert.Contains("malformed.json", result.Errors[0], StringComparison.Ordinal);
     }

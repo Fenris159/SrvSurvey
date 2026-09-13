@@ -1,6 +1,6 @@
 # Surface mining
 
-Available in **SrvSurvey-XP 2.1.3.0-rc.46.5**. Surface Mining combines Rhino rig
+Available in **SrvSurvey-XP 2.1.3.0-rc.48**. Surface Mining combines Rhino rig
 guidance with reusable maps of planetary mining-location signals and their
 deposits. The same workflow is covered inside the application under
 **Guides > Surface mining**.
@@ -45,11 +45,18 @@ Elite window. It first prompts for the border command, directs the player to the
 calculated center, and asks for `.mining center here`. It then advances
 automatically through an outward spiral of scan waypoints. Waypoints and adjacent
 spiral turns are at most 2 km apart so the 2 km surface scanner covers the
-saved area through its outer edge. After the last waypoint, the overlay reminds the
-player to use `.mine rigs <number>` while mining and closes after 10 seconds.
+saved area through its outer edge. While following waypoints, the fourth row keeps
+both deposit-marking forms visible; command results temporarily replace that hint.
+After the last waypoint, the overlay reminds the player to use `.mine rigs <number>`
+while mining and closes after 10 seconds.
+
+Guided-survey progress is saved after every phase and waypoint change. If the
+game or SrvSurvey closes, reopening SrvSurvey resumes the active guide at the
+same waypoint once the matching Commander and mining location are loaded.
 
 Running `.mining survey` while already inside a saved map starts at that map's
-center step.
+center step. Running it again before the center workflow is complete restarts at
+the border. Running it again during the waypoint route returns to waypoint 1.
 
 Drive to the orange border of a mining-location signal and face the marker at its
 center. Send this case-insensitive chat command using the current bearing, the
@@ -115,14 +122,20 @@ To correct an existing marker, stand at its true position and send `.mine move
 and only when it is within 200 m. Success and failure are reported through Status
 notifications.
 
-To plan rig placement for a mapped deposit, drive to its edge and send `.mine
-splat`. SrvSurvey selects the nearest deposit within 0.5 km and records the
-Rhino's path as you drive around the boundary. Returning within 12 m of the
-starting point after at least 50 m of travel closes the trace. The compact
-Surface Mining radar shows the trace as a dotted line and square suggested rig
-positions. Suggestions use the 78 m rig exclusion distance and remain separate
-from actual tracked rigs. Send `.mine splat cancel` to discard an unfinished
-trace.
+To plan rig placement for a mapped deposit, position the Rhino so the center of
+its chassis sits on the visible deposit border. HUD colors vary. Switch to turret
+mode, keep the mineral scanner active, and send `.mine splat`. SrvSurvey selects
+the nearest deposit within 0.5 km and records the Rhino's path as you drive slowly
+around the visible boundary. Returning within 12 m of the starting point after at
+least 50 m of travel closes the trace.
+
+The compact Surface Mining radar draws the trace as a dotted line and places
+separate square rig suggestions using the 78 m exclusion distance. It zooms to
+2× within 100 m of a suggestion, 4× within 50 m and 6× within 25 m so the player
+marker and target can be aligned precisely. Active traces receive the same local
+zoom from their nearby path points. The suggestions remain separate from actual
+tracked rigs; use them to position the Rhino, then deploy and track each rig as
+normal. Send `.mine splat cancel` to discard an unfinished trace.
 
 The **Survey Map** and Overview Map overlay share the selected bookmark, live
 player position, 1 km rings extending through the whole-kilometer ring that

@@ -9,7 +9,10 @@ public sealed class MiningCommunityCacheTests
     public void NewestMarketWinsAndUnknownDistanceDoesNotMasqueradeAsNearby()
     {
         var cache = new MiningCommunityCache();
-        var now = DateTimeOffset.Parse("2026-09-06T12:00:00Z");
+        var now = DateTimeOffset.Parse(
+            "2026-09-06T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         cache.Apply(
             """{"$schemaRef":"https://eddn.edcd.io/schemas/commodity/3","message":{"timestamp":"2026-09-06T11:59:00Z","systemName":"Sol","stationName":"Test","marketId":1,"commodities":[{"name":"platinum","sellPrice":200,"buyPrice":250,"demand":10,"stock":20}]}}""",
             now

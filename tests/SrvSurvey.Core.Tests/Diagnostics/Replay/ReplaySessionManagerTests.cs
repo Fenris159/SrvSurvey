@@ -91,7 +91,10 @@ public sealed class ReplaySessionManagerTests
     [Fact]
     public void MergeTimelinePreservesJournalSourceOrderAcrossMissingAndRegressingTimestamps()
     {
-        var ten = DateTimeOffset.Parse("2026-08-23T10:00:00Z");
+        var ten = DateTimeOffset.Parse(
+            "2026-08-23T10:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var journal = new[]
         {
             new JournalReplayEvent(0, ten, "First", "{}"),
@@ -333,18 +336,18 @@ public sealed class ReplaySessionManagerTests
             new JournalReplayExportRequest(null, null, ReplayPrivacyMode.Raw, "test"),
             CancellationToken.None
         );
-        using (var archive = ZipFile.Open(packagePath, ZipArchiveMode.Update))
+        using (var archive = await ZipFile.OpenAsync(packagePath, ZipArchiveMode.Update))
         {
             var entry = archive.GetEntry("replay-package.json")!;
             JsonObject manifest;
-            using (var reader = new StreamReader(entry.Open()))
+            using (var reader = new StreamReader(await entry.OpenAsync()))
             {
                 manifest = JsonNode.Parse(await reader.ReadToEndAsync())!.AsObject();
             }
 
             entry.Delete();
             var replacement = archive.CreateEntry("replay-package.json");
-            await using var output = replacement.Open();
+            await using var output = await replacement.OpenAsync();
             await using var writer = new StreamWriter(output);
             manifest["commander"] = null;
             await writer.WriteAsync(manifest.ToJsonString());

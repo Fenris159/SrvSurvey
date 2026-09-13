@@ -233,7 +233,7 @@ public sealed class ReleaseInstallationHistoryCleanerTests : IDisposable
 
     private string CreateGenerated(string kind, int seed, DateTimeOffset lastWriteTime)
     {
-        var suffix = seed.ToString("x32", System.Globalization.CultureInfo.InvariantCulture);
+        var suffix = seed.ToString("x32", global::System.Globalization.CultureInfo.InvariantCulture);
         var path = Path.Combine(root, $".SrvSurvey-XP-{kind}-{suffix}");
         Directory.CreateDirectory(path);
         Directory.SetLastWriteTimeUtc(path, lastWriteTime.UtcDateTime);

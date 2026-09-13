@@ -21,8 +21,8 @@ public sealed class LocalizationCatalogTests : IDisposable
 
         Assert.Equal("de", LocalizationCatalog.CurrentLanguage);
         Assert.Equal(1_090, LocalizationCatalog.LegacyTranslationCount);
-        Assert.Equal(7_824, LocalizationCatalog.ApplicationTranslationCount);
-        Assert.Equal(7_824, LocalizationCatalog.SourceCount);
+        Assert.Equal(7_837, LocalizationCatalog.ApplicationTranslationCount);
+        Assert.Equal(7_837, LocalizationCatalog.SourceCount);
         Assert.Equal("Himmelskörper", LocalizationCatalog.Translate("Bodies"));
         Assert.Equal("Neues Lesezeichen", LocalizationCatalog.Translate("New bookmark"));
     }
@@ -117,7 +117,9 @@ public sealed class LocalizationCatalogTests : IDisposable
     {
         LocalizationCatalog.Initialize("de");
 
-        Assert.Equal(expected, LocalizationCatalog.Translate(source));
+        var translated = LocalizationCatalog.Translate(source);
+        Assert.Equal(expected, translated);
+        Assert.NotEqual(source, translated);
     }
 
     [Fact]

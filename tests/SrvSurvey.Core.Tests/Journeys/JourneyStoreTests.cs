@@ -115,7 +115,10 @@ public sealed class JourneyStoreTests : IDisposable
     public async Task CreateUsesLegacyTimestampFileAndInitialWatermark()
     {
         var store = new JourneyStore(temporaryDirectory);
-        var timestamp = DateTimeOffset.Parse("2026-07-24T12:34:56Z");
+        var timestamp = DateTimeOffset.Parse(
+            "2026-07-24T12:34:56Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
 
         var journey = await store.CreateAsync(
             new JourneyCreationRequest(

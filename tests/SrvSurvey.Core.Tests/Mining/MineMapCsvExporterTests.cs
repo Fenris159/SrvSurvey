@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.VisualBasic.FileIO;
 using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Navigation;
@@ -10,7 +11,7 @@ public sealed class MineMapCsvExporterTests
     [Fact]
     public void WriteCreatesOneSelfContainedRowPerMarker()
     {
-        DateTimeOffset created = DateTimeOffset.Parse("2026-09-12T12:30:00-05:00");
+        DateTimeOffset created = DateTimeOffset.Parse("2026-09-12T12:30:00-05:00", CultureInfo.InvariantCulture);
         var center = new SurfaceCoordinate(14.2609, -79.3292);
         const double planetRadiusMeters = 855_573.1875;
         var survey = new MineMapSurvey

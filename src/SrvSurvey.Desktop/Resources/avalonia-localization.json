@@ -1569,6 +1569,10 @@
       "translation": "Alarm"
     },
     {
+      "source": "Align with the squares and place the rigs.",
+      "translation": "Richten Sie die Quadrate aus und platzieren Sie die Rigs."
+    },
+    {
       "source": "Align with the survey origin and rise to {0} m.",
       "translation": "Richten Sie sich am Vermessungsursprung aus und steigen Sie auf {0} m."
     },
@@ -2263,6 +2267,10 @@
     {
       "source": "Authorization point",
       "translation": "Autorisierungspunkt"
+    },
+    {
+      "source": "Auto Fitting Rigs to a Splat",
+      "translation": "Automatisches Anpassen von Rigs an einen Splat"
     },
     {
       "source": "Auto add tracker location when Composition scanning organisms.",
@@ -3409,6 +3417,10 @@
       "translation": "Grenzradius (km)"
     },
     {
+      "source": "Border setup",
+      "translation": "Randeinrichtung"
+    },
+    {
       "source": "Borderless or windowed Elite modes provide the most predictable desktop overlay stacking. Exclusive fullscreen behavior depends on the operating system and compositor.",
       "translation": "Die randlosen oder fensterbasierten Elite-Modi bieten das vorhersehbarste Desktop-Overlay-Stacking. Das ausschließliche Vollbildverhalten hängt vom Betriebssystem und Compositor ab."
     },
@@ -4255,6 +4267,14 @@
     {
       "source": "Cavas",
       "translation": "Cavas"
+    },
+    {
+      "source": "Center the Rhino chassis on a mapped deposit edge, switch to turret mode, keep the mineral scanner active, and send .mine splat. Drive the full visible circuit until SrvSurvey closes the trace, then use the square rig-position suggestions to line up each deployment. The compact radar zooms automatically near the deposit and recommendations. Send .mine splat cancel to discard an unfinished trace.",
+      "translation": "Zentrieren Sie das Rhino-Chassis auf einer kartierten Lagerstättenkante, wechseln Sie in den Turmmodus, lassen Sie den Mineralienscanner aktiv und senden Sie .mine splat. Fahren Sie den vollständig sichtbaren Stromkreis, bis SrvSurvey die Spur schließt, und verwenden Sie dann die Vorschläge für die quadratische Riggposition, um jeden Einsatz auszurichten. Das kompakte Radar zoomt automatisch in die Nähe der Lagerstätte und Empfehlungen. Senden Sie .mine splat cancel, um eine nicht abgeschlossene Ablaufverfolgung zu verwerfen."
+    },
+    {
+      "source": "Center the Rhino on the edge (HUD colors vary).",
+      "translation": "Zentrieren Sie das Nashorn am Rand (HUD-Farben variieren)."
     },
     {
       "source": "Century Gothic, Segoe UI, sans-serif",
@@ -5543,6 +5563,10 @@
     {
       "source": "Confirm any body import, review inferred sites and manually edit details as needed.",
       "translation": "Bestätigen Sie den Import aller Körper, überprüfen Sie abgeleitete Websites und bearbeiten Sie die Details bei Bedarf manuell."
+    },
+    {
+      "source": "Confirm center",
+      "translation": "Mitte bestätigen"
     },
     {
       "source": "Confirm clear",
@@ -8115,10 +8139,6 @@
     {
       "source": "Estimated",
       "translation": "Geschätzte"
-    },
-    {
-      "source": "Estimated reward: {0}",
-      "translation": "Geschätzte Belohnung: {0}"
     },
     {
       "source": "Every Raven site requires a name.",
@@ -11885,10 +11905,6 @@
       "translation": "Bekannte Belohnung:"
     },
     {
-      "source": "Known reward: {0}",
-      "translation": "Bekannte Belohnung: {0}"
-    },
-    {
       "source": "Known system · body count unavailable",
       "translation": "Bekanntes System · Körperzahl nicht verfügbar"
     },
@@ -13727,6 +13743,10 @@
     {
       "source": "Move to a body surface to begin guidance",
       "translation": "Gehen Sie zu einer Körperoberfläche, um mit der Führung zu beginnen"
+    },
+    {
+      "source": "Move to center",
+      "translation": "In die Mitte bewegen"
     },
     {
       "source": "Move to the site centre and align the map origin.",
@@ -16567,6 +16587,10 @@
     {
       "source": "Português (Brasil)",
       "translation": "Português (Brasilien)"
+    },
+    {
+      "source": "Position the Rhino so the center of its chassis sits directly over the visible deposit border. HUD colors vary.",
+      "translation": "Positionieren Sie das Rhino so, dass die Mitte seines Chassis direkt über der sichtbaren Ablagerungsgrenze liegt. HUD-Farben variieren."
     },
     {
       "source": "Position unavailable",
@@ -20357,6 +20381,10 @@
       "translation": "Scanwert"
     },
     {
+      "source": "Scan waypoint",
+      "translation": "Wegpunkt scannen"
+    },
+    {
       "source": "Scan {0}",
       "translation": "Scannen Sie {0}"
     },
@@ -22605,10 +22633,6 @@
       "translation": "Download des verifizierten Pakets wird gestartet..."
     },
     {
-      "source": "Starts guided survey mode. The compact top-center overlay walks you from the orange border to the saved center, then through automatically advancing scan waypoints in an outward spiral. Waypoints stay no more than 2 km apart for complete surface-scanner coverage. The guide closes 10 seconds after its final rig-capacity reminder.",
-      "translation": "Startet den geführten Umfragemodus. Das kompakte Overlay in der oberen Mitte führt Sie vom orangefarbenen Rand zur gespeicherten Mitte und dann durch automatisch fortschreitende Scan-Wegpunkte in einer Spirale nach außen. Für eine vollständige Abdeckung durch den Oberflächenscanner bleiben Wegpunkte nicht weiter als 2 km voneinander entfernt. Der Guide wird 10 Sekunden nach der letzten Erinnerung an die Rig-Kapazität geschlossen."
-    },
-    {
       "source": "Startup failed at {0}.",
       "translation": "Der Start ist bei {0} fehlgeschlagen."
     },
@@ -23017,6 +23041,10 @@
       "translation": "Umfrage"
     },
     {
+      "source": "Survey complete",
+      "translation": "Umfrage abgeschlossen"
+    },
+    {
       "source": "Survey groups Exploration, Exobiology, and Boxel; Navigation groups Travel, Search, and Bookmarks; Activities groups Mining, Guardian, Quests, and Colonization. Expanding one group collapses the previous group.",
       "translation": "Umfragegruppen Exploration, Exobiologie und Boxel; Navigationsgruppen Reisen, Suche und Lesezeichen; Aktivitätsgruppen Bergbau, Wächter, Quests und Kolonisierung. Durch das Erweitern einer Gruppe wird die vorherige Gruppe ausgeblendet."
     },
@@ -23075,6 +23103,10 @@
     {
       "source": "Switch to Session on prospecting and Hotspots on completion",
       "translation": "Wechseln Sie nach Abschluss zur Sitzung über Neukundengewinnung und Hotspots"
+    },
+    {
+      "source": "Switch to turret mode and send .mine splat in chat. Keep the mineral scanner active, then drive slowly around the visible edge until SrvSurvey reports that the full circuit is complete.",
+      "translation": "Wechseln Sie in den Turmmodus und senden Sie .mine splat im Chat. Halten Sie den Mineralienscanner aktiv und fahren Sie dann langsam um die sichtbare Kante herum, bis SrvSurvey meldet, dass der gesamte Rundgang abgeschlossen ist."
     },
     {
       "source": "Switched to the {0} release channel; checking now.",
@@ -25809,10 +25841,6 @@
       "translation": "Gesamtbelohnung:"
     },
     {
-      "source": "Total reward: {0}",
-      "translation": "Gesamtbelohnung: {0}"
-    },
-    {
       "source": "TotalItemsToDeliver",
       "translation": "TotalItemsToDeliver"
     },
@@ -25847,6 +25875,10 @@
     {
       "source": "Toxic Green",
       "translation": "Giftiges Grün"
+    },
+    {
+      "source": "Trace the complete splat border.",
+      "translation": "Zeichnen Sie den gesamten Splat-Rand nach."
     },
     {
       "source": "Track Guardian component materials",
@@ -26791,6 +26823,10 @@
     {
       "source": "Use the smallest targeted recovery before considering a profile import or reset.",
       "translation": "Verwenden Sie die kleinste gezielte Wiederherstellung, bevor Sie einen Profilimport oder ein Zurücksetzen in Betracht ziehen."
+    },
+    {
+      "source": "Use the square recommendations on the compact Surface Mining radar to line up and place each rig. The radar zooms automatically as you approach the deposit and its suggested positions.",
+      "translation": "Verwenden Sie die quadratischen Empfehlungen auf dem kompakten Surface Mining-Radar, um jedes Bohrgerät auszurichten und zu platzieren. Das Radar zoomt automatisch, wenn Sie sich der Lagerstätte und den vorgeschlagenen Positionen nähern."
     },
     {
       "source": "UseDevelopmentReleases",
@@ -28061,6 +28097,10 @@
       "translation": "Lesezeichen"
     },
     {
+      "source": "border",
+      "translation": "Grenze"
+    },
+    {
       "source": "bottom",
       "translation": "unten"
     },
@@ -28261,8 +28301,16 @@
       "translation": "Gemeinschaftsziele"
     },
     {
+      "source": "complete",
+      "translation": "vollständig"
+    },
+    {
       "source": "components",
       "translation": "Komponenten"
+    },
+    {
+      "source": "confirm-center",
+      "translation": "Bestätigungszentrum"
     },
     {
       "source": "consumables",
@@ -30235,6 +30283,10 @@
     {
       "source": "wayland",
       "translation": "Wayland"
+    },
+    {
+      "source": "waypoint",
+      "translation": "Wegpunkt"
     },
     {
       "source": "weaponcolour",
@@ -32867,6 +32919,10 @@
       "translation": "alarma"
     },
     {
+      "source": "Align with the squares and place the rigs.",
+      "translation": "Alinea con los cuadrados y coloca los rigs."
+    },
+    {
       "source": "Align with the survey origin and rise to {0} m.",
       "translation": "Alinearse con el origen del levantamiento y subir hasta {0} m."
     },
@@ -33561,6 +33617,10 @@
     {
       "source": "Authorization point",
       "translation": "Punto de autorización"
+    },
+    {
+      "source": "Auto Fitting Rigs to a Splat",
+      "translation": "Montaje automático de plataformas en un Splat"
     },
     {
       "source": "Auto add tracker location when Composition scanning organisms.",
@@ -34707,6 +34767,10 @@
       "translation": "Radio de frontera (km)"
     },
     {
+      "source": "Border setup",
+      "translation": "Configuración de borde"
+    },
+    {
       "source": "Borderless or windowed Elite modes provide the most predictable desktop overlay stacking. Exclusive fullscreen behavior depends on the operating system and compositor.",
       "translation": "Los modos Elite sin bordes o con ventanas proporcionan el apilamiento de superposiciones de escritorio más predecible. El comportamiento exclusivo de pantalla completa depende del sistema operativo y del compositor."
     },
@@ -35553,6 +35617,14 @@
     {
       "source": "Cavas",
       "translation": "cavas"
+    },
+    {
+      "source": "Center the Rhino chassis on a mapped deposit edge, switch to turret mode, keep the mineral scanner active, and send .mine splat. Drive the full visible circuit until SrvSurvey closes the trace, then use the square rig-position suggestions to line up each deployment. The compact radar zooms automatically near the deposit and recommendations. Send .mine splat cancel to discard an unfinished trace.",
+      "translation": "Centre el chasis de Rhino en un borde de depósito mapeado, cambie al modo torreta, mantenga activo el escáner de minerales y envíe .mine splat. Conduzca por todo el circuito visible hasta que SrvSurvey cierre el rastro, luego use las sugerencias de posición del equipo cuadrado para alinear cada despliegue. El radar compacto se acerca automáticamente al depósito y a las recomendaciones. Envíe .mine splat cancel para descartar un seguimiento inacabado."
+    },
+    {
+      "source": "Center the Rhino on the edge (HUD colors vary).",
+      "translation": "Centre el Rhino en el borde (los colores del HUD varían)."
     },
     {
       "source": "Century Gothic, Segoe UI, sans-serif",
@@ -36841,6 +36913,10 @@
     {
       "source": "Confirm any body import, review inferred sites and manually edit details as needed.",
       "translation": "Confirme cualquier importación de cuerpo, revise los sitios inferidos y edite manualmente los detalles según sea necesario."
+    },
+    {
+      "source": "Confirm center",
+      "translation": "Confirmar centro"
     },
     {
       "source": "Confirm clear",
@@ -39413,10 +39489,6 @@
     {
       "source": "Estimated",
       "translation": "Estimado"
-    },
-    {
-      "source": "Estimated reward: {0}",
-      "translation": "Recompensa estimada: {0}"
     },
     {
       "source": "Every Raven site requires a name.",
@@ -43183,10 +43255,6 @@
       "translation": "Recompensa conocida:"
     },
     {
-      "source": "Known reward: {0}",
-      "translation": "Recompensa conocida: {0}"
-    },
-    {
       "source": "Known system · body count unavailable",
       "translation": "Sistema conocido · recuento de cadáveres no disponible"
     },
@@ -45025,6 +45093,10 @@
     {
       "source": "Move to a body surface to begin guidance",
       "translation": "Muévase a una superficie del cuerpo para comenzar a guiarse."
+    },
+    {
+      "source": "Move to center",
+      "translation": "Mover al centro"
     },
     {
       "source": "Move to the site centre and align the map origin.",
@@ -47865,6 +47937,10 @@
     {
       "source": "Português (Brasil)",
       "translation": "Português (Brasil)"
+    },
+    {
+      "source": "Position the Rhino so the center of its chassis sits directly over the visible deposit border. HUD colors vary.",
+      "translation": "Coloque el Rhino de modo que el centro de su chasis quede directamente sobre el borde de depósito visible. Los colores del HUD varían."
     },
     {
       "source": "Position unavailable",
@@ -51655,6 +51731,10 @@
       "translation": "Valor de escaneo"
     },
     {
+      "source": "Scan waypoint",
+      "translation": "Escanear punto de referencia"
+    },
+    {
       "source": "Scan {0}",
       "translation": "Escanear {0}"
     },
@@ -53903,10 +53983,6 @@
       "translation": "Iniciando la descarga del paquete verificado..."
     },
     {
-      "source": "Starts guided survey mode. The compact top-center overlay walks you from the orange border to the saved center, then through automatically advancing scan waypoints in an outward spiral. Waypoints stay no more than 2 km apart for complete surface-scanner coverage. The guide closes 10 seconds after its final rig-capacity reminder.",
-      "translation": "Inicia el modo de encuesta guiada. La superposición compacta superior central lo guía desde el borde naranja hasta el centro guardado y luego a través de los puntos de ruta de escaneo que avanzan automáticamente en una espiral hacia afuera. Los puntos de referencia no se mantienen a más de 2 km de distancia para una cobertura completa del escáner de superficie. La guía se cierra 10 segundos después del último recordatorio de capacidad del equipo."
-    },
-    {
       "source": "Startup failed at {0}.",
       "translation": "El inicio falló en {0}."
     },
@@ -54315,6 +54391,10 @@
       "translation": "Encuesta"
     },
     {
+      "source": "Survey complete",
+      "translation": "Encuesta completa"
+    },
+    {
       "source": "Survey groups Exploration, Exobiology, and Boxel; Navigation groups Travel, Search, and Bookmarks; Activities groups Mining, Guardian, Quests, and Colonization. Expanding one group collapses the previous group.",
       "translation": "Grupos de encuesta Exploración, Exobiología y Boxel; Grupos de navegación Viajes, Búsqueda y Marcadores; Grupos de actividades Minería, Guardián, Misiones y Colonización. Al expandir un grupo, se colapsa el grupo anterior."
     },
@@ -54373,6 +54453,10 @@
     {
       "source": "Switch to Session on prospecting and Hotspots on completion",
       "translation": "Cambie a Sesión sobre prospección y Hotspots al finalizar"
+    },
+    {
+      "source": "Switch to turret mode and send .mine splat in chat. Keep the mineral scanner active, then drive slowly around the visible edge until SrvSurvey reports that the full circuit is complete.",
+      "translation": "Cambia al modo torreta y envía .mine splat en el chat. Mantenga activo el escáner de minerales, luego conduzca lentamente alrededor del borde visible hasta que SrvSurvey informe que el circuito completo está completo."
     },
     {
       "source": "Switched to the {0} release channel; checking now.",
@@ -57107,10 +57191,6 @@
       "translation": "Recompensa total:"
     },
     {
-      "source": "Total reward: {0}",
-      "translation": "Recompensa total: {0}"
-    },
-    {
       "source": "TotalItemsToDeliver",
       "translation": "Total de artículos para entregar"
     },
@@ -57145,6 +57225,10 @@
     {
       "source": "Toxic Green",
       "translation": "Verde tóxico"
+    },
+    {
+      "source": "Trace the complete splat border.",
+      "translation": "Traza el borde completo del símbolo."
     },
     {
       "source": "Track Guardian component materials",
@@ -58089,6 +58173,10 @@
     {
       "source": "Use the smallest targeted recovery before considering a profile import or reset.",
       "translation": "Utilice la recuperación dirigida más pequeña antes de considerar importar o restablecer un perfil."
+    },
+    {
+      "source": "Use the square recommendations on the compact Surface Mining radar to line up and place each rig. The radar zooms automatically as you approach the deposit and its suggested positions.",
+      "translation": "Utilice las recomendaciones de cuadrados del radar compacto de minería de superficie para alinear y colocar cada equipo. El radar hace zoom automáticamente a medida que se acerca al depósito y sus posiciones sugeridas."
     },
     {
       "source": "UseDevelopmentReleases",
@@ -59359,6 +59447,10 @@
       "translation": "marcadores"
     },
     {
+      "source": "border",
+      "translation": "borde"
+    },
+    {
       "source": "bottom",
       "translation": "abajo"
     },
@@ -59559,8 +59651,16 @@
       "translation": "objetivos comunitarios"
     },
     {
+      "source": "complete",
+      "translation": "completo"
+    },
+    {
       "source": "components",
       "translation": "componentes"
+    },
+    {
+      "source": "confirm-center",
+      "translation": "centro de confirmación"
     },
     {
       "source": "consumables",
@@ -61533,6 +61633,10 @@
     {
       "source": "wayland",
       "translation": "tierra del camino"
+    },
+    {
+      "source": "waypoint",
+      "translation": "punto de ruta"
     },
     {
       "source": "weaponcolour",
@@ -64165,6 +64269,10 @@
       "translation": "Alarme"
     },
     {
+      "source": "Align with the squares and place the rigs.",
+      "translation": "Alignez avec les carrés et placez les plates-formes."
+    },
+    {
       "source": "Align with the survey origin and rise to {0} m.",
       "translation": "Alignez-vous sur l'origine du levé et montez jusqu'à {0} m."
     },
@@ -64859,6 +64967,10 @@
     {
       "source": "Authorization point",
       "translation": "Point d'autorisation"
+    },
+    {
+      "source": "Auto Fitting Rigs to a Splat",
+      "translation": "Montage automatique des plates-formes sur un Splat"
     },
     {
       "source": "Auto add tracker location when Composition scanning organisms.",
@@ -66005,6 +66117,10 @@
       "translation": "Rayon de la frontière (km)"
     },
     {
+      "source": "Border setup",
+      "translation": "Configuration des bordures"
+    },
+    {
       "source": "Borderless or windowed Elite modes provide the most predictable desktop overlay stacking. Exclusive fullscreen behavior depends on the operating system and compositor.",
       "translation": "Les modes Elite sans bordure ou avec fenêtre offrent l'empilement de superpositions de bureau le plus prévisible. Le comportement exclusif en plein écran dépend du système d'exploitation et du compositeur."
     },
@@ -66851,6 +66967,14 @@
     {
       "source": "Cavas",
       "translation": "Cavas"
+    },
+    {
+      "source": "Center the Rhino chassis on a mapped deposit edge, switch to turret mode, keep the mineral scanner active, and send .mine splat. Drive the full visible circuit until SrvSurvey closes the trace, then use the square rig-position suggestions to line up each deployment. The compact radar zooms automatically near the deposit and recommendations. Send .mine splat cancel to discard an unfinished trace.",
+      "translation": "Centrez le châssis Rhino sur un bord de dépôt cartographié, passez en mode tourelle, gardez le scanner de minéraux actif et envoyez .mine splat. Parcourez le circuit entièrement visible jusqu'à ce que SrvSurvey ferme la trace, puis utilisez les suggestions de position de plate-forme carrée pour aligner chaque déploiement. Le radar compact zoome automatiquement à proximité du gisement et des recommandations. Envoyez .mine splat cancel pour supprimer une trace inachevée."
+    },
+    {
+      "source": "Center the Rhino on the edge (HUD colors vary).",
+      "translation": "Centrez le Rhino sur le bord (les couleurs du HUD varient)."
     },
     {
       "source": "Century Gothic, Segoe UI, sans-serif",
@@ -68139,6 +68263,10 @@
     {
       "source": "Confirm any body import, review inferred sites and manually edit details as needed.",
       "translation": "Confirmez toute importation de corps, examinez les sites déduits et modifiez manuellement les détails si nécessaire."
+    },
+    {
+      "source": "Confirm center",
+      "translation": "Confirmer le centre"
     },
     {
       "source": "Confirm clear",
@@ -70711,10 +70839,6 @@
     {
       "source": "Estimated",
       "translation": "Estimé"
-    },
-    {
-      "source": "Estimated reward: {0}",
-      "translation": "Récompense estimée : {0}"
     },
     {
       "source": "Every Raven site requires a name.",
@@ -74481,10 +74605,6 @@
       "translation": "Récompense connue :"
     },
     {
-      "source": "Known reward: {0}",
-      "translation": "Récompense connue : {0}"
-    },
-    {
       "source": "Known system · body count unavailable",
       "translation": "Système connu · décompte des cadavres indisponible"
     },
@@ -76323,6 +76443,10 @@
     {
       "source": "Move to a body surface to begin guidance",
       "translation": "Déplacez-vous vers une surface corporelle pour commencer le guidage"
+    },
+    {
+      "source": "Move to center",
+      "translation": "Déplacer au centre"
     },
     {
       "source": "Move to the site centre and align the map origin.",
@@ -79163,6 +79287,10 @@
     {
       "source": "Português (Brasil)",
       "translation": "Portugais (Brésil)"
+    },
+    {
+      "source": "Position the Rhino so the center of its chassis sits directly over the visible deposit border. HUD colors vary.",
+      "translation": "Positionnez le Rhino de manière à ce que le centre de son châssis se trouve directement au-dessus de la bordure visible du dépôt. Les couleurs du HUD varient."
     },
     {
       "source": "Position unavailable",
@@ -82953,6 +83081,10 @@
       "translation": "Valeur de numérisation"
     },
     {
+      "source": "Scan waypoint",
+      "translation": "Scanner le waypoint"
+    },
+    {
       "source": "Scan {0}",
       "translation": "Scanner {0}"
     },
@@ -85201,10 +85333,6 @@
       "translation": "Démarrage du téléchargement du package vérifié..."
     },
     {
-      "source": "Starts guided survey mode. The compact top-center overlay walks you from the orange border to the saved center, then through automatically advancing scan waypoints in an outward spiral. Waypoints stay no more than 2 km apart for complete surface-scanner coverage. The guide closes 10 seconds after its final rig-capacity reminder.",
-      "translation": "Démarre le mode d'enquête guidée. La superposition compacte en haut au centre vous guide de la bordure orange au centre enregistré, puis à travers les points de cheminement d'analyse qui avancent automatiquement dans une spirale vers l'extérieur. Les waypoints ne restent pas espacés de plus de 2 km pour une couverture complète du scanner de surface. Le guide ferme 10 secondes après son dernier rappel de capacité de forage."
-    },
-    {
       "source": "Startup failed at {0}.",
       "translation": "Le démarrage a échoué sur {0}."
     },
@@ -85613,6 +85741,10 @@
       "translation": "Enquête"
     },
     {
+      "source": "Survey complete",
+      "translation": "Enquête terminée"
+    },
+    {
       "source": "Survey groups Exploration, Exobiology, and Boxel; Navigation groups Travel, Search, and Bookmarks; Activities groups Mining, Guardian, Quests, and Colonization. Expanding one group collapses the previous group.",
       "translation": "Groupes d'enquête Exploration, Exobiologie et Boxel ; Groupes de navigation Voyage, Recherche et Favoris ; Groupes d'activités Exploitation minière, Gardien, Quêtes et Colonisation. Le développement d'un groupe réduit le groupe précédent."
     },
@@ -85671,6 +85803,10 @@
     {
       "source": "Switch to Session on prospecting and Hotspots on completion",
       "translation": "Passer à la Session sur la prospection et aux Hotspots à la fin"
+    },
+    {
+      "source": "Switch to turret mode and send .mine splat in chat. Keep the mineral scanner active, then drive slowly around the visible edge until SrvSurvey reports that the full circuit is complete.",
+      "translation": "Passez en mode tourelle et envoyez .mine splat dans le chat. Gardez le scanner de minéraux actif, puis conduisez lentement autour du bord visible jusqu'à ce que SrvSurvey signale que le circuit complet est terminé."
     },
     {
       "source": "Switched to the {0} release channel; checking now.",
@@ -88405,10 +88541,6 @@
       "translation": "Récompense totale :"
     },
     {
-      "source": "Total reward: {0}",
-      "translation": "Récompense totale : {0}"
-    },
-    {
       "source": "TotalItemsToDeliver",
       "translation": "Nombre total d'articles à livrer"
     },
@@ -88443,6 +88575,10 @@
     {
       "source": "Toxic Green",
       "translation": "Vert Toxique"
+    },
+    {
+      "source": "Trace the complete splat border.",
+      "translation": "Tracez la bordure complète des éclaboussures."
     },
     {
       "source": "Track Guardian component materials",
@@ -89387,6 +89523,10 @@
     {
       "source": "Use the smallest targeted recovery before considering a profile import or reset.",
       "translation": "Utilisez la plus petite récupération ciblée avant d’envisager une importation ou une réinitialisation de profil."
+    },
+    {
+      "source": "Use the square recommendations on the compact Surface Mining radar to line up and place each rig. The radar zooms automatically as you approach the deposit and its suggested positions.",
+      "translation": "Utilisez les recommandations carrées sur le radar compact Surface Mining pour aligner et placer chaque plate-forme. Le radar zoome automatiquement à l'approche du gisement et de ses positions suggérées."
     },
     {
       "source": "UseDevelopmentReleases",
@@ -90657,6 +90797,10 @@
       "translation": "signets"
     },
     {
+      "source": "border",
+      "translation": "frontière"
+    },
+    {
       "source": "bottom",
       "translation": "en bas"
     },
@@ -90857,8 +91001,16 @@
       "translation": "objectifs de la communauté"
     },
     {
+      "source": "complete",
+      "translation": "complet"
+    },
+    {
       "source": "components",
       "translation": "composants"
+    },
+    {
+      "source": "confirm-center",
+      "translation": "centre de confirmation"
     },
     {
       "source": "consumables",
@@ -92831,6 +92983,10 @@
     {
       "source": "wayland",
       "translation": "Wayland"
+    },
+    {
+      "source": "waypoint",
+      "translation": "point de cheminement"
     },
     {
       "source": "weaponcolour",
@@ -95463,6 +95619,10 @@
       "translation": "Alarme"
     },
     {
+      "source": "Align with the squares and place the rigs.",
+      "translation": "Alinhe com os quadrados e coloque as plataformas."
+    },
+    {
       "source": "Align with the survey origin and rise to {0} m.",
       "translation": "Alinhe com a origem do levantamento e suba para {0} m."
     },
@@ -96157,6 +96317,10 @@
     {
       "source": "Authorization point",
       "translation": "Ponto de autorização"
+    },
+    {
+      "source": "Auto Fitting Rigs to a Splat",
+      "translation": "Montagem automática de plataformas em um Splat"
     },
     {
       "source": "Auto add tracker location when Composition scanning organisms.",
@@ -97303,6 +97467,10 @@
       "translation": "Raio da fronteira (km)"
     },
     {
+      "source": "Border setup",
+      "translation": "Configuração de borda"
+    },
+    {
       "source": "Borderless or windowed Elite modes provide the most predictable desktop overlay stacking. Exclusive fullscreen behavior depends on the operating system and compositor.",
       "translation": "Os modos Elite sem bordas ou em janela fornecem o empilhamento de sobreposição de desktop mais previsível. O comportamento exclusivo de tela cheia depende do sistema operacional e do compositor."
     },
@@ -98149,6 +98317,14 @@
     {
       "source": "Cavas",
       "translation": "cavas"
+    },
+    {
+      "source": "Center the Rhino chassis on a mapped deposit edge, switch to turret mode, keep the mineral scanner active, and send .mine splat. Drive the full visible circuit until SrvSurvey closes the trace, then use the square rig-position suggestions to line up each deployment. The compact radar zooms automatically near the deposit and recommendations. Send .mine splat cancel to discard an unfinished trace.",
+      "translation": "Centralize o chassi do Rhino em uma borda de depósito mapeada, mude para o modo torre, mantenha o scanner mineral ativo e envie .mine splat. Dirija todo o circuito visível até que SrvSurvey feche o rastreamento e, em seguida, use as sugestões de posição quadrada da plataforma para alinhar cada implantação. O radar compacto aproxima-se automaticamente do depósito e das recomendações. Envie .mine splat cancel para descartar um rastreio inacabado."
+    },
+    {
+      "source": "Center the Rhino on the edge (HUD colors vary).",
+      "translation": "Centralize o Rhino na borda (as cores do HUD variam)."
     },
     {
       "source": "Century Gothic, Segoe UI, sans-serif",
@@ -99437,6 +99613,10 @@
     {
       "source": "Confirm any body import, review inferred sites and manually edit details as needed.",
       "translation": "Confirme qualquer importação de corpo, revise sites inferidos e edite manualmente os detalhes conforme necessário."
+    },
+    {
+      "source": "Confirm center",
+      "translation": "Confirmar centro"
     },
     {
       "source": "Confirm clear",
@@ -102009,10 +102189,6 @@
     {
       "source": "Estimated",
       "translation": "Estimado"
-    },
-    {
-      "source": "Estimated reward: {0}",
-      "translation": "Recompensa estimada: {0}"
     },
     {
       "source": "Every Raven site requires a name.",
@@ -105779,10 +105955,6 @@
       "translation": "Recompensa conhecida:"
     },
     {
-      "source": "Known reward: {0}",
-      "translation": "Recompensa conhecida: {0}"
-    },
-    {
       "source": "Known system · body count unavailable",
       "translation": "Sistema conhecido · contagem de corpos indisponível"
     },
@@ -107621,6 +107793,10 @@
     {
       "source": "Move to a body surface to begin guidance",
       "translation": "Mova-se para uma superfície corporal para iniciar a orientação"
+    },
+    {
+      "source": "Move to center",
+      "translation": "Mover para o centro"
     },
     {
       "source": "Move to the site centre and align the map origin.",
@@ -110461,6 +110637,10 @@
     {
       "source": "Português (Brasil)",
       "translation": "Português (Brasil)"
+    },
+    {
+      "source": "Position the Rhino so the center of its chassis sits directly over the visible deposit border. HUD colors vary.",
+      "translation": "Posicione o Rhino de forma que o centro do chassi fique diretamente sobre a borda visível do depósito. As cores do HUD variam."
     },
     {
       "source": "Position unavailable",
@@ -114251,6 +114431,10 @@
       "translation": "Valor de digitalização"
     },
     {
+      "source": "Scan waypoint",
+      "translation": "Digitalizar ponto de referência"
+    },
+    {
       "source": "Scan {0}",
       "translation": "Digitalizar {0}"
     },
@@ -116499,10 +116683,6 @@
       "translation": "Iniciando download de pacote verificado..."
     },
     {
-      "source": "Starts guided survey mode. The compact top-center overlay walks you from the orange border to the saved center, then through automatically advancing scan waypoints in an outward spiral. Waypoints stay no more than 2 km apart for complete surface-scanner coverage. The guide closes 10 seconds after its final rig-capacity reminder.",
-      "translation": "Inicia o modo de pesquisa guiada. A sobreposição compacta superior central orienta você da borda laranja até o centro salvo e, em seguida, avança automaticamente pelos waypoints de varredura em uma espiral externa. Os waypoints não ficam separados por mais de 2 km para uma cobertura completa do scanner de superfície. O guia fecha 10 segundos após o lembrete final da capacidade da plataforma."
-    },
-    {
       "source": "Startup failed at {0}.",
       "translation": "A inicialização falhou em {0}."
     },
@@ -116911,6 +117091,10 @@
       "translation": "Pesquisa"
     },
     {
+      "source": "Survey complete",
+      "translation": "Pesquisa concluída"
+    },
+    {
       "source": "Survey groups Exploration, Exobiology, and Boxel; Navigation groups Travel, Search, and Bookmarks; Activities groups Mining, Guardian, Quests, and Colonization. Expanding one group collapses the previous group.",
       "translation": "Grupos de pesquisa Exploração, Exobiologia e Boxel; Grupos de navegação Viagem, Pesquisa e Favoritos; Grupos de atividades Mineração, Guardião, Missões e Colonização. Expandir um grupo recolhe o grupo anterior."
     },
@@ -116969,6 +117153,10 @@
     {
       "source": "Switch to Session on prospecting and Hotspots on completion",
       "translation": "Mude para sessão de prospecção e pontos de acesso após a conclusão"
+    },
+    {
+      "source": "Switch to turret mode and send .mine splat in chat. Keep the mineral scanner active, then drive slowly around the visible edge until SrvSurvey reports that the full circuit is complete.",
+      "translation": "Mude para o modo torre e envie .mine splat no chat. Mantenha o scanner mineral ativo e dirija lentamente ao redor da borda visível até que SrvSurvey informe que o circuito completo está completo."
     },
     {
       "source": "Switched to the {0} release channel; checking now.",
@@ -119703,10 +119891,6 @@
       "translation": "Recompensa total:"
     },
     {
-      "source": "Total reward: {0}",
-      "translation": "Recompensa total: {0}"
-    },
-    {
       "source": "TotalItemsToDeliver",
       "translation": "Total de itens para entrega"
     },
@@ -119741,6 +119925,10 @@
     {
       "source": "Toxic Green",
       "translation": "Verde Tóxico"
+    },
+    {
+      "source": "Trace the complete splat border.",
+      "translation": "Trace a borda completa do splat."
     },
     {
       "source": "Track Guardian component materials",
@@ -120685,6 +120873,10 @@
     {
       "source": "Use the smallest targeted recovery before considering a profile import or reset.",
       "translation": "Use a menor recuperação direcionada antes de considerar uma importação ou redefinição de perfil."
+    },
+    {
+      "source": "Use the square recommendations on the compact Surface Mining radar to line up and place each rig. The radar zooms automatically as you approach the deposit and its suggested positions.",
+      "translation": "Use as recomendações quadradas no radar compacto Surface Mining para alinhar e posicionar cada plataforma. O radar amplia automaticamente conforme você se aproxima do depósito e de suas posições sugeridas."
     },
     {
       "source": "UseDevelopmentReleases",
@@ -121955,6 +122147,10 @@
       "translation": "favoritos"
     },
     {
+      "source": "border",
+      "translation": "fronteira"
+    },
+    {
       "source": "bottom",
       "translation": "inferior"
     },
@@ -122155,8 +122351,16 @@
       "translation": "objetivos da comunidade"
     },
     {
+      "source": "complete",
+      "translation": "completo"
+    },
+    {
       "source": "components",
       "translation": "componentes"
+    },
+    {
+      "source": "confirm-center",
+      "translation": "centro de confirmação"
     },
     {
       "source": "consumables",
@@ -124129,6 +124333,10 @@
     {
       "source": "wayland",
       "translation": "caminho"
+    },
+    {
+      "source": "waypoint",
+      "translation": "ponto de referência"
     },
     {
       "source": "weaponcolour",
@@ -126761,6 +126969,10 @@
       "translation": "Сигнализация"
     },
     {
+      "source": "Align with the squares and place the rigs.",
+      "translation": "Совместите квадраты и разместите оснастку."
+    },
+    {
       "source": "Align with the survey origin and rise to {0} m.",
       "translation": "Выровняйтесь по исходной точке съемки и поднимитесь до {0} м."
     },
@@ -127455,6 +127667,10 @@
     {
       "source": "Authorization point",
       "translation": "Точка авторизации"
+    },
+    {
+      "source": "Auto Fitting Rigs to a Splat",
+      "translation": "Автоматическая установка оснастки на Splat"
     },
     {
       "source": "Auto add tracker location when Composition scanning organisms.",
@@ -128601,6 +128817,10 @@
       "translation": "Радиус границы (км)"
     },
     {
+      "source": "Border setup",
+      "translation": "Настройка границ"
+    },
+    {
       "source": "Borderless or windowed Elite modes provide the most predictable desktop overlay stacking. Exclusive fullscreen behavior depends on the operating system and compositor.",
       "translation": "Режимы Elite без полей или с окном обеспечивают наиболее предсказуемое наложение на рабочий стол. Эксклюзивное полноэкранное поведение зависит от операционной системы и композитора."
     },
@@ -129447,6 +129667,14 @@
     {
       "source": "Cavas",
       "translation": "Кавас"
+    },
+    {
+      "source": "Center the Rhino chassis on a mapped deposit edge, switch to turret mode, keep the mineral scanner active, and send .mine splat. Drive the full visible circuit until SrvSurvey closes the trace, then use the square rig-position suggestions to line up each deployment. The compact radar zooms automatically near the deposit and recommendations. Send .mine splat cancel to discard an unfinished trace.",
+      "translation": "Отцентрируйте шасси Rhino на нанесенном на карту краю месторождения, переключитесь в режим турели, оставьте активным сканер минералов и отправьте .mine splat. Проезжайте всю видимую цепь до тех пор, пока SrvSurvey не замкнет трассу, затем используйте квадратные предложения по расположению буровой установки для выстраивания каждого развертывания. Компактный радар автоматически приближается к месторождению и рекомендациям. Отправьте .mine splat cancel, чтобы отменить незавершенную трассировку."
+    },
+    {
+      "source": "Center the Rhino on the edge (HUD colors vary).",
+      "translation": "Отцентрируйте Rhino на краю (цвета HUD различаются)."
     },
     {
       "source": "Century Gothic, Segoe UI, sans-serif",
@@ -130735,6 +130963,10 @@
     {
       "source": "Confirm any body import, review inferred sites and manually edit details as needed.",
       "translation": "Подтвердите импорт любого тела, просмотрите предполагаемые сайты и при необходимости отредактируйте данные вручную."
+    },
+    {
+      "source": "Confirm center",
+      "translation": "Подтвердить центр"
     },
     {
       "source": "Confirm clear",
@@ -133307,10 +133539,6 @@
     {
       "source": "Estimated",
       "translation": "Предполагаемый"
-    },
-    {
-      "source": "Estimated reward: {0}",
-      "translation": "Предполагаемая награда: {0}"
     },
     {
       "source": "Every Raven site requires a name.",
@@ -137077,10 +137305,6 @@
       "translation": "Известная награда:"
     },
     {
-      "source": "Known reward: {0}",
-      "translation": "Известная награда: {0}"
-    },
-    {
       "source": "Known system · body count unavailable",
       "translation": "Известная система · количество погибших недоступно"
     },
@@ -138919,6 +139143,10 @@
     {
       "source": "Move to a body surface to begin guidance",
       "translation": "Подойдите к поверхности тела, чтобы начать наведение."
+    },
+    {
+      "source": "Move to center",
+      "translation": "Переместить в центр"
     },
     {
       "source": "Move to the site centre and align the map origin.",
@@ -141759,6 +141987,10 @@
     {
       "source": "Português (Brasil)",
       "translation": "Португальский (Бразилия)"
+    },
+    {
+      "source": "Position the Rhino so the center of its chassis sits directly over the visible deposit border. HUD colors vary.",
+      "translation": "Расположите Rhino так, чтобы центр его шасси находился прямо над видимой границей отложения. Цвета HUD различаются."
     },
     {
       "source": "Position unavailable",
@@ -145549,6 +145781,10 @@
       "translation": "Значение сканирования"
     },
     {
+      "source": "Scan waypoint",
+      "translation": "Сканировать путевую точку"
+    },
+    {
       "source": "Scan {0}",
       "translation": "Сканировать {0}"
     },
@@ -147797,10 +148033,6 @@
       "translation": "Начинаем загрузку проверенного пакета..."
     },
     {
-      "source": "Starts guided survey mode. The compact top-center overlay walks you from the orange border to the saved center, then through automatically advancing scan waypoints in an outward spiral. Waypoints stay no more than 2 km apart for complete surface-scanner coverage. The guide closes 10 seconds after its final rig-capacity reminder.",
-      "translation": "Запускает режим управляемой съемки. Компактное верхнее центральное наложение проведет вас от оранжевой границы к сохраненному центру, а затем автоматически продвинет путевые точки сканирования по внешней спирали. Путевые точки располагаются на расстоянии не более 2 км друг от друга для обеспечения полного покрытия поверхности сканером. Руководство закрывается через 10 секунд после последнего напоминания о мощности буровой установки."
-    },
-    {
       "source": "Startup failed at {0}.",
       "translation": "Ошибка запуска по адресу {0}."
     },
@@ -148209,6 +148441,10 @@
       "translation": "Опрос"
     },
     {
+      "source": "Survey complete",
+      "translation": "Опрос завершен"
+    },
+    {
       "source": "Survey groups Exploration, Exobiology, and Boxel; Navigation groups Travel, Search, and Bookmarks; Activities groups Mining, Guardian, Quests, and Colonization. Expanding one group collapses the previous group.",
       "translation": "Исследовательские группы «Разведка», «Экзобиология» и «Боксел»; Группы навигации «Путешествие», «Поиск» и «Закладки»; Группы действий «Горное дело», «Защитник», «Квесты» и «Колонизация». Развертывание одной группы сворачивает предыдущую группу."
     },
@@ -148267,6 +148503,10 @@
     {
       "source": "Switch to Session on prospecting and Hotspots on completion",
       "translation": "Переключитесь на сеанс поиска и горячих точек по завершении."
+    },
+    {
+      "source": "Switch to turret mode and send .mine splat in chat. Keep the mineral scanner active, then drive slowly around the visible edge until SrvSurvey reports that the full circuit is complete.",
+      "translation": "Переключитесь в режим турели и отправьте в чат .mine splat. Держите сканер минералов включенным, затем медленно объезжайте видимый край, пока SrvSurvey не сообщит, что полный круг завершен."
     },
     {
       "source": "Switched to the {0} release channel; checking now.",
@@ -151001,10 +151241,6 @@
       "translation": "Общая награда:"
     },
     {
-      "source": "Total reward: {0}",
-      "translation": "Общая награда: {0}"
-    },
-    {
       "source": "TotalItemsToDeliver",
       "translation": "ВсегоItemsToДоставить"
     },
@@ -151039,6 +151275,10 @@
     {
       "source": "Toxic Green",
       "translation": "Токсичный зеленый"
+    },
+    {
+      "source": "Trace the complete splat border.",
+      "translation": "Обведите полную границу знака."
     },
     {
       "source": "Track Guardian component materials",
@@ -151983,6 +152223,10 @@
     {
       "source": "Use the smallest targeted recovery before considering a profile import or reset.",
       "translation": "Используйте наименьшее целевое восстановление, прежде чем рассматривать импорт или сброс профиля."
+    },
+    {
+      "source": "Use the square recommendations on the compact Surface Mining radar to line up and place each rig. The radar zooms automatically as you approach the deposit and its suggested positions.",
+      "translation": "Используйте квадратные рекомендации на компактном радаре для наземных горных работ, чтобы выровнять и разместить каждую буровую установку. Радар автоматически масштабирует масштаб по мере приближения к месторождению и предлагаемым позициям."
     },
     {
       "source": "UseDevelopmentReleases",
@@ -153253,6 +153497,10 @@
       "translation": "закладки"
     },
     {
+      "source": "border",
+      "translation": "граница"
+    },
+    {
       "source": "bottom",
       "translation": "дно"
     },
@@ -153453,8 +153701,16 @@
       "translation": "цели сообщества"
     },
     {
+      "source": "complete",
+      "translation": "полный"
+    },
+    {
       "source": "components",
       "translation": "компоненты"
+    },
+    {
+      "source": "confirm-center",
+      "translation": "центр подтверждения"
     },
     {
       "source": "consumables",
@@ -155427,6 +155683,10 @@
     {
       "source": "wayland",
       "translation": "дорога"
+    },
+    {
+      "source": "waypoint",
+      "translation": "путевая точка"
     },
     {
       "source": "weaponcolour",
@@ -158059,6 +158319,10 @@
       "translation": "报警"
     },
     {
+      "source": "Align with the squares and place the rigs.",
+      "translation": "与方块对齐并放置装备。"
+    },
+    {
       "source": "Align with the survey origin and rise to {0} m.",
       "translation": "与测量原点对齐并上升至 {0} 米。"
     },
@@ -158753,6 +159017,10 @@
     {
       "source": "Authorization point",
       "translation": "授权点"
+    },
+    {
+      "source": "Auto Fitting Rigs to a Splat",
+      "translation": "自动将装备安装到 Splat 上"
     },
     {
       "source": "Auto add tracker location when Composition scanning organisms.",
@@ -159899,6 +160167,10 @@
       "translation": "边界半径（公里）"
     },
     {
+      "source": "Border setup",
+      "translation": "边框设置"
+    },
+    {
       "source": "Borderless or windowed Elite modes provide the most predictable desktop overlay stacking. Exclusive fullscreen behavior depends on the operating system and compositor.",
       "translation": "无边框或窗口精英模式提供最可预测的桌面叠加堆叠。独占全屏行为取决于操作系统和合成器。"
     },
@@ -160745,6 +161017,14 @@
     {
       "source": "Cavas",
       "translation": "卡瓦斯"
+    },
+    {
+      "source": "Center the Rhino chassis on a mapped deposit edge, switch to turret mode, keep the mineral scanner active, and send .mine splat. Drive the full visible circuit until SrvSurvey closes the trace, then use the square rig-position suggestions to line up each deployment. The compact radar zooms automatically near the deposit and recommendations. Send .mine splat cancel to discard an unfinished trace.",
+      "translation": "将 Rhino 底盘置于映射的矿床边缘中心，切换到炮塔模式，保持矿物扫描仪处于活动状态，然后发送 .mine splat。驱动完整的可见电路，直到 SrvSurvey 关闭走线，然后使用方形钻机位置建议来排列每个部署。紧凑型雷达自动变焦靠近存款和建议。发送 .mine splat cancel 以放弃未完成的跟踪。"
+    },
+    {
+      "source": "Center the Rhino on the edge (HUD colors vary).",
+      "translation": "将 Rhino 置于边缘中心（HUD 颜色有所不同）。"
     },
     {
       "source": "Century Gothic, Segoe UI, sans-serif",
@@ -162033,6 +162313,10 @@
     {
       "source": "Confirm any body import, review inferred sites and manually edit details as needed.",
       "translation": "确认任何正文导入、检查推断的位点并根据需要手动编辑详细信息。"
+    },
+    {
+      "source": "Confirm center",
+      "translation": "确认中心"
     },
     {
       "source": "Confirm clear",
@@ -164605,10 +164889,6 @@
     {
       "source": "Estimated",
       "translation": "估计"
-    },
-    {
-      "source": "Estimated reward: {0}",
-      "translation": "预计奖励：{0}"
     },
     {
       "source": "Every Raven site requires a name.",
@@ -168375,10 +168655,6 @@
       "translation": "已知奖励："
     },
     {
-      "source": "Known reward: {0}",
-      "translation": "已知奖励：{0}"
-    },
-    {
       "source": "Known system · body count unavailable",
       "translation": "已知系统 · 无法统计人数"
     },
@@ -170217,6 +170493,10 @@
     {
       "source": "Move to a body surface to begin guidance",
       "translation": "移动到身体表面开始引导"
+    },
+    {
+      "source": "Move to center",
+      "translation": "移至中心"
     },
     {
       "source": "Move to the site centre and align the map origin.",
@@ -173057,6 +173337,10 @@
     {
       "source": "Português (Brasil)",
       "translation": "葡萄牙语（巴西）"
+    },
+    {
+      "source": "Position the Rhino so the center of its chassis sits directly over the visible deposit border. HUD colors vary.",
+      "translation": "定位 Rhino，使其底盘中心位于可见沉积物边界的正上方。 HUD 颜色各不相同。"
     },
     {
       "source": "Position unavailable",
@@ -176847,6 +177131,10 @@
       "translation": "扫描值"
     },
     {
+      "source": "Scan waypoint",
+      "translation": "扫描航点"
+    },
+    {
       "source": "Scan {0}",
       "translation": "扫描{0}"
     },
@@ -179095,10 +179383,6 @@
       "translation": "正在开始下载经过验证的包..."
     },
     {
-      "source": "Starts guided survey mode. The compact top-center overlay walks you from the orange border to the saved center, then through automatically advancing scan waypoints in an outward spiral. Waypoints stay no more than 2 km apart for complete surface-scanner coverage. The guide closes 10 seconds after its final rig-capacity reminder.",
-      "translation": "启动引导调查模式。紧凑的顶部中心覆盖将引导您从橙色边框到保存的中心，然后以向外螺旋的方式自动前进扫描路径点。航路点之间的距离不超过 2 公里，以实现表面扫描仪的完整覆盖。该指南在最后一次设备容量提醒后 10 秒关闭。"
-    },
-    {
       "source": "Startup failed at {0}.",
       "translation": "{0} 启动失败。"
     },
@@ -179507,6 +179791,10 @@
       "translation": "调查"
     },
     {
+      "source": "Survey complete",
+      "translation": "调查完成"
+    },
+    {
       "source": "Survey groups Exploration, Exobiology, and Boxel; Navigation groups Travel, Search, and Bookmarks; Activities groups Mining, Guardian, Quests, and Colonization. Expanding one group collapses the previous group.",
       "translation": "探索组、外星生物学组和 Boxel 调查组；导航组 旅行、搜索和书签；活动分为采矿、守护、任务和殖民。展开一组会折叠前一组。"
     },
@@ -179565,6 +179853,10 @@
     {
       "source": "Switch to Session on prospecting and Hotspots on completion",
       "translation": "完成后切换到勘探和热点会议"
+    },
+    {
+      "source": "Switch to turret mode and send .mine splat in chat. Keep the mineral scanner active, then drive slowly around the visible edge until SrvSurvey reports that the full circuit is complete.",
+      "translation": "切换到炮塔模式并在聊天中发送.mine splat。保持矿物扫描仪处于活动状态，然后沿着可见边缘缓慢行驶，直到 SrvSurvey 报告整个电路已完成。"
     },
     {
       "source": "Switched to the {0} release channel; checking now.",
@@ -182299,10 +182591,6 @@
       "translation": "总奖励："
     },
     {
-      "source": "Total reward: {0}",
-      "translation": "总奖励：{0}"
-    },
-    {
       "source": "TotalItemsToDeliver",
       "translation": "待交付物品总数"
     },
@@ -182337,6 +182625,10 @@
     {
       "source": "Toxic Green",
       "translation": "有毒绿"
+    },
+    {
+      "source": "Trace the complete splat border.",
+      "translation": "追踪完整的 splat 边界。"
     },
     {
       "source": "Track Guardian component materials",
@@ -183281,6 +183573,10 @@
     {
       "source": "Use the smallest targeted recovery before considering a profile import or reset.",
       "translation": "在考虑配置文件导入或重置之前，请使用最小的目标恢复。"
+    },
+    {
+      "source": "Use the square recommendations on the compact Surface Mining radar to line up and place each rig. The radar zooms automatically as you approach the deposit and its suggested positions.",
+      "translation": "使用紧凑型露天采矿雷达上的方形建议来排列和放置每个钻机。当您接近矿床及其建议位置时，雷达会自动缩放。"
     },
     {
       "source": "UseDevelopmentReleases",
@@ -184551,6 +184847,10 @@
       "translation": "书签"
     },
     {
+      "source": "border",
+      "translation": "边界"
+    },
+    {
       "source": "bottom",
       "translation": "底部"
     },
@@ -184751,8 +185051,16 @@
       "translation": "社区目标"
     },
     {
+      "source": "complete",
+      "translation": "完全的"
+    },
+    {
       "source": "components",
       "translation": "组件"
+    },
+    {
+      "source": "confirm-center",
+      "translation": "确认中心"
     },
     {
       "source": "consumables",
@@ -186725,6 +187033,10 @@
     {
       "source": "wayland",
       "translation": "韦兰"
+    },
+    {
+      "source": "waypoint",
+      "translation": "航路点"
     },
     {
       "source": "weaponcolour",
@@ -189357,6 +189669,10 @@
       "translation": "* ALARM >>>!"
     },
     {
+      "source": "Align with the squares and place the rigs.",
+      "translation": "* ALIGN WITH THE SQUARES AND PLACE THE RIGS. >>>!"
+    },
+    {
       "source": "Align with the survey origin and rise to {0} m.",
       "translation": "* ALIGN WITH THE SURVEY ORIGIN AND RISE TO {0} M. >>>!"
     },
@@ -190051,6 +190367,10 @@
     {
       "source": "Authorization point",
       "translation": "* AUTHORIZATION POINT >>>!"
+    },
+    {
+      "source": "Auto Fitting Rigs to a Splat",
+      "translation": "* AUTO FITTING RIGS TO A SPLAT >>>!"
     },
     {
       "source": "Auto add tracker location when Composition scanning organisms.",
@@ -191197,6 +191517,10 @@
       "translation": "* BORDER RADIUS (KM) >>>!"
     },
     {
+      "source": "Border setup",
+      "translation": "* BORDER SETUP >>>!"
+    },
+    {
       "source": "Borderless or windowed Elite modes provide the most predictable desktop overlay stacking. Exclusive fullscreen behavior depends on the operating system and compositor.",
       "translation": "* BORDERLESS OR WINDOWED ELITE MODES PROVIDE THE MOST PREDICTABLE DESKTOP OVERLAY STACKING. EXCLUSIVE FULLSCREEN BEHAVIOR DEPENDS ON THE OPERATING SYSTEM AND COMPOSITOR. >>>!"
     },
@@ -192043,6 +192367,14 @@
     {
       "source": "Cavas",
       "translation": "* CAVAS >>>!"
+    },
+    {
+      "source": "Center the Rhino chassis on a mapped deposit edge, switch to turret mode, keep the mineral scanner active, and send .mine splat. Drive the full visible circuit until SrvSurvey closes the trace, then use the square rig-position suggestions to line up each deployment. The compact radar zooms automatically near the deposit and recommendations. Send .mine splat cancel to discard an unfinished trace.",
+      "translation": "* CENTER THE RHINO CHASSIS ON A MAPPED DEPOSIT EDGE, SWITCH TO TURRET MODE, KEEP THE MINERAL SCANNER ACTIVE, AND SEND .MINE SPLAT. DRIVE THE FULL VISIBLE CIRCUIT UNTIL SRVSURVEY CLOSES THE TRACE, THEN USE THE SQUARE RIG-POSITION SUGGESTIONS TO LINE UP EACH DEPLOYMENT. THE COMPACT RADAR ZOOMS AUTOMATICALLY NEAR THE DEPOSIT AND RECOMMENDATIONS. SEND .MINE SPLAT CANCEL TO DISCARD AN UNFINISHED TRACE. >>>!"
+    },
+    {
+      "source": "Center the Rhino on the edge (HUD colors vary).",
+      "translation": "* CENTER THE RHINO ON THE EDGE (HUD COLORS VARY). >>>!"
     },
     {
       "source": "Century Gothic, Segoe UI, sans-serif",
@@ -193331,6 +193663,10 @@
     {
       "source": "Confirm any body import, review inferred sites and manually edit details as needed.",
       "translation": "* CONFIRM ANY BODY IMPORT, REVIEW INFERRED SITES AND MANUALLY EDIT DETAILS AS NEEDED. >>>!"
+    },
+    {
+      "source": "Confirm center",
+      "translation": "* CONFIRM CENTER >>>!"
     },
     {
       "source": "Confirm clear",
@@ -195903,10 +196239,6 @@
     {
       "source": "Estimated",
       "translation": "* ESTIMATED >>>!"
-    },
-    {
-      "source": "Estimated reward: {0}",
-      "translation": "* ESTIMATED REWARD: {0} >>>!"
     },
     {
       "source": "Every Raven site requires a name.",
@@ -199673,10 +200005,6 @@
       "translation": "* KNOWN REWARD: >>>!"
     },
     {
-      "source": "Known reward: {0}",
-      "translation": "* KNOWN REWARD: {0} >>>!"
-    },
-    {
       "source": "Known system · body count unavailable",
       "translation": "* KNOWN SYSTEM · BODY COUNT UNAVAILABLE >>>!"
     },
@@ -201515,6 +201843,10 @@
     {
       "source": "Move to a body surface to begin guidance",
       "translation": "* MOVE TO A BODY SURFACE TO BEGIN GUIDANCE >>>!"
+    },
+    {
+      "source": "Move to center",
+      "translation": "* MOVE TO CENTER >>>!"
     },
     {
       "source": "Move to the site centre and align the map origin.",
@@ -204355,6 +204687,10 @@
     {
       "source": "Português (Brasil)",
       "translation": "* PORTUGUÊS (BRASIL) >>>!"
+    },
+    {
+      "source": "Position the Rhino so the center of its chassis sits directly over the visible deposit border. HUD colors vary.",
+      "translation": "* POSITION THE RHINO SO THE CENTER OF ITS CHASSIS SITS DIRECTLY OVER THE VISIBLE DEPOSIT BORDER. HUD COLORS VARY. >>>!"
     },
     {
       "source": "Position unavailable",
@@ -208145,6 +208481,10 @@
       "translation": "* SCAN VALUE >>>!"
     },
     {
+      "source": "Scan waypoint",
+      "translation": "* SCAN WAYPOINT >>>!"
+    },
+    {
       "source": "Scan {0}",
       "translation": "* SCAN {0} >>>!"
     },
@@ -210393,10 +210733,6 @@
       "translation": "* STARTING VERIFIED PACKAGE DOWNLOAD... >>>!"
     },
     {
-      "source": "Starts guided survey mode. The compact top-center overlay walks you from the orange border to the saved center, then through automatically advancing scan waypoints in an outward spiral. Waypoints stay no more than 2 km apart for complete surface-scanner coverage. The guide closes 10 seconds after its final rig-capacity reminder.",
-      "translation": "* STARTS GUIDED SURVEY MODE. THE COMPACT TOP-CENTER OVERLAY WALKS YOU FROM THE ORANGE BORDER TO THE SAVED CENTER, THEN THROUGH AUTOMATICALLY ADVANCING SCAN WAYPOINTS IN AN OUTWARD SPIRAL. WAYPOINTS STAY NO MORE THAN 2 KM APART FOR COMPLETE SURFACE-SCANNER COVERAGE. THE GUIDE CLOSES 10 SECONDS AFTER ITS FINAL RIG-CAPACITY REMINDER. >>>!"
-    },
-    {
       "source": "Startup failed at {0}.",
       "translation": "* STARTUP FAILED AT {0}. >>>!"
     },
@@ -210805,6 +211141,10 @@
       "translation": "* SURVEY >>>!"
     },
     {
+      "source": "Survey complete",
+      "translation": "* SURVEY COMPLETE >>>!"
+    },
+    {
       "source": "Survey groups Exploration, Exobiology, and Boxel; Navigation groups Travel, Search, and Bookmarks; Activities groups Mining, Guardian, Quests, and Colonization. Expanding one group collapses the previous group.",
       "translation": "* SURVEY GROUPS EXPLORATION, EXOBIOLOGY, AND BOXEL; NAVIGATION GROUPS TRAVEL, SEARCH, AND BOOKMARKS; ACTIVITIES GROUPS MINING, GUARDIAN, QUESTS, AND COLONIZATION. EXPANDING ONE GROUP COLLAPSES THE PREVIOUS GROUP. >>>!"
     },
@@ -210863,6 +211203,10 @@
     {
       "source": "Switch to Session on prospecting and Hotspots on completion",
       "translation": "* SWITCH TO SESSION ON PROSPECTING AND HOTSPOTS ON COMPLETION >>>!"
+    },
+    {
+      "source": "Switch to turret mode and send .mine splat in chat. Keep the mineral scanner active, then drive slowly around the visible edge until SrvSurvey reports that the full circuit is complete.",
+      "translation": "* SWITCH TO TURRET MODE AND SEND .MINE SPLAT IN CHAT. KEEP THE MINERAL SCANNER ACTIVE, THEN DRIVE SLOWLY AROUND THE VISIBLE EDGE UNTIL SRVSURVEY REPORTS THAT THE FULL CIRCUIT IS COMPLETE. >>>!"
     },
     {
       "source": "Switched to the {0} release channel; checking now.",
@@ -213597,10 +213941,6 @@
       "translation": "* TOTAL REWARD: >>>!"
     },
     {
-      "source": "Total reward: {0}",
-      "translation": "* TOTAL REWARD: {0} >>>!"
-    },
-    {
       "source": "TotalItemsToDeliver",
       "translation": "* TOTALITEMSTODELIVER >>>!"
     },
@@ -213635,6 +213975,10 @@
     {
       "source": "Toxic Green",
       "translation": "* TOXIC GREEN >>>!"
+    },
+    {
+      "source": "Trace the complete splat border.",
+      "translation": "* TRACE THE COMPLETE SPLAT BORDER. >>>!"
     },
     {
       "source": "Track Guardian component materials",
@@ -214579,6 +214923,10 @@
     {
       "source": "Use the smallest targeted recovery before considering a profile import or reset.",
       "translation": "* USE THE SMALLEST TARGETED RECOVERY BEFORE CONSIDERING A PROFILE IMPORT OR RESET. >>>!"
+    },
+    {
+      "source": "Use the square recommendations on the compact Surface Mining radar to line up and place each rig. The radar zooms automatically as you approach the deposit and its suggested positions.",
+      "translation": "* USE THE SQUARE RECOMMENDATIONS ON THE COMPACT SURFACE MINING RADAR TO LINE UP AND PLACE EACH RIG. THE RADAR ZOOMS AUTOMATICALLY AS YOU APPROACH THE DEPOSIT AND ITS SUGGESTED POSITIONS. >>>!"
     },
     {
       "source": "UseDevelopmentReleases",
@@ -215849,6 +216197,10 @@
       "translation": "* BOOKMARKS >>>!"
     },
     {
+      "source": "border",
+      "translation": "* BORDER >>>!"
+    },
+    {
       "source": "bottom",
       "translation": "* BOTTOM >>>!"
     },
@@ -216049,8 +216401,16 @@
       "translation": "* COMMUNITYGOALS >>>!"
     },
     {
+      "source": "complete",
+      "translation": "* COMPLETE >>>!"
+    },
+    {
       "source": "components",
       "translation": "* COMPONENTS >>>!"
+    },
+    {
+      "source": "confirm-center",
+      "translation": "* CONFIRM-CENTER >>>!"
     },
     {
       "source": "consumables",
@@ -218023,6 +218383,10 @@
     {
       "source": "wayland",
       "translation": "* WAYLAND >>>!"
+    },
+    {
+      "source": "waypoint",
+      "translation": "* WAYPOINT >>>!"
     },
     {
       "source": "weaponcolour",

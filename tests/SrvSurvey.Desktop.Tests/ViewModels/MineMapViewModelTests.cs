@@ -399,6 +399,91 @@ public sealed class MineMapViewModelTests
         Assert.Contains(" OF ", viewModel.SurveyGuideTitle, StringComparison.Ordinal);
         Assert.NotNull(viewModel.SurveyGuideTarget);
         Assert.Contains("advances automatically", viewModel.SurveyGuideCommandHint, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("center moved", viewModel.SurveyGuideFooter, StringComparison.OrdinalIgnoreCase);
+        viewModel.ExpireSurveyGuideFeedback(DateTimeOffset.MaxValue);
+        Assert.Contains(".mine <bearing>", viewModel.SurveyGuideFooter, StringComparison.Ordinal);
+        Assert.Contains(".mine <commodity>", viewModel.SurveyGuideFooter, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task GuidedSurveyRemainsVisibleWhenBoardedAndEndsAfterLeavingTheMappedArea()
+    {
+        using var directory = new TemporaryDirectory();
+        using var viewModel = new MineMapViewModel(
+            directory.Path,
+            new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
+            _ => { }
+        );
+        var border = new SurfaceCoordinate(1, 2);
+        MineMapCommandContext context = Context(border);
+        var surfaceStatus = new EliteStatus
+        {
+            Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
+            PlanetRadius = 855_573.1875m,
+        };
+        await viewModel.ApplyUpdateAsync([Command(".mining survey")], context, surfaceStatus, allowCommands: true);
+        await viewModel.ApplyUpdateAsync([Command(".mining 90 6.44 4")], context, surfaceStatus, allowCommands: true);
+        MineMapSurvey survey = Assert.IsType<MineMapSurvey>(viewModel.ActiveSurvey);
+        viewModel.ExpireSurveyGuideFeedback(DateTimeOffset.MaxValue);
+
+        await viewModel.ApplyUpdateAsync(
+            [],
+            null,
+            new EliteStatus { Flags = StatusFlags.InMainShip },
+            allowCommands: true
+        );
+
+        Assert.True(viewModel.ShouldShowSurveyGuideOverlay);
+        Assert.EndsWith("CENTER", viewModel.SurveyGuideTitle, StringComparison.Ordinal);
+
+        SurfaceCoordinate outside = MineMapService.GetDestination(
+            survey.Center,
+            90,
+            survey.LocationRadiusMeters + 1_000,
+            survey.PlanetRadiusMeters
+        );
+        await viewModel.ApplyUpdateAsync(
+            [],
+            context with
+            {
+                PlayerLocation = outside,
+            },
+            new EliteStatus { Flags = StatusFlags.InMainShip | StatusFlags.HasLatLong, PlanetRadius = 855_573.1875m },
+            allowCommands: true
+        );
+
+        Assert.False(viewModel.ShouldShowSurveyGuideOverlay);
+        Assert.Empty(viewModel.SurveyGuideTitle);
+    }
+
+    [Fact]
+    public async Task GuidedSurveyEndsWhenTheShipLeavesForSupercruise()
+    {
+        using var directory = new TemporaryDirectory();
+        using var viewModel = new MineMapViewModel(
+            directory.Path,
+            new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
+            _ => { }
+        );
+        MineMapCommandContext context = Context(new SurfaceCoordinate(1, 2));
+        var surfaceStatus = new EliteStatus
+        {
+            Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
+            PlanetRadius = 855_573.1875m,
+        };
+        await viewModel.ApplyUpdateAsync([Command(".mining survey")], context, surfaceStatus, allowCommands: true);
+        await viewModel.ApplyUpdateAsync([Command(".mining 90 6.44 4")], context, surfaceStatus, allowCommands: true);
+        viewModel.ExpireSurveyGuideFeedback(DateTimeOffset.MaxValue);
+
+        await viewModel.ApplyUpdateAsync(
+            [],
+            null,
+            new EliteStatus { Flags = StatusFlags.InMainShip | StatusFlags.Supercruise },
+            allowCommands: true
+        );
+
+        Assert.False(viewModel.ShouldShowSurveyGuideOverlay);
+        Assert.Empty(viewModel.SurveyGuideTitle);
     }
 
     [Fact]
@@ -825,7 +910,7 @@ public sealed class MineMapViewModelTests
             [moveCommand!],
             border with
             {
-                PlayerLocation = viewModel.ActiveSurvey!.Center,
+                PlayerLocation = viewModel.ActiveSurvey.Center,
             },
             status,
             allowCommands: true

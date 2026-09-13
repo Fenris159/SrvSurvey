@@ -12,8 +12,14 @@ public sealed class SystemBodyDataRetryStoreTests : IDisposable
     [Fact]
     public async Task StateRoundTripsAcrossStoreInstancesAndIdCasing()
     {
-        var visitedAt = DateTimeOffset.Parse("2026-07-24T10:00:02Z");
-        var retryAt = DateTimeOffset.Parse("2026-07-24T10:01:02Z");
+        var visitedAt = DateTimeOffset.Parse(
+            "2026-07-24T10:00:02Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
+        var retryAt = DateTimeOffset.Parse(
+            "2026-07-24T10:01:02Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var expected = new SystemBodyDataRetryState(
             "F123",
             42,
@@ -40,7 +46,7 @@ public sealed class SystemBodyDataRetryStoreTests : IDisposable
             new SystemBodyDataRetryState(
                 "F123",
                 42,
-                DateTimeOffset.Parse("2026-07-24T10:00:02Z"),
+                DateTimeOffset.Parse("2026-07-24T10:00:02Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 AttemptCount: 4,
                 null,
                 StandardDataComplete: false,
@@ -59,9 +65,9 @@ public sealed class SystemBodyDataRetryStoreTests : IDisposable
             new SystemBodyDataRetryState(
                 "F123",
                 42,
-                DateTimeOffset.Parse("2026-07-24T10:00:02Z"),
+                DateTimeOffset.Parse("2026-07-24T10:00:02Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 AttemptCount: 1,
-                DateTimeOffset.Parse("2026-07-24T10:00:32Z"),
+                DateTimeOffset.Parse("2026-07-24T10:00:32Z", global::System.Globalization.CultureInfo.InvariantCulture),
                 StandardDataComplete: false,
                 BiologicalDataComplete: false
             )

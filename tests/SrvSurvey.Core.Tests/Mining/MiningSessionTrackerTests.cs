@@ -9,7 +9,10 @@ public sealed class MiningSessionTrackerTests
     public void SessionCountsRefiningRatherThanCargoTransfersAndExcludesPausedTime()
     {
         var tracker = new MiningSessionTracker();
-        var start = DateTimeOffset.Parse("2026-09-06T12:00:00Z");
+        var start = DateTimeOffset.Parse(
+            "2026-09-06T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         tracker.Start(start, "Sol", "Earth A Ring", "Python");
         tracker.Apply(
             Parse(
@@ -56,7 +59,10 @@ public sealed class MiningSessionTrackerTests
     public void DepletionUpdatesTheLatestProspectWithoutCountingAnotherAsteroid()
     {
         var tracker = new MiningSessionTracker();
-        var start = DateTimeOffset.Parse("2026-09-06T12:00:00Z");
+        var start = DateTimeOffset.Parse(
+            "2026-09-06T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         tracker.Start(start, "Sol", "Earth A Ring", "Python");
 
         tracker.Apply(
@@ -83,7 +89,10 @@ public sealed class MiningSessionTrackerTests
     public void DepletionAndTravelReleaseTheCurrentProspectWithoutRemovingSessionHistory()
     {
         var tracker = new MiningSessionTracker();
-        var start = DateTimeOffset.Parse("2026-09-06T12:00:00Z");
+        var start = DateTimeOffset.Parse(
+            "2026-09-06T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         tracker.Start(start, "Sol", "Earth A Ring", "Python");
 
         tracker.Apply(

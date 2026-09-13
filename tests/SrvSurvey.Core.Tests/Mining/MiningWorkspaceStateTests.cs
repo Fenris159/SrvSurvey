@@ -25,7 +25,10 @@ public sealed class MiningWorkspaceStateTests
     public void LiveProspectorResumesPausedSessionWhenAutoStartIsEnabled()
     {
         var state = new MiningWorkspaceState(new MiningCommanderData());
-        var started = DateTimeOffset.Parse("2026-09-06T12:00:00Z");
+        var started = DateTimeOffset.Parse(
+            "2026-09-06T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         state.Session.Start(started, "Sol", "Ring", "Python");
         state.Session.Pause(started.AddMinutes(1));
 
@@ -46,7 +49,10 @@ public sealed class MiningWorkspaceStateTests
     {
         var state = new MiningWorkspaceState(new MiningCommanderData());
         state.Data.Settings.AutoStart = false;
-        var started = DateTimeOffset.Parse("2026-09-06T12:00:00Z");
+        var started = DateTimeOffset.Parse(
+            "2026-09-06T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         state.Session.Start(started, "Sol", "Ring", "Python");
         state.Session.Pause(started.AddMinutes(1));
 
@@ -65,7 +71,10 @@ public sealed class MiningWorkspaceStateTests
     [Fact]
     public void JournalImportKeepsNewerRingsAndExistingMissionProgress()
     {
-        var time = DateTimeOffset.Parse("2026-09-06T12:00:00Z");
+        var time = DateTimeOffset.Parse(
+            "2026-09-06T12:00:00Z",
+            global::System.Globalization.CultureInfo.InvariantCulture
+        );
         var ring = new MiningRing
         {
             System = "Sol",
@@ -97,7 +106,12 @@ public sealed class MiningWorkspaceStateTests
     public void ProspectorProgressUpdatesThePersistentReportWithoutAddingAnotherNotice()
     {
         var state = new MiningWorkspaceState(new MiningCommanderData());
-        state.Session.Start(DateTimeOffset.Parse("2026-09-06T12:00:00Z"), "Sol", "Ring", "Python");
+        state.Session.Start(
+            DateTimeOffset.Parse("2026-09-06T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
+            "Sol",
+            "Ring",
+            "Python"
+        );
 
         state.Apply(
             Parse(
