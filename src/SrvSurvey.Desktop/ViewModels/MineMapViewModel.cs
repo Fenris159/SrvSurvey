@@ -13,6 +13,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
 {
     private const double DefaultViewportZoom = 1;
     private const string AllMarkerRatings = "ALL";
+    private static readonly TimeSpan SurveyGuideFeedbackDuration = TimeSpan.FromSeconds(6);
     private static readonly IReadOnlyList<string> MarkerRatingFilters = [AllMarkerRatings, "HIGH", "MEDIUM", "LOW"];
     private readonly MineMapService service;
     private readonly MineMapSettingsStore settingsStore;
@@ -44,6 +45,8 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     private Guid? planningCircleSurveyId;
     private string statusText = string.Empty;
     private bool isAlignmentHelperVisible;
+    private string surveyGuideFeedback = string.Empty;
+    private DateTimeOffset? surveyGuideFeedbackExpiresAt;
 
     public MineMapViewModel(
         string dataDirectory,
@@ -187,13 +190,20 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     public bool ShouldShowAlignmentHelper => isAlignmentHelperVisible;
 
     public bool ShouldShowSurveyGuideOverlay =>
-        service.SurveyGuide is { } guide
-        && context is { } current
-        && guide.FrontierId == current.FrontierId
-        && guide.SystemAddress == current.SystemAddress
-        && guide.BodyId == current.BodyId
-        && status is { HasLatitudeLongitude: true }
-        && IsOnGround(status);
+        HasSurveyGuideFeedback
+        || (
+            service.SurveyGuide is { } guide
+            && context is { } current
+            && guide.FrontierId == current.FrontierId
+            && guide.SystemAddress == current.SystemAddress
+            && guide.BodyId == current.BodyId
+            && status is { HasLatitudeLongitude: true }
+            && IsOnGround(status)
+        );
+
+    public bool HasSurveyGuideFeedback => !string.IsNullOrWhiteSpace(surveyGuideFeedback);
+
+    public string SurveyGuideFeedback => surveyGuideFeedback;
 
     public bool IsSurveyGuideComplete => service.SurveyGuide is { Phase: MineMapSurveyGuidePhase.Complete };
 
@@ -206,7 +216,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
             { Phase: MineMapSurveyGuidePhase.Waypoint } guide =>
                 $"SURFACE MINING SURVEY · {guide.WaypointIndex + 1:N0} OF {guide.Waypoints?.Count ?? 0:N0}",
             { Phase: MineMapSurveyGuidePhase.Complete } => "SURFACE MINING SURVEY · COMPLETE",
-            _ => string.Empty,
+            _ => HasSurveyGuideFeedback ? "SURFACE MINING SURVEY" : string.Empty,
         };
 
     public string SurveyGuideInstruction =>
@@ -510,6 +520,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         bool allowCommands
     )
     {
+        bool startsSurveyGuide = ContainsSurveyGuideCommand(journalEvents);
         context = nextContext;
         status = latestStatus;
         ApplyAlignmentCommands(journalEvents, allowCommands);
@@ -520,10 +531,17 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
             allowCommands,
             CancellationToken.None
         );
-        foreach (var message in results.Select(result => result.Message))
+        foreach (MineMapCommandResult result in results)
         {
-            StatusText = message;
-            notify(message);
+            StatusText = result.Message;
+            if (startsSurveyGuide || service.SurveyGuide is not null)
+            {
+                ShowSurveyGuideFeedback(result.Message);
+            }
+            else
+            {
+                notify(result.Message);
+            }
         }
         if (results.Any(result => result.Succeeded && result.Survey is not null))
         {
@@ -595,13 +613,64 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
     private void OnServiceNotificationRequested(string message)
     {
         StatusText = message;
-        notify(message);
+        if (service.SurveyGuide is not null)
+        {
+            ShowSurveyGuideFeedback(message);
+        }
+        else
+        {
+            notify(message);
+        }
     }
 
     public void DismissSurveyGuide()
     {
         service.DismissSurveyGuide();
+        ClearSurveyGuideFeedback();
     }
+
+    internal void ExpireSurveyGuideFeedback(DateTimeOffset now)
+    {
+        if (surveyGuideFeedbackExpiresAt is null || now < surveyGuideFeedbackExpiresAt)
+        {
+            return;
+        }
+
+        ClearSurveyGuideFeedback();
+    }
+
+    private void ShowSurveyGuideFeedback(string message)
+    {
+        surveyGuideFeedback = message;
+        surveyGuideFeedbackExpiresAt = DateTimeOffset.UtcNow + SurveyGuideFeedbackDuration;
+        Changed(nameof(SurveyGuideFeedback));
+        Changed(nameof(HasSurveyGuideFeedback));
+        Changed(nameof(ShouldShowSurveyGuideOverlay));
+        Changed(nameof(SurveyGuideTitle));
+    }
+
+    private void ClearSurveyGuideFeedback()
+    {
+        if (!HasSurveyGuideFeedback && surveyGuideFeedbackExpiresAt is null)
+        {
+            return;
+        }
+
+        surveyGuideFeedback = string.Empty;
+        surveyGuideFeedbackExpiresAt = null;
+        Changed(nameof(SurveyGuideFeedback));
+        Changed(nameof(HasSurveyGuideFeedback));
+        Changed(nameof(ShouldShowSurveyGuideOverlay));
+        Changed(nameof(SurveyGuideTitle));
+    }
+
+    private static bool ContainsSurveyGuideCommand(IReadOnlyList<JournalEventEnvelope> journalEvents) =>
+        journalEvents.Any(journalEvent =>
+            string.Equals(journalEvent.EventName, "SendText", StringComparison.Ordinal)
+            && journalEvent.Payload.TryGetProperty("Message", out JsonElement message)
+            && message.ValueKind == JsonValueKind.String
+            && string.Equals(message.GetString()?.Trim(), ".mining survey", StringComparison.OrdinalIgnoreCase)
+        );
 
     internal static MineMapViewModel CreateEditorPreview()
     {

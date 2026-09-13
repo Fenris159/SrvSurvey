@@ -468,7 +468,7 @@ public sealed class MineMapViewMarkupTests
     }
 
     [Fact]
-    public void GuidedSurveyOverlayUsesThreeCompactTopCenterRowsAndBothMapsShareItsTarget()
+    public void GuidedSurveyOverlayUsesFourCompactTopCenterRowsAndBothMapsShareItsTarget()
     {
         var root = FindRepositoryRoot();
         var guide = XDocument.Load(
@@ -477,13 +477,22 @@ public sealed class MineMapViewMarkupTests
         XNamespace avalonia = "https://github.com/avaloniaui";
         XElement grid = Assert.Single(guide.Descendants(avalonia + "Grid"));
 
-        Assert.Equal("Auto,Auto,Auto", grid.Attribute("RowDefinitions")?.Value);
-        Assert.Equal("108", guide.Root?.Attribute("MaxHeight")?.Value);
+        Assert.Equal("Auto,Auto,Auto,Auto", grid.Attribute("RowDefinitions")?.Value);
+        Assert.Equal("126", guide.Root?.Attribute("MaxHeight")?.Value);
+        Assert.Contains(
+            guide.Descendants(avalonia + "TextBlock"),
+            text => text.Attribute("Text")?.Value == "{Binding SurveyGuideFeedback}"
+        );
 
         string coordinator = File.ReadAllText(
             Path.Combine(root, "src", "SrvSurvey.Desktop", "Platform", "Overlay", "MineMapOverlayCoordinator.cs")
         );
         Assert.Contains("OverlayWindowPlacement.TopCenter", coordinator, StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "ConfigureAuxiliaryWindow(overlay, \"PlotMineMap\", applyOpacity: false)",
+            coordinator,
+            StringComparison.Ordinal
+        );
 
         foreach (
             string path in new[]

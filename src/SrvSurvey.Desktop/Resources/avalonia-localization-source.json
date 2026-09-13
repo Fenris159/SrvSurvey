@@ -39836,6 +39836,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/SurfaceMiningOverlayPresentation.axaml"
   },
   {
+    "Text": "SURFACE MINING SURVEY",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
+  },
+  {
     "Text": "SURFACE MINING SURVEY \u00B7 BORDER",
     "IsFormat": false,
     "SourceKinds": [

@@ -19865,6 +19865,10 @@
       "translation": "Tagebau"
     },
     {
+      "source": "SURFACE MINING SURVEY",
+      "translation": "UMFRAGE ZUM OBERFLÄCHENBERG"
+    },
+    {
       "source": "SURFACE MINING SURVEY · BORDER",
       "translation": "SURFACE MINING UMFRAGE · GRENZE"
     },
@@ -51157,6 +51161,10 @@
     {
       "source": "SURFACE MINING",
       "translation": "Minería a cielo abierto"
+    },
+    {
+      "source": "SURFACE MINING SURVEY",
+      "translation": "ESTUDIO DE MINERÍA DE SUPERFICIE"
     },
     {
       "source": "SURFACE MINING SURVEY · BORDER",
@@ -82453,6 +82461,10 @@
       "translation": "Exploitation minière à ciel ouvert"
     },
     {
+      "source": "SURFACE MINING SURVEY",
+      "translation": "ENQUÊTE SUR LES MINIÈRES DE SURFACE"
+    },
+    {
       "source": "SURFACE MINING SURVEY · BORDER",
       "translation": "ENQUÊTE SUR LES MINIÈRES DE SURFACE · FRONTIÈRE"
     },
@@ -113745,6 +113757,10 @@
     {
       "source": "SURFACE MINING",
       "translation": "Mineração de superfície"
+    },
+    {
+      "source": "SURFACE MINING SURVEY",
+      "translation": "PESQUISA DE MINERAÇÃO DE SUPERFÍCIE"
     },
     {
       "source": "SURFACE MINING SURVEY · BORDER",
@@ -145041,6 +145057,10 @@
       "translation": "Открытая добыча полезных ископаемых"
     },
     {
+      "source": "SURFACE MINING SURVEY",
+      "translation": "ОБСЛЕДОВАНИЕ ПОВЕРХНОСТНЫХ ГОРНЫХ ДОБЫЧ"
+    },
+    {
       "source": "SURFACE MINING SURVEY · BORDER",
       "translation": "ОБСЛЕДОВАНИЕ ГОРНЫХ ГОРНЫХ ПУТЕЙ · ГРАНИЦА"
     },
@@ -176335,6 +176355,10 @@
       "translation": "露天采矿"
     },
     {
+      "source": "SURFACE MINING SURVEY",
+      "translation": "露天采矿勘察"
+    },
+    {
       "source": "SURFACE MINING SURVEY · BORDER",
       "translation": "露天采矿调查·边境"
     },
@@ -207627,6 +207651,10 @@
     {
       "source": "SURFACE MINING",
       "translation": "* SURFACE MINING >>>!"
+    },
+    {
+      "source": "SURFACE MINING SURVEY",
+      "translation": "* SURFACE MINING SURVEY >>>!"
     },
     {
       "source": "SURFACE MINING SURVEY · BORDER",

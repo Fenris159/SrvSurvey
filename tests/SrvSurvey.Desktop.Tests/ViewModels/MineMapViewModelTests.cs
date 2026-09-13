@@ -365,10 +365,11 @@ public sealed class MineMapViewModelTests
     public async Task GuidedSurveyPublishesCompactDirectionsAndMapTargets()
     {
         using var directory = new TemporaryDirectory();
+        var notifications = new List<string>();
         using var viewModel = new MineMapViewModel(
             directory.Path,
             new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
-            _ => { }
+            notifications.Add
         );
         var border = new SurfaceCoordinate(1, 2);
         MineMapCommandContext context = Context(border);
@@ -383,6 +384,8 @@ public sealed class MineMapViewModelTests
         Assert.True(viewModel.ShouldShowSurveyGuideOverlay);
         Assert.EndsWith("BORDER", viewModel.SurveyGuideTitle, StringComparison.Ordinal);
         Assert.Contains(".mining <bearing>", viewModel.SurveyGuideCommandHint, StringComparison.Ordinal);
+        Assert.Contains("Guided survey started", viewModel.SurveyGuideFeedback, StringComparison.OrdinalIgnoreCase);
+        Assert.Empty(notifications);
 
         await viewModel.ApplyUpdateAsync([Command(".mining 90 6.44 4")], context, status, allowCommands: true);
         Assert.EndsWith("CENTER", viewModel.SurveyGuideTitle, StringComparison.Ordinal);
@@ -396,6 +399,30 @@ public sealed class MineMapViewModelTests
         Assert.Contains(" OF ", viewModel.SurveyGuideTitle, StringComparison.Ordinal);
         Assert.NotNull(viewModel.SurveyGuideTarget);
         Assert.Contains("advances automatically", viewModel.SurveyGuideCommandHint, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task GuidedSurveyFailureAppearsTemporarilyInItsOwnOverlay()
+    {
+        using var directory = new TemporaryDirectory();
+        var notifications = new List<string>();
+        using var viewModel = new MineMapViewModel(
+            directory.Path,
+            new MineMapSettingsStore(Path.Combine(directory.Path, "ui-settings.json")),
+            notifications.Add
+        );
+
+        await viewModel.ApplyUpdateAsync([Command(".mining survey")], null, null, allowCommands: true);
+
+        Assert.True(viewModel.ShouldShowSurveyGuideOverlay);
+        Assert.Equal("SURFACE MINING SURVEY", viewModel.SurveyGuideTitle);
+        Assert.Contains("surface position", viewModel.SurveyGuideFeedback, StringComparison.OrdinalIgnoreCase);
+        Assert.Empty(notifications);
+
+        viewModel.ExpireSurveyGuideFeedback(DateTimeOffset.MaxValue);
+
+        Assert.False(viewModel.ShouldShowSurveyGuideOverlay);
+        Assert.Empty(viewModel.SurveyGuideFeedback);
     }
 
     [Fact]

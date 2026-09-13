@@ -135,6 +135,7 @@ public sealed class MineMapOverlayCoordinator : IDisposable
 
     private void OnTimerTick(object? sender, EventArgs eventArgs)
     {
+        mineMap.ExpireSurveyGuideFeedback(DateTimeOffset.UtcNow);
         SynchronizeZoomWindow();
         SynchronizeAlignmentWindow();
         SynchronizeSurveyGuideWindow();
@@ -192,7 +193,6 @@ public sealed class MineMapOverlayCoordinator : IDisposable
         }
 
         var overlay = new SurfaceMiningAlignmentOverlayWindow();
-        presentationSession.ConfigureAuxiliaryWindow(overlay, "PlotMineMap", applyOpacity: false);
         overlay.Opened += OnAlignmentWindowOpened;
         overlay.Closed += OnAlignmentWindowClosed;
         alignmentWindow = overlay;

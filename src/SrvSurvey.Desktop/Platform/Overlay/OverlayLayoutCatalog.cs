@@ -180,7 +180,7 @@ public static class OverlayLayoutCatalog
             "MineMap.ShouldShowSurveyGuideOverlay",
             OverlayLayoutCategory.Mining,
             OverlaySettingsCategory.MineMap,
-            new(520, 108),
+            new(520, 126),
             new(LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Top, 8)
         ),
         Define(
