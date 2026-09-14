@@ -230,8 +230,9 @@ public sealed class OverlayThemeResourcesTests
     public void ApplicationRegistersBundledSymbolFallbacksBeforeSystemFonts()
     {
         FontManagerOptions options = SrvSurveyFontConfiguration.CreateOptions();
-        IReadOnlyList<FontFallback> fallbacks = Assert.IsAssignableFrom<IReadOnlyList<FontFallback>>(
-            options.FontFallbacks
+        IReadOnlyList<FontFallback> fallbacks = Assert.IsType<IReadOnlyList<FontFallback>>(
+            options.FontFallbacks,
+            exactMatch: false
         );
 
         Assert.Collection(

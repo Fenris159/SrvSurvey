@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
 using Avalonia;
@@ -10,6 +11,8 @@ using Tmds.DBus;
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
 [SupportedOSPlatform("linux")]
+// This adapter requires a live XDG portal and PipeWire desktop session. Its pure parsing and cropping helpers remain covered.
+[ExcludeFromCodeCoverage]
 internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCapture
 {
     private const string PortalService = "org.freedesktop.portal.Desktop";
@@ -75,7 +78,7 @@ internal sealed partial class WaylandPortalGameScreenCapture : IGameScreenCaptur
                 exception
             );
         }
-        catch (OperationCanceledException exception) when (disposed)
+        catch (OperationCanceledException exception)
         {
             throw new NotSupportedException("The Wayland screen capture session is closed.", exception);
         }
