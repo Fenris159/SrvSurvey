@@ -24,12 +24,10 @@ csharp_prefer_braces = true:warning
 csharp_indent_labels = one_less_than_current
 
 # Type usage and member access
-# IDE0007/IDE0008 stay at suggestion because the repository has a legacy backlog.
-# tools/Test-ChangedCodeQuality.ps1 enforces these preferences on changed lines,
-# matching SonarCloud's new-code scope without blocking builds on untouched code.
-csharp_style_var_for_built_in_types = false:suggestion
-csharp_style_var_when_type_is_apparent = true:suggestion
-csharp_style_var_elsewhere = false:suggestion
+# The repository baseline conforms to these rules; builds reject regressions.
+csharp_style_var_for_built_in_types = false:warning
+csharp_style_var_when_type_is_apparent = true:warning
+csharp_style_var_elsewhere = false:warning
 dotnet_style_qualification_for_field = false:suggestion
 dotnet_style_qualification_for_property = false:suggestion
 dotnet_style_qualification_for_method = false:suggestion
@@ -66,18 +64,29 @@ dotnet_diagnostic.CA2213.severity = suggestion
 dotnet_diagnostic.CA1001.severity = suggestion
 dotnet_diagnostic.CS1690.severity = none
 
-# Existing analyzer backlog; keep these visible in editors during the first adoption pass.
-dotnet_diagnostic.CA1305.severity = suggestion
-dotnet_diagnostic.CA1310.severity = suggestion
-dotnet_diagnostic.CA1711.severity = suggestion
-dotnet_diagnostic.CA1720.severity = suggestion
-dotnet_diagnostic.CA1805.severity = suggestion
-dotnet_diagnostic.CA1822.severity = suggestion
-dotnet_diagnostic.CA1826.severity = suggestion
-dotnet_diagnostic.CA1838.severity = suggestion
-dotnet_diagnostic.CA1863.severity = suggestion
-dotnet_diagnostic.CA1869.severity = suggestion
-dotnet_diagnostic.CA2263.severity = suggestion
+# Roslyn rules currently imported by SonarCloud are build-blocking locally.
+dotnet_diagnostic.IDE0019.severity = warning
+dotnet_diagnostic.IDE0028.severity = warning
+dotnet_diagnostic.IDE0031.severity = warning
+dotnet_diagnostic.IDE0037.severity = warning
+dotnet_diagnostic.IDE0063.severity = warning
+dotnet_diagnostic.IDE0066.severity = warning
+dotnet_diagnostic.IDE0078.severity = warning
+dotnet_diagnostic.IDE0260.severity = warning
+dotnet_diagnostic.IDE0270.severity = warning
+dotnet_diagnostic.IDE0330.severity = warning
+dotnet_diagnostic.CA1305.severity = warning
+dotnet_diagnostic.CA1310.severity = warning
+dotnet_diagnostic.CA1711.severity = warning
+dotnet_diagnostic.CA1720.severity = warning
+dotnet_diagnostic.CA1805.severity = warning
+dotnet_diagnostic.CA1822.severity = warning
+dotnet_diagnostic.CA1826.severity = warning
+dotnet_diagnostic.CA1838.severity = warning
+dotnet_diagnostic.CA1863.severity = warning
+dotnet_diagnostic.CA1869.severity = warning
+dotnet_diagnostic.CA2201.severity = warning
+dotnet_diagnostic.CA2263.severity = warning
 
 # Existing repository naming conventions
 dotnet_naming_rule.interface_should_begin_with_i.severity = suggestion
@@ -105,9 +114,30 @@ dotnet_naming_style.pascal_case.capitalization = pascal_case
 
 [tests/**/*.cs]
 # Existing test names use behavior-oriented words separated by underscores.
-dotnet_diagnostic.CA1707.severity = suggestion
-# Tests deliberately use broad exceptions when exercising generic failure paths.
-dotnet_diagnostic.CA2201.severity = suggestion
+dotnet_diagnostic.CA1707.severity = warning
+# Test helpers and assertion scans favor readable test data over production API thresholds.
+dotnet_diagnostic.S107.severity = none
+dotnet_diagnostic.S3776.severity = none
+
+[src/SrvSurvey.Core/Journal/EliteStatus.cs]
+# The public Status.json model deliberately mirrors Elite's documented Flags field.
+dotnet_diagnostic.CA1711.severity = none
+
+[src/SrvSurvey.Core/Quests/LegacyQuestStateStore.cs]
+# Short and Long are serialized quest-duration values rather than CLR type names.
+dotnet_diagnostic.CA1720.severity = none
+
+[src/SrvSurvey.Core/Quests/RavenQuestClient.cs]
+# Short and Long are serialized quest-duration values rather than CLR type names.
+dotnet_diagnostic.CA1720.severity = none
+
+[tests/SrvSurvey.Desktop.Tests/AvaloniaHeadlessTestCollection.cs]
+# The suffix identifies an xUnit test collection, not a general-purpose collection type.
+dotnet_diagnostic.CA1711.severity = none
+
+[tests/SrvSurvey.Desktop.Tests/Localization/LocalizationTestCollection.cs]
+# The suffix identifies an xUnit test collection, not a general-purpose collection type.
+dotnet_diagnostic.CA1711.severity = none
 
 [src/SrvSurvey.Core/Navigation/RegionMapData.cs]
 # Imported verbatim from EliteDangerousRegionMap.
