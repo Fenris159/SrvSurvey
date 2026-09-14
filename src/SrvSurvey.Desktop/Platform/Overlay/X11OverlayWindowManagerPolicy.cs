@@ -6,6 +6,20 @@ internal enum X11OverlayStackingMode
     KdeOnScreenDisplay,
 }
 
+internal sealed class X11StackingPolicyLogLimiter
+{
+    private readonly Lock gate = new();
+    private readonly HashSet<X11OverlayStackingMode> reportedModes = [];
+
+    public bool ShouldLog(X11OverlayStackingMode mode)
+    {
+        lock (gate)
+        {
+            return reportedModes.Add(mode);
+        }
+    }
+}
+
 internal static class X11OverlayWindowManagerPolicy
 {
     internal const string SupportedAtomName = "_NET_SUPPORTED";

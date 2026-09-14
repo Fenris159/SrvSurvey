@@ -1,3 +1,5 @@
+using Avalonia;
+
 namespace SrvSurvey.Desktop.Tests;
 
 public sealed class ProgramTests
@@ -21,5 +23,13 @@ public sealed class ProgramTests
     public void SoftwareRenderingRemainsOffByDefault(string? value)
     {
         Assert.False(Program.IsSoftwareRenderingRequested(value));
+    }
+
+    [Fact]
+    public void LinuxSoftwareRenderingUsesTheX11FramebufferRenderer()
+    {
+        X11PlatformOptions options = Program.CreateX11SoftwareRenderingOptions();
+
+        Assert.Equal([X11RenderingMode.Software], options.RenderingMode);
     }
 }

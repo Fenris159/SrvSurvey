@@ -288,6 +288,11 @@ only in Linux Wayland/XWayland sessions and restarts SrvSurvey before the next
 capture attempt; the desktop picker opens only if normal X11 capture fails and
 the Wayland fallback is needed.
 
+On Linux, automatic restarts wait for the retiring process before launching its
+replacement, and repeated matching X11 or renderer failures are summarized in
+the log. If GLX initialization still fails, the software-rendering diagnostic
+override is documented in the Linux installation guide.
+
 ## Build and validation
 
 Install the .NET 10 SDK, then run:

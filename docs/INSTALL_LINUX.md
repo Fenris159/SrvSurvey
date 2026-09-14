@@ -1,6 +1,6 @@
 # Install SrvSurvey on Linux
 
-Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.48.3**.
+Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.48.4**.
 
 The Linux review build targets 64-bit x86 Linux. The AppImage is the simplest
 package for most desktops; the `.tar.gz` archive is a portable fallback. Both
@@ -32,21 +32,21 @@ directory:
 
 ```bash
 mkdir -p "$HOME/Applications/SrvSurvey"
-mv "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.48.3-x86_64.AppImage" \
+mv "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.48.4-x86_64.AppImage" \
     "$HOME/Applications/SrvSurvey/"
 cd "$HOME/Applications/SrvSurvey"
-chmod +x SrvSurvey-XP-2.1.3.0-rc.48.3-x86_64.AppImage
-./SrvSurvey-XP-2.1.3.0-rc.48.3-x86_64.AppImage
+chmod +x SrvSurvey-XP-2.1.3.0-rc.48.4-x86_64.AppImage
+./SrvSurvey-XP-2.1.3.0-rc.48.4-x86_64.AppImage
 ```
 
 To launch the standalone diagnostic replay controller from the same AppImage,
 pass its explicit dispatcher option:
 
 ```bash
-./SrvSurvey-XP-2.1.3.0-rc.48.3-x86_64.AppImage --replay-controller
+./SrvSurvey-XP-2.1.3.0-rc.48.4-x86_64.AppImage --replay-controller
 ```
 
-Replace `2.1.3.0-rc.48.3` with the downloaded version. Keep the AppImage in this folder;
+Replace `2.1.3.0-rc.48.4` with the downloaded version. Keep the AppImage in this folder;
 create a launcher or shortcut that points to it instead of moving internal
 files out of the AppImage.
 
@@ -55,7 +55,7 @@ the same folder:
 
 ```bash
 cd "$HOME/Applications/SrvSurvey"
-./SrvSurvey-XP-2.1.3.0-rc.48.3-x86_64.AppImage --appimage-extract-and-run
+./SrvSurvey-XP-2.1.3.0-rc.48.4-x86_64.AppImage --appimage-extract-and-run
 ```
 
 ## Run the portable archive
@@ -64,10 +64,10 @@ The extracted archive directory is the application's container folder. Keep
 all files together and run `SrvSurvey.Desktop` from that directory:
 
 ```bash
-mkdir -p "$HOME/Applications/SrvSurvey/2.1.3.0-rc.48.3"
-tar -xzf "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.48.3-linux-x64.tar.gz" \
-    -C "$HOME/Applications/SrvSurvey/2.1.3.0-rc.48.3"
-cd "$HOME/Applications/SrvSurvey/2.1.3.0-rc.48.3"
+mkdir -p "$HOME/Applications/SrvSurvey/2.1.3.0-rc.48.4"
+tar -xzf "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.48.4-linux-x64.tar.gz" \
+    -C "$HOME/Applications/SrvSurvey/2.1.3.0-rc.48.4"
+cd "$HOME/Applications/SrvSurvey/2.1.3.0-rc.48.4"
 chmod +x SrvSurvey.Desktop
 ./SrvSurvey.Desktop
 ```
@@ -150,6 +150,19 @@ Temporary X11 or portal capture failures are retried with an increasing delay
 and normal capture resumes after the next successful frame. Repeated expected
 X11 capture errors are summarized periodically in the application log instead
 of being written once per FSS sample.
+
+If the application UI repeatedly reports `glXMakeContextCurrent failed`, fully
+close every SrvSurvey process before reopening it. To diagnose a driver-specific
+GLX failure, launch one session with Avalonia's X11 framebuffer renderer:
+
+```bash
+SRVSURVEY_SOFTWARE_RENDERING=1 ./SrvSurvey.AppImage
+```
+
+This override affects SrvSurvey's UI renderer only. It does not change Elite
+Dangerous, Gamescope, or PipeWire rendering and should normally be used only for
+troubleshooting. Replace `SrvSurvey.AppImage` with the actual filename when the
+download has not been renamed.
 
 The fallback requires PipeWire, WirePlumber (or another PipeWire session
 manager), `xdg-desktop-portal`, and the portal backend for the active desktop,

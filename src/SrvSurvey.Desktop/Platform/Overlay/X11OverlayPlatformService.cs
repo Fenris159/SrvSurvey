@@ -18,6 +18,8 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
     private static readonly Lock ErrorHandlerSync = new();
     private static readonly ConcurrentDictionary<nint, byte> ErrorHandledDisplays = new();
     private static readonly X11ExpectedErrorLogLimiter ExpectedErrorLogLimiter = new(TimeSpan.FromSeconds(30));
+    private static readonly X11ExpectedErrorLogLimiter UnexpectedErrorLogLimiter = new(TimeSpan.FromMinutes(1));
+    private static readonly X11StackingPolicyLogLimiter StackingPolicyLogLimiter = new();
     private static nint previousErrorHandlerPointer;
     private static bool errorHandlerInstalled;
     private readonly object displaySync = new();
@@ -139,11 +141,14 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
             );
         }
 
-        Trace.TraceInformation(
-            stackingMode == X11OverlayStackingMode.KdeOnScreenDisplay
-                ? "X11 overlay stacking policy: KDE on-screen display (advertised by the window manager)."
-                : "X11 overlay stacking policy: standard topmost (KDE on-screen display support was not advertised)."
-        );
+        if (StackingPolicyLogLimiter.ShouldLog(stackingMode))
+        {
+            Trace.TraceInformation(
+                stackingMode == X11OverlayStackingMode.KdeOnScreenDisplay
+                    ? "X11 overlay stacking policy: KDE on-screen display (advertised by the window manager)."
+                    : "X11 overlay stacking policy: standard topmost (KDE on-screen display support was not advertised)."
+            );
+        }
 
         return new X11OverlayPlatformService(
             new X11OverlayPlatformContext
@@ -575,9 +580,25 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
             }
             else
             {
-                Trace.TraceWarning(
-                    "X11 request failed and will be delegated to the previous " + "error handler: " + detail
+                var signature = new X11ExpectedErrorSignature(
+                    errorDisplay,
+                    errorEvent.ErrorCode,
+                    errorEvent.RequestCode,
+                    errorEvent.MinorCode,
+                    errorEvent.ResourceId
                 );
+                X11ExpectedErrorLogDecision decision = UnexpectedErrorLogLimiter.Record(
+                    signature,
+                    DateTimeOffset.UtcNow
+                );
+                if (decision.ShouldLog)
+                {
+                    Trace.TraceWarning(
+                        decision.SuppressedCount > 0
+                            ? $"Suppressed {decision.SuppressedCount} repeated unexpected X11 errors; latest: {detail}"
+                            : "X11 request failed and will be delegated to the previous error handler: " + detail
+                    );
+                }
             }
         }
         catch (Exception)
@@ -613,6 +634,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
     {
         ErrorHandledDisplays.TryRemove(errorDisplay, out _);
         ExpectedErrorLogLimiter.RemoveDisplay(errorDisplay);
+        UnexpectedErrorLogLimiter.RemoveDisplay(errorDisplay);
     }
 
     internal static bool ShouldSuppressXError(nint errorDisplay, byte errorCode, byte requestCode = 0)

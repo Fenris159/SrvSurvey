@@ -25,6 +25,11 @@ internal static class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        if (ApplicationRestartService.TryRunRestartHelper(args))
+        {
+            return;
+        }
+
         ApplicationUpdateStartup updateStartup = ApplicationUpdateBootstrap.ParseStartupArguments(args);
         if (TryRunUpdateHelper(updateStartup))
         {
@@ -88,7 +93,9 @@ internal static class Program
             Environment.GetEnvironmentVariable(SoftwareRenderingEnvironmentVariable)
         );
         applicationLog.Append(
-            useSoftwareRendering ? "Windows renderer: software (diagnostic override)." : "Windows renderer: automatic."
+            useSoftwareRendering
+                ? "Application renderer: software (diagnostic override)."
+                : "Application renderer: automatic."
         );
         using var traceListener = new ApplicationLogTraceListener(applicationLog);
         void HandleUnhandledException(object sender, UnhandledExceptionEventArgs eventArgs)
@@ -221,7 +228,16 @@ internal static class Program
         {
             builder = builder.With(new Win32PlatformOptions { RenderingMode = [Win32RenderingMode.Software] });
         }
+        else if (useSoftwareRendering && OperatingSystem.IsLinux())
+        {
+            builder = builder.With(CreateX11SoftwareRenderingOptions());
+        }
 
         return builder.WithInterFont().With(SrvSurveyFontConfiguration.CreateOptions()).LogToTrace();
+    }
+
+    internal static X11PlatformOptions CreateX11SoftwareRenderingOptions()
+    {
+        return new X11PlatformOptions { RenderingMode = [X11RenderingMode.Software] };
     }
 }

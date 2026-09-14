@@ -1,6 +1,6 @@
 # Development and Validation
 
-Last updated: 2026-09-13
+Last updated: 2026-09-14
 
 ## Branch purpose
 
@@ -11,9 +11,9 @@ full porting audit remain recoverable on `cross-platform-development`.
 
 ## Current release candidate
 
-The branch is versioned as **SrvSurvey-XP 2.1.3.0-rc.48.3**. Its development tag
-is `xp-v2.1.3.0-rc.48.3`, package manifests use `SrvSurvey.XP`, and distributable
-filenames begin with `SrvSurvey-XP-2.1.3.0-rc.48.3`. The assembly `FileVersion`
+The branch is versioned as **SrvSurvey-XP 2.1.3.0-rc.48.4**. Its development tag
+is `xp-v2.1.3.0-rc.48.4`, package manifests use `SrvSurvey.XP`, and distributable
+filenames begin with `SrvSurvey-XP-2.1.3.0-rc.48.4`. The assembly `FileVersion`
 remains numeric at `2.1.3.0` for Windows compatibility.
 
 ## Build contract
