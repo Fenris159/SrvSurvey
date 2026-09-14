@@ -96,14 +96,17 @@ public sealed class FirstFootfallInferenceService : IFirstFootfallInferenceServi
     public string? UnavailableReason => screenCapture.UnavailableReason;
 
     public static IFirstFootfallInferenceService CreateCurrent(
-        Func<CancellationToken, Task<bool>>? confirmWaylandScreenShare = null
+        Func<CancellationToken, Task<bool>>? confirmWaylandScreenShare = null,
+        Action<string>? log = null
     )
     {
         return new FirstFootfallInferenceService(
             GameWindowTracker.CreateCurrent(),
             GameScreenCapture.CreateCurrent(
                 enableWaylandPortalFallback: true,
-                confirmWaylandScreenShare: confirmWaylandScreenShare
+                confirmWaylandScreenShare: confirmWaylandScreenShare,
+                log: log,
+                capturePurpose: "first-footfall inference"
             )
         );
     }

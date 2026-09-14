@@ -8203,6 +8203,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
   },
   {
+    "Text": "Capture source cleared, but automatic restart failed: {0} Close and reopen SrvSurvey manually.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/WaylandCaptureSettingsViewModel.cs"
+  },
+  {
+    "Text": "Capture source cleared. Restart SrvSurvey; the picker opens if capture falls back to Wayland sharing.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/WaylandCaptureSettingsViewModel.cs"
+  },
+  {
+    "Text": "Capture source cleared; restarting SrvSurvey...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/WaylandCaptureSettingsViewModel.cs"
+  },
+  {
     "Text": "Captured and copied the {0} cockpit offset for this session.",
     "IsFormat": true,
     "SourceKinds": [
@@ -9124,6 +9148,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "Choose capture source again",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
     "Text": "Choose file",
     "IsFormat": false,
     "SourceKinds": [
@@ -9338,6 +9370,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
+  },
+  {
+    "Text": "ChooseWaylandCaptureSourceAgainButton",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
   },
   {
     "Text": "Circle radius",
@@ -17511,6 +17551,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/SystemSurveyOverlayCoordinator.cs"
   },
   {
+    "Text": "FSS tuning detection",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
+  },
+  {
     "Text": "FSS tuning detection is active, but its diagnostic image could not be saved: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -18640,6 +18688,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/HumanSiteSettingsStore.cs"
+  },
+  {
+    "Text": "For Linux Wayland or XWayland users only, when normal X11 capture fails and SrvSurvey uses the desktop ScreenCast and PipeWire fallback. Windows and native X11 users do not need this.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "For Rig tracking and full command details click here",
@@ -38101,6 +38157,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "Requested a fresh Wayland screen-capture source selection after restart.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/WaylandCaptureSettingsViewModel.cs"
+  },
+  {
     "Text": "Require FSS to report all bodies before completion",
     "IsFormat": false,
     "SourceKinds": [
@@ -41140,6 +41204,38 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlayVehicleCatalog.cs"
+  },
+  {
+    "Text": "Screen capture ({0}) failed: {1} Next retry in {2} seconds.{3}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
+  },
+  {
+    "Text": "Screen capture ({0}): X11 capture failed; switching to the Wayland portal. {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
+  },
+  {
+    "Text": "Screen capture ({0}): recovered after {1} failed attempts and {2} suppressed repeat reports.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
+  },
+  {
+    "Text": "Screen capture failed: {0} Retrying in {1} seconds.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
   },
   {
     "Text": "Screen capture is unavailable.",
@@ -44945,6 +45041,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderPreferenceViewModel.cs"
   },
   {
+    "Text": "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/WaylandCaptureSettingsViewModel.cs"
+  },
+  {
     "Text": "SrvSurvey will start with {0}.",
     "IsFormat": true,
     "SourceKinds": [
@@ -46121,6 +46225,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Surface Mining rig detection",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
   },
   {
     "Text": "Surface Navigation",
@@ -50536,6 +50648,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderPreferenceViewModel.cs"
+  },
+  {
+    "Text": "The saved Wayland capture source could not be cleared: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/WaylandCaptureSettingsViewModel.cs"
   },
   {
     "Text": "The saved boxel search action could not be completed.",
@@ -55163,6 +55283,70 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "Wayland capture ({0}): Settings requested a fresh source selection.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+  },
+  {
+    "Text": "Wayland capture ({0}): first PipeWire frame {1}x{2}, stride {3}, format {4}; requested {5} from game source {6}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+  },
+  {
+    "Text": "Wayland capture ({0}): first cropped frame is {1}x{2}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+  },
+  {
+    "Text": "Wayland capture ({0}): portal selected {1}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+  },
+  {
+    "Text": "Wayland capture ({0}): portal version {1}; available sources {2}; saved selection {3}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+  },
+  {
+    "Text": "Wayland capture ({0}): saved source selection could not be read. {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+  },
+  {
+    "Text": "Wayland capture ({0}): selected source could not be saved for reuse. {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+  },
+  {
+    "Text": "Wayland capture ({0}): the source-reselection request could not be cleared. {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+  },
+  {
     "Text": "Wayland did not provide a frame from the shared Elite Dangerous window.",
     "IsFormat": false,
     "SourceKinds": [
@@ -55177,6 +55361,15 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPlatformCapabilities.cs"
+  },
+  {
+    "Text": "Wayland screen capture",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
     "Text": "Wayland screen sharing could not start: {0}",
@@ -55201,6 +55394,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+  },
+  {
+    "Text": "Wayland screen-capture source changed",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Runtime/DesktopRuntime.Composition.cs"
+  },
+  {
+    "Text": "WaylandCaptureCard",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
   },
   {
     "Text": "Waypoint 3 of 12",
@@ -55972,6 +56181,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationLogTraceListener.cs"
   },
   {
+    "Text": "a monitor",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+  },
+  {
+    "Text": "a window",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+  },
+  {
     "Text": "accepted",
     "IsFormat": false,
     "SourceKinds": [
@@ -56068,6 +56293,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Runtime/DiagnosticReplayContext.cs"
   },
   {
+    "Text": "an unspecified source",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+  },
+  {
     "Text": "anaconda",
     "IsFormat": false,
     "SourceKinds": [
@@ -56129,7 +56362,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalInspectorViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
   },
   {
     "Text": "and the global opacity.",
@@ -56290,6 +56523,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Presentation/RouteBodyAssetResolver.cs"
+  },
+  {
+    "Text": "at ({0},{1})",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
   },
   {
     "Text": "atmos",
@@ -57732,6 +57973,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/OverlaySettingsCategoryCatalog.cs"
   },
   {
+    "Text": "first-footfall inference",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/FirstFootfallInferenceService.cs"
+  },
+  {
     "Text": "fistbump",
     "IsFormat": false,
     "SourceKinds": [
@@ -57906,6 +58155,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayEditorPreviewFactories.cs"
+  },
+  {
+    "Text": "game-screen detection",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
   },
   {
     "Text": "gamepad joystick hotas sdl device",
@@ -58620,6 +58877,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SettingsWorkspaceViewModel.cs"
+  },
+  {
     "Text": "linux64",
     "IsFormat": false,
     "SourceKinds": [
@@ -58852,6 +59117,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
+    "Text": "monitor",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+  },
+  {
     "Text": "monitor scale minimize tray game elite focus startup jump reduce motion animation",
     "IsFormat": false,
     "SourceKinds": [
@@ -59050,6 +59323,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalInspectorViewModel.cs"
+  },
+  {
+    "Text": "not available",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
   },
   {
     "Text": "not scanned",
@@ -59588,6 +59869,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
   },
   {
+    "Text": "requested",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+  },
+  {
     "Text": "rescue",
     "IsFormat": false,
     "SourceKinds": [
@@ -59990,6 +60279,14 @@
   {
     "Text": "size",
     "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+  },
+  {
+    "Text": "sized {0}x{1}",
+    "IsFormat": true,
     "SourceKinds": [
       "csharp"
     ],
@@ -61069,12 +61366,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
   },
   {
+    "Text": "wayland-screen-capture.reselect",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
+  },
+  {
     "Text": "wayland-screen-capture.token",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
   },
   {
     "Text": "waypoint",
@@ -61131,6 +61436,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationUpdateBootstrap.cs"
+  },
+  {
+    "Text": "window",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
   },
   {
     "Text": "windows",
@@ -62061,6 +62374,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MiningSearchViewModel.cs"
   },
   {
+    "Text": "{0} matching failure reports were suppressed.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
+  },
+  {
     "Text": "{0} matching guide entries",
     "IsFormat": true,
     "SourceKinds": [
@@ -62915,6 +63236,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MineMapViewModel.cs"
+  },
+  {
+    "Text": "{0}x{1} at ({2},{3})",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/WaylandPortalGameScreenCapture.cs"
   },
   {
     "Text": "{0}{1} - {2} x {3} - {4}%",

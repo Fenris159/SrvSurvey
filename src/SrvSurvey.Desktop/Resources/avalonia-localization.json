@@ -4093,6 +4093,18 @@
       "translation": "Erfassen Sie ausgewählte Oberflächenstandorte"
     },
     {
+      "source": "Capture source cleared, but automatic restart failed: {0} Close and reopen SrvSurvey manually.",
+      "translation": "Capture-Quelle gelöscht, aber automatischer Neustart fehlgeschlagen: {0} Manuell schließen und erneut öffnen SrvSurvey."
+    },
+    {
+      "source": "Capture source cleared. Restart SrvSurvey; the picker opens if capture falls back to Wayland sharing.",
+      "translation": "Aufnahmequelle gelöscht. Neustart SrvSurvey; Die Auswahl wird geöffnet, wenn die Erfassung auf die Wayland-Freigabe zurückfällt."
+    },
+    {
+      "source": "Capture source cleared; restarting SrvSurvey...",
+      "translation": "Aufnahmequelle gelöscht; Neustart SrvSurvey..."
+    },
+    {
       "source": "Captured and copied the {0} cockpit offset for this session.",
       "translation": "Erfasst und kopiert den Cockpit-Offset {0} für diese Sitzung."
     },
@@ -4553,6 +4565,10 @@
       "translation": "Cache auswählen..."
     },
     {
+      "source": "Choose capture source again",
+      "translation": "Wählen Sie erneut die Aufnahmequelle"
+    },
+    {
       "source": "Choose file",
       "translation": "Datei auswählen"
     },
@@ -4659,6 +4675,10 @@
     {
       "source": "Choose...",
       "translation": "Wählen..."
+    },
+    {
+      "source": "ChooseWaylandCaptureSourceAgainButton",
+      "translation": "Wählen Sie WaylandCaptureSourceAgainButton"
     },
     {
       "source": "Circle radius",
@@ -8733,6 +8753,10 @@
       "translation": "Die FSS-Tuning-Erfassung ist vorübergehend nicht verfügbar: {0}"
     },
     {
+      "source": "FSS tuning detection",
+      "translation": "FSS-Tuning-Erkennung"
+    },
+    {
       "source": "FSS tuning detection is active, but its diagnostic image could not be saved: {0}",
       "translation": "Die FSS-Tuning-Erkennung ist aktiv, aber das Diagnosebild konnte nicht gespeichert werden: {0}"
     },
@@ -9295,6 +9319,10 @@
     {
       "source": "FootZoom",
       "translation": "FußZoom"
+    },
+    {
+      "source": "For Linux Wayland or XWayland users only, when normal X11 capture fails and SrvSurvey uses the desktop ScreenCast and PipeWire fallback. Windows and native X11 users do not need this.",
+      "translation": "Nur für Benutzer von Linux Wayland oder XWayland, wenn die normale X11-Erfassung fehlschlägt und SrvSurvey den Desktop-ScreenCast- und PipeWire-Fallback verwendet. Windows- und native X11-Benutzer benötigen dies nicht."
     },
     {
       "source": "For Rig tracking and full command details click here",
@@ -19001,6 +19029,10 @@
       "translation": "Ruf"
     },
     {
+      "source": "Requested a fresh Wayland screen-capture source selection after restart.",
+      "translation": "Nach dem Neustart wurde eine neue Auswahl der Wayland-Screenshot-Quelle angefordert."
+    },
+    {
       "source": "Require FSS to report all bodies before completion",
       "translation": "Fordern Sie FSS auf, alle Leichen vor der Fertigstellung zu melden"
     },
@@ -20515,6 +20547,22 @@
     {
       "source": "Scorpion",
       "translation": "Skorpion"
+    },
+    {
+      "source": "Screen capture ({0}) failed: {1} Next retry in {2} seconds.{3}",
+      "translation": "Bildschirmaufnahme ({0}) fehlgeschlagen: {1} Nächster Wiederholungsversuch in {2} Sekunden.{3}"
+    },
+    {
+      "source": "Screen capture ({0}): X11 capture failed; switching to the Wayland portal. {1}",
+      "translation": "Bildschirmaufnahme ({0}): X11-Aufnahme fehlgeschlagen; Wechsel zum Wayland-Portal. {1}"
+    },
+    {
+      "source": "Screen capture ({0}): recovered after {1} failed attempts and {2} suppressed repeat reports.",
+      "translation": "Bildschirmaufnahme ({0}): wiederhergestellt, nachdem {1} fehlgeschlagene Versuche und {2} wiederholte Berichte unterdrückte."
+    },
+    {
+      "source": "Screen capture failed: {0} Retrying in {1} seconds.",
+      "translation": "Bildschirmaufnahme fehlgeschlagen: {0} Wiederholungsversuch in {1} Sekunden."
     },
     {
       "source": "Screen capture is unavailable.",
@@ -22413,6 +22461,10 @@
       "translation": "SrvSurvey folgt dem neuesten aktiven Journal."
     },
     {
+      "source": "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker.",
+      "translation": "SrvSurvey wird neu gestartet. Wenn die normale X11-Erfassung erneut fehlschlägt, wird beim nächsten Erfassungsversuch die Auswahl geöffnet."
+    },
+    {
       "source": "SrvSurvey will start with {0}.",
       "translation": "SrvSurvey beginnt mit {0}."
     },
@@ -22999,6 +23051,10 @@
     {
       "source": "Surface Mining overlay settings provides an independent visibility toggle and optional shortcut. Its initial placement copies your saved Flight Warning placement; you can move it separately in the overlay editor.",
       "translation": "Die Overlay-Einstellungen für Surface Mining bieten einen unabhängigen Sichtbarkeitsschalter und eine optionale Verknüpfung. Seine anfängliche Platzierung kopiert Ihre gespeicherte Flugwarnungsplatzierung; Sie können es im Overlay-Editor separat verschieben."
+    },
+    {
+      "source": "Surface Mining rig detection",
+      "translation": "Erkennung von Surface-Mining-Rigs"
     },
     {
       "source": "Surface Navigation",
@@ -25203,6 +25259,10 @@
     {
       "source": "The saved Frontier ID {0} has no readable imported profile. Automatic selection is shown until the profile is restored.",
       "translation": "Die gespeicherte Frontier-ID {0} hat kein lesbares importiertes Profil. Die automatische Auswahl wird angezeigt, bis das Profil wiederhergestellt ist."
+    },
+    {
+      "source": "The saved Wayland capture source could not be cleared: {0}",
+      "translation": "Die gespeicherte Wayland-Erfassungsquelle konnte nicht gelöscht werden: {0}"
     },
     {
       "source": "The saved boxel search action could not be completed.",
@@ -27513,12 +27573,48 @@
       "translation": "Wasserwelt | 1,24 Mio. cr"
     },
     {
+      "source": "Wayland capture ({0}): Settings requested a fresh source selection.",
+      "translation": "Wayland-Erfassung ({0}): Die Einstellungen erforderten eine neue Quellenauswahl."
+    },
+    {
+      "source": "Wayland capture ({0}): first PipeWire frame {1}x{2}, stride {3}, format {4}; requested {5} from game source {6}.",
+      "translation": "Wayland-Erfassung ({0}): erster PipeWire-Frame {1}x{2}, Schrittweite {3}, Format {4}; Angeforderte {5} von der Spielequelle {6}."
+    },
+    {
+      "source": "Wayland capture ({0}): first cropped frame is {1}x{2}.",
+      "translation": "Wayland-Aufnahme ({0}): Das erste zugeschnittene Bild ist {1}x{2}."
+    },
+    {
+      "source": "Wayland capture ({0}): portal selected {1}.",
+      "translation": "Wayland-Erfassung ({0}): Portal ausgewählt {1}."
+    },
+    {
+      "source": "Wayland capture ({0}): portal version {1}; available sources {2}; saved selection {3}.",
+      "translation": "Wayland-Erfassung ({0}): Portalversion {1}; verfügbare Quellen {2}; gespeicherte Auswahl {3}."
+    },
+    {
+      "source": "Wayland capture ({0}): saved source selection could not be read. {1}",
+      "translation": "Wayland-Erfassung ({0}): Gespeicherte Quellenauswahl konnte nicht gelesen werden. {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): selected source could not be saved for reuse. {1}",
+      "translation": "Wayland-Erfassung ({0}): Die ausgewählte Quelle konnte nicht zur Wiederverwendung gespeichert werden. {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): the source-reselection request could not be cleared. {1}",
+      "translation": "Wayland-Erfassung ({0}): Die Anforderung zur erneuten Quellenauswahl konnte nicht gelöscht werden. {1}"
+    },
+    {
       "source": "Wayland did not provide a frame from the shared Elite Dangerous window.",
       "translation": "Wayland hat keinen Frame aus dem freigegebenen Fenster Elite Dangerous bereitgestellt."
     },
     {
       "source": "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
       "translation": "Wayland-Overlay-Positionierung, Transparenz, Click-through und globale Eingabe erfordern Compositor-Unterstützung und sind nicht aktiviert."
+    },
+    {
+      "source": "Wayland screen capture",
+      "translation": "Wayland-Screenshot"
     },
     {
       "source": "Wayland screen sharing could not start: {0}",
@@ -27531,6 +27627,14 @@
     {
       "source": "Wayland screen sharing was canceled.",
       "translation": "Die Bildschirmfreigabe von Wayland wurde abgebrochen."
+    },
+    {
+      "source": "Wayland screen-capture source changed",
+      "translation": "Wayland-Screenshot-Quelle geändert"
+    },
+    {
+      "source": "WaylandCaptureCard",
+      "translation": "WaylandCaptureCard"
     },
     {
       "source": "Waypoint 3 of 12",
@@ -27917,6 +28021,14 @@
       "translation": "[Control] PlatformImpl ist null, die Eingabe konnte nicht verarbeitet werden. (Präsentationsquelle #"
     },
     {
+      "source": "a monitor",
+      "translation": "ein Monitor"
+    },
+    {
+      "source": "a window",
+      "translation": "ein Fenster"
+    },
+    {
       "source": "accepted",
       "translation": "akzeptiert"
     },
@@ -27963,6 +28075,10 @@
     {
       "source": "an external service",
       "translation": "ein externer Dienst"
+    },
+    {
+      "source": "an unspecified source",
+      "translation": "eine nicht näher bezeichnete Quelle"
     },
     {
       "source": "anaconda",
@@ -28075,6 +28191,10 @@
     {
       "source": "asteroid",
       "translation": "Asteroid"
+    },
+    {
+      "source": "at ({0},{1})",
+      "translation": "bei ({0},{1})"
     },
     {
       "source": "atmos",
@@ -28797,6 +28917,10 @@
       "translation": "Feuergruppen"
     },
     {
+      "source": "first-footfall inference",
+      "translation": "Schlussfolgerung beim ersten Schritt"
+    },
+    {
       "source": "fistbump",
       "translation": "Fauststoß"
     },
@@ -28883,6 +29007,10 @@
     {
       "source": "galmap",
       "translation": "Galmap"
+    },
+    {
+      "source": "game-screen detection",
+      "translation": "Erkennung des Spielbildschirms"
     },
     {
       "source": "gamepad joystick hotas sdl device",
@@ -29241,6 +29369,10 @@
       "translation": "Lichter"
     },
     {
+      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset",
+      "translation": "Linux Xwayland Portal Pipewire Screencast Source Picker Share Window Monitor Gamescope Reset"
+    },
+    {
       "source": "linux64",
       "translation": "Linux64"
     },
@@ -29357,6 +29489,10 @@
       "translation": "Molybdän"
     },
     {
+      "source": "monitor",
+      "translation": "Monitor"
+    },
+    {
       "source": "monitor scale minimize tray game elite focus startup jump reduce motion animation",
       "translation": "Monitorskalierung Minimieren Tablett Spiel Elite Fokus Start Springen Reduzieren Bewegungsanimation"
     },
@@ -29455,6 +29591,10 @@
     {
       "source": "not",
       "translation": "nicht"
+    },
+    {
+      "source": "not available",
+      "translation": "nicht verfügbar"
     },
     {
       "source": "not scanned",
@@ -29725,6 +29865,10 @@
       "translation": "Anfrage"
     },
     {
+      "source": "requested",
+      "translation": "angefordert"
+    },
+    {
       "source": "rescue",
       "translation": "Rettung"
     },
@@ -29927,6 +30071,10 @@
     {
       "source": "size",
       "translation": "Größe"
+    },
+    {
+      "source": "sized {0}x{1}",
+      "translation": "Größe {0}x{1}"
     },
     {
       "source": "slot",
@@ -30465,6 +30613,10 @@
       "translation": "Wayland"
     },
     {
+      "source": "wayland-screen-capture.reselect",
+      "translation": "wayland-screen-capture.reselect"
+    },
+    {
       "source": "wayland-screen-capture.token",
       "translation": "wayland-screen-capture.token"
     },
@@ -30495,6 +30647,10 @@
     {
       "source": "win-x64",
       "translation": "win-x64"
+    },
+    {
+      "source": "window",
+      "translation": "Fenster"
     },
     {
       "source": "windows",
@@ -30961,6 +31117,10 @@
       "translation": "{0} Märkte · {1}. Bei Preisen und Mengen handelt es sich um Richtwerte, nicht um Garantien."
     },
     {
+      "source": "{0} matching failure reports were suppressed.",
+      "translation": "{0} Matching-Fehlerberichte wurden unterdrückt."
+    },
+    {
       "source": "{0} matching guide entries",
       "translation": "{0} passende Guide-Einträge"
     },
@@ -31387,6 +31547,10 @@
     {
       "source": "{0}x",
       "translation": "{0}x"
+    },
+    {
+      "source": "{0}x{1} at ({2},{3})",
+      "translation": "{0}x{1} bei ({2},{3})"
     },
     {
       "source": "{0}{1} - {2} x {3} - {4}%",
@@ -35627,6 +35791,18 @@
       "translation": "Capturar sitios de superficie seleccionados"
     },
     {
+      "source": "Capture source cleared, but automatic restart failed: {0} Close and reopen SrvSurvey manually.",
+      "translation": "Se borró la fuente de captura, pero falló el reinicio automático: {0} Cerrar y volver a abrir SrvSurvey manualmente."
+    },
+    {
+      "source": "Capture source cleared. Restart SrvSurvey; the picker opens if capture falls back to Wayland sharing.",
+      "translation": "Se borró la fuente de captura. Reiniciar SrvSurvey; el selector se abre si la captura vuelve a compartirse con Wayland."
+    },
+    {
+      "source": "Capture source cleared; restarting SrvSurvey...",
+      "translation": "Fuente de captura borrada; reiniciando SrvSurvey..."
+    },
+    {
       "source": "Captured and copied the {0} cockpit offset for this session.",
       "translation": "Capturó y copió el desplazamiento de la cabina {0} para esta sesión."
     },
@@ -36087,6 +36263,10 @@
       "translation": "Elige caché..."
     },
     {
+      "source": "Choose capture source again",
+      "translation": "Elija la fuente de captura nuevamente"
+    },
+    {
       "source": "Choose file",
       "translation": "Elige el archivo"
     },
@@ -36193,6 +36373,10 @@
     {
       "source": "Choose...",
       "translation": "Elegir..."
+    },
+    {
+      "source": "ChooseWaylandCaptureSourceAgainButton",
+      "translation": "Elija WaylandCaptureSourceAgainButton"
     },
     {
       "source": "Circle radius",
@@ -40267,6 +40451,10 @@
       "translation": "La captura de sintonización FSS no está disponible temporalmente: {0}"
     },
     {
+      "source": "FSS tuning detection",
+      "translation": "Detección de sintonización FSS"
+    },
+    {
       "source": "FSS tuning detection is active, but its diagnostic image could not be saved: {0}",
       "translation": "La detección de sintonización FSS está activa, pero su imagen de diagnóstico no se pudo guardar: {0}"
     },
@@ -40829,6 +41017,10 @@
     {
       "source": "FootZoom",
       "translation": "PieZoom"
+    },
+    {
+      "source": "For Linux Wayland or XWayland users only, when normal X11 capture fails and SrvSurvey uses the desktop ScreenCast and PipeWire fallback. Windows and native X11 users do not need this.",
+      "translation": "Solo para usuarios de Linux Wayland o XWayland, cuando falla la captura normal de X11 y SrvSurvey utiliza el respaldo ScreenCast y PipeWire del escritorio. Los usuarios de Windows y X11 nativo no lo necesitan."
     },
     {
       "source": "For Rig tracking and full command details click here",
@@ -50535,6 +50727,10 @@
       "translation": "Reputación"
     },
     {
+      "source": "Requested a fresh Wayland screen-capture source selection after restart.",
+      "translation": "Solicitó una nueva selección de fuente de captura de pantalla de Wayland después del reinicio."
+    },
+    {
       "source": "Require FSS to report all bodies before completion",
       "translation": "Requerir que FSS informe todos los cuerpos antes de su finalización"
     },
@@ -52049,6 +52245,22 @@
     {
       "source": "Scorpion",
       "translation": "Escorpión"
+    },
+    {
+      "source": "Screen capture ({0}) failed: {1} Next retry in {2} seconds.{3}",
+      "translation": "Error en la captura de pantalla ({0}): {1} Siguiente reintento en segundos {2}.{3}"
+    },
+    {
+      "source": "Screen capture ({0}): X11 capture failed; switching to the Wayland portal. {1}",
+      "translation": "Captura de pantalla ({0}): Error en la captura de X11; cambiando al portal Wayland. {1}"
+    },
+    {
+      "source": "Screen capture ({0}): recovered after {1} failed attempts and {2} suppressed repeat reports.",
+      "translation": "Captura de pantalla ({0}): recuperada después de intentos fallidos de {1} y {2} suprimió los informes repetidos."
+    },
+    {
+      "source": "Screen capture failed: {0} Retrying in {1} seconds.",
+      "translation": "Error en la captura de pantalla: {0} Reintentando en {1} segundos."
     },
     {
       "source": "Screen capture is unavailable.",
@@ -53947,6 +54159,10 @@
       "translation": "SrvSurvey seguirá el diario activo más reciente."
     },
     {
+      "source": "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker.",
+      "translation": "SrvSurvey se reiniciará. Si la captura normal de X11 vuelve a fallar, el siguiente intento de captura abre el selector."
+    },
+    {
       "source": "SrvSurvey will start with {0}.",
       "translation": "SrvSurvey comenzará con {0}."
     },
@@ -54533,6 +54749,10 @@
     {
       "source": "Surface Mining overlay settings provides an independent visibility toggle and optional shortcut. Its initial placement copies your saved Flight Warning placement; you can move it separately in the overlay editor.",
       "translation": "La configuración de superposición de Surface Mining proporciona una alternancia de visibilidad independiente y un acceso directo opcional. Su ubicación inicial copia la ubicación de Advertencia de vuelo guardada; puedes moverlo por separado en el editor de superposición."
+    },
+    {
+      "source": "Surface Mining rig detection",
+      "translation": "Detección de plataformas de minería de superficie"
     },
     {
       "source": "Surface Navigation",
@@ -56737,6 +56957,10 @@
     {
       "source": "The saved Frontier ID {0} has no readable imported profile. Automatic selection is shown until the profile is restored.",
       "translation": "El ID Frontier guardado {0} no tiene un perfil importado legible. La selección automática se muestra hasta que se restablece el perfil."
+    },
+    {
+      "source": "The saved Wayland capture source could not be cleared: {0}",
+      "translation": "No se pudo borrar la fuente de captura de Wayland guardada: {0}"
     },
     {
       "source": "The saved boxel search action could not be completed.",
@@ -59047,12 +59271,48 @@
       "translation": "Mundo acuático | 1,24 millones de euros"
     },
     {
+      "source": "Wayland capture ({0}): Settings requested a fresh source selection.",
+      "translation": "Captura de Wayland ({0}): la configuración solicitó una nueva selección de fuente."
+    },
+    {
+      "source": "Wayland capture ({0}): first PipeWire frame {1}x{2}, stride {3}, format {4}; requested {5} from game source {6}.",
+      "translation": "Captura de Wayland ({0}): primer cuadro PipeWire {1}x{2}, zancada {3}, formato {4}; solicitó {5} de la fuente del juego {6}."
+    },
+    {
+      "source": "Wayland capture ({0}): first cropped frame is {1}x{2}.",
+      "translation": "Captura de Wayland ({0}): el primer fotograma recortado es {1}x{2}."
+    },
+    {
+      "source": "Wayland capture ({0}): portal selected {1}.",
+      "translation": "Captura de Wayland ({0}): portal seleccionado {1}."
+    },
+    {
+      "source": "Wayland capture ({0}): portal version {1}; available sources {2}; saved selection {3}.",
+      "translation": "Captura de Wayland ({0}): versión del portal {1}; fuentes disponibles {2}; selección guardada {3}."
+    },
+    {
+      "source": "Wayland capture ({0}): saved source selection could not be read. {1}",
+      "translation": "Captura de Wayland ({0}): no se pudo leer la selección de fuente guardada. {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): selected source could not be saved for reuse. {1}",
+      "translation": "Captura de Wayland ({0}): la fuente seleccionada no se pudo guardar para su reutilización. {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): the source-reselection request could not be cleared. {1}",
+      "translation": "Captura de Wayland ({0}): no se pudo borrar la solicitud de reselección de fuente. {1}"
+    },
+    {
       "source": "Wayland did not provide a frame from the shared Elite Dangerous window.",
       "translation": "Wayland no proporcionó un marco de la ventana compartida Elite Dangerous."
     },
     {
       "source": "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
       "translation": "El posicionamiento de superposición de Wayland, la transparencia, los clics y la entrada global requieren compatibilidad con el compositor y no están habilitados."
+    },
+    {
+      "source": "Wayland screen capture",
+      "translation": "Captura de pantalla de Wayland"
     },
     {
       "source": "Wayland screen sharing could not start: {0}",
@@ -59065,6 +59325,14 @@
     {
       "source": "Wayland screen sharing was canceled.",
       "translation": "Se canceló el uso compartido de pantalla de Wayland."
+    },
+    {
+      "source": "Wayland screen-capture source changed",
+      "translation": "La fuente de captura de pantalla de Wayland cambió"
+    },
+    {
+      "source": "WaylandCaptureCard",
+      "translation": "Tarjeta de captura Wayland"
     },
     {
       "source": "Waypoint 3 of 12",
@@ -59451,6 +59719,14 @@
       "translation": "[Control] PlatformImpl es nulo, no se pudo manejar la entrada. (PresentaciónFuente #"
     },
     {
+      "source": "a monitor",
+      "translation": "un monitor"
+    },
+    {
+      "source": "a window",
+      "translation": "una ventana"
+    },
+    {
       "source": "accepted",
       "translation": "aceptado"
     },
@@ -59497,6 +59773,10 @@
     {
       "source": "an external service",
       "translation": "un servicio externo"
+    },
+    {
+      "source": "an unspecified source",
+      "translation": "una fuente no especificada"
     },
     {
       "source": "anaconda",
@@ -59609,6 +59889,10 @@
     {
       "source": "asteroid",
       "translation": "asteroide"
+    },
+    {
+      "source": "at ({0},{1})",
+      "translation": "en ({0}, {1})"
     },
     {
       "source": "atmos",
@@ -60331,6 +60615,10 @@
       "translation": "grupos de fuego"
     },
     {
+      "source": "first-footfall inference",
+      "translation": "inferencia del primer paso"
+    },
+    {
       "source": "fistbump",
       "translation": "choque de puños"
     },
@@ -60417,6 +60705,10 @@
     {
       "source": "galmap",
       "translation": "galmapa"
+    },
+    {
+      "source": "game-screen detection",
+      "translation": "detección de pantalla de juego"
     },
     {
       "source": "gamepad joystick hotas sdl device",
@@ -60775,6 +61067,10 @@
       "translation": "luces"
     },
     {
+      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset",
+      "translation": "linux xwayland portal pipewire screencast selector de fuente compartir ventana monitor gamescope restablecer"
+    },
+    {
       "source": "linux64",
       "translation": "linux64"
     },
@@ -60891,6 +61187,10 @@
       "translation": "molibdeno"
     },
     {
+      "source": "monitor",
+      "translation": "monitor"
+    },
+    {
       "source": "monitor scale minimize tray game elite focus startup jump reduce motion animation",
       "translation": "monitor escala minimizar bandeja juego élite enfoque inicio saltar reducir movimiento animación"
     },
@@ -60989,6 +61289,10 @@
     {
       "source": "not",
       "translation": "no"
+    },
+    {
+      "source": "not available",
+      "translation": "No disponible"
     },
     {
       "source": "not scanned",
@@ -61259,6 +61563,10 @@
       "translation": "pedido"
     },
     {
+      "source": "requested",
+      "translation": "solicitado"
+    },
+    {
       "source": "rescue",
       "translation": "rescate"
     },
@@ -61461,6 +61769,10 @@
     {
       "source": "size",
       "translation": "tamaño"
+    },
+    {
+      "source": "sized {0}x{1}",
+      "translation": "tamaño {0}x{1}"
     },
     {
       "source": "slot",
@@ -61999,6 +62311,10 @@
       "translation": "tierra del camino"
     },
     {
+      "source": "wayland-screen-capture.reselect",
+      "translation": "wayland-captura-de-pantalla.reselect"
+    },
+    {
       "source": "wayland-screen-capture.token",
       "translation": "captura-de-pantalla-wayland.token"
     },
@@ -62029,6 +62345,10 @@
     {
       "source": "win-x64",
       "translation": "ganar-x64"
+    },
+    {
+      "source": "window",
+      "translation": "ventana"
     },
     {
       "source": "windows",
@@ -62495,6 +62815,10 @@
       "translation": "Mercados {0} · {1}. Los precios y las cantidades son observaciones, no garantías."
     },
     {
+      "source": "{0} matching failure reports were suppressed.",
+      "translation": "Se suprimieron los informes de fallas coincidentes {0}."
+    },
+    {
       "source": "{0} matching guide entries",
       "translation": "{0} entradas de guía coincidentes"
     },
@@ -62921,6 +63245,10 @@
     {
       "source": "{0}x",
       "translation": "{0}x"
+    },
+    {
+      "source": "{0}x{1} at ({2},{3})",
+      "translation": "{0}x{1} en ({2},{3})"
     },
     {
       "source": "{0}{1} - {2} x {3} - {4}%",
@@ -67161,6 +67489,18 @@
       "translation": "Capturez les sites de surface sélectionnés"
     },
     {
+      "source": "Capture source cleared, but automatic restart failed: {0} Close and reopen SrvSurvey manually.",
+      "translation": "Source de capture effacée, mais échec du redémarrage automatique : {0} Fermez et rouvrez SrvSurvey manuellement."
+    },
+    {
+      "source": "Capture source cleared. Restart SrvSurvey; the picker opens if capture falls back to Wayland sharing.",
+      "translation": "Source de capture effacée. Redémarrer SrvSurvey; le sélecteur s'ouvre si la capture revient au partage Wayland."
+    },
+    {
+      "source": "Capture source cleared; restarting SrvSurvey...",
+      "translation": "Source de capture effacée ; redémarrage SrvSurvey..."
+    },
+    {
       "source": "Captured and copied the {0} cockpit offset for this session.",
       "translation": "Capture et copie du décalage du cockpit {0} pour cette session."
     },
@@ -67621,6 +67961,10 @@
       "translation": "Choisissez le cache..."
     },
     {
+      "source": "Choose capture source again",
+      "translation": "Choisissez à nouveau la source de capture"
+    },
+    {
       "source": "Choose file",
       "translation": "Choisir un fichier"
     },
@@ -67727,6 +68071,10 @@
     {
       "source": "Choose...",
       "translation": "Choisir..."
+    },
+    {
+      "source": "ChooseWaylandCaptureSourceAgainButton",
+      "translation": "ChoisirWaylandCaptureSourceAgainButton"
     },
     {
       "source": "Circle radius",
@@ -71801,6 +72149,10 @@
       "translation": "La capture de réglage FSS est temporairement indisponible : {0}"
     },
     {
+      "source": "FSS tuning detection",
+      "translation": "Détection de réglage FSS"
+    },
+    {
       "source": "FSS tuning detection is active, but its diagnostic image could not be saved: {0}",
       "translation": "La détection de réglage FSS est active, mais son image de diagnostic n'a pas pu être enregistrée : {0}"
     },
@@ -72363,6 +72715,10 @@
     {
       "source": "FootZoom",
       "translation": "Zoom au pied"
+    },
+    {
+      "source": "For Linux Wayland or XWayland users only, when normal X11 capture fails and SrvSurvey uses the desktop ScreenCast and PipeWire fallback. Windows and native X11 users do not need this.",
+      "translation": "Pour les utilisateurs de Linux Wayland ou XWayland uniquement, lorsque la capture X11 normale échoue et SrvSurvey utilise la solution de secours ScreenCast et PipeWire du bureau. Les utilisateurs Windows et X11 natifs n’en ont pas besoin."
     },
     {
       "source": "For Rig tracking and full command details click here",
@@ -82069,6 +82425,10 @@
       "translation": "Réputation"
     },
     {
+      "source": "Requested a fresh Wayland screen-capture source selection after restart.",
+      "translation": "Demandé une nouvelle sélection de source de capture d'écran Wayland après le redémarrage."
+    },
+    {
       "source": "Require FSS to report all bodies before completion",
       "translation": "Exiger que la FSS signale tous les corps avant la fin"
     },
@@ -83583,6 +83943,22 @@
     {
       "source": "Scorpion",
       "translation": "Scorpion"
+    },
+    {
+      "source": "Screen capture ({0}) failed: {1} Next retry in {2} seconds.{3}",
+      "translation": "Échec de la capture d'écran ({0}) : {1} Prochaine tentative dans {2} secondes.{3}"
+    },
+    {
+      "source": "Screen capture ({0}): X11 capture failed; switching to the Wayland portal. {1}",
+      "translation": "Capture d'écran ({0}) : échec de la capture X11 ; passer au portail Wayland. {1}"
+    },
+    {
+      "source": "Screen capture ({0}): recovered after {1} failed attempts and {2} suppressed repeat reports.",
+      "translation": "Capture d'écran ({0}) : récupérée après l'échec des tentatives de {1} et la suppression des rapports répétés par {2}."
+    },
+    {
+      "source": "Screen capture failed: {0} Retrying in {1} seconds.",
+      "translation": "Échec de la capture d'écran : {0} Nouvelle tentative dans {1} secondes."
     },
     {
       "source": "Screen capture is unavailable.",
@@ -85481,6 +85857,10 @@
       "translation": "SrvSurvey suivra le journal actif le plus récent."
     },
     {
+      "source": "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker.",
+      "translation": "SrvSurvey redémarrera. Si la capture X11 normale échoue à nouveau, la prochaine tentative de capture ouvre le sélecteur."
+    },
+    {
       "source": "SrvSurvey will start with {0}.",
       "translation": "SrvSurvey commencera par {0}."
     },
@@ -86067,6 +86447,10 @@
     {
       "source": "Surface Mining overlay settings provides an independent visibility toggle and optional shortcut. Its initial placement copies your saved Flight Warning placement; you can move it separately in the overlay editor.",
       "translation": "Les paramètres de superposition Surface Mining fournissent une bascule de visibilité indépendante et un raccourci facultatif. Son placement initial copie votre placement d'avertissement de vol enregistré ; vous pouvez le déplacer séparément dans l'éditeur de superposition."
+    },
+    {
+      "source": "Surface Mining rig detection",
+      "translation": "Détection des plates-formes de Surface Mining"
     },
     {
       "source": "Surface Navigation",
@@ -88271,6 +88655,10 @@
     {
       "source": "The saved Frontier ID {0} has no readable imported profile. Automatic selection is shown until the profile is restored.",
       "translation": "L'ID Frontier {0} enregistré n'a pas de profil importé lisible. La sélection automatique est affichée jusqu'à ce que le profil soit restauré."
+    },
+    {
+      "source": "The saved Wayland capture source could not be cleared: {0}",
+      "translation": "La source de capture Wayland enregistrée n'a pas pu être effacée : {0}"
     },
     {
       "source": "The saved boxel search action could not be completed.",
@@ -90581,12 +90969,48 @@
       "translation": "Monde aquatique | 1,24 Mcr"
     },
     {
+      "source": "Wayland capture ({0}): Settings requested a fresh source selection.",
+      "translation": "Capture Wayland ({0}) : les paramètres ont demandé une nouvelle sélection de source."
+    },
+    {
+      "source": "Wayland capture ({0}): first PipeWire frame {1}x{2}, stride {3}, format {4}; requested {5} from game source {6}.",
+      "translation": "Capture Wayland ({0}) : première trame PipeWire {1}x{2}, foulée {3}, format {4} ; » a demandé {5} à partir de la source du jeu {6}."
+    },
+    {
+      "source": "Wayland capture ({0}): first cropped frame is {1}x{2}.",
+      "translation": "Capture Wayland ({0}) : la première image recadrée est {1}x{2}."
+    },
+    {
+      "source": "Wayland capture ({0}): portal selected {1}.",
+      "translation": "Capture Wayland ({0}) : portail sélectionné {1}."
+    },
+    {
+      "source": "Wayland capture ({0}): portal version {1}; available sources {2}; saved selection {3}.",
+      "translation": "Capture Wayland ({0}) : version portail {1} ; sources disponibles {2} ; sélection enregistrée {3}."
+    },
+    {
+      "source": "Wayland capture ({0}): saved source selection could not be read. {1}",
+      "translation": "Capture Wayland ({0}) : la sélection de source enregistrée n'a pas pu être lue. {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): selected source could not be saved for reuse. {1}",
+      "translation": "Capture Wayland ({0}) : la source sélectionnée n'a pas pu être enregistrée pour être réutilisée. {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): the source-reselection request could not be cleared. {1}",
+      "translation": "Capture Wayland ({0}) : la demande de resélection de source n'a pas pu être effacée. {1}"
+    },
+    {
       "source": "Wayland did not provide a frame from the shared Elite Dangerous window.",
       "translation": "Wayland n'a pas fourni de cadre à partir de la fenêtre partagée Elite Dangerous."
     },
     {
       "source": "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
       "translation": "Le positionnement de la superposition Wayland, la transparence, le clic et la saisie globale nécessitent la prise en charge du compositeur et ne sont pas activés."
+    },
+    {
+      "source": "Wayland screen capture",
+      "translation": "Capture d'écran de Wayland"
     },
     {
       "source": "Wayland screen sharing could not start: {0}",
@@ -90599,6 +91023,14 @@
     {
       "source": "Wayland screen sharing was canceled.",
       "translation": "Le partage d'écran Wayland a été annulé."
+    },
+    {
+      "source": "Wayland screen-capture source changed",
+      "translation": "La source de capture d'écran de Wayland a été modifiée"
+    },
+    {
+      "source": "WaylandCaptureCard",
+      "translation": "WaylandCaptureCard"
     },
     {
       "source": "Waypoint 3 of 12",
@@ -90985,6 +91417,14 @@
       "translation": "[Contrôle] PlatformImpl est nul, n'a pas pu gérer les entrées. (Source de présentation #"
     },
     {
+      "source": "a monitor",
+      "translation": "un moniteur"
+    },
+    {
+      "source": "a window",
+      "translation": "une fenêtre"
+    },
+    {
       "source": "accepted",
       "translation": "accepté"
     },
@@ -91031,6 +91471,10 @@
     {
       "source": "an external service",
       "translation": "un service externe"
+    },
+    {
+      "source": "an unspecified source",
+      "translation": "une source non précisée"
     },
     {
       "source": "anaconda",
@@ -91143,6 +91587,10 @@
     {
       "source": "asteroid",
       "translation": "astéroïde"
+    },
+    {
+      "source": "at ({0},{1})",
+      "translation": "à ({0},{1})"
     },
     {
       "source": "atmos",
@@ -91865,6 +92313,10 @@
       "translation": "groupes de pompiers"
     },
     {
+      "source": "first-footfall inference",
+      "translation": "inférence de première étape"
+    },
+    {
       "source": "fistbump",
       "translation": "coup de poing"
     },
@@ -91951,6 +92403,10 @@
     {
       "source": "galmap",
       "translation": "galmap"
+    },
+    {
+      "source": "game-screen detection",
+      "translation": "détection d'écran de jeu"
     },
     {
       "source": "gamepad joystick hotas sdl device",
@@ -92309,6 +92765,10 @@
       "translation": "lumières"
     },
     {
+      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset",
+      "translation": "Linux Portail Xwayland Pipewire Screencast Sélecteur de source Partager Fenêtre Moniteur Gamescope Réinitialiser"
+    },
+    {
       "source": "linux64",
       "translation": "Linux64"
     },
@@ -92425,6 +92885,10 @@
       "translation": "molybdène"
     },
     {
+      "source": "monitor",
+      "translation": "moniteur"
+    },
+    {
       "source": "monitor scale minimize tray game elite focus startup jump reduce motion animation",
       "translation": "moniteur échelle minimiser plateau jeu élite focus démarrage saut réduire mouvement animation"
     },
@@ -92523,6 +92987,10 @@
     {
       "source": "not",
       "translation": "pas"
+    },
+    {
+      "source": "not available",
+      "translation": "pas disponible"
     },
     {
       "source": "not scanned",
@@ -92793,6 +93261,10 @@
       "translation": "demande"
     },
     {
+      "source": "requested",
+      "translation": "demandé"
+    },
+    {
       "source": "rescue",
       "translation": "sauvetage"
     },
@@ -92995,6 +93467,10 @@
     {
       "source": "size",
       "translation": "taille"
+    },
+    {
+      "source": "sized {0}x{1}",
+      "translation": "taille {0}x{1}"
     },
     {
       "source": "slot",
@@ -93533,6 +94009,10 @@
       "translation": "Wayland"
     },
     {
+      "source": "wayland-screen-capture.reselect",
+      "translation": "wayland-screen-capture.reselect"
+    },
+    {
       "source": "wayland-screen-capture.token",
       "translation": "wayland-screen-capture.token"
     },
@@ -93563,6 +94043,10 @@
     {
       "source": "win-x64",
       "translation": "gagner-x64"
+    },
+    {
+      "source": "window",
+      "translation": "fenêtre"
     },
     {
       "source": "windows",
@@ -94029,6 +94513,10 @@
       "translation": "Marchés {0} · {1}. Les prix et les quantités sont des observations et non des garanties."
     },
     {
+      "source": "{0} matching failure reports were suppressed.",
+      "translation": "Les rapports d’échec de correspondance {0} ont été supprimés."
+    },
+    {
       "source": "{0} matching guide entries",
       "translation": "{0} entrées de guide correspondantes"
     },
@@ -94455,6 +94943,10 @@
     {
       "source": "{0}x",
       "translation": "{0}x"
+    },
+    {
+      "source": "{0}x{1} at ({2},{3})",
+      "translation": "{0}x{1} à ({2},{3})"
     },
     {
       "source": "{0}{1} - {2} x {3} - {4}%",
@@ -98695,6 +99187,18 @@
       "translation": "Capture locais de superfície selecionados"
     },
     {
+      "source": "Capture source cleared, but automatic restart failed: {0} Close and reopen SrvSurvey manually.",
+      "translation": "Fonte de captura limpa, mas falha na reinicialização automática: {0} Fechar e reabrir SrvSurvey manualmente."
+    },
+    {
+      "source": "Capture source cleared. Restart SrvSurvey; the picker opens if capture falls back to Wayland sharing.",
+      "translation": "Fonte de captura apagada. Reiniciar SrvSurvey; o seletor é aberto se a captura voltar ao compartilhamento do Wayland."
+    },
+    {
+      "source": "Capture source cleared; restarting SrvSurvey...",
+      "translation": "Fonte de captura apagada; reiniciando SrvSurvey..."
+    },
+    {
       "source": "Captured and copied the {0} cockpit offset for this session.",
       "translation": "Capturou e copiou o deslocamento do cockpit {0} para esta sessão."
     },
@@ -99155,6 +99659,10 @@
       "translation": "Escolha cache..."
     },
     {
+      "source": "Choose capture source again",
+      "translation": "Escolha a fonte de captura novamente"
+    },
+    {
       "source": "Choose file",
       "translation": "Escolha o arquivo"
     },
@@ -99261,6 +99769,10 @@
     {
       "source": "Choose...",
       "translation": "Escolher..."
+    },
+    {
+      "source": "ChooseWaylandCaptureSourceAgainButton",
+      "translation": "EscolhaWaylandCaptureSourceAgainButton"
     },
     {
       "source": "Circle radius",
@@ -103335,6 +103847,10 @@
       "translation": "A captura de ajuste FSS está temporariamente indisponível: {0}"
     },
     {
+      "source": "FSS tuning detection",
+      "translation": "Detecção de ajuste FSS"
+    },
+    {
       "source": "FSS tuning detection is active, but its diagnostic image could not be saved: {0}",
       "translation": "A detecção de ajuste FSS está ativa, mas sua imagem de diagnóstico não pôde ser salva: {0}"
     },
@@ -103897,6 +104413,10 @@
     {
       "source": "FootZoom",
       "translation": "Zoom de pé"
+    },
+    {
+      "source": "For Linux Wayland or XWayland users only, when normal X11 capture fails and SrvSurvey uses the desktop ScreenCast and PipeWire fallback. Windows and native X11 users do not need this.",
+      "translation": "Somente para usuários do Linux Wayland ou XWayland, quando a captura normal do X11 falha e SrvSurvey usa o substituto ScreenCast e PipeWire da área de trabalho. Usuários do Windows e do X11 nativo não precisam disso."
     },
     {
       "source": "For Rig tracking and full command details click here",
@@ -113603,6 +114123,10 @@
       "translation": "Reputação"
     },
     {
+      "source": "Requested a fresh Wayland screen-capture source selection after restart.",
+      "translation": "Solicitada uma nova seleção de fonte de captura de tela do Wayland após a reinicialização."
+    },
+    {
       "source": "Require FSS to report all bodies before completion",
       "translation": "Exigir que o FSS relate todos os órgãos antes da conclusão"
     },
@@ -115117,6 +115641,22 @@
     {
       "source": "Scorpion",
       "translation": "Escorpião"
+    },
+    {
+      "source": "Screen capture ({0}) failed: {1} Next retry in {2} seconds.{3}",
+      "translation": "Falha na captura de tela ({0}): {1} Próxima tentativa em {2} segundos.{3}"
+    },
+    {
+      "source": "Screen capture ({0}): X11 capture failed; switching to the Wayland portal. {1}",
+      "translation": "Captura de tela ({0}): falha na captura do X11; mudando para o portal Wayland. {1}"
+    },
+    {
+      "source": "Screen capture ({0}): recovered after {1} failed attempts and {2} suppressed repeat reports.",
+      "translation": "Captura de tela ({0}): recuperada após tentativas malsucedidas de {1} e relatórios repetidos suprimidos de {2}."
+    },
+    {
+      "source": "Screen capture failed: {0} Retrying in {1} seconds.",
+      "translation": "Falha na captura de tela: {0} Nova tentativa em {1} segundos."
     },
     {
       "source": "Screen capture is unavailable.",
@@ -117015,6 +117555,10 @@
       "translation": "SrvSurvey seguirá o mais novo diário ativo."
     },
     {
+      "source": "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker.",
+      "translation": "SrvSurvey será reiniciado. Se a captura normal do X11 falhar novamente, a próxima tentativa de captura abrirá o seletor."
+    },
+    {
       "source": "SrvSurvey will start with {0}.",
       "translation": "SrvSurvey começará com {0}."
     },
@@ -117601,6 +118145,10 @@
     {
       "source": "Surface Mining overlay settings provides an independent visibility toggle and optional shortcut. Its initial placement copies your saved Flight Warning placement; you can move it separately in the overlay editor.",
       "translation": "As configurações de sobreposição do Surface Mining fornecem uma alternância de visibilidade independente e um atalho opcional. Seu posicionamento inicial copia seu posicionamento de aviso de voo salvo; você pode movê-lo separadamente no editor de sobreposição."
+    },
+    {
+      "source": "Surface Mining rig detection",
+      "translation": "Detecção de plataforma de mineração de superfície"
     },
     {
       "source": "Surface Navigation",
@@ -119805,6 +120353,10 @@
     {
       "source": "The saved Frontier ID {0} has no readable imported profile. Automatic selection is shown until the profile is restored.",
       "translation": "O Frontier ID {0} salvo não possui perfil importado legível. A seleção automática é mostrada até que o perfil seja restaurado."
+    },
+    {
+      "source": "The saved Wayland capture source could not be cleared: {0}",
+      "translation": "A fonte de captura Wayland salva não pôde ser apagada: {0}"
     },
     {
       "source": "The saved boxel search action could not be completed.",
@@ -122115,12 +122667,48 @@
       "translation": "Mundo da água | 1,24 milhões de cr"
     },
     {
+      "source": "Wayland capture ({0}): Settings requested a fresh source selection.",
+      "translation": "Captura Wayland ({0}): As configurações solicitaram uma nova seleção de fonte."
+    },
+    {
+      "source": "Wayland capture ({0}): first PipeWire frame {1}x{2}, stride {3}, format {4}; requested {5} from game source {6}.",
+      "translation": "Captura Wayland ({0}): primeiro quadro PipeWire {1}x{2}, passada {3}, formato {4}; solicitou {5} da fonte do jogo {6}."
+    },
+    {
+      "source": "Wayland capture ({0}): first cropped frame is {1}x{2}.",
+      "translation": "Captura Wayland ({0}): o primeiro quadro recortado é {1}x{2}."
+    },
+    {
+      "source": "Wayland capture ({0}): portal selected {1}.",
+      "translation": "Captura de Wayland ({0}): portal selecionado {1}."
+    },
+    {
+      "source": "Wayland capture ({0}): portal version {1}; available sources {2}; saved selection {3}.",
+      "translation": "Captura de Wayland ({0}): versão do portal {1}; fontes disponíveis {2}; seleção salva {3}."
+    },
+    {
+      "source": "Wayland capture ({0}): saved source selection could not be read. {1}",
+      "translation": "Captura Wayland ({0}): a seleção da fonte salva não pôde ser lida. {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): selected source could not be saved for reuse. {1}",
+      "translation": "Captura Wayland ({0}): a fonte selecionada não pôde ser salva para reutilização. {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): the source-reselection request could not be cleared. {1}",
+      "translation": "Captura de Wayland ({0}): a solicitação de nova seleção da fonte não pôde ser apagada. {1}"
+    },
+    {
       "source": "Wayland did not provide a frame from the shared Elite Dangerous window.",
       "translation": "Wayland não forneceu um quadro da janela compartilhada Elite Dangerous."
     },
     {
       "source": "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
       "translation": "Posicionamento de sobreposição de Wayland, transparência, clique e entrada global requerem suporte de compositor e não estão habilitados."
+    },
+    {
+      "source": "Wayland screen capture",
+      "translation": "Captura de tela do Wayland"
     },
     {
       "source": "Wayland screen sharing could not start: {0}",
@@ -122133,6 +122721,14 @@
     {
       "source": "Wayland screen sharing was canceled.",
       "translation": "O compartilhamento de tela do Wayland foi cancelado."
+    },
+    {
+      "source": "Wayland screen-capture source changed",
+      "translation": "Fonte de captura de tela do Wayland alterada"
+    },
+    {
+      "source": "WaylandCaptureCard",
+      "translation": "Cartão WaylandCapture"
     },
     {
       "source": "Waypoint 3 of 12",
@@ -122519,6 +123115,14 @@
       "translation": "[Control] PlatformImpl é nulo, não foi possível processar a entrada. (Fonte de apresentação #"
     },
     {
+      "source": "a monitor",
+      "translation": "um monitor"
+    },
+    {
+      "source": "a window",
+      "translation": "uma janela"
+    },
+    {
       "source": "accepted",
       "translation": "aceito"
     },
@@ -122565,6 +123169,10 @@
     {
       "source": "an external service",
       "translation": "um serviço externo"
+    },
+    {
+      "source": "an unspecified source",
+      "translation": "uma fonte não especificada"
     },
     {
       "source": "anaconda",
@@ -122677,6 +123285,10 @@
     {
       "source": "asteroid",
       "translation": "asteróide"
+    },
+    {
+      "source": "at ({0},{1})",
+      "translation": "em ({0},{1})"
     },
     {
       "source": "atmos",
@@ -123399,6 +124011,10 @@
       "translation": "grupos de fogo"
     },
     {
+      "source": "first-footfall inference",
+      "translation": "inferência do primeiro passo"
+    },
+    {
       "source": "fistbump",
       "translation": "soco"
     },
@@ -123485,6 +124101,10 @@
     {
       "source": "galmap",
       "translation": "galmap"
+    },
+    {
+      "source": "game-screen detection",
+      "translation": "detecção de tela de jogo"
     },
     {
       "source": "gamepad joystick hotas sdl device",
@@ -123843,6 +124463,10 @@
       "translation": "luzes"
     },
     {
+      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset",
+      "translation": "linux xwayland portal pipewire screencast selecionador de fonte compartilhar janela monitor gamescope reset"
+    },
+    {
       "source": "linux64",
       "translation": "linux64"
     },
@@ -123959,6 +124583,10 @@
       "translation": "molibdênio"
     },
     {
+      "source": "monitor",
+      "translation": "monitor"
+    },
+    {
       "source": "monitor scale minimize tray game elite focus startup jump reduce motion animation",
       "translation": "escala do monitor minimizar bandeja jogo elite foco inicialização salto reduzir animação em movimento"
     },
@@ -124057,6 +124685,10 @@
     {
       "source": "not",
       "translation": "não"
+    },
+    {
+      "source": "not available",
+      "translation": "não disponível"
     },
     {
       "source": "not scanned",
@@ -124327,6 +124959,10 @@
       "translation": "solicitar"
     },
     {
+      "source": "requested",
+      "translation": "solicitado"
+    },
+    {
       "source": "rescue",
       "translation": "resgate"
     },
@@ -124529,6 +125165,10 @@
     {
       "source": "size",
       "translation": "tamanho"
+    },
+    {
+      "source": "sized {0}x{1}",
+      "translation": "tamanho {0}x{1}"
     },
     {
       "source": "slot",
@@ -125067,6 +125707,10 @@
       "translation": "caminho"
     },
     {
+      "source": "wayland-screen-capture.reselect",
+      "translation": "wayland-screen-capture.reselect"
+    },
+    {
       "source": "wayland-screen-capture.token",
       "translation": "wayland-screen-capture.token"
     },
@@ -125097,6 +125741,10 @@
     {
       "source": "win-x64",
       "translation": "vitória-x64"
+    },
+    {
+      "source": "window",
+      "translation": "janela"
     },
     {
       "source": "windows",
@@ -125563,6 +126211,10 @@
       "translation": "Mercados {0} · {1}. Preços e quantidades são observações, não garantias."
     },
     {
+      "source": "{0} matching failure reports were suppressed.",
+      "translation": "Os relatórios de falha correspondentes {0} foram suprimidos."
+    },
+    {
       "source": "{0} matching guide entries",
       "translation": "{0} entradas correspondentes do guia"
     },
@@ -125989,6 +126641,10 @@
     {
       "source": "{0}x",
       "translation": "{0}x"
+    },
+    {
+      "source": "{0}x{1} at ({2},{3})",
+      "translation": "{0}x{1} em ({2},{3})"
     },
     {
       "source": "{0}{1} - {2} x {3} - {4}%",
@@ -130229,6 +130885,18 @@
       "translation": "Захват выбранных участков поверхности"
     },
     {
+      "source": "Capture source cleared, but automatic restart failed: {0} Close and reopen SrvSurvey manually.",
+      "translation": "Источник захвата очищен, но автоматический перезапуск не удался: {0} Закройте и снова откройте SrvSurvey вручную."
+    },
+    {
+      "source": "Capture source cleared. Restart SrvSurvey; the picker opens if capture falls back to Wayland sharing.",
+      "translation": "Источник захвата очищен. Перезапустить SrvSurvey; окно выбора открывается, если захват возвращается к совместному использованию Wayland."
+    },
+    {
+      "source": "Capture source cleared; restarting SrvSurvey...",
+      "translation": "Источник захвата очищен; перезапуск SrvSurvey..."
+    },
+    {
       "source": "Captured and copied the {0} cockpit offset for this session.",
       "translation": "Захвачено и скопировано смещение кабины {0} для этого сеанса."
     },
@@ -130689,6 +131357,10 @@
       "translation": "Выбрать кэш..."
     },
     {
+      "source": "Choose capture source again",
+      "translation": "Выберите источник захвата еще раз"
+    },
+    {
       "source": "Choose file",
       "translation": "Выбрать файл"
     },
@@ -130795,6 +131467,10 @@
     {
       "source": "Choose...",
       "translation": "Выбирать..."
+    },
+    {
+      "source": "ChooseWaylandCaptureSourceAgainButton",
+      "translation": "Выберите WaylandCaptureSourceAgainButton"
     },
     {
       "source": "Circle radius",
@@ -134869,6 +135545,10 @@
       "translation": "Захват настроек FSS временно недоступен: {0}"
     },
     {
+      "source": "FSS tuning detection",
+      "translation": "Обнаружение настройки FSS"
+    },
+    {
       "source": "FSS tuning detection is active, but its diagnostic image could not be saved: {0}",
       "translation": "Обнаружение настройки FSS активно, но его диагностический образ не удалось сохранить: {0}"
     },
@@ -135431,6 +136111,10 @@
     {
       "source": "FootZoom",
       "translation": "ФутЗум"
+    },
+    {
+      "source": "For Linux Wayland or XWayland users only, when normal X11 capture fails and SrvSurvey uses the desktop ScreenCast and PipeWire fallback. Windows and native X11 users do not need this.",
+      "translation": "Только для пользователей Linux Wayland или XWayland, когда обычный захват X11 не удался и SrvSurvey использует резервный вариант ScreenCast и PipeWire рабочего стола. Пользователям Windows и родным X11 это не нужно."
     },
     {
       "source": "For Rig tracking and full command details click here",
@@ -145137,6 +145821,10 @@
       "translation": "Репутация"
     },
     {
+      "source": "Requested a fresh Wayland screen-capture source selection after restart.",
+      "translation": "После перезапуска запрошен новый выбор источника снимка экрана Wayland."
+    },
+    {
       "source": "Require FSS to report all bodies before completion",
       "translation": "Требовать от ФСС сообщать обо всех телах до завершения строительства."
     },
@@ -146651,6 +147339,22 @@
     {
       "source": "Scorpion",
       "translation": "Скорпион"
+    },
+    {
+      "source": "Screen capture ({0}) failed: {1} Next retry in {2} seconds.{3}",
+      "translation": "Не удалось сделать снимок экрана ({0}): {1} Следующая повторная попытка через {2} секунд. {3}"
+    },
+    {
+      "source": "Screen capture ({0}): X11 capture failed; switching to the Wayland portal. {1}",
+      "translation": "Снимок экрана ({0}): захват X11 не удался; переключение на портал Wayland. {1}"
+    },
+    {
+      "source": "Screen capture ({0}): recovered after {1} failed attempts and {2} suppressed repeat reports.",
+      "translation": "Снимок экрана ({0}): восстановлен после неудачных попыток {1} и подавления повторных отчетов {2}."
+    },
+    {
+      "source": "Screen capture failed: {0} Retrying in {1} seconds.",
+      "translation": "Не удалось сделать снимок экрана: {0} Повторная попытка через {1} секунд."
     },
     {
       "source": "Screen capture is unavailable.",
@@ -148549,6 +149253,10 @@
       "translation": "SrvSurvey будет следить за последним активным журналом."
     },
     {
+      "source": "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker.",
+      "translation": "SrvSurvey перезагрузится. Если обычный захват X11 снова не удался, следующая попытка захвата откроет сборщик."
+    },
+    {
       "source": "SrvSurvey will start with {0}.",
       "translation": "SrvSurvey будет начинаться с {0}."
     },
@@ -149135,6 +149843,10 @@
     {
       "source": "Surface Mining overlay settings provides an independent visibility toggle and optional shortcut. Its initial placement copies your saved Flight Warning placement; you can move it separately in the overlay editor.",
       "translation": "Настройки наложения Surface Mining предоставляют независимый переключатель видимости и дополнительный ярлык. Его первоначальное размещение копирует сохраненное вами размещение предупреждения о полете; вы можете переместить его отдельно в редакторе наложений."
+    },
+    {
+      "source": "Surface Mining rig detection",
+      "translation": "Обнаружение буровой установки для поверхностной добычи полезных ископаемых"
     },
     {
       "source": "Surface Navigation",
@@ -151339,6 +152051,10 @@
     {
       "source": "The saved Frontier ID {0} has no readable imported profile. Automatic selection is shown until the profile is restored.",
       "translation": "Сохраненный идентификатор Frontier {0} не имеет читаемого импортированного профиля. Автоматический выбор отображается до тех пор, пока профиль не будет восстановлен."
+    },
+    {
+      "source": "The saved Wayland capture source could not be cleared: {0}",
+      "translation": "Не удалось очистить сохраненный источник захвата Wayland: {0}."
     },
     {
       "source": "The saved boxel search action could not be completed.",
@@ -153649,12 +154365,48 @@
       "translation": "Водный мир | 1,24 млн кр"
     },
     {
+      "source": "Wayland capture ({0}): Settings requested a fresh source selection.",
+      "translation": "Захват Wayland ({0}): настройки запросили новый выбор источника."
+    },
+    {
+      "source": "Wayland capture ({0}): first PipeWire frame {1}x{2}, stride {3}, format {4}; requested {5} from game source {6}.",
+      "translation": "Захват Wayland ({0}): первый кадр PipeWire {1}x{2}, шаг {3}, формат {4}; запросил {5} из источника игры {6}."
+    },
+    {
+      "source": "Wayland capture ({0}): first cropped frame is {1}x{2}.",
+      "translation": "Захват Wayland ({0}): первый обрезанный кадр — {1}x{2}."
+    },
+    {
+      "source": "Wayland capture ({0}): portal selected {1}.",
+      "translation": "Захват Вэйланда ({0}): выбран портал {1}."
+    },
+    {
+      "source": "Wayland capture ({0}): portal version {1}; available sources {2}; saved selection {3}.",
+      "translation": "Захват Вэйланда ({0}): портальная версия {1}; доступные исходники {2}; сохранен выбор {3}."
+    },
+    {
+      "source": "Wayland capture ({0}): saved source selection could not be read. {1}",
+      "translation": "Захват Wayland ({0}): невозможно прочитать сохраненный выбор источника. {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): selected source could not be saved for reuse. {1}",
+      "translation": "Захват Wayland ({0}): выбранный источник не удалось сохранить для повторного использования. {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): the source-reselection request could not be cleared. {1}",
+      "translation": "Захват Wayland ({0}): не удалось очистить запрос на повторный выбор источника. {1}"
+    },
+    {
       "source": "Wayland did not provide a frame from the shared Elite Dangerous window.",
       "translation": "Wayland не предоставил кадр из общего окна Elite Dangerous."
     },
     {
       "source": "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
       "translation": "Позиционирование наложения Wayland, прозрачность, переход по щелчку и глобальный ввод требуют поддержки композитора и не включены."
+    },
+    {
+      "source": "Wayland screen capture",
+      "translation": "Снимок экрана Вейланда"
     },
     {
       "source": "Wayland screen sharing could not start: {0}",
@@ -153667,6 +154419,14 @@
     {
       "source": "Wayland screen sharing was canceled.",
       "translation": "Демонстрация экрана Wayland отменена."
+    },
+    {
+      "source": "Wayland screen-capture source changed",
+      "translation": "Изменен источник снимка экрана Wayland"
+    },
+    {
+      "source": "WaylandCaptureCard",
+      "translation": "WaylandЗахватКарта"
     },
     {
       "source": "Waypoint 3 of 12",
@@ -154053,6 +154813,14 @@
       "translation": "[Control] PlatformImpl имеет значение null, не удалось обработать ввод. (Источник презентации #"
     },
     {
+      "source": "a monitor",
+      "translation": "монитор"
+    },
+    {
+      "source": "a window",
+      "translation": "окно"
+    },
+    {
       "source": "accepted",
       "translation": "принял"
     },
@@ -154099,6 +154867,10 @@
     {
       "source": "an external service",
       "translation": "внешний сервис"
+    },
+    {
+      "source": "an unspecified source",
+      "translation": "неуказанный источник"
     },
     {
       "source": "anaconda",
@@ -154211,6 +154983,10 @@
     {
       "source": "asteroid",
       "translation": "астероид"
+    },
+    {
+      "source": "at ({0},{1})",
+      "translation": "в ({0}, {1})"
     },
     {
       "source": "atmos",
@@ -154933,6 +155709,10 @@
       "translation": "огневые группы"
     },
     {
+      "source": "first-footfall inference",
+      "translation": "вывод по первому шагу"
+    },
+    {
       "source": "fistbump",
       "translation": "удар кулаком"
     },
@@ -155019,6 +155799,10 @@
     {
       "source": "galmap",
       "translation": "Галмап"
+    },
+    {
+      "source": "game-screen detection",
+      "translation": "обнаружение игрового экрана"
     },
     {
       "source": "gamepad joystick hotas sdl device",
@@ -155377,6 +156161,10 @@
       "translation": "огни"
     },
     {
+      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset",
+      "translation": "Linux Портал xwayland Pipewire Screencast Выбор источника Поделиться Окно монитора Сброс Gamescope"
+    },
+    {
       "source": "linux64",
       "translation": "Linux64"
     },
@@ -155493,6 +156281,10 @@
       "translation": "молибден"
     },
     {
+      "source": "monitor",
+      "translation": "монитор"
+    },
+    {
       "source": "monitor scale minimize tray game elite focus startup jump reduce motion animation",
       "translation": "масштаб монитора свернуть лоток игра элита фокус запуск прыжок уменьшение анимации движения"
     },
@@ -155591,6 +156383,10 @@
     {
       "source": "not",
       "translation": "нет"
+    },
+    {
+      "source": "not available",
+      "translation": "нет в наличии"
     },
     {
       "source": "not scanned",
@@ -155861,6 +156657,10 @@
       "translation": "запрос"
     },
     {
+      "source": "requested",
+      "translation": "просил"
+    },
+    {
       "source": "rescue",
       "translation": "спасение"
     },
@@ -156063,6 +156863,10 @@
     {
       "source": "size",
       "translation": "размер"
+    },
+    {
+      "source": "sized {0}x{1}",
+      "translation": "размер {0}x{1}"
     },
     {
       "source": "slot",
@@ -156601,6 +157405,10 @@
       "translation": "дорога"
     },
     {
+      "source": "wayland-screen-capture.reselect",
+      "translation": "wayland-screen-capture.reselect"
+    },
+    {
       "source": "wayland-screen-capture.token",
       "translation": "wayland-screen-capture.token"
     },
@@ -156631,6 +157439,10 @@
     {
       "source": "win-x64",
       "translation": "победа-x64"
+    },
+    {
+      "source": "window",
+      "translation": "окно"
     },
     {
       "source": "windows",
@@ -157097,6 +157909,10 @@
       "translation": "Рынки {0} · {1}. Цены и количества являются наблюдениями, а не гарантиями."
     },
     {
+      "source": "{0} matching failure reports were suppressed.",
+      "translation": "Отчеты об ошибках сопоставления {0} были подавлены."
+    },
+    {
       "source": "{0} matching guide entries",
       "translation": "{0} соответствующие записи руководства"
     },
@@ -157523,6 +158339,10 @@
     {
       "source": "{0}x",
       "translation": "{0}x"
+    },
+    {
+      "source": "{0}x{1} at ({2},{3})",
+      "translation": "{0}x{1} в ({2},{3})"
     },
     {
       "source": "{0}{1} - {2} x {3} - {4}%",
@@ -161763,6 +162583,18 @@
       "translation": "捕获选定的表面站点"
     },
     {
+      "source": "Capture source cleared, but automatic restart failed: {0} Close and reopen SrvSurvey manually.",
+      "translation": "捕获源已清除，但自动重启失败：{0} 手动关闭并重新打开SrvSurvey。"
+    },
+    {
+      "source": "Capture source cleared. Restart SrvSurvey; the picker opens if capture falls back to Wayland sharing.",
+      "translation": "捕获源已清除。重启SrvSurvey；如果捕获返回到 Wayland 共享，则选择器将打开。"
+    },
+    {
+      "source": "Capture source cleared; restarting SrvSurvey...",
+      "translation": "捕获源清除；正在重新启动SrvSurvey..."
+    },
+    {
       "source": "Captured and copied the {0} cockpit offset for this session.",
       "translation": "捕获并复制了此会话的 {0} 驾驶舱偏移。"
     },
@@ -162223,6 +163055,10 @@
       "translation": "选择缓存..."
     },
     {
+      "source": "Choose capture source again",
+      "translation": "再次选择捕捉源"
+    },
+    {
       "source": "Choose file",
       "translation": "选择文件"
     },
@@ -162329,6 +163165,10 @@
     {
       "source": "Choose...",
       "translation": "选择..."
+    },
+    {
+      "source": "ChooseWaylandCaptureSourceAgainButton",
+      "translation": "选择 WaylandCaptureSourceAgain 按钮"
     },
     {
       "source": "Circle radius",
@@ -166403,6 +167243,10 @@
       "translation": "FSS 调谐捕获暂时不可用：{0}"
     },
     {
+      "source": "FSS tuning detection",
+      "translation": "FSS调谐检测"
+    },
+    {
       "source": "FSS tuning detection is active, but its diagnostic image could not be saved: {0}",
       "translation": "FSS 调谐检测已激活，但无法保存其诊断映像：{0}"
     },
@@ -166965,6 +167809,10 @@
     {
       "source": "FootZoom",
       "translation": "足部变焦"
+    },
+    {
+      "source": "For Linux Wayland or XWayland users only, when normal X11 capture fails and SrvSurvey uses the desktop ScreenCast and PipeWire fallback. Windows and native X11 users do not need this.",
+      "translation": "仅适用于 Linux Wayland 或 XWayland 用户，当正常 X11 捕获失败并且 SrvSurvey 使用桌面 ScreenCast 和 PipeWire 后备时。 Windows 和本机 X11 用户不需要这个。"
     },
     {
       "source": "For Rig tracking and full command details click here",
@@ -176671,6 +177519,10 @@
       "translation": "声誉"
     },
     {
+      "source": "Requested a fresh Wayland screen-capture source selection after restart.",
+      "translation": "重新启动后请求重新选择 Wayland 屏幕捕获源。"
+    },
+    {
       "source": "Require FSS to report all bodies before completion",
       "translation": "要求 FSS 在完成前报告所有机构"
     },
@@ -178185,6 +179037,22 @@
     {
       "source": "Scorpion",
       "translation": "蝎"
+    },
+    {
+      "source": "Screen capture ({0}) failed: {1} Next retry in {2} seconds.{3}",
+      "translation": "屏幕捕获 ({0}) 失败：{1} 在 {2} 秒后重试。{3}"
+    },
+    {
+      "source": "Screen capture ({0}): X11 capture failed; switching to the Wayland portal. {1}",
+      "translation": "屏幕捕获（{0}）：X11捕获失败；切换到 Wayland 门户。 {1}"
+    },
+    {
+      "source": "Screen capture ({0}): recovered after {1} failed attempts and {2} suppressed repeat reports.",
+      "translation": "屏幕截图 ({0})：在 {1} 尝试失败且 {2} 抑制重复报告后恢复。"
+    },
+    {
+      "source": "Screen capture failed: {0} Retrying in {1} seconds.",
+      "translation": "屏幕捕获失败：{0} 正在 {1} 秒内重试。"
     },
     {
       "source": "Screen capture is unavailable.",
@@ -180083,6 +180951,10 @@
       "translation": "SrvSurvey 将关注最新的活跃期刊。"
     },
     {
+      "source": "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker.",
+      "translation": "SrvSurvey将重新启动。如果正常的 X11 捕获再次失败，下一次捕获尝试将打开选取器。"
+    },
+    {
       "source": "SrvSurvey will start with {0}.",
       "translation": "SrvSurvey 将以 {0} 开头。"
     },
@@ -180669,6 +181541,10 @@
     {
       "source": "Surface Mining overlay settings provides an independent visibility toggle and optional shortcut. Its initial placement copies your saved Flight Warning placement; you can move it separately in the overlay editor.",
       "translation": "露天采矿覆盖设置提供独立的可见性切换和可选的快捷方式。它的初始位置复制您保存的飞行警告位置；您可以在叠加编辑器中单独移动它。"
+    },
+    {
+      "source": "Surface Mining rig detection",
+      "translation": "露天采矿设备检测"
     },
     {
       "source": "Surface Navigation",
@@ -182873,6 +183749,10 @@
     {
       "source": "The saved Frontier ID {0} has no readable imported profile. Automatic selection is shown until the profile is restored.",
       "translation": "已保存的 Frontier ID {0} 没有可读的导入配置文件。将显示自动选择，直到配置文件恢复为止。"
+    },
+    {
+      "source": "The saved Wayland capture source could not be cleared: {0}",
+      "translation": "无法清除已保存的 Wayland 捕获源：{0}"
     },
     {
       "source": "The saved boxel search action could not be completed.",
@@ -185183,12 +186063,48 @@
       "translation": "水世界| 1.24M铬"
     },
     {
+      "source": "Wayland capture ({0}): Settings requested a fresh source selection.",
+      "translation": "Wayland 捕获 ({0})：设置请求新的源选择。"
+    },
+    {
+      "source": "Wayland capture ({0}): first PipeWire frame {1}x{2}, stride {3}, format {4}; requested {5} from game source {6}.",
+      "translation": "Wayland捕获（{0}）：第一个PipeWire框架{1}x{2}，步长{3}，格式{4}；从游戏源 {6} 请求 {5}。"
+    },
+    {
+      "source": "Wayland capture ({0}): first cropped frame is {1}x{2}.",
+      "translation": "Wayland 捕获 ({0})：第一个裁剪帧是 {1}x{2}。"
+    },
+    {
+      "source": "Wayland capture ({0}): portal selected {1}.",
+      "translation": "Wayland 捕获 ({0})：传送门选择 {1}。"
+    },
+    {
+      "source": "Wayland capture ({0}): portal version {1}; available sources {2}; saved selection {3}.",
+      "translation": "Wayland捕获（{0}）：门户版本{1}；可用来源 {2}；已保存选择 {3}。"
+    },
+    {
+      "source": "Wayland capture ({0}): saved source selection could not be read. {1}",
+      "translation": "Wayland 捕获 ({0})：无法读取保存的源选择。 {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): selected source could not be saved for reuse. {1}",
+      "translation": "Wayland 捕获 ({0})：无法保存所选源以供重复使用。 {1}"
+    },
+    {
+      "source": "Wayland capture ({0}): the source-reselection request could not be cleared. {1}",
+      "translation": "Wayland 捕获 ({0})：无法清除源重选请求。 {1}"
+    },
+    {
       "source": "Wayland did not provide a frame from the shared Elite Dangerous window.",
       "translation": "Wayland 没有提供共享 Elite Dangerous 窗口的框架。"
     },
     {
       "source": "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
       "translation": "Wayland 叠加定位、透明度、点击率和全局输入需要合成器支持，并且未启用。"
+    },
+    {
+      "source": "Wayland screen capture",
+      "translation": "韦兰屏幕截图"
     },
     {
       "source": "Wayland screen sharing could not start: {0}",
@@ -185201,6 +186117,14 @@
     {
       "source": "Wayland screen sharing was canceled.",
       "translation": "Wayland 屏幕共享已取消。"
+    },
+    {
+      "source": "Wayland screen-capture source changed",
+      "translation": "Wayland 屏幕捕获源已更改"
+    },
+    {
+      "source": "WaylandCaptureCard",
+      "translation": "WaylandCaptureCard"
     },
     {
       "source": "Waypoint 3 of 12",
@@ -185587,6 +186511,14 @@
       "translation": "[Control] PlatformImpl 为空，无法处理输入。 （演示来源#"
     },
     {
+      "source": "a monitor",
+      "translation": "监视器"
+    },
+    {
+      "source": "a window",
+      "translation": "一扇窗户"
+    },
+    {
       "source": "accepted",
       "translation": "公认"
     },
@@ -185633,6 +186565,10 @@
     {
       "source": "an external service",
       "translation": "外部服务"
+    },
+    {
+      "source": "an unspecified source",
+      "translation": "未指明来源"
     },
     {
       "source": "anaconda",
@@ -185745,6 +186681,10 @@
     {
       "source": "asteroid",
       "translation": "小行星"
+    },
+    {
+      "source": "at ({0},{1})",
+      "translation": "在 ({0},{1})"
     },
     {
       "source": "atmos",
@@ -186467,6 +187407,10 @@
       "translation": "火力组"
     },
     {
+      "source": "first-footfall inference",
+      "translation": "首次脚步推断"
+    },
+    {
       "source": "fistbump",
       "translation": "碰拳"
     },
@@ -186553,6 +187497,10 @@
     {
       "source": "galmap",
       "translation": "加尔马普"
+    },
+    {
+      "source": "game-screen detection",
+      "translation": "游戏画面检测"
     },
     {
       "source": "gamepad joystick hotas sdl device",
@@ -186911,6 +187859,10 @@
       "translation": "灯"
     },
     {
+      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset",
+      "translation": "linux xwayland 门户 pipelinewire 截屏源选择器 共享窗口 监视器 gamescope 重置"
+    },
+    {
       "source": "linux64",
       "translation": "linux64"
     },
@@ -187027,6 +187979,10 @@
       "translation": "钼"
     },
     {
+      "source": "monitor",
+      "translation": "监视器"
+    },
+    {
       "source": "monitor scale minimize tray game elite focus startup jump reduce motion animation",
       "translation": "显示器比例最小化托盘游戏精英焦点启动跳跃减少运动动画"
     },
@@ -187125,6 +188081,10 @@
     {
       "source": "not",
       "translation": "不"
+    },
+    {
+      "source": "not available",
+      "translation": "无法使用"
     },
     {
       "source": "not scanned",
@@ -187395,6 +188355,10 @@
       "translation": "要求"
     },
     {
+      "source": "requested",
+      "translation": "要求的"
+    },
+    {
       "source": "rescue",
       "translation": "救援"
     },
@@ -187597,6 +188561,10 @@
     {
       "source": "size",
       "translation": "尺寸"
+    },
+    {
+      "source": "sized {0}x{1}",
+      "translation": "尺寸 {0}x{1}"
     },
     {
       "source": "slot",
@@ -188135,6 +189103,10 @@
       "translation": "韦兰"
     },
     {
+      "source": "wayland-screen-capture.reselect",
+      "translation": "Wayland-屏幕捕获.重新选择"
+    },
+    {
       "source": "wayland-screen-capture.token",
       "translation": "Wayland-屏幕捕获.token"
     },
@@ -188165,6 +189137,10 @@
     {
       "source": "win-x64",
       "translation": "赢-x64"
+    },
+    {
+      "source": "window",
+      "translation": "窗户"
     },
     {
       "source": "windows",
@@ -188631,6 +189607,10 @@
       "translation": "{0} 市场 · {1}。价格和数量只是观察结果，并非保证。"
     },
     {
+      "source": "{0} matching failure reports were suppressed.",
+      "translation": "{0} 匹配失败报告已被抑制。"
+    },
+    {
       "source": "{0} matching guide entries",
       "translation": "{0} 匹配的指南条目"
     },
@@ -189057,6 +190037,10 @@
     {
       "source": "{0}x",
       "translation": "{0}x"
+    },
+    {
+      "source": "{0}x{1} at ({2},{3})",
+      "translation": "{0}x{1} 位于 ({2},{3})"
     },
     {
       "source": "{0}{1} - {2} x {3} - {4}%",
@@ -193297,6 +194281,18 @@
       "translation": "* CAPTURE SELECTED SURFACE SITES >>>!"
     },
     {
+      "source": "Capture source cleared, but automatic restart failed: {0} Close and reopen SrvSurvey manually.",
+      "translation": "* CAPTURE SOURCE CLEARED, BUT AUTOMATIC RESTART FAILED: {0} CLOSE AND REOPEN SRVSURVEY MANUALLY. >>>!"
+    },
+    {
+      "source": "Capture source cleared. Restart SrvSurvey; the picker opens if capture falls back to Wayland sharing.",
+      "translation": "* CAPTURE SOURCE CLEARED. RESTART SRVSURVEY; THE PICKER OPENS IF CAPTURE FALLS BACK TO WAYLAND SHARING. >>>!"
+    },
+    {
+      "source": "Capture source cleared; restarting SrvSurvey...",
+      "translation": "* CAPTURE SOURCE CLEARED; RESTARTING SRVSURVEY... >>>!"
+    },
+    {
       "source": "Captured and copied the {0} cockpit offset for this session.",
       "translation": "* CAPTURED AND COPIED THE {0} COCKPIT OFFSET FOR THIS SESSION. >>>!"
     },
@@ -193757,6 +194753,10 @@
       "translation": "* CHOOSE CACHE... >>>!"
     },
     {
+      "source": "Choose capture source again",
+      "translation": "* CHOOSE CAPTURE SOURCE AGAIN >>>!"
+    },
+    {
       "source": "Choose file",
       "translation": "* CHOOSE FILE >>>!"
     },
@@ -193863,6 +194863,10 @@
     {
       "source": "Choose...",
       "translation": "* CHOOSE... >>>!"
+    },
+    {
+      "source": "ChooseWaylandCaptureSourceAgainButton",
+      "translation": "* CHOOSEWAYLANDCAPTURESOURCEAGAINBUTTON >>>!"
     },
     {
       "source": "Circle radius",
@@ -197937,6 +198941,10 @@
       "translation": "* FSS TUNING CAPTURE IS TEMPORARILY UNAVAILABLE: {0} >>>!"
     },
     {
+      "source": "FSS tuning detection",
+      "translation": "* FSS TUNING DETECTION >>>!"
+    },
+    {
       "source": "FSS tuning detection is active, but its diagnostic image could not be saved: {0}",
       "translation": "* FSS TUNING DETECTION IS ACTIVE, BUT ITS DIAGNOSTIC IMAGE COULD NOT BE SAVED: {0} >>>!"
     },
@@ -198499,6 +199507,10 @@
     {
       "source": "FootZoom",
       "translation": "* FOOTZOOM >>>!"
+    },
+    {
+      "source": "For Linux Wayland or XWayland users only, when normal X11 capture fails and SrvSurvey uses the desktop ScreenCast and PipeWire fallback. Windows and native X11 users do not need this.",
+      "translation": "* FOR LINUX WAYLAND OR XWAYLAND USERS ONLY, WHEN NORMAL X11 CAPTURE FAILS AND SRVSURVEY USES THE DESKTOP SCREENCAST AND PIPEWIRE FALLBACK. WINDOWS AND NATIVE X11 USERS DO NOT NEED THIS. >>>!"
     },
     {
       "source": "For Rig tracking and full command details click here",
@@ -208205,6 +209217,10 @@
       "translation": "* REPUTATION >>>!"
     },
     {
+      "source": "Requested a fresh Wayland screen-capture source selection after restart.",
+      "translation": "* REQUESTED A FRESH WAYLAND SCREEN-CAPTURE SOURCE SELECTION AFTER RESTART. >>>!"
+    },
+    {
       "source": "Require FSS to report all bodies before completion",
       "translation": "* REQUIRE FSS TO REPORT ALL BODIES BEFORE COMPLETION >>>!"
     },
@@ -209719,6 +210735,22 @@
     {
       "source": "Scorpion",
       "translation": "* SCORPION >>>!"
+    },
+    {
+      "source": "Screen capture ({0}) failed: {1} Next retry in {2} seconds.{3}",
+      "translation": "* SCREEN CAPTURE ({0}) FAILED: {1} NEXT RETRY IN {2} SECONDS.{3} >>>!"
+    },
+    {
+      "source": "Screen capture ({0}): X11 capture failed; switching to the Wayland portal. {1}",
+      "translation": "* SCREEN CAPTURE ({0}): X11 CAPTURE FAILED; SWITCHING TO THE WAYLAND PORTAL. {1} >>>!"
+    },
+    {
+      "source": "Screen capture ({0}): recovered after {1} failed attempts and {2} suppressed repeat reports.",
+      "translation": "* SCREEN CAPTURE ({0}): RECOVERED AFTER {1} FAILED ATTEMPTS AND {2} SUPPRESSED REPEAT REPORTS. >>>!"
+    },
+    {
+      "source": "Screen capture failed: {0} Retrying in {1} seconds.",
+      "translation": "* SCREEN CAPTURE FAILED: {0} RETRYING IN {1} SECONDS. >>>!"
     },
     {
       "source": "Screen capture is unavailable.",
@@ -211617,6 +212649,10 @@
       "translation": "* SRVSURVEY WILL FOLLOW THE NEWEST ACTIVE JOURNAL. >>>!"
     },
     {
+      "source": "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker.",
+      "translation": "* SRVSURVEY WILL RESTART. IF NORMAL X11 CAPTURE FAILS AGAIN, THE NEXT CAPTURE ATTEMPT OPENS THE PICKER. >>>!"
+    },
+    {
       "source": "SrvSurvey will start with {0}.",
       "translation": "* SRVSURVEY WILL START WITH {0}. >>>!"
     },
@@ -212203,6 +213239,10 @@
     {
       "source": "Surface Mining overlay settings provides an independent visibility toggle and optional shortcut. Its initial placement copies your saved Flight Warning placement; you can move it separately in the overlay editor.",
       "translation": "* SURFACE MINING OVERLAY SETTINGS PROVIDES AN INDEPENDENT VISIBILITY TOGGLE AND OPTIONAL SHORTCUT. ITS INITIAL PLACEMENT COPIES YOUR SAVED FLIGHT WARNING PLACEMENT; YOU CAN MOVE IT SEPARATELY IN THE OVERLAY EDITOR. >>>!"
+    },
+    {
+      "source": "Surface Mining rig detection",
+      "translation": "* SURFACE MINING RIG DETECTION >>>!"
     },
     {
       "source": "Surface Navigation",
@@ -214407,6 +215447,10 @@
     {
       "source": "The saved Frontier ID {0} has no readable imported profile. Automatic selection is shown until the profile is restored.",
       "translation": "* THE SAVED FRONTIER ID {0} HAS NO READABLE IMPORTED PROFILE. AUTOMATIC SELECTION IS SHOWN UNTIL THE PROFILE IS RESTORED. >>>!"
+    },
+    {
+      "source": "The saved Wayland capture source could not be cleared: {0}",
+      "translation": "* THE SAVED WAYLAND CAPTURE SOURCE COULD NOT BE CLEARED: {0} >>>!"
     },
     {
       "source": "The saved boxel search action could not be completed.",
@@ -216717,12 +217761,48 @@
       "translation": "* WATER WORLD | 1.24 M CR >>>!"
     },
     {
+      "source": "Wayland capture ({0}): Settings requested a fresh source selection.",
+      "translation": "* WAYLAND CAPTURE ({0}): SETTINGS REQUESTED A FRESH SOURCE SELECTION. >>>!"
+    },
+    {
+      "source": "Wayland capture ({0}): first PipeWire frame {1}x{2}, stride {3}, format {4}; requested {5} from game source {6}.",
+      "translation": "* WAYLAND CAPTURE ({0}): FIRST PIPEWIRE FRAME {1}X{2}, STRIDE {3}, FORMAT {4}; REQUESTED {5} FROM GAME SOURCE {6}. >>>!"
+    },
+    {
+      "source": "Wayland capture ({0}): first cropped frame is {1}x{2}.",
+      "translation": "* WAYLAND CAPTURE ({0}): FIRST CROPPED FRAME IS {1}X{2}. >>>!"
+    },
+    {
+      "source": "Wayland capture ({0}): portal selected {1}.",
+      "translation": "* WAYLAND CAPTURE ({0}): PORTAL SELECTED {1}. >>>!"
+    },
+    {
+      "source": "Wayland capture ({0}): portal version {1}; available sources {2}; saved selection {3}.",
+      "translation": "* WAYLAND CAPTURE ({0}): PORTAL VERSION {1}; AVAILABLE SOURCES {2}; SAVED SELECTION {3}. >>>!"
+    },
+    {
+      "source": "Wayland capture ({0}): saved source selection could not be read. {1}",
+      "translation": "* WAYLAND CAPTURE ({0}): SAVED SOURCE SELECTION COULD NOT BE READ. {1} >>>!"
+    },
+    {
+      "source": "Wayland capture ({0}): selected source could not be saved for reuse. {1}",
+      "translation": "* WAYLAND CAPTURE ({0}): SELECTED SOURCE COULD NOT BE SAVED FOR REUSE. {1} >>>!"
+    },
+    {
+      "source": "Wayland capture ({0}): the source-reselection request could not be cleared. {1}",
+      "translation": "* WAYLAND CAPTURE ({0}): THE SOURCE-RESELECTION REQUEST COULD NOT BE CLEARED. {1} >>>!"
+    },
+    {
       "source": "Wayland did not provide a frame from the shared Elite Dangerous window.",
       "translation": "* WAYLAND DID NOT PROVIDE A FRAME FROM THE SHARED ELITE DANGEROUS WINDOW. >>>!"
     },
     {
       "source": "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
       "translation": "* WAYLAND OVERLAY POSITIONING, TRANSPARENCY, CLICK-THROUGH, AND GLOBAL INPUT REQUIRE COMPOSITOR SUPPORT AND ARE NOT ENABLED. >>>!"
+    },
+    {
+      "source": "Wayland screen capture",
+      "translation": "* WAYLAND SCREEN CAPTURE >>>!"
     },
     {
       "source": "Wayland screen sharing could not start: {0}",
@@ -216735,6 +217815,14 @@
     {
       "source": "Wayland screen sharing was canceled.",
       "translation": "* WAYLAND SCREEN SHARING WAS CANCELED. >>>!"
+    },
+    {
+      "source": "Wayland screen-capture source changed",
+      "translation": "* WAYLAND SCREEN-CAPTURE SOURCE CHANGED >>>!"
+    },
+    {
+      "source": "WaylandCaptureCard",
+      "translation": "* WAYLANDCAPTURECARD >>>!"
     },
     {
       "source": "Waypoint 3 of 12",
@@ -217121,6 +218209,14 @@
       "translation": "* [CONTROL] PLATFORMIMPL IS NULL, COULDN'T HANDLE INPUT. (PRESENTATIONSOURCE # >>>!"
     },
     {
+      "source": "a monitor",
+      "translation": "* A MONITOR >>>!"
+    },
+    {
+      "source": "a window",
+      "translation": "* A WINDOW >>>!"
+    },
+    {
       "source": "accepted",
       "translation": "* ACCEPTED >>>!"
     },
@@ -217167,6 +218263,10 @@
     {
       "source": "an external service",
       "translation": "* AN EXTERNAL SERVICE >>>!"
+    },
+    {
+      "source": "an unspecified source",
+      "translation": "* AN UNSPECIFIED SOURCE >>>!"
     },
     {
       "source": "anaconda",
@@ -217279,6 +218379,10 @@
     {
       "source": "asteroid",
       "translation": "* ASTEROID >>>!"
+    },
+    {
+      "source": "at ({0},{1})",
+      "translation": "* AT ({0},{1}) >>>!"
     },
     {
       "source": "atmos",
@@ -218001,6 +219105,10 @@
       "translation": "* FIREGROUPS >>>!"
     },
     {
+      "source": "first-footfall inference",
+      "translation": "* FIRST-FOOTFALL INFERENCE >>>!"
+    },
+    {
       "source": "fistbump",
       "translation": "* FISTBUMP >>>!"
     },
@@ -218087,6 +219195,10 @@
     {
       "source": "galmap",
       "translation": "* GALMAP >>>!"
+    },
+    {
+      "source": "game-screen detection",
+      "translation": "* GAME-SCREEN DETECTION >>>!"
     },
     {
       "source": "gamepad joystick hotas sdl device",
@@ -218445,6 +219557,10 @@
       "translation": "* LIGHTS >>>!"
     },
     {
+      "source": "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset",
+      "translation": "* LINUX XWAYLAND PORTAL PIPEWIRE SCREENCAST SOURCE PICKER SHARE WINDOW MONITOR GAMESCOPE RESET >>>!"
+    },
+    {
       "source": "linux64",
       "translation": "* LINUX64 >>>!"
     },
@@ -218561,6 +219677,10 @@
       "translation": "* MOLYBDENUM >>>!"
     },
     {
+      "source": "monitor",
+      "translation": "* MONITOR >>>!"
+    },
+    {
       "source": "monitor scale minimize tray game elite focus startup jump reduce motion animation",
       "translation": "* MONITOR SCALE MINIMIZE TRAY GAME ELITE FOCUS STARTUP JUMP REDUCE MOTION ANIMATION >>>!"
     },
@@ -218659,6 +219779,10 @@
     {
       "source": "not",
       "translation": "* NOT >>>!"
+    },
+    {
+      "source": "not available",
+      "translation": "* NOT AVAILABLE >>>!"
     },
     {
       "source": "not scanned",
@@ -218929,6 +220053,10 @@
       "translation": "* REQUEST >>>!"
     },
     {
+      "source": "requested",
+      "translation": "* REQUESTED >>>!"
+    },
+    {
       "source": "rescue",
       "translation": "* RESCUE >>>!"
     },
@@ -219131,6 +220259,10 @@
     {
       "source": "size",
       "translation": "* SIZE >>>!"
+    },
+    {
+      "source": "sized {0}x{1}",
+      "translation": "* SIZED {0}X{1} >>>!"
     },
     {
       "source": "slot",
@@ -219669,6 +220801,10 @@
       "translation": "* WAYLAND >>>!"
     },
     {
+      "source": "wayland-screen-capture.reselect",
+      "translation": "* WAYLAND-SCREEN-CAPTURE.RESELECT >>>!"
+    },
+    {
       "source": "wayland-screen-capture.token",
       "translation": "* WAYLAND-SCREEN-CAPTURE.TOKEN >>>!"
     },
@@ -219699,6 +220835,10 @@
     {
       "source": "win-x64",
       "translation": "* WIN-X64 >>>!"
+    },
+    {
+      "source": "window",
+      "translation": "* WINDOW >>>!"
     },
     {
       "source": "windows",
@@ -220165,6 +221305,10 @@
       "translation": "* {0} MARKETS · {1}. PRICES AND QUANTITIES ARE OBSERVATIONS, NOT GUARANTEES. >>>!"
     },
     {
+      "source": "{0} matching failure reports were suppressed.",
+      "translation": "* {0} MATCHING FAILURE REPORTS WERE SUPPRESSED. >>>!"
+    },
+    {
       "source": "{0} matching guide entries",
       "translation": "* {0} MATCHING GUIDE ENTRIES >>>!"
     },
@@ -220591,6 +221735,10 @@
     {
       "source": "{0}x",
       "translation": "* {0}X >>>!"
+    },
+    {
+      "source": "{0}x{1} at ({2},{3})",
+      "translation": "* {0}X{1} AT ({2},{3}) >>>!"
     },
     {
       "source": "{0}{1} - {2} x {3} - {4}%",

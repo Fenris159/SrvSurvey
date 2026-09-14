@@ -1,4 +1,4 @@
-# SrvSurvey-XP 2.1.3.0-rc.48.2
+# SrvSurvey-XP 2.1.3.0-rc.48.3
 
 - Replaces the Mining workspace placeholder with session accounting, prospecting
   yields, core and raw-material tracking, cargo, mining missions, historical
@@ -14,6 +14,22 @@
 - Adds announcement filters/presets and optional Windows speech, CSV history
   import, offline HTML reports with print/PDF output, and ZIP backups containing
   shared bookmarks and screenshot attachments. Guides documents the new tools.
+
+RC48.3 adds an explicit Wayland capture-source reset and actionable diagnostics
+for the next Linux field test. It retains the full RC48.2 feature set and the
+prior release-candidate changes summarized below.
+
+## New in RC48.3
+
+- Adds **Settings → Application → Wayland screen capture** with a clearly scoped
+  **Choose capture source again** action. It clears the saved portal source and
+  restarts SrvSurvey so the desktop picker opens if X11 capture fails and the
+  Wayland fallback is needed again.
+- Preserves the original capture failure in the retry-countdown status instead
+  of replacing it with only a timer.
+- Adds low-noise diagnostics for X11-to-portal fallback, portal capabilities and
+  selected-source geometry, the first PipeWire frame and crop, repeated failures,
+  and recovery. Matching failures are throttled instead of flooding the log.
 
 RC48.2 makes Linux game-screen capture resilient across X11 and Wayland and
 bundles the symbols used by SrvSurvey overlays. It retains the full RC48.1
@@ -180,11 +196,11 @@ release-candidate changes summarized below.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.48.2`
-- Tag: `xp-v2.1.3.0-rc.48.2`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.48.2-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.48.2-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.48.2-x86_64.AppImage`
+- Version: `2.1.3.0-rc.48.3`
+- Tag: `xp-v2.1.3.0-rc.48.3`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.48.3-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.48.3-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.48.3-x86_64.AppImage`
 
 Windows and Linux packages are self-contained. Linux packaging tools and the
 AppImage runtime use versioned, checksum-verified downloads. AppImages are updated

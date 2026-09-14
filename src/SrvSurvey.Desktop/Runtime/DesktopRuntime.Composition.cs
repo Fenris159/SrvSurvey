@@ -168,7 +168,10 @@ internal sealed partial class DesktopRuntime
 
         string? targetFrontierId = commanderPreferenceResolution.TargetFrontierId;
         IFirstFootfallInferenceService firstFootfallInferenceService = diagnosticReplay is null
-            ? FirstFootfallInferenceService.CreateCurrent(confirmWaylandScreenShare)
+            ? FirstFootfallInferenceService.CreateCurrent(
+                confirmWaylandScreenShare,
+                message => applicationLog.Append(message)
+            )
             : new UnavailableFirstFootfallInferenceService();
         var canonnHumanSiteClient = new CanonnHumanSiteClient(externalNetworkClient);
         using var mainViewModelStartup = new MainWindowViewModelStartup(
@@ -237,6 +240,7 @@ internal sealed partial class DesktopRuntime
             viewModel.ProfileImportCompleted += RestartAfterProfileImportAsync;
             viewModel.JournalSettings.RestartRequested += RestartAfterJournalChangeAsync;
             viewModel.CommanderPreference.RestartRequested += RestartAfterCommanderPreferenceChangeAsync;
+            viewModel.WaylandCapture.RestartRequested += RestartAfterWaylandCaptureSourceChangeAsync;
             viewModel.SetJournalCommandPlatformServices(
                 directory => mainWindow.Launcher.LaunchDirectoryInfoAsync(directory),
                 () => RequestShutdownOnUiThreadAsync(DesktopShutdownReason.JournalCommand, CancellationToken.None),
@@ -338,7 +342,9 @@ internal sealed partial class DesktopRuntime
             CreateRawGameWindowTracker(),
             GameScreenCapture.CreateCurrent(
                 enableWaylandPortalFallback: true,
-                confirmWaylandScreenShare: confirmWaylandScreenShare
+                confirmWaylandScreenShare: confirmWaylandScreenShare,
+                log: message => applicationLog.Append(message),
+                capturePurpose: "Surface Mining rig detection"
             )
         );
         groundTargetOverlayCoordinator = new GroundTargetOverlayCoordinator(
@@ -370,7 +376,9 @@ internal sealed partial class DesktopRuntime
                 OverlayLayout = overlayLayout,
                 GameScreenCapture = GameScreenCapture.CreateCurrent(
                     enableWaylandPortalFallback: true,
-                    confirmWaylandScreenShare: confirmWaylandScreenShare
+                    confirmWaylandScreenShare: confirmWaylandScreenShare,
+                    log: message => applicationLog.Append(message),
+                    capturePurpose: "FSS tuning detection"
                 ),
                 FssDiagnosticDirectory = Path.Combine(appDataPaths.CacheDirectory, "fss-diagnostics"),
             }
@@ -816,6 +824,7 @@ internal sealed partial class DesktopRuntime
             viewModel.ProfileImportCompleted -= RestartAfterProfileImportAsync;
             viewModel.JournalSettings.RestartRequested -= RestartAfterJournalChangeAsync;
             viewModel.CommanderPreference.RestartRequested -= RestartAfterCommanderPreferenceChangeAsync;
+            viewModel.WaylandCapture.RestartRequested -= RestartAfterWaylandCaptureSourceChangeAsync;
             viewModel.OverlayBehavior.PropertyChanged -= HandleOverlayBehaviorChanged;
             viewModel.SystemSurvey.PropertyChanged -= HandleOverlayPriorityFactsChanged;
             viewModel.FrontierProfile.AuthorizationCallbackReceived -= HandleFrontierAuthorizationCallback;
@@ -1270,6 +1279,11 @@ internal sealed partial class DesktopRuntime
     private Task RestartAfterCommanderPreferenceChangeAsync()
     {
         return RestartApplicationAsync("Commander preference changed");
+    }
+
+    private Task RestartAfterWaylandCaptureSourceChangeAsync()
+    {
+        return RestartApplicationAsync("Wayland screen-capture source changed");
     }
 
     private async Task WriteClipboardAsync(string text)

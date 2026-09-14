@@ -220,6 +220,13 @@ public sealed class SettingsWorkspaceViewModel : INotifyPropertyChanged
                 "translation locale localization display language"
             ),
             new(
+                "Wayland screen capture",
+                ApplicationCategoryKey,
+                "ChooseWaylandCaptureSourceAgainButton",
+                "WaylandCaptureCard",
+                "linux xwayland portal pipewire screencast source picker share window monitor gamescope reset"
+            ),
+            new(
                 "Application window and focus",
                 DesktopCategoryKey,
                 "FocusGameOnStartCheckBox",

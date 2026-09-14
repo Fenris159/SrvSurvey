@@ -29,6 +29,10 @@ public sealed class SettingsWorkspaceViewModelTests
             viewModel.SearchCatalog,
             entry => entry.Title == "Import SrvSurvey User Data" && entry.CategoryKey == "data"
         );
+        Assert.Contains(
+            viewModel.SearchCatalog,
+            entry => entry.Title == "Wayland screen capture" && entry.CategoryKey == "application"
+        );
     }
 
     [Fact]
@@ -62,5 +66,17 @@ public sealed class SettingsWorkspaceViewModelTests
             Assert.NotNull(view.FindControl<Control>(entry.TargetControlName));
             Assert.NotNull(view.FindControl<Control>(entry.HighlightControlName));
         }
+    }
+
+    [AvaloniaFact]
+    public void WaylandCapturePanelAppearsDirectlyBelowLanguage()
+    {
+        var view = new SettingsView();
+        Control language = Assert.IsType<Control>(view.FindControl<Control>("LanguageCard"), exactMatch: false);
+        Control wayland = Assert.IsType<Control>(view.FindControl<Control>("WaylandCaptureCard"), exactMatch: false);
+        Panel panel = Assert.IsType<Panel>(language.Parent, exactMatch: false);
+
+        Assert.Same(panel, wayland.Parent);
+        Assert.Equal(panel.Children.IndexOf(language) + 1, panel.Children.IndexOf(wayland));
     }
 }

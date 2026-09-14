@@ -21,8 +21,8 @@ public sealed class LocalizationCatalogTests : IDisposable
 
         Assert.Equal("de", LocalizationCatalog.CurrentLanguage);
         Assert.Equal(1_090, LocalizationCatalog.LegacyTranslationCount);
-        Assert.Equal(7_883, LocalizationCatalog.ApplicationTranslationCount);
-        Assert.Equal(7_883, LocalizationCatalog.SourceCount);
+        Assert.Equal(7_924, LocalizationCatalog.ApplicationTranslationCount);
+        Assert.Equal(7_924, LocalizationCatalog.SourceCount);
         Assert.Equal("Himmelskörper", LocalizationCatalog.Translate("Bodies"));
         Assert.Equal("Neues Lesezeichen", LocalizationCatalog.Translate("New bookmark"));
     }
