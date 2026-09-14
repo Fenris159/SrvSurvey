@@ -490,11 +490,7 @@ namespace SrvSurvey
         {
             if (!this.IsHandleCreated || this.IsDisposed) return;
 
-            Program.crashGuard(true, () =>
-            {
-                Application.DoEvents();
-                this.checkFullScreenGraphics();
-            });
+            Program.crashGuard(true, this.checkFullScreenGraphics);
         }
 
         private void logFolderWatcher_Created(object sender, FileSystemEventArgs e)
