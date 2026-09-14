@@ -4,6 +4,10 @@ Overlays in SrvSurvey rely on X11 (or XWayland) window management features: clic
 
 ## Gamescope and the combined overlay host
 
+For the complete CachyOS workflow, including mouse confinement and a launcher
+that starts Elite and SrvSurvey in the same nested display, see
+[CachyOS: Elite Dangerous, SrvSurvey, KDE Plasma, and Gamescope](CACHYOS_GAMESCOPE.md).
+
 Ordinary Windows, X11, and XWayland sessions continue to use one native window
 per live overlay. When Gamescope is detected, SrvSurvey reparents the same live
 Avalonia controls into one transparent game-sized host. Opacity, positioning,
@@ -85,4 +89,5 @@ Plasma is more restrictive than GNOME about the stacking order of windows relati
 
    and a screenshot of any relevant window rules.
 
-See also the general [Linux Troubleshooting](Linux_Troubleshooting.md) document.
+See also the general [Linux Troubleshooting](Linux_Troubleshooting.md) document
+and the [CachyOS and Gamescope guide](CACHYOS_GAMESCOPE.md).
