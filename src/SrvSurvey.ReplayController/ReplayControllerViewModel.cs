@@ -619,7 +619,7 @@ public sealed class ReplayControllerViewModel : INotifyPropertyChanged, IAsyncDi
         try
         {
             int exitCode = await observedInstance.WaitForExitAsync(cancellation.Token);
-            (bool Handled, Task Playback) exitTransition = await InvokeOnCapturedContextAsync(() =>
+            (bool Handled, Task? Playback) exitTransition = await InvokeOnCapturedContextAsync(() =>
             {
                 if (!ReferenceEquals(instance, observedInstance))
                 {
