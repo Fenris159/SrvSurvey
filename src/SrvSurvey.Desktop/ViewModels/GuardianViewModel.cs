@@ -164,19 +164,16 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState, IDisp
         showMapNotes = overlayPreferences.ShowMapNotes;
         showMapLegend = overlayPreferences.ShowMapLegend;
         selectedOverlaySize = OverlaySizes[overlayPreferences.OverlaySizeIndex];
-        if (this.ramTah is not null)
+        this.ramTah?.PropertyChanged += (_, _) =>
         {
-            this.ramTah.PropertyChanged += (_, _) =>
+            NotifyCurrentObeliskChanged();
+            NotifyAuxiliaryOverlayState();
+            OnPropertyChanged(nameof(HasActiveRamTahMission));
+            if (IncludeRamTahLogs)
             {
-                NotifyCurrentObeliskChanged();
-                NotifyAuxiliaryOverlayState();
-                OnPropertyChanged(nameof(HasActiveRamTahMission));
-                if (IncludeRamTahLogs)
-                {
-                    ApplyFilters();
-                }
-            };
-        }
+                ApplyFilters();
+            }
+        };
         completionCalculator = new GuardianSurveyCompletionCalculator(this.templates);
         commanderDataReader = new GuardianCommanderDataReader(dataDirectory, this.publishedSites);
         commanderSurveyStore = new GuardianCommanderSurveyStore(dataDirectory);

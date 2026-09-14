@@ -119,10 +119,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         searchState = session.Current.Search;
         this.session.Changed += OnSessionChanged;
         this.surveyStats = surveyStats;
-        if (this.surveyStats is not null)
-        {
-            this.surveyStats.Changed += OnSurveyStatsChanged;
-        }
+        this.surveyStats?.Changed += OnSurveyStatsChanged;
 
         this.systemNameSuggestionClient = systemNameSuggestionClient;
         this.systemSuggestionDelay = systemSuggestionDelay ?? TimeSpan.FromMilliseconds(450);

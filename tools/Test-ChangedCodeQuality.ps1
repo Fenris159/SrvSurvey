@@ -16,6 +16,67 @@ function Invoke-Git {
     return $output
 }
 
+function Find-NullConditionalEventFindings {
+    param(
+        [string]$RepositoryRoot,
+        [hashtable]$ChangedRanges
+    )
+
+    $blockPattern = [regex]::new(
+        '(?ms)^(?<indent>[ \t]*)if\s*\(\s*(?<receiver>(?:this\.)?[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*)\s+(?:is\s+not\s+null|!=\s*null)\s*\)\s*\r?\n\k<indent>\{\s*\r?\n(?<body>.*?)^\k<indent>\}',
+        [System.Text.RegularExpressions.RegexOptions]::CultureInvariant
+    )
+
+    foreach ($relativePath in $ChangedRanges.Keys) {
+        $absolutePath = Join-Path $RepositoryRoot $relativePath
+        if (-not (Test-Path -LiteralPath $absolutePath)) {
+            continue
+        }
+
+        $content = Get-Content -LiteralPath $absolutePath -Raw
+        foreach ($match in $blockPattern.Matches($content)) {
+            $receiverPattern = [regex]::Escape($match.Groups['receiver'].Value)
+            $body = $match.Groups['body'].Value
+            if ($body -notmatch "^\s*$receiverPattern\.[A-Za-z_][A-Za-z0-9_]*\s*(?:\+=|-=)") {
+                continue
+            }
+
+            $braceDepth = 0
+            $topLevelSemicolons = 0
+            foreach ($character in $body.ToCharArray()) {
+                if ($character -eq '{') {
+                    $braceDepth++
+                }
+                elseif ($character -eq '}') {
+                    $braceDepth--
+                }
+                elseif ($character -eq ';' -and $braceDepth -eq 0) {
+                    $topLevelSemicolons++
+                }
+            }
+
+            if ($topLevelSemicolons -ne 1) {
+                continue
+            }
+
+            $startLine = 1 + ([regex]::Matches($content.Substring(0, $match.Index), "\n")).Count
+            $endLine = $startLine + ([regex]::Matches($match.Value, "\n")).Count
+            $isChangedBlock = $ChangedRanges[$relativePath] | Where-Object {
+                $_.Start -le $endLine -and $_.End -ge $startLine
+            }
+            if ($isChangedBlock) {
+                [pscustomobject]@{
+                    File = $relativePath
+                    Line = $startLine
+                    Column = $match.Groups['indent'].Length + 1
+                    Rule = 'IDE0031'
+                    Message = 'Null check can be simplified with null-conditional event assignment.'
+                }
+            }
+        }
+    }
+}
+
 $repositoryRoot = (Invoke-Git rev-parse --show-toplevel | Select-Object -First 1).Trim()
 $mergeBase = (Invoke-Git merge-base $BaseRef HEAD | Select-Object -First 1).Trim()
 $changedRanges = @{}
@@ -56,7 +117,7 @@ try {
 
     try {
         & dotnet format $Solution style `
-            --diagnostics IDE0007 IDE0008 `
+            --diagnostics IDE0007 IDE0008 IDE0031 `
             --severity info `
             --no-restore `
             --verify-no-changes `
@@ -134,7 +195,9 @@ try {
             }
         }
 
-        $findings = @($formatFindings) + @($sonarFindings.Values)
+        $nullConditionalEventFindings = Find-NullConditionalEventFindings $repositoryRoot $changedRanges
+        $findings =
+            @($formatFindings) + @($sonarFindings.Values) + @($nullConditionalEventFindings)
         if ($findings.Count -gt 0) {
             $findings |
                 Sort-Object File, Line, Column |
