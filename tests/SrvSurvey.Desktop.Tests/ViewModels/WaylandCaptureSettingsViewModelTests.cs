@@ -73,6 +73,46 @@ public sealed class WaylandCaptureSettingsViewModelTests : IDisposable
         Assert.False(viewModel.ChooseCaptureSourceAgainCommand.CanExecute(null));
     }
 
+    [Fact]
+    public async Task ChooseAgainWithoutRestartHandlerExplainsManualRestart()
+    {
+        var viewModel = new WaylandCaptureSettingsViewModel(dataDirectory, isApplicable: true);
+
+        await viewModel.ChooseCaptureSourceAgainAsync();
+
+        Assert.Contains("Restart SrvSurvey", viewModel.StatusMessage, StringComparison.Ordinal);
+        Assert.True(viewModel.ChooseCaptureSourceAgainCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public async Task ChooseAgainExplainsAutomaticRestartFailure()
+    {
+        var viewModel = new WaylandCaptureSettingsViewModel(dataDirectory, isApplicable: true);
+        viewModel.RestartRequested += () => throw new InvalidOperationException("replacement unavailable");
+
+        await viewModel.ChooseCaptureSourceAgainAsync();
+
+        Assert.Contains("automatic restart failed", viewModel.StatusMessage, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("replacement unavailable", viewModel.StatusMessage, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ChooseAgainCommandRunsTheReselectionWorkflow()
+    {
+        var restarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var viewModel = new WaylandCaptureSettingsViewModel(dataDirectory, isApplicable: true);
+        viewModel.RestartRequested += () =>
+        {
+            restarted.SetResult();
+            return Task.CompletedTask;
+        };
+
+        viewModel.ChooseCaptureSourceAgainCommand.Execute(null);
+        await restarted.Task.WaitAsync(TimeSpan.FromSeconds(2));
+
+        Assert.True(File.Exists(WaylandCaptureSourceSelection.GetReselectionRequestPath(dataDirectory)));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(dataDirectory))

@@ -270,6 +270,7 @@ public sealed class GameScreenCaptureTests
         Assert.Null(stream.Position);
         Assert.Null(stream.Size);
         Assert.Equal("an unspecified source", stream.DescribeSource());
+        Assert.Equal("a window", new PortalStreamInfo(42, SourceType: 2, Position: null, Size: null).DescribeSource());
     }
 
     [Fact]

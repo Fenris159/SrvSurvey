@@ -9,7 +9,7 @@ public sealed class WaylandCaptureSettingsViewModel : INotifyPropertyChanged
 {
     private readonly string dataDirectory;
     private readonly Action<string>? log;
-    private readonly AsyncCommand chooseCaptureSourceAgainCommand;
+    private readonly WorkspaceCommand chooseCaptureSourceAgainCommand;
     private string statusMessage;
     private bool isBusy;
 
@@ -21,8 +21,8 @@ public sealed class WaylandCaptureSettingsViewModel : INotifyPropertyChanged
         statusMessage = isApplicable
             ? "SrvSurvey will restart. If normal X11 capture fails again, the next capture attempt opens the picker."
             : "This session is not using Linux Wayland screen sharing, so no capture source needs to be reset.";
-        chooseCaptureSourceAgainCommand = new AsyncCommand(
-            ChooseCaptureSourceAgainAsync,
+        chooseCaptureSourceAgainCommand = new WorkspaceCommand(
+            () => _ = ChooseCaptureSourceAgainAsync(),
             () => IsApplicable && !isBusy
         );
         ChooseCaptureSourceAgainCommand = chooseCaptureSourceAgainCommand;
@@ -61,7 +61,7 @@ public sealed class WaylandCaptureSettingsViewModel : INotifyPropertyChanged
         }
 
         isBusy = true;
-        chooseCaptureSourceAgainCommand.RaiseCanExecuteChanged();
+        chooseCaptureSourceAgainCommand.Refresh();
         try
         {
             try
@@ -102,32 +102,12 @@ public sealed class WaylandCaptureSettingsViewModel : INotifyPropertyChanged
         finally
         {
             isBusy = false;
-            chooseCaptureSourceAgainCommand.RaiseCanExecuteChanged();
+            chooseCaptureSourceAgainCommand.Refresh();
         }
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
-
-    private sealed class AsyncCommand(Func<Task> execute, Func<bool> canExecute) : ICommand
-    {
-        public event EventHandler? CanExecuteChanged;
-
-        public bool CanExecute(object? parameter) => canExecute();
-
-        public async void Execute(object? parameter)
-        {
-            if (CanExecute(parameter))
-            {
-                await execute();
-            }
-        }
-
-        public void RaiseCanExecuteChanged()
-        {
-            CanExecuteChanged?.Invoke(this, EventArgs.Empty);
-        }
     }
 }

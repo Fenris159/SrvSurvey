@@ -72,9 +72,9 @@ public sealed class SettingsWorkspaceViewModelTests
     public void WaylandCapturePanelAppearsDirectlyBelowLanguage()
     {
         var view = new SettingsView();
-        Control language = Assert.IsAssignableFrom<Control>(view.FindControl<Control>("LanguageCard"));
-        Control wayland = Assert.IsAssignableFrom<Control>(view.FindControl<Control>("WaylandCaptureCard"));
-        Panel panel = Assert.IsAssignableFrom<Panel>(language.Parent);
+        Control language = Assert.IsType<Control>(view.FindControl<Control>("LanguageCard"), exactMatch: false);
+        Control wayland = Assert.IsType<Control>(view.FindControl<Control>("WaylandCaptureCard"), exactMatch: false);
+        Panel panel = Assert.IsType<Panel>(language.Parent, exactMatch: false);
 
         Assert.Same(panel, wayland.Parent);
         Assert.Equal(panel.Children.IndexOf(language) + 1, panel.Children.IndexOf(wayland));
