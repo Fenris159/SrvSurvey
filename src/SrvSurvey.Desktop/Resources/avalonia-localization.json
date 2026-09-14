@@ -16117,6 +16117,10 @@
       "translation": "Sauerstoff"
     },
     {
+      "source": "P1",
+      "translation": "P1"
+    },
+    {
       "source": "P2",
       "translation": "P2"
     },
@@ -47469,6 +47473,10 @@
     {
       "source": "Oxygen",
       "translation": "Oxígeno"
+    },
+    {
+      "source": "P1",
+      "translation": "P1"
     },
     {
       "source": "P2",
@@ -78825,6 +78833,10 @@
       "translation": "Oxygène"
     },
     {
+      "source": "P1",
+      "translation": "P1"
+    },
+    {
       "source": "P2",
       "translation": "P2"
     },
@@ -110177,6 +110189,10 @@
     {
       "source": "Oxygen",
       "translation": "Oxigênio"
+    },
+    {
+      "source": "P1",
+      "translation": "P1"
     },
     {
       "source": "P2",
@@ -141533,6 +141549,10 @@
       "translation": "Кислород"
     },
     {
+      "source": "P1",
+      "translation": "П1"
+    },
+    {
       "source": "P2",
       "translation": "П2"
     },
@@ -172887,6 +172907,10 @@
       "translation": "氧气"
     },
     {
+      "source": "P1",
+      "translation": "P1"
+    },
+    {
       "source": "P2",
       "translation": "P2"
     },
@@ -204239,6 +204263,10 @@
     {
       "source": "Oxygen",
       "translation": "* OXYGEN >>>!"
+    },
+    {
+      "source": "P1",
+      "translation": "* P1 >>>!"
     },
     {
       "source": "P2",

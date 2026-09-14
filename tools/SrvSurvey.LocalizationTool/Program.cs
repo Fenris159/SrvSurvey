@@ -35,8 +35,7 @@ IReadOnlyList<LocalizationSourceEntry> entries = extractor.Extract();
 Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
 await File.WriteAllTextAsync(
     outputPath,
-    JsonSerializer.Serialize(entries, new JsonSerializerOptions { WriteIndented = true }).ReplaceLineEndings("\n")
-        + "\n"
+    JsonSerializer.Serialize(entries, LocalizationJson.Indented).ReplaceLineEndings("\n") + "\n"
 );
 Console.WriteLine($"Extracted {entries.Count:N0} localizable strings to {outputPath}.");
 return 0;
@@ -48,16 +47,15 @@ static async Task MergeSourcesAsync(
     IReadOnlyList<string> refreshedFiles
 )
 {
-    var options = new JsonSerializerOptions { WriteIndented = true };
     LocalizationSourceEntry[] baseline =
         JsonSerializer.Deserialize<LocalizationSourceEntry[]>(
             await File.ReadAllTextAsync(Path.GetFullPath(baselinePath)),
-            options
+            LocalizationJson.Indented
         ) ?? [];
     LocalizationSourceEntry[] fresh =
         JsonSerializer.Deserialize<LocalizationSourceEntry[]>(
             await File.ReadAllTextAsync(Path.GetFullPath(freshPath)),
-            options
+            LocalizationJson.Indented
         ) ?? [];
     var normalizedFiles = refreshedFiles
         .Select(path => path.Replace('\\', '/'))
@@ -79,7 +77,7 @@ static async Task MergeSourcesAsync(
 
     await File.WriteAllTextAsync(
         Path.GetFullPath(outputPath),
-        JsonSerializer.Serialize(merged, options).ReplaceLineEndings("\n") + "\n",
+        JsonSerializer.Serialize(merged, LocalizationJson.Indented).ReplaceLineEndings("\n") + "\n",
         new UTF8Encoding(false)
     );
     Console.WriteLine(
@@ -119,14 +117,18 @@ static async Task NormalizeCatalogAsync(string inputPath, string outputPath)
 
     await File.WriteAllTextAsync(
         Path.GetFullPath(outputPath),
-        JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true }).ReplaceLineEndings("\n")
-            + "\n",
+        JsonSerializer.Serialize(result, LocalizationJson.Indented).ReplaceLineEndings("\n") + "\n",
         new UTF8Encoding(false)
     );
 }
 
 namespace SrvSurvey.LocalizationTool
 {
+    internal static class LocalizationJson
+    {
+        internal static JsonSerializerOptions Indented { get; } = new() { WriteIndented = true };
+    }
+
     internal sealed class LocalizationSourceExtractor(string repositoryRoot)
     {
         private static readonly TimeSpan RegexTimeout = TimeSpan.FromSeconds(1);

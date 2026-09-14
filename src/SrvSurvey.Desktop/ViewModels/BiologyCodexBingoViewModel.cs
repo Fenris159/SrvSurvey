@@ -252,10 +252,8 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
     public string SelectedProgress =>
         SelectedNode is null
             ? string.Empty
-            : string.Create(
-                CultureInfo.CurrentCulture,
-                $"{SelectedNode.DiscoveredCount:N0} of {SelectedNode.TotalCount:N0} · {SelectedNode.Completion:P1}"
-            );
+            : $"{SelectedNode.DiscoveredCount:N0} of {SelectedNode.TotalCount:N0} · "
+                + SelectedNode.Completion.ToString("P1", CultureInfo.CurrentCulture);
 
     public double SelectedCompletionPercent => SelectedNode?.CompletionPercent ?? 0;
 
