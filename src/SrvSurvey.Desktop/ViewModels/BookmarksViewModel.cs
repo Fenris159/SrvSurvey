@@ -141,10 +141,7 @@ public sealed class BookmarksViewModel : WorkspaceObservable
             Changed(nameof(Items));
             Changed(nameof(SortIndicators));
         });
-        if (catalog is not null)
-        {
-            catalog.Changed += OnCatalogChanged;
-        }
+        catalog?.Changed += OnCatalogChanged;
     }
 
     public ICommand NewCommand { get; }

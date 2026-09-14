@@ -22,10 +22,7 @@ public sealed class JumpInfoOverlayViewModel : INotifyPropertyChanged, IDisposab
         platformStatus = capabilities.StatusText;
         inputMode = capabilities.SupportsClickThrough ? "PASSIVE" : "UNAVAILABLE";
         JumpInfo.PropertyChanged += OnJumpInfoPropertyChanged;
-        if (systemNicknames is not null)
-        {
-            systemNicknames.NamesChanged += OnNamesChanged;
-        }
+        systemNicknames?.NamesChanged += OnNamesChanged;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -56,10 +53,7 @@ public sealed class JumpInfoOverlayViewModel : INotifyPropertyChanged, IDisposab
     public void Dispose()
     {
         JumpInfo.PropertyChanged -= OnJumpInfoPropertyChanged;
-        if (systemNicknames is not null)
-        {
-            systemNicknames.NamesChanged -= OnNamesChanged;
-        }
+        systemNicknames?.NamesChanged -= OnNamesChanged;
     }
 
     private void OnJumpInfoPropertyChanged(object? sender, PropertyChangedEventArgs eventArgs)

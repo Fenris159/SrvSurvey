@@ -16,16 +16,10 @@ public sealed class MiningActivityOverlayViewModel : WorkspaceObservable, IDispo
     {
         this.workspace = workspace;
         this.firegroupsWorkspace = firegroupsWorkspace;
-        if (firegroupsWorkspace is not null)
-        {
-            firegroupsWorkspace.PropertyChanged += OnFiregroupsChanged;
-        }
+        firegroupsWorkspace?.PropertyChanged += OnFiregroupsChanged;
 
         IsFiregroups = firegroups;
-        if (workspace is not null)
-        {
-            workspace.PropertyChanged += OnChanged;
-        }
+        workspace?.PropertyChanged += OnChanged;
 
         RefreshNotices();
     }
@@ -102,14 +96,8 @@ public sealed class MiningActivityOverlayViewModel : WorkspaceObservable, IDispo
 
     public void Dispose()
     {
-        if (workspace is not null)
-        {
-            workspace.PropertyChanged -= OnChanged;
-        }
-        if (firegroupsWorkspace is not null)
-        {
-            firegroupsWorkspace.PropertyChanged -= OnFiregroupsChanged;
-        }
+        workspace?.PropertyChanged -= OnChanged;
+        firegroupsWorkspace?.PropertyChanged -= OnFiregroupsChanged;
     }
 
     private void OnChanged(object? sender, PropertyChangedEventArgs e)

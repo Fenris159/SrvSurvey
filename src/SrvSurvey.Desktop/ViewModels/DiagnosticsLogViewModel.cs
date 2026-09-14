@@ -32,10 +32,7 @@ public sealed class DiagnosticsLogViewModel : INotifyPropertyChanged, IDisposabl
         CopyCommand = copyCommand;
         OpenFolderCommand = openFolderCommand;
         ClearCommand = new DelegateCommand(Clear, () => applicationLog is not null);
-        if (applicationLog is not null)
-        {
-            applicationLog.Changed += OnLogChanged;
-        }
+        applicationLog?.Changed += OnLogChanged;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -101,10 +98,7 @@ public sealed class DiagnosticsLogViewModel : INotifyPropertyChanged, IDisposabl
         }
 
         disposed = true;
-        if (applicationLog is not null)
-        {
-            applicationLog.Changed -= OnLogChanged;
-        }
+        applicationLog?.Changed -= OnLogChanged;
 
         SetPlatformServices(null, null);
     }
