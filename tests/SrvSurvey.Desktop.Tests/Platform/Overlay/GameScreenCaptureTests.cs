@@ -163,6 +163,83 @@ public sealed class GameScreenCaptureTests
     }
 
     [Fact]
+    public void PortalStreamMetadataReadsWindowGeometryAndDefaults()
+    {
+        var properties = new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            ["source_type"] = 1U,
+            ["position"] = (100, 200),
+            ["size"] = (1920, 1080),
+        };
+        var results = new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            ["streams"] = new ValueTuple<uint, IDictionary<string, object>>[] { (42U, properties) },
+        };
+
+        var stream = PortalStreamInfo.Read(results);
+
+        Assert.Equal(42U, stream.NodeId);
+        Assert.Equal(1U, stream.SourceType);
+        Assert.Equal(new PixelPoint(100, 200), stream.Position);
+        Assert.Equal(new PixelSize(1920, 1080), stream.Size);
+
+        properties.Clear();
+        stream = PortalStreamInfo.Read(results);
+        Assert.Equal(0U, stream.SourceType);
+        Assert.Null(stream.Position);
+        Assert.Null(stream.Size);
+    }
+
+    [Fact]
+    public void PortalStreamMetadataRequiresExactlyOneStream()
+    {
+        var missing = new Dictionary<string, object>(StringComparer.Ordinal);
+        var multiple = new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            ["streams"] = new ValueTuple<uint, IDictionary<string, object>>[]
+            {
+                (1U, new Dictionary<string, object>()),
+                (2U, new Dictionary<string, object>()),
+            },
+        };
+
+        Assert.Throws<InvalidDataException>(() => PortalStreamInfo.Read(missing));
+        Assert.Throws<InvalidDataException>(() => PortalStreamInfo.Read(multiple));
+    }
+
+    [Fact]
+    public void PortalCaptureRejectsUnreadableUnsupportedAndOutsideFrames()
+    {
+        var stream = new PortalStreamInfo(42, SourceType: 2, Position: null, Size: null);
+        var bounds = new PixelRect(0, 0, 1, 1);
+
+        Assert.Throws<InvalidDataException>(() =>
+            PortalFrameCropper.Crop(
+                new VideoFrame([], stride: 0, width: 0, height: 0, PixelFormat.Bgra, sequenceNumber: 1),
+                stream,
+                bounds,
+                bounds
+            )
+        );
+        Assert.Throws<InvalidDataException>(() =>
+            PortalFrameCropper.Crop(
+                new VideoFrame([0, 0, 0, 0], stride: 4, width: 1, height: 1, PixelFormat.Yuv420, sequenceNumber: 1),
+                stream,
+                bounds,
+                bounds
+            )
+        );
+        Assert.Throws<InvalidDataException>(() =>
+            PortalFrameCropper.Crop(
+                new VideoFrame([0, 0, 0, 0], stride: 4, width: 1, height: 1, PixelFormat.Bgra, sequenceNumber: 1),
+                stream,
+                new PixelRect(2, 2, 1, 1),
+                bounds
+            )
+        );
+    }
+
+    [Fact]
     public void DiagnosticWriterCreatesAPortablePng()
     {
         string directory = Path.Combine(Path.GetTempPath(), "SrvSurvey-fss-diagnostic-" + Guid.NewGuid().ToString("N"));

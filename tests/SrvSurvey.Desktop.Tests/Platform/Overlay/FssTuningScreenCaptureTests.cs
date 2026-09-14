@@ -19,6 +19,22 @@ public sealed class FssTuningScreenCaptureTests
         Assert.Equal(gameBounds, capture.SourceBounds);
     }
 
+    [Fact]
+    public void CaptureRejectsMissingCaptureAndInvalidGameBounds()
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+            FssTuningScreenCapture.Capture(null!, new PixelRect(0, 0, 800, 600))
+        );
+
+        using var capture = new RecordingCapture(new CapturedPixelBuffer(1, 1, [3, 2, 1, 255]));
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            FssTuningScreenCapture.Capture(capture, new PixelRect(0, 0, 1, 600))
+        );
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            FssTuningScreenCapture.Capture(capture, new PixelRect(0, 0, 800, 1))
+        );
+    }
+
     private sealed class RecordingCapture(CapturedPixelBuffer result) : IGameScreenCapture
     {
         public bool IsAvailable => true;

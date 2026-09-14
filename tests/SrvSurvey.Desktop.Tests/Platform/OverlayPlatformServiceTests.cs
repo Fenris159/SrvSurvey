@@ -218,10 +218,15 @@ public sealed class OverlayPlatformServiceTests
         );
         var now = new DateTimeOffset(2026, 9, 13, 12, 0, 0, TimeSpan.Zero);
 
-        Assert.Equal(
-            new X11ExpectedErrorLogDecision(ShouldLog: true, SuppressedCount: 0),
-            limiter.Record(signature, now)
-        );
+        Assert.Equal((nint)42, signature.Display);
+        Assert.Equal(X11Native.BadMatch, signature.ErrorCode);
+        Assert.Equal(X11Native.GetImageRequest, signature.RequestCode);
+        Assert.Equal((byte)0, signature.MinorCode);
+        Assert.Equal((nuint)1070, signature.ResourceId);
+
+        X11ExpectedErrorLogDecision firstDecision = limiter.Record(signature, now);
+        Assert.True(firstDecision.ShouldLog);
+        Assert.Equal(0, firstDecision.SuppressedCount);
         Assert.Equal(
             new X11ExpectedErrorLogDecision(ShouldLog: false, SuppressedCount: 0),
             limiter.Record(signature, now.AddSeconds(1))
