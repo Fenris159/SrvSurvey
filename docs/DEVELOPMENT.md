@@ -11,9 +11,9 @@ full porting audit remain recoverable on `cross-platform-development`.
 
 ## Current release candidate
 
-The branch is versioned as **SrvSurvey-XP 2.1.3.0-rc.48.1**. Its development tag
-is `xp-v2.1.3.0-rc.48.1`, package manifests use `SrvSurvey.XP`, and distributable
-filenames begin with `SrvSurvey-XP-2.1.3.0-rc.48.1`. The assembly `FileVersion`
+The branch is versioned as **SrvSurvey-XP 2.1.3.0-rc.48.2**. Its development tag
+is `xp-v2.1.3.0-rc.48.2`, package manifests use `SrvSurvey.XP`, and distributable
+filenames begin with `SrvSurvey-XP-2.1.3.0-rc.48.2`. The assembly `FileVersion`
 remains numeric at `2.1.3.0` for Windows compatibility.
 
 ## Build contract
@@ -130,7 +130,9 @@ Automated builds do not replace native testing with a live Elite Dangerous
 session. Before promoting a release, verify on clean supported systems:
 
 1. Windows portable startup, upgrade, rollback, and removal.
-2. Linux AppImage startup on native X11 and XWayland.
+2. Linux AppImage startup on native X11 and XWayland. On Wayland, force an X11
+   capture failure and verify the ScreenCast picker, Elite-window selection,
+   restored selection, cancellation message, and rig-calibration **Test** path.
 3. Journal attachment, game-window tracking, click-through overlays, global
    input, capture-dependent features, and overlay update cost during play.
 4. Backup/import/restart using a representative existing profile.

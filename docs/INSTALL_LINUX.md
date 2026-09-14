@@ -1,6 +1,6 @@
 # Install SrvSurvey on Linux
 
-Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.48.1**.
+Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.48.2**.
 
 The Linux review build targets 64-bit x86 Linux. The AppImage is the simplest
 package for most desktops; the `.tar.gz` archive is a portable fallback. Both
@@ -32,21 +32,21 @@ directory:
 
 ```bash
 mkdir -p "$HOME/Applications/SrvSurvey"
-mv "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.48.1-x86_64.AppImage" \
+mv "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.48.2-x86_64.AppImage" \
     "$HOME/Applications/SrvSurvey/"
 cd "$HOME/Applications/SrvSurvey"
-chmod +x SrvSurvey-XP-2.1.3.0-rc.48.1-x86_64.AppImage
-./SrvSurvey-XP-2.1.3.0-rc.48.1-x86_64.AppImage
+chmod +x SrvSurvey-XP-2.1.3.0-rc.48.2-x86_64.AppImage
+./SrvSurvey-XP-2.1.3.0-rc.48.2-x86_64.AppImage
 ```
 
 To launch the standalone diagnostic replay controller from the same AppImage,
 pass its explicit dispatcher option:
 
 ```bash
-./SrvSurvey-XP-2.1.3.0-rc.48.1-x86_64.AppImage --replay-controller
+./SrvSurvey-XP-2.1.3.0-rc.48.2-x86_64.AppImage --replay-controller
 ```
 
-Replace `2.1.3.0-rc.48.1` with the downloaded version. Keep the AppImage in this folder;
+Replace `2.1.3.0-rc.48.2` with the downloaded version. Keep the AppImage in this folder;
 create a launcher or shortcut that points to it instead of moving internal
 files out of the AppImage.
 
@@ -55,7 +55,7 @@ the same folder:
 
 ```bash
 cd "$HOME/Applications/SrvSurvey"
-./SrvSurvey-XP-2.1.3.0-rc.48.1-x86_64.AppImage --appimage-extract-and-run
+./SrvSurvey-XP-2.1.3.0-rc.48.2-x86_64.AppImage --appimage-extract-and-run
 ```
 
 ## Run the portable archive
@@ -64,10 +64,10 @@ The extracted archive directory is the application's container folder. Keep
 all files together and run `SrvSurvey.Desktop` from that directory:
 
 ```bash
-mkdir -p "$HOME/Applications/SrvSurvey/2.1.3.0-rc.48.1"
-tar -xzf "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.48.1-linux-x64.tar.gz" \
-    -C "$HOME/Applications/SrvSurvey/2.1.3.0-rc.48.1"
-cd "$HOME/Applications/SrvSurvey/2.1.3.0-rc.48.1"
+mkdir -p "$HOME/Applications/SrvSurvey/2.1.3.0-rc.48.2"
+tar -xzf "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.48.2-linux-x64.tar.gz" \
+    -C "$HOME/Applications/SrvSurvey/2.1.3.0-rc.48.2"
+cd "$HOME/Applications/SrvSurvey/2.1.3.0-rc.48.2"
 chmod +x SrvSurvey.Desktop
 ./SrvSurvey.Desktop
 ```
@@ -91,7 +91,10 @@ printf 'session=%s\nDISPLAY=%s\nWAYLAND_DISPLAY=%s\n' \
   global-input path. XWayland is not required.
 - **Wayland with XWayland:** `XDG_SESSION_TYPE` is normally `wayland`, while
   both `WAYLAND_DISPLAY` and `DISPLAY` are set. SrvSurvey runs through XWayland
-  and uses the same complete X11-compatible feature path.
+  for its windows and overlays. If X11 cannot read the game pixels needed by
+  FSS tuning, first-footfall inference, or rig detection, SrvSurvey asks the
+  desktop ScreenCast portal to share the Elite Dangerous window through
+  PipeWire.
 - **Pure Wayland without XWayland:** `WAYLAND_DISPLAY` is set but `DISPLAY` is
   empty. This is not a supported full-functionality mode and the application
   may fail to open because this build uses Avalonia's X11 backend. Install or
@@ -130,6 +133,31 @@ session so it can see the game window and the Gamescope environment. If it
 cannot detect Elite there, first test both programs in the same normal
 X11/XWayland desktop session.
 
+### Game screen capture on Wayland
+
+When FSS tuning, first-footfall inference, rig detection, or the rig calibration
+panel's **Test** option first needs pixels that XWayland cannot provide, the
+desktop opens its normal screen-sharing picker. Select only the **Elite
+Dangerous** window. If the game is not offered as a separate window, select the
+desktop or monitor where Elite is running. SrvSurvey explains these choices
+before opening the picker; use **Alt+Tab** if either prompt appears behind the
+game. SrvSurvey crops each requested game region from that shared source;
+existing rig calibration controls and saved positions continue to work as they
+do on Xorg. The desktop may remember the selection; it can ask again after a
+restart or when its permission token expires.
+
+Temporary X11 or portal capture failures are retried with an increasing delay
+and normal capture resumes after the next successful frame. Repeated expected
+X11 capture errors are summarized periodically in the application log instead
+of being written once per FSS sample.
+
+The fallback requires PipeWire, WirePlumber (or another PipeWire session
+manager), `xdg-desktop-portal`, and the portal backend for the active desktop,
+such as `xdg-desktop-portal-gnome` or `xdg-desktop-portal-kde`. Full GNOME and
+KDE installations normally provide these. If the picker is canceled or the
+wrong source is shared, restart SrvSurvey and use **Test** again to start a new
+capture session.
+
 ## Elite journal discovery
 
 SrvSurvey detects every existing Elite journal folder it can find, rather than
@@ -163,7 +191,7 @@ native Xorg desktop, omit the XWayland package.
 
 ```bash
 sudo apt update
-sudo apt install libx11-6 libxext6 libice6 libsm6 libfontconfig1
+sudo apt install libx11-6 libxext6 libice6 libsm6 libfontconfig1 libpipewire-0.3-0
 sudo apt install xwayland  # Wayland sessions only
 ```
 

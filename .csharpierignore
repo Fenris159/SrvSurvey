@@ -15,3 +15,4 @@
 
 # Imported upstream data; preserve its source form and keep it out of new-code metrics.
 src/SrvSurvey.Core/Navigation/RegionMapData.cs
+src/ThirdParty/PipeWire.NET/**

@@ -1,0 +1,5 @@
+# Preserve the upstream library's declaration-style choices. SrvSurvey's application projects
+# continue to enforce their repository-wide explicit/implicit type rules.
+[*.cs]
+dotnet_diagnostic.IDE0007.severity = none
+dotnet_diagnostic.IDE0008.severity = none

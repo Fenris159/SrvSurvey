@@ -81,3 +81,25 @@ The relevant source is `src/views/SystemView2/SitesBodyView.tsx` in that
 repository. RavenColonialWeb and SrvSurvey are distributed under the GNU
 General Public License version 3, so these adaptations remain available under
 SrvSurvey's GPL-3.0 license.
+
+# PipeWire.NET
+
+SrvSurvey includes source derived from PipeWire.NET at commit
+`58355f0e5b26d1c27391fbeab722775e69eb87b5`, with a local addition for XDG
+desktop portal file-descriptor connections and CPU-readable capture
+buffers. PipeWire.NET is distributed under the MIT License. Its license is
+included at `src/ThirdParty/PipeWire.NET/LICENSE`.
+
+## Noto symbol and emoji fonts
+
+SrvSurvey bundles Noto Sans Symbols 2.003, Noto Sans Symbols 2 version 2.008,
+and Noto Color Emoji 2.051 as deterministic fallbacks for the symbols used by
+its overlays. The font files are distributed under the SIL Open Font License
+1.1. A copy of that license is included beside each font under
+`src/SrvSurvey.Desktop/Assets/Fonts`.
+
+Sources:
+
+- [Noto Sans Symbols 2.003](https://github.com/notofonts/symbols/releases/tag/NotoSansSymbols-v2.003)
+- [Noto Sans Symbols 2 version 2.008](https://github.com/notofonts/symbols/releases/tag/NotoSansSymbols2-v2.008)
+- [Noto Color Emoji 2.051](https://github.com/googlefonts/noto-emoji/releases/tag/v2.051)

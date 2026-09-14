@@ -222,6 +222,6 @@ internal static class Program
             builder = builder.With(new Win32PlatformOptions { RenderingMode = [Win32RenderingMode.Software] });
         }
 
-        return builder.WithInterFont().LogToTrace();
+        return builder.WithInterFont().With(SrvSurveyFontConfiguration.CreateOptions()).LogToTrace();
     }
 }

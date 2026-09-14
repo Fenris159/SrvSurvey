@@ -17,6 +17,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
     private static readonly X11Native.XErrorHandler ErrorHandler = HandleXError;
     private static readonly Lock ErrorHandlerSync = new();
     private static readonly ConcurrentDictionary<nint, byte> ErrorHandledDisplays = new();
+    private static readonly X11ExpectedErrorLogLimiter ExpectedErrorLogLimiter = new(TimeSpan.FromSeconds(30));
     private static nint previousErrorHandlerPointer;
     private static bool errorHandlerInstalled;
     private readonly object displaySync = new();
@@ -551,7 +552,26 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
                 + $"{errorEvent.ResourceId}, display {errorDisplay}.";
             if (suppressExpectedLifecycleRace)
             {
-                Trace.TraceInformation("Ignoring an expected X11 window or capture lifecycle " + "race: " + detail);
+                var signature = new X11ExpectedErrorSignature(
+                    errorDisplay,
+                    errorEvent.ErrorCode,
+                    errorEvent.RequestCode,
+                    errorEvent.MinorCode,
+                    errorEvent.ResourceId
+                );
+                X11ExpectedErrorLogDecision decision = ExpectedErrorLogLimiter.Record(signature, DateTimeOffset.UtcNow);
+                if (decision.ShouldLog)
+                {
+                    string category =
+                        errorEvent.RequestCode == X11Native.GetImageRequest
+                            ? "X11 screen capture failed and was handed to the managed capture fallback"
+                            : "Ignoring an expected X11 window lifecycle race";
+                    Trace.TraceInformation(
+                        decision.SuppressedCount > 0
+                            ? $"Suppressed {decision.SuppressedCount} repeated {category.ToLowerInvariant()} events; latest: {detail}"
+                            : category + ": " + detail
+                    );
+                }
             }
             else
             {
@@ -592,6 +612,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService, IComb
     internal static void UnregisterErrorHandledDisplay(nint errorDisplay)
     {
         ErrorHandledDisplays.TryRemove(errorDisplay, out _);
+        ExpectedErrorLogLimiter.RemoveDisplay(errorDisplay);
     }
 
     internal static bool ShouldSuppressXError(nint errorDisplay, byte errorCode, byte requestCode = 0)

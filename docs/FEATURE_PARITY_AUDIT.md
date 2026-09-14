@@ -86,10 +86,11 @@ These are proof gaps, not source features known to be absent:
    accepting new writes.
 4. Application update staging, health confirmation, rollback, and recovery on
    a clean installed/portable machine.
-5. Linux AppImage testing on native X11 and XWayland. Pure native Wayland
+5. Linux AppImage testing on native X11 and XWayland, including the PipeWire
+   ScreenCast fallback for FSS tuning, first-footfall inference, and rig
+   detection when XWayland cannot capture game pixels. Pure native Wayland
    remains an explicit platform limitation because it cannot provide the
-   required game-window tracking, click-through, capture, and global-input
-   contracts.
+   required game-window tracking, click-through, and global-input contracts.
 
 The port should remain labeled a testing preview until these runtime gates are
 recorded against a release candidate.

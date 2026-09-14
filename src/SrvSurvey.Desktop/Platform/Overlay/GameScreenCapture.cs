@@ -13,6 +13,8 @@ public interface IGameScreenCapture : IDisposable
     string? UnavailableReason { get; }
 
     CapturedPixelBuffer Capture(PixelRect bounds);
+
+    CapturedPixelBuffer Capture(PixelRect bounds, PixelRect sourceBounds) => Capture(bounds);
 }
 
 public sealed class CapturedPixelBuffer : IFssPixelSource
@@ -57,17 +59,35 @@ public sealed class CapturedPixelBuffer : IFssPixelSource
 
 public static class GameScreenCapture
 {
-    public static IGameScreenCapture CreateCurrent()
+    public static IGameScreenCapture CreateCurrent(
+        bool enableWaylandPortalFallback = false,
+        Func<CancellationToken, Task<bool>>? confirmWaylandScreenShare = null
+    )
     {
         if (OperatingSystem.IsWindows())
         {
             return new WindowsGameScreenCapture();
         }
 
-        if (OverlayPlatformCapabilities.DetectCurrent().UsesX11Compatibility)
+        var capabilities = OverlayPlatformCapabilities.DetectCurrent();
+        if (capabilities.UsesX11Compatibility)
         {
-            return X11GameScreenCapture.TryCreate()
+            IGameScreenCapture x11Capture =
+                X11GameScreenCapture.TryCreate()
                 ?? new UnavailableGameScreenCapture("X11 screen capture could not connect to the display.");
+            IGameScreenCapture capture =
+                enableWaylandPortalFallback && OperatingSystem.IsLinux() && IsWaylandSession()
+                    ? new FallbackGameScreenCapture(
+                        x11Capture,
+                        new WaylandPortalGameScreenCapture(confirmWaylandScreenShare)
+                    )
+                    : x11Capture;
+            return OperatingSystem.IsLinux() ? new BackoffGameScreenCapture(capture) : capture;
+        }
+
+        if (enableWaylandPortalFallback && OperatingSystem.IsLinux() && IsWaylandSession())
+        {
+            return new BackoffGameScreenCapture(new WaylandPortalGameScreenCapture(confirmWaylandScreenShare));
         }
 
         return new UnavailableGameScreenCapture(
@@ -76,6 +96,26 @@ public static class GameScreenCapture
                 : "FSS tuning detection is not supported on this platform."
         );
     }
+
+    private static bool IsWaylandSession() =>
+        !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("WAYLAND_DISPLAY"))
+        || string.Equals(
+            Environment.GetEnvironmentVariable("XDG_SESSION_TYPE"),
+            "wayland",
+            StringComparison.OrdinalIgnoreCase
+        );
+
+    internal static bool IsRecoverableFailure(Exception exception) =>
+        exception
+            is Win32Exception
+                or ExternalException
+                or IOException
+                or InvalidDataException
+                or InvalidOperationException
+                or NotSupportedException;
+
+    internal static bool ShouldShowWaylandSelectionGuidance(uint portalVersion, string? restoreToken) =>
+        portalVersion < 4 || string.IsNullOrWhiteSpace(restoreToken);
 }
 
 public sealed class UnavailableGameScreenCapture : IGameScreenCapture
@@ -96,6 +136,170 @@ public sealed class UnavailableGameScreenCapture : IGameScreenCapture
 
     public void Dispose() { }
 }
+
+internal sealed class FallbackGameScreenCapture : IGameScreenCapture
+{
+    private readonly Lock gate = new();
+    private IGameScreenCapture? primary;
+    private IGameScreenCapture? fallback;
+
+    public FallbackGameScreenCapture(IGameScreenCapture primary, IGameScreenCapture fallback)
+    {
+        ArgumentNullException.ThrowIfNull(primary);
+        ArgumentNullException.ThrowIfNull(fallback);
+        this.primary = primary;
+        this.fallback = fallback;
+    }
+
+    public bool IsAvailable
+    {
+        get
+        {
+            lock (gate)
+            {
+                return primary?.IsAvailable == true || fallback?.IsAvailable == true;
+            }
+        }
+    }
+
+    public string? UnavailableReason
+    {
+        get
+        {
+            lock (gate)
+            {
+                return primary?.UnavailableReason ?? fallback?.UnavailableReason;
+            }
+        }
+    }
+
+    public CapturedPixelBuffer Capture(PixelRect bounds) => CaptureCore(capture => capture.Capture(bounds));
+
+    public CapturedPixelBuffer Capture(PixelRect bounds, PixelRect sourceBounds) =>
+        CaptureCore(capture => capture.Capture(bounds, sourceBounds));
+
+    public void Dispose()
+    {
+        lock (gate)
+        {
+            primary?.Dispose();
+            fallback?.Dispose();
+            primary = null;
+            fallback = null;
+        }
+    }
+
+    private CapturedPixelBuffer CaptureCore(Func<IGameScreenCapture, CapturedPixelBuffer> captureFrame)
+    {
+        lock (gate)
+        {
+            ObjectDisposedException.ThrowIf(primary is null && fallback is null, this);
+            if (primary is not null && primary.IsAvailable)
+            {
+                try
+                {
+                    return captureFrame(primary);
+                }
+                catch (Exception exception) when (GameScreenCapture.IsRecoverableFailure(exception))
+                {
+                    primary.Dispose();
+                    primary = null;
+                }
+            }
+
+            return captureFrame(fallback ?? throw new ObjectDisposedException(nameof(FallbackGameScreenCapture)));
+        }
+    }
+}
+
+internal sealed class BackoffGameScreenCapture : IGameScreenCapture
+{
+    private static readonly TimeSpan MaximumBackoff = TimeSpan.FromSeconds(30);
+
+    private readonly Lock gate = new();
+    private readonly TimeProvider timeProvider;
+    private IGameScreenCapture? inner;
+    private DateTimeOffset retryAfter;
+    private int consecutiveFailures;
+
+    public BackoffGameScreenCapture(IGameScreenCapture inner, TimeProvider? timeProvider = null)
+    {
+        this.inner = inner ?? throw new ArgumentNullException(nameof(inner));
+        this.timeProvider = timeProvider ?? TimeProvider.System;
+    }
+
+    public bool IsAvailable
+    {
+        get
+        {
+            lock (gate)
+            {
+                return inner?.IsAvailable == true;
+            }
+        }
+    }
+
+    public string? UnavailableReason
+    {
+        get
+        {
+            lock (gate)
+            {
+                return inner?.UnavailableReason;
+            }
+        }
+    }
+
+    public CapturedPixelBuffer Capture(PixelRect bounds) => CaptureCore(capture => capture.Capture(bounds));
+
+    public CapturedPixelBuffer Capture(PixelRect bounds, PixelRect sourceBounds) =>
+        CaptureCore(capture => capture.Capture(bounds, sourceBounds));
+
+    public void Dispose()
+    {
+        lock (gate)
+        {
+            inner?.Dispose();
+            inner = null;
+        }
+    }
+
+    private CapturedPixelBuffer CaptureCore(Func<IGameScreenCapture, CapturedPixelBuffer> captureFrame)
+    {
+        lock (gate)
+        {
+            IGameScreenCapture capture = inner ?? throw new ObjectDisposedException(nameof(BackoffGameScreenCapture));
+            DateTimeOffset now = timeProvider.GetUtcNow();
+            if (now < retryAfter)
+            {
+                throw new ScreenCaptureBackoffException(retryAfter - now);
+            }
+
+            try
+            {
+                CapturedPixelBuffer result = captureFrame(capture);
+                consecutiveFailures = 0;
+                retryAfter = default;
+                return result;
+            }
+            catch (Exception exception) when (GameScreenCapture.IsRecoverableFailure(exception))
+            {
+                consecutiveFailures++;
+                retryAfter = now + GetBackoff(consecutiveFailures);
+                throw;
+            }
+        }
+    }
+
+    private static TimeSpan GetBackoff(int consecutiveFailures)
+    {
+        int exponent = Math.Min(Math.Max(consecutiveFailures - 1, 0), 5);
+        return TimeSpan.FromSeconds(Math.Min(1 << exponent, MaximumBackoff.TotalSeconds));
+    }
+}
+
+internal sealed class ScreenCaptureBackoffException(TimeSpan remaining)
+    : InvalidOperationException($"Screen capture will retry in {Math.Max(remaining.TotalSeconds, 0):0.0} seconds.");
 
 [SupportedOSPlatform("windows")]
 internal sealed partial class WindowsGameScreenCapture : IGameScreenCapture
