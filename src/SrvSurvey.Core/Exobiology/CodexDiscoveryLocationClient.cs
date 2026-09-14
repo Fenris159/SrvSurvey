@@ -70,7 +70,7 @@ public sealed class CodexDiscoveryLocationClient : ICodexDiscoveryLocationClient
             throw new ArgumentOutOfRangeException(nameof(systemAddress), "A positive system address is required.");
         }
 
-        var requestUri = CreateRequestUri(systemAddress);
+        Uri requestUri = CreateRequestUri(systemAddress);
         using var timeoutCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeoutCancellation.CancelAfter(requestTimeout);
         return await LoadLocationSafelyAsync(
@@ -124,11 +124,11 @@ public sealed class CodexDiscoveryLocationClient : ICodexDiscoveryLocationClient
         CancellationToken operationToken
     )
     {
-        using var response = await client
+        using HttpResponseMessage response = await client
             .GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead, operationToken)
             .ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
-        using var document = await BoundedHttpContent
+        using JsonDocument document = await BoundedHttpContent
             .ReadJsonDocumentAsync(
                 response.Content,
                 MaximumResponseBytes,
@@ -136,15 +136,18 @@ public sealed class CodexDiscoveryLocationClient : ICodexDiscoveryLocationClient
                 operationToken
             )
             .ConfigureAwait(false);
-        if (!document.RootElement.TryGetProperty("system", out var system) || system.ValueKind != JsonValueKind.Object)
+        if (
+            !document.RootElement.TryGetProperty("system", out JsonElement system)
+            || system.ValueKind != JsonValueKind.Object
+        )
         {
             throw new InvalidDataException("The Spansh dump has no system object.");
         }
 
-        var systemName = GetString(system, "name") ?? systemAddress.ToString(CultureInfo.InvariantCulture);
-        var position = TryReadPosition(system);
-        var (bodyName, bodyAddress) = FindBody(system, bodyId);
-        var spanshUri = CreateSpanshUri(systemAddress, bodyAddress);
+        string systemName = GetString(system, "name") ?? systemAddress.ToString(CultureInfo.InvariantCulture);
+        GalacticCoordinate? position = TryReadPosition(system);
+        (string? bodyName, long? bodyAddress) = FindBody(system, bodyId);
+        Uri spanshUri = CreateSpanshUri(systemAddress, bodyAddress);
         return new CodexDiscoveryLocationLoadResult(
             new CodexDiscoveryLocation(
                 systemAddress,
@@ -162,7 +165,7 @@ public sealed class CodexDiscoveryLocationClient : ICodexDiscoveryLocationClient
     private static GalacticCoordinate? TryReadPosition(JsonElement system)
     {
         if (
-            system.TryGetProperty("coords", out var coords)
+            system.TryGetProperty("coords", out JsonElement coords)
             && coords.ValueKind == JsonValueKind.Object
             && GetDouble(coords, "x") is { } x
             && GetDouble(coords, "y") is { } y
@@ -177,12 +180,12 @@ public sealed class CodexDiscoveryLocationClient : ICodexDiscoveryLocationClient
 
     private static (string? BodyName, long? BodyAddress) FindBody(JsonElement system, int bodyId)
     {
-        if (!system.TryGetProperty("bodies", out var bodies) || bodies.ValueKind != JsonValueKind.Array)
+        if (!system.TryGetProperty("bodies", out JsonElement bodies) || bodies.ValueKind != JsonValueKind.Array)
         {
             return (null, null);
         }
 
-        foreach (var body in bodies.EnumerateArray())
+        foreach (JsonElement body in bodies.EnumerateArray())
         {
             if (body.ValueKind != JsonValueKind.Object || GetInt32(body, "bodyId") != bodyId)
             {
@@ -207,7 +210,7 @@ public sealed class CodexDiscoveryLocationClient : ICodexDiscoveryLocationClient
 
     private static string? GetString(JsonElement root, string name)
     {
-        return root.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String
+        return root.TryGetProperty(name, out JsonElement value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
     }
@@ -215,9 +218,9 @@ public sealed class CodexDiscoveryLocationClient : ICodexDiscoveryLocationClient
     private static double? GetDouble(JsonElement root, string name)
     {
         return
-            root.TryGetProperty(name, out var value)
+            root.TryGetProperty(name, out JsonElement value)
             && value.ValueKind == JsonValueKind.Number
-            && value.TryGetDouble(out var result)
+            && value.TryGetDouble(out double result)
             ? result
             : null;
     }
@@ -225,21 +228,21 @@ public sealed class CodexDiscoveryLocationClient : ICodexDiscoveryLocationClient
     private static int? GetInt32(JsonElement root, string name)
     {
         return
-            root.TryGetProperty(name, out var value)
+            root.TryGetProperty(name, out JsonElement value)
             && value.ValueKind == JsonValueKind.Number
-            && value.TryGetInt32(out var result)
+            && value.TryGetInt32(out int result)
             ? result
             : null;
     }
 
     private static long? GetInt64(JsonElement root, string name)
     {
-        if (!root.TryGetProperty(name, out var value))
+        if (!root.TryGetProperty(name, out JsonElement value))
         {
             return null;
         }
 
-        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out var result))
+        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out long result))
         {
             return result;
         }

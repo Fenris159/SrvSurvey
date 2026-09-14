@@ -16,14 +16,14 @@ public sealed class EliteGameProcessDetector : IEliteGameProcessDetector
     {
         try
         {
-            var processes = Process.GetProcessesByName(EliteGameWindowIdentity.WindowsProcessName);
+            Process[] processes = Process.GetProcessesByName(EliteGameWindowIdentity.WindowsProcessName);
             try
             {
                 return processes.Length > 0;
             }
             finally
             {
-                foreach (var process in processes)
+                foreach (Process process in processes)
                 {
                     process.Dispose();
                 }

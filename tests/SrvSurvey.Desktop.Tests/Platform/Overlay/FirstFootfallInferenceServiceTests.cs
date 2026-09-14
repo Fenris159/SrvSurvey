@@ -9,14 +9,14 @@ public sealed class FirstFootfallInferenceServiceTests
     [Fact]
     public void ColorDetectorUsesLegacyStrictToleranceBounds()
     {
-        var preferences = FirstFootfallInferencePreferences.Default with
+        FirstFootfallInferencePreferences preferences = FirstFootfallInferencePreferences.Default with
         {
             Red = 100,
             Green = 100,
             Blue = 100,
             Tolerance = 10,
         };
-        var source = CreateBuffer(
+        CapturedPixelBuffer source = CreateBuffer(
             new FssRgbPixel(100, 100, 100),
             new FssRgbPixel(91, 109, 100),
             new FssRgbPixel(90, 100, 100),
@@ -42,7 +42,7 @@ public sealed class FirstFootfallInferenceServiceTests
         );
         using var service = new FirstFootfallInferenceService(tracker, capture, (_, _) => Task.CompletedTask);
 
-        var result = await service.DetectAsync(
+        FirstFootfallInferenceResult result = await service.DetectAsync(
             FirstFootfallInferencePreferences.Default with
             {
                 Threshold = 0.2,
@@ -66,7 +66,7 @@ public sealed class FirstFootfallInferenceServiceTests
         var capture = new StubScreenCapture(CreateBuffer(new FssRgbPixel(102, 255, 255)));
         using var service = new FirstFootfallInferenceService(tracker, capture, (_, _) => Task.CompletedTask);
 
-        var result = await service.DetectAsync(
+        FirstFootfallInferenceResult result = await service.DetectAsync(
             FirstFootfallInferencePreferences.Default with
             {
                 DurationSeconds = 1,
@@ -80,7 +80,7 @@ public sealed class FirstFootfallInferenceServiceTests
 
     private static CapturedPixelBuffer CreateBuffer(params FssRgbPixel[] pixels)
     {
-        var bytes = pixels.SelectMany(pixel => new byte[] { pixel.Blue, pixel.Green, pixel.Red, 255 }).ToArray();
+        byte[] bytes = pixels.SelectMany(pixel => new byte[] { pixel.Blue, pixel.Green, pixel.Red, 255 }).ToArray();
         return new CapturedPixelBuffer(pixels.Length, 1, bytes);
     }
 

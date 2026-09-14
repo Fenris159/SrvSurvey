@@ -452,48 +452,48 @@ public sealed class GuideIconPreviewControl : Control
             return;
         }
 
-        var background = BackgroundBrush ?? Brushes.Black;
-        var primary = PrimaryBrush ?? Brushes.Orange;
-        var secondary = SecondaryBrush ?? Brushes.Cyan;
-        var muted = MutedBrush ?? Brushes.Gray;
-        var success = SuccessBrush ?? Brushes.LimeGreen;
-        var warning = WarningBrush ?? Brushes.Gold;
-        var danger = DangerBrush ?? Brushes.Red;
-        var gold = GoldBrush ?? Brushes.Goldenrod;
-        var pipConfirmed = PipConfirmedBrush ?? primary;
-        var pipConfirmedDim = PipConfirmedDimBrush ?? muted;
-        var pipPotential = PipPotentialBrush ?? muted;
-        var pipConfirmedDimPotential = PipConfirmedDimPotentialBrush ?? pipPotential;
-        var pipPrediction = PipPredictionBrush ?? secondary;
-        var pipPredictionPotential = PipPredictionPotentialBrush ?? muted;
-        var pipHighlight = PipHighlightBrush ?? gold;
-        var pipHighlightPotential = PipHighlightPotentialBrush ?? pipHighlight;
-        var pipGlobalRegional = PipGlobalRegionalBrush ?? Brushes.White;
-        var pipGlobalRegionalPotential = PipGlobalRegionalPotentialBrush ?? Brushes.Gray;
-        var pipUnknown = PipUnknownBrush ?? muted;
-        var pipUnknownGlyph = PipUnknownGlyphBrush ?? Brushes.LightGray;
-        var pipHatch = PipHatchBrush ?? muted;
-        var pipEmpty = PipEmptyBrush ?? Brushes.Transparent;
-        var pipConfirmedEdge = PipConfirmedEdgeBrush ?? pipConfirmed;
-        var pipConfirmedDimEdge = PipConfirmedDimEdgeBrush ?? pipConfirmedDim;
-        var pipPredictionEdge = PipPredictionEdgeBrush ?? pipPrediction;
-        var pipHighlightEdge = PipHighlightEdgeBrush ?? pipHighlight;
-        var pipGlobalRegionalEdge = PipGlobalRegionalEdgeBrush ?? pipGlobalRegional;
-        var pipUnknownEdge = PipUnknownEdgeBrush ?? pipUnknown;
-        var pipConfirmedSegmentEdge = PipConfirmedSegmentEdgeBrush ?? pipConfirmed;
-        var pipConfirmedPotentialSegmentEdge = PipConfirmedPotentialSegmentEdgeBrush ?? pipPotential;
-        var pipConfirmedDimSegmentEdge = PipConfirmedDimSegmentEdgeBrush ?? pipConfirmedDim;
-        var pipConfirmedDimPotentialSegmentEdge = PipConfirmedDimPotentialSegmentEdgeBrush ?? pipPotential;
-        var pipPredictionSegmentEdge = PipPredictionSegmentEdgeBrush ?? pipPrediction;
-        var pipPredictionPotentialSegmentEdge = PipPredictionPotentialSegmentEdgeBrush ?? pipPredictionPotential;
-        var pipHighlightSegmentEdge = PipHighlightSegmentEdgeBrush ?? pipHighlight;
-        var pipHighlightPotentialSegmentEdge = PipHighlightPotentialSegmentEdgeBrush ?? pipHighlight;
-        var pipGlobalRegionalSegmentEdge = PipGlobalRegionalSegmentEdgeBrush ?? pipGlobalRegional;
-        var pipGlobalRegionalPotentialSegmentEdge =
+        IBrush background = BackgroundBrush ?? Brushes.Black;
+        IBrush primary = PrimaryBrush ?? Brushes.Orange;
+        IBrush secondary = SecondaryBrush ?? Brushes.Cyan;
+        IBrush muted = MutedBrush ?? Brushes.Gray;
+        IBrush success = SuccessBrush ?? Brushes.LimeGreen;
+        IBrush warning = WarningBrush ?? Brushes.Gold;
+        IBrush danger = DangerBrush ?? Brushes.Red;
+        IBrush gold = GoldBrush ?? Brushes.Goldenrod;
+        IBrush pipConfirmed = PipConfirmedBrush ?? primary;
+        IBrush pipConfirmedDim = PipConfirmedDimBrush ?? muted;
+        IBrush pipPotential = PipPotentialBrush ?? muted;
+        IBrush pipConfirmedDimPotential = PipConfirmedDimPotentialBrush ?? pipPotential;
+        IBrush pipPrediction = PipPredictionBrush ?? secondary;
+        IBrush pipPredictionPotential = PipPredictionPotentialBrush ?? muted;
+        IBrush pipHighlight = PipHighlightBrush ?? gold;
+        IBrush pipHighlightPotential = PipHighlightPotentialBrush ?? pipHighlight;
+        IBrush pipGlobalRegional = PipGlobalRegionalBrush ?? Brushes.White;
+        IBrush pipGlobalRegionalPotential = PipGlobalRegionalPotentialBrush ?? Brushes.Gray;
+        IBrush pipUnknown = PipUnknownBrush ?? muted;
+        IBrush pipUnknownGlyph = PipUnknownGlyphBrush ?? Brushes.LightGray;
+        IBrush pipHatch = PipHatchBrush ?? muted;
+        IBrush pipEmpty = PipEmptyBrush ?? Brushes.Transparent;
+        IBrush pipConfirmedEdge = PipConfirmedEdgeBrush ?? pipConfirmed;
+        IBrush pipConfirmedDimEdge = PipConfirmedDimEdgeBrush ?? pipConfirmedDim;
+        IBrush pipPredictionEdge = PipPredictionEdgeBrush ?? pipPrediction;
+        IBrush pipHighlightEdge = PipHighlightEdgeBrush ?? pipHighlight;
+        IBrush pipGlobalRegionalEdge = PipGlobalRegionalEdgeBrush ?? pipGlobalRegional;
+        IBrush pipUnknownEdge = PipUnknownEdgeBrush ?? pipUnknown;
+        IBrush pipConfirmedSegmentEdge = PipConfirmedSegmentEdgeBrush ?? pipConfirmed;
+        IBrush pipConfirmedPotentialSegmentEdge = PipConfirmedPotentialSegmentEdgeBrush ?? pipPotential;
+        IBrush pipConfirmedDimSegmentEdge = PipConfirmedDimSegmentEdgeBrush ?? pipConfirmedDim;
+        IBrush pipConfirmedDimPotentialSegmentEdge = PipConfirmedDimPotentialSegmentEdgeBrush ?? pipPotential;
+        IBrush pipPredictionSegmentEdge = PipPredictionSegmentEdgeBrush ?? pipPrediction;
+        IBrush pipPredictionPotentialSegmentEdge = PipPredictionPotentialSegmentEdgeBrush ?? pipPredictionPotential;
+        IBrush pipHighlightSegmentEdge = PipHighlightSegmentEdgeBrush ?? pipHighlight;
+        IBrush pipHighlightPotentialSegmentEdge = PipHighlightPotentialSegmentEdgeBrush ?? pipHighlight;
+        IBrush pipGlobalRegionalSegmentEdge = PipGlobalRegionalSegmentEdgeBrush ?? pipGlobalRegional;
+        IBrush pipGlobalRegionalPotentialSegmentEdge =
             PipGlobalRegionalPotentialSegmentEdgeBrush ?? pipGlobalRegionalPotential;
         var bounds = new Rect(0.5, 0.5, Bounds.Width - 1, Bounds.Height - 1);
         context.DrawRectangle(background, new Pen(muted, 1), bounds, 8, 8);
-        var center = bounds.Center;
+        Point center = bounds.Center;
 
         switch (Kind)
         {
@@ -824,10 +824,10 @@ public sealed class GuideIconPreviewControl : Control
     {
         var frame = new Rect(center.X - 12, center.Y - 25, 24, 50);
         var edgePen = new Pen(brushes.Edge, 1.9, DashStyle.Dot, PenLineCap.Round, PenLineJoin.Round);
-        for (var index = 0; index < 4; index++)
+        for (int index = 0; index < 4; index++)
         {
             var segment = new Rect(frame.X + 4, frame.Bottom - 5 - (index + 1) * 10, frame.Width - 8, 8);
-            var segmentBrush = GetRewardSegmentBrush(
+            IBrush segmentBrush = GetRewardSegmentBrush(
                 index,
                 isPrediction,
                 brushes.Filled,
@@ -837,7 +837,7 @@ public sealed class GuideIconPreviewControl : Control
             Pen? segmentPen = null;
             if (!ReferenceEquals(segmentBrush, brushes.Empty))
             {
-                var segmentEdge = brushes.FilledEdge;
+                IBrush segmentEdge = brushes.FilledEdge;
                 if (isPrediction && index == 2)
                 {
                     segmentEdge = brushes.PotentialEdge;
@@ -852,10 +852,10 @@ public sealed class GuideIconPreviewControl : Control
         if (isPrediction)
         {
             var hatchPen = new Pen(brushes.Hatch, 1);
-            for (var x = frame.Left - frame.Height; x < frame.Right; x += 6)
+            for (double x = frame.Left - frame.Height; x < frame.Right; x += 6)
             {
-                var startX = Math.Max(x, frame.Left);
-                var endX = Math.Min(x + frame.Height, frame.Right);
+                double startX = Math.Max(x, frame.Left);
+                double endX = Math.Min(x + frame.Height, frame.Right);
                 if (startX >= endX)
                 {
                     continue;
@@ -885,7 +885,7 @@ public sealed class GuideIconPreviewControl : Control
         IBrush empty
     )
     {
-        var filledSegmentCount = isPrediction ? 2 : 3;
+        int filledSegmentCount = isPrediction ? 2 : 3;
         if (index < filledSegmentCount)
         {
             return filled;
@@ -942,9 +942,9 @@ public sealed class GuideIconPreviewControl : Control
         bool isActiveObelisk = false
     )
     {
-        var style = GuardianLegacyMapDrawing.GetPointStyle(type, status, isActiveObelisk);
+        GuardianLegacyPointStyle style = GuardianLegacyMapDrawing.GetPointStyle(type, status, isActiveObelisk);
         var stroke = new SolidColorBrush(style.Stroke);
-        var fill = style.HasFill ? new SolidColorBrush(style.Fill) : null;
+        SolidColorBrush? fill = style.HasFill ? new SolidColorBrush(style.Fill) : null;
         var pen = new Pen(
             stroke,
             Math.Max(1.5, style.StrokeWidth),
@@ -961,13 +961,13 @@ public sealed class GuideIconPreviewControl : Control
             return;
         }
 
-        var rotation = type switch
+        double rotation = type switch
         {
             GuardianPoiType.Obelisk or GuardianPoiType.BrokenObelisk => 167.5,
             GuardianPoiType.Component => -45,
             _ => 0,
         };
-        var points = GuardianLegacyMapDrawing
+        Point[] points = GuardianLegacyMapDrawing
             .CreateGlyphPoints(type, new Point(), rotation)
             .Select(point => new Point(center.X + point.X * 3, center.Y + point.Y * 3))
             .ToArray();
@@ -999,18 +999,18 @@ public sealed class GuideIconPreviewControl : Control
         }
         else if (type == GuardianPoiType.Component)
         {
-            var materialCenters = GuardianLegacyMapDrawing.CreateComponentMaterialCenters(center);
-            var materials = new[]
+            IReadOnlyList<Point> materialCenters = GuardianLegacyMapDrawing.CreateComponentMaterialCenters(center);
+            GuardianComponentMaterial[] materials = new[]
             {
                 GuardianComponentMaterial.Cell,
                 GuardianComponentMaterial.Conduit,
                 GuardianComponentMaterial.Tech,
             };
-            for (var index = 0; index < materialCenters.Count; index++)
+            for (int index = 0; index < materialCenters.Count; index++)
             {
-                var raw = materialCenters[index] - center;
-                var dot = center + new Point(raw.X * 2.4, raw.Y * 2.4);
-                var color = GuardianLegacyMapDrawing.GetComponentMaterialColor(materials[index]);
+                Point raw = materialCenters[index] - center;
+                Point dot = center + new Point(raw.X * 2.4, raw.Y * 2.4);
+                Color? color = GuardianLegacyMapDrawing.GetComponentMaterialColor(materials[index]);
                 context.DrawEllipse(new SolidColorBrush(color!.Value), new Pen(Brushes.Black, 1), dot, 3, 3);
             }
         }
@@ -1018,9 +1018,9 @@ public sealed class GuideIconPreviewControl : Control
 
     private static void DrawGuardianActiveObelisk(DrawingContext context, Point center)
     {
-        for (var step = 0; step < 6; step++)
+        for (int step = 0; step < 6; step++)
         {
-            var color = GuardianLegacyMapDrawing.Cyan;
+            Color color = GuardianLegacyMapDrawing.Cyan;
             context.DrawGeometry(
                 new SolidColorBrush(Color.FromArgb((byte)(18 + step * 22), color.R, color.G, color.B)),
                 null,
@@ -1039,7 +1039,7 @@ public sealed class GuideIconPreviewControl : Control
 
     private static void DrawGuardianArtifactPalette(DrawingContext context, Point center)
     {
-        var types = new[]
+        GuardianPoiType[] types = new[]
         {
             GuardianPoiType.Orb,
             GuardianPoiType.Casket,
@@ -1047,9 +1047,12 @@ public sealed class GuideIconPreviewControl : Control
             GuardianPoiType.Totem,
             GuardianPoiType.Urn,
         };
-        for (var index = 0; index < types.Length; index++)
+        for (int index = 0; index < types.Length; index++)
         {
-            var style = GuardianLegacyMapDrawing.GetPointStyle(types[index], GuardianPoiStatus.Present);
+            GuardianLegacyPointStyle style = GuardianLegacyMapDrawing.GetPointStyle(
+                types[index],
+                GuardianPoiStatus.Present
+            );
             context.DrawEllipse(
                 new SolidColorBrush(style.Fill),
                 new Pen(new SolidColorBrush(style.Stroke), 2),
@@ -1064,15 +1067,15 @@ public sealed class GuideIconPreviewControl : Control
     {
         var unknown = new Point(center.X - 22, center.Y);
         GuardianSurveyMarkerDrawing.Draw(context, unknown, haloRadius: 9, ringRadius: 8, dotRadius: 0.7);
-        var states = new[]
+        (GuardianPoiStatus, double)[] states = new[]
         {
             (GuardianPoiStatus.Absent, center.X - 7),
             (GuardianPoiStatus.Present, center.X + 8),
             (GuardianPoiStatus.Empty, center.X + 23),
         };
-        foreach (var (status, x) in states)
+        foreach ((GuardianPoiStatus status, double x) in states)
         {
-            var style = GuardianLegacyMapDrawing.GetPointStyle(GuardianPoiType.Orb, status);
+            GuardianLegacyPointStyle style = GuardianLegacyMapDrawing.GetPointStyle(GuardianPoiType.Orb, status);
             context.DrawEllipse(
                 style.HasFill ? new SolidColorBrush(style.Fill) : null,
                 new Pen(new SolidColorBrush(style.Stroke), 2),
@@ -1091,9 +1094,9 @@ public sealed class GuideIconPreviewControl : Control
         }
 
         var geometry = new StreamGeometry();
-        using var geometryContext = geometry.Open();
+        using StreamGeometryContext geometryContext = geometry.Open();
         geometryContext.BeginFigure(points[0], isFilled: false);
-        for (var index = 1; index < points.Length; index++)
+        for (int index = 1; index < points.Length; index++)
         {
             geometryContext.LineTo(points[index]);
         }
@@ -1138,7 +1141,7 @@ public sealed class GuideIconPreviewControl : Control
     )
     {
         var left = new Point(center.X - 24, center.Y);
-        var middle = center;
+        Point middle = center;
         var right = new Point(center.X + 24, center.Y);
         context.DrawLine(new Pen(muted, 2), left, right);
         context.DrawEllipse(muted, null, left, 4, 4);
@@ -1190,7 +1193,7 @@ public sealed class GuideIconPreviewControl : Control
 
     private static void DrawTriangle(DrawingContext context, Point center, double radius, IBrush brush, bool fill)
     {
-        var geometry = CreatePolygon([
+        StreamGeometry geometry = CreatePolygon([
             new Point(center.X, center.Y - radius),
             new Point(center.X + radius * 0.75, center.Y + radius),
             new Point(center.X, center.Y + radius * 0.55),
@@ -1202,9 +1205,9 @@ public sealed class GuideIconPreviewControl : Control
     private static StreamGeometry CreatePolygon(IReadOnlyList<Point> points)
     {
         var geometry = new StreamGeometry();
-        using var geometryContext = geometry.Open();
+        using StreamGeometryContext geometryContext = geometry.Open();
         geometryContext.BeginFigure(points[0], isFilled: true);
-        for (var index = 1; index < points.Count; index++)
+        for (int index = 1; index < points.Count; index++)
         {
             geometryContext.LineTo(points[index]);
         }

@@ -208,7 +208,7 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
 
     public void ReportAction(GlobalInputAction action, bool handled)
     {
-        var definition = GlobalInputActionCatalog.Get(action);
+        GlobalInputActionDefinition definition = GlobalInputActionCatalog.Get(action);
         LastActionStatus = handled
             ? $"Shortcut received: {definition.DisplayName}."
             : $"Shortcut received: {definition.DisplayName}; it is not available in the current game context.";
@@ -227,7 +227,7 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
             definition => definition.Action,
             definition => definition.DefaultChord
         );
-        foreach (var binding in Bindings)
+        foreach (InputBindingViewModel binding in Bindings)
         {
             binding.Reset(bindings[binding.Definition.Action]);
         }
@@ -247,7 +247,7 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
             return;
         }
 
-        var result = controllerDeviceProvider.Discover();
+        ControllerDeviceDiscoveryResult result = controllerDeviceProvider.Discover();
         var devices = result
             .Devices.Select(device => new ControllerDeviceOptionViewModel(
                 device.Id,
@@ -256,8 +256,8 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
                 IsConnected: true
             ))
             .ToList();
-        var configuredId = settings.ControllerDeviceId;
-        var configured = devices.FirstOrDefault(device =>
+        string? configuredId = settings.ControllerDeviceId;
+        ControllerDeviceOptionViewModel? configured = devices.FirstOrDefault(device =>
             string.Equals(device.Id, configuredId, StringComparison.Ordinal)
         );
         if (configured is null && !string.IsNullOrWhiteSpace(configuredId))
@@ -339,7 +339,10 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
     }
 }
 
-public sealed record GlobalInputSettingsChangedEventArgs(GlobalInputSettings Settings);
+public sealed class GlobalInputSettingsChangedEventArgs(GlobalInputSettings settings) : EventArgs
+{
+    public GlobalInputSettings Settings { get; } = settings;
+}
 
 public sealed record ControllerDeviceOptionViewModel(
     string Id,

@@ -16,7 +16,7 @@ public sealed partial class MultipleApplicationInstancesDialog : Window
         ArgumentOutOfRangeException.ThrowIfLessThan(otherInstanceCount, 1);
         ArgumentOutOfRangeException.ThrowIfNegative(unverifiedInstanceCount);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(unverifiedInstanceCount, otherInstanceCount);
-        var total = otherInstanceCount + 1;
+        int total = otherInstanceCount + 1;
         InstanceCountText.Text =
             total == 2
                 ? "2 SrvSurvey instances are currently running."

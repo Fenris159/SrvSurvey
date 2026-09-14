@@ -10,7 +10,7 @@ public sealed class FiregroupStore(string directory)
 
     public FiregroupDocument Load(string commander)
     {
-        var path = GetPath(commander);
+        string path = GetPath(commander);
         if (!File.Exists(path))
         {
             return new();
@@ -21,7 +21,7 @@ public sealed class FiregroupStore(string directory)
 
     public static FiregroupDocument Parse(string json)
     {
-        var document =
+        FiregroupDocument document =
             JsonSerializer.Deserialize<FiregroupDocument>(json, Options)
             ?? throw new JsonException("Empty Firegroups document.");
         Validate(document);
@@ -36,8 +36,8 @@ public sealed class FiregroupStore(string directory)
 
     public FiregroupDocument Restore(string commander, string json)
     {
-        var restored = Parse(json);
-        var path = GetPath(commander);
+        FiregroupDocument restored = Parse(json);
+        string path = GetPath(commander);
         if (File.Exists(path))
         {
             File.Copy(path, path + ".before-restore", true);
@@ -50,9 +50,9 @@ public sealed class FiregroupStore(string directory)
     public void Save(string commander, FiregroupDocument document)
     {
         Validate(document);
-        var path = GetPath(commander);
+        string path = GetPath(commander);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        var temporary = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
+        string temporary = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try
         {
             File.WriteAllText(temporary, JsonSerializer.Serialize(document, Options));

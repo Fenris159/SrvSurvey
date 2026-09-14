@@ -26,9 +26,9 @@ public sealed class CommanderPreferenceViewModel : INotifyPropertyChanged
         this.settingsStore = settingsStore;
         this.profileCatalog = profileCatalog;
         IsCommandLineOverride = isCommandLineOverride;
-        var preference = settingsStore.Load();
-        var automatic = CommanderPreferenceOptionViewModel.Automatic;
-        var stored = CreateStoredOption(preference);
+        CommanderPreferencePreferences preference = settingsStore.Load();
+        CommanderPreferenceOptionViewModel automatic = CommanderPreferenceOptionViewModel.Automatic;
+        CommanderPreferenceOptionViewModel? stored = CreateStoredOption(preference);
         options = stored is null ? [automatic] : [automatic, stored];
         selectedOption = stored ?? automatic;
         statusMessage =
@@ -96,8 +96,8 @@ public sealed class CommanderPreferenceViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            var preference = settingsStore.Load();
-            var catalog = await profileCatalog.LoadAsync();
+            CommanderPreferencePreferences preference = settingsStore.Load();
+            CommanderProfileCatalogResult catalog = await profileCatalog.LoadAsync();
             var profileOptions = catalog
                 .Profiles.Select(profile => new CommanderPreferenceOptionViewModel(
                     profile.CommanderName,
@@ -178,7 +178,7 @@ public sealed class CommanderPreferenceViewModel : INotifyPropertyChanged
             return;
         }
 
-        var restartHandlers = RestartRequested;
+        Func<Task>? restartHandlers = RestartRequested;
         if (restartHandlers is null)
         {
             StatusMessage = "Commander preference saved. Restart SrvSurvey to use it.";
@@ -188,7 +188,7 @@ public sealed class CommanderPreferenceViewModel : INotifyPropertyChanged
         StatusMessage = "Commander preference saved; restarting SrvSurvey...";
         try
         {
-            foreach (var handler in restartHandlers.GetInvocationList().Cast<Func<Task>>())
+            foreach (Func<Task> handler in restartHandlers.GetInvocationList().Cast<Func<Task>>())
             {
                 await handler();
             }
@@ -224,7 +224,7 @@ public sealed class CommanderPreferenceViewModel : INotifyPropertyChanged
             return null;
         }
 
-        var matches = options
+        CommanderPreferenceOptionViewModel[] matches = options
             .Where(option =>
                 string.Equals(
                     option.CommanderName,
@@ -240,7 +240,7 @@ public sealed class CommanderPreferenceViewModel : INotifyPropertyChanged
     {
         if (preference.PreferredFrontierId is not null)
         {
-            var name = preference.PreferredCommanderName ?? preference.PreferredFrontierId;
+            string name = preference.PreferredCommanderName ?? preference.PreferredFrontierId;
             return new CommanderPreferenceOptionViewModel(
                 name,
                 preference.PreferredFrontierId,

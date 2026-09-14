@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Input.Platform;
+using Avalonia.Platform.Storage;
 using SrvSurvey.Desktop.Runtime;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -33,7 +34,7 @@ public sealed partial class SearchView : UserControl
 
     private async Task WriteClipboardAsync(string text)
     {
-        var clipboard =
+        IClipboard clipboard =
             TopLevel.GetTopLevel(this)?.Clipboard
             ?? throw new InvalidOperationException("The desktop clipboard is not available.");
         await clipboard.SetTextAsync(text);
@@ -42,7 +43,7 @@ public sealed partial class SearchView : UserControl
 
     private Task<bool> LaunchUriAsync(Uri uri)
     {
-        var launcher =
+        ILauncher launcher =
             TopLevel.GetTopLevel(this)?.Launcher
             ?? throw new InvalidOperationException("The desktop link launcher is not available.");
         return launcher.LaunchUriAsync(uri);

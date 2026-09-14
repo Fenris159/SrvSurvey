@@ -24,7 +24,7 @@ public static class CargoInventoryDiff
             return;
         }
 
-        foreach (var entry in inventory)
+        foreach (CargoItem entry in inventory)
         {
             if (string.IsNullOrWhiteSpace(entry.Name))
             {
@@ -41,7 +41,7 @@ public static class CargoInventoryDiff
         ArgumentNullException.ThrowIfNull(destination);
         ArgumentNullException.ThrowIfNull(source);
         destination.Clear();
-        foreach (var pair in source)
+        foreach (KeyValuePair<string, int> pair in source)
         {
             destination[pair.Key] = pair.Value;
         }
@@ -61,25 +61,25 @@ public static class CargoInventoryDiff
         ArgumentNullException.ThrowIfNull(after);
 
         // Normalize into NameComparer maps so case-sensitive caller dictionaries still match.
-        var beforeMap = CreateCountMap();
+        Dictionary<string, int> beforeMap = CreateCountMap();
         CopyFromCounts(beforeMap, before);
-        var afterMap = CreateCountMap();
+        Dictionary<string, int> afterMap = CreateCountMap();
         CopyFromCounts(afterMap, after);
 
-        var diffs = CreateCountMap();
+        Dictionary<string, int> diffs = CreateCountMap();
         // O(after) name set so removed-commodity detection is O(before), not O(before×after).
         var afterNames = new HashSet<string>(afterMap.Count, NameComparer);
-        foreach (var entry in afterMap)
+        foreach (KeyValuePair<string, int> entry in afterMap)
         {
             afterNames.Add(entry.Key);
-            var delta = entry.Value - beforeMap.GetValueOrDefault(entry.Key);
+            int delta = entry.Value - beforeMap.GetValueOrDefault(entry.Key);
             if (delta != 0)
             {
                 diffs[entry.Key] = delta;
             }
         }
 
-        foreach (var entry in beforeMap.Where(item => !afterNames.Contains(item.Key)))
+        foreach (KeyValuePair<string, int> entry in beforeMap.Where(item => !afterNames.Contains(item.Key)))
         {
             diffs[entry.Key] = -entry.Value;
         }
@@ -97,7 +97,7 @@ public static class CargoInventoryDiff
     )
     {
         ArgumentNullException.ThrowIfNull(before);
-        var afterMap = ToCountMap(after);
+        Dictionary<string, int> afterMap = ToCountMap(after);
         return Compute(before, afterMap);
     }
 
@@ -111,13 +111,13 @@ public static class CargoInventoryDiff
     /// <summary>Map inventory items to name → count for logging/debug dumps.</summary>
     public static Dictionary<string, int> ToCountMap(IReadOnlyList<CargoItem>? inventory)
     {
-        var map = CreateCountMap();
+        Dictionary<string, int> map = CreateCountMap();
         if (inventory is null || inventory.Count == 0)
         {
             return map;
         }
 
-        foreach (var entry in inventory)
+        foreach (CargoItem entry in inventory)
         {
             if (string.IsNullOrWhiteSpace(entry.Name))
             {

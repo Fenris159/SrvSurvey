@@ -11,7 +11,7 @@ namespace SrvSurvey.Desktop.Behaviors;
 
 public static class ClipboardCopyBehavior
 {
-    private static readonly ConditionalWeakTable<Control, object> Attached = new();
+    private static readonly ConditionalWeakTable<Control, object> Attached = [];
 
     public static readonly AttachedProperty<object?> TextProperty = AvaloniaProperty.RegisterAttached<
         Control,
@@ -84,7 +84,7 @@ public static class ClipboardCopyBehavior
             return;
         }
 
-        var text = GetText(control)?.ToString()?.Trim();
+        string? text = GetText(control)?.ToString()?.Trim();
         if (string.IsNullOrWhiteSpace(text) || TopLevel.GetTopLevel(control)?.Clipboard is not { } clipboard)
         {
             return;

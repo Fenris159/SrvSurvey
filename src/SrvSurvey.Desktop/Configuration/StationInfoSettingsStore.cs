@@ -15,7 +15,7 @@ public sealed class StationInfoSettingsStore
     {
         var settings = documentStore.Load()["StationInfo"] as JsonObject;
         return new StationInfoPreferences(
-            settings?["AutoShow"] is JsonValue value && value.TryGetValue<bool>(out var autoShow)
+            settings?["AutoShow"] is JsonValue value && value.TryGetValue<bool>(out bool autoShow)
                 ? autoShow
                 : StationInfoPreferences.Default.AutoShow
         );

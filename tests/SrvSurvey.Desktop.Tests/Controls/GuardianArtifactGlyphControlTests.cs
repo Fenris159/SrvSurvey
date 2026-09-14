@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Media.Imaging;
 using SrvSurvey.Desktop.Controls;
 
 namespace SrvSurvey.Desktop.Tests.Controls;
@@ -31,7 +32,7 @@ public sealed class GuardianArtifactGlyphControlTests
             "relic",
         ];
 
-        foreach (var code in codes)
+        foreach (string? code in codes)
         {
             var control = new GuardianArtifactGlyphControl
             {
@@ -49,7 +50,7 @@ public sealed class GuardianArtifactGlyphControlTests
             try
             {
                 window.Show();
-                var frame = window.CaptureRenderedFrame();
+                WriteableBitmap? frame = window.CaptureRenderedFrame();
                 Assert.NotNull(frame);
                 Assert.Equal(new PixelSize(64, 64), frame.PixelSize);
             }

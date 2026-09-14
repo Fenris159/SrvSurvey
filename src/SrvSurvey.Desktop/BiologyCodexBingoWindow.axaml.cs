@@ -40,7 +40,7 @@ public sealed partial class BiologyCodexBingoWindow : Window
 
     private async Task WriteClipboardAsync(string text)
     {
-        var clipboard =
+        IClipboard clipboard =
             TopLevel.GetTopLevel(this)?.Clipboard
             ?? throw new InvalidOperationException("The desktop clipboard is not available.");
         await clipboard.SetTextAsync(text);
@@ -60,7 +60,7 @@ public sealed partial class BiologyCodexBingoWindow : Window
 
     private static BiologyCodexBingoViewModel CreateDesignViewModel()
     {
-        var temporaryDirectory = Path.Combine(Path.GetTempPath(), "SrvSurvey-CodexBingo-Design");
+        string temporaryDirectory = Path.Combine(Path.GetTempPath(), "SrvSurvey-CodexBingo-Design");
         var store = new CommanderCodexStore(temporaryDirectory);
         var catalog = ExobiologyReferenceCatalog.LoadEmbedded();
         return new BiologyCodexBingoViewModel(

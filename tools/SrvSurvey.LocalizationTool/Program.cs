@@ -28,15 +28,14 @@ if (args.Length != 2)
     return 2;
 }
 
-var repositoryRoot = Path.GetFullPath(args[0]);
-var outputPath = Path.GetFullPath(args[1]);
+string repositoryRoot = Path.GetFullPath(args[0]);
+string outputPath = Path.GetFullPath(args[1]);
 var extractor = new LocalizationSourceExtractor(repositoryRoot);
-var entries = extractor.Extract();
+IReadOnlyList<LocalizationSourceEntry> entries = extractor.Extract();
 Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
 await File.WriteAllTextAsync(
     outputPath,
-    JsonSerializer.Serialize(entries, new JsonSerializerOptions { WriteIndented = true }).ReplaceLineEndings("\n")
-        + "\n"
+    JsonSerializer.Serialize(entries, LocalizationJson.Indented).ReplaceLineEndings("\n") + "\n"
 );
 Console.WriteLine($"Extracted {entries.Count:N0} localizable strings to {outputPath}.");
 return 0;
@@ -48,16 +47,15 @@ static async Task MergeSourcesAsync(
     IReadOnlyList<string> refreshedFiles
 )
 {
-    var options = new JsonSerializerOptions { WriteIndented = true };
-    var baseline =
+    LocalizationSourceEntry[] baseline =
         JsonSerializer.Deserialize<LocalizationSourceEntry[]>(
             await File.ReadAllTextAsync(Path.GetFullPath(baselinePath)),
-            options
+            LocalizationJson.Indented
         ) ?? [];
-    var fresh =
+    LocalizationSourceEntry[] fresh =
         JsonSerializer.Deserialize<LocalizationSourceEntry[]>(
             await File.ReadAllTextAsync(Path.GetFullPath(freshPath)),
-            options
+            LocalizationJson.Indented
         ) ?? [];
     var normalizedFiles = refreshedFiles
         .Select(path => path.Replace('\\', '/'))
@@ -67,8 +65,11 @@ static async Task MergeSourcesAsync(
         .Where(entry => normalizedFiles.Contains(entry.FirstSource))
         .Select(entry => entry.Text)
         .ToHashSet(StringComparer.Ordinal);
-    var freshByText = fresh.ToDictionary(entry => entry.Text, StringComparer.Ordinal);
-    var merged = baseline
+    Dictionary<string, LocalizationSourceEntry> freshByText = fresh.ToDictionary(
+        entry => entry.Text,
+        StringComparer.Ordinal
+    );
+    LocalizationSourceEntry[] merged = baseline
         .Where(entry => !affectedTexts.Contains(entry.Text))
         .Concat(affectedTexts.Where(freshByText.ContainsKey).Select(text => freshByText[text]))
         .OrderBy(entry => entry.Text, StringComparer.Ordinal)
@@ -76,7 +77,7 @@ static async Task MergeSourcesAsync(
 
     await File.WriteAllTextAsync(
         Path.GetFullPath(outputPath),
-        JsonSerializer.Serialize(merged, options).ReplaceLineEndings("\n") + "\n",
+        JsonSerializer.Serialize(merged, LocalizationJson.Indented).ReplaceLineEndings("\n") + "\n",
         new UTF8Encoding(false)
     );
     Console.WriteLine(
@@ -86,24 +87,24 @@ static async Task MergeSourcesAsync(
 
 static async Task NormalizeCatalogAsync(string inputPath, string outputPath)
 {
-    await using var stream = File.OpenRead(Path.GetFullPath(inputPath));
-    using var document = await JsonDocument.ParseAsync(stream);
+    await using FileStream stream = File.OpenRead(Path.GetFullPath(inputPath));
+    using JsonDocument document = await JsonDocument.ParseAsync(stream);
     var result = new Dictionary<string, IReadOnlyList<LocalizationTranslationEntry>>(StringComparer.Ordinal);
-    foreach (var language in document.RootElement.EnumerateObject())
+    foreach (JsonProperty language in document.RootElement.EnumerateObject())
     {
         var entries = new Dictionary<string, string>(StringComparer.Ordinal);
         if (language.Value.ValueKind == JsonValueKind.Object)
         {
-            foreach (var property in language.Value.EnumerateObject())
+            foreach (JsonProperty property in language.Value.EnumerateObject())
             {
                 entries[property.Name] = property.Value.GetString() ?? property.Name;
             }
         }
         else if (language.Value.ValueKind == JsonValueKind.Array)
         {
-            foreach (var element in language.Value.EnumerateArray())
+            foreach (JsonElement element in language.Value.EnumerateArray())
             {
-                var source = element.GetProperty("source").GetString() ?? string.Empty;
+                string source = element.GetProperty("source").GetString() ?? string.Empty;
                 entries[source] = element.GetProperty("translation").GetString() ?? source;
             }
         }
@@ -116,14 +117,18 @@ static async Task NormalizeCatalogAsync(string inputPath, string outputPath)
 
     await File.WriteAllTextAsync(
         Path.GetFullPath(outputPath),
-        JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true }).ReplaceLineEndings("\n")
-            + "\n",
+        JsonSerializer.Serialize(result, LocalizationJson.Indented).ReplaceLineEndings("\n") + "\n",
         new UTF8Encoding(false)
     );
 }
 
 namespace SrvSurvey.LocalizationTool
 {
+    internal static class LocalizationJson
+    {
+        internal static JsonSerializerOptions Indented { get; } = new() { WriteIndented = true };
+    }
+
     internal sealed class LocalizationSourceExtractor(string repositoryRoot)
     {
         private static readonly TimeSpan RegexTimeout = TimeSpan.FromSeconds(1);
@@ -168,20 +173,20 @@ namespace SrvSurvey.LocalizationTool
 
         private void ExtractXaml(IDictionary<string, LocalizationSourceEntry> entries)
         {
-            var root = Path.Combine(repositoryRoot, "src", "SrvSurvey.Desktop");
+            string root = Path.Combine(repositoryRoot, "src", "SrvSurvey.Desktop");
             foreach (
-                var path in Directory
+                string? path in Directory
                     .EnumerateFiles(root, "*.axaml", SearchOption.AllDirectories)
                     .OrderBy(path => Path.GetRelativePath(root, path).Replace('\\', '/'), StringComparer.Ordinal)
             )
             {
                 var document = XDocument.Load(path, LoadOptions.PreserveWhitespace);
-                foreach (var attribute in document.Descendants().Attributes())
+                foreach (XAttribute attribute in document.Descendants().Attributes())
                 {
                     if (
                         !LocalizableAttributes.Contains(attribute.Name.LocalName)
                         || attribute.Value.StartsWith('{')
-                        || !TryNormalize(attribute.Value, out var text)
+                        || !TryNormalize(attribute.Value, out string? text)
                     )
                     {
                         continue;
@@ -194,23 +199,23 @@ namespace SrvSurvey.LocalizationTool
 
         private void ExtractCSharp(IDictionary<string, LocalizationSourceEntry> entries)
         {
-            var root = Path.Combine(repositoryRoot, "src", "SrvSurvey.Desktop");
+            string root = Path.Combine(repositoryRoot, "src", "SrvSurvey.Desktop");
             foreach (
-                var path in Directory
+                string? path in Directory
                     .EnumerateFiles(root, "*.cs", SearchOption.AllDirectories)
                     .Where(path => !IsBuildOutput(path))
                     .OrderBy(path => Path.GetRelativePath(root, path).Replace('\\', '/'), StringComparer.Ordinal)
             )
             {
-                var syntaxTree = CSharpSyntaxTree.ParseText(File.ReadAllText(path));
-                var syntaxRoot = syntaxTree.GetRoot();
+                SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(File.ReadAllText(path));
+                SyntaxNode syntaxRoot = syntaxTree.GetRoot();
 
-                foreach (var expression in syntaxRoot.DescendantNodes().OfType<ExpressionSyntax>())
+                foreach (ExpressionSyntax expression in syntaxRoot.DescendantNodes().OfType<ExpressionSyntax>())
                 {
                     if (
                         IsNestedStringExpression(expression)
-                        || !TryCreateTemplate(expression, out var template)
-                        || !TryNormalize(template, out var text)
+                        || !TryCreateTemplate(expression, out string? template)
+                        || !TryNormalize(template, out string? text)
                     )
                     {
                         continue;
@@ -223,7 +228,7 @@ namespace SrvSurvey.LocalizationTool
 
         private static bool IsBuildOutput(string path)
         {
-            var separator = Path.DirectorySeparatorChar;
+            char separator = Path.DirectorySeparatorChar;
             return path.Contains($"{separator}bin{separator}", StringComparison.OrdinalIgnoreCase)
                 || path.Contains($"{separator}obj{separator}", StringComparison.OrdinalIgnoreCase);
         }
@@ -237,8 +242,8 @@ namespace SrvSurvey.LocalizationTool
 
         private static bool TryCreateTemplate(ExpressionSyntax expression, out string template)
         {
-            var placeholderIndex = 0;
-            var containsText = false;
+            int placeholderIndex = 0;
+            bool containsText = false;
             template = BuildTemplate(expression, ref placeholderIndex, ref containsText);
             return containsText;
         }
@@ -254,7 +259,7 @@ namespace SrvSurvey.LocalizationTool
                 case LiteralExpressionSyntax literal
                     when literal.IsKind(SyntaxKind.StringLiteralExpression)
                         || literal.IsKind(SyntaxKind.Utf8StringLiteralExpression):
-                    var literalValue = literal.Token.ValueText;
+                    string literalValue = literal.Token.ValueText;
                     if (literalValue.Contains('\n'))
                     {
                         return string.Empty;
@@ -266,7 +271,7 @@ namespace SrvSurvey.LocalizationTool
                 case InterpolatedStringExpressionSyntax interpolated:
                     containsText = true;
                     var builder = new StringBuilder();
-                    foreach (var content in interpolated.Contents)
+                    foreach (InterpolatedStringContentSyntax content in interpolated.Contents)
                     {
                         if (content is InterpolatedStringTextSyntax text)
                         {
@@ -299,7 +304,7 @@ namespace SrvSurvey.LocalizationTool
             string sourceKind
         )
         {
-            if (entries.TryGetValue(text, out var existing))
+            if (entries.TryGetValue(text, out LocalizationSourceEntry? existing))
             {
                 if (!existing.SourceKinds.Contains(sourceKind, StringComparer.Ordinal))
                 {

@@ -13,7 +13,7 @@ public static class BoxelSurveyAverageFormatter
 
     public static string Format(int? count, int visitedSystems, BoxelSurveyAverageFormat format = default)
     {
-        var minSystems =
+        int minSystems =
             format.MinSystemsForAverages <= 0 ? DefaultMinSystemsForAverages : format.MinSystemsForAverages;
         if (count is null || count.Value == 0)
         {
@@ -27,7 +27,7 @@ public static class BoxelSurveyAverageFormatter
 
         if (visitedSystems >= count.Value)
         {
-            var inverse = visitedSystems / (double)count.Value;
+            double inverse = visitedSystems / (double)count.Value;
             return string.Create(CultureInfo.CurrentCulture, $"1 in {inverse:0.#}");
         }
 

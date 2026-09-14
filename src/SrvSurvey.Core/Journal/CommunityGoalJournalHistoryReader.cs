@@ -41,12 +41,12 @@ public sealed class CommunityGoalJournalHistoryReader(string journalDirectory) :
             );
         }
 
-        var normalizedFrontierId = NormalizeFrontierId(frontierId);
+        string normalizedFrontierId = NormalizeFrontierId(frontierId);
         var latest = new Dictionary<string, HistoryGoal>(StringComparer.Ordinal);
-        var malformedEntries = 0;
-        var unreadableFiles = 0;
+        int malformedEntries = 0;
+        int unreadableFiles = 0;
         foreach (
-            var file in new DirectoryInfo(journalDirectory)
+            FileInfo? file in new DirectoryInfo(journalDirectory)
                 .EnumerateFiles("Journal.*.log", SearchOption.TopDirectoryOnly)
                 .OrderBy(item => item.LastWriteTimeUtc)
                 .ThenBy(item => item.Name, StringComparer.Ordinal)
@@ -64,7 +64,7 @@ public sealed class CommunityGoalJournalHistoryReader(string journalDirectory) :
             }
         }
 
-        var goals = latest
+        FrontierCommunityGoalSnapshot[] goals = latest
             .Values.OrderByDescending(item => item.Timestamp)
             .Take(MaximumHistoryGoals)
             .Select(item => item.Goal)
@@ -133,7 +133,7 @@ public sealed class CommunityGoalJournalHistoryReader(string journalDirectory) :
             return;
         }
 
-        if (!JournalEventEnvelope.TryParse(line, out var journalEvent, out _) || journalEvent is null)
+        if (!JournalEventEnvelope.TryParse(line, out JournalEventEnvelope? journalEvent, out _) || journalEvent is null)
         {
             state.MalformedEntries++;
             return;
@@ -180,7 +180,7 @@ public sealed class CommunityGoalJournalHistoryReader(string journalDirectory) :
         HistoryReadState state
     )
     {
-        foreach (var pendingEvent in pending)
+        foreach (JournalEventEnvelope pendingEvent in pending)
         {
             state.MalformedEntries += ApplyCommunityGoalEvent(pendingEvent, latest);
         }
@@ -212,12 +212,16 @@ public sealed class CommunityGoalJournalHistoryReader(string journalDirectory) :
     {
         try
         {
-            foreach (var parsed in FrontierCapiSnapshotParser.ParseCommunityGoals(journalEvent.RawJson))
+            foreach (
+                FrontierCommunityGoalSnapshot parsed in FrontierCapiSnapshotParser.ParseCommunityGoals(
+                    journalEvent.RawJson
+                )
+            )
             {
-                var timestamp = journalEvent.Timestamp ?? DateTimeOffset.MinValue;
-                var goal = AddJournalTimestamp(parsed, timestamp);
-                var key = GoalKey(goal);
-                if (!latest.TryGetValue(key, out var prior) || timestamp >= prior.Timestamp)
+                DateTimeOffset timestamp = journalEvent.Timestamp ?? DateTimeOffset.MinValue;
+                FrontierCommunityGoalSnapshot goal = AddJournalTimestamp(parsed, timestamp);
+                string key = GoalKey(goal);
+                if (!latest.TryGetValue(key, out HistoryGoal? prior) || timestamp >= prior.Timestamp)
                 {
                     latest[key] = new HistoryGoal(goal, timestamp);
                 }
@@ -237,7 +241,7 @@ public sealed class CommunityGoalJournalHistoryReader(string journalDirectory) :
     )
     {
         var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var point in goal.DataPoints ?? [])
+        foreach (FrontierDataPointSnapshot point in goal.DataPoints ?? [])
         {
             data[point.Path] = point.Value;
         }
@@ -264,12 +268,12 @@ public sealed class CommunityGoalJournalHistoryReader(string journalDirectory) :
 
     private static string? ReadFrontierId(JsonElement payload)
     {
-        if (!payload.TryGetProperty("FID", out var value) || value.ValueKind != JsonValueKind.String)
+        if (!payload.TryGetProperty("FID", out JsonElement value) || value.ValueKind != JsonValueKind.String)
         {
             return null;
         }
 
-        var frontierId = value.GetString();
+        string? frontierId = value.GetString();
         return string.IsNullOrWhiteSpace(frontierId) ? null : frontierId;
     }
 
@@ -278,7 +282,7 @@ public sealed class CommunityGoalJournalHistoryReader(string journalDirectory) :
 
     private static string NormalizeFrontierId(string value)
     {
-        var normalized = value.Trim();
+        string normalized = value.Trim();
         return normalized.StartsWith('F') || normalized.StartsWith('f') ? normalized[1..] : normalized;
     }
 

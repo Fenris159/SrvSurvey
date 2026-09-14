@@ -12,7 +12,7 @@ public sealed class StreamOverlaySettingsStoreTests : IDisposable
     [Fact]
     public void MissingSettingsDefaultToDisabled()
     {
-        var store = CreateStore();
+        StreamOverlaySettingsStore store = CreateStore();
 
         Assert.False(store.LoadEnabled());
     }
@@ -22,7 +22,7 @@ public sealed class StreamOverlaySettingsStoreTests : IDisposable
     [InlineData(false)]
     public void SavedSettingRoundTripsWithoutRemovingOtherSections(bool enabled)
     {
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         Directory.CreateDirectory(temporaryDirectory);
         File.WriteAllText(path, "{\"Future\":{\"Keep\":42}}");
         var store = new StreamOverlaySettingsStore(path);

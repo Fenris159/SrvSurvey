@@ -9,7 +9,7 @@ internal static class VoxStellarSharedKeyProvider
 
     public static string? GetSharedKey()
     {
-        var environmentValue = Environment.GetEnvironmentVariable(EnvironmentVariable);
+        string? environmentValue = Environment.GetEnvironmentVariable(EnvironmentVariable);
         if (!string.IsNullOrWhiteSpace(environmentValue))
         {
             return environmentValue.Trim();

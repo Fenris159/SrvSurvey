@@ -145,23 +145,23 @@ public sealed class RavenColonialClient : IRavenColonialClient
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(commanderName);
-        var commander = Uri.EscapeDataString(commanderName.Trim());
-        var projectsTask = GetAsync<ColonizationProject[]>(
+        string commander = Uri.EscapeDataString(commanderName.Trim());
+        Task<ColonizationProject[]?> projectsTask = GetAsync<ColonizationProject[]>(
             $"api/cmdr/{commander}/active",
             "load active colonisation projects",
             cancellationToken
         );
-        var hiddenTask = GetAsync<string[]>(
+        Task<string[]?> hiddenTask = GetAsync<string[]>(
             $"api/cmdr/{commander}/hiddenIDs",
             "load hidden colonisation projects",
             cancellationToken
         );
-        var primaryTask = GetAsync<string?>(
+        Task<string?> primaryTask = GetAsync<string?>(
             $"api/cmdr/{commander}/primary",
             "load the primary colonisation project",
             cancellationToken
         );
-        var fleetCarriersTask = GetAsync<ColonizationFleetCarrier[]>(
+        Task<ColonizationFleetCarrier[]?> fleetCarriersTask = GetAsync<ColonizationFleetCarrier[]>(
             $"api/cmdr/{commander}/fc/all",
             "load commander Fleet Carriers",
             cancellationToken
@@ -180,7 +180,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
         ArgumentException.ThrowIfNullOrWhiteSpace(apiKey);
         using var request = new HttpRequestMessage(HttpMethod.Get, CreateUri("api/cmdr/"));
         request.Headers.TryAddWithoutValidation(RccKeyHeader, apiKey.Trim());
-        using var response = await httpClient
+        using HttpResponseMessage response = await httpClient
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         if (
@@ -194,13 +194,13 @@ public sealed class RavenColonialClient : IRavenColonialClient
             return null;
         }
 
-        var data = await ReadRequiredAsync<Dictionary<string, string>>(
+        Dictionary<string, string> data = await ReadRequiredAsync<Dictionary<string, string>>(
                 response,
                 "validate the Raven API key",
                 cancellationToken
             )
             .ConfigureAwait(false);
-        if (!data.TryGetValue("displayName", out var commanderName) || string.IsNullOrWhiteSpace(commanderName))
+        if (!data.TryGetValue("displayName", out string? commanderName) || string.IsNullOrWhiteSpace(commanderName))
         {
             throw new InvalidDataException("Raven returned no commander display name for the API key.");
         }
@@ -216,7 +216,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(commanderName);
         ArgumentNullException.ThrowIfNull(hiddenProjectIds);
-        var ids = hiddenProjectIds
+        string[] ids = hiddenProjectIds
             .Where(id => !string.IsNullOrWhiteSpace(id))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
@@ -227,7 +227,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
         {
             Content = JsonContent.Create(ids, options: JsonOptions),
         };
-        using var response = await httpClient
+        using HttpResponseMessage response = await httpClient
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         return await ReadRequiredAsync<string[]>(response, "save hidden colonisation projects", cancellationToken)
@@ -240,7 +240,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(buildId);
-        using var response = await httpClient
+        using HttpResponseMessage response = await httpClient
             .GetAsync(
                 CreateUri($"api/project/{Uri.EscapeDataString(buildId.Trim())}"),
                 HttpCompletionOption.ResponseHeadersRead,
@@ -264,7 +264,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(systemAddress);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(marketId);
-        using var response = await httpClient
+        using HttpResponseMessage response = await httpClient
             .GetAsync(
                 CreateUri($"api/system/{systemAddress}/{marketId}"),
                 HttpCompletionOption.ResponseHeadersRead,
@@ -298,7 +298,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
         {
             Content = JsonContent.Create(update, options: JsonOptions),
         };
-        using var response = await httpClient
+        using HttpResponseMessage response = await httpClient
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         return await ReadRequiredAsync<ColonizationProject>(
@@ -361,7 +361,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(commanderName);
-        var relativeUri = $"api/cmdr/{Uri.EscapeDataString(commanderName.Trim())}/primary/";
+        string relativeUri = $"api/cmdr/{Uri.EscapeDataString(commanderName.Trim())}/primary/";
         if (string.IsNullOrWhiteSpace(buildId))
         {
             return SendWithoutResponseAsync(
@@ -433,7 +433,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
             HttpMethod.Post,
             CreateUri($"api/v2/system/{Uri.EscapeDataString(systemNameOrAddress.Trim())}/import/bodies")
         );
-        using var response = await httpClient
+        using HttpResponseMessage response = await httpClient
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         return await ReadRequiredAsync<ColonizationSystemRecord>(
@@ -462,7 +462,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
             Content = JsonContent.Create(update, options: JsonOptions),
         };
         request.Headers.TryAddWithoutValidation(RccKeyHeader, apiKey.Trim());
-        using var response = await httpClient
+        using HttpResponseMessage response = await httpClient
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         return await ReadRequiredAsync<ColonizationSystemRecord>(
@@ -509,12 +509,12 @@ public sealed class RavenColonialClient : IRavenColonialClient
             Content = JsonContent.Create(patch, options: JsonOptions),
         };
         request.Headers.TryAddWithoutValidation(RccKeyHeader, apiKey.Trim());
-        using var response = await httpClient
+        using HttpResponseMessage response = await httpClient
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
-            var detail = await ReadBoundedTextAsync(response.Content, MaximumErrorDetailBytes, cancellationToken)
+            string detail = await ReadBoundedTextAsync(response.Content, MaximumErrorDetailBytes, cancellationToken)
                 .ConfigureAwait(false);
             throw new RavenColonialServiceException(response.StatusCode, "repair a colonisation system site", detail);
         }
@@ -530,7 +530,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
         {
             Content = JsonContent.Create(project, options: JsonOptions),
         };
-        using var response = await httpClient
+        using HttpResponseMessage response = await httpClient
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.Conflict)
@@ -552,7 +552,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
     )
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(marketId);
-        using var response = await httpClient
+        using HttpResponseMessage response = await httpClient
             .GetAsync(CreateUri($"api/fc/{marketId}"), HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.NotFound)
@@ -583,7 +583,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
             Content = JsonContent.Create(carrier, options: JsonOptions),
         };
         request.Headers.TryAddWithoutValidation(RccKeyHeader, apiKey.Trim());
-        using var response = await httpClient
+        using HttpResponseMessage response = await httpClient
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         return await ReadRequiredAsync<ColonizationFleetCarrier>(
@@ -648,12 +648,12 @@ public sealed class RavenColonialClient : IRavenColonialClient
             Content = JsonContent.Create(ship, options: JsonOptions),
         };
         request.Headers.TryAddWithoutValidation(RccKeyHeader, apiKey.Trim());
-        using var response = await httpClient
+        using HttpResponseMessage response = await httpClient
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
-            var detail = await ReadBoundedTextAsync(response.Content, MaximumErrorDetailBytes, cancellationToken)
+            string detail = await ReadBoundedTextAsync(response.Content, MaximumErrorDetailBytes, cancellationToken)
                 .ConfigureAwait(false);
             throw new RavenColonialServiceException(response.StatusCode, "publish current ship cargo", detail);
         }
@@ -678,15 +678,19 @@ public sealed class RavenColonialClient : IRavenColonialClient
             Content = JsonContent.Create(normalizedCargo, options: JsonOptions),
         };
         request.Headers.TryAddWithoutValidation(RccKeyHeader, apiKey.Trim());
-        using var response = await httpClient
+        using HttpResponseMessage response = await httpClient
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
-        var result = await ReadRequiredAsync<Dictionary<string, int>>(response, operation, cancellationToken)
+        Dictionary<string, int> result = await ReadRequiredAsync<Dictionary<string, int>>(
+                response,
+                operation,
+                cancellationToken
+            )
             .ConfigureAwait(false);
         var validated = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        foreach (var pair in result)
+        foreach (KeyValuePair<string, int> pair in result)
         {
-            var name = pair.Key?.Trim();
+            string? name = pair.Key?.Trim();
             if (string.IsNullOrWhiteSpace(name) || pair.Value < 0)
             {
                 throw new InvalidDataException("Raven Colonial returned invalid Fleet Carrier cargo.");
@@ -703,7 +707,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
 
     private async Task<T?> GetAsync<T>(string relativeUri, string operation, CancellationToken cancellationToken)
     {
-        using var response = await httpClient
+        using HttpResponseMessage response = await httpClient
             .GetAsync(CreateUri(relativeUri), HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         return await ReadRequiredAsync<T>(response, operation, cancellationToken).ConfigureAwait(false);
@@ -718,12 +722,12 @@ public sealed class RavenColonialClient : IRavenColonialClient
     )
     {
         using var request = new HttpRequestMessage(method, CreateUri(relativeUri)) { Content = content };
-        using var response = await httpClient
+        using HttpResponseMessage response = await httpClient
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
-            var detail = await ReadBoundedTextAsync(response.Content, MaximumErrorDetailBytes, cancellationToken)
+            string detail = await ReadBoundedTextAsync(response.Content, MaximumErrorDetailBytes, cancellationToken)
                 .ConfigureAwait(false);
             throw new RavenColonialServiceException(response.StatusCode, operation, detail);
         }
@@ -737,16 +741,16 @@ public sealed class RavenColonialClient : IRavenColonialClient
     {
         if (!response.IsSuccessStatusCode)
         {
-            var detail = await ReadBoundedTextAsync(response.Content, MaximumErrorDetailBytes, cancellationToken)
+            string detail = await ReadBoundedTextAsync(response.Content, MaximumErrorDetailBytes, cancellationToken)
                 .ConfigureAwait(false);
             throw new RavenColonialServiceException(response.StatusCode, operation, detail);
         }
 
         try
         {
-            var bytes = await ReadBoundedBytesAsync(response.Content, MaximumJsonResponseBytes, cancellationToken)
+            byte[] bytes = await ReadBoundedBytesAsync(response.Content, MaximumJsonResponseBytes, cancellationToken)
                 .ConfigureAwait(false);
-            var result = JsonSerializer.Deserialize<T>(bytes, JsonOptions);
+            T? result = JsonSerializer.Deserialize<T>(bytes, JsonOptions);
             return result
                 ?? throw new InvalidDataException($"Raven Colonial returned no data while trying to {operation}.");
         }
@@ -765,12 +769,12 @@ public sealed class RavenColonialClient : IRavenColonialClient
         CancellationToken cancellationToken
     )
     {
-        await using var source = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-        var buffer = new byte[maximumBytes];
-        var total = 0;
+        await using Stream source = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        byte[] buffer = new byte[maximumBytes];
+        int total = 0;
         while (total < buffer.Length)
         {
-            var read = await source
+            int read = await source
                 .ReadAsync(buffer.AsMemory(total, buffer.Length - total), cancellationToken)
                 .ConfigureAwait(false);
             if (read == 0)
@@ -795,12 +799,12 @@ public sealed class RavenColonialClient : IRavenColonialClient
             throw new InvalidDataException($"Raven Colonial returned more than {maximumBytes:N0} bytes.");
         }
 
-        await using var source = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        await using Stream source = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         using var destination = new MemoryStream();
-        var buffer = new byte[16 * 1024];
+        byte[] buffer = new byte[16 * 1024];
         while (true)
         {
-            var read = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+            int read = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
             if (read == 0)
             {
                 break;
@@ -864,13 +868,13 @@ public sealed class RavenColonialServiceException : HttpRequestException
 
     private static string CreateMessage(HttpStatusCode statusCode, string operation, string? detail)
     {
-        var message = $"Raven Colonial could not {operation} " + $"(HTTP {(int)statusCode} {statusCode}).";
+        string message = $"Raven Colonial could not {operation} " + $"(HTTP {(int)statusCode} {statusCode}).";
         if (string.IsNullOrWhiteSpace(detail))
         {
             return message;
         }
 
-        var normalized = detail.Trim();
+        string normalized = detail.Trim();
         if (normalized.Length > 512)
         {
             normalized = normalized[..512] + "...";

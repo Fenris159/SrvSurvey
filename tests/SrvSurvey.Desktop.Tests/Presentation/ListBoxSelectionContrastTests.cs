@@ -14,9 +14,12 @@ public sealed class ListBoxSelectionContrastTests
     [AvaloniaFact]
     public void SelectedMutedTextOnlyUsesHighContrastInMonochromeTheme()
     {
-        var application =
+        Application application =
             Application.Current ?? throw new InvalidOperationException("Avalonia application is missing.");
-        var temporaryDirectory = Path.Combine(Path.GetTempPath(), $"SrvSurvey-list-selection-tests-{Guid.NewGuid():N}");
+        string temporaryDirectory = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-list-selection-tests-{Guid.NewGuid():N}"
+        );
         var service = new RavenThemeService(
             application,
             new ThemePreferenceStore(Path.Combine(temporaryDirectory, "ui.json"))
@@ -51,8 +54,8 @@ public sealed class ListBoxSelectionContrastTests
             service.Select("monochrome-dark");
             Assert.NotNull(window.CaptureRenderedFrame());
 
-            var selectedItem = listBox.GetVisualDescendants().OfType<ListBoxItem>().Single();
-            var foreground = Assert.IsType<ISolidColorBrush>(text.Foreground, exactMatch: false);
+            ListBoxItem selectedItem = listBox.GetVisualDescendants().OfType<ListBoxItem>().Single();
+            ISolidColorBrush foreground = Assert.IsType<ISolidColorBrush>(text.Foreground, exactMatch: false);
 
             Assert.True(selectedItem.IsSelected);
             Assert.Equal(Color.Parse("#0A0A0A"), foreground.Color);

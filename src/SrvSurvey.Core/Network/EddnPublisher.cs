@@ -45,8 +45,8 @@ public interface IEddnPublisher
 /// </summary>
 public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposable
 {
-    private readonly object sync = new();
-    private readonly object applySync = new();
+    private readonly Lock sync = new();
+    private readonly Lock applySync = new();
     private readonly EddnOutbox outbox;
     private readonly Channel<OutboxWriteCommand> outboxWrites;
     private readonly Task outboxWriterTask;
@@ -160,7 +160,7 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
             }
 
             SetEnabled(request.Enabled);
-            var currentSession = ReplaceSessionIfNeeded(request);
+            EddnSessionPublisher? currentSession = ReplaceSessionIfNeeded(request);
             if (currentSession is null)
             {
                 return Task.FromResult(EddnPublicationResult.Empty);
@@ -229,7 +229,7 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
             acceptedConsentGeneration = consentGeneration;
         }
 
-        var item = EddnTransport.prepare(prepared.message, prepared.schemaRef, header);
+        EddnQueuedMessage item = EddnTransport.prepare(prepared.message, prepared.schemaRef, header);
         Interlocked.Increment(ref stagedWriteCount);
         if (outboxWrites.Writer.TryWrite(new PersistOutboxWrite(item, acceptedConsentGeneration, eventName, rejected)))
         {
@@ -335,7 +335,11 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
 
     private async Task RunOutboxWriterAsync()
     {
-        await foreach (var command in outboxWrites.Reader.ReadAllAsync(CancellationToken.None).ConfigureAwait(false))
+        await foreach (
+            OutboxWriteCommand? command in outboxWrites
+                .Reader.ReadAllAsync(CancellationToken.None)
+                .ConfigureAwait(false)
+        )
         {
             if (command is FlushOutboxWrites flush)
             {
@@ -346,7 +350,7 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
             var write = (PersistOutboxWrite)command;
             try
             {
-                var persisted =
+                bool persisted =
                     IsConsentCurrent(write.ConsentGeneration) && outbox.enqueue(write.Item, allowWhileSuspended: true);
                 if (!persisted)
                 {
@@ -436,14 +440,14 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
                 return null;
             }
 
-            var commander = request.CommanderName.Trim();
-            var journalSeries = GetJournalSeriesPath(request.JournalPath);
+            string commander = request.CommanderName.Trim();
+            string? journalSeries = GetJournalSeriesPath(request.JournalPath);
             var key = new EddnSessionKey(
                 commander.ToUpperInvariant(),
                 request.FrontierId?.Trim().ToUpperInvariant() ?? string.Empty,
                 NormalizePathKey(journalSeries)
             );
-            var journalDirectory = string.IsNullOrWhiteSpace(request.JournalDirectory)
+            string? journalDirectory = string.IsNullOrWhiteSpace(request.JournalDirectory)
                 ? Path.GetDirectoryName(request.JournalPath)
                 : request.JournalDirectory;
             return new EddnSessionDescriptor(
@@ -460,7 +464,7 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
                 return string.Empty;
             }
 
-            var normalized = Path.GetFullPath(path);
+            string normalized = Path.GetFullPath(path);
             return OperatingSystem.IsWindows() ? normalized.ToUpperInvariant() : normalized;
         }
 
@@ -471,13 +475,13 @@ public sealed class EddnPublisher : IEddnPublisher, IEddnSessionSink, IDisposabl
                 return null;
             }
 
-            var filenameParts = Path.GetFileName(journalPath).Split('.');
+            string[] filenameParts = Path.GetFileName(journalPath).Split('.');
             if (filenameParts.Length < 4 || !int.TryParse(filenameParts[^2], out _))
             {
                 return Path.GetFullPath(journalPath);
             }
 
-            var seriesName = string.Join('.', filenameParts[..^2]) + "." + filenameParts[^1];
+            string seriesName = string.Join('.', filenameParts[..^2]) + "." + filenameParts[^1];
             return Path.Combine(Path.GetDirectoryName(journalPath) ?? string.Empty, seriesName);
         }
     }

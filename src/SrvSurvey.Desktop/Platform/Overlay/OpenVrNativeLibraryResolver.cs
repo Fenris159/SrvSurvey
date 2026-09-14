@@ -9,7 +9,7 @@ public static class OpenVrNativeLibraryResolver
     public const string LibraryEnvironmentVariable = "SRVSURVEY_OPENVR_LIBRARY";
     private const string LinuxLibraryFileName = "libopenvr_api.so";
     private const string OpenVrApiLibraryName = "openvr_api";
-    private static readonly object RegistrationLock = new();
+    private static readonly Lock RegistrationLock = new();
     private static bool registered;
 
     public static void Register()
@@ -34,7 +34,7 @@ public static class OpenVrNativeLibraryResolver
     public static IReadOnlyList<string> GetLinuxCandidates()
     {
         var candidates = new List<string>();
-        var configured = Environment.GetEnvironmentVariable(LibraryEnvironmentVariable);
+        string? configured = Environment.GetEnvironmentVariable(LibraryEnvironmentVariable);
         if (!string.IsNullOrWhiteSpace(configured))
         {
             try
@@ -49,7 +49,7 @@ public static class OpenVrNativeLibraryResolver
         }
 
         candidates.Add(Path.Combine(AppContext.BaseDirectory, LinuxLibraryFileName));
-        var profile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        string profile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         if (!string.IsNullOrWhiteSpace(profile))
         {
             candidates.Add(
@@ -111,9 +111,9 @@ public static class OpenVrNativeLibraryResolver
             return nint.Zero;
         }
 
-        foreach (var candidate in GetLinuxCandidates())
+        foreach (string candidate in GetLinuxCandidates())
         {
-            if (File.Exists(candidate) && NativeLibrary.TryLoad(candidate, out var handle))
+            if (File.Exists(candidate) && NativeLibrary.TryLoad(candidate, out nint handle))
             {
                 return handle;
             }

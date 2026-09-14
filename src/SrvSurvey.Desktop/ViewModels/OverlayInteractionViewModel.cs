@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Avalonia;
@@ -192,7 +193,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         get => globalOpacityPercent;
         set
         {
-            var normalized = Math.Clamp(value, 0, 100);
+            double normalized = Math.Clamp(value, 0, 100);
             if (!SetField(ref globalOpacityPercent, normalized))
             {
                 return;
@@ -230,7 +231,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
                 return "Overlay opacity and scale";
             }
 
-            var definition = OverlayLayoutCatalog.Supported.First(candidate =>
+            OverlayLayoutDefinition definition = OverlayLayoutCatalog.Supported.First(candidate =>
                 candidate.Name == selectedOverlaySettingsPlotterName
             );
             return $"{definition.DisplayName} opacity and scale";
@@ -256,7 +257,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         get => selectedOverlayOpacityPercent;
         set
         {
-            var normalized = Math.Clamp(value, 0, 100);
+            double normalized = Math.Clamp(value, 0, 100);
             if (!SetField(ref selectedOverlayOpacityPercent, normalized))
             {
                 return;
@@ -291,7 +292,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         get => selectedOverlayScaleOrdinal;
         set
         {
-            var normalized = Math.Clamp(Math.Round(value), 0, SelectedOverlayScaleMaximum);
+            double normalized = Math.Clamp(Math.Round(value), 0, SelectedOverlayScaleMaximum);
             if (!SetField(ref selectedOverlayScaleOrdinal, normalized))
             {
                 return;
@@ -311,11 +312,11 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
     {
         get
         {
-            var option =
+            OverlayScaleOption option =
                 UseGlobalOverlayScale && editSession is not null
                     ? OverlayScaleCatalog.Options.Single(candidate => candidate.Index == editSession.ScaleIndex)
                     : GetScaleOption((int)Math.Round(SelectedOverlayScaleOrdinal));
-            return option.AbsoluteScale is { } scale ? scale.ToString("0%") : "OS";
+            return option.AbsoluteScale is { } scale ? scale.ToString("0%", CultureInfo.CurrentCulture) : "OS";
         }
     }
 
@@ -335,19 +336,16 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             return;
         }
 
-        var definition = OverlayLayoutCatalog.Supported.FirstOrDefault(candidate =>
-            string.Equals(candidate.Name, plotterName, StringComparison.Ordinal)
-        );
-        if (definition is null)
-        {
-            throw new ArgumentOutOfRangeException(
+        OverlayLayoutDefinition? definition =
+            OverlayLayoutCatalog.Supported.FirstOrDefault(candidate =>
+                string.Equals(candidate.Name, plotterName, StringComparison.Ordinal)
+            )
+            ?? throw new ArgumentOutOfRangeException(
                 nameof(plotterName),
                 plotterName,
                 "The overlay is not available in the position editor."
             );
-        }
-
-        var placement = editSession.GetPlacement(plotterName);
+        LegacyOverlayPlacement placement = editSession.GetPlacement(plotterName);
         updatingSelectedOverlaySettings = true;
         selectedOverlaySettingsPlotterName = plotterName;
         useGlobalOverlayOpacity = placement.Opacity is null;
@@ -387,9 +385,11 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         }
 
         CloseOverlaySettings();
-        var definitions = OverlayLayoutCatalog.ForCategory(SelectedCategory.Category);
-        var snappedCount = editorHost?.SnapPreviewsToCenter(editSession) ?? 0;
-        foreach (var definition in definitions)
+        IReadOnlyList<OverlayLayoutDefinition> definitions = OverlayLayoutCatalog.ForCategory(
+            SelectedCategory.Category
+        );
+        int snappedCount = editorHost?.SnapPreviewsToCenter(editSession) ?? 0;
+        foreach (OverlayLayoutDefinition definition in definitions)
         {
             SynchronizeLiveOverlayFromPreview(definition.Name);
         }
@@ -450,8 +450,8 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         OnPropertyChanged(nameof(GlobalOpacityPercent));
         OnPropertyChanged(nameof(GlobalOpacityLabel));
         IsEditing = true;
-        var game = gameWindowTracker.GetSnapshot();
-        var preferredBounds = game.IsAvailable ? game.ClientBounds : (PixelRect?)null;
+        GameWindowSnapshot game = gameWindowTracker.GetSnapshot();
+        PixelRect? preferredBounds = game.IsAvailable ? game.ClientBounds : (PixelRect?)null;
         StatusMessage =
             $"Showing {SelectedCategory.DisplayName} with simulated game data. Drag the previews, then use ✓ to save or ✕ to cancel.";
         if (editorHost.Open(this, session, SelectedCategory.Category, preferredBounds))
@@ -473,8 +473,8 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             return;
         }
 
-        var changes = editSession.Changes;
-        var saveDefaultOpacity = editSession.HasDefaultOpacityChange;
+        IReadOnlyDictionary<string, LegacyOverlayPlacement> changes = editSession.Changes;
+        bool saveDefaultOpacity = editSession.HasDefaultOpacityChange;
         if (changes.Count == 0 && !saveDefaultOpacity && MiningDetection?.HasCalibrationChanges != true)
         {
             EndSession(closeHost: true, restoreRuntimeWindows: true);
@@ -484,7 +484,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
 
         try
         {
-            var saveMiningCalibration = MiningDetection?.HasCalibrationChanges == true;
+            bool saveMiningCalibration = MiningDetection?.HasCalibrationChanges == true;
             if (changes.Count == 0 && !saveDefaultOpacity)
             {
                 // The no-change guard above leaves this path only for a pending calibration.
@@ -493,8 +493,12 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
                 StatusMessage = "Saved mining HUD calibration.";
                 return;
             }
-            var result = layoutStore.Save(changes, editSession.DefaultOpacity, saveDefaultOpacity);
-            var updated = layoutStore.Load();
+            LegacyOverlayLayoutSaveResult result = layoutStore.Save(
+                changes,
+                editSession.DefaultOpacity,
+                saveDefaultOpacity
+            );
+            LegacyOverlayLayout updated = layoutStore.Load();
             if (updated.Error is not null)
             {
                 throw new InvalidDataException(updated.Error);
@@ -563,7 +567,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             return false;
         }
 
-        var game = gameWindowTracker.GetSnapshot();
+        GameWindowSnapshot game = gameWindowTracker.GetSnapshot();
         if (!game.IsAvailable || game.ClientBounds is not { Width: > 0, Height: > 0 })
         {
             StatusMessage =
@@ -573,10 +577,10 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
 
         liveHostBounds = game.ClientBounds;
         liveEditSession = new OverlayPositionEditSession(activeLayout);
-        var lastStatus = "No registered live overlay accepted interactive mode.";
-        foreach (var registered in registry.Snapshot())
+        string lastStatus = "No registered live overlay accepted interactive mode.";
+        foreach (RegisteredOverlayWindow registered in registry.Snapshot())
         {
-            var result = platform.SetInteractive(registered.Window, interactive: true);
+            OverlayInteractionResult result = platform.SetInteractive(registered.Window, interactive: true);
             lastStatus = result.Status;
             if (!result.IsPrepared || !result.IsInteractive)
             {
@@ -592,7 +596,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
 
         if (liveWindows.Count == 0)
         {
-            var failures = DetachAndRestoreClickThrough();
+            List<string> failures = DetachAndRestoreClickThrough();
             liveEditSession = null;
             StatusMessage = "No live overlays could be made clickable. " + lastStatus + FormatFailureSuffix(failures);
             return false;
@@ -612,8 +616,9 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
 
     private void EndLiveInteraction(bool saveChanges)
     {
-        var session = liveEditSession;
-        var changes = session?.Changes ?? new Dictionary<string, LegacyOverlayPlacement>();
+        OverlayPositionEditSession? session = liveEditSession;
+        IReadOnlyDictionary<string, LegacyOverlayPlacement> changes =
+            session?.Changes ?? new Dictionary<string, LegacyOverlayPlacement>();
         List<string> failures;
         try
         {
@@ -650,7 +655,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
     private List<string> DetachAndRestoreClickThrough()
     {
         var failures = new List<string>();
-        foreach (var window in interactiveWindows.ToArray())
+        foreach (Window? window in interactiveWindows.ToArray())
         {
             DetachLiveWindow(window);
             interactiveWindows.Remove(window);
@@ -659,7 +664,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
                 continue;
             }
 
-            var result = platform.SetInteractive(window, interactive: false);
+            OverlayInteractionResult result = platform.SetInteractive(window, interactive: false);
             if (!result.IsPrepared || result.IsInteractive)
             {
                 failures.Add(result.Status);
@@ -682,7 +687,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
                 throw new InvalidOperationException("The overlay layout store is unavailable.");
             }
 
-            var result = PersistLivePositions(changes);
+            LegacyOverlayLayoutSaveResult result = PersistLivePositions(changes);
             StatusMessage =
                 $"Saved {result.UpdatedPlacementCount:N0} live overlay position(s) and restored click-through mode."
                 + FormatFailureSuffix(failures);
@@ -705,7 +710,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
 
     private bool PersistPendingLivePositionsForEditor()
     {
-        var changes = liveEditSession?.Changes;
+        IReadOnlyDictionary<string, LegacyOverlayPlacement>? changes = liveEditSession?.Changes;
         if (changes is null || changes.Count == 0)
         {
             return true;
@@ -717,7 +722,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             // Continue live interaction from the layout now shared by disk,
             // runtime overlays, and the editor. Rebasing prevents the same
             // placements from remaining pending after the editor opens.
-            var synchronizedLayout =
+            LegacyOverlayLayout synchronizedLayout =
                 activeLayout ?? throw new InvalidOperationException("The active overlay layout is unavailable.");
             liveEditSession = new OverlayPositionEditSession(synchronizedLayout);
             return true;
@@ -747,8 +752,8 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             throw new InvalidOperationException("The overlay layout store is unavailable.");
         }
 
-        var result = layoutStore.Save(changes);
-        var updated = layoutStore.Load();
+        LegacyOverlayLayoutSaveResult result = layoutStore.Save(changes);
+        LegacyOverlayLayout updated = layoutStore.Load();
         if (updated.Error is not null)
         {
             throw new InvalidDataException(updated.Error);
@@ -765,8 +770,8 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             return;
         }
 
-        var game = gameWindowTracker?.GetSnapshot();
-        foreach (var registered in registry.Snapshot())
+        GameWindowSnapshot? game = gameWindowTracker?.GetSnapshot();
+        foreach (RegisteredOverlayWindow registered in registry.Snapshot())
         {
             OverlayThemeResources.ApplyScale(registered.Window, activeLayout, registered.PlotterName);
             if (
@@ -777,7 +782,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
                 continue;
             }
 
-            var position = activeLayout.GetPosition(
+            PixelPoint? position = activeLayout.GetPosition(
                 registered.PlotterName,
                 game.ClientBounds,
                 OverlayWindowMetrics.GetPixelSize(registered)
@@ -848,7 +853,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
 
     private void DetachLiveWindow(Window window)
     {
-        if (!liveWindows.Remove(window, out var state))
+        if (!liveWindows.Remove(window, out LiveOverlayWindowState? state))
         {
             return;
         }
@@ -876,7 +881,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             return;
         }
 
-        var size = OverlayWindowMetrics.GetPixelSize(registered);
+        PixelSize size = OverlayWindowMetrics.GetPixelSize(registered);
         if (
             activeLayout is null
             || !MoveLiveOverlay(
@@ -898,7 +903,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             editorHost?.RefreshPreviewPositions(editSession);
         }
 
-        var name =
+        string name =
             OverlayLayoutCatalog
                 .Supported.FirstOrDefault(definition =>
                     string.Equals(definition.Name, registered.PlotterName, StringComparison.Ordinal)
@@ -925,7 +930,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             return false;
         }
 
-        var placement = session.GetPlacement(plotterName);
+        LegacyOverlayPlacement placement = session.GetPlacement(plotterName);
         activeLayout.SetPlacement(plotterName, placement);
         previewSession?.SetPlacement(plotterName, placement);
         return true;
@@ -938,9 +943,9 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             return;
         }
 
-        foreach (var plotterName in plotterNames)
+        foreach (string plotterName in plotterNames)
         {
-            var original = session.GetOriginalPlacement(plotterName);
+            LegacyOverlayPlacement original = session.GetOriginalPlacement(plotterName);
             activeLayout.SetPlacement(plotterName, original);
             if (IsEditing && editSession is not null)
             {
@@ -962,7 +967,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             return false;
         }
 
-        var updated = layoutStore.Load();
+        LegacyOverlayLayout updated = layoutStore.Load();
         if (updated.Error is not null)
         {
             StatusMessage = errorPrefix + ": " + updated.Error;
@@ -1013,14 +1018,14 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
     )
     {
         ArgumentNullException.ThrowIfNull(original);
-        var horizontalOffset = original.Horizontal switch
+        int horizontalOffset = original.Horizontal switch
         {
             LegacyHorizontalAnchor.Left => position.X - gameBounds.X,
             LegacyHorizontalAnchor.Center => position.X - (gameBounds.X + ((gameBounds.Width - overlaySize.Width) / 2)),
             LegacyHorizontalAnchor.Right => gameBounds.Right - overlaySize.Width - position.X,
             _ => position.X,
         };
-        var verticalOffset = original.Vertical switch
+        int verticalOffset = original.Vertical switch
         {
             LegacyVerticalAnchor.Top => position.Y - gameBounds.Y,
             LegacyVerticalAnchor.Middle => position.Y - (gameBounds.Y + ((gameBounds.Height - overlaySize.Height) / 2)),
@@ -1043,7 +1048,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         }
 
         SynchronizeLiveOverlayFromPreview(eventArgs.PlotterName);
-        var displayName = OverlayLayoutCatalog
+        string displayName = OverlayLayoutCatalog
             .Supported.First(definition =>
                 string.Equals(definition.Name, eventArgs.PlotterName, StringComparison.Ordinal)
             )
@@ -1064,10 +1069,10 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             return;
         }
 
-        var placement = editSession.GetPlacement(plotterName);
+        LegacyOverlayPlacement placement = editSession.GetPlacement(plotterName);
         liveEditSession.SetPlacement(plotterName, placement);
         activeLayout.SetPlacement(plotterName, placement);
-        var registered = registry
+        RegisteredOverlayWindow? registered = registry
             .Snapshot()
             .FirstOrDefault(candidate =>
                 candidate.ParticipatesInPlacement
@@ -1078,7 +1083,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             return;
         }
 
-        var runtimePosition = activeLayout.GetPosition(
+        PixelPoint? runtimePosition = activeLayout.GetPosition(
             plotterName,
             liveHostBounds,
             OverlayWindowMetrics.GetPixelSize(registered)
@@ -1149,7 +1154,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         }
 
         editorHost?.RefreshPreviewOpacities(editSession);
-        var displayName = OverlayLayoutCatalog
+        string displayName = OverlayLayoutCatalog
             .Supported.First(definition => definition.Name == plotterName)
             .DisplayName;
         StatusMessage = opacityOverride is null
@@ -1173,7 +1178,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         }
 
         editorHost?.RefreshPreviewScales(editSession);
-        var displayName = OverlayLayoutCatalog
+        string displayName = OverlayLayoutCatalog
             .Supported.First(definition => definition.Name == plotterName)
             .DisplayName;
         StatusMessage = scaleOverride is null
@@ -1200,7 +1205,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
 
     private static int GetScaleOptionOrdinal(int scaleIndex)
     {
-        for (var index = 0; index < IndividualScaleOptions.Length; index++)
+        for (int index = 0; index < IndividualScaleOptions.Length; index++)
         {
             if (IndividualScaleOptions[index].Index == scaleIndex)
             {
@@ -1208,7 +1213,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             }
         }
 
-        var scale =
+        double scale =
             OverlayScaleCatalog.Options.FirstOrDefault(option => option.Index == scaleIndex)?.AbsoluteScale ?? 1d;
         return IndividualScaleOptions
             .Select((option, index) => new { index, distance = Math.Abs(option.AbsoluteScale!.Value - scale) })

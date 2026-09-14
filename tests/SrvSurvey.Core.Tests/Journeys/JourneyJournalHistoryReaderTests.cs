@@ -41,7 +41,7 @@ public sealed class JourneyJournalHistoryReaderTests : IDisposable
         );
         var reader = new JourneyJournalHistoryReader(temporaryDirectory);
 
-        var result = await reader.FindLatestFsdJumpAsync("F123", true, 42);
+        JourneyJournalSystemSearchResult result = await reader.FindLatestFsdJumpAsync("F123", true, 42);
 
         Assert.NotNull(result.Entry);
         Assert.Equal("Journal.2026-07-03T000000.01.log", result.Entry.JournalFileName);
@@ -75,7 +75,7 @@ public sealed class JourneyJournalHistoryReaderTests : IDisposable
         );
         var reader = new JourneyJournalHistoryReader(temporaryDirectory);
 
-        var result = await reader.ReadFromAsync("Journal.2026-07-01T000000.01.log", "F123", true);
+        JourneyJournalReadResult result = await reader.ReadFromAsync("Journal.2026-07-01T000000.01.log", "F123", true);
 
         Assert.Contains(result.Events, entry => entry.EventName == "Screenshot");
         Assert.Contains(result.Events, entry => entry.EventName == "Touchdown");
@@ -97,7 +97,7 @@ public sealed class JourneyJournalHistoryReaderTests : IDisposable
     private async Task WriteJournalAsync(string fileName, DateTime lastWriteTime, string content)
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, fileName);
+        string path = Path.Combine(temporaryDirectory, fileName);
         await File.WriteAllTextAsync(path, content);
         File.SetLastWriteTimeUtc(path, lastWriteTime);
     }

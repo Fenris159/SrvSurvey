@@ -35,8 +35,8 @@ public static class RouteBodyAssetResolver
 
     public static RouteBodyVisual Resolve(string? subtype)
     {
-        var normalized = Normalize(subtype);
-        var kind = ResolveKind(normalized);
+        string normalized = Normalize(subtype);
+        RouteBodyVisualKind kind = ResolveKind(normalized);
         return CreateVisual(kind);
     }
 
@@ -74,7 +74,7 @@ public static class RouteBodyAssetResolver
             return RouteBodyVisualKind.AsteroidCluster;
         }
 
-        foreach (var (token, kind) in ExactTokenKinds)
+        foreach ((string? token, RouteBodyVisualKind kind) in ExactTokenKinds)
         {
             if (normalized.Contains(token, StringComparison.Ordinal))
             {

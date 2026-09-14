@@ -22,7 +22,7 @@ public sealed class OverlayExceptionsTests
     [InlineData("lander01")]
     public void BoardedVehicleOverridesMothershipAndOnFootOverridesParkedVehicle(string vehicle)
     {
-        var journal = Journal("python");
+        JournalSessionState journal = Journal("python");
         Apply(journal, $$"""{"event":"LaunchSRV","SRVType":"{{vehicle}}","ID":1}""");
         var srv = new EliteStatus { Flags = StatusFlags.InSrv };
         journal.ReconcileVehicleStatus(srv);
@@ -46,7 +46,7 @@ public sealed class OverlayExceptionsTests
     [InlineData(StatusFlags2.PhysicalMulticrew)]
     public void PassengerContextsDoNotInheritTheOwnedShipFilter(StatusFlags2 passenger)
     {
-        var journal = Journal("python");
+        JournalSessionState journal = Journal("python");
         var status = new EliteStatus { Flags = StatusFlags.InMainShip, Flags2 = passenger };
         Assert.Equal("unknown", OverlayVehicleCatalog.Resolve(journal, status));
         Assert.Equal("fighters", OverlayVehicleCatalog.Resolve(journal, status with { Flags = StatusFlags.InFighter }));
@@ -59,7 +59,7 @@ public sealed class OverlayExceptionsTests
     [InlineData("PantherMkII", "Large")]
     public void RecentShipSymbolsResolveToTheirSizeGroups(string symbol, string group)
     {
-        var id = OverlayVehicleCatalog.Resolve(Journal(symbol), new EliteStatus { Flags = StatusFlags.InMainShip });
+        string id = OverlayVehicleCatalog.Resolve(Journal(symbol), new EliteStatus { Flags = StatusFlags.InMainShip });
         Assert.Equal(symbol.ToLowerInvariant(), id);
         Assert.Equal(group, OverlayVehicleCatalog.All.Single(v => v.Id == id).Group);
         Assert.Equal(OverlayVehicleCatalog.All.Count, OverlayVehicleCatalog.All.Select(v => v.Id).Distinct().Count());
@@ -68,7 +68,7 @@ public sealed class OverlayExceptionsTests
     [Fact]
     public void DedicatedFiregroupsExceptionsInheritOnceAndThenRemainIndependent()
     {
-        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".json");
+        string path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".json");
         try
         {
             var store = new OverlayVehicleSettingsStore(path);
@@ -91,7 +91,7 @@ public sealed class OverlayExceptionsTests
     [Fact]
     public void DefaultFiregroupsExceptionsDoNotInheritLaterGlobalChangesAfterRestart()
     {
-        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".json");
+        string path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".json");
         try
         {
             var store = new OverlayVehicleSettingsStore(path);
@@ -114,7 +114,7 @@ public sealed class OverlayExceptionsTests
     [AvaloniaFact]
     public void CategoryExceptionsPersistAndHideLivePresentationsWithoutLosingIntentOrUserToggle()
     {
-        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".json");
+        string path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".json");
         var window = new Window();
         try
         {
@@ -122,7 +122,7 @@ public sealed class OverlayExceptionsTests
             var registry = new OverlayWindowRegistry();
             var settings = new OverlayVehicleSettingsStore(path);
             var model = new OverlayExceptionsViewModel(settings, registry);
-            var exploration = model.ForCategory(OverlaySettingsCategory.Exploration);
+            OverlayExceptionCategoryViewModel exploration = model.ForCategory(OverlaySettingsCategory.Exploration);
             Assert.All(model.Categories.SelectMany(c => c.Entries), e => Assert.True(e.IsAllowed));
             model.UpdateBoardedVehicle(Journal("python"), new EliteStatus { Flags = StatusFlags.InMainShip });
             registry.Register(window, "PlotBodyInfo");
@@ -163,7 +163,7 @@ public sealed class OverlayExceptionsTests
     [AvaloniaFact]
     public void ExceptionsDialogAndCompactFiregroupsRenderWithVerticalContent()
     {
-        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".json");
+        string path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".json");
         var model = new OverlayExceptionsViewModel(new OverlayVehicleSettingsStore(path), new OverlayWindowRegistry());
         var dialog = new OverlayExceptionsWindow { DataContext = model.ForCategory(OverlaySettingsCategory.Mining) };
         var firegroup = new MiningActivityOverlayViewModel(null, true);
@@ -172,34 +172,34 @@ public sealed class OverlayExceptionsTests
         try
         {
             dialog.Show();
-            using var dialogFrame = dialog.CaptureRenderedFrame();
+            using WriteableBitmap? dialogFrame = dialog.CaptureRenderedFrame();
             Assert.Equal(ExpectedGroups, model.ForCategory(OverlaySettingsCategory.Mining).Groups.Select(g => g.Name));
             Assert.Equal(OverlayVehicleCatalog.All.Count, dialog.GetVisualDescendants().OfType<CheckBox>().Count());
             window.Show();
-            using var frame = window.CaptureRenderedFrame();
-            var labels = presentation
+            using WriteableBitmap? frame = window.CaptureRenderedFrame();
+            TextBlock[] labels = presentation
                 .GetVisualDescendants()
                 .OfType<TextBlock>()
                 .Where(t => t.IsEffectivelyVisible)
                 .ToArray();
             Assert.DoesNotContain(labels, t => t.Text == "FIREGROUPS");
-            var group = Assert.Single(labels, t => t.Text == "Group A");
-            var primary = Assert.Single(labels, t => t.Text == "Primary: Mining laser");
-            var secondary = Assert.Single(labels, t => t.Text == "Secondary: Collector limpet");
+            TextBlock group = Assert.Single(labels, t => t.Text == "Group A");
+            TextBlock primary = Assert.Single(labels, t => t.Text == "Primary: Mining laser");
+            TextBlock secondary = Assert.Single(labels, t => t.Text == "Secondary: Collector limpet");
             Assert.True(group.Bounds.Y < primary.Bounds.Y && primary.Bounds.Y < secondary.Bounds.Y);
             Assert.Equal(220, presentation.Bounds.Width);
-            var definition = OverlayLayoutCatalog.GetRequired("PlotMiningFiregroups");
+            OverlayLayoutDefinition definition = OverlayLayoutCatalog.GetRequired("PlotMiningFiregroups");
             Assert.Equal("Firegroups", definition.DisplayName);
             Assert.Equal(OverlayLayoutCategory.StatusAndUtilities, definition.Category);
             Assert.Equal(LegacyHorizontalAnchor.Right, definition.DefaultPlacement.Horizontal);
             Assert.Equal(LegacyVerticalAnchor.Bottom, definition.DefaultPlacement.Vertical);
-            var output = Environment.GetEnvironmentVariable("SRVSURVEY_EXCEPTIONS_RENDER_OUTPUT");
+            string? output = Environment.GetEnvironmentVariable("SRVSURVEY_EXCEPTIONS_RENDER_OUTPUT");
             if (output is not null)
             {
                 Directory.CreateDirectory(output);
-                using var dialogStream = File.Create(Path.Combine(output, "exceptions.png"));
+                using FileStream dialogStream = File.Create(Path.Combine(output, "exceptions.png"));
                 dialogFrame!.Save(dialogStream, PngBitmapEncoderOptions.Default);
-                using var fireStream = File.Create(Path.Combine(output, "firegroups.png"));
+                using FileStream fireStream = File.Create(Path.Combine(output, "firegroups.png"));
                 frame!.Save(fireStream, PngBitmapEncoderOptions.Default);
             }
         }
@@ -221,7 +221,7 @@ public sealed class OverlayExceptionsTests
 
     private static void Apply(JournalSessionState journal, string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var entry, out _));
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? entry, out _));
         journal.Apply(entry!);
     }
 }

@@ -107,8 +107,8 @@ public sealed partial class MiningSearchView : UserControl
             return;
         }
 
-        var tag = (sender as Control)?.Tag as string ?? "";
-        var system = tag.Split(':')[0] switch
+        string tag = (sender as Control)?.Tag as string ?? "";
+        string? system = tag.Split(':')[0] switch
         {
             "ring" => vm.SelectedRing?.System,
             "market" => vm.SelectedMarket?.System,
@@ -120,7 +120,7 @@ public sealed partial class MiningSearchView : UserControl
             return;
         }
 
-        var uri = InaraSystemUrl + Uri.EscapeDataString(system);
+        string uri = InaraSystemUrl + Uri.EscapeDataString(system);
         if (tag.EndsWith(":edsm", StringComparison.Ordinal))
         {
             uri = EdsmSystemUrl + Uri.EscapeDataString(system);

@@ -10,14 +10,14 @@ public sealed class BiologySurveyRewardSummaryTests
     [Fact]
     public void IdentifiedBodyFormatsKnownThousandsWithPendingSignals()
     {
-        var snapshot = CreateSnapshot(
+        SystemScanSnapshot snapshot = CreateSnapshot(
             biologicalSignalCount: 2,
             isDssComplete: true,
             isFirstFootfall: false,
             [KnownOrganism(2_500)]
         );
 
-        var survey = CreateBodyDetail(snapshot, disablePredictions: true);
+        BiologySurveyViewModel survey = CreateBodyDetail(snapshot, disablePredictions: true);
 
         Assert.Equal("Known reward:\n2.5 K + pending", survey.RewardSummary);
         Assert.Empty(survey.FirstFootfallRewardSummary);
@@ -26,14 +26,14 @@ public sealed class BiologySurveyRewardSummaryTests
     [Fact]
     public void IdentifiedBodyFormatsRawKnownRewardAndFirstFootfallTotal()
     {
-        var snapshot = CreateSnapshot(
+        SystemScanSnapshot snapshot = CreateSnapshot(
             biologicalSignalCount: 1,
             isDssComplete: true,
             isFirstFootfall: true,
             [KnownOrganism(500)]
         );
 
-        var survey = CreateBodyDetail(snapshot, disablePredictions: true);
+        BiologySurveyViewModel survey = CreateBodyDetail(snapshot, disablePredictions: true);
 
         Assert.Equal("Known reward:\n500", survey.RewardSummary);
         Assert.Equal("First-footfall total:\n2.5 K", survey.FirstFootfallRewardSummary);
@@ -42,10 +42,18 @@ public sealed class BiologySurveyRewardSummaryTests
     [Fact]
     public void IdentifiedBodyFormatsPredictedFirstFootfallRangeWithPendingSignals()
     {
-        var snapshot = CreateSnapshot(biologicalSignalCount: 2, isDssComplete: true, isFirstFootfall: true, []);
-        var options = CreatePredictionOptions(("Arcus", "Green", 1_000), ("Coronamus", "Lime", 2_000));
+        SystemScanSnapshot snapshot = CreateSnapshot(
+            biologicalSignalCount: 2,
+            isDssComplete: true,
+            isFirstFootfall: true,
+            []
+        );
+        BiologySurveyBodyDetailOptions options = CreatePredictionOptions(
+            ("Arcus", "Green", 1_000),
+            ("Coronamus", "Lime", 2_000)
+        );
 
-        var survey = CreateBodyDetail(snapshot, options);
+        BiologySurveyViewModel survey = CreateBodyDetail(snapshot, options);
 
         Assert.Equal("Reward pending identification", survey.RewardSummary);
         Assert.Equal("First-footfall estimate:\n5.0 K – 10.0 K + pending", survey.FirstFootfallRewardSummary);
@@ -54,10 +62,15 @@ public sealed class BiologySurveyRewardSummaryTests
     [Fact]
     public void IdentifiedBodyFormatsSinglePredictedFirstFootfallValue()
     {
-        var snapshot = CreateSnapshot(biologicalSignalCount: 1, isDssComplete: true, isFirstFootfall: true, []);
-        var options = CreatePredictionOptions(("Arcus", "Green", 1_000));
+        SystemScanSnapshot snapshot = CreateSnapshot(
+            biologicalSignalCount: 1,
+            isDssComplete: true,
+            isFirstFootfall: true,
+            []
+        );
+        BiologySurveyBodyDetailOptions options = CreatePredictionOptions(("Arcus", "Green", 1_000));
 
-        var survey = CreateBodyDetail(snapshot, options);
+        BiologySurveyViewModel survey = CreateBodyDetail(snapshot, options);
 
         Assert.Empty(survey.RewardSummary);
         Assert.Equal("First-footfall estimate:\n5.0 K", survey.FirstFootfallRewardSummary);
@@ -66,7 +79,7 @@ public sealed class BiologySurveyRewardSummaryTests
     [Fact]
     public void SystemOverviewOmitsZeroKnownRewardWithoutPendingSignals()
     {
-        var snapshot = CreateSnapshot(
+        SystemScanSnapshot snapshot = CreateSnapshot(
             biologicalSignalCount: 1,
             isDssComplete: false,
             isFirstFootfall: false,
@@ -109,7 +122,7 @@ public sealed class BiologySurveyRewardSummaryTests
         params (string Species, string Variant, long Reward)[] predictions
     )
     {
-        var criteria = predictions
+        BiologyCriteriaNode[] criteria = predictions
             .Select(prediction => new BiologyCriteriaNode(
                 "Aleoida",
                 prediction.Species,
@@ -120,7 +133,7 @@ public sealed class BiologySurveyRewardSummaryTests
                 null
             ))
             .ToArray();
-        var references = predictions
+        ExobiologyReference[] references = predictions
             .Select(
                 (prediction, index) =>
                     new ExobiologyReference(
@@ -170,8 +183,8 @@ public sealed class BiologySurveyRewardSummaryTests
             )
         );
 
-        var snapshot = scan.CreateSnapshot();
-        var bodies = snapshot
+        SystemScanSnapshot snapshot = scan.CreateSnapshot();
+        SystemScanBodySnapshot[] bodies = snapshot
             .Bodies.Select(body =>
                 body.BodyId == 1
                     ? body with
@@ -205,7 +218,7 @@ public sealed class BiologySurveyRewardSummaryTests
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var value, out var error), error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? value, out string? error), error);
         return Assert.IsType<JournalEventEnvelope>(value);
     }
 }

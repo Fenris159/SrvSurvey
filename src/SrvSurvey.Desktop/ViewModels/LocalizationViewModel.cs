@@ -19,7 +19,7 @@ public sealed class LocalizationViewModel : INotifyPropertyChanged
     {
         this.settingsStore = settingsStore;
         Languages = LocalizationCatalog.Languages;
-        var selectedCode = settingsStore.Load();
+        string selectedCode = settingsStore.Load();
         selectedLanguage = Languages.Single(language => language.Code == selectedCode);
         restartCommand = new AsyncCommand(RestartAsync, () => IsRestartRequired && restartHandler is not null);
         RestartCommand = restartCommand;

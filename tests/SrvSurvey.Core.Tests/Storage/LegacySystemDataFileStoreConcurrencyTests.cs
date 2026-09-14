@@ -17,7 +17,7 @@ public sealed class LegacySystemDataFileStoreConcurrencyTests : IDisposable
         var noteStore = new SystemNoteStore(temporaryDirectory);
         var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var transaction = transactionStore.ExecuteProfileWriteAsync(
+        Task<bool> transaction = transactionStore.ExecuteProfileWriteAsync(
             "F123",
             async _ =>
             {
@@ -28,7 +28,7 @@ public sealed class LegacySystemDataFileStoreConcurrencyTests : IDisposable
         );
         await entered.Task;
 
-        var save = noteStore.SaveAsync(
+        Task<string> save = noteStore.SaveAsync(
             new SystemNoteContext("F123", "Drew", "Test", 42, new GalacticCoordinate(1, 2, 3)),
             "serialized"
         );
@@ -36,7 +36,7 @@ public sealed class LegacySystemDataFileStoreConcurrencyTests : IDisposable
         Assert.False(save.IsCompleted);
         release.SetResult();
         await transaction;
-        var path = await save;
+        string path = await save;
         Assert.Contains("serialized", await File.ReadAllTextAsync(path));
     }
 

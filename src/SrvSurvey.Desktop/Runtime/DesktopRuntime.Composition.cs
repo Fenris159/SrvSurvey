@@ -83,18 +83,19 @@ internal sealed partial class DesktopRuntime
         DesktopStartup startup
     )
     {
-        var diagnosticReplay = startup.DiagnosticReplay;
+        DiagnosticReplayContext? diagnosticReplay = startup.DiagnosticReplay;
         diagnosticReplayContext = diagnosticReplay;
-        var externalNetworkClient = DiagnosticReplayContext.CreateNetworkClient(diagnosticReplay);
+        HttpClient? externalNetworkClient = DiagnosticReplayContext.CreateNetworkClient(diagnosticReplay);
         diagnosticNetworkClientOwnership = externalNetworkClient;
-        var appDataPaths = startup.AppDataPathsOverride ?? AppDataPaths.ResolveCurrent();
-        var applicationLog = startup.ApplicationLog ?? new ApplicationLogService(appDataPaths.DataDirectory);
+        AppDataPaths appDataPaths = startup.AppDataPathsOverride ?? AppDataPaths.ResolveCurrent();
+        ApplicationLogService applicationLog =
+            startup.ApplicationLog ?? new ApplicationLogService(appDataPaths.DataDirectory);
         applicationLogService = applicationLog;
         MigrateLegacyStateIfNeeded(diagnosticReplay, appDataPaths, applicationLog);
 
-        var overlayTheme = LoadOverlayTheme(appDataPaths, applicationLog);
+        LegacyOverlayTheme overlayTheme = LoadOverlayTheme(appDataPaths, applicationLog);
         var overlayLayoutStore = new LegacyOverlayLayoutStore(appDataPaths.DataDirectory);
-        var overlayLayout = LoadOverlayLayout(overlayLayoutStore, applicationLog);
+        LegacyOverlayLayout overlayLayout = LoadOverlayLayout(overlayLayoutStore, applicationLog);
 
         var themeService = new RavenThemeService(
             application,
@@ -111,7 +112,7 @@ internal sealed partial class DesktopRuntime
             new GlobalInputSettingsStore(appDataPaths.UiSettingsPath),
             capabilities
         );
-        var inputSettings = globalInputSettings;
+        GlobalInputSettingsViewModel inputSettings = globalInputSettings;
         var overlayPresentation = OverlayPresentationSession.CreateCurrent(
             gameWindowTracker: CreateRawGameWindowTracker(),
             registry: null,
@@ -147,10 +148,10 @@ internal sealed partial class DesktopRuntime
         );
         gameTextInputService = diagnosticReplay is null ? GameTextInputService.CreateCurrent() : null;
         startup.Checkpoint?.Invoke(DesktopStartupCheckpoint.OverlayInfrastructureReady);
-        var configuredJournalDirectory =
+        string? configuredJournalDirectory =
             diagnosticReplay?.JournalDirectory ?? StartupOptions.GetJournalDirectory(startup.Arguments);
         var commanderPreferenceStore = new CommanderPreferenceSettingsStore(appDataPaths.UiSettingsPath);
-        var commanderPreferenceResolution = ResolveCommanderPreference(
+        CommanderPreferenceResolution commanderPreferenceResolution = ResolveCommanderPreference(
             diagnosticReplay,
             startup.Arguments,
             commanderPreferenceStore,
@@ -161,8 +162,8 @@ internal sealed partial class DesktopRuntime
             applicationLog.Append(commanderPreferenceResolution.StatusMessage);
         }
 
-        var targetFrontierId = commanderPreferenceResolution.TargetFrontierId;
-        var firstFootfallInferenceService = diagnosticReplay is null
+        string? targetFrontierId = commanderPreferenceResolution.TargetFrontierId;
+        IFirstFootfallInferenceService firstFootfallInferenceService = diagnosticReplay is null
             ? FirstFootfallInferenceService.CreateCurrent()
             : new UnavailableFirstFootfallInferenceService();
         var canonnHumanSiteClient = new CanonnHumanSiteClient(externalNetworkClient);
@@ -215,7 +216,7 @@ internal sealed partial class DesktopRuntime
         );
         startup.Checkpoint?.Invoke(DesktopStartupCheckpoint.MainViewModelDependenciesReady);
         mainViewModel = MainWindowViewModelFactory.Create(mainViewModelStartup);
-        var viewModel = mainViewModel;
+        MainWindowViewModel viewModel = mainViewModel;
         mainWindow = new MainWindow(viewModel);
         mainWindow.Opened += HandleMainWindowOpened;
         AttachMainWindow(mainWindow);
@@ -479,7 +480,7 @@ internal sealed partial class DesktopRuntime
         string[] startupArguments
     )
     {
-        var appImagePath = Environment.GetEnvironmentVariable("APPIMAGE");
+        string? appImagePath = Environment.GetEnvironmentVariable("APPIMAGE");
         applicationInstanceManager = new ApplicationInstanceManager(
             appDataPaths.DataDirectory,
             () => RequestShutdownOnUiThreadAsync(DesktopShutdownReason.RemoteInstanceRequest, CancellationToken.None),
@@ -560,7 +561,9 @@ internal sealed partial class DesktopRuntime
 
     private static void MigrateLegacyUiSettings(AppDataPaths appDataPaths, ApplicationLogService applicationLog)
     {
-        var settingsMigration = new LegacyUiSettingsMigrator().MigrateIfNeeded(appDataPaths);
+        LegacyUiSettingsMigrationResult settingsMigration = new LegacyUiSettingsMigrator().MigrateIfNeeded(
+            appDataPaths
+        );
         if (settingsMigration.Migrated)
         {
             applicationLog.Append(
@@ -582,7 +585,9 @@ internal sealed partial class DesktopRuntime
 
     private static void MigrateLegacyOverlayLayout(AppDataPaths appDataPaths, ApplicationLogService applicationLog)
     {
-        var migration = LegacyOverlayLayoutImportMigrator.MigrateIfNeeded(appDataPaths);
+        LegacyOverlayLayoutImportMigrationResult migration = LegacyOverlayLayoutImportMigrator.MigrateIfNeeded(
+            appDataPaths
+        );
         if (migration.Migrated)
         {
             applicationLog.Append(
@@ -603,7 +608,9 @@ internal sealed partial class DesktopRuntime
     {
         try
         {
-            var organicMigration = new LegacyOrganicProfileMigrator(appDataPaths.DataDirectory)
+            LegacyOrganicProfileMigrationResult organicMigration = new LegacyOrganicProfileMigrator(
+                appDataPaths.DataDirectory
+            )
                 .MigrateAsync()
                 .GetAwaiter()
                 .GetResult();
@@ -618,7 +625,7 @@ internal sealed partial class DesktopRuntime
                 );
             }
 
-            foreach (var error in organicMigration.Errors)
+            foreach (string error in organicMigration.Errors)
             {
                 applicationLog.Append("Legacy organic history was preserved without conversion: " + error);
             }
@@ -634,7 +641,9 @@ internal sealed partial class DesktopRuntime
 
     private static LegacyOverlayTheme LoadOverlayTheme(AppDataPaths appDataPaths, ApplicationLogService applicationLog)
     {
-        var overlayTheme = new LegacyOverlayThemeStore(Path.Combine(appDataPaths.DataDirectory, "theme.json")).Load();
+        LegacyOverlayTheme overlayTheme = new LegacyOverlayThemeStore(
+            Path.Combine(appDataPaths.DataDirectory, "theme.json")
+        ).Load();
         if (overlayTheme.Error is not null)
         {
             applicationLog.Append(overlayTheme.Error);
@@ -648,7 +657,7 @@ internal sealed partial class DesktopRuntime
         ApplicationLogService applicationLog
     )
     {
-        var overlayLayout = overlayLayoutStore.Load();
+        LegacyOverlayLayout overlayLayout = overlayLayoutStore.Load();
         if (overlayLayout.Error is not null)
         {
             applicationLog.Append(overlayLayout.Error);
@@ -708,7 +717,7 @@ internal sealed partial class DesktopRuntime
 
     private void PostKeyboardRuntimeStatus(GlobalInputSettingsViewModel inputSettings)
     {
-        var status = globalKeyboardHookService?.Status;
+        string? status = globalKeyboardHookService?.Status;
         if (status is not null)
         {
             Dispatcher.UIThread.Post(() => inputSettings.UpdateRuntimeStatus(status));
@@ -717,7 +726,7 @@ internal sealed partial class DesktopRuntime
 
     private void PostControllerRuntimeStatus(GlobalInputSettingsViewModel inputSettings)
     {
-        var status = globalControllerInputService?.Status;
+        string? status = globalControllerInputService?.Status;
         if (status is not null)
         {
             Dispatcher.UIThread.Post(() => inputSettings.UpdateControllerRuntimeStatus(status));
@@ -762,21 +771,21 @@ internal sealed partial class DesktopRuntime
         await TryCleanupAsync(journalMonitorSession.StopAsync);
         await TryCleanupAsync(StopReleaseUpdateHistoryCleanupAsync);
 
-        var instanceManager = applicationInstanceManager;
+        ApplicationInstanceManager? instanceManager = applicationInstanceManager;
         applicationInstanceManager = null;
         if (instanceManager is not null)
         {
             await TryCleanupAsync(() => instanceManager.DisposeAsync().AsTask());
         }
 
-        var controllerInput = globalControllerInputService;
+        GlobalControllerInputService? controllerInput = globalControllerInputService;
         globalControllerInputService = null;
         if (controllerInput is not null)
         {
             await TryCleanupAsync(() => controllerInput.DisposeAsync().AsTask());
         }
 
-        var keyboardInput = globalKeyboardHookService;
+        GlobalKeyboardHookService? keyboardInput = globalKeyboardHookService;
         globalKeyboardHookService = null;
         if (keyboardInput is not null)
         {
@@ -827,7 +836,7 @@ internal sealed partial class DesktopRuntime
 
     private async Task DisposeMainViewModelAsync()
     {
-        var viewModel = mainViewModel;
+        MainWindowViewModel? viewModel = mainViewModel;
         mainViewModel = null;
         if (viewModel is not null)
         {
@@ -872,7 +881,7 @@ internal sealed partial class DesktopRuntime
             );
         }
 
-        var commandLineFrontierId = StartupOptions.GetFrontierId(startupArguments);
+        string? commandLineFrontierId = StartupOptions.GetFrontierId(startupArguments);
         return new CommanderPreferenceResolver(preferenceStore, new CommanderProfileCatalog(dataDirectory))
             .ResolveAsync(commandLineFrontierId, CancellationToken.None)
             .GetAwaiter()
@@ -898,7 +907,7 @@ internal sealed partial class DesktopRuntime
     private void DisposeResource<T>(ref T? resource)
         where T : class, IDisposable
     {
-        var current = resource;
+        T? current = resource;
         resource = null;
         if (current is not null)
         {
@@ -985,7 +994,7 @@ internal sealed partial class DesktopRuntime
     {
         try
         {
-            var cacheResult = await releaseHistoryCleanup
+            ReleasePackageCacheCleanupResult cacheResult = await releaseHistoryCleanup
                 .CleanPackageCacheAsync(new ReleasePackageCacheCleaner(), appDataPaths.DataDirectory, cancellationToken)
                 .ConfigureAwait(false);
             if (cacheResult.DeletedVersions > 0)
@@ -997,12 +1006,12 @@ internal sealed partial class DesktopRuntime
                 );
             }
 
-            foreach (var failure in cacheResult.Failures)
+            foreach (string failure in cacheResult.Failures)
             {
                 applicationLog.Append("Update cache cleanup retained an inaccessible directory: " + failure);
             }
 
-            var planResult = await releaseHistoryCleanup
+            ReleaseInstallationPlanCleanupResult planResult = await releaseHistoryCleanup
                 .CleanPlansAsync(new ReleaseInstallationPlanCleaner(), appDataPaths.DataDirectory, cancellationToken)
                 .ConfigureAwait(false);
             if (planResult.DeletedPlans > 0)
@@ -1010,7 +1019,7 @@ internal sealed partial class DesktopRuntime
                 applicationLog.Append($"Removed {planResult.DeletedPlans:N0} stale installation plans.");
             }
 
-            foreach (var failure in planResult.Failures)
+            foreach (string failure in planResult.Failures)
             {
                 applicationLog.Append("Installation-plan cleanup retained an inaccessible directory: " + failure);
             }
@@ -1020,7 +1029,7 @@ internal sealed partial class DesktopRuntime
                 return;
             }
 
-            var installationResult = await releaseHistoryCleanup
+            ReleaseInstallationCleanupResult installationResult = await releaseHistoryCleanup
                 .CleanInstallationAsync(
                     new ReleaseInstallationHistoryCleaner(),
                     AppContext.BaseDirectory,
@@ -1037,7 +1046,7 @@ internal sealed partial class DesktopRuntime
                 );
             }
 
-            foreach (var failure in installationResult.Failures)
+            foreach (string failure in installationResult.Failures)
             {
                 applicationLog.Append("Update history cleanup retained an inaccessible directory: " + failure);
             }
@@ -1055,7 +1064,7 @@ internal sealed partial class DesktopRuntime
 
     private async Task StopReleaseUpdateHistoryCleanupAsync()
     {
-        var cleanupTask = releaseHistoryCleanupTask;
+        Task? cleanupTask = releaseHistoryCleanupTask;
         if (cleanupTask is null)
         {
             return;
@@ -1083,7 +1092,7 @@ internal sealed partial class DesktopRuntime
         ApplicationLogService applicationLog
     )
     {
-        var updateOutcome = ApplicationUpdateBootstrap
+        ReleaseInstallationOutcome? updateOutcome = ApplicationUpdateBootstrap
             .ConsumePendingOutcomeAsync(appDataPaths)
             .GetAwaiter()
             .GetResult();
@@ -1106,7 +1115,7 @@ internal sealed partial class DesktopRuntime
         ApplicationLogService applicationLog
     )
     {
-        var confirmedUpdate = ApplicationUpdateBootstrap
+        ReleaseInstallationHandoffPlan? confirmedUpdate = ApplicationUpdateBootstrap
             .ConfirmPendingHealthyAsync(appDataPaths)
             .GetAwaiter()
             .GetResult();
@@ -1131,7 +1140,8 @@ internal sealed partial class DesktopRuntime
 
     private OverlayGameWindowTracker CreateOverlayGameWindowTracker()
     {
-        var viewModel = mainViewModel ?? throw new InvalidOperationException("Main view model is not ready.");
+        MainWindowViewModel viewModel =
+            mainViewModel ?? throw new InvalidOperationException("Main view model is not ready.");
         return new OverlayGameWindowTracker(
             CreateRawGameWindowTracker(),
             () =>
@@ -1148,8 +1158,8 @@ internal sealed partial class DesktopRuntime
 
     private PixelRect? CaptureReplayViewport()
     {
-        using var tracker = CreateRawGameWindowTracker();
-        var snapshot = tracker.GetSnapshot();
+        using IGameWindowTracker tracker = CreateRawGameWindowTracker();
+        GameWindowSnapshot snapshot = tracker.GetSnapshot();
         return snapshot.IsAvailable ? snapshot.ClientBounds : null;
     }
 
@@ -1178,7 +1188,7 @@ internal sealed partial class DesktopRuntime
             return;
         }
 
-        var dispatchedShutdownTask = await Dispatcher.UIThread.InvokeAsync(
+        Task dispatchedShutdownTask = await Dispatcher.UIThread.InvokeAsync(
             () => RequestShutdownAsync(reason),
             DispatcherPriority.Normal,
             cancellationToken
@@ -1203,7 +1213,7 @@ internal sealed partial class DesktopRuntime
 
     private async Task WriteClipboardAsync(string text)
     {
-        var clipboard =
+        IClipboard clipboard =
             mainWindow?.Clipboard ?? throw new InvalidOperationException("The desktop clipboard is not available.");
         await clipboard.SetTextAsync(text);
         await clipboard.FlushAsync();
@@ -1211,7 +1221,7 @@ internal sealed partial class DesktopRuntime
 
     private async Task<string?> ReadClipboardAsync()
     {
-        var clipboard =
+        IClipboard clipboard =
             mainWindow?.Clipboard ?? throw new InvalidOperationException("The desktop clipboard is not available.");
         return await clipboard.TryGetValueAsync(DataFormat.Text);
     }
@@ -1230,13 +1240,13 @@ internal sealed partial class DesktopRuntime
 
     private void SynchronizeOverlayPriorityFacts()
     {
-        var viewModel = mainViewModel;
+        MainWindowViewModel? viewModel = mainViewModel;
         if (viewModel is null)
         {
             return;
         }
 
-        var facts = OverlayPriorityFacts.None;
+        OverlayPriorityFacts facts = OverlayPriorityFacts.None;
         if (viewModel.SystemSurvey.IsFssInfoForced)
         {
             facts |= OverlayPriorityFacts.FssInfoForced;
@@ -1267,16 +1277,16 @@ internal sealed partial class DesktopRuntime
 
     private void ApplyOverlaySuppression()
     {
-        var viewModel = mainViewModel;
+        MainWindowViewModel? viewModel = mainViewModel;
         if (viewModel is null)
         {
             return;
         }
 
-        var suppressForSuit = viewModel.OverlayBehavior.ShouldSuppressForSuit;
-        var suppressForSession = viewModel.OverlayBehavior.ShouldSuppressForSession;
+        bool suppressForSuit = viewModel.OverlayBehavior.ShouldSuppressForSuit;
+        bool suppressForSession = viewModel.OverlayBehavior.ShouldSuppressForSession;
         OverlayWindowRegistry.Shared.SetGlobalSuppression(manualOverlaySuppressed, suppressForSuit, suppressForSession);
-        var suppress = manualOverlaySuppressed || suppressForSuit || suppressForSession;
+        bool suppress = manualOverlaySuppressed || suppressForSuit || suppressForSession;
         jumpInfoOverlayCoordinator?.SetSuppressed(suppress);
         routeBioOverlayCoordinator?.SetSuppressed(suppress);
         fleetCarrierRouteOverlayCoordinator?.SetSuppressed(suppress);
@@ -1321,28 +1331,29 @@ internal sealed partial class DesktopRuntime
 
         Dispatcher.UIThread.Post(async () =>
         {
-            var viewModel = mainViewModel;
-            var window = mainWindow;
-            var inputSettings = globalInputSettings;
+            MainWindowViewModel? viewModel = mainViewModel;
+            MainWindow? window = mainWindow;
+            GlobalInputSettingsViewModel? inputSettings = globalInputSettings;
             if (viewModel is null || window is null || inputSettings is null)
             {
                 return;
             }
 
-            var handled = await ExecuteGlobalInputActionAsync(eventArgs.Action);
+            bool handled = await ExecuteGlobalInputActionAsync(eventArgs.Action);
             inputSettings.ReportAction(eventArgs.Action, handled);
         });
     }
 
     private async Task<bool> ExecuteGlobalInputActionAsync(GlobalInputAction action)
     {
-        var viewModel = mainViewModel ?? throw new InvalidOperationException("Main view model is not ready.");
+        MainWindowViewModel viewModel =
+            mainViewModel ?? throw new InvalidOperationException("Main view model is not ready.");
         if (mainWindow is null)
         {
             throw new InvalidOperationException("Main window is not ready.");
         }
 
-        if (GlobalInputActionCatalog.TryGetOverlayPlotterName(action, out var plotterName))
+        if (GlobalInputActionCatalog.TryGetOverlayPlotterName(action, out string? plotterName))
         {
             return viewModel.OverlayPanelVisibility.Toggle(plotterName);
         }
@@ -1400,8 +1411,8 @@ internal sealed partial class DesktopRuntime
 
     private bool ShowQuestsWindow()
     {
-        var viewModel = mainViewModel;
-        var window = mainWindow;
+        MainWindowViewModel? viewModel = mainViewModel;
+        MainWindow? window = mainWindow;
         if (viewModel is null || window is null)
         {
             return false;
@@ -1421,7 +1432,7 @@ internal sealed partial class DesktopRuntime
 
     private async Task<bool> CopyNextBoxelAsync()
     {
-        var viewModel = mainViewModel;
+        MainWindowViewModel? viewModel = mainViewModel;
         if (
             viewModel is null
             || !viewModel.BoxelSearch.ShouldShowGalaxyMapOverlay
@@ -1437,15 +1448,15 @@ internal sealed partial class DesktopRuntime
 
     private async Task<bool> PasteGalaxyMapAsync()
     {
-        var viewModel = mainViewModel;
+        MainWindowViewModel? viewModel = mainViewModel;
         if (viewModel is null || gameTextInputService is null)
         {
             return false;
         }
 
-        var isGalaxyMapOpen = viewModel.SystemSurvey.CurrentStatus?.GuiFocus == GuiFocus.GalaxyMap;
-        var routeNextHop = viewModel.Route.ShouldShowGalaxyMapOverlay ? viewModel.Route.NextHop?.Name : null;
-        var resolvedText = GalaxyMapTextResolver.Resolve(
+        bool isGalaxyMapOpen = viewModel.SystemSurvey.CurrentStatus?.GuiFocus == GuiFocus.GalaxyMap;
+        string? routeNextHop = viewModel.Route.ShouldShowGalaxyMapOverlay ? viewModel.Route.NextHop?.Name : null;
+        string? resolvedText = GalaxyMapTextResolver.Resolve(
             isGalaxyMapOpen,
             routeNextHop,
             viewModel.BoxelSearch.NextSystemForInput,
@@ -1468,14 +1479,14 @@ internal sealed partial class DesktopRuntime
 
     private bool BeginVrAdjustment()
     {
-        var viewModel = mainViewModel;
-        var window = mainWindow;
+        MainWindowViewModel? viewModel = mainViewModel;
+        MainWindow? window = mainWindow;
         if (viewModel is null || window is null)
         {
             return false;
         }
 
-        var handled = viewModel.BeginVrAdjustment();
+        bool handled = viewModel.BeginVrAdjustment();
         window.Show();
         window.Activate();
         return handled;
@@ -1483,7 +1494,7 @@ internal sealed partial class DesktopRuntime
 
     private Task<bool> ToggleQuickTrackerAsync(int trackerNumber)
     {
-        var viewModel = mainViewModel;
+        MainWindowViewModel? viewModel = mainViewModel;
         if (viewModel is null)
         {
             return Task.FromResult(false);
@@ -1494,7 +1505,7 @@ internal sealed partial class DesktopRuntime
 
     private bool RefreshColonyData()
     {
-        var viewModel = mainViewModel;
+        MainWindowViewModel? viewModel = mainViewModel;
         if (viewModel is null || !viewModel.Colonization.IsEnabled)
         {
             return false;
@@ -1512,13 +1523,13 @@ internal sealed partial class DesktopRuntime
 
     private bool ToggleImageEmbed()
     {
-        var viewModel = mainViewModel;
+        MainWindowViewModel? viewModel = mainViewModel;
         if (viewModel is null)
         {
             return false;
         }
 
-        var handled = viewModel.ScreenshotProcessing.ToggleBanner();
+        bool handled = viewModel.ScreenshotProcessing.ToggleBanner();
         if (handled)
         {
             viewModel.Notifications.ShowBannerPreference(viewModel.ScreenshotProcessing.AddBanner);
@@ -1529,7 +1540,7 @@ internal sealed partial class DesktopRuntime
 
     private bool ToggleOverlayInteraction()
     {
-        var viewModel = mainViewModel;
+        MainWindowViewModel? viewModel = mainViewModel;
         if (viewModel is null || !viewModel.OverlayInteraction.ToggleLiveOverlayInteraction())
         {
             return false;

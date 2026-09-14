@@ -81,7 +81,12 @@ public sealed class DockToDockViewModel : INotifyPropertyChanged
         bool isBootstrapRead
     )
     {
-        var result = logService.Apply(journalEvents, SharedCargoSuppressed ? null : cargo, Enabled, isBootstrapRead);
+        DockToDockApplyResult result = logService.Apply(
+            journalEvents,
+            SharedCargoSuppressed ? null : cargo,
+            Enabled,
+            isBootstrapRead
+        );
         if (result.Error is not null)
         {
             StatusMessage =

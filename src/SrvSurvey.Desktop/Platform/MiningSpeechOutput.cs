@@ -25,7 +25,7 @@ public sealed class MiningSpeechOutput : IDisposable
                 {
                     dynamic voices = ((dynamic)speaker).GetVoices();
                     var names = new List<string>();
-                    for (var index = 0; index < voices.Count; index++)
+                    for (int index = 0; index < voices.Count; index++)
                     {
                         names.Add((string)voices.Item(index).GetDescription());
                     }
@@ -54,7 +54,7 @@ public sealed class MiningSpeechOutput : IDisposable
             if (!string.IsNullOrEmpty(voice))
             {
                 dynamic voices = sapi.GetVoices();
-                for (var index = 0; index < voices.Count; index++)
+                for (int index = 0; index < voices.Count; index++)
                 {
                     if ((string)voices.Item(index).GetDescription() == voice)
                     {
@@ -113,7 +113,7 @@ public sealed class MiningSpeechOutput : IDisposable
                 return;
             }
 
-            foreach (var action in queue.GetConsumingEnumerable())
+            foreach (Action<object> action in queue.GetConsumingEnumerable())
             {
                 if (disposed)
                 {

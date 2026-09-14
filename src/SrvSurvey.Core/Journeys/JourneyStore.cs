@@ -26,7 +26,7 @@ public sealed class JourneyStore(string dataDirectory)
     )
     {
         ValidateFolderName(frontierId, nameof(frontierId));
-        var directory = GetJourneyDirectory(frontierId);
+        string directory = GetJourneyDirectory(frontierId);
         if (!Directory.Exists(directory))
         {
             return new JourneyCatalogResult([], []);
@@ -35,13 +35,13 @@ public sealed class JourneyStore(string dataDirectory)
         var journeys = new List<JourneyDocument>();
         var errors = new List<string>();
         foreach (
-            var path in Directory
+            string? path in Directory
                 .EnumerateFiles(directory, "*" + JsonFileExtension, SearchOption.TopDirectoryOnly)
                 .Order(StringComparer.Ordinal)
         )
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var result = await LoadPathAsync(frontierId, path, cancellationToken).ConfigureAwait(false);
+            JourneyLoadResult result = await LoadPathAsync(frontierId, path, cancellationToken).ConfigureAwait(false);
             if (result.Journey is not null)
             {
                 journeys.Add(result.Journey);
@@ -68,8 +68,8 @@ public sealed class JourneyStore(string dataDirectory)
     )
     {
         ValidateFolderName(frontierId, nameof(frontierId));
-        var normalizedFileName = NormalizeFileName(fileName);
-        var path = Path.Combine(GetJourneyDirectory(frontierId), normalizedFileName + JsonFileExtension);
+        string normalizedFileName = NormalizeFileName(fileName);
+        string path = Path.Combine(GetJourneyDirectory(frontierId), normalizedFileName + JsonFileExtension);
         return LoadPathAsync(frontierId, path, cancellationToken);
     }
 
@@ -90,9 +90,9 @@ public sealed class JourneyStore(string dataDirectory)
             throw new ArgumentException("The starting journal file is required.", nameof(request));
         }
 
-        var fileName = request.StartingEventTimestamp.ToString("yyyyMMdd_HHmmss", CultureInfo.InvariantCulture);
-        var path = Path.Combine(GetJourneyDirectory(request.FrontierId), fileName + JsonFileExtension);
-        var legacyStartTime = request.StartingEventTimestamp.AddMilliseconds(-10);
+        string fileName = request.StartingEventTimestamp.ToString("yyyyMMdd_HHmmss", CultureInfo.InvariantCulture);
+        string path = Path.Combine(GetJourneyDirectory(request.FrontierId), fileName + JsonFileExtension);
+        DateTimeOffset legacyStartTime = request.StartingEventTimestamp.AddMilliseconds(-10);
         var journey = new JourneyDocument(
             fileName,
             path,
@@ -131,15 +131,15 @@ public sealed class JourneyStore(string dataDirectory)
     {
         ArgumentNullException.ThrowIfNull(journey);
         ValidateFolderName(journey.FrontierId, nameof(journey));
-        var fileName = NormalizeFileName(journey.FileName);
-        var path = Path.Combine(GetJourneyDirectory(journey.FrontierId), fileName + JsonFileExtension);
+        string fileName = NormalizeFileName(journey.FileName);
+        string path = Path.Combine(GetJourneyDirectory(journey.FrontierId), fileName + JsonFileExtension);
         await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             JsonObject root;
             if (File.Exists(path))
             {
-                var readResult = await ReadObjectAsync(path, cancellationToken).ConfigureAwait(false);
+                JsonObjectReadResult readResult = await ReadObjectAsync(path, cancellationToken).ConfigureAwait(false);
                 root =
                     readResult.Root
                     ?? throw new InvalidDataException(
@@ -166,20 +166,21 @@ public sealed class JourneyStore(string dataDirectory)
         CancellationToken cancellationToken = default
     )
     {
-        var result = await LoadAsync(frontierId, journeyFileName, cancellationToken).ConfigureAwait(false);
+        JourneyLoadResult result = await LoadAsync(frontierId, journeyFileName, cancellationToken)
+            .ConfigureAwait(false);
         if (result.Journey is not { } journey)
         {
             throw new InvalidDataException(result.Error ?? "The active journey could not be loaded.");
         }
 
-        var visits = journey.VisitedSystems.ToArray();
-        var index = Array.FindLastIndex(visits, visit => visit.StarSystem.SystemAddress == systemAddress);
+        JourneySystemVisit[] visits = journey.VisitedSystems.ToArray();
+        int index = Array.FindLastIndex(visits, visit => visit.StarSystem.SystemAddress == systemAddress);
         if (index < 0)
         {
             return false;
         }
 
-        var visit = visits[index];
+        JourneySystemVisit visit = visits[index];
         visits[index] = visit with { Counts = visit.Counts with { Notes = checked(visit.Counts.Notes + 1) } };
         await SaveAsync(journey with { VisitedSystems = visits }, cancellationToken).ConfigureAwait(false);
         return true;
@@ -196,7 +197,7 @@ public sealed class JourneyStore(string dataDirectory)
             return new JourneyLoadResult(path, false, null, null);
         }
 
-        var readResult = await ReadObjectAsync(path, cancellationToken).ConfigureAwait(false);
+        JsonObjectReadResult readResult = await ReadObjectAsync(path, cancellationToken).ConfigureAwait(false);
         if (readResult.Root is null)
         {
             return new JourneyLoadResult(path, true, null, readResult.Error);
@@ -214,14 +215,14 @@ public sealed class JourneyStore(string dataDirectory)
 
     private static JourneyDocument ParseJourney(string frontierId, string path, JsonObject root)
     {
-        var fileName = Path.GetFileNameWithoutExtension(path);
-        var startTime =
+        string fileName = Path.GetFileNameWithoutExtension(path);
+        DateTimeOffset startTime =
             GetDateTimeOffset(root, "startTime")
             ?? throw new InvalidDataException($"The journey {path} has no valid startTime.");
         var visits = new List<JourneySystemVisit>();
         if (root["visitedSystems"] is JsonArray visitedSystems)
         {
-            for (var index = 0; index < visitedSystems.Count; index++)
+            for (int index = 0; index < visitedSystems.Count; index++)
             {
                 if (visitedSystems[index] is not JsonObject visit)
                 {
@@ -249,10 +250,10 @@ public sealed class JourneyStore(string dataDirectory)
 
     private static JourneySystemVisit ParseVisit(string path, int index, JsonObject root)
     {
-        var starSystem =
+        JourneySystemReference starSystem =
             ParseStarReference(root["starRef"])
             ?? throw new InvalidDataException($"The journey {path} has an invalid visitedSystems[{index}].starRef.");
-        var arrived =
+        DateTimeOffset arrived =
             GetDateTimeOffset(root, "arrived")
             ?? throw new InvalidDataException($"The journey {path} has an invalid visitedSystems[{index}].arrived.");
         return new JourneySystemVisit(
@@ -272,15 +273,15 @@ public sealed class JourneyStore(string dataDirectory)
 
     private static JourneySystemReference? ParseStarReference(JsonNode? node)
     {
-        if (node is JsonValue value && value.TryGetValue<string>(out var compact))
+        if (node is JsonValue value && value.TryGetValue<string>(out string? compact))
         {
-            var parts = compact.Split('|');
+            string[] parts = compact.Split('|');
             if (
                 parts.Length != 5
-                || !long.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var address)
-                || !double.TryParse(parts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out var x)
-                || !double.TryParse(parts[3], NumberStyles.Float, CultureInfo.InvariantCulture, out var y)
-                || !double.TryParse(parts[4], NumberStyles.Float, CultureInfo.InvariantCulture, out var z)
+                || !long.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out long address)
+                || !double.TryParse(parts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out double x)
+                || !double.TryParse(parts[3], NumberStyles.Float, CultureInfo.InvariantCulture, out double y)
+                || !double.TryParse(parts[4], NumberStyles.Float, CultureInfo.InvariantCulture, out double z)
                 || string.IsNullOrWhiteSpace(parts[0])
             )
             {
@@ -295,11 +296,11 @@ public sealed class JourneyStore(string dataDirectory)
             return null;
         }
 
-        var name = GetString(legacy, "name");
-        var systemAddress = GetInt64(legacy, "id64");
-        var legacyX = GetDouble(legacy, "x");
-        var legacyY = GetDouble(legacy, "y");
-        var legacyZ = GetDouble(legacy, "z");
+        string? name = GetString(legacy, "name");
+        long? systemAddress = GetInt64(legacy, "id64");
+        double? legacyX = GetDouble(legacy, "x");
+        double? legacyY = GetDouble(legacy, "y");
+        double? legacyZ = GetDouble(legacy, "z");
         return
             string.IsNullOrWhiteSpace(name)
             || systemAddress is null
@@ -379,7 +380,7 @@ public sealed class JourneyStore(string dataDirectory)
 
     private static JsonArray MergeVisits(JsonArray? existing, IReadOnlyList<JourneySystemVisit> visits)
     {
-        var existingRows =
+        ExistingVisit[] existingRows =
             existing
                 ?.Select(
                     (node, index) =>
@@ -393,10 +394,10 @@ public sealed class JourneyStore(string dataDirectory)
             ?? [];
         var used = new HashSet<int>();
         var result = new JsonArray();
-        foreach (var visit in visits)
+        foreach (JourneySystemVisit visit in visits)
         {
-            var identity = GetVisitIdentity(visit);
-            var match = existingRows.FirstOrDefault(candidate =>
+            string identity = GetVisitIdentity(visit);
+            ExistingVisit? match = existingRows.FirstOrDefault(candidate =>
                 !used.Contains(candidate.Index) && string.Equals(candidate.Identity, identity, StringComparison.Ordinal)
             );
             JsonObject row;
@@ -419,7 +420,7 @@ public sealed class JourneyStore(string dataDirectory)
 
     private static void WriteVisit(JsonObject root, JourneySystemVisit visit)
     {
-        var star = visit.StarSystem;
+        JourneySystemReference star = visit.StarSystem;
         root["starRef"] = string.Join(
             '|',
             star.Name,
@@ -438,7 +439,7 @@ public sealed class JourneyStore(string dataDirectory)
             root.Remove("departed");
         }
 
-        var counts = root["count"] is JsonObject existingCounts ? existingCounts : [];
+        JsonObject counts = root["count"] is JsonObject existingCounts ? existingCounts : [];
         WriteCounts(counts, visit.Counts);
         root["count"] = counts;
         WriteDictionary(root, "landedOn", visit.LandedOn);
@@ -474,7 +475,7 @@ public sealed class JourneyStore(string dataDirectory)
         }
 
         var result = new JsonObject();
-        foreach (var (key, value) in values.OrderBy(entry => entry.Key, StringComparer.Ordinal))
+        foreach ((string? key, int value) in values.OrderBy(entry => entry.Key, StringComparer.Ordinal))
         {
             result[key] = value;
         }
@@ -491,7 +492,7 @@ public sealed class JourneyStore(string dataDirectory)
         }
 
         var array = new JsonArray();
-        foreach (var value in values.Order())
+        foreach (T? value in values.Order())
         {
             array.Add(JsonValue.Create(value));
         }
@@ -506,8 +507,8 @@ public sealed class JourneyStore(string dataDirectory)
 
     private static string? GetVisitIdentity(JsonObject visit)
     {
-        var star = ParseStarReference(visit["starRef"]);
-        var arrived = GetDateTimeOffset(visit, "arrived");
+        JourneySystemReference? star = ParseStarReference(visit["starRef"]);
+        DateTimeOffset? arrived = GetDateTimeOffset(visit, "arrived");
         return star is null || arrived is null ? null : $"{star.SystemAddress}|{arrived.Value:O}";
     }
 
@@ -520,7 +521,7 @@ public sealed class JourneyStore(string dataDirectory)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(fileName);
         ValidateFolderName(fileName, nameof(fileName));
-        var normalized = fileName.EndsWith(JsonFileExtension, StringComparison.OrdinalIgnoreCase)
+        string normalized = fileName.EndsWith(JsonFileExtension, StringComparison.OrdinalIgnoreCase)
             ? Path.GetFileNameWithoutExtension(fileName)
             : fileName;
         ValidateFolderName(normalized, nameof(fileName));
@@ -552,12 +553,12 @@ public sealed class JourneyStore(string dataDirectory)
 
     private static string? GetString(JsonObject root, string propertyName)
     {
-        return root[propertyName] is JsonValue value && value.TryGetValue<string>(out var result) ? result : null;
+        return root[propertyName] is JsonValue value && value.TryGetValue<string>(out string? result) ? result : null;
     }
 
     private static int? GetInt32(JsonObject root, string propertyName)
     {
-        var value = GetInt64(root, propertyName);
+        long? value = GetInt64(root, propertyName);
         return value is >= int.MinValue and <= int.MaxValue ? (int)value.Value : null;
     }
 
@@ -568,12 +569,12 @@ public sealed class JourneyStore(string dataDirectory)
             return null;
         }
 
-        if (value.TryGetValue<long>(out var result))
+        if (value.TryGetValue<long>(out long result))
         {
             return result;
         }
 
-        return value.TryGetValue<double>(out var number) && number is >= long.MinValue and <= long.MaxValue
+        return value.TryGetValue<double>(out double number) && number is >= long.MinValue and <= long.MaxValue
             ? Convert.ToInt64(number)
             : null;
     }
@@ -585,12 +586,12 @@ public sealed class JourneyStore(string dataDirectory)
             return null;
         }
 
-        if (value.TryGetValue<double>(out var result))
+        if (value.TryGetValue<double>(out double result))
         {
             return result;
         }
 
-        return value.TryGetValue<long>(out var integer) ? integer : null;
+        return value.TryGetValue<long>(out long integer) ? integer : null;
     }
 
     private static DateTimeOffset? GetDateTimeOffset(JsonObject root, string propertyName)
@@ -600,13 +601,13 @@ public sealed class JourneyStore(string dataDirectory)
             return null;
         }
 
-        if (value.TryGetValue<DateTimeOffset>(out var result))
+        if (value.TryGetValue<DateTimeOffset>(out DateTimeOffset result))
         {
             return result;
         }
 
         return
-            value.TryGetValue<string>(out var text)
+            value.TryGetValue<string>(out string? text)
             && DateTimeOffset.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out result)
             ? result
             : null;
@@ -620,9 +621,9 @@ public sealed class JourneyStore(string dataDirectory)
         }
 
         var result = new Dictionary<string, int>(StringComparer.Ordinal);
-        foreach (var (key, node) in dictionary)
+        foreach ((string? key, JsonNode? node) in dictionary)
         {
-            if (node is JsonValue value && value.TryGetValue<int>(out var number))
+            if (node is JsonValue value && value.TryGetValue<int>(out int number))
             {
                 result[key] = number;
             }
@@ -640,7 +641,7 @@ public sealed class JourneyStore(string dataDirectory)
 
         return array
             .OfType<JsonValue>()
-            .Select(value => value.TryGetValue<long>(out var number) ? number : (long?)null)
+            .Select(value => value.TryGetValue<long>(out long number) ? number : (long?)null)
             .Where(value => value is not null)
             .Select(value => value!.Value)
             .ToHashSet();
@@ -655,7 +656,7 @@ public sealed class JourneyStore(string dataDirectory)
 
         return array
             .OfType<JsonValue>()
-            .Select(value => value.TryGetValue<int>(out var number) ? number : (int?)null)
+            .Select(value => value.TryGetValue<int>(out int number) ? number : (int?)null)
             .Where(value => value is not null)
             .Select(value => value!.Value)
             .ToHashSet();
@@ -670,7 +671,7 @@ public sealed class JourneyStore(string dataDirectory)
 
         return array
             .OfType<JsonValue>()
-            .Select(value => value.TryGetValue<string>(out var text) ? text : null)
+            .Select(value => value.TryGetValue<string>(out string? text) ? text : null)
             .Where(text => text is not null)
             .Cast<string>()
             .ToHashSet(StringComparer.Ordinal);
@@ -688,7 +689,9 @@ public sealed class JourneyStore(string dataDirectory)
                 16 * 1024,
                 FileOptions.Asynchronous | FileOptions.SequentialScan
             );
-            var node = await JsonNode.ParseAsync(stream, cancellationToken: cancellationToken).ConfigureAwait(false);
+            JsonNode? node = await JsonNode
+                .ParseAsync(stream, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
             return node is JsonObject root
                 ? new JsonObjectReadResult(root, null)
                 : new JsonObjectReadResult(null, $"{path} does not contain a JSON object.");
@@ -701,11 +704,11 @@ public sealed class JourneyStore(string dataDirectory)
 
     private static async Task WriteObjectAsync(string path, JsonObject root, CancellationToken cancellationToken)
     {
-        var directory =
+        string directory =
             Path.GetDirectoryName(path)
             ?? throw new InvalidOperationException($"The journey path has no parent directory: {path}");
         Directory.CreateDirectory(directory);
-        var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
+        string temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
         try
         {
             await using (

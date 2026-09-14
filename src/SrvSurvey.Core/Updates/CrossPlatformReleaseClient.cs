@@ -72,20 +72,20 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
     )
     {
         ValidateRuntimeIdentifier(runtimeIdentifier);
-        var releasesApiUri = channel == ReleaseChannel.Development ? developmentReleasesApiUri : stableReleasesApiUri;
+        Uri releasesApiUri = channel == ReleaseChannel.Development ? developmentReleasesApiUri : stableReleasesApiUri;
         ReleaseCandidate? candidate = null;
-        var releaseCount = 0;
-        for (var page = 1; page <= MaximumReleasePages; page++)
+        int releaseCount = 0;
+        for (int page = 1; page <= MaximumReleasePages; page++)
         {
-            var pageUri = ResolvePageUri(releasesApiUri, page);
-            using var request = CreateGitHubRequest(pageUri);
-            using var response = await client
+            Uri pageUri = ResolvePageUri(releasesApiUri, page);
+            using HttpRequestMessage request = CreateGitHubRequest(pageUri);
+            using HttpResponseMessage response = await client
                 .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                 .ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-            var bytes = await ReadBoundedAsync(response.Content, MaximumReleaseApiBytes, pageUri, cancellationToken)
+            byte[] bytes = await ReadBoundedAsync(response.Content, MaximumReleaseApiBytes, pageUri, cancellationToken)
                 .ConfigureAwait(false);
-            var parsed = ParseReleasePage(bytes, channel);
+            ReleasePage parsed = ParseReleasePage(bytes, channel);
             releaseCount += parsed.ReleaseCount;
             if (releaseCount > MaximumReleaseCount)
             {
@@ -108,16 +108,16 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
             return null;
         }
 
-        var indexAsset = candidate.Assets.Single(asset =>
+        ReleaseAsset indexAsset = candidate.Assets.Single(asset =>
             string.Equals(asset.Name, ReleaseIndexName, StringComparison.Ordinal)
         );
         using var indexRequest = new HttpRequestMessage(HttpMethod.Get, indexAsset.DownloadUri);
         indexRequest.Headers.UserAgent.ParseAdd("SrvSurvey-XP/1.0");
-        using var indexResponse = await client
+        using HttpResponseMessage indexResponse = await client
             .SendAsync(indexRequest, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         indexResponse.EnsureSuccessStatusCode();
-        var indexBytes = await ReadBoundedAsync(
+        byte[] indexBytes = await ReadBoundedAsync(
                 indexResponse.Content,
                 MaximumReleaseIndexBytes,
                 indexAsset.DownloadUri,
@@ -129,7 +129,12 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
             throw new InvalidDataException("The release index size does not match its GitHub asset metadata.");
         }
 
-        var package = ParseReleaseIndex(indexBytes, candidate.Version, runtimeIdentifier, candidate.Assets);
+        CrossPlatformReleasePackage package = ParseReleaseIndex(
+            indexBytes,
+            candidate.Version,
+            runtimeIdentifier,
+            candidate.Assets
+        );
         return new CrossPlatformRelease(candidate.Version, candidate.ReleaseUri, package, candidate.ReleaseNotes);
     }
 
@@ -164,8 +169,8 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
             }
 
             ReleaseCandidate? latest = null;
-            var count = 0;
-            foreach (var element in document.RootElement.EnumerateArray())
+            int count = 0;
+            foreach (JsonElement element in document.RootElement.EnumerateArray())
             {
                 count++;
                 if (count > ReleasesPerPage)
@@ -173,7 +178,7 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
                     throw new InvalidDataException("A GitHub release page contains too many releases.");
                 }
 
-                var candidate = ParseReleaseCandidate(element, channel);
+                ReleaseCandidate? candidate = ParseReleaseCandidate(element, channel);
                 if (candidate is not null && (latest is null || candidate.Version > latest.Version))
                 {
                     latest = candidate;
@@ -195,9 +200,9 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
             return null;
         }
 
-        var isDraft = ReadBoolean(element, "draft");
-        var isPrerelease = ReadBoolean(element, "prerelease");
-        var tag = ReadRequiredString(element, "tag_name");
+        bool isDraft = ReadBoolean(element, "draft");
+        bool isPrerelease = ReadBoolean(element, "prerelease");
+        string tag = ReadRequiredString(element, "tag_name");
         if (
             isDraft
             || (channel == ReleaseChannel.Stable && isPrerelease)
@@ -207,21 +212,24 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
             return null;
         }
 
-        var versionText = tag[ProductTagPrefix.Length..];
-        if (!ReleaseVersion.TryParse(versionText, out var version) || version.IsPrerelease != isPrerelease)
+        string versionText = tag[ProductTagPrefix.Length..];
+        if (!ReleaseVersion.TryParse(versionText, out ReleaseVersion version) || version.IsPrerelease != isPrerelease)
         {
             return null;
         }
 
-        var releaseUri = ReadRequiredHttpsUri(element, "html_url");
-        var releaseNotes = ReadOptionalString(element, "body");
-        if (!element.TryGetProperty("assets", out var assetsElement) || assetsElement.ValueKind != JsonValueKind.Array)
+        Uri releaseUri = ReadRequiredHttpsUri(element, "html_url");
+        string releaseNotes = ReadOptionalString(element, "body");
+        if (
+            !element.TryGetProperty("assets", out JsonElement assetsElement)
+            || assetsElement.ValueKind != JsonValueKind.Array
+        )
         {
             throw new InvalidDataException($"Release {version} has no GitHub asset array.");
         }
 
         var assets = new List<ReleaseAsset>();
-        foreach (var assetElement in assetsElement.EnumerateArray())
+        foreach (JsonElement assetElement in assetsElement.EnumerateArray())
         {
             if (assets.Count >= MaximumAssetCount)
             {
@@ -237,7 +245,7 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
             );
         }
 
-        var indexCount = assets.Count(asset => string.Equals(asset.Name, ReleaseIndexName, StringComparison.Ordinal));
+        int indexCount = assets.Count(asset => string.Equals(asset.Name, ReleaseIndexName, StringComparison.Ordinal));
         if (indexCount == 0)
         {
             return null;
@@ -261,7 +269,7 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
         try
         {
             using var document = JsonDocument.Parse(bytes);
-            var root = document.RootElement;
+            JsonElement root = document.RootElement;
             if (
                 root.ValueKind != JsonValueKind.Object
                 || ReadRequiredInt32(root, "schemaVersion") != 1
@@ -273,28 +281,43 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
                 );
             }
 
-            var versionText = ReadRequiredString(root, "version");
-            if (!ReleaseVersion.TryParse(versionText, out var indexVersion) || indexVersion != expectedVersion)
+            string versionText = ReadRequiredString(root, "version");
+            if (
+                !ReleaseVersion.TryParse(versionText, out ReleaseVersion indexVersion)
+                || indexVersion != expectedVersion
+            )
             {
                 throw new InvalidDataException("The release index version does not match the GitHub tag.");
             }
 
             if (
-                !root.TryGetProperty("packages", out var packagesElement)
+                !root.TryGetProperty("packages", out JsonElement packagesElement)
                 || packagesElement.ValueKind != JsonValueKind.Array
             )
             {
                 throw new InvalidDataException("The release index has no package array.");
             }
 
-            var packages = packagesElement.EnumerateArray().ToArray();
+            JsonElement[] packages = packagesElement.EnumerateArray().ToArray();
             if (packages.Length != 2)
             {
                 throw new InvalidDataException("The release index must contain exactly two platform packages.");
             }
 
-            var windows = ParseIndexedPackage(packages, expectedVersion, WinX64RuntimeIdentifier, "zip", assets);
-            var linux = ParseIndexedPackage(packages, expectedVersion, "linux-x64", "tar.gz", assets);
+            CrossPlatformReleasePackage windows = ParseIndexedPackage(
+                packages,
+                expectedVersion,
+                WinX64RuntimeIdentifier,
+                "zip",
+                assets
+            );
+            CrossPlatformReleasePackage linux = ParseIndexedPackage(
+                packages,
+                expectedVersion,
+                "linux-x64",
+                "tar.gz",
+                assets
+            );
             return runtimeIdentifier == WinX64RuntimeIdentifier ? windows : linux;
         }
         catch (JsonException exception)
@@ -311,7 +334,7 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
         IReadOnlyList<ReleaseAsset> assets
     )
     {
-        var matching = packages
+        JsonElement[] matching = packages
             .Where(package =>
                 string.Equals(
                     ReadRequiredString(package, "runtimeIdentifier"),
@@ -320,8 +343,8 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
                 )
             )
             .ToArray();
-        var suffix = archiveType == "zip" ? ".zip" : ".tar.gz";
-        var expectedName = $"{PackageNamePrefix}-{version}-{runtimeIdentifier}{suffix}";
+        string suffix = archiveType == "zip" ? ".zip" : ".tar.gz";
+        string expectedName = $"{PackageNamePrefix}-{version}-{runtimeIdentifier}{suffix}";
         if (
             matching.Length != 1
             || !string.Equals(ReadRequiredString(matching[0], "archive"), expectedName, StringComparison.Ordinal)
@@ -331,21 +354,21 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
             throw new InvalidDataException($"The release index has an invalid {runtimeIdentifier} package contract.");
         }
 
-        var selected = matching[0];
-        var archiveName = ReadRequiredString(selected, "archive");
-        var size = ReadPositiveInt64(selected, "size");
+        JsonElement selected = matching[0];
+        string archiveName = ReadRequiredString(selected, "archive");
+        long size = ReadPositiveInt64(selected, "size");
         if (size > MaximumPackageBytes)
         {
             throw new InvalidDataException($"The {runtimeIdentifier} package exceeds the supported size.");
         }
 
-        var sha256 = ReadRequiredString(selected, "sha256").ToLowerInvariant();
+        string sha256 = ReadRequiredString(selected, "sha256").ToLowerInvariant();
         if (sha256.Length != 64 || sha256.Any(character => !Uri.IsHexDigit(character)))
         {
             throw new InvalidDataException($"The {runtimeIdentifier} package has an invalid SHA-256 value.");
         }
 
-        var matchingAssets = assets
+        ReleaseAsset[] matchingAssets = assets
             .Where(asset => string.Equals(asset.Name, archiveName, StringComparison.Ordinal))
             .ToArray();
         if (matchingAssets.Length != 1 || matchingAssets[0].Size != size)
@@ -372,18 +395,18 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
         CancellationToken cancellationToken
     )
     {
-        var contentLength = content.Headers.ContentLength;
+        long? contentLength = content.Headers.ContentLength;
         if (contentLength.HasValue && contentLength.Value > maximumBytes)
         {
             throw new InvalidDataException($"The update response exceeded {maximumBytes:N0} bytes: {uri}");
         }
 
-        await using var input = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        await using Stream input = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         using var output = new MemoryStream();
-        var buffer = new byte[16 * 1024];
+        byte[] buffer = new byte[16 * 1024];
         while (true)
         {
-            var read = await input.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+            int read = await input.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
             if (read == 0)
             {
                 break;
@@ -417,14 +440,14 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
             return baseUri;
         }
 
-        var separator = string.IsNullOrEmpty(baseUri.Query) ? "?" : "&";
+        string separator = string.IsNullOrEmpty(baseUri.Query) ? "?" : "&";
         return new Uri($"{baseUri.AbsoluteUri}{separator}page={page}");
     }
 
     private static bool ReadBoolean(JsonElement element, string propertyName)
     {
         if (
-            !element.TryGetProperty(propertyName, out var property)
+            !element.TryGetProperty(propertyName, out JsonElement property)
             || property.ValueKind is not (JsonValueKind.True or JsonValueKind.False)
         )
         {
@@ -436,7 +459,7 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
 
     private static int ReadRequiredInt32(JsonElement element, string propertyName)
     {
-        if (!element.TryGetProperty(propertyName, out var property) || !property.TryGetInt32(out var value))
+        if (!element.TryGetProperty(propertyName, out JsonElement property) || !property.TryGetInt32(out int value))
         {
             throw new InvalidDataException($"The update metadata has an invalid '{propertyName}' value.");
         }
@@ -447,8 +470,8 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
     private static long ReadPositiveInt64(JsonElement element, string propertyName)
     {
         if (
-            !element.TryGetProperty(propertyName, out var property)
-            || !property.TryGetInt64(out var value)
+            !element.TryGetProperty(propertyName, out JsonElement property)
+            || !property.TryGetInt64(out long value)
             || value <= 0
         )
         {
@@ -461,7 +484,7 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
     private static string ReadRequiredString(JsonElement element, string propertyName)
     {
         if (
-            !element.TryGetProperty(propertyName, out var property)
+            !element.TryGetProperty(propertyName, out JsonElement property)
             || property.ValueKind != JsonValueKind.String
             || string.IsNullOrWhiteSpace(property.GetString())
         )
@@ -475,7 +498,7 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
     private static string ReadOptionalString(JsonElement element, string propertyName)
     {
         if (
-            !element.TryGetProperty(propertyName, out var property)
+            !element.TryGetProperty(propertyName, out JsonElement property)
             || property.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined
         )
         {
@@ -487,8 +510,8 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
 
     private static Uri ReadRequiredHttpsUri(JsonElement element, string propertyName)
     {
-        var value = ReadRequiredString(element, propertyName);
-        if (!Uri.TryCreate(value, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps)
+        string value = ReadRequiredString(element, propertyName);
+        if (!Uri.TryCreate(value, UriKind.Absolute, out Uri? uri) || uri.Scheme != Uri.UriSchemeHttps)
         {
             throw new InvalidDataException($"The update metadata has an invalid '{propertyName}' URI.");
         }

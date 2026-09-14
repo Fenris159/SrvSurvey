@@ -12,7 +12,7 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
     [Fact]
     public void MissingDocumentUsesLegacyCompatibleDefaults()
     {
-        var preferences = CreateStore().Load();
+        SystemSurveyPreferences preferences = CreateStore().Load();
 
         Assert.Equal(SystemSurveyPreferences.Default, preferences);
         Assert.Equal(0, preferences.BodyInformationPreviewExtensionSeconds);
@@ -26,7 +26,7 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
     public void PreferencesRoundTripWithoutRemovingOtherUiSettings()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         File.WriteAllText(path, "{\"Theme\":\"Blue-dark\"}");
         var store = new SystemSurveySettingsStore(path);
         var expected = new SystemSurveyPreferences(
@@ -106,7 +106,7 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
     public void NegativeNumericValuesAreClamped()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         File.WriteAllText(
             path,
             "{\"SystemSurvey\":{\"FssBodyValueFloor\":-1,"
@@ -124,7 +124,7 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
                 + "\"YellowBar\":{\"Red\":-1,\"Green\":999}}}}"
         );
 
-        var preferences = new SystemSurveySettingsStore(path).Load();
+        SystemSurveyPreferences preferences = new SystemSurveySettingsStore(path).Load();
 
         Assert.Equal(0, preferences.FssBodyValueFloor);
         Assert.Equal(1, preferences.FssBodiesBeforeScrolling);
@@ -147,7 +147,7 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
     public void SavingDetectorSettingsPreservesFutureNestedValues()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         File.WriteAllText(
             path,
             "{\"SystemSurvey\":{\"FssTuningDetector\":{"
@@ -155,14 +155,14 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
                 + "\"YellowBar\":{\"FutureColor\":true}}}}"
         );
         var store = new SystemSurveySettingsStore(path);
-        var preferences = store.Load() with
+        SystemSurveyPreferences preferences = store.Load() with
         {
             FssTuningDetector = FssTuningDetectorSettings.Default with { Enabled = false },
         };
 
         store.Save(preferences);
 
-        var json = File.ReadAllText(path);
+        string json = File.ReadAllText(path);
         Assert.Contains("FutureOption", json);
         Assert.Contains("FutureColor", json);
         Assert.False(store.Load().FssTuningDetector.Enabled);

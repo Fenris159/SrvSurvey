@@ -27,7 +27,7 @@ public sealed class MiningSessionTrackerTests
         );
         tracker.Pause(start.AddMinutes(10));
         tracker.Resume(start.AddMinutes(20));
-        var session = tracker.Stop(start.AddMinutes(30));
+        MiningSession session = tracker.Stop(start.AddMinutes(30));
 
         Assert.Equal(TimeSpan.FromMinutes(20), session.ActiveDuration);
         Assert.Equal(1, session.RefinedTons);
@@ -46,7 +46,7 @@ public sealed class MiningSessionTrackerTests
                 new MiningProspect(DateTimeOffset.UtcNow, [new MiningMaterial("Osmium", 5)], "Monazite", "High"),
             ],
         };
-        var material = Assert.Single(
+        MiningMaterialSummary material = Assert.Single(
             session.Summarize(new Dictionary<string, double> { ["Monazite"] = 90 }),
             m => m.Name == "Monazite"
         );
@@ -78,7 +78,7 @@ public sealed class MiningSessionTrackerTests
             )
         );
 
-        var prospect = Assert.Single(tracker.Current!.Prospects);
+        MiningProspect prospect = Assert.Single(tracker.Current!.Prospects);
         Assert.Equal(start.AddMinutes(1), prospect.Time);
         Assert.Equal(42.5, prospect.Remaining);
         Assert.Equal(prospect, tracker.Current.ActiveProspect);
@@ -146,7 +146,7 @@ public sealed class MiningSessionTrackerTests
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var entry, out _));
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? entry, out _));
         return entry!;
     }
 }

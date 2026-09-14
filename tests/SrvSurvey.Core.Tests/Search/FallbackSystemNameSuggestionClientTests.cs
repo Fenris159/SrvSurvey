@@ -7,12 +7,12 @@ public sealed class FallbackSystemNameSuggestionClientTests
     [Fact]
     public async Task UsesFallbackWhenPrimaryIsUnavailable()
     {
-        var fallbackResults = new[] { new SystemNameSuggestion("Sol", 10477373803, "Ardent") };
+        SystemNameSuggestion[] fallbackResults = new[] { new SystemNameSuggestion("Sol", 10477373803, "Ardent") };
         var primary = new StubClient(_ => throw new HttpRequestException("EDSM unavailable"));
         var fallback = new StubClient(_ => Task.FromResult<IReadOnlyList<SystemNameSuggestion>>(fallbackResults));
         var client = new FallbackSystemNameSuggestionClient(primary, fallback);
 
-        var results = await client.SearchAsync("Sol");
+        IReadOnlyList<SystemNameSuggestion> results = await client.SearchAsync("Sol");
 
         Assert.Same(fallbackResults, results);
         Assert.Equal(1, primary.CallCount);
@@ -30,7 +30,7 @@ public sealed class FallbackSystemNameSuggestionClientTests
         );
         var client = new FallbackSystemNameSuggestionClient(primary, fallback);
 
-        var results = await client.SearchAsync("No match");
+        IReadOnlyList<SystemNameSuggestion> results = await client.SearchAsync("No match");
 
         Assert.Empty(results);
         Assert.Equal(0, fallback.CallCount);
@@ -52,12 +52,12 @@ public sealed class FallbackSystemNameSuggestionClientTests
     [Fact]
     public async Task InternalCancellationUsesFallbackWhenCallerIsNotCancelled()
     {
-        var fallbackResults = new[] { new SystemNameSuggestion("Sol", 10477373803, "Ardent") };
+        SystemNameSuggestion[] fallbackResults = new[] { new SystemNameSuggestion("Sol", 10477373803, "Ardent") };
         var primary = new StubClient(_ => throw new TaskCanceledException("Provider timeout"));
         var fallback = new StubClient(_ => Task.FromResult<IReadOnlyList<SystemNameSuggestion>>(fallbackResults));
         var client = new FallbackSystemNameSuggestionClient(primary, fallback);
 
-        var results = await client.SearchAsync("Sol");
+        IReadOnlyList<SystemNameSuggestion> results = await client.SearchAsync("Sol");
 
         Assert.Same(fallbackResults, results);
         Assert.Equal(1, fallback.CallCount);

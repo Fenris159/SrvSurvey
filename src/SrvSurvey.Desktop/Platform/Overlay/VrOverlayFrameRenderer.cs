@@ -35,17 +35,17 @@ public static class VrOverlayFrameRenderer
     {
         ArgumentNullException.ThrowIfNull(pngBytes);
         using var stream = new MemoryStream(pngBytes, writable: false);
-        using var codec =
+        using SKCodec codec =
             SKCodec.Create(stream) ?? throw new InvalidDataException("The rendered VR frame is not a PNG image.");
         var info = new SKImageInfo(codec.Info.Width, codec.Info.Height, SKColorType.Rgba8888, SKAlphaType.Unpremul);
-        var byteCount = checked((long)info.RowBytes * info.Height);
-        if (byteCount <= 0 || byteCount > MaximumFrameBytes)
+        long byteCount = checked((long)info.RowBytes * info.Height);
+        if (byteCount is <= 0 or > MaximumFrameBytes)
         {
             throw new InvalidDataException("The rendered VR frame exceeds the 256 MiB safety limit.");
         }
 
-        var pixels = new byte[(int)byteCount];
-        var result = codec.GetPixels(info, pixels);
+        byte[] pixels = new byte[(int)byteCount];
+        SKCodecResult result = codec.GetPixels(info, pixels);
         if (result is not SKCodecResult.Success)
         {
             throw new InvalidDataException($"The rendered VR frame could not be decoded: {result}.");

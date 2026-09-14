@@ -46,9 +46,13 @@ public sealed class ColonizationBuildSiteRepairTests
     [Fact]
     public void RepairsMissingOrStaleMarketIdByUniqueCompletedName()
     {
-        var missing = CompleteSite("x1", "Dampier Gateway", marketId: null);
-        var missingPlan = ColonizationBuildSiteRepair.CreatePlan([missing], "Dampier Gateway", 4_310_999_999);
-        var stalePlan = ColonizationBuildSiteRepair.CreatePlan(
+        ColonizationSystemSite missing = CompleteSite("x1", "Dampier Gateway", marketId: null);
+        ColonizationBuildSiteRepairPlan? missingPlan = ColonizationBuildSiteRepair.CreatePlan(
+            [missing],
+            "Dampier Gateway",
+            4_310_999_999
+        );
+        ColonizationBuildSiteRepairPlan? stalePlan = ColonizationBuildSiteRepair.CreatePlan(
             [missing with { MarketId = 3_963_024_386 }],
             "Dampier Gateway",
             4_310_999_999
@@ -62,7 +66,7 @@ public sealed class ColonizationBuildSiteRepairTests
     [Fact]
     public void RepairsNameByUniqueMatchingMarketIdFallback()
     {
-        var plan = ColonizationBuildSiteRepair.CreatePlan(
+        ColonizationBuildSiteRepairPlan? plan = ColonizationBuildSiteRepair.CreatePlan(
             [CompleteSite("x1", "Generic Outpost", 4_310_999_999)],
             "Dampier Gateway",
             4_310_999_999
@@ -76,12 +80,12 @@ public sealed class ColonizationBuildSiteRepairTests
     [Fact]
     public void AllowsStatuslessLegacyRows()
     {
-        var site = JsonSerializer.Deserialize<ColonizationSystemSite>(
+        ColonizationSystemSite? site = JsonSerializer.Deserialize<ColonizationSystemSite>(
             """{"id":"x1","name":"Dampier Gateway"}""",
             CaseInsensitiveJson
         );
 
-        var plan = ColonizationBuildSiteRepair.CreatePlan(
+        ColonizationBuildSiteRepairPlan? plan = ColonizationBuildSiteRepair.CreatePlan(
             [Assert.IsType<ColonizationSystemSite>(site)],
             "Dampier Gateway",
             4_310_999_999
@@ -94,7 +98,7 @@ public sealed class ColonizationBuildSiteRepairTests
     [Fact]
     public void RejectsAmbiguousNamesEvenWhenOnlyOneRowIsEligible()
     {
-        var sites = new[]
+        ColonizationSystemSite[] sites = new[]
         {
             CompleteSite("a", "Twin Hub", 100),
             CompleteSite("b", "Twin Hub", null) with
@@ -109,7 +113,7 @@ public sealed class ColonizationBuildSiteRepairTests
     [Fact]
     public void RejectsAmbiguousMarketIdNameRepair()
     {
-        var sites = new[]
+        ColonizationSystemSite[] sites = new[]
         {
             CompleteSite("a", "Generic Outpost", 4_310_999_999),
             CompleteSite("b", "Other Outpost", 4_310_999_999),
@@ -123,7 +127,7 @@ public sealed class ColonizationBuildSiteRepairTests
     [InlineData(ColonizationSystemSiteStatus.Build)]
     public void RejectsActiveRows(ColonizationSystemSiteStatus status)
     {
-        var site = CompleteSite("x1", "Dampier Gateway", null) with { Status = status };
+        ColonizationSystemSite site = CompleteSite("x1", "Dampier Gateway", null) with { Status = status };
 
         Assert.Null(ColonizationBuildSiteRepair.CreatePlan([site], "Dampier Gateway", 4_310_999_999));
     }
@@ -131,7 +135,7 @@ public sealed class ColonizationBuildSiteRepairTests
     [Fact]
     public void SkipsRowsThatAlreadyMatch()
     {
-        var site = CompleteSite("x1", "Dampier Gateway", 4_310_999_999);
+        ColonizationSystemSite site = CompleteSite("x1", "Dampier Gateway", 4_310_999_999);
 
         Assert.Null(ColonizationBuildSiteRepair.CreatePlan([site], "Dampier Gateway", 4_310_999_999));
     }

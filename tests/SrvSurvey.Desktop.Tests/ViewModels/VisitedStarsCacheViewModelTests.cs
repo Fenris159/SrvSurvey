@@ -18,7 +18,7 @@ public sealed class VisitedStarsCacheViewModelTests : IDisposable
             Path.Combine(temporaryDirectory, "F123-live.json"),
             "{\"fid\":\"F123\",\"commander\":\"Drew\"}"
         );
-        var target = Path.Combine(temporaryDirectory, VisitedStarsCacheService.CacheFileName);
+        string target = Path.Combine(temporaryDirectory, VisitedStarsCacheService.CacheFileName);
         await File.WriteAllBytesAsync(target, [1, 2, 3]);
         var service = new RecordingService();
         var viewModel = new VisitedStarsCacheViewModel(
@@ -55,7 +55,7 @@ public sealed class VisitedStarsCacheViewModelTests : IDisposable
             Path.Combine(temporaryDirectory, "F123-live.json"),
             "{\"fid\":\"F123\",\"commander\":\"Drew\"}"
         );
-        var target = Path.Combine(temporaryDirectory, VisitedStarsCacheService.CacheFileName);
+        string target = Path.Combine(temporaryDirectory, VisitedStarsCacheService.CacheFileName);
         await File.WriteAllBytesAsync(target, [1, 2, 3]);
         await File.WriteAllBytesAsync(VisitedStarsCacheService.GetBackupPath(target), [9, 8, 7]);
         var service = new RecordingService();
@@ -83,7 +83,7 @@ public sealed class VisitedStarsCacheViewModelTests : IDisposable
             Path.Combine(temporaryDirectory, "F123-live.json"),
             "{\"fid\":\"F123\",\"commander\":\"Drew\"}"
         );
-        var target = Path.Combine(temporaryDirectory, VisitedStarsCacheService.CacheFileName);
+        string target = Path.Combine(temporaryDirectory, VisitedStarsCacheService.CacheFileName);
         await File.WriteAllBytesAsync(target, [1]);
         var service = new RecordingService();
         var viewModel = new VisitedStarsCacheViewModel(
@@ -110,7 +110,7 @@ public sealed class VisitedStarsCacheViewModelTests : IDisposable
             "{\"fid\":\"F123\",\"commander\":\"Imported\"}"
         );
         var service = new RecordingService();
-        var targetResolverCalls = 0;
+        int targetResolverCalls = 0;
         var viewModel = new VisitedStarsCacheViewModel(
             new CommanderProfileCatalog(temporaryDirectory),
             service,

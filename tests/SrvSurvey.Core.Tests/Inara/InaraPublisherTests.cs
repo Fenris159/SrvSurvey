@@ -29,7 +29,7 @@ public sealed class InaraPublisherTests
             [new CargoItem("tea", null, 7, 0)]
         );
 
-        var bootstrap = await publisher.ApplyAsync(
+        InaraPublicationResult bootstrap = await publisher.ApplyAsync(
             CreateUpdate(
                 [
                     Event(
@@ -84,7 +84,7 @@ public sealed class InaraPublisherTests
         );
         Assert.Equal(0, bootstrap.QueuedEventCount);
 
-        var live = await publisher.ApplyAsync(
+        InaraPublicationResult live = await publisher.ApplyAsync(
             CreateUpdate(
                 [
                     Event(
@@ -144,7 +144,7 @@ public sealed class InaraPublisherTests
                 allowSharedData: false
             )
         );
-        var live = await publisher.ApplyAsync(
+        InaraPublicationResult live = await publisher.ApplyAsync(
             CreateUpdate(
                 [
                     Event(
@@ -199,12 +199,12 @@ public sealed class InaraPublisherTests
                 allowSharedData: true
             )
         );
-        var result = await publisher.FlushAsync();
+        InaraPublicationResult result = await publisher.FlushAsync();
 
         Assert.True(result.AcceptedEventCount > 0);
         Assert.Equal(0, result.PendingEventCount);
-        var payload = Assert.IsType<JObject>(handler.LastPayload);
-        var header = Assert.IsType<JObject>(payload["header"]);
+        JObject payload = Assert.IsType<JObject>(handler.LastPayload);
+        JObject header = Assert.IsType<JObject>(payload["header"]);
         Assert.Equal("SrvSurvey", header.Value<string>("appName"));
         Assert.Equal("personal-key", header.Value<string>("APIkey"));
         Assert.True(header.Value<bool>("isBeingDeveloped"));
@@ -235,13 +235,13 @@ public sealed class InaraPublisherTests
                 allowSharedData: true
             )
         );
-        var deferred = await publisher.FlushAsync();
+        InaraPublicationResult deferred = await publisher.FlushAsync();
 
         Assert.True(deferred.PendingEventCount > 0);
         Assert.Contains(deferred.Warnings, warning => warning.Contains("retained", StringComparison.OrdinalIgnoreCase));
 
         handler.StatusCode = HttpStatusCode.OK;
-        var retried = await publisher.FlushAsync();
+        InaraPublicationResult retried = await publisher.FlushAsync();
         Assert.True(retried.AcceptedEventCount > 0);
         Assert.Equal(0, retried.PendingEventCount);
     }
@@ -270,7 +270,7 @@ public sealed class InaraPublisherTests
                 allowSharedData: true
             )
         );
-        var deferred = await publisher.FlushAsync();
+        InaraPublicationResult deferred = await publisher.FlushAsync();
 
         Assert.True(deferred.PendingEventCount > 0);
         Assert.Contains(
@@ -303,7 +303,7 @@ public sealed class InaraPublisherTests
                 allowSharedData: true
             )
         );
-        var deferred = await publisher.FlushAsync();
+        InaraPublicationResult deferred = await publisher.FlushAsync();
 
         Assert.True(deferred.PendingEventCount > 0);
         Assert.Contains(
@@ -318,7 +318,7 @@ public sealed class InaraPublisherTests
         var handler = new BlockingInaraHandler();
         var publisher = new InaraPublisher("2.0.95.0", new HttpClient(handler));
 
-        var applyTask = publisher.ApplyAsync(
+        Task<InaraPublicationResult> applyTask = publisher.ApplyAsync(
             CreateUpdate(
                 [
                     Event(
@@ -347,16 +347,16 @@ public sealed class InaraPublisherTests
 
         await applyTask.WaitAsync(TimeSpan.FromSeconds(1));
         await handler.RequestStarted.Task.WaitAsync(TimeSpan.FromSeconds(1));
-        var stopTask = publisher.StopAsync();
+        Task<InaraPublicationResult> stopTask = publisher.StopAsync();
         Assert.False(stopTask.IsCompleted);
 
         handler.ReleaseResponse();
-        var stopped = await stopTask.WaitAsync(TimeSpan.FromSeconds(1));
+        InaraPublicationResult stopped = await stopTask.WaitAsync(TimeSpan.FromSeconds(1));
 
         Assert.True(stopped.AcceptedEventCount > 0);
         Assert.False(handler.RequestCancelled.Task.IsCompleted);
-        var requestCount = handler.RequestCount;
-        var repeatedStop = publisher.StopAsync();
+        int requestCount = handler.RequestCount;
+        Task<InaraPublicationResult> repeatedStop = publisher.StopAsync();
         Assert.Same(stopTask, repeatedStop);
         await repeatedStop;
         publisher.Dispose();
@@ -397,13 +397,13 @@ public sealed class InaraPublisherTests
         await handler.RequestStarted.Task.WaitAsync(TimeSpan.FromSeconds(1));
 
         using var cancellation = new CancellationTokenSource();
-        var cancelledWait = publisher.StopAsync(cancellation.Token);
+        Task<InaraPublicationResult> cancelledWait = publisher.StopAsync(cancellation.Token);
         await cancellation.CancelAsync();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => cancelledWait);
         Assert.False(handler.RequestCancelled.Task.IsCompleted);
 
         handler.ReleaseResponse();
-        var stopped = await publisher.StopAsync().WaitAsync(TimeSpan.FromSeconds(1));
+        InaraPublicationResult stopped = await publisher.StopAsync().WaitAsync(TimeSpan.FromSeconds(1));
         Assert.True(stopped.AcceptedEventCount > 0);
         publisher.Dispose();
     }
@@ -466,7 +466,7 @@ public sealed class InaraPublisherTests
         await disposeStarted.Task.WaitAsync(TimeSpan.FromSeconds(1));
         Assert.False(completed.Task.IsCompleted);
         handler.ReleaseResponse();
-        var exception = await completed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        Exception? exception = await completed.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
         Assert.Null(exception);
         Assert.True(handler.ResponseCompleted);
@@ -505,8 +505,8 @@ public sealed class InaraPublisherTests
         );
         await handler.RequestStarted.Task.WaitAsync(TimeSpan.FromSeconds(1));
 
-        var disabledOptions = Options with { ApiKey = null };
-        var optOut = await publisher.ApplyAsync(
+        InaraPublicationOptions disabledOptions = Options with { ApiKey = null };
+        InaraPublicationResult optOut = await publisher.ApplyAsync(
             CreateUpdate(
                 [
                     Event(
@@ -526,7 +526,7 @@ public sealed class InaraPublisherTests
             )
         );
         await handler.RequestCancelled.Task.WaitAsync(TimeSpan.FromSeconds(1));
-        var cancelled = await publisher.FlushAsync();
+        InaraPublicationResult cancelled = await publisher.FlushAsync();
 
         Assert.Equal(0, optOut.PendingEventCount);
         Assert.Equal(0, cancelled.AcceptedEventCount);
@@ -609,11 +609,11 @@ public sealed class InaraPublisherTests
 
         await publisher.FlushAsync();
 
-        var mission = Assert.Single(
+        JObject mission = Assert.Single(
             handler.LastPayload!["events"]!.OfType<JObject>(),
             item => item.Value<string>("eventName") == "addCommanderMission"
         );
-        var data = Assert.IsType<JObject>(mission["eventData"]);
+        JObject data = Assert.IsType<JObject>(mission["eventData"]);
         Assert.Equal("Sol", data.Value<string>("starsystemNameOrigin"));
         Assert.Equal("Galileo", data.Value<string>("stationNameOrigin"));
     }
@@ -623,7 +623,7 @@ public sealed class InaraPublisherTests
     {
         using var publisher = new InaraPublisher("2.0.95.0", new HttpClient(new InaraResponseHandler()));
 
-        var result = await publisher.ApplyAsync(
+        InaraPublicationResult result = await publisher.ApplyAsync(
             CreateUpdate(
                 [
                     Event(
@@ -653,13 +653,13 @@ public sealed class InaraPublisherTests
     {
         var handler = new InaraResponseHandler();
         using var publisher = new InaraPublisher("2.0.95.0", new HttpClient(handler));
-        var firstOptions = Options with
+        InaraPublicationOptions firstOptions = Options with
         {
             ApiKey = "first-key",
             CommanderName = "First Commander",
             FrontierId = "F111",
         };
-        var secondOptions = Options with
+        InaraPublicationOptions secondOptions = Options with
         {
             ApiKey = "second-key",
             CommanderName = "Second Commander",
@@ -718,7 +718,7 @@ public sealed class InaraPublisherTests
         await publisher.FlushAsync();
 
         Assert.Equal(2, handler.Payloads.Count);
-        var headers = handler.Payloads.Select(payload => Assert.IsType<JObject>(payload["header"])).ToArray();
+        JObject[] headers = handler.Payloads.Select(payload => Assert.IsType<JObject>(payload["header"])).ToArray();
         Assert.Collection(
             headers,
             first =>
@@ -826,12 +826,12 @@ public sealed class InaraPublisherTests
         );
         await publisher.FlushAsync();
 
-        var ship = Assert.Single(
+        JObject ship = Assert.Single(
             handler.LastPayload!["events"]!.OfType<JObject>(),
             item => item.Value<string>("eventName") == "setCommanderShip"
         );
         Assert.Equal(42, ship["eventData"]!.Value<int>("shipGameID"));
-        var mission = Assert.Single(
+        JObject mission = Assert.Single(
             handler.LastPayload["events"]!.OfType<JObject>(),
             item => item.Value<string>("eventName") == "addCommanderMission"
         );
@@ -847,7 +847,7 @@ public sealed class InaraPublisherTests
     {
         var handler = new InaraResponseHandler();
         using var publisher = new InaraPublisher("2.0.95.0", new HttpClient(handler));
-        var events = Enumerable
+        JournalEventEnvelope[] events = Enumerable
             .Range(0, 140)
             .Select(index =>
                 Event(
@@ -864,7 +864,7 @@ public sealed class InaraPublisherTests
             .ToArray();
 
         await publisher.ApplyAsync(CreateUpdate(events, cargo: null, allowPublishing: true, allowSharedData: true));
-        var first = await publisher.FlushAsync();
+        InaraPublicationResult first = await publisher.FlushAsync();
         await publisher.ApplyAsync(
             CreateUpdate(
                 [
@@ -894,7 +894,7 @@ public sealed class InaraPublisherTests
     {
         var handler = new InaraResponseHandler();
         using var publisher = new InaraPublisher("2.0.95.0", new HttpClient(handler));
-        var largeName = new string('x', 600_000);
+        string largeName = new string('x', 600_000);
 
         await publisher.ApplyAsync(
             CreateUpdate(
@@ -925,7 +925,7 @@ public sealed class InaraPublisherTests
                 allowSharedData: true
             )
         );
-        var result = await publisher.FlushAsync();
+        InaraPublicationResult result = await publisher.FlushAsync();
 
         Assert.Equal(1, handler.RequestCount);
         Assert.True(result.AcceptedEventCount > 0);
@@ -976,7 +976,7 @@ public sealed class InaraPublisherTests
             )
         );
 
-        var result = await publisher.FlushAsync();
+        InaraPublicationResult result = await publisher.FlushAsync();
 
         Assert.Equal(1, result.AcceptedEventCount);
         Assert.Equal(1, result.PendingEventCount);
@@ -1003,7 +1003,7 @@ public sealed class InaraPublisherTests
                 allowSharedData: true
             )
         );
-        var redirected = await redirectPublisher.FlushAsync();
+        InaraPublicationResult redirected = await redirectPublisher.FlushAsync();
         Assert.Equal(0, redirected.AcceptedEventCount);
         Assert.Equal(0, redirected.PendingEventCount);
         Assert.Contains(redirected.Warnings, warning => warning.Contains("API status 302"));
@@ -1107,13 +1107,13 @@ public sealed class InaraPublisherTests
 
     private static JournalEventEnvelope Event(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var parsed, out var error), error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? parsed, out string? error), error);
         return Assert.IsType<JournalEventEnvelope>(parsed);
     }
 
     private static async Task WaitForAsync(Func<bool> predicate)
     {
-        var deadline = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(2);
+        DateTimeOffset deadline = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(2);
         while (!predicate() && DateTimeOffset.UtcNow < deadline)
         {
             await Task.Delay(10);
@@ -1150,7 +1150,7 @@ public sealed class InaraPublisherTests
         )
         {
             Interlocked.Increment(ref requestCount);
-            var body = await request.Content!.ReadAsStringAsync(cancellationToken);
+            string body = await request.Content!.ReadAsStringAsync(cancellationToken);
             LastPayload = JToken.Parse(body);
             Payloads.Add(LastPayload);
             if ((int)StatusCode is < 200 or > 299)
@@ -1172,8 +1172,8 @@ public sealed class InaraPublisherTests
                 };
             }
 
-            var eventCount = LastPayload["events"]?.Count() ?? 0;
-            var responseEvents = ReturnMalformedEventResponse
+            int eventCount = LastPayload["events"]?.Count() ?? 0;
+            JArray responseEvents = ReturnMalformedEventResponse
                 ? new JArray(Enumerable.Range(0, eventCount).Select(_ => JValue.CreateString("malformed")))
                 : new JArray(
                     Enumerable
@@ -1222,7 +1222,7 @@ public sealed class InaraPublisherTests
             RequestStarted.TrySetResult();
             try
             {
-                var body = await request.Content!.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+                string body = await request.Content!.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
                 var payload = JObject.Parse(body);
                 await releaseResponse.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
                 ResponseCompleted = true;

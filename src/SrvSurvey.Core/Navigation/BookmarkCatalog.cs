@@ -52,7 +52,7 @@ public sealed record GalacticBookmark
     {
         get
         {
-            var location = SplitBodyAndRing(Body, Ring);
+            (string Body, string Ring) location = SplitBodyAndRing(Body, Ring);
             return string.IsNullOrWhiteSpace(location.Ring) ? location.Body : $"{location.Body} {location.Ring}";
         }
     }
@@ -84,26 +84,26 @@ public sealed record GalacticBookmark
 
     public static (string Body, string Ring) SplitBodyAndRing(string? body, string? ring = null)
     {
-        var normalizedBody = body?.Trim() ?? string.Empty;
-        var normalizedRing = ring?.Trim() ?? string.Empty;
+        string normalizedBody = body?.Trim() ?? string.Empty;
+        string normalizedRing = ring?.Trim() ?? string.Empty;
         if (normalizedRing.Length > 0)
         {
             return (normalizedBody, normalizedRing);
         }
 
-        var suffix = normalizedBody.LastIndexOf(" Ring", StringComparison.OrdinalIgnoreCase);
+        int suffix = normalizedBody.LastIndexOf(" Ring", StringComparison.OrdinalIgnoreCase);
         if (suffix != normalizedBody.Length - 5 || suffix <= 0)
         {
             return (normalizedBody, string.Empty);
         }
 
-        var ringTokenStart = normalizedBody.LastIndexOf(' ', suffix - 1);
+        int ringTokenStart = normalizedBody.LastIndexOf(' ', suffix - 1);
         if (ringTokenStart < 0)
         {
             return (normalizedBody, string.Empty);
         }
 
-        var ringToken = normalizedBody[(ringTokenStart + 1)..suffix];
+        string ringToken = normalizedBody[(ringTokenStart + 1)..suffix];
         if (ringToken.Length != 1 || !char.IsLetter(ringToken[0]))
         {
             return (normalizedBody, string.Empty);
@@ -114,8 +114,8 @@ public sealed record GalacticBookmark
 
     public static string TrimSystemPrefix(string? system, string? body)
     {
-        var normalizedSystem = system?.Trim() ?? string.Empty;
-        var normalizedBody = body?.Trim() ?? string.Empty;
+        string normalizedSystem = system?.Trim() ?? string.Empty;
+        string normalizedBody = body?.Trim() ?? string.Empty;
         if (
             normalizedSystem.Length == 0
             || normalizedBody.Length <= normalizedSystem.Length
@@ -169,8 +169,11 @@ public sealed class BookmarkCatalog
     public void Save(GalacticBookmark bookmark)
     {
         Validate(bookmark);
-        var normalizedCategories = BookmarkCategoryCatalog.Normalize(bookmark.CategoryAssignments, bookmark.Category);
-        var location = GalacticBookmark.SplitBodyAndRing(bookmark.Body, bookmark.Ring);
+        IReadOnlyList<string> normalizedCategories = BookmarkCategoryCatalog.Normalize(
+            bookmark.CategoryAssignments,
+            bookmark.Category
+        );
+        (string Body, string Ring) location = GalacticBookmark.SplitBodyAndRing(bookmark.Body, bookmark.Ring);
         var next = items
             .Where(b => b.Id != bookmark.Id)
             .Append(
@@ -203,7 +206,7 @@ public sealed class BookmarkCatalog
 
     public void Restore(string json)
     {
-        var restored = Parse(json);
+        List<GalacticBookmark> restored = Parse(json);
         if (File.Exists(path))
         {
             File.Copy(path, path + ".before-restore", true);
@@ -214,9 +217,13 @@ public sealed class BookmarkCatalog
 
     public void Import(string json)
     {
-        var incoming = Parse(json);
+        List<GalacticBookmark> incoming = Parse(json);
         var next = items.ToList();
-        foreach (var bookmark in incoming.Where(bookmark => !next.Any(existing => IsSameBookmark(existing, bookmark))))
+        foreach (
+            GalacticBookmark? bookmark in incoming.Where(bookmark =>
+                !next.Any(existing => IsSameBookmark(existing, bookmark))
+            )
+        )
         {
             next.Add(bookmark);
         }
@@ -227,7 +234,7 @@ public sealed class BookmarkCatalog
     private void Persist(List<GalacticBookmark> next)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        var temporary = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
+        string temporary = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try
         {
             File.WriteAllText(temporary, JsonSerializer.Serialize(next, JsonOptions));
@@ -265,7 +272,7 @@ public sealed class BookmarkCatalog
             }
 
             var parsed = new List<GalacticBookmark>();
-            foreach (var row in document.RootElement.EnumerateArray())
+            foreach (JsonElement row in document.RootElement.EnumerateArray())
             {
                 if (row.ValueKind != JsonValueKind.Object)
                 {
@@ -284,7 +291,7 @@ public sealed class BookmarkCatalog
                 }
             }
             var valid = new List<GalacticBookmark>(parsed.Count);
-            foreach (var bookmark in parsed)
+            foreach (GalacticBookmark bookmark in parsed)
             {
                 try
                 {
@@ -308,11 +315,11 @@ public sealed class BookmarkCatalog
     private static GalacticBookmark ReadLegacyBookmark(JsonElement row)
     {
         string Text(string key) =>
-            row.TryGetProperty(key, out var value) && value.ValueKind == JsonValueKind.String
+            row.TryGetProperty(key, out JsonElement value) && value.ValueKind == JsonValueKind.String
                 ? value.GetString() ?? ""
                 : "";
-        var rating = row.TryGetProperty("rating", out var r) && int.TryParse(r.ToString(), out var n) ? n : 0;
-        var location = GalacticBookmark.SplitBodyAndRing(Text("body"));
+        int rating = row.TryGetProperty("rating", out JsonElement r) && int.TryParse(r.ToString(), out int n) ? n : 0;
+        (string Body, string Ring) location = GalacticBookmark.SplitBodyAndRing(Text("body"));
         return new GalacticBookmark
         {
             System = Text("system"),
@@ -363,8 +370,8 @@ public sealed class BookmarkCatalog
             return true;
         }
 
-        var existingMap = existing.SurfaceMiningMap;
-        var incomingMap = incoming.SurfaceMiningMap;
+        MineMapSurvey? existingMap = existing.SurfaceMiningMap;
+        MineMapSurvey? incomingMap = incoming.SurfaceMiningMap;
         if (existingMap is not null || incomingMap is not null)
         {
             return existingMap is not null
@@ -444,7 +451,7 @@ public static class BookmarkCategoryCatalog
 
     public static IReadOnlyList<string> Normalize(IEnumerable<string>? assignments, string? legacyCategory)
     {
-        var normalized = (assignments ?? [])
+        string[] normalized = (assignments ?? [])
             .Select(Resolve)
             .Where(category => category is not null)
             .Cast<string>()

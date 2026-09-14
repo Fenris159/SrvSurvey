@@ -75,7 +75,7 @@ public sealed class BookmarksViewModel : WorkspaceObservable
         SaveCommand = new WorkspaceCommand(() =>
             Run(() =>
             {
-                var surfaceMap = selected?.SurfaceMiningMap;
+                MineMapSurvey? surfaceMap = selected?.SurfaceMiningMap;
                 if (surfaceMap is not null)
                 {
                     surfaceMap = surfaceMap with
@@ -340,7 +340,7 @@ public sealed class BookmarksViewModel : WorkspaceObservable
 
     public bool SelectBookmark(Guid id)
     {
-        var bookmark = catalog?.Items.FirstOrDefault(candidate => candidate.Id == id);
+        GalacticBookmark? bookmark = catalog?.Items.FirstOrDefault(candidate => candidate.Id == id);
         if (bookmark is null)
         {
             return false;
@@ -358,7 +358,7 @@ public sealed class BookmarksViewModel : WorkspaceObservable
 
     public bool OpenSurfaceMiningMap(Guid bookmarkId)
     {
-        var bookmark = catalog?.Items.FirstOrDefault(candidate => candidate.Id == bookmarkId);
+        GalacticBookmark? bookmark = catalog?.Items.FirstOrDefault(candidate => candidate.Id == bookmarkId);
         if (bookmark is not { IsSurfaceMiningMap: true })
         {
             return false;
@@ -385,7 +385,10 @@ public sealed class BookmarksViewModel : WorkspaceObservable
         {
             if (Selected is { } bookmark)
             {
-                var updated = bookmark with { Screenshots = bookmark.Screenshots.Where(p => p != path).ToList() };
+                GalacticBookmark updated = bookmark with
+                {
+                    Screenshots = bookmark.Screenshots.Where(p => p != path).ToList(),
+                };
                 catalog!.Save(updated);
                 Selected = updated;
             }
@@ -396,7 +399,7 @@ public sealed class BookmarksViewModel : WorkspaceObservable
         {
             if (Selected is { } bookmark)
             {
-                var updated = bookmark with
+                GalacticBookmark updated = bookmark with
                 {
                     Screenshots = bookmark.Screenshots.Concat(paths).Distinct(FileSystemPathComparer).ToList(),
                 };
@@ -477,7 +480,7 @@ public sealed class BookmarksViewModel : WorkspaceObservable
     private void OnCatalogChanged(object? sender, EventArgs eventArgs)
     {
         categories = null;
-        var selectedId = selected?.Id;
+        Guid? selectedId = selected?.Id;
         if (selectedId is { } id)
         {
             Selected = catalog?.Items.FirstOrDefault(candidate => candidate.Id == id);
@@ -518,7 +521,7 @@ public sealed class BookmarksViewModel : WorkspaceObservable
     private void SetCategoryAssignments(IEnumerable<string> values)
     {
         categoryAssignments.Clear();
-        foreach (var value in BookmarkCategoryCatalog.Normalize(values, category))
+        foreach (string value in BookmarkCategoryCatalog.Normalize(values, category))
         {
             categoryAssignments.Add(value);
         }

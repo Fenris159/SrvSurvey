@@ -9,7 +9,7 @@ public sealed class BookmarksViewModelTests
     [Fact]
     public void RepeatedSaveEditsOneBookmarkAndDeletionCanBeUndone()
     {
-        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         try
         {
             var vm = new BookmarksViewModel(directory) { System = "Sol", Category = "Location" };
@@ -34,7 +34,7 @@ public sealed class BookmarksViewModelTests
     [Fact]
     public void HeadersSortTheSharedCatalogAscendingThenDescending()
     {
-        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         try
         {
             var vm = new BookmarksViewModel(directory);
@@ -64,7 +64,7 @@ public sealed class BookmarksViewModelTests
     [Fact]
     public void OpeningSelectedSurfaceMiningBookmarkRequestsItsSurveyMap()
     {
-        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         try
         {
             var opened = new List<Guid>();
@@ -139,7 +139,7 @@ public sealed class BookmarksViewModelTests
     [Fact]
     public void CatalogChangesRehydrateEverySelectedEditorField()
     {
-        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         try
         {
             var vm = new BookmarksViewModel(directory);
@@ -147,7 +147,7 @@ public sealed class BookmarksViewModelTests
             vm.Minerals = "Ruby";
             vm.Hotspot = "Signal 4";
             vm.SaveCommand.Execute(null);
-            var original = Assert.Single(vm.Items);
+            GalacticBookmark original = Assert.Single(vm.Items);
             vm.Selected = original;
 
             vm.Catalog!.Save(original with { Minerals = "Gold", Hotspot = "Signal 5", Notes = "Updated externally" });

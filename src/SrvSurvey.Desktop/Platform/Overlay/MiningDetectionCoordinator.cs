@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Threading;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Configuration;
@@ -43,9 +44,9 @@ public sealed class MiningDetectionCoordinator : IDisposable
             return;
         }
 
-        var model = mining.Detection;
-        var game = tracker.GetSnapshot();
-        var context = mining.DetectionContext;
+        MiningDetectionViewModel model = mining.Detection;
+        GameWindowSnapshot game = tracker.GetSnapshot();
+        SystemSurfaceContext? context = mining.DetectionContext;
         if (!mining.ShouldShow || context != previousContext)
         {
             previousAnalysis = null;
@@ -56,15 +57,15 @@ public sealed class MiningDetectionCoordinator : IDisposable
             return;
         }
 
-        var settings = model.Settings;
-        var previous = ReferenceEquals(settings, previousSettings) ? previousAnalysis : null;
-        var bounds = settings.GetBounds(game.ClientBounds);
+        MiningDetectionSettings settings = model.Settings;
+        MiningBarAnalysis? previous = ReferenceEquals(settings, previousSettings) ? previousAnalysis : null;
+        PixelRect bounds = settings.GetBounds(game.ClientBounds);
         busy = true;
         try
         {
-            var result = await Task.Run(() =>
+            MiningBarAnalysis result = await Task.Run(() =>
             {
-                var pixels = capture.Capture(bounds);
+                CapturedPixelBuffer pixels = capture.Capture(bounds);
                 return MiningBarDetector.Analyze(pixels, settings, previous);
             });
             await ApplyResultAsync(result, model, settings, context, game);
@@ -111,7 +112,7 @@ public sealed class MiningDetectionCoordinator : IDisposable
             return;
         }
 
-        var current = tracker.GetSnapshot();
+        GameWindowSnapshot current = tracker.GetSnapshot();
         if (
             !current.IsAvailable
             || current.ClientBounds != game.ClientBounds
@@ -132,7 +133,7 @@ public sealed class MiningDetectionCoordinator : IDisposable
         previousAnalysis = result;
         previousSettings = settings;
         previousContext = context;
-        var confirmed = model.Apply(result);
+        IReadOnlyList<MiningBarState> confirmed = model.Apply(result);
         if (CanApplyTrackers(context, current, model))
         {
             await mining.ApplyDetectedRigsAsync(confirmed, context!, settings);

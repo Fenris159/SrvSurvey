@@ -53,7 +53,7 @@ public static class WellKnownUris
 
     public static string Require(string key)
     {
-        if (!Values.TryGetValue(key, out var value) || string.IsNullOrWhiteSpace(value))
+        if (!Values.TryGetValue(key, out string? value) || string.IsNullOrWhiteSpace(value))
         {
             throw new InvalidOperationException($"Well-known URI key '{key}' is missing from embedded configuration.");
         }
@@ -65,11 +65,11 @@ public static class WellKnownUris
 
     private static Dictionary<string, string> Load()
     {
-        var assembly = typeof(WellKnownUris).Assembly;
-        using var stream =
+        Assembly assembly = typeof(WellKnownUris).Assembly;
+        using Stream stream =
             assembly.GetManifestResourceStream(ResourceName)
             ?? throw new InvalidOperationException($"Embedded resource '{ResourceName}' was not found.");
-        var parsed =
+        Dictionary<string, string> parsed =
             JsonSerializer.Deserialize<Dictionary<string, string>>(stream)
             ?? throw new InvalidOperationException($"Embedded resource '{ResourceName}' did not contain a URI map.");
         return parsed;

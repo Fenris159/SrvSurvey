@@ -48,36 +48,36 @@ public sealed class ReplaySessionManager
         ArgumentException.ThrowIfNullOrWhiteSpace(sourcePath);
         ArgumentException.ThrowIfNullOrWhiteSpace(managedRoot);
 
-        var fullSourcePath = Path.GetFullPath(sourcePath);
+        string fullSourcePath = Path.GetFullPath(sourcePath);
         var sourceInfo = new FileInfo(fullSourcePath);
         if (!sourceInfo.Exists)
         {
             throw new FileNotFoundException("The journal selected for replay does not exist.", fullSourcePath);
         }
 
-        var isPackage = string.Equals(
+        bool isPackage = string.Equals(
             Path.GetExtension(fullSourcePath),
             ".srvreplay",
             StringComparison.OrdinalIgnoreCase
         );
-        var maximumSourceBytes = isPackage ? MaximumReplayPackageBytes : MaximumJournalBytes;
+        long maximumSourceBytes = isPackage ? MaximumReplayPackageBytes : MaximumJournalBytes;
         if (sourceInfo.Length > maximumSourceBytes)
         {
             throw new InvalidDataException("The journal selected for replay is larger than the supported limit.");
         }
 
-        var sessionId = createSessionId();
-        var createdAt = getUtcNow();
-        var sessionDirectory = Path.Combine(
+        Guid sessionId = createSessionId();
+        DateTimeOffset createdAt = getUtcNow();
+        string sessionDirectory = Path.Combine(
             Path.GetFullPath(managedRoot),
             $"replay-{createdAt:yyyyMMdd-HHmmss}-{sessionId:N}"
         );
-        var sourceDirectory = Path.Combine(sessionDirectory, "source");
-        var playbackDirectory = Path.Combine(sessionDirectory, "playback");
-        var configDirectory = Path.Combine(sessionDirectory, "config");
-        var dataDirectory = Path.Combine(sessionDirectory, "data");
-        var cacheDirectory = Path.Combine(sessionDirectory, "cache");
-        var logsDirectory = Path.Combine(sessionDirectory, "logs");
+        string sourceDirectory = Path.Combine(sessionDirectory, "source");
+        string playbackDirectory = Path.Combine(sessionDirectory, "playback");
+        string configDirectory = Path.Combine(sessionDirectory, "config");
+        string dataDirectory = Path.Combine(sessionDirectory, "data");
+        string cacheDirectory = Path.Combine(sessionDirectory, "cache");
+        string logsDirectory = Path.Combine(sessionDirectory, "logs");
         Directory.CreateDirectory(sourceDirectory);
         Directory.CreateDirectory(playbackDirectory);
         Directory.CreateDirectory(configDirectory);
@@ -85,9 +85,9 @@ public sealed class ReplaySessionManager
         Directory.CreateDirectory(cacheDirectory);
         Directory.CreateDirectory(logsDirectory);
 
-        var sourceJournalPath = Path.Combine(sourceDirectory, "journal.jsonl");
-        var sourceCompanionPath = Path.Combine(sourceDirectory, "companions.jsonl");
-        var playbackJournalPath = Path.Combine(playbackDirectory, "Journal.9999-12-31T235959.01.log");
+        string sourceJournalPath = Path.Combine(sourceDirectory, "journal.jsonl");
+        string sourceCompanionPath = Path.Combine(sourceDirectory, "companions.jsonl");
+        string playbackJournalPath = Path.Combine(playbackDirectory, "Journal.9999-12-31T235959.01.log");
         IReadOnlyList<JournalReplayEvent> events;
         IReadOnlyList<CompanionTimelineEntry> companionEntries;
         ReplayCommander commander;
@@ -120,7 +120,7 @@ public sealed class ReplaySessionManager
             commander = ResolveCommander(events);
             sourceSha256 = await ComputeSha256Async(sourceJournalPath, cancellationToken);
             ValidatePackage(package, events, commander, sourceSha256);
-            var companionSha256 = await ComputeSha256Async(sourceCompanionPath, cancellationToken);
+            string companionSha256 = await ComputeSha256Async(sourceCompanionPath, cancellationToken);
             ValidateCompanionPackage(package, companionEntries, companionSha256);
             events = MergeTimeline(
                 events,
@@ -173,7 +173,7 @@ public sealed class ReplaySessionManager
             package?.MissingCompanionTimelines ?? AllCompanionTimelineNames,
             package?.PresentationSnapshot
         );
-        var manifestPath = Path.Combine(sessionDirectory, "replay-session.json");
+        string manifestPath = Path.Combine(sessionDirectory, "replay-session.json");
         await File.WriteAllTextAsync(
             manifestPath,
             JsonSerializer.Serialize(manifest, ManifestJson),
@@ -280,10 +280,10 @@ public sealed class ReplaySessionManager
             leaveOpen: false
         );
         var boundedReader = new BoundedJournalLineReader(reader);
-        var line = await boundedReader.ReadLineAsync(MaximumJournalLineCharacters, cancellationToken);
+        string? line = await boundedReader.ReadLineAsync(MaximumJournalLineCharacters, cancellationToken);
         while (line is not null)
         {
-            var nextLine = await boundedReader.ReadLineAsync(MaximumJournalLineCharacters, cancellationToken);
+            string? nextLine = await boundedReader.ReadLineAsync(MaximumJournalLineCharacters, cancellationToken);
             if (string.IsNullOrWhiteSpace(line))
             {
                 line = nextLine;
@@ -295,7 +295,11 @@ public sealed class ReplaySessionManager
                 throw new InvalidDataException("The journal contains more events than the supported limit.");
             }
 
-            var replayEvent = ParseReplayEvent(line, events.Count, allowIncompleteFinalLine && nextLine is null);
+            JournalReplayEvent? replayEvent = ParseReplayEvent(
+                line,
+                events.Count,
+                allowIncompleteFinalLine && nextLine is null
+            );
             if (replayEvent is null)
             {
                 break;
@@ -319,7 +323,7 @@ public sealed class ReplaySessionManager
     )
     {
         var entries = new List<CompanionTimelineEntry>();
-        await foreach (var entry in CompanionTimelineStore.StreamFileAsync(path, cancellationToken))
+        await foreach (CompanionTimelineEntry entry in CompanionTimelineStore.StreamFileAsync(path, cancellationToken))
         {
             if (entries.Count >= MaximumJournalEvents)
             {
@@ -341,8 +345,8 @@ public sealed class ReplaySessionManager
         int companionBootstrapCount
     )
     {
-        var journal = CreateJournalTimelineItems(journalEvents);
-        var companions = companionEntries.Select(
+        List<TimelineItem> journal = CreateJournalTimelineItems(journalEvents);
+        IEnumerable<TimelineItem> companions = companionEntries.Select(
             (item, sourceIndex) =>
                 new TimelineItem(
                     new JournalReplayEvent(0, item.Timestamp, item.Kind.ToString(), item.RawJson, item.Kind),
@@ -351,13 +355,13 @@ public sealed class ReplaySessionManager
                     sourceIndex
                 )
         );
-        var bootstrap = journal
+        IOrderedEnumerable<TimelineItem> bootstrap = journal
             .Take(journalBootstrapCount)
             .Concat(companions.Take(companionBootstrapCount))
             .OrderBy(item => item.SortTimestamp)
             .ThenBy(item => item.KindOrder)
             .ThenBy(item => item.SourceIndex);
-        var selected = journal
+        IOrderedEnumerable<TimelineItem> selected = journal
             .Skip(journalBootstrapCount)
             .Concat(companions.Skip(companionBootstrapCount))
             .OrderBy(item => item.SortTimestamp)
@@ -369,10 +373,10 @@ public sealed class ReplaySessionManager
     private static List<TimelineItem> CreateJournalTimelineItems(IReadOnlyList<JournalReplayEvent> journalEvents)
     {
         var items = new List<TimelineItem>(journalEvents.Count);
-        var sortTimestamp = DateTimeOffset.MinValue;
-        for (var sourceIndex = 0; sourceIndex < journalEvents.Count; sourceIndex++)
+        DateTimeOffset sortTimestamp = DateTimeOffset.MinValue;
+        for (int sourceIndex = 0; sourceIndex < journalEvents.Count; sourceIndex++)
         {
-            var item = journalEvents[sourceIndex];
+            JournalReplayEvent item = journalEvents[sourceIndex];
             if (item.Timestamp is { } timestamp && timestamp > sortTimestamp)
             {
                 sortTimestamp = timestamp;
@@ -419,8 +423,8 @@ public sealed class ReplaySessionManager
 
         using (document)
         {
-            var root = document.RootElement;
-            if (root.ValueKind != JsonValueKind.Object || !TryGetString(root, "event", out var eventName))
+            JsonElement root = document.RootElement;
+            if (root.ValueKind != JsonValueKind.Object || !TryGetString(root, "event", out string? eventName))
             {
                 throw new InvalidDataException($"Journal line {eventIndex + 1:N0} does not contain an event name.");
             }
@@ -432,12 +436,12 @@ public sealed class ReplaySessionManager
     private static DateTimeOffset? ParseTimestamp(JsonElement root)
     {
         return
-            TryGetString(root, "timestamp", out var timestampText)
+            TryGetString(root, "timestamp", out string? timestampText)
             && DateTimeOffset.TryParse(
                 timestampText,
                 System.Globalization.CultureInfo.InvariantCulture,
                 System.Globalization.DateTimeStyles.AssumeUniversal,
-                out var timestamp
+                out DateTimeOffset timestamp
             )
             ? timestamp
             : null;
@@ -452,7 +456,7 @@ public sealed class ReplaySessionManager
         public async Task<string?> ReadLineAsync(int maximumCharacters, CancellationToken cancellationToken)
         {
             var line = new StringBuilder(256);
-            var characterCount = 0;
+            int characterCount = 0;
             while (true)
             {
                 if (offset >= count && !await FillBufferAsync(cancellationToken))
@@ -460,9 +464,9 @@ public sealed class ReplaySessionManager
                     return characterCount == 0 ? null : line.ToString();
                 }
 
-                var newline = Array.IndexOf(buffer, '\n', offset, count - offset);
-                var segmentEnd = newline >= 0 ? newline : count;
-                var segmentLength = segmentEnd - offset;
+                int newline = Array.IndexOf(buffer, '\n', offset, count - offset);
+                int segmentEnd = newline >= 0 ? newline : count;
+                int segmentLength = segmentEnd - offset;
                 ValidateLineLength(characterCount, segmentLength, maximumCharacters);
                 line.Append(buffer, offset, segmentLength);
                 characterCount += segmentLength;
@@ -503,7 +507,7 @@ public sealed class ReplaySessionManager
 
     internal static ReplayCommander ResolveCommander(IReadOnlyList<JournalReplayEvent> events)
     {
-        foreach (var replayEvent in events)
+        foreach (JournalReplayEvent replayEvent in events)
         {
             if (
                 !string.Equals(replayEvent.EventName, "Commander", StringComparison.OrdinalIgnoreCase)
@@ -514,12 +518,13 @@ public sealed class ReplaySessionManager
             }
 
             using var document = JsonDocument.Parse(replayEvent.RawJson);
-            var root = document.RootElement;
-            var nameProperty = string.Equals(replayEvent.EventName, "LoadGame", StringComparison.OrdinalIgnoreCase)
+            JsonElement root = document.RootElement;
+            string nameProperty = string.Equals(replayEvent.EventName, "LoadGame", StringComparison.OrdinalIgnoreCase)
                 ? "Commander"
                 : "Name";
             if (
-                TryGetString(root, nameProperty, out var commanderName) && TryGetString(root, "FID", out var frontierId)
+                TryGetString(root, nameProperty, out string? commanderName)
+                && TryGetString(root, "FID", out string? frontierId)
             )
             {
                 return new ReplayCommander(commanderName, frontierId);
@@ -536,7 +541,7 @@ public sealed class ReplaySessionManager
     internal static bool TryGetString(JsonElement element, string propertyName, out string value)
     {
         if (
-            element.TryGetProperty(propertyName, out var property)
+            element.TryGetProperty(propertyName, out JsonElement property)
             && property.ValueKind == JsonValueKind.String
             && !string.IsNullOrWhiteSpace(property.GetString())
         )
@@ -559,7 +564,7 @@ public sealed class ReplaySessionManager
             bufferSize: 64 * 1024,
             useAsync: true
         );
-        var hash = await SHA256.HashDataAsync(stream, cancellationToken);
+        byte[] hash = await SHA256.HashDataAsync(stream, cancellationToken);
         return Convert.ToHexStringLower(hash);
     }
 
@@ -604,13 +609,13 @@ public sealed class ReplaySessionManager
         ArgumentNullException.ThrowIfNull(destination);
         ArgumentOutOfRangeException.ThrowIfNegative(maximumBytes);
 
-        var buffer = new byte[64 * 1024];
+        byte[] buffer = new byte[64 * 1024];
         long written = 0;
         while (true)
         {
-            var remaining = maximumBytes - written;
-            var readLength = remaining > 0 ? (int)Math.Min(buffer.Length, remaining) : 1;
-            var read = await source.ReadAsync(buffer.AsMemory(0, readLength), cancellationToken);
+            long remaining = maximumBytes - written;
+            int readLength = remaining > 0 ? (int)Math.Min(buffer.Length, remaining) : 1;
+            int read = await source.ReadAsync(buffer.AsMemory(0, readLength), cancellationToken);
             if (read == 0)
             {
                 return;
@@ -647,18 +652,18 @@ public sealed class ReplaySessionManager
             throw new InvalidDataException("The replay package contains too many archive entries.");
         }
 
-        foreach (var entry in archive.Entries)
+        foreach (ZipArchiveEntry entry in archive.Entries)
         {
             ValidateArchiveEntry(entry);
         }
 
-        var manifests = archive
+        ZipArchiveEntry[] manifests = archive
             .Entries.Where(entry => string.Equals(entry.FullName, "replay-package.json", StringComparison.Ordinal))
             .ToArray();
-        var journals = archive
+        ZipArchiveEntry[] journals = archive
             .Entries.Where(entry => string.Equals(entry.FullName, "journal.jsonl", StringComparison.Ordinal))
             .ToArray();
-        var companions = archive
+        ZipArchiveEntry[] companions = archive
             .Entries.Where(entry => string.Equals(entry.FullName, "companions.jsonl", StringComparison.Ordinal))
             .ToArray();
         if (manifests.Length != 1 || journals.Length != 1 || companions.Length != 1)
@@ -686,7 +691,7 @@ public sealed class ReplaySessionManager
         JournalReplayPackageManifest package;
         try
         {
-            await using var manifestStream = await manifests[0].OpenAsync(cancellationToken);
+            await using Stream manifestStream = await manifests[0].OpenAsync(cancellationToken);
             await using var boundedManifest = new MemoryStream();
             await CopyBoundedAsync(manifestStream, boundedManifest, MaximumReplayManifestBytes, cancellationToken);
             boundedManifest.Position = 0;
@@ -716,7 +721,7 @@ public sealed class ReplaySessionManager
         CancellationToken cancellationToken
     )
     {
-        await using var source = await entry.OpenAsync(cancellationToken);
+        await using Stream source = await entry.OpenAsync(cancellationToken);
         await using var destination = new FileStream(
             destinationPath,
             FileMode.CreateNew,
@@ -731,7 +736,7 @@ public sealed class ReplaySessionManager
 
     private static void ValidateArchiveEntry(ZipArchiveEntry entry)
     {
-        var normalized = entry.FullName.Replace('\\', '/');
+        string normalized = entry.FullName.Replace('\\', '/');
         if (
             string.IsNullOrWhiteSpace(normalized)
             || normalized.StartsWith('/')
@@ -742,7 +747,7 @@ public sealed class ReplaySessionManager
             throw new InvalidDataException("A replay package entry escapes the package root.");
         }
 
-        var unixFileType = (entry.ExternalAttributes >> 16) & 0xF000;
+        int unixFileType = (entry.ExternalAttributes >> 16) & 0xF000;
         if (unixFileType == 0xA000)
         {
             throw new InvalidDataException("Replay packages may not contain symbolic links.");
@@ -871,7 +876,7 @@ public sealed record DiagnosticReplaySession(
             new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
             cancellationToken
         );
-        foreach (var fileName in CompanionFileNames)
+        foreach (string fileName in CompanionFileNames)
         {
             File.Delete(EnsureContainedPath(Path.Combine(Path.GetDirectoryName(PlaybackJournalPath)!, fileName)));
         }
@@ -890,28 +895,28 @@ public sealed record DiagnosticReplaySession(
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(manifestPath);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maximumJournalBytes);
-        var fullManifestPath = Path.GetFullPath(manifestPath);
+        string fullManifestPath = Path.GetFullPath(manifestPath);
         if (!File.Exists(fullManifestPath))
         {
             throw new FileNotFoundException("The diagnostic replay manifest does not exist.", fullManifestPath);
         }
 
         var manifestInfo = new FileInfo(fullManifestPath);
-        var manifest = await ReadManifestAsync(manifestInfo, cancellationToken);
+        DiagnosticReplayManifest manifest = await ReadManifestAsync(manifestInfo, cancellationToken);
         ValidateLoadedManifest(manifest);
         ValidateVersionTwoPathSchema(manifest.Paths);
         ReplayPresentationSnapshotValidator.Validate(manifest.PresentationSnapshot);
 
-        var sessionDirectory =
+        string sessionDirectory =
             Path.GetDirectoryName(fullManifestPath)
             ?? throw new InvalidDataException("The diagnostic replay manifest has no containing session directory.");
-        var sourceJournalPath = ResolveContainedPath(sessionDirectory, manifest.Paths.SourceJournal);
-        var sourceCompanionPath = ResolveContainedPath(sessionDirectory, manifest.Paths.SourceCompanions);
-        var playbackJournalPath = ResolveContainedPath(sessionDirectory, manifest.Paths.PlaybackJournal);
-        var configDirectory = ResolveContainedPath(sessionDirectory, manifest.Paths.ConfigDirectory);
-        var dataDirectory = ResolveContainedPath(sessionDirectory, manifest.Paths.DataDirectory);
-        var cacheDirectory = ResolveContainedPath(sessionDirectory, manifest.Paths.CacheDirectory);
-        var logsDirectory = ResolveContainedPath(sessionDirectory, manifest.Paths.LogsDirectory);
+        string sourceJournalPath = ResolveContainedPath(sessionDirectory, manifest.Paths.SourceJournal);
+        string sourceCompanionPath = ResolveContainedPath(sessionDirectory, manifest.Paths.SourceCompanions);
+        string playbackJournalPath = ResolveContainedPath(sessionDirectory, manifest.Paths.PlaybackJournal);
+        string configDirectory = ResolveContainedPath(sessionDirectory, manifest.Paths.ConfigDirectory);
+        string dataDirectory = ResolveContainedPath(sessionDirectory, manifest.Paths.DataDirectory);
+        string cacheDirectory = ResolveContainedPath(sessionDirectory, manifest.Paths.CacheDirectory);
+        string logsDirectory = ResolveContainedPath(sessionDirectory, manifest.Paths.LogsDirectory);
 
         await ValidateSourceFileAsync(
             sourceJournalPath,
@@ -932,11 +937,17 @@ public sealed record DiagnosticReplaySession(
             cancellationToken
         );
 
-        var journalEvents = await ReplaySessionManager.ReadEventsAsync(sourceJournalPath, cancellationToken);
-        var companionEntries = await ReplaySessionManager.ReadCompanionsAsync(sourceCompanionPath, cancellationToken);
+        IReadOnlyList<JournalReplayEvent> journalEvents = await ReplaySessionManager.ReadEventsAsync(
+            sourceJournalPath,
+            cancellationToken
+        );
+        IReadOnlyList<CompanionTimelineEntry> companionEntries = await ReplaySessionManager.ReadCompanionsAsync(
+            sourceCompanionPath,
+            cancellationToken
+        );
         ValidateSourceCounts(manifest, journalEvents, companionEntries);
 
-        var events = ReplaySessionManager.MergeTimeline(
+        IReadOnlyList<JournalReplayEvent> events = ReplaySessionManager.MergeTimeline(
             journalEvents,
             manifest.JournalBootstrapEventCount,
             companionEntries,
@@ -944,7 +955,7 @@ public sealed record DiagnosticReplaySession(
         );
         ValidateTimelineCount(manifest, events);
 
-        var commander = ReplaySessionManager.ResolveCommander(journalEvents);
+        ReplayCommander commander = ReplaySessionManager.ResolveCommander(journalEvents);
         ValidateCommander(manifest.Commander, commander);
 
         EnsureDirectory(configDirectory);
@@ -988,7 +999,7 @@ public sealed record DiagnosticReplaySession(
 
         try
         {
-            await using var stream = manifestInfo.OpenRead();
+            await using FileStream stream = manifestInfo.OpenRead();
             return await JsonSerializer.DeserializeAsync<DiagnosticReplayManifest>(
                     stream,
                     ReplaySessionManager.GetManifestJsonOptions(),
@@ -1056,7 +1067,7 @@ public sealed record DiagnosticReplaySession(
             throw new InvalidDataException(tooLargeMessage);
         }
 
-        var actualChecksum = await ReplaySessionManager.ComputeSha256Async(path, cancellationToken);
+        string actualChecksum = await ReplaySessionManager.ComputeSha256Async(path, cancellationToken);
         if (!string.Equals(actualChecksum, expectedChecksum, StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidDataException(checksumMessage);
@@ -1117,9 +1128,9 @@ public sealed record DiagnosticReplaySession(
             throw new InvalidDataException("Replay session paths must be relative to the session directory.");
         }
 
-        var fullSessionDirectory = Path.GetFullPath(sessionDirectory);
-        var candidate = Path.GetFullPath(Path.Combine(fullSessionDirectory, relativePath));
-        var relative = Path.GetRelativePath(fullSessionDirectory, candidate);
+        string fullSessionDirectory = Path.GetFullPath(sessionDirectory);
+        string candidate = Path.GetFullPath(Path.Combine(fullSessionDirectory, relativePath));
+        string relative = Path.GetRelativePath(fullSessionDirectory, candidate);
         if (
             relative.Equals("..", StringComparison.Ordinal)
             || relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal)
@@ -1135,7 +1146,7 @@ public sealed record DiagnosticReplaySession(
 
     private static void ValidateVersionTwoPathSchema(DiagnosticReplaySessionPaths paths)
     {
-        var valid =
+        bool valid =
             string.Equals(paths.SourceJournal, "source/journal.jsonl", StringComparison.Ordinal)
             && string.Equals(paths.SourceCompanions, "source/companions.jsonl", StringComparison.Ordinal)
             && string.Equals(
@@ -1155,9 +1166,9 @@ public sealed record DiagnosticReplaySession(
 
     private string EnsureContainedPath(string path)
     {
-        var sessionRoot = Path.GetFullPath(SessionDirectory);
-        var candidate = Path.GetFullPath(path);
-        var relative = Path.GetRelativePath(sessionRoot, candidate);
+        string sessionRoot = Path.GetFullPath(SessionDirectory);
+        string candidate = Path.GetFullPath(path);
+        string relative = Path.GetRelativePath(sessionRoot, candidate);
         if (
             relative.Equals("..", StringComparison.Ordinal)
             || relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal)
@@ -1174,10 +1185,10 @@ public sealed record DiagnosticReplaySession(
     private static void RejectReparsePoints(string sessionRoot, string candidate)
     {
         RejectReparsePointIfPresent(sessionRoot);
-        var relative = Path.GetRelativePath(sessionRoot, candidate);
-        var current = sessionRoot;
+        string relative = Path.GetRelativePath(sessionRoot, candidate);
+        string current = sessionRoot;
         foreach (
-            var segment in relative.Split(
+            string segment in relative.Split(
                 [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar],
                 StringSplitOptions.RemoveEmptyEntries
             )
@@ -1205,12 +1216,12 @@ public sealed record DiagnosticReplaySession(
     {
         var directory = new DirectoryInfo(EnsureContainedPath(path));
         directory.Create();
-        foreach (var entry in directory.EnumerateFileSystemInfos())
+        foreach (FileSystemInfo entry in directory.EnumerateFileSystemInfos())
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (entry is DirectoryInfo childDirectory)
             {
-                var isReparsePoint = (childDirectory.Attributes & FileAttributes.ReparsePoint) != 0;
+                bool isReparsePoint = (childDirectory.Attributes & FileAttributes.ReparsePoint) != 0;
                 childDirectory.Delete(recursive: !isReparsePoint);
             }
             else

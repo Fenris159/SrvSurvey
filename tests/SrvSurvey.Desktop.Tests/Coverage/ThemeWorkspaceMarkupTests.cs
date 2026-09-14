@@ -7,8 +7,8 @@ public sealed class ThemeWorkspaceMarkupTests
     [Fact]
     public void ThemeIsAFixedWorkspaceBetweenSettingsAndGuides()
     {
-        var mainWindow = LoadDesktopFile("MainWindow.axaml");
-        var viewNames = mainWindow
+        XDocument mainWindow = LoadDesktopFile("MainWindow.axaml");
+        string[] viewNames = mainWindow
             .Descendants()
             .Where(element => element.Name.LocalName.EndsWith("View", StringComparison.Ordinal))
             .Select(element => element.Name.LocalName)
@@ -22,9 +22,9 @@ public sealed class ThemeWorkspaceMarkupTests
     [Fact]
     public void ThemeWorkspaceOwnsTheThreeExistingSections()
     {
-        var theme = LoadDesktopFile("Views", "ThemeView.axaml");
-        var settings = LoadDesktopFile("Views", "SettingsView.axaml");
-        var headers = theme
+        XDocument theme = LoadDesktopFile("Views", "ThemeView.axaml");
+        XDocument settings = LoadDesktopFile("Views", "SettingsView.axaml");
+        string[] headers = theme
             .Descendants()
             .Where(element => element.Name.LocalName == "TabItem")
             .Select(element => element.Attribute("Header")?.Value ?? string.Empty)
@@ -40,8 +40,8 @@ public sealed class ThemeWorkspaceMarkupTests
     [Fact]
     public void OverlayColorGroupsAreSingleOpenAccordionsAndTypographyIsExperimental()
     {
-        var theme = LoadDesktopFile("Views", "ThemeView.axaml");
-        var categoryExpander = theme
+        XDocument theme = LoadDesktopFile("Views", "ThemeView.axaml");
+        XElement categoryExpander = theme
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Expander"
@@ -59,14 +59,14 @@ public sealed class ThemeWorkspaceMarkupTests
     [Fact]
     public void ApplicationThemesUseOneSharedSelectablePreviewTemplate()
     {
-        var theme = LoadDesktopFile("Views", "ThemeView.axaml");
-        var gallery = theme
+        XDocument theme = LoadDesktopFile("Views", "ThemeView.axaml");
+        XElement gallery = theme
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "ItemsControl"
                 && element.Attribute("ItemsSource")?.Value == "{Binding ThemeOptions}"
             );
-        var values = gallery
+        string[] values = gallery
             .Descendants()
             .SelectMany(element => element.Attributes())
             .Select(attribute => attribute.Value)
@@ -82,8 +82,8 @@ public sealed class ThemeWorkspaceMarkupTests
     [Fact]
     public void ApplicationThemeStylesExposeGrayscaleInteractionAndDepthRoles()
     {
-        var styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
-        var selectors = styles
+        XDocument styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
+        string[] selectors = styles
             .Descendants()
             .Where(element => element.Name.LocalName == "Style")
             .Select(element => element.Attribute("Selector")?.Value ?? string.Empty)
@@ -93,7 +93,7 @@ public sealed class ThemeWorkspaceMarkupTests
         Assert.Contains(selectors, selector => selector.Contains("Button:disabled", StringComparison.Ordinal));
         Assert.Contains("ToolTip", selectors);
 
-        var mainWindow = LoadDesktopFile("MainWindow.axaml");
+        XDocument mainWindow = LoadDesktopFile("MainWindow.axaml");
         Assert.Contains(
             mainWindow.Descendants(),
             element => element.Attribute("BoxShadow")?.Value == "{DynamicResource RavenFloatingPanelShadow}"
@@ -103,9 +103,12 @@ public sealed class ThemeWorkspaceMarkupTests
     [Fact]
     public void LegacyCollapsingHeadersUseRoundedSectionChrome()
     {
-        var colonization = LoadDesktopFile("Views", "ColonizationView.axaml");
-        var styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
-        var expanders = colonization.Descendants().Where(element => element.Name.LocalName == "Expander").ToArray();
+        XDocument colonization = LoadDesktopFile("Views", "ColonizationView.axaml");
+        XDocument styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
+        XElement[] expanders = colonization
+            .Descendants()
+            .Where(element => element.Name.LocalName == "Expander")
+            .ToArray();
 
         Assert.Equal(2, expanders.Length);
         Assert.All(
@@ -135,8 +138,8 @@ public sealed class ThemeWorkspaceMarkupTests
 
     private static XDocument LoadDesktopFile(params string[] relativeParts)
     {
-        var root = FindRepositoryRoot();
-        var parts = new[] { root, "src", "SrvSurvey.Desktop" }.Concat(relativeParts).ToArray();
+        string root = FindRepositoryRoot();
+        string[] parts = new[] { root, "src", "SrvSurvey.Desktop" }.Concat(relativeParts).ToArray();
         return XDocument.Load(Path.Combine(parts));
     }
 

@@ -22,7 +22,7 @@ public sealed class PriorScanPlanner(ExobiologyReferenceCatalog catalog)
         }
 
         var analyzedEntryIds = request.AnalyzedEntryIds.ToHashSet();
-        var candidates = request
+        PriorScanSpecies[] candidates = request
             .Signals.Where(signal => ExobiologyBodyNames.Matches(signal.BodyName, request.BodyName, request.SystemName))
             .Select(signal => new Candidate(signal, catalog.FindByEntryId(signal.EntryId)))
             .Where(candidate => candidate.Reference is not null)
@@ -54,15 +54,15 @@ public sealed class PriorScanPlanner(ExobiologyReferenceCatalog catalog)
         bool analyzed
     )
     {
-        var first = group.First();
-        var reference = first.Reference!;
+        Candidate first = group.First();
+        ExobiologyReference reference = first.Reference!;
         var targets = group
             .Select(candidate => CreateTarget(candidate.Signal.Location, request, analyzed))
             .OrderBy(target => target.DistanceMeters)
             .ToList();
         RemoveNearbyDuplicates(targets, request.BodyRadiusMeters, request.HighlightDistanceMeters);
-        var displayName = FormatDisplayName(reference, first.Signal.DisplayName);
-        var active =
+        string displayName = FormatDisplayName(reference, first.Signal.DisplayName);
+        bool active =
             string.IsNullOrWhiteSpace(request.ActiveSpeciesName)
             || string.Equals(request.ActiveSpeciesName, reference.SpeciesName, StringComparison.Ordinal);
         return new PriorScanSpecies(
@@ -90,18 +90,18 @@ public sealed class PriorScanPlanner(ExobiologyReferenceCatalog catalog)
             return "Radicoida - Unica";
         }
 
-        var displayName = FirstPresentDisplayName(reference.DisplayName, signalDisplayName);
-        var isLegacyPlatform =
+        string? displayName = FirstPresentDisplayName(reference.DisplayName, signalDisplayName);
+        bool isLegacyPlatform =
             string.Equals(reference.Platform, "legacy", StringComparison.OrdinalIgnoreCase)
             || string.Equals(reference.Platform, "horizons", StringComparison.OrdinalIgnoreCase);
         if (isLegacyPlatform)
         {
-            var genus = !string.IsNullOrWhiteSpace(reference.SubClass)
+            string genus = !string.IsNullOrWhiteSpace(reference.SubClass)
                 ? reference.SubClass.Trim()
                 : ExobiologyReferenceCatalog.GetGenusDisplayName(
                     ExobiologyReferenceCatalog.GetGenusName(reference.SpeciesName)
                 );
-            var color = ExtractHorizonsColorName(displayName, genus);
+            string? color = ExtractHorizonsColorName(displayName, genus);
             return string.IsNullOrWhiteSpace(color) ? genus : $"{genus} - {color}";
         }
 
@@ -120,7 +120,7 @@ public sealed class PriorScanPlanner(ExobiologyReferenceCatalog catalog)
             return null;
         }
 
-        var trimmed = displayName.Trim();
+        string trimmed = displayName.Trim();
         if (string.Equals(trimmed, genusDisplayName, StringComparison.OrdinalIgnoreCase))
         {
             return null;
@@ -142,9 +142,9 @@ public sealed class PriorScanPlanner(ExobiologyReferenceCatalog catalog)
 
     private static PriorScanTarget CreateTarget(SurfaceCoordinate location, PriorScanPlanRequest request, bool analyzed)
     {
-        var distance = SurfaceNavigation.GetDistance(request.CurrentLocation, location, request.BodyRadiusMeters);
-        var bearing = SurfaceNavigation.GetBearing(request.CurrentLocation, location);
-        var state = analyzed
+        double distance = SurfaceNavigation.GetDistance(request.CurrentLocation, location, request.BodyRadiusMeters);
+        double bearing = SurfaceNavigation.GetBearing(request.CurrentLocation, location);
+        PriorScanTargetState state = analyzed
             ? PriorScanTargetState.Analyzed
             : (distance < request.HighlightDistanceMeters) switch
             {
@@ -184,10 +184,10 @@ public sealed class PriorScanPlanner(ExobiologyReferenceCatalog catalog)
         double highlightDistanceMeters
     )
     {
-        for (var index = 0; index < targets.Count; index++)
+        for (int index = 0; index < targets.Count; index++)
         {
-            var target = targets[index];
-            for (var candidateIndex = targets.Count - 1; candidateIndex > index; candidateIndex--)
+            PriorScanTarget target = targets[index];
+            for (int candidateIndex = targets.Count - 1; candidateIndex > index; candidateIndex--)
             {
                 if (
                     SurfaceNavigation.GetDistance(target.Location, targets[candidateIndex].Location, bodyRadiusMeters)

@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.IO.Compression;
+using System.Reflection;
 using System.Text.Json;
 
 namespace SrvSurvey.Core.Guardian;
@@ -45,7 +46,10 @@ public sealed class GuardianPublishedSiteCatalog
 
     public GuardianPublishedSite? Find(GuardianSiteKind kind, int siteId)
     {
-        var matches = allSites.Where(site => site.Kind == kind && site.SiteId == siteId).Take(2).ToArray();
+        GuardianPublishedSite[] matches = allSites
+            .Where(site => site.Kind == kind && site.SiteId == siteId)
+            .Take(2)
+            .ToArray();
         return matches.Length == 1 ? matches[0] : null;
     }
 
@@ -57,15 +61,15 @@ public sealed class GuardianPublishedSiteCatalog
 
     public IReadOnlyList<string> FindItemCodesByLog(string? logCode)
     {
-        return !string.IsNullOrWhiteSpace(logCode) && itemCodesByLog.TryGetValue(logCode, out var itemCodes)
+        return !string.IsNullOrWhiteSpace(logCode) && itemCodesByLog.TryGetValue(logCode, out string[]? itemCodes)
             ? itemCodes
             : [];
     }
 
     public static GuardianPublishedSiteCatalog LoadEmbedded()
     {
-        var assembly = typeof(GuardianPublishedSiteCatalog).Assembly;
-        using var stream =
+        Assembly assembly = typeof(GuardianPublishedSiteCatalog).Assembly;
+        using Stream stream =
             assembly.GetManifestResourceStream(EmbeddedResourceName)
             ?? throw new InvalidOperationException(
                 $"The embedded Guardian surveys {EmbeddedResourceName} are missing."
@@ -79,12 +83,12 @@ public sealed class GuardianPublishedSiteCatalog
         using var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true);
         var sites = new List<GuardianPublishedSite>();
         foreach (
-            var entry in archive.Entries.Where(entry =>
+            ZipArchiveEntry? entry in archive.Entries.Where(entry =>
                 entry.FullName.EndsWith(".json", StringComparison.OrdinalIgnoreCase)
             )
         )
         {
-            using var entryStream = entry.Open();
+            using Stream entryStream = entry.Open();
             sites.Add(Read(entryStream, entry.FullName));
         }
 
@@ -96,21 +100,21 @@ public sealed class GuardianPublishedSiteCatalog
         ArgumentNullException.ThrowIfNull(stream);
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceName);
         using var document = JsonDocument.Parse(stream);
-        var root = document.RootElement;
+        JsonElement root = document.RootElement;
         if (root.ValueKind != JsonValueKind.Object)
         {
             throw new InvalidDataException($"Guardian published survey {sourceName} is not an object.");
         }
 
-        var identifier = GetRequiredString(root, "sid");
-        var kind = identifier.StartsWith("GR", StringComparison.OrdinalIgnoreCase)
+        string identifier = GetRequiredString(root, "sid");
+        GuardianSiteKind kind = identifier.StartsWith("GR", StringComparison.OrdinalIgnoreCase)
             ? GuardianSiteKind.Ruins
             : (identifier.StartsWith("GS", StringComparison.OrdinalIgnoreCase)) switch
             {
                 true => GuardianSiteKind.Structure,
                 false => throw new InvalidDataException($"Guardian survey {sourceName} has unknown ID {identifier}."),
             };
-        if (!int.TryParse(identifier.AsSpan(2), NumberStyles.Integer, CultureInfo.InvariantCulture, out var siteId))
+        if (!int.TryParse(identifier.AsSpan(2), NumberStyles.Integer, CultureInfo.InvariantCulture, out int siteId))
         {
             throw new InvalidDataException($"Guardian survey {sourceName} has invalid ID {identifier}.");
         }
@@ -134,9 +138,9 @@ public sealed class GuardianPublishedSiteCatalog
 
     private static string GetFullBodyName(string sourceName, GuardianSiteKind kind)
     {
-        var filename = Path.GetFileNameWithoutExtension(sourceName);
-        var marker = kind == GuardianSiteKind.Ruins ? "-ruins-" : "-structure-";
-        var markerIndex = filename.LastIndexOf(marker, StringComparison.OrdinalIgnoreCase);
+        string filename = Path.GetFileNameWithoutExtension(sourceName);
+        string marker = kind == GuardianSiteKind.Ruins ? "-ruins-" : "-structure-";
+        int markerIndex = filename.LastIndexOf(marker, StringComparison.OrdinalIgnoreCase);
         if (markerIndex <= 0)
         {
             throw new InvalidDataException($"Guardian survey filename {sourceName} has no {marker} marker.");
@@ -152,13 +156,13 @@ public sealed class GuardianPublishedSiteCatalog
 
     private static GuardianSurfaceLocation? ReadLocation(JsonElement root)
     {
-        if (!root.TryGetProperty("ll", out var value) || value.ValueKind != JsonValueKind.Object)
+        if (!root.TryGetProperty("ll", out JsonElement value) || value.ValueKind != JsonValueKind.Object)
         {
             return null;
         }
 
-        var latitude = GetDouble(value, "lat");
-        var longitude = GetDouble(value, "long");
+        double? latitude = GetDouble(value, "lat");
+        double? longitude = GetDouble(value, "long");
         return latitude is not null && longitude is not null
             ? new GuardianSurfaceLocation(latitude.Value, longitude.Value)
             : null;
@@ -180,13 +184,15 @@ public sealed class GuardianPublishedSiteCatalog
         Dictionary<string, GuardianPoiStatus> statuses
     )
     {
-        var encoded = GetString(root, propertyName);
+        string? encoded = GetString(root, propertyName);
         if (string.IsNullOrWhiteSpace(encoded))
         {
             return;
         }
 
-        foreach (var name in encoded.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+        foreach (
+            string name in encoded.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+        )
         {
             statuses[name] = status;
         }
@@ -195,18 +201,20 @@ public sealed class GuardianPublishedSiteCatalog
     private static Dictionary<string, int> ReadRelicHeadings(JsonElement root)
     {
         var headings = new Dictionary<string, int>(StringComparer.Ordinal);
-        var encoded = GetString(root, "rth");
+        string? encoded = GetString(root, "rth");
         if (string.IsNullOrWhiteSpace(encoded))
         {
             return headings;
         }
 
-        foreach (var pair in encoded.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+        foreach (
+            string pair in encoded.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+        )
         {
-            var parts = pair.Split(':', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            string[] parts = pair.Split(':', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
             if (
                 parts.Length != 2
-                || !int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var heading)
+                || !int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int heading)
             )
             {
                 throw new InvalidDataException($"A Guardian relic heading is invalid: {pair}.");
@@ -221,7 +229,7 @@ public sealed class GuardianPublishedSiteCatalog
     private static GuardianObelisk[] ReadObelisks(JsonElement root)
     {
         if (
-            !root.TryGetProperty("ao", out var value)
+            !root.TryGetProperty("ao", out JsonElement value)
             || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined
         )
         {
@@ -243,15 +251,15 @@ public sealed class GuardianPublishedSiteCatalog
             throw new InvalidDataException("A Guardian obelisk entry is empty.");
         }
 
-        var parts = encoded.Split('-');
+        string[] parts = encoded.Split('-');
         if (parts.Length < 3 || string.IsNullOrWhiteSpace(parts[0]))
         {
             throw new InvalidDataException($"A Guardian obelisk entry is invalid: {encoded}.");
         }
 
-        var scanned = parts[0].EndsWith('!');
-        var name = scanned ? parts[0][..^1] : parts[0];
-        var items = parts[1].Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        bool scanned = parts[0].EndsWith('!');
+        string name = scanned ? parts[0][..^1] : parts[0];
+        string[] items = parts[1].Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         return new GuardianObelisk(name, parts[2], scanned, items);
     }
 
@@ -264,21 +272,23 @@ public sealed class GuardianPublishedSiteCatalog
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+        return root.TryGetProperty(propertyName, out JsonElement value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
     }
 
     private static int? GetInt32(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value) && value.TryGetInt32(out var number) ? number : null;
+        return root.TryGetProperty(propertyName, out JsonElement value) && value.TryGetInt32(out int number)
+            ? number
+            : null;
     }
 
     private static double? GetDouble(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
-            && value.TryGetDouble(out var number)
+            root.TryGetProperty(propertyName, out JsonElement value)
+            && value.TryGetDouble(out double number)
             && double.IsFinite(number)
             ? number
             : null;

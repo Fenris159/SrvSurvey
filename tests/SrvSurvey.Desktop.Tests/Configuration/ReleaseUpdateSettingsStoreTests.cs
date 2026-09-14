@@ -19,7 +19,7 @@ public sealed class ReleaseUpdateSettingsStoreTests : IDisposable
     public void ChannelRoundTripsWithoutRemovingUnknownSettings()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         File.WriteAllText(path, "{\"Future\":{\"Keep\":42}}");
         var store = new ReleaseUpdateSettingsStore(path);
 

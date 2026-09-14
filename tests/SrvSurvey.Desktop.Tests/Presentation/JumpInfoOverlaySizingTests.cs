@@ -14,7 +14,7 @@ public sealed class JumpInfoOverlaySizingTests
     public void LongLookupWarningCannotExpandRuntimeOrPreviewWidth()
     {
         var window = new JumpInfoOverlayWindow();
-        var model = Assert.IsType<JumpInfoOverlayViewModel>(window.DataContext);
+        JumpInfoOverlayViewModel model = Assert.IsType<JumpInfoOverlayViewModel>(window.DataContext);
         model.JumpInfo.InstallEditorPreview(
             new JumpInfoRoutePlan(new JumpTarget("Beta", 3), JumpInfoRouteSource.Direct, 0, [], null),
             new SystemSummary(

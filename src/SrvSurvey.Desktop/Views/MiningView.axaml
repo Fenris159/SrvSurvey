@@ -146,7 +146,7 @@
                 </Grid>
                     <ListBox Grid.Row="1" x:Name="EngineeringMaterialRows" Classes="table-rows" ItemsSource="{Binding EngineeringMaterials}" MinHeight="60" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                   <ListBox.ItemTemplate>
-                    <DataTemplate x:DataType="mining:MiningCollection">
+                    <DataTemplate x:DataType="mining:MiningCollectionEntry">
                       <Grid Classes="table-row" RowDefinitions="Auto" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="EngineeringMaterials0" /><ColumnDefinition Width="Auto" SharedSizeGroup="EngineeringMaterials1" /><ColumnDefinition Width="Auto" SharedSizeGroup="EngineeringMaterials2" /></Grid.ColumnDefinitions>
                         <TextBlock Text="{Binding Name}"/><TextBlock Grid.Column="1" Text="{Binding Grade}"/><TextBlock Grid.Column="2" Text="{Binding Count}"/>
                       </Grid>

@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Windows.Input;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Navigation;
@@ -36,7 +37,7 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
     public GroundTargetViewModel(GroundTargetSettingsStore settingsStore)
     {
         this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
-        var loadResult = settingsStore.Load();
+        GroundTargetSettingsLoadResult loadResult = settingsStore.Load();
         state = new GroundTargetState(loadResult.Snapshot ?? GroundTargetSnapshot.Empty);
         if (loadResult.Snapshot is not null)
         {
@@ -216,7 +217,7 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
 
     public async Task SetTargetAsync()
     {
-        if (!state.TrySetTarget(TargetLatitude, TargetLongitude, out var error))
+        if (!state.TrySetTarget(TargetLatitude, TargetLongitude, out string? error))
         {
             StatusMessage = error ?? "The ground target is invalid.";
             return;
@@ -236,7 +237,7 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
 
     public async Task ApplyPastedTextAsync(string? text)
     {
-        if (!state.TrySetTarget(text ?? string.Empty, out var error))
+        if (!state.TrySetTarget(text ?? string.Empty, out string? error))
         {
             StatusMessage = error ?? "The clipboard does not contain coordinates.";
             return;
@@ -248,7 +249,7 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
 
     public async Task UseCurrentLocationAsync()
     {
-        if (!state.TryUseCurrentLocation(out var error))
+        if (!state.TryUseCurrentLocation(out string? error))
         {
             StatusMessage = error ?? "Current coordinates are unavailable.";
             return;
@@ -284,8 +285,8 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
             return 0;
         }
 
-        var applied = 0;
-        foreach (var journalEvent in journalEvents)
+        int applied = 0;
+        foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
             applied += await TryApplyTargetCommandAsync(journalEvent);
         }
@@ -295,7 +296,7 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
 
     private async Task<int> TryApplyTargetCommandAsync(JournalEventEnvelope journalEvent)
     {
-        if (!TryReadTargetCommand(journalEvent, out var message))
+        if (!TryReadTargetCommand(journalEvent, out string? message))
         {
             return 0;
         }
@@ -308,7 +309,7 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
         message = null;
         if (
             journalEvent.EventName != "SendText"
-            || !journalEvent.Payload.TryGetProperty("Message", out var value)
+            || !journalEvent.Payload.TryGetProperty("Message", out JsonElement value)
             || value.ValueKind != System.Text.Json.JsonValueKind.String
         )
         {
@@ -321,23 +322,18 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
 
     private async Task<int> ApplyTargetCommandAsync(string? message)
     {
-        switch (message)
+        return message switch
         {
-            case ".target here":
-            case "@":
-                return await ApplyTargetHereCommandAsync().ConfigureAwait(true);
-            case ".target off":
-                return await SetActiveAsync(false) ? 1 : 0;
-            case ".target on":
-                return await SetActiveAsync(true) ? 1 : 0;
-            default:
-                return 0;
-        }
+            ".target here" or "@" => await ApplyTargetHereCommandAsync().ConfigureAwait(true),
+            ".target off" => await SetActiveAsync(false) ? 1 : 0,
+            ".target on" => await SetActiveAsync(true) ? 1 : 0,
+            _ => 0,
+        };
     }
 
     private async Task<int> ApplyTargetHereCommandAsync()
     {
-        var before = state.Version;
+        int before = state.Version;
         await UseCurrentLocationAsync();
         return state.Version != before ? 1 : 0;
     }
@@ -386,7 +382,7 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ShouldShow));
         ((AsyncCommand)ClearTargetCommand).RaiseCanExecuteChanged();
 
-        var solution = state.Solution;
+        GroundTargetSolution? solution = state.Solution;
         if (solution is null)
         {
             DistanceToTarget = Unavailable;
@@ -440,7 +436,7 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
             return false;
         }
 
-        var mode = OverlayGameModeResolver.Resolve(status, musicTrack: musicTrack);
+        OverlayGameMode mode = OverlayGameModeResolver.Resolve(status, musicTrack: musicTrack);
         return mode
             is OverlayGameMode.CommsPanel
                 or OverlayGameMode.SuperCruising

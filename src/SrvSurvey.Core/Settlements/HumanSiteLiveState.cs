@@ -30,7 +30,7 @@ public sealed class HumanSiteLiveState(HumanSiteTemplateCatalog templates, TimeP
             return false;
         }
 
-        var heading = SurfaceNavigation.NormalizeDegrees(geometry.Heading);
+        double heading = SurfaceNavigation.NormalizeDegrees(geometry.Heading);
         if (CurrentSite.SubType == geometry.SubType && EquivalentHeading(CurrentSite.Heading, heading))
         {
             return false;
@@ -57,12 +57,13 @@ public sealed class HumanSiteLiveState(HumanSiteTemplateCatalog templates, TimeP
             return false;
         }
 
-        var incomingTemplate = knowledge.SubType > 0 ? templates.Find(knowledge.Economy, knowledge.SubType) : null;
-        var template =
+        HumanSiteTemplate? incomingTemplate =
+            knowledge.SubType > 0 ? templates.Find(knowledge.Economy, knowledge.SubType) : null;
+        HumanSiteTemplate? template =
             mergeMode == HumanSiteKnowledgeMergeMode.FillMissing && CurrentSite.Template is not null
                 ? CurrentSite.Template
                 : incomingTemplate ?? CurrentSite.Template;
-        var heading =
+        double? heading =
             mergeMode == HumanSiteKnowledgeMergeMode.FillMissing && CurrentSite.Heading is not null
                 ? CurrentSite.Heading
                 : knowledge.Heading switch
@@ -70,12 +71,12 @@ public sealed class HumanSiteLiveState(HumanSiteTemplateCatalog templates, TimeP
                     double savedHeading => SurfaceNavigation.NormalizeDegrees(savedHeading),
                     null => CurrentSite.Heading,
                 };
-        var pads =
+        HumanSiteLandingPads pads =
             knowledge.AvailablePads.Total > 0
             && (mergeMode != HumanSiteKnowledgeMergeMode.FillMissing || CurrentSite.AvailablePads.Total == 0)
                 ? knowledge.AvailablePads
                 : CurrentSite.AvailablePads;
-        var subType = template?.SubType ?? CurrentSite.SubType;
+        int subType = template?.SubType ?? CurrentSite.SubType;
         if (
             CurrentSite.SubType == subType
             && CurrentSite.Template == template
@@ -100,7 +101,7 @@ public sealed class HumanSiteLiveState(HumanSiteTemplateCatalog templates, TimeP
     public bool Apply(JournalEventEnvelope journalEvent)
     {
         ArgumentNullException.ThrowIfNull(journalEvent);
-        var changed = journalEvent.EventName switch
+        bool changed = journalEvent.EventName switch
         {
             "ApproachSettlement" => ApplyApproach(journalEvent),
             "DockingRequested" => ApplyDockingRequested(journalEvent.Payload),
@@ -135,15 +136,15 @@ public sealed class HumanSiteLiveState(HumanSiteTemplateCatalog templates, TimeP
 
     private bool ApplyApproach(JournalEventEnvelope journalEvent)
     {
-        var root = journalEvent.Payload;
-        if (!TryReadCompatibleSite(root, out var site))
+        JsonElement root = journalEvent.Payload;
+        if (!TryReadCompatibleSite(root, out HumanSiteLiveSnapshot? site))
         {
             return Clear();
         }
 
-        var timestamp = journalEvent.Timestamp ?? timeProvider.GetUtcNow();
-        var current = CurrentSite;
-        var firstApproached =
+        DateTimeOffset timestamp = journalEvent.Timestamp ?? timeProvider.GetUtcNow();
+        HumanSiteLiveSnapshot? current = CurrentSite;
+        DateTimeOffset firstApproached =
             current is not null && IsSameSite(current, site.MarketId, site.SystemAddress)
                 ? current.FirstApproached
                 : timestamp;
@@ -177,8 +178,8 @@ public sealed class HumanSiteLiveState(HumanSiteTemplateCatalog templates, TimeP
             return false;
         }
 
-        var pads = ReadLandingPads(root);
-        var subType = InferSubType(CurrentSite!.Economy, pads);
+        HumanSiteLandingPads pads = ReadLandingPads(root);
+        int subType = InferSubType(CurrentSite!.Economy, pads);
         CurrentSite = CurrentSite with
         {
             StationType = OnFootSettlement,
@@ -248,13 +249,13 @@ public sealed class HumanSiteLiveState(HumanSiteTemplateCatalog templates, TimeP
             return false;
         }
 
-        var pads = ReadLandingPads(root);
+        HumanSiteLandingPads pads = ReadLandingPads(root);
         if (pads == HumanSiteLandingPads.Empty)
         {
             pads = CurrentSite!.AvailablePads;
         }
 
-        var subType = CurrentSite!.SubType > 0 ? CurrentSite.SubType : InferSubType(CurrentSite.Economy, pads);
+        int subType = CurrentSite!.SubType > 0 ? CurrentSite.SubType : InferSubType(CurrentSite.Economy, pads);
         CurrentSite = CurrentSite with
         {
             StationType = OnFootSettlement,
@@ -275,7 +276,7 @@ public sealed class HumanSiteLiveState(HumanSiteTemplateCatalog templates, TimeP
             return false;
         }
 
-        var nearestDestination = GetString(root, "NearestDestination");
+        string? nearestDestination = GetString(root, "NearestDestination");
         if (
             !string.IsNullOrWhiteSpace(nearestDestination)
             && !string.Equals(nearestDestination, CurrentSite.Name, StringComparison.OrdinalIgnoreCase)
@@ -291,14 +292,14 @@ public sealed class HumanSiteLiveState(HumanSiteTemplateCatalog templates, TimeP
     private static bool TryReadCompatibleSite(JsonElement root, out HumanSiteLiveSnapshot site)
     {
         site = null!;
-        var name = GetString(root, "Name");
-        var services = GetStringArray(root, "StationServices");
-        var marketId = GetInt64(root, "MarketID") ?? 0;
-        var systemAddress = GetInt64(root, "SystemAddress") ?? 0;
-        var bodyId = GetInt32(root, "BodyID") ?? -1;
-        var latitude = GetDouble(root, "Latitude");
-        var longitude = GetDouble(root, "Longitude");
-        var economy = HumanSiteEconomyParser.ParseJournalValue(GetString(root, "StationEconomy"));
+        string? name = GetString(root, "Name");
+        string[] services = GetStringArray(root, "StationServices");
+        long marketId = GetInt64(root, "MarketID") ?? 0;
+        long systemAddress = GetInt64(root, "SystemAddress") ?? 0;
+        int bodyId = GetInt32(root, "BodyID") ?? -1;
+        double? latitude = GetDouble(root, "Latitude");
+        double? longitude = GetDouble(root, "Longitude");
+        HumanSiteEconomy economy = HumanSiteEconomyParser.ParseJournalValue(GetString(root, "StationEconomy"));
         if (
             string.IsNullOrWhiteSpace(name)
             || name.StartsWith("$Ancient", StringComparison.Ordinal)
@@ -350,7 +351,7 @@ public sealed class HumanSiteLiveState(HumanSiteTemplateCatalog templates, TimeP
 
     private int InferSubType(HumanSiteEconomy economy, HumanSiteLandingPads pads)
     {
-        var matches = templates
+        int[] matches = templates
             .ForEconomy(economy)
             .Where(template => HumanSiteLandingPads.From(template) == pads)
             .Select(template => template.SubType)
@@ -366,7 +367,7 @@ public sealed class HumanSiteLiveState(HumanSiteTemplateCatalog templates, TimeP
             return false;
         }
 
-        var marketId = GetInt64(root, "MarketID");
+        long? marketId = GetInt64(root, "MarketID");
         return marketId == CurrentSite.MarketId;
     }
 
@@ -399,7 +400,7 @@ public sealed class HumanSiteLiveState(HumanSiteTemplateCatalog templates, TimeP
 
     private static HumanSiteLandingPads ReadLandingPads(JsonElement root)
     {
-        if (!root.TryGetProperty("LandingPads", out var pads) || pads.ValueKind != JsonValueKind.Object)
+        if (!root.TryGetProperty("LandingPads", out JsonElement pads) || pads.ValueKind != JsonValueKind.Object)
         {
             return HumanSiteLandingPads.Empty;
         }
@@ -413,7 +414,7 @@ public sealed class HumanSiteLiveState(HumanSiteTemplateCatalog templates, TimeP
 
     private static string[] GetStringArray(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.Array
+        return root.TryGetProperty(propertyName, out JsonElement value) && value.ValueKind == JsonValueKind.Array
             ? value
                 .EnumerateArray()
                 .Where(item => item.ValueKind == JsonValueKind.String)
@@ -426,33 +427,37 @@ public sealed class HumanSiteLiveState(HumanSiteTemplateCatalog templates, TimeP
 
     private static string? GetNestedString(JsonElement root, string objectName, string propertyName)
     {
-        return root.TryGetProperty(objectName, out var nested) && nested.ValueKind == JsonValueKind.Object
+        return root.TryGetProperty(objectName, out JsonElement nested) && nested.ValueKind == JsonValueKind.Object
             ? GetString(nested, propertyName)
             : null;
     }
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+        return root.TryGetProperty(propertyName, out JsonElement value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
     }
 
     private static int? GetInt32(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value) && value.TryGetInt32(out var result) ? result : null;
+        return root.TryGetProperty(propertyName, out JsonElement value) && value.TryGetInt32(out int result)
+            ? result
+            : null;
     }
 
     private static long? GetInt64(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value) && value.TryGetInt64(out var result) ? result : null;
+        return root.TryGetProperty(propertyName, out JsonElement value) && value.TryGetInt64(out long result)
+            ? result
+            : null;
     }
 
     private static double? GetDouble(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
-            && value.TryGetDouble(out var result)
+            root.TryGetProperty(propertyName, out JsonElement value)
+            && value.TryGetDouble(out double result)
             && double.IsFinite(result)
             ? result
             : null;

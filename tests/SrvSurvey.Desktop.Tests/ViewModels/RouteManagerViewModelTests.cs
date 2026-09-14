@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using SrvSurvey.Core.Routes;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.ViewModels;
@@ -14,9 +15,10 @@ public sealed class RouteManagerViewModelTests : IDisposable
     [Fact]
     public async Task SameCommanderAndCatalogRefreshPreserveCollectionAndRows()
     {
-        var (store, _, manager) = await CreateViewModelsAsync();
-        var routes = manager.Routes;
-        var alpha = manager.Routes.Single(route => route.Name == "Alpha");
+        (FollowRouteStore? store, RouteWorkspaceViewModel _, RouteManagerViewModel? manager) =
+            await CreateViewModelsAsync();
+        ObservableCollection<RouteManagerItemViewModel> routes = manager.Routes;
+        RouteManagerItemViewModel alpha = manager.Routes.Single(route => route.Name == "Alpha");
         alpha.IsSelected = true;
         var notifications = new List<string?>();
         manager.PropertyChanged += (_, eventArgs) => notifications.Add(eventArgs.PropertyName);
@@ -30,7 +32,7 @@ public sealed class RouteManagerViewModelTests : IDisposable
         await store.SaveNotesAsync("F123", alpha.FileName, alpha.IsLegacy, "Updated outside the manager");
         await manager.RefreshAsync();
 
-        var refreshedAlpha = manager.Routes.Single(route => route.Name == "Alpha");
+        RouteManagerItemViewModel refreshedAlpha = manager.Routes.Single(route => route.Name == "Alpha");
         Assert.Same(routes, manager.Routes);
         Assert.Same(alpha, refreshedAlpha);
         Assert.True(refreshedAlpha.IsSelected);
@@ -40,9 +42,10 @@ public sealed class RouteManagerViewModelTests : IDisposable
     [Fact]
     public async Task FavoritePersistsAndCanBeSortedAheadOfName()
     {
-        var (store, _, manager) = await CreateViewModelsAsync();
-        var alpha = manager.Routes.Single(route => route.Name == "Alpha");
-        var beta = manager.Routes.Single(route => route.Name == "Beta");
+        (FollowRouteStore? store, RouteWorkspaceViewModel _, RouteManagerViewModel? manager) =
+            await CreateViewModelsAsync();
+        RouteManagerItemViewModel alpha = manager.Routes.Single(route => route.Name == "Alpha");
+        RouteManagerItemViewModel beta = manager.Routes.Single(route => route.Name == "Beta");
 
         Assert.Same(alpha, manager.Routes[0]);
         await manager.ToggleFavoriteAsync(beta);
@@ -53,16 +56,17 @@ public sealed class RouteManagerViewModelTests : IDisposable
         manager.FavoritesFirst = false;
         Assert.Same(alpha, manager.Routes[0]);
 
-        var catalogBeta = (await store.ListAsync("F123")).Single(route => route.Name == "Beta");
+        FollowRouteCatalogEntry catalogBeta = (await store.ListAsync("F123")).Single(route => route.Name == "Beta");
         Assert.True(catalogBeta.IsFavorite);
     }
 
     [Fact]
     public async Task NotesAndBulkDeleteUpdateFilesAndWorkspaceState()
     {
-        var (_, workspace, manager) = await CreateViewModelsAsync();
-        var beta = manager.Routes.Single(route => route.Name == "Beta");
-        var betaPath = beta.FilePath;
+        (FollowRouteStore _, RouteWorkspaceViewModel? workspace, RouteManagerViewModel? manager) =
+            await CreateViewModelsAsync();
+        RouteManagerItemViewModel beta = manager.Routes.Single(route => route.Name == "Beta");
+        string betaPath = beta.FilePath;
         beta.EditNotesCommand.Execute(null);
         manager.NotesDraft = "Watch the neutron jump near waypoint five.";
 
@@ -85,8 +89,9 @@ public sealed class RouteManagerViewModelTests : IDisposable
     [Fact]
     public async Task RouteCanBeActivatedAndDeactivatedWithoutOpeningWorkspace()
     {
-        var (store, workspace, manager) = await CreateViewModelsAsync();
-        var alpha = manager.Routes.Single(route => route.Name == "Alpha");
+        (FollowRouteStore? store, RouteWorkspaceViewModel? workspace, RouteManagerViewModel? manager) =
+            await CreateViewModelsAsync();
+        RouteManagerItemViewModel alpha = manager.Routes.Single(route => route.Name == "Alpha");
 
         await manager.ActivateAsync(alpha);
 
@@ -105,7 +110,7 @@ public sealed class RouteManagerViewModelTests : IDisposable
         Assert.False(manager.CanDeactivate);
         Assert.Contains("deactivated", manager.StatusMessage);
 
-        var paused = await store.LoadNamedAsync("F123", alpha.FileName, alpha.IsLegacy);
+        FollowRouteLoadResult paused = await store.LoadNamedAsync("F123", alpha.FileName, alpha.IsLegacy);
         Assert.False(paused.Route!.IsActive);
         Assert.Equal(0, paused.Route.LastReachedIndex);
     }
@@ -113,8 +118,9 @@ public sealed class RouteManagerViewModelTests : IDisposable
     [Fact]
     public async Task AutoCopyCanBeChangedAndPersistedFromRouteManager()
     {
-        var (store, workspace, manager) = await CreateViewModelsAsync();
-        var alpha = manager.Routes.Single(route => route.Name == "Alpha");
+        (FollowRouteStore? store, RouteWorkspaceViewModel? workspace, RouteManagerViewModel? manager) =
+            await CreateViewModelsAsync();
+        RouteManagerItemViewModel alpha = manager.Routes.Single(route => route.Name == "Alpha");
         await manager.ActivateAsync(alpha);
 
         Assert.True(manager.AutoCopy);
@@ -125,7 +131,7 @@ public sealed class RouteManagerViewModelTests : IDisposable
         Assert.False(manager.AutoCopy);
         Assert.False(workspace.AutoCopy);
         Assert.Contains("disabled", manager.StatusMessage);
-        var saved = await store.LoadNamedAsync("F123", alpha.FileName, alpha.IsLegacy);
+        FollowRouteLoadResult saved = await store.LoadNamedAsync("F123", alpha.FileName, alpha.IsLegacy);
         Assert.False(saved.Route!.AutoCopy);
 
         await manager.DeactivateAsync();
@@ -135,9 +141,10 @@ public sealed class RouteManagerViewModelTests : IDisposable
     [Fact]
     public async Task RenamePreservesBoundRowSelectionAndLoadedWorkspace()
     {
-        var (_, workspace, manager) = await CreateViewModelsAsync();
-        var beta = manager.Routes.Single(route => route.Name == "Beta");
-        var oldPath = beta.FilePath;
+        (FollowRouteStore _, RouteWorkspaceViewModel? workspace, RouteManagerViewModel? manager) =
+            await CreateViewModelsAsync();
+        RouteManagerItemViewModel beta = manager.Routes.Single(route => route.Name == "Beta");
+        string oldPath = beta.FilePath;
         beta.IsSelected = true;
 
         beta.RenameCommand.Execute(null);
@@ -148,7 +155,7 @@ public sealed class RouteManagerViewModelTests : IDisposable
         manager.RenameDraft = "Gamma Route";
         await manager.SaveRenameAsync();
 
-        var renamed = manager.Routes.Single(route => route.Name == "Gamma Route");
+        RouteManagerItemViewModel renamed = manager.Routes.Single(route => route.Name == "Gamma Route");
         Assert.Same(beta, renamed);
         Assert.True(renamed.IsSelected);
         Assert.Equal("Gamma Route.json", renamed.FileName);

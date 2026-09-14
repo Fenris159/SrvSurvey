@@ -32,18 +32,18 @@ public static class SurfaceMiningGeometry
             throw new ArgumentOutOfRangeException(nameof(heading));
         }
 
-        var latitude = origin.Latitude * Math.PI / 180;
-        var longitude = origin.Longitude * Math.PI / 180;
-        var bearing = (heading + 180) * Math.PI / 180;
-        var angle = meters / radius;
-        var resultLatitude = Math.Asin(
+        double latitude = origin.Latitude * Math.PI / 180;
+        double longitude = origin.Longitude * Math.PI / 180;
+        double bearing = (heading + 180) * Math.PI / 180;
+        double angle = meters / radius;
+        double resultLatitude = Math.Asin(
             Math.Clamp(
                 Math.Sin(latitude) * Math.Cos(angle) + Math.Cos(latitude) * Math.Sin(angle) * Math.Cos(bearing),
                 -1,
                 1
             )
         );
-        var resultLongitude =
+        double resultLongitude =
             longitude
             + Math.Atan2(
                 Math.Sin(bearing) * Math.Sin(angle) * Math.Cos(latitude),

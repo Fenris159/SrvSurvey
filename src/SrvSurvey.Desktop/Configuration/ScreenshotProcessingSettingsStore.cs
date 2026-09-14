@@ -61,12 +61,12 @@ public sealed class ScreenshotProcessingSettingsStore
 
     private static bool? GetBoolean(JsonObject? root, string name)
     {
-        return root?[name] is JsonValue value && value.TryGetValue<bool>(out var result) ? result : null;
+        return root?[name] is JsonValue value && value.TryGetValue<bool>(out bool result) ? result : null;
     }
 
     private static double? GetDouble(JsonObject? root, string name)
     {
-        return root?[name] is JsonValue value && value.TryGetValue<double>(out var result) && double.IsFinite(result)
+        return root?[name] is JsonValue value && value.TryGetValue<double>(out double result) && double.IsFinite(result)
             ? result
             : null;
     }
@@ -75,7 +75,7 @@ public sealed class ScreenshotProcessingSettingsStore
     {
         return
             root?[name] is JsonValue value
-            && value.TryGetValue<string>(out var result)
+            && value.TryGetValue<string>(out string? result)
             && !string.IsNullOrWhiteSpace(result)
             ? result
             : null;
@@ -83,7 +83,7 @@ public sealed class ScreenshotProcessingSettingsStore
 
     private static string GetBannerColor(JsonNode? value, string fallback)
     {
-        if (value is JsonValue text && text.TryGetValue<string>(out var color) && !string.IsNullOrWhiteSpace(color))
+        if (value is JsonValue text && text.TryGetValue<string>(out string? color) && !string.IsNullOrWhiteSpace(color))
         {
             return color.Trim();
         }
@@ -93,9 +93,9 @@ public sealed class ScreenshotProcessingSettingsStore
             return fallback;
         }
 
-        var red = GetByte(legacy, "R");
-        var green = GetByte(legacy, "G");
-        var blue = GetByte(legacy, "B");
+        byte? red = GetByte(legacy, "R");
+        byte? green = GetByte(legacy, "G");
+        byte? blue = GetByte(legacy, "B");
         return red is not null && green is not null && blue is not null
             ? $"#{red.Value:X2}{green.Value:X2}{blue.Value:X2}"
             : fallback;
@@ -105,7 +105,7 @@ public sealed class ScreenshotProcessingSettingsStore
     {
         return
             root[name] is JsonValue value
-            && value.TryGetValue<int>(out var result)
+            && value.TryGetValue<int>(out int result)
             && result is >= byte.MinValue and <= byte.MaxValue
             ? (byte)result
             : null;
@@ -129,8 +129,8 @@ public sealed record ScreenshotProcessingPreferences(
 {
     public static ScreenshotProcessingPreferences CreateDefaults()
     {
-        var pictures = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
-        var source = Path.Combine(pictures, "Frontier Developments", "Elite Dangerous");
+        string pictures = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+        string source = Path.Combine(pictures, "Frontier Developments", "Elite Dangerous");
         return new ScreenshotProcessingPreferences(
             false,
             true,

@@ -43,7 +43,7 @@ public static class QuestJournalPayloadResolver
             );
         }
 
-        var path = Path.Combine(journalDirectory, $"{journalEvent.EventName}.json");
+        string path = Path.Combine(journalDirectory, $"{journalEvent.EventName}.json");
         try
         {
             await using var stream = new FileStream(
@@ -54,7 +54,7 @@ public static class QuestJournalPayloadResolver
                 bufferSize: 4096,
                 useAsync: true
             );
-            using var document = await JsonDocument
+            using JsonDocument document = await JsonDocument
                 .ParseAsync(stream, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
             if (document.RootElement.ValueKind != JsonValueKind.Object)

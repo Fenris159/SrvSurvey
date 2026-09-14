@@ -23,7 +23,7 @@ public sealed class OverlayThemeStateStore
         fileLock = FileLocks.GetOrAdd(this.path, _ => new object());
     }
 
-    public OverlayThemeStateCollection Load()
+    public OverlayThemeStateLoadResult Load()
     {
         lock (fileLock)
         {
@@ -38,17 +38,17 @@ public sealed class OverlayThemeStateStore
     )
     {
         ArgumentNullException.ThrowIfNull(colors);
-        var normalizedName = NormalizeName(name);
+        string normalizedName = NormalizeName(name);
         lock (fileLock)
         {
-            var current = LoadCore();
+            OverlayThemeStateLoadResult current = LoadCore();
             if (current.Error is not null)
             {
                 throw new InvalidDataException(current.Error);
             }
 
             var states = current.States.ToList();
-            var existingIndex = states.FindIndex(state =>
+            int existingIndex = states.FindIndex(state =>
                 string.Equals(state.Name, normalizedName, StringComparison.OrdinalIgnoreCase)
             );
             var updated = new OverlayThemeState(
@@ -65,23 +65,23 @@ public sealed class OverlayThemeStateStore
                 states.Add(updated);
             }
 
-            var backupPath = Write(states);
+            string? backupPath = Write(states);
             return new OverlayThemeStateSaveResult(path, backupPath, updated.Name, existingIndex >= 0);
         }
     }
 
     public OverlayThemeStateSaveResult DeleteState(string name)
     {
-        var normalizedName = NormalizeName(name);
+        string normalizedName = NormalizeName(name);
         lock (fileLock)
         {
-            var current = LoadCore();
+            OverlayThemeStateLoadResult current = LoadCore();
             if (current.Error is not null)
             {
                 throw new InvalidDataException(current.Error);
             }
 
-            var states = current
+            OverlayThemeState[] states = current
                 .States.Where(state => !string.Equals(state.Name, normalizedName, StringComparison.OrdinalIgnoreCase))
                 .ToArray();
             if (states.Length == current.States.Count)
@@ -89,21 +89,21 @@ public sealed class OverlayThemeStateStore
                 throw new KeyNotFoundException($"Overlay theme state '{normalizedName}' was not found.");
             }
 
-            var backupPath = Write(states);
+            string? backupPath = Write(states);
             return new OverlayThemeStateSaveResult(path, backupPath, normalizedName, ReplacedExisting: true);
         }
     }
 
-    private OverlayThemeStateCollection LoadCore()
+    private OverlayThemeStateLoadResult LoadCore()
     {
         if (!File.Exists(path))
         {
-            return new OverlayThemeStateCollection([], null);
+            return new OverlayThemeStateLoadResult([], null);
         }
 
         try
         {
-            var root =
+            JsonObject root =
                 JsonNode.Parse(File.ReadAllText(path)) as JsonObject
                 ?? throw new InvalidDataException("The overlay theme state file is not a JSON object.");
             if (root["version"]?.GetValue<int>() != 1)
@@ -111,32 +111,32 @@ public sealed class OverlayThemeStateStore
                 throw new InvalidDataException("The overlay theme state file version is not supported.");
             }
 
-            var items =
+            JsonArray items =
                 root["states"] as JsonArray
                 ?? throw new InvalidDataException("The overlay theme state list is missing.");
             var states = new List<OverlayThemeState>(items.Count);
             var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var item in items)
+            foreach (JsonNode? item in items)
             {
-                var state =
+                JsonObject state =
                     item as JsonObject
                     ?? throw new InvalidDataException("An overlay theme state is not a JSON object.");
-                var name = NormalizeName(state["name"]?.GetValue<string>());
+                string name = NormalizeName(state["name"]?.GetValue<string>());
                 if (!names.Add(name))
                 {
                     throw new InvalidDataException($"Overlay theme state '{name}' is duplicated.");
                 }
 
-                var colorValues =
+                JsonObject colorValues =
                     state["colors"] as JsonObject
                     ?? throw new InvalidDataException($"Overlay theme state '{name}' has no colours.");
                 var colors = new Dictionary<string, Color>(StringComparer.Ordinal);
-                foreach (var entry in colorValues)
+                foreach (KeyValuePair<string, JsonNode?> entry in colorValues)
                 {
                     if (
                         entry.Value is not JsonValue value
-                        || !value.TryGetValue<string>(out var text)
-                        || !LegacyOverlayThemeStore.TryParseHtmlColor(text, out var color)
+                        || !value.TryGetValue<string>(out string? text)
+                        || !LegacyOverlayThemeStore.TryParseHtmlColor(text, out Color color)
                     )
                     {
                         throw new InvalidDataException(
@@ -157,7 +157,7 @@ public sealed class OverlayThemeStateStore
                 states.Add(new OverlayThemeState(name, colors, typography));
             }
 
-            return new OverlayThemeStateCollection(
+            return new OverlayThemeStateLoadResult(
                 states.OrderBy(state => state.Name, StringComparer.CurrentCultureIgnoreCase).ToArray(),
                 null
             );
@@ -173,7 +173,7 @@ public sealed class OverlayThemeStateStore
                         or ArgumentException
             )
         {
-            return new OverlayThemeStateCollection(
+            return new OverlayThemeStateLoadResult(
                 [],
                 $"Could not read overlay theme states '{path}': {exception.Message}"
             );
@@ -182,20 +182,27 @@ public sealed class OverlayThemeStateStore
 
     private string? Write(IReadOnlyCollection<OverlayThemeState> states)
     {
-        var directory =
+        string directory =
             Path.GetDirectoryName(path)
             ?? throw new InvalidOperationException("The overlay theme state path has no parent directory.");
         Directory.CreateDirectory(directory);
-        var backupPath = File.Exists(path) ? CreateVerifiedBackup(directory) : null;
-        var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
+        string? backupPath = File.Exists(path) ? CreateVerifiedBackup(directory) : null;
+        string temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
         try
         {
             var stateArray = new JsonArray();
-            foreach (var state in states.OrderBy(state => state.Name, StringComparer.CurrentCultureIgnoreCase))
+            foreach (
+                OverlayThemeState? state in states.OrderBy(state => state.Name, StringComparer.CurrentCultureIgnoreCase)
+            )
             {
                 ValidateColors(state.Name, state.Colors);
                 var colors = new JsonObject();
-                foreach (var entry in state.Colors.OrderBy(entry => entry.Key, StringComparer.Ordinal))
+                foreach (
+                    KeyValuePair<string, Color> entry in state.Colors.OrderBy(
+                        entry => entry.Key,
+                        StringComparer.Ordinal
+                    )
+                )
                 {
                     colors[entry.Key] = LegacyOverlayThemeStore.FormatHtmlColor(entry.Value);
                 }
@@ -222,7 +229,7 @@ public sealed class OverlayThemeStateStore
                 root.WriteTo(writer);
             }
 
-            var verifier = new OverlayThemeStateStore(temporaryPath).Load();
+            OverlayThemeStateLoadResult verifier = new OverlayThemeStateStore(temporaryPath).Load();
             if (verifier.Error is not null || !StatesEqual(states, verifier.States))
             {
                 throw new InvalidDataException(verifier.Error ?? "The written overlay theme states did not verify.");
@@ -242,14 +249,14 @@ public sealed class OverlayThemeStateStore
 
     private string CreateVerifiedBackup(string directory)
     {
-        var backupDirectory = Path.Combine(
+        string backupDirectory = Path.Combine(
             directory,
             "legacy-backups",
             "overlay-theme-states",
             DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmssfff", CultureInfo.InvariantCulture)
         );
         Directory.CreateDirectory(backupDirectory);
-        var backupPath = Path.Combine(backupDirectory, Path.GetFileName(path));
+        string backupPath = Path.Combine(backupDirectory, Path.GetFileName(path));
         File.Copy(path, backupPath, overwrite: false);
         if (
             !SHA256
@@ -266,7 +273,7 @@ public sealed class OverlayThemeStateStore
 
     private static string NormalizeName(string? name)
     {
-        var normalized = name?.Trim() ?? string.Empty;
+        string normalized = name?.Trim() ?? string.Empty;
         if (normalized.Length is < 1 or > 80)
         {
             throw new ArgumentException("A saved overlay theme name must contain 1 to 80 characters.", nameof(name));
@@ -277,8 +284,8 @@ public sealed class OverlayThemeStateStore
 
     private static void ValidateColors(string name, IReadOnlyDictionary<string, Color> colors)
     {
-        var defaults = LegacyOverlayThemeStore.CreateDefault().Colors;
-        var missingColor = defaults.Keys.FirstOrDefault(required => !colors.ContainsKey(required));
+        IReadOnlyDictionary<string, Color> defaults = LegacyOverlayThemeStore.CreateDefault().Colors;
+        string? missingColor = defaults.Keys.FirstOrDefault(required => !colors.ContainsKey(required));
         if (missingColor is not null)
         {
             throw new InvalidDataException($"Overlay theme state '{name}' does not define '{missingColor}'.");
@@ -297,14 +304,14 @@ public sealed class OverlayThemeStateStore
 
         return expected.All(expectedState =>
         {
-            var actualState = actual.SingleOrDefault(state =>
+            OverlayThemeState? actualState = actual.SingleOrDefault(state =>
                 string.Equals(state.Name, expectedState.Name, StringComparison.Ordinal)
             );
             return actualState is not null
                 && expectedState.Colors.Count == actualState.Colors.Count
                 && expectedState.EffectiveTypography == actualState.EffectiveTypography
                 && expectedState.Colors.All(entry =>
-                    actualState.Colors.TryGetValue(entry.Key, out var color) && color == entry.Value
+                    actualState.Colors.TryGetValue(entry.Key, out Color color) && color == entry.Value
                 );
         });
     }
@@ -319,7 +326,7 @@ public sealed record OverlayThemeState(
     public OverlayTypographySettings EffectiveTypography => Typography ?? OverlayTypographySettings.Default;
 }
 
-public sealed record OverlayThemeStateCollection(IReadOnlyList<OverlayThemeState> States, string? Error);
+public sealed record OverlayThemeStateLoadResult(IReadOnlyList<OverlayThemeState> States, string? Error);
 
 public sealed record OverlayThemeStateSaveResult(
     string Path,

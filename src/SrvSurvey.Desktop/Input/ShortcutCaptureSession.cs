@@ -2,7 +2,7 @@ namespace SrvSurvey.Desktop.Input;
 
 public static class ShortcutCaptureSession
 {
-    private static readonly object Sync = new();
+    private static readonly Lock Sync = new();
     private static readonly List<CaptureTarget> controllerCaptures = [];
     private static int activeCaptures;
     private static long suppressUntilUtcTicks;

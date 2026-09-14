@@ -71,7 +71,7 @@ public sealed class LegacyOverlayBackgroundControl : Control
         context.DrawRectangle(BackgroundBrush ?? Brushes.Black, null, bounds);
 
         var stripePen = new Pen(StripeBrush ?? new SolidColorBrush(Color.FromRgb(12, 12, 12)), 1);
-        for (var y = 0.5; y < bounds.Height; y += 3)
+        for (double y = 0.5; y < bounds.Height; y += 3)
         {
             context.DrawLine(stripePen, new Point(0, y), new Point(bounds.Width, y));
         }

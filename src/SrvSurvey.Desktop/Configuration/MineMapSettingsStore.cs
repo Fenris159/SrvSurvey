@@ -12,7 +12,7 @@ public sealed class MineMapSettingsStore(string path)
         var settings = document.Load()[SettingsKey] as JsonObject;
         return new MineMapPreferences(
             OnlyShowWhileOnGround: settings?["OnlyShowWhileOnGround"] is JsonValue value
-                && value.TryGetValue<bool>(out var enabled)
+                && value.TryGetValue<bool>(out bool enabled)
                 && enabled,
             MiningReferenceCommodities: settings?["MiningReferenceCommodities"] is JsonArray commodities
                 ? commodities

@@ -15,11 +15,11 @@ public sealed class LegacyQuestStateStoreTests : IDisposable
     [Fact]
     public void DevelopmentQuestStateIsLoadedWithoutChangingSourceFiles()
     {
-        var questDirectory = Path.Combine(temporaryDirectory, "quests");
+        string questDirectory = Path.Combine(temporaryDirectory, "quests");
         Directory.CreateDirectory(questDirectory);
-        var statePath = Path.Combine(questDirectory, "f123.json");
-        var definitionPath = Path.Combine(questDirectory, "dev-sample.json");
-        var stateBytes = Encoding.UTF8.GetBytes(
+        string statePath = Path.Combine(questDirectory, "f123.json");
+        string definitionPath = Path.Combine(questDirectory, "dev-sample.json");
+        byte[] stateBytes = Encoding.UTF8.GetBytes(
             """
             {
               "fid": "F123",
@@ -66,7 +66,7 @@ public sealed class LegacyQuestStateStoreTests : IDisposable
             }
             """
         );
-        var definitionBytes = Encoding.UTF8.GetBytes(
+        byte[] definitionBytes = Encoding.UTF8.GetBytes(
             """
             {
               "id": "sample",
@@ -100,14 +100,14 @@ public sealed class LegacyQuestStateStoreTests : IDisposable
         File.WriteAllBytes(statePath, stateBytes);
         File.WriteAllBytes(definitionPath, definitionBytes);
 
-        var result = new LegacyQuestStateStore(temporaryDirectory).Load("F123");
+        LegacyQuestStateLoadResult result = new LegacyQuestStateStore(temporaryDirectory).Load("F123");
 
         Assert.True(result.Exists);
         Assert.Null(result.Error);
-        var state = Assert.IsType<LegacyCommanderQuestState>(result.Data);
+        LegacyCommanderQuestState state = Assert.IsType<LegacyCommanderQuestState>(result.Data);
         Assert.Equal("F123", state.FrontierId);
         Assert.Equal("Test Cmdr", state.CommanderName);
-        var quest = Assert.IsType<LegacyQuestProgress>(state.DevelopmentQuest);
+        LegacyQuestProgress quest = Assert.IsType<LegacyQuestProgress>(state.DevelopmentQuest);
         Assert.Equal(new LegacyQuestReference("publisher", "sample", 1.5), quest.Reference);
         Assert.Equal(new DateTimeOffset(2026, 7, 1, 0, 0, 0, TimeSpan.Zero), quest.StartTime);
         Assert.False(quest.Paused);
@@ -118,20 +118,20 @@ public sealed class LegacyQuestStateStoreTests : IDisposable
         Assert.Equal(42, quest.Variables["counter"].GetInt32());
         Assert.True(quest.Variables["nested"].GetProperty("future").GetBoolean());
         Assert.Equal("Docked", quest.KeptJournalEvents["Docked"].GetProperty("event").GetString());
-        var chapter = Assert.Single(quest.Chapters);
+        LegacyQuestChapter chapter = Assert.Single(quest.Chapters);
         Assert.True(chapter.IsActive);
         Assert.Equal(2, chapter.Variables["visits"].GetInt32());
-        var message = Assert.Single(quest.Messages);
+        LegacyQuestMessage message = Assert.Single(quest.Messages);
         Assert.Equal("Raven", message.From);
         Assert.Equal("Hello", message.Subject);
         Assert.Equal("Welcome", message.Body);
         Assert.Equal(["go", "later", "go"], message.Actions);
         Assert.Equal(1, quest.UnreadMessageCount);
-        var route = Assert.Single(quest.Routes);
+        LegacyQuestRoute route = Assert.Single(quest.Routes);
         Assert.Equal(2.5, route.Width);
         Assert.Equal([1d, 2d], route.Waypoints[0]);
 
-        var definition = Assert.IsType<LegacyQuestDefinition>(quest.Definition);
+        LegacyQuestDefinition definition = Assert.IsType<LegacyQuestDefinition>(quest.Definition);
         Assert.Equal("Sample Quest", definition.Title);
         Assert.Equal("Testing", definition.Subtitle);
         Assert.Equal(LegacyQuestDuration.Long, definition.Duration);
@@ -149,7 +149,7 @@ public sealed class LegacyQuestStateStoreTests : IDisposable
     [Fact]
     public void MissingStateReturnsAnEmptySnapshotWithoutCreatingAFile()
     {
-        var result = new LegacyQuestStateStore(temporaryDirectory).Load("F123");
+        LegacyQuestStateLoadResult result = new LegacyQuestStateStore(temporaryDirectory).Load("F123");
 
         Assert.False(result.Exists);
         Assert.Null(result.Error);
@@ -160,13 +160,13 @@ public sealed class LegacyQuestStateStoreTests : IDisposable
     [Fact]
     public void MalformedStateIsReportedWithoutChangingTheFile()
     {
-        var questDirectory = Path.Combine(temporaryDirectory, "quests");
+        string questDirectory = Path.Combine(temporaryDirectory, "quests");
         Directory.CreateDirectory(questDirectory);
-        var path = Path.Combine(questDirectory, "F123.json");
-        var malformed = Encoding.UTF8.GetBytes("{\"devQuest\":[");
+        string path = Path.Combine(questDirectory, "F123.json");
+        byte[] malformed = Encoding.UTF8.GetBytes("{\"devQuest\":[");
         File.WriteAllBytes(path, malformed);
 
-        var result = new LegacyQuestStateStore(temporaryDirectory).Load("F123");
+        LegacyQuestStateLoadResult result = new LegacyQuestStateStore(temporaryDirectory).Load("F123");
 
         Assert.True(result.Exists);
         Assert.Null(result.Data);
@@ -185,7 +185,7 @@ public sealed class LegacyQuestStateStoreTests : IDisposable
     [Fact]
     public void DevelopmentQuestIdCannotEscapeTheQuestDirectory()
     {
-        var questDirectory = Path.Combine(temporaryDirectory, "quests");
+        string questDirectory = Path.Combine(temporaryDirectory, "quests");
         Directory.CreateDirectory(questDirectory);
         File.WriteAllText(
             Path.Combine(questDirectory, "F123.json"),
@@ -198,9 +198,9 @@ public sealed class LegacyQuestStateStoreTests : IDisposable
             """
         );
 
-        var result = new LegacyQuestStateStore(temporaryDirectory).Load("F123");
+        LegacyQuestStateLoadResult result = new LegacyQuestStateStore(temporaryDirectory).Load("F123");
 
-        var quest = Assert.IsType<LegacyQuestProgress>(result.Data?.DevelopmentQuest);
+        LegacyQuestProgress quest = Assert.IsType<LegacyQuestProgress>(result.Data?.DevelopmentQuest);
         Assert.Null(quest.Definition);
         Assert.Contains(result.Warnings, warning => warning.Contains("path separator", StringComparison.Ordinal));
     }
@@ -208,11 +208,11 @@ public sealed class LegacyQuestStateStoreTests : IDisposable
     [Fact]
     public async Task DevelopmentProgressSavesAtomicallyWithVerifiedBackup()
     {
-        var questDirectory = Path.Combine(temporaryDirectory, "quests");
+        string questDirectory = Path.Combine(temporaryDirectory, "quests");
         Directory.CreateDirectory(questDirectory);
-        var statePath = Path.Combine(questDirectory, "F123.json");
-        var definitionPath = Path.Combine(questDirectory, "dev-sample.json");
-        var stateBytes = Encoding.UTF8.GetBytes(
+        string statePath = Path.Combine(questDirectory, "F123.json");
+        string definitionPath = Path.Combine(questDirectory, "dev-sample.json");
+        byte[] stateBytes = Encoding.UTF8.GetBytes(
             """
             {
               "fid": "F123",
@@ -239,7 +239,7 @@ public sealed class LegacyQuestStateStoreTests : IDisposable
             }
             """
         );
-        var definitionBytes = Encoding.UTF8.GetBytes(
+        byte[] definitionBytes = Encoding.UTF8.GetBytes(
             """
             {
               "id":"sample",
@@ -256,24 +256,24 @@ public sealed class LegacyQuestStateStoreTests : IDisposable
         await File.WriteAllBytesAsync(statePath, stateBytes);
         await File.WriteAllBytesAsync(definitionPath, definitionBytes);
         var store = new LegacyQuestStateStore(temporaryDirectory);
-        var loaded = store.Load("F123");
-        var legacy = Assert.IsType<LegacyQuestProgress>(loaded.Data?.DevelopmentQuest);
-        var progress = QuestProgressMapper.FromLegacy(legacy);
+        LegacyQuestStateLoadResult loaded = store.Load("F123");
+        LegacyQuestProgress legacy = Assert.IsType<LegacyQuestProgress>(loaded.Data?.DevelopmentQuest);
+        RavenCommanderQuest progress = QuestProgressMapper.FromLegacy(legacy);
         progress.Objectives["scan"] = "complete,3,3";
         progress.Variables["counter"] = JsonSerializer.SerializeToElement(99);
         progress.ExtensionData["newFutureQuest"] = JsonSerializer.SerializeToElement("round-trip");
         progress.Messages[0] = progress.Messages[0] with { Read = true, Replied = "go" };
         progress.Routes[0].Waypoints.Add([3, 4]);
 
-        var saved = await store.SaveDevelopmentQuestAsync("F123", "Test Cmdr", progress);
+        LegacyQuestStateSaveResult saved = await store.SaveDevelopmentQuestAsync("F123", "Test Cmdr", progress);
 
         Assert.Equal(statePath, saved.Path);
-        var backupPath = Assert.IsType<string>(saved.BackupPath);
+        string backupPath = Assert.IsType<string>(saved.BackupPath);
         Assert.Equal(stateBytes, await File.ReadAllBytesAsync(backupPath));
         Assert.Equal(definitionBytes, await File.ReadAllBytesAsync(definitionPath));
         JsonObject root = Assert.IsType<JsonObject>(JsonNode.Parse(await File.ReadAllTextAsync(statePath)));
         Assert.Equal("keep", root["futureRoot"]?.GetValue<string>());
-        var quest = Assert.IsType<JsonObject>(root["devQuest"]);
+        JsonObject quest = Assert.IsType<JsonObject>(root["devQuest"]);
         Assert.True(quest["futureQuest"]?["keep"]?.GetValue<bool>());
         Assert.Equal("round-trip", quest["newFutureQuest"]?.GetValue<string>());
         Assert.True(quest["chapters"]?[0]?["futureChapter"]?.GetValue<bool>());
@@ -286,7 +286,7 @@ public sealed class LegacyQuestStateStoreTests : IDisposable
         Assert.Equal(2, quest["routes"]?[0]?["wp"]?.AsArray().Count);
         Assert.Empty(Directory.EnumerateFiles(questDirectory, "*.tmp"));
 
-        var reopened = store.Load("F123");
+        LegacyQuestStateLoadResult reopened = store.Load("F123");
         Assert.Null(reopened.Error);
         Assert.Equal(LegacyQuestObjectiveState.complete, reopened.Data?.DevelopmentQuest?.Objectives["scan"].State);
     }
@@ -294,7 +294,7 @@ public sealed class LegacyQuestStateStoreTests : IDisposable
     [Fact]
     public async Task EmbeddedPortableDefinitionSurvivesWithoutLegacySidecar()
     {
-        var extension = JsonSerializer.SerializeToElement(new { retain = true });
+        JsonElement extension = JsonSerializer.SerializeToElement(new { retain = true });
         var definition = new RavenQuestDefinition
         {
             Publisher = "publisher",
@@ -319,8 +319,10 @@ public sealed class LegacyQuestStateStoreTests : IDisposable
         var store = new LegacyQuestStateStore(temporaryDirectory);
 
         await store.SaveDevelopmentQuestAsync("F123", "Test Cmdr", progress);
-        var loaded = store.Load("F123");
-        var mapped = QuestProgressMapper.FromLegacy(Assert.IsType<LegacyQuestProgress>(loaded.Data?.DevelopmentQuest));
+        LegacyQuestStateLoadResult loaded = store.Load("F123");
+        RavenCommanderQuest mapped = QuestProgressMapper.FromLegacy(
+            Assert.IsType<LegacyQuestProgress>(loaded.Data?.DevelopmentQuest)
+        );
 
         Assert.Null(loaded.Error);
         Assert.DoesNotContain(
@@ -332,7 +334,7 @@ public sealed class LegacyQuestStateStoreTests : IDisposable
         Assert.False(File.Exists(Path.Combine(temporaryDirectory, "quests", "dev-portable.json")));
 
         await store.SaveDevelopmentQuestAsync("F123", "Test Cmdr", mapped);
-        var reopened = QuestProgressMapper.FromLegacy(
+        RavenCommanderQuest reopened = QuestProgressMapper.FromLegacy(
             Assert.IsType<LegacyQuestProgress>(store.Load("F123").Data?.DevelopmentQuest)
         );
         Assert.True(reopened.Quest?.ExtensionData["futureDefinition"].GetProperty("retain").GetBoolean());
@@ -341,10 +343,10 @@ public sealed class LegacyQuestStateStoreTests : IDisposable
     [Fact]
     public async Task MalformedStateIsNeverOverwrittenBySave()
     {
-        var questDirectory = Path.Combine(temporaryDirectory, "quests");
+        string questDirectory = Path.Combine(temporaryDirectory, "quests");
         Directory.CreateDirectory(questDirectory);
-        var path = Path.Combine(questDirectory, "F123.json");
-        var malformed = Encoding.UTF8.GetBytes("{\"devQuest\":[");
+        string path = Path.Combine(questDirectory, "F123.json");
+        byte[] malformed = Encoding.UTF8.GetBytes("{\"devQuest\":[");
         await File.WriteAllBytesAsync(path, malformed);
 
         await Assert.ThrowsAnyAsync<InvalidDataException>(() =>
@@ -362,17 +364,19 @@ public sealed class LegacyQuestStateStoreTests : IDisposable
     [Fact]
     public async Task ClearingDevelopmentQuestPreservesOtherCommanderState()
     {
-        var questDirectory = Path.Combine(temporaryDirectory, "quests");
+        string questDirectory = Path.Combine(temporaryDirectory, "quests");
         Directory.CreateDirectory(questDirectory);
-        var path = Path.Combine(questDirectory, "F123.json");
-        var original = Encoding.UTF8.GetBytes(
+        string path = Path.Combine(questDirectory, "F123.json");
+        byte[] original = Encoding.UTF8.GetBytes(
             """
             {"fid":"F123","cmdr":"Cmdr","devRef":"publisher|sample|1","devQuest":{},"future":42}
             """
         );
         await File.WriteAllBytesAsync(path, original);
 
-        var saved = await new LegacyQuestStateStore(temporaryDirectory).SaveDevelopmentQuestAsync("F123", "Cmdr", null);
+        LegacyQuestStateSaveResult saved = await new LegacyQuestStateStore(
+            temporaryDirectory
+        ).SaveDevelopmentQuestAsync("F123", "Cmdr", null);
 
         Assert.Equal(original, await File.ReadAllBytesAsync(saved.BackupPath!));
         JsonObject root = Assert.IsType<JsonObject>(JsonNode.Parse(await File.ReadAllTextAsync(path)));

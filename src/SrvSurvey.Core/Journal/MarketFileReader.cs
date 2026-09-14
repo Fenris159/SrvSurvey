@@ -19,10 +19,10 @@ public static class MarketFileReader
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         ArgumentOutOfRangeException.ThrowIfLessThan(maximumAttempts, 1);
-        var delay = retryDelay ?? TimeSpan.FromMilliseconds(25);
+        TimeSpan delay = retryDelay ?? TimeSpan.FromMilliseconds(25);
         Exception? lastException = null;
 
-        for (var attempt = 1; attempt <= maximumAttempts; attempt++)
+        for (int attempt = 1; attempt <= maximumAttempts; attempt++)
         {
             cancellationToken.ThrowIfCancellationRequested();
             try
@@ -37,11 +37,11 @@ public static class MarketFileReader
                 );
                 using var content = new MemoryStream();
                 await stream.CopyToAsync(content, cancellationToken).ConfigureAwait(false);
-                var bytes = content.ToArray();
-                var data =
+                byte[] bytes = content.ToArray();
+                MarketData data =
                     JsonSerializer.Deserialize<MarketData>(bytes, SerializerOptions)
                     ?? throw new JsonException("Market.json contained no JSON value.");
-                var items = (data.Items ?? [])
+                MarketItem[] items = (data.Items ?? [])
                     .Where(item => !string.IsNullOrWhiteSpace(item.Name))
                     .Select(item => new MarketItem(
                         item.Id,
@@ -71,7 +71,7 @@ public static class MarketFileReader
                     data.StarSystem ?? string.Empty,
                     items
                 );
-                var hash = Convert.ToHexStringLower(SHA256.HashData(bytes));
+                string hash = Convert.ToHexStringLower(SHA256.HashData(bytes));
                 return new MarketReadResult(snapshot, hash, null, attempt);
             }
             catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)
@@ -136,7 +136,7 @@ public sealed record MarketSnapshot(
     public MarketItem? FindItem(string commodity)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(commodity);
-        var normalized = NormalizeCommodityName(commodity);
+        string normalized = NormalizeCommodityName(commodity);
         return Items.FirstOrDefault(item =>
             string.Equals(NormalizeCommodityName(item.Name), normalized, StringComparison.OrdinalIgnoreCase)
         );
@@ -145,7 +145,7 @@ public sealed record MarketSnapshot(
     public static string NormalizeCommodityName(string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        var normalized = name.Trim();
+        string normalized = name.Trim();
         if (normalized.StartsWith('$'))
         {
             normalized = normalized[1..];

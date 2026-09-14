@@ -13,7 +13,7 @@ public sealed class CommanderPreferenceSettingsStoreTests : IDisposable
     [Fact]
     public void RoundTripsNormalizedStableIdentityAndPreservesOtherSettings()
     {
-        var settingsPath = Path.Combine(temporaryDirectory, "ui.json");
+        string settingsPath = Path.Combine(temporaryDirectory, "ui.json");
         Directory.CreateDirectory(temporaryDirectory);
         File.WriteAllText(settingsPath, "{\"Theme\":\"green-dark\"}");
         var store = new CommanderPreferenceSettingsStore(settingsPath);
@@ -27,10 +27,10 @@ public sealed class CommanderPreferenceSettingsStoreTests : IDisposable
     [Fact]
     public void RejectsInvalidFrontierIdWithoutChangingSettings()
     {
-        var settingsPath = Path.Combine(temporaryDirectory, "ui.json");
+        string settingsPath = Path.Combine(temporaryDirectory, "ui.json");
         var store = new CommanderPreferenceSettingsStore(settingsPath);
         store.Save(new CommanderPreferencePreferences("Drew", "F123"));
-        var before = File.ReadAllText(settingsPath);
+        string before = File.ReadAllText(settingsPath);
 
         Assert.Throws<ArgumentException>(() => store.Save(new CommanderPreferencePreferences("Raven", "../profile")));
 
@@ -40,8 +40,8 @@ public sealed class CommanderPreferenceSettingsStoreTests : IDisposable
     [Fact]
     public async Task ResolvesUniqueImportedNameAndPersistsFrontierId()
     {
-        var profileDirectory = Path.Combine(temporaryDirectory, "profiles");
-        var settingsPath = Path.Combine(temporaryDirectory, "ui.json");
+        string profileDirectory = Path.Combine(temporaryDirectory, "profiles");
+        string settingsPath = Path.Combine(temporaryDirectory, "ui.json");
         Directory.CreateDirectory(profileDirectory);
         await File.WriteAllTextAsync(
             Path.Combine(profileDirectory, "F123-live.json"),
@@ -50,7 +50,7 @@ public sealed class CommanderPreferenceSettingsStoreTests : IDisposable
         var store = new CommanderPreferenceSettingsStore(settingsPath);
         store.Save(new CommanderPreferencePreferences("drew", null));
 
-        var result = await new CommanderPreferenceResolver(
+        CommanderPreferenceResolution result = await new CommanderPreferenceResolver(
             store,
             new CommanderProfileCatalog(profileDirectory)
         ).ResolveAsync(null);
@@ -64,8 +64,8 @@ public sealed class CommanderPreferenceSettingsStoreTests : IDisposable
     [Fact]
     public async Task AmbiguousImportedNameFallsBackWithoutChangingPreference()
     {
-        var profileDirectory = Path.Combine(temporaryDirectory, "profiles");
-        var settingsPath = Path.Combine(temporaryDirectory, "ui.json");
+        string profileDirectory = Path.Combine(temporaryDirectory, "profiles");
+        string settingsPath = Path.Combine(temporaryDirectory, "ui.json");
         Directory.CreateDirectory(profileDirectory);
         await File.WriteAllTextAsync(
             Path.Combine(profileDirectory, "F123-live.json"),
@@ -79,7 +79,7 @@ public sealed class CommanderPreferenceSettingsStoreTests : IDisposable
         var preference = new CommanderPreferencePreferences("Drew", null);
         store.Save(preference);
 
-        var result = await new CommanderPreferenceResolver(
+        CommanderPreferenceResolution result = await new CommanderPreferenceResolver(
             store,
             new CommanderProfileCatalog(profileDirectory)
         ).ResolveAsync(null);
@@ -92,12 +92,12 @@ public sealed class CommanderPreferenceSettingsStoreTests : IDisposable
     [Fact]
     public async Task CommandLineIdentityWinsWithoutReplacingSavedPreference()
     {
-        var settingsPath = Path.Combine(temporaryDirectory, "ui.json");
+        string settingsPath = Path.Combine(temporaryDirectory, "ui.json");
         var store = new CommanderPreferenceSettingsStore(settingsPath);
         var preference = new CommanderPreferencePreferences("Drew", "F123");
         store.Save(preference);
 
-        var result = await new CommanderPreferenceResolver(
+        CommanderPreferenceResolution result = await new CommanderPreferenceResolver(
             store,
             new CommanderProfileCatalog(Path.Combine(temporaryDirectory, "missing-profiles"))
         ).ResolveAsync("F456");

@@ -39,7 +39,7 @@ public sealed class JournalSettingsViewModel : INotifyPropertyChanged
         get => directoryPath;
         set
         {
-            var normalized = value?.Trim() ?? string.Empty;
+            string normalized = value?.Trim() ?? string.Empty;
             if (directoryPath == normalized)
             {
                 return;
@@ -88,7 +88,7 @@ public sealed class JournalSettingsViewModel : INotifyPropertyChanged
             return;
         }
 
-        var restartHandlers = RestartRequested;
+        Func<Task>? restartHandlers = RestartRequested;
         if (restartHandlers is null)
         {
             StatusMessage = "Journal folder saved. Restart SrvSurvey to use it.";
@@ -98,7 +98,7 @@ public sealed class JournalSettingsViewModel : INotifyPropertyChanged
         StatusMessage = "Journal folder saved; restarting SrvSurvey...";
         try
         {
-            foreach (var handler in restartHandlers.GetInvocationList().Cast<Func<Task>>())
+            foreach (Func<Task> handler in restartHandlers.GetInvocationList().Cast<Func<Task>>())
             {
                 await handler();
             }

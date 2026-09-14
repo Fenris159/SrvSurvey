@@ -16,9 +16,9 @@ public sealed class GameWindowTrackerTests
             IsVisible: true,
             IsForeground: true
         );
-        var missingHandle = available with { NativeHandle = nint.Zero };
-        var missingProcess = available with { ProcessId = null };
-        var emptyBounds = available with { ClientBounds = default };
+        GameWindowSnapshot missingHandle = available with { NativeHandle = nint.Zero };
+        GameWindowSnapshot missingProcess = available with { ProcessId = null };
+        GameWindowSnapshot emptyBounds = available with { ClientBounds = default };
 
         Assert.True(available.IsAvailable);
         Assert.False(missingHandle.IsAvailable);
@@ -29,9 +29,9 @@ public sealed class GameWindowTrackerTests
     [Fact]
     public void CurrentHostTrackerReturnsAConsistentSnapshot()
     {
-        using var tracker = GameWindowTracker.CreateCurrent();
+        using IGameWindowTracker tracker = GameWindowTracker.CreateCurrent();
 
-        var snapshot = tracker.GetSnapshot();
+        GameWindowSnapshot snapshot = tracker.GetSnapshot();
 
         if (snapshot.IsAvailable)
         {
@@ -51,15 +51,15 @@ public sealed class GameWindowTrackerTests
     [Fact]
     public void CachedTrackerSharesOneNativeSampleInsideFreshnessWindow()
     {
-        var timestamp = 0L;
+        long timestamp = 0L;
         var inner = new CountingGameWindowTracker();
         using var tracker = new CachedGameWindowTracker(inner, TimeSpan.FromMilliseconds(40), () => timestamp);
 
-        var first = tracker.GetSnapshot();
+        GameWindowSnapshot first = tracker.GetSnapshot();
         timestamp += Stopwatch.Frequency / 100;
-        var cached = tracker.GetSnapshot();
+        GameWindowSnapshot cached = tracker.GetSnapshot();
         timestamp += Stopwatch.Frequency / 20;
-        var refreshed = tracker.GetSnapshot();
+        GameWindowSnapshot refreshed = tracker.GetSnapshot();
 
         Assert.Same(first, cached);
         Assert.NotSame(first, refreshed);
@@ -70,7 +70,7 @@ public sealed class GameWindowTrackerTests
     public void OverlayTimerPulsesOnlyWhenItsIntervalIsDue()
     {
         var timer = new OverlayDispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
-        var ticks = 0;
+        int ticks = 0;
         timer.Tick += (_, _) => ticks++;
         timer.Arm(TimeSpan.Zero);
 

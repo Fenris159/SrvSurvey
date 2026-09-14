@@ -17,11 +17,11 @@ public sealed class ApplicationCommanderInstanceLauncher : ICommanderInstanceLau
         cancellationToken.ThrowIfCancellationRequested();
         ArgumentException.ThrowIfNullOrWhiteSpace(frontierId);
         ArgumentException.ThrowIfNullOrWhiteSpace(journalDirectory);
-        var processPath =
+        string processPath =
             Environment.ProcessPath
             ?? throw new InvalidOperationException("The current SrvSurvey executable path is unavailable.");
         var startInfo = new ProcessStartInfo { FileName = processPath, UseShellExecute = false };
-        var entryAssemblyPath = Assembly.GetEntryAssembly()?.Location;
+        string? entryAssemblyPath = Assembly.GetEntryAssembly()?.Location;
         if (
             Path.GetFileNameWithoutExtension(processPath).Equals("dotnet", StringComparison.OrdinalIgnoreCase)
             && !string.IsNullOrWhiteSpace(entryAssemblyPath)
@@ -34,7 +34,7 @@ public sealed class ApplicationCommanderInstanceLauncher : ICommanderInstanceLau
         startInfo.ArgumentList.Add(frontierId);
         startInfo.ArgumentList.Add("--journal-directory");
         startInfo.ArgumentList.Add(Path.GetFullPath(journalDirectory));
-        using var process =
+        using Process process =
             Process.Start(startInfo)
             ?? throw new InvalidOperationException("The additional SrvSurvey process did not start.");
         return Task.CompletedTask;

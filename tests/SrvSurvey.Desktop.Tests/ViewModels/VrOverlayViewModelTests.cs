@@ -14,7 +14,7 @@ public sealed class VrOverlayViewModelTests : IDisposable
     [Fact]
     public void AdjustmentCanCreateAndReloadCurrentModeOverride()
     {
-        var viewModel = CreateViewModel();
+        VrOverlayViewModel viewModel = CreateViewModel();
         viewModel.SetCurrentRuntimeMode("testbuggy");
 
         Assert.True(viewModel.BeginAdjustment());
@@ -32,10 +32,10 @@ public sealed class VrOverlayViewModelTests : IDisposable
     [Fact]
     public void CancelDiscardsUnsavedPreviewCalibration()
     {
-        var viewModel = CreateViewModel();
+        VrOverlayViewModel viewModel = CreateViewModel();
         Assert.True(viewModel.BeginAdjustment());
         viewModel.SelectedOverlayName = "PlotJumpInfo";
-        var savedScale = viewModel.Scale;
+        double savedScale = viewModel.Scale;
         viewModel.Scale = 42;
 
         viewModel.CancelCommand.Execute(null);
@@ -48,7 +48,7 @@ public sealed class VrOverlayViewModelTests : IDisposable
     [Fact]
     public void PreferencesPersistImmediately()
     {
-        var viewModel = CreateViewModel();
+        VrOverlayViewModel viewModel = CreateViewModel();
 
         viewModel.Enabled = true;
         viewModel.RuntimeProcessName = "vrcompositor";
@@ -68,11 +68,11 @@ public sealed class VrOverlayViewModelTests : IDisposable
 
     private VrOverlayViewModel CreateViewModel()
     {
-        var data = Path.Combine(temporaryDirectory, "data");
-        var factoryDirectory = Path.Combine(temporaryDirectory, "factory");
+        string data = Path.Combine(temporaryDirectory, "data");
+        string factoryDirectory = Path.Combine(temporaryDirectory, "factory");
         Directory.CreateDirectory(data);
         Directory.CreateDirectory(factoryDirectory);
-        var factory = Path.Combine(factoryDirectory, "plotters.json");
+        string factory = Path.Combine(factoryDirectory, "plotters.json");
         File.WriteAllText(factory, "{\"PlotJumpInfo\":\"center:0, top:8 " + "{ s: 20, p: <1, 2, 3>, r: <4, 5, 6>}\"}");
         return new VrOverlayViewModel(
             new VrOverlaySettingsStore(SettingsPath),

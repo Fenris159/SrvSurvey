@@ -123,7 +123,7 @@ public static class OverlayVehicleCatalog
 
     private static string Normalize(string? symbol)
     {
-        var id = symbol?.ToLowerInvariant();
+        string? id = symbol?.ToLowerInvariant();
         return All.Any(v => v.Id == id) ? id! : UnknownKey;
     }
 }

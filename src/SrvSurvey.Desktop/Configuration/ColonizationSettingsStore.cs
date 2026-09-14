@@ -16,19 +16,19 @@ public sealed class ColonizationSettingsStore
 
     public bool LoadEnabled()
     {
-        var root = documentStore.Load();
+        JsonObject root = documentStore.Load();
         return root[ColonizationSectionKey] is JsonObject colonization
             && colonization["Enabled"] is JsonValue enabled
-            && enabled.TryGetValue<bool>(out var value)
+            && enabled.TryGetValue<bool>(out bool value)
             && value;
     }
 
     public ColonizationOverlayPreferences LoadOverlayPreferences()
     {
-        var root = documentStore.Load();
+        JsonObject root = documentStore.Load();
         var colonization = root[ColonizationSectionKey] as JsonObject;
         var overlay = colonization?["Overlay"] as JsonObject;
-        var defaults = ColonizationOverlayPreferences.Default;
+        ColonizationOverlayPreferences defaults = ColonizationOverlayPreferences.Default;
         return new ColonizationOverlayPreferences(
             GetBoolean(overlay, "AutoShow", defaults.AutoShow),
             GetBoolean(overlay, "ShowOnRightPanel", defaults.ShowOnRightPanel),
@@ -46,40 +46,39 @@ public sealed class ColonizationSettingsStore
 
     public bool LoadFleetCarrierCargoSyncEnabled()
     {
-        var root = documentStore.Load();
+        JsonObject root = documentStore.Load();
         return root[ColonizationSectionKey] is JsonObject colonization
             && colonization["FleetCarrierCargoSyncEnabled"] is JsonValue enabled
-            && enabled.TryGetValue<bool>(out var value)
+            && enabled.TryGetValue<bool>(out bool value)
             && value;
     }
 
     public bool LoadShipCargoPublishingEnabled()
     {
-        var root = documentStore.Load();
+        JsonObject root = documentStore.Load();
         return root[ColonizationSectionKey] is JsonObject colonization
             && colonization["ShipCargoPublishingEnabled"] is JsonValue enabled
-            && enabled.TryGetValue<bool>(out var value)
+            && enabled.TryGetValue<bool>(out bool value)
             && value;
     }
 
     public IReadOnlyList<ColonizationBuildSiteRepairVisit> LoadBuildSiteRepairVisits()
     {
-        var root = documentStore.Load();
-        var visits = root[ColonizationSectionKey]?["BuildSiteRepairVisits"] as JsonArray;
-        if (visits is null)
+        JsonObject root = documentStore.Load();
+        if (root[ColonizationSectionKey]?["BuildSiteRepairVisits"] is not JsonArray visits)
         {
             return [];
         }
 
         var loaded = new List<ColonizationBuildSiteRepairVisit>();
-        foreach (var item in visits.OfType<JsonObject>())
+        foreach (JsonObject item in visits.OfType<JsonObject>())
         {
             if (
                 item["MarketId"] is not JsonValue marketValue
-                || !marketValue.TryGetValue<long>(out var marketId)
+                || !marketValue.TryGetValue<long>(out long marketId)
                 || marketId <= 0
                 || item["StationKey"] is not JsonValue stationValue
-                || !stationValue.TryGetValue<string>(out var stationKey)
+                || !stationValue.TryGetValue<string>(out string? stationKey)
                 || string.IsNullOrWhiteSpace(stationKey)
             )
             {
@@ -175,7 +174,7 @@ public sealed class ColonizationSettingsStore
     public void SaveBuildSiteRepairVisits(IEnumerable<ColonizationBuildSiteRepairVisit> visits)
     {
         ArgumentNullException.ThrowIfNull(visits);
-        var normalized = visits
+        ColonizationBuildSiteRepairVisit[] normalized = visits
             .Where(visit => visit.MarketId > 0 && !string.IsNullOrWhiteSpace(visit.StationKey))
             .Select(visit => visit with { StationKey = visit.StationKey.Trim().ToLowerInvariant() })
             .Distinct()
@@ -205,7 +204,7 @@ public sealed class ColonizationSettingsStore
 
     private static bool GetBoolean(JsonObject? source, string propertyName, bool fallback)
     {
-        return source?[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result) ? result : fallback;
+        return source?[propertyName] is JsonValue value && value.TryGetValue<bool>(out bool result) ? result : fallback;
     }
 }
 

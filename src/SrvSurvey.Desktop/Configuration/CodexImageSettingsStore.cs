@@ -51,14 +51,14 @@ public sealed class CodexImageSettingsStore
 
     private static bool? GetBoolean(JsonObject? root, string name)
     {
-        return root?[name] is JsonValue value && value.TryGetValue<bool>(out var result) ? result : null;
+        return root?[name] is JsonValue value && value.TryGetValue<bool>(out bool result) ? result : null;
     }
 
     private static string? GetString(JsonObject? root, string name)
     {
         return
             root?[name] is JsonValue value
-            && value.TryGetValue<string>(out var result)
+            && value.TryGetValue<string>(out string? result)
             && !string.IsNullOrWhiteSpace(result)
             ? result.Trim()
             : null;

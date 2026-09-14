@@ -62,13 +62,18 @@ public sealed class CompanionTimelineStoreTests
 
         var entries = new List<CompanionTimelineEntry>();
         await foreach (
-            var entry in CompanionTimelineStore.StreamAsync(temp.Path, from: null, to: null, CancellationToken.None)
+            CompanionTimelineEntry entry in CompanionTimelineStore.StreamAsync(
+                temp.Path,
+                from: null,
+                to: null,
+                CancellationToken.None
+            )
         )
         {
             entries.Add(entry);
         }
 
-        var status = Assert.Single(entries);
+        CompanionTimelineEntry status = Assert.Single(entries);
         Assert.Equal(ReplayInputKind.Status, status.Kind);
         Assert.Equal(
             DateTimeOffset.Parse("2026-08-23T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
@@ -85,8 +90,8 @@ public sealed class CompanionTimelineStoreTests
     public async Task PackageSynchronizesAndPreloadsEveryCompanionTimeline()
     {
         using var temp = new TemporaryDirectory();
-        var journals = Path.Combine(temp.Path, "journals");
-        var history = Path.Combine(temp.Path, "history");
+        string journals = Path.Combine(temp.Path, "journals");
+        string history = Path.Combine(temp.Path, "history");
         Directory.CreateDirectory(journals);
         await File.WriteAllLinesAsync(
             Path.Combine(journals, "Journal.2026-08-23T095000.01.log"),
@@ -130,8 +135,8 @@ public sealed class CompanionTimelineStoreTests
             );
         }
 
-        var packagePath = Path.Combine(temp.Path, "incident.srvreplay");
-        var result = await new JournalReplayExporter().ExportAsync(
+        string packagePath = Path.Combine(temp.Path, "incident.srvreplay");
+        JournalReplayExportResult result = await new JournalReplayExporter().ExportAsync(
             journals,
             history,
             packagePath,
@@ -150,7 +155,7 @@ public sealed class CompanionTimelineStoreTests
             Assert.NotNull(archive.GetEntry("companions.jsonl"));
         }
 
-        var session = await new ReplaySessionManager().ImportAsync(
+        DiagnosticReplaySession session = await new ReplaySessionManager().ImportAsync(
             packagePath,
             Path.Combine(temp.Path, "managed"),
             CancellationToken.None
@@ -161,8 +166,8 @@ public sealed class CompanionTimelineStoreTests
 
         var player = new JournalReplayPlayer(session);
         await player.SeekAsync(session.BootstrapInputCount, CancellationToken.None);
-        var playback = Path.GetDirectoryName(session.PlaybackJournalPath)!;
-        var status = await StatusFileReader.ReadAsync(Path.Combine(playback, StatusFileReader.FileName));
+        string playback = Path.GetDirectoryName(session.PlaybackJournalPath)!;
+        StatusReadResult status = await StatusFileReader.ReadAsync(Path.Combine(playback, StatusFileReader.FileName));
         Assert.NotNull(status.Status);
         Assert.Equal(0, status.Status.Latitude);
         Assert.Equal(0, status.Status.Longitude);
@@ -173,9 +178,9 @@ public sealed class CompanionTimelineStoreTests
             Assert.True(await player.StepAsync(CancellationToken.None));
         }
 
-        var cargo = await CargoFileReader.ReadAsync(Path.Combine(playback, CargoFileReader.FileName));
+        CargoReadResult cargo = await CargoFileReader.ReadAsync(Path.Combine(playback, CargoFileReader.FileName));
         Assert.Equal(2, cargo.Snapshot?.GetCount("ancientorb"));
-        var routeEntry = Assert.Single(session.Events, item => item.Kind == ReplayInputKind.NavRoute);
+        JournalReplayEvent routeEntry = Assert.Single(session.Events, item => item.Kind == ReplayInputKind.NavRoute);
         using var routeDocument = JsonDocument.Parse(routeEntry.RawJson);
         Assert.Equal(
             "Replay Route 001",

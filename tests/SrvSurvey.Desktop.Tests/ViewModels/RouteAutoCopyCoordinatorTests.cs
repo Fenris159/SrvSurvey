@@ -18,9 +18,9 @@ public sealed class RouteAutoCopyCoordinatorTests : IAsyncLifetime
     [Fact]
     public async Task ClaimingClipboardDisablesAndPersistsTheCompetingRoute()
     {
-        var standard = await CreateWorkspaceAsync(FollowRouteKind.Standard);
-        var carrier = await CreateWorkspaceAsync(FollowRouteKind.FleetCarrier);
-        var boxel = CreateInactiveBoxel();
+        RouteWorkspaceViewModel standard = await CreateWorkspaceAsync(FollowRouteKind.Standard);
+        RouteWorkspaceViewModel carrier = await CreateWorkspaceAsync(FollowRouteKind.FleetCarrier);
+        BoxelSearchViewModel boxel = CreateInactiveBoxel();
         using var coordinator = new RouteAutoCopyCoordinator(standard, carrier, boxel.Session);
 
         Assert.True(standard.ShouldAutoCopyNextHop);
@@ -37,10 +37,11 @@ public sealed class RouteAutoCopyCoordinatorTests : IAsyncLifetime
         Assert.True(carrier.AutoCopy);
         Assert.False(standard.AutoCopy);
 
-        var standardSaved = await new FollowRouteStore(temporaryDirectory).LoadAsync("F123");
-        var carrierSaved = await new FollowRouteStore(temporaryDirectory, FollowRouteKind.FleetCarrier).LoadAsync(
-            "F123"
-        );
+        FollowRouteLoadResult standardSaved = await new FollowRouteStore(temporaryDirectory).LoadAsync("F123");
+        FollowRouteLoadResult carrierSaved = await new FollowRouteStore(
+            temporaryDirectory,
+            FollowRouteKind.FleetCarrier
+        ).LoadAsync("F123");
         Assert.False(standardSaved.Route!.AutoCopy);
         Assert.True(carrierSaved.Route!.AutoCopy);
     }
@@ -48,8 +49,8 @@ public sealed class RouteAutoCopyCoordinatorTests : IAsyncLifetime
     [Fact]
     public async Task InactiveRouteSelectionStillOwnsTheAutoCopySetting()
     {
-        var standard = await CreateWorkspaceAsync(FollowRouteKind.Standard);
-        var carrier = await CreateWorkspaceAsync(FollowRouteKind.FleetCarrier, isActive: false);
+        RouteWorkspaceViewModel standard = await CreateWorkspaceAsync(FollowRouteKind.Standard);
+        RouteWorkspaceViewModel carrier = await CreateWorkspaceAsync(FollowRouteKind.FleetCarrier, isActive: false);
         using var coordinator = new RouteAutoCopyCoordinator(standard, carrier, CreateInactiveBoxel().Session);
 
         await coordinator.ClaimAsync(carrier);
@@ -63,8 +64,8 @@ public sealed class RouteAutoCopyCoordinatorTests : IAsyncLifetime
     [Fact]
     public async Task LatePropertyChangeClaimIsIgnoredAfterDisposal()
     {
-        var standard = await CreateWorkspaceAsync(FollowRouteKind.Standard);
-        var carrier = await CreateWorkspaceAsync(FollowRouteKind.FleetCarrier);
+        RouteWorkspaceViewModel standard = await CreateWorkspaceAsync(FollowRouteKind.Standard);
+        RouteWorkspaceViewModel carrier = await CreateWorkspaceAsync(FollowRouteKind.FleetCarrier);
         var coordinator = new RouteAutoCopyCoordinator(standard, carrier, CreateInactiveBoxel().Session);
         coordinator.Dispose();
 
@@ -77,9 +78,9 @@ public sealed class RouteAutoCopyCoordinatorTests : IAsyncLifetime
     [Fact]
     public async Task BoxelAndBothRouteTypesShareOneAutoCopyOwner()
     {
-        var standard = await CreateWorkspaceAsync(FollowRouteKind.Standard);
-        var carrier = await CreateWorkspaceAsync(FollowRouteKind.FleetCarrier);
-        var boxel = await CreateConfiguredBoxelAsync(autoCopy: true);
+        RouteWorkspaceViewModel standard = await CreateWorkspaceAsync(FollowRouteKind.Standard);
+        RouteWorkspaceViewModel carrier = await CreateWorkspaceAsync(FollowRouteKind.FleetCarrier);
+        BoxelSearchViewModel boxel = await CreateConfiguredBoxelAsync(autoCopy: true);
         using var coordinator = new RouteAutoCopyCoordinator(standard, carrier, boxel.Session);
 
         await coordinator.ReconcileAsync();
@@ -98,16 +99,19 @@ public sealed class RouteAutoCopyCoordinatorTests : IAsyncLifetime
         Assert.True(standard.AutoCopy);
         Assert.False(carrier.AutoCopy);
         Assert.False(boxel.AutoCopy);
-        var savedProfile = await new CommanderProfileStore(temporaryDirectory).LoadAsync("F123", true);
+        CommanderProfileLoadResult savedProfile = await new CommanderProfileStore(temporaryDirectory).LoadAsync(
+            "F123",
+            true
+        );
         Assert.False(savedProfile.Data!.BoxelSearch.AutoCopy);
     }
 
     [AvaloniaFact]
     public async Task SelectingBoxelAutoCopyAutomaticallyClearsBothRouteSelections()
     {
-        var standard = await CreateWorkspaceAsync(FollowRouteKind.Standard);
-        var carrier = await CreateWorkspaceAsync(FollowRouteKind.FleetCarrier);
-        var boxel = await CreateConfiguredBoxelAsync(autoCopy: false);
+        RouteWorkspaceViewModel standard = await CreateWorkspaceAsync(FollowRouteKind.Standard);
+        RouteWorkspaceViewModel carrier = await CreateWorkspaceAsync(FollowRouteKind.FleetCarrier);
+        BoxelSearchViewModel boxel = await CreateConfiguredBoxelAsync(autoCopy: false);
         using var coordinator = new RouteAutoCopyCoordinator(standard, carrier, boxel.Session);
         await coordinator.ClaimAsync(standard);
 
@@ -120,10 +124,11 @@ public sealed class RouteAutoCopyCoordinatorTests : IAsyncLifetime
         );
 
         Assert.True(boxel.AutoCopy);
-        var standardSaved = await new FollowRouteStore(temporaryDirectory).LoadAsync("F123");
-        var carrierSaved = await new FollowRouteStore(temporaryDirectory, FollowRouteKind.FleetCarrier).LoadAsync(
-            "F123"
-        );
+        FollowRouteLoadResult standardSaved = await new FollowRouteStore(temporaryDirectory).LoadAsync("F123");
+        FollowRouteLoadResult carrierSaved = await new FollowRouteStore(
+            temporaryDirectory,
+            FollowRouteKind.FleetCarrier
+        ).LoadAsync("F123");
         Assert.False(standardSaved.Route!.AutoCopy);
         Assert.False(carrierSaved.Route!.AutoCopy);
     }
@@ -131,8 +136,8 @@ public sealed class RouteAutoCopyCoordinatorTests : IAsyncLifetime
     [Fact]
     public async Task ReconcileClearsImplicitSelectionsWithoutSavedRoutes()
     {
-        var standard = await CreateUnsavedWorkspaceAsync(FollowRouteKind.Standard);
-        var carrier = await CreateUnsavedWorkspaceAsync(FollowRouteKind.FleetCarrier);
+        RouteWorkspaceViewModel standard = await CreateUnsavedWorkspaceAsync(FollowRouteKind.Standard);
+        RouteWorkspaceViewModel carrier = await CreateUnsavedWorkspaceAsync(FollowRouteKind.FleetCarrier);
         using var coordinator = new RouteAutoCopyCoordinator(standard, carrier, CreateInactiveBoxel().Session);
 
         Assert.True(standard.AutoCopy);
@@ -188,12 +193,12 @@ public sealed class RouteAutoCopyCoordinatorTests : IAsyncLifetime
 
     private BoxelSearchViewModel CreateInactiveBoxel()
     {
-        var viewModel = BoxelSearchViewModelTestFactory.Create(
+        BoxelSearchViewModel viewModel = BoxelSearchViewModelTestFactory.Create(
             new CommanderProfileStore(temporaryDirectory),
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
             new EmptyBoxelResolver(),
-            out var session
+            out BoxelSearchSession? session
         );
         sessions.Add(session);
         return viewModel;
@@ -201,7 +206,7 @@ public sealed class RouteAutoCopyCoordinatorTests : IAsyncLifetime
 
     private async Task<BoxelSearchViewModel> CreateConfiguredBoxelAsync(bool autoCopy, bool active = false)
     {
-        var boxel = CreateInactiveBoxel();
+        BoxelSearchViewModel boxel = CreateInactiveBoxel();
         var top = BoxelAddress.Parse("Praea Euq IL-P c5-0");
         await boxel.LoadProfileAsync(
             "F123",
@@ -238,7 +243,7 @@ public sealed class RouteAutoCopyCoordinatorTests : IAsyncLifetime
     private static async Task WaitUntilAsync(Func<Task<bool>> condition)
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        var satisfied = await condition();
+        bool satisfied = await condition();
         while (!satisfied && !timeout.IsCancellationRequested)
         {
             await Task.Delay(10);
@@ -252,7 +257,7 @@ public sealed class RouteAutoCopyCoordinatorTests : IAsyncLifetime
 
     public async ValueTask DisposeAsync()
     {
-        foreach (var session in sessions.AsEnumerable().Reverse())
+        foreach (BoxelSearchSession? session in sessions.AsEnumerable().Reverse())
         {
             await session.DisposeAsync();
         }

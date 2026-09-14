@@ -14,7 +14,7 @@ public sealed class GuardianOverlaySettingsStore
     public GuardianOverlayPreferences Load()
     {
         var settings = documentStore.Load()["GuardianOverlays"] as JsonObject;
-        var defaults = GuardianOverlayPreferences.Default;
+        GuardianOverlayPreferences defaults = GuardianOverlayPreferences.Default;
         return new GuardianOverlayPreferences(
             GetBoolean(settings, "EnableGuardianSites", defaults.EnableGuardianSites),
             GetBoolean(settings, "AutoShowGuardianSummary", defaults.AutoShowGuardianSummary),
@@ -61,14 +61,14 @@ public sealed class GuardianOverlaySettingsStore
 
     private static bool GetBoolean(JsonObject? settings, string propertyName, bool fallback)
     {
-        return settings?[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result)
+        return settings?[propertyName] is JsonValue value && value.TryGetValue<bool>(out bool result)
             ? result
             : fallback;
     }
 
     private static int GetInteger(JsonObject? settings, string propertyName, int fallback)
     {
-        return settings?[propertyName] is JsonValue value && value.TryGetValue<int>(out var result)
+        return settings?[propertyName] is JsonValue value && value.TryGetValue<int>(out int result)
             ? Math.Clamp(result, 0, 4)
             : fallback;
     }

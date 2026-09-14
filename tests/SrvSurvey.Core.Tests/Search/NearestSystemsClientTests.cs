@@ -32,9 +32,13 @@ public sealed class NearestSystemsClientTests
                 )
                 : Json("{\"codex\":[]}");
         });
-        var client = Create(handler);
+        NearestSystemsClient client = Create(handler);
 
-        var result = await client.SearchCanonnAsync(new GalacticCoordinate(1.5, 2.5, 3.5), "Stratum", "Test Cmdr");
+        NearestSystemsSearchResult result = await client.SearchCanonnAsync(
+            new GalacticCoordinate(1.5, 2.5, 3.5),
+            "Stratum",
+            "Test Cmdr"
+        );
 
         Assert.Equal(2, result.Rows.Count);
         Assert.Equal("Test A", result.Rows[0].SystemName);
@@ -62,9 +66,9 @@ public sealed class NearestSystemsClientTests
                     + "]}"
             );
         });
-        var client = Create(handler);
+        NearestSystemsClient client = Create(handler);
 
-        var result = await client.SearchMissingVariantsAsync(
+        NearestSystemsSearchResult result = await client.SearchMissingVariantsAsync(
             new GalacticCoordinate(1, 2, 3),
             "tussock",
             "Tussock Capillum",
@@ -78,8 +82,8 @@ public sealed class NearestSystemsClientTests
         Assert.Contains("1.5k LS", result.Rows[0].Notes);
         Assert.Equal(42, result.Rows[0].SystemAddress);
         using var document = JsonDocument.Parse(requestBody!);
-        var root = document.RootElement;
-        var landmark = root.GetProperty("filters").GetProperty("landmarks")[0];
+        JsonElement root = document.RootElement;
+        JsonElement landmark = root.GetProperty("filters").GetProperty("landmarks")[0];
         Assert.Equal("Tussock", landmark.GetProperty("type").GetString());
         Assert.Equal("Tussock Capillum", landmark.GetProperty("subtype")[0].GetString());
         Assert.Equal("Emerald", landmark.GetProperty("variant")[0].GetString());
@@ -89,7 +93,7 @@ public sealed class NearestSystemsClientTests
     [Fact]
     public void CanonnNotesFallBackWhenBodyIsMissing()
     {
-        var notes = NearestSystemsClient.SummarizeCanonnSystemPoi([
+        string notes = NearestSystemsClient.SummarizeCanonnSystemPoi([
             new CanonnCodexEntry(null, "Stratum", 1, "Biology"),
             new CanonnCodexEntry("A 1", "Geology", 2, "Geology"),
         ]);

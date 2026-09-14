@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
+using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Platform.Overlay;
@@ -181,7 +182,7 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
 
     public async Task RefreshAsync()
     {
-        if (!TryBeginRefresh(out var context))
+        if (!TryBeginRefresh(out PriorScanContext? context))
         {
             return;
         }
@@ -249,7 +250,7 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
     {
         IsLoading = true;
         StatusText = $"Loading Canonn signals for {context.SystemName}…";
-        var result = await client
+        CanonnSystemPoiResult result = await client
             .GetAsync(context.SystemName, context.CommanderName, disposalCancellation.Token)
             .ConfigureAwait(true);
         if (disposed)
@@ -321,7 +322,7 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
 
     private void Recalculate()
     {
-        if (!TryCreateContext(out var context))
+        if (!TryCreateContext(out PriorScanContext? context))
         {
             retainedPresentationKey = null;
             ClearPresentation("Waiting for surface navigation context.");
@@ -329,7 +330,7 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
             return;
         }
 
-        var presentationKey = BuildPresentationKey(context);
+        string presentationKey = BuildPresentationKey(context);
         if (cachedResult is null || !string.Equals(cachedKey, context.CacheKey, StringComparison.Ordinal))
         {
             // Same body/system: keep the last plan while Canonn reloads so
@@ -354,7 +355,7 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
             return;
         }
 
-        var plan = planner.CreatePlan(
+        PriorScanPlan plan = planner.CreatePlan(
             new PriorScanPlanRequest(
                 context.BodyShortName,
                 context.BodyRadiusMeters,
@@ -370,10 +371,10 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
                 SystemName: context.SystemName
             )
         );
-        var nextSpecies = plan
+        PriorScanSpeciesViewModel[] nextSpecies = plan
             .Species.Select(item => PriorScanSpeciesViewModel.Create(item, survey.CurrentStatus?.Altitude ?? 0))
             .ToArray();
-        var nextRadar = nextSpecies
+        PriorScanRadarTargetViewModel[] nextRadar = nextSpecies
             .Where(item => !item.IsAnalyzed)
             .SelectMany(item =>
                 item.Targets.Select(target => new PriorScanRadarTargetViewModel(
@@ -386,12 +387,12 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
             )
             .ToArray();
         // Absolute lat/long for PlotGrounded-style surface radar rings.
-        var nextSurface = plan
+        PriorScanSurfaceMarkerViewModel[] nextSurface = plan
             .Species.Where(item => !item.IsAnalyzed)
             .SelectMany(item =>
             {
-                var genus = item.GenusName;
-                var radius = ExobiologyReferenceCatalog.GetSampleDistanceMeters(genus);
+                string genus = item.GenusName;
+                int radius = ExobiologyReferenceCatalog.GetSampleDistanceMeters(genus);
                 return item.Targets.Select(target => new PriorScanSurfaceMarkerViewModel(
                     item.DisplayName,
                     target.Location,
@@ -434,8 +435,8 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
     private bool TryCreateContext(out PriorScanContext context)
     {
         context = null!;
-        var snapshot = survey.Snapshot;
-        var status = survey.CurrentStatus;
+        SystemScanSnapshot snapshot = survey.Snapshot;
+        EliteStatus? status = survey.CurrentStatus;
         if (
             !survey.ShouldLoadPriorScans
             || status is null
@@ -446,8 +447,8 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
             return false;
         }
 
-        var body = ResolveCurrentBody(snapshot, status.BodyName);
-        var radius = (double)status.PlanetRadius;
+        SystemScanBodySnapshot? body = ResolveCurrentBody(snapshot, status.BodyName);
+        double radius = (double)status.PlanetRadius;
         if (radius <= 0)
         {
             radius = body?.RadiusMeters ?? 0;
@@ -470,18 +471,22 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
 
         // Prefer full body name + system strip so keys match Canonn short labels
         // whether or not the body is already in the system snapshot.
-        var bodyShortName = ExobiologyBodyNames.NormalizeKey(body?.Name ?? status.BodyName, snapshot.SystemName);
+        string bodyShortName = ExobiologyBodyNames.NormalizeKey(body?.Name ?? status.BodyName, snapshot.SystemName);
         if (bodyShortName.Length == 0)
         {
             bodyShortName = body?.ShortName ?? GetBodyShortName(status.BodyName, snapshot.SystemName);
         }
 
-        var analyzed =
+        long[] analyzed =
             body?.Organisms.Where(organism => organism.IsAnalyzed && organism.EntryId is > 0)
                 .Select(organism => organism.EntryId!.Value)
                 .ToArray()
             ?? [];
-        var activeSamples = new[] { survey.CurrentExobiology.ScanOne, survey.CurrentExobiology.ScanTwo }
+        PriorScanPersonalSample[] activeSamples = new[]
+        {
+            survey.CurrentExobiology.ScanOne,
+            survey.CurrentExobiology.ScanTwo,
+        }
             .Where(sample =>
                 sample is not null
                 && (
@@ -494,15 +499,15 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
             .Where(sample => sample is not null)
             .Cast<PriorScanPersonalSample>()
             .ToArray();
-        var historicalSamples =
+        PriorScanPersonalSample[] historicalSamples =
             currentSurfaceProvider()
                 ?.BioScans.Where(sample => !string.Equals(sample.Status, "Died", StringComparison.OrdinalIgnoreCase))
                 .Where(sample => !string.IsNullOrWhiteSpace(sample.Species))
                 .Select(sample => new PriorScanPersonalSample(sample.Species, sample.Location))
                 .ToArray()
             ?? [];
-        var samples = activeSamples.Concat(historicalSamples).Distinct().ToArray();
-        var commander = commanderNameProvider()?.Trim() ?? string.Empty;
+        PriorScanPersonalSample[] samples = activeSamples.Concat(historicalSamples).Distinct().ToArray();
+        string commander = commanderNameProvider()?.Trim() ?? string.Empty;
         context = new PriorScanContext(
             snapshot.SystemName,
             bodyShortName,
@@ -530,7 +535,7 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
 
     private static SystemScanBodySnapshot? ResolveCurrentBody(SystemScanSnapshot snapshot, string bodyName)
     {
-        var byExactName = snapshot.Bodies.FirstOrDefault(body =>
+        SystemScanBodySnapshot? byExactName = snapshot.Bodies.FirstOrDefault(body =>
             string.Equals(body.Name, bodyName, StringComparison.OrdinalIgnoreCase)
         );
         if (byExactName is not null)
@@ -538,7 +543,7 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
             return byExactName;
         }
 
-        var byKey = snapshot.Bodies.FirstOrDefault(body =>
+        SystemScanBodySnapshot? byKey = snapshot.Bodies.FirstOrDefault(body =>
             ExobiologyBodyNames.Matches(body.Name, bodyName, snapshot.SystemName)
             || ExobiologyBodyNames.Matches(body.ShortName, bodyName, snapshot.SystemName)
         );
@@ -554,7 +559,7 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
 
     private static string GetBodyShortName(string bodyName, string systemName)
     {
-        var normalized = ExobiologyBodyNames.NormalizeKey(bodyName, systemName);
+        string normalized = ExobiologyBodyNames.NormalizeKey(bodyName, systemName);
         if (normalized.Length > 0)
         {
             return normalized;
@@ -643,12 +648,12 @@ public sealed record PriorScanSpeciesViewModel(
 {
     public static PriorScanSpeciesViewModel Create(PriorScanSpecies species, double altitudeMeters)
     {
-        var genus = species.GenusName;
-        var approachAngle =
+        string genus = species.GenusName;
+        double approachAngle =
             altitudeMeters > 500 && species.Targets.Count > 0 && species.Targets[0] is { DistanceMeters: > 0 } target
                 ? Math.Atan(altitudeMeters / target.DistanceMeters) * 180d / Math.PI
                 : 0;
-        var showApproach = approachAngle > 5;
+        bool showApproach = approachAngle > 5;
         return new PriorScanSpeciesViewModel(
             species.DisplayName,
             FormatCredits(species.Reward),

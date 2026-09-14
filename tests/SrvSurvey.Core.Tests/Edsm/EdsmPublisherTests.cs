@@ -23,9 +23,9 @@ public sealed class EdsmPublisherTests
     public async Task StatisticsMulticrewObjectDoesNotTriggerCrewMode()
     {
         var handler = new EdsmResponseHandler();
-        using var publisher = CreatePublisher(handler);
+        using EdsmPublisher publisher = CreatePublisher(handler);
 
-        var result = await publisher.ApplyAsync(
+        EdsmPublicationResult result = await publisher.ApplyAsync(
             CreateUpdate([
                 Event(
                     """
@@ -57,9 +57,9 @@ public sealed class EdsmPublisherTests
     public async Task BootstrapSeedsContextAndLiveBatchUsesRequiredFormFields()
     {
         var handler = new EdsmResponseHandler();
-        using var publisher = CreatePublisher(handler);
+        using EdsmPublisher publisher = CreatePublisher(handler);
 
-        var bootstrap = await publisher.ApplyAsync(
+        EdsmPublicationResult bootstrap = await publisher.ApplyAsync(
             CreateUpdate(
                 [
                     Event(
@@ -91,7 +91,7 @@ public sealed class EdsmPublisherTests
         );
         Assert.Equal(0, bootstrap.QueuedEventCount);
 
-        var live = await publisher.ApplyAsync(
+        EdsmPublicationResult live = await publisher.ApplyAsync(
             CreateUpdate([
                 Event(
                     """
@@ -107,7 +107,7 @@ public sealed class EdsmPublisherTests
         );
         Assert.Equal(1, live.QueuedEventCount);
 
-        var sent = await publisher.FlushAsync();
+        EdsmPublicationResult sent = await publisher.FlushAsync();
 
         Assert.Equal(1, sent.AcceptedEventCount);
         Assert.Equal(1, handler.PostCount);
@@ -118,7 +118,7 @@ public sealed class EdsmPublisherTests
         Assert.Equal("4.1.0.100", handler.LastForm["fromGameVersion"]);
         Assert.Equal("r300000/r0", handler.LastForm["fromGameBuild"]);
         var message = JArray.Parse(handler.LastForm["message"]);
-        var uploaded = Assert.IsType<JObject>(Assert.Single(message));
+        JObject uploaded = Assert.IsType<JObject>(Assert.Single(message));
         Assert.Equal("CollectCargo", uploaded.Value<string>("event"));
         Assert.Equal("Sol", uploaded.Value<string>("_systemName"));
         Assert.Equal(10477373803, uploaded.Value<long>("_systemAddress"));
@@ -132,7 +132,7 @@ public sealed class EdsmPublisherTests
     public async Task InvalidDiscardListFailsClosedAndUsesBoundedRetryCadence()
     {
         var handler = new EdsmResponseHandler { DiscardedEvents = [] };
-        using var publisher = CreatePublisher(handler);
+        using EdsmPublisher publisher = CreatePublisher(handler);
         await publisher.ApplyAsync(
             CreateUpdate([
                 Event(
@@ -147,8 +147,8 @@ public sealed class EdsmPublisherTests
             ])
         );
 
-        var first = await publisher.FlushAsync();
-        var second = await publisher.FlushAsync();
+        EdsmPublicationResult first = await publisher.FlushAsync();
+        EdsmPublicationResult second = await publisher.FlushAsync();
 
         Assert.Equal(0, handler.PostCount);
         Assert.Equal(1, handler.GetCount);
@@ -161,7 +161,7 @@ public sealed class EdsmPublisherTests
     public async Task CurrentDiscardListSilentlyFiltersUnsupportedEventsBeforePost()
     {
         var handler = new EdsmResponseHandler { DiscardedEvents = ["SendText", "Screenshot"] };
-        using var publisher = CreatePublisher(handler);
+        using EdsmPublisher publisher = CreatePublisher(handler);
 
         await publisher.ApplyAsync(
             CreateUpdate([
@@ -177,7 +177,7 @@ public sealed class EdsmPublisherTests
                 ),
             ])
         );
-        var result = await publisher.FlushAsync();
+        EdsmPublicationResult result = await publisher.FlushAsync();
 
         Assert.Equal(0, result.AcceptedEventCount);
         Assert.Equal(0, result.PendingEventCount);
@@ -244,8 +244,8 @@ public sealed class EdsmPublisherTests
     public async Task MissingCredentialsAndNonLiveSessionsNeverLoadOrUpload()
     {
         var handler = new EdsmResponseHandler();
-        using var publisher = CreatePublisher(handler);
-        var journalEvent = Event(
+        using EdsmPublisher publisher = CreatePublisher(handler);
+        JournalEventEnvelope journalEvent = Event(
             """
             {
               "timestamp": "2026-08-25T12:00:00Z",
@@ -272,9 +272,9 @@ public sealed class EdsmPublisherTests
     public async Task MulticrewEventsAreSuppressedUntilCrewSessionEnds(string crewEndEvent)
     {
         var handler = new EdsmResponseHandler { DiscardedEvents = ["JoinACrew"] };
-        using var publisher = CreatePublisher(handler);
+        using EdsmPublisher publisher = CreatePublisher(handler);
 
-        var result = await publisher.ApplyAsync(
+        EdsmPublicationResult result = await publisher.ApplyAsync(
             CreateUpdate([
                 Event(
                     """
@@ -312,7 +312,7 @@ public sealed class EdsmPublisherTests
                 ),
             ])
         );
-        var sent = await publisher.FlushAsync();
+        EdsmPublicationResult sent = await publisher.FlushAsync();
 
         Assert.Equal([crewEndEvent, "FSDJump"], result.QueuedEventNames);
         Assert.Equal(2, sent.AcceptedEventCount);
@@ -322,7 +322,7 @@ public sealed class EdsmPublisherTests
     public async Task TransientFailureRetainsBatchAndRetriesWithoutImmediateLoop()
     {
         var handler = new EdsmResponseHandler { PostStatusCode = HttpStatusCode.ServiceUnavailable };
-        using var publisher = CreatePublisher(handler);
+        using EdsmPublisher publisher = CreatePublisher(handler);
         await publisher.ApplyAsync(
             CreateUpdate([
                 Event(
@@ -337,14 +337,14 @@ public sealed class EdsmPublisherTests
             ])
         );
 
-        var deferred = await publisher.FlushAsync();
+        EdsmPublicationResult deferred = await publisher.FlushAsync();
 
         Assert.Equal(1, deferred.PendingEventCount);
         Assert.Equal(1, handler.PostCount);
         Assert.Contains(deferred.Warnings, warning => warning.Contains("retained in memory", StringComparison.Ordinal));
 
         handler.PostStatusCode = HttpStatusCode.OK;
-        var retried = await publisher.FlushAsync();
+        EdsmPublicationResult retried = await publisher.FlushAsync();
         Assert.Equal(1, retried.AcceptedEventCount);
         Assert.Equal(2, handler.PostCount);
     }
@@ -353,7 +353,7 @@ public sealed class EdsmPublisherTests
     public async Task FatalCredentialResponsePausesUntilCredentialsChange()
     {
         var handler = new EdsmResponseHandler { TopStatus = 203, TopMessage = "Commander name/API Key not found" };
-        using var publisher = CreatePublisher(handler);
+        using EdsmPublisher publisher = CreatePublisher(handler);
         await publisher.ApplyAsync(
             CreateUpdate([
                 Event(
@@ -367,7 +367,7 @@ public sealed class EdsmPublisherTests
                 ),
             ])
         );
-        var rejected = await publisher.FlushAsync();
+        EdsmPublicationResult rejected = await publisher.FlushAsync();
         Assert.Contains(rejected.Warnings, warning => warning.Contains("203", StringComparison.Ordinal));
 
         await publisher.ApplyAsync(
@@ -407,7 +407,7 @@ public sealed class EdsmPublisherTests
                 }
             )
         );
-        var accepted = await publisher.FlushAsync();
+        EdsmPublicationResult accepted = await publisher.FlushAsync();
         Assert.Equal(1, accepted.AcceptedEventCount);
         Assert.Equal(2, handler.PostCount);
     }
@@ -416,7 +416,7 @@ public sealed class EdsmPublisherTests
     public async Task ApiStatus402RetriesOnlyUnknownCatalogEvent()
     {
         var handler = new EdsmResponseHandler { EventStatusSelector = index => index == 0 ? 100 : 402 };
-        using var publisher = CreatePublisher(handler);
+        using EdsmPublisher publisher = CreatePublisher(handler);
         await publisher.ApplyAsync(
             CreateUpdate([
                 Event(
@@ -440,12 +440,12 @@ public sealed class EdsmPublisherTests
             ])
         );
 
-        var partial = await publisher.FlushAsync();
+        EdsmPublicationResult partial = await publisher.FlushAsync();
         Assert.Equal(1, partial.AcceptedEventCount);
         Assert.Equal(1, partial.PendingEventCount);
 
         handler.EventStatusSelector = _ => 100;
-        var retried = await publisher.FlushAsync();
+        EdsmPublicationResult retried = await publisher.FlushAsync();
         Assert.Equal(1, retried.AcceptedEventCount);
         var retriedBatch = JArray.Parse(handler.Forms[1]["message"]);
         Assert.Equal("CollectCargo", Assert.Single(retriedBatch).Value<string>("event"));
@@ -472,7 +472,7 @@ public sealed class EdsmPublisherTests
 
     private static JournalEventEnvelope Event(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var parsed, out var error), error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? parsed, out string? error), error);
         return Assert.IsType<JournalEventEnvelope>(parsed);
     }
 
@@ -511,15 +511,15 @@ public sealed class EdsmPublisherTests
             }
 
             Interlocked.Increment(ref postCount);
-            var encoded = await request.Content!.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            var form = ParseForm(encoded);
+            string encoded = await request.Content!.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            Dictionary<string, string> form = ParseForm(encoded);
             Forms.Add(form);
             if (PostStatusCode != HttpStatusCode.OK)
             {
                 return new HttpResponseMessage(PostStatusCode);
             }
 
-            var eventCount = JArray.Parse(form["message"]).Count;
+            int eventCount = JArray.Parse(form["message"]).Count;
             return JsonResponse(
                 new JObject
                 {

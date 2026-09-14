@@ -5,6 +5,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.LogicalTree;
+using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Theming;
@@ -30,7 +31,7 @@ public sealed class OverlayThemeSettingsPresentationTests : IDisposable
             new OverlayThemeStateStore(Path.Combine(temporaryDirectory, "states.json")),
             initialTheme: LegacyOverlayThemeStore.CreateDefault()
         );
-        using var viewModel = MainWindowViewModelTestBuilder.Create(
+        using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
             Path.Combine(temporaryDirectory, "journals"),
             builder =>
                 builder
@@ -55,19 +56,19 @@ public sealed class OverlayThemeSettingsPresentationTests : IDisposable
         try
         {
             window.Show();
-            var overlayTab = theme
+            TabItem overlayTab = theme
                 .GetLogicalDescendants()
                 .OfType<TabItem>()
                 .Single(tab =>
                     string.Equals(tab.Header?.ToString(), "In-game overlay appearance", StringComparison.Ordinal)
                 );
             overlayTab.IsSelected = true;
-            var frame = window.CaptureRenderedFrame();
-            var presetCard = theme.FindControl<Border>("OverlayThemePresetCard");
-            var actionsCard = theme.FindControl<Border>("OverlayThemeActionsCard");
-            var colorEditorList = theme.FindControl<ItemsControl>("OverlayThemeColorEditorList");
-            var typographyEditorList = theme.FindControl<ItemsControl>("OverlayTypographyEditorList");
-            var rows = theme
+            WriteableBitmap? frame = window.CaptureRenderedFrame();
+            Border? presetCard = theme.FindControl<Border>("OverlayThemePresetCard");
+            Border? actionsCard = theme.FindControl<Border>("OverlayThemeActionsCard");
+            ItemsControl? colorEditorList = theme.FindControl<ItemsControl>("OverlayThemeColorEditorList");
+            ItemsControl? typographyEditorList = theme.FindControl<ItemsControl>("OverlayTypographyEditorList");
+            Grid[] rows = theme
                 .GetVisualDescendants()
                 .OfType<Grid>()
                 .Where(grid => grid.Classes.Contains("overlay-theme-color-row"))
@@ -78,20 +79,23 @@ public sealed class OverlayThemeSettingsPresentationTests : IDisposable
             Assert.NotNull(actionsCard);
             Assert.NotNull(colorEditorList);
             Assert.NotNull(typographyEditorList);
-            var typographyEditors = typographyEditorList.GetVisualDescendants().OfType<NumericUpDown>().ToArray();
+            NumericUpDown[] typographyEditors = typographyEditorList
+                .GetVisualDescendants()
+                .OfType<NumericUpDown>()
+                .ToArray();
             Assert.Equal(6, typographyEditors.Length);
             Assert.All(
                 typographyEditors,
                 editor =>
                 {
-                    var valueTextBox = editor.GetVisualDescendants().OfType<TextBox>().Single();
+                    TextBox valueTextBox = editor.GetVisualDescendants().OfType<TextBox>().Single();
                     Assert.True(valueTextBox.Bounds.Width >= 40);
                     Assert.False(string.IsNullOrWhiteSpace(valueTextBox.Text));
                 }
             );
-            var presetOrigin = presetCard.TranslatePoint(default, theme);
-            var actionsOrigin = actionsCard.TranslatePoint(default, theme);
-            var colorEditorOrigin = colorEditorList.TranslatePoint(default, theme);
+            Point? presetOrigin = presetCard.TranslatePoint(default, theme);
+            Point? actionsOrigin = actionsCard.TranslatePoint(default, theme);
+            Point? colorEditorOrigin = colorEditorList.TranslatePoint(default, theme);
             Assert.NotNull(presetOrigin);
             Assert.NotNull(actionsOrigin);
             Assert.NotNull(colorEditorOrigin);
@@ -103,25 +107,25 @@ public sealed class OverlayThemeSettingsPresentationTests : IDisposable
                 row =>
                 {
                     Assert.InRange(row.Bounds.Height, 1, 40);
-                    var colorPicker = row.GetVisualDescendants().OfType<ColorPicker>().Single();
-                    var colorPreview = colorPicker
+                    ColorPicker colorPicker = row.GetVisualDescendants().OfType<ColorPicker>().Single();
+                    ContentPresenter colorPreview = colorPicker
                         .GetVisualDescendants()
                         .OfType<ContentPresenter>()
                         .Single(presenter => presenter.Name == "PART_ContentPresenter");
-                    var opacity = row.GetVisualDescendants()
+                    Slider opacity = row.GetVisualDescendants()
                         .OfType<Slider>()
                         .Single(slider => slider.Name == "OverlayThemeOpacitySlider");
-                    var thumb = opacity
+                    Thumb thumb = opacity
                         .GetVisualDescendants()
                         .OfType<Thumb>()
                         .Single(candidate => candidate.Name == "thumb");
-                    var hex = row.GetVisualDescendants()
+                    TextBox hex = row.GetVisualDescendants()
                         .OfType<TextBox>()
                         .Single(textBox => textBox.Name == "OverlayThemeHexTextBox");
-                    var colorOrigin = colorPicker.TranslatePoint(default, row);
-                    var opacityOrigin = opacity.TranslatePoint(default, row);
-                    var thumbOrigin = thumb.TranslatePoint(default, opacity);
-                    var hexOrigin = hex.TranslatePoint(default, row);
+                    Point? colorOrigin = colorPicker.TranslatePoint(default, row);
+                    Point? opacityOrigin = opacity.TranslatePoint(default, row);
+                    Point? thumbOrigin = thumb.TranslatePoint(default, opacity);
+                    Point? hexOrigin = hex.TranslatePoint(default, row);
                     Assert.NotNull(colorOrigin);
                     Assert.NotNull(opacityOrigin);
                     Assert.NotNull(thumbOrigin);

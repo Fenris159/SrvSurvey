@@ -45,7 +45,7 @@ public sealed class GuidesViewModel : INotifyPropertyChanged
         get => searchText;
         set
         {
-            var normalized = value ?? string.Empty;
+            string normalized = value ?? string.Empty;
             if (!SetField(ref searchText, normalized))
             {
                 return;
@@ -75,7 +75,7 @@ public sealed class GuidesViewModel : INotifyPropertyChanged
 
     private void RefreshSearchResults()
     {
-        var terms = SearchText.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        string[] terms = SearchText.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         if (terms.Length == 0)
         {
             searchResults = [];
@@ -84,10 +84,10 @@ public sealed class GuidesViewModel : INotifyPropertyChanged
         }
 
         var results = new List<GuideSearchResultViewModel>();
-        foreach (var category in Categories)
+        foreach (GuideCategoryViewModel category in Categories)
         {
             foreach (
-                var section in category.Sections.Where(section =>
+                GuideSectionViewModel? section in category.Sections.Where(section =>
                     MatchesAllTerms(section.SearchableText, terms) || MatchesAllTerms(category.SearchableText, terms)
                 )
             )
@@ -96,7 +96,7 @@ public sealed class GuidesViewModel : INotifyPropertyChanged
             }
 
             foreach (
-                var icon in category.Icons.Where(icon =>
+                GuideIconViewModel? icon in category.Icons.Where(icon =>
                     MatchesAllTerms(icon.SearchableText, terms) || MatchesAllTerms(category.SearchableText, terms)
                 )
             )

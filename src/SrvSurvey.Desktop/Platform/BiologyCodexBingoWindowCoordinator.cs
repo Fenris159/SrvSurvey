@@ -63,7 +63,7 @@ public sealed class BiologyCodexBingoWindowCoordinator : IDisposable
         disposed = true;
         viewModel.SetWindowOpener(null);
         viewModel.SetNearestSearchHandler(null);
-        var bingoWindow = window;
+        BiologyCodexBingoWindow? bingoWindow = window;
         window = null;
         if (bingoWindow is not null)
         {

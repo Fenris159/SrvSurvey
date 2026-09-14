@@ -20,7 +20,7 @@ public sealed class HumanSiteVehicleTracker
     public bool Apply(JournalEventEnvelope journalEvent, EliteStatus? status)
     {
         ArgumentNullException.ThrowIfNull(journalEvent);
-        var changed = journalEvent.EventName switch
+        bool changed = journalEvent.EventName switch
         {
             "Touchdown" => SetShipLocation(
                 GetCoordinate(journalEvent.Payload) ?? GetCoordinate(status),
@@ -61,7 +61,7 @@ public sealed class HumanSiteVehicleTracker
             return false;
         }
 
-        var normalizedHeading = heading is { } value ? SurfaceNavigation.NormalizeDegrees(value) : ShipHeading;
+        double? normalizedHeading = heading is { } value ? SurfaceNavigation.NormalizeDegrees(value) : ShipHeading;
         if (ShipLocation == location && EquivalentHeading(ShipHeading, normalizedHeading) && !HasShipDeparted)
         {
             return false;
@@ -127,8 +127,8 @@ public sealed class HumanSiteVehicleTracker
 
     private static SurfaceCoordinate? GetCoordinate(JsonElement root)
     {
-        var latitude = GetDouble(root, "Latitude");
-        var longitude = GetDouble(root, "Longitude");
+        double? latitude = GetDouble(root, "Latitude");
+        double? longitude = GetDouble(root, "Longitude");
         return latitude is not null && longitude is not null ? CreateCoordinate(latitude.Value, longitude.Value) : null;
     }
 
@@ -147,7 +147,7 @@ public sealed class HumanSiteVehicleTracker
     private static bool? GetBoolean(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind is JsonValueKind.True or JsonValueKind.False
             ? value.GetBoolean()
             : null;
@@ -155,19 +155,19 @@ public sealed class HumanSiteVehicleTracker
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+        return root.TryGetProperty(propertyName, out JsonElement value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
     }
 
     private static double? GetDouble(JsonElement root, string propertyName)
     {
-        if (!root.TryGetProperty(propertyName, out var value))
+        if (!root.TryGetProperty(propertyName, out JsonElement value))
         {
             return null;
         }
 
-        if (value.ValueKind == JsonValueKind.Number && value.TryGetDouble(out var number) && double.IsFinite(number))
+        if (value.ValueKind == JsonValueKind.Number && value.TryGetDouble(out double number) && double.IsFinite(number))
         {
             return number;
         }

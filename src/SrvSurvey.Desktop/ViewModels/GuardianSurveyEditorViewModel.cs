@@ -298,14 +298,14 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             if (
                 value is not { } requested
                 || distanceOrigin is not { } origin
-                || !TryGetGalacticPosition(out var position)
+                || !TryGetGalacticPosition(out GalacticCoordinate position)
             )
             {
                 UpdateDistanceFromGalacticCoordinates();
                 return;
             }
 
-            var existingDistance = origin.DistanceTo(position);
+            double existingDistance = origin.DistanceTo(position);
             if (existingDistance <= double.Epsilon)
             {
                 StatusMessage =
@@ -314,7 +314,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
                 return;
             }
 
-            var scale = decimal.ToDouble(requested) / existingDistance;
+            double scale = decimal.ToDouble(requested) / existingDistance;
             SetGalacticCoordinates(
                 new GalacticCoordinate(
                     origin.X + ((position.X - origin.X) * scale),
@@ -342,7 +342,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
     public bool CanEditDistanceLy =>
         distanceOrigin is { } origin
-        && TryGetGalacticPosition(out var position)
+        && TryGetGalacticPosition(out GalacticCoordinate position)
         && origin.DistanceTo(position) > double.Epsilon;
 
     public string DistanceOriginText =>
@@ -364,7 +364,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
     private void SetGalacticCoordinates(GalacticCoordinate? position, bool updateDistance)
     {
-        var wasLoading = isLoading;
+        bool wasLoading = isLoading;
         isLoading = true;
         GalacticX = position is { } x ? (decimal)x.X : null;
         GalacticY = position is { } y ? (decimal)y.Y : null;
@@ -380,11 +380,12 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
     private void UpdateDistanceFromGalacticCoordinates()
     {
-        var nextDistance =
-            distanceOrigin is { } origin && TryGetGalacticPosition(out var position)
+        decimal? nextDistance =
+            distanceOrigin is { } origin
+            && TryGetGalacticPosition(out global::SrvSurvey.Core.Search.GalacticCoordinate position)
                 ? (decimal?)origin.DistanceTo(position)
                 : null;
-        var wasLoading = isLoading;
+        bool wasLoading = isLoading;
         isLoading = true;
         DistanceLy = nextDistance;
         isLoading = wasLoading;
@@ -406,9 +407,9 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
     {
         get
         {
-            var savedLocation = originalSurvey?.Survey.Location;
-            var savedLatitude = savedLocation is { } latitude ? (decimal?)latitude.Latitude : null;
-            var savedLongitude = savedLocation is { } longitude ? (decimal?)longitude.Longitude : null;
+            GuardianSurfaceLocation? savedLocation = originalSurvey?.Survey.Location;
+            decimal? savedLatitude = savedLocation is { } latitude ? (decimal?)latitude.Latitude : null;
+            decimal? savedLongitude = savedLocation is { } longitude ? (decimal?)longitude.Longitude : null;
             return SurfaceLatitude != savedLatitude || SurfaceLongitude != savedLongitude;
         }
     }
@@ -478,7 +479,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
             selectedPointName = value;
             NotifySelectedPointStateChanged(selectionNameChanged: true);
-            var point = value is null
+            GuardianSurveyPoiViewModel? point = value is null
                 ? null
                 : selectableMapPoints.FirstOrDefault(candidate =>
                     string.Equals(candidate.Name, value, StringComparison.OrdinalIgnoreCase)
@@ -545,10 +546,10 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
     public void Load(GuardianSurveyEditorLoadContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        var survey = context.Survey;
-        var template = context.Template;
-        var templateCatalog = context.TemplateCatalog;
-        var siteReference = context.SiteReference;
+        GuardianCommanderSiteSurvey? survey = context.Survey;
+        GuardianSiteTemplate? template = context.Template;
+        GuardianSiteTemplateCatalog? templateCatalog = context.TemplateCatalog;
+        GuardianSiteReference? siteReference = context.SiteReference;
         GuardianSiteSelectionKey? nextSelectionContext = siteReference is null
             ? null
             : new GuardianSiteSelectionKey(
@@ -558,8 +559,8 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
                 siteReference.Index,
                 siteReference.SiteId
             );
-        var previousSelectionName = selectionContext == nextSelectionContext ? SelectedPointName : null;
-        var preserveCatalogDraft = selectionContext == nextSelectionContext && catalogMetadataDirty;
+        string? previousSelectionName = selectionContext == nextSelectionContext ? SelectedPointName : null;
+        bool preserveCatalogDraft = selectionContext == nextSelectionContext && catalogMetadataDirty;
         selectionContext = nextSelectionContext;
         frontierId = context.FrontierId;
         isOdyssey = context.IsOdyssey;
@@ -609,7 +610,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         }
 
         isLoading = true;
-        var resolvedSiteType = !string.IsNullOrWhiteSpace(survey.SiteType)
+        string resolvedSiteType = !string.IsNullOrWhiteSpace(survey.SiteType)
             ? survey.SiteType
             : template?.SiteType ?? "Unknown";
         SiteTypeOptions = templates
@@ -661,7 +662,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             return;
         }
 
-        var rawPoints = survey.RawPointsOfInterest ?? [];
+        IReadOnlyList<GuardianPointOfInterest> rawPoints = survey.RawPointsOfInterest ?? [];
         Points = template
             .SurveyPoints.Concat(showComponentMaterials ? template.DestructiblePanels : [])
             .Select(point => new GuardianSurveyPoiViewModel(
@@ -718,7 +719,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             .Concat(template?.DestructiblePanels ?? [])
             .Select(point => point.Name)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var projectedRows = referenceProjection
+        GuardianSurveyPoiViewModel[] projectedRows = referenceProjection
             .Points.Select(point =>
                 editableByName.GetValueOrDefault(point.Name)
                 ?? CreateReferencePointRow(point, isRaw: !templatePointNames.Contains(point.Name))
@@ -730,7 +731,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
     private GuardianSurveyPoiViewModel CreateReferencePointRow(GuardianProjectedPoint point, bool isRaw)
     {
-        var componentMaterials =
+        GuardianComponentLoadout? componentMaterials =
             point.ComponentMaterials.Count == 0
                 ? null
                 : new GuardianComponentLoadout(point.Name, point.ComponentMaterials);
@@ -768,12 +769,15 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             return;
         }
 
-        var previousSelectionName = SelectedPointName;
-        var source = originalSurvey.Survey;
+        string? previousSelectionName = SelectedPointName;
+        GuardianSurveyData source = originalSurvey.Survey;
         if (preserveDraft && Points.Count > 0)
         {
-            var maps = BuildSurveyMutationMaps();
-            var rawPoints = Points.Where(point => point.IsRaw).Select(BuildRawPointForSave).ToArray();
+            SurveyMutationMaps maps = BuildSurveyMutationMaps();
+            GuardianPointOfInterest[] rawPoints = Points
+                .Where(point => point.IsRaw)
+                .Select(BuildRawPointForSave)
+                .ToArray();
             source = new GuardianSurveyData
             {
                 SiteType = SiteType,
@@ -843,7 +847,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             return Task.CompletedTask;
         }
 
-        var duplicate = Points.FirstOrDefault(point =>
+        GuardianSurveyPoiViewModel? duplicate = Points.FirstOrDefault(point =>
             IsTooClose(point.Point, NewRawPointType, measurement.Angle, measurement.Distance)
         );
         if (duplicate is not null)
@@ -852,7 +856,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             return Task.CompletedTask;
         }
 
-        var name = NextRawPointName(Points.Select(point => point.Name));
+        string name = NextRawPointName(Points.Select(point => point.Name));
         var point = new GuardianPointOfInterest(
             name,
             NewRawPointType,
@@ -895,7 +899,13 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
     public async Task SaveAsync()
     {
-        if (!TryBeginSave(out var normalizedSiteHeading, out var normalizedRelicTowerHeading, out var surfaceLocation))
+        if (
+            !TryBeginSave(
+                out int normalizedSiteHeading,
+                out int normalizedRelicTowerHeading,
+                out GuardianSurfaceLocation? surfaceLocation
+            )
+        )
         {
             return;
         }
@@ -903,10 +913,14 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         IsBusy = true;
         try
         {
-            var updated = BuildSurveyForSave(normalizedSiteHeading, normalizedRelicTowerHeading, surfaceLocation);
-            var path = await store.SaveAsync(frontierId!, isOdyssey, updated);
-            var saved = updated with { Path = path };
-            var previous = originalSurvey!;
+            GuardianCommanderSiteSurvey updated = BuildSurveyForSave(
+                normalizedSiteHeading,
+                normalizedRelicTowerHeading,
+                surfaceLocation
+            );
+            string path = await store.SaveAsync(frontierId!, isOdyssey, updated);
+            GuardianCommanderSiteSurvey saved = updated with { Path = path };
+            GuardianCommanderSiteSurvey previous = originalSurvey!;
             originalSurvey = saved;
             catalogMetadataDirty = false;
             resetCoordinatesCommand.RaiseCanExecuteChanged();
@@ -968,14 +982,14 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         GuardianSurfaceLocation? surfaceLocation
     )
     {
-        var maps = BuildSurveyMutationMaps();
-        var rawPoints = Points.Where(point => point.IsRaw).Select(BuildRawPointForSave).ToArray();
+        SurveyMutationMaps maps = BuildSurveyMutationMaps();
+        GuardianPointOfInterest[] rawPoints = Points.Where(point => point.IsRaw).Select(BuildRawPointForSave).ToArray();
         return originalSurvey! with
         {
             SiteType = SiteType,
             Notes = Notes,
             CatalogBodyName = string.IsNullOrWhiteSpace(CatalogBodyName) ? null : CatalogBodyName.Trim(),
-            StarPosition = TryGetGalacticPosition(out var position) ? position : null,
+            StarPosition = TryGetGalacticPosition(out GalacticCoordinate position) ? position : null,
             DistanceToArrivalLs = ArrivalDistanceLs is { } arrival ? decimal.ToDouble(arrival) : null,
             MapMarkerOffset = ResolveMapMarkerOffset(surfaceLocation, normalizedSiteHeading),
             Survey = new GuardianSurveyData
@@ -1005,7 +1019,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             return false;
         }
 
-        var coordinateCount = new[] { GalacticX, GalacticY, GalacticZ }.Count(value => value is not null);
+        int coordinateCount = new[] { GalacticX, GalacticY, GalacticZ }.Count(value => value is not null);
         if (coordinateCount is > 0 and < 3)
         {
             StatusMessage = "Enter galactic X, Y, and Z together, or leave all three blank.";
@@ -1029,7 +1043,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
     private static GuardianPointOfInterest BuildRawPointForSave(GuardianSurveyPoiViewModel point)
     {
-        return point.SupportsRelicHeading && TryGetHeading(point.RelicHeading, out var heading)
+        return point.SupportsRelicHeading && TryGetHeading(point.RelicHeading, out int heading)
             ? point.Point with
             {
                 Rotation = heading,
@@ -1039,7 +1053,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
     private bool TryValidatePointsForSave()
     {
-        foreach (var point in Points)
+        foreach (GuardianSurveyPoiViewModel point in Points)
         {
             if (point.Status == GuardianPoiStatus.Empty && !point.SupportsEmptyStatus)
             {
@@ -1108,7 +1122,9 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
     public GuardianMapPoint GetPreviewMapMarkerOffset()
     {
-        return TryGetPreviewSurfaceLocation(out var location) && TryGetHeading(SiteHeading, out var heading)
+        return
+            TryGetPreviewSurfaceLocation(out GuardianSurfaceLocation location)
+            && TryGetHeading(SiteHeading, out int heading)
             ? ResolveMapMarkerOffset(location, heading)
             : originalSurvey?.MapMarkerOffset ?? default;
     }
@@ -1135,7 +1151,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
     private GuardianMapPoint ResolveMapMarkerOffset(GuardianSurfaceLocation? correctedOrigin, int siteHeading)
     {
-        var savedOffset = originalSurvey?.MapMarkerOffset ?? default;
+        GuardianMapPoint savedOffset = originalSurvey?.MapMarkerOffset ?? default;
         if (
             correctedOrigin is not { } corrected
             || alignmentOrigin is not { } original
@@ -1169,7 +1185,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
     private Task ResetCoordinatesAsync()
     {
-        var savedLocation = originalSurvey?.Survey.Location;
+        GuardianSurfaceLocation? savedLocation = originalSurvey?.Survey.Location;
         SurfaceLatitude = savedLocation is { } latitude ? (decimal)latitude.Latitude : null;
         SurfaceLongitude = savedLocation is { } longitude ? (decimal)longitude.Longitude : null;
         StatusMessage = "Restored the last saved surface coordinates.";
@@ -1178,13 +1194,15 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
     private GuardianSurfaceLocation? BuildSurfaceLocation()
     {
-        return TryBuildSurfaceLocation(out var location) ? location : originalSurvey?.Survey.Location;
+        return TryBuildSurfaceLocation(out GuardianSurfaceLocation? location)
+            ? location
+            : originalSurvey?.Survey.Location;
     }
 
     private bool TryValidateActiveObelisksForSave()
     {
         var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var obelisk in ActiveObelisks)
+        foreach (GuardianActiveObeliskViewModel obelisk in ActiveObelisks)
         {
             if (!obelisk.IsLegacyEncodable)
             {
@@ -1205,7 +1223,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
     private SurveyMutationMaps BuildSurveyMutationMaps()
     {
-        var siteTypeChanged = !string.Equals(SiteType, originalSurvey!.SiteType, StringComparison.OrdinalIgnoreCase);
+        bool siteTypeChanged = !string.Equals(SiteType, originalSurvey!.SiteType, StringComparison.OrdinalIgnoreCase);
         var originalRawNames = (originalSurvey.Survey.RawPointsOfInterest ?? [])
             .Select(point => point.Name)
             .ToHashSet(StringComparer.Ordinal);
@@ -1228,7 +1246,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             .Select(point => point.Name)
             .ToHashSet(StringComparer.Ordinal);
         foreach (
-            var removedName in (originalSurvey.Survey.RawPointsOfInterest ?? [])
+            string? removedName in (originalSurvey.Survey.RawPointsOfInterest ?? [])
                 .Select(point => point.Name)
                 .Where(name => !retainedRawNames.Contains(name))
         )
@@ -1238,7 +1256,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             componentMaterials.Remove(removedName);
         }
 
-        foreach (var point in Points)
+        foreach (GuardianSurveyPoiViewModel point in Points)
         {
             ApplyPointMutation(point, statuses, relicHeadings, componentMaterials);
         }
@@ -1283,7 +1301,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             return;
         }
 
-        if (TryGetHeading(point.RelicHeading, out var heading) && heading >= 0)
+        if (TryGetHeading(point.RelicHeading, out int heading) && heading >= 0)
         {
             relicHeadings[point.Name] = heading;
         }
@@ -1321,19 +1339,19 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
     private static bool IsTooClose(GuardianPointOfInterest point, GuardianPoiType type, double angle, double distance)
     {
-        var angleDelta = Math.Abs(point.Angle - angle);
+        double angleDelta = Math.Abs(point.Angle - angle);
         angleDelta = Math.Min(angleDelta, 360 - angleDelta);
-        var distanceDelta = Math.Abs(point.Distance - distance);
+        double distanceDelta = Math.Abs(point.Distance - distance);
         return point.Type == type && angleDelta <= 3 && distanceDelta <= 10 || angleDelta <= 1 && distanceDelta <= 3;
     }
 
     private static string NextRawPointName(IEnumerable<string> names)
     {
         var used = names.ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var index = 1;
+        int index = 1;
         while (true)
         {
-            var candidate = $"x{index}";
+            string candidate = $"x{index}";
             if (!used.Contains(candidate))
             {
                 return candidate;
@@ -1346,9 +1364,9 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
     private static string NextActiveObeliskName(IEnumerable<string> names)
     {
         var used = names.ToHashSet(StringComparer.OrdinalIgnoreCase);
-        for (var index = 1; index <= 999; index++)
+        for (int index = 1; index <= 999; index++)
         {
-            var candidate = $"A{index:00}";
+            string candidate = $"A{index:00}";
             if (!used.Contains(candidate))
             {
                 return candidate;
@@ -1792,8 +1810,8 @@ public sealed class GuardianActiveObeliskViewModel : INotifyPropertyChanged
     {
         get
         {
-            var trimmedName = Name.Trim();
-            var trimmedLog = LogCode.Trim();
+            string trimmedName = Name.Trim();
+            string trimmedLog = LogCode.Trim();
             return trimmedName.Length > 0
                 && trimmedName.IndexOfAny(['-', '!', ',']) < 0
                 && trimmedLog.IndexOfAny(['-', '!', ',']) < 0

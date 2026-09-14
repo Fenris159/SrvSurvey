@@ -13,7 +13,7 @@ public sealed class DockToDockSettingsStoreTests : IDisposable
     public void MissingSettingIsOffAndSavePreservesUnknownValues()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         File.WriteAllText(path, "{\"Future\":true,\"Travel\":{\"FutureTravel\":42}}");
         var store = new DockToDockSettingsStore(path);
 
@@ -21,7 +21,7 @@ public sealed class DockToDockSettingsStoreTests : IDisposable
         store.SaveEnabled(true);
 
         Assert.True(store.LoadEnabled());
-        var saved = File.ReadAllText(path);
+        string saved = File.ReadAllText(path);
         Assert.Contains("\"Future\": true", saved);
         Assert.Contains("\"FutureTravel\": 42", saved);
     }

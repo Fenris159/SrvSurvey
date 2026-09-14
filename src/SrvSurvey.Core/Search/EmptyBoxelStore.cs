@@ -23,7 +23,7 @@ public sealed class EmptyBoxelStore : IBoxelEmptyStore
     public async Task<bool> IsEmptyAsync(BoxelAddress boxel, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(boxel);
-        var emptyBoxels = await LoadAsync(boxel, cancellationToken).ConfigureAwait(false);
+        HashSet<string> emptyBoxels = await LoadAsync(boxel, cancellationToken).ConfigureAwait(false);
         return emptyBoxels.Contains(boxel.Id);
     }
 
@@ -33,7 +33,7 @@ public sealed class EmptyBoxelStore : IBoxelEmptyStore
     )
     {
         ArgumentNullException.ThrowIfNull(boxel);
-        var emptyBoxels = await LoadAsync(boxel, cancellationToken).ConfigureAwait(false);
+        HashSet<string> emptyBoxels = await LoadAsync(boxel, cancellationToken).ConfigureAwait(false);
         return emptyBoxels;
     }
 
@@ -44,19 +44,19 @@ public sealed class EmptyBoxelStore : IBoxelEmptyStore
     )
     {
         ArgumentNullException.ThrowIfNull(boxel);
-        var path = GetFilePath(boxel);
+        string path = GetFilePath(boxel);
         await writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            var emptyBoxels = await LoadFileAsync(path, cancellationToken).ConfigureAwait(false);
-            var changed = isEmpty ? emptyBoxels.Add(boxel.Id) : emptyBoxels.Remove(boxel.Id);
+            HashSet<string> emptyBoxels = await LoadFileAsync(path, cancellationToken).ConfigureAwait(false);
+            bool changed = isEmpty ? emptyBoxels.Add(boxel.Id) : emptyBoxels.Remove(boxel.Id);
             if (!changed)
             {
                 return false;
             }
 
             Directory.CreateDirectory(emptyBoxelDirectory);
-            var temporaryPath = path + $".{Guid.NewGuid():N}.tmp";
+            string temporaryPath = path + $".{Guid.NewGuid():N}.tmp";
             try
             {
                 await using (
@@ -102,13 +102,13 @@ public sealed class EmptyBoxelStore : IBoxelEmptyStore
             throw new ArgumentException("Mass-code h boxels cannot be stored as empty.", nameof(boxel));
         }
 
-        var group = boxel.WithSystemNumber(0);
+        BoxelAddress group = boxel.WithSystemNumber(0);
         while (group.MassCode < 'g')
         {
             group = group.Parent;
         }
 
-        var fileName = group.Name + ".json";
+        string fileName = group.Name + ".json";
         if (
             fileName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0
             || fileName.IndexOfAny([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar]) >= 0
@@ -122,7 +122,7 @@ public sealed class EmptyBoxelStore : IBoxelEmptyStore
 
     private async Task<HashSet<string>> LoadAsync(BoxelAddress boxel, CancellationToken cancellationToken)
     {
-        var path = GetFilePath(boxel);
+        string path = GetFilePath(boxel);
         return await LoadFileAsync(path, cancellationToken).ConfigureAwait(false);
     }
 

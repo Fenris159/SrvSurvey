@@ -25,7 +25,7 @@ public sealed class GalacticRegionMapTests
         string expectedName
     )
     {
-        var region = GalacticRegionMap.Find(new GalacticCoordinate(x, y, z));
+        GalacticRegion? region = GalacticRegionMap.Find(new GalacticCoordinate(x, y, z));
 
         Assert.Equal(new GalacticRegion(expectedId, expectedName), region);
     }

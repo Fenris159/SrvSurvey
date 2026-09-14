@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using SrvSurvey.Core.Journal;
@@ -83,7 +84,7 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         this.systemResolver = systemResolver ?? throw new ArgumentNullException(nameof(systemResolver));
         this.noteStore = noteStore ?? throw new ArgumentNullException(nameof(noteStore));
         this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
-        var settings = settingsStore.Load();
+        SystemNotesSettingsLoadResult settings = settingsStore.Load();
         alwaysOnTop = settings.Snapshot?.JourneyAlwaysOnTop ?? false;
         useGalacticTime = settings.Snapshot?.JourneyUseGalacticTime ?? false;
         if (!settings.IsSuccess)
@@ -496,7 +497,7 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         long? nextSystemAddress
     )
     {
-        var normalizedFrontierId = string.IsNullOrWhiteSpace(nextFrontierId) ? null : nextFrontierId;
+        string? normalizedFrontierId = string.IsNullOrWhiteSpace(nextFrontierId) ? null : nextFrontierId;
         if (
             string.Equals(frontierId, normalizedFrontierId, StringComparison.OrdinalIgnoreCase)
             && string.Equals(commanderName, nextCommanderName, StringComparison.Ordinal)
@@ -516,7 +517,7 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(HasProfile));
         OnPropertyChanged(nameof(CurrentStartSystem));
 
-        var profileKey = frontierId is null ? null : $"{frontierId}|{isOdyssey}";
+        string? profileKey = frontierId is null ? null : $"{frontierId}|{isOdyssey}";
         if (string.Equals(initializedProfileKey, profileKey, StringComparison.OrdinalIgnoreCase))
         {
             RaiseCommands();
@@ -537,7 +538,7 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            var active = await journeyService.InitializeActiveAsync(frontierId, isOdyssey);
+            JourneyServiceResult active = await journeyService.InitializeActiveAsync(frontierId, isOdyssey);
             await RefreshCatalogAsync(active.Journey?.FileName);
             if (active.Errors.Count > 0)
             {
@@ -578,7 +579,7 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
 
         try
         {
-            var result = await journeyService.ApplyLiveAsync(journalEvents);
+            JourneyServiceResult result = await journeyService.ApplyLiveAsync(journalEvents);
             if (result.ProcessedEventCount == 0 || result.Journey is null)
             {
                 return;
@@ -606,8 +607,8 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
 
     public async Task SetPreferencesAsync(bool nextAlwaysOnTop, bool nextUseGalacticTime)
     {
-        var previousAlwaysOnTop = AlwaysOnTop;
-        var previousUseGalacticTime = UseGalacticTime;
+        bool previousAlwaysOnTop = AlwaysOnTop;
+        bool previousUseGalacticTime = UseGalacticTime;
         AlwaysOnTop = nextAlwaysOnTop;
         UseGalacticTime = nextUseGalacticTime;
         try
@@ -657,7 +658,7 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            var result = await journeyService.LoadAllAsync(frontierId);
+            JourneyCatalogResult result = await journeyService.LoadAllAsync(frontierId);
             Journeys = result
                 .Journeys.Select(journey => new JourneyListItemViewModel(
                     journey,
@@ -725,7 +726,7 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         {
             IsBusy = true;
             StartStatus = $"Searching for {StartSystemQuery.Trim()}\u2026";
-            var results = await systemResolver.SearchAsync(StartSystemQuery.Trim());
+            IReadOnlyList<StarSystemReference> results = await systemResolver.SearchAsync(StartSystemQuery.Trim());
             StartSystemResults = results.Select(system => new JourneyStartSystemViewModel(system)).ToArray();
             SelectedStartSystem =
                 StartSystemResults.FirstOrDefault(system =>
@@ -761,8 +762,8 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
             return;
         }
 
-        var address = UseCurrentStart ? currentSystemAddress : SelectedStartSystem?.SystemAddress;
-        var name = UseCurrentStart ? currentSystemName : SelectedStartSystem?.Name;
+        long? address = UseCurrentStart ? currentSystemAddress : SelectedStartSystem?.SystemAddress;
+        string? name = UseCurrentStart ? currentSystemName : SelectedStartSystem?.Name;
         if (address is not > 0)
         {
             StartStatus = "Choose a valid starting system.";
@@ -773,7 +774,11 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         {
             IsBusy = true;
             StartStatus = $"Reading journals for the last visit to {name}\u2026";
-            var result = await journeyService.FindLatestStartAsync(frontierId, isOdyssey, address.Value);
+            JourneyJournalSystemSearchResult result = await journeyService.FindLatestStartAsync(
+                frontierId,
+                isOdyssey,
+                address.Value
+            );
             startingEntry = result.Entry;
             StartStatus = result.Entry is null
                 ? $"No FSD jump into {name} was found in this commander's journals."
@@ -817,7 +822,7 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            var result = await journeyService.BeginAsync(
+            JourneyServiceResult result = await journeyService.BeginAsync(
                 new JourneyBeginRequest(
                     frontierId,
                     commanderName ?? string.Empty,
@@ -858,13 +863,13 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
             return;
         }
 
-        var selectedIdentity = SelectedSystem is { } system
+        (long Address, DateTimeOffset Arrived)? selectedIdentity = SelectedSystem is { } system
             ? (system.Visit.StarSystem.SystemAddress, system.Visit.Arrived)
             : ((long Address, DateTimeOffset Arrived)?)null;
         try
         {
             IsBusy = true;
-            var saved = await journeyService.SaveAsync(
+            JourneyDocument saved = await journeyService.SaveAsync(
                 selectedDocument with
                 {
                     Name = JourneyName,
@@ -952,7 +957,7 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            var concluded = await journeyService.ConcludeActiveAsync(
+            JourneyDocument? concluded = await journeyService.ConcludeActiveAsync(
                 commanderName ?? selectedDocument?.CommanderName ?? string.Empty,
                 DateTimeOffset.Now
             );
@@ -999,7 +1004,7 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            var result = await journeyService.ReprocessAsync(selectedDocument, isOdyssey);
+            JourneyServiceResult result = await journeyService.ReprocessAsync(selectedDocument, isOdyssey);
             IsReprocessPending = false;
             if (result.Journey is not null)
             {
@@ -1029,9 +1034,9 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         (long Address, DateTimeOffset Arrived)? preferredSystem = null
     )
     {
-        var previousName = JourneyName;
-        var previousDescription = JourneyDescription;
-        var previousNotes = SelectedSystemNotes;
+        string previousName = JourneyName;
+        string previousDescription = JourneyDescription;
+        string previousNotes = SelectedSystemNotes;
         preferredSystem ??= SelectedSystem is { } prior
             ? (prior.Visit.StarSystem.SystemAddress, prior.Visit.Arrived)
             : null;
@@ -1056,7 +1061,7 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
             suppressSystemLoad = preserveEdits;
             try
             {
-                var firstVisitedSystem = VisitedSystems.Count > 0 ? VisitedSystems[0] : null;
+                JourneySystemItemViewModel? firstVisitedSystem = VisitedSystems.Count > 0 ? VisitedSystems[0] : null;
                 SelectedSystem = preferredSystem is { } identity
                     ? VisitedSystems.FirstOrDefault(item =>
                         item.Visit.StarSystem.SystemAddress == identity.Address
@@ -1091,7 +1096,7 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
 
     private async Task LoadSelectedSystemAsync(JourneySystemItemViewModel? item)
     {
-        var version = ++systemLoadVersion;
+        int version = ++systemLoadVersion;
         if (item is null || selectedDocument is null)
         {
             isApplyingDocument = true;
@@ -1116,8 +1121,8 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
 
         try
         {
-            var visit = item.Visit;
-            var load = await noteStore.LoadAsync(
+            JourneySystemVisit visit = item.Visit;
+            SystemNoteLoadResult load = await noteStore.LoadAsync(
                 selectedDocument.FrontierId,
                 visit.StarSystem.Name,
                 visit.StarSystem.SystemAddress
@@ -1236,13 +1241,13 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
     private string FormatTime(DateTimeOffset value)
     {
         return UseGalacticTime
-            ? value.UtcDateTime.ToString("yyyy-MM-dd HH:mm 'UTC'")
-            : value.LocalDateTime.ToString("g");
+            ? value.UtcDateTime.ToString("yyyy-MM-dd HH:mm 'UTC'", CultureInfo.InvariantCulture)
+            : value.LocalDateTime.ToString("g", CultureInfo.CurrentCulture);
     }
 
     private string CreateSystemDetails(JourneySystemVisit visit)
     {
-        var bodyCount = Math.Max(0, visit.Counts.BodyCount - visit.Counts.Stars);
+        int bodyCount = Math.Max(0, visit.Counts.BodyCount - visit.Counts.Stars);
         var lines = new List<string>
         {
             $"Arrived {FormatTime(visit.Arrived)}",
@@ -1276,25 +1281,25 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
     {
         var values = new List<JourneyStatisticViewModel>
         {
-            new("FSD jumps", statistics.JumpCount.ToString("N0")),
+            new("FSD jumps", statistics.JumpCount.ToString("N0", CultureInfo.CurrentCulture)),
             new("Total distance", $"{statistics.TotalDistance:N1} ly"),
-            new("Systems visited", statistics.UniqueSystemCount.ToString("N0")),
-            new("FSS complete", statistics.FssCompletedSystemCount.ToString("N0")),
-            new("Bodies scanned", statistics.Counts.BodyScans.ToString("N0")),
-            new("Detailed scans", statistics.Counts.DetailedSurfaceScans.ToString("N0")),
-            new("Touchdowns", statistics.TotalLandingCount.ToString("N0")),
-            new("Screenshots", statistics.Counts.Screenshots.ToString("N0")),
-            new("Notes", statistics.Counts.Notes.ToString("N0")),
-            new("Organisms", statistics.Counts.Organisms.ToString("N0")),
+            new("Systems visited", statistics.UniqueSystemCount.ToString("N0", CultureInfo.CurrentCulture)),
+            new("FSS complete", statistics.FssCompletedSystemCount.ToString("N0", CultureInfo.CurrentCulture)),
+            new("Bodies scanned", statistics.Counts.BodyScans.ToString("N0", CultureInfo.CurrentCulture)),
+            new("Detailed scans", statistics.Counts.DetailedSurfaceScans.ToString("N0", CultureInfo.CurrentCulture)),
+            new("Touchdowns", statistics.TotalLandingCount.ToString("N0", CultureInfo.CurrentCulture)),
+            new("Screenshots", statistics.Counts.Screenshots.ToString("N0", CultureInfo.CurrentCulture)),
+            new("Notes", statistics.Counts.Notes.ToString("N0", CultureInfo.CurrentCulture)),
+            new("Organisms", statistics.Counts.Organisms.ToString("N0", CultureInfo.CurrentCulture)),
             new("Bio rewards", $"{statistics.Counts.ExobiologyRewards:N0} CR"),
             new("Exploration rewards", $"~{statistics.Counts.ExplorationRewards:N0} CR"),
-            new("Codex scans", statistics.CodexScanCount.ToString("N0")),
-            new("New Codex", statistics.Counts.NewCodexEntries.ToString("N0")),
+            new("Codex scans", statistics.CodexScanCount.ToString("N0", CultureInfo.CurrentCulture)),
+            new("New Codex", statistics.Counts.NewCodexEntries.ToString("N0", CultureInfo.CurrentCulture)),
         };
         values.AddRange(
             statistics.SubCategoryCounts.Select(category => new JourneyStatisticViewModel(
                 category.Key,
-                category.Value.ToString("N0")
+                category.Value.ToString("N0", CultureInfo.CurrentCulture)
             ))
         );
         return values;
@@ -1302,10 +1307,10 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
 
     private static string CreateInterestFlags(JourneyDocument journey, JourneySystemVisit visit)
     {
-        var sameNameVisits = journey.VisitedSystems.Where(candidate =>
+        IEnumerable<JourneySystemVisit> sameNameVisits = journey.VisitedSystems.Where(candidate =>
             string.Equals(candidate.StarSystem.Name, visit.StarSystem.Name, StringComparison.Ordinal)
         );
-        var flags = string.Empty;
+        string flags = string.Empty;
         flags +=
             visit.Counts.Screenshots > 0
                 ? "P"
@@ -1421,7 +1426,7 @@ public sealed record JourneySystemItemViewModel(
 {
     public string Name => Visit.StarSystem.Name;
 
-    public string Address => Visit.StarSystem.SystemAddress.ToString();
+    public string Address => Visit.StarSystem.SystemAddress.ToString(CultureInfo.InvariantCulture);
 }
 
 public sealed record JourneyStartSystemViewModel(StarSystemReference System)

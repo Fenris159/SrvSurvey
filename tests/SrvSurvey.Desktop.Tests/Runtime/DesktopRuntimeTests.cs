@@ -21,8 +21,8 @@ public sealed class DesktopRuntimeTests
         var phases = new RecordingDesktopRuntimePhases(events);
         await using var runtime = DesktopRuntime.CreateForTests(lifetime, phases);
 
-        var first = runtime.RequestShutdownAsync(DesktopShutdownReason.MainWindowClose);
-        var second = runtime.RequestShutdownAsync(DesktopShutdownReason.MainWindowClose);
+        Task first = runtime.RequestShutdownAsync(DesktopShutdownReason.MainWindowClose);
+        Task second = runtime.RequestShutdownAsync(DesktopShutdownReason.MainWindowClose);
 
         Assert.Same(first, second);
         phases.AllowProducerStop.SetResult();
@@ -51,7 +51,7 @@ public sealed class DesktopRuntimeTests
         Task? reentrantRequest = null;
         phases.OnQuiesce = _ => reentrantRequest = runtime.RequestShutdownAsync(DesktopShutdownReason.UpdateHandoff);
 
-        var first = runtime.RequestShutdownAsync(DesktopShutdownReason.MainWindowClose);
+        Task first = runtime.RequestShutdownAsync(DesktopShutdownReason.MainWindowClose);
 
         Assert.Same(first, reentrantRequest);
         phases.AllowProducerStop.SetResult();
@@ -115,7 +115,9 @@ public sealed class DesktopRuntimeTests
         var first = new Window();
         runtime.AttachMainWindow(first);
 
-        var exception = Assert.Throws<InvalidOperationException>(() => runtime.AttachMainWindow(new Window()));
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() =>
+            runtime.AttachMainWindow(new Window())
+        );
 
         Assert.Contains("already has a main window", exception.Message, StringComparison.Ordinal);
         phases.AllowProducerStop.SetResult();
@@ -171,10 +173,10 @@ public sealed class DesktopRuntimeTests
     public async Task ProductionStartupCheckpointRollsBackAcquiredResources(int checkpointValue)
     {
         var checkpoint = (DesktopStartupCheckpoint)checkpointValue;
-        var application =
+        Application application =
             Application.Current ?? throw new InvalidOperationException("The Headless application is unavailable.");
         var desktop = new ClassicDesktopStyleApplicationLifetime();
-        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-runtime-startup-{Guid.NewGuid():N}");
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-runtime-startup-{Guid.NewGuid():N}");
         List<string> events = [];
         var lifetime = new RecordingDesktopLifetime(events);
         try
@@ -251,7 +253,7 @@ public sealed class DesktopRuntimeTests
         var phases = new RecordingDesktopRuntimePhases(events);
         await using var runtime = DesktopRuntime.CreateForTests(lifetime, phases);
 
-        var cancel = runtime.RequestMainWindowClose(WindowCloseReason.OSShutdown);
+        bool cancel = runtime.RequestMainWindowClose(WindowCloseReason.OSShutdown);
 
         Assert.False(cancel);
         Assert.Equal(["quiesce:OperatingSystemShutdown", "stop-producers"], events);
@@ -286,7 +288,7 @@ public sealed class DesktopRuntimeTests
         var entered = new TaskCompletionSource<DesktopShutdownReason>(
             TaskCreationOptions.RunContinuationsAsynchronously
         );
-        var ranOnUiThread = false;
+        bool ranOnUiThread = false;
         phases.OnQuiesce = reason =>
         {
             ranOnUiThread = Dispatcher.UIThread.CheckAccess();
@@ -295,7 +297,7 @@ public sealed class DesktopRuntimeTests
         await using var runtime = DesktopRuntime.CreateForTests(lifetime, phases);
 
         await Task.Run(() => runtime.PostShutdownOnUiThread(DesktopShutdownReason.LinuxTermination));
-        var actualReason = await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        DesktopShutdownReason actualReason = await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
         Assert.Equal(DesktopShutdownReason.LinuxTermination, actualReason);
         Assert.True(ranOnUiThread);
@@ -312,7 +314,7 @@ public sealed class DesktopRuntimeTests
         await using var runtime = DesktopRuntime.CreateForTests(lifetime, phases);
         var expected = new InvalidOperationException("Launch failed.");
 
-        var actual = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        InvalidOperationException actual = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             runtime.RestartAsync(() => throw expected)
         );
 
@@ -332,7 +334,7 @@ public sealed class DesktopRuntimeTests
         runtime.AttachMainWindow(window);
         window.Show();
 
-        var restarting = runtime.RestartAsync(() => events.Add("launch"));
+        Task restarting = runtime.RestartAsync(() => events.Add("launch"));
 
         Assert.False(window.IsVisible);
         Assert.Equal(["launch", "quiesce:Restart", "stop-producers"], events);
@@ -351,7 +353,7 @@ public sealed class DesktopRuntimeTests
         runtime.AttachMainWindow(window);
         window.Show();
 
-        var stopping = runtime.RequestShutdownAsync(DesktopShutdownReason.UpdateHandoff);
+        Task stopping = runtime.RequestShutdownAsync(DesktopShutdownReason.UpdateHandoff);
 
         Assert.False(window.IsVisible);
         Assert.Equal(["quiesce:UpdateHandoff", "stop-producers"], events);

@@ -338,12 +338,12 @@ public sealed partial class OverlayCoverageInventoryTests
     [Fact]
     public void EverySupportedOverlayHasProductionAndAssertionEvidence()
     {
-        var root = FindRepositoryRoot();
-        foreach (var mapping in Mappings)
+        string root = FindRepositoryRoot();
+        foreach (OverlayMapping mapping in Mappings)
         {
             Assert.NotEmpty(mapping.ProductionFiles);
             Assert.NotEmpty(mapping.TestFiles);
-            foreach (var path in mapping.ProductionFiles)
+            foreach (string path in mapping.ProductionFiles)
             {
                 Assert.True(
                     File.Exists(Path.Combine(root, Native(path))),
@@ -351,9 +351,9 @@ public sealed partial class OverlayCoverageInventoryTests
                 );
             }
 
-            foreach (var path in mapping.TestFiles)
+            foreach (string path in mapping.TestFiles)
             {
-                var absolutePath = Path.Combine(root, Native(path));
+                string absolutePath = Path.Combine(root, Native(path));
                 Assert.True(File.Exists(absolutePath), $"Missing {mapping.ContractName} test evidence: {path}");
                 Assert.Contains("Assert.", File.ReadAllText(absolutePath));
             }
@@ -363,12 +363,12 @@ public sealed partial class OverlayCoverageInventoryTests
     [Fact]
     public void EveryForcedPreviewMapsToAnExistingProductionWindow()
     {
-        var root = FindRepositoryRoot();
+        string root = FindRepositoryRoot();
         Assert.Equal(
             OverlayLayoutCatalog.Supported.Select(definition => definition.Name).Order(StringComparer.Ordinal),
             PreviewProductionWindows.Keys.Order(StringComparer.Ordinal)
         );
-        foreach (var productionWindow in PreviewProductionWindows.Values)
+        foreach (string productionWindow in PreviewProductionWindows.Values)
         {
             Assert.True(
                 File.Exists(Path.Combine(root, "src", "SrvSurvey.Desktop", productionWindow)),
@@ -380,8 +380,8 @@ public sealed partial class OverlayCoverageInventoryTests
     [Fact]
     public void FixedRuntimeWidthsMatchTheirEditorPresentationWidths()
     {
-        var root = FindRepositoryRoot();
-        foreach (var pair in PreviewProductionWindows)
+        string root = FindRepositoryRoot();
+        foreach (KeyValuePair<string, string> pair in PreviewProductionWindows)
         {
             // Human-site dimensions are commander settings in the legacy app.
             if (pair.Key == "PlotHumanSite")
@@ -389,7 +389,7 @@ public sealed partial class OverlayCoverageInventoryTests
                 continue;
             }
 
-            var markup = File.ReadAllText(Path.Combine(root, "src", "SrvSurvey.Desktop", pair.Value));
+            string markup = File.ReadAllText(Path.Combine(root, "src", "SrvSurvey.Desktop", pair.Value));
             // Content-driven WidthAndHeight hosts may set only a soft MinWidth
             // that is lower than the catalog anchor; only pin-check fixed hosts.
             if (markup.Contains("SizeToContent=\"WidthAndHeight\"", StringComparison.Ordinal))
@@ -397,13 +397,13 @@ public sealed partial class OverlayCoverageInventoryTests
                 continue;
             }
 
-            var match = WindowWidthRegex().Match(markup);
+            Match match = WindowWidthRegex().Match(markup);
             if (!match.Success)
             {
                 continue;
             }
 
-            var expected = OverlayLayoutCatalog.GetRequired(pair.Key).PreviewSize.Width;
+            int expected = OverlayLayoutCatalog.GetRequired(pair.Key).PreviewSize.Width;
             Assert.Equal(
                 expected,
                 int.Parse(match.Groups["width"].Value, global::System.Globalization.CultureInfo.InvariantCulture)
@@ -421,8 +421,8 @@ public sealed partial class OverlayCoverageInventoryTests
     [Fact]
     public void CommodityOverlayUsesLegacyContentDrivenHeight()
     {
-        var root = FindRepositoryRoot();
-        var markup = File.ReadAllText(
+        string root = FindRepositoryRoot();
+        string markup = File.ReadAllText(
             Path.Combine(root, "src", "SrvSurvey.Desktop", PreviewProductionWindows["PlotBuildCommodities"])
         );
 
@@ -434,8 +434,8 @@ public sealed partial class OverlayCoverageInventoryTests
     [Fact]
     public void EveryIndividualRuntimeOverlayWindowIsAvailableInTheEditor()
     {
-        var root = FindRepositoryRoot();
-        var overlayDirectory = Path.Combine(root, "src", "SrvSurvey.Desktop");
+        string root = FindRepositoryRoot();
+        string overlayDirectory = Path.Combine(root, "src", "SrvSurvey.Desktop");
         var containerWindows = new HashSet<string>(StringComparer.Ordinal)
         {
             "CombinedOverlayWindow.axaml",
@@ -444,7 +444,7 @@ public sealed partial class OverlayCoverageInventoryTests
             "SurfaceMiningAlignmentOverlayWindow.axaml",
             "StreamOverlayWindow.axaml",
         };
-        var runtimePanels = Directory
+        string[] runtimePanels = Directory
             .GetFiles(overlayDirectory, "*OverlayWindow.axaml")
             .Select(Path.GetFileName)
             .Where(name => name is not null && !containerWindows.Contains(name))
@@ -461,8 +461,8 @@ public sealed partial class OverlayCoverageInventoryTests
     [Fact]
     public void EveryRuntimeOverlayUsesTheSharedLegacyPresentationPipeline()
     {
-        var root = FindRepositoryRoot();
-        var hostedWindowSource = File.ReadAllText(
+        string root = FindRepositoryRoot();
+        string hostedWindowSource = File.ReadAllText(
             Path.Combine(root, Native("src/SrvSurvey.Desktop/Platform/Overlay/HostedOverlayWindow.cs"))
         );
         Assert.Contains("OverlayThemeResources.Apply(", hostedWindowSource);
@@ -470,7 +470,7 @@ public sealed partial class OverlayCoverageInventoryTests
             .GetFiles(Path.Combine(root, Native("src/SrvSurvey.Desktop/Platform/Overlay")), "*Coordinator.cs")
             .Select(path => new { Path = path, Source = File.ReadAllText(path) })
             .ToArray();
-        foreach (var definition in OverlayLayoutCatalog.Supported)
+        foreach (OverlayLayoutDefinition definition in OverlayLayoutCatalog.Supported)
         {
             var owners = coordinatorFiles.Where(file =>
                 file.Source.Contains($"\"{definition.Name}\"", StringComparison.Ordinal)
@@ -492,8 +492,8 @@ public sealed partial class OverlayCoverageInventoryTests
     [InlineData("src/SrvSurvey.Desktop/MassacreMissionsOverlayPresentation.axaml", "IsComplete")]
     public void CompletionStatesRemainVisiblyStruckThrough(string relativePath, string stateBinding)
     {
-        var root = FindRepositoryRoot();
-        var xaml = File.ReadAllText(Path.Combine(root, Native(relativePath)));
+        string root = FindRepositoryRoot();
+        string xaml = File.ReadAllText(Path.Combine(root, Native(relativePath)));
 
         Assert.Contains($"IsVisible=\"{{Binding {stateBinding}}}\"", xaml);
         Assert.Contains("TextDecorations=\"Strikethrough\"", xaml);
@@ -502,11 +502,11 @@ public sealed partial class OverlayCoverageInventoryTests
     [Fact]
     public void FssOverlayDoesNotReplaceBodyRowsWithAnArbitrarySummaryCap()
     {
-        var root = FindRepositoryRoot();
-        var xaml = File.ReadAllText(
+        string root = FindRepositoryRoot();
+        string xaml = File.ReadAllText(
             Path.Combine(root, Native("src/SrvSurvey.Desktop/FssInfoOverlayPresentation.axaml"))
         );
-        var viewModel = File.ReadAllText(
+        string viewModel = File.ReadAllText(
             Path.Combine(root, Native("src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"))
         );
 
@@ -519,24 +519,24 @@ public sealed partial class OverlayCoverageInventoryTests
     [Fact]
     public void PositionEditorUsesCategorizedForcedPreviewsAndExplicitCommitControls()
     {
-        var root = FindRepositoryRoot();
-        var themeShell = File.ReadAllText(Path.Combine(root, Native("src/SrvSurvey.Desktop/Views/ThemeView.axaml")));
-        var overlaySettings = File.ReadAllText(
+        string root = FindRepositoryRoot();
+        string themeShell = File.ReadAllText(Path.Combine(root, Native("src/SrvSurvey.Desktop/Views/ThemeView.axaml")));
+        string overlaySettings = File.ReadAllText(
             Path.Combine(root, Native("src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"))
         );
-        var editor = File.ReadAllText(
+        string editor = File.ReadAllText(
             Path.Combine(root, Native("src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"))
         );
-        var preview = File.ReadAllText(
+        string preview = File.ReadAllText(
             Path.Combine(root, Native("src/SrvSurvey.Desktop/OverlayPositionPreviewWindow.axaml"))
         );
-        var interaction = File.ReadAllText(
+        string interaction = File.ReadAllText(
             Path.Combine(root, Native("src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"))
         );
-        var editorHost = File.ReadAllText(
+        string editorHost = File.ReadAllText(
             Path.Combine(root, Native("src/SrvSurvey.Desktop/Platform/Overlay/OverlayPositionEditorHost.cs"))
         );
-        var themeResources = File.ReadAllText(
+        string themeResources = File.ReadAllText(
             Path.Combine(root, Native("src/SrvSurvey.Desktop/Platform/Overlay/OverlayThemeResources.cs"))
         );
 
@@ -569,14 +569,14 @@ public sealed partial class OverlayCoverageInventoryTests
         Assert.Contains("CornerRadius=\"7,7,0,0\"", preview);
         Assert.Contains("SIMULATED GAME STATE", preview);
         Assert.Contains("BorderThickness=\"2\"", preview);
-        var runtimeFactory = File.ReadAllText(
+        string runtimeFactory = File.ReadAllText(
             Path.Combine(root, Native("src/SrvSurvey.Desktop/Platform/Overlay/OverlayRuntimePresentationFactory.cs"))
         );
         Assert.Contains("CreatePresentation", runtimeFactory);
         Assert.Contains("CreateEditorDataContext", runtimeFactory);
         Assert.Contains("BiologySurveyOverlayPresentation", runtimeFactory);
         Assert.Contains("RouteBioOverlayPresentation", runtimeFactory);
-        var routePresentation = File.ReadAllText(
+        string routePresentation = File.ReadAllText(
             Path.Combine(root, Native("src/SrvSurvey.Desktop/RouteBioOverlayPresentation.axaml"))
         );
         Assert.Contains("RouteBioTargetList", routePresentation);
@@ -646,10 +646,10 @@ public sealed partial class OverlayCoverageInventoryTests
         Assert.DoesNotContain("Notifications.Enabled", themeShell);
         Assert.Contains("Notifications.Enabled", overlaySettings);
 
-        var routeOverlay = File.ReadAllText(
+        string routeOverlay = File.ReadAllText(
             Path.Combine(root, Native("src/SrvSurvey.Desktop/RouteBioOverlayWindow.axaml"))
         );
-        var routeOverlayPresentation = File.ReadAllText(
+        string routeOverlayPresentation = File.ReadAllText(
             Path.Combine(root, Native("src/SrvSurvey.Desktop/RouteBioOverlayPresentation.axaml"))
         );
         Assert.Contains("RouteBioOverlayPresentation", routeOverlay);
@@ -661,10 +661,10 @@ public sealed partial class OverlayCoverageInventoryTests
         Assert.DoesNotContain("RavenWarningBrush", routeOverlayPresentation);
         Assert.DoesNotContain("BorderBrush=\"{DynamicResource RavenWarningBrush}\"", routeOverlayPresentation);
 
-        var biologyOverlay = File.ReadAllText(
+        string biologyOverlay = File.ReadAllText(
             Path.Combine(root, Native("src/SrvSurvey.Desktop/BiologySurveyOverlayWindow.axaml"))
         );
-        var biologyPresentation = File.ReadAllText(
+        string biologyPresentation = File.ReadAllText(
             Path.Combine(root, Native("src/SrvSurvey.Desktop/BiologySurveyOverlayPresentation.axaml"))
         );
         Assert.Contains("Width=\"240\"", biologyOverlay);
@@ -680,13 +680,13 @@ public sealed partial class OverlayCoverageInventoryTests
         Assert.DoesNotContain("RavenSurfaceBrush", biologyPresentation);
         Assert.DoesNotContain("Classes=\"badge\"", biologyPresentation);
 
-        var routeTargetList = File.ReadAllText(
+        string routeTargetList = File.ReadAllText(
             Path.Combine(root, Native("src/SrvSurvey.Desktop/Controls/RouteBioTargetList.axaml"))
         );
-        var routeTargetListCode = File.ReadAllText(
+        string routeTargetListCode = File.ReadAllText(
             Path.Combine(root, Native("src/SrvSurvey.Desktop/Controls/RouteBioTargetList.axaml.cs"))
         );
-        var routeTargetRow = File.ReadAllText(
+        string routeTargetRow = File.ReadAllText(
             Path.Combine(root, Native("src/SrvSurvey.Desktop/Controls/RouteBioTargetRow.axaml"))
         );
         Assert.Contains("VerticalScrollBarVisibility=\"Hidden\"", routeTargetList);

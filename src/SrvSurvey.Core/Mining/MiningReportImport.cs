@@ -25,7 +25,7 @@ public static class MiningReportImport
             TrimWhiteSpace = false,
         };
         parser.SetDelimiters(",");
-        var header = parser.ReadFields() ?? throw new JsonException("Missing report columns.");
+        string[] header = parser.ReadFields() ?? throw new JsonException("Missing report columns.");
         if (!header.Contains("timestamp_utc") && !header.Contains("Started"))
         {
             throw new JsonException("Expected an EliteMining or SrvSurvey session CSV.");
@@ -34,7 +34,7 @@ public static class MiningReportImport
         var output = new List<MiningSession>();
         while (!parser.EndOfData)
         {
-            var row = parser.ReadFields()!;
+            string[] row = parser.ReadFields()!;
             if (row.Length != header.Length)
             {
                 throw new JsonException("Report column count does not match its header.");
@@ -51,7 +51,7 @@ public static class MiningReportImport
         string Get(string reference, string own) =>
             fields.GetValueOrDefault(reference) ?? fields.GetValueOrDefault(own) ?? "";
         double Number(string reference, string own) =>
-            double.TryParse(Get(reference, own), NumberStyles.Float, CultureInfo.InvariantCulture, out var value)
+            double.TryParse(Get(reference, own), NumberStyles.Float, CultureInfo.InvariantCulture, out double value)
             && double.IsFinite(value)
             && value >= 0
                 ? value
@@ -61,14 +61,14 @@ public static class MiningReportImport
                 Get("timestamp_utc", "Started"),
                 CultureInfo.InvariantCulture,
                 DateTimeStyles.AssumeLocal,
-                out var started
+                out DateTimeOffset started
             )
         )
         {
             throw new JsonException("Invalid session date.");
         }
 
-        var duration = TimeSpan.TryParse(Get("elapsed", ""), CultureInfo.InvariantCulture, out var elapsed)
+        TimeSpan duration = TimeSpan.TryParse(Get("elapsed", ""), CultureInfo.InvariantCulture, out TimeSpan elapsed)
             ? elapsed
             : TimeSpan.FromMinutes(Number("", "ActiveMinutes"));
         if (duration < TimeSpan.Zero || duration > TimeSpan.FromDays(366))

@@ -16,11 +16,11 @@ internal sealed class MiningHudImage : IFssPixelSource
         Height = Math.Max(1, (int)Math.Round(source.Height * Width / (double)source.Width));
         Radius = Width * circleWidth / 2;
         colors = new FssRgbPixel[Width * Height];
-        for (var y = 0; y < Height; y++)
+        for (int y = 0; y < Height; y++)
         {
-            for (var x = 0; x < Width; x++)
+            for (int x = 0; x < Width; x++)
             {
-                var p = source.GetPixel(
+                FssRgbPixel p = source.GetPixel(
                     Math.Min(source.Width - 1, (int)(x * source.Width / (double)Width)),
                     Math.Min(source.Height - 1, (int)(y * source.Height / (double)Height))
                 );

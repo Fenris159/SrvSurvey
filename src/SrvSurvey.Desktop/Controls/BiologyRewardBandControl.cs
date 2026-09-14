@@ -529,13 +529,13 @@ public sealed class BiologyRewardBandControl : Control
             return;
         }
 
-        var brushes = ResolveBandBrushes();
-        var state = BiologyRewardBandScale.Calculate(
+        BandBrushes brushes = ResolveBandBrushes();
+        BiologyRewardBandState state = BiologyRewardBandScale.Calculate(
             MinimumReward,
             MaximumReward,
             BiologyRewardThresholds.Normalize(BucketOneMillions, BucketTwoMillions, BucketThreeMillions)
         );
-        var edge = ResolveEdgeBrush(state, brushes);
+        IBrush edge = ResolveEdgeBrush(state, brushes);
 
         if (state.IsUnknown)
         {
@@ -614,9 +614,9 @@ public sealed class BiologyRewardBandControl : Control
 
     private BandBrushes ResolveBandBrushes()
     {
-        var filled = ResolveFilledBrush();
-        var potential = ResolvePotentialBrush();
-        var segmentEdges = ResolveSegmentEdgeBrushes(filled, potential);
+        IBrush filled = ResolveFilledBrush();
+        IBrush potential = ResolvePotentialBrush();
+        SegmentEdgeBrushes segmentEdges = ResolveSegmentEdgeBrushes(filled, potential);
         return new BandBrushes(
             UnknownBrush ?? Brushes.Gray,
             filled,
@@ -744,11 +744,11 @@ public sealed class BiologyRewardBandControl : Control
     )
     {
         const double gap = 1;
-        var segmentHeight = (Bounds.Height - 3 - gap * 3) / 4;
-        for (var index = 0; index < state.Segments.Count; index++)
+        double segmentHeight = (Bounds.Height - 3 - gap * 3) / 4;
+        for (int index = 0; index < state.Segments.Count; index++)
         {
-            var segment = state.Segments[index];
-            var y = Bounds.Height - 1.5 - segmentHeight - index * (segmentHeight + gap);
+            BiologyRewardBandSegment segment = state.Segments[index];
+            double y = Bounds.Height - 1.5 - segmentHeight - index * (segmentHeight + gap);
             var rect = new Rect(2, y, Bounds.Width - 4, segmentHeight);
             DrawSegment(context, segment, rect, filled, potential, filledEdge, potentialEdge);
         }
@@ -785,7 +785,7 @@ public sealed class BiologyRewardBandControl : Control
     {
         // Clip strictly inside the border so diagonals never spill past the
         // pip frame (visible when IsPrediction paints the hatch overlay).
-        var inset = 1.5;
+        double inset = 1.5;
         var clip = new Rect(
             inset,
             inset,
@@ -800,7 +800,7 @@ public sealed class BiologyRewardBandControl : Control
         using (context.PushClip(clip))
         {
             var hatchPen = new Pen(hatch, 0.75);
-            for (var x = -Bounds.Height; x < Bounds.Width; x += 4)
+            for (double x = -Bounds.Height; x < Bounds.Width; x += 4)
             {
                 context.DrawLine(hatchPen, new Point(x, Bounds.Height - 1), new Point(x + Bounds.Height, 1));
             }
@@ -822,14 +822,14 @@ public static class BiologyRewardBandScale
             return new BiologyRewardBandState(true, []);
         }
 
-        var buckets = new[]
+        long[] buckets = new[]
         {
             0L,
             ToCredits(thresholds.BucketOneMillions),
             ToCredits(thresholds.BucketTwoMillions),
             ToCredits(thresholds.BucketThreeMillions),
         };
-        var segments = buckets
+        BiologyRewardBandSegment[] segments = buckets
             .Select(bucket =>
                 minimumReward > bucket
                     ? BiologyRewardBandSegment.Filled

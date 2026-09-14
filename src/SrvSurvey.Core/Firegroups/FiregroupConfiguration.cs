@@ -66,10 +66,10 @@ public static class FiregroupLoadout
 
     public static FiregroupShip? Parse(JsonElement root)
     {
-        var type = Text(root, "Ship");
+        string type = Text(root, "Ship");
         if (
             string.IsNullOrWhiteSpace(type)
-            || !root.TryGetProperty("Modules", out var modules)
+            || !root.TryGetProperty("Modules", out JsonElement modules)
             || modules.ValueKind != JsonValueKind.Array
         )
         {
@@ -77,24 +77,24 @@ public static class FiregroupLoadout
         }
 
         long? id =
-            root.TryGetProperty("ShipID", out var shipId)
+            root.TryGetProperty("ShipID", out JsonElement shipId)
             && shipId.ValueKind == JsonValueKind.Number
-            && shipId.TryGetInt64(out var value)
+            && shipId.TryGetInt64(out long value)
                 ? value
                 : null;
-        var name = Text(root, "ShipName");
-        var key =
+        string name = Text(root, "ShipName");
+        string key =
             $"{type.ToLowerInvariant()}:{(id is not null ? id.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) : name)}";
         var equipped = new List<FiregroupModule>();
-        foreach (var module in modules.EnumerateArray())
+        foreach (JsonElement module in modules.EnumerateArray())
         {
-            var symbol = Text(module, "Item").ToLowerInvariant();
-            var slot = Text(module, "Slot");
-            var localizedName = Text(module, "Item_Localised");
-            var specializedKey = $"{symbol}|{localizedName.ToLowerInvariant()}";
+            string symbol = Text(module, "Item").ToLowerInvariant();
+            string slot = Text(module, "Slot");
+            string localizedName = Text(module, "Item_Localised");
+            string specializedKey = $"{symbol}|{localizedName.ToLowerInvariant()}";
             if (
                 slot.Length == 0
-                || (!Names.TryGetValue(specializedKey, out var label) && !Names.TryGetValue(symbol, out label))
+                || (!Names.TryGetValue(specializedKey, out string? label) && !Names.TryGetValue(symbol, out label))
             )
             {
                 continue;
@@ -109,14 +109,14 @@ public static class FiregroupLoadout
 
     private static string Text(JsonElement element, string name) =>
         element.ValueKind == JsonValueKind.Object
-        && element.TryGetProperty(name, out var value)
+        && element.TryGetProperty(name, out JsonElement value)
         && value.ValueKind == JsonValueKind.String
             ? value.GetString() ?? ""
             : "";
 
     private static Dictionary<string, string> ReadNames()
     {
-        using var stream = typeof(FiregroupLoadout).Assembly.GetManifestResourceStream(
+        using Stream stream = typeof(FiregroupLoadout).Assembly.GetManifestResourceStream(
             "SrvSurvey.Core.Resources.firegroup-modules.json"
         )!;
         return JsonSerializer.Deserialize<Dictionary<string, string>>(stream)!;

@@ -13,7 +13,7 @@ public sealed class ShipLockerFileReaderTests : IDisposable
     public async Task ReadAsyncProjectsAllSectionsAndMergesDuplicateItems()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, ShipLockerFileReader.FileName);
+        string path = Path.Combine(temporaryDirectory, ShipLockerFileReader.FileName);
         await File.WriteAllTextAsync(
             path,
             """
@@ -31,13 +31,13 @@ public sealed class ShipLockerFileReaderTests : IDisposable
             """
         );
 
-        var result = await ShipLockerFileReader.ReadAsync(path);
+        ShipLockerReadResult result = await ShipLockerFileReader.ReadAsync(path);
 
         Assert.True(result.IsSuccess, result.Error);
-        var snapshot = Assert.IsType<ShipLockerSnapshot>(result.Snapshot);
+        ShipLockerSnapshot snapshot = Assert.IsType<ShipLockerSnapshot>(result.Snapshot);
         Assert.Equal("ShipLocker", snapshot.EventName);
         Assert.Equal(4, snapshot.Items.Count);
-        var healthMonitor = snapshot.Items.Single(item =>
+        ShipLockerItem healthMonitor = snapshot.Items.Single(item =>
             item.Name.Equals("healthmonitor", StringComparison.OrdinalIgnoreCase)
         );
         Assert.Equal("Items", healthMonitor.Category);
@@ -51,10 +51,14 @@ public sealed class ShipLockerFileReaderTests : IDisposable
     public async Task ReadAsyncRetriesMalformedPartialWrite()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, ShipLockerFileReader.FileName);
+        string path = Path.Combine(temporaryDirectory, ShipLockerFileReader.FileName);
         await File.WriteAllTextAsync(path, "{\"event\":\"ShipLocker\"");
 
-        var result = await ShipLockerFileReader.ReadAsync(path, maximumAttempts: 2, retryDelay: TimeSpan.Zero);
+        ShipLockerReadResult result = await ShipLockerFileReader.ReadAsync(
+            path,
+            maximumAttempts: 2,
+            retryDelay: TimeSpan.Zero
+        );
 
         Assert.False(result.IsSuccess);
         Assert.Equal(2, result.Attempts);

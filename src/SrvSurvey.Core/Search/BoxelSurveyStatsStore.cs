@@ -47,7 +47,7 @@ public sealed class BoxelSurveyStatsStore
         CancellationToken cancellationToken = default
     )
     {
-        var catalog = await LoadCatalogAsync(frontierId, cancellationToken).ConfigureAwait(false);
+        BoxelSurveyStatsCatalog catalog = await LoadCatalogAsync(frontierId, cancellationToken).ConfigureAwait(false);
         return catalog.Index;
     }
 
@@ -57,8 +57,8 @@ public sealed class BoxelSurveyStatsStore
     )
     {
         ValidateFileName(frontierId, nameof(frontierId));
-        var directory = GetCommanderDirectory(frontierId);
-        var indexPath = Path.Combine(directory, IndexFileName);
+        string directory = GetCommanderDirectory(frontierId);
+        string indexPath = Path.Combine(directory, IndexFileName);
         if (File.Exists(indexPath))
         {
             try
@@ -83,8 +83,8 @@ public sealed class BoxelSurveyStatsStore
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(prefix);
         ValidateFileName(frontierId, nameof(frontierId));
-        var catalog = await LoadCatalogAsync(frontierId, cancellationToken).ConfigureAwait(false);
-        var path = await ResolveExistingBoxelPathAsync(frontierId, prefix, catalog, cancellationToken)
+        BoxelSurveyStatsCatalog catalog = await LoadCatalogAsync(frontierId, cancellationToken).ConfigureAwait(false);
+        string? path = await ResolveExistingBoxelPathAsync(frontierId, prefix, catalog, cancellationToken)
             .ConfigureAwait(false);
         if (path is null)
         {
@@ -93,7 +93,8 @@ public sealed class BoxelSurveyStatsStore
 
         try
         {
-            var document = await ReadDocumentAsync(frontierId, path, cancellationToken).ConfigureAwait(false);
+            BoxelSurveyBoxelDocument document = await ReadDocumentAsync(frontierId, path, cancellationToken)
+                .ConfigureAwait(false);
             return string.Equals(document.Prefix, prefix, StringComparison.Ordinal) ? document : null;
         }
         catch (Exception exception)
@@ -127,7 +128,7 @@ public sealed class BoxelSurveyStatsStore
         }
 
         var uniqueDocuments = new Dictionary<string, BoxelSurveyBoxelDocument>(StringComparer.Ordinal);
-        foreach (var document in documents)
+        foreach (BoxelSurveyBoxelDocument document in documents)
         {
             ArgumentNullException.ThrowIfNull(document);
             ArgumentException.ThrowIfNullOrWhiteSpace(document.Prefix);
@@ -137,37 +138,40 @@ public sealed class BoxelSurveyStatsStore
         await writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            var directory = GetCommanderDirectory(frontierId);
+            string directory = GetCommanderDirectory(frontierId);
             Directory.CreateDirectory(directory);
-            var catalog = await LoadCatalogAsync(frontierId, cancellationToken).ConfigureAwait(false);
+            BoxelSurveyStatsCatalog catalog = await LoadCatalogAsync(frontierId, cancellationToken)
+                .ConfigureAwait(false);
             var entriesByPrefix = new Dictionary<string, BoxelSurveyIndexEntry>(StringComparer.Ordinal);
-            foreach (var entry in catalog.Index)
+            foreach (BoxelSurveyIndexEntry entry in catalog.Index)
             {
                 entriesByPrefix[entry.Prefix] = entry;
             }
-            foreach (var document in uniqueDocuments.Values)
+            foreach (BoxelSurveyBoxelDocument document in uniqueDocuments.Values)
             {
                 entriesByPrefix[document.Prefix] = CreateSnapshot(document).ToIndexEntry();
             }
 
-            var entries = entriesByPrefix.Values.OrderBy(entry => entry.Prefix, StringComparer.Ordinal).ToArray();
+            BoxelSurveyIndexEntry[] entries = entriesByPrefix
+                .Values.OrderBy(entry => entry.Prefix, StringComparer.Ordinal)
+                .ToArray();
             var updated = new BoxelSurveyStatsCatalog(
                 frontierId,
                 BoxelSurveyStatsCatalog.CurrentSchemaVersion,
                 DateTimeOffset.UtcNow,
                 entries
             );
-            foreach (var document in uniqueDocuments.Values)
+            foreach (BoxelSurveyBoxelDocument document in uniqueDocuments.Values)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var previousPath = await ResolveExistingBoxelPathAsync(
+                string? previousPath = await ResolveExistingBoxelPathAsync(
                         frontierId,
                         document.Prefix,
                         updated,
                         cancellationToken
                     )
                     .ConfigureAwait(false);
-                var path = ResolveBoxelPath(frontierId, document.Prefix, updated);
+                string path = ResolveBoxelPath(frontierId, document.Prefix, updated);
                 await WriteJsonAsync(path, WriteDocument(frontierId, document), cancellationToken)
                     .ConfigureAwait(false);
                 if (
@@ -192,10 +196,10 @@ public sealed class BoxelSurveyStatsStore
     public static string SanitizePrefix(string prefix)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(prefix);
-        var characters = prefix
+        char[] characters = prefix
             .Select(character => character < 32 || InvalidFileNameCharacters.Contains(character) ? '_' : character)
             .ToArray();
-        var safe = new string(characters).Trim().Trim('.');
+        string safe = new string(characters).Trim().Trim('.');
         return string.IsNullOrWhiteSpace(safe) ? "boxel" : safe;
     }
 
@@ -211,7 +215,7 @@ public sealed class BoxelSurveyStatsStore
         }
 
         var entries = new List<BoxelSurveyIndexEntry>();
-        foreach (var path in Directory.EnumerateFiles(directory, "*.json", SearchOption.TopDirectoryOnly))
+        foreach (string path in Directory.EnumerateFiles(directory, "*.json", SearchOption.TopDirectoryOnly))
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (string.Equals(Path.GetFileName(path), IndexFileName, StringComparison.OrdinalIgnoreCase))
@@ -221,7 +225,8 @@ public sealed class BoxelSurveyStatsStore
 
             try
             {
-                var document = await ReadDocumentAsync(frontierId, path, cancellationToken).ConfigureAwait(false);
+                BoxelSurveyBoxelDocument document = await ReadDocumentAsync(frontierId, path, cancellationToken)
+                    .ConfigureAwait(false);
                 entries.Add(CreateSnapshot(document).ToIndexEntry());
             }
             catch (Exception exception)
@@ -243,9 +248,9 @@ public sealed class BoxelSurveyStatsStore
 
     private string ResolveBoxelPath(string frontierId, string prefix, BoxelSurveyStatsCatalog catalog)
     {
-        var directory = GetCommanderDirectory(frontierId);
-        var preferred = Path.Combine(directory, SanitizePrefix(prefix) + ".json");
-        var collision = catalog.Index.Any(entry =>
+        string directory = GetCommanderDirectory(frontierId);
+        string preferred = Path.Combine(directory, SanitizePrefix(prefix) + ".json");
+        bool collision = catalog.Index.Any(entry =>
             !string.Equals(entry.Prefix, prefix, StringComparison.Ordinal)
             && string.Equals(SanitizePrefix(entry.Prefix), SanitizePrefix(prefix), StringComparison.OrdinalIgnoreCase)
         );
@@ -267,9 +272,9 @@ public sealed class BoxelSurveyStatsStore
         CancellationToken cancellationToken
     )
     {
-        var directory = GetCommanderDirectory(frontierId);
-        var preferred = Path.Combine(directory, SanitizePrefix(prefix) + ".json");
-        var resolved = ResolveBoxelPath(frontierId, prefix, catalog);
+        string directory = GetCommanderDirectory(frontierId);
+        string preferred = Path.Combine(directory, SanitizePrefix(prefix) + ".json");
+        string resolved = ResolveBoxelPath(frontierId, prefix, catalog);
         if (File.Exists(resolved))
         {
             return resolved;
@@ -295,11 +300,11 @@ public sealed class BoxelSurveyStatsStore
             candidates = [];
         }
 
-        foreach (var candidate in candidates)
+        foreach (string candidate in candidates)
         {
             try
             {
-                var root = await ReadObjectAsync(candidate, cancellationToken).ConfigureAwait(false);
+                JsonObject root = await ReadObjectAsync(candidate, cancellationToken).ConfigureAwait(false);
                 if (string.Equals(GetString(root, PrefixPropertyName), prefix, StringComparison.Ordinal))
                 {
                     return candidate;
@@ -321,8 +326,8 @@ public sealed class BoxelSurveyStatsStore
         const ulong prime = 1099511628211;
         unchecked
         {
-            var hash = offset;
-            foreach (var character in prefix)
+            ulong hash = offset;
+            foreach (char character in prefix)
             {
                 hash ^= character;
                 hash *= prime;
@@ -336,7 +341,9 @@ public sealed class BoxelSurveyStatsStore
     {
         var state = new BoxelSurveyStatsState();
         state.ImportDocument(document);
-        return state.TryGet(document.Prefix, out var snapshot) ? snapshot : BoxelSurveyBoxelSnapshot.Empty;
+        return state.TryGet(document.Prefix, out BoxelSurveyBoxelSnapshot? snapshot)
+            ? snapshot
+            : BoxelSurveyBoxelSnapshot.Empty;
     }
 
     private static async Task<BoxelSurveyStatsCatalog> ReadCatalogAsync(
@@ -345,8 +352,8 @@ public sealed class BoxelSurveyStatsStore
         CancellationToken cancellationToken
     )
     {
-        var root = await ReadObjectAsync(path, cancellationToken).ConfigureAwait(false);
-        var storedFrontierId = GetString(root, "frontierId");
+        JsonObject root = await ReadObjectAsync(path, cancellationToken).ConfigureAwait(false);
+        string? storedFrontierId = GetString(root, "frontierId");
         if (
             !string.IsNullOrWhiteSpace(storedFrontierId)
             && !string.Equals(storedFrontierId, frontierId, StringComparison.OrdinalIgnoreCase)
@@ -358,15 +365,15 @@ public sealed class BoxelSurveyStatsStore
         var entries = new List<BoxelSurveyIndexEntry>();
         if (root["entries"] is JsonArray array)
         {
-            foreach (var node in array.OfType<JsonObject>())
+            foreach (JsonObject node in array.OfType<JsonObject>())
             {
-                var prefix = GetString(node, PrefixPropertyName);
+                string? prefix = GetString(node, PrefixPropertyName);
                 if (string.IsNullOrWhiteSpace(prefix))
                 {
                     continue;
                 }
 
-                var massText = GetString(node, "massCode");
+                string? massText = GetString(node, "massCode");
                 entries.Add(
                     new BoxelSurveyIndexEntry(
                         prefix,
@@ -402,8 +409,8 @@ public sealed class BoxelSurveyStatsStore
         CancellationToken cancellationToken
     )
     {
-        var root = await ReadObjectAsync(path, cancellationToken).ConfigureAwait(false);
-        var storedFrontierId = GetString(root, "frontierId");
+        JsonObject root = await ReadObjectAsync(path, cancellationToken).ConfigureAwait(false);
+        string? storedFrontierId = GetString(root, "frontierId");
         if (
             !string.IsNullOrWhiteSpace(storedFrontierId)
             && !string.Equals(storedFrontierId, frontierId, StringComparison.OrdinalIgnoreCase)
@@ -412,7 +419,7 @@ public sealed class BoxelSurveyStatsStore
             throw new InvalidDataException("The boxel survey file belongs to a different commander profile.");
         }
 
-        var prefix = GetString(root, PrefixPropertyName);
+        string? prefix = GetString(root, PrefixPropertyName);
         if (string.IsNullOrWhiteSpace(prefix))
         {
             throw new InvalidDataException("The boxel survey file does not have a prefix.");
@@ -421,9 +428,9 @@ public sealed class BoxelSurveyStatsStore
         var systems = new List<BoxelSurveySystemContribution>();
         if (root["systems"] is JsonArray array)
         {
-            foreach (var node in array.OfType<JsonObject>())
+            foreach (JsonObject node in array.OfType<JsonObject>())
             {
-                var generatedName = GetString(node, "generatedName");
+                string? generatedName = GetString(node, "generatedName");
                 if (string.IsNullOrWhiteSpace(generatedName))
                 {
                     continue;
@@ -467,15 +474,15 @@ public sealed class BoxelSurveyStatsStore
         }
 
         var bodies = new List<BoxelSurveyBodyContribution>();
-        foreach (var node in array.OfType<JsonObject>())
+        foreach (JsonObject node in array.OfType<JsonObject>())
         {
-            var bodyId = GetInt32(node, "bodyId");
+            int? bodyId = GetInt32(node, "bodyId");
             if (bodyId is null or < 0)
             {
                 continue;
             }
 
-            var classified =
+            BoxelPlanetClass classified =
                 GetInt32(node, "class") is { } raw && Enum.IsDefined((BoxelPlanetClass)raw)
                     ? (BoxelPlanetClass)raw
                     : BoxelPlanetClass.Unknown;
@@ -505,7 +512,7 @@ public sealed class BoxelSurveyStatsStore
     private static JsonObject WriteCatalog(BoxelSurveyStatsCatalog catalog)
     {
         var entries = new JsonArray();
-        foreach (var entry in catalog.Index)
+        foreach (BoxelSurveyIndexEntry entry in catalog.Index)
         {
             entries.Add(
                 new JsonObject
@@ -538,10 +545,10 @@ public sealed class BoxelSurveyStatsStore
     private static JsonObject WriteDocument(string frontierId, BoxelSurveyBoxelDocument document)
     {
         var systems = new JsonArray();
-        foreach (var system in document.Systems)
+        foreach (BoxelSurveySystemContribution system in document.Systems)
         {
             var bodies = new JsonArray();
-            foreach (var body in system.Bodies)
+            foreach (BoxelSurveyBodyContribution body in system.Bodies)
             {
                 bodies.Add(
                     new JsonObject
@@ -616,7 +623,7 @@ public sealed class BoxelSurveyStatsStore
 
     private static async Task WriteJsonAsync(string path, JsonObject root, CancellationToken cancellationToken)
     {
-        var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
+        string temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
         try
         {
             await using (
@@ -675,10 +682,10 @@ public sealed class BoxelSurveyStatsStore
     }
 
     private static string? GetString(JsonObject root, string propertyName) =>
-        root[propertyName] is JsonValue value && value.TryGetValue<string>(out var text) ? text : null;
+        root[propertyName] is JsonValue value && value.TryGetValue<string>(out string? text) ? text : null;
 
     private static bool? GetBoolean(JsonObject root, string propertyName) =>
-        root[propertyName] is JsonValue value && value.TryGetValue<bool>(out var flag) ? flag : null;
+        root[propertyName] is JsonValue value && value.TryGetValue<bool>(out bool flag) ? flag : null;
 
     private static int? GetInt32(JsonObject root, string propertyName)
     {
@@ -687,12 +694,12 @@ public sealed class BoxelSurveyStatsStore
             return null;
         }
 
-        if (value.TryGetValue<int>(out var number))
+        if (value.TryGetValue<int>(out int number))
         {
             return number;
         }
 
-        if (value.TryGetValue<long>(out var wider) && wider is >= int.MinValue and <= int.MaxValue)
+        if (value.TryGetValue<long>(out long wider) && wider is >= int.MinValue and <= int.MaxValue)
         {
             return (int)wider;
         }
@@ -707,16 +714,16 @@ public sealed class BoxelSurveyStatsStore
             return null;
         }
 
-        if (value.TryGetValue<long>(out var number))
+        if (value.TryGetValue<long>(out long number))
         {
             return number;
         }
 
-        return value.TryGetValue<int>(out var smaller) ? smaller : null;
+        return value.TryGetValue<int>(out int smaller) ? smaller : null;
     }
 
     private static double? GetDouble(JsonObject root, string propertyName) =>
-        root[propertyName] is JsonValue value && value.TryGetValue<double>(out var number) ? number : null;
+        root[propertyName] is JsonValue value && value.TryGetValue<double>(out double number) ? number : null;
 
     private static DateTimeOffset? GetDateTimeOffset(JsonObject root, string propertyName)
     {
@@ -725,14 +732,19 @@ public sealed class BoxelSurveyStatsStore
             return null;
         }
 
-        if (value.TryGetValue<DateTimeOffset>(out var stamp))
+        if (value.TryGetValue<DateTimeOffset>(out DateTimeOffset stamp))
         {
             return stamp;
         }
 
         return
-            value.TryGetValue<string>(out var text)
-            && DateTimeOffset.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var parsed)
+            value.TryGetValue<string>(out string? text)
+            && DateTimeOffset.TryParse(
+                text,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.RoundtripKind,
+                out DateTimeOffset parsed
+            )
             ? parsed
             : null;
     }

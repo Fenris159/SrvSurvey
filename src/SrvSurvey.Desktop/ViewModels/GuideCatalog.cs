@@ -1106,7 +1106,7 @@ public static class GuideCatalog
 
     private static GuideSectionViewModel[] LoadChatCommandSections()
     {
-        using var stream =
+        using Stream stream =
             typeof(GuideCatalog).Assembly.GetManifestResourceStream(
                 "SrvSurvey.Desktop.Resources.chat-commands-guide.json"
             ) ?? throw new InvalidOperationException("The chat command guide resource is missing.");

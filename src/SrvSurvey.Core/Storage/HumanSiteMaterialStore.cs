@@ -30,8 +30,8 @@ public sealed class HumanSiteMaterialStore
     )
     {
         ValidateContext(context);
-        var folder = GetFolder(context);
-        var path = FindLatestPath(folder, context);
+        string folder = GetFolder(context);
+        string? path = FindLatestPath(folder, context);
         if (path is null)
         {
             return new HumanSiteMaterialLoadResult(
@@ -44,14 +44,14 @@ public sealed class HumanSiteMaterialStore
             );
         }
 
-        var result = await ReadAsync(path, cancellationToken).ConfigureAwait(false);
+        (JsonObject? Root, string? Error) result = await ReadAsync(path, cancellationToken).ConfigureAwait(false);
         if (result.Root is null)
         {
             return new HumanSiteMaterialLoadResult(path, true, false, null, result.Error, []);
         }
 
         var warnings = new List<string>();
-        var survey = ReadSurvey(result.Root, warnings);
+        HumanSiteMaterialSurvey survey = ReadSurvey(result.Root, warnings);
         if (survey.Completed)
         {
             return new HumanSiteMaterialLoadResult(
@@ -75,10 +75,11 @@ public sealed class HumanSiteMaterialStore
     {
         ValidateContext(context);
         ArgumentNullException.ThrowIfNull(materials);
-        var additions = materials.ToArray();
+        HumanSiteCollectedMaterial[] additions = materials.ToArray();
         if (additions.Length == 0)
         {
-            var current = await LoadActiveAsync(context, cancellationToken).ConfigureAwait(false);
+            HumanSiteMaterialLoadResult current = await LoadActiveAsync(context, cancellationToken)
+                .ConfigureAwait(false);
             return new HumanSiteMaterialMutationResult(
                 current.Path,
                 0,
@@ -86,19 +87,20 @@ public sealed class HumanSiteMaterialStore
             );
         }
 
-        var folder = GetFolder(context);
+        string folder = GetFolder(context);
         Directory.CreateDirectory(folder);
-        var sessionLockKey = GetSessionLockKey(folder, context);
-        var fileLock = FileLocks.GetOrAdd(sessionLockKey, static _ => new SemaphoreSlim(1, 1));
+        string sessionLockKey = GetSessionLockKey(folder, context);
+        SemaphoreSlim fileLock = FileLocks.GetOrAdd(sessionLockKey, static _ => new SemaphoreSlim(1, 1));
         await fileLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            var latest = FindLatestPath(folder, context);
-            var path = latest ?? GetNewPath(folder, context);
+            string? latest = FindLatestPath(folder, context);
+            string path = latest ?? GetNewPath(folder, context);
             var root = new JsonObject();
             if (latest is not null)
             {
-                var read = await ReadAsync(latest, cancellationToken).ConfigureAwait(false);
+                (JsonObject? Root, string? Error) read = await ReadAsync(latest, cancellationToken)
+                    .ConfigureAwait(false);
                 if (read.Root is null)
                 {
                     throw new InvalidDataException(read.Error);
@@ -115,12 +117,12 @@ public sealed class HumanSiteMaterialStore
             }
 
             ApplyContext(root, context);
-            var locations = GetOrCreateArray(root, "matLocations");
-            var countMats = GetOrCreateObject(root, "countMats");
-            var countTypes = GetOrCreateObject(root, "countTypes");
-            var total = Math.Max(0, ReadInt32(root, "totalMatCount") ?? 0);
-            var addedCount = 0;
-            foreach (var material in additions)
+            JsonArray locations = GetOrCreateArray(root, "matLocations");
+            JsonObject countMats = GetOrCreateObject(root, "countMats");
+            JsonObject countTypes = GetOrCreateObject(root, "countTypes");
+            int total = Math.Max(0, ReadInt32(root, "totalMatCount") ?? 0);
+            int addedCount = 0;
+            foreach (HumanSiteCollectedMaterial? material in additions)
             {
                 if (
                     !material.Offset.IsFinite
@@ -157,13 +159,13 @@ public sealed class HumanSiteMaterialStore
     )
     {
         ValidateContext(context);
-        var folder = GetFolder(context);
-        var sessionLockKey = GetSessionLockKey(folder, context);
-        var fileLock = FileLocks.GetOrAdd(sessionLockKey, static _ => new SemaphoreSlim(1, 1));
+        string folder = GetFolder(context);
+        string sessionLockKey = GetSessionLockKey(folder, context);
+        SemaphoreSlim fileLock = FileLocks.GetOrAdd(sessionLockKey, static _ => new SemaphoreSlim(1, 1));
         await fileLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            var path = FindLatestPath(folder, context);
+            string? path = FindLatestPath(folder, context);
             if (path is null)
             {
                 return new HumanSiteMaterialMutationResult(
@@ -176,7 +178,7 @@ public sealed class HumanSiteMaterialStore
                 );
             }
 
-            var read = await ReadAsync(path, cancellationToken).ConfigureAwait(false);
+            (JsonObject? Root, string? Error) read = await ReadAsync(path, cancellationToken).ConfigureAwait(false);
             if (read.Root is null)
             {
                 throw new InvalidDataException(read.Error);
@@ -200,19 +202,20 @@ public sealed class HumanSiteMaterialStore
     )
     {
         ValidateContext(context);
-        var folder = GetFolder(context);
+        string folder = GetFolder(context);
         Directory.CreateDirectory(folder);
-        var sessionLockKey = GetSessionLockKey(folder, context);
-        var fileLock = FileLocks.GetOrAdd(sessionLockKey, static _ => new SemaphoreSlim(1, 1));
+        string sessionLockKey = GetSessionLockKey(folder, context);
+        SemaphoreSlim fileLock = FileLocks.GetOrAdd(sessionLockKey, static _ => new SemaphoreSlim(1, 1));
         await fileLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            var latest = FindLatestPath(folder, context);
-            var path = latest ?? GetNewPath(folder, context);
+            string? latest = FindLatestPath(folder, context);
+            string path = latest ?? GetNewPath(folder, context);
             var root = new JsonObject();
             if (latest is not null)
             {
-                var read = await ReadAsync(latest, cancellationToken).ConfigureAwait(false);
+                (JsonObject? Root, string? Error) read = await ReadAsync(latest, cancellationToken)
+                    .ConfigureAwait(false);
                 if (read.Root is null)
                 {
                     throw new InvalidDataException(read.Error);
@@ -246,12 +249,12 @@ public sealed class HumanSiteMaterialStore
         var materials = new List<HumanSiteCollectedMaterial>();
         if (root["matLocations"] is JsonArray locations)
         {
-            foreach (var node in locations)
+            foreach (JsonNode? node in locations)
             {
                 if (
                     node is JsonValue value
-                    && value.TryGetValue<string>(out var text)
-                    && TryParseLocation(text, out var material)
+                    && value.TryGetValue<string>(out string? text)
+                    && TryParseLocation(text, out HumanSiteCollectedMaterial? material)
                 )
                 {
                     materials.Add(material!);
@@ -282,11 +285,11 @@ public sealed class HumanSiteMaterialStore
             return false;
         }
 
-        var parts = text.Split('_');
+        string[] parts = text.Split('_');
         if (
             parts.Length < 4
-            || !double.TryParse(parts[^2], NumberStyles.Float, CultureInfo.InvariantCulture, out var x)
-            || !double.TryParse(parts[^1], NumberStyles.Float, CultureInfo.InvariantCulture, out var y)
+            || !double.TryParse(parts[^2], NumberStyles.Float, CultureInfo.InvariantCulture, out double x)
+            || !double.TryParse(parts[^1], NumberStyles.Float, CultureInfo.InvariantCulture, out double y)
             || !double.IsFinite(x)
             || !double.IsFinite(y)
         )
@@ -294,8 +297,8 @@ public sealed class HumanSiteMaterialStore
             return false;
         }
 
-        var name = parts[0];
-        var type = string.Join('_', parts.Skip(1).Take(parts.Length - 3));
+        string name = parts[0];
+        string type = string.Join('_', parts.Skip(1).Take(parts.Length - 3));
         if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(type))
         {
             return false;
@@ -362,15 +365,15 @@ public sealed class HumanSiteMaterialStore
 
     private string GetNewPath(string folder, HumanSiteMaterialContext context, bool avoidExisting = false)
     {
-        var timestamp = timeProvider.GetUtcNow().ToString("yyyy-MM-dd HHmmss", CultureInfo.InvariantCulture);
-        var stem = $"{context.Site.SystemAddress}-{context.Site.MarketId}-{timestamp}";
-        var path = Path.Combine(folder, stem + ".json");
+        string timestamp = timeProvider.GetUtcNow().ToString("yyyy-MM-dd HHmmss", CultureInfo.InvariantCulture);
+        string stem = $"{context.Site.SystemAddress}-{context.Site.MarketId}-{timestamp}";
+        string path = Path.Combine(folder, stem + ".json");
         if (!avoidExisting || !File.Exists(path))
         {
             return path;
         }
 
-        var suffix = 1;
+        int suffix = 1;
         while (true)
         {
             path = Path.Combine(folder, $"{stem}_{suffix}.json");
@@ -390,9 +393,10 @@ public sealed class HumanSiteMaterialStore
     {
         try
         {
-            var json = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
-            var root = JsonNode.Parse(json) as JsonObject;
-            return root is null ? (null, "The settlement material survey is not a JSON object.") : (root, null);
+            string json = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
+            return JsonNode.Parse(json) is not JsonObject root
+                ? (null, "The settlement material survey is not a JSON object.")
+                : (root, null);
         }
         catch (JsonException exception)
         {
@@ -403,7 +407,7 @@ public sealed class HumanSiteMaterialStore
     private static async Task WriteAsync(string path, JsonObject root, CancellationToken cancellationToken)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        var temporaryPath = path + $".{Guid.NewGuid():N}.tmp";
+        string temporaryPath = path + $".{Guid.NewGuid():N}.tmp";
         try
         {
             await File.WriteAllTextAsync(temporaryPath, root.ToJsonString(JsonOptions), cancellationToken)
@@ -460,13 +464,13 @@ public sealed class HumanSiteMaterialStore
             return null;
         }
 
-        if (value.TryGetValue<int>(out var number))
+        if (value.TryGetValue<int>(out int number))
         {
             return number;
         }
 
         return
-            value.TryGetValue<string>(out var text)
+            value.TryGetValue<string>(out string? text)
             && int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out number)
             ? number
             : null;
@@ -474,7 +478,7 @@ public sealed class HumanSiteMaterialStore
 
     private static bool? ReadBoolean(JsonObject root, string propertyName)
     {
-        return root[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result) ? result : null;
+        return root[propertyName] is JsonValue value && value.TryGetValue<bool>(out bool result) ? result : null;
     }
 
     private static void ValidateContext(HumanSiteMaterialContext context)

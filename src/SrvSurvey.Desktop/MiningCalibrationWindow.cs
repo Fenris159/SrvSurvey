@@ -223,9 +223,9 @@ public sealed class MiningCalibrationWindow : Window
             return;
         }
 
-        var width = (int)Math.Ceiling(ToolsWindow.Bounds.Width * ToolsWindow.RenderScaling);
-        var height = (int)Math.Ceiling(ToolsWindow.Bounds.Height * ToolsWindow.RenderScaling);
-        var top = Position.Y - height - 6;
+        int width = (int)Math.Ceiling(ToolsWindow.Bounds.Width * ToolsWindow.RenderScaling);
+        int height = (int)Math.Ceiling(ToolsWindow.Bounds.Height * ToolsWindow.RenderScaling);
+        int top = Position.Y - height - 6;
         if (top < viewport.Y)
         {
             top = Position.Y + (int)Math.Ceiling(Height * RenderScaling) + 6;
@@ -266,7 +266,7 @@ public sealed class MiningCalibrationWindow : Window
             return;
         }
 
-        var point = e.GetPosition(this);
+        Point point = e.GetPosition(this);
         if (point.X >= Bounds.Width - 18 && point.Y >= Bounds.Height - 18)
         {
             BeginResizeDrag(WindowEdge.SouthEast, e);
@@ -285,8 +285,8 @@ public sealed class MiningCalibrationWindow : Window
         canvas.ShowGuides = !model.IsCalibrationTesting;
         status.Text = model.SlotsText;
         detectionStatus.Text = model.StatusText;
-        var settings = model.Settings;
-        var frameWidth = settings.GetBounds(viewport).Width;
+        MiningDetectionSettings settings = model.Settings;
+        int frameWidth = settings.GetBounds(viewport).Width;
         values.Text =
             $"Size {settings.CircleWidth * frameWidth:F0} px · Height {settings.CircleAspectRatio:P0}"
             + $" · Rotation {settings.RotationDegrees:0}° · Bar gap {settings.BarGap * settings.CircleWidth * frameWidth / 2:F1} px"
@@ -325,12 +325,12 @@ public sealed class MiningCalibrationWindow : Window
                 return;
             }
 
-            var radius = Bounds.Width * model.Settings.CircleWidth / 2;
+            double radius = Bounds.Width * model.Settings.CircleWidth / 2;
             var geometry = new MiningHudGeometry(model.Settings);
             if (ShowSearchArea)
             {
-                var margin = model.Settings.GetMovementAllowance(Bounds.Width);
-                var markers = model.Settings.Markers;
+                double margin = model.Settings.GetMovementAllowance(Bounds.Width);
+                MiningDetectionPoint[] markers = model.Settings.Markers;
                 var search = new Rect(
                     new Point(
                         markers.Min(p => p.X) * Bounds.Width - margin,
@@ -343,16 +343,16 @@ public sealed class MiningCalibrationWindow : Window
                 );
                 context.DrawRectangle(null, new Pen(Brushes.Gold, 1, DashStyle.Dash), search);
             }
-            for (var i = 0; i < 6; i++)
+            for (int i = 0; i < 6; i++)
             {
-                var p = model.Settings.Markers[i];
+                MiningDetectionPoint p = model.Settings.Markers[i];
                 var center = new Point(p.X * Bounds.Width, p.Y * Bounds.Height);
                 context.DrawEllipse(Brushes.Red, null, center, 3, 3);
-                var outline = Enumerable
+                Point[] outline = Enumerable
                     .Range(0, 65)
                     .Select(n =>
                     {
-                        var angle = n * Math.PI / 32;
+                        double angle = n * Math.PI / 32;
                         return center + geometry.RingPoint(angle, radius);
                     })
                     .ToArray();
@@ -382,7 +382,7 @@ public sealed class MiningCalibrationWindow : Window
 
         private static void DrawPolyline(DrawingContext context, Pen pen, Point[] points)
         {
-            for (var i = 1; i < points.Length; i++)
+            for (int i = 1; i < points.Length; i++)
             {
                 context.DrawLine(pen, points[i - 1], points[i]);
             }
@@ -396,12 +396,12 @@ public sealed class MiningCalibrationWindow : Window
                 return;
             }
 
-            var point = e.GetPosition(this);
-            for (var i = 0; i < 6; i++)
+            Point point = e.GetPosition(this);
+            for (int i = 0; i < 6; i++)
             {
-                var p = model.Settings.Markers[i];
-                var dx = point.X - p.X * Bounds.Width;
-                var dy = point.Y - p.Y * Bounds.Height;
+                MiningDetectionPoint p = model.Settings.Markers[i];
+                double dx = point.X - p.X * Bounds.Width;
+                double dy = point.Y - p.Y * Bounds.Height;
                 if (dx * dx + dy * dy > 144)
                 {
                     continue;
@@ -422,8 +422,8 @@ public sealed class MiningCalibrationWindow : Window
                 return;
             }
 
-            var point = e.GetPosition(this);
-            var markers = model.Settings.Markers.ToArray();
+            Point point = e.GetPosition(this);
+            MiningDetectionPoint[] markers = model.Settings.Markers.ToArray();
             markers[dragged] = new(point.X / Bounds.Width, point.Y / Bounds.Height);
             model.UpdateCalibration(model.Settings with { Markers = markers });
             e.Handled = true;

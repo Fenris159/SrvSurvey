@@ -19,7 +19,7 @@ public sealed class ExobiologyReferenceCatalog
     public ExobiologyReferenceCatalog(IEnumerable<ExobiologyReference> entries)
     {
         ArgumentNullException.ThrowIfNull(entries);
-        var materialized = entries.ToArray();
+        ExobiologyReference[] materialized = entries.ToArray();
         Entries = Array.AsReadOnly(materialized);
         BiologyEntries = Array.AsReadOnly(materialized.Where(entry => entry.IsBiology).ToArray());
         byVariant = materialized
@@ -45,12 +45,16 @@ public sealed class ExobiologyReferenceCatalog
 
     public ExobiologyReference? FindByVariant(string? variantName)
     {
-        return variantName is not null && byVariant.TryGetValue(variantName, out var result) ? result : null;
+        return variantName is not null && byVariant.TryGetValue(variantName, out ExobiologyReference? result)
+            ? result
+            : null;
     }
 
     public ExobiologyReference? FindBySpecies(string? speciesName)
     {
-        return speciesName is not null && bySpecies.TryGetValue(speciesName, out var result) ? result : null;
+        return speciesName is not null && bySpecies.TryGetValue(speciesName, out ExobiologyReference? result)
+            ? result
+            : null;
     }
 
     public ExobiologyReference? FindByEntryId(long entryId)
@@ -60,13 +64,15 @@ public sealed class ExobiologyReferenceCatalog
 
     public ExobiologyReference? FindByDisplayName(string? displayName)
     {
-        return displayName is not null && byDisplayName.TryGetValue(displayName, out var result) ? result : null;
+        return displayName is not null && byDisplayName.TryGetValue(displayName, out ExobiologyReference? result)
+            ? result
+            : null;
     }
 
     public static ExobiologyReferenceCatalog LoadEmbedded()
     {
-        var assembly = typeof(ExobiologyReferenceCatalog).Assembly;
-        using var stream =
+        Assembly assembly = typeof(ExobiologyReferenceCatalog).Assembly;
+        using Stream stream =
             assembly.GetManifestResourceStream(EmbeddedResourceName)
             ?? throw new InvalidOperationException($"The embedded Codex reference {EmbeddedResourceName} is missing.");
         return Load(stream);
@@ -82,19 +88,19 @@ public sealed class ExobiologyReferenceCatalog
         }
 
         var entries = new List<ExobiologyReference>();
-        foreach (var value in document.RootElement.EnumerateObject().Select(property => property.Value))
+        foreach (JsonElement value in document.RootElement.EnumerateObject().Select(property => property.Value))
         {
-            var reward = GetInt64(value, "reward");
-            var entryId = GetInt64(value, "entryid");
-            var variantName = GetString(value, "name");
+            long? reward = GetInt64(value, "reward");
+            long? entryId = GetInt64(value, "entryid");
+            string? variantName = GetString(value, "name");
             if (entryId is not > 0 || string.IsNullOrWhiteSpace(variantName))
             {
                 continue;
             }
 
-            var platform = GetString(value, "platform");
-            var hudCategory = GetString(value, "hud_category");
-            var speciesName =
+            string? platform = GetString(value, "platform");
+            string? hudCategory = GetString(value, "hud_category");
+            string speciesName =
                 platform == "odyssey" && hudCategory == "Biology" ? GetSpeciesName(variantName) : variantName;
             entries.Add(
                 new ExobiologyReference(
@@ -123,10 +129,10 @@ public sealed class ExobiologyReferenceCatalog
 
     internal static string GetSpeciesName(string variantName)
     {
-        var species = variantName
+        string species = variantName
             .Replace(CodexEntPrefix, string.Empty, StringComparison.Ordinal)
             .Replace(CodexNameSuffix, string.Empty, StringComparison.Ordinal);
-        var lastSeparator = species.LastIndexOf('_');
+        int lastSeparator = species.LastIndexOf('_');
         if (species.IndexOf('_') != lastSeparator)
         {
             species = species[..lastSeparator];
@@ -137,10 +143,10 @@ public sealed class ExobiologyReferenceCatalog
 
     public static string GetGenusName(string speciesName)
     {
-        var genus = speciesName
+        string genus = speciesName
             .Replace(CodexEntPrefix, string.Empty, StringComparison.Ordinal)
             .Replace(CodexNameSuffix, string.Empty, StringComparison.Ordinal);
-        var separator = genus.IndexOf('_');
+        int separator = genus.IndexOf('_');
         if (separator >= 0)
         {
             genus = genus[..separator];
@@ -160,7 +166,7 @@ public sealed class ExobiologyReferenceCatalog
         ArgumentNullException.ThrowIfNull(reference);
         if (reference.IsBiology)
         {
-            var legacyGenus = reference.SubClass switch
+            string? legacyGenus = reference.SubClass switch
             {
                 AnemoneSubclass => "$Codex_Ent_Sphere_Name;",
                 AmphoraPlantSubclass => "$Codex_Ent_Vents_Name;",
@@ -187,7 +193,7 @@ public sealed class ExobiologyReferenceCatalog
     public static string GetGenusDisplayName(ExobiologyReference reference)
     {
         ArgumentNullException.ThrowIfNull(reference);
-        var legacyDisplayName = reference.SubClass switch
+        string? legacyDisplayName = reference.SubClass switch
         {
             AnemoneSubclass => AnemoneSubclass,
             AmphoraPlantSubclass => AmphoraPlantSubclass,
@@ -207,7 +213,7 @@ public sealed class ExobiologyReferenceCatalog
             return "Unknown genus";
         }
 
-        var normalized = genusName
+        string normalized = genusName
             .Replace(CodexEntPrefix, string.Empty, StringComparison.Ordinal)
             .Replace("_Genus_Name;", string.Empty, StringComparison.Ordinal)
             .Replace(CodexNameSuffix, string.Empty, StringComparison.Ordinal)
@@ -247,7 +253,7 @@ public sealed class ExobiologyReferenceCatalog
             return 50;
         }
 
-        var normalized = genusName
+        string normalized = genusName
             .Replace(CodexEntPrefix, string.Empty, StringComparison.Ordinal)
             .Replace("_Genus_Name;", string.Empty, StringComparison.Ordinal)
             .Replace(CodexNameSuffix, string.Empty, StringComparison.Ordinal)
@@ -285,19 +291,19 @@ public sealed class ExobiologyReferenceCatalog
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+        return root.TryGetProperty(propertyName, out JsonElement value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
     }
 
     private static long? GetInt64(JsonElement root, string propertyName)
     {
-        if (!root.TryGetProperty(propertyName, out var value))
+        if (!root.TryGetProperty(propertyName, out JsonElement value))
         {
             return null;
         }
 
-        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out var number))
+        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out long number))
         {
             return number;
         }
@@ -322,7 +328,7 @@ public sealed record ExobiologyReference(
     string? DumpUrl = null
 )
 {
-    public string EntryIdPrefix => EntryId.ToString()[..5];
+    public string EntryIdPrefix => EntryId.ToString(CultureInfo.InvariantCulture)[..5];
 
     public bool IsBiology => string.Equals(HudCategory, "Biology", StringComparison.OrdinalIgnoreCase);
 
@@ -335,13 +341,16 @@ public sealed record ExobiologyReference(
 
         if (string.Equals(Platform, "odyssey", StringComparison.OrdinalIgnoreCase))
         {
-            var parts = DisplayName.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            string[] parts = DisplayName.Split(
+                ' ',
+                StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries
+            );
             return parts.Length == 4
                 ? $"{parts[0]}-{parts[1]}-{parts[3]}".ToLowerInvariant()
                 : $"{parts[^1]}-{parts[0]}".ToLowerInvariant();
         }
 
-        var genusName = string.Equals(SubCategory, "$Codex_SubCategory_Thargoid;", StringComparison.Ordinal)
+        string genusName = string.Equals(SubCategory, "$Codex_SubCategory_Thargoid;", StringComparison.Ordinal)
             ? DisplayName
             : DisplayName.Split(' ', 2).ElementAtOrDefault(1) ?? DisplayName;
         genusName = genusName switch
@@ -353,10 +362,10 @@ public sealed record ExobiologyReference(
             "Shards" => "Crystalline Shards",
             _ => genusName,
         };
-        var speciesName = string.Equals(DisplayName, genusName, StringComparison.Ordinal)
+        string speciesName = string.Equals(DisplayName, genusName, StringComparison.Ordinal)
             ? DisplayName
             : DisplayName.Replace(genusName, string.Empty, StringComparison.Ordinal).Trim();
-        var localGenusName = genusName == "Luteolum Anemone" ? "Anemone" : genusName;
+        string localGenusName = genusName == "Luteolum Anemone" ? "Anemone" : genusName;
         speciesName = speciesName.Replace(localGenusName, string.Empty, StringComparison.Ordinal).Trim();
         return $"{localGenusName}-{speciesName}".Replace(' ', '-');
     }

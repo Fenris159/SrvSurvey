@@ -32,7 +32,7 @@ public sealed class GreenGasGiantClientTests
         Assert.Equal(HttpMethod.Put, request!.Method);
         Assert.Equal("/root/api/ggg/create", request.RequestUri!.AbsolutePath);
         using var json = JsonDocument.Parse(content!);
-        var root = json.RootElement;
+        JsonElement root = json.RootElement;
         Assert.Equal("Test Cmdr", root.GetProperty("cmdr").GetString());
         Assert.Equal("likely", root.GetProperty("tag").GetString());
         Assert.Equal(
@@ -51,7 +51,7 @@ public sealed class GreenGasGiantClientTests
         });
         var client = new GreenGasGiantClient(new HttpClient(handler), new Uri("https://example.test/"));
 
-        var exception = await Assert.ThrowsAsync<HttpRequestException>(() =>
+        HttpRequestException exception = await Assert.ThrowsAsync<HttpRequestException>(() =>
             client.PublishAsync(new GreenGasGiantCandidate("Cmdr", "likely", new GalacticCoordinate(1, 2, 3), "{}"))
         );
 

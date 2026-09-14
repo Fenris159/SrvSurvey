@@ -65,12 +65,14 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         this.notify = notify;
         this.editBookmark = editBookmark ?? (_ => { });
         this.requestOverviewMapVisibility = requestOverviewMapVisibility ?? (() => { });
-        var preferences = settingsStore.Load();
+        MineMapPreferences preferences = settingsStore.Load();
         onlyShowWhileOnGround = preferences.OnlyShowWhileOnGround;
         showMarkerLabelsInOverviewMap = preferences.ShowMarkerLabelsInOverviewMap;
         var selectedReferenceCommodities = preferences
             .EffectiveMiningReferenceCommodities.Select(name =>
-                SurfaceMiningCommodityCatalog.TryResolve(name, out var commodity) ? commodity.Name : name
+                SurfaceMiningCommodityCatalog.TryResolve(name, out SurfaceMiningCommodity? commodity)
+                    ? commodity.Name
+                    : name
             )
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
         hotspotRows = SurfaceMiningCommodityCatalog
@@ -353,7 +355,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
                 return "No survey selected";
             }
 
-            var suffix = survey.Markers.Count == 1 ? string.Empty : "s";
+            string suffix = survey.Markers.Count == 1 ? string.Empty : "s";
             return $"{survey.Markers.Count:N0} mapped deposit{suffix}";
         }
     }
@@ -384,7 +386,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         get => viewportZoom;
         set
         {
-            var normalized = double.IsFinite(value) ? Math.Clamp(value, 1, 15) : 1;
+            double normalized = double.IsFinite(value) ? Math.Clamp(value, 1, 15) : 1;
             if (Set(ref viewportZoom, normalized))
             {
                 Changed(nameof(ZoomText));
@@ -559,7 +561,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
             service.DismissSurveyGuide();
             ClearSurveyGuideFeedback();
         }
-        var results = await service.ApplyJournalEventsAsync(
+        IReadOnlyList<MineMapCommandResult> results = await service.ApplyJournalEventsAsync(
             journalEvents,
             nextContext,
             allowCommands,
@@ -735,7 +737,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
         );
         var center = new SurfaceCoordinate(-18.4216, 74.0921);
         const double radius = 855_573.1875;
-        var now = DateTimeOffset.UtcNow;
+        DateTimeOffset now = DateTimeOffset.UtcNow;
         viewModel.editorSurvey = new MineMapSurvey
         {
             FrontierId = "preview",
@@ -834,7 +836,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
 
     private void RefreshCatalog()
     {
-        var surveys = CatalogSurveys;
+        IReadOnlyList<MineMapSurvey> surveys = CatalogSurveys;
         ContainsOptions =
         [
             "All",
@@ -871,7 +873,7 @@ public sealed class MineMapViewModel : WorkspaceObservable, IDisposable
 
     private void RefreshFilteredSurveys()
     {
-        var query = SearchText.Trim();
+        string query = SearchText.Trim();
         var expanded = FilteredSurveys.Where(row => row.IsExpanded).Select(row => row.Id).ToHashSet();
         FilteredSurveys = surveySorter.Apply(
             CatalogSurveys

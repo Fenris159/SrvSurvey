@@ -6,7 +6,7 @@ namespace SrvSurvey.Core.Diagnostics;
 public sealed class ApplicationLogService
 {
     private const int DefaultRetainedFileCount = 10;
-    private readonly object syncRoot = new();
+    private readonly Lock syncRoot = new();
     private readonly List<string> entries = [];
     private readonly TimeProvider timeProvider;
     private readonly int retainedFileCount;
@@ -68,7 +68,7 @@ public sealed class ApplicationLogService
 
     public string Append(object? value)
     {
-        var line = string.Create(CultureInfo.InvariantCulture, $"{timeProvider.GetLocalNow():HH:mm:ss}: {value}");
+        string line = string.Create(CultureInfo.InvariantCulture, $"{timeProvider.GetLocalNow():HH:mm:ss}: {value}");
         lock (syncRoot)
         {
             entries.Add(line);
@@ -91,13 +91,13 @@ public sealed class ApplicationLogService
 
     private string CreateSessionFile()
     {
-        var timestamp = timeProvider.GetLocalNow().ToString("yyyyMMdd_HHmmss", CultureInfo.InvariantCulture);
-        var stem = $"srvs-{timestamp}";
-        var path = Path.Combine(LogDirectory, stem + ".txt");
+        string timestamp = timeProvider.GetLocalNow().ToString("yyyyMMdd_HHmmss", CultureInfo.InvariantCulture);
+        string stem = $"srvs-{timestamp}";
+        string path = Path.Combine(LogDirectory, stem + ".txt");
         try
         {
             Directory.CreateDirectory(LogDirectory);
-            var suffix = 1;
+            int suffix = 1;
             while (File.Exists(path))
             {
                 path = Path.Combine(LogDirectory, $"{stem}_{suffix}.txt");
@@ -117,7 +117,7 @@ public sealed class ApplicationLogService
     private void WriteLineWithRetry(string line)
     {
         Exception? lastException = null;
-        for (var attempt = 0; attempt < 2; attempt++)
+        for (int attempt = 0; attempt < 2; attempt++)
         {
             try
             {
@@ -139,14 +139,14 @@ public sealed class ApplicationLogService
     {
         try
         {
-            var obsolete = Directory
+            FileInfo[] obsolete = Directory
                 .EnumerateFiles(LogDirectory, "*.txt")
                 .Select(path => new FileInfo(path))
                 .OrderByDescending(file => file.LastWriteTimeUtc)
                 .ThenByDescending(file => file.Name, StringComparer.OrdinalIgnoreCase)
                 .Skip(retainedFileCount)
                 .ToArray();
-            foreach (var file in obsolete)
+            foreach (FileInfo? file in obsolete)
             {
                 file.Delete();
             }

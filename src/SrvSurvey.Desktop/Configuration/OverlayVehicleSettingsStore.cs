@@ -11,7 +11,7 @@ public sealed class OverlayVehicleSettingsStore(string path)
 
     public void MigrateFiregroupsCategory()
     {
-        var stored = document.Load();
+        JsonObject stored = document.Load();
         if (IsFiregroupsMigrated(stored))
         {
             return;
@@ -34,7 +34,7 @@ public sealed class OverlayVehicleSettingsStore(string path)
 
     public IReadOnlySet<string>? Load(OverlaySettingsCategory category)
     {
-        var root = document.Load();
+        JsonObject root = document.Load();
         var lists = root[SettingsKey] as JsonObject;
         var values = lists?[category.ToString()] as JsonArray;
         if (values is null && category == OverlaySettingsCategory.Firegroups && !IsFiregroupsMigrated(root))
@@ -44,13 +44,13 @@ public sealed class OverlayVehicleSettingsStore(string path)
 
         return values
             ?.OfType<JsonValue>()
-            .Select(v => v.TryGetValue<string>(out var id) ? id : null)
+            .Select(v => v.TryGetValue<string>(out string? id) ? id : null)
             .OfType<string>()
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
     }
 
     private static bool IsFiregroupsMigrated(JsonObject root) =>
-        root[FiregroupsMigration] is JsonValue value && value.TryGetValue<bool>(out var migrated) && migrated;
+        root[FiregroupsMigration] is JsonValue value && value.TryGetValue<bool>(out bool migrated) && migrated;
 
     public void Save(OverlaySettingsCategory category, IEnumerable<string> allowed)
     {

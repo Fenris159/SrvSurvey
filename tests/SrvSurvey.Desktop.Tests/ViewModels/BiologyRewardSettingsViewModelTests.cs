@@ -14,7 +14,7 @@ public sealed class BiologyRewardSettingsViewModelTests : IDisposable
     [Fact]
     public void EditingThresholdsKeepsBandsOrderedAndPersistsThem()
     {
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         var store = new BiologyRewardSettingsStore(path);
         var viewModel = new BiologyRewardSettingsViewModel(store);
 
@@ -29,9 +29,9 @@ public sealed class BiologyRewardSettingsViewModelTests : IDisposable
     [Fact]
     public void SpeciesGroupPreviewRewardsFillOneThroughFourBars()
     {
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         var viewModel = new BiologyRewardSettingsViewModel(new BiologyRewardSettingsStore(path));
-        var thresholds = BiologyRewardThresholds.Default;
+        BiologyRewardThresholds thresholds = BiologyRewardThresholds.Default;
 
         Assert.Equal(
             [
@@ -86,7 +86,7 @@ public sealed class BiologyRewardSettingsViewModelTests : IDisposable
     [Fact]
     public void LegacySampleRewardAliasesMatchProgressivePreviewRewards()
     {
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         var viewModel = new BiologyRewardSettingsViewModel(new BiologyRewardSettingsStore(path));
 
         Assert.Equal(viewModel.PreviewTwoBarReward, viewModel.BucketOneSampleReward);
@@ -105,7 +105,7 @@ public sealed class BiologyRewardSettingsViewModelTests : IDisposable
     [Fact]
     public void PreviewRewardsStayStrictlyAboveNearIntegerMillionThresholds()
     {
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         var viewModel = new BiologyRewardSettingsViewModel(new BiologyRewardSettingsStore(path));
 
         // Just below the displayed 3 M boundary; truncation alone would under-fill.
@@ -113,7 +113,7 @@ public sealed class BiologyRewardSettingsViewModelTests : IDisposable
         viewModel.BucketTwoMillions = 6.999999999d;
         viewModel.BucketThreeMillions = 11.999999999d;
 
-        var state = BiologyRewardBandScale.Calculate(
+        BiologyRewardBandState state = BiologyRewardBandScale.Calculate(
             viewModel.PreviewTwoBarReward,
             viewModel.PreviewTwoBarReward,
             viewModel.Thresholds

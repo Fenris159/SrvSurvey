@@ -35,9 +35,9 @@ public sealed class BiologyPredictionContextBuilderTests
             )
         );
 
-        var snapshot = state.CreateSnapshot();
+        SystemScanSnapshot snapshot = state.CreateSnapshot();
         var nebulaCatalog = new NebulaCatalog([new GalacticCoordinate(position.X + 42, position.Y, position.Z)]);
-        var inputs = BiologyPredictionContextBuilder.Build(snapshot, bodyId: 1, nebulaCatalog);
+        BiologyPredictionInputs? inputs = BiologyPredictionContextBuilder.Build(snapshot, bodyId: 1, nebulaCatalog);
 
         Assert.NotNull(inputs);
         Assert.Equal("Rocky body", inputs.Context.PlanetClass);
@@ -55,7 +55,9 @@ public sealed class BiologyPredictionContextBuilderTests
         Assert.Equal(["Aleoida"], inputs.Knowledge.KnownGenera);
         Assert.Equal("Aleoida Coronamus", inputs.Knowledge.KnownSpeciesByGenus["Aleoida"]);
 
-        var prediction = new BiologyPredictionEvaluator(BiologyCriteriaCatalog.LoadEmbedded()).Evaluate(inputs.Context);
+        BiologyPredictionResult prediction = new BiologyPredictionEvaluator(
+            BiologyCriteriaCatalog.LoadEmbedded()
+        ).Evaluate(inputs.Context);
         Assert.Contains("Aleoida Coronamus - Lime", prediction.Predictions);
         Assert.True(prediction.HasCompleteContext);
     }
@@ -82,7 +84,7 @@ public sealed class BiologyPredictionContextBuilderTests
             )
         );
 
-        var inputs = BiologyPredictionContextBuilder.Build(state.CreateSnapshot(), bodyId: 3);
+        BiologyPredictionInputs? inputs = BiologyPredictionContextBuilder.Build(state.CreateSnapshot(), bodyId: 3);
 
         Assert.NotNull(inputs);
         Assert.Equal(["D"], inputs.Context.StarTypes);
@@ -113,7 +115,7 @@ public sealed class BiologyPredictionContextBuilderTests
             )
         );
 
-        var inputs = BiologyPredictionContextBuilder.Build(state.CreateSnapshot(), bodyId: 1);
+        BiologyPredictionInputs? inputs = BiologyPredictionContextBuilder.Build(state.CreateSnapshot(), bodyId: 1);
 
         Assert.NotNull(inputs);
         Assert.Equal(["Brain Trees"], inputs.Knowledge.KnownGenera);
@@ -137,7 +139,7 @@ public sealed class BiologyPredictionContextBuilderTests
             )
         );
 
-        var inputs = BiologyPredictionContextBuilder.Build(state.CreateSnapshot(), bodyId: 1);
+        BiologyPredictionInputs? inputs = BiologyPredictionContextBuilder.Build(state.CreateSnapshot(), bodyId: 1);
 
         Assert.NotNull(inputs);
         Assert.Equal(["Brain Trees"], inputs.Knowledge.KnownGenera);
@@ -190,7 +192,7 @@ public sealed class BiologyPredictionContextBuilderTests
 
     private static JournalEventEnvelope Parse(string json)
     {
-        var success = JournalEventEnvelope.TryParse(json, out var journalEvent, out var error);
+        bool success = JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error);
         Assert.True(success, error);
         return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }

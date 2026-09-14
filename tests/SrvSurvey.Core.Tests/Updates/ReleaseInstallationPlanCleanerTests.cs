@@ -10,17 +10,19 @@ public sealed class ReleaseInstallationPlanCleanerTests : IDisposable
     [Fact]
     public void CleanDeletesOnlyOldDirectGuidPlanDirectories()
     {
-        var oldPlan = CreatePlan(Guid.NewGuid(), Now.AddDays(-2));
-        var recentPlan = CreatePlan(Guid.NewGuid(), Now.AddHours(-4));
-        var planRoot = Path.GetDirectoryName(oldPlan)!;
-        var unrelated = Path.Combine(planRoot, "notes");
-        var emptyRequest = Path.Combine(planRoot, Guid.Empty.ToString("N"));
-        var nestedPlan = Path.Combine(unrelated, Guid.NewGuid().ToString("N"));
+        string oldPlan = CreatePlan(Guid.NewGuid(), Now.AddDays(-2));
+        string recentPlan = CreatePlan(Guid.NewGuid(), Now.AddHours(-4));
+        string planRoot = Path.GetDirectoryName(oldPlan)!;
+        string unrelated = Path.Combine(planRoot, "notes");
+        string emptyRequest = Path.Combine(planRoot, Guid.Empty.ToString("N"));
+        string nestedPlan = Path.Combine(unrelated, Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(emptyRequest);
         Directory.CreateDirectory(nestedPlan);
         Directory.SetLastWriteTimeUtc(unrelated, Now.AddDays(-8).UtcDateTime);
 
-        var result = new ReleaseInstallationPlanCleaner(new FixedTimeProvider(Now)).Clean(root);
+        ReleaseInstallationPlanCleanupResult result = new ReleaseInstallationPlanCleaner(
+            new FixedTimeProvider(Now)
+        ).Clean(root);
 
         Assert.Equal(1, result.DeletedPlans);
         Assert.Equal(1, result.RetainedPlans);
@@ -35,7 +37,9 @@ public sealed class ReleaseInstallationPlanCleanerTests : IDisposable
     [Fact]
     public void CleanReturnsAnEmptyResultWhenThePlanRootDoesNotExist()
     {
-        var result = new ReleaseInstallationPlanCleaner(new FixedTimeProvider(Now)).Clean(root);
+        ReleaseInstallationPlanCleanupResult result = new ReleaseInstallationPlanCleaner(
+            new FixedTimeProvider(Now)
+        ).Clean(root);
 
         Assert.Equal(0, result.DeletedPlans);
         Assert.Equal(0, result.RetainedPlans);
@@ -45,18 +49,18 @@ public sealed class ReleaseInstallationPlanCleanerTests : IDisposable
     [Fact]
     public void CleanRetainsAndReportsAPlanThatCannotBeDeleted()
     {
-        var plan = CreatePlan(Guid.NewGuid(), Now.AddDays(-2));
+        string plan = CreatePlan(Guid.NewGuid(), Now.AddDays(-2));
         var cleaner = new ReleaseInstallationPlanCleaner(
             new FixedTimeProvider(Now),
             minimumAge: TimeSpan.FromHours(24),
             _ => throw new UnauthorizedAccessException("locked")
         );
 
-        var result = cleaner.Clean(root);
+        ReleaseInstallationPlanCleanupResult result = cleaner.Clean(root);
 
         Assert.Equal(0, result.DeletedPlans);
         Assert.Equal(1, result.RetainedPlans);
-        var failure = Assert.Single(result.Failures);
+        string failure = Assert.Single(result.Failures);
         Assert.Contains(plan, failure);
         Assert.Contains("locked", failure);
         Assert.True(Directory.Exists(plan));
@@ -65,7 +69,7 @@ public sealed class ReleaseInstallationPlanCleanerTests : IDisposable
     [Fact]
     public async Task CleanAsyncHonorsCancellationWithoutDeletingPlans()
     {
-        var plan = CreatePlan(Guid.NewGuid(), Now.AddDays(-2));
+        string plan = CreatePlan(Guid.NewGuid(), Now.AddDays(-2));
         using var cancellation = new CancellationTokenSource();
         await cancellation.CancelAsync();
 
@@ -82,10 +86,10 @@ public sealed class ReleaseInstallationPlanCleanerTests : IDisposable
     [Fact]
     public async Task CoordinatorRunsPlanCleanupThroughTheSharedGate()
     {
-        var plan = CreatePlan(Guid.NewGuid(), Now.AddDays(-2));
+        string plan = CreatePlan(Guid.NewGuid(), Now.AddDays(-2));
         var coordinator = new ReleaseUpdateHistoryCleanupCoordinator();
 
-        var result = await coordinator.CleanPlansAsync(
+        ReleaseInstallationPlanCleanupResult result = await coordinator.CleanPlansAsync(
             new ReleaseInstallationPlanCleaner(new FixedTimeProvider(Now)),
             root
         );
@@ -104,7 +108,7 @@ public sealed class ReleaseInstallationPlanCleanerTests : IDisposable
 
     private string CreatePlan(Guid requestId, DateTimeOffset lastWriteTime)
     {
-        var path = Path.Combine(root, "updates", "install-plans", requestId.ToString("N"));
+        string path = Path.Combine(root, "updates", "install-plans", requestId.ToString("N"));
         Directory.CreateDirectory(path);
         File.WriteAllText(Path.Combine(path, "plan.json"), "{}");
         Directory.SetLastWriteTimeUtc(path, lastWriteTime.UtcDateTime);

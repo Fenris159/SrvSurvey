@@ -28,11 +28,11 @@ public sealed class GuardianAlignmentControlTests
             ["lacrosse"] = "d3aba02afbf249d279bfb16649593232a18c48a4e76019c7dc2b3ba4042db86d",
         };
 
-        foreach (var (name, hash) in expected)
+        foreach ((string? name, string? hash) in expected)
         {
             var uri = new Uri($"avares://SrvSurvey.Desktop/Assets/GuardianGuidance/{name}-heading-guide.png");
             Assert.True(AssetLoader.Exists(uri), name);
-            using var stream = AssetLoader.Open(uri);
+            using Stream stream = AssetLoader.Open(uri);
             Assert.Equal(hash, Convert.ToHexString(SHA256.HashData(stream)).ToLowerInvariant());
         }
     }
@@ -41,7 +41,7 @@ public sealed class GuardianAlignmentControlTests
     public void EveryLegacyAlignmentModeRendersAndStructuresKeepDistinctGeometry()
     {
         var structureHashes = new HashSet<string>();
-        foreach (var mode in Enum.GetValues<GuardianAlignmentMode>())
+        foreach (GuardianAlignmentMode mode in Enum.GetValues<GuardianAlignmentMode>())
         {
             var control = new GuardianAlignmentControl
             {
@@ -59,7 +59,7 @@ public sealed class GuardianAlignmentControlTests
             try
             {
                 window.Show();
-                var frame = window.CaptureRenderedFrame();
+                WriteableBitmap? frame = window.CaptureRenderedFrame();
                 Assert.NotNull(frame);
                 Assert.Equal(new PixelSize(600, 600), frame.PixelSize);
                 if (mode >= GuardianAlignmentMode.Bear)

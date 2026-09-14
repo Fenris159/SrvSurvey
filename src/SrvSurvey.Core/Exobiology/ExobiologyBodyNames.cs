@@ -17,13 +17,13 @@ public static class ExobiologyBodyNames
             return string.Empty;
         }
 
-        var trimmed = bodyName.Trim();
+        string trimmed = bodyName.Trim();
         if (!string.IsNullOrWhiteSpace(systemName))
         {
-            var system = systemName.Trim();
+            string system = systemName.Trim();
             if (trimmed.Length > system.Length && trimmed.StartsWith(system, StringComparison.OrdinalIgnoreCase))
             {
-                var remainder = trimmed[system.Length..];
+                string remainder = trimmed[system.Length..];
                 // Require a boundary so "Sol" does not strip from "Solitude 1".
                 if (remainder.Length > 0 && remainder[0] is ' ' or '-' or '_')
                 {
@@ -40,8 +40,8 @@ public static class ExobiologyBodyNames
     /// </summary>
     public static bool Matches(string? first, string? second, string? systemName = null)
     {
-        var left = NormalizeKey(first, systemName);
-        var right = NormalizeKey(second, systemName);
+        string left = NormalizeKey(first, systemName);
+        string right = NormalizeKey(second, systemName);
         return left.Length > 0 && right.Length > 0 && string.Equals(left, right, StringComparison.OrdinalIgnoreCase);
     }
 }

@@ -19,6 +19,8 @@ public static partial class FrontierCapiSnapshotParser
     private const string JsonValue = "value";
     private const string JsonTotal = "total";
     private const string JsonStock = "stock";
+    private const string JsonStarSystem = "starsystem";
+    private const string JsonSystemName = "systemName";
     private const string JsonPlayerContribution = "playerContribution";
     private const string JsonContribution = "contribution";
 
@@ -221,19 +223,19 @@ public static partial class FrontierCapiSnapshotParser
         ArgumentException.ThrowIfNullOrWhiteSpace(profileJson);
 
         using var profile = JsonDocument.Parse(profileJson);
-        var root = RequireObject(profile.RootElement, "Frontier profile");
-        var commander =
+        JsonElement root = RequireObject(profile.RootElement, "Frontier profile");
+        JsonElement commander =
             GetObject(root, "commander")
             ?? throw new InvalidDataException("Frontier profile did not contain commander information.");
 
-        var commanderName = GetString(commander, "name");
+        string commanderName = GetString(commander, "name");
         if (string.IsNullOrWhiteSpace(commanderName))
         {
             throw new InvalidDataException("Frontier profile did not contain a commander name.");
         }
 
-        var currentShipElement = GetObject(root, "ship");
-        var currentShipId = GetInt64(commander, "currentShipId");
+        JsonElement? currentShipElement = GetObject(root, "ship");
+        long? currentShipId = GetInt64(commander, "currentShipId");
         var parsedShips = EnumerateObjects(root, "ships")
             .Select(
                 (element, index) =>
@@ -250,7 +252,7 @@ public static partial class FrontierCapiSnapshotParser
             .Cast<FrontierShipSnapshot>()
             .ToList();
 
-        var parsedCurrentShip = currentShipElement is { } shipElement
+        FrontierShipSnapshot? parsedCurrentShip = currentShipElement is { } shipElement
             ? ParseShip(
                 shipElement,
                 currentShipElement,
@@ -273,15 +275,18 @@ public static partial class FrontierCapiSnapshotParser
             .ThenBy(ship => ship.Name, StringComparer.CurrentCultureIgnoreCase)
             .ToList();
 
-        var carrierEndpoint = string.IsNullOrWhiteSpace(carrierJson)
+        FrontierCarrierEndpointSnapshot? carrierEndpoint = string.IsNullOrWhiteSpace(carrierJson)
             ? null
             : ParseCarrierEndpoint(carrierJson, fetchedAt);
-        var profileReputation = ParseReputation(
+        FrontierReputationSnapshot[] profileReputation = ParseReputation(
             GetProperty(root, "reputation") ?? GetProperty(commander, "reputation")
         );
-        var commanderReputation = MergeReputation(profileReputation, carrierEndpoint?.CommanderReputation ?? []);
-        var lastSystem = ParseLocation(GetObject(root, JsonLastSystem), false);
-        var lastStation = ParseLocation(GetObject(root, JsonLastStarport), true);
+        FrontierReputationSnapshot[] commanderReputation = MergeReputation(
+            profileReputation,
+            carrierEndpoint?.CommanderReputation ?? []
+        );
+        FrontierLocationSnapshot? lastSystem = ParseLocation(GetObject(root, JsonLastSystem), false);
+        FrontierLocationSnapshot? lastStation = ParseLocation(GetObject(root, JsonLastStarport), true);
 
         return new FrontierAccountSnapshot(
             commanderName.Trim(),
@@ -312,7 +317,7 @@ public static partial class FrontierCapiSnapshotParser
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(marketJson);
         using var document = JsonDocument.Parse(marketJson);
-        var root = RequireObject(document.RootElement, "Frontier market");
+        JsonElement root = RequireObject(document.RootElement, "Frontier market");
         return ParseMarket(root, fetchedAt, "market");
     }
 
@@ -320,7 +325,7 @@ public static partial class FrontierCapiSnapshotParser
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(shipyardJson);
         using var document = JsonDocument.Parse(shipyardJson);
-        var root = RequireObject(document.RootElement, "Frontier shipyard");
+        JsonElement root = RequireObject(document.RootElement, "Frontier shipyard");
         return ParseShipyard(root, fetchedAt, "shipyard");
     }
 
@@ -328,7 +333,7 @@ public static partial class FrontierCapiSnapshotParser
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(communityGoalsJson);
         using var document = JsonDocument.Parse(communityGoalsJson);
-        var candidates = FindCommunityGoalObjects(document.RootElement);
+        List<JsonElement> candidates = FindCommunityGoalObjects(document.RootElement);
         return candidates
             .Select(ParseCommunityGoal)
             .Where(goal => !string.IsNullOrWhiteSpace(goal.Title))
@@ -360,27 +365,27 @@ public static partial class FrontierCapiSnapshotParser
             return null;
         }
 
-        var id = GetInt64(ship, "id") ?? GetInt64(ship, "shipID");
-        var currentId = currentShip is { } current ? GetInt64(current, "id") ?? GetInt64(current, "shipID") : null;
-        var isCurrent =
+        long? id = GetInt64(ship, "id") ?? GetInt64(ship, "shipID");
+        long? currentId = currentShip is { } current ? GetInt64(current, "id") ?? GetInt64(current, "shipID") : null;
+        bool isCurrent =
             forceCurrent
             || (id is not null && currentId == id)
             || (currentShipId is not null && (currentShipId == id || currentShipId == index));
-        var type = FirstNonEmpty(GetString(ship, JsonLocName), GetString(ship, "name"), "Unknown ship");
-        var customName = GetString(ship, "shipName");
-        var identifier = GetString(ship, "shipID");
-        var system = GetString(GetObject(ship, "starsystem"), "name");
-        var station = GetString(GetObject(ship, "station"), "name");
+        string type = FirstNonEmpty(GetString(ship, JsonLocName), GetString(ship, "name"), "Unknown ship");
+        string customName = GetString(ship, "shipName");
+        string identifier = GetString(ship, "shipID");
+        string system = GetString(GetObject(ship, JsonStarSystem), "name");
+        string station = GetString(GetObject(ship, "station"), "name");
         if (isCurrent)
         {
             system = FirstNonEmpty(system, fallbackSystem);
             station = FirstNonEmpty(station, fallbackStation);
         }
 
-        var health = GetObject(ship, "health");
-        var value = GetObject(ship, JsonValue);
-        var starsystem = GetObject(ship, "starsystem");
-        var stationObject = GetObject(ship, "station");
+        JsonElement? health = GetObject(ship, "health");
+        JsonElement? value = GetObject(ship, JsonValue);
+        JsonElement? starsystem = GetObject(ship, JsonStarSystem);
+        JsonElement? stationObject = GetObject(ship, "station");
         return new FrontierShipSnapshot(
             id,
             HumanizeShipType(type),
@@ -419,13 +424,13 @@ public static partial class FrontierCapiSnapshotParser
             return null;
         }
 
-        var name = GetString(location, "name");
+        string name = GetString(location, "name");
         if (string.IsNullOrWhiteSpace(name))
         {
             return null;
         }
 
-        var services = includeServices
+        string[] services = includeServices
             ? ParseNamedValues(GetProperty(location, "services"))
                 .Where(item => IsAvailable(item.Value))
                 .Select(item => item.Name)
@@ -449,17 +454,17 @@ public static partial class FrontierCapiSnapshotParser
         }
 
         var result = new List<FrontierShipModuleSnapshot>();
-        foreach (var property in moduleObject.EnumerateObject())
+        foreach (JsonProperty property in moduleObject.EnumerateObject())
         {
             if (property.Value.ValueKind != JsonValueKind.Object)
             {
                 continue;
             }
 
-            var wrapper = property.Value;
-            var module = GetObject(wrapper, "module") ?? wrapper;
-            var engineer = GetObject(wrapper, "engineer");
-            var effects = EnumerateScalarValues(GetProperty(wrapper, "specialModifications"));
+            JsonElement wrapper = property.Value;
+            JsonElement module = GetObject(wrapper, "module") ?? wrapper;
+            JsonElement? engineer = GetObject(wrapper, "engineer");
+            string[] effects = EnumerateScalarValues(GetProperty(wrapper, "specialModifications"));
             result.Add(
                 new FrontierShipModuleSnapshot(
                     HumanizeIdentifier(property.Name),
@@ -521,16 +526,16 @@ public static partial class FrontierCapiSnapshotParser
         }
 
         var result = new List<FrontierRankSnapshot>();
-        foreach (var key in RankCategories.Keys)
+        foreach (string key in RankCategories.Keys)
         {
-            var level = GetInt32(rankObject, key);
+            int? level = GetInt32(rankObject, key);
             if (level is null)
             {
                 continue;
             }
 
-            var names = RankNames[key];
-            var name =
+            string[] names = RankNames[key];
+            string name =
                 level >= 0 && level < names.Length
                     ? names[level.Value]
                     : $"Rank {level.Value.ToString(CultureInfo.InvariantCulture)}";
@@ -557,7 +562,7 @@ public static partial class FrontierCapiSnapshotParser
 
     public static FrontierCarrierSnapshot ParseCarrier(string carrierJson, DateTimeOffset fetchedAt)
     {
-        var endpoint = ParseCarrierEndpoint(carrierJson, fetchedAt);
+        FrontierCarrierEndpointSnapshot endpoint = ParseCarrierEndpoint(carrierJson, fetchedAt);
         return endpoint.Carrier
             ?? throw new InvalidDataException("Frontier fleet-carrier response did not contain a carrier callsign.");
     }
@@ -566,23 +571,23 @@ public static partial class FrontierCapiSnapshotParser
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(carrierJson);
         using var document = JsonDocument.Parse(carrierJson);
-        var root = RequireObject(document.RootElement, "Frontier fleet carrier");
-        var reputation = ParseReputation(GetProperty(root, "reputation"));
-        var dataPoints = Flatten(root, "fleetcarrier");
-        var name = GetObject(root, "name");
+        JsonElement root = RequireObject(document.RootElement, "Frontier fleet carrier");
+        FrontierReputationSnapshot[] reputation = ParseReputation(GetProperty(root, "reputation"));
+        List<FrontierDataPointSnapshot> dataPoints = Flatten(root, "fleetcarrier");
+        JsonElement? name = GetObject(root, "name");
         if (string.IsNullOrWhiteSpace(GetString(name, "callsign")))
         {
             return new FrontierCarrierEndpointSnapshot(null, reputation, dataPoints);
         }
 
-        var capacity = GetObject(root, "capacity");
-        var finance = GetObject(root, "finance");
-        var marketFinances = GetObject(root, "marketFinances");
-        var blackMarketFinances = GetObject(root, "blackmarketFinances");
-        var bartenderFinances = GetObject(finance, "bartender");
-        var itinerary = GetObject(root, "itinerary");
+        JsonElement? capacity = GetObject(root, "capacity");
+        JsonElement? finance = GetObject(root, "finance");
+        JsonElement? marketFinances = GetObject(root, "marketFinances");
+        JsonElement? blackMarketFinances = GetObject(root, "blackmarketFinances");
+        JsonElement? bartenderFinances = GetObject(finance, "bartender");
+        JsonElement? itinerary = GetObject(root, "itinerary");
 
-        var capacityRows = capacity is { } capacityValue
+        FrontierCapacitySnapshot[] capacityRows = capacity is { } capacityValue
             ? capacityValue
                 .EnumerateObject()
                 .Where(property =>
@@ -598,10 +603,10 @@ public static partial class FrontierCapiSnapshotParser
                 .OrderByDescending(item => item.Used)
                 .ToArray()
             : [];
-        var capacityFree = GetInt32(capacity, "freeSpace") ?? 0;
-        var capacityUsed = capacityRows.Sum(row => row.Used);
+        int capacityFree = GetInt32(capacity, "freeSpace") ?? 0;
+        int capacityUsed = capacityRows.Sum(row => row.Used);
 
-        var cargo = EnumerateObjects(root, "cargo")
+        FrontierInventorySnapshot[] cargo = EnumerateObjects(root, "cargo")
             .Select(item => new FrontierInventorySnapshot(
                 "Cargo",
                 FirstNonEmpty(
@@ -623,22 +628,22 @@ public static partial class FrontierCapiSnapshotParser
             .ThenBy(item => item.Name, StringComparer.CurrentCultureIgnoreCase)
             .ToArray();
 
-        var locker = ParseLocker(GetObject(root, "carrierLocker"));
-        var orders = GetObject(root, "orders");
-        var commodities = GetObject(orders, "commodities");
-        var microresources = GetObject(orders, "onfootmicroresources");
-        var sellOrders = ParseOrders(commodities, "sales", "Commodity", false)
+        FrontierInventorySnapshot[] locker = ParseLocker(GetObject(root, "carrierLocker"));
+        JsonElement? orders = GetObject(root, "orders");
+        JsonElement? commodities = GetObject(orders, "commodities");
+        JsonElement? microresources = GetObject(orders, "onfootmicroresources");
+        FrontierMarketOrderSnapshot[] sellOrders = ParseOrders(commodities, "sales", "Commodity", false)
             .Concat(ParseOrders(microresources, "sales", "Microresource", false))
             .OrderBy(order => order.Category)
             .ThenBy(order => order.Name, StringComparer.CurrentCultureIgnoreCase)
             .ToArray();
-        var buyOrders = ParseOrders(commodities, "purchases", "Commodity", true)
+        FrontierMarketOrderSnapshot[] buyOrders = ParseOrders(commodities, "purchases", "Commodity", true)
             .Concat(ParseOrders(microresources, "purchases", "Microresource", true))
             .OrderBy(order => order.Category)
             .ThenBy(order => order.Name, StringComparer.CurrentCultureIgnoreCase)
             .ToArray();
 
-        var services = GetObject(root, "servicesCrew") is { } serviceObject
+        string[] services = GetObject(root, "servicesCrew") is { } serviceObject
             ? serviceObject
                 .EnumerateObject()
                 .Where(property => property.Value.ValueKind == JsonValueKind.Object)
@@ -717,8 +722,8 @@ public static partial class FrontierCapiSnapshotParser
 
     private static string ParseCarrierCurrentJump(JsonElement? value)
     {
-        var currentJump = value is { ValueKind: JsonValueKind.Object } jump
-            ? FirstNonEmpty(GetString(jump, "starsystem"), GetString(jump, "systemName"), ReadNamedValue(jump))
+        string currentJump = value is { ValueKind: JsonValueKind.Object } jump
+            ? FirstNonEmpty(GetString(jump, JsonStarSystem), GetString(jump, JsonSystemName), ReadNamedValue(jump))
             : ReadNamedValue(value);
         return string.Equals(currentJump, "None", StringComparison.OrdinalIgnoreCase) ? string.Empty : currentJump;
     }
@@ -731,14 +736,14 @@ public static partial class FrontierCapiSnapshotParser
         }
 
         var result = new List<FrontierCarrierCrewSnapshot>();
-        foreach (var property in serviceObject.EnumerateObject())
+        foreach (JsonProperty property in serviceObject.EnumerateObject())
         {
             if (property.Value.ValueKind != JsonValueKind.Object)
             {
                 continue;
             }
 
-            var crew = GetObject(property.Value, "crewMember");
+            JsonElement? crew = GetObject(property.Value, "crewMember");
             result.Add(
                 new FrontierCarrierCrewSnapshot(
                     HumanizeIdentifier(property.Name),
@@ -762,7 +767,7 @@ public static partial class FrontierCapiSnapshotParser
             ? []
             : EnumerateObjects(completed.Value)
                 .Select(item => new FrontierCarrierJumpSnapshot(
-                    ReadNamedValue(GetProperty(item, "starsystem")),
+                    ReadNamedValue(GetProperty(item, JsonStarSystem)),
                     HumanizeIdentifier(GetString(item, "state")),
                     GetDateTimeOffsetAny(item, "arrivalTime"),
                     GetDateTimeOffsetAny(item, "departureTime"),
@@ -779,7 +784,7 @@ public static partial class FrontierCapiSnapshotParser
             return [];
         }
 
-        var values =
+        List<FrontierReputationSnapshot> values =
             reputation.Value.ValueKind == JsonValueKind.Object
                 ? ParseReputationObject(reputation.Value)
                 : ParseReputationArray(reputation.Value);
@@ -809,15 +814,15 @@ public static partial class FrontierCapiSnapshotParser
 
     private static List<FrontierReputationSnapshot> ParseReputationObject(JsonElement reputation)
     {
-        if (TryParseSingleReputation(reputation, out var single))
+        if (TryParseSingleReputation(reputation, out FrontierReputationSnapshot? single))
         {
             return [single];
         }
 
         var values = new List<FrontierReputationSnapshot>();
-        foreach (var property in reputation.EnumerateObject())
+        foreach (JsonProperty property in reputation.EnumerateObject())
         {
-            if (TryReadReputationScore(property.Value, out var score))
+            if (TryReadReputationScore(property.Value, out double score))
             {
                 values.Add(new FrontierReputationSnapshot(HumanizeIdentifier(property.Name), score));
             }
@@ -829,8 +834,8 @@ public static partial class FrontierCapiSnapshotParser
     private static bool TryParseSingleReputation(JsonElement reputation, out FrontierReputationSnapshot snapshot)
     {
         snapshot = null!;
-        var faction = GetString(reputation, "majorFaction");
-        var score = GetDouble(reputation, "score");
+        string faction = GetString(reputation, "majorFaction");
+        double? score = GetDouble(reputation, "score");
         if (string.IsNullOrWhiteSpace(faction) || score is null)
         {
             return false;
@@ -842,7 +847,7 @@ public static partial class FrontierCapiSnapshotParser
 
     private static bool TryReadReputationScore(JsonElement value, out double score)
     {
-        var parsed = value.ValueKind == JsonValueKind.Object ? GetDouble(value, "score") : ReadDouble(value);
+        double? parsed = value.ValueKind == JsonValueKind.Object ? GetDouble(value, "score") : ReadDouble(value);
         if (parsed is null)
         {
             score = 0;
@@ -868,7 +873,7 @@ public static partial class FrontierCapiSnapshotParser
 
     private static FrontierMarketSnapshot ParseMarket(JsonElement root, DateTimeOffset fetchedAt, string source)
     {
-        var commodities = EnumerateObjects(root, "commodities")
+        FrontierCommoditySnapshot[] commodities = EnumerateObjects(root, "commodities")
             .Select(item => new FrontierCommoditySnapshot(
                 GetInt64(item, "id"),
                 HumanizeIdentifier(FirstNonEmpty(GetString(item, "categoryName"), GetString(item, "categoryname"))),
@@ -908,7 +913,7 @@ public static partial class FrontierCapiSnapshotParser
 
     private static FrontierShipyardSnapshot ParseShipyard(JsonElement root, DateTimeOffset fetchedAt, string source)
     {
-        var modules = EnumerateObjects(root, "modules")
+        FrontierOutfittingModuleSnapshot[] modules = EnumerateObjects(root, "modules")
             .Select(item => new FrontierOutfittingModuleSnapshot(
                 GetInt64(item, "id"),
                 HumanizeIdentifier(GetString(item, "category")),
@@ -924,12 +929,12 @@ public static partial class FrontierCapiSnapshotParser
             .OrderBy(item => item.Category, StringComparer.CurrentCultureIgnoreCase)
             .ThenBy(item => item.Name, StringComparer.CurrentCultureIgnoreCase)
             .ToArray();
-        var shipsContainer = GetObject(root, "ships");
-        var shipList =
+        JsonElement? shipsContainer = GetObject(root, "ships");
+        JsonElement? shipList =
             GetProperty(shipsContainer, "shipyard_list")
             ?? GetProperty(root, "shipyard_list")
             ?? GetProperty(root, "ships");
-        var ships = shipList is { } shipValue
+        FrontierShipForSaleSnapshot[] ships = shipList is { } shipValue
             ? EnumerateObjects(shipValue)
                 .Select(item => new FrontierShipForSaleSnapshot(
                     GetInt64(item, "id"),
@@ -969,7 +974,7 @@ public static partial class FrontierCapiSnapshotParser
         {
             if (value.ValueKind == JsonValueKind.Array)
             {
-                foreach (var item in value.EnumerateArray())
+                foreach (JsonElement item in value.EnumerateArray())
                 {
                     Visit(item);
                 }
@@ -988,7 +993,7 @@ public static partial class FrontierCapiSnapshotParser
                 return;
             }
 
-            foreach (var property in value.EnumerateObject())
+            foreach (JsonProperty property in value.EnumerateObject())
             {
                 Visit(property.Value);
             }
@@ -997,7 +1002,7 @@ public static partial class FrontierCapiSnapshotParser
 
     private static bool LooksLikeCommunityGoal(JsonElement value)
     {
-        var title = FirstNonEmpty(
+        string title = FirstNonEmpty(
             GetString(value, "title"),
             GetString(value, "name"),
             GetString(value, "communitygoalName")
@@ -1009,16 +1014,17 @@ public static partial class FrontierCapiSnapshotParser
                 || GetProperty(value, "description") is not null
                 || GetProperty(value, "currentTotal") is not null
                 || GetProperty(value, JsonPlayerContribution) is not null
-                || GetProperty(value, "systemName") is not null
+                || GetProperty(value, JsonSystemName) is not null
             );
     }
 
     private static FrontierCommunityGoalSnapshot ParseCommunityGoal(JsonElement goal)
     {
-        var commander = GetObject(goal, "commander") ?? GetObject(goal, JsonContribution) ?? GetObject(goal, "player");
-        var progress = GetObject(goal, "progress");
-        var title = GetStringAny(goal, "title", "name", "communitygoalName");
-        var briefing = CleanCommunityGoalText(
+        JsonElement? commander =
+            GetObject(goal, "commander") ?? GetObject(goal, JsonContribution) ?? GetObject(goal, "player");
+        JsonElement? progress = GetObject(goal, "progress");
+        string title = GetStringAny(goal, "title", "name", "communitygoalName");
+        string briefing = CleanCommunityGoalText(
             FirstNonEmpty(
                 GetStringAny(goal, "bulletin"),
                 GetStringAny(goal, "description", "descriptionText", "goalDescriptionText", "locDescription"),
@@ -1032,7 +1038,7 @@ public static partial class FrontierCapiSnapshotParser
             briefing,
             GetStringAny(goal, "objective", "objectiveText", "goalObjectiveText"),
             GetStringAny(goal, "reward", "rewardText", "goalRewardText"),
-            GetStringAny(goal, "systemName", "starsystemName", "starsystem_name", "system"),
+            GetStringAny(goal, JsonSystemName, "starsystemName", "starsystem_name", "system"),
             GetStringAny(goal, "marketName", "market_name", "stationName", "market"),
             GetDateTimeOffsetAny(goal, "expiry", "expiresAt", "goalExpiry"),
             GetBooleanAny(goal, "isComplete", "completed") ?? false,
@@ -1070,7 +1076,7 @@ public static partial class FrontierCapiSnapshotParser
             return string.Empty;
         }
 
-        var normalized = value
+        string normalized = value
             .Replace("\r\n", "\n", StringComparison.Ordinal)
             .Replace('\r', '\n')
             .Replace("{{top5}}", string.Empty, StringComparison.OrdinalIgnoreCase)
@@ -1096,9 +1102,9 @@ public static partial class FrontierCapiSnapshotParser
         }
 
         var result = new List<FrontierInventorySnapshot>();
-        foreach (var category in lockerObject.EnumerateObject())
+        foreach (JsonProperty category in lockerObject.EnumerateObject())
         {
-            foreach (var item in EnumerateObjects(category.Value))
+            foreach (JsonElement item in EnumerateObjects(category.Value))
             {
                 result.Add(
                     new FrontierInventorySnapshot(
@@ -1134,9 +1140,9 @@ public static partial class FrontierCapiSnapshotParser
             yield break;
         }
 
-        foreach (var item in EnumerateObjects(orderOwner, propertyName))
+        foreach (JsonElement item in EnumerateObjects(orderOwner, propertyName))
         {
-            var quantity = isPurchase ? GetInt32(item, JsonTotal) ?? 0 : GetInt32(item, JsonStock) ?? 0;
+            int quantity = isPurchase ? GetInt32(item, JsonTotal) ?? 0 : GetInt32(item, JsonStock) ?? 0;
             yield return new FrontierMarketOrderSnapshot(
                 category,
                 FirstNonEmpty(
@@ -1225,7 +1231,7 @@ public static partial class FrontierCapiSnapshotParser
                 .Value.EnumerateObject()
                 .Where(item => item.Value.ValueKind == JsonValueKind.Object)
                 .Select(item => new FrontierEconomySnapshot(
-                    long.TryParse(item.Name, NumberStyles.Integer, CultureInfo.InvariantCulture, out var id)
+                    long.TryParse(item.Name, NumberStyles.Integer, CultureInfo.InvariantCulture, out long id)
                         ? id
                         : null,
                     HumanizeIdentifier(GetString(item.Value, "name")),
@@ -1292,14 +1298,14 @@ public static partial class FrontierCapiSnapshotParser
             switch (value.ValueKind)
             {
                 case JsonValueKind.Object:
-                    foreach (var property in value.EnumerateObject())
+                    foreach (JsonProperty property in value.EnumerateObject())
                     {
                         Visit(property.Value, path + "." + property.Name);
                     }
                     break;
                 case JsonValueKind.Array:
-                    var index = 0;
-                    foreach (var item in value.EnumerateArray())
+                    int index = 0;
+                    foreach (JsonElement item in value.EnumerateArray())
                     {
                         Visit(item, $"{path}[{index++}]");
                     }
@@ -1332,7 +1338,7 @@ public static partial class FrontierCapiSnapshotParser
             return null;
         }
 
-        foreach (var name in names)
+        foreach (string name in names)
         {
             if (GetInt64(owner.Value, name) is { } value)
             {
@@ -1345,7 +1351,7 @@ public static partial class FrontierCapiSnapshotParser
 
     private static int? GetInt32Any(JsonElement? owner, params string[] names)
     {
-        var value = GetInt64Any(owner, names);
+        long? value = GetInt64Any(owner, names);
         return value is >= int.MinValue and <= int.MaxValue ? (int)value.Value : null;
     }
 
@@ -1356,7 +1362,7 @@ public static partial class FrontierCapiSnapshotParser
             return null;
         }
 
-        foreach (var name in names)
+        foreach (string name in names)
         {
             if (GetBoolean(owner.Value, name) is { } value)
             {
@@ -1374,12 +1380,12 @@ public static partial class FrontierCapiSnapshotParser
 
     private static DateTimeOffset? GetDateTimeOffsetAny(JsonElement? owner, params string[] names)
     {
-        var value = GetStringAny(owner, names);
+        string value = GetStringAny(owner, names);
         return DateTimeOffset.TryParse(
             value,
             CultureInfo.InvariantCulture,
             DateTimeStyles.AssumeUniversal,
-            out var parsed
+            out DateTimeOffset parsed
         )
             ? parsed.ToUniversalTime()
             : null;
@@ -1415,7 +1421,7 @@ public static partial class FrontierCapiSnapshotParser
 
     private static JsonElement[] EnumerateObjects(JsonElement owner, string propertyName)
     {
-        var value = GetProperty(owner, propertyName);
+        JsonElement? value = GetProperty(owner, propertyName);
         return value is null ? [] : EnumerateObjects(value.Value);
     }
 
@@ -1443,12 +1449,12 @@ public static partial class FrontierCapiSnapshotParser
             return null;
         }
 
-        if (owner.TryGetProperty(name, out var exact))
+        if (owner.TryGetProperty(name, out JsonElement exact))
         {
             return exact;
         }
 
-        foreach (var property in owner.EnumerateObject())
+        foreach (JsonProperty property in owner.EnumerateObject())
         {
             if (string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase))
             {
@@ -1466,7 +1472,7 @@ public static partial class FrontierCapiSnapshotParser
 
     private static JsonElement? GetObject(JsonElement owner, string name)
     {
-        var value = GetProperty(owner, name);
+        JsonElement? value = GetProperty(owner, name);
         return value is { ValueKind: JsonValueKind.Object } ? value : null;
     }
 
@@ -1477,7 +1483,7 @@ public static partial class FrontierCapiSnapshotParser
 
     private static string GetString(JsonElement owner, string name)
     {
-        var value = GetProperty(owner, name);
+        JsonElement? value = GetProperty(owner, name);
         return value is null ? string.Empty : ReadNamedValue(value);
     }
 
@@ -1500,7 +1506,7 @@ public static partial class FrontierCapiSnapshotParser
             JsonValueKind.Object => FirstNonEmpty(
                 GetString(value.Value, "name"),
                 GetString(value.Value, "Name"),
-                GetString(value.Value, "systemName")
+                GetString(value.Value, JsonSystemName)
             ),
             _ => string.Empty,
         };
@@ -1523,7 +1529,7 @@ public static partial class FrontierCapiSnapshotParser
             return null;
         }
 
-        if (value.Value.ValueKind == JsonValueKind.Number && value.Value.TryGetInt64(out var number))
+        if (value.Value.ValueKind == JsonValueKind.Number && value.Value.TryGetInt64(out long number))
         {
             return number;
         }
@@ -1537,7 +1543,7 @@ public static partial class FrontierCapiSnapshotParser
 
     private static int? GetInt32(JsonElement owner, string name)
     {
-        var value = GetInt64(owner, name);
+        long? value = GetInt64(owner, name);
         return value is >= int.MinValue and <= int.MaxValue ? (int)value.Value : null;
     }
 
@@ -1548,13 +1554,13 @@ public static partial class FrontierCapiSnapshotParser
 
     private static double? GetDouble(JsonElement? owner, string name)
     {
-        var value = owner is { } element ? GetProperty(element, name) : null;
+        JsonElement? value = owner is { } element ? GetProperty(element, name) : null;
         return value is { } elementValue ? ReadDouble(elementValue) : null;
     }
 
     private static double? ReadDouble(JsonElement value)
     {
-        if (value.ValueKind == JsonValueKind.Number && value.TryGetDouble(out var number))
+        if (value.ValueKind == JsonValueKind.Number && value.TryGetDouble(out double number))
         {
             return number;
         }
@@ -1568,7 +1574,7 @@ public static partial class FrontierCapiSnapshotParser
 
     private static bool? GetBoolean(JsonElement owner, string name)
     {
-        var value = GetProperty(owner, name);
+        JsonElement? value = GetProperty(owner, name);
         return value?.ValueKind switch
         {
             JsonValueKind.True => true,
@@ -1626,7 +1632,7 @@ public static partial class FrontierCapiSnapshotParser
             return string.Empty;
         }
 
-        var normalized = value.Trim().Trim('$', ';').Replace('_', ' ').Replace('-', ' ');
+        string normalized = value.Trim().Trim('$', ';').Replace('_', ' ').Replace('-', ' ');
         normalized = WordBoundaryRegex().Replace(normalized, "$1 $2");
         normalized = WhitespaceRegex().Replace(normalized, " ").Trim();
         return CultureInfo
@@ -1639,8 +1645,8 @@ public static partial class FrontierCapiSnapshotParser
 
     private static string HumanizeShipType(string value)
     {
-        var normalized = value.Trim().Trim('$', ';');
-        return ShipNames.TryGetValue(normalized, out var known) ? known : HumanizeIdentifier(normalized);
+        string normalized = value.Trim().Trim('$', ';');
+        return ShipNames.TryGetValue(normalized, out string? known) ? known : HumanizeIdentifier(normalized);
     }
 
     [GeneratedRegex("([a-z0-9])([A-Z])", RegexOptions.CultureInvariant)]

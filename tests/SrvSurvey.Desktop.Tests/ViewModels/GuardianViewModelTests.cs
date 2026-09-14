@@ -3,6 +3,7 @@ using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
@@ -24,11 +25,14 @@ public sealed class GuardianViewModelTests
     [Fact]
     public void DisableAlignmentGridPreferencesInvertShowFlagsAndPersist()
     {
-        var root = Path.Combine(Path.GetTempPath(), "SrvSurvey-GuardianDisableGrids-" + Guid.NewGuid().ToString("N"));
+        string root = Path.Combine(
+            Path.GetTempPath(),
+            "SrvSurvey-GuardianDisableGrids-" + Guid.NewGuid().ToString("N")
+        );
         Directory.CreateDirectory(root);
         try
         {
-            var settingsPath = Path.Combine(root, "ui-settings.json");
+            string settingsPath = Path.Combine(root, "ui-settings.json");
             var store = new GuardianOverlaySettingsStore(settingsPath);
             var viewModel = new GuardianViewModel(root, new GuardianViewModelOptions { OverlaySettingsStore = store });
 
@@ -45,7 +49,7 @@ public sealed class GuardianViewModelTests
             Assert.True(viewModel.DisableAerialAlignmentGrid);
             Assert.False(viewModel.ShowAerialAlignmentGrid);
 
-            var saved = store.Load();
+            GuardianOverlayPreferences saved = store.Load();
             Assert.True(saved.DisableRuinsMeasurementGrid);
             Assert.True(saved.DisableAerialAlignmentGrid);
 
@@ -122,7 +126,7 @@ public sealed class GuardianViewModelTests
         double expected
     )
     {
-        var actual = GuardianViewModel.CalculateAutomaticMapScale(
+        double actual = GuardianViewModel.CalculateAutomaticMapScale(
             new GuardianAutomaticMapScaleOptions
             {
                 SiteKind = kind,
@@ -142,7 +146,7 @@ public sealed class GuardianViewModelTests
     [Fact]
     public async Task LandedShipNavigationTracksBearingDistanceAndDeparture()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
             var viewModel = new GuardianViewModel(
@@ -186,10 +190,10 @@ public sealed class GuardianViewModelTests
     [Fact]
     public async Task GuardianSurveySharingPreparesAndCopiesBundle()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
-            var surveyDirectory = Path.Combine(root, "guardian", "F123");
+            string surveyDirectory = Path.Combine(root, "guardian", "F123");
             Directory.CreateDirectory(surveyDirectory);
             await File.WriteAllTextAsync(
                 Path.Combine(surveyDirectory, "Unpublished Body-ruins-1.json"),
@@ -224,7 +228,7 @@ public sealed class GuardianViewModelTests
     [Fact]
     public void FiltersAllLegacyGuardianReferenceFields()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
             var viewModel = new GuardianViewModel(root);
@@ -260,15 +264,15 @@ public sealed class GuardianViewModelTests
     [Fact]
     public void CurrentPositionDoesNotChangeDefaultSolDistances()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
             var viewModel = new GuardianViewModel(root);
-            var target = viewModel.Rows.Single(row =>
+            GuardianSiteRowViewModel target = viewModel.Rows.Single(row =>
                 row.Reference.Kind == GuardianSiteKind.Ruins && row.Reference.SiteId == 1
             );
-            var firstBefore = viewModel.Rows[0].Reference;
-            var distanceBefore = target.Distance;
+            GuardianSiteReference firstBefore = viewModel.Rows[0].Reference;
+            double? distanceBefore = target.Distance;
 
             viewModel.UpdateCurrentSystem("GR 1 system", target.Reference.Position);
 
@@ -285,12 +289,12 @@ public sealed class GuardianViewModelTests
     [Fact]
     public void GuardianTemplateDraftUpdatesMapPreviewAndDiscardRestoresIt()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
             var viewModel = new GuardianViewModel(root);
             viewModel.SelectedSite = viewModel.Rows.First(row => row.Reference.Kind == GuardianSiteKind.Ruins);
-            var originalPoint = viewModel.MapProjection!.Points[0];
+            GuardianProjectedPoint originalPoint = viewModel.MapProjection!.Points[0];
 
             viewModel.TemplateAuthoring.EditCommand.Execute(null);
             viewModel.TemplateAuthoring.SelectedPoint = viewModel.TemplateAuthoring.Points.Single(point =>
@@ -323,11 +327,23 @@ public sealed class GuardianViewModelTests
     [Fact]
     public async Task CustomOriginLookupReordersRowsAndClearRestoresSolOrigin()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
-            var near = CreateReference(1, GuardianSiteKind.Beacon, "Near", 1, new GalacticCoordinate(0, 0, 0));
-            var far = CreateReference(2, GuardianSiteKind.Beacon, "Far", 2, new GalacticCoordinate(100, 0, 0));
+            GuardianSiteReference near = CreateReference(
+                1,
+                GuardianSiteKind.Beacon,
+                "Near",
+                1,
+                new GalacticCoordinate(0, 0, 0)
+            );
+            GuardianSiteReference far = CreateReference(
+                2,
+                GuardianSiteKind.Beacon,
+                "Far",
+                2,
+                new GalacticCoordinate(100, 0, 0)
+            );
             var resolver = new StubStarSystemResolver([
                 new StarSystemReference("Far Origin", 100, new GalacticCoordinate(100, 0, 0)),
             ]);
@@ -369,14 +385,20 @@ public sealed class GuardianViewModelTests
     [Fact]
     public void RamTahCatalogLogsSupportNeededOnlySearchAndSurveyNavigation()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
-            var ruins = CreateReference(1, GuardianSiteKind.Ruins, "Ruins", 1, new GalacticCoordinate(0, 0, 0)) with
+            GuardianSiteReference ruins = CreateReference(
+                1,
+                GuardianSiteKind.Ruins,
+                "Ruins",
+                1,
+                new GalacticCoordinate(0, 0, 0)
+            ) with
             {
                 SiteType = "Beta",
             };
-            var structure = CreateReference(
+            GuardianSiteReference structure = CreateReference(
                 2,
                 GuardianSiteKind.Structure,
                 "Structure",
@@ -422,11 +444,11 @@ public sealed class GuardianViewModelTests
             Assert.Empty(viewModel.Rows.Single(row => row.Reference == structure).RamTahLogCodes);
 
             viewModel.UpdateCurrentSystem("Ruins", ruins.Position);
-            var systemRuins = Assert.Single(viewModel.CurrentSystemSites);
+            GuardianSiteRowViewModel systemRuins = Assert.Single(viewModel.CurrentSystemSites);
             Assert.Equal(["B1"], systemRuins.RamTahLogCodes);
             Assert.False(systemRuins.HasBlueprint);
             viewModel.UpdateCurrentSystem("Structure", structure.Position);
-            var systemStructure = Assert.Single(viewModel.CurrentSystemSites);
+            GuardianSiteRowViewModel systemStructure = Assert.Single(viewModel.CurrentSystemSites);
             Assert.True(systemStructure.HasBlueprint);
             Assert.Contains("Weapon blueprint", systemStructure.BlueprintText);
 
@@ -451,11 +473,11 @@ public sealed class GuardianViewModelTests
     [Fact]
     public async Task GuardianSystemSummaryUsesLegacyModesAndDestinationState()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
             var viewModel = new GuardianViewModel(root);
-            var target = viewModel.Rows.First(row => row.Reference.Kind == GuardianSiteKind.Ruins);
+            GuardianSiteRowViewModel target = viewModel.Rows.First(row => row.Reference.Kind == GuardianSiteKind.Ruins);
             viewModel.UpdateCurrentSystem(target.Reference.SystemName, target.Reference.Position);
             viewModel.UpdateStatus(
                 new EliteStatus
@@ -509,10 +531,10 @@ public sealed class GuardianViewModelTests
     [Fact]
     public async Task LoadsCommanderVisitsAndCopiesSelectedSiteFields()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
-            var folder = Path.Combine(root, "guardian", "F123");
+            string folder = Path.Combine(root, "guardian", "F123");
             Directory.CreateDirectory(folder);
             await File.WriteAllTextAsync(
                 Path.Combine(folder, "site-ruins-1.json"),
@@ -536,7 +558,7 @@ public sealed class GuardianViewModelTests
             await viewModel.LoadProfileAsync("F123", isOdyssey: true);
             viewModel.SelectedVisitFilter = "Visited";
 
-            var row = Assert.Single(viewModel.Rows);
+            GuardianSiteRowViewModel row = Assert.Single(viewModel.Rows);
             Assert.True(row.Visit.IsVisited);
             Assert.Equal("commander note", row.Notes);
             Assert.Contains("1 site survey file", viewModel.StatusMessage);
@@ -571,7 +593,7 @@ public sealed class GuardianViewModelTests
     [Fact]
     public async Task SurfaceCopyReportsUnavailableBeaconCoordinates()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
             var catalog = new GuardianSiteCatalog([
@@ -620,7 +642,7 @@ public sealed class GuardianViewModelTests
     [Fact]
     public async Task LiveJournalVisitCreatesSurveyAndSelectsKnownSite()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
             var viewModel = new GuardianViewModel(root);
@@ -651,8 +673,8 @@ public sealed class GuardianViewModelTests
             Assert.Contains("Recorded the live Guardian site", viewModel.StatusMessage);
 
             var reader = new GuardianCommanderDataReader(root);
-            var data = await reader.ReadAsync("F123", isOdyssey: true);
-            var survey = Assert.Single(data.Surveys);
+            GuardianCommanderDataReadResult data = await reader.ReadAsync("F123", isOdyssey: true);
+            GuardianCommanderSiteSurvey survey = Assert.Single(data.Surveys);
             Assert.Equal("Drew", survey.Commander);
             Assert.Equal("Beta", survey.SiteType);
             Assert.Equal(new GuardianSurfaceLocation(-46.576923, 133.985107), survey.Survey.Location);
@@ -666,7 +688,7 @@ public sealed class GuardianViewModelTests
     [Fact]
     public async Task LiveDepartureClearsSiteWithoutRemovingRecordedVisit()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
             var viewModel = new GuardianViewModel(root);
@@ -684,8 +706,8 @@ public sealed class GuardianViewModelTests
             Assert.False(viewModel.HasActiveSite);
             Assert.Equal("No live Guardian site detected", viewModel.ActiveSiteTitle);
             var reader = new GuardianCommanderDataReader(root);
-            var data = await reader.ReadAsync("F123", isOdyssey: false);
-            var survey = Assert.Single(data.Surveys);
+            GuardianCommanderDataReadResult data = await reader.ReadAsync("F123", isOdyssey: false);
+            GuardianCommanderSiteSurvey survey = Assert.Single(data.Surveys);
             Assert.Equal("Lacrosse", survey.SiteType);
             Assert.True(survey.Legacy);
         }
@@ -698,12 +720,24 @@ public sealed class GuardianViewModelTests
     [Fact]
     public void SiteBrowserRestoresLegacyImageIndicatorAndColumnSorting()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
-            var screenshotRoot = Path.Combine(root, "screenshots");
-            var alpha = CreateReference(1, GuardianSiteKind.Structure, "Alpha", 1, new GalacticCoordinate(0, 0, 0));
-            var zulu = CreateReference(2, GuardianSiteKind.Structure, "Zulu", 2, new GalacticCoordinate(1, 0, 0));
+            string screenshotRoot = Path.Combine(root, "screenshots");
+            GuardianSiteReference alpha = CreateReference(
+                1,
+                GuardianSiteKind.Structure,
+                "Alpha",
+                1,
+                new GalacticCoordinate(0, 0, 0)
+            );
+            GuardianSiteReference zulu = CreateReference(
+                2,
+                GuardianSiteKind.Structure,
+                "Zulu",
+                2,
+                new GalacticCoordinate(1, 0, 0)
+            );
             var viewModel = new GuardianViewModel(
                 root,
                 new GuardianViewModelOptions
@@ -716,7 +750,7 @@ public sealed class GuardianViewModelTests
             );
 
             Assert.All(viewModel.Rows, row => Assert.False(row.HasImages));
-            var zuluFolder = Path.Combine(screenshotRoot, zulu.SystemName);
+            string zuluFolder = Path.Combine(screenshotRoot, zulu.SystemName);
             Directory.CreateDirectory(zuluFolder);
             File.WriteAllText(
                 Path.Combine(zuluFolder, $"{zulu.FullBodyName} (2026-08-03 120000), {zulu.SiteType}.png"),
@@ -752,11 +786,15 @@ public sealed class GuardianViewModelTests
     [Fact]
     public async Task PublishedSiteHydratesLiveSurveyAndCodexMarksNearbyRelic()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
-            var reference = CreateProximityReference();
-            var published = CreatePublishedSite(reference, []) with { SiteHeading = 90, ObeliskGroups = "A" };
+            GuardianSiteReference reference = CreateProximityReference();
+            GuardianPublishedSite published = CreatePublishedSite(reference, []) with
+            {
+                SiteHeading = 90,
+                ObeliskGroups = "A",
+            };
             var viewModel = new GuardianViewModel(
                 root,
                 new GuardianViewModelOptions
@@ -789,7 +827,10 @@ public sealed class GuardianViewModelTests
 
             Assert.Equal(GuardianLiveMapMode.Map, viewModel.LiveMapMode);
             Assert.Equal("Test", viewModel.ResolvedActiveSiteType);
-            var saved = await new GuardianCommanderDataReader(root).ReadAsync("F123", isOdyssey: true);
+            GuardianCommanderDataReadResult saved = await new GuardianCommanderDataReader(root).ReadAsync(
+                "F123",
+                isOdyssey: true
+            );
             Assert.Equal(90, Assert.Single(saved.Surveys).Survey.SiteHeading);
             Assert.Contains('A', Assert.Single(saved.Surveys).ObeliskGroups);
 
@@ -823,7 +864,7 @@ public sealed class GuardianViewModelTests
     [Fact]
     public async Task GuardianBeaconCodexEntryCreatesCommanderBeaconVisit()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
             var viewModel = new GuardianViewModel(
@@ -846,8 +887,11 @@ public sealed class GuardianViewModelTests
                 "Drew"
             );
 
-            var data = await new GuardianCommanderDataReader(root).ReadAsync("F123", isOdyssey: true);
-            var beacon = Assert.Single(data.Beacons);
+            GuardianCommanderDataReadResult data = await new GuardianCommanderDataReader(root).ReadAsync(
+                "F123",
+                isOdyssey: true
+            );
+            GuardianCommanderBeaconVisit beacon = Assert.Single(data.Beacons);
             Assert.Equal("Test System", beacon.SystemName);
             Assert.Equal(new GuardianSurfaceLocation(1.25, -2.5), Assert.Single(beacon.ScannedLocations).Value);
             Assert.Contains(viewModel.Rows, row => row.Reference.DisplayId == "GB LOCAL" && row.Visit.HasCommanderData);
@@ -861,10 +905,10 @@ public sealed class GuardianViewModelTests
     [Fact]
     public async Task DoubleCockpitModeToggleSavesGuardianHeadingOnlyWhenLive()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
-            var reference = CreateProximityReference();
+            GuardianSiteReference reference = CreateProximityReference();
             var viewModel = new GuardianViewModel(
                 root,
                 new GuardianViewModelOptions
@@ -896,15 +940,18 @@ public sealed class GuardianViewModelTests
             );
             Assert.Equal(GuardianLiveMapMode.Heading, viewModel.LiveMapMode);
             var started = new DateTimeOffset(2026, 7, 25, 12, 0, 0, TimeSpan.Zero);
-            var normal = StatusNorthOfSite(10) with { Heading = 123 };
-            var analysis = normal with { Flags = normal.Flags | StatusFlags.HudInAnalysisMode };
+            EliteStatus normal = StatusNorthOfSite(10) with { Heading = 123 };
+            EliteStatus analysis = normal with { Flags = normal.Flags | StatusFlags.HudInAnalysisMode };
 
             await viewModel.UpdateStatusAsync(normal, allowGesture: true, observedAt: started);
             await viewModel.UpdateStatusAsync(analysis, allowGesture: true, observedAt: started.AddSeconds(1));
             Assert.True(viewModel.IsBlinkGesturePrimed);
             await viewModel.UpdateStatusAsync(normal, allowGesture: true, observedAt: started.AddSeconds(2));
 
-            var saved = await new GuardianCommanderDataReader(root).ReadAsync("F123", isOdyssey: true);
+            GuardianCommanderDataReadResult saved = await new GuardianCommanderDataReader(root).ReadAsync(
+                "F123",
+                isOdyssey: true
+            );
             Assert.Equal(123, Assert.Single(saved.Surveys).Survey.SiteHeading);
             Assert.Equal(GuardianLiveMapMode.Map, viewModel.LiveMapMode);
             Assert.Equal(123, viewModel.SelectedSite?.Reference.SiteHeading);
@@ -935,11 +982,11 @@ public sealed class GuardianViewModelTests
     [Fact]
     public async Task FireGroupChoosesRuinsTypeAndDoubleToggleConfirmsIt()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
-            var reference = CreateProximityReference() with { SiteType = "" };
-            var templates = RuinsSiteTypes
+            GuardianSiteReference reference = CreateProximityReference() with { SiteType = "" };
+            GuardianSiteTemplate[] templates = RuinsSiteTypes
                 .Select(type => new GuardianSiteTemplate(
                     type,
                     type,
@@ -973,13 +1020,16 @@ public sealed class GuardianViewModelTests
             Assert.Equal(GuardianLiveMapMode.SiteType, viewModel.LiveMapMode);
             Assert.Contains("active fire group", viewModel.GuardianStatusDetail, StringComparison.Ordinal);
             var started = new DateTimeOffset(2026, 8, 12, 12, 0, 0, TimeSpan.Zero);
-            var normal = StatusNorthOfSite(10) with { FireGroup = 1 };
-            var analysis = normal with { Flags = normal.Flags | StatusFlags.HudInAnalysisMode };
+            EliteStatus normal = StatusNorthOfSite(10) with { FireGroup = 1 };
+            EliteStatus analysis = normal with { Flags = normal.Flags | StatusFlags.HudInAnalysisMode };
 
             await viewModel.UpdateStatusAsync(normal, true, started);
             Assert.True(viewModel.IsGuardianChoiceTwoSelected);
             Assert.Equal(GuardianLiveMapMode.SiteType, viewModel.LiveMapMode);
-            var saved = await new GuardianCommanderDataReader(root).ReadAsync("F123", isOdyssey: true);
+            GuardianCommanderDataReadResult saved = await new GuardianCommanderDataReader(root).ReadAsync(
+                "F123",
+                isOdyssey: true
+            );
             Assert.NotEqual("Beta", Assert.Single(saved.Surveys).SiteType);
             await viewModel.UpdateStatusAsync(analysis, true, started.AddSeconds(1));
             await viewModel.UpdateStatusAsync(normal, true, started.AddSeconds(2));
@@ -1001,7 +1051,7 @@ public sealed class GuardianViewModelTests
     [Fact]
     public async Task UnknownStructureSiteTypeGuidanceUsesSiteCommand()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
             var viewModel = new GuardianViewModel(
@@ -1037,11 +1087,11 @@ public sealed class GuardianViewModelTests
     [Fact]
     public async Task FireGroupChoosesPointStateAndDoubleToggleConfirmsIt()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
-            var reference = CreateProximityReference() with { SiteHeading = 90 };
-            var published = CreatePublishedSite(reference, []) with { SiteHeading = 90 };
+            GuardianSiteReference reference = CreateProximityReference() with { SiteHeading = 90 };
+            GuardianPublishedSite published = CreatePublishedSite(reference, []) with { SiteHeading = 90 };
             var viewModel = new GuardianViewModel(
                 root,
                 new GuardianViewModelOptions
@@ -1073,16 +1123,19 @@ public sealed class GuardianViewModelTests
             );
 
             var started = new DateTimeOffset(2026, 8, 12, 12, 0, 0, TimeSpan.Zero);
-            var normal = StatusNorthOfSite(10) with { FireGroup = 2 };
-            var analysis = normal with { Flags = normal.Flags | StatusFlags.HudInAnalysisMode };
+            EliteStatus normal = StatusNorthOfSite(10) with { FireGroup = 2 };
+            EliteStatus analysis = normal with { Flags = normal.Flags | StatusFlags.HudInAnalysisMode };
             await viewModel.UpdateStatusAsync(normal, true, started);
 
             Assert.True(viewModel.IsGuardianPoiChoiceVisible);
             Assert.True(viewModel.IsGuardianChoiceThreeSelected);
-            var saved = await new GuardianCommanderDataReader(root).ReadAsync("F123", isOdyssey: true);
-            var initialSurvey = Assert.Single(saved.Surveys).Survey;
+            GuardianCommanderDataReadResult saved = await new GuardianCommanderDataReader(root).ReadAsync(
+                "F123",
+                isOdyssey: true
+            );
+            GuardianSurveyData initialSurvey = Assert.Single(saved.Surveys).Survey;
             Assert.False(
-                initialSurvey.PoiStatuses.TryGetValue("c1", out var initialStatus)
+                initialSurvey.PoiStatuses.TryGetValue("c1", out GuardianPoiStatus initialStatus)
                     && initialStatus == GuardianPoiStatus.Empty
             );
             await viewModel.UpdateStatusAsync(analysis, true, started.AddSeconds(1));
@@ -1108,12 +1161,12 @@ public sealed class GuardianViewModelTests
     [Fact]
     public async Task DoubleCockpitToggleScansCurrentObeliskAndRefreshesMap()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
-            var reference = CreateProximityReference() with { SiteHeading = 90 };
+            GuardianSiteReference reference = CreateProximityReference() with { SiteHeading = 90 };
             var obelisk = new GuardianObelisk("A01", "H1", false, []);
-            var published = CreatePublishedSite(reference, [obelisk]) with { SiteHeading = 90 };
+            GuardianPublishedSite published = CreatePublishedSite(reference, [obelisk]) with { SiteHeading = 90 };
             var viewModel = new GuardianViewModel(
                 root,
                 new GuardianViewModelOptions
@@ -1147,15 +1200,15 @@ public sealed class GuardianViewModelTests
                 "2026-08-27T12:00:00Z",
                 global::System.Globalization.CultureInfo.InvariantCulture
             );
-            var normal = StatusNorthOfSite(10);
-            var analysis = normal with { Flags = normal.Flags | StatusFlags.HudInAnalysisMode };
+            EliteStatus normal = StatusNorthOfSite(10);
+            EliteStatus analysis = normal with { Flags = normal.Flags | StatusFlags.HudInAnalysisMode };
 
             await viewModel.UpdateStatusAsync(normal, true, started);
             Assert.Equal("A01", viewModel.CurrentObelisk?.Name);
             await viewModel.UpdateStatusAsync(analysis, true, started.AddSeconds(1));
             await viewModel.UpdateStatusAsync(normal, true, started.AddSeconds(2));
 
-            var saved = Assert.Single(
+            GuardianCommanderSiteSurvey saved = Assert.Single(
                 (await new GuardianCommanderDataReader(root).ReadAsync("F123", isOdyssey: true)).Surveys
             );
             Assert.True(Assert.Single(saved.ActiveObelisks).Scanned);
@@ -1171,11 +1224,11 @@ public sealed class GuardianViewModelTests
     [Fact]
     public async Task DoubleShieldToggleSetsRelicHeadingAndRefreshesSurvey()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
-            var reference = CreateProximityReference() with { SiteHeading = 90 };
-            var published = CreatePublishedSite(reference, []) with { SiteHeading = 90 };
+            GuardianSiteReference reference = CreateProximityReference() with { SiteHeading = 90 };
+            GuardianPublishedSite published = CreatePublishedSite(reference, []) with { SiteHeading = 90 };
             var viewModel = new GuardianViewModel(
                 root,
                 new GuardianViewModelOptions
@@ -1209,20 +1262,20 @@ public sealed class GuardianViewModelTests
                 "2026-08-27T12:00:00Z",
                 global::System.Globalization.CultureInfo.InvariantCulture
             );
-            var normal = StatusNorthOfSite(10) with
+            EliteStatus normal = StatusNorthOfSite(10) with
             {
                 Flags = StatusFlags.HasLatLong,
                 Flags2 = StatusFlags2.OnFoot | StatusFlags2.OnFootOnPlanet | StatusFlags2.OnFootExterior,
                 SelectedWeapon = "$humanoid_companalyser_name;",
                 Heading = 123,
             };
-            var shields = normal with { Flags = normal.Flags | StatusFlags.ShieldsUp };
+            EliteStatus shields = normal with { Flags = normal.Flags | StatusFlags.ShieldsUp };
 
             await viewModel.UpdateStatusAsync(normal, true, started);
             await viewModel.UpdateStatusAsync(shields, true, started.AddSeconds(1));
             await viewModel.UpdateStatusAsync(normal, true, started.AddSeconds(2));
 
-            var saved = Assert.Single(
+            GuardianCommanderSiteSurvey saved = Assert.Single(
                 (await new GuardianCommanderDataReader(root).ReadAsync("F123", isOdyssey: true)).Surveys
             );
             Assert.Equal(123, saved.Survey.RelicTowerHeading);
@@ -1239,7 +1292,7 @@ public sealed class GuardianViewModelTests
     [Fact]
     public void ConfiguredGuardianGestureIsReflectedByOverlayGuidance()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
             var viewModel = new GuardianViewModel(
@@ -1268,12 +1321,12 @@ public sealed class GuardianViewModelTests
     [Fact]
     public async Task StatusOverlayKeepsNearbyObeliskVisibleOutsideScanRange()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
-            var reference = CreateProximityReference();
+            GuardianSiteReference reference = CreateProximityReference();
             var obelisk = new GuardianObelisk("A01", "H1", false, ["ca"]);
-            var published = CreatePublishedSite(reference, [obelisk]) with { SiteHeading = 90 };
+            GuardianPublishedSite published = CreatePublishedSite(reference, [obelisk]) with { SiteHeading = 90 };
             var viewModel = new GuardianViewModel(
                 root,
                 new GuardianViewModelOptions
@@ -1321,10 +1374,10 @@ public sealed class GuardianViewModelTests
     [Fact]
     public async Task LiveObeliskTracksArtifactsScanStateAndRamTahProgress()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
-            var reference = CreateProximityReference();
+            GuardianSiteReference reference = CreateProximityReference();
             var publishedObelisk = new GuardianObelisk("A01", "H1", false, ["ca", "ca"]);
             var ramTah = new RamTahViewModel(new CommanderProfileStore(root));
             ramTah.LoadProfile(
@@ -1442,7 +1495,7 @@ public sealed class GuardianViewModelTests
             viewModel.UpdateStatus(StatusNorthOfSite(10));
             Assert.True(viewModel.SurveyEditor.HasLiveMeasurement);
             Assert.Contains("10.0 m from origin", viewModel.SurveyEditor.LiveMeasurementText);
-            var ramTahLog = Assert.Single(viewModel.CurrentRamTahLogs);
+            GuardianRamTahLogViewModel ramTahLog = Assert.Single(viewModel.CurrentRamTahLogs);
             Assert.Same(viewModel.CurrentRamTahLogs, viewModel.CurrentRamTahLogs);
             Assert.Equal("H1", ramTahLog.LogCode);
             Assert.Equal("MISSING", ramTahLog.ArtifactStatus);
@@ -1459,7 +1512,7 @@ public sealed class GuardianViewModelTests
             Assert.True(viewModel.AreGuardianEncodedMaterialsFull);
             Assert.True(viewModel.HasGuardianMaterialCapacityWarning);
             viewModel.UpdateOverlayAnimation(DateTimeOffset.UnixEpoch);
-            var firstCapacityWarning = viewModel.GuardianMaterialCapacityWarning;
+            string firstCapacityWarning = viewModel.GuardianMaterialCapacityWarning;
             viewModel.UpdateOverlayAnimation(DateTimeOffset.UnixEpoch.AddMilliseconds(750));
             Assert.NotEqual(firstCapacityWarning, viewModel.GuardianMaterialCapacityWarning);
 
@@ -1550,7 +1603,10 @@ public sealed class GuardianViewModelTests
             Assert.True(ramTah.IsAncientRuinsMissionActive);
             Assert.True(ramTah.IsLogCompleted(RamTahMission.AncientRuins, "H1"));
             Assert.Empty(viewModel.CurrentRamTahLogs);
-            var saved = await new GuardianCommanderDataReader(root).ReadAsync("F123", isOdyssey: true);
+            GuardianCommanderDataReadResult saved = await new GuardianCommanderDataReader(root).ReadAsync(
+                "F123",
+                isOdyssey: true
+            );
             Assert.True(Assert.Single(saved.Surveys).ActiveObelisks.Single().Scanned);
 
             Assert.Equal(GuardianLiveMapMode.Heading, viewModel.LiveMapMode);
@@ -1576,7 +1632,7 @@ public sealed class GuardianViewModelTests
             Assert.Equal(18, viewModel.ActiveMapScale);
             Assert.False(viewModel.IsAutomaticMapZoom);
             saved = await new GuardianCommanderDataReader(root).ReadAsync("F123", isOdyssey: true);
-            var commandSurvey = Assert.Single(saved.Surveys);
+            GuardianCommanderSiteSurvey commandSurvey = Assert.Single(saved.Surveys);
             Assert.Equal(90, commandSurvey.Survey.SiteHeading);
             Assert.Equal(0, commandSurvey.Survey.RelicTowerHeading);
             Assert.Contains("Mixed Case Note", commandSurvey.Notes);
@@ -1595,7 +1651,7 @@ public sealed class GuardianViewModelTests
             viewModel.UpdateStatus(StatusNorthOfSite(20) with { Heading = 123 });
             await viewModel.ApplyJournalEventsAsync([Parse("""{"event":"SendText","Message":".add orb"}""")], "Drew");
             saved = await new GuardianCommanderDataReader(root).ReadAsync("F123", isOdyssey: true);
-            var rawPoint = Assert.Single(Assert.Single(saved.Surveys).Survey.RawPointsOfInterest!);
+            GuardianPointOfInterest rawPoint = Assert.Single(Assert.Single(saved.Surveys).Survey.RawPointsOfInterest!);
             Assert.Equal("x1", rawPoint.Name);
             Assert.Equal(GuardianPoiType.Orb, rawPoint.Type);
             Assert.Equal(90, rawPoint.Angle, precision: 6);
@@ -1693,15 +1749,16 @@ public sealed class GuardianViewModelTests
             );
             Assert.Equal(GuardianLiveMapMode.Map, viewModel.LiveMapMode);
 
-            var screenshot = Parse(
+            JournalEventEnvelope screenshot = Parse(
                 """{"timestamp":"2026-07-24T10:09:59Z","event":"Screenshot","Filename":"Screenshot_0001.bmp","System":"Test","Body":"Test A 1","Latitude":0,"Longitude":0,"Altitude":1200}"""
             );
-            var screenshotContexts = await viewModel.ApplyJournalEventsAsync(
-                [screenshot, Parse("""{"timestamp":"2026-07-24T10:10:00Z","event":"SupercruiseEntry"}""")],
-                "Drew"
-            );
+            IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext> screenshotContexts =
+                await viewModel.ApplyJournalEventsAsync(
+                    [screenshot, Parse("""{"timestamp":"2026-07-24T10:10:00Z","event":"SupercruiseEntry"}""")],
+                    "Drew"
+                );
 
-            var screenshotContext = Assert.Single(screenshotContexts).Value;
+            ScreenshotGuardianContext screenshotContext = Assert.Single(screenshotContexts).Value;
             Assert.Equal(GuardianSiteKind.Ruins, screenshotContext.SiteKind);
             Assert.Equal(1, screenshotContext.SiteIndex);
             Assert.Equal("Test", screenshotContext.SiteType);
@@ -1720,11 +1777,11 @@ public sealed class GuardianViewModelTests
     [Fact]
     public async Task LegacyPointStatusCommandsPersistPresentAbsentAndEmpty()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
-            var reference = CreateProximityReference() with { SiteHeading = 90 };
-            var published = CreatePublishedSite(reference, []) with { SiteHeading = 90 };
+            GuardianSiteReference reference = CreateProximityReference() with { SiteHeading = 90 };
+            GuardianPublishedSite published = CreatePublishedSite(reference, []) with { SiteHeading = 90 };
             var viewModel = new GuardianViewModel(
                 root,
                 new GuardianViewModelOptions
@@ -1774,7 +1831,7 @@ public sealed class GuardianViewModelTests
             Assert.Equal("p1", viewModel.ActiveMapSelectedPointName);
 
             foreach (
-                var (command, expected) in new[]
+                (string? command, GuardianPoiStatus expected) in new[]
                 {
                     (".p", GuardianPoiStatus.Present),
                     (".m", GuardianPoiStatus.Absent),
@@ -1786,7 +1843,7 @@ public sealed class GuardianViewModelTests
                     [Parse($$"""{"event":"SendText","Message":"{{command}}"}""")],
                     "Drew"
                 );
-                var saved = await new GuardianCommanderDataReader(
+                GuardianCommanderDataReadResult saved = await new GuardianCommanderDataReader(
                     root,
                     new GuardianPublishedSiteCatalog([published])
                 ).ReadAsync("F123", isOdyssey: true);
@@ -1811,10 +1868,10 @@ public sealed class GuardianViewModelTests
     [Fact]
     public async Task SurfaceOriginEditsPreviewCommanderPositionAndResetImmediately()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
-            var reference = CreateProximityReference();
+            GuardianSiteReference reference = CreateProximityReference();
             var template = new GuardianSiteTemplate(
                 "Test",
                 "Test",
@@ -1842,7 +1899,7 @@ public sealed class GuardianViewModelTests
                 ],
                 "Drew"
             );
-            var status = StatusNorthOfSite(10);
+            EliteStatus status = StatusNorthOfSite(10);
             viewModel.UpdateStatus(status);
             Assert.Equal(10d, viewModel.Proximity!.DistanceFromSite, 3);
 
@@ -1861,10 +1918,10 @@ public sealed class GuardianViewModelTests
     [Fact]
     public async Task MapSelectionDrivesTemplateCoordinatePreview()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
-            var reference = CreateProximityReference();
+            GuardianSiteReference reference = CreateProximityReference();
             var template = new GuardianSiteTemplate(
                 "Test",
                 "Test",
@@ -1947,7 +2004,7 @@ public sealed class GuardianViewModelTests
 
     private static string CreateTemporaryDirectory()
     {
-        var path = Path.Combine(Path.GetTempPath(), $"SrvSurvey-guardian-vm-tests-{Guid.NewGuid():N}");
+        string path = Path.Combine(Path.GetTempPath(), $"SrvSurvey-guardian-vm-tests-{Guid.NewGuid():N}");
         Directory.CreateDirectory(path);
         return path;
     }
@@ -2055,7 +2112,7 @@ public sealed class GuardianViewModelTests
     [Fact]
     public async Task MusicAndFileheaderTracksChangeGuardianModeState()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
             var viewModel = new GuardianViewModel(
@@ -2099,7 +2156,7 @@ public sealed class GuardianViewModelTests
     [Fact]
     public async Task GuardianBeaconScanReportsMissingSystemAddressAndName()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
             var viewModel = new GuardianViewModel(
@@ -2142,7 +2199,7 @@ public sealed class GuardianViewModelTests
     [Fact]
     public async Task GuardianBeaconScanMergesExistingVisitLocations()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
             var store = new GuardianCommanderBeaconStore(root);
@@ -2199,8 +2256,11 @@ public sealed class GuardianViewModelTests
                 "Drew"
             );
 
-            var data = await new GuardianCommanderDataReader(root).ReadAsync("F123", isOdyssey: true);
-            var beacon = Assert.Single(data.Beacons);
+            GuardianCommanderDataReadResult data = await new GuardianCommanderDataReader(root).ReadAsync(
+                "F123",
+                isOdyssey: true
+            );
+            GuardianCommanderBeaconVisit beacon = Assert.Single(data.Beacons);
             Assert.Equal("kept notes", beacon.Notes);
             Assert.Equal(firstScan, beacon.FirstVisited);
             Assert.Equal(2, beacon.ScannedLocations.Count);
@@ -2216,7 +2276,7 @@ public sealed class GuardianViewModelTests
     [Fact]
     public async Task NonBeaconCodexDoesNotCreateBeaconVisit()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
             var viewModel = new GuardianViewModel(
@@ -2239,7 +2299,10 @@ public sealed class GuardianViewModelTests
                 "Drew"
             );
 
-            var data = await new GuardianCommanderDataReader(root).ReadAsync("F123", isOdyssey: true);
+            GuardianCommanderDataReadResult data = await new GuardianCommanderDataReader(root).ReadAsync(
+                "F123",
+                isOdyssey: true
+            );
             Assert.Empty(data.Beacons);
         }
         finally
@@ -2251,10 +2314,10 @@ public sealed class GuardianViewModelTests
     [Fact]
     public async Task LiveApproachSettlementSaveFailureReportsStatusMessage()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
-            var reference = CreateProximityReference();
+            GuardianSiteReference reference = CreateProximityReference();
             var viewModel = new GuardianViewModel(
                 root,
                 new GuardianViewModelOptions
@@ -2278,7 +2341,7 @@ public sealed class GuardianViewModelTests
             await viewModel.LoadProfileAsync("F123", isOdyssey: true);
 
             // Replace the writable survey path with a file so SaveAsync fails.
-            var surveyFolder = Path.Combine(root, "guardian", "F123");
+            string surveyFolder = Path.Combine(root, "guardian", "F123");
             Directory.CreateDirectory(Path.GetDirectoryName(surveyFolder)!);
             await File.WriteAllTextAsync(surveyFolder, "not-a-directory");
 
@@ -2302,7 +2365,7 @@ public sealed class GuardianViewModelTests
     [Fact]
     public void LegacySurveyLineFormatsProgressStates()
     {
-        var incomplete = CreateProximityReference();
+        GuardianSiteReference incomplete = CreateProximityReference();
         var incompleteVisit = new GuardianSiteVisit(
             incomplete,
             FirstVisited: DateTimeOffset.UtcNow,
@@ -2323,7 +2386,11 @@ public sealed class GuardianViewModelTests
         );
         Assert.Equal("\u25ba Survey: Incomplete", incompleteRow.LegacySurveyLine);
 
-        var notStartedVisit = incompleteVisit with { SurveyProgress = 0, RecordedObeliskOrLocationCount = 0 };
+        GuardianSiteVisit notStartedVisit = incompleteVisit with
+        {
+            SurveyProgress = 0,
+            RecordedObeliskOrLocationCount = 0,
+        };
         var notStartedRow = new GuardianSiteRowViewModel(
             notStartedVisit,
             distance: null,
@@ -2332,7 +2399,7 @@ public sealed class GuardianViewModelTests
         );
         Assert.Equal("\u25ba Survey: Not started", notStartedRow.LegacySurveyLine);
 
-        var completeVisit = incompleteVisit with { SurveyProgress = 100, IsSurveyComplete = true };
+        GuardianSiteVisit completeVisit = incompleteVisit with { SurveyProgress = 100, IsSurveyComplete = true };
         var completeRow = new GuardianSiteRowViewModel(
             completeVisit,
             distance: null,
@@ -2344,7 +2411,7 @@ public sealed class GuardianViewModelTests
 
     private static JournalEventEnvelope Parse(string json)
     {
-        var success = JournalEventEnvelope.TryParse(json, out var journalEvent, out var error);
+        bool success = JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error);
         Assert.True(success, error);
         return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }

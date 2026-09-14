@@ -15,11 +15,11 @@ public sealed class EddnMessageBuilderTests
             """
         );
 
-        var built = EddnMessageSanitizer.tryBuildJournal(
+        bool built = EddnMessageSanitizer.tryBuildJournal(
             raw,
             context(statusBody: "Test A 1", trackedBody: "Test A 1", trackedBodyId: 4),
-            out var prepared,
-            out var reason
+            out EddnPreparedMessage? prepared,
+            out string? reason
         );
 
         Assert.True(built, reason);
@@ -46,11 +46,11 @@ public sealed class EddnMessageBuilderTests
             """
         );
 
-        var built = EddnMessageSanitizer.tryBuildJournal(
+        bool built = EddnMessageSanitizer.tryBuildJournal(
             raw,
             context(statusBody: "Test A 2", trackedBody: "Test A 1", trackedBodyId: 4),
-            out var prepared,
-            out var reason
+            out EddnPreparedMessage? prepared,
+            out string? reason
         );
 
         Assert.True(built, reason);
@@ -67,11 +67,11 @@ public sealed class EddnMessageBuilderTests
             """
         );
 
-        var built = EddnMessageSanitizer.tryBuildJournal(
+        bool built = EddnMessageSanitizer.tryBuildJournal(
             raw,
             context(statusBody: "Test A 1", trackedBody: "Test A 1", trackedBodyId: 4),
-            out var prepared,
-            out var reason
+            out EddnPreparedMessage? prepared,
+            out string? reason
         );
 
         Assert.True(built, reason);
@@ -88,11 +88,11 @@ public sealed class EddnMessageBuilderTests
             """
         );
 
-        var built = EddnMessageSanitizer.tryBuildJournal(
+        bool built = EddnMessageSanitizer.tryBuildJournal(
             raw,
             context(statusBody: "Test A 1", trackedBody: "Test A 1", trackedBodyId: 4),
-            out var prepared,
-            out var reason
+            out EddnPreparedMessage? prepared,
+            out string? reason
         );
 
         Assert.True(built, reason);
@@ -108,7 +108,7 @@ public sealed class EddnMessageBuilderTests
             {"timestamp":"2026-07-28T12:00:00Z","event":"CodexEntry","System":"Test A","SystemAddress":123,"EntryID":10,"Traits":[""]}
             """
         );
-        Assert.False(EddnMessageSanitizer.tryBuildJournal(invalidTrait, context(), out _, out var traitReason));
+        Assert.False(EddnMessageSanitizer.tryBuildJournal(invalidTrait, context(), out _, out string? traitReason));
         Assert.Contains("Traits", traitReason);
 
         var stale = new JObject(invalidTrait)
@@ -116,12 +116,12 @@ public sealed class EddnMessageBuilderTests
             ["Traits"] = new JArray("$Codex_Ent_Trait_Name;"),
             ["SystemAddress"] = 999,
         };
-        Assert.False(EddnMessageSanitizer.tryBuildJournal(stale, context(), out _, out var locationReason));
+        Assert.False(EddnMessageSanitizer.tryBuildJournal(stale, context(), out _, out string? locationReason));
         Assert.Contains("tracked system", locationReason);
     }
 
     public static TheoryData<string> GenericEvents =>
-        new() { "Docked", "FSDJump", "CarrierJump", "Scan", "Location", "SAASignalsFound" };
+        ["Docked", "FSDJump", "CarrierJump", "Scan", "Location", "SAASignalsFound"];
 
     [Theory]
     [MemberData(nameof(GenericEvents))]
@@ -143,7 +143,12 @@ public sealed class EddnMessageBuilderTests
             raw["StarPos"] = new JArray(1.5, -2, 3);
         }
 
-        var built = EddnMessageSanitizer.tryBuildJournal(raw, context(), out var prepared, out var reason);
+        bool built = EddnMessageSanitizer.tryBuildJournal(
+            raw,
+            context(),
+            out EddnPreparedMessage? prepared,
+            out string? reason
+        );
 
         Assert.True(built, reason);
         Assert.Equal("https://eddn.edcd.io/schemas/journal/1", prepared!.schemaRef);
@@ -160,12 +165,17 @@ public sealed class EddnMessageBuilderTests
             """
         );
 
-        var built = EddnMessageSanitizer.tryBuildJournal(raw, context(), out var prepared, out var reason);
+        bool built = EddnMessageSanitizer.tryBuildJournal(
+            raw,
+            context(),
+            out EddnPreparedMessage? prepared,
+            out string? reason
+        );
 
         Assert.True(built, reason);
         Assert.Null(prepared!.message["FuelLevel"]);
         Assert.Null(prepared.message["Wanted"]);
-        var faction = Assert.IsType<JObject>(prepared.message["Factions"]![0]);
+        JObject faction = Assert.IsType<JObject>(prepared.message["Factions"]![0]);
         Assert.Equal("Test Faction", faction.Value<string>("Name"));
         Assert.Null(faction["Name_Localised"]);
         Assert.Null(faction["MyReputation"]);
@@ -181,11 +191,11 @@ public sealed class EddnMessageBuilderTests
             """
         );
 
-        var built = EddnMessageSanitizer.tryBuildJournal(
+        bool built = EddnMessageSanitizer.tryBuildJournal(
             raw,
             new EddnMessageContext(location(), horizons: true, odyssey: null),
-            out var prepared,
-            out var reason
+            out EddnPreparedMessage? prepared,
+            out string? reason
         );
 
         Assert.True(built, reason);
@@ -238,7 +248,12 @@ public sealed class EddnMessageBuilderTests
         raw["timestamp"] = "2026-07-28T12:00:00Z";
         raw["event"] = eventName;
 
-        var built = EddnMessageSanitizer.tryBuildJournal(raw, context(), out var prepared, out var reason);
+        bool built = EddnMessageSanitizer.tryBuildJournal(
+            raw,
+            context(),
+            out EddnPreparedMessage? prepared,
+            out string? reason
+        );
 
         Assert.True(built, reason);
         Assert.Equal("https://eddn.edcd.io/schemas/" + schema, prepared!.schemaRef);
@@ -261,11 +276,16 @@ public sealed class EddnMessageBuilderTests
             """
         );
 
-        var built = EddnMessageSanitizer.tryBuildCompanion(market, context(), out var prepared, out var reason);
+        bool built = EddnMessageSanitizer.tryBuildCompanion(
+            market,
+            context(),
+            out EddnPreparedMessage? prepared,
+            out string? reason
+        );
 
         Assert.True(built, reason);
         Assert.Equal("https://eddn.edcd.io/schemas/commodity/3", prepared!.schemaRef);
-        var commodity = Assert.IsType<JObject>(Assert.Single((JArray)prepared.message["commodities"]!));
+        JObject commodity = Assert.IsType<JObject>(Assert.Single((JArray)prepared.message["commodities"]!));
         Assert.Equal("gold", commodity.Value<string>("name"));
         Assert.Null(commodity["id"]);
         Assert.Equal(["Producer"], commodity["statusFlags"]!.Values<string>());
@@ -275,7 +295,10 @@ public sealed class EddnMessageBuilderTests
         );
 
         market["Items"] = new JArray();
-        Assert.True(EddnMessageSanitizer.tryBuildCompanion(market, context(), out var empty, out reason), reason);
+        Assert.True(
+            EddnMessageSanitizer.tryBuildCompanion(market, context(), out EddnPreparedMessage? empty, out reason),
+            reason
+        );
         Assert.Empty((JArray)empty!.message["commodities"]!);
     }
 
@@ -288,7 +311,12 @@ public sealed class EddnMessageBuilderTests
             """
         );
         Assert.True(
-            EddnMessageSanitizer.tryBuildCompanion(outfitting, context(), out var modules, out var reason),
+            EddnMessageSanitizer.tryBuildCompanion(
+                outfitting,
+                context(),
+                out EddnPreparedMessage? modules,
+                out string? reason
+            ),
             reason
         );
         Assert.Equal(
@@ -302,7 +330,10 @@ public sealed class EddnMessageBuilderTests
             {"timestamp":"2026-07-28T12:00:00Z","event":"Shipyard","MarketID":42,"StationName":"Test Port","StarSystem":"Test A","Horizons":true,"AllowCobraMkIV":false,"PriceList":[{"ShipType":"Krait_MkII"},{"ShipType":"krait_mkii"},{"ShipType":"adder"}]}
             """
         );
-        Assert.True(EddnMessageSanitizer.tryBuildCompanion(shipyard, context(), out var ships, out reason), reason);
+        Assert.True(
+            EddnMessageSanitizer.tryBuildCompanion(shipyard, context(), out EddnPreparedMessage? ships, out reason),
+            reason
+        );
         Assert.Equal(["Krait_MkII", "adder"], ships!.message["ships"]!.Values<string>());
         Assert.False(ships.message.Value<bool>("allowCobraMkIV"));
     }
@@ -315,7 +346,15 @@ public sealed class EddnMessageBuilderTests
             {"timestamp":"2026-07-28T12:00:00Z","event":"FCMaterials","MarketID":42,"CarrierName":"TEST CARRIER","CarrierID":"ABC-123","Items":[{"id":1,"Name":"$memorychip_name;","Name_Localised":"Memory Chip","Price":600,"Stock":5,"Demand":0}]}
             """
         );
-        Assert.True(EddnMessageSanitizer.tryBuildCompanion(materials, context(), out var fc, out var reason), reason);
+        Assert.True(
+            EddnMessageSanitizer.tryBuildCompanion(
+                materials,
+                context(),
+                out EddnPreparedMessage? fc,
+                out string? reason
+            ),
+            reason
+        );
         Assert.Equal("https://eddn.edcd.io/schemas/fcmaterials_journal/1", fc!.schemaRef);
         Assert.Null(fc.message["Items"]![0]!["Name_Localised"]);
 
@@ -324,19 +363,25 @@ public sealed class EddnMessageBuilderTests
             {"timestamp":"2026-07-28T12:00:00Z","event":"NavRoute","Route":[{"StarSystem":"Test A","SystemAddress":123,"StarPos":[1.5,-2,3],"StarClass":"K","Unexpected":"removed"}]}
             """
         );
-        Assert.True(EddnMessageSanitizer.tryBuildCompanion(route, context(), out var nav, out reason), reason);
+        Assert.True(
+            EddnMessageSanitizer.tryBuildCompanion(route, context(), out EddnPreparedMessage? nav, out reason),
+            reason
+        );
         Assert.Equal("https://eddn.edcd.io/schemas/navroute/1", nav!.schemaRef);
         Assert.Null(nav.message["Route"]![0]!["Unexpected"]);
 
         route["Route"] = new JArray();
-        Assert.True(EddnMessageSanitizer.tryBuildCompanion(route, context(), out var cleared, out reason), reason);
+        Assert.True(
+            EddnMessageSanitizer.tryBuildCompanion(route, context(), out EddnPreparedMessage? cleared, out reason),
+            reason
+        );
         Assert.Empty((JArray)cleared!.message["Route"]!);
     }
 
     [Fact]
     public void SignalBatchDropsMissionSignalsAndPrivateOrUnsupportedFields()
     {
-        var pending = new[]
+        JObject[] pending = new[]
         {
             JObject.Parse(
                 """
@@ -355,18 +400,18 @@ public sealed class EddnMessageBuilderTests
             ),
         };
 
-        var built = EddnMessageSanitizer.tryBuildSignalBatch(
+        bool built = EddnMessageSanitizer.tryBuildSignalBatch(
             pending,
             location(),
             horizons: true,
             odyssey: true,
-            out var prepared,
-            out var reason
+            out EddnPreparedMessage? prepared,
+            out string? reason
         );
 
         Assert.True(built, reason);
         Assert.Equal("https://eddn.edcd.io/schemas/fsssignaldiscovered/1", prepared!.schemaRef);
-        var signal = Assert.IsType<JObject>(Assert.Single((JArray)prepared.message["signals"]!));
+        JObject signal = Assert.IsType<JObject>(Assert.Single((JArray)prepared.message["signals"]!));
         Assert.Equal("$MULTIPLAYER_SCENARIO42_TITLE;", signal.Value<string>("SignalName"));
         Assert.Null(signal["SignalName_Localised"]);
         Assert.Null(signal["TimeRemaining"]);

@@ -28,7 +28,7 @@ public sealed class JourneyWorkspaceViewModelTests : IDisposable
             {"timestamp":"2026-07-01T00:05:00Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
             """
         );
-        var viewModel = CreateViewModel();
+        JourneyWorkspaceViewModel viewModel = CreateViewModel();
 
         Assert.True(await viewModel.UpdateContextAsync("F123", "Drew", true, "Sol", 42));
         var contextNotifications = new List<string?>();
@@ -55,7 +55,7 @@ public sealed class JourneyWorkspaceViewModelTests : IDisposable
         Assert.False(viewModel.IsDirty);
         Assert.Equal("Updated description", viewModel.JourneyDescription);
         Assert.Equal(1, viewModel.SelectedSystem!.Visit.Counts.Notes);
-        var note = await new SystemNoteStore(DataDirectory).LoadAsync("F123", "Sol", 42);
+        SystemNoteLoadResult note = await new SystemNoteStore(DataDirectory).LoadAsync("F123", "Sol", 42);
         Assert.Equal("Remember this system", note.Notes);
 
         await viewModel.RefreshAsync();
@@ -87,7 +87,9 @@ public sealed class JourneyWorkspaceViewModelTests : IDisposable
             {"timestamp":"2026-07-01T00:05:00Z","event":"FSDJump","StarSystem":"Achenar","SystemAddress":99,"StarPos":[1,2,3]}
             """
         );
-        var viewModel = CreateViewModel([new StarSystemReference("Achenar", 99, new GalacticCoordinate(1, 2, 3))]);
+        JourneyWorkspaceViewModel viewModel = CreateViewModel([
+            new StarSystemReference("Achenar", 99, new GalacticCoordinate(1, 2, 3)),
+        ]);
         await viewModel.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
         await viewModel.StartNewJourneyAsync();
         viewModel.UseCurrentStart = false;
@@ -106,7 +108,7 @@ public sealed class JourneyWorkspaceViewModelTests : IDisposable
     [Fact]
     public void SelectedSystemDisplayValuesRemainSafeWithoutASelection()
     {
-        var viewModel = CreateViewModel();
+        JourneyWorkspaceViewModel viewModel = CreateViewModel();
 
         Assert.Empty(viewModel.SelectedSystemName);
         Assert.Empty(viewModel.SelectedSystemAddressText);
@@ -150,7 +152,7 @@ public sealed class JourneyWorkspaceViewModelTests : IDisposable
             {"timestamp":"2026-07-01T00:05:00Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
             """
         );
-        var viewModel = CreateViewModel();
+        JourneyWorkspaceViewModel viewModel = CreateViewModel();
         await viewModel.UpdateContextAsync("F123", "Drew", true, "Sol", 42);
         await viewModel.StartNewJourneyAsync();
         viewModel.NewJourneyName = "Journey";
@@ -162,7 +164,7 @@ public sealed class JourneyWorkspaceViewModelTests : IDisposable
         Assert.True(viewModel.AlwaysOnTop);
         Assert.True(viewModel.UseGalacticTime);
         Assert.Contains("UTC", viewModel.JourneyByline);
-        var settings = new SystemNotesSettingsStore(DataDirectory).Load();
+        SystemNotesSettingsLoadResult settings = new SystemNotesSettingsStore(DataDirectory).Load();
         Assert.True(settings.Snapshot?.JourneyAlwaysOnTop);
         Assert.True(settings.Snapshot?.JourneyUseGalacticTime);
     }
@@ -187,14 +189,17 @@ public sealed class JourneyWorkspaceViewModelTests : IDisposable
     private async Task WriteJournalAsync(string content)
     {
         Directory.CreateDirectory(JournalDirectory);
-        var path = Path.Combine(JournalDirectory, "Journal.2026-07-01T000000.01.log");
+        string path = Path.Combine(JournalDirectory, "Journal.2026-07-01T000000.01.log");
         await File.WriteAllTextAsync(path, content);
         File.SetLastWriteTimeUtc(path, new DateTime(2026, 7, 1, 0, 0, 0, DateTimeKind.Utc));
     }
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
+        Assert.True(
+            JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error),
+            error
+        );
         return journalEvent!;
     }
 

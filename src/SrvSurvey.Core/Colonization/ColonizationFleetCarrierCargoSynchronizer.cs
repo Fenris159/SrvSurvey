@@ -1,3 +1,4 @@
+using System.Text.Json;
 using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Core.Colonization;
@@ -79,16 +80,16 @@ public static class ColonizationFleetCarrierCargoSynchronizer
                 StringComparer.OrdinalIgnoreCase
             );
         var replacement = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        foreach (var item in market.Items)
+        foreach (MarketItem item in market.Items)
         {
-            var commodity = item.Commodity;
+            string commodity = item.Commodity;
             if (commodity.Length == 0)
             {
                 continue;
             }
 
-            var stock = Math.Max(0, item.Stock);
-            var tracked = currentCargo.GetValueOrDefault(commodity);
+            int stock = Math.Max(0, item.Stock);
+            int tracked = currentCargo.GetValueOrDefault(commodity);
             if ((item.Producer && tracked != stock) || (!item.Producer && !item.Consumer && tracked > 0))
             {
                 replacement[commodity] = stock;
@@ -104,14 +105,14 @@ public static class ColonizationFleetCarrierCargoSynchronizer
         int sign
     )
     {
-        var marketId = GetInt64(root, "MarketID");
+        long? marketId = GetInt64(root, "MarketID");
         if (marketId != dock.MarketId)
         {
             return new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         }
 
-        var commodity = ColonizationConstructionState.NormalizeCommodityName(GetString(root, "Type"));
-        var count = GetInt32(root, "Count");
+        string commodity = ColonizationConstructionState.NormalizeCommodityName(GetString(root, "Type"));
+        int? count = GetInt32(root, "Count");
         if (commodity.Length == 0 || count is not > 0)
         {
             throw new InvalidDataException("The Fleet Carrier market event has invalid commodity data.");
@@ -123,7 +124,7 @@ public static class ColonizationFleetCarrierCargoSynchronizer
     private static Dictionary<string, int> CreateTransferAdjustment(System.Text.Json.JsonElement root)
     {
         if (
-            !root.TryGetProperty("Transfers", out var transfers)
+            !root.TryGetProperty("Transfers", out JsonElement transfers)
             || transfers.ValueKind != System.Text.Json.JsonValueKind.Array
         )
         {
@@ -131,11 +132,11 @@ public static class ColonizationFleetCarrierCargoSynchronizer
         }
 
         var result = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        foreach (var transfer in transfers.EnumerateArray())
+        foreach (JsonElement transfer in transfers.EnumerateArray())
         {
-            var commodity = ColonizationConstructionState.NormalizeCommodityName(GetString(transfer, "Type"));
-            var count = GetInt32(transfer, "Count");
-            var direction = GetString(transfer, "Direction");
+            string commodity = ColonizationConstructionState.NormalizeCommodityName(GetString(transfer, "Type"));
+            int? count = GetInt32(transfer, "Count");
+            string? direction = GetString(transfer, "Direction");
             if (commodity.Length == 0 || count is not > 0)
             {
                 throw new InvalidDataException("The Fleet Carrier cargo transfer has invalid commodity data.");
@@ -163,8 +164,8 @@ public static class ColonizationFleetCarrierCargoSynchronizer
 
     private static void AddDelta(Dictionary<string, int> result, string commodity, int delta)
     {
-        result.TryGetValue(commodity, out var current);
-        var updated = (long)current + delta;
+        result.TryGetValue(commodity, out int current);
+        long updated = (long)current + delta;
         if (updated is < int.MinValue or > int.MaxValue)
         {
             throw new InvalidDataException("The Fleet Carrier cargo transfer exceeds supported counts.");
@@ -183,18 +184,23 @@ public static class ColonizationFleetCarrierCargoSynchronizer
     private static string? GetString(System.Text.Json.JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value) && value.ValueKind == System.Text.Json.JsonValueKind.String
+            root.TryGetProperty(propertyName, out JsonElement value)
+            && value.ValueKind == System.Text.Json.JsonValueKind.String
             ? value.GetString()
             : null;
     }
 
     private static int? GetInt32(System.Text.Json.JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value) && value.TryGetInt32(out var result) ? result : null;
+        return root.TryGetProperty(propertyName, out JsonElement value) && value.TryGetInt32(out int result)
+            ? result
+            : null;
     }
 
     private static long? GetInt64(System.Text.Json.JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value) && value.TryGetInt64(out var result) ? result : null;
+        return root.TryGetProperty(propertyName, out JsonElement value) && value.TryGetInt64(out long result)
+            ? result
+            : null;
     }
 }

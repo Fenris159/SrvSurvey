@@ -33,7 +33,7 @@ public sealed class CodexDiscoveryLocationClientTests
         );
         var client = new CodexDiscoveryLocationClient(httpClient, new Uri("https://example.test/api/"));
 
-        var result = await client.GetAsync(42, 3);
+        CodexDiscoveryLocationLoadResult result = await client.GetAsync(42, 3);
 
         Assert.True(result.IsSuccess);
         Assert.Equal("Test System", result.Location!.SystemName);
@@ -59,7 +59,7 @@ public sealed class CodexDiscoveryLocationClientTests
         );
         var client = new CodexDiscoveryLocationClient(httpClient, new Uri("https://example.test/api/"));
 
-        var result = await client.GetAsync(42, 7);
+        CodexDiscoveryLocationLoadResult result = await client.GetAsync(42, 7);
 
         Assert.True(result.IsSuccess);
         Assert.Equal("Test System #7", result.Location!.BodyName);

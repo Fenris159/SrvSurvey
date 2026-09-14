@@ -57,7 +57,7 @@ internal static class OverlayVisibilityPolicy
 
     internal static OverlayVisibilityDecision Evaluate(OverlayVisibilityFacts facts)
     {
-        var reasons = OverlayVisibilityReasons.None;
+        OverlayVisibilityReasons reasons = OverlayVisibilityReasons.None;
         if (!facts.Requested)
         {
             reasons |= OverlayVisibilityReasons.DomainNotRequested;
@@ -108,7 +108,7 @@ internal static class OverlayVisibilityPolicy
             reasons |= OverlayVisibilityReasons.VehicleExcluded;
         }
 
-        var shouldHost = (reasons & LifecycleReasons) == 0;
+        bool shouldHost = (reasons & LifecycleReasons) == 0;
         return new OverlayVisibilityDecision(
             (reasons & PolicyReasons) == 0,
             shouldHost,

@@ -18,8 +18,8 @@ public sealed class SurfaceSurveyOverlayViewModelTests : IDisposable
     [Fact]
     public void TracksLegacySizeMappingAndPassivePreparation()
     {
-        var (surfaceSurvey, survey) = CreateSurfaceSurvey();
-        using var ownedSurfaceSurvey = surfaceSurvey;
+        (SurfaceSurveyViewModel? surfaceSurvey, SystemSurveyViewModel? survey) = CreateSurfaceSurvey();
+        using SurfaceSurveyViewModel ownedSurfaceSurvey = surfaceSurvey;
         using var viewModel = new SurfaceSurveyOverlayViewModel(
             surfaceSurvey,
             OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows)
@@ -49,8 +49,8 @@ public sealed class SurfaceSurveyOverlayViewModelTests : IDisposable
     [AvaloniaFact]
     public void RecreatedWindowKeepsConfiguredSurfaceGeometry()
     {
-        var (surfaceSurvey, survey) = CreateSurfaceSurvey();
-        using var ownedSurfaceSurvey = surfaceSurvey;
+        (SurfaceSurveyViewModel? surfaceSurvey, SystemSurveyViewModel? survey) = CreateSurfaceSurvey();
+        using SurfaceSurveyViewModel ownedSurfaceSurvey = surfaceSurvey;
         using var viewModel = new SurfaceSurveyOverlayViewModel(
             surfaceSurvey,
             OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows)
@@ -62,8 +62,8 @@ public sealed class SurfaceSurveyOverlayViewModelTests : IDisposable
         );
 
         survey.SurfaceRadarSize = 3;
-        var first = CreateWindow(viewModel, layout);
-        var recreated = CreateWindow(viewModel, layout);
+        SurfaceSurveyOverlayWindow first = CreateWindow(viewModel, layout);
+        SurfaceSurveyOverlayWindow recreated = CreateWindow(viewModel, layout);
         Assert.Equal(380, first.Width);
         Assert.Equal(500, first.Height);
         Assert.Equal(first.Width, recreated.Width);

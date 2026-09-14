@@ -27,7 +27,7 @@ internal sealed class ManagedOverlayWindowDragSession
         ArgumentNullException.ThrowIfNull(window);
         ArgumentNullException.ThrowIfNull(eventArgs);
 
-        if (ActiveSessions.Remove(window, out var current))
+        if (ActiveSessions.Remove(window, out ManagedOverlayWindowDragSession? current))
         {
             current.Stop(releasePointer: true);
         }
@@ -60,7 +60,7 @@ internal sealed class ManagedOverlayWindowDragSession
             return;
         }
 
-        var currentPointerPosition = window.PointToScreen(eventArgs.GetPosition(window));
+        PixelPoint currentPointerPosition = window.PointToScreen(eventArgs.GetPosition(window));
         window.Position = CalculatePosition(initialWindowPosition, initialPointerPosition, currentPointerPosition);
         eventArgs.Handled = true;
     }

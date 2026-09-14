@@ -31,7 +31,7 @@ public sealed class RouteBodyAssetResolverTests
         string expectedFileName
     )
     {
-        var visual = RouteBodyAssetResolver.Resolve(subtype);
+        RouteBodyVisual visual = RouteBodyAssetResolver.Resolve(subtype);
 
         Assert.Equal(expectedKind, visual.Kind);
         Assert.EndsWith($"/Assets/Bodies/{expectedFileName}", visual.AssetPath, StringComparison.Ordinal);
@@ -41,13 +41,13 @@ public sealed class RouteBodyAssetResolverTests
     [Fact]
     public void EverySharedBodyAssetHasValidVectorAndRuntimeImages()
     {
-        var assetRoot = Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "Assets", "Bodies");
-        var pngs = Directory.GetFiles(assetRoot, "*.png");
-        var svgs = Directory.GetFiles(assetRoot, "*.svg");
+        string assetRoot = Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "Assets", "Bodies");
+        string[] pngs = Directory.GetFiles(assetRoot, "*.png");
+        string[] svgs = Directory.GetFiles(assetRoot, "*.svg");
 
         Assert.Equal(17, pngs.Length);
         Assert.Equal(17, svgs.Length);
-        foreach (var png in pngs)
+        foreach (string png in pngs)
         {
             using var image = SKBitmap.Decode(png);
             Assert.NotNull(image);
@@ -55,7 +55,7 @@ public sealed class RouteBodyAssetResolverTests
             Assert.Equal(152, image.Height);
         }
 
-        foreach (var svg in svgs)
+        foreach (string svg in svgs)
         {
             var document = XDocument.Load(svg);
             Assert.Equal("svg", document.Root?.Name.LocalName);
@@ -66,7 +66,7 @@ public sealed class RouteBodyAssetResolverTests
     [Fact]
     public void DesktopProjectBundlesBodyRuntimeAssets()
     {
-        var project = File.ReadAllText(
+        string project = File.ReadAllText(
             Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "SrvSurvey.Desktop.csproj")
         );
 

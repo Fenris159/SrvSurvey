@@ -288,8 +288,8 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
 
     public void UpdateCurrentSystem(string? systemName, GalacticCoordinate? position, long? systemAddress = null)
     {
-        var nextSystemName = string.IsNullOrWhiteSpace(systemName) ? Unavailable : systemName;
-        var nextSystemAddress = systemAddress is > 0 ? systemAddress : null;
+        string nextSystemName = string.IsNullOrWhiteSpace(systemName) ? Unavailable : systemName;
+        long? nextSystemAddress = systemAddress is > 0 ? systemAddress : null;
         if (
             string.Equals(currentSystemName, nextSystemName, StringComparison.OrdinalIgnoreCase)
             && currentPosition == position
@@ -316,17 +316,17 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
     )
     {
         ApplyNavigationInputs(navRoute, nextStatus, nextMusicTrack);
-        var destination = ResolveRouteDestination();
+        (string Name, long Address, GalacticCoordinate? Position)? destination = ResolveRouteDestination();
         if (destination is null)
         {
             ClearDestinationDisplay();
             return;
         }
 
-        var targetChanged = ApplyDestinationIdentity(destination.Value);
-        var destinationName = destination.Value.Name;
-        var destinationAddress = destination.Value.Address;
-        var destinationPosition = resolvedDestinationPosition;
+        bool targetChanged = ApplyDestinationIdentity(destination.Value);
+        string destinationName = destination.Value.Name;
+        long destinationAddress = destination.Value.Address;
+        GalacticCoordinate? destinationPosition = resolvedDestinationPosition;
         if (!state.IsActive)
         {
             SetInactiveDestinationDisplay();
@@ -365,7 +365,7 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
 
     private bool ApplyDestinationIdentity((string Name, long Address, GalacticCoordinate? Position) destination)
     {
-        var targetChanged =
+        bool targetChanged =
             destinationSystemAddress != destination.Address
             || !string.Equals(DestinationSystemName, destination.Name, StringComparison.OrdinalIgnoreCase);
         if (targetChanged)
@@ -390,8 +390,12 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
         IsDestinationUnknown = false;
         try
         {
-            var matches = await systemResolver.SearchAsync(destinationName);
-            var destinationPosition = SelectDestinationPosition(matches, destinationName, destinationAddress);
+            IReadOnlyList<StarSystemReference> matches = await systemResolver.SearchAsync(destinationName);
+            GalacticCoordinate? destinationPosition = SelectDestinationPosition(
+                matches,
+                destinationName,
+                destinationAddress
+            );
             resolvedDestinationPosition = destinationPosition;
             return destinationPosition;
         }
@@ -433,7 +437,7 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
 
     private void ApplyDestinationEvaluation(string destinationName, GalacticCoordinate destinationPosition)
     {
-        var evaluation = state.Evaluate(destinationName, destinationPosition);
+        SphereLimitEvaluation? evaluation = state.Evaluate(destinationName, destinationPosition);
         if (evaluation is null)
         {
             DestinationDistance = Unavailable;
@@ -453,7 +457,7 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
 
     private (string Name, long Address, GalacticCoordinate? Position)? ResolveRouteDestination()
     {
-        var routeDestination = latestNavRoute?.Route.Count > 1 ? latestNavRoute.Route[^1] : null;
+        NavRouteEntry? routeDestination = latestNavRoute?.Route.Count > 1 ? latestNavRoute.Route[^1] : null;
         if (routeDestination is not null)
         {
             if (string.IsNullOrWhiteSpace(routeDestination.StarSystem))
@@ -464,7 +468,7 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
             return (routeDestination.StarSystem, routeDestination.SystemAddress, routeDestination.Position);
         }
 
-        var statusDestination = status?.Destination;
+        StatusDestination? statusDestination = status?.Destination;
         if (statusDestination is null || string.IsNullOrWhiteSpace(statusDestination.Name))
         {
             return null;
@@ -504,7 +508,7 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
         {
             IsSearching = true;
             StatusMessage = $"Searching for {Query.Trim()}…";
-            var results = await systemResolver.SearchAsync(Query.Trim());
+            IReadOnlyList<StarSystemReference> results = await systemResolver.SearchAsync(Query.Trim());
             SearchResults = results;
             SelectedCenterSystem =
                 results.FirstOrDefault(system =>
@@ -532,7 +536,7 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
 
     public async Task EnableAsync()
     {
-        if (!TryParseRadius(Radius, out var parsedRadius))
+        if (!TryParseRadius(Radius, out double parsedRadius))
         {
             StatusMessage =
                 $"Radius must be between "
@@ -541,7 +545,7 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
             return;
         }
 
-        if (!state.TryEnable(SelectedCenterSystem, parsedRadius, out var error))
+        if (!state.TryEnable(SelectedCenterSystem, parsedRadius, out string? error))
         {
             StatusMessage = error ?? "The spherical limit is invalid.";
             return;
@@ -596,15 +600,15 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
 
     private void UpdateDisplay()
     {
-        var resolvedCenter = selectedCenterSystem?.Position ?? state.Center;
+        GalacticCoordinate? resolvedCenter = selectedCenterSystem?.Position ?? state.Center;
         CenterPosition = resolvedCenter?.ToString() ?? Unavailable;
         OnPropertyChanged(nameof(CenterSystemName));
         OnPropertyChanged(nameof(IsActive));
         OnPropertyChanged(nameof(StatusLabel));
         OnPropertyChanged(nameof(ShouldShowGalaxyMapOverlay));
 
-        var distanceCenter = state.IsActive ? state.Center : resolvedCenter;
-        var distance =
+        GalacticCoordinate? distanceCenter = state.IsActive ? state.Center : resolvedCenter;
+        double? distance =
             distanceCenter is { } center && currentPosition is { } current ? center.DistanceTo(current) : (double?)null;
         DistanceToCenter = distance is null ? Unavailable : $"{distance:N2} ly";
         if (state.CenterSystemName is not null)
@@ -618,7 +622,9 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
                 : $"Candidate center: {selectedCenterSystem.Name}";
         }
 
-        var evaluation = currentPosition is { } position ? state.Evaluate(CurrentSystemName, position) : null;
+        SphereLimitEvaluation? evaluation = currentPosition is { } position
+            ? state.Evaluate(CurrentSystemName, position)
+            : null;
         CurrentSystemResult = evaluation is null
             ? (state.IsActive) switch
             {

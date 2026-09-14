@@ -28,7 +28,7 @@ public sealed class LegacySystemSnapshotMergerTests
                 """{"event":"ScanOrganic","ScanType":"Analyse","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Species":"$Codex_Ent_Aleoids_01_Name;","Species_Localised":"Aleoida Arcus"}"""
             )
         );
-        var existing = JsonNode
+        JsonObject existing = JsonNode
             .Parse(
                 """
                 {
@@ -55,7 +55,7 @@ public sealed class LegacySystemSnapshotMergerTests
             )!
             .AsObject();
 
-        var merged = LegacySystemSnapshotMerger.Merge(
+        JsonObject merged = LegacySystemSnapshotMerger.Merge(
             existing,
             state.CreateSnapshot(),
             "Drew",
@@ -70,15 +70,15 @@ public sealed class LegacySystemSnapshotMergerTests
         Assert.Equal("2026-07-22T00:00:00.0000000+00:00", merged["lastVisited"]!.GetValue<string>());
         Assert.True(merged["honked"]!.GetValue<bool>());
         Assert.Equal(2, merged["bodyCount"]!.GetValue<int>());
-        var body = Assert.IsType<JsonObject>(Assert.Single(merged["bodies"]!.AsArray()));
+        JsonObject body = Assert.IsType<JsonObject>(Assert.Single(merged["bodies"]!.AsArray()));
         Assert.True(body["futureBody"]!.GetValue<bool>());
         Assert.Equal("LandableBody", body["type"]!.GetValue<string>());
         Assert.Equal(1, body["bioSignalCount"]!.GetValue<int>());
         Assert.Equal(100, body["atmosphereComposition"]!["CarbonDioxide"]!.GetValue<double>());
-        var parent = Assert.IsType<JsonObject>(Assert.Single(body["parents"]!.AsArray()));
+        JsonObject parent = Assert.IsType<JsonObject>(Assert.Single(body["parents"]!.AsArray()));
         Assert.Equal("Star", parent["type"]!.GetValue<string>());
         Assert.Equal(0, parent["id"]!.GetValue<int>());
-        var organism = Assert.IsType<JsonObject>(Assert.Single(body["organisms"]!.AsArray()));
+        JsonObject organism = Assert.IsType<JsonObject>(Assert.Single(body["organisms"]!.AsArray()));
         Assert.Equal("keep", organism["futureOrganism"]!.GetValue<string>());
         Assert.Equal("Aleoida Arcus", organism["speciesLocalized"]!.GetValue<string>());
         Assert.True(organism["analyzed"]!.GetValue<bool>());
@@ -91,7 +91,7 @@ public sealed class LegacySystemSnapshotMergerTests
     {
         var state = new SystemScanState();
         state.Apply(Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
-        var existing = JsonNode.Parse("""{"name":"Test","address":42,"bodies":{"future":true}}""")!.AsObject();
+        JsonObject existing = JsonNode.Parse("""{"name":"Test","address":42,"bodies":{"future":true}}""")!.AsObject();
 
         Assert.Throws<InvalidDataException>(() =>
             LegacySystemSnapshotMerger.Merge(
@@ -126,7 +126,7 @@ public sealed class LegacySystemSnapshotMergerTests
             )
         );
 
-        var merged = LegacySystemSnapshotMerger.Merge(
+        JsonObject merged = LegacySystemSnapshotMerger.Merge(
             JsonNode.Parse("""{"name":"Test","address":42,"bodies":[]}""")!.AsObject(),
             state.CreateSnapshot(),
             "Drew",
@@ -134,7 +134,7 @@ public sealed class LegacySystemSnapshotMergerTests
             DateTimeOffset.UtcNow
         );
 
-        var organisms = Assert.Single(merged["bodies"]!.AsArray())!["organisms"]!.AsArray();
+        JsonArray organisms = Assert.Single(merged["bodies"]!.AsArray())!["organisms"]!.AsArray();
         Assert.Equal(2, organisms.Count);
         Assert.Equal(
             ["$Variant_BrainTree_A;", "$Variant_BrainTree_B;"],
@@ -144,7 +144,7 @@ public sealed class LegacySystemSnapshotMergerTests
 
     private static JournalEventEnvelope Parse(string json)
     {
-        var success = JournalEventEnvelope.TryParse(json, out var journalEvent, out var error);
+        bool success = JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error);
         Assert.True(success, error);
         return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }

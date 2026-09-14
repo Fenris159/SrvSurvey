@@ -28,10 +28,18 @@ public sealed class SystemNicknameCatalog
     public static SystemNicknameCatalog Load(string dataDirectory)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
-        var root = Path.GetFullPath(dataDirectory);
+        string root = Path.GetFullPath(dataDirectory);
         var warnings = new List<string>();
-        var local = LoadMap(Path.Combine(root, "system-nick-names.json"), nestedProperty: "map", warnings);
-        var raven = LoadMap(Path.Combine(root, "pub", "nicknames.json"), nestedProperty: null, warnings);
+        Dictionary<string, string> local = LoadMap(
+            Path.Combine(root, "system-nick-names.json"),
+            nestedProperty: "map",
+            warnings
+        );
+        Dictionary<string, string> raven = LoadMap(
+            Path.Combine(root, "pub", "nicknames.json"),
+            nestedProperty: null,
+            warnings
+        );
         return new SystemNicknameCatalog(local, raven, warnings);
     }
 
@@ -60,7 +68,7 @@ public sealed class SystemNicknameCatalog
 
         try
         {
-            var parsed =
+            JsonObject parsed =
                 JsonNode.Parse(
                     File.ReadAllText(path),
                     documentOptions: new JsonDocumentOptions
@@ -70,15 +78,15 @@ public sealed class SystemNicknameCatalog
                     }
                 ) as JsonObject
                 ?? throw new InvalidDataException("The nickname file is not a JSON object.");
-            var map = nestedProperty is null
+            JsonObject map = nestedProperty is null
                 ? parsed
                 : parsed[nestedProperty] as JsonObject
                     ?? throw new InvalidDataException($"The nickname file has no '{nestedProperty}' object.");
-            foreach (var entry in map)
+            foreach (KeyValuePair<string, JsonNode?> entry in map)
             {
                 if (
                     entry.Value is JsonValue value
-                    && value.TryGetValue<string>(out var nickname)
+                    && value.TryGetValue<string>(out string? nickname)
                     && !string.IsNullOrWhiteSpace(entry.Key)
                     && !string.IsNullOrWhiteSpace(nickname)
                 )

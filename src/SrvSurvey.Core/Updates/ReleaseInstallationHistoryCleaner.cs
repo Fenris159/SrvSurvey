@@ -50,7 +50,7 @@ public sealed class ReleaseInstallationHistoryCleaner
     )
     {
         ArgumentOutOfRangeException.ThrowIfNegative(retainedDirectoriesPerKind);
-        var resolvedMinimumAge = minimumAge ?? DefaultMinimumAge;
+        TimeSpan resolvedMinimumAge = minimumAge ?? DefaultMinimumAge;
         ArgumentOutOfRangeException.ThrowIfLessThan(resolvedMinimumAge, TimeSpan.Zero);
         this.timeProvider = timeProvider ?? TimeProvider.System;
         this.retainedDirectoriesPerKind = retainedDirectoriesPerKind;
@@ -66,21 +66,23 @@ public sealed class ReleaseInstallationHistoryCleaner
     {
         cancellationToken.ThrowIfCancellationRequested();
         ArgumentException.ThrowIfNullOrWhiteSpace(installationDirectory);
-        var installation = Path.TrimEndingDirectorySeparator(Path.GetFullPath(installationDirectory));
-        var parent =
+        string installation = Path.TrimEndingDirectorySeparator(Path.GetFullPath(installationDirectory));
+        string parent =
             Directory.GetParent(installation)?.FullName
             ?? throw new InvalidDataException("The SrvSurvey installation cannot be a file-system root.");
-        var installationName = Path.GetFileName(installation);
+        string installationName = Path.GetFileName(installation);
         if (string.IsNullOrWhiteSpace(installationName))
         {
             throw new InvalidDataException("The SrvSurvey installation directory name is invalid.");
         }
 
-        var comparer = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+        StringComparer comparer = OperatingSystem.IsWindows()
+            ? StringComparer.OrdinalIgnoreCase
+            : StringComparer.Ordinal;
         var protectedPaths = new HashSet<string>(comparer);
         if (protectedDirectories is not null)
         {
-            foreach (var path in protectedDirectories.Where(path => !string.IsNullOrWhiteSpace(path)))
+            foreach (string? path in protectedDirectories.Where(path => !string.IsNullOrWhiteSpace(path)))
             {
                 protectedPaths.Add(Path.TrimEndingDirectorySeparator(Path.GetFullPath(path)));
             }
@@ -92,14 +94,14 @@ public sealed class ReleaseInstallationHistoryCleaner
             ["update"] = 0,
             ["failed"] = 0,
         };
-        var retained = 0;
+        int retained = 0;
         var failures = new List<string>();
-        foreach (var kind in Kinds)
+        foreach (string kind in Kinds)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var candidates = FindCandidates(parent, installationName, kind, protectedPaths, failures);
+            DirectoryInfo[] candidates = FindCandidates(parent, installationName, kind, protectedPaths, failures);
             retained += Math.Min(retainedDirectoriesPerKind, candidates.Length);
-            foreach (var candidate in candidates.Skip(retainedDirectoriesPerKind))
+            foreach (DirectoryInfo? candidate in candidates.Skip(retainedDirectoriesPerKind))
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 if (timeProvider.GetUtcNow() - candidate.LastWriteTimeUtc < minimumAge)
@@ -147,8 +149,10 @@ public sealed class ReleaseInstallationHistoryCleaner
         List<string> failures
     )
     {
-        var prefix = $".{installationName}-{kind}-";
-        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        string prefix = $".{installationName}-{kind}-";
+        StringComparison comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
         try
         {
             return new DirectoryInfo(parent)
@@ -198,7 +202,7 @@ public sealed class ReleasePackageCacheCleaner
     )
     {
         ArgumentOutOfRangeException.ThrowIfNegative(retainedVersions);
-        var resolvedMinimumAge = minimumAge ?? ReleaseInstallationHistoryCleaner.DefaultMinimumAge;
+        TimeSpan resolvedMinimumAge = minimumAge ?? ReleaseInstallationHistoryCleaner.DefaultMinimumAge;
         ArgumentOutOfRangeException.ThrowIfLessThan(resolvedMinimumAge, TimeSpan.Zero);
         this.timeProvider = timeProvider ?? TimeProvider.System;
         this.retainedVersions = retainedVersions;
@@ -210,10 +214,18 @@ public sealed class ReleasePackageCacheCleaner
     {
         cancellationToken.ThrowIfCancellationRequested();
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
-        var updatesRoot = Path.GetFullPath(Path.Combine(dataDirectory, "updates"));
+        string updatesRoot = Path.GetFullPath(Path.Combine(dataDirectory, "updates"));
         var failures = new List<string>();
-        var packageResult = CleanVersionRoot(Path.Combine(updatesRoot, "packages"), failures, cancellationToken);
-        var stagedResult = CleanVersionRoot(Path.Combine(updatesRoot, "staged"), failures, cancellationToken);
+        (int Deleted, int Retained) packageResult = CleanVersionRoot(
+            Path.Combine(updatesRoot, "packages"),
+            failures,
+            cancellationToken
+        );
+        (int Deleted, int Retained) stagedResult = CleanVersionRoot(
+            Path.Combine(updatesRoot, "staged"),
+            failures,
+            cancellationToken
+        );
         return new ReleasePackageCacheCleanupResult(
             packageResult.Deleted,
             stagedResult.Deleted,
@@ -260,9 +272,9 @@ public sealed class ReleasePackageCacheCleaner
             return (0, 0);
         }
 
-        var deleted = 0;
-        var retained = Math.Min(retainedVersions, candidates.Length);
-        foreach (var candidate in candidates.Skip(retainedVersions))
+        int deleted = 0;
+        int retained = Math.Min(retainedVersions, candidates.Length);
+        foreach (DirectoryInfo? candidate in candidates.Skip(retainedVersions))
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (timeProvider.GetUtcNow() - candidate.LastWriteTimeUtc < minimumAge)

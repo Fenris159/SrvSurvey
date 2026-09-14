@@ -36,7 +36,7 @@ public sealed class SettingsWorkspaceViewModelTests
     {
         var viewModel = new SettingsWorkspaceViewModel { SearchQuery = "hotkey" };
 
-        var group = Assert.Single(viewModel.GroupedSearchResults);
+        SettingsSearchGroupViewModel group = Assert.Single(viewModel.GroupedSearchResults);
         Assert.Equal("Input", group.CategoryName);
         Assert.Equal(2, group.Results.Count);
         Assert.True(group.Results[0].IsSelected);
@@ -45,7 +45,7 @@ public sealed class SettingsWorkspaceViewModelTests
 
         Assert.False(group.Results[0].IsSelected);
         Assert.True(group.Results[1].IsSelected);
-        var activated = viewModel.ActivateSelectedSearchResult();
+        SettingsSearchResultViewModel? activated = viewModel.ActivateSelectedSearchResult();
         Assert.Same(group.Results[1], activated);
         Assert.True(viewModel.IsInputSelected);
         Assert.False(viewModel.HasSearchQuery);
@@ -57,7 +57,7 @@ public sealed class SettingsWorkspaceViewModelTests
         var viewModel = new SettingsWorkspaceViewModel();
         var view = new SettingsView();
 
-        foreach (var entry in viewModel.SearchCatalog)
+        foreach (SettingsSearchEntry entry in viewModel.SearchCatalog)
         {
             Assert.NotNull(view.FindControl<Control>(entry.TargetControlName));
             Assert.NotNull(view.FindControl<Control>(entry.HighlightControlName));

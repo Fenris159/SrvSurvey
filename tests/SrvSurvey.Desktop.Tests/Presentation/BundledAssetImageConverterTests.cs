@@ -8,7 +8,7 @@ public sealed class BundledAssetImageConverterTests
     [Fact]
     public void ReusesTheDecodedBitmapForRepeatedBindings()
     {
-        var path = Path.Combine(
+        string path = Path.Combine(
             FindRepositoryRoot(),
             "src",
             "SrvSurvey.Desktop",
@@ -16,8 +16,8 @@ public sealed class BundledAssetImageConverterTests
             "Bodies",
             "earth-like-world.png"
         );
-        var openCount = 0;
-        var decoded = new object();
+        int openCount = 0;
+        object decoded = new object();
         var converter = new BundledAssetImageConverter(
             _ =>
             {
@@ -32,8 +32,8 @@ public sealed class BundledAssetImageConverterTests
         );
         const string asset = "avares://SrvSurvey.Desktop/Assets/Bodies/earth-like-world.png";
 
-        var first = converter.Convert(asset, typeof(object), null, CultureInfo.InvariantCulture);
-        var second = converter.Convert(asset, typeof(object), null, CultureInfo.InvariantCulture);
+        object? first = converter.Convert(asset, typeof(object), null, CultureInfo.InvariantCulture);
+        object? second = converter.Convert(asset, typeof(object), null, CultureInfo.InvariantCulture);
 
         Assert.Same(decoded, first);
         Assert.Same(first, second);
@@ -52,7 +52,7 @@ public sealed class BundledAssetImageConverterTests
             _ => throw new InvalidOperationException("The asset decoder must not run.")
         );
 
-        var result = converter.Convert(value, typeof(object), null, CultureInfo.InvariantCulture);
+        object? result = converter.Convert(value, typeof(object), null, CultureInfo.InvariantCulture);
 
         Assert.Null(result);
     }

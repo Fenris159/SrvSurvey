@@ -24,7 +24,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
     [Fact]
     public void ActiveSampleShowsLegacyProgressDistanceRewardAndSignals()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         var scanOne = new BioSampleSnapshot(
             new SurfaceLocation(0, 0),
             150,
@@ -34,7 +34,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
             2310101,
             "Test 1"
         );
-        var scanTwo = scanOne with { Location = new SurfaceLocation(0, 0.001) };
+        BioSampleSnapshot scanTwo = scanOne with { Location = new SurfaceLocation(0, 0.001) };
         viewModel.ApplyUpdate(
             [
                 Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"Population":0}"""),
@@ -68,7 +68,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
         );
 
         Assert.True(viewModel.ShouldShowBioStatus);
-        var status = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
+        BiologyStatusViewModel status = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
         Assert.Equal("1", status.BodyName);
         Assert.Equal("0 of 2 analyzed", status.ProgressText);
         Assert.Equal(0, status.CompletionPercent);
@@ -79,7 +79,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
         Assert.Equal("150 m", Assert.Single(status.Signals, signal => signal.Name == "Aleoida").Detail);
         Assert.True(Assert.Single(status.Signals, signal => signal.Name == "Silicate Vapour Fumarole").IsAnalyzed);
 
-        var active = Assert.IsType<BiologyActiveSampleViewModel>(status.ActiveSample);
+        BiologyActiveSampleViewModel active = Assert.IsType<BiologyActiveSampleViewModel>(status.ActiveSample);
         Assert.Equal("Aleoida Arcus - Green", active.DisplayName);
         Assert.Equal(2, active.Stage);
         Assert.True(active.IsFirstSampleComplete);
@@ -96,7 +96,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
     [Fact]
     public void StaleActiveSampleWarnsAndKeepsGenusSummary()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         var scanOne = new BioSampleSnapshot(
             new SurfaceLocation(0, 0),
             150,
@@ -125,7 +125,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
             new ExobiologySnapshot(null, scanOne, null, 0, [], 0)
         );
 
-        var status = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
+        BiologyStatusViewModel status = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
         Assert.True(status.IsStaleActiveSample);
         Assert.Null(status.ActiveSample);
         Assert.True(status.HasWarning);
@@ -137,7 +137,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
     [Fact]
     public void ActiveSampleChoosesExactSpeciesBeforeSameGenusFallback()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         var active = new BioSampleSnapshot(
             new SurfaceLocation(0, 0),
             150,
@@ -170,7 +170,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
             new ExobiologySnapshot(null, active, null, 0, [], 0)
         );
 
-        var status = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
+        BiologyStatusViewModel status = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
         Assert.Equal(
             "Aleoida Coronamus - Lime",
             Assert.IsType<BiologyActiveSampleViewModel>(status.ActiveSample).DisplayName
@@ -208,7 +208,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
     [Fact]
     public void CodexImageIndicatorTracksNotificationImageAvailability()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
             [
                 Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"Population":0}"""),
@@ -231,7 +231,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
             ExobiologySnapshot.Empty
         );
 
-        var status = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
+        BiologyStatusViewModel status = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
         Assert.NotNull(status.CodexNotification);
         Assert.True(status.ShowCodexImageIndicator);
         Assert.Equal(status.CodexNotification.HasImage, status.HasCodexImage);
@@ -242,7 +242,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
     [Fact]
     public void StaleSampleWarnsWithoutReplacingCurrentBodySummary()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         var staleScan = new BioSampleSnapshot(
             new SurfaceLocation(1, 2),
             500,
@@ -266,7 +266,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
             new ExobiologySnapshot(null, staleScan, null, 0, [], 0)
         );
 
-        var status = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
+        BiologyStatusViewModel status = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
         Assert.False(status.HasActiveSample);
         Assert.True(status.HasWarning);
         Assert.Contains("Bacterial", status.Warning);
@@ -277,7 +277,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
     [Fact]
     public void TemperatureDiagnosticsUseLiveBodyAndExactSpeciesRange()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.ShowTemperatureRangeDebug = true;
         var scan = new BioSampleSnapshot(
             new SurfaceLocation(0, 0),
@@ -316,8 +316,10 @@ public sealed class BiologyStatusViewModelTests : IDisposable
             new ExobiologySnapshot(null, scan, null, 0, [], 0)
         );
 
-        var status = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
-        var temperature = Assert.IsType<BiologyTemperatureRangeViewModel>(status.TemperatureRange);
+        BiologyStatusViewModel status = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
+        BiologyTemperatureRangeViewModel temperature = Assert.IsType<BiologyTemperatureRangeViewModel>(
+            status.TemperatureRange
+        );
         Assert.True(status.HasTemperatureRange);
         Assert.Equal(185, temperature.BodyTemperature);
         Assert.Equal(187, temperature.LiveTemperature);
@@ -333,7 +335,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
     [Fact]
     public void CompositionScannerCodexCueShowsRewardAndClearsOnSampling()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         var status = new EliteStatus
         {
             Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
@@ -357,8 +359,10 @@ public sealed class BiologyStatusViewModelTests : IDisposable
             status
         );
 
-        var biologyStatus = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
-        var notification = Assert.IsType<BiologyCodexNotificationViewModel>(biologyStatus.CodexNotification);
+        BiologyStatusViewModel biologyStatus = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
+        BiologyCodexNotificationViewModel notification = Assert.IsType<BiologyCodexNotificationViewModel>(
+            biologyStatus.CodexNotification
+        );
         Assert.True(biologyStatus.HasCodexNotification);
         Assert.Equal(2310101, viewModel.LatestBiologyEntryId);
         Assert.Equal(2310101, notification.EntryId);
@@ -386,7 +390,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
     [Fact]
     public void VisibilityAndDssGuidanceFollowLegacyModesAndPreference()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
             [
                 Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
@@ -398,7 +402,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
             new EliteStatus { Flags = StatusFlags.InMainShip | StatusFlags.HasLatLong, BodyName = "Test 1" }
         );
 
-        var status = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
+        BiologyStatusViewModel status = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
         Assert.True(status.RequiresDss);
         Assert.False(status.HasFooter);
         Assert.True(viewModel.ShouldShowBioStatus);
@@ -435,7 +439,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
     [InlineData("stale-sample")]
     public void SupercruiseSuppressesEveryBiologyStatusState(string state)
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         var activeSample = new BioSampleSnapshot(
             new SurfaceLocation(0, 0),
             150,
@@ -445,7 +449,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
             2310101,
             state == "stale-sample" ? "Other Body" : "Test 1"
         );
-        var signalsEvent =
+        JournalEventEnvelope signalsEvent =
             state == "dss-required"
                 ? Parse(
                     """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""
@@ -453,7 +457,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
                 : Parse(
                     """{"event":"SAASignalsFound","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""
                 );
-        var exobiology = state is "active-sample" or "stale-sample"
+        ExobiologySnapshot exobiology = state is "active-sample" or "stale-sample"
             ? new ExobiologySnapshot(null, activeSample, null, 0, [], 0)
             : ExobiologySnapshot.Empty;
         var supercruise = new EliteStatus
@@ -470,7 +474,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
             exobiology
         );
 
-        var biologyStatus = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
+        BiologyStatusViewModel biologyStatus = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
         switch (state)
         {
             case "active-sample":
@@ -494,7 +498,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
     [Fact]
     public void LiveStatusUpdatesRefreshSampleDistanceAndHideOnTaxiOrJump()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         var scanOne = new BioSampleSnapshot(
             new SurfaceLocation(0, 0),
             150,
@@ -525,7 +529,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
         );
 
         Assert.True(viewModel.ShouldShowBioStatus);
-        var firstDistance = viewModel.BiologyStatus!.ActiveSample!.NearestDistanceMeters;
+        double? firstDistance = viewModel.BiologyStatus!.ActiveSample!.NearestDistanceMeters;
         Assert.NotNull(firstDistance);
 
         viewModel.ApplyUpdate([], surface with { Longitude = 0.002 });
@@ -533,7 +537,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
         Assert.NotNull(secondDistance);
         Assert.True(secondDistance > firstDistance);
 
-        var visibilityChanges = 0;
+        int visibilityChanges = 0;
         viewModel.PropertyChanged += (_, args) =>
         {
             if (args.PropertyName == nameof(SystemSurveyViewModel.ShouldShowBioStatus))
@@ -629,7 +633,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
 
     private static JournalEventEnvelope Parse(string json)
     {
-        var success = JournalEventEnvelope.TryParse(json, out var journalEvent, out var error);
+        bool success = JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error);
         Assert.True(success, error);
         return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }

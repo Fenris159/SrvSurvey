@@ -126,7 +126,7 @@ internal static class GuardianLegacyMapDrawing
 
     private static GuardianLegacyPointStyle GetComponentStyle(GuardianPoiStatus status)
     {
-        var color = status switch
+        Color color = status switch
         {
             GuardianPoiStatus.Present => Colors.Lime,
             GuardianPoiStatus.Absent => MissingStroke,
@@ -154,7 +154,7 @@ internal static class GuardianLegacyMapDrawing
         double commanderHeading
     )
     {
-        var relativeHeading = double.IsFinite(commanderHeading) ? commanderHeading : 0;
+        double relativeHeading = double.IsFinite(commanderHeading) ? commanderHeading : 0;
         return point.Type switch
         {
             GuardianPoiType.Obelisk or GuardianPoiType.BrokenObelisk => NormalizeDegrees(
@@ -177,7 +177,7 @@ internal static class GuardianLegacyMapDrawing
         double scale = 1
     )
     {
-        var source = type switch
+        Point[] source = type switch
         {
             GuardianPoiType.Obelisk => ObeliskPoints,
             GuardianPoiType.BrokenObelisk => BrokenObeliskPoints,
@@ -236,17 +236,17 @@ internal static class GuardianLegacyMapDrawing
 
     internal static (Point Start, Point End) CreateHeadingLine(Point center, double length, double rotation)
     {
-        var direction = RotateClockwise(new Point(0, length), rotation);
+        Point direction = RotateClockwise(new Point(0, length), rotation);
         return (center - direction, center + direction);
     }
 
     internal static IReadOnlyList<Point> CreateWedge(Point center, double radius, double rotation, int segments = 12)
     {
         var points = new List<Point>(segments + 2) { center };
-        for (var index = 0; index <= segments; index++)
+        for (int index = 0; index <= segments; index++)
         {
-            var angle = rotation + 240 + (90d * index / segments);
-            var radians = angle * Math.PI / 180;
+            double angle = rotation + 240 + (90d * index / segments);
+            double radians = angle * Math.PI / 180;
             points.Add(new Point(center.X + Math.Cos(radians) * radius, center.Y + Math.Sin(radians) * radius));
         }
 
@@ -255,7 +255,7 @@ internal static class GuardianLegacyMapDrawing
 
     internal static Point RotateClockwise(Point point, double degrees)
     {
-        var radians = degrees * Math.PI / 180;
+        double radians = degrees * Math.PI / 180;
         return new Point(
             point.X * Math.Cos(radians) - point.Y * Math.Sin(radians),
             point.X * Math.Sin(radians) + point.Y * Math.Cos(radians)
@@ -264,7 +264,7 @@ internal static class GuardianLegacyMapDrawing
 
     private static GuardianLegacyPointStyle StatusStrokeStyle(GuardianPoiStatus status, double width)
     {
-        var color = status switch
+        Color color = status switch
         {
             GuardianPoiStatus.Present => Colors.DodgerBlue,
             GuardianPoiStatus.Absent => MissingStroke,
@@ -276,7 +276,7 @@ internal static class GuardianLegacyMapDrawing
 
     private static double NormalizeDegrees(double degrees)
     {
-        var normalized = degrees % 360;
+        double normalized = degrees % 360;
         return normalized < 0 ? normalized + 360 : normalized;
     }
 }

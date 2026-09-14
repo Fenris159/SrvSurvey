@@ -11,7 +11,7 @@ public sealed class ColonizationFleetCarrierIdentityTracker
     public void Apply(JournalEventEnvelope journalEvent)
     {
         ArgumentNullException.ThrowIfNull(journalEvent);
-        var candidate = journalEvent.EventName switch
+        string? candidate = journalEvent.EventName switch
         {
             "ReceiveText" => GetString(journalEvent.Payload, "From"),
             "FSSSignalDiscovered"
@@ -38,16 +38,16 @@ public sealed class ColonizationFleetCarrierIdentityTracker
     public string ResolveDisplayName(string carrierName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(carrierName);
-        var normalizedName = carrierName.Trim();
-        for (var index = candidates.Count - 1; index >= 0; index--)
+        string normalizedName = carrierName.Trim();
+        for (int index = candidates.Count - 1; index >= 0; index--)
         {
-            var candidate = candidates[index];
+            string candidate = candidates[index];
             if (!candidate.EndsWith(normalizedName, StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
 
-            var displayName = candidate[..^normalizedName.Length].TrimEnd();
+            string displayName = candidate[..^normalizedName.Length].TrimEnd();
             if (displayName.EndsWith('|'))
             {
                 displayName = displayName[..^1].TrimEnd();
@@ -61,7 +61,7 @@ public sealed class ColonizationFleetCarrierIdentityTracker
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var property) && property.ValueKind == JsonValueKind.String
+        return root.TryGetProperty(propertyName, out JsonElement property) && property.ValueKind == JsonValueKind.String
             ? property.GetString()
             : null;
     }

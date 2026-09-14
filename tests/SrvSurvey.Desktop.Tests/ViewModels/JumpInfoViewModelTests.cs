@@ -27,7 +27,7 @@ public sealed class JumpInfoViewModelTests : IDisposable
             ],
         };
         var messages = new List<string>();
-        using var viewModel = CreateViewModel(client, log: messages.Add);
+        using JumpInfoViewModel viewModel = CreateViewModel(client, log: messages.Add);
         viewModel.ApplyUpdate(
             new JumpInfoApplyUpdateRequest(
                 "Sol",
@@ -69,7 +69,7 @@ public sealed class JumpInfoViewModelTests : IDisposable
     [InlineData("Unexpected provider", "System data unavailable.")]
     public async Task SingleLookupWarningNeverExposesExceptionInOverlay(string provider, string expected)
     {
-        using var viewModel = CreateViewModel(
+        using JumpInfoViewModel viewModel = CreateViewModel(
             new FakeSummaryClient(CreateSummary())
             {
                 Warnings = [$"{provider} data is unavailable: detailed network failure"],
@@ -99,7 +99,7 @@ public sealed class JumpInfoViewModelTests : IDisposable
             ? new TaskCanceledException("Detailed timeout message")
             : new HttpRequestException("Detailed HTTP failure", null, System.Net.HttpStatusCode.BadGateway);
         var messages = new List<string>();
-        using var viewModel = CreateViewModel(
+        using JumpInfoViewModel viewModel = CreateViewModel(
             new FakeSummaryClient(CreateSummary()) { Failure = failure },
             log: messages.Add
         );
@@ -117,7 +117,7 @@ public sealed class JumpInfoViewModelTests : IDisposable
         await viewModel.PendingSummaryLoad;
         Assert.Equal("System data unavailable.", viewModel.DataStatus);
         Assert.False(viewModel.IsLoading);
-        var message = Assert.Single(messages);
+        string message = Assert.Single(messages);
         Assert.Contains("Beta (3)", message);
         Assert.Contains(failure.GetType().Name, message);
         Assert.Contains(failure.Message, message);
@@ -127,7 +127,7 @@ public sealed class JumpInfoViewModelTests : IDisposable
     public async Task ChargingJumpBuildsRouteAndLoadsAllMetadata()
     {
         var client = new FakeSummaryClient(CreateSummary());
-        using var viewModel = CreateViewModel(client);
+        using JumpInfoViewModel viewModel = CreateViewModel(client);
         var status = new EliteStatus { Flags = StatusFlags.InMainShip, Flags2 = StatusFlags2.FsdChargingJump };
 
         viewModel.ApplyUpdate(
@@ -171,7 +171,7 @@ public sealed class JumpInfoViewModelTests : IDisposable
             DateTimeOffset.Parse("2026-08-13T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
         );
         var client = new FakeSummaryClient(CreateSummary() with { StarClass = null });
-        using var viewModel = CreateViewModel(client, time);
+        using JumpInfoViewModel viewModel = CreateViewModel(client, time);
 
         viewModel.ApplyUpdate(
             new JumpInfoApplyUpdateRequest(
@@ -247,7 +247,7 @@ public sealed class JumpInfoViewModelTests : IDisposable
     public async Task WitchspaceUsesDisplayedStarClassWhenTargetOmitsIt()
     {
         var client = new FakeSummaryClient(CreateSummary() with { StarClass = null });
-        using var viewModel = CreateViewModel(client);
+        using JumpInfoViewModel viewModel = CreateViewModel(client);
 
         viewModel.ApplyUpdate(
             new JumpInfoApplyUpdateRequest(
@@ -286,7 +286,7 @@ public sealed class JumpInfoViewModelTests : IDisposable
     public async Task WitchspaceAdoptsStarClassReceivedAfterJumpStarts()
     {
         var client = new FakeSummaryClient(CreateSummary() with { StarClass = null });
-        using var viewModel = CreateViewModel(client);
+        using JumpInfoViewModel viewModel = CreateViewModel(client);
 
         viewModel.ApplyUpdate(
             new JumpInfoApplyUpdateRequest(
@@ -332,7 +332,7 @@ public sealed class JumpInfoViewModelTests : IDisposable
     [InlineData("K Giant", false)]
     public void ScoopablePillOnlyAppliesToFuelStarClasses(string starClass, bool expected)
     {
-        using var viewModel = CreateViewModel(new FakeSummaryClient(CreateSummary()));
+        using JumpInfoViewModel viewModel = CreateViewModel(new FakeSummaryClient(CreateSummary()));
 
         viewModel.ApplyUpdate(
             new JumpInfoApplyUpdateRequest(
@@ -352,7 +352,7 @@ public sealed class JumpInfoViewModelTests : IDisposable
     [Fact]
     public async Task FollowedRouteSelectionCanShowOverlayInSupercruise()
     {
-        using var viewModel = CreateViewModel(new FakeSummaryClient(CreateSummary()));
+        using JumpInfoViewModel viewModel = CreateViewModel(new FakeSummaryClient(CreateSummary()));
         viewModel.ShowWhenNextHopSelected = true;
         var followedRoute = new FollowRouteDocument(
             "F123",
@@ -386,7 +386,10 @@ public sealed class JumpInfoViewModelTests : IDisposable
         await viewModel.PendingSummaryLoad;
 
         Assert.True(viewModel.ShouldShow);
-        var followedRouteLine = Assert.Single(viewModel.DetailLines, line => line.Label == "Followed route");
+        JumpInfoDetailLineViewModel followedRouteLine = Assert.Single(
+            viewModel.DetailLines,
+            line => line.Label == "Followed route"
+        );
         Assert.Contains("HOP 1 / 1", followedRouteLine.Value);
         Assert.Contains("Survey the A ring", followedRouteLine.Value);
         Assert.DoesNotContain(
@@ -449,7 +452,7 @@ public sealed class JumpInfoViewModelTests : IDisposable
     [Fact]
     public async Task ShortcutForcesOverlayButFssStillSuppressesIt()
     {
-        using var viewModel = CreateViewModel(new FakeSummaryClient(CreateSummary()));
+        using JumpInfoViewModel viewModel = CreateViewModel(new FakeSummaryClient(CreateSummary()));
         viewModel.ApplyUpdate(
             new JumpInfoApplyUpdateRequest(
                 "Sol",
@@ -485,7 +488,7 @@ public sealed class JumpInfoViewModelTests : IDisposable
     public async Task BootstrapIgnoresHistoricalTargetAndUsesLiveStatusDestination()
     {
         var client = new FakeSummaryClient(CreateSummary());
-        using var viewModel = CreateViewModel(client);
+        using JumpInfoViewModel viewModel = CreateViewModel(client);
 
         viewModel.ApplyUpdate(
             new JumpInfoApplyUpdateRequest(
@@ -516,13 +519,13 @@ public sealed class JumpInfoViewModelTests : IDisposable
     [Fact]
     public async Task DifferentDestinationRegionIsIncludedInSpecialDetails()
     {
-        var colonia = CreateSummary() with
+        SystemSummary colonia = CreateSummary() with
         {
             SystemName = "Colonia",
             SystemAddress = 32_382_960_970_595,
             Position = new GalacticCoordinate(-9530.5, -910.28125, 19808.125),
         };
-        using var viewModel = CreateViewModel(new FakeSummaryClient(colonia));
+        using JumpInfoViewModel viewModel = CreateViewModel(new FakeSummaryClient(colonia));
 
         viewModel.ApplyUpdate(
             new JumpInfoApplyUpdateRequest(
@@ -550,7 +553,7 @@ public sealed class JumpInfoViewModelTests : IDisposable
             DateTimeOffset.Parse("2026-08-25T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
         );
         var client = new FakeSummaryClient(CreateSummary());
-        using var viewModel = CreateViewModel(client, time);
+        using JumpInfoViewModel viewModel = CreateViewModel(client, time);
 
         viewModel.ApplyUpdate(
             new JumpInfoApplyUpdateRequest(
@@ -645,7 +648,7 @@ public sealed class JumpInfoViewModelTests : IDisposable
             DateTimeOffset.Parse("2026-08-12T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
         );
         var client = new FakeSummaryClient(CreateSummary());
-        using var viewModel = CreateViewModel(client, time);
+        using JumpInfoViewModel viewModel = CreateViewModel(client, time);
 
         viewModel.ApplyUpdate(
             new JumpInfoApplyUpdateRequest(
@@ -726,7 +729,7 @@ public sealed class JumpInfoViewModelTests : IDisposable
         var time = new MutableTimeProvider(
             DateTimeOffset.Parse("2026-08-13T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
         );
-        using var viewModel = CreateViewModel(new FakeSummaryClient(CreateSummary()), time);
+        using JumpInfoViewModel viewModel = CreateViewModel(new FakeSummaryClient(CreateSummary()), time);
 
         viewModel.ApplyUpdate(
             new JumpInfoApplyUpdateRequest(
@@ -782,7 +785,7 @@ public sealed class JumpInfoViewModelTests : IDisposable
             DateTimeOffset.Parse("2026-08-12T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
         );
         var client = new FakeSummaryClient(CreateSummary());
-        using var viewModel = CreateViewModel(client, time);
+        using JumpInfoViewModel viewModel = CreateViewModel(client, time);
         var followedRoute = new FollowRouteDocument(
             "F123",
             "route.json",
@@ -806,7 +809,7 @@ public sealed class JumpInfoViewModelTests : IDisposable
         await viewModel.PendingSummaryLoad;
         viewModel.BeginOverlayPresentation();
 
-        var routeAfterBeta = followedRoute with { LastReachedIndex = 1 };
+        FollowRouteDocument routeAfterBeta = followedRoute with { LastReachedIndex = 1 };
         viewModel.ApplyUpdate(
             new JumpInfoApplyUpdateRequest(
                 "Beta",
@@ -876,7 +879,10 @@ public sealed class JumpInfoViewModelTests : IDisposable
         await viewModel.PendingSummaryLoad;
 
         Assert.Equal("Gamma", viewModel.TargetName);
-        var routeLine = Assert.Single(viewModel.DetailLines, line => line.Label == "Followed route");
+        JumpInfoDetailLineViewModel routeLine = Assert.Single(
+            viewModel.DetailLines,
+            line => line.Label == "Followed route"
+        );
         Assert.Contains("Resume survey route", routeLine.Value);
         Assert.Equal([("Beta", 3L), ("Delta", 5L), ("Gamma", 4L)], client.Requests);
     }
@@ -887,7 +893,7 @@ public sealed class JumpInfoViewModelTests : IDisposable
         var time = new MutableTimeProvider(
             DateTimeOffset.Parse("2026-08-12T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
         );
-        using var viewModel = CreateViewModel(new FakeSummaryClient(CreateSummary()), time);
+        using JumpInfoViewModel viewModel = CreateViewModel(new FakeSummaryClient(CreateSummary()), time);
         var followedRoute = new FollowRouteDocument(
             "F123",
             "route.json",
@@ -960,10 +966,10 @@ public sealed class JumpInfoViewModelTests : IDisposable
     [Fact]
     public void PresentationCallbacksAreNoOpsAfterDisposal()
     {
-        var viewModel = CreateViewModel(new FakeSummaryClient(CreateSummary()));
+        JumpInfoViewModel viewModel = CreateViewModel(new FakeSummaryClient(CreateSummary()));
         viewModel.Dispose();
 
-        var exception = Record.Exception(() =>
+        Exception? exception = Record.Exception(() =>
         {
             viewModel.BeginOverlayPresentation();
             viewModel.EndOverlayPresentation();
@@ -1029,8 +1035,8 @@ public sealed class JumpInfoViewModelTests : IDisposable
 
     private static JournalEventEnvelope Event(string name, string properties)
     {
-        var json = $"{{\"event\":\"{name}\",{properties}}}";
-        Assert.True(JournalEventEnvelope.TryParse(json, out var value, out _));
+        string json = $"{{\"event\":\"{name}\",{properties}}}";
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? value, out _));
         return value!;
     }
 

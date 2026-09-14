@@ -7,7 +7,7 @@ public sealed class JournalSnapshotReaderTests
     [Fact]
     public async Task ReadAsyncBuildsBootstrapStateAndIgnoresMalformedTail()
     {
-        var journal = """
+        string journal = """
             {"timestamp":"2026-07-24T10:00:00Z","event":"Fileheader","gameversion":"4.2.0","build":"r123","Odyssey":true}
             {"timestamp":"2026-07-24T10:00:01Z","event":"Commander","Name":"Drew","FID":"F123"}
             {"timestamp":"2026-07-24T10:00:02Z","event":"LoadGame","Commander":"Drew","FID":"F123","GameMode":"Open","Odyssey":true,"gameversion":"4.2.1","build":"r124"}
@@ -17,7 +17,10 @@ public sealed class JournalSnapshotReaderTests
             {"timestamp":"2026-07-24T10:00:06Z","event":"Partial"
             """;
 
-        var snapshot = await JournalSnapshotReader.ReadAsync(new StringReader(journal), "Journal.fixture.log");
+        JournalSnapshot snapshot = await JournalSnapshotReader.ReadAsync(
+            new StringReader(journal),
+            "Journal.fixture.log"
+        );
 
         Assert.Equal("Journal.fixture.log", snapshot.SourcePath);
         Assert.Equal("4.2.1", snapshot.GameVersion);
@@ -42,7 +45,7 @@ public sealed class JournalSnapshotReaderTests
     [Fact]
     public async Task ReadAsyncTracksLegacyCurrentBodyAndShutdownSemantics()
     {
-        var journal = """
+        string journal = """
             {"timestamp":"2026-07-24T11:00:00Z","event":"Location","StarSystem":"Sol","SystemAddress":1,"Body":"Earth","BodyType":"Planet"}
             {"timestamp":"2026-07-24T11:00:01Z","event":"FSDJump","StarSystem":"Achenar","SystemAddress":2,"Body":"Achenar A","BodyType":"Star"}
             {"timestamp":"2026-07-24T11:00:02Z","event":"ApproachBody","Body":"Achenar 3"}
@@ -50,7 +53,7 @@ public sealed class JournalSnapshotReaderTests
             {"timestamp":"2026-07-24T11:00:04Z","event":"Shutdown"}
             """;
 
-        var snapshot = await JournalSnapshotReader.ReadAsync(new StringReader(journal));
+        JournalSnapshot snapshot = await JournalSnapshotReader.ReadAsync(new StringReader(journal));
 
         Assert.Equal("Achenar", snapshot.SystemName);
         Assert.Equal(2, snapshot.SystemAddress);
@@ -64,13 +67,13 @@ public sealed class JournalSnapshotReaderTests
     [Fact]
     public async Task ReadLatestAsyncUsesNewestJournalByWriteTime()
     {
-        var testDirectory = Path.Combine(Path.GetTempPath(), $"SrvSurvey.Core.Tests-{Guid.NewGuid():N}");
+        string testDirectory = Path.Combine(Path.GetTempPath(), $"SrvSurvey.Core.Tests-{Guid.NewGuid():N}");
         Directory.CreateDirectory(testDirectory);
 
         try
         {
-            var olderPath = Path.Combine(testDirectory, "Journal.2026-07-23T000000.01.log");
-            var newerPath = Path.Combine(testDirectory, "Journal.2026-07-24T000000.01.log");
+            string olderPath = Path.Combine(testDirectory, "Journal.2026-07-23T000000.01.log");
+            string newerPath = Path.Combine(testDirectory, "Journal.2026-07-24T000000.01.log");
 
             await File.WriteAllTextAsync(
                 olderPath,
@@ -83,7 +86,7 @@ public sealed class JournalSnapshotReaderTests
             File.SetLastWriteTimeUtc(olderPath, new DateTime(2026, 7, 23, 0, 0, 0, DateTimeKind.Utc));
             File.SetLastWriteTimeUtc(newerPath, new DateTime(2026, 7, 24, 0, 0, 0, DateTimeKind.Utc));
 
-            var snapshot = await JournalSnapshotReader.ReadLatestAsync(testDirectory);
+            JournalSnapshot snapshot = await JournalSnapshotReader.ReadLatestAsync(testDirectory);
 
             Assert.Equal("Newer", snapshot.CommanderName);
             Assert.Equal(newerPath, snapshot.SourcePath);
@@ -97,13 +100,13 @@ public sealed class JournalSnapshotReaderTests
     [Fact]
     public async Task ReadLatestAsyncFillsPartialLoginFromRecentJournals()
     {
-        var testDirectory = Path.Combine(Path.GetTempPath(), $"SrvSurvey.Core.Tests-{Guid.NewGuid():N}");
+        string testDirectory = Path.Combine(Path.GetTempPath(), $"SrvSurvey.Core.Tests-{Guid.NewGuid():N}");
         Directory.CreateDirectory(testDirectory);
 
         try
         {
-            var olderPath = Path.Combine(testDirectory, "Journal.2026-07-23T000000.01.log");
-            var newerPath = Path.Combine(testDirectory, "Journal.2026-07-24T000000.01.log");
+            string olderPath = Path.Combine(testDirectory, "Journal.2026-07-23T000000.01.log");
+            string newerPath = Path.Combine(testDirectory, "Journal.2026-07-24T000000.01.log");
             await File.WriteAllTextAsync(
                 olderPath,
                 """
@@ -122,7 +125,7 @@ public sealed class JournalSnapshotReaderTests
             File.SetLastWriteTimeUtc(olderPath, new DateTime(2026, 7, 23, 0, 0, 0, DateTimeKind.Utc));
             File.SetLastWriteTimeUtc(newerPath, new DateTime(2026, 7, 24, 0, 0, 0, DateTimeKind.Utc));
 
-            var snapshot = await JournalSnapshotReader.ReadLatestAsync(testDirectory);
+            JournalSnapshot snapshot = await JournalSnapshotReader.ReadLatestAsync(testDirectory);
 
             Assert.Equal(newerPath, snapshot.SourcePath);
             Assert.Equal("Drew", snapshot.CommanderName);

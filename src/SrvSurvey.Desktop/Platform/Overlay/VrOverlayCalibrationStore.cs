@@ -25,18 +25,21 @@ public sealed class VrOverlayCalibrationStore
 
     public VrOverlayCalibrationCatalog Load()
     {
-        var defaults = LoadFile(
+        Dictionary<string, VrOverlayCalibration> defaults = LoadFile(
             File.Exists(plottersPath) ? plottersPath : defaultPlottersPath,
             allowDesktopPrefix: true
         );
-        var factoryDefaults = LoadFile(defaultPlottersPath, allowDesktopPrefix: true);
+        Dictionary<string, VrOverlayCalibration> factoryDefaults = LoadFile(
+            defaultPlottersPath,
+            allowDesktopPrefix: true
+        );
         var overrides = new Dictionary<string, IReadOnlyDictionary<string, VrOverlayCalibration>>(
             StringComparer.OrdinalIgnoreCase
         );
-        var overrideDirectory = Path.Combine(dataDirectory, "vr");
+        string overrideDirectory = Path.Combine(dataDirectory, "vr");
         if (Directory.Exists(overrideDirectory))
         {
-            foreach (var path in Directory.GetFiles(overrideDirectory, "*.json"))
+            foreach (string path in Directory.GetFiles(overrideDirectory, "*.json"))
             {
                 overrides[Path.GetFileNameWithoutExtension(path)] = LoadFile(path, allowDesktopPrefix: false);
             }
@@ -54,7 +57,7 @@ public sealed class VrOverlayCalibrationStore
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
         ArgumentNullException.ThrowIfNull(calibration);
         calibration.Validate();
-        var normalizedMode = NormalizeMode(mode);
+        string? normalizedMode = NormalizeMode(mode);
         return normalizedMode is null
             ? SaveDefault(plotterName, calibration)
             : SaveOverride(plotterName, calibration, normalizedMode);
@@ -62,19 +65,19 @@ public sealed class VrOverlayCalibrationStore
 
     private VrOverlayCalibrationSaveResult SaveDefault(string plotterName, VrOverlayCalibration calibration)
     {
-        var sourcePath = File.Exists(plottersPath) ? plottersPath : defaultPlottersPath;
-        var root = ParseObject(sourcePath);
-        if (root[plotterName] is not JsonValue value || !value.TryGetValue<string>(out var existing))
+        string sourcePath = File.Exists(plottersPath) ? plottersPath : defaultPlottersPath;
+        JsonObject root = ParseObject(sourcePath);
+        if (root[plotterName] is not JsonValue value || !value.TryGetValue<string>(out string? existing))
         {
             throw new InvalidDataException($"Overlay calibration '{plotterName}' is not present in '{sourcePath}'.");
         }
 
-        var brace = existing.IndexOf('{');
-        var desktop = (brace >= 0 ? existing[..brace] : existing).TrimEnd();
+        int brace = existing.IndexOf('{');
+        string desktop = (brace >= 0 ? existing[..brace] : existing).TrimEnd();
         root[plotterName] = $"{desktop} {calibration}";
 
         Directory.CreateDirectory(dataDirectory);
-        var backupPath = File.Exists(plottersPath)
+        string? backupPath = File.Exists(plottersPath)
             ? CreateVerifiedBackup(plottersPath, "vr-calibration-backups")
             : null;
         WriteAtomic(
@@ -82,8 +85,8 @@ public sealed class VrOverlayCalibrationStore
             plottersPath,
             temporaryPath =>
             {
-                var pending = LoadFile(temporaryPath, allowDesktopPrefix: true);
-                if (!pending.TryGetValue(plotterName, out var saved) || saved != calibration)
+                Dictionary<string, VrOverlayCalibration> pending = LoadFile(temporaryPath, allowDesktopPrefix: true);
+                if (!pending.TryGetValue(plotterName, out VrOverlayCalibration? saved) || saved != calibration)
                 {
                     throw new InvalidDataException(
                         $"Overlay calibration '{plotterName}' could not be verified before saving."
@@ -91,8 +94,8 @@ public sealed class VrOverlayCalibrationStore
                 }
             }
         );
-        var verified = LoadFile(plottersPath, allowDesktopPrefix: true);
-        if (!verified.TryGetValue(plotterName, out var saved) || saved != calibration)
+        Dictionary<string, VrOverlayCalibration> verified = LoadFile(plottersPath, allowDesktopPrefix: true);
+        if (!verified.TryGetValue(plotterName, out VrOverlayCalibration? saved) || saved != calibration)
         {
             throw new InvalidDataException($"Overlay calibration '{plotterName}' could not be verified after saving.");
         }
@@ -106,13 +109,13 @@ public sealed class VrOverlayCalibrationStore
         string mode
     )
     {
-        var overrideDirectory = Path.Combine(dataDirectory, "vr");
-        var overridePath = Path.Combine(overrideDirectory, $"{mode}.json");
-        var root = File.Exists(overridePath) ? ParseObject(overridePath) : new JsonObject();
+        string overrideDirectory = Path.Combine(dataDirectory, "vr");
+        string overridePath = Path.Combine(overrideDirectory, $"{mode}.json");
+        JsonObject root = File.Exists(overridePath) ? ParseObject(overridePath) : [];
         root[plotterName] = calibration.ToString();
 
         Directory.CreateDirectory(overrideDirectory);
-        var backupPath = File.Exists(overridePath)
+        string? backupPath = File.Exists(overridePath)
             ? CreateVerifiedBackup(overridePath, "vr-calibration-backups")
             : null;
         WriteAtomic(
@@ -120,8 +123,8 @@ public sealed class VrOverlayCalibrationStore
             overridePath,
             temporaryPath =>
             {
-                var pending = LoadFile(temporaryPath, allowDesktopPrefix: false);
-                if (!pending.TryGetValue(plotterName, out var saved) || saved != calibration)
+                Dictionary<string, VrOverlayCalibration> pending = LoadFile(temporaryPath, allowDesktopPrefix: false);
+                if (!pending.TryGetValue(plotterName, out VrOverlayCalibration? saved) || saved != calibration)
                 {
                     throw new InvalidDataException(
                         $"VR override '{mode}/{plotterName}' could not be verified before saving."
@@ -140,11 +143,11 @@ public sealed class VrOverlayCalibrationStore
             return new Dictionary<string, VrOverlayCalibration>(StringComparer.Ordinal);
         }
 
-        var root = ParseObject(path);
+        JsonObject root = ParseObject(path);
         var result = new Dictionary<string, VrOverlayCalibration>(StringComparer.Ordinal);
-        foreach (var entry in root)
+        foreach (KeyValuePair<string, JsonNode?> entry in root)
         {
-            if (entry.Value is not JsonValue value || !value.TryGetValue<string>(out var text))
+            if (entry.Value is not JsonValue value || !value.TryGetValue<string>(out string? text))
             {
                 throw new InvalidDataException($"VR calibration '{entry.Key}' must be a string.");
             }
@@ -174,13 +177,13 @@ public sealed class VrOverlayCalibrationStore
 
     private static string CreateVerifiedBackup(string path, string directoryName)
     {
-        var directory = Path.Combine(
+        string directory = Path.Combine(
             Path.GetDirectoryName(path)
                 ?? throw new InvalidOperationException("The calibration file has no parent directory."),
             directoryName
         );
         Directory.CreateDirectory(directory);
-        var backupPath = Path.Combine(
+        string backupPath = Path.Combine(
             directory,
             $"{Path.GetFileNameWithoutExtension(path)}-"
                 + $"{DateTimeOffset.UtcNow:yyyyMMddTHHmmssfffffffZ}-"
@@ -203,7 +206,7 @@ public sealed class VrOverlayCalibrationStore
 
     private static void WriteAtomic(JsonObject root, string path, Action<string> verify)
     {
-        var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
+        string temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
         try
         {
             using (var stream = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
@@ -236,7 +239,7 @@ public sealed class VrOverlayCalibrationStore
             return null;
         }
 
-        var normalized = mode.Trim();
+        string normalized = mode.Trim();
         if (
             normalized is "." or ".."
             || !string.Equals(Path.GetFileName(normalized), normalized, StringComparison.Ordinal)
@@ -273,8 +276,8 @@ public sealed class VrOverlayCalibrationCatalog
     {
         if (
             !string.IsNullOrWhiteSpace(mode)
-            && Overrides.TryGetValue(mode, out var modeOverrides)
-            && modeOverrides.TryGetValue(plotterName, out var modeCalibration)
+            && Overrides.TryGetValue(mode, out IReadOnlyDictionary<string, VrOverlayCalibration>? modeOverrides)
+            && modeOverrides.TryGetValue(plotterName, out VrOverlayCalibration? modeCalibration)
         )
         {
             return modeCalibration;
@@ -289,7 +292,7 @@ public sealed record VrOverlayCalibration(float Scale, Vector3 Position, Vector3
     public static VrOverlayCalibration? Parse(string text, bool allowDesktopPrefix = true)
     {
         ArgumentNullException.ThrowIfNull(text);
-        var start = text.IndexOf('{');
+        int start = text.IndexOf('{');
         if (start < 0)
         {
             return null;
@@ -300,7 +303,7 @@ public sealed record VrOverlayCalibration(float Scale, Vector3 Position, Vector3
             throw new InvalidDataException("A VR override must contain only a calibration block.");
         }
 
-        var parts = text[start..]
+        string[] parts = text[start..]
             .Split(
                 ['{', '}', ',', ':', '<', '>'],
                 StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries

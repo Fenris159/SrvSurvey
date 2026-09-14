@@ -91,7 +91,7 @@ internal sealed class DiagnosticReplayScreenshotProcessingService : IScreenshotP
     )
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var warnings =
+        string[] warnings =
             preferences.Enabled && journalEvents.Any(item => item.EventName == "Screenshot")
                 ? new[] { "Screenshot file processing is unavailable during diagnostic replay." }
                 : [];

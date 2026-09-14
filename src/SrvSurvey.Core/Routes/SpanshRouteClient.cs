@@ -71,11 +71,11 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
         ArgumentNullException.ThrowIfNull(route);
         var requestUri = new Uri(apiBaseUri, "results/" + route.JobId.ToString("D").ToUpperInvariant());
         var timer = Stopwatch.StartNew();
-        var nextPollInterval = pollInterval;
+        TimeSpan nextPollInterval = pollInterval;
         while (true)
         {
-            var root = await FetchRouteStatusAsync(requestUri, cancellationToken).ConfigureAwait(false);
-            var completed = TryCompleteRoute(root, route, out var hops);
+            JsonObject root = await FetchRouteStatusAsync(requestUri, cancellationToken).ConfigureAwait(false);
+            bool completed = TryCompleteRoute(root, route, out IReadOnlyList<FollowRouteHop>? hops);
             if (completed)
             {
                 return hops!;
@@ -89,7 +89,7 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
 
     private async Task<JsonObject> FetchRouteStatusAsync(Uri requestUri, CancellationToken cancellationToken)
     {
-        using var response = await client
+        using HttpResponseMessage response = await client
             .GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
@@ -120,8 +120,8 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
     )
     {
         hops = null;
-        var lastState = GetString(root, "state");
-        var lastStatus = GetString(root, "status");
+        string? lastState = GetString(root, "state");
+        string? lastStatus = GetString(root, "status");
         ThrowIfRouteFailed(route, lastStatus);
 
         if (IsRouteReady(root, lastStatus))
@@ -183,8 +183,8 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
         CancellationToken cancellationToken
     )
     {
-        var remaining = maximumWait - timer.Elapsed;
-        var delay = nextPollInterval <= remaining ? nextPollInterval : remaining;
+        TimeSpan remaining = maximumWait - timer.Elapsed;
+        TimeSpan delay = nextPollInterval <= remaining ? nextPollInterval : remaining;
         if (delay > TimeSpan.Zero)
         {
             await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
@@ -200,7 +200,7 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
 
     private static List<FollowRouteHop> ParseRoute(JsonObject root, SpanshRouteKind kind)
     {
-        var result = root["result"];
+        JsonNode? result = root["result"];
         return kind switch
         {
             SpanshRouteKind.Generic => ParseDetectedRoute(result),
@@ -219,7 +219,7 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
     {
         if (result is JsonArray rows)
         {
-            var isTradeRoute = rows.OfType<JsonObject>()
+            bool isTradeRoute = rows.OfType<JsonObject>()
                 .Any(row => row["source"] is JsonObject || row["destination"] is JsonObject);
             if (isTradeRoute)
             {
@@ -262,7 +262,7 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
         }
 
         var hops = new List<FollowRouteHop>(rows.Count);
-        for (var index = 0; index < rows.Count; index++)
+        for (int index = 0; index < rows.Count; index++)
         {
             if (rows[index] is not JsonObject row)
             {
@@ -303,14 +303,14 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
         }
 
         var hops = new List<FollowRouteHop>(legs.Count + 1);
-        for (var index = 0; index < legs.Count; index++)
+        for (int index = 0; index < legs.Count; index++)
         {
             if (legs[index] is not JsonObject leg)
             {
                 throw InvalidResponse($"trade route leg {index + 1} is not an object");
             }
 
-            var source = ParseTradeStop(leg["source"] as JsonObject, index, "source");
+            FollowRouteHop source = ParseTradeStop(leg["source"] as JsonObject, index, "source");
             if (hops.Count == 0 || !IsSameSystem(hops[^1], source))
             {
                 hops.Add(source);
@@ -339,13 +339,13 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
             throw InvalidResponse($"trade route leg {legIndex + 1} has no {stopKind}");
         }
 
-        var systemName = GetString(stop, "system");
+        string? systemName = GetString(stop, "system");
         if (string.IsNullOrWhiteSpace(systemName))
         {
             throw InvalidResponse($"trade route leg {legIndex + 1} has no {stopKind} system");
         }
 
-        var station = GetString(stop, "station");
+        string? station = GetString(stop, "station");
         return new FollowRouteHop(
             systemName,
             GetInt64(stop, "system_id64"),
@@ -358,16 +358,16 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
 
     private static FollowRouteHop ParseHop(JsonObject root, int index, SpanshRouteKind kind)
     {
-        var name = GetString(root, "system") ?? GetString(root, "name");
+        string? name = GetString(root, "system") ?? GetString(root, "name");
         if (string.IsNullOrWhiteSpace(name))
         {
             throw InvalidResponse($"route hop {index + 1} has no valid system name");
         }
 
-        var bodyTargets = SupportsBodyTargets(kind)
+        List<FollowRouteBioTarget>? bodyTargets = SupportsBodyTargets(kind)
             ? ParseBodyTargets(name, root["bodies"], kind == SpanshRouteKind.Exobiology)
             : null;
-        var notes = GetString(root, "notes") ?? GetString(root, "note");
+        string? notes = GetString(root, "notes") ?? GetString(root, "note");
         if (GetBoolean(root, "must_restock") == true)
         {
             notes = string.IsNullOrWhiteSpace(notes)
@@ -418,16 +418,16 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
         }
 
         var result = new List<FollowRouteHop>(hops.Count);
-        foreach (var hop in hops)
+        foreach (FollowRouteHop hop in hops)
         {
-            var existingIndex = result.FindIndex(existing => IsSameSystem(existing, hop));
+            int existingIndex = result.FindIndex(existing => IsSameSystem(existing, hop));
             if (existingIndex < 0)
             {
                 result.Add(hop);
                 continue;
             }
 
-            var existing = result[existingIndex];
+            FollowRouteHop existing = result[existingIndex];
             result[existingIndex] = existing with
             {
                 Position = existing.Position ?? hop.Position,
@@ -447,9 +447,9 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
     )
     {
         var result = existing.ToList();
-        foreach (var target in incoming)
+        foreach (FollowRouteBioTarget target in incoming)
         {
-            var index = result.FindIndex(candidate =>
+            int index = result.FindIndex(candidate =>
                 (target.BodyId is not null && candidate.BodyId == target.BodyId)
                 || string.Equals(candidate.BodyName, target.BodyName, StringComparison.OrdinalIgnoreCase)
             );
@@ -459,7 +459,7 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
                 continue;
             }
 
-            var current = result[index];
+            FollowRouteBioTarget current = result[index];
             result[index] = current with
             {
                 Species = current.Species.Concat(target.Species).Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
@@ -504,7 +504,7 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
             return first.EstimatedBiologyValue;
         }
 
-        var sharesSpecies = first.Species.Intersect(second.Species, StringComparer.OrdinalIgnoreCase).Any();
+        bool sharesSpecies = first.Species.Intersect(second.Species, StringComparer.OrdinalIgnoreCase).Any();
         return sharesSpecies
             ? Math.Max(first.EstimatedBiologyValue.Value, second.EstimatedBiologyValue.Value)
             : checked(first.EstimatedBiologyValue.Value + second.EstimatedBiologyValue.Value);
@@ -527,9 +527,9 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
 
     private static GalacticCoordinate? ParsePosition(JsonObject root, string context)
     {
-        var x = GetDouble(root, "x");
-        var y = GetDouble(root, "y");
-        var z = GetDouble(root, "z");
+        double? x = GetDouble(root, "x");
+        double? y = GetDouble(root, "y");
+        double? z = GetDouble(root, "z");
         if (x is not null && y is not null && z is not null)
         {
             try
@@ -583,13 +583,13 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
         bool isBiologicalRoute
     )
     {
-        var bodyName =
+        string bodyName =
             GetString(body, "name")
             ?? GetString(body, "body_name")
             ?? throw InvalidResponse($"a route body {bodyIndex + 1} has no name");
 
-        var species = ReadSpecies(body, out var speciesValues);
-        var biologyValue = ReadBiologyValue(body, speciesValues);
+        List<string> species = ReadSpecies(body, out Dictionary<string, long>? speciesValues);
+        long? biologyValue = ReadBiologyValue(body, speciesValues);
 
         return new FollowRouteBioTarget(
             NormalizeBodyName(systemName, bodyName),
@@ -634,27 +634,27 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
     private static List<string> ReadSpeciesFromLandmarks(JsonArray landmarks, Dictionary<string, long> speciesValues)
     {
         var species = new List<string>();
-        foreach (var landmarkNode in landmarks)
+        foreach (JsonNode? landmarkNode in landmarks)
         {
             if (landmarkNode is not JsonObject landmark)
             {
                 throw InvalidResponse("a route body landmark is not an object");
             }
 
-            var name = GetString(landmark, "subtype") ?? GetString(landmark, "name");
+            string? name = GetString(landmark, "subtype") ?? GetString(landmark, "name");
             if (string.IsNullOrWhiteSpace(name))
             {
                 throw InvalidResponse("a route body landmark has no subtype");
             }
 
-            var trimmed = name.Trim();
+            string trimmed = name.Trim();
             if (!species.Contains(trimmed, StringComparer.OrdinalIgnoreCase))
             {
                 species.Add(trimmed);
             }
 
-            var value = GetInt64Any(landmark, "value", "estimated_value", "landmark_value", "scan_value");
-            if (value is not null && (!speciesValues.TryGetValue(trimmed, out var existing) || value > existing))
+            long? value = GetInt64Any(landmark, "value", "estimated_value", "landmark_value", "scan_value");
+            if (value is not null && (!speciesValues.TryGetValue(trimmed, out long existing) || value > existing))
             {
                 speciesValues[trimmed] = value.Value;
             }
@@ -671,7 +671,7 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
 
     private static string NormalizeBodyName(string systemName, string bodyName)
     {
-        var prefix = systemName.TrimEnd() + " ";
+        string prefix = systemName.TrimEnd() + " ";
         return bodyName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
             ? bodyName[prefix.Length..].Trim()
             : bodyName.Trim();
@@ -684,7 +684,7 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
             return true;
         }
 
-        var state = GetStringAny(body, "terraforming_state", "terraformingState");
+        string? state = GetStringAny(body, "terraforming_state", "terraformingState");
         return !string.IsNullOrWhiteSpace(state)
             && !string.Equals(state, "Not terraformable", StringComparison.OrdinalIgnoreCase)
             && !string.Equals(state, "None", StringComparison.OrdinalIgnoreCase);
@@ -697,34 +697,34 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
 
     private static bool? GetBoolean(JsonObject root, string propertyName)
     {
-        return root[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result) ? result : null;
+        return root[propertyName] is JsonValue value && value.TryGetValue<bool>(out bool result) ? result : null;
     }
 
     private static bool? GetBooleanAny(JsonObject root, params string[] propertyNames)
     {
-        var node = FindValue(root, propertyNames);
+        JsonValue? node = FindValue(root, propertyNames);
         if (node is null)
         {
             return null;
         }
 
-        if (node.TryGetValue<bool>(out var boolean))
+        if (node.TryGetValue<bool>(out bool boolean))
         {
             return boolean;
         }
 
-        return node.TryGetValue<string>(out var text) && bool.TryParse(text, out boolean) ? boolean : null;
+        return node.TryGetValue<string>(out string? text) && bool.TryParse(text, out boolean) ? boolean : null;
     }
 
     private static string? GetString(JsonObject root, string propertyName)
     {
-        return root[propertyName] is JsonValue value && value.TryGetValue<string>(out var result) ? result : null;
+        return root[propertyName] is JsonValue value && value.TryGetValue<string>(out string? result) ? result : null;
     }
 
     private static string? GetStringAny(JsonObject root, params string[] propertyNames)
     {
-        var node = FindValue(root, propertyNames);
-        return node is not null && node.TryGetValue<string>(out var result)
+        JsonValue? node = FindValue(root, propertyNames);
+        return node is not null && node.TryGetValue<string>(out string? result)
             ? (string.IsNullOrWhiteSpace(result)) switch
             {
                 true => null,
@@ -735,24 +735,24 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
 
     private static long? GetInt64(JsonObject root, string propertyName)
     {
-        return root[propertyName] is JsonValue value && value.TryGetValue<long>(out var result) ? result : null;
+        return root[propertyName] is JsonValue value && value.TryGetValue<long>(out long result) ? result : null;
     }
 
     private static long? GetInt64Any(JsonObject root, params string[] propertyNames)
     {
-        var node = FindValue(root, propertyNames);
+        JsonValue? node = FindValue(root, propertyNames);
         if (node is null)
         {
             return null;
         }
 
-        if (node.TryGetValue<long>(out var integer))
+        if (node.TryGetValue<long>(out long integer))
         {
             return integer;
         }
 
         if (
-            node.TryGetValue<double>(out var number)
+            node.TryGetValue<double>(out double number)
             && double.IsFinite(number)
             && number is >= long.MinValue and <= long.MaxValue
         )
@@ -761,7 +761,7 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
         }
 
         return
-            node.TryGetValue<string>(out var text)
+            node.TryGetValue<string>(out string? text)
             && double.TryParse(
                 text,
                 NumberStyles.Float | NumberStyles.AllowThousands,
@@ -781,34 +781,34 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
             return null;
         }
 
-        if (value.TryGetValue<double>(out var result))
+        if (value.TryGetValue<double>(out double result))
         {
             return result;
         }
 
-        return value.TryGetValue<long>(out var integer) ? integer : null;
+        return value.TryGetValue<long>(out long integer) ? integer : null;
     }
 
     private static double? GetDoubleAny(JsonObject root, params string[] propertyNames)
     {
-        var node = FindValue(root, propertyNames);
+        JsonValue? node = FindValue(root, propertyNames);
         if (node is null)
         {
             return null;
         }
 
-        if (node.TryGetValue<double>(out var number) && double.IsFinite(number))
+        if (node.TryGetValue<double>(out double number) && double.IsFinite(number))
         {
             return number;
         }
 
-        if (node.TryGetValue<long>(out var integer))
+        if (node.TryGetValue<long>(out long integer))
         {
             return integer;
         }
 
         return
-            node.TryGetValue<string>(out var text)
+            node.TryGetValue<string>(out string? text)
             && double.TryParse(
                 text,
                 NumberStyles.Float | NumberStyles.AllowThousands,
@@ -822,14 +822,14 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
 
     private static JsonValue? FindValue(JsonObject root, IReadOnlyList<string> propertyNames)
     {
-        foreach (var propertyName in propertyNames)
+        foreach (string propertyName in propertyNames)
         {
             if (root[propertyName] is JsonValue exact)
             {
                 return exact;
             }
 
-            var match = root.FirstOrDefault(candidate =>
+            KeyValuePair<string, JsonNode?> match = root.FirstOrDefault(candidate =>
                 string.Equals(candidate.Key, propertyName, StringComparison.OrdinalIgnoreCase)
             );
             if (match.Value is JsonValue value)

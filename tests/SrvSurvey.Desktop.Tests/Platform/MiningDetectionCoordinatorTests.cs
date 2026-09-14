@@ -41,14 +41,14 @@ public sealed class MiningDetectionCoordinatorTests : IDisposable
         using var mining = new SurfaceMiningViewModel(new SystemSurfaceStore(root), store, clock);
         var scan = new SystemScanState();
         foreach (
-            var json in new[]
+            string? json in new[]
             {
                 """{"event":"Location","StarSystem":"Test","SystemAddress":42}""",
                 """{"event":"Scan","StarSystem":"Test","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Radius":1000000,"PlanetClass":"Rocky body"}""",
             }
         )
         {
-            Assert.True(JournalEventEnvelope.TryParse(json, out var envelope, out _));
+            Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? envelope, out _));
             scan.Apply(envelope!);
         }
         var session = new SurfaceSurveySessionContext("F123", "Test", "Test", 42, null);
@@ -151,10 +151,10 @@ public sealed class MiningDetectionCoordinatorTests : IDisposable
         {
             Count++;
             onCapture();
-            var pixels = new byte[bounds.Width * bounds.Height * 4];
+            byte[] pixels = new byte[bounds.Width * bounds.Height * 4];
             if (withContrast)
             {
-                for (var i = 0; i < pixels.Length; i++)
+                for (int i = 0; i < pixels.Length; i++)
                 {
                     pixels[i] = (byte)((i / 16) % 2 * 255);
                 }

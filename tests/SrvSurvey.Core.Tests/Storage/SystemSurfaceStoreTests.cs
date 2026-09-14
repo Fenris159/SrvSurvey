@@ -15,7 +15,7 @@ public sealed class SystemSurfaceStoreTests : IDisposable
     [Fact]
     public async Task LoadsLegacyTouchdownBookmarksAndBiologicalScans()
     {
-        var path = CreateSystemPath();
+        string path = CreateSystemPath();
         await File.WriteAllTextAsync(
             path,
             """
@@ -57,7 +57,7 @@ public sealed class SystemSurfaceStoreTests : IDisposable
         );
         var store = new SystemSurfaceStore(temporaryDirectory);
 
-        var result = await store.LoadBodyAsync(Context());
+        SystemSurfaceLoadResult result = await store.LoadBodyAsync(Context());
 
         Assert.True(result.IsSuccess, result.Error);
         Assert.True(result.FileExists);
@@ -65,7 +65,7 @@ public sealed class SystemSurfaceStoreTests : IDisposable
         Assert.Equal(new SurfaceCoordinate(1.5, -2.25), result.Snapshot!.LastTouchdown);
         Assert.Equal(new SurfaceCoordinate(1, 2), Assert.Single(result.Snapshot.Bookmarks["Aleoida"]));
         Assert.Equal(new SurfaceCoordinate(-3, 4), Assert.Single(result.Snapshot.Bookmarks["#mini"]));
-        var scan = Assert.Single(result.Snapshot.BioScans);
+        SurfaceBioScan scan = Assert.Single(result.Snapshot.BioScans);
         Assert.Equal("Complete", scan.Status);
         Assert.Equal(150, scan.RadiusMeters);
         Assert.Equal(123, scan.EntryId);
@@ -75,7 +75,7 @@ public sealed class SystemSurfaceStoreTests : IDisposable
     [Fact]
     public async Task LoadsAndMergesLegacyShortBookmarkGroupsWithoutWriting()
     {
-        var path = CreateSystemPath();
+        string path = CreateSystemPath();
         await File.WriteAllTextAsync(
             path,
             """
@@ -95,10 +95,10 @@ public sealed class SystemSurfaceStoreTests : IDisposable
             }
             """
         );
-        var originalBytes = await File.ReadAllBytesAsync(path);
+        byte[] originalBytes = await File.ReadAllBytesAsync(path);
         var store = new SystemSurfaceStore(temporaryDirectory);
 
-        var result = await store.LoadBodyAsync(Context());
+        SystemSurfaceLoadResult result = await store.LoadBodyAsync(Context());
 
         Assert.Equal(
             [new SurfaceCoordinate(3, 4), new SurfaceCoordinate(1, 2)],
@@ -113,7 +113,7 @@ public sealed class SystemSurfaceStoreTests : IDisposable
     [Fact]
     public async Task BookmarkMutationCanonicalizesImportedGroupsWithoutDataLoss()
     {
-        var path = CreateSystemPath();
+        string path = CreateSystemPath();
         await File.WriteAllTextAsync(
             path,
             """
@@ -136,16 +136,20 @@ public sealed class SystemSurfaceStoreTests : IDisposable
         );
         var store = new SystemSurfaceStore(temporaryDirectory);
 
-        var result = await store.AddBookmarkAsync(Context(), "ale", new SurfaceCoordinate(5, 6));
+        SurfaceBookmarkMutationResult result = await store.AddBookmarkAsync(
+            Context(),
+            "ale",
+            new SurfaceCoordinate(5, 6)
+        );
 
         Assert.Equal(SurfaceBookmarkMutation.Added, result.Mutation);
-        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        JsonObject root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.Equal(9, root["futureSystem"]!.GetValue<int>());
-        var body = root["bodies"]![0]!.AsObject();
+        JsonObject body = root["bodies"]![0]!.AsObject();
         Assert.True(body["futureBody"]!.GetValue<bool>());
-        var bookmarks = body["bookmarks"]!.AsObject();
+        JsonObject bookmarks = body["bookmarks"]!.AsObject();
         Assert.False(bookmarks.ContainsKey("ale"));
-        var locations = bookmarks["$Codex_Ent_Aleoids_Genus_Name;"]!.AsArray();
+        JsonArray locations = bookmarks["$Codex_Ent_Aleoids_Genus_Name;"]!.AsArray();
         Assert.Equal(3, locations.Count);
         Assert.Equal("old", locations[1]!["futurePoint"]!.GetValue<string>());
     }
@@ -155,7 +159,7 @@ public sealed class SystemSurfaceStoreTests : IDisposable
     {
         var store = new SystemSurfaceStore(temporaryDirectory);
 
-        var result = await store.LoadBodyAsync(Context());
+        SystemSurfaceLoadResult result = await store.LoadBodyAsync(Context());
 
         Assert.True(result.IsSuccess, result.Error);
         Assert.False(result.FileExists);
@@ -169,7 +173,7 @@ public sealed class SystemSurfaceStoreTests : IDisposable
     [Fact]
     public async Task DeathMarksEveryMatchingSampleAcrossExistingSystemFiles()
     {
-        var path = CreateSystemPath();
+        string path = CreateSystemPath();
         await File.WriteAllTextAsync(
             path,
             """
@@ -194,7 +198,7 @@ public sealed class SystemSurfaceStoreTests : IDisposable
         );
         var store = new SystemSurfaceStore(temporaryDirectory);
 
-        var result = await store.MarkBioScansDiedAsync(
+        SurfaceDeathMarkResult result = await store.MarkBioScansDiedAsync(
             "F123",
             ["42_7_123_7252500_False", "42_7_456_1_False", "invalid"]
         );
@@ -202,24 +206,24 @@ public sealed class SystemSurfaceStoreTests : IDisposable
         Assert.Equal(3, result.MarkedScanCount);
         Assert.Equal(1, result.ChangedFileCount);
         Assert.Single(result.Warnings);
-        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        JsonObject root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.True(root["futureSystem"]!.GetValue<bool>());
-        var scans = root["bodies"]![0]!["bioScans"]!.AsArray();
+        JsonArray scans = root["bodies"]![0]!["bioScans"]!.AsArray();
         Assert.Equal(["Died", "Died", "Died", "Abandoned"], scans.Select(scan => scan!["status"]!.GetValue<string>()));
 
-        var missing = await store.MarkBioScansDiedAsync("F123", ["99_1_123_1_False"]);
+        SurfaceDeathMarkResult missing = await store.MarkBioScansDiedAsync("F123", ["99_1_123_1_False"]);
         Assert.Equal(0, missing.MarkedScanCount);
         Assert.Equal(0, missing.ChangedFileCount);
         Assert.DoesNotContain(
             Directory.EnumerateFiles(Path.Combine(temporaryDirectory, "systems", "F123")),
-            file => Path.GetFileName(file).EndsWith("_99.json")
+            file => Path.GetFileName(file).EndsWith("_99.json", StringComparison.Ordinal)
         );
     }
 
     [Fact]
     public async Task MutationsPreserveNotesUnknownFieldsAndExistingBodyData()
     {
-        var path = CreateSystemPath();
+        string path = CreateSystemPath();
         await File.WriteAllTextAsync(
             path,
             """
@@ -246,7 +250,11 @@ public sealed class SystemSurfaceStoreTests : IDisposable
         var store = new SystemSurfaceStore(temporaryDirectory);
 
         await store.SetLastTouchdownAsync(Context(), new SurfaceCoordinate(1, 2));
-        var added = await store.AddBookmarkAsync(Context(), "Bacterium", new SurfaceCoordinate(3, 4));
+        SurfaceBookmarkMutationResult added = await store.AddBookmarkAsync(
+            Context(),
+            "Bacterium",
+            new SurfaceCoordinate(3, 4)
+        );
         await store.AppendBioScansAsync(
             Context(),
             [
@@ -263,10 +271,10 @@ public sealed class SystemSurfaceStoreTests : IDisposable
         );
 
         Assert.Equal(SurfaceBookmarkMutation.Added, added.Mutation);
-        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        JsonObject root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.Equal("Keep me", root["notes"]!.GetValue<string>());
         Assert.Equal(9, root["futureSystem"]!.GetValue<int>());
-        var body = root["bodies"]![0]!.AsObject();
+        JsonObject body = root["bodies"]![0]!.AsObject();
         Assert.True(body["futureBody"]!.GetValue<bool>());
         Assert.Equal(1, body["lastTouchdown"]!["lat"]!.GetValue<double>());
         Assert.Single(body["bookmarks"]!["Aleoida"]!.AsArray());
@@ -280,14 +288,18 @@ public sealed class SystemSurfaceStoreTests : IDisposable
         var store = new SystemSurfaceStore(temporaryDirectory);
         var first = new SurfaceCoordinate(0, 0);
 
-        var added = await store.AddBookmarkAsync(Context(), "Aleoida", first);
-        var tooClose = await store.AddBookmarkAsync(Context(), "Aleoida", new SurfaceCoordinate(0, 0.5));
+        SurfaceBookmarkMutationResult added = await store.AddBookmarkAsync(Context(), "Aleoida", first);
+        SurfaceBookmarkMutationResult tooClose = await store.AddBookmarkAsync(
+            Context(),
+            "Aleoida",
+            new SurfaceCoordinate(0, 0.5)
+        );
         var scan = new SurfaceBioScan(first, 150, "genus", "species", "Complete", 1, "Test System 1 a");
         await store.AppendBioScansAsync(Context(), [scan, scan]);
 
         Assert.Equal(SurfaceBookmarkMutation.Added, added.Mutation);
         Assert.Equal(SurfaceBookmarkMutation.TooClose, tooClose.Mutation);
-        var loaded = await store.LoadBodyAsync(Context());
+        SystemSurfaceLoadResult loaded = await store.LoadBodyAsync(Context());
         Assert.Single(loaded.Snapshot!.Bookmarks["Aleoida"]);
         Assert.Single(loaded.Snapshot.BioScans);
     }
@@ -299,13 +311,13 @@ public sealed class SystemSurfaceStoreTests : IDisposable
         await store.AddBookmarkAsync(Context(), "Aleoida", new SurfaceCoordinate(0, 0));
         await store.AddBookmarkAsync(Context(), "Aleoida", new SurfaceCoordinate(0, 10));
 
-        var removed = await store.RemoveBookmarkAsync(
+        SurfaceBookmarkMutationResult removed = await store.RemoveBookmarkAsync(
             Context(),
             "Aleoida",
             new SurfaceCoordinate(0, 1),
             maximumDistanceMeters: 150
         );
-        var outside = await store.RemoveBookmarkAsync(
+        SurfaceBookmarkMutationResult outside = await store.RemoveBookmarkAsync(
             Context(),
             "Aleoida",
             new SurfaceCoordinate(0, -90),
@@ -314,7 +326,7 @@ public sealed class SystemSurfaceStoreTests : IDisposable
 
         Assert.Equal(SurfaceBookmarkMutation.Removed, removed.Mutation);
         Assert.Equal(SurfaceBookmarkMutation.NotFound, outside.Mutation);
-        var loaded = await store.LoadBodyAsync(Context());
+        SystemSurfaceLoadResult loaded = await store.LoadBodyAsync(Context());
         Assert.Equal(new SurfaceCoordinate(0, 10), Assert.Single(loaded.Snapshot!.Bookmarks["Aleoida"]));
     }
 
@@ -323,13 +335,21 @@ public sealed class SystemSurfaceStoreTests : IDisposable
     {
         var store = new SystemSurfaceStore(temporaryDirectory);
 
-        var added = await store.ToggleBookmarkGroupAsync(Context(), "#1", new SurfaceCoordinate(1, 2));
-        var loaded = await store.LoadBodyAsync(Context());
+        SurfaceBookmarkMutationResult added = await store.ToggleBookmarkGroupAsync(
+            Context(),
+            "#1",
+            new SurfaceCoordinate(1, 2)
+        );
+        SystemSurfaceLoadResult loaded = await store.LoadBodyAsync(Context());
 
         Assert.Equal(SurfaceBookmarkMutation.Added, added.Mutation);
         Assert.Equal(new SurfaceCoordinate(1, 2), Assert.Single(loaded.Snapshot!.Bookmarks["#1"]));
 
-        var removed = await store.ToggleBookmarkGroupAsync(Context(), "#1", new SurfaceCoordinate(3, 4));
+        SurfaceBookmarkMutationResult removed = await store.ToggleBookmarkGroupAsync(
+            Context(),
+            "#1",
+            new SurfaceCoordinate(3, 4)
+        );
         loaded = await store.LoadBodyAsync(Context());
 
         Assert.Equal(SurfaceBookmarkMutation.Removed, removed.Mutation);
@@ -341,14 +361,14 @@ public sealed class SystemSurfaceStoreTests : IDisposable
     {
         var store = new SystemSurfaceStore(temporaryDirectory);
         await store.AddBookmarkAsync(Context(), "Aleoida", new SurfaceCoordinate(1, 2));
-        var path = CreateSystemPath();
-        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        string path = CreateSystemPath();
+        JsonObject root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         root["bodies"]![0]!["futureBody"] = 42;
         await File.WriteAllTextAsync(path, root.ToJsonString());
 
         await store.ClearBookmarksAsync(Context());
 
-        var saved = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        JsonObject saved = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.Null(saved["bodies"]![0]!["bookmarks"]);
         Assert.Equal(42, saved["bodies"]![0]!["futureBody"]!.GetValue<int>());
     }
@@ -360,7 +380,7 @@ public sealed class SystemSurfaceStoreTests : IDisposable
         var surfaceStore = new SystemSurfaceStore(temporaryDirectory);
         var noteContext = new SystemNoteContext("F123", "Drew", "Test System", 42, new GalacticCoordinate(1, 2, 3));
 
-        var tasks = Enumerable
+        Task[] tasks = Enumerable
             .Range(0, 20)
             .SelectMany(index =>
                 new Task[]
@@ -376,8 +396,8 @@ public sealed class SystemSurfaceStoreTests : IDisposable
             .ToArray();
         await Task.WhenAll(tasks);
 
-        var note = await noteStore.LoadAsync("F123", "Test System", 42);
-        var surface = await surfaceStore.LoadBodyAsync(Context());
+        SystemNoteLoadResult note = await noteStore.LoadAsync("F123", "Test System", 42);
+        SystemSurfaceLoadResult surface = await surfaceStore.LoadBodyAsync(Context());
         Assert.StartsWith("Note ", note.Notes);
         Assert.Equal(20, surface.Snapshot!.Bookmarks.Count);
     }
@@ -385,7 +405,7 @@ public sealed class SystemSurfaceStoreTests : IDisposable
     [Fact]
     public async Task MalformedKnownCollectionsAreNotOverwritten()
     {
-        var path = CreateSystemPath();
+        string path = CreateSystemPath();
         const string malformed = "{\"name\":\"Test System\",\"address\":42,\"bodies\":{}}";
         await File.WriteAllTextAsync(path, malformed);
         var store = new SystemSurfaceStore(temporaryDirectory);
@@ -419,7 +439,7 @@ public sealed class SystemSurfaceStoreTests : IDisposable
             )
         );
 
-        var result = await store.LoadBodyAsync(Context());
+        SystemSurfaceLoadResult result = await store.LoadBodyAsync(Context());
         Assert.False(result.FileExists);
     }
 
@@ -439,7 +459,7 @@ public sealed class SystemSurfaceStoreTests : IDisposable
 
     private string CreateSystemPath()
     {
-        var directory = Path.Combine(temporaryDirectory, "systems", "F123");
+        string directory = Path.Combine(temporaryDirectory, "systems", "F123");
         Directory.CreateDirectory(directory);
         return Path.Combine(directory, "Test System_42.json");
     }

@@ -37,11 +37,11 @@ public static class LegacyReferenceCatalogLoader
     public static LegacyReferenceCatalogLoadResult Load(string dataDirectory)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
-        var root = Path.GetFullPath(dataDirectory);
-        var published = Path.Combine(root, "pub");
+        string root = Path.GetFullPath(dataDirectory);
+        string published = Path.Combine(root, "pub");
         var sources = new List<ReferenceCatalogSource>();
 
-        var exobiology = LoadCandidate(
+        ExobiologyReferenceCatalog exobiology = LoadCandidate(
             "Codex reference",
             Path.Combine(root, "codexRef.json"),
             ExobiologyReferenceCatalog.LoadEmbedded,
@@ -49,7 +49,7 @@ public static class LegacyReferenceCatalogLoader
             candidate => candidate.Count,
             sources
         );
-        var biologyCriteria = LoadCandidate(
+        BiologyCriteriaCatalog biologyCriteria = LoadCandidate(
             "biology criteria",
             Path.Combine(published, "bio-criteria"),
             BiologyCriteriaCatalog.LoadEmbedded,
@@ -58,7 +58,7 @@ public static class LegacyReferenceCatalogLoader
             sources,
             Directory.Exists
         );
-        var guardianSites = LoadCandidate(
+        GuardianSiteCatalog guardianSites = LoadCandidate(
             "Guardian site index",
             published,
             GuardianSiteCatalog.LoadEmbedded,
@@ -69,7 +69,7 @@ public static class LegacyReferenceCatalogLoader
                 File.Exists(Path.Combine(path, "allRuins.json"))
                 && File.Exists(Path.Combine(path, "allStructures.json"))
         );
-        var guardianPublishedSites = LoadCandidate(
+        GuardianPublishedSiteCatalog guardianPublishedSites = LoadCandidate(
             "Guardian published surveys",
             Path.Combine(published, "guardian.zip"),
             GuardianPublishedSiteCatalog.LoadEmbedded,
@@ -77,8 +77,8 @@ public static class LegacyReferenceCatalogLoader
             candidate => candidate.Count,
             sources
         );
-        var editableGuardianTemplates = Path.Combine(root, "guardianSiteTemplates.json");
-        var guardianTemplates = LoadCandidate(
+        string editableGuardianTemplates = Path.Combine(root, "guardianSiteTemplates.json");
+        GuardianSiteTemplateCatalog guardianTemplates = LoadCandidate(
             "Guardian site templates",
             File.Exists(editableGuardianTemplates)
                 ? editableGuardianTemplates
@@ -88,7 +88,7 @@ public static class LegacyReferenceCatalogLoader
             candidate => candidate.Count,
             sources
         );
-        var humanSiteTemplates = LoadCandidate(
+        HumanSiteTemplateCatalog humanSiteTemplates = LoadCandidate(
             "human settlement templates",
             Path.Combine(published, "settlements", "humanSiteTemplates.json"),
             HumanSiteTemplateCatalog.LoadEmbedded,
@@ -96,7 +96,7 @@ public static class LegacyReferenceCatalogLoader
             candidate => candidate.Count,
             sources
         );
-        var greenGasGiants = LoadCandidate(
+        GreenGasGiantCriteriaCatalog greenGasGiants = LoadCandidate(
             "Green Gas Giant criteria",
             Path.Combine(published, "ggg.json"),
             GreenGasGiantCriteriaCatalog.LoadEmbedded,
@@ -127,7 +127,7 @@ public static class LegacyReferenceCatalogLoader
         Func<string, bool>? exists = null
     )
     {
-        var embedded = loadEmbedded();
+        T? embedded = loadEmbedded();
         exists ??= File.Exists;
         if (!exists(candidatePath))
         {
@@ -137,9 +137,9 @@ public static class LegacyReferenceCatalogLoader
 
         try
         {
-            var candidate = loadCandidate(candidatePath);
-            var embeddedCoverage = getCoverage(embedded);
-            var candidateCoverage = getCoverage(candidate);
+            T? candidate = loadCandidate(candidatePath);
+            int embeddedCoverage = getCoverage(embedded);
+            int candidateCoverage = getCoverage(candidate);
             if (candidateCoverage < embeddedCoverage)
             {
                 throw new InvalidDataException(
@@ -167,7 +167,7 @@ public static class LegacyReferenceCatalogLoader
 
     private static T LoadFile<T>(string path, Func<Stream, T> load)
     {
-        using var stream = File.OpenRead(path);
+        using FileStream stream = File.OpenRead(path);
         return load(stream);
     }
 

@@ -17,13 +17,13 @@ internal static partial class DesktopApplicationActivator
         }
 
         using var current = Process.GetCurrentProcess();
-        var executablePath = Environment.ProcessPath;
+        string? executablePath = Environment.ProcessPath;
         if (string.IsNullOrWhiteSpace(executablePath))
         {
             return false;
         }
 
-        var deadline = Environment.TickCount64 + (long)ActivationTimeout.TotalMilliseconds;
+        long deadline = Environment.TickCount64 + (long)ActivationTimeout.TotalMilliseconds;
         do
         {
             if (TryActivateMatchingProcess(current, executablePath))
@@ -42,7 +42,7 @@ internal static partial class DesktopApplicationActivator
 
     private static bool TryActivateMatchingProcess(Process current, string executablePath)
     {
-        foreach (var process in Process.GetProcessesByName(current.ProcessName))
+        foreach (Process process in Process.GetProcessesByName(current.ProcessName))
         {
             using (process)
             {
@@ -70,7 +70,7 @@ internal static partial class DesktopApplicationActivator
             }
 
             process.Refresh();
-            var handle = process.MainWindowHandle;
+            nint handle = process.MainWindowHandle;
             if (handle == nint.Zero)
             {
                 return false;

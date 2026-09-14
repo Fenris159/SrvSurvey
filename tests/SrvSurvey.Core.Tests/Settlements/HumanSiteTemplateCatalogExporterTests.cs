@@ -14,20 +14,20 @@ public sealed class HumanSiteTemplateCatalogExporterTests : IDisposable
     public async Task ExportRoundTripsEveryTemplateAndAuthoredElement()
     {
         var source = HumanSiteTemplateCatalog.LoadEmbedded();
-        var template = source.Templates[0];
+        HumanSiteTemplate template = source.Templates[0];
         var session = new HumanSiteTemplateAuthoringSession(template);
         session.AddNamedPoint("QA Point", new HumanSiteMapPoint(1.25, -2.5), securityLevel: 2, floor: 3);
         session.AddCircle(new HumanSiteMapPoint(5, 6), radius: 7);
         session.CommitBuilding("QA Building");
-        var updated = source.WithTemplate(session.Template);
-        var path = Path.Combine(directory, "humanSiteTemplates.json");
+        HumanSiteTemplateCatalog updated = source.WithTemplate(session.Template);
+        string path = Path.Combine(directory, "humanSiteTemplates.json");
 
-        var result = await new HumanSiteTemplateCatalogExporter().ExportAsync(updated, path);
+        HumanSiteTemplateExportResult result = await new HumanSiteTemplateCatalogExporter().ExportAsync(updated, path);
 
-        await using var stream = File.OpenRead(path);
+        await using FileStream stream = File.OpenRead(path);
         var reloaded = HumanSiteTemplateCatalog.Load(stream);
         Assert.Equal(source.Count, reloaded.Count);
-        var match = reloaded.Find(template.Economy, template.SubType)!;
+        HumanSiteTemplate match = reloaded.Find(template.Economy, template.SubType)!;
         Assert.Equal("QA Point", match.NamedPoints[^1].Name);
         Assert.Equal("QA Building", match.Buildings[^1].Name);
         Assert.Null(result.BackupPath);
@@ -38,16 +38,16 @@ public sealed class HumanSiteTemplateCatalogExporterTests : IDisposable
     public async Task ExistingDestinationGetsByteIdenticalBackup()
     {
         Directory.CreateDirectory(directory);
-        var path = Path.Combine(directory, "humanSiteTemplates.json");
-        var original = new byte[] { 0, 1, 2, 3, 255 };
+        string path = Path.Combine(directory, "humanSiteTemplates.json");
+        byte[] original = new byte[] { 0, 1, 2, 3, 255 };
         await File.WriteAllBytesAsync(path, original);
 
         var catalog = HumanSiteTemplateCatalog.LoadEmbedded();
-        var result = await new HumanSiteTemplateCatalogExporter().ExportAsync(catalog, path);
+        HumanSiteTemplateExportResult result = await new HumanSiteTemplateCatalogExporter().ExportAsync(catalog, path);
 
         Assert.NotNull(result.BackupPath);
         Assert.Equal(original, await File.ReadAllBytesAsync(result.BackupPath));
-        await using var stream = File.OpenRead(path);
+        await using FileStream stream = File.OpenRead(path);
         Assert.Equal(catalog.Count, HumanSiteTemplateCatalog.Load(stream).Count);
     }
 
@@ -55,17 +55,17 @@ public sealed class HumanSiteTemplateCatalogExporterTests : IDisposable
     public async Task ConcurrentDestinationChangeIsNeverOverwritten()
     {
         Directory.CreateDirectory(directory);
-        var path = Path.Combine(directory, "humanSiteTemplates.json");
+        string path = Path.Combine(directory, "humanSiteTemplates.json");
         await File.WriteAllTextAsync(path, "original");
         var exporter = new HumanSiteTemplateCatalogExporter(target => File.WriteAllTextAsync(target, "newer"));
 
-        var exception = await Assert.ThrowsAsync<IOException>(() =>
+        IOException exception = await Assert.ThrowsAsync<IOException>(() =>
             exporter.ExportAsync(HumanSiteTemplateCatalog.LoadEmbedded(), path)
         );
 
         Assert.Contains("changed during export", exception.Message);
         Assert.Equal("newer", await File.ReadAllTextAsync(path));
-        var backup = Assert.Single(Directory.GetFiles(directory, "humanSiteTemplates.json.backup-*"));
+        string backup = Assert.Single(Directory.GetFiles(directory, "humanSiteTemplates.json.backup-*"));
         Assert.Equal("original", await File.ReadAllTextAsync(backup));
         Assert.Empty(Directory.GetFiles(directory, "*.tmp"));
     }

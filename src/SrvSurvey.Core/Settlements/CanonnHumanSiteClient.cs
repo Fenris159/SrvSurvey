@@ -54,7 +54,7 @@ public sealed class CanonnHumanSiteClient : ICanonnHumanSiteClient, ICanonnHuman
 
         var uri = new Uri(baseUri, systemAddress.ToString(CultureInfo.InvariantCulture));
         using var request = new HttpRequestMessage(HttpMethod.Get, uri);
-        using var response = await client
+        using HttpResponseMessage response = await client
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.NotFound)
@@ -63,7 +63,7 @@ public sealed class CanonnHumanSiteClient : ICanonnHumanSiteClient, ICanonnHuman
         }
 
         response.EnsureSuccessStatusCode();
-        var bytes = await ReadBoundedAsync(response, uri, cancellationToken).ConfigureAwait(false);
+        byte[] bytes = await ReadBoundedAsync(response, uri, cancellationToken).ConfigureAwait(false);
         return Parse(bytes, systemAddress);
     }
 
@@ -99,27 +99,27 @@ public sealed class CanonnHumanSiteClient : ICanonnHumanSiteClient, ICanonnHuman
                     bodyRadius = submission.BodyRadiusMeters,
                     availblePads = new
                     {
-                        Large = submission.AvailablePads.Large,
-                        Medium = submission.AvailablePads.Medium,
-                        Small = submission.AvailablePads.Small,
+                        submission.AvailablePads.Large,
+                        submission.AvailablePads.Medium,
+                        submission.AvailablePads.Small,
                     },
                 },
                 options: new JsonSerializerOptions()
             ),
         };
-        using var response = await client
+        using HttpResponseMessage response = await client
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
-        var responseText = await ReadBoundedTextAsync(response, cancellationToken).ConfigureAwait(false);
+        string responseText = await ReadBoundedTextAsync(response, cancellationToken).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
-            var compact = responseText.Trim().ReplaceLineEndings(" ");
+            string compact = responseText.Trim().ReplaceLineEndings(" ");
             if (compact.Length > 512)
             {
                 compact = compact[..512] + "...";
             }
 
-            var detail = string.IsNullOrWhiteSpace(compact) ? string.Empty : ": " + compact;
+            string detail = string.IsNullOrWhiteSpace(compact) ? string.Empty : ": " + compact;
             throw new HttpRequestException(
                 $"Canonn rejected the settlement geometry "
                     + $"({(int)response.StatusCode} {response.ReasonPhrase}){detail}.",
@@ -145,8 +145,8 @@ public sealed class CanonnHumanSiteClient : ICanonnHumanSiteClient, ICanonnHuman
 
             var stations = new Dictionary<long, HumanSiteKnowledge>();
             var warnings = new List<string>();
-            var index = 0;
-            foreach (var row in document.RootElement.EnumerateArray())
+            int index = 0;
+            foreach (JsonElement row in document.RootElement.EnumerateArray())
             {
                 index++;
                 if (index > MaximumRows)
@@ -156,7 +156,7 @@ public sealed class CanonnHumanSiteClient : ICanonnHumanSiteClient, ICanonnHuman
 
                 if (
                     row.ValueKind != JsonValueKind.Object
-                    || !TryGetProperty(row, "raw_json", out var rawValue)
+                    || !TryGetProperty(row, "raw_json", out JsonElement rawValue)
                     || rawValue.ValueKind != JsonValueKind.String
                 )
                 {
@@ -164,7 +164,7 @@ public sealed class CanonnHumanSiteClient : ICanonnHumanSiteClient, ICanonnHuman
                     continue;
                 }
 
-                var raw = rawValue.GetString();
+                string? raw = rawValue.GetString();
                 if (string.IsNullOrWhiteSpace(raw) || raw.Length > MaximumRawJsonCharacters)
                 {
                     warnings.Add($"Canonn settlement row {index:N0} has an invalid payload size.");
@@ -174,7 +174,13 @@ public sealed class CanonnHumanSiteClient : ICanonnHumanSiteClient, ICanonnHuman
                 try
                 {
                     using var stationDocument = JsonDocument.Parse(raw);
-                    if (!TryReadStation(stationDocument.RootElement, expectedSystemAddress, out var station))
+                    if (
+                        !TryReadStation(
+                            stationDocument.RootElement,
+                            expectedSystemAddress,
+                            out HumanSiteKnowledge? station
+                        )
+                    )
                     {
                         warnings.Add($"Canonn settlement row {index:N0} is incomplete or incompatible.");
                         continue;
@@ -199,13 +205,13 @@ public sealed class CanonnHumanSiteClient : ICanonnHumanSiteClient, ICanonnHuman
     private static bool TryReadStation(JsonElement root, long expectedSystemAddress, out HumanSiteKnowledge? station)
     {
         station = null;
-        var name = ReadString(root, "name");
-        var marketId = ReadInt64(root, "marketId");
-        var bodyId = ReadInt32(root, "bodyId");
-        var economyToken = ReadString(root, "stationEconomy");
-        var economy = HumanSiteEconomyParser.ParseJournalValue(economyToken);
-        var latitude = ReadDouble(root, "lat");
-        var longitude = ReadDouble(root, "long");
+        string? name = ReadString(root, "name");
+        long? marketId = ReadInt64(root, "marketId");
+        int? bodyId = ReadInt32(root, "bodyId");
+        string? economyToken = ReadString(root, "stationEconomy");
+        HumanSiteEconomy economy = HumanSiteEconomyParser.ParseJournalValue(economyToken);
+        double? latitude = ReadDouble(root, "lat");
+        double? longitude = ReadDouble(root, "long");
         if (
             root.ValueKind != JsonValueKind.Object
             || string.IsNullOrWhiteSpace(name)
@@ -220,8 +226,8 @@ public sealed class CanonnHumanSiteClient : ICanonnHumanSiteClient, ICanonnHuman
             return false;
         }
 
-        var subType = Math.Max(0, ReadInt32(root, "subType") ?? 0);
-        var heading = ReadDouble(root, "heading");
+        int subType = Math.Max(0, ReadInt32(root, "subType") ?? 0);
+        double? heading = ReadDouble(root, "heading");
         if (heading is not null)
         {
             heading =
@@ -249,7 +255,10 @@ public sealed class CanonnHumanSiteClient : ICanonnHumanSiteClient, ICanonnHuman
     private static HumanSiteLandingPads ReadLandingPads(JsonElement root)
     {
         if (
-            !(TryGetProperty(root, "availblePads", out var pads) || TryGetProperty(root, "availablePads", out pads))
+            !(
+                TryGetProperty(root, "availblePads", out JsonElement pads)
+                || TryGetProperty(root, "availablePads", out pads)
+            )
             || pads.ValueKind != JsonValueKind.Object
         )
         {
@@ -265,32 +274,36 @@ public sealed class CanonnHumanSiteClient : ICanonnHumanSiteClient, ICanonnHuman
 
     private static HumanSiteGeometrySource ReadGeometrySource(JsonElement root)
     {
-        return Enum.TryParse<HumanSiteGeometrySource>(ReadString(root, "calcMethod"), ignoreCase: true, out var source)
+        return Enum.TryParse<HumanSiteGeometrySource>(
+            ReadString(root, "calcMethod"),
+            ignoreCase: true,
+            out HumanSiteGeometrySource source
+        )
             ? source
             : HumanSiteGeometrySource.Unknown;
     }
 
     private static string? ReadString(JsonElement root, string propertyName)
     {
-        return TryGetProperty(root, propertyName, out var value) && value.ValueKind == JsonValueKind.String
+        return TryGetProperty(root, propertyName, out JsonElement value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
     }
 
     private static int? ReadInt32(JsonElement root, string propertyName)
     {
-        var value = ReadInt64(root, propertyName);
+        long? value = ReadInt64(root, propertyName);
         return value is >= int.MinValue and <= int.MaxValue ? (int)value.Value : null;
     }
 
     private static long? ReadInt64(JsonElement root, string propertyName)
     {
-        if (!TryGetProperty(root, propertyName, out var value))
+        if (!TryGetProperty(root, propertyName, out JsonElement value))
         {
             return null;
         }
 
-        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out var number))
+        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out long number))
         {
             return number;
         }
@@ -304,12 +317,12 @@ public sealed class CanonnHumanSiteClient : ICanonnHumanSiteClient, ICanonnHuman
 
     private static double? ReadDouble(JsonElement root, string propertyName)
     {
-        if (!TryGetProperty(root, propertyName, out var value))
+        if (!TryGetProperty(root, propertyName, out JsonElement value))
         {
             return null;
         }
 
-        if (value.ValueKind == JsonValueKind.Number && value.TryGetDouble(out var number))
+        if (value.ValueKind == JsonValueKind.Number && value.TryGetDouble(out double number))
         {
             return number;
         }
@@ -325,7 +338,7 @@ public sealed class CanonnHumanSiteClient : ICanonnHumanSiteClient, ICanonnHuman
     {
         if (root.ValueKind == JsonValueKind.Object)
         {
-            var matchedValue = root.EnumerateObject()
+            JsonElement? matchedValue = root.EnumerateObject()
                 .Where(property => string.Equals(property.Name, propertyName, StringComparison.OrdinalIgnoreCase))
                 .Select(property => (JsonElement?)property.Value)
                 .FirstOrDefault();
@@ -353,9 +366,9 @@ public sealed class CanonnHumanSiteClient : ICanonnHumanSiteClient, ICanonnHuman
             );
         }
 
-        await using var input = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        await using Stream input = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         await using var output = new MemoryStream();
-        var buffer = new byte[64 * 1024];
+        byte[] buffer = new byte[64 * 1024];
         int read;
         while ((read = await input.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0)
         {
@@ -383,9 +396,9 @@ public sealed class CanonnHumanSiteClient : ICanonnHumanSiteClient, ICanonnHuman
             throw new InvalidDataException("The Canonn publication response exceeded the safety limit.");
         }
 
-        await using var input = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        await using Stream input = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         await using var output = new MemoryStream();
-        var buffer = new byte[8 * 1024];
+        byte[] buffer = new byte[8 * 1024];
         int read;
         while ((read = await input.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0)
         {

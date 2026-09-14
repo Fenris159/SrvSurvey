@@ -11,11 +11,11 @@ public sealed class StatusBlinkDetectorTests
     {
         var detector = new StatusBlinkDetector(StatusFlags.HudInAnalysisMode, TimeSpan.FromSeconds(3));
         var normal = new EliteStatus { Flags = StatusFlags.InSrv };
-        var analysis = normal with { Flags = StatusFlags.InSrv | StatusFlags.HudInAnalysisMode };
+        EliteStatus analysis = normal with { Flags = StatusFlags.InSrv | StatusFlags.HudInAnalysisMode };
 
         Assert.False(detector.Update(normal, Start).Detected);
-        var first = detector.Update(analysis, Start.AddSeconds(1));
-        var second = detector.Update(normal, Start.AddSeconds(2));
+        StatusBlinkResult first = detector.Update(analysis, Start.AddSeconds(1));
+        StatusBlinkResult second = detector.Update(normal, Start.AddSeconds(2));
 
         Assert.True(first.IsPrimed);
         Assert.False(first.Detected);
@@ -28,11 +28,11 @@ public sealed class StatusBlinkDetectorTests
     {
         var detector = new StatusBlinkDetector(StatusFlags.HudInAnalysisMode, TimeSpan.FromSeconds(3));
         var normal = new EliteStatus();
-        var analysis = normal with { Flags = StatusFlags.HudInAnalysisMode };
+        EliteStatus analysis = normal with { Flags = StatusFlags.HudInAnalysisMode };
         detector.Update(normal, Start);
         detector.Update(analysis, Start.AddSeconds(1));
 
-        var result = detector.Update(normal, Start.AddSeconds(4));
+        StatusBlinkResult result = detector.Update(normal, Start.AddSeconds(4));
 
         Assert.False(result.Detected);
         Assert.True(result.IsPrimed);
@@ -47,9 +47,15 @@ public sealed class StatusBlinkDetectorTests
         detector.Update(ship, Start);
         detector.Update(ship with { Flags = StatusFlags.HudInAnalysisMode }, Start.AddMilliseconds(100));
 
-        var transition = detector.Update(onFoot, Start.AddMilliseconds(200));
-        var firstShield = detector.Update(onFoot with { Flags = StatusFlags.ShieldsUp }, Start.AddMilliseconds(300));
-        var secondShield = detector.Update(onFoot, Start.AddMilliseconds(400));
+        StatusBlinkResult transition = detector.Update(onFoot, Start.AddMilliseconds(200));
+        StatusBlinkResult firstShield = detector.Update(
+            onFoot with
+            {
+                Flags = StatusFlags.ShieldsUp,
+            },
+            Start.AddMilliseconds(300)
+        );
+        StatusBlinkResult secondShield = detector.Update(onFoot, Start.AddMilliseconds(400));
 
         Assert.False(transition.Detected);
         Assert.Equal(StatusFlags.ShieldsUp, transition.ActiveTrigger);
@@ -65,8 +71,11 @@ public sealed class StatusBlinkDetectorTests
         detector.Update(new EliteStatus { Flags = StatusFlags.LightsOn }, Start.AddSeconds(1));
         detector.Reset();
 
-        var first = detector.Update(new EliteStatus(), Start.AddSeconds(2));
-        var second = detector.Update(new EliteStatus { Flags = StatusFlags.LightsOn }, Start.AddSeconds(3));
+        StatusBlinkResult first = detector.Update(new EliteStatus(), Start.AddSeconds(2));
+        StatusBlinkResult second = detector.Update(
+            new EliteStatus { Flags = StatusFlags.LightsOn },
+            Start.AddSeconds(3)
+        );
 
         Assert.False(first.Detected);
         Assert.False(second.Detected);

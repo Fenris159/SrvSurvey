@@ -201,7 +201,7 @@ internal sealed class MainWindowViewModelTestBuilder
 
     private static AppDataPaths CreateIsolatedPaths()
     {
-        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-main-window-{Guid.NewGuid():N}");
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-main-window-{Guid.NewGuid():N}");
         return new AppDataPaths(
             Path.Combine(root, "config"),
             Path.Combine(root, "data"),

@@ -54,14 +54,14 @@ public sealed class ReleaseUpdateService : IReleaseUpdateService
         CancellationToken cancellationToken = default
     )
     {
-        var currentRuntimeIdentifier =
+        string currentRuntimeIdentifier =
             runtimeIdentifier ?? CrossPlatformReleaseClient.ResolveCurrentRuntimeIdentifier();
-        var release = await releaseClient
+        CrossPlatformRelease? release = await releaseClient
             .GetLatestAsync(currentRuntimeIdentifier, channel, cancellationToken)
             .ConfigureAwait(false);
-        var latestVersion = release?.Version;
-        var isUpdateAvailable = latestVersion is { } available && available > currentVersion;
-        var releaseUri =
+        ReleaseVersion? latestVersion = release?.Version;
+        bool isUpdateAvailable = latestVersion is { } available && available > currentVersion;
+        Uri releaseUri =
             release?.ReleaseUri ?? (channel == ReleaseChannel.Development ? developmentReleaseUri : stableReleaseUri);
         return new ReleaseUpdateResult(
             currentVersion,

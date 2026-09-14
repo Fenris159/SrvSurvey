@@ -15,7 +15,7 @@ public sealed class FirstFootfallInferenceSettingsStore
     {
         var settings = documentStore.Load()["FirstFootfallInference"] as JsonObject;
         var color = settings?["Color"] as JsonObject;
-        var defaults = FirstFootfallInferencePreferences.Default;
+        FirstFootfallInferencePreferences defaults = FirstFootfallInferencePreferences.Default;
         return new FirstFootfallInferencePreferences(
             GetBoolean(settings, "Enabled", defaults.Enabled),
             GetInt32(color, "Red", defaults.Red, 0, 255),
@@ -31,7 +31,7 @@ public sealed class FirstFootfallInferenceSettingsStore
     public void Save(FirstFootfallInferencePreferences preferences)
     {
         ArgumentNullException.ThrowIfNull(preferences);
-        var normalized = Normalize(preferences);
+        FirstFootfallInferencePreferences normalized = Normalize(preferences);
         documentStore.Update(root =>
         {
             root["Version"] = 1;
@@ -62,7 +62,7 @@ public sealed class FirstFootfallInferenceSettingsStore
 
     private static FirstFootfallInferencePreferences Normalize(FirstFootfallInferencePreferences preferences)
     {
-        var defaults = FirstFootfallInferencePreferences.Default;
+        FirstFootfallInferencePreferences defaults = FirstFootfallInferencePreferences.Default;
         return preferences with
         {
             Red = Math.Clamp(preferences.Red, 0, 255),
@@ -80,12 +80,12 @@ public sealed class FirstFootfallInferenceSettingsStore
 
     private static bool GetBoolean(JsonObject? source, string propertyName, bool fallback)
     {
-        return source?[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result) ? result : fallback;
+        return source?[propertyName] is JsonValue value && value.TryGetValue<bool>(out bool result) ? result : fallback;
     }
 
     private static int GetInt32(JsonObject? source, string propertyName, int fallback, int minimum, int maximum)
     {
-        return source?[propertyName] is JsonValue value && value.TryGetValue<int>(out var result)
+        return source?[propertyName] is JsonValue value && value.TryGetValue<int>(out int result)
             ? Math.Clamp(result, minimum, maximum)
             : fallback;
     }
@@ -100,7 +100,7 @@ public sealed class FirstFootfallInferenceSettingsStore
     {
         return
             source?[propertyName] is JsonValue value
-            && value.TryGetValue<double>(out var result)
+            && value.TryGetValue<double>(out double result)
             && double.IsFinite(result)
             && result > 0
             ? Math.Clamp(result, minimum, maximum)

@@ -15,7 +15,7 @@ public sealed class OverlayWindowRegistryTests
         var biologyWindow = new Window();
         var galaxyMapContent = new Border();
         var biologyContent = new Border();
-        var changes = 0;
+        int changes = 0;
         registry.Changed += (_, _) => changes++;
 
         registry.Register(galaxyMapWindow, "PlotGalMap");
@@ -24,7 +24,7 @@ public sealed class OverlayWindowRegistryTests
         registry.SetPresentationVisual(galaxyMapWindow, galaxyMapContent);
         registry.SetPresentationVisual(biologyWindow, biologyContent);
 
-        Assert.True(registry.TryGetPlotterName(galaxyMapWindow, out var plotterName));
+        Assert.True(registry.TryGetPlotterName(galaxyMapWindow, out string? plotterName));
         Assert.Equal("PlotGalMap", plotterName);
         Assert.Equal(4, changes);
         Assert.Equal(["PlotGalMap", "PlotBioSystem"], registry.Snapshot().Select(entry => entry.PlotterName).ToArray());
@@ -57,10 +57,12 @@ public sealed class OverlayWindowRegistryTests
         var unknown = new Window();
         registry.Register(registered, "PlotJumpInfo");
 
-        var exception = Assert.Throws<InvalidOperationException>(() => registry.Register(registered, "PlotBioSystem"));
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() =>
+            registry.Register(registered, "PlotBioSystem")
+        );
         Assert.Contains("PlotJumpInfo", exception.Message);
         Assert.Throws<ArgumentOutOfRangeException>(() => registry.Register(unknown, "PlotUnknown"));
-        Assert.False(registry.TryGetPlotterName(unknown, out var plotterName));
+        Assert.False(registry.TryGetPlotterName(unknown, out string? plotterName));
         Assert.Empty(plotterName);
 
         registry.SetPresentationVisual(unknown, new Border());
@@ -69,7 +71,7 @@ public sealed class OverlayWindowRegistryTests
         registry.SetPresentationVisible(registered, visible: true);
         registry.SetGalaxyMapContextActive(active: false);
 
-        var snapshot = Assert.Single(registry.Snapshot());
+        RegisteredOverlayWindow snapshot = Assert.Single(registry.Snapshot());
         Assert.Same(registered, snapshot.Window);
         Assert.Same(registered, snapshot.RenderSource);
         Assert.False(snapshot.IsVisible);
@@ -186,7 +188,7 @@ public sealed class OverlayWindowRegistryTests
             new[] { presentationWindow, separateWindow },
             window =>
             {
-                var decision = registry.GetDecision(window);
+                OverlayVisibilityDecision decision = registry.GetDecision(window);
                 Assert.True(decision.ShouldHost);
                 Assert.False(decision.ShouldPresent);
                 Assert.Equal(OverlayVisibilityReasons.EditorSuppressed, decision.Reasons);
@@ -211,7 +213,7 @@ public sealed class OverlayWindowRegistryTests
 
         registry.SetGlobalSuppression(manualSuppressed: true, suitSuppressed: true, sessionSuppressed: true);
 
-        var decision = registry.GetDecision(window);
+        OverlayVisibilityDecision decision = registry.GetDecision(window);
         Assert.False(decision.Permitted);
         Assert.False(decision.ShouldHost);
         Assert.False(decision.ShouldPresent);

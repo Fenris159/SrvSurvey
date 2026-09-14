@@ -16,7 +16,7 @@ public sealed class ColonizationProjectFactory
     )
     {
         ArgumentNullException.ThrowIfNull(draft);
-        var errors = Validate(draft, dock, depot);
+        List<string> errors = Validate(draft, dock, depot);
         if (errors.Count > 0 || dock is null || depot is null)
         {
             return new ColonizationProjectCreateResult(null, errors);

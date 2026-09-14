@@ -50,7 +50,7 @@ public sealed class RouteWindowCoordinator : IDisposable
 
         disposed = true;
         viewModel.SetWindowOpener(null);
-        var routeWindow = window;
+        RouteWindow? routeWindow = window;
         window = null;
         if (routeWindow is not null)
         {

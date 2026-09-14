@@ -7,8 +7,8 @@ public sealed class MainWindowRedesignMarkupTests
     [Fact]
     public void ShellUsesCorrectedBrandGroupsHelpAndUpdateNotification()
     {
-        var mainWindow = LoadDesktopFile("MainWindow.axaml");
-        var values = Values(mainWindow);
+        XDocument mainWindow = LoadDesktopFile("MainWindow.axaml");
+        string[] values = Values(mainWindow);
 
         Assert.Contains("SrvSurvey-XP", values);
         Assert.Contains("CMDR'S COMPANION", values);
@@ -22,7 +22,7 @@ public sealed class MainWindowRedesignMarkupTests
         Assert.Contains("{StaticResource window_multiple_regular}", values);
         Assert.DoesNotContain(values, value => value.Contains("chevron", StringComparison.OrdinalIgnoreCase));
 
-        var notification = mainWindow
+        XElement notification = mainWindow
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Border"
@@ -38,8 +38,8 @@ public sealed class MainWindowRedesignMarkupTests
     [Fact]
     public void DiagnosticReplayUsesOnlyAnAlteredApplicationBorder()
     {
-        var mainWindow = LoadDesktopFile("MainWindow.axaml");
-        var diagnosticBorder = mainWindow
+        XDocument mainWindow = LoadDesktopFile("MainWindow.axaml");
+        XElement diagnosticBorder = mainWindow
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Border" && element.Attribute("Classes")?.Value == "diagnostic-shell"
@@ -61,8 +61,8 @@ public sealed class MainWindowRedesignMarkupTests
     [Fact]
     public void NavigationGroupHeadingsMatchDestinationTypography()
     {
-        var styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
-        var headingStyle = styles
+        XDocument styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
+        XElement headingStyle = styles
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Style" && element.Attribute("Selector")?.Value == "Button.nav-group-heading"
@@ -75,8 +75,8 @@ public sealed class MainWindowRedesignMarkupTests
     [Fact]
     public void NavigationGroupsAnimateHeightAndOpacityUnlessMotionIsReduced()
     {
-        var mainWindow = LoadDesktopFile("MainWindow.axaml");
-        var containers = mainWindow
+        XDocument mainWindow = LoadDesktopFile("MainWindow.axaml");
+        XElement[] containers = mainWindow
             .Descendants()
             .Where(element =>
                 element.Name.LocalName == "Border" && element.Attribute("Classes")?.Value == "nav-group-container"
@@ -97,14 +97,14 @@ public sealed class MainWindowRedesignMarkupTests
             element => element.Attribute("IsVisible")?.Value is not null
         );
 
-        var styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
-        var containerStyle = styles
+        XDocument styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
+        XElement containerStyle = styles
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Style"
                 && element.Attribute("Selector")?.Value == "Border.nav-group-container"
             );
-        var transitionedProperties = containerStyle
+        string?[] transitionedProperties = containerStyle
             .Descendants()
             .Where(element => element.Name.LocalName == "DoubleTransition")
             .Select(element => element.Attribute("Property")?.Value)
@@ -112,7 +112,7 @@ public sealed class MainWindowRedesignMarkupTests
         Assert.Contains("MaxHeight", transitionedProperties);
         Assert.Contains("Opacity", transitionedProperties);
 
-        var reducedMotionStyle = styles
+        XElement reducedMotionStyle = styles
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Style"
@@ -124,8 +124,8 @@ public sealed class MainWindowRedesignMarkupTests
     [Fact]
     public void OnlyAccordionNavigationLivesInsideTheSidebarScroller()
     {
-        var mainWindow = LoadDesktopFile("MainWindow.axaml");
-        var scroller = mainWindow
+        XDocument mainWindow = LoadDesktopFile("MainWindow.axaml");
+        XElement scroller = mainWindow
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "ScrollViewer"
@@ -135,13 +135,13 @@ public sealed class MainWindowRedesignMarkupTests
                         attribute.Name.LocalName == "Name" && attribute.Value == "NavigationAccordionScroller"
                     )
             );
-        var overview = mainWindow
+        XElement overview = mainWindow
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "ItemsControl"
                 && element.Attribute("ItemsSource")?.Value == "{Binding OverviewNavigationItems}"
             );
-        var utilities = mainWindow
+        XElement utilities = mainWindow
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "ItemsControl"
@@ -164,8 +164,8 @@ public sealed class MainWindowRedesignMarkupTests
     [Fact]
     public void OverviewPreservesCommanderAndMultipleCommanderContracts()
     {
-        var overview = LoadView("OverviewView.axaml");
-        var values = Values(overview);
+        XDocument overview = LoadView("OverviewView.axaml");
+        string[] values = Values(overview);
 
         Assert.Contains("{Binding CommanderName}", values);
         Assert.Contains("{Binding FrontierId, StringFormat=Frontier ID: {0}}", values);
@@ -189,8 +189,8 @@ public sealed class MainWindowRedesignMarkupTests
     [Fact]
     public void SphereLimitKeepsItsFullLookupAndLimitContract()
     {
-        var search = LoadView("SearchView.axaml");
-        var values = Values(search);
+        XDocument search = LoadView("SearchView.axaml");
+        string[] values = Values(search);
 
         Assert.Contains("{Binding Search.LimitSummary}", values);
         Assert.Contains("{Binding Search.CurrentSystemResult}", values);
@@ -213,7 +213,7 @@ public sealed class MainWindowRedesignMarkupTests
     [Fact]
     public void CopyLinksStayClickableWithoutUnderlines()
     {
-        var styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
+        XDocument styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
         var styleMap = styles
             .Descendants()
             .Where(element => element.Name.LocalName == "Style")
@@ -222,7 +222,7 @@ public sealed class MainWindowRedesignMarkupTests
         AssertNoUnderlineSetter(styleMap["Button.link TextBlock"]);
         AssertNoUnderlineSetter(styleMap["TextBlock.system-copy-link"]);
 
-        var copyTargets = Directory
+        int copyTargets = Directory
             .EnumerateFiles(
                 Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop"),
                 "*.axaml",
@@ -239,7 +239,7 @@ public sealed class MainWindowRedesignMarkupTests
     [Fact]
     public void GlobalScrollbarsKeepAReservedVisibleGutter()
     {
-        var styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
+        XDocument styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
         var styleMap = styles
             .Descendants()
             .Where(element => element.Name.LocalName == "Style")
@@ -256,14 +256,14 @@ public sealed class MainWindowRedesignMarkupTests
     [Fact]
     public void OverlayShortcutColorDoesNotDependOnRemovedListBoxItemAncestor()
     {
-        var styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
-        var overlayShortcutStyle = styles
+        XDocument styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
+        XElement overlayShortcutStyle = styles
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Style"
                 && element.Attribute("Selector")?.Value == "Button.nav-overlay-settings"
             );
-        var foreground = overlayShortcutStyle
+        XElement foreground = overlayShortcutStyle
             .Elements()
             .Single(element =>
                 element.Name.LocalName == "Setter" && element.Attribute("Property")?.Value == "Foreground"
@@ -276,7 +276,7 @@ public sealed class MainWindowRedesignMarkupTests
     [Fact]
     public void SelectedMutedListTextUsesTheThemeSpecificContrastResource()
     {
-        var styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
+        XDocument styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
         var styleMap = styles
             .Descendants()
             .Where(element => element.Name.LocalName == "Style")
@@ -304,15 +304,15 @@ public sealed class MainWindowRedesignMarkupTests
     [Fact]
     public void GlobalScrollbarTemplateUsesRoundedTrackWithoutLineButtons()
     {
-        var styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
+        XDocument styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
         var styleMap = styles
             .Descendants()
             .Where(element => element.Name.LocalName == "Style")
             .ToDictionary(element => element.Attribute("Selector")?.Value ?? string.Empty, StringComparer.Ordinal);
 
-        foreach (var selector in new[] { "ScrollBar:vertical", "ScrollBar:horizontal" })
+        foreach (string? selector in new[] { "ScrollBar:vertical", "ScrollBar:horizontal" })
         {
-            var style = styleMap[selector];
+            XElement style = styleMap[selector];
             Assert.Contains(
                 style.Elements(),
                 element => element.Name.LocalName == "Setter" && element.Attribute("Property")?.Value == "Template"
@@ -331,7 +331,7 @@ public sealed class MainWindowRedesignMarkupTests
                 && element.Attribute("CornerRadius")?.Value == "999"
         );
 
-        var separatorStyle = styleMap["ScrollViewer[IsExpanded=true] /template/ Panel#PART_ScrollBarsSeparator"];
+        XElement separatorStyle = styleMap["ScrollViewer[IsExpanded=true] /template/ Panel#PART_ScrollBarsSeparator"];
         AssertStyleSetter(separatorStyle, "Background", "Transparent");
         AssertStyleSetter(separatorStyle, "Opacity", "0");
     }
@@ -339,7 +339,7 @@ public sealed class MainWindowRedesignMarkupTests
     [Fact]
     public void ExpandableSectionHeadersUsePillChrome()
     {
-        var styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
+        XDocument styles = LoadDesktopFile("Styles", "RavenStyles.axaml");
         var expectedSelectors = new HashSet<string>(StringComparer.Ordinal)
         {
             "Expander.theme-selector /template/ ToggleButton",
@@ -347,7 +347,7 @@ public sealed class MainWindowRedesignMarkupTests
             "Expander.section-pill /template/ ToggleButton",
         };
 
-        var pillToggleStyles = styles
+        XElement[] pillToggleStyles = styles
             .Descendants()
             .Where(element =>
                 element.Name.LocalName == "Style"
@@ -358,7 +358,7 @@ public sealed class MainWindowRedesignMarkupTests
         Assert.Equal(3, pillToggleStyles.Length);
         Assert.All(pillToggleStyles, style => AssertStyleSetter(style, "CornerRadius", "999"));
 
-        var boxelStats = LoadDesktopFile("BoxelStatsWindow.axaml");
+        XDocument boxelStats = LoadDesktopFile("BoxelStatsWindow.axaml");
         Assert.Contains(
             boxelStats.Descendants(),
             element => element.Name.LocalName == "Expander" && element.Attribute("Classes")?.Value == "section-pill"

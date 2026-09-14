@@ -126,7 +126,7 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
 
     public bool SwitchToNextGameWindow()
     {
-        var switched = gameWindowSwitcher.TryActivateNext();
+        bool switched = gameWindowSwitcher.TryActivateNext();
         RefreshGameWindowCount();
         StatusMessage = switched
             ? "Focused the next Elite Dangerous window; overlays will follow it."
@@ -163,7 +163,7 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
         try
         {
             IsBusy = true;
-            var result = await catalog.LoadAsync();
+            CommanderProfileCatalogResult result = await catalog.LoadAsync();
             catalogProfiles = result.Profiles;
             RebuildOptions();
             if (result.Warnings.Count > 0)
@@ -245,7 +245,7 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
 
     private void RebuildOptions()
     {
-        var selectedFrontierId = SelectedCommander?.FrontierId;
+        string? selectedFrontierId = SelectedCommander?.FrontierId;
         Commanders = catalogProfiles
             .Where(profile => !string.Equals(profile.FrontierId, currentFrontierId, StringComparison.OrdinalIgnoreCase))
             .Select(profile => new CommanderInstanceOptionViewModel(profile))

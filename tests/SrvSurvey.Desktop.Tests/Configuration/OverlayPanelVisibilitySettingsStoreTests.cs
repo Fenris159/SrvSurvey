@@ -13,7 +13,7 @@ public sealed class OverlayPanelVisibilitySettingsStoreTests : IDisposable
     [Fact]
     public void MissingSettingsDefaultEveryCatalogPanelToVisible()
     {
-        var settings = CreateStore().Load();
+        IReadOnlyDictionary<string, bool> settings = CreateStore().Load();
 
         Assert.Equal(OverlayLayoutCatalog.Supported.Count, settings.Count);
         Assert.All(settings.Values, Assert.True);
@@ -23,14 +23,14 @@ public sealed class OverlayPanelVisibilitySettingsStoreTests : IDisposable
     public void SaveRoundTripPreservesPanelVisibilityAndUnrelatedSettings()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui.json");
+        string path = Path.Combine(temporaryDirectory, "ui.json");
         File.WriteAllText(path, "{ \"Theme\": \"purple-dark\" }");
         var store = new OverlayPanelVisibilitySettingsStore(path);
         var settings = store.Load().ToDictionary();
         settings["PlotGuardians"] = false;
 
         store.Save(settings);
-        var loaded = store.Load();
+        IReadOnlyDictionary<string, bool> loaded = store.Load();
 
         Assert.False(loaded["PlotGuardians"]);
         Assert.True(loaded["PlotGuardianStatus"]);

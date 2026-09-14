@@ -163,8 +163,8 @@ public sealed class OverlayThemeResourcesTests
     [Fact]
     public void OverlayFontFilesAndLicensesArePackaged()
     {
-        var root = FindRepositoryRoot();
-        var project = File.ReadAllText(Path.Combine(root, "src", "SrvSurvey.Desktop", "SrvSurvey.Desktop.csproj"));
+        string root = FindRepositoryRoot();
+        string project = File.ReadAllText(Path.Combine(root, "src", "SrvSurvey.Desktop", "SrvSurvey.Desktop.csproj"));
 
         Assert.Contains("Assets\\Fonts\\**\\*.ttf", project);
         Assert.Contains("Assets\\Fonts\\**\\OFL.txt", project);
@@ -189,8 +189,8 @@ public sealed class OverlayThemeResourcesTests
     [AvaloniaFact]
     public void FullApplyTracksPerPanelOpacityScaleAndBaseSizeChanges()
     {
-        var definition = OverlayLayoutCatalog.GetRequired("PlotJumpInfo");
-        var placement = definition.DefaultPlacement with { Opacity = 0.42, ScaleIndex = 3 };
+        OverlayLayoutDefinition definition = OverlayLayoutCatalog.GetRequired("PlotJumpInfo");
+        LegacyOverlayPlacement placement = definition.DefaultPlacement with { Opacity = 0.42, ScaleIndex = 3 };
         var layout = new LegacyOverlayLayout(
             new Dictionary<string, LegacyOverlayPlacement>(StringComparer.Ordinal) { [definition.Name] = placement },
             defaultOpacity: 0.9,
@@ -222,7 +222,7 @@ public sealed class OverlayThemeResourcesTests
 
         OverlayThemeResources.Apply(window, layout, definition.Name);
 
-        var scaleContainer = Assert.IsType<LayoutTransformControl>(window.Content);
+        LayoutTransformControl scaleContainer = Assert.IsType<LayoutTransformControl>(window.Content);
         Assert.Same(surface, scaleContainer.Child);
         Assert.IsType<ScaleTransform>(scaleContainer.LayoutTransform);
         Assert.Equal(0.42, window.Opacity);
@@ -314,11 +314,11 @@ public sealed class OverlayThemeResourcesTests
             ("PlotRamTah", typeof(RamTahOverlayPresentation), new RamTahOverlayWindow(viewModel)),
         ];
 
-        foreach (var testCase in cases)
+        foreach ((string PlotterName, Type PresentationType, Window LiveWindow) testCase in cases)
         {
-            var definition = OverlayLayoutCatalog.GetRequired(testCase.PlotterName);
+            OverlayLayoutDefinition definition = OverlayLayoutCatalog.GetRequired(testCase.PlotterName);
             var preview = new OverlayPositionPreviewWindow(definition);
-            var liveSurface = Assert.IsType<Border>(testCase.LiveWindow.Content);
+            Border liveSurface = Assert.IsType<Border>(testCase.LiveWindow.Content);
 
             Assert.Equal(
                 testCase.PresentationType,
@@ -349,7 +349,7 @@ public sealed class OverlayThemeResourcesTests
     [AvaloniaFact]
     public void DedicatedGuardianPresentationBypassesGenericHeaderAndCardNormalization()
     {
-        var definition = OverlayLayoutCatalog.GetRequired("PlotGuardianSystem");
+        OverlayLayoutDefinition definition = OverlayLayoutCatalog.GetRequired("PlotGuardianSystem");
         var presentation = new GuardianSystemOverlayPresentation
         {
             DataContext = GuardianOverlayViewModel.CreateEditorPreview(),
@@ -369,7 +369,7 @@ public sealed class OverlayThemeResourcesTests
 
         OverlayThemeResources.Apply(window, layout, definition.Name);
 
-        var scaled = Assert.IsType<LayoutTransformControl>(window.Content);
+        LayoutTransformControl scaled = Assert.IsType<LayoutTransformControl>(window.Content);
         Assert.Same(surface, scaled.Child);
         Assert.Same(presentation, surface.Child);
         Assert.Equal(new Thickness(0), surface.Padding);
@@ -381,7 +381,9 @@ public sealed class OverlayThemeResourcesTests
     [Fact]
     public void RuntimeWindowUsesTheSameLegacyWidthAsItsEditorPreview()
     {
-        var definition = OverlayLayoutCatalog.Supported.Single(candidate => candidate.Name == "PlotBioSystem");
+        OverlayLayoutDefinition definition = OverlayLayoutCatalog.Supported.Single(candidate =>
+            candidate.Name == "PlotBioSystem"
+        );
 
         Assert.Equal(definition.PreviewSize.Width, OverlayThemeResources.GetLegacyFormFactorWidth(definition.Name));
     }

@@ -40,7 +40,7 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
             throw new ArgumentOutOfRangeException(nameof(index), "A Guardian site index must be positive.");
         }
 
-        var folder = Path.Combine(dataDirectory, "guardian", frontierId);
+        string folder = Path.Combine(dataDirectory, "guardian", frontierId);
         if (!isOdyssey)
         {
             folder = Path.Combine(folder, "legacy");
@@ -57,13 +57,13 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
     )
     {
         ArgumentNullException.ThrowIfNull(survey);
-        var path = GetSurveyPath(frontierId, isOdyssey, survey.BodyName, survey.Index, IsRuins(survey));
+        string path = GetSurveyPath(frontierId, isOdyssey, survey.BodyName, survey.Index, IsRuins(survey));
         await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            var root = File.Exists(path)
+            JsonObject root = File.Exists(path)
                 ? await ReadExistingAsync(path, cancellationToken).ConfigureAwait(false)
-                : new JsonObject();
+                : [];
             WriteSurvey(root, survey, !isOdyssey);
             await WriteAtomicAsync(path, root, cancellationToken).ConfigureAwait(false);
             return path;
@@ -86,7 +86,9 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
                 16 * 1024,
                 FileOptions.Asynchronous | FileOptions.SequentialScan
             );
-            var node = await JsonNode.ParseAsync(stream, cancellationToken: cancellationToken).ConfigureAwait(false);
+            JsonNode? node = await JsonNode
+                .ParseAsync(stream, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
             return node as JsonObject
                 ?? throw new InvalidDataException(
                     $"The Guardian survey is not a JSON object and was not overwritten: {path}"
@@ -181,7 +183,7 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
     private static JsonArray WriteObelisks(IEnumerable<GuardianObelisk> obelisks)
     {
         var array = new JsonArray();
-        foreach (var obelisk in obelisks.OrderBy(item => item.Name))
+        foreach (GuardianObelisk? obelisk in obelisks.OrderBy(item => item.Name))
         {
             ValidateObelisk(obelisk);
             array.Add(
@@ -201,7 +203,7 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
     private static JsonObject WriteRelicHeadings(IReadOnlyDictionary<string, int> headings)
     {
         var node = new JsonObject();
-        foreach (var heading in headings.OrderBy(pair => pair.Key))
+        foreach (KeyValuePair<string, int> heading in headings.OrderBy(pair => pair.Key))
         {
             node[heading.Key] = heading.Value;
         }
@@ -232,7 +234,7 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
     private static JsonArray WriteRawPoints(IEnumerable<GuardianPointOfInterest> points)
     {
         var array = new JsonArray();
-        foreach (var point in points)
+        foreach (GuardianPointOfInterest point in points)
         {
             array.Add(
                 new JsonObject
@@ -255,8 +257,10 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
     )
     {
         var pending = new Dictionary<string, GuardianComponentLoadout>(components, StringComparer.Ordinal);
-        var output = MergeExistingComponentMaterials(root, components, pending);
-        foreach (var component in pending.Values.OrderBy(item => item.Name, StringComparer.Ordinal))
+        JsonArray output = MergeExistingComponentMaterials(root, components, pending);
+        foreach (
+            GuardianComponentLoadout? component in pending.Values.OrderBy(item => item.Name, StringComparer.Ordinal)
+        )
         {
             output.Add(component.ToLegacyString());
         }
@@ -283,7 +287,7 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
             );
         }
 
-        foreach (var node in existing)
+        foreach (JsonNode? node in existing)
         {
             output.Add(MergeComponentNode(node, components, pending));
         }
@@ -299,11 +303,11 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
     {
         if (
             node is JsonValue value
-            && value.TryGetValue<string>(out var encoded)
-            && GuardianComponentLoadout.TryParseLegacy(encoded, out var existingComponent)
+            && value.TryGetValue<string>(out string? encoded)
+            && GuardianComponentLoadout.TryParseLegacy(encoded, out GuardianComponentLoadout? existingComponent)
         )
         {
-            if (components.TryGetValue(existingComponent.Name, out var replacement))
+            if (components.TryGetValue(existingComponent.Name, out GuardianComponentLoadout? replacement))
             {
                 pending.Remove(existingComponent.Name);
                 return replacement.ToLegacyString();
@@ -327,11 +331,11 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
 
     private static async Task WriteAtomicAsync(string path, JsonObject root, CancellationToken cancellationToken)
     {
-        var folder =
+        string folder =
             Path.GetDirectoryName(path)
             ?? throw new InvalidOperationException("The Guardian survey path has no parent folder.");
         Directory.CreateDirectory(folder);
-        var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
+        string temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
         try
         {
             await using (

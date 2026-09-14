@@ -27,9 +27,9 @@ public sealed record MiningCommunitySnapshot(
 /// <summary>Bounded, shared observations from EDDN. Unknown positions never become zero-distance results.</summary>
 public sealed class MiningCommunityCache
 {
-    private readonly object gate = new();
+    private readonly Lock gate = new();
     private readonly Dictionary<string, MiningCommunitySystem> systems = new(StringComparer.OrdinalIgnoreCase);
-    private readonly Dictionary<(long, string), MiningCommunityMarket> markets = new();
+    private readonly Dictionary<(long, string), MiningCommunityMarket> markets = [];
 
     public MiningPowerObservation? Power(string system)
     {
@@ -61,23 +61,23 @@ public sealed class MiningCommunityCache
     public void Apply(string json, DateTimeOffset now)
     {
         using var document = JsonDocument.Parse(json);
-        var root = document.RootElement;
+        JsonElement root = document.RootElement;
         if (
             root.ValueKind != JsonValueKind.Object
-            || !root.TryGetProperty("message", out var message)
+            || !root.TryGetProperty("message", out JsonElement message)
             || message.ValueKind != JsonValueKind.Object
         )
         {
             return;
         }
 
-        var schema = MiningJson.Text(root, "$schemaRef");
+        string schema = MiningJson.Text(root, "$schemaRef");
         if (
             !DateTimeOffset.TryParse(
                 MiningJson.Text(message, "timestamp"),
                 System.Globalization.CultureInfo.InvariantCulture,
                 System.Globalization.DateTimeStyles.AssumeUniversal,
-                out var time
+                out DateTimeOffset time
             )
             || time > now.AddMinutes(5)
             || time < now.AddDays(-1)
@@ -103,21 +103,21 @@ public sealed class MiningCommunityCache
 
     private void ApplySystem(JsonElement message, DateTimeOffset time)
     {
-        var name = MiningJson.Text(message, "StarSystem");
+        string name = MiningJson.Text(message, "StarSystem");
         if (name.Length == 0 || MiningJson.Text(message, "event") is not ("FSDJump" or "Location" or "CarrierJump"))
         {
             return;
         }
 
-        var coordinates = MiningJson.Array(message, "StarPos").ToArray();
+        JsonElement[] coordinates = MiningJson.Array(message, "StarPos").ToArray();
         GalacticCoordinate? position =
             coordinates.Length == 3
             && coordinates.All(c =>
-                c.ValueKind == JsonValueKind.Number && c.TryGetDouble(out var n) && double.IsFinite(n)
+                c.ValueKind == JsonValueKind.Number && c.TryGetDouble(out double n) && double.IsFinite(n)
             )
                 ? new(coordinates[0].GetDouble(), coordinates[1].GetDouble(), coordinates[2].GetDouble())
                 : null;
-        if (!systems.TryGetValue(name, out var old) || old.Power.Time < time)
+        if (!systems.TryGetValue(name, out MiningCommunitySystem? old) || old.Power.Time < time)
         {
             systems[name] = new(
                 name,
@@ -129,24 +129,24 @@ public sealed class MiningCommunityCache
 
     private void ApplyMarket(JsonElement message, DateTimeOffset time)
     {
-        var id = (long)MiningJson.Number(message, "marketId");
-        var system = MiningJson.Text(message, "systemName");
-        var station = MiningJson.Text(message, "stationName");
+        long id = (long)MiningJson.Number(message, "marketId");
+        string system = MiningJson.Text(message, "systemName");
+        string station = MiningJson.Text(message, "stationName");
         if (id <= 0 || system.Length == 0 || station.Length == 0)
         {
             return;
         }
 
-        foreach (var item in MiningJson.Array(message, "commodities"))
+        foreach (JsonElement item in MiningJson.Array(message, "commodities"))
         {
-            var commodity = MiningCommodityName.Normalize(MiningJson.Text(item, "name"));
+            string commodity = MiningCommodityName.Normalize(MiningJson.Text(item, "name"));
             if (commodity.Length == 0)
             {
                 continue;
             }
 
-            var key = (id, commodity);
-            if (markets.TryGetValue(key, out var previous) && previous.Time >= time)
+            (long id, string commodity) key = (id, commodity);
+            if (markets.TryGetValue(key, out MiningCommunityMarket? previous) && previous.Time >= time)
             {
                 continue;
             }
@@ -224,7 +224,7 @@ public sealed class MiningCommunityCache
 
         lock (gate)
         {
-            var origin = systems.GetValueOrDefault(query.ReferenceSystem)?.Position;
+            GalacticCoordinate? origin = systems.GetValueOrDefault(query.ReferenceSystem)?.Position;
             return systems
                 .Values.Where(s => s.Power.Time >= now.AddDays(-1) && s.Power.Time <= now.AddMinutes(5))
                 .Where(s =>
@@ -273,7 +273,7 @@ public sealed class MiningCommunityCache
 
     public void Restore(string json, DateTimeOffset now)
     {
-        var snapshot =
+        MiningCommunitySnapshot snapshot =
             JsonSerializer.Deserialize<MiningCommunitySnapshot>(json)
             ?? throw new JsonException("Empty community cache.");
         if (
@@ -288,12 +288,14 @@ public sealed class MiningCommunityCache
 
         lock (gate)
         {
-            foreach (var system in snapshot.Systems.Take(50000))
+            foreach (MiningCommunitySystem? system in snapshot.Systems.Take(50000))
             {
                 systems[system.Name] = system;
             }
 
-            foreach (var market in snapshot.Markets.Where(m => m.Time >= now.AddDays(-1)).Take(50000))
+            foreach (
+                MiningCommunityMarket? market in snapshot.Markets.Where(m => m.Time >= now.AddDays(-1)).Take(50000)
+            )
             {
                 markets[(market.Id, market.Commodity)] = market;
             }
@@ -307,7 +309,11 @@ public sealed class MiningCommunityCache
         if (markets.Count > 50000)
         {
             foreach (
-                var key in markets.OrderBy(p => p.Value.Time).Take(markets.Count - 45000).Select(p => p.Key).ToArray()
+                (long, string) key in markets
+                    .OrderBy(p => p.Value.Time)
+                    .Take(markets.Count - 45000)
+                    .Select(p => p.Key)
+                    .ToArray()
             )
             {
                 markets.Remove(key);
@@ -317,7 +323,7 @@ public sealed class MiningCommunityCache
         if (systems.Count > 50000)
         {
             foreach (
-                var key in systems
+                string? key in systems
                     .OrderBy(p => p.Value.Power.Time)
                     .Take(systems.Count - 45000)
                     .Select(p => p.Key)
@@ -330,7 +336,9 @@ public sealed class MiningCommunityCache
         // Expiry is also checked on queries; periodic pruning avoids scanning the entire cache for every broadcast.
         if (now.Second == 0)
         {
-            foreach (var key in markets.Where(p => p.Value.Time < now.AddDays(-1)).Select(p => p.Key).ToArray())
+            foreach (
+                (long, string) key in markets.Where(p => p.Value.Time < now.AddDays(-1)).Select(p => p.Key).ToArray()
+            )
             {
                 markets.Remove(key);
             }

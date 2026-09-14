@@ -8,14 +8,14 @@ public sealed class JournalReplayPlayerTests
     public async Task StepAppendsCompleteEventsInSourceOrder()
     {
         using var temp = new TemporaryDirectory();
-        var sourcePath = Path.Combine(temp.Path, "Journal.01.log");
-        var lines = new[]
+        string sourcePath = Path.Combine(temp.Path, "Journal.01.log");
+        string[] lines = new[]
         {
             "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Commander\",\"Name\":\"Replay Cmdr\",\"FID\":\"F123456\"}",
             "{\"timestamp\":\"2026-08-21T18:00:01Z\",\"event\":\"LoadGame\",\"Commander\":\"Replay Cmdr\",\"FID\":\"F123456\"}",
         };
         await File.WriteAllLinesAsync(sourcePath, lines);
-        var session = await new ReplaySessionManager().ImportAsync(
+        DiagnosticReplaySession session = await new ReplaySessionManager().ImportAsync(
             sourcePath,
             Path.Combine(temp.Path, "managed"),
             CancellationToken.None
@@ -34,7 +34,7 @@ public sealed class JournalReplayPlayerTests
     public async Task PlayUsesVirtualTimeAndReadsSpeedForEachDelay()
     {
         using var temp = new TemporaryDirectory();
-        var sourcePath = Path.Combine(temp.Path, "Journal.01.log");
+        string sourcePath = Path.Combine(temp.Path, "Journal.01.log");
         await File.WriteAllLinesAsync(
             sourcePath,
             [
@@ -43,7 +43,7 @@ public sealed class JournalReplayPlayerTests
                 "{\"timestamp\":\"2026-08-21T18:00:08Z\",\"event\":\"Shutdown\"}",
             ]
         );
-        var session = await new ReplaySessionManager().ImportAsync(
+        DiagnosticReplaySession session = await new ReplaySessionManager().ImportAsync(
             sourcePath,
             Path.Combine(temp.Path, "managed"),
             CancellationToken.None
@@ -62,11 +62,11 @@ public sealed class JournalReplayPlayerTests
     public async Task CancellationDuringEmissionStillWritesOneCompleteEvent()
     {
         using var temp = new TemporaryDirectory();
-        var sourcePath = Path.Combine(temp.Path, "Journal.01.log");
-        var line =
+        string sourcePath = Path.Combine(temp.Path, "Journal.01.log");
+        string line =
             "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Commander\",\"Name\":\"Replay Cmdr\",\"FID\":\"F123456\"}";
         await File.WriteAllTextAsync(sourcePath, line + Environment.NewLine);
-        var session = await new ReplaySessionManager().ImportAsync(
+        DiagnosticReplaySession session = await new ReplaySessionManager().ImportAsync(
             sourcePath,
             Path.Combine(temp.Path, "managed"),
             CancellationToken.None

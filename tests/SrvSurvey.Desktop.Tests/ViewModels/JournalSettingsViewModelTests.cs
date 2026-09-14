@@ -14,11 +14,11 @@ public sealed class JournalSettingsViewModelTests : IDisposable
     public async Task AvailableFolderIsSavedBeforeRestartIsRequested()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var journals = Path.Combine(temporaryDirectory, "journals");
+        string journals = Path.Combine(temporaryDirectory, "journals");
         Directory.CreateDirectory(journals);
-        var store = CreateStore();
+        JournalSettingsStore store = CreateStore();
         var viewModel = new JournalSettingsViewModel(store);
-        var restartRequested = false;
+        bool restartRequested = false;
         viewModel.RestartRequested += () =>
         {
             Assert.Equal(journals, store.Load().Directory);
@@ -49,7 +49,7 @@ public sealed class JournalSettingsViewModelTests : IDisposable
     public void CommandLineFolderCannotBeOverriddenInTheRunningInstance()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var journals = Path.Combine(temporaryDirectory, "journals");
+        string journals = Path.Combine(temporaryDirectory, "journals");
         Directory.CreateDirectory(journals);
         var viewModel = new JournalSettingsViewModel(CreateStore(), journals);
 

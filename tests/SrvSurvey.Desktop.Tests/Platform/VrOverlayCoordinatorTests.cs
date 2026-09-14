@@ -14,12 +14,12 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
     [Fact]
     public void ResetOrientationUsesActiveRuntimeAndReportsResult()
     {
-        var viewModel = CreateViewModel();
+        VrOverlayViewModel viewModel = CreateViewModel();
         viewModel.Enabled = true;
         var runtime = new StubOpenVrRuntime();
         using var coordinator = new VrOverlayCoordinator(viewModel, new OverlayWindowRegistry(), runtime, _ => true);
 
-        var reset = coordinator.ResetOrientation();
+        bool reset = coordinator.ResetOrientation();
 
         Assert.True(reset);
         Assert.Equal(1, runtime.ResetCount);
@@ -29,11 +29,11 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
     [Fact]
     public void ResetOrientationFailsClosedWhileVrIsDisabled()
     {
-        var viewModel = CreateViewModel();
+        VrOverlayViewModel viewModel = CreateViewModel();
         var runtime = new StubOpenVrRuntime();
         using var coordinator = new VrOverlayCoordinator(viewModel, new OverlayWindowRegistry(), runtime, _ => true);
 
-        var reset = coordinator.ResetOrientation();
+        bool reset = coordinator.ResetOrientation();
 
         Assert.False(reset);
         Assert.Equal(0, runtime.ResetCount);
@@ -50,11 +50,11 @@ public sealed class VrOverlayCoordinatorTests : IDisposable
 
     private VrOverlayViewModel CreateViewModel()
     {
-        var dataDirectory = Path.Combine(temporaryDirectory, "data");
-        var factoryDirectory = Path.Combine(temporaryDirectory, "factory");
+        string dataDirectory = Path.Combine(temporaryDirectory, "data");
+        string factoryDirectory = Path.Combine(temporaryDirectory, "factory");
         Directory.CreateDirectory(dataDirectory);
         Directory.CreateDirectory(factoryDirectory);
-        var factoryPath = Path.Combine(factoryDirectory, "plotters.json");
+        string factoryPath = Path.Combine(factoryDirectory, "plotters.json");
         File.WriteAllText(
             factoryPath,
             "{\"PlotJumpInfo\":\"center:0, top:8 " + "{ s: 20, p: <1, 2, 3>, r: <4, 5, 6>}\"}"

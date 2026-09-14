@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Globalization;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Avalonia.Data.Converters;
@@ -84,19 +85,19 @@ internal sealed class WorkspaceTableSorter
 
     public IReadOnlyList<T> Apply<T>(IEnumerable<T> source)
     {
-        var rows = source.ToArray();
+        T[] rows = source.ToArray();
         if (propertyName.Length == 0)
         {
             return rows;
         }
 
-        var property = typeof(T).GetProperty(propertyName);
+        PropertyInfo? property = typeof(T).GetProperty(propertyName);
         if (property is null)
         {
             return rows;
         }
 
-        var ordered = descending
+        IOrderedEnumerable<T> ordered = descending
             ? rows.OrderByDescending(row => property.GetValue(row), SortValueComparer.Instance)
             : rows.OrderBy(row => property.GetValue(row), SortValueComparer.Instance);
         return ordered.ToArray();

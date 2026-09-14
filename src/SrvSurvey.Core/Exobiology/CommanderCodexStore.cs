@@ -22,7 +22,7 @@ public sealed class CommanderCodexStore(string dataDirectory)
         CancellationToken cancellationToken = default
     )
     {
-        var path = ResolvePath(frontierId, regionId);
+        string path = ResolvePath(frontierId, regionId);
         if (!File.Exists(path))
         {
             return new CommanderCodexLoadResult(
@@ -41,7 +41,7 @@ public sealed class CommanderCodexStore(string dataDirectory)
 
         try
         {
-            var root = await ReadRootAsync(path, cancellationToken).ConfigureAwait(false);
+            JsonObject? root = await ReadRootAsync(path, cancellationToken).ConfigureAwait(false);
             if (root is null)
             {
                 return CommanderCodexLoadResult.Failed(
@@ -54,15 +54,15 @@ public sealed class CommanderCodexStore(string dataDirectory)
             var entries = new Dictionary<long, CommanderCodexFirst>();
             if (root[CodexFirstsProperty] is JsonObject firsts)
             {
-                foreach (var property in firsts)
+                foreach (KeyValuePair<string, JsonNode?> property in firsts)
                 {
                     if (
                         !long.TryParse(
                             property.Key,
                             NumberStyles.Integer,
                             CultureInfo.InvariantCulture,
-                            out var entryId
-                        ) || !TryParseFirst(property.Value, out var first)
+                            out long entryId
+                        ) || !TryParseFirst(property.Value, out CommanderCodexFirst? first)
                     )
                     {
                         warnings.Add($"Ignored malformed Commander Codex entry {property.Key}.");
@@ -117,11 +117,12 @@ public sealed class CommanderCodexStore(string dataDirectory)
         var commanders = new List<CommanderCodexData>();
         var warnings = new List<string>();
         const string suffix = "-codex.json";
-        foreach (var fileName in files.Select(file => file.Name))
+        foreach (string? fileName in files.Select(file => file.Name))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var frontierId = fileName[..^suffix.Length];
-            var loaded = await LoadAsync(frontierId, null, cancellationToken: cancellationToken).ConfigureAwait(false);
+            string frontierId = fileName[..^suffix.Length];
+            CommanderCodexLoadResult loaded = await LoadAsync(frontierId, null, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
             if (loaded.Data is not null)
             {
                 commanders.Add(loaded.Data);
@@ -146,7 +147,7 @@ public sealed class CommanderCodexStore(string dataDirectory)
     )
     {
         ArgumentNullException.ThrowIfNull(request);
-        var result = await TrackBatchAsync(
+        CommanderCodexBatchTrackResult result = await TrackBatchAsync(
                 request.FrontierId,
                 request.CommanderName,
                 [
@@ -179,7 +180,7 @@ public sealed class CommanderCodexStore(string dataDirectory)
             throw new ArgumentOutOfRangeException(nameof(entryId), "A positive Codex entry ID is required.");
         }
 
-        var path = ResolvePath(frontierId);
+        string path = ResolvePath(frontierId);
         JsonObject root;
         try
         {
@@ -197,8 +198,8 @@ public sealed class CommanderCodexStore(string dataDirectory)
             root[CodexFirstsProperty] = firsts;
         }
 
-        var key = entryId.ToString(CultureInfo.InvariantCulture);
-        var hasExisting = TryParseFirst(firsts[key], out var existing);
+        string key = entryId.ToString(CultureInfo.InvariantCulture);
+        bool hasExisting = TryParseFirst(firsts[key], out CommanderCodexFirst? existing);
         if (isDiscovered == hasExisting || !isDiscovered && existing.SystemAddress != -1)
         {
             return new CommanderCodexManualUpdateResult(path, false, hasExisting, true, null);
@@ -248,20 +249,21 @@ public sealed class CommanderCodexStore(string dataDirectory)
             );
         }
 
-        var path = ResolvePath(frontierId, regionId);
+        string path = ResolvePath(frontierId, regionId);
         if (discoveries.Count == 0)
         {
             return new CommanderCodexBatchTrackResult(path, 0, true, null);
         }
 
-        var load = await TryLoadRootAsync(path, cancellationToken).ConfigureAwait(false);
+        (bool IsSuccess, JsonObject? Root, string? Error) load = await TryLoadRootAsync(path, cancellationToken)
+            .ConfigureAwait(false);
         if (!load.IsSuccess)
         {
             return new CommanderCodexBatchTrackResult(path, 0, false, load.Error);
         }
 
-        var root = load.Root!;
-        var changedEntryCount = ApplyDiscoveries(root, discoveries);
+        JsonObject root = load.Root!;
+        int changedEntryCount = ApplyDiscoveries(root, discoveries);
         if (changedEntryCount == 0)
         {
             return new CommanderCodexBatchTrackResult(path, 0, true, null);
@@ -278,7 +280,7 @@ public sealed class CommanderCodexStore(string dataDirectory)
     {
         try
         {
-            var root = File.Exists(path)
+            JsonObject root = File.Exists(path)
                 ? await ReadRootAsync(path, cancellationToken).ConfigureAwait(false) ?? []
                 : [];
             return (true, root, null);
@@ -299,7 +301,7 @@ public sealed class CommanderCodexStore(string dataDirectory)
         }
 
         var changedEntryIds = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var discovery in discoveries)
+        foreach (CommanderCodexDiscovery discovery in discoveries)
         {
             ApplyDiscovery(firsts, discovery, changedEntryIds);
         }
@@ -313,8 +315,11 @@ public sealed class CommanderCodexStore(string dataDirectory)
         HashSet<string> changedEntryIds
     )
     {
-        var key = discovery.EntryId.ToString(CultureInfo.InvariantCulture);
-        if (TryParseFirst(firsts[key], out var existing) && ShouldKeepExistingFirst(existing, discovery))
+        string key = discovery.EntryId.ToString(CultureInfo.InvariantCulture);
+        if (
+            TryParseFirst(firsts[key], out CommanderCodexFirst? existing)
+            && ShouldKeepExistingFirst(existing, discovery)
+        )
         {
             return;
         }
@@ -376,7 +381,7 @@ public sealed class CommanderCodexStore(string dataDirectory)
 
         ArgumentOutOfRangeException.ThrowIfNegative(regionId);
 
-        var fileName = regionId == 0 ? $"{frontierId}-codex.json" : $"{frontierId}-codex-{regionId}.json";
+        string fileName = regionId == 0 ? $"{frontierId}-codex.json" : $"{frontierId}-codex-{regionId}.json";
         return Path.Combine(dataDirectory, fileName);
     }
 
@@ -396,11 +401,11 @@ public sealed class CommanderCodexStore(string dataDirectory)
 
     private static async Task WriteAtomicAsync(string path, JsonObject root, CancellationToken cancellationToken)
     {
-        var directory =
+        string directory =
             Path.GetDirectoryName(path)
             ?? throw new InvalidDataException("The Commander Codex path has no parent directory.");
         Directory.CreateDirectory(directory);
-        var temporaryPath = path + ".tmp-" + Guid.NewGuid().ToString("N");
+        string temporaryPath = path + ".tmp-" + Guid.NewGuid().ToString("N");
         try
         {
             await using (
@@ -434,7 +439,7 @@ public sealed class CommanderCodexStore(string dataDirectory)
     private static bool TryParseFirst(JsonNode? value, out CommanderCodexFirst first)
     {
         first = null!;
-        if (value is JsonValue scalar && scalar.TryGetValue<string>(out var text))
+        if (value is JsonValue scalar && scalar.TryGetValue<string>(out string? text))
         {
             return TryParseLegacyFirst(text, out first);
         }
@@ -461,17 +466,17 @@ public sealed class CommanderCodexStore(string dataDirectory)
             return false;
         }
 
-        var parts = value.Split('_', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        string[] parts = value.Split('_', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         if (
             parts.Length != 3
             || !DateTimeOffset.TryParse(
                 parts[0],
                 CultureInfo.InvariantCulture,
                 DateTimeStyles.AssumeLocal,
-                out var timestamp
+                out DateTimeOffset timestamp
             )
-            || !long.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var address)
-            || !int.TryParse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out var bodyId)
+            || !long.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out long address)
+            || !int.TryParse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out int bodyId)
         )
         {
             return false;
@@ -498,17 +503,17 @@ public sealed class CommanderCodexStore(string dataDirectory)
 
     private static string? GetString(JsonObject root, string propertyName)
     {
-        return root[propertyName] is JsonValue value && value.TryGetValue<string>(out var result) ? result : null;
+        return root[propertyName] is JsonValue value && value.TryGetValue<string>(out string? result) ? result : null;
     }
 
     private static long? GetInt64(JsonObject root, string propertyName)
     {
-        return root[propertyName] is JsonValue value && value.TryGetValue<long>(out var result) ? result : null;
+        return root[propertyName] is JsonValue value && value.TryGetValue<long>(out long result) ? result : null;
     }
 
     private static int? GetInt32(JsonObject root, string propertyName)
     {
-        return root[propertyName] is JsonValue value && value.TryGetValue<int>(out var result) ? result : null;
+        return root[propertyName] is JsonValue value && value.TryGetValue<int>(out int result) ? result : null;
     }
 
     private static DateTimeOffset? GetDateTimeOffset(JsonObject root, string propertyName)
@@ -518,13 +523,13 @@ public sealed class CommanderCodexStore(string dataDirectory)
             return null;
         }
 
-        if (value.TryGetValue<DateTimeOffset>(out var result))
+        if (value.TryGetValue<DateTimeOffset>(out DateTimeOffset result))
         {
             return result;
         }
 
         return
-            value.TryGetValue<string>(out var text)
+            value.TryGetValue<string>(out string? text)
             && DateTimeOffset.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out result)
             ? result
             : null;
@@ -543,7 +548,7 @@ public sealed record CommanderCodexData(
 
     public bool IsPersonalFirst(long entryId, long systemAddress, int bodyId)
     {
-        return !Firsts.TryGetValue(entryId, out var first)
+        return !Firsts.TryGetValue(entryId, out CommanderCodexFirst? first)
             || first.SystemAddress == systemAddress && first.BodyId == bodyId;
     }
 }

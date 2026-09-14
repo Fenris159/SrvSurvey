@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using SrvSurvey.Core.Network;
@@ -47,19 +48,20 @@ public sealed class SpanshBoxelClient : IBoxelSystemResolver
         ArgumentNullException.ThrowIfNull(boxel);
         var requestUri = new Uri(apiBaseUri, "systems/search");
         var observations = new Dictionary<string, BoxelSystemObservation>(StringComparer.Ordinal);
-        var received = 0;
+        int received = 0;
 
-        for (var page = 0; page < MaximumPages; page++)
+        for (int page = 0; page < MaximumPages; page++)
         {
-            var payload = await SearchPageAsync(requestUri, boxel, page, cancellationToken).ConfigureAwait(false);
-            var results = payload.Results ?? [];
+            SpanshSearchResponse payload = await SearchPageAsync(requestUri, boxel, page, cancellationToken)
+                .ConfigureAwait(false);
+            IReadOnlyList<SpanshSystem> results = payload.Results ?? [];
             received += results.Count;
 
-            foreach (var result in results)
+            foreach (SpanshSystem result in results)
             {
-                var resolved =
+                bool resolved =
                     result.Id64 > 0
-                        ? BoxelAddress.TryFromSystemAddress(result.Id64, result.Name, out var resultBoxel)
+                        ? BoxelAddress.TryFromSystemAddress(result.Id64, result.Name, out BoxelAddress? resultBoxel)
                         : BoxelAddress.TryParse(result.Name, out resultBoxel);
                 if (
                     !resolved
@@ -101,7 +103,7 @@ public sealed class SpanshBoxelClient : IBoxelSystemResolver
         CancellationToken cancellationToken
     )
     {
-        for (var attempt = 1; attempt <= MaximumAttemptsPerPage; attempt++)
+        for (int attempt = 1; attempt <= MaximumAttemptsPerPage; attempt++)
         {
             try
             {
@@ -115,7 +117,7 @@ public sealed class SpanshBoxelClient : IBoxelSystemResolver
                 {
                     Content = JsonContent.Create(request),
                 };
-                using var response = await client
+                using HttpResponseMessage response = await client
                     .SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                     .ConfigureAwait(false);
                 if (
@@ -167,8 +169,8 @@ public sealed class SpanshBoxelClient : IBoxelSystemResolver
 
     private static TimeSpan GetRetryDelay(HttpResponseMessage response, int attempt)
     {
-        var retryAfter = response.Headers.RetryAfter;
-        var requested = retryAfter?.Delta ?? (retryAfter?.Date - DateTimeOffset.UtcNow) ?? GetRetryDelay(attempt);
+        RetryConditionHeaderValue? retryAfter = response.Headers.RetryAfter;
+        TimeSpan requested = retryAfter?.Delta ?? (retryAfter?.Date - DateTimeOffset.UtcNow) ?? GetRetryDelay(attempt);
         return requested <= TimeSpan.Zero
             ? TimeSpan.Zero
             : TimeSpan.FromTicks(Math.Min(requested.Ticks, MaximumRetryDelay.Ticks));
@@ -185,7 +187,7 @@ public sealed class SpanshBoxelClient : IBoxelSystemResolver
             value,
             CultureInfo.InvariantCulture,
             DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeUniversal,
-            out var timestamp
+            out DateTimeOffset timestamp
         )
             ? timestamp
             : null;

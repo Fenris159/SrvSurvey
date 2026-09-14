@@ -34,13 +34,13 @@ public sealed class HumanSiteTemplateCatalogExporter
     {
         ArgumentNullException.ThrowIfNull(catalog);
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
-        var targetPath = Path.GetFullPath(path);
+        string targetPath = Path.GetFullPath(path);
         if (string.IsNullOrWhiteSpace(Path.GetFileName(targetPath)))
         {
             throw new ArgumentException("A settlement template export file is required.", nameof(path));
         }
 
-        var pathLock = PathLocks.GetOrAdd(targetPath, _ => new SemaphoreSlim(1, 1));
+        SemaphoreSlim pathLock = PathLocks.GetOrAdd(targetPath, _ => new SemaphoreSlim(1, 1));
         await pathLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -58,17 +58,17 @@ public sealed class HumanSiteTemplateCatalogExporter
         CancellationToken cancellationToken
     )
     {
-        var directory =
+        string directory =
             Path.GetDirectoryName(targetPath)
             ?? throw new InvalidOperationException("The settlement template export has no parent directory.");
         Directory.CreateDirectory(directory);
         RejectReparsePoint(targetPath);
-        var original = await CaptureAsync(targetPath, cancellationToken).ConfigureAwait(false);
-        var payload = Serialize(catalog.Templates);
-        var expectedHash = Convert.ToHexString(SHA256.HashData(payload));
-        var temporaryPath = Path.Combine(directory, $".{Path.GetFileName(targetPath)}.{Guid.NewGuid():N}.tmp");
+        FileFingerprint? original = await CaptureAsync(targetPath, cancellationToken).ConfigureAwait(false);
+        byte[] payload = Serialize(catalog.Templates);
+        string expectedHash = Convert.ToHexString(SHA256.HashData(payload));
+        string temporaryPath = Path.Combine(directory, $".{Path.GetFileName(targetPath)}.{Guid.NewGuid():N}.tmp");
         string? backupPath = null;
-        var activated = false;
+        bool activated = false;
         try
         {
             await WriteNewFileAsync(temporaryPath, payload, cancellationToken).ConfigureAwait(false);
@@ -79,7 +79,7 @@ public sealed class HumanSiteTemplateCatalogExporter
             {
                 backupPath = CreateBackupPath(targetPath);
                 File.Copy(targetPath, backupPath, overwrite: false);
-                var backup = await CaptureAsync(backupPath, cancellationToken).ConfigureAwait(false);
+                FileFingerprint? backup = await CaptureAsync(backupPath, cancellationToken).ConfigureAwait(false);
                 EnsureUnchanged(original, backup);
             }
 
@@ -118,7 +118,7 @@ public sealed class HumanSiteTemplateCatalogExporter
     private static byte[] Serialize(IReadOnlyList<HumanSiteTemplate> templates)
     {
         _ = new HumanSiteTemplateCatalog(templates);
-        var rows = templates
+        TemplateRow[] rows = templates
             .Select(template => new TemplateRow(
                 template.Economy.ToString(),
                 template.SubType,
@@ -177,8 +177,8 @@ public sealed class HumanSiteTemplateCatalogExporter
         CancellationToken cancellationToken
     )
     {
-        var bytes = await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false);
-        var hash = Convert.ToHexString(SHA256.HashData(bytes));
+        byte[] bytes = await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false);
+        string hash = Convert.ToHexString(SHA256.HashData(bytes));
         if (!string.Equals(hash, expectedHash, StringComparison.Ordinal))
         {
             throw new IOException("The settlement template export checksum did not match the staged data.");
@@ -200,7 +200,7 @@ public sealed class HumanSiteTemplateCatalogExporter
         }
 
         RejectReparsePoint(path);
-        var bytes = await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false);
+        byte[] bytes = await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false);
         return new FileFingerprint(bytes.LongLength, Convert.ToHexString(SHA256.HashData(bytes)));
     }
 
@@ -238,12 +238,12 @@ public sealed class HumanSiteTemplateCatalogExporter
 
     private static string CreateBackupPath(string targetPath)
     {
-        var timestamp = DateTimeOffset.UtcNow.ToString(
+        string timestamp = DateTimeOffset.UtcNow.ToString(
             "yyyyMMdd-HHmmssfff",
             System.Globalization.CultureInfo.InvariantCulture
         );
-        var candidate = $"{targetPath}.backup-{timestamp}";
-        var suffix = 1;
+        string candidate = $"{targetPath}.backup-{timestamp}";
+        int suffix = 1;
         while (File.Exists(candidate))
         {
             candidate = $"{targetPath}.backup-{timestamp}-{suffix++}";

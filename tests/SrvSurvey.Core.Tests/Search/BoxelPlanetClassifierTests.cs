@@ -32,7 +32,7 @@ public sealed class BoxelPlanetClassifierTests
     [MemberData(nameof(JournalPlanetClasses))]
     public void MapsAllNineteenJournalPlanetClasses(string planetClass, BoxelPlanetClass expected)
     {
-        Assert.True(BoxelPlanetClassifier.TryFromPlanetClass(planetClass, out var classified));
+        Assert.True(BoxelPlanetClassifier.TryFromPlanetClass(planetClass, out BoxelPlanetClass classified));
         Assert.Equal(expected, classified);
         Assert.Equal(planetClass, BoxelPlanetClassifier.ToPlanetClassString(classified));
     }
@@ -40,7 +40,7 @@ public sealed class BoxelPlanetClassifierTests
     [Fact]
     public void EarthPrefixMapsToEarthlike()
     {
-        Assert.True(BoxelPlanetClassifier.TryFromPlanetClass("Earth-like", out var classified));
+        Assert.True(BoxelPlanetClassifier.TryFromPlanetClass("Earth-like", out BoxelPlanetClass classified));
         Assert.Equal(BoxelPlanetClass.Earthlike, classified);
     }
 
@@ -54,7 +54,7 @@ public sealed class BoxelPlanetClassifierTests
     [InlineData("Unknown rocky body")]
     public void RejectsEmptyStarsAndUnknownClasses(string? planetClass)
     {
-        Assert.False(BoxelPlanetClassifier.TryFromPlanetClass(planetClass, out var classified));
+        Assert.False(BoxelPlanetClassifier.TryFromPlanetClass(planetClass, out BoxelPlanetClass classified));
         Assert.Equal(BoxelPlanetClass.Unknown, classified);
     }
 
@@ -96,7 +96,7 @@ public sealed class BoxelPlanetClassifierTests
         Assert.True(
             BoxelPlanetClassifier.TryGetHeliumPercent(
                 new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase) { ["helium"] = 28.5 },
-                out var percent
+                out double percent
             )
         );
         Assert.Equal(28.5, percent);
@@ -111,7 +111,7 @@ public sealed class BoxelPlanetClassifierTests
         Assert.False(
             BoxelPlanetClassifier.TryGetHeliumPercent(
                 new Dictionary<string, double> { ["Helium"] = 150 },
-                out var overflow
+                out double overflow
             )
         );
         Assert.Equal(0, overflow);

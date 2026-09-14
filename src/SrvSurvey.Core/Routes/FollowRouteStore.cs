@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using SrvSurvey.Core.Search;
@@ -15,7 +17,6 @@ public sealed class FollowRouteStore
     private const string WorkspaceFileName = ".workspace.json";
     private const string NotePropertyName = "notes";
     private const string SavedRouteMissingMessage = "The saved route no longer exists.";
-    private const string SavedRouteNameAlreadyExistsMessage = "A saved route named '{0}' already exists.";
     private const string SavedRouteMustBeJsonFileMessage = "The selected route must be a JSON file.";
     private const string SelectedRouteMissingMessage = "The selected route file no longer exists:";
     private const string SavedRouteLoadErrorMessage = "The saved route could not be loaded.";
@@ -24,6 +25,9 @@ public sealed class FollowRouteStore
     private const string SavedRouteExportLoadErrorMessage = "The saved route could not be loaded for export.";
 
     private static readonly JsonSerializerOptions SerializerOptions = new() { WriteIndented = true };
+    private static readonly CompositeFormat SavedRouteNameAlreadyExistsFormat = CompositeFormat.Parse(
+        "A saved route named '{0}' already exists."
+    );
 
     private readonly string dataDirectory;
     private readonly FollowRouteKind routeKind;
@@ -38,7 +42,8 @@ public sealed class FollowRouteStore
     public async Task<FollowRouteLoadResult> LoadAsync(string frontierId, CancellationToken cancellationToken = default)
     {
         ValidateFileName(frontierId, nameof(frontierId));
-        var selection = await ReadSelectionAsync(frontierId, cancellationToken).ConfigureAwait(false);
+        WorkspaceSelectionReadResult selection = await ReadSelectionAsync(frontierId, cancellationToken)
+            .ConfigureAwait(false);
         if (selection.Error is not null)
         {
             return new FollowRouteLoadResult(GetPath(frontierId), true, null, selection.Error);
@@ -56,7 +61,7 @@ public sealed class FollowRouteStore
                 );
             }
 
-            var selectedPath = ResolveCatalogPath(frontierId, selection.FileName, selection.IsLegacy);
+            string selectedPath = ResolveCatalogPath(frontierId, selection.FileName, selection.IsLegacy);
             if (!File.Exists(selectedPath))
             {
                 return new FollowRouteLoadResult(
@@ -70,7 +75,7 @@ public sealed class FollowRouteStore
             return await LoadFromPathAsync(frontierId, selectedPath, cancellationToken).ConfigureAwait(false);
         }
 
-        var path = GetLegacyPaths(frontierId).FirstOrDefault(File.Exists) ?? GetPath(frontierId);
+        string path = GetLegacyPaths(frontierId).FirstOrDefault(File.Exists) ?? GetPath(frontierId);
         if (!File.Exists(path))
         {
             return new FollowRouteLoadResult(path, false, CreateDefault(frontierId, path), null);
@@ -86,12 +91,12 @@ public sealed class FollowRouteStore
     {
         ValidateFileName(frontierId, nameof(frontierId));
         var paths = new List<(string Path, bool IsLegacy)>();
-        foreach (var legacyPath in GetLegacyPaths(frontierId).Where(File.Exists))
+        foreach (string? legacyPath in GetLegacyPaths(frontierId).Where(File.Exists))
         {
             paths.Add((legacyPath, true));
         }
 
-        var namedDirectory = GetNamedDirectory(frontierId);
+        string namedDirectory = GetNamedDirectory(frontierId);
         if (Directory.Exists(namedDirectory))
         {
             paths.AddRange(
@@ -108,15 +113,16 @@ public sealed class FollowRouteStore
         }
 
         var result = new List<FollowRouteCatalogEntry>();
-        foreach (var candidate in paths)
+        foreach ((string Path, bool IsLegacy) candidate in paths)
         {
-            var loaded = await LoadFromPathAsync(frontierId, candidate.Path, cancellationToken).ConfigureAwait(false);
+            FollowRouteLoadResult loaded = await LoadFromPathAsync(frontierId, candidate.Path, cancellationToken)
+                .ConfigureAwait(false);
             if (loaded.Route is not { } route)
             {
                 continue;
             }
 
-            var routeName = route.Name?.Trim();
+            string? routeName = route.Name?.Trim();
             if (string.IsNullOrWhiteSpace(routeName))
             {
                 routeName = candidate.IsLegacy
@@ -150,8 +156,9 @@ public sealed class FollowRouteStore
         CancellationToken cancellationToken = default
     )
     {
-        var path = ResolveCatalogPath(frontierId, fileName, isLegacy);
-        var result = await LoadFromPathAsync(frontierId, path, cancellationToken).ConfigureAwait(false);
+        string path = ResolveCatalogPath(frontierId, fileName, isLegacy);
+        FollowRouteLoadResult result = await LoadFromPathAsync(frontierId, path, cancellationToken)
+            .ConfigureAwait(false);
         if (result.Exists && result.Route is not null)
         {
             await WriteSelectionAsync(frontierId, fileName, isLegacy, cancellationToken).ConfigureAwait(false);
@@ -166,7 +173,7 @@ public sealed class FollowRouteStore
     )
     {
         ArgumentNullException.ThrowIfNull(route);
-        var path = ResolveWritablePath(route);
+        string path = ResolveWritablePath(route);
         return LoadFromPathAsync(route.FrontierId, path, cancellationToken);
     }
 
@@ -187,17 +194,19 @@ public sealed class FollowRouteStore
     )
     {
         ArgumentNullException.ThrowIfNull(route);
-        var normalizedName = NormalizeRouteName(name);
-        var path = GetNamedPath(route.FrontierId, normalizedName);
+        string normalizedName = NormalizeRouteName(name);
+        string path = GetNamedPath(route.FrontierId, normalizedName);
         await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             if (File.Exists(path))
             {
-                throw new IOException(string.Format(SavedRouteNameAlreadyExistsMessage, normalizedName));
+                throw new IOException(
+                    string.Format(CultureInfo.CurrentCulture, SavedRouteNameAlreadyExistsFormat, normalizedName)
+                );
             }
 
-            var saved = route with { FilePath = path, Name = normalizedName };
+            FollowRouteDocument saved = route with { FilePath = path, Name = normalizedName };
             await SaveRouteObjectAsync(saved, path, cancellationToken).ConfigureAwait(false);
             await WriteSelectionObjectAsync(
                     route.FrontierId,
@@ -217,7 +226,7 @@ public sealed class FollowRouteStore
     public async Task SaveAsync(FollowRouteDocument route, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(route);
-        var path = ResolveWritablePath(route);
+        string path = ResolveWritablePath(route);
         await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -232,11 +241,11 @@ public sealed class FollowRouteStore
     public async Task SaveProgressAsync(FollowRouteDocument route, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(route);
-        var path = ResolveWritablePath(route);
+        string path = ResolveWritablePath(route);
         await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            var root = await ReadRequiredObjectAsync(path, cancellationToken).ConfigureAwait(false);
+            JsonObject root = await ReadRequiredObjectAsync(path, cancellationToken).ConfigureAwait(false);
             root["active"] = route.IsActive;
             root["autoCopy"] = route.AutoCopy;
             root["last"] = route.LastReachedIndex;
@@ -256,12 +265,12 @@ public sealed class FollowRouteStore
     )
     {
         ArgumentNullException.ThrowIfNull(route);
-        var path = ResolveWritablePath(route);
-        var normalizedNotes = NormalizeNotes(notes);
+        string path = ResolveWritablePath(route);
+        string? normalizedNotes = NormalizeNotes(notes);
         await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            var root = await ReadRequiredObjectAsync(path, cancellationToken).ConfigureAwait(false);
+            JsonObject root = await ReadRequiredObjectAsync(path, cancellationToken).ConfigureAwait(false);
             WriteOptional(root, NotePropertyName, normalizedNotes);
             await WriteObjectAsync(path, root, cancellationToken).ConfigureAwait(false);
             return route with { Notes = normalizedNotes };
@@ -280,7 +289,12 @@ public sealed class FollowRouteStore
         CancellationToken cancellationToken = default
     )
     {
-        var loaded = await LoadNamedWithoutSelectionAsync(frontierId, fileName, isLegacy, cancellationToken)
+        FollowRouteLoadResult loaded = await LoadNamedWithoutSelectionAsync(
+                frontierId,
+                fileName,
+                isLegacy,
+                cancellationToken
+            )
             .ConfigureAwait(false);
         if (loaded.Route is null)
         {
@@ -298,11 +312,11 @@ public sealed class FollowRouteStore
         CancellationToken cancellationToken = default
     )
     {
-        var path = ResolveCatalogPath(frontierId, fileName, isLegacy);
+        string path = ResolveCatalogPath(frontierId, fileName, isLegacy);
         await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            var root = await ReadRequiredObjectAsync(path, cancellationToken).ConfigureAwait(false);
+            JsonObject root = await ReadRequiredObjectAsync(path, cancellationToken).ConfigureAwait(false);
             WriteTrue(root, "favorite", isFavorite);
             await WriteObjectAsync(path, root, cancellationToken).ConfigureAwait(false);
         }
@@ -311,7 +325,8 @@ public sealed class FollowRouteStore
             saveLock.Release();
         }
 
-        var loaded = await LoadFromPathAsync(frontierId, path, cancellationToken).ConfigureAwait(false);
+        FollowRouteLoadResult loaded = await LoadFromPathAsync(frontierId, path, cancellationToken)
+            .ConfigureAwait(false);
         return loaded.Route ?? throw new InvalidDataException(loaded.Error ?? FavoriteRouteReloadErrorMessage);
     }
 
@@ -323,27 +338,28 @@ public sealed class FollowRouteStore
     {
         ValidateFileName(frontierId, nameof(frontierId));
         ArgumentException.ThrowIfNullOrWhiteSpace(sourcePath);
-        var fullSourcePath = Path.GetFullPath(sourcePath);
+        string fullSourcePath = Path.GetFullPath(sourcePath);
         if (!string.Equals(Path.GetExtension(fullSourcePath), RouteFileExtension, StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidDataException($"The selected file is not a JSON route: {fullSourcePath}");
         }
 
-        var loaded = await LoadFromPathAsync(frontierId, fullSourcePath, cancellationToken).ConfigureAwait(false);
+        FollowRouteLoadResult loaded = await LoadFromPathAsync(frontierId, fullSourcePath, cancellationToken)
+            .ConfigureAwait(false);
         if (!loaded.Exists || loaded.Route is null)
         {
             throw new InvalidDataException(loaded.Error ?? $"The selected route does not exist: {fullSourcePath}");
         }
 
-        var requestedName = string.IsNullOrWhiteSpace(loaded.Route.Name)
+        string requestedName = string.IsNullOrWhiteSpace(loaded.Route.Name)
             ? Path.GetFileNameWithoutExtension(fullSourcePath)
             : loaded.Route.Name.Trim();
-        var normalizedName = NormalizeRouteName(requestedName);
+        string normalizedName = NormalizeRouteName(requestedName);
         await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            var path = GetAvailableNamedPath(frontierId, normalizedName);
-            var imported = loaded.Route with
+            string path = GetAvailableNamedPath(frontierId, normalizedName);
+            FollowRouteDocument imported = loaded.Route with
             {
                 FrontierId = frontierId,
                 FilePath = path,
@@ -368,19 +384,19 @@ public sealed class FollowRouteStore
         ValidateFileName(frontierId, nameof(frontierId));
         ArgumentNullException.ThrowIfNull(routes);
         ArgumentException.ThrowIfNullOrWhiteSpace(destinationDirectory);
-        var fullDestination = Path.GetFullPath(destinationDirectory);
+        string fullDestination = Path.GetFullPath(destinationDirectory);
         Directory.CreateDirectory(fullDestination);
         var exported = new List<string>(routes.Count);
-        foreach (var route in routes)
+        foreach (FollowRouteCatalogEntry route in routes)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var source = ResolveCatalogPath(frontierId, route.FileName, route.IsLegacy);
+            string source = ResolveCatalogPath(frontierId, route.FileName, route.IsLegacy);
             if (!File.Exists(source))
             {
                 throw new FileNotFoundException(SavedRouteMissingMessage, source);
             }
 
-            var destination = GetAvailableExportPath(fullDestination, Path.GetFileName(source));
+            string destination = GetAvailableExportPath(fullDestination, Path.GetFileName(source));
             await using var sourceStream = new FileStream(
                 source,
                 FileMode.Open,
@@ -447,11 +463,13 @@ public sealed class FollowRouteStore
         CancellationToken cancellationToken = default
     )
     {
-        var source = ResolveCatalogPath(frontierId, fileName, isLegacy);
-        var normalizedName = NormalizeRouteName(name);
-        var destination = GetNamedPath(frontierId, normalizedName);
-        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-        var samePath = string.Equals(source, destination, comparison);
+        string source = ResolveCatalogPath(frontierId, fileName, isLegacy);
+        string normalizedName = NormalizeRouteName(name);
+        string destination = GetNamedPath(frontierId, normalizedName);
+        StringComparison comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+        bool samePath = string.Equals(source, destination, comparison);
 
         await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
@@ -463,12 +481,14 @@ public sealed class FollowRouteStore
 
             if (!samePath && File.Exists(destination))
             {
-                throw new IOException(string.Format(SavedRouteNameAlreadyExistsMessage, normalizedName));
+                throw new IOException(
+                    string.Format(CultureInfo.CurrentCulture, SavedRouteNameAlreadyExistsFormat, normalizedName)
+                );
             }
 
-            var root = await ReadRequiredObjectAsync(source, cancellationToken).ConfigureAwait(false);
+            JsonObject root = await ReadRequiredObjectAsync(source, cancellationToken).ConfigureAwait(false);
             root["name"] = normalizedName;
-            var createdAt = File.GetCreationTimeUtc(source);
+            DateTime createdAt = File.GetCreationTimeUtc(source);
             await WriteObjectAsync(samePath ? source : destination, root, cancellationToken).ConfigureAwait(false);
             if (!samePath)
             {
@@ -488,7 +508,8 @@ public sealed class FollowRouteStore
                 }
             }
 
-            var selection = await ReadSelectionAsync(frontierId, cancellationToken).ConfigureAwait(false);
+            WorkspaceSelectionReadResult selection = await ReadSelectionAsync(frontierId, cancellationToken)
+                .ConfigureAwait(false);
             if (selection.Error is not null)
             {
                 throw new InvalidDataException(selection.Error);
@@ -509,8 +530,9 @@ public sealed class FollowRouteStore
                     .ConfigureAwait(false);
             }
 
-            var loaded = await LoadFromPathAsync(frontierId, destination, cancellationToken).ConfigureAwait(false);
-            var renamed =
+            FollowRouteLoadResult loaded = await LoadFromPathAsync(frontierId, destination, cancellationToken)
+                .ConfigureAwait(false);
+            FollowRouteDocument renamed =
                 loaded.Route ?? throw new InvalidDataException(loaded.Error ?? RenamedRouteReloadErrorMessage);
             var entry = new FollowRouteCatalogEntry(
                 normalizedName,
@@ -537,7 +559,7 @@ public sealed class FollowRouteStore
         CancellationToken cancellationToken = default
     )
     {
-        var path = ResolveCatalogPath(frontierId, fileName, isLegacy);
+        string path = ResolveCatalogPath(frontierId, fileName, isLegacy);
         await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -546,9 +568,9 @@ public sealed class FollowRouteStore
                 throw new FileNotFoundException(SavedRouteMissingMessage, path);
             }
 
-            var trashDirectory = Path.Combine(GetNamedDirectory(frontierId), ".trash");
+            string trashDirectory = Path.Combine(GetNamedDirectory(frontierId), ".trash");
             Directory.CreateDirectory(trashDirectory);
-            var trashPath = Path.Combine(
+            string trashPath = Path.Combine(
                 trashDirectory,
                 $"{Path.GetFileNameWithoutExtension(path)}-"
                     + $"{DateTimeOffset.UtcNow:yyyyMMddHHmmssfff}-"
@@ -556,7 +578,8 @@ public sealed class FollowRouteStore
             );
             File.Move(path, trashPath);
 
-            var selection = await ReadSelectionAsync(frontierId, cancellationToken).ConfigureAwait(false);
+            WorkspaceSelectionReadResult selection = await ReadSelectionAsync(frontierId, cancellationToken)
+                .ConfigureAwait(false);
             if (
                 selection.FileName is not null
                 && selection.IsLegacy == isLegacy
@@ -578,7 +601,7 @@ public sealed class FollowRouteStore
     public async Task<string> DeleteAsync(FollowRouteDocument route, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(route);
-        var path = ResolveWritablePath(route);
+        string path = ResolveWritablePath(route);
         await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -587,9 +610,9 @@ public sealed class FollowRouteStore
                 throw new FileNotFoundException(SavedRouteMissingMessage, path);
             }
 
-            var trashDirectory = Path.Combine(GetNamedDirectory(route.FrontierId), ".trash");
+            string trashDirectory = Path.Combine(GetNamedDirectory(route.FrontierId), ".trash");
             Directory.CreateDirectory(trashDirectory);
-            var trashPath = Path.Combine(
+            string trashPath = Path.Combine(
                 trashDirectory,
                 $"{Path.GetFileNameWithoutExtension(path)}-"
                     + $"{DateTimeOffset.UtcNow:yyyyMMddHHmmssfff}{RouteFileExtension}"
@@ -613,7 +636,7 @@ public sealed class FollowRouteStore
 
     private string GetRoutesDirectory()
     {
-        var routesDirectory = Path.Combine(dataDirectory, "Routes");
+        string routesDirectory = Path.Combine(dataDirectory, "Routes");
         return routeKind == FollowRouteKind.FleetCarrier
             ? Path.Combine(routesDirectory, "FleetCarrier")
             : routesDirectory;
@@ -632,13 +655,13 @@ public sealed class FollowRouteStore
 
     private string GetAvailableNamedPath(string frontierId, string name)
     {
-        var path = GetNamedPath(frontierId, name);
+        string path = GetNamedPath(frontierId, name);
         if (!File.Exists(path))
         {
             return path;
         }
 
-        for (var suffix = 2; suffix < 10_000; suffix++)
+        for (int suffix = 2; suffix < 10_000; suffix++)
         {
             path = GetNamedPath(frontierId, $"{name} ({suffix:N0})");
             if (!File.Exists(path))
@@ -652,15 +675,15 @@ public sealed class FollowRouteStore
 
     private static string GetAvailableExportPath(string destinationDirectory, string fileName)
     {
-        var path = Path.Combine(destinationDirectory, fileName);
+        string path = Path.Combine(destinationDirectory, fileName);
         if (!File.Exists(path))
         {
             return path;
         }
 
-        var stem = Path.GetFileNameWithoutExtension(fileName);
-        var extension = Path.GetExtension(fileName);
-        for (var suffix = 2; suffix < 10_000; suffix++)
+        string stem = Path.GetFileNameWithoutExtension(fileName);
+        string extension = Path.GetExtension(fileName);
+        for (int suffix = 2; suffix < 10_000; suffix++)
         {
             path = Path.Combine(destinationDirectory, $"{stem} ({suffix:N0}){extension}");
             if (!File.Exists(path))
@@ -684,7 +707,9 @@ public sealed class FollowRouteStore
             return [];
         }
 
-        var comparison = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+        StringComparer comparison = OperatingSystem.IsWindows()
+            ? StringComparer.OrdinalIgnoreCase
+            : StringComparer.Ordinal;
         return new[] { GetPath(frontierId), Path.Combine(dataDirectory, "routes", frontierId + RouteFileExtension) }
             .Select(Path.GetFullPath)
             .Distinct(comparison);
@@ -709,7 +734,7 @@ public sealed class FollowRouteStore
             throw new InvalidOperationException("Fleet-carrier routes do not use the standard legacy route location.");
         }
 
-        var path = GetLegacyPaths(frontierId)
+        string? path = GetLegacyPaths(frontierId)
             .FirstOrDefault(path =>
                 File.Exists(path) && string.Equals(Path.GetFileName(path), fileName, StringComparison.OrdinalIgnoreCase)
             );
@@ -719,15 +744,17 @@ public sealed class FollowRouteStore
     private string ResolveWritablePath(FollowRouteDocument route)
     {
         ValidateFileName(route.FrontierId, nameof(route.FrontierId));
-        var path = Path.GetFullPath(route.FilePath);
-        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        string path = Path.GetFullPath(route.FilePath);
+        StringComparison comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
         if (GetLegacyPaths(route.FrontierId).Any(candidate => string.Equals(candidate, path, comparison)))
         {
             return path;
         }
 
-        var namedDirectory = Path.GetFullPath(GetNamedDirectory(route.FrontierId));
-        var relativePath = Path.GetRelativePath(namedDirectory, path);
+        string namedDirectory = Path.GetFullPath(GetNamedDirectory(route.FrontierId));
+        string relativePath = Path.GetRelativePath(namedDirectory, path);
         if (
             relativePath == "."
             || relativePath.StartsWith(".." + Path.DirectorySeparatorChar, comparison)
@@ -756,7 +783,7 @@ public sealed class FollowRouteStore
             return new FollowRouteLoadResult(path, false, CreateDefault(frontierId, path), null);
         }
 
-        var read = await ReadObjectAsync(path, cancellationToken).ConfigureAwait(false);
+        JsonObjectReadResult read = await ReadObjectAsync(path, cancellationToken).ConfigureAwait(false);
         if (read.Root is null)
         {
             return new FollowRouteLoadResult(path, true, null, read.Error);
@@ -779,7 +806,7 @@ public sealed class FollowRouteStore
         CancellationToken cancellationToken
     )
     {
-        var path = ResolveCatalogPath(frontierId, fileName, isLegacy);
+        string path = ResolveCatalogPath(frontierId, fileName, isLegacy);
         return LoadFromPathAsync(frontierId, path, cancellationToken);
     }
 
@@ -795,22 +822,22 @@ public sealed class FollowRouteStore
         ValidateFileName(frontierId, nameof(frontierId));
         ArgumentNullException.ThrowIfNull(routes);
         ArgumentException.ThrowIfNullOrWhiteSpace(destinationDirectory);
-        var fullDestination = Path.GetFullPath(destinationDirectory);
+        string fullDestination = Path.GetFullPath(destinationDirectory);
         Directory.CreateDirectory(fullDestination);
         var exported = new List<string>(routes.Count);
-        foreach (var route in routes)
+        foreach (FollowRouteCatalogEntry route in routes)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var loaded = await LoadNamedWithoutSelectionAsync(
+            FollowRouteLoadResult loaded = await LoadNamedWithoutSelectionAsync(
                     frontierId,
                     route.FileName,
                     route.IsLegacy,
                     cancellationToken
                 )
                 .ConfigureAwait(false);
-            var document =
+            FollowRouteDocument document =
                 loaded.Route ?? throw new InvalidDataException(loaded.Error ?? SavedRouteExportLoadErrorMessage);
-            var destination = GetAvailableExportPath(fullDestination, getFileName(route));
+            string destination = GetAvailableExportPath(fullDestination, getFileName(route));
             await write(document, destination, cancellationToken).ConfigureAwait(false);
             exported.Add(destination);
         }
@@ -861,7 +888,7 @@ public sealed class FollowRouteStore
             throw new FileNotFoundException(SavedRouteMissingMessage, path);
         }
 
-        var read = await ReadObjectAsync(path, cancellationToken).ConfigureAwait(false);
+        JsonObjectReadResult read = await ReadObjectAsync(path, cancellationToken).ConfigureAwait(false);
         return read.Root ?? throw new InvalidDataException(read.Error ?? $"The route {path} could not be read.");
     }
 
@@ -870,19 +897,19 @@ public sealed class FollowRouteStore
         CancellationToken cancellationToken
     )
     {
-        var path = GetWorkspacePath(frontierId);
+        string path = GetWorkspacePath(frontierId);
         if (!File.Exists(path))
         {
             return new WorkspaceSelectionReadResult(false, null, false, null);
         }
 
-        var read = await ReadObjectAsync(path, cancellationToken).ConfigureAwait(false);
+        JsonObjectReadResult read = await ReadObjectAsync(path, cancellationToken).ConfigureAwait(false);
         if (read.Root is null)
         {
             return new WorkspaceSelectionReadResult(true, null, false, read.Error);
         }
 
-        var fileName = GetString(read.Root, "selectedFile");
+        string? fileName = GetString(read.Root, "selectedFile");
         if (fileName is not null)
         {
             try
@@ -941,7 +968,7 @@ public sealed class FollowRouteStore
     private static string NormalizeRouteName(string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        var normalized = name.Trim();
+        string normalized = name.Trim();
         if (normalized.Length > 80)
         {
             throw new ArgumentException("The route name cannot be longer than 80 characters.", nameof(name));
@@ -958,8 +985,8 @@ public sealed class FollowRouteStore
     private static string CreateRouteFileName(string name)
     {
         var invalid = Path.GetInvalidFileNameChars().Concat(['<', '>', ':', '"', '/', '\\', '|', '?', '*']).ToHashSet();
-        var characters = name.Select(character => invalid.Contains(character) ? '-' : character).ToArray();
-        var stem = new string(characters).Trim().TrimEnd('.');
+        char[] characters = name.Select(character => invalid.Contains(character) ? '-' : character).ToArray();
+        string stem = new string(characters).Trim().TrimEnd('.');
         if (string.IsNullOrWhiteSpace(stem))
         {
             throw new ArgumentException("The route name must contain at least one file-safe character.", nameof(name));
@@ -988,7 +1015,7 @@ public sealed class FollowRouteStore
         var hops = new List<FollowRouteHop>();
         if (root["hops"] is JsonArray hopArray)
         {
-            for (var index = 0; index < hopArray.Count; index++)
+            for (int index = 0; index < hopArray.Count; index++)
             {
                 if (hopArray[index] is not JsonObject hop)
                 {
@@ -1003,7 +1030,7 @@ public sealed class FollowRouteStore
             throw InvalidRoute(path, "hops is not an array");
         }
 
-        var parsedKind = GetString(root, "routeType") switch
+        FollowRouteKind parsedKind = GetString(root, "routeType") switch
         {
             null or "" or "standard" => FollowRouteKind.Standard,
             "fleetCarrier" => FollowRouteKind.FleetCarrier,
@@ -1041,9 +1068,9 @@ public sealed class FollowRouteStore
             return null;
         }
 
-        var normalizedValue = value.Trim();
+        string normalizedValue = value.Trim();
         if (
-            Enum.TryParse<SpanshRouteKind>(normalizedValue, ignoreCase: true, out var kind)
+            Enum.TryParse<SpanshRouteKind>(normalizedValue, ignoreCase: true, out SpanshRouteKind kind)
             && Enum.IsDefined(kind)
             && string.Equals(Enum.GetName(kind), normalizedValue, StringComparison.OrdinalIgnoreCase)
         )
@@ -1056,16 +1083,16 @@ public sealed class FollowRouteStore
 
     private static FollowRouteHop ParseHop(string path, int index, JsonObject root)
     {
-        var name = GetString(root, "name");
+        string? name = GetString(root, "name");
         if (string.IsNullOrWhiteSpace(name))
         {
             throw InvalidRoute(path, $"hops[{index}] has no valid name");
         }
 
         GalacticCoordinate? position = null;
-        var x = GetDouble(root, "x");
-        var y = GetDouble(root, "y");
-        var z = GetDouble(root, "z");
+        double? x = GetDouble(root, "x");
+        double? y = GetDouble(root, "y");
+        double? z = GetDouble(root, "z");
         if (x is not null && y is not null && z is not null)
         {
             try
@@ -1128,7 +1155,7 @@ public sealed class FollowRouteStore
         }
 
         var result = new List<FollowRouteBioTarget>(array.Count);
-        for (var index = 0; index < array.Count; index++)
+        for (int index = 0; index < array.Count; index++)
         {
             if (array[index] is not JsonObject target)
             {
@@ -1143,7 +1170,7 @@ public sealed class FollowRouteStore
 
     private static FollowRouteBioTarget ParseBioTarget(string path, int hopIndex, int index, JsonObject target)
     {
-        var bodyName = GetString(target, "body");
+        string? bodyName = GetString(target, "body");
         if (string.IsNullOrWhiteSpace(bodyName))
         {
             throw InvalidRoute(path, $"hops[{hopIndex}].bio[{index}] has no body name");
@@ -1177,11 +1204,11 @@ public sealed class FollowRouteStore
             return [];
         }
 
-        for (var speciesIndex = 0; speciesIndex < speciesArray.Count; speciesIndex++)
+        for (int speciesIndex = 0; speciesIndex < speciesArray.Count; speciesIndex++)
         {
             if (
                 speciesArray[speciesIndex] is not JsonValue value
-                || !value.TryGetValue<string>(out var speciesName)
+                || !value.TryGetValue<string>(out string? speciesName)
                 || string.IsNullOrWhiteSpace(speciesName)
             )
             {
@@ -1199,7 +1226,7 @@ public sealed class FollowRouteStore
 
     private static JsonArray MergeHops(JsonArray? existing, IReadOnlyList<FollowRouteHop> hops)
     {
-        var existingRows =
+        ExistingHop[] existingRows =
             existing
                 ?.Select(
                     (node, index) =>
@@ -1209,10 +1236,10 @@ public sealed class FollowRouteStore
             ?? [];
         var used = new HashSet<int>();
         var result = new JsonArray();
-        foreach (var hop in hops)
+        foreach (FollowRouteHop hop in hops)
         {
-            var identity = GetIdentity(hop);
-            var match = existingRows.FirstOrDefault(candidate =>
+            string identity = GetIdentity(hop);
+            ExistingHop? match = existingRows.FirstOrDefault(candidate =>
                 !used.Contains(candidate.Index)
                 && string.Equals(candidate.Identity, identity, StringComparison.OrdinalIgnoreCase)
             );
@@ -1297,7 +1324,7 @@ public sealed class FollowRouteStore
         }
 
         var existing = root["bio"] as JsonArray;
-        var existingRows =
+        ExistingBioTarget[] existingRows =
             existing
                 ?.Select(
                     (node, index) =>
@@ -1311,14 +1338,14 @@ public sealed class FollowRouteStore
             ?? [];
         var used = new HashSet<int>();
         var result = new JsonArray();
-        foreach (var target in targets)
+        foreach (FollowRouteBioTarget target in targets)
         {
-            var identity = GetBioIdentity(target);
-            var match = existingRows.FirstOrDefault(candidate =>
+            string identity = GetBioIdentity(target);
+            ExistingBioTarget? match = existingRows.FirstOrDefault(candidate =>
                 !used.Contains(candidate.Index)
                 && string.Equals(candidate.Identity, identity, StringComparison.OrdinalIgnoreCase)
             );
-            var row = match?.Root?.DeepClone().AsObject() ?? [];
+            JsonObject row = match?.Root?.DeepClone().AsObject() ?? [];
             if (match?.Root is not null)
             {
                 used.Add(match.Index);
@@ -1354,11 +1381,11 @@ public sealed class FollowRouteStore
             return;
         }
 
-        var existingRows = existingHops.OfType<JsonObject>().ToArray();
-        foreach (var hop in hops.Where(candidate => candidate.BioTargets.Count > 0))
+        JsonObject[] existingRows = existingHops.OfType<JsonObject>().ToArray();
+        foreach (FollowRouteHop? hop in hops.Where(candidate => candidate.BioTargets.Count > 0))
         {
-            var identity = GetIdentity(hop);
-            var row = existingRows.FirstOrDefault(candidate =>
+            string identity = GetIdentity(hop);
+            JsonObject? row = existingRows.FirstOrDefault(candidate =>
                 string.Equals(GetIdentity(candidate), identity, StringComparison.OrdinalIgnoreCase)
             );
             if (row is null)
@@ -1366,17 +1393,16 @@ public sealed class FollowRouteStore
                 continue;
             }
 
-            var savedTargets = row["bio"] as JsonArray;
-            if (savedTargets is null)
+            if (row["bio"] is not JsonArray savedTargets)
             {
                 WriteBioTargets(row, hop.BioTargets);
                 continue;
             }
 
-            foreach (var target in hop.BioTargets)
+            foreach (FollowRouteBioTarget target in hop.BioTargets)
             {
-                var targetIdentity = GetBioIdentity(target);
-                var saved = savedTargets
+                string targetIdentity = GetBioIdentity(target);
+                JsonObject? saved = savedTargets
                     .OfType<JsonObject>()
                     .FirstOrDefault(candidate =>
                         string.Equals(GetBioIdentity(candidate), targetIdentity, StringComparison.OrdinalIgnoreCase)
@@ -1398,8 +1424,8 @@ public sealed class FollowRouteStore
 
     private static string? GetBioIdentity(JsonObject root)
     {
-        var bodyId = GetInt64(root, "bodyId");
-        var bodyName = GetString(root, "body");
+        long? bodyId = GetInt64(root, "bodyId");
+        string? bodyName = GetString(root, "body");
         if (bodyId is not null)
         {
             return $"bodyId:{bodyId}";
@@ -1420,8 +1446,8 @@ public sealed class FollowRouteStore
 
     private static string? GetIdentity(JsonObject root)
     {
-        var address = GetInt64(root, "id64");
-        var name = GetString(root, "name");
+        long? address = GetInt64(root, "id64");
+        string? name = GetString(root, "name");
         if (address is not null)
         {
             return $"address:{address}";
@@ -1461,23 +1487,23 @@ public sealed class FollowRouteStore
 
     private static bool? GetBoolean(JsonObject root, string propertyName)
     {
-        return root[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result) ? result : null;
+        return root[propertyName] is JsonValue value && value.TryGetValue<bool>(out bool result) ? result : null;
     }
 
     private static string? GetString(JsonObject root, string propertyName)
     {
-        return root[propertyName] is JsonValue value && value.TryGetValue<string>(out var result) ? result : null;
+        return root[propertyName] is JsonValue value && value.TryGetValue<string>(out string? result) ? result : null;
     }
 
     private static int? GetInt32(JsonObject root, string propertyName)
     {
-        var value = GetInt64(root, propertyName);
+        long? value = GetInt64(root, propertyName);
         return value is >= int.MinValue and <= int.MaxValue ? (int)value.Value : null;
     }
 
     private static long? GetInt64(JsonObject root, string propertyName)
     {
-        return root[propertyName] is JsonValue value && value.TryGetValue<long>(out var result) ? result : null;
+        return root[propertyName] is JsonValue value && value.TryGetValue<long>(out long result) ? result : null;
     }
 
     private static double? GetDouble(JsonObject root, string propertyName)
@@ -1487,12 +1513,12 @@ public sealed class FollowRouteStore
             return null;
         }
 
-        if (value.TryGetValue<double>(out var result))
+        if (value.TryGetValue<double>(out double result))
         {
             return result;
         }
 
-        return value.TryGetValue<long>(out var integer) ? integer : null;
+        return value.TryGetValue<long>(out long integer) ? integer : null;
     }
 
     private static void ValidateFileName(string value, string parameterName)
@@ -1532,7 +1558,9 @@ public sealed class FollowRouteStore
                 16 * 1024,
                 FileOptions.Asynchronous | FileOptions.SequentialScan
             );
-            var node = await JsonNode.ParseAsync(stream, cancellationToken: cancellationToken).ConfigureAwait(false);
+            JsonNode? node = await JsonNode
+                .ParseAsync(stream, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
             return node is JsonObject root
                 ? new JsonObjectReadResult(root, null)
                 : new JsonObjectReadResult(null, $"{path} does not contain a JSON object.");
@@ -1545,11 +1573,11 @@ public sealed class FollowRouteStore
 
     private static async Task WriteObjectAsync(string path, JsonObject root, CancellationToken cancellationToken)
     {
-        var directory =
+        string directory =
             Path.GetDirectoryName(path)
             ?? throw new InvalidOperationException($"The route path has no parent directory: {path}");
         Directory.CreateDirectory(directory);
-        var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
+        string temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
         try
         {
             await using (

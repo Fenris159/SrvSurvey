@@ -19,7 +19,7 @@ public static class ColonizationBuildSiteRepair
             return false;
         }
 
-        var text = marketId.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        string text = marketId.ToString(System.Globalization.CultureInfo.InvariantCulture);
         return PlayerColonyMarketIdPrefixes.Any(prefix => text.StartsWith(prefix, StringComparison.Ordinal));
     }
 
@@ -30,7 +30,7 @@ public static class ColonizationBuildSiteRepair
             return true;
         }
 
-        var name = stationName?.Trim() ?? string.Empty;
+        string name = stationName?.Trim() ?? string.Empty;
         return isConstructionShip
             || name.Contains("ColonisationShip", StringComparison.Ordinal)
             || IsConstructionDepotDockName(name);
@@ -38,14 +38,14 @@ public static class ColonizationBuildSiteRepair
 
     public static bool IsConstructionDepotDockName(string? stationName)
     {
-        var name = RemoveLocalizationToken(stationName);
+        string name = RemoveLocalizationToken(stationName);
         return name.StartsWith(PlanetaryConstructionPrefix, StringComparison.Ordinal)
             || name.StartsWith(OrbitalConstructionPrefix, StringComparison.Ordinal);
     }
 
     public static string NormalizeDockStationName(string? stationName)
     {
-        var name = RemoveLocalizationToken(stationName);
+        string name = RemoveLocalizationToken(stationName);
         if (name.StartsWith(PlanetaryConstructionPrefix, StringComparison.Ordinal))
         {
             name = name[PlanetaryConstructionPrefix.Length..];
@@ -65,20 +65,20 @@ public static class ColonizationBuildSiteRepair
     )
     {
         ArgumentNullException.ThrowIfNull(sites);
-        var normalizedName = NormalizeDockStationName(stationName);
+        string normalizedName = NormalizeDockStationName(stationName);
         if (normalizedName.Length == 0 || marketId <= 0)
         {
             return null;
         }
 
-        var nameMatches = sites
+        ColonizationSystemSite[] nameMatches = sites
             .Where(site =>
                 string.Equals(NormalizeDockStationName(site.Name), normalizedName, StringComparison.OrdinalIgnoreCase)
             )
             .ToArray();
         if (nameMatches.Length == 1)
         {
-            var site = nameMatches[0];
+            ColonizationSystemSite site = nameMatches[0];
             if (StatusAllowsRepair(site) && site.MarketId != marketId)
             {
                 return new ColonizationBuildSiteRepairPlan(
@@ -90,13 +90,13 @@ public static class ColonizationBuildSiteRepair
             }
         }
 
-        var marketMatches = sites.Where(site => site.MarketId == marketId).ToArray();
+        ColonizationSystemSite[] marketMatches = sites.Where(site => site.MarketId == marketId).ToArray();
         if (marketMatches.Length != 1)
         {
             return null;
         }
 
-        var marketMatch = marketMatches[0];
+        ColonizationSystemSite marketMatch = marketMatches[0];
         if (
             !StatusAllowsRepair(marketMatch)
             || string.Equals(
@@ -124,8 +124,8 @@ public static class ColonizationBuildSiteRepair
 
     private static string RemoveLocalizationToken(string? stationName)
     {
-        var name = stationName?.Trim() ?? string.Empty;
-        var delimiter = name.IndexOf(';');
+        string name = stationName?.Trim() ?? string.Empty;
+        int delimiter = name.IndexOf(';');
         return delimiter >= 0 ? name[(delimiter + 1)..].Trim() : name;
     }
 }

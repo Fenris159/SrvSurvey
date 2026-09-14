@@ -38,7 +38,7 @@ public sealed class CanonnSystemPoiClientTests
         );
         var client = new CanonnSystemPoiClient(new HttpClient(handler), new Uri("https://example.test/query"));
 
-        var result = await client.GetAsync(" Shinrarta Dezhra ", " CMDR Test ");
+        CanonnSystemPoiResult result = await client.GetAsync(" Shinrarta Dezhra ", " CMDR Test ");
 
         Assert.Equal("Shinrarta Dezhra", result.SystemName);
         Assert.Collection(
@@ -83,9 +83,9 @@ public sealed class CanonnSystemPoiClientTests
         );
         var client = new CanonnSystemPoiClient(new HttpClient(handler), new Uri("https://example.test/"));
 
-        var result = await client.GetAsync("System", string.Empty);
+        CanonnSystemPoiResult result = await client.GetAsync("System", string.Empty);
 
-        var signal = Assert.Single(result.Signals);
+        CanonnSurfaceBiologySignal signal = Assert.Single(result.Signals);
         Assert.Equal(5, signal.EntryId);
         Assert.Equal("System", result.SystemName);
     }
@@ -96,7 +96,9 @@ public sealed class CanonnSystemPoiClientTests
         var handler = new RecordingHandler("""{"system":"Other","codex":[]}""");
         var client = new CanonnSystemPoiClient(new HttpClient(handler), new Uri("https://example.test/"));
 
-        var exception = await Assert.ThrowsAsync<InvalidDataException>(() => client.GetAsync("Expected", string.Empty));
+        InvalidDataException exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            client.GetAsync("Expected", string.Empty)
+        );
 
         Assert.Contains("Other", exception.Message);
         Assert.Contains("Expected", exception.Message);

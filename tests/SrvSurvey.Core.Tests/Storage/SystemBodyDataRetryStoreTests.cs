@@ -33,7 +33,7 @@ public sealed class SystemBodyDataRetryStoreTests : IDisposable
 
         await first.SaveAsync(expected);
         var second = new SystemBodyDataRetryStore(temporaryDirectory);
-        var restored = await second.LoadAsync("f123");
+        SystemBodyDataRetryState? restored = await second.LoadAsync("f123");
 
         Assert.Equal(expected, restored);
     }
@@ -72,7 +72,7 @@ public sealed class SystemBodyDataRetryStoreTests : IDisposable
                 BiologicalDataComplete: false
             )
         );
-        var path = Assert.Single(Directory.GetFiles(temporaryDirectory, "*.json", SearchOption.AllDirectories));
+        string path = Assert.Single(Directory.GetFiles(temporaryDirectory, "*.json", SearchOption.AllDirectories));
         await File.WriteAllTextAsync(path, "{");
 
         await Assert.ThrowsAsync<InvalidDataException>(() => store.LoadAsync("F123"));

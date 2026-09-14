@@ -65,10 +65,10 @@ public sealed class CodexImageViewport : Control
             return;
         }
 
-        var fit = Math.Min(bounds.Width / source.Size.Width, bounds.Height / source.Size.Height);
-        var scale = fit * zoom;
-        var width = source.Size.Width * scale;
-        var height = source.Size.Height * scale;
+        double fit = Math.Min(bounds.Width / source.Size.Width, bounds.Height / source.Size.Height);
+        double scale = fit * zoom;
+        double width = source.Size.Width * scale;
+        double height = source.Size.Height * scale;
         var destination = new Rect(
             bounds.Center.X - width / 2 + offset.X,
             bounds.Center.Y - height / 2 + offset.Y,
@@ -114,7 +114,7 @@ public sealed class CodexImageViewport : Control
             return;
         }
 
-        var position = e.GetPosition(this);
+        Point position = e.GetPosition(this);
         offset = dragStartOffset + (position - origin);
         InvalidateVisual();
         e.Handled = true;

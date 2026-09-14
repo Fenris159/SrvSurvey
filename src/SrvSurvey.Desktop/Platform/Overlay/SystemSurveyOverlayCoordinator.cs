@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Desktop.ViewModels;
@@ -238,7 +239,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
 
     private async Task RefreshFssTuningAsync()
     {
-        var request = survey.CreateFssTuningCaptureRequest();
+        FssTuningCaptureRequest? request = survey.CreateFssTuningCaptureRequest();
         if (!CanCaptureFssTuning(request))
         {
             return;
@@ -299,8 +300,8 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
 
     private async Task CaptureAndApplyFssTuningAsync(FssTuningCaptureRequest request)
     {
-        var halfWidth = gameWindow.ClientBounds.Width / 2;
-        var halfHeight = gameWindow.ClientBounds.Height / 2;
+        int halfWidth = gameWindow.ClientBounds.Width / 2;
+        int halfHeight = gameWindow.ClientBounds.Height / 2;
         if (halfWidth <= 0 || halfHeight <= 0)
         {
             return;
@@ -312,11 +313,11 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
             halfWidth,
             halfHeight
         );
-        var captureResult = await Task.Run(
+        (CapturedPixelBuffer Pixels, FssTuningAnalysis Analysis) captureResult = await Task.Run(
                 () =>
                 {
-                    var pixels = gameScreenCapture.Capture(captureBounds);
-                    var analysis = FssTuningDetector.Analyze(pixels, request.Settings, request.State);
+                    CapturedPixelBuffer pixels = gameScreenCapture.Capture(captureBounds);
+                    FssTuningAnalysis analysis = FssTuningDetector.Analyze(pixels, request.Settings, request.State);
                     return (Pixels: pixels, Analysis: analysis);
                 },
                 disposalCancellation.Token
@@ -336,7 +337,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         (CapturedPixelBuffer Pixels, FssTuningAnalysis Analysis) captureResult
     )
     {
-        var shouldSaveDiagnostic =
+        bool shouldSaveDiagnostic =
             captureResult.Analysis.Failure is not null
             && request.Settings.SaveDiagnosticImages
             && fssDiagnosticDirectory is not null
@@ -375,7 +376,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
 
     private async Task RefreshBiologyCanonnAsync()
     {
-        if (!TryCreateCanonnContext(out var systemName, out var commanderName))
+        if (!TryCreateCanonnContext(out string? systemName, out string? commanderName))
         {
             if (canonnLoadedKey is not null)
             {
@@ -386,7 +387,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
             return;
         }
 
-        var key = systemName + "\n" + commanderName;
+        string key = systemName + "\n" + commanderName;
         if (
             string.Equals(canonnLoadedKey, key, StringComparison.OrdinalIgnoreCase)
             || string.Equals(canonnFailedKey, key, StringComparison.OrdinalIgnoreCase)
@@ -410,12 +411,12 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
                 return;
             }
 
-            var result = await canonnSystemPoiClient
+            CanonnSystemPoiResult result = await canonnSystemPoiClient
                 .GetAsync(systemName, commanderName, disposalCancellation.Token)
                 .ConfigureAwait(true);
             if (
                 disposed
-                || !TryCreateCanonnContext(out var currentSystem, out var currentCommander)
+                || !TryCreateCanonnContext(out string? currentSystem, out string? currentCommander)
                 || !string.Equals(key, currentSystem + "\n" + currentCommander, StringComparison.OrdinalIgnoreCase)
             )
             {
@@ -517,7 +518,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         gameWindow = gameWindowTracker.GetSnapshot();
-        var platformReady =
+        bool platformReady =
             !isSuppressed
             && platform.Capabilities.SupportsPassiveOverlay
             && platform.Capabilities.SupportsClickThrough
@@ -525,18 +526,18 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
             && gameWindow.IsAvailable
             && gameWindow.IsVisible
             && gameWindow.IsForeground;
-        var showFss = platformReady && survey.ShouldShowFssInfo && windowRegistry.ShouldHost("PlotFSSInfo");
-        var showLastFssBody = platformReady && survey.ShouldShowLastFssBody;
-        var showBodyInfo = platformReady && survey.ShouldShowBodyInfo && windowRegistry.ShouldHost("PlotBodyInfo");
-        var showStatus = platformReady && survey.ShouldShowSystemStatus;
-        var showFlightWarning = platformReady && survey.ShouldShowFlightWarning;
-        var showBiology = platformReady && survey.ShouldShowBioSystem && windowRegistry.ShouldHost("PlotBioSystem");
-        var showBiologyStatus =
+        bool showFss = platformReady && survey.ShouldShowFssInfo && windowRegistry.ShouldHost("PlotFSSInfo");
+        bool showLastFssBody = platformReady && survey.ShouldShowLastFssBody;
+        bool showBodyInfo = platformReady && survey.ShouldShowBodyInfo && windowRegistry.ShouldHost("PlotBodyInfo");
+        bool showStatus = platformReady && survey.ShouldShowSystemStatus;
+        bool showFlightWarning = platformReady && survey.ShouldShowFlightWarning;
+        bool showBiology = platformReady && survey.ShouldShowBioSystem && windowRegistry.ShouldHost("PlotBioSystem");
+        bool showBiologyStatus =
             platformReady && survey.ShouldShowBioStatus && windowRegistry.ShouldHost("PlotBioStatus");
-        var showPriorScans =
+        bool showPriorScans =
             platformReady && priorScansViewModel.ShouldShow && windowRegistry.ShouldHost("PlotPriorScans");
-        var showSurface = platformReady && surfaceSurvey.ShouldShow && windowRegistry.ShouldHost("PlotGrounded");
-        var showMiniTrack = platformReady && surfaceSurvey.ShouldShowMiniTrack;
+        bool showSurface = platformReady && surfaceSurvey.ShouldShow && windowRegistry.ShouldHost("PlotGrounded");
+        bool showMiniTrack = platformReady && surfaceSurvey.ShouldShowMiniTrack;
 
         SynchronizeBodyInfoWindow(showBodyInfo);
         SynchronizeFssWindow(showFss);
@@ -854,7 +855,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     private void PrepareWindow(Window window, Action<Window, PixelRect> position, Action close)
     {
         position(window, gameWindow.ClientBounds);
-        var preparation = platform.PreparePassiveWindow(window);
+        OverlayPreparationResult preparation = platform.PreparePassiveWindow(window);
         viewModel.ApplyPreparation(preparation);
         priorScansViewModel.ApplyPreparation(preparation);
         surfaceViewModel.ApplyPreparation(preparation);
@@ -867,7 +868,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
 
     private void PositionTopLeft(Window window, PixelRect gameBounds)
     {
-        var plotterName = window switch
+        string plotterName = window switch
         {
             BodyInformationOverlayWindow => "PlotBodyInfo",
             FssInfoOverlayWindow => "PlotFSSInfo",
@@ -878,7 +879,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
 
     private void PositionTopCenter(Window window, PixelRect gameBounds)
     {
-        var plotterName = window switch
+        string plotterName = window switch
         {
             FlightWarningOverlayWindow => "PlotFlightWarning",
             BiologyStatusOverlayWindow => "PlotBioStatus",
@@ -934,7 +935,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
             "PlotBioSystem",
             (bounds, size, margin) =>
             {
-                var statusOffset =
+                int statusOffset =
                     statusWindow is null || statusWindow.Bounds.Height <= 0
                         ? 0
                         : Math.Max(0, bounds.Bottom - statusWindow.Position.Y) + 12;
@@ -955,14 +956,15 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     )
     {
         OverlayThemeResources.ApplyOpacity(window, overlayLayout, plotterName);
-        var screen = window.Screens.ScreenFromBounds(gameBounds) ?? window.Screens.Primary;
+        Screen? screen = window.Screens.ScreenFromBounds(gameBounds) ?? window.Screens.Primary;
         if (screen is null)
         {
             return;
         }
 
-        var size = OverlayWindowMetrics.PrepareForPlacement(window, overlayLayout, plotterName, screen.Scaling);
-        var position = overlayLayout.GetPosition(plotterName, gameBounds, size) ?? calculate(gameBounds, size, margin);
+        PixelSize size = OverlayWindowMetrics.PrepareForPlacement(window, overlayLayout, plotterName, screen.Scaling);
+        PixelPoint position =
+            overlayLayout.GetPosition(plotterName, gameBounds, size) ?? calculate(gameBounds, size, margin);
         if (window.Position != position)
         {
             window.Position = position;
@@ -971,7 +973,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
 
     private void CloseFssWindow()
     {
-        var overlay = fssWindow;
+        FssInfoOverlayWindow? overlay = fssWindow;
         if (overlay is null)
         {
             return;
@@ -984,7 +986,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
 
     private void CloseFlightWarningWindow()
     {
-        var overlay = flightWarningWindow;
+        FlightWarningOverlayWindow? overlay = flightWarningWindow;
         if (overlay is null)
         {
             return;
@@ -997,7 +999,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
 
     private void CloseMiniTrackWindow()
     {
-        var overlay = miniTrackWindow;
+        MiniTrackOverlayWindow? overlay = miniTrackWindow;
         if (overlay is null)
         {
             return;
@@ -1010,7 +1012,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
 
     private void CloseBiologyWindow()
     {
-        var overlay = biologyWindow;
+        BiologySurveyOverlayWindow? overlay = biologyWindow;
         if (overlay is null)
         {
             return;
@@ -1023,7 +1025,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
 
     private void CloseBiologyStatusWindow()
     {
-        var overlay = biologyStatusWindow;
+        BiologyStatusOverlayWindow? overlay = biologyStatusWindow;
         if (overlay is null)
         {
             return;
@@ -1036,7 +1038,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
 
     private void CloseBodyInfoWindow()
     {
-        var overlay = bodyInfoWindow;
+        BodyInformationOverlayWindow? overlay = bodyInfoWindow;
         if (overlay is null)
         {
             return;
@@ -1049,7 +1051,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
 
     private void CloseLastFssBodyWindow()
     {
-        var overlay = lastFssBodyWindow;
+        LastFssBodyOverlayWindow? overlay = lastFssBodyWindow;
         if (overlay is null)
         {
             return;
@@ -1062,7 +1064,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
 
     private void CloseStatusWindow()
     {
-        var overlay = statusWindow;
+        SystemStatusOverlayWindow? overlay = statusWindow;
         if (overlay is null)
         {
             return;
@@ -1075,7 +1077,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
 
     private void ClosePriorScansWindow()
     {
-        var overlay = priorScansWindow;
+        PriorScansOverlayWindow? overlay = priorScansWindow;
         if (overlay is null)
         {
             return;
@@ -1088,7 +1090,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
 
     private void CloseSurfaceWindow()
     {
-        var overlay = surfaceWindow;
+        SurfaceSurveyOverlayWindow? overlay = surfaceWindow;
         if (overlay is null)
         {
             return;

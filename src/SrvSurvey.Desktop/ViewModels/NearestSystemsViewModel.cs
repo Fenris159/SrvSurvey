@@ -241,9 +241,9 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
         long? systemAddress = null
     )
     {
-        var nextSystemName = string.IsNullOrWhiteSpace(systemName) ? Unavailable : systemName;
-        var nextSystemAddress = systemAddress is > 0 ? systemAddress : null;
-        var nextCommanderName = currentCommanderName?.Trim() ?? string.Empty;
+        string nextSystemName = string.IsNullOrWhiteSpace(systemName) ? Unavailable : systemName;
+        long? nextSystemAddress = systemAddress is > 0 ? systemAddress : null;
+        string nextCommanderName = currentCommanderName?.Trim() ?? string.Empty;
         if (
             string.Equals(referenceSystemName, nextSystemName, StringComparison.OrdinalIgnoreCase)
             && referencePosition == position
@@ -315,7 +315,7 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
             SelectedResult = null;
             SpanshSearchReference = null;
             StatusMessage = $"Searching near {ReferenceSystemName}\u2026";
-            var searchResult = IsCanonnMode
+            NearestSystemsSearchResult searchResult = IsCanonnMode
                 ? await nearestSystemsClient.SearchCanonnAsync(position, BiologicalSignal.Trim(), commanderName)
                 : await nearestSystemsClient.SearchMissingVariantsAsync(
                     position,
@@ -363,7 +363,7 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
             return Task.CompletedTask;
         }
 
-        var system = Uri.EscapeDataString(selected.SystemName);
+        string system = Uri.EscapeDataString(selected.SystemName);
         return LaunchAsync(new Uri($"https://signals.canonn.tech/?system={system}"), "Canonn Signals");
     }
 
@@ -375,13 +375,13 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
             return;
         }
 
-        var address = selected.SystemAddress;
+        long? address = selected.SystemAddress;
         if (address is null)
         {
             try
             {
                 StatusMessage = $"Resolving {selected.SystemName} on Spansh\u2026";
-                var systems = await systemResolver.SearchAsync(selected.SystemName);
+                IReadOnlyList<StarSystemReference> systems = await systemResolver.SearchAsync(selected.SystemName);
                 address = systems
                     .FirstOrDefault(system =>
                         string.Equals(system.Name, selected.SystemName, StringComparison.OrdinalIgnoreCase)
@@ -413,7 +413,7 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
             return Task.CompletedTask;
         }
 
-        var reference = Uri.EscapeDataString(SpanshSearchReference);
+        string reference = Uri.EscapeDataString(SpanshSearchReference);
         return LaunchAsync(new Uri($"https://spansh.co.uk/bodies/search/{reference}/1"), "the original Spansh search");
     }
 
@@ -495,7 +495,7 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
 
         try
         {
-            var launched = await uriLauncher(uri);
+            bool launched = await uriLauncher(uri);
             StatusMessage = launched ? $"Opened {label}." : $"The operating system could not open {label}.";
         }
         catch (Exception exception)
@@ -600,7 +600,7 @@ internal static class SystemAddressFormatter
 {
     public static string Format(long? systemAddress)
     {
-        var value = FormatValue(systemAddress);
+        string value = FormatValue(systemAddress);
         return value.Length == 0 ? string.Empty : "id64 " + value;
     }
 

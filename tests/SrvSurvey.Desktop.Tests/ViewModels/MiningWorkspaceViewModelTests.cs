@@ -1,4 +1,5 @@
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Mining;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -9,7 +10,7 @@ public sealed class MiningWorkspaceViewModelTests
     [Fact]
     public void MiningTablesExposeIndependentSortIndicators()
     {
-        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         try
         {
             using var viewModel = new MiningWorkspaceViewModel(
@@ -38,7 +39,7 @@ public sealed class MiningWorkspaceViewModelTests
     [Fact]
     public void MiningNotificationsRemainShipOnlyAndRecoveryIsPaused()
     {
-        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         try
         {
             var bookmarks = new BookmarksViewModel(directory);
@@ -47,7 +48,7 @@ public sealed class MiningWorkspaceViewModelTests
             Assert.True(
                 JournalEventEnvelope.TryParse(
                     """{"event":"LoadGame","FID":"F1","Commander":"Test","Ship":"python"}""",
-                    out var entry,
+                    out JournalEventEnvelope? entry,
                     out _
                 )
             );
@@ -58,7 +59,7 @@ public sealed class MiningWorkspaceViewModelTests
             vm.Settings.HideInSupercruise = true;
             vm.Settings.OverlaysOnlyDuringSession = true;
             foreach (
-                var status in new[]
+                EliteStatus? status in new[]
                 {
                     new EliteStatus { Flags = StatusFlags.InSrv },
                     new EliteStatus { Flags = StatusFlags.InFighter },
@@ -95,7 +96,7 @@ public sealed class MiningWorkspaceViewModelTests
     [Fact]
     public void FullCargoWaitsForOneMinuteAndDoesNotRepeatOrSurviveCommanderLoss()
     {
-        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         var clock = new Clock();
         try
         {
@@ -109,7 +110,7 @@ public sealed class MiningWorkspaceViewModelTests
             Assert.True(
                 JournalEventEnvelope.TryParse(
                     """{"event":"LoadGame","FID":"F1","Commander":"Test","Ship":"python"}""",
-                    out var load,
+                    out JournalEventEnvelope? load,
                     out _
                 )
             );
@@ -117,7 +118,7 @@ public sealed class MiningWorkspaceViewModelTests
             Assert.True(
                 JournalEventEnvelope.TryParse(
                     """{"event":"Loadout","CargoCapacity":10,"Ship":"python"}""",
-                    out var capacity,
+                    out JournalEventEnvelope? capacity,
                     out _
                 )
             );
@@ -161,7 +162,7 @@ public sealed class MiningWorkspaceViewModelTests
     [Fact]
     public void ProspectReportPersistsAndCollectedMaterialsAreNotDisplacedByRefining()
     {
-        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         var clock = new Clock();
         try
         {
@@ -175,7 +176,7 @@ public sealed class MiningWorkspaceViewModelTests
             var ship = new EliteStatus { Flags = StatusFlags.InMainShip };
             void Feed(string json, bool bootstrap = false)
             {
-                var entry = FiregroupsWorkspaceViewModelTests.Event(json);
+                JournalEventEnvelope entry = FiregroupsWorkspaceViewModelTests.Event(json);
                 context.Apply(entry);
                 vm.Apply(new(null, [entry], ship, null, null, null, [], bootstrap), context, null, ship);
             }
@@ -188,7 +189,7 @@ public sealed class MiningWorkspaceViewModelTests
             Feed(
                 """{"event":"MaterialCollected","timestamp":"2026-09-06T12:00:02Z","Category":"Raw","Name":"chromium","Count":3}"""
             );
-            for (var second = 3; second <= 9; second++)
+            for (int second = 3; second <= 9; second++)
             {
                 Feed(
                     $$"""{"event":"MiningRefined","timestamp":"2026-09-06T12:00:0{{second}}Z","Type":"platinum","Type_Localised":"Platinum"}"""
@@ -220,7 +221,7 @@ public sealed class MiningWorkspaceViewModelTests
     [Fact]
     public void LiveProspectorResumesPausedSessionBeforeShowingItsReport()
     {
-        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         try
         {
             using var vm = new MiningWorkspaceViewModel(
@@ -233,7 +234,7 @@ public sealed class MiningWorkspaceViewModelTests
             var ship = new EliteStatus { Flags = StatusFlags.InMainShip };
             void Feed(string json, bool bootstrap = false)
             {
-                var entry = FiregroupsWorkspaceViewModelTests.Event(json);
+                JournalEventEnvelope entry = FiregroupsWorkspaceViewModelTests.Event(json);
                 context.Apply(entry);
                 vm.Apply(new(null, [entry], ship, null, null, null, [], bootstrap), context, null, ship);
             }
@@ -265,19 +266,19 @@ public sealed class MiningWorkspaceViewModelTests
     [Fact]
     public async Task MiningBackupRestoresNamedFiregroupsAndKeepsOldArchivesCompatible()
     {
-        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        var restoredDirectory = Path.Combine(directory, "restored");
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        string restoredDirectory = Path.Combine(directory, "restored");
         try
         {
             var context = new JournalSessionState();
-            var events = new[]
+            JournalEventEnvelope[] events = new[]
             {
                 FiregroupsWorkspaceViewModelTests.Event(
                     """{"event":"LoadGame","FID":"F1","Commander":"Test","Ship":"python","ShipID":1}"""
                 ),
                 FiregroupsWorkspaceViewModelTests.Loadout(1, "Survey Python"),
             };
-            foreach (var entry in events)
+            foreach (JournalEventEnvelope? entry in events)
             {
                 context.Apply(entry);
             }
@@ -296,7 +297,7 @@ public sealed class MiningWorkspaceViewModelTests
                 firegroups: firegroups
             );
             source.Apply(update, context, null, ship);
-            var bytes = await source.BackupPackageAsync();
+            byte[] bytes = await source.BackupPackageAsync();
             var targetFiregroups = new FiregroupsWorkspaceViewModel(restoredDirectory);
             targetFiregroups.Apply(update, context, ship);
             using var target = new MiningWorkspaceViewModel(
@@ -314,7 +315,7 @@ public sealed class MiningWorkspaceViewModelTests
             var reloaded = new FiregroupsWorkspaceViewModel(restoredDirectory);
             reloaded.Apply(update, context, ship);
             Assert.Equal("Backup configuration", reloaded.ActiveProfile!.Name);
-            var oldArchive = SrvSurvey.Core.Mining.MiningBackup.Create(new(), "[]");
+            byte[] oldArchive = SrvSurvey.Core.Mining.MiningBackup.Create(new(), "[]");
             await target.RestorePackageAsync(oldArchive);
             Assert.Single(targetFiregroups.SavedProfiles);
             Assert.False(targetFiregroups.Restore("OtherCommander", firegroups.Backup("F1")));
@@ -332,7 +333,7 @@ public sealed class MiningWorkspaceViewModelTests
     [Fact]
     public async Task MiningTripCanBeConfiguredRecordedBookmarkedAndReviewedWithoutLosingHistory()
     {
-        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         var clock = new Clock();
         try
         {
@@ -342,7 +343,7 @@ public sealed class MiningWorkspaceViewModelTests
             var ship = new EliteStatus { Flags = StatusFlags.InMainShip };
             void Feed(string json, bool bootstrap = false)
             {
-                var entry = FiregroupsWorkspaceViewModelTests.Event(json);
+                JournalEventEnvelope entry = FiregroupsWorkspaceViewModelTests.Event(json);
                 context.Apply(entry);
                 vm.Apply(new(null, [entry], ship, null, null, null, [], bootstrap), context, null, ship);
             }
@@ -397,7 +398,7 @@ public sealed class MiningWorkspaceViewModelTests
             clock.Now += TimeSpan.FromMinutes(10);
             vm.StopCommand.Execute(null);
             Assert.Null(vm.Current);
-            var report = Assert.Single(vm.History);
+            MiningSession report = Assert.Single(vm.History);
             vm.SelectedSession = report;
             vm.Notes = "Keep the ring context";
             vm.SaveNotesCommand.Execute(null);
@@ -406,11 +407,11 @@ public sealed class MiningWorkspaceViewModelTests
             Assert.Empty(vm.History);
             vm.UndoDeleteReport();
             Assert.Same(report, Assert.Single(vm.History));
-            var exported = SrvSurvey.Core.Mining.MiningReport.Csv(vm.History);
+            string exported = SrvSurvey.Core.Mining.MiningReport.Csv(vm.History);
             vm.ImportReports(exported);
             Assert.Single(vm.History);
             Assert.Contains("Imported 0", vm.Status);
-            var journalPath = Path.Combine(directory, "import.log");
+            string journalPath = Path.Combine(directory, "import.log");
             await File.WriteAllLinesAsync(
                 journalPath,
                 [
@@ -424,7 +425,7 @@ public sealed class MiningWorkspaceViewModelTests
                 ]
             );
             await vm.ImportJournalsAsync([journalPath]);
-            var ring = Assert.Single(vm.Rings);
+            MiningRing ring = Assert.Single(vm.Rings);
             Assert.Equal("Wille A Ring", ring.Body);
             Assert.Equal(2, ring.Hotspots["Platinum"]);
             vm.SelectedRing = ring;
@@ -439,7 +440,7 @@ public sealed class MiningWorkspaceViewModelTests
             vm.Destination = "Unknown";
             await vm.CalculateDistanceAsync();
             Assert.Equal("System not found.", vm.DistanceResult);
-            var backup = vm.Backup();
+            string backup = vm.Backup();
             Assert.True(vm.Restore(backup));
             Assert.Single(vm.History);
             Assert.Single(vm.Rings);

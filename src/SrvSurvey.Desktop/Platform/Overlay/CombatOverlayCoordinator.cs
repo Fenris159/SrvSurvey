@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -102,7 +103,7 @@ public sealed class CombatOverlayCoordinator : IDisposable
         }
 
         gameWindow = gameWindowTracker.GetSnapshot();
-        var platformReady =
+        bool platformReady =
             !isSuppressed
             && platform.Capabilities.SupportsPassiveOverlay
             && platform.Capabilities.SupportsClickThrough
@@ -178,7 +179,7 @@ public sealed class CombatOverlayCoordinator : IDisposable
     private void PrepareWindow(Window window, Action<Window, PixelRect> position)
     {
         position(window, gameWindow.ClientBounds);
-        var preparation = platform.PreparePassiveWindow(window);
+        OverlayPreparationResult preparation = platform.PreparePassiveWindow(window);
         viewModel.ApplyPreparation(preparation);
         if (!preparation.IsClickThrough)
         {
@@ -206,14 +207,15 @@ public sealed class CombatOverlayCoordinator : IDisposable
     )
     {
         OverlayThemeResources.ApplyOpacity(window, overlayLayout, plotterName);
-        var screen = window.Screens.ScreenFromBounds(gameBounds) ?? window.Screens.Primary;
+        Screen? screen = window.Screens.ScreenFromBounds(gameBounds) ?? window.Screens.Primary;
         if (screen is null)
         {
             return;
         }
 
-        var size = OverlayWindowMetrics.PrepareForPlacement(window, overlayLayout, plotterName, screen.Scaling);
-        var position = overlayLayout.GetPosition(plotterName, gameBounds, size) ?? placement(gameBounds, size, 8);
+        PixelSize size = OverlayWindowMetrics.PrepareForPlacement(window, overlayLayout, plotterName, screen.Scaling);
+        PixelPoint position =
+            overlayLayout.GetPosition(plotterName, gameBounds, size) ?? placement(gameBounds, size, 8);
         if (window.Position != position)
         {
             window.Position = position;
@@ -222,7 +224,7 @@ public sealed class CombatOverlayCoordinator : IDisposable
 
     private void CloseFootCombatWindow()
     {
-        var overlay = footCombatWindow;
+        FootCombatOverlayWindow? overlay = footCombatWindow;
         if (overlay is null)
         {
             return;
@@ -235,7 +237,7 @@ public sealed class CombatOverlayCoordinator : IDisposable
 
     private void CloseMassacreWindow()
     {
-        var overlay = massacreWindow;
+        MassacreMissionsOverlayWindow? overlay = massacreWindow;
         if (overlay is null)
         {
             return;

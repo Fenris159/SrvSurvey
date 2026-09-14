@@ -13,7 +13,7 @@ public sealed class JourneyStoreTests : IDisposable
     [Fact]
     public async Task LoadsCompactAndLegacyStarReferences()
     {
-        var directory = CreateJourneyDirectory();
+        string directory = CreateJourneyDirectory();
         await File.WriteAllTextAsync(
             Path.Combine(directory, "20260701_120000.json"),
             """
@@ -49,10 +49,10 @@ public sealed class JourneyStoreTests : IDisposable
         );
         var store = new JourneyStore(temporaryDirectory);
 
-        var result = await store.LoadAsync("F123", "20260701_120000");
+        JourneyLoadResult result = await store.LoadAsync("F123", "20260701_120000");
 
         Assert.True(result.IsSuccess, result.Error);
-        var journey = Assert.IsType<JourneyDocument>(result.Journey);
+        JourneyDocument journey = Assert.IsType<JourneyDocument>(result.Journey);
         Assert.Equal("Across the black", journey.Name);
         Assert.Equal(2, journey.VisitedSystems.Count);
         Assert.Equal(10477373803, journey.VisitedSystems[0].StarSystem.SystemAddress);
@@ -65,8 +65,8 @@ public sealed class JourneyStoreTests : IDisposable
     [Fact]
     public async Task SavePreservesUnknownJourneyVisitAndCountFields()
     {
-        var directory = CreateJourneyDirectory();
-        var path = Path.Combine(directory, "20260701_120000.json");
+        string directory = CreateJourneyDirectory();
+        string path = Path.Combine(directory, "20260701_120000.json");
         await File.WriteAllTextAsync(
             path,
             """
@@ -89,10 +89,10 @@ public sealed class JourneyStoreTests : IDisposable
             """
         );
         var store = new JourneyStore(temporaryDirectory);
-        var loaded = await store.LoadAsync("F123", "20260701_120000");
-        var journey = Assert.IsType<JourneyDocument>(loaded.Journey);
-        var visit = journey.VisitedSystems[0];
-        var updated = journey with
+        JourneyLoadResult loaded = await store.LoadAsync("F123", "20260701_120000");
+        JourneyDocument journey = Assert.IsType<JourneyDocument>(loaded.Journey);
+        JourneySystemVisit visit = journey.VisitedSystems[0];
+        JourneyDocument updated = journey with
         {
             Name = "After",
             Description = "After description",
@@ -101,10 +101,10 @@ public sealed class JourneyStoreTests : IDisposable
 
         await store.SaveAsync(updated);
 
-        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        JsonObject root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.Equal("After", root["name"]!.GetValue<string>());
         Assert.True(root["futureJourney"]!["enabled"]!.GetValue<bool>());
-        var savedVisit = root["visitedSystems"]![0]!;
+        JsonNode savedVisit = root["visitedSystems"]![0]!;
         Assert.Equal("kept", savedVisit["futureVisit"]!.GetValue<string>());
         Assert.Equal(7, savedVisit["count"]!["futureCount"]!.GetValue<int>());
         Assert.Equal(2, savedVisit["count"]!["notes"]!.GetValue<int>());
@@ -120,7 +120,7 @@ public sealed class JourneyStoreTests : IDisposable
             global::System.Globalization.CultureInfo.InvariantCulture
         );
 
-        var journey = await store.CreateAsync(
+        JourneyDocument journey = await store.CreateAsync(
             new JourneyCreationRequest(
                 "F123",
                 "Drew",
@@ -135,7 +135,7 @@ public sealed class JourneyStoreTests : IDisposable
         Assert.Equal(timestamp.AddMilliseconds(-10), journey.StartTime);
         Assert.Equal(timestamp.AddMilliseconds(-10), journey.Watermark);
         Assert.True(File.Exists(journey.FilePath));
-        var loaded = await store.LoadAsync("F123", journey.FileName);
+        JourneyLoadResult loaded = await store.LoadAsync("F123", journey.FileName);
         Assert.Equal("Fresh journey", loaded.Journey?.Name);
         Assert.Empty(loaded.Journey!.VisitedSystems);
     }
@@ -143,8 +143,8 @@ public sealed class JourneyStoreTests : IDisposable
     [Fact]
     public async Task IncrementNoteCountUpdatesLastVisitToSystem()
     {
-        var directory = CreateJourneyDirectory();
-        var path = Path.Combine(directory, "20260701_120000.json");
+        string directory = CreateJourneyDirectory();
+        string path = Path.Combine(directory, "20260701_120000.json");
         await File.WriteAllTextAsync(
             path,
             """
@@ -172,10 +172,10 @@ public sealed class JourneyStoreTests : IDisposable
         );
         var store = new JourneyStore(temporaryDirectory);
 
-        var updated = await store.IncrementNoteCountAsync("F123", "20260701_120000", 42);
+        bool updated = await store.IncrementNoteCountAsync("F123", "20260701_120000", 42);
 
         Assert.True(updated);
-        var loaded = await store.LoadAsync("F123", "20260701_120000");
+        JourneyLoadResult loaded = await store.LoadAsync("F123", "20260701_120000");
         Assert.Equal(1, loaded.Journey!.VisitedSystems[0].Counts.Notes);
         Assert.Equal(3, loaded.Journey.VisitedSystems[2].Counts.Notes);
     }
@@ -183,7 +183,7 @@ public sealed class JourneyStoreTests : IDisposable
     [Fact]
     public async Task CatalogSkipsMalformedFilesAndReportsThem()
     {
-        var directory = CreateJourneyDirectory();
+        string directory = CreateJourneyDirectory();
         await File.WriteAllTextAsync(
             Path.Combine(directory, "good.json"),
             "{\"name\":\"Good\",\"startTime\":\"2026-07-01T12:00:00Z\"}"
@@ -191,7 +191,7 @@ public sealed class JourneyStoreTests : IDisposable
         await File.WriteAllTextAsync(Path.Combine(directory, "bad.json"), "{\"name\":");
         var store = new JourneyStore(temporaryDirectory);
 
-        var result = await store.LoadAllAsync("F123");
+        JourneyCatalogResult result = await store.LoadAllAsync("F123");
 
         Assert.Single(result.Journeys);
         Assert.Equal("Good", result.Journeys[0].Name);
@@ -202,8 +202,8 @@ public sealed class JourneyStoreTests : IDisposable
     [Fact]
     public async Task SaveRefusesToOverwriteMalformedJourney()
     {
-        var directory = CreateJourneyDirectory();
-        var path = Path.Combine(directory, "bad.json");
+        string directory = CreateJourneyDirectory();
+        string path = Path.Combine(directory, "bad.json");
         const string malformed = "{\"name\":";
         await File.WriteAllTextAsync(path, malformed);
         var store = new JourneyStore(temporaryDirectory);
@@ -238,7 +238,7 @@ public sealed class JourneyStoreTests : IDisposable
 
     private string CreateJourneyDirectory()
     {
-        var path = Path.Combine(temporaryDirectory, "journey", "F123");
+        string path = Path.Combine(temporaryDirectory, "journey", "F123");
         Directory.CreateDirectory(path);
         return path;
     }

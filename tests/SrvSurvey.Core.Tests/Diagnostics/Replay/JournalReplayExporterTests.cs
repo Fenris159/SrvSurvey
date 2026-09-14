@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using System.Text.Json;
 using SrvSurvey.Core.Diagnostics.Replay;
 
 namespace SrvSurvey.Core.Tests.Diagnostics.Replay;
@@ -9,7 +10,7 @@ public sealed class JournalReplayExporterTests
     public async Task ExportPrependsCommanderAndSessionBootstrapForSelectedRange()
     {
         using var temp = new TemporaryDirectory();
-        var journals = Path.Combine(temp.Path, "journals");
+        string journals = Path.Combine(temp.Path, "journals");
         Directory.CreateDirectory(journals);
         await File.WriteAllLinesAsync(
             Path.Combine(journals, "Journal.2026-08-21T180000.01.log"),
@@ -22,9 +23,9 @@ public sealed class JournalReplayExporterTests
                 "{\"timestamp\":\"2026-08-21T18:20:00Z\",\"event\":\"Shutdown\"}",
             ]
         );
-        var destination = Path.Combine(temp.Path, "incident.srvreplay");
+        string destination = Path.Combine(temp.Path, "incident.srvreplay");
 
-        var result = await new JournalReplayExporter().ExportAsync(
+        JournalReplayExportResult result = await new JournalReplayExporter().ExportAsync(
             journals,
             destination,
             new JournalReplayExportRequest(
@@ -42,7 +43,7 @@ public sealed class JournalReplayExporterTests
         ZipArchiveEntry? journalEntry = archive.GetEntry("journal.jsonl");
         Assert.NotNull(journalEntry);
         using var reader = new StreamReader(await journalEntry.OpenAsync());
-        var lines = (await reader.ReadToEndAsync()).Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        string[] lines = (await reader.ReadToEndAsync()).Split('\n', StringSplitOptions.RemoveEmptyEntries);
         Assert.Equal(["Fileheader", "Commander", "LoadGame", "Location", "FSDJump"], lines.Select(GetEventName));
         Assert.NotNull(archive.GetEntry("replay-package.json"));
     }
@@ -53,7 +54,7 @@ public sealed class JournalReplayExporterTests
     public async Task ExportAlwaysRemovesCredentialsAndRedactionIsConsistent(ReplayPrivacyMode privacyMode)
     {
         using var temp = new TemporaryDirectory();
-        var journals = Path.Combine(temp.Path, "journals");
+        string journals = Path.Combine(temp.Path, "journals");
         Directory.CreateDirectory(journals);
         await File.WriteAllLinesAsync(
             Path.Combine(journals, "Journal.2026-08-21T180000.01.log"),
@@ -63,7 +64,7 @@ public sealed class JournalReplayExporterTests
                 "{\"timestamp\":\"2026-08-21T18:00:02Z\",\"event\":\"ReceiveText\",\"From\":\"Private Cmdr\",\"Message\":\"private message\"}",
             ]
         );
-        var destination = Path.Combine(temp.Path, $"{privacyMode}.srvreplay");
+        string destination = Path.Combine(temp.Path, $"{privacyMode}.srvreplay");
 
         await new JournalReplayExporter().ExportAsync(
             journals,
@@ -74,7 +75,7 @@ public sealed class JournalReplayExporterTests
 
         using ZipArchive archive = await ZipFile.OpenReadAsync(destination);
         using var reader = new StreamReader(await archive.GetEntry("journal.jsonl")!.OpenAsync());
-        var journal = await reader.ReadToEndAsync();
+        string journal = await reader.ReadToEndAsync();
         Assert.DoesNotContain("do-not-share", journal, StringComparison.Ordinal);
         Assert.DoesNotContain("also-secret", journal, StringComparison.Ordinal);
         Assert.DoesNotContain("AccessToken", journal, StringComparison.OrdinalIgnoreCase);
@@ -97,7 +98,7 @@ public sealed class JournalReplayExporterTests
     public async Task RedactionPreservesJsonKeysAndPseudonymizesEveryIdentityAndLocation()
     {
         using var temp = new TemporaryDirectory();
-        var journals = Path.Combine(temp.Path, "journals");
+        string journals = Path.Combine(temp.Path, "journals");
         Directory.CreateDirectory(journals);
         await File.WriteAllLinesAsync(
             Path.Combine(journals, "Journal.2026-08-21T180000.01.log"),
@@ -114,7 +115,7 @@ public sealed class JournalReplayExporterTests
                 "{\"timestamp\":\"2026-08-21T18:01:07Z\",\"event\":\"SendText\",\"To\":\"Other Cmdr\",\"Message\":\"sent secret\",\"Message_Localised\":\"sent localized secret\"}",
             ]
         );
-        var destination = Path.Combine(temp.Path, "redacted.srvreplay");
+        string destination = Path.Combine(temp.Path, "redacted.srvreplay");
 
         await new JournalReplayExporter().ExportAsync(
             journals,
@@ -126,7 +127,7 @@ public sealed class JournalReplayExporterTests
         using (ZipArchive archive = await ZipFile.OpenReadAsync(destination))
         using (var reader = new StreamReader(await archive.GetEntry("journal.jsonl")!.OpenAsync()))
         {
-            var journal = await reader.ReadToEndAsync();
+            string journal = await reader.ReadToEndAsync();
             Assert.Contains("\"Name\":", journal, StringComparison.Ordinal);
             Assert.DoesNotContain("Other Cmdr", journal, StringComparison.Ordinal);
             Assert.DoesNotContain("F222222", journal, StringComparison.Ordinal);
@@ -143,7 +144,7 @@ public sealed class JournalReplayExporterTests
             Assert.Contains("Replay Location 001", journal, StringComparison.Ordinal);
         }
 
-        var imported = await new ReplaySessionManager().ImportAsync(
+        DiagnosticReplaySession imported = await new ReplaySessionManager().ImportAsync(
             destination,
             Path.Combine(temp.Path, "managed"),
             CancellationToken.None
@@ -156,7 +157,7 @@ public sealed class JournalReplayExporterTests
     public async Task RedactionHandlesNonCoordinateArraysWithoutReparentingNodes()
     {
         using var temp = new TemporaryDirectory();
-        var journals = Path.Combine(temp.Path, "journals");
+        string journals = Path.Combine(temp.Path, "journals");
         Directory.CreateDirectory(journals);
         await File.WriteAllLinesAsync(
             Path.Combine(journals, "Journal.2026-08-21T180000.01.log"),
@@ -165,7 +166,7 @@ public sealed class JournalReplayExporterTests
                 "{\"timestamp\":\"2026-08-21T18:00:01Z\",\"event\":\"Materials\",\"Raw\":[{\"Name\":\"iron\",\"Count\":12}]}",
             ]
         );
-        var destination = Path.Combine(temp.Path, "redacted-array.srvreplay");
+        string destination = Path.Combine(temp.Path, "redacted-array.srvreplay");
 
         await new JournalReplayExporter().ExportAsync(
             journals,
@@ -176,7 +177,7 @@ public sealed class JournalReplayExporterTests
 
         using ZipArchive archive = await ZipFile.OpenReadAsync(destination);
         using var reader = new StreamReader(await archive.GetEntry("journal.jsonl")!.OpenAsync());
-        var journal = await reader.ReadToEndAsync();
+        string journal = await reader.ReadToEndAsync();
         Assert.Contains("\"Raw\":[{\"Name\":\"iron\",\"Count\":12}]", journal);
     }
 
@@ -184,7 +185,7 @@ public sealed class JournalReplayExporterTests
     public async Task ExportStreamsRangesOutsideTheHistoryDisplayWindow()
     {
         using var temp = new TemporaryDirectory();
-        var journals = Path.Combine(temp.Path, "journals");
+        string journals = Path.Combine(temp.Path, "journals");
         Directory.CreateDirectory(journals);
         await File.WriteAllLinesAsync(
             Path.Combine(journals, "Journal.2026-08-21T180000.01.log"),
@@ -195,14 +196,14 @@ public sealed class JournalReplayExporterTests
                 "{\"timestamp\":\"2026-08-21T18:00:03Z\",\"event\":\"Shutdown\"}",
             ]
         );
-        var destination = Path.Combine(temp.Path, "older-range.srvreplay");
+        string destination = Path.Combine(temp.Path, "older-range.srvreplay");
         var historyReader = new JournalHistoryReader(maximumLoadedEvents: 2);
-        var displaySnapshot = await historyReader.LoadAsync(journals, CancellationToken.None);
+        JournalHistorySnapshot displaySnapshot = await historyReader.LoadAsync(journals, CancellationToken.None);
         Assert.True(displaySnapshot.IsWindowed);
         Assert.Equal(2, displaySnapshot.Events.Count);
         var exporter = new JournalReplayExporter();
 
-        var result = await exporter.ExportAsync(
+        JournalReplayExportResult result = await exporter.ExportAsync(
             journals,
             destination,
             new JournalReplayExportRequest(
@@ -228,7 +229,7 @@ public sealed class JournalReplayExporterTests
     public async Task RedactionPreservesSystemAndBodyRelationshipsAcrossEvents()
     {
         using var temp = new TemporaryDirectory();
-        var journals = Path.Combine(temp.Path, "journals");
+        string journals = Path.Combine(temp.Path, "journals");
         Directory.CreateDirectory(journals);
         await File.WriteAllLinesAsync(
             Path.Combine(journals, "Journal.2026-08-21T180000.01.log"),
@@ -241,7 +242,7 @@ public sealed class JournalReplayExporterTests
                 "{\"timestamp\":\"2026-08-21T18:00:05Z\",\"event\":\"Scan\",\"SystemAddress\":456,\"BodyID\":7,\"BodyName\":\"Destination 7\"}",
             ]
         );
-        var destination = Path.Combine(temp.Path, "relationships.srvreplay");
+        string destination = Path.Combine(temp.Path, "relationships.srvreplay");
 
         await new JournalReplayExporter().ExportAsync(
             journals,
@@ -252,23 +253,23 @@ public sealed class JournalReplayExporterTests
 
         using ZipArchive archive = await ZipFile.OpenReadAsync(destination);
         using var reader = new StreamReader(await archive.GetEntry("journal.jsonl")!.OpenAsync());
-        var events = (await reader.ReadToEndAsync())
+        JsonDocument[] events = (await reader.ReadToEndAsync())
             .Split('\n', StringSplitOptions.RemoveEmptyEntries)
             .Select(json => System.Text.Json.JsonDocument.Parse(json))
             .ToArray();
         try
         {
-            var targetAddress = events[3].RootElement.GetProperty("DestinationSystemAddress").GetInt64();
-            var arrivalAddress = events[4].RootElement.GetProperty("SystemAddress").GetInt64();
-            var originBody = events[2].RootElement.GetProperty("BodyID").GetInt64();
-            var destinationBody = events[5].RootElement.GetProperty("BodyID").GetInt64();
+            long targetAddress = events[3].RootElement.GetProperty("DestinationSystemAddress").GetInt64();
+            long arrivalAddress = events[4].RootElement.GetProperty("SystemAddress").GetInt64();
+            long originBody = events[2].RootElement.GetProperty("BodyID").GetInt64();
+            long destinationBody = events[5].RootElement.GetProperty("BodyID").GetInt64();
 
             Assert.Equal(targetAddress, arrivalAddress);
             Assert.NotEqual(originBody, destinationBody);
         }
         finally
         {
-            foreach (var replayEvent in events)
+            foreach (JsonDocument? replayEvent in events)
             {
                 replayEvent.Dispose();
             }
@@ -279,7 +280,7 @@ public sealed class JournalReplayExporterTests
     public async Task RedactionDoesNotRewriteGeneratedAliasesOnIdentityCollisions()
     {
         using var temp = new TemporaryDirectory();
-        var journals = Path.Combine(temp.Path, "journals");
+        string journals = Path.Combine(temp.Path, "journals");
         Directory.CreateDirectory(journals);
         await File.WriteAllLinesAsync(
             Path.Combine(journals, "Journal.01.log"),
@@ -288,7 +289,7 @@ public sealed class JournalReplayExporterTests
                 "{\"event\":\"Commander\",\"Name\":\"Replay\",\"FID\":\"F000000\"}",
             ]
         );
-        var destination = Path.Combine(temp.Path, "identity-collision.srvreplay");
+        string destination = Path.Combine(temp.Path, "identity-collision.srvreplay");
 
         await new JournalReplayExporter().ExportAsync(
             journals,
@@ -299,7 +300,7 @@ public sealed class JournalReplayExporterTests
 
         using ZipArchive archive = await ZipFile.OpenReadAsync(destination);
         using var reader = new StreamReader(await archive.GetEntry("journal.jsonl")!.OpenAsync());
-        var lines = (await reader.ReadToEndAsync()).Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        string[] lines = (await reader.ReadToEndAsync()).Split('\n', StringSplitOptions.RemoveEmptyEntries);
         using var first = System.Text.Json.JsonDocument.Parse(lines[0]);
         using var second = System.Text.Json.JsonDocument.Parse(lines[1]);
         Assert.Equal("Replay Commander", first.RootElement.GetProperty("Name").GetString());
@@ -312,7 +313,7 @@ public sealed class JournalReplayExporterTests
     public async Task RangeBootstrapUsesOneCoherentCommanderIdentity()
     {
         using var temp = new TemporaryDirectory();
-        var journals = Path.Combine(temp.Path, "journals");
+        string journals = Path.Combine(temp.Path, "journals");
         Directory.CreateDirectory(journals);
         await File.WriteAllLinesAsync(
             Path.Combine(journals, "Journal.2026-08-21T180000.01.log"),
@@ -323,7 +324,7 @@ public sealed class JournalReplayExporterTests
                 "{\"timestamp\":\"2026-08-21T18:10:02Z\",\"event\":\"Location\",\"StarSystem\":\"Sol\"}",
             ]
         );
-        var destination = Path.Combine(temp.Path, "second.srvreplay");
+        string destination = Path.Combine(temp.Path, "second.srvreplay");
 
         await new JournalReplayExporter().ExportAsync(
             journals,
@@ -339,7 +340,7 @@ public sealed class JournalReplayExporterTests
 
         using ZipArchive archive = await ZipFile.OpenReadAsync(destination);
         using var reader = new StreamReader(await archive.GetEntry("journal.jsonl")!.OpenAsync());
-        var journal = await reader.ReadToEndAsync();
+        string journal = await reader.ReadToEndAsync();
         Assert.DoesNotContain("First Cmdr", journal, StringComparison.Ordinal);
         Assert.DoesNotContain("F111111", journal, StringComparison.Ordinal);
         Assert.Contains("Second Cmdr", journal, StringComparison.Ordinal);
@@ -350,7 +351,7 @@ public sealed class JournalReplayExporterTests
     public async Task RangeBootstrapDoesNotAttachAPriorCommandersLocation()
     {
         using var temp = new TemporaryDirectory();
-        var journals = Path.Combine(temp.Path, "journals");
+        string journals = Path.Combine(temp.Path, "journals");
         Directory.CreateDirectory(journals);
         await File.WriteAllLinesAsync(
             Path.Combine(journals, "Journal.2026-08-21T180000.01.log"),
@@ -361,7 +362,7 @@ public sealed class JournalReplayExporterTests
                 "{\"timestamp\":\"2026-08-21T18:10:01Z\",\"event\":\"Shutdown\"}",
             ]
         );
-        var destination = Path.Combine(temp.Path, "second-no-location.srvreplay");
+        string destination = Path.Combine(temp.Path, "second-no-location.srvreplay");
 
         await new JournalReplayExporter().ExportAsync(
             journals,
@@ -377,7 +378,7 @@ public sealed class JournalReplayExporterTests
 
         using ZipArchive archive = await ZipFile.OpenReadAsync(destination);
         using var reader = new StreamReader(await archive.GetEntry("journal.jsonl")!.OpenAsync());
-        var journal = await reader.ReadToEndAsync();
+        string journal = await reader.ReadToEndAsync();
         Assert.DoesNotContain("First System", journal, StringComparison.Ordinal);
         Assert.DoesNotContain("\"event\":\"Location\"", journal, StringComparison.Ordinal);
         Assert.Contains("Second Cmdr", journal, StringComparison.Ordinal);
@@ -387,13 +388,13 @@ public sealed class JournalReplayExporterTests
     public async Task ExportCarriesPortableOverlayPresentationAndNamesMissingTimelines()
     {
         using var temp = new TemporaryDirectory();
-        var journals = Path.Combine(temp.Path, "journals");
+        string journals = Path.Combine(temp.Path, "journals");
         Directory.CreateDirectory(journals);
         await File.WriteAllTextAsync(
             Path.Combine(journals, "Journal.01.log"),
             "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Commander\",\"Name\":\"Replay Cmdr\",\"FID\":\"F123456\"}\n"
         );
-        var destination = Path.Combine(temp.Path, "presentation.srvreplay");
+        string destination = Path.Combine(temp.Path, "presentation.srvreplay");
         var presentation = new ReplayPresentationSnapshot(
             2560,
             1440,
@@ -416,13 +417,13 @@ public sealed class JournalReplayExporterTests
         using (ZipArchive archive = await ZipFile.OpenReadAsync(destination))
         using (var reader = new StreamReader(await archive.GetEntry("replay-package.json")!.OpenAsync()))
         {
-            var manifest = await reader.ReadToEndAsync();
+            string manifest = await reader.ReadToEndAsync();
             Assert.Contains("missingCompanionTimelines", manifest);
             Assert.DoesNotContain("supportedCompanionTimelines", manifest);
             Assert.Contains("presentationSnapshot", manifest);
         }
 
-        var imported = await new ReplaySessionManager().ImportAsync(
+        DiagnosticReplaySession imported = await new ReplaySessionManager().ImportAsync(
             destination,
             Path.Combine(temp.Path, "managed"),
             CancellationToken.None
@@ -437,13 +438,13 @@ public sealed class JournalReplayExporterTests
     public async Task FailedExportPreservesAnExistingPackage()
     {
         using var temp = new TemporaryDirectory();
-        var journals = Path.Combine(temp.Path, "journals");
+        string journals = Path.Combine(temp.Path, "journals");
         Directory.CreateDirectory(journals);
         await File.WriteAllTextAsync(
             Path.Combine(journals, "Journal.01.log"),
             "{\"event\":\"Commander\",\"Name\":\"Replay Cmdr\",\"FID\":\"F123456\"}\n"
         );
-        var destination = Path.Combine(temp.Path, "existing.srvreplay");
+        string destination = Path.Combine(temp.Path, "existing.srvreplay");
         await File.WriteAllTextAsync(destination, "valid existing evidence");
         var exporter = new JournalReplayExporter(new FailingPackageWriter());
 
@@ -465,16 +466,19 @@ public sealed class JournalReplayExporterTests
     public async Task ExportRejectsSameCountJournalMutationBetweenPasses()
     {
         using var temp = new TemporaryDirectory();
-        var firstPass = new[] { HistoryEvent("{\"event\":\"Commander\",\"Name\":\"First Cmdr\",\"FID\":\"F111111\"}") };
-        var secondPass = new[]
+        JournalHistoryEvent[] firstPass = new[]
+        {
+            HistoryEvent("{\"event\":\"Commander\",\"Name\":\"First Cmdr\",\"FID\":\"F111111\"}"),
+        };
+        JournalHistoryEvent[] secondPass = new[]
         {
             HistoryEvent("{\"event\":\"Commander\",\"Name\":\"Private Replacement\",\"FID\":\"F999999\"}"),
         };
-        var pass = 0;
+        int pass = 0;
         var exporter = new JournalReplayExporter(StreamHistory);
-        var destination = Path.Combine(temp.Path, "changed.srvreplay");
+        string destination = Path.Combine(temp.Path, "changed.srvreplay");
 
-        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+        InvalidDataException exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
             exporter.ExportAsync(
                 temp.Path,
                 destination,
@@ -492,8 +496,8 @@ public sealed class JournalReplayExporterTests
             [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken
         )
         {
-            var events = Interlocked.Increment(ref pass) == 1 ? firstPass : secondPass;
-            foreach (var historyEvent in events)
+            JournalHistoryEvent[] events = Interlocked.Increment(ref pass) == 1 ? firstPass : secondPass;
+            foreach (JournalHistoryEvent? historyEvent in events)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 await Task.Yield();
@@ -513,15 +517,15 @@ public sealed class JournalReplayExporterTests
     public async Task ExportRejectsBlankSourceVersion(string sourceVersion)
     {
         using var temp = new TemporaryDirectory();
-        var journals = Path.Combine(temp.Path, "journals");
+        string journals = Path.Combine(temp.Path, "journals");
         Directory.CreateDirectory(journals);
         await File.WriteAllTextAsync(
             Path.Combine(journals, "Journal.01.log"),
             "{\"event\":\"Commander\",\"Name\":\"Replay Cmdr\",\"FID\":\"F123456\"}\n"
         );
-        var destination = Path.Combine(temp.Path, "invalid.srvreplay");
+        string destination = Path.Combine(temp.Path, "invalid.srvreplay");
 
-        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+        InvalidDataException exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
             new JournalReplayExporter().ExportAsync(
                 journals,
                 destination,
@@ -538,15 +542,15 @@ public sealed class JournalReplayExporterTests
     public async Task ExportRejectsOversizedSourceVersion()
     {
         using var temp = new TemporaryDirectory();
-        var journals = Path.Combine(temp.Path, "journals");
+        string journals = Path.Combine(temp.Path, "journals");
         Directory.CreateDirectory(journals);
         await File.WriteAllTextAsync(
             Path.Combine(journals, "Journal.01.log"),
             "{\"event\":\"Commander\",\"Name\":\"Replay Cmdr\",\"FID\":\"F123456\"}\n"
         );
-        var destination = Path.Combine(temp.Path, "invalid.srvreplay");
+        string destination = Path.Combine(temp.Path, "invalid.srvreplay");
 
-        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+        InvalidDataException exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
             new JournalReplayExporter().ExportAsync(
                 journals,
                 destination,
@@ -569,7 +573,7 @@ public sealed class JournalReplayExporterTests
     [InlineData(1, ReplaySessionManager.MaximumJournalBytes + 1)]
     public void ExportBoundsMatchWhatTheImporterCanRead(int eventCount, long byteCount)
     {
-        var exception = Assert.Throws<InvalidDataException>(() =>
+        InvalidDataException exception = Assert.Throws<InvalidDataException>(() =>
             JournalReplayExporter.ValidateOutputBounds(eventCount, byteCount)
         );
 

@@ -4,6 +4,7 @@ using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
@@ -17,7 +18,7 @@ public sealed class OverlayEditorFolderTabTests
     [AvaloniaFact]
     public void PreviewRendersAVisibleFolderTabAttachedAboveTheBody()
     {
-        var definition = OverlayLayoutCatalog.GetRequired("PlotFSSInfo");
+        OverlayLayoutDefinition definition = OverlayLayoutCatalog.GetRequired("PlotFSSInfo");
         var preview = new OverlayPositionPreviewWindow(definition);
         try
         {
@@ -43,7 +44,7 @@ public sealed class OverlayEditorFolderTabTests
             Assert.Equal(1, preview.EditorPreviewStateCount);
             Assert.False(preview.CycleEditorPreviewState());
 
-            var frame = preview.CaptureRenderedFrame();
+            WriteableBitmap? frame = preview.CaptureRenderedFrame();
             Assert.NotNull(frame);
         }
         finally
@@ -55,7 +56,7 @@ public sealed class OverlayEditorFolderTabTests
     [AvaloniaFact]
     public void StatefulFolderTabCyclesRealSharedPresentationData()
     {
-        var definition = OverlayLayoutCatalog.GetRequired("PlotBioSystem");
+        OverlayLayoutDefinition definition = OverlayLayoutCatalog.GetRequired("PlotBioSystem");
         var preview = new OverlayPositionPreviewWindow(definition);
         try
         {
@@ -63,18 +64,22 @@ public sealed class OverlayEditorFolderTabTests
             preview.ApplyRuntimePresentationTheme();
             preview.Show();
 
-            var presentation = Assert.IsType<BiologySurveyOverlayPresentation>(preview.RuntimePresentation);
+            BiologySurveyOverlayPresentation presentation = Assert.IsType<BiologySurveyOverlayPresentation>(
+                preview.RuntimePresentation
+            );
             Assert.True(preview.EditorFolderTabStateButtonControl.IsVisible);
             Assert.Equal(3, preview.EditorPreviewStateCount);
             Assert.Equal("System overview", preview.CurrentEditorPreviewStateName);
             Assert.Contains("1/3", preview.EditorFolderTabStateLabelControl.Text);
-            var stateLabelBrush = Assert.IsType<ISolidColorBrush>(
+            ISolidColorBrush stateLabelBrush = Assert.IsType<ISolidColorBrush>(
                 preview.EditorFolderTabStateLabelControl.Foreground,
                 exactMatch: false
             );
             Assert.Equal(Color.Parse("#5C130D"), stateLabelBrush.Color);
 
-            var overview = Assert.IsType<SystemSurveyOverlayViewModel>(presentation.DataContext);
+            SystemSurveyOverlayViewModel overview = Assert.IsType<SystemSurveyOverlayViewModel>(
+                presentation.DataContext
+            );
             Assert.True(overview.Survey.BiologySurveyDisplay.IsSystemOverview);
             Assert.Equal("SYSTEM BIOLOGY", overview.Survey.BiologySurveyDisplay.Title);
             Assert.All(
@@ -98,7 +103,9 @@ public sealed class OverlayEditorFolderTabTests
             Assert.Same(presentation, preview.RuntimePresentation);
             Assert.Equal("Body predictions", preview.CurrentEditorPreviewStateName);
             Assert.Contains("2/3", preview.EditorFolderTabStateLabelControl.Text);
-            var predictions = Assert.IsType<SystemSurveyOverlayViewModel>(presentation.DataContext);
+            SystemSurveyOverlayViewModel predictions = Assert.IsType<SystemSurveyOverlayViewModel>(
+                presentation.DataContext
+            );
             Assert.True(predictions.Survey.BiologySurveyDisplay.IsBodyDetail);
             Assert.Equal("BODY PREDICTIONS", predictions.Survey.BiologySurveyDisplay.Title);
             Assert.True(predictions.Survey.BiologySurveyDisplay.RequiresDss);
@@ -123,7 +130,9 @@ public sealed class OverlayEditorFolderTabTests
             Assert.Same(presentation, preview.RuntimePresentation);
             Assert.Equal("Body identified", preview.CurrentEditorPreviewStateName);
             Assert.Contains("3/3", preview.EditorFolderTabStateLabelControl.Text);
-            var identified = Assert.IsType<SystemSurveyOverlayViewModel>(presentation.DataContext);
+            SystemSurveyOverlayViewModel identified = Assert.IsType<SystemSurveyOverlayViewModel>(
+                presentation.DataContext
+            );
             Assert.True(identified.Survey.BiologySurveyDisplay.IsBodyDetail);
             Assert.Equal("IDENTIFIED BIO", identified.Survey.BiologySurveyDisplay.Title);
             Assert.False(identified.Survey.BiologySurveyDisplay.RequiresDss);
@@ -207,7 +216,7 @@ public sealed class OverlayEditorFolderTabTests
     [AvaloniaFact]
     public void RuntimePreviewDoesNotRetainASecondCatalogSizedBackingLayer()
     {
-        var definition = OverlayLayoutCatalog.GetRequired("PlotGuardianSystem");
+        OverlayLayoutDefinition definition = OverlayLayoutCatalog.GetRequired("PlotGuardianSystem");
         var preview = new OverlayPositionPreviewWindow(definition);
         try
         {
@@ -220,7 +229,7 @@ public sealed class OverlayEditorFolderTabTests
             Assert.Equal(0.35, preview.PreviewBodyControl.Opacity);
             Assert.Equal(new Thickness(0), preview.PreviewBodyControl.Padding);
             Assert.Same(Brushes.Transparent, preview.PreviewBodyControl.Background);
-            var measured = preview.GetExpectedPixelSize(1);
+            PixelSize measured = preview.GetExpectedPixelSize(1);
             Assert.True(
                 measured.Width < definition.PreviewSize.Width,
                 $"Content measured {measured.Width} against the old "
@@ -244,10 +253,14 @@ public sealed class OverlayEditorFolderTabTests
             preview.Show();
             Assert.NotNull(preview.CaptureRenderedFrame());
 
-            var presentation = Assert.IsType<BiologyStatusOverlayPresentation>(preview.RuntimePresentation);
-            var progress = Assert.Single(presentation.GetVisualDescendants().OfType<ProgressBar>());
-            var header = Assert.IsType<Grid>(progress.Parent);
-            var state = Assert.IsType<SystemSurveyOverlayViewModel>(presentation.DataContext).Survey.BiologyStatus!;
+            BiologyStatusOverlayPresentation presentation = Assert.IsType<BiologyStatusOverlayPresentation>(
+                preview.RuntimePresentation
+            );
+            ProgressBar progress = Assert.Single(presentation.GetVisualDescendants().OfType<ProgressBar>());
+            Grid header = Assert.IsType<Grid>(progress.Parent);
+            BiologyStatusViewModel state = Assert
+                .IsType<SystemSurveyOverlayViewModel>(presentation.DataContext)
+                .Survey.BiologyStatus!;
 
             Assert.Equal(state.CompletionPercent, progress.Value);
             Assert.True(header.ClipToBounds);
@@ -311,9 +324,11 @@ public sealed class OverlayEditorFolderTabTests
             preview.ApplyRuntimePresentationTheme();
             preview.Show();
 
-            var presentation = Assert.IsType<PulseOverlayPresentation>(preview.RuntimePresentation);
-            var metrics = preview.GetPanelMetrics(preview.RenderScaling);
-            var translatedOrigin = presentation.TranslatePoint(default, preview);
+            PulseOverlayPresentation presentation = Assert.IsType<PulseOverlayPresentation>(
+                preview.RuntimePresentation
+            );
+            OverlayPreviewPanelMetrics metrics = preview.GetPanelMetrics(preview.RenderScaling);
+            Point? translatedOrigin = presentation.TranslatePoint(default, preview);
 
             Assert.Equal(Avalonia.Layout.HorizontalAlignment.Left, presentation.HorizontalAlignment);
             Assert.Equal(Avalonia.Layout.VerticalAlignment.Top, presentation.VerticalAlignment);
@@ -330,7 +345,7 @@ public sealed class OverlayEditorFolderTabTests
 
     private static void AssertFolderTabBrush(IBrush? candidate)
     {
-        var brush = Assert.IsType<ISolidColorBrush>(candidate, exactMatch: false);
+        ISolidColorBrush brush = Assert.IsType<ISolidColorBrush>(candidate, exactMatch: false);
         Assert.Equal(Color.Parse("#FFCC33"), brush.Color);
     }
 }

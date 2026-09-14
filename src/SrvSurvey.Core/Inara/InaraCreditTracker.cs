@@ -37,7 +37,7 @@ internal sealed class InaraCreditTracker
 
     public void Observe(JObject entry, bool inMulticrew)
     {
-        var eventName = entry.Value<string>("event");
+        string? eventName = entry.Value<string>("event");
         if (eventName == "LoadGame")
         {
             ObserveLoadGame(entry);
@@ -79,7 +79,7 @@ internal sealed class InaraCreditTracker
 
     private bool ObserveStatistics(JObject entry)
     {
-        var currentAssets = value(entry["Bank_Account"] as JObject, "Current_Wealth");
+        long? currentAssets = value(entry["Bank_Account"] as JObject, "Current_Wealth");
         if (currentAssets.HasValue && currentAssets != assets)
         {
             assets = currentAssets;
@@ -172,7 +172,7 @@ internal sealed class InaraCreditTracker
             return;
         }
 
-        var updatedCredits = credits.Value + delta;
+        long updatedCredits = credits.Value + delta;
         if (updatedCredits < 0)
         {
             // A missing or malformed journal delta means the reconstructed
@@ -194,7 +194,7 @@ internal sealed class InaraCreditTracker
             return null;
         }
 
-        var reportAt = parseTimestamp(timestamp);
+        DateTimeOffset reportAt = parseTimestamp(timestamp);
         if (!force && !ShouldReport(reportAt))
         {
             return null;
@@ -234,7 +234,12 @@ internal sealed class InaraCreditTracker
     }
 
     private static DateTimeOffset parseTimestamp(string timestamp) =>
-        DateTimeOffset.TryParse(timestamp, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var parsed)
+        DateTimeOffset.TryParse(
+            timestamp,
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.AssumeUniversal,
+            out DateTimeOffset parsed
+        )
             ? parsed
             : DateTimeOffset.UtcNow;
 
@@ -248,7 +253,7 @@ internal sealed class InaraCreditTracker
 
     private static long? value(JObject? entry, string property)
     {
-        var token = entry?[property];
+        JToken? token = entry?[property];
         if (token == null || token.Type is JTokenType.Null or JTokenType.Undefined)
         {
             return null;

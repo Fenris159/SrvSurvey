@@ -79,8 +79,8 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(systemName);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(systemAddress);
-        var normalizedName = systemName.Trim();
-        var edsmTask = FetchAsync(
+        string normalizedName = systemName.Trim();
+        Task<ProviderResult> edsmTask = FetchAsync(
             "EDSM",
             new Uri(
                 edsmBaseUri,
@@ -92,7 +92,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
             root => ParseEdsm(root, normalizedName, systemAddress),
             cancellationToken
         );
-        var spanshTask = FetchAsync(
+        Task<ProviderResult> spanshTask = FetchAsync(
             "Spansh",
             new Uri(
                 spanshBaseUri,
@@ -102,7 +102,11 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
             cancellationToken
         );
         await Task.WhenAll(edsmTask, spanshTask).ConfigureAwait(false);
-        var results = new[] { await edsmTask.ConfigureAwait(false), await spanshTask.ConfigureAwait(false) };
+        ProviderResult[] results = new[]
+        {
+            await edsmTask.ConfigureAwait(false),
+            await spanshTask.ConfigureAwait(false),
+        };
         return new SystemBodyDataLoadResult(
             results
                 .Where(result => result.Snapshot is not null)
@@ -124,7 +128,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
         timeoutCancellation.CancelAfter(requestTimeout);
         try
         {
-            using var response = await client
+            using HttpResponseMessage response = await client
                 .GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead, timeoutCancellation.Token)
                 .ConfigureAwait(false);
             if (response.StatusCode == HttpStatusCode.NotFound)
@@ -133,9 +137,9 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
             }
 
             response.EnsureSuccessStatusCode();
-            var bytes = await ReadBoundedAsync(response.Content, timeoutCancellation.Token).ConfigureAwait(false);
+            byte[] bytes = await ReadBoundedAsync(response.Content, timeoutCancellation.Token).ConfigureAwait(false);
             using var document = JsonDocument.Parse(bytes);
-            var snapshot = parser(document.RootElement);
+            SystemScanSnapshot? snapshot = parser(document.RootElement);
             return new ProviderResult(provider, snapshot, null, snapshot is null);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -166,8 +170,8 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
         }
 
         ValidateAddress(root, expectedAddress, EdsmBodiesResponseLabel);
-        var systemName = GetString(root, "name") ?? expectedName;
-        var bodies = ReadBodyArray(root, EdsmBodiesResponseLabel)
+        string systemName = GetString(root, "name") ?? expectedName;
+        SystemScanBodySnapshot[] bodies = ReadBodyArray(root, EdsmBodiesResponseLabel)
             .Select(body => ParseBody(body, systemName, BodyProvider.Edsm))
             .ToArray();
         ValidateUniqueBodyIds(bodies, EdsmBodiesResponseLabel);
@@ -177,20 +181,20 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
     private static SystemScanSnapshot ParseSpansh(JsonElement root, string expectedName, long expectedAddress)
     {
         RequireObject(root, "Spansh system dump response");
-        if (!TryGetObject(root, "system", out var system))
+        if (!TryGetObject(root, "system", out JsonElement system))
         {
             throw new InvalidDataException("The Spansh system dump has no system object.");
         }
 
         ValidateAddress(system, expectedAddress, "Spansh system dump");
-        var systemName = GetString(system, "name") ?? expectedName;
-        var bodies = ReadBodyArray(system, "Spansh system dump")
+        string systemName = GetString(system, "name") ?? expectedName;
+        SystemScanBodySnapshot[] bodies = ReadBodyArray(system, "Spansh system dump")
             .Select(body => ParseBody(body, systemName, BodyProvider.Spansh))
             .ToArray();
         ValidateUniqueBodyIds(bodies, "Spansh system dump");
         GalacticCoordinate? position = null;
         if (
-            TryGetObject(system, "coords", out var coords)
+            TryGetObject(system, "coords", out JsonElement coords)
             && GetDouble(coords, "x") is { } x
             && GetDouble(coords, "y") is { } y
             && GetDouble(coords, "z") is { } z
@@ -233,23 +237,23 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
     private static SystemScanBodySnapshot ParseBody(JsonElement body, string systemName, BodyProvider provider)
     {
         RequireObject(body, provider + " body");
-        var bodyId = GetInt32(body, "bodyId") ?? throw new InvalidDataException($"A {provider} body has no bodyId.");
-        var name = GetString(body, "name") ?? throw new InvalidDataException($"A {provider} body has no name.");
+        int bodyId = GetInt32(body, "bodyId") ?? throw new InvalidDataException($"A {provider} body has no bodyId.");
+        string name = GetString(body, "name") ?? throw new InvalidDataException($"A {provider} body has no name.");
         if (bodyId < 0)
         {
             throw new InvalidDataException($"The {provider} body '{name}' has an invalid bodyId.");
         }
 
-        var type = GetString(body, "type");
-        var subType = GetString(body, "subType");
-        var isLandable = GetBoolean(body, "isLandable") == true;
-        var kind = GetBodyKind(type, subType, isLandable, name);
-        var parents = ReadParents(body, provider);
-        var biologicalSignalCount = provider == BodyProvider.Spansh ? ReadBiologicalSignalCount(body) : 0;
-        var organisms = provider == BodyProvider.Spansh ? ReadOrganisms(body) : [];
-        var atmosphereType = NormalizeAtmosphereType(GetString(body, "atmosphereType"));
-        var radius = ReadRadius(body, provider);
-        var mass = GetDouble(body, "earthMasses") is > 0 and var earthMasses
+        string? type = GetString(body, "type");
+        string? subType = GetString(body, "subType");
+        bool isLandable = GetBoolean(body, "isLandable") == true;
+        SystemBodyKind kind = GetBodyKind(type, subType, isLandable, name);
+        List<SystemBodyParentSnapshot> parents = ReadParents(body, provider);
+        int biologicalSignalCount = provider == BodyProvider.Spansh ? ReadBiologicalSignalCount(body) : 0;
+        SystemOrganismSnapshot[] organisms = provider == BodyProvider.Spansh ? ReadOrganisms(body) : [];
+        string atmosphereType = NormalizeAtmosphereType(GetString(body, "atmosphereType"));
+        double radius = ReadRadius(body, provider);
+        double mass = GetDouble(body, "earthMasses") is > 0 and var earthMasses
             ? earthMasses
             : GetDouble(body, "solarMasses") ?? 0;
         return new SystemScanBodySnapshot(
@@ -316,7 +320,10 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
 
     private static SystemOrganismSnapshot[] ReadOrganisms(JsonElement body)
     {
-        if (!TryGetObject(body, "signals", out var signals) || !signals.TryGetProperty("genuses", out var genuses))
+        if (
+            !TryGetObject(body, "signals", out JsonElement signals)
+            || !signals.TryGetProperty("genuses", out JsonElement genuses)
+        )
         {
             return [];
         }
@@ -356,10 +363,10 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
     private static int ReadBiologicalSignalCount(JsonElement body)
     {
         if (
-            !TryGetObject(body, "signals", out var signals)
+            !TryGetObject(body, "signals", out JsonElement signals)
             || GetDateTimeOffset(signals, "updateTime") is not { } updated
             || updated <= BiologicalSignalCutoff
-            || !TryGetObject(signals, "signals", out var counts)
+            || !TryGetObject(signals, "signals", out JsonElement counts)
         )
         {
             return 0;
@@ -370,13 +377,13 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
 
     private static bool? ReadTidalLock(JsonElement body, BodyProvider provider)
     {
-        var value = GetBoolean(body, "rotationalPeriodTidallyLocked");
+        bool? value = GetBoolean(body, "rotationalPeriodTidallyLocked");
         return provider == BodyProvider.Edsm && value != true ? null : value;
     }
 
     private static List<SystemBodyParentSnapshot> ReadParents(JsonElement body, BodyProvider provider)
     {
-        if (!body.TryGetProperty("parents", out var parents) || parents.ValueKind == JsonValueKind.Null)
+        if (!body.TryGetProperty("parents", out JsonElement parents) || parents.ValueKind == JsonValueKind.Null)
         {
             return [];
         }
@@ -387,7 +394,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
         }
 
         var result = new List<SystemBodyParentSnapshot>();
-        foreach (var parent in parents.EnumerateArray())
+        foreach (JsonElement parent in parents.EnumerateArray())
         {
             result.Add(ParseParentSnapshot(parent, provider));
         }
@@ -403,8 +410,8 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
         }
 
         if (
-            !TryReadParentBodyId(parent, out var kindText, out var parentBodyId)
-            || !Enum.TryParse<SystemBodyParentKind>(kindText, ignoreCase: true, out var kind)
+            !TryReadParentBodyId(parent, out string? kindText, out int? parentBodyId)
+            || !Enum.TryParse<SystemBodyParentKind>(kindText, ignoreCase: true, out SystemBodyParentKind kind)
             || parentBodyId is null or < 0
         )
         {
@@ -425,7 +432,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
             return true;
         }
 
-        var firstProperty = parent.EnumerateObject().FirstOrDefault();
+        JsonProperty firstProperty = parent.EnumerateObject().FirstOrDefault();
         if (firstProperty.Value.ValueKind is JsonValueKind.Undefined)
         {
             return false;
@@ -433,7 +440,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
 
         kindText = firstProperty.Name;
         parentBodyId =
-            firstProperty.Value.ValueKind == JsonValueKind.Number && firstProperty.Value.TryGetInt32(out var id)
+            firstProperty.Value.ValueKind == JsonValueKind.Number && firstProperty.Value.TryGetInt32(out int id)
                 ? id
                 : null;
         return true;
@@ -441,7 +448,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
 
     private static SystemRingSnapshot[] ReadRings(JsonElement body, BodyProvider provider)
     {
-        if (!body.TryGetProperty("rings", out var rings) || rings.ValueKind == JsonValueKind.Null)
+        if (!body.TryGetProperty("rings", out JsonElement rings) || rings.ValueKind == JsonValueKind.Null)
         {
             return [];
         }
@@ -473,7 +480,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
         bool lowerCaseKeys = false
     )
     {
-        if (!owner.TryGetProperty(propertyName, out var values) || values.ValueKind == JsonValueKind.Null)
+        if (!owner.TryGetProperty(propertyName, out JsonElement values) || values.ValueKind == JsonValueKind.Null)
         {
             return new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
         }
@@ -484,18 +491,18 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
         }
 
         var result = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
-        foreach (var pair in values.EnumerateObject())
+        foreach (JsonProperty pair in values.EnumerateObject())
         {
             if (
                 pair.Value.ValueKind != JsonValueKind.Number
-                || !pair.Value.TryGetDouble(out var value)
+                || !pair.Value.TryGetDouble(out double value)
                 || !double.IsFinite(value)
             )
             {
                 throw new InvalidDataException($"The external {propertyName} value '{pair.Name}' is invalid.");
             }
 
-            var key = normalizeCompositionKeys ? NormalizeCompositionKey(pair.Name) : pair.Name;
+            string key = normalizeCompositionKeys ? NormalizeCompositionKey(pair.Name) : pair.Name;
             result[lowerCaseKeys ? key.ToLowerInvariant() : key] = value;
         }
 
@@ -569,8 +576,8 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
 
     private static string NormalizeCompositionKey(string value)
     {
-        var normalized = value.Replace("-rich", "Rich", StringComparison.Ordinal);
-        var separator = normalized.IndexOf(' ');
+        string normalized = value.Replace("-rich", "Rich", StringComparison.Ordinal);
+        int separator = normalized.IndexOf(' ');
         return separator < 0 || separator == normalized.Length - 1
             ? normalized
             : normalized[..separator]
@@ -585,8 +592,8 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
             return null;
         }
 
-        var start = value.IndexOf('(');
-        var end = start < 0 ? -1 : value.IndexOf(')', start + 1);
+        int start = value.IndexOf('(');
+        int end = start < 0 ? -1 : value.IndexOf(')', start + 1);
         if (start >= 0 && end > start + 1 && end - start - 1 <= 3)
         {
             return value[(start + 1)..end];
@@ -597,7 +604,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
 
     private static string GetShortName(string bodyName, string systemName)
     {
-        var shortName = bodyName.StartsWith(systemName, StringComparison.Ordinal)
+        string shortName = bodyName.StartsWith(systemName, StringComparison.Ordinal)
             ? bodyName[systemName.Length..]
             : bodyName;
         return shortName.Replace(" ", string.Empty, StringComparison.Ordinal);
@@ -605,7 +612,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
 
     private static void ValidateAddress(JsonElement owner, long expectedAddress, string source)
     {
-        var address = GetInt64(owner, "id64");
+        long? address = GetInt64(owner, "id64");
         if (address != expectedAddress)
         {
             throw new InvalidDataException(
@@ -616,7 +623,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
 
     private static JsonElement[] ReadBodyArray(JsonElement owner, string source)
     {
-        if (!owner.TryGetProperty("bodies", out var bodies) || bodies.ValueKind != JsonValueKind.Array)
+        if (!owner.TryGetProperty("bodies", out JsonElement bodies) || bodies.ValueKind != JsonValueKind.Array)
         {
             throw new InvalidDataException($"The {source} bodies value is not an array.");
         }
@@ -639,12 +646,12 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
             throw new InvalidDataException("The external body response exceeds the 16 MiB safety limit.");
         }
 
-        await using var stream = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        await using Stream stream = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         using var buffer = new MemoryStream();
-        var block = new byte[81920];
+        byte[] block = new byte[81920];
         while (true)
         {
-            var count = await stream.ReadAsync(block, cancellationToken).ConfigureAwait(false);
+            int count = await stream.ReadAsync(block, cancellationToken).ConfigureAwait(false);
             if (count == 0)
             {
                 return buffer.ToArray();
@@ -674,7 +681,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
 
     private static string? GetString(JsonElement owner, string propertyName)
     {
-        return owner.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+        return owner.TryGetProperty(propertyName, out JsonElement value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
     }
@@ -682,7 +689,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
     private static bool? GetBoolean(JsonElement owner, string propertyName)
     {
         return
-            owner.TryGetProperty(propertyName, out var value)
+            owner.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind is JsonValueKind.True or JsonValueKind.False
             ? value.GetBoolean()
             : null;
@@ -691,9 +698,9 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
     private static int? GetInt32(JsonElement owner, string propertyName)
     {
         return
-            owner.TryGetProperty(propertyName, out var value)
+            owner.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind == JsonValueKind.Number
-            && value.TryGetInt32(out var result)
+            && value.TryGetInt32(out int result)
             ? result
             : null;
     }
@@ -701,9 +708,9 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
     private static long? GetInt64(JsonElement owner, string propertyName)
     {
         return
-            owner.TryGetProperty(propertyName, out var value)
+            owner.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind == JsonValueKind.Number
-            && value.TryGetInt64(out var result)
+            && value.TryGetInt64(out long result)
             ? result
             : null;
     }
@@ -711,9 +718,9 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
     private static double? GetDouble(JsonElement owner, string propertyName)
     {
         return
-            owner.TryGetProperty(propertyName, out var value)
+            owner.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind == JsonValueKind.Number
-            && value.TryGetDouble(out var result)
+            && value.TryGetDouble(out double result)
             && double.IsFinite(result)
             ? result
             : null;
@@ -727,7 +734,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
                 value,
                 CultureInfo.InvariantCulture,
                 DateTimeStyles.AssumeUniversal,
-                out var result
+                out global::System.DateTimeOffset result
             )
             ? result
             : null;

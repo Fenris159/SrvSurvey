@@ -18,9 +18,9 @@ public sealed class OverlayPositionEditSessionTests
                 .Count()
         );
 
-        foreach (var category in OverlayLayoutCatalog.Categories)
+        foreach (OverlayLayoutCategoryDefinition category in OverlayLayoutCatalog.Categories)
         {
-            var definitions = OverlayLayoutCatalog.ForCategory(category.Category);
+            IReadOnlyList<OverlayLayoutDefinition> definitions = OverlayLayoutCatalog.ForCategory(category.Category);
             Assert.NotEmpty(definitions);
             Assert.All(
                 definitions,
@@ -60,7 +60,9 @@ public sealed class OverlayPositionEditSessionTests
             null
         );
         var session = new OverlayPositionEditSession(active);
-        var definition = OverlayLayoutCatalog.Supported.Single(item => item.Name == "PlotBioStatus");
+        OverlayLayoutDefinition definition = OverlayLayoutCatalog.Supported.Single(item =>
+            item.Name == "PlotBioStatus"
+        );
         var bounds = new PixelRect(100, 200, 1200, 800);
         var destination = new PixelPoint(530, 360);
 
@@ -115,7 +117,7 @@ public sealed class OverlayPositionEditSessionTests
 
         Assert.True(session.Move("PlotJumpInfo", destination, size, bounds));
 
-        var placement = session.GetPlacement("PlotJumpInfo");
+        LegacyOverlayPlacement placement = session.GetPlacement("PlotJumpInfo");
         Assert.Equal(LegacyHorizontalAnchor.Center, placement.Horizontal);
         Assert.Equal(LegacyVerticalAnchor.Top, placement.Vertical);
         Assert.Equal(destination, session.GetPosition("PlotJumpInfo", bounds, size));
@@ -144,7 +146,7 @@ public sealed class OverlayPositionEditSessionTests
 
         Assert.True(session.MoveWithDefaultAnchors("PlotJumpInfo", center, size, bounds));
 
-        var placement = session.GetPlacement("PlotJumpInfo");
+        LegacyOverlayPlacement placement = session.GetPlacement("PlotJumpInfo");
         Assert.Equal(LegacyHorizontalAnchor.Center, placement.Horizontal);
         Assert.Equal(0, placement.HorizontalOffset);
         Assert.Equal(LegacyVerticalAnchor.Top, placement.Vertical);

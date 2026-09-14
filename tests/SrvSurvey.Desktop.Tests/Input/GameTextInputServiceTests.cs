@@ -15,7 +15,7 @@ public sealed class GameTextInputServiceTests
             return UioHookResult.Success;
         });
 
-        var result = service.EnterText("Synuefe NL-N C23-4");
+        GameTextInputResult result = service.EnterText("Synuefe NL-N C23-4");
 
         Assert.True(result.Succeeded);
         Assert.Equal("Synuefe NL-N C23-4", entered);
@@ -26,7 +26,7 @@ public sealed class GameTextInputServiceTests
     {
         var service = new SharpHookGameTextInputService(_ => UioHookResult.ErrorXOpenDisplay);
 
-        var result = service.EnterText("Sol");
+        GameTextInputResult result = service.EnterText("Sol");
 
         Assert.False(result.Succeeded);
         Assert.Contains("ErrorXOpenDisplay", result.Status);
@@ -37,7 +37,7 @@ public sealed class GameTextInputServiceTests
     {
         var service = new UnavailableGameTextInputService("Wayland synthetic input unavailable.");
 
-        var result = service.EnterText("Sol");
+        GameTextInputResult result = service.EnterText("Sol");
 
         Assert.False(service.IsAvailable);
         Assert.False(result.Succeeded);

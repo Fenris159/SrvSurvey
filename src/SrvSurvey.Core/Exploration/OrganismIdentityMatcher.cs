@@ -13,7 +13,7 @@ internal static class OrganismIdentityMatcher
     {
         ArgumentNullException.ThrowIfNull(candidates);
         ArgumentNullException.ThrowIfNull(identitySelector);
-        var materialized = candidates.ToArray();
+        T[] materialized = candidates.ToArray();
 
         if (
             incoming.EntryId is > 0
@@ -37,7 +37,7 @@ internal static class OrganismIdentityMatcher
             return variantMatch;
         }
 
-        var sameGenus = materialized
+        T[] sameGenus = materialized
             .Where(candidate =>
                 string.Equals(identitySelector(candidate).Genus, incoming.Genus, StringComparison.Ordinal)
             )
@@ -57,7 +57,7 @@ internal static class OrganismIdentityMatcher
             return speciesMatch;
         }
 
-        var placeholder = FindBy(
+        T? placeholder = FindBy(
             sameGenus,
             identitySelector,
             identity =>

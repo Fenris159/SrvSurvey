@@ -5,17 +5,17 @@ public static class JourneyStatistics
     public static JourneyQuickStatistics Calculate(JourneyDocument journey)
     {
         ArgumentNullException.ThrowIfNull(journey);
-        var counts = JourneyCounts.Empty;
+        JourneyCounts counts = JourneyCounts.Empty;
         var uniqueSystems = new HashSet<string>(StringComparer.Ordinal);
         var categoryCounts = new Dictionary<string, int>(StringComparer.Ordinal);
-        var totalDistance = 0d;
-        var landedBodies = 0;
-        var totalLandings = 0;
-        var codexScans = 0;
-        var fssCompleted = 0;
+        double totalDistance = 0d;
+        int landedBodies = 0;
+        int totalLandings = 0;
+        int codexScans = 0;
+        int fssCompleted = 0;
         JourneySystemReference? previous = null;
 
-        foreach (var visit in journey.VisitedSystems)
+        foreach (JourneySystemVisit visit in journey.VisitedSystems)
         {
             uniqueSystems.Add(visit.StarSystem.Name);
             counts += visit.Counts;
@@ -38,7 +38,7 @@ public static class JourneyStatistics
                 continue;
             }
 
-            foreach (var (name, count) in visit.SubCategories)
+            foreach ((string? name, int count) in visit.SubCategories)
             {
                 categoryCounts[name] = categoryCounts.GetValueOrDefault(name) + count;
             }

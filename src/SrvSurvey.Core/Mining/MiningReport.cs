@@ -10,30 +10,47 @@ public static class MiningReport
     public static string Text(IEnumerable<MiningSession> sessions)
     {
         var output = new StringBuilder("SrvSurvey mining report\n");
-        foreach (var s in sessions)
+        foreach (MiningSession s in sessions)
         {
-            output.AppendLine($"\n{s.System} / {s.Ring} · {s.Started:O} · {s.Ship}");
             output.AppendLine(
-                $"{s.RefinedTons:0.##} t · {s.TonsPerHour:0.0} t/h · {s.ActiveDuration} · {s.Asteroids} asteroids · {s.CoreHits} cores"
+                string.Create(CultureInfo.CurrentCulture, $"\n{s.System} / {s.Ring} · {s.Started:O} · {s.Ship}")
+            );
+            output.AppendLine(
+                string.Create(
+                    CultureInfo.CurrentCulture,
+                    $"{s.RefinedTons:0.##} t · {s.TonsPerHour:0.0} t/h · {s.ActiveDuration} · {s.Asteroids} asteroids · {s.CoreHits} cores"
+                )
             );
             output.AppendLine(s.Notes);
-            foreach (var prospect in s.Prospects)
-            {
-                output.AppendLine($"{prospect.Time:O} · {prospect.MineralSummary} · Core: {prospect.Core}");
-            }
-
-            foreach (var group in s.Collections.GroupBy(c => (c.Name, c.Engineering)))
+            foreach (MiningProspect prospect in s.Prospects)
             {
                 output.AppendLine(
-                    $"{group.Key.Name}: {group.Sum(c => c.Count)} {(group.Key.Engineering ? "materials" : "t")}"
+                    string.Create(
+                        CultureInfo.CurrentCulture,
+                        $"{prospect.Time:O} · {prospect.MineralSummary} · Core: {prospect.Core}"
+                    )
+                );
+            }
+
+            foreach (
+                IGrouping<(string Name, bool Engineering), MiningCollectionEntry> group in s.Collections.GroupBy(c =>
+                    (c.Name, c.Engineering)
+                )
+            )
+            {
+                output.AppendLine(
+                    string.Create(
+                        CultureInfo.CurrentCulture,
+                        $"{group.Key.Name}: {group.Sum(c => c.Count)} {(group.Key.Engineering ? "materials" : "t")}"
+                    )
                 );
             }
 
             if (s.Imported is { } imported)
             {
-                foreach (var field in imported.Fields)
+                foreach (KeyValuePair<string, string> field in imported.Fields)
                 {
-                    output.AppendLine($"{field.Key}: {field.Value}");
+                    output.AppendLine(string.Create(CultureInfo.CurrentCulture, $"{field.Key}: {field.Value}"));
                 }
             }
         }
@@ -45,7 +62,7 @@ public static class MiningReport
         var text = new StringBuilder(
             "Started,System,Ring,Ship,ActiveMinutes,Tons,TonsPerHour,Asteroids,CoreHits,Prospectors,Collectors,EngineeringMaterials,Notes\r\n"
         );
-        foreach (var s in sessions)
+        foreach (MiningSession s in sessions)
         {
             text.AppendLine(
                 string.Join(
@@ -96,10 +113,16 @@ public static class MiningReport
         if (sessions.Count > 1)
         {
             text.Append("<h2>Session comparison</h2><p>Tons refined per active hour; paused time excluded.</p>");
-            var maximum = Math.Max(1, sessions.Max(s => s.TonsPerHour));
-            foreach (var session in sessions)
+            double maximum = Math.Max(1, sessions.Max(s => s.TonsPerHour));
+            foreach (MiningSession session in sessions)
             {
-                Bar(text, session.System + " · " + session.Started.ToString("g"), session.TonsPerHour, maximum, "t/h");
+                Bar(
+                    text,
+                    session.System + " · " + session.Started.ToString("g", CultureInfo.CurrentCulture),
+                    session.TonsPerHour,
+                    maximum,
+                    "t/h"
+                );
             }
         }
         if (sessions.Count > 1)
@@ -107,7 +130,7 @@ public static class MiningReport
             MiningReportCharts.AppendMaterialComparison(text, sessions);
         }
 
-        foreach (var session in sessions)
+        foreach (MiningSession session in sessions)
         {
             AppendSession(text, session);
         }
@@ -121,7 +144,10 @@ public static class MiningReport
     private static void AppendSession(StringBuilder text, MiningSession s)
     {
         text.Append(
-            $"<section><h2>{H(s.System)} / {H(s.Ring)}</h2><p>{H(s.Ship)} · {H(s.Started.ToLocalTime().ToString("f"))}</p>"
+            string.Create(
+                CultureInfo.CurrentCulture,
+                $"<section><h2>{H(s.System)} / {H(s.Ring)}</h2><p>{H(s.Ship)} · {H(s.Started.ToLocalTime().ToString("f", CultureInfo.CurrentCulture))}</p>"
+            )
         );
         text.Append(
             CultureInfo.InvariantCulture,
@@ -129,7 +155,7 @@ public static class MiningReport
         );
         if (s.Notes.Length > 0)
         {
-            text.Append($"<pre>{H(s.Notes)}</pre>");
+            text.Append("<pre>" + H(s.Notes) + "</pre>");
         }
 
         if (s.Imported is { } imported)
@@ -137,9 +163,9 @@ public static class MiningReport
             text.Append(
                 "<details><summary>Imported report details</summary><p>Historical summary; per-event observations were not included in this CSV.</p><table>"
             );
-            foreach (var field in imported.Fields)
+            foreach (KeyValuePair<string, string> field in imported.Fields)
             {
-                text.Append($"<tr><th>{H(field.Key)}</th><td>{H(field.Value)}</td></tr>");
+                text.Append("<tr><th>" + H(field.Key) + "</th><td>" + H(field.Value) + "</td></tr>");
             }
 
             text.Append("</table></details>");
@@ -147,7 +173,7 @@ public static class MiningReport
         if (s.RefineryEstimates.Count > 0)
         {
             text.Append("<h3>Pending refinery contents (manual estimates)</h3><ul>");
-            foreach (var item in s.RefineryEstimates)
+            foreach (KeyValuePair<string, double> item in s.RefineryEstimates)
             {
                 text.Append(CultureInfo.InvariantCulture, $"<li>{H(item.Key)}: {item.Value:0.##} t</li>");
             }
@@ -163,7 +189,9 @@ public static class MiningReport
         MiningReportCharts.AppendTimeline(text, s);
         text.Append("<h3>Refined minerals</h3>");
         foreach (
-            var group in s.Collections.Where(c => !c.Engineering).GroupBy(c => c.Name, StringComparer.OrdinalIgnoreCase)
+            IGrouping<string, MiningCollectionEntry> group in s
+                .Collections.Where(c => !c.Engineering)
+                .GroupBy(c => c.Name, StringComparer.OrdinalIgnoreCase)
         )
         {
             Bar(text, group.Key, group.Sum(c => c.Count), Math.Max(1, s.RefinedTons), "t");
@@ -172,7 +200,7 @@ public static class MiningReport
         text.Append(
             "<h3>Prospecting yields</h3><table><thead><tr><th>Mineral</th><th>Finds</th><th>Quality hits</th><th title='Mean proportion over asteroids containing the mineral'>Average %</th><th>Best %</th></tr></thead><tbody>"
         );
-        foreach (var material in s.Summarize(s.Thresholds))
+        foreach (MiningMaterialSummary material in s.Summarize(s.Thresholds))
         {
             text.Append(
                 CultureInfo.InvariantCulture,
@@ -183,21 +211,43 @@ public static class MiningReport
         text.Append(
             "</tbody></table><details><summary>Prospecting timeline</summary><table><tr><th>Time</th><th>Minerals</th><th>Core</th></tr>"
         );
-        foreach (var prospect in s.Prospects)
+        foreach (MiningProspect prospect in s.Prospects)
         {
+            string materials = string.Join(
+                ", ",
+                prospect.Materials.Select(material =>
+                    material.Name + " " + material.Percentage.ToString("0.0", CultureInfo.CurrentCulture) + "%"
+                )
+            );
             text.Append(
-                $"<tr><td>{H(prospect.Time.ToLocalTime().ToString("T"))}</td><td>{H(string.Join(", ", prospect.Materials.Select(m => $"{m.Name} {m.Percentage:0.0}%")))}</td><td>{H(prospect.Core)}</td></tr>"
+                "<tr><td>"
+                    + H(prospect.Time.ToLocalTime().ToString("T", CultureInfo.CurrentCulture))
+                    + "</td><td>"
+                    + H(materials)
+                    + "</td><td>"
+                    + H(prospect.Core)
+                    + "</td></tr>"
             );
         }
 
         text.Append("</table></details><h3>Engineering materials collected</h3><ul>");
-        foreach (var group in s.Collections.Where(c => c.Engineering).GroupBy(c => c.Name))
+        foreach (
+            IGrouping<string, MiningCollectionEntry> group in s
+                .Collections.Where(c => c.Engineering)
+                .GroupBy(c => c.Name)
+        )
         {
-            text.Append($"<li>{H(group.Key)} ×{group.Sum(c => c.Count)}</li>");
+            text.Append(
+                "<li>"
+                    + H(group.Key)
+                    + " ×"
+                    + group.Sum(collection => collection.Count).ToString(CultureInfo.CurrentCulture)
+                    + "</li>"
+            );
         }
 
         text.Append("</ul>");
-        foreach (var screenshot in s.Screenshots)
+        foreach (string screenshot in s.Screenshots)
         {
             AppendScreenshot(text, screenshot);
         }
@@ -216,8 +266,8 @@ public static class MiningReport
             return;
         }
 
-        var extension = Path.GetExtension(path).ToLowerInvariant();
-        var mime = extension switch
+        string extension = Path.GetExtension(path).ToLowerInvariant();
+        string? mime = extension switch
         {
             ".png" => "image/png",
             ".jpg" or ".jpeg" => "image/jpeg",
@@ -230,7 +280,11 @@ public static class MiningReport
         }
 
         text.Append(
-            $"<img alt='Session screenshot' src='data:{mime};base64,{Convert.ToBase64String(File.ReadAllBytes(path))}'>"
+            "<img alt='Session screenshot' src='data:"
+                + mime
+                + ";base64,"
+                + Convert.ToBase64String(File.ReadAllBytes(path))
+                + "'>"
         );
     }
 

@@ -1,4 +1,6 @@
+using Avalonia.Media;
 using SrvSurvey.Core.Exobiology;
+using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Desktop.Configuration;
@@ -17,7 +19,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void EmptyBiologyStateProvidesAStableNonNullBindingTarget()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
 
         Assert.False(viewModel.HasBiologySurvey);
         Assert.Same(BiologySurveyViewModel.Empty, viewModel.BiologySurveyDisplay);
@@ -26,7 +28,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void EmptyBodyInformationProvidesAStableNonNullBindingTarget()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
 
         Assert.False(viewModel.HasBodyInformation);
         Assert.Null(viewModel.BodyInformation);
@@ -36,7 +38,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void UseBioSignalRadiusInvertsSmallCanonnRadarCircles()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         Assert.True(viewModel.UseSmallCanonnRadarCircles);
         Assert.False(viewModel.UseBioSignalRadius);
 
@@ -60,16 +62,16 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void IdenticalEmptyUpdateRetainsPresentationAndDoesNotNotify()
     {
-        var viewModel = CreateViewModel();
-        var exobiology = ExobiologySnapshot.Empty with { ScannedBioEntryIds = ["bio-entry"] };
+        SystemSurveyViewModel viewModel = CreateViewModel();
+        ExobiologySnapshot exobiology = ExobiologySnapshot.Empty with { ScannedBioEntryIds = ["bio-entry"] };
         viewModel.ApplyUpdate(
             [Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}""")],
             new EliteStatus(),
             exobiology
         );
-        var fssBodies = viewModel.FssBodies;
-        var dssBodies = viewModel.DssBodies;
-        var biologicalBodies = viewModel.BiologicalBodies;
+        IReadOnlyList<FssBodyRowViewModel> fssBodies = viewModel.FssBodies;
+        IReadOnlyList<SurveyBodyReferenceViewModel> dssBodies = viewModel.DssBodies;
+        IReadOnlyList<SurveyBodyReferenceViewModel> biologicalBodies = viewModel.BiologicalBodies;
         var notifications = new List<string?>();
         viewModel.PropertyChanged += (_, eventArgs) => notifications.Add(eventArgs.PropertyName);
 
@@ -84,7 +86,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void ApplyUpdateRaisesStatusAfterSnapshotIsConsistent()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
             [Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}""")],
             new EliteStatus { BodyName = "Test 1", Flags = StatusFlags.HasLatLong },
@@ -125,7 +127,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void PriorScanEligibilityUsesLegacySurfaceModesAndPreferences()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
             [Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}""")],
             new EliteStatus
@@ -245,7 +247,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void FssOverlayUsesLegacyModesAndForcedToggleSemantics()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
             [Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}""")],
             new EliteStatus { GuiFocus = GuiFocus.Fss }
@@ -277,7 +279,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void SystemStatusRequiresHonkAndSupportedFlightMode()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         var supercruise = new EliteStatus { Flags = StatusFlags.Supercruise | StatusFlags.InMainShip };
         viewModel.ApplyUpdate([Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}""")], supercruise);
         Assert.False(viewModel.ShouldShowSystemStatus);
@@ -300,7 +302,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [InlineData("lander01", true)]
     public void FlightWarningExcludesGroundVehiclesButRetainsNomad(string srvType, bool expected)
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
             [Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""), Parse(BodyInformationScan)],
             new EliteStatus { Flags = StatusFlags.InSrv | StatusFlags.HasLatLong, BodyName = "Test 1" },
@@ -312,7 +314,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void FlightWarningMatchesLegacyGravityBodyAndModeRules()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
             [Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""), Parse(BodyInformationScan)],
             new EliteStatus { Flags = StatusFlags.InMainShip | StatusFlags.HasLatLong, BodyName = "Test 1" }
@@ -411,7 +413,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         bool expectedExtreme
     )
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
             [
                 Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
@@ -422,7 +424,10 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             new EliteStatus { Flags = StatusFlags.InMainShip | StatusFlags.HasLatLong, BodyName = "Test 1" }
         );
 
-        var brush = Assert.IsType<Avalonia.Media.ISolidColorBrush>(viewModel.FlightWarningBrush, exactMatch: false);
+        ISolidColorBrush brush = Assert.IsType<Avalonia.Media.ISolidColorBrush>(
+            viewModel.FlightWarningBrush,
+            exactMatch: false
+        );
         Assert.Equal(Avalonia.Media.Color.FromRgb(red, green, blue), brush.Color);
         Assert.Equal(expectedNote, viewModel.FlightWarningNote);
         Assert.Equal(expectedExtreme, viewModel.IsExtremeFlightWarning);
@@ -431,7 +436,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void DisplayFiltersBodiesAndBuildsDssAndSignalProgress()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
             [
                 Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
@@ -463,11 +468,11 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         );
 
         Assert.Equal(3, viewModel.FssBodies.Count);
-        var terraformable = Assert.Single(viewModel.FssBodies, body => body.Name.Contains('1'));
+        FssBodyRowViewModel terraformable = Assert.Single(viewModel.FssBodies, body => body.Name.Contains('1'));
         Assert.Contains("TERRAFORMABLE", terraformable.Markers);
         Assert.True(terraformable.IsDssCandidate);
 
-        var signalBody = Assert.Single(viewModel.FssBodies, body => body.Name.Contains('2'));
+        FssBodyRowViewModel signalBody = Assert.Single(viewModel.FssBodies, body => body.Name.Contains('2'));
         Assert.Equal(2, signalBody.BiologicalSignalCount);
         Assert.Equal(1, signalBody.AnalyzedBiologicalSignalCount);
         Assert.Equal(1, signalBody.GeologicalSignalCount);
@@ -481,7 +486,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.False(viewModel.HasLastFssMarkers);
         Assert.False(viewModel.HasLastFssSignals);
 
-        var dssBody = Assert.Single(viewModel.DssBodies);
+        SurveyBodyReferenceViewModel dssBody = Assert.Single(viewModel.DssBodies);
         Assert.Equal("1", dssBody.Name);
         Assert.True(dssBody.IsDestination);
         Assert.Equal("1 biological signal remaining", viewModel.BiologicalHeading);
@@ -491,7 +496,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void ScanSummaryCountsOnlyScannedFssBodies()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
             [
                 Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
@@ -517,7 +522,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             new EliteStatus { GuiFocus = GuiFocus.Fss }
         );
 
-        var knownUnscannedBody = viewModel.Snapshot.Bodies.Single(body => body.BodyId == 3) with
+        SystemScanBodySnapshot knownUnscannedBody = viewModel.Snapshot.Bodies.Single(body => body.BodyId == 3) with
         {
             BodyId = 8,
             Name = "Test C 1",
@@ -536,7 +541,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void FssBodiesPutUnmappedBodiesFirstAndSortEachGroupNaturally()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
             [
                 Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
@@ -565,7 +570,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void LastFssBodyVisibilityHonorsModeAndPreference()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
             [Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""), Parse(TerraformableScan)],
             new EliteStatus { GuiFocus = GuiFocus.Fss }
@@ -587,7 +592,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void LastFssBodyPreservesPerSignalBiologyRewardBars()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
             [
                 Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
@@ -614,7 +619,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void SettingsImmediatelyRecalculateFilteredRows()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
             [
                 Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
@@ -634,7 +639,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void FssBodyScrollThresholdUpdatesHeightAndPersists()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         var notifications = new List<string?>();
         viewModel.PropertyChanged += (_, eventArgs) => notifications.Add(eventArgs.PropertyName);
 
@@ -662,7 +667,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void FssBodyRowsSeparateMarkersGeoAndBiologyOnOneStatusLine()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
             [
                 Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
@@ -674,7 +679,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             new EliteStatus { GuiFocus = GuiFocus.Fss }
         );
 
-        var row = Assert.Single(viewModel.FssBodies);
+        FssBodyRowViewModel row = Assert.Single(viewModel.FssBodies);
 
         Assert.True(row.IsLandable);
         Assert.Equal("TERRAFORMABLE", row.Markers);
@@ -687,7 +692,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void BodyInformationUsesMapDestinationAndFormatsDetailedScan()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         var notifications = new List<string?>();
         viewModel.PropertyChanged += (_, eventArgs) => notifications.Add(eventArgs.PropertyName);
         viewModel.ApplyUpdate(
@@ -712,7 +717,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         );
 
         Assert.True(viewModel.ShouldShowBodyInfo);
-        var body = Assert.IsType<BodyInformationViewModel>(viewModel.BodyInformation);
+        BodyInformationViewModel body = Assert.IsType<BodyInformationViewModel>(viewModel.BodyInformation);
         Assert.Same(body, viewModel.BodyInformationDisplay);
         Assert.Contains(nameof(SystemSurveyViewModel.BodyInformationDisplay), notifications);
         Assert.Equal("⚑ Test 1", body.Name);
@@ -734,7 +739,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.Equal("Carbon Dioxide", body.AtmosphereComposition[0].Name);
         Assert.Equal(2, body.Materials.Count);
         Assert.True(Assert.Single(body.Materials, material => material.Name == "Yttrium").IsRare);
-        var ring = Assert.Single(body.Rings);
+        BodyRingRowViewModel ring = Assert.Single(body.Rings);
         Assert.Equal("A", ring.Name);
         Assert.Equal("Rocky", ring.RingClass);
     }
@@ -742,7 +747,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void BodyInformationHonorsVisibilityAndToggleModes()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
             [
                 Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[500,0,0]}"""),
@@ -883,7 +888,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [InlineData(GuiFocus.ExternalPanel, true)]
     public void BodyInformationBubbleFilterIsIndependentOfDisabledBiologyPanels(GuiFocus focus, bool atSurface)
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.AutoShowBodyInfo = true;
         viewModel.AutoShowBioSystem = false;
         viewModel.AutoShowBioStatus = false;
@@ -1026,7 +1031,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void BodyInformationRequiresLegacyExactTargetMatch()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
             [Parse("""{"event":"Location","StarSystem":"Sol vicinity","SystemAddress":42,"StarPos":[100,0,0]}""")],
             new EliteStatus
@@ -1052,7 +1057,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void BodyInformationUsesNearbyBodyOutsideMapAndRejectsExternalTarget()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
             [
                 Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[500,0,0]}"""),
@@ -1099,7 +1104,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void BiologySurveyUsesSystemOverviewInMapModes()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
             [
                 Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
@@ -1128,12 +1133,12 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         viewModel.SetRepeatVisitBiologySuppression(true);
         Assert.False(viewModel.ShouldShowBioSystem);
         viewModel.SetRepeatVisitBiologySuppression(false);
-        var biology = Assert.IsType<BiologySurveyViewModel>(viewModel.BiologySurvey);
+        BiologySurveyViewModel biology = Assert.IsType<BiologySurveyViewModel>(viewModel.BiologySurvey);
         Assert.True(biology.IsSystemOverview);
         Assert.True(biology.HasRadicoidaUnicaCount);
         Assert.Equal("Radicoida scans: 4", biology.RadicoidaUnicaCountText);
         Assert.Equal("1 of 2 biological signals analyzed", biology.ProgressText);
-        var body = Assert.Single(biology.Bodies);
+        BiologyBodyRowViewModel body = Assert.Single(biology.Bodies);
         Assert.True(body.IsDestination);
         Assert.Equal("High metal content body", body.BodySubtype);
         Assert.EndsWith("/Assets/Bodies/high-metal-content.png", body.BodyIconAssetPath, StringComparison.Ordinal);
@@ -1327,7 +1332,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void BiologyBodyDetailIgnoresNearBodyWithoutBiologicalSignals()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
             [
                 Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
@@ -1342,7 +1347,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             new EliteStatus { Flags = StatusFlags.InMainShip | StatusFlags.HasLatLong, BodyName = "Test 2" }
         );
 
-        var biology = Assert.IsType<BiologySurveyViewModel>(viewModel.BiologySurvey);
+        BiologySurveyViewModel biology = Assert.IsType<BiologySurveyViewModel>(viewModel.BiologySurvey);
         Assert.True(biology.IsSystemOverview);
         Assert.Equal(1, Assert.Single(biology.Bodies).BodyId);
     }
@@ -1390,7 +1395,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         );
 
         Assert.True(viewModel.IsWithinPostDssBiologyWindow);
-        var biology = Assert.IsType<BiologySurveyViewModel>(viewModel.BiologySurvey);
+        BiologySurveyViewModel biology = Assert.IsType<BiologySurveyViewModel>(viewModel.BiologySurvey);
         Assert.True(biology.IsSystemOverview);
         Assert.Equal([1, 3], biology.Bodies.Select(body => body.BodyId));
         Assert.Equal("0 of 5 biological signals analyzed", biology.ProgressText);
@@ -1530,7 +1535,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.True(viewModel.BiologySurvey.IsSystemOverview);
         Assert.Null(viewModel.BiologyStatus);
 
-        var visibilityChanges = 0;
+        int visibilityChanges = 0;
         viewModel.PropertyChanged += (_, eventArgs) =>
         {
             if (eventArgs.PropertyName == nameof(SystemSurveyViewModel.ShouldShowBioStatus))
@@ -1563,7 +1568,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void BiologySurveyShowsBodySamplesRewardsFootfallAndGeology()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         var scan = new BioSampleSnapshot(
             new SurfaceLocation(1, 2),
             150,
@@ -1598,10 +1603,10 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         );
 
         Assert.True(viewModel.ShouldShowBioSystem);
-        var biology = Assert.IsType<BiologySurveyViewModel>(viewModel.BiologySurvey);
+        BiologySurveyViewModel biology = Assert.IsType<BiologySurveyViewModel>(viewModel.BiologySurvey);
         Assert.True(biology.IsBodyDetail);
         Assert.Equal("Test 1", biology.Heading);
-        var organism = Assert.Single(biology.Organisms);
+        BiologyOrganismRowViewModel organism = Assert.Single(biology.Organisms);
         Assert.Equal("Aleoida Arcus - Green", organism.DisplayName);
         Assert.Equal("Arcus", organism.SpeciesName);
         Assert.Equal("Green", organism.VariantName);
@@ -1611,7 +1616,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.False(organism.IsHighlightedFirst);
         Assert.True(organism.IsCurrentSample);
         Assert.False(organism.ShouldDim);
-        var organismGroup = Assert.Single(biology.OrganismGroups);
+        BiologyOrganismGroupViewModel organismGroup = Assert.Single(biology.OrganismGroups);
         Assert.Equal("Aleoida:", organismGroup.GenusLabel);
         Assert.False(organismGroup.IsGlobalRegionalFirst);
         Assert.True(organismGroup.IsRegionalFirst);
@@ -1629,7 +1634,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void BiologySurveyMarksOnlyTheExactSameGenusSpeciesAsCurrent()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         var activeScan = new BioSampleSnapshot(
             new SurfaceLocation(1, 2),
             150,
@@ -1657,7 +1662,9 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             new ExobiologySnapshot(null, activeScan, null, 0, [], 0)
         );
 
-        var organisms = Assert.IsType<BiologySurveyViewModel>(viewModel.BiologySurvey).Organisms;
+        IReadOnlyList<BiologyOrganismRowViewModel> organisms = Assert
+            .IsType<BiologySurveyViewModel>(viewModel.BiologySurvey)
+            .Organisms;
         Assert.Equal(2, organisms.Count);
         Assert.False(Assert.Single(organisms, organism => organism.SpeciesName == "Arcus").IsCurrentSample);
         Assert.True(Assert.Single(organisms, organism => organism.SpeciesName == "Coronamus").IsCurrentSample);
@@ -1666,12 +1673,14 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void BiologySurveyClearsExternalFirstCandidateAfterJournalConfirmation()
     {
-        var reference = ExobiologyReferenceCatalog.LoadEmbedded().FindByDisplayName("Aleoida Coronamus - Lime");
+        ExobiologyReference? reference = ExobiologyReferenceCatalog
+            .LoadEmbedded()
+            .FindByDisplayName("Aleoida Coronamus - Lime");
         Assert.NotNull(reference);
         var globalRegionalCandidates = RegionalCodexCandidateCatalog.FromEntries([
             new(18, "Inner Orion Spur", reference.EntryId, reference.DisplayName ?? "Aleoida Coronamus - Lime"),
         ]);
-        var viewModel = CreateViewModel(globalRegionalCandidates);
+        SystemSurveyViewModel viewModel = CreateViewModel(globalRegionalCandidates);
         viewModel.ApplyUpdate(
             [
                 Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""),
@@ -1699,7 +1708,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             18
         );
 
-        var prediction = Assert.Single(viewModel.BiologySurvey!.Organisms);
+        BiologyOrganismRowViewModel prediction = Assert.Single(viewModel.BiologySurvey!.Organisms);
         Assert.True(prediction.IsPrediction);
         Assert.True(prediction.IsGlobalRegionalFirst);
 
@@ -1727,7 +1736,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void BiologySurveyInfersCommanderAndRegionalFirstsFromLedgers()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
             [
                 Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""),
@@ -1745,7 +1754,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             new EliteStatus { GuiFocus = GuiFocus.Fss }
         );
 
-        var unavailable = Assert.Single(viewModel.BiologySurvey!.Organisms);
+        BiologyOrganismRowViewModel unavailable = Assert.Single(viewModel.BiologySurvey!.Organisms);
         Assert.False(unavailable.IsGlobalRegionalFirst);
         Assert.False(unavailable.IsCommanderFirst);
         Assert.False(unavailable.IsRegionalFirst);
@@ -1785,7 +1794,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         viewModel.HighlightRegionalFirsts = true;
         Assert.True(Assert.Single(viewModel.BiologySurvey.Organisms).IsHighlightedFirst);
 
-        var globalCurrentLocation = globalOtherLocation with
+        CommanderCodexData globalCurrentLocation = globalOtherLocation with
         {
             Firsts = new Dictionary<long, CommanderCodexFirst>
             {
@@ -1811,7 +1820,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void BiologySystemOverviewHighlightsKnownRegionalFirstCandidates()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
             [
                 Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""),
@@ -1859,7 +1868,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         );
         viewModel.UpdateCommanderCodexContext(globalOtherLocation, emptyRegional, 18);
 
-        var overview = Assert.IsType<BiologySurveyViewModel>(viewModel.BiologySurvey);
+        BiologySurveyViewModel overview = Assert.IsType<BiologySurveyViewModel>(viewModel.BiologySurvey);
         Assert.True(overview.IsSystemOverview);
         Assert.False(Assert.Single(Assert.Single(overview.Bodies).RewardBands).IsHighlighted);
 
@@ -1894,9 +1903,11 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void BiologySystemOverviewHighlightsPredictedRegionalFirstCandidates()
     {
-        var reference = ExobiologyReferenceCatalog.LoadEmbedded().FindByDisplayName("Aleoida Coronamus - Lime");
+        ExobiologyReference? reference = ExobiologyReferenceCatalog
+            .LoadEmbedded()
+            .FindByDisplayName("Aleoida Coronamus - Lime");
         Assert.NotNull(reference);
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
             [
                 Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""),
@@ -1938,8 +1949,8 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             18
         );
 
-        var overview = Assert.IsType<BiologySurveyViewModel>(viewModel.BiologySurvey);
-        var band = Assert.Single(Assert.Single(overview.Bodies).RewardBands);
+        BiologySurveyViewModel overview = Assert.IsType<BiologySurveyViewModel>(viewModel.BiologySurvey);
+        BiologySignalRewardBandViewModel band = Assert.Single(Assert.Single(overview.Bodies).RewardBands);
         Assert.True(band.IsPrediction);
         Assert.False(band.IsHighlighted);
 
@@ -1953,7 +1964,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void BiologySurveyHonorsNearBodySelectionPreference()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
             [
                 Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
@@ -1984,7 +1995,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
         Assert.False(viewModel.ShouldShowBioSystem);
 
-        var notifiedVisible = false;
+        bool notifiedVisible = false;
         viewModel.PropertyChanged += (_, eventArgs) =>
         {
             if (
@@ -2007,7 +2018,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void BiologySurveyUsesTargetBodyDuringDssWhenNearBodyPreferenceIsEnabled()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         var destination = new StatusDestination
         {
             System = 42,
@@ -2053,7 +2064,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void BiologySurveyShowsCanonnHintOnlyForNonlocalSelectedBody()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
             [
                 Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
@@ -2133,12 +2144,14 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void BiologySurveyShowsExactCriteriaPredictionsAndHonorsDisableSetting()
     {
-        var reference = ExobiologyReferenceCatalog.LoadEmbedded().FindByDisplayName("Aleoida Coronamus - Lime");
+        ExobiologyReference? reference = ExobiologyReferenceCatalog
+            .LoadEmbedded()
+            .FindByDisplayName("Aleoida Coronamus - Lime");
         Assert.NotNull(reference);
         var globalRegionalCandidates = RegionalCodexCandidateCatalog.FromEntries([
             new(18, "Inner Orion Spur", reference.EntryId, reference.DisplayName ?? "Aleoida Coronamus - Lime"),
         ]);
-        var viewModel = CreateViewModel(globalRegionalCandidates);
+        SystemSurveyViewModel viewModel = CreateViewModel(globalRegionalCandidates);
         viewModel.ApplyUpdate(
             [
                 Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""),
@@ -2162,18 +2175,18 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             }
         );
 
-        var systemSurvey = Assert.IsType<BiologySurveyViewModel>(viewModel.BiologySurvey);
-        var bodySummary = Assert.Single(systemSurvey.Bodies);
+        BiologySurveyViewModel systemSurvey = Assert.IsType<BiologySurveyViewModel>(viewModel.BiologySurvey);
+        BiologyBodyRowViewModel bodySummary = Assert.Single(systemSurvey.Bodies);
         Assert.True(bodySummary.HasPredictedReward);
-        var systemBand = Assert.Single(bodySummary.RewardBands);
+        BiologySignalRewardBandViewModel systemBand = Assert.Single(bodySummary.RewardBands);
         Assert.True(systemBand.IsPrediction);
         Assert.True(systemBand.MinimumReward > 0);
         Assert.True(systemBand.MaximumReward >= systemBand.MinimumReward);
         Assert.StartsWith("Estimated reward:", systemSurvey.RewardSummary);
         viewModel.ApplyUpdate([], new EliteStatus { GuiFocus = GuiFocus.Fss });
 
-        var bodySurvey = Assert.IsType<BiologySurveyViewModel>(viewModel.BiologySurvey);
-        var prediction = Assert.Single(bodySurvey.Organisms);
+        BiologySurveyViewModel bodySurvey = Assert.IsType<BiologySurveyViewModel>(viewModel.BiologySurvey);
+        BiologyOrganismRowViewModel prediction = Assert.Single(bodySurvey.Organisms);
         Assert.Equal("Aleoida Coronamus - Lime", prediction.DisplayName);
         Assert.Equal("Aleoida", prediction.GenusName);
         Assert.Equal("Coronamus", prediction.SpeciesName);
@@ -2249,7 +2262,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             new EliteStatus { GuiFocus = GuiFocus.SystemMap }
         );
 
-        var body = Assert.Single(viewModel.BiologySurvey!.Bodies);
+        BiologyBodyRowViewModel body = Assert.Single(viewModel.BiologySurvey!.Bodies);
 
         Assert.Equal(1, body.SignalCount);
         Assert.Equal(2, body.RewardBands.Count);
@@ -2262,7 +2275,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void BiologySystemPreservesSpoihaaeAlternativeGenusPipParity()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
             [
                 Parse(
@@ -2283,7 +2296,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             new EliteStatus { GuiFocus = GuiFocus.SystemMap }
         );
 
-        var bodies = viewModel.BiologySurvey!.Bodies;
+        IReadOnlyList<BiologyBodyRowViewModel> bodies = viewModel.BiologySurvey!.Bodies;
         Assert.Equal(2, bodies.Count);
         AssertBodyPipParity(bodies.Single(body => body.BodyId == 55), 16_074_600, 1_849_000);
         AssertBodyPipParity(bodies.Single(body => body.BodyId == 56), 15_225_600, 1_000_000);
@@ -2298,7 +2311,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.Equal(3, body.SignalCount);
         Assert.Equal(4, body.RewardBands.Count);
         Assert.Equal(3, body.SignalRewardBands.Count());
-        var overflow = Assert.Single(body.AlternativeRewardBands);
+        BiologySignalRewardBandViewModel overflow = Assert.Single(body.AlternativeRewardBands);
         Assert.True(body.HasAlternativeRewardBands);
         Assert.Equal(4_352_400, body.MinimumReward);
         Assert.Equal(expectedMaximumReward, body.MaximumReward);
@@ -2334,7 +2347,9 @@ public sealed class SystemSurveyViewModelTests : IDisposable
 
         Assert.Equal(FssTuningDetectionState.Waiting, viewModel.FssTuningState);
         Assert.Equal("⏳", viewModel.FssTuningIndicator);
-        var waiting = Assert.IsType<FssTuningCaptureRequest>(viewModel.CreateFssTuningCaptureRequest());
+        FssTuningCaptureRequest waiting = Assert.IsType<FssTuningCaptureRequest>(
+            viewModel.CreateFssTuningCaptureRequest()
+        );
         viewModel.ApplyFssTuningAnalysis(
             waiting.Revision,
             new FssTuningAnalysis(FssTuningDetectionState.White, new FssPixelRegion(1, 1, 1, 1), 30, 0, null)
@@ -2363,7 +2378,9 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             null
         );
         Assert.Equal(FssTuningDetectionState.Skipped, viewModel.FssTuningState);
-        var skipped = Assert.IsType<FssTuningCaptureRequest>(viewModel.CreateFssTuningCaptureRequest());
+        FssTuningCaptureRequest skipped = Assert.IsType<FssTuningCaptureRequest>(
+            viewModel.CreateFssTuningCaptureRequest()
+        );
 
         viewModel.ApplyUpdate(
             [
@@ -2391,7 +2408,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void FssTuningCapabilityStatusIsOnlyShownWhileEnabled()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.UpdateFssTuningDetectorStatus("Wayland capture unavailable.");
 
         Assert.True(viewModel.HasFssTuningDetectorStatus);
@@ -2407,7 +2424,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void GuiFocusOverridesPhysicalModeForSurveyVisibility()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
             [
                 Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
@@ -2438,7 +2455,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void ActiveBuildProjectsSuppressLegacySurveyOverlayGroup()
     {
-        var viewModel = CreateViewModel();
+        SystemSurveyViewModel viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
             [
                 Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
@@ -2489,7 +2506,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
 
     private static JournalEventEnvelope Parse(string json)
     {
-        var success = JournalEventEnvelope.TryParse(json, out var journalEvent, out var error);
+        bool success = JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error);
         Assert.True(success, error);
         return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }

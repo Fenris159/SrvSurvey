@@ -11,27 +11,27 @@ public sealed class AdaptiveTabHeaderPanel : WrapPanel
 
     protected override Size MeasureOverride(Size constraint)
     {
-        var tabs = Children.OfType<TabItem>().Where(t => t.Header is TextBlock).ToArray();
+        TabItem[] tabs = Children.OfType<TabItem>().Where(t => t.Header is TextBlock).ToArray();
         if (tabs.Length == 0)
         {
             return base.MeasureOverride(constraint);
         }
 
-        var headers = tabs.Select(t => (TextBlock)t.Header!).ToArray();
-        var chrome = new double[tabs.Length];
-        for (var i = 0; i < tabs.Length; i++)
+        TextBlock[] headers = tabs.Select(t => (TextBlock)t.Header!).ToArray();
+        double[] chrome = new double[tabs.Length];
+        for (int i = 0; i < tabs.Length; i++)
         {
             tabs[i].Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
             chrome[i] = Math.Max(0, tabs[i].DesiredSize.Width - headers[i].DesiredSize.Width);
         }
-        var size = PreferredFontSize;
+        double size = PreferredFontSize;
         // Measure detached text rather than changing live headers repeatedly during layout.
         for (; size > MinimumFontSize; size--)
         {
             double width = 0;
-            for (var i = 0; i < headers.Length; i++)
+            for (int i = 0; i < headers.Length; i++)
             {
-                var header = headers[i];
+                TextBlock header = headers[i];
                 var probe = new TextBlock
                 {
                     Text = header.Text,
@@ -48,7 +48,7 @@ public sealed class AdaptiveTabHeaderPanel : WrapPanel
                 break;
             }
         }
-        foreach (var header in headers)
+        foreach (TextBlock? header in headers)
         {
             header.FontSize = size;
         }

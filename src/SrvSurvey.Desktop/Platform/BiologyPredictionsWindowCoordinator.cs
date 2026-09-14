@@ -48,7 +48,7 @@ public sealed class BiologyPredictionsWindowCoordinator : IDisposable
 
         disposed = true;
         viewModel.SetWindowOpener(null);
-        var predictionsWindow = window;
+        BiologyPredictionsWindow? predictionsWindow = window;
         window = null;
         if (predictionsWindow is not null)
         {

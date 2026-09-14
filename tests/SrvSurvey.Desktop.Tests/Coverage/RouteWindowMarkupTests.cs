@@ -46,12 +46,12 @@ public sealed class RouteWindowMarkupTests
     [Fact]
     public void RouteRowsAreNotSelectableAndWindowUsesWorkspaceTitle()
     {
-        var document = LoadRouteWindow();
-        var window = document.Root ?? throw new InvalidDataException("RouteWindow.axaml has no root element.");
+        XDocument document = LoadRouteWindow();
+        XElement window = document.Root ?? throw new InvalidDataException("RouteWindow.axaml has no root element.");
 
         Assert.Equal("{Binding WindowTitle}", window.Attribute("Title")?.Value);
 
-        var routeItems = window
+        XElement routeItems = window
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "ItemsControl"
@@ -77,10 +77,10 @@ public sealed class RouteWindowMarkupTests
     [Fact]
     public void SidebarReservesScrollbarGutterOutsidePanels()
     {
-        var document = LoadRouteWindow();
-        var sidebar = FindNamedElement(document, "RouteSidebar");
-        var scroller = FindNamedElement(document, "RouteSidebarScroller");
-        var panels = FindNamedElement(document, "RouteSidebarPanels");
+        XDocument document = LoadRouteWindow();
+        XElement sidebar = FindNamedElement(document, "RouteSidebar");
+        XElement scroller = FindNamedElement(document, "RouteSidebarScroller");
+        XElement panels = FindNamedElement(document, "RouteSidebarPanels");
 
         Assert.Equal("18,18,6,18", sidebar.Attribute("Padding")?.Value);
         Assert.Equal("Auto", scroller.Attribute("VerticalScrollBarVisibility")?.Value);
@@ -90,8 +90,8 @@ public sealed class RouteWindowMarkupTests
     [Fact]
     public void SaveAsValidationUsesABooleanVisibilityBinding()
     {
-        var document = LoadRouteWindow();
-        var error = document
+        XDocument document = LoadRouteWindow();
+        XElement error = document
             .Descendants()
             .Single(element => element.Attribute("Text")?.Value == "{Binding SaveAsError}");
 
@@ -101,12 +101,12 @@ public sealed class RouteWindowMarkupTests
     [Fact]
     public void RouteListReservesScrollbarGutterOutsidePanels()
     {
-        var document = LoadRouteWindow();
-        var workspace = FindNamedElement(document, "RouteHopWorkspace");
-        var header = FindNamedElement(document, "RouteHopHeader");
-        var scroller = FindNamedElement(document, "RouteHopScroller");
-        var table = FindNamedElement(document, "RouteHopTable");
-        var routeItems = FindNamedElement(document, "RouteHopItems");
+        XDocument document = LoadRouteWindow();
+        XElement workspace = FindNamedElement(document, "RouteHopWorkspace");
+        XElement header = FindNamedElement(document, "RouteHopHeader");
+        XElement scroller = FindNamedElement(document, "RouteHopScroller");
+        XElement table = FindNamedElement(document, "RouteHopTable");
+        XElement routeItems = FindNamedElement(document, "RouteHopItems");
 
         Assert.Equal("20,20,6,20", workspace.Attribute("Margin")?.Value);
         Assert.Equal("{Binding !IsFleetCarrierWorkspace}", header.Attribute("IsVisible")?.Value);
@@ -119,9 +119,9 @@ public sealed class RouteWindowMarkupTests
     [Fact]
     public void FleetCarrierRowsFollowSpanshLogisticsColumnOrder()
     {
-        var document = LoadRouteWindow();
-        var header = FindNamedElement(document, "FleetCarrierRouteHopHeader");
-        var headerTexts = header
+        XDocument document = LoadRouteWindow();
+        XElement header = FindNamedElement(document, "FleetCarrierRouteHopHeader");
+        string[] headerTexts = header
             .Descendants()
             .Where(element => element.Name.LocalName == "TextBlock")
             .Select(element => element.Attribute("Text")?.Value)
@@ -131,13 +131,13 @@ public sealed class RouteWindowMarkupTests
         Assert.Equal(FleetCarrierHeaderTexts, headerTexts);
         Assert.Equal("{Binding IsFleetCarrierWorkspace}", header.Attribute("IsVisible")?.Value);
 
-        var carrierRow = document
+        XElement carrierRow = document
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Grid"
                 && element.Attribute("IsVisible")?.Value == "{Binding IsFleetCarrierHop}"
             );
-        var bindings = carrierRow
+        string?[] bindings = carrierRow
             .Descendants()
             .Select(element => element.Attribute("Text")?.Value)
             .Where(value =>
@@ -151,8 +151,8 @@ public sealed class RouteWindowMarkupTests
     [Fact]
     public void RouteRowsExposeStructuredBodyTreeAndSeparateGuidanceIndicators()
     {
-        var document = LoadRouteWindow();
-        var text = string.Join(
+        XDocument document = LoadRouteWindow();
+        string text = string.Join(
             " ",
             document.Descendants().Select(element => element.Attribute("Text")?.Value).Where(value => value is not null)
         );
@@ -202,10 +202,10 @@ public sealed class RouteWindowMarkupTests
     [Fact]
     public void RouteGuidanceBadgesKeepTheWorkspacePaletteInTheOverlay()
     {
-        foreach (var fileName in RoutedFileNames)
+        foreach (string fileName in RoutedFileNames)
         {
             var document = XDocument.Load(Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", fileName));
-            var guidanceBadges = document
+            XElement[] guidanceBadges = document
                 .Descendants()
                 .Where(element =>
                     element.Name.LocalName == "Border"
@@ -234,13 +234,13 @@ public sealed class RouteWindowMarkupTests
         var document = XDocument.Load(
             Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "JumpInfoOverlayPresentation.axaml")
         );
-        var label = document
+        XElement label = document
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "TextBlock" && element.Attribute("Text")?.Value == "SCOOPABLE"
             );
-        var badge = label.Parent ?? throw new InvalidDataException("The scoopable label has no badge parent.");
-        var starClass =
+        XElement badge = label.Parent ?? throw new InvalidDataException("The scoopable label has no badge parent.");
+        XElement starClass =
             badge
                 .Parent?.Elements()
                 .SingleOrDefault(element => element.Attribute("Text")?.Value == "{Binding JumpInfo.StarClass}")
@@ -262,16 +262,17 @@ public sealed class RouteWindowMarkupTests
     [Fact]
     public void RouteBodiesWrapBelowTheCompactHopSummary()
     {
-        var document = LoadRouteWindow();
-        var header = FindNamedElement(document, "RouteHopHeader");
-        var bodyItems = document
+        XDocument document = LoadRouteWindow();
+        XElement header = FindNamedElement(document, "RouteHopHeader");
+        XElement bodyItems = document
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "ItemsControl"
                 && element.Attribute("ItemsSource")?.Value == "{Binding BioTargets}"
             );
-        var bodySection = bodyItems.Parent ?? throw new InvalidDataException("The route body list has no section.");
-        var bodyPanel = bodyItems
+        XElement bodySection =
+            bodyItems.Parent ?? throw new InvalidDataException("The route body list has no section.");
+        XElement bodyPanel = bodyItems
             .Descendants()
             .Single(element => element.Name.LocalName == "WrapPanel" && element.Attribute("ItemWidth")?.Value == "520");
 
@@ -288,9 +289,9 @@ public sealed class RouteWindowMarkupTests
     [Fact]
     public void RouteLifecycleControlsAndDialogsArePresentInRequestedOrder()
     {
-        var document = LoadRouteWindow();
-        var buttons = document.Descendants().Where(element => element.Name.LocalName == "Button").ToArray();
-        var contents = buttons
+        XDocument document = LoadRouteWindow();
+        XElement[] buttons = document.Descendants().Where(element => element.Name.LocalName == "Button").ToArray();
+        string?[] contents = buttons
             .Select(button => button.Attribute("Content")?.Value)
             .Where(content => content is not null)
             .ToArray();
@@ -311,7 +312,7 @@ public sealed class RouteWindowMarkupTests
             document.Descendants().Select(element => element.Attribute("Text")?.Value)
         );
 
-        var footer = document
+        XElement footer = document
             .Descendants()
             .Single(element => element.Name.LocalName == "Border" && element.Attribute("Grid.Row")?.Value == "2");
         Assert.Equal(

@@ -105,13 +105,13 @@ public sealed partial class MainWindow : Window
         eventArgs.Handled = true;
         if (
             sender is not Button { CommandParameter: string navigationKey }
-            || !OverlaySettingsCategoryCatalog.TryGet(navigationKey, out var definition)
+            || !OverlaySettingsCategoryCatalog.TryGet(navigationKey, out OverlaySettingsCategoryDefinition? definition)
         )
         {
             return;
         }
 
-        if (overlaySettingsWindows.TryGetValue(definition.Category, out var existing))
+        if (overlaySettingsWindows.TryGetValue(definition.Category, out OverlayCategorySettingsWindow? existing))
         {
             existing.Activate();
             return;
@@ -149,7 +149,7 @@ public sealed partial class MainWindow : Window
 
     private void OnScreensChanged(object? sender, EventArgs eventArgs)
     {
-        var currentPosition = GetCurrentApplicationWindowPosition();
+        ApplicationWindowPosition? currentPosition = GetCurrentApplicationWindowPosition();
         RefreshApplicationMonitors();
         ApplyApplicationWindowPreferences(currentPosition);
     }
@@ -177,8 +177,8 @@ public sealed partial class MainWindow : Window
 
     private void ApplyApplicationWindowPreferences(ApplicationWindowPosition? lastPosition)
     {
-        var automaticMonitorId = IsVisible ? Screens.ScreenFromWindow(this)?.DisplayName : null;
-        var placement = MainWindowPlacement.Resolve(
+        string? automaticMonitorId = IsVisible ? Screens.ScreenFromWindow(this)?.DisplayName : null;
+        MainWindowPlacementResult placement = MainWindowPlacement.Resolve(
             applicationMonitors,
             viewModel.DesktopBehavior.PreferredMonitorId,
             viewModel.DesktopBehavior.ApplicationWindowScalePercent,
@@ -203,13 +203,13 @@ public sealed partial class MainWindow : Window
 
     private ApplicationWindowPosition? GetCurrentApplicationWindowPosition()
     {
-        var position = WindowState == WindowState.Normal ? Position : lastNormalPosition;
+        PixelPoint? position = WindowState == WindowState.Normal ? Position : lastNormalPosition;
         if (position is not { } point)
         {
             return null;
         }
 
-        var monitor = applicationMonitors.FirstOrDefault(candidate =>
+        MainWindowMonitor? monitor = applicationMonitors.FirstOrDefault(candidate =>
             point.X >= candidate.Bounds.X
             && point.X < candidate.Bounds.X + candidate.Bounds.Width
             && point.Y >= candidate.Bounds.Y
@@ -246,7 +246,7 @@ public sealed partial class MainWindow : Window
 
     private async Task StopMonitorForProfileImportAsync()
     {
-        var session =
+        JournalMonitorSession session =
             monitorSession
             ?? throw new InvalidOperationException("An application-owned window requires a monitor session.");
         await session.StopAsync();
@@ -286,7 +286,7 @@ public sealed partial class MainWindow : Window
     {
         try
         {
-            var session =
+            JournalMonitorSession session =
                 monitorSession
                 ?? throw new InvalidOperationException("An application-owned window requires a monitor session.");
             await session.StopAsync();
@@ -319,7 +319,7 @@ public sealed partial class MainWindow : Window
 
     internal void ReleaseRuntimeDependents()
     {
-        foreach (var window in overlaySettingsWindows.Values.ToArray())
+        foreach (OverlayCategorySettingsWindow? window in overlaySettingsWindows.Values.ToArray())
         {
             window.Close();
         }
@@ -377,7 +377,7 @@ public sealed partial class MainWindow : Window
                 IsVisible = true,
             };
             icon.Clicked += (_, _) => RestoreFromTray();
-            TrayIcon.SetIcons(application, new TrayIcons { icon });
+            TrayIcon.SetIcons(application, [icon]);
             return icon;
         }
         catch (Exception exception)

@@ -9,7 +9,7 @@ internal static class InaraApplicationKeyProvider
 
     public static string? GetApplicationKey()
     {
-        var environmentValue = Environment.GetEnvironmentVariable(EnvironmentVariable);
+        string? environmentValue = Environment.GetEnvironmentVariable(EnvironmentVariable);
         if (!string.IsNullOrWhiteSpace(environmentValue))
         {
             return environmentValue.Trim();

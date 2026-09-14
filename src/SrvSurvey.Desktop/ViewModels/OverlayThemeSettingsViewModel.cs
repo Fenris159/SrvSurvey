@@ -142,7 +142,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         RestoreDefaultsCommand = new DelegateCommand(RestoreDefaults);
         ReloadActiveCommand = new DelegateCommand(ReloadActive);
 
-        var theme = initialTheme ?? themeService?.CurrentOverlayTheme ?? activeStore.Load();
+        LegacyOverlayTheme theme = initialTheme ?? themeService?.CurrentOverlayTheme ?? activeStore.Load();
         ReplaceEditors(theme.Colors, acceptChanges: true);
         ReplaceTypographyEditors(theme.EffectiveTypography, acceptChanges: true);
         RefreshSavedStates(OverlayThemePresetCatalog.FindMatching(theme.Colors)?.Name);
@@ -198,7 +198,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         get => stateName;
         set
         {
-            var normalized = value ?? string.Empty;
+            string normalized = value ?? string.Empty;
             if (string.Equals(stateName, normalized, StringComparison.Ordinal))
             {
                 return;
@@ -267,15 +267,15 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
     {
         try
         {
-            var theme = CreateDraftTheme();
-            var result = activeStore.Save(theme);
+            LegacyOverlayTheme theme = CreateDraftTheme();
+            LegacyOverlayThemeSaveResult result = activeStore.Save(theme);
             themeService?.ApplyOverlayTheme(theme);
-            foreach (var editor in Categories.SelectMany(category => category.Colors))
+            foreach (OverlayThemeColorEditorViewModel? editor in Categories.SelectMany(category => category.Colors))
             {
                 editor.AcceptChanges();
             }
 
-            foreach (var editor in Typography)
+            foreach (OverlayTypographyEditorViewModel editor in Typography)
             {
                 editor.AcceptChanges();
             }
@@ -324,8 +324,12 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
 
         try
         {
-            var draft = CreateDraftTheme();
-            var result = stateStore.SaveState(StateName, draft.Colors, draft.EffectiveTypography);
+            LegacyOverlayTheme draft = CreateDraftTheme();
+            OverlayThemeStateSaveResult result = stateStore.SaveState(
+                StateName,
+                draft.Colors,
+                draft.EffectiveTypography
+            );
             RefreshSavedStates(result.StateName);
             StateName = result.StateName;
             StatusMessage = result.ReplacedExisting
@@ -347,21 +351,21 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
 
     private void LoadState()
     {
-        var selected = SelectedSavedState;
+        string? selected = SelectedSavedState;
         if (selected is null)
         {
             return;
         }
 
-        if (OverlayThemePresetCatalog.TryGet(selected, out var preset))
+        if (OverlayThemePresetCatalog.TryGet(selected, out OverlayThemePreset? preset))
         {
             LoadBuiltInPreset(preset, updateSelection: true);
             Preview();
             return;
         }
 
-        var collection = stateStore.Load();
-        var state = collection.States.SingleOrDefault(candidate =>
+        OverlayThemeStateLoadResult collection = stateStore.Load();
+        OverlayThemeState? state = collection.States.SingleOrDefault(candidate =>
             string.Equals(candidate.Name, selected, StringComparison.Ordinal)
         );
         if (state is null)
@@ -379,7 +383,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
 
     private void DeleteState()
     {
-        var selected = SelectedSavedState;
+        string? selected = SelectedSavedState;
         if (selected is null)
         {
             return;
@@ -413,7 +417,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
 
     private void ReloadActive()
     {
-        var theme = activeStore.Load();
+        LegacyOverlayTheme theme = activeStore.Load();
         ReplaceEditors(theme.Colors, acceptChanges: true);
         ReplaceTypographyEditors(theme.EffectiveTypography, acceptChanges: true);
         SetSelectedSavedState(OverlayThemePresetCatalog.FindMatching(theme.Colors)?.Name, loadBuiltInPreset: false);
@@ -442,7 +446,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
 
     private void ReplaceEditors(IReadOnlyDictionary<string, Color> colors, bool acceptChanges)
     {
-        var expandedCategoryName = Categories.FirstOrDefault(category => category.IsExpanded)?.Name;
+        string? expandedCategoryName = Categories.FirstOrDefault(category => category.IsExpanded)?.Name;
         var definitions = Definitions.ToList();
         var knownKeys = definitions.Select(definition => definition.Key).ToHashSet(StringComparer.Ordinal);
         definitions.AddRange(
@@ -452,14 +456,14 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
                 .Select(key => new OverlayThemeColorDefinition("Custom / imported", key, key))
         );
 
-        var rebuiltCategories = definitions
+        OverlayThemeCategoryViewModel[] rebuiltCategories = definitions
             .GroupBy(definition => definition.Category, StringComparer.Ordinal)
             .Select(group => new OverlayThemeCategoryViewModel(
                 group.Key,
                 group
                     .Select(definition =>
                     {
-                        var initialColor = colors.TryGetValue(definition.Key, out var configuredColor)
+                        Color initialColor = colors.TryGetValue(definition.Key, out Color configuredColor)
                             ? configuredColor
                             : LegacyOverlayThemeStore.CreateDefault().GetColor(definition.Key);
                         var editor = new OverlayThemeColorEditorViewModel(definition, initialColor, OnEditorsChanged);
@@ -475,7 +479,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
             ))
             .ToArray();
         Categories = rebuiltCategories;
-        var categoryToExpand =
+        OverlayThemeCategoryViewModel? categoryToExpand =
             rebuiltCategories.FirstOrDefault(category =>
                 string.Equals(category.Name, expandedCategoryName, StringComparison.Ordinal)
             ) ?? rebuiltCategories.FirstOrDefault();
@@ -485,7 +489,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
 
     private void SelectExpandedCategory(OverlayThemeCategoryViewModel selected)
     {
-        foreach (var category in Categories)
+        foreach (OverlayThemeCategoryViewModel category in Categories)
         {
             category.SetExpanded(ReferenceEquals(category, selected));
         }
@@ -539,7 +543,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
 
     private void RefreshSavedStates(string? select = null)
     {
-        var collection = stateStore.Load();
+        OverlayThemeStateLoadResult collection = stateStore.Load();
         SavedStates = OverlayThemePresetCatalog
             .Presets.Select(preset => preset.Name)
             .Concat(
@@ -548,7 +552,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
                     .Where(name => !OverlayThemePresetCatalog.TryGet(name, out _))
             )
             .ToArray();
-        var requested = select ?? SelectedSavedState;
+        string? requested = select ?? SelectedSavedState;
         SetSelectedSavedState(
             requested is not null && SavedStates.Contains(requested) ? requested : null,
             loadBuiltInPreset: false
@@ -563,7 +567,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
     {
         if (string.Equals(selectedSavedState, value, StringComparison.Ordinal))
         {
-            if (loadBuiltInPreset && OverlayThemePresetCatalog.TryGet(value, out var currentPreset))
+            if (loadBuiltInPreset && OverlayThemePresetCatalog.TryGet(value, out OverlayThemePreset? currentPreset))
             {
                 LoadBuiltInPreset(currentPreset, updateSelection: false);
             }
@@ -576,7 +580,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(CanDeleteSelectedState));
         loadStateCommand.RaiseCanExecuteChanged();
         deleteStateCommand.RaiseCanExecuteChanged();
-        if (loadBuiltInPreset && OverlayThemePresetCatalog.TryGet(value, out var preset))
+        if (loadBuiltInPreset && OverlayThemePresetCatalog.TryGet(value, out OverlayThemePreset? preset))
         {
             LoadBuiltInPreset(preset, updateSelection: false);
         }
@@ -715,7 +719,7 @@ public sealed class OverlayTypographyEditorViewModel : INotifyPropertyChanged
         get => fontSize;
         set
         {
-            var normalized = OverlayTypographySettings.Normalize(value);
+            double normalized = OverlayTypographySettings.Normalize(value);
             if (AreFontSizesEqual(fontSize, normalized))
             {
                 OnPropertyChanged();
@@ -784,14 +788,14 @@ public sealed class OverlayThemeColorEditorViewModel : INotifyPropertyChanged
         get => hexValue;
         set
         {
-            var updated = value?.Trim() ?? string.Empty;
+            string updated = value?.Trim() ?? string.Empty;
             if (string.Equals(hexValue, updated, StringComparison.Ordinal))
             {
                 return;
             }
 
             hexValue = updated;
-            if (LegacyOverlayThemeStore.TryParseHtmlColor(updated, out var parsed))
+            if (LegacyOverlayThemeStore.TryParseHtmlColor(updated, out Color parsed))
             {
                 color = parsed;
                 validationMessage = string.Empty;
@@ -816,7 +820,7 @@ public sealed class OverlayThemeColorEditorViewModel : INotifyPropertyChanged
         get => color;
         set
         {
-            var formatted = LegacyOverlayThemeStore.FormatHtmlColor(value);
+            string formatted = LegacyOverlayThemeStore.FormatHtmlColor(value);
             if (color == value && string.Equals(hexValue, formatted, StringComparison.Ordinal) && !HasValidationError)
             {
                 return;
@@ -845,8 +849,8 @@ public sealed class OverlayThemeColorEditorViewModel : INotifyPropertyChanged
         get => (int)Math.Round(color.A * 100d / 255d);
         set
         {
-            var clamped = Math.Clamp(value, 0, 100);
-            var alpha = (byte)Math.Round(clamped * 255d / 100d);
+            int clamped = Math.Clamp(value, 0, 100);
+            byte alpha = (byte)Math.Round(clamped * 255d / 100d);
             if (color.A == alpha)
             {
                 return;

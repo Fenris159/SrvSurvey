@@ -39,7 +39,7 @@ public sealed class SphereLimitViewModelTests : IDisposable
         Assert.Equal("id64 10477373803", viewModel.CenterSystemAddressText);
         Assert.True(viewModel.IsActive);
         Assert.Contains("inside", viewModel.CurrentSystemResult);
-        var loaded = await store.LoadAsync("F123", true);
+        CommanderProfileLoadResult loaded = await store.LoadAsync("F123", true);
         Assert.Equal(
             new SphereLimitSnapshot(true, "Sol", new GalacticCoordinate(0, 0, 0), 50),
             loaded.Data?.SphereLimit
@@ -61,7 +61,7 @@ public sealed class SphereLimitViewModelTests : IDisposable
 
         await viewModel.DisableAsync();
 
-        var loaded = await store.LoadAsync("F123", true);
+        CommanderProfileLoadResult loaded = await store.LoadAsync("F123", true);
         Assert.Equal(snapshot with { Active = false }, loaded.Data?.SphereLimit);
         Assert.False(viewModel.IsActive);
         Assert.Equal("250 ly around Sol", viewModel.LimitSummary);

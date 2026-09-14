@@ -148,14 +148,14 @@ public sealed class OverlayPlatformServiceTests
     [Fact]
     public void X11ErrorHandlerSupportsACompatibleDelegateType()
     {
-        var invoked = false;
+        bool invoked = false;
         var errorEvent = new X11Native.XErrorEvent { ErrorCode = 3 };
         CompatibleX11ErrorHandler handler = (nint display, ref X11Native.XErrorEvent receivedEvent) =>
         {
             invoked = display == (nint)42 && receivedEvent.ErrorCode == 3;
             return 17;
         };
-        var handlerPointer = Marshal.GetFunctionPointerForDelegate(handler);
+        nint handlerPointer = Marshal.GetFunctionPointerForDelegate(handler);
 
         Assert.Equal(17, X11Native.InvokeErrorHandler(handlerPointer, (nint)42, ref errorEvent));
         Assert.True(invoked);
@@ -166,7 +166,7 @@ public sealed class OverlayPlatformServiceTests
     [Fact]
     public void X11ErrorHandlerOnlySuppressesExpectedRacesOnOwnedDisplays()
     {
-        var ownedDisplay = (nint)42;
+        nint ownedDisplay = (nint)42;
         X11OverlayPlatformService.RegisterErrorHandledDisplay(ownedDisplay);
         try
         {

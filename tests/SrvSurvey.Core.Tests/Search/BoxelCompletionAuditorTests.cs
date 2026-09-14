@@ -13,9 +13,9 @@ public sealed class BoxelCompletionAuditorTests : IDisposable
     public async Task AuditAppliesLegacySkipRulesAndSkipsCurrentAndEmptyBoxels()
     {
         var top = BoxelAddress.Parse("Praea Euq RS-U d2-0");
-        var localBoxel = top.Children[0];
-        var spanshBoxel = top.Children[1];
-        var emptyBoxel = top.Children[2];
+        BoxelAddress localBoxel = top.Children[0];
+        BoxelAddress spanshBoxel = top.Children[1];
+        BoxelAddress emptyBoxel = top.Children[2];
         await WriteLocalSystemAsync(
             localBoxel.WithSystemNumber(3),
             DateTimeOffset.Parse("2026-06-01T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
@@ -37,7 +37,7 @@ public sealed class BoxelCompletionAuditorTests : IDisposable
         );
         var auditor = new BoxelCompletionAuditor(new LegacySystemDataReader(temporaryDirectory), resolver);
 
-        var result = await auditor.AuditAsync(
+        BoxelCompletionAuditResult result = await auditor.AuditAsync(
             new BoxelCompletionAuditRequest(
                 "F123",
                 [top, localBoxel, spanshBoxel, emptyBoxel],
@@ -77,7 +77,7 @@ public sealed class BoxelCompletionAuditorTests : IDisposable
     public async Task AuditReturnsCompletedPartialResultWhenCancelled()
     {
         var top = BoxelAddress.Parse("Praea Euq RS-U d2-0");
-        var boxels = top.Children.Take(2).ToArray();
+        BoxelAddress[] boxels = top.Children.Take(2).ToArray();
         using var cancellation = new CancellationTokenSource();
         var resolver = new StubResolver(boxel =>
         {
@@ -86,7 +86,7 @@ public sealed class BoxelCompletionAuditorTests : IDisposable
         });
         var auditor = new BoxelCompletionAuditor(new LegacySystemDataReader(temporaryDirectory), resolver);
 
-        var result = await auditor.AuditAsync(
+        BoxelCompletionAuditResult result = await auditor.AuditAsync(
             new BoxelCompletionAuditRequest(
                 "F123",
                 boxels,
@@ -120,7 +120,7 @@ public sealed class BoxelCompletionAuditorTests : IDisposable
             new StubResolver(_ => throw new HttpRequestException("offline"))
         );
 
-        var result = await auditor.AuditAsync(
+        BoxelCompletionAuditResult result = await auditor.AuditAsync(
             new BoxelCompletionAuditRequest(
                 "F123",
                 [boxel],
@@ -134,7 +134,7 @@ public sealed class BoxelCompletionAuditorTests : IDisposable
             )
         );
 
-        var entry = Assert.Single(result.Entries);
+        BoxelCompletionAuditEntry entry = Assert.Single(result.Entries);
         Assert.True(entry.IsComplete);
         Assert.Single(result.Errors);
         Assert.Contains("offline", result.Errors[0], StringComparison.Ordinal);
@@ -144,8 +144,8 @@ public sealed class BoxelCompletionAuditorTests : IDisposable
     public async Task AuditContinuesAfterInvalidSpanshResponse()
     {
         var top = BoxelAddress.Parse("Praea Euq RS-U d2-0");
-        var invalidBoxel = top.Children[0];
-        var validBoxel = top.Children[1];
+        BoxelAddress invalidBoxel = top.Children[0];
+        BoxelAddress validBoxel = top.Children[1];
         var auditor = new BoxelCompletionAuditor(
             new LegacySystemDataReader(temporaryDirectory),
             new StubResolver(boxel =>
@@ -155,7 +155,7 @@ public sealed class BoxelCompletionAuditorTests : IDisposable
             )
         );
 
-        var result = await auditor.AuditAsync(
+        BoxelCompletionAuditResult result = await auditor.AuditAsync(
             new BoxelCompletionAuditRequest(
                 "F123",
                 [invalidBoxel, validBoxel],
@@ -182,8 +182,8 @@ public sealed class BoxelCompletionAuditorTests : IDisposable
     public async Task FssAuditRequiresAllBodiesAfterSearchStart()
     {
         var top = BoxelAddress.Parse("Praea Euq RS-U d2-0");
-        var beforeStart = top.Children[0];
-        var afterStart = top.Children[1];
+        BoxelAddress beforeStart = top.Children[0];
+        BoxelAddress afterStart = top.Children[1];
         await WriteLocalSystemAsync(
             beforeStart,
             DateTimeOffset.Parse("2026-06-01T00:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture),
@@ -199,7 +199,7 @@ public sealed class BoxelCompletionAuditorTests : IDisposable
             new StubResolver(_ => [])
         );
 
-        var result = await auditor.AuditAsync(
+        BoxelCompletionAuditResult result = await auditor.AuditAsync(
             new BoxelCompletionAuditRequest(
                 "F123",
                 [beforeStart, afterStart],
@@ -237,7 +237,7 @@ public sealed class BoxelCompletionAuditorTests : IDisposable
             )
         );
 
-        var result = await auditor.AuditAsync(
+        BoxelCompletionAuditResult result = await auditor.AuditAsync(
             new BoxelCompletionAuditRequest(
                 "F123",
                 [boxel],
@@ -256,7 +256,7 @@ public sealed class BoxelCompletionAuditorTests : IDisposable
 
     private async Task WriteLocalSystemAsync(BoxelAddress boxel, DateTimeOffset visitedAt, bool fssAllBodies = false)
     {
-        var directory = Path.Combine(temporaryDirectory, "systems", "F123");
+        string directory = Path.Combine(temporaryDirectory, "systems", "F123");
         Directory.CreateDirectory(directory);
         await File.WriteAllTextAsync(
             Path.Combine(directory, boxel.GeneratedName + ".json"),

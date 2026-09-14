@@ -11,7 +11,7 @@ public sealed class ApplicationInstanceManagerTests
     {
         var manager = new ApplicationInstanceManager();
 
-        var count = await manager.CountOtherInstancesAsync();
+        int count = await manager.CountOtherInstancesAsync();
 
         Assert.True(count >= 0);
     }
@@ -35,9 +35,9 @@ public sealed class ApplicationInstanceManagerTests
     {
         var first = new StubProcess(10);
         var second = new StubProcess(20);
-        var manager = CreateManager(first, second);
+        ApplicationInstanceManager manager = CreateManager(first, second);
 
-        var count = await manager.CountOtherInstancesAsync();
+        int count = await manager.CountOtherInstancesAsync();
 
         Assert.Equal(2, count);
         Assert.True(first.Disposed);
@@ -47,7 +47,7 @@ public sealed class ApplicationInstanceManagerTests
     [Fact]
     public async Task ScanAndCloseHonorPreCanceledTokens()
     {
-        var manager = CreateManager(new StubProcess(10));
+        ApplicationInstanceManager manager = CreateManager(new StubProcess(10));
         using var cancellation = new CancellationTokenSource();
         await cancellation.CancelAsync();
 
@@ -65,7 +65,7 @@ public sealed class ApplicationInstanceManagerTests
         var source = new StubProcessSource([], unverifiedCount: 2);
         var manager = new ApplicationInstanceManager(source, TimeSpan.Zero, TimeSpan.Zero);
 
-        var scan = await manager.ScanOtherInstancesAsync();
+        ApplicationInstanceScan scan = await manager.ScanOtherInstancesAsync();
 
         Assert.Equal(0, scan.ConfirmedCount);
         Assert.Equal(2, scan.UnverifiedCount);
@@ -78,7 +78,7 @@ public sealed class ApplicationInstanceManagerTests
     {
         var graceful = new StubProcess(10) { GracefulExitSupported = true, ExitWhenWaited = true };
         var forced = new StubProcess(20) { ForceExitSucceeds = true };
-        var manager = CreateManager(graceful, forced);
+        ApplicationInstanceManager manager = CreateManager(graceful, forced);
 
         await manager.CloseOtherInstancesAsync();
 
@@ -93,7 +93,7 @@ public sealed class ApplicationInstanceManagerTests
     public async Task CloseForcesAnInstanceThatIgnoresTheGracePeriod()
     {
         var process = new StubProcess(10) { GracefulExitSupported = true, ForceExitSucceeds = true };
-        var manager = CreateManager(process);
+        ApplicationInstanceManager manager = CreateManager(process);
 
         await manager.CloseOtherInstancesAsync();
 
@@ -107,9 +107,9 @@ public sealed class ApplicationInstanceManagerTests
     public async Task CloseFailsSafelyWhenAnInstanceCannotBeTerminated()
     {
         var process = new StubProcess(10);
-        var manager = CreateManager(process);
+        ApplicationInstanceManager manager = CreateManager(process);
 
-        var exception = await Assert.ThrowsAsync<IOException>(() => manager.CloseOtherInstancesAsync());
+        IOException exception = await Assert.ThrowsAsync<IOException>(() => manager.CloseOtherInstancesAsync());
 
         Assert.Contains("update was not started", exception.Message);
         Assert.Equal(2, process.ForceExitRequests);
@@ -165,7 +165,12 @@ public sealed class ApplicationInstanceManagerTests
     {
         using var process = Process.GetCurrentProcess();
 
-        var resolved = ApplicationProcessPathResolver.TryResolve(process, out var path, out var method, out var error);
+        bool resolved = ApplicationProcessPathResolver.TryResolve(
+            process,
+            out string? path,
+            out string? method,
+            out string? error
+        );
 
         Assert.True(resolved, error);
         Assert.NotNull(path);
@@ -182,12 +187,20 @@ public sealed class ApplicationInstanceManagerTests
         }
 
         Assert.True(
-            ApplicationProcessPathResolver.TryResolveWindows(Environment.ProcessId, out var path, out var error),
+            ApplicationProcessPathResolver.TryResolveWindows(
+                Environment.ProcessId,
+                out string? path,
+                out string? error
+            ),
             error
         );
         Assert.NotNull(path);
         Assert.False(
-            ApplicationProcessPathResolver.TryResolveWindows(int.MaxValue, out var missingPath, out var missingError)
+            ApplicationProcessPathResolver.TryResolveWindows(
+                int.MaxValue,
+                out string? missingPath,
+                out string? missingError
+            )
         );
         Assert.Null(missingPath);
         Assert.False(string.IsNullOrWhiteSpace(missingError));
@@ -208,7 +221,7 @@ public sealed class ApplicationInstanceManagerTests
         Assert.False(
             ApplicationProcessPathResolver.TryGetFinalWindowsPath(
                 Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N")),
-                out var finalPath
+                out string? finalPath
             )
         );
         Assert.True(Path.IsPathFullyQualified(finalPath));
@@ -222,7 +235,7 @@ public sealed class ApplicationInstanceManagerTests
             Assert.Skip("This regression exercises the unavailable Linux fallback.");
         }
 
-        Assert.False(ApplicationProcessPathResolver.TryResolveLinux(int.MaxValue, out var path, out var error));
+        Assert.False(ApplicationProcessPathResolver.TryResolveLinux(int.MaxValue, out string? path, out string? error));
         Assert.Null(path);
         Assert.False(string.IsNullOrWhiteSpace(error));
     }
@@ -235,7 +248,9 @@ public sealed class ApplicationInstanceManagerTests
             Assert.Skip("Restart Manager discovery requires Windows.");
         }
 
-        var processIds = WindowsRestartManagerProcessFinder.FindLockingProcessIds(Environment.ProcessPath);
+        IReadOnlySet<int> processIds = WindowsRestartManagerProcessFinder.FindLockingProcessIds(
+            Environment.ProcessPath
+        );
 
         Assert.Contains(Environment.ProcessId, processIds);
     }
@@ -243,7 +258,10 @@ public sealed class ApplicationInstanceManagerTests
     [Fact]
     public async Task CooperativeRegistryAcceptsVerifiedShutdownRequest()
     {
-        var dataDirectory = Path.Combine(Path.GetTempPath(), $"SrvSurvey-instance-registry-tests-{Guid.NewGuid():N}");
+        string dataDirectory = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-instance-registry-tests-{Guid.NewGuid():N}"
+        );
         var requested = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         try
         {
@@ -276,7 +294,7 @@ public sealed class ApplicationInstanceManagerTests
     [Fact]
     public async Task CooperativeRegistryDisposalIsIdempotent()
     {
-        var dataDirectory = Path.Combine(
+        string dataDirectory = Path.Combine(
             Path.GetTempPath(),
             $"SrvSurvey-instance-registry-dispose-tests-{Guid.NewGuid():N}"
         );
@@ -310,14 +328,14 @@ public sealed class ApplicationInstanceManagerTests
     [Fact]
     public async Task RegistryIgnoresMalformedRecordsAndReturnsValidRecords()
     {
-        var dataDirectory = Path.Combine(
+        string dataDirectory = Path.Combine(
             Path.GetTempPath(),
             $"SrvSurvey-instance-registry-read-tests-{Guid.NewGuid():N}"
         );
         try
         {
             await using var registry = new ApplicationInstanceRegistry(dataDirectory, () => Task.CompletedTask);
-            var directory = Path.Combine(dataDirectory, "updates", "instances");
+            string directory = Path.Combine(dataDirectory, "updates", "instances");
             var valid = new ApplicationInstanceRecord(
                 1,
                 "SrvSurvey.XP",
@@ -326,12 +344,12 @@ public sealed class ApplicationInstanceManagerTests
                 Path.GetFullPath(Environment.ProcessPath!),
                 "SrvSurvey.XP.test.pipe"
             );
-            var validPath = Path.Combine(directory, "valid.json");
+            string validPath = Path.Combine(directory, "valid.json");
             await File.WriteAllTextAsync(validPath, JsonSerializer.Serialize(valid));
-            var invalidPath = Path.Combine(directory, "invalid.json");
+            string invalidPath = Path.Combine(directory, "invalid.json");
             await File.WriteAllTextAsync(invalidPath, "not-json");
 
-            var records = registry.ReadOtherRecords();
+            IReadOnlyList<ApplicationInstanceRecord> records = registry.ReadOtherRecords();
 
             Assert.Contains(valid, records);
             Assert.True(File.Exists(invalidPath));
@@ -361,7 +379,7 @@ public sealed class ApplicationInstanceManagerTests
     [Fact]
     public async Task RegistryInitializationFailureFallsBackWithoutBlockingStartup()
     {
-        var path = Path.Combine(Path.GetTempPath(), $"SrvSurvey-instance-registry-file-{Guid.NewGuid():N}");
+        string path = Path.Combine(Path.GetTempPath(), $"SrvSurvey-instance-registry-file-{Guid.NewGuid():N}");
         await File.WriteAllTextAsync(path, "not a directory");
         var messages = new List<string>();
         try

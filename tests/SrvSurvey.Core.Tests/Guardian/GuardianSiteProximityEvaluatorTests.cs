@@ -11,11 +11,13 @@ public sealed class GuardianSiteProximityEvaluatorTests
     [Fact]
     public void SelectsActiveObeliskWithinLegacyTwentyFiveMeterThreshold()
     {
-        var template = Template(new GuardianPointOfInterest("A01", GuardianPoiType.Obelisk, 180, 10, 0));
-        var status = StatusAt(Bearing.North, 10, inSrv: true);
+        GuardianSiteTemplate template = Template(
+            new GuardianPointOfInterest("A01", GuardianPoiType.Obelisk, 180, 10, 0)
+        );
+        EliteStatus status = StatusAt(Bearing.North, 10, inSrv: true);
         var obelisk = new GuardianObelisk("A01", "H1", false, ["ca"]);
 
-        var result = new GuardianSiteProximityEvaluator().Evaluate(
+        GuardianSiteProximitySnapshot? result = new GuardianSiteProximityEvaluator().Evaluate(
             new GuardianSiteProximityEvaluateRequest
             {
                 Status = status,
@@ -27,8 +29,8 @@ public sealed class GuardianSiteProximityEvaluatorTests
             }
         );
 
-        var proximity = Assert.IsType<GuardianSiteProximitySnapshot>(result);
-        var nearby = Assert.IsType<GuardianNearbyPoint>(proximity.NearestPoint);
+        GuardianSiteProximitySnapshot proximity = Assert.IsType<GuardianSiteProximitySnapshot>(result);
+        GuardianNearbyPoint nearby = Assert.IsType<GuardianNearbyPoint>(proximity.NearestPoint);
         Assert.Equal(0, nearby.Distance, precision: 5);
         Assert.Equal(0, proximity.MapX, precision: 5);
         Assert.Equal(-10, proximity.MapY, precision: 5);
@@ -38,11 +40,13 @@ public sealed class GuardianSiteProximityEvaluatorTests
     [Fact]
     public void AppliesSiteHeadingToObeliskPosition()
     {
-        var template = Template(new GuardianPointOfInterest("A01", GuardianPoiType.Obelisk, 180, 10, 0));
-        var status = StatusAt(Bearing.East, 10, inSrv: true);
+        GuardianSiteTemplate template = Template(
+            new GuardianPointOfInterest("A01", GuardianPoiType.Obelisk, 180, 10, 0)
+        );
+        EliteStatus status = StatusAt(Bearing.East, 10, inSrv: true);
         var obelisk = new GuardianObelisk("A01", "H1", false, ["ca"]);
 
-        var result = new GuardianSiteProximityEvaluator().Evaluate(
+        GuardianSiteProximitySnapshot? result = new GuardianSiteProximityEvaluator().Evaluate(
             new GuardianSiteProximityEvaluateRequest
             {
                 Status = status,
@@ -53,8 +57,8 @@ public sealed class GuardianSiteProximityEvaluatorTests
             }
         );
 
-        var proximity = Assert.IsType<GuardianSiteProximitySnapshot>(result);
-        var nearby = Assert.IsType<GuardianNearbyPoint>(proximity.NearestPoint);
+        GuardianSiteProximitySnapshot proximity = Assert.IsType<GuardianSiteProximitySnapshot>(result);
+        GuardianNearbyPoint nearby = Assert.IsType<GuardianNearbyPoint>(proximity.NearestPoint);
         Assert.Equal(0, nearby.Distance, precision: 5);
         Assert.Equal(0, proximity.MapX, precision: 5);
         Assert.Equal(-10, proximity.MapY, precision: 5);
@@ -64,9 +68,9 @@ public sealed class GuardianSiteProximityEvaluatorTests
     [Fact]
     public void AppliesMapMarkerOffsetToNearbyPointTargeting()
     {
-        var template = Template(new GuardianPointOfInterest("p1", GuardianPoiType.Orb, 180, 10, 0));
+        GuardianSiteTemplate template = Template(new GuardianPointOfInterest("p1", GuardianPoiType.Orb, 180, 10, 0));
 
-        var result = new GuardianSiteProximityEvaluator().Evaluate(
+        GuardianSiteProximitySnapshot? result = new GuardianSiteProximityEvaluator().Evaluate(
             new GuardianSiteProximityEvaluateRequest
             {
                 Status = StatusAt(Bearing.North, 0, inSrv: true),
@@ -77,7 +81,7 @@ public sealed class GuardianSiteProximityEvaluatorTests
             }
         );
 
-        var nearby = Assert.IsType<GuardianNearbyPoint>(result?.NearestPoint);
+        GuardianNearbyPoint nearby = Assert.IsType<GuardianNearbyPoint>(result?.NearestPoint);
         Assert.Equal(0, nearby.Distance, precision: 5);
         Assert.Equal(0, nearby.X, precision: 5);
         Assert.Equal(0, nearby.Y, precision: 5);
@@ -86,14 +90,14 @@ public sealed class GuardianSiteProximityEvaluatorTests
     [Fact]
     public void ClosestSelectablePointMustBeObeliskAndWithinThreshold()
     {
-        var template = Template(
+        GuardianSiteTemplate template = Template(
             new GuardianPointOfInterest("A01", GuardianPoiType.Obelisk, 180, 20, 0),
             new GuardianPointOfInterest("p1", GuardianPoiType.Orb, 180, 10, 0)
         );
-        var status = StatusAt(Bearing.North, 10, inSrv: true);
+        EliteStatus status = StatusAt(Bearing.North, 10, inSrv: true);
         var obelisk = new GuardianObelisk("A01", "H1", false, ["ca"]);
 
-        var nearArtifact = new GuardianSiteProximityEvaluator().Evaluate(
+        GuardianSiteProximitySnapshot? nearArtifact = new GuardianSiteProximityEvaluator().Evaluate(
             new GuardianSiteProximityEvaluateRequest
             {
                 Status = status,
@@ -103,7 +107,7 @@ public sealed class GuardianSiteProximityEvaluatorTests
                 ActiveObelisks = [obelisk],
             }
         );
-        var outsideObeliskRange = new GuardianSiteProximityEvaluator().Evaluate(
+        GuardianSiteProximitySnapshot? outsideObeliskRange = new GuardianSiteProximityEvaluator().Evaluate(
             new GuardianSiteProximityEvaluateRequest
             {
                 Status = StatusAt(Bearing.South, 10, inSrv: true),
@@ -123,7 +127,7 @@ public sealed class GuardianSiteProximityEvaluatorTests
     [Fact]
     public void DoesNotExposeMappedPointsBeyondLegacySeventyFiveMeterRange()
     {
-        var result = new GuardianSiteProximityEvaluator().Evaluate(
+        GuardianSiteProximitySnapshot? result = new GuardianSiteProximityEvaluator().Evaluate(
             new GuardianSiteProximityEvaluateRequest
             {
                 Status = StatusAt(Bearing.South, 100, inSrv: true),
@@ -141,14 +145,14 @@ public sealed class GuardianSiteProximityEvaluatorTests
     [Fact]
     public void IgnoresInactiveFilteredAndVehicleIncompatibleObelisks()
     {
-        var template = Template(
+        GuardianSiteTemplate template = Template(
             new GuardianPointOfInterest("A01", GuardianPoiType.Obelisk, 180, 10, 0),
             new GuardianPointOfInterest("B01", GuardianPoiType.Obelisk, 180, 11, 0)
         );
         var active = new GuardianObelisk("B01", "H1", false, ["ca"]);
         var evaluator = new GuardianSiteProximityEvaluator();
 
-        var filtered = evaluator.Evaluate(
+        GuardianSiteProximitySnapshot? filtered = evaluator.Evaluate(
             new GuardianSiteProximityEvaluateRequest
             {
                 Status = StatusAt(Bearing.North, 11, inSrv: true),
@@ -159,7 +163,7 @@ public sealed class GuardianSiteProximityEvaluatorTests
                 ObeliskGroups = new HashSet<char> { 'A' },
             }
         );
-        var inShip = evaluator.Evaluate(
+        GuardianSiteProximitySnapshot? inShip = evaluator.Evaluate(
             new GuardianSiteProximityEvaluateRequest
             {
                 Status = StatusAt(Bearing.North, 11, inSrv: false),
@@ -177,13 +181,16 @@ public sealed class GuardianSiteProximityEvaluatorTests
     [Fact]
     public void GeneticSamplerSelectsOnlyRelicTowers()
     {
-        var template = Template(
+        GuardianSiteTemplate template = Template(
             new GuardianPointOfInterest("A01", GuardianPoiType.Obelisk, 180, 10, 0),
             new GuardianPointOfInterest("t1", GuardianPoiType.Relic, 180, 12, 0)
         );
-        var status = StatusAt(Bearing.North, 10, inSrv: true) with { SelectedWeapon = "$humanoid_companalyser_name;" };
+        EliteStatus status = StatusAt(Bearing.North, 10, inSrv: true) with
+        {
+            SelectedWeapon = "$humanoid_companalyser_name;",
+        };
 
-        var result = new GuardianSiteProximityEvaluator().Evaluate(
+        GuardianSiteProximitySnapshot? result = new GuardianSiteProximityEvaluator().Evaluate(
             new GuardianSiteProximityEvaluateRequest
             {
                 Status = status,
@@ -211,10 +218,10 @@ public sealed class GuardianSiteProximityEvaluatorTests
             [new GuardianPointOfInterest("d1", GuardianPoiType.DestructiblePanel, 180, 10, 0)],
             new Dictionary<string, GuardianMapPoint>()
         );
-        var status = StatusAt(Bearing.North, 10, inSrv: true);
+        EliteStatus status = StatusAt(Bearing.North, 10, inSrv: true);
         var evaluator = new GuardianSiteProximityEvaluator();
 
-        var standard = evaluator.Evaluate(
+        GuardianSiteProximitySnapshot? standard = evaluator.Evaluate(
             new GuardianSiteProximityEvaluateRequest
             {
                 Status = status,
@@ -223,7 +230,7 @@ public sealed class GuardianSiteProximityEvaluatorTests
                 Template = template,
             }
         );
-        var componentMode = evaluator.Evaluate(
+        GuardianSiteProximitySnapshot? componentMode = evaluator.Evaluate(
             new GuardianSiteProximityEvaluateRequest
             {
                 Status = status,
@@ -235,7 +242,7 @@ public sealed class GuardianSiteProximityEvaluatorTests
         );
 
         Assert.Null(standard?.NearestPoint);
-        var nearby = Assert.IsType<GuardianNearbyPoint>(componentMode?.NearestPoint);
+        GuardianNearbyPoint nearby = Assert.IsType<GuardianNearbyPoint>(componentMode?.NearestPoint);
         Assert.Equal("d1", nearby.Point.Name);
         Assert.Equal(0, nearby.Distance, precision: 5);
     }
@@ -244,8 +251,10 @@ public sealed class GuardianSiteProximityEvaluatorTests
     public void ReturnsUnavailableWithoutSurfaceGeometryOrKnownHeading()
     {
         var evaluator = new GuardianSiteProximityEvaluator();
-        var status = StatusAt(Bearing.North, 10, inSrv: true);
-        var template = Template(new GuardianPointOfInterest("A01", GuardianPoiType.Obelisk, 180, 10, 0));
+        EliteStatus status = StatusAt(Bearing.North, 10, inSrv: true);
+        GuardianSiteTemplate template = Template(
+            new GuardianPointOfInterest("A01", GuardianPoiType.Obelisk, 180, 10, 0)
+        );
 
         Assert.Null(
             evaluator.Evaluate(
@@ -298,14 +307,14 @@ public sealed class GuardianSiteProximityEvaluatorTests
 
     private static EliteStatus StatusAt(Bearing bearing, double distance, bool inSrv)
     {
-        var angularDistance = distance / Radius;
-        var latitude = bearing switch
+        double angularDistance = distance / Radius;
+        double latitude = bearing switch
         {
             Bearing.North => angularDistance * 180 / Math.PI,
             Bearing.South => -angularDistance * 180 / Math.PI,
             _ => 0,
         };
-        var longitude = bearing switch
+        double longitude = bearing switch
         {
             Bearing.East => angularDistance * 180 / Math.PI,
             Bearing.West => -angularDistance * 180 / Math.PI,

@@ -8,8 +8,8 @@ public sealed class ColonizationSystemSiteReconcilerTests
     [Fact]
     public void LocalEditMergesOverUnrelatedRemoteChangeAndPreservesExtensions()
     {
-        var baseline = Site("site-1", "Port", body: 1, buildType: "outpost");
-        var latest = baseline with
+        ColonizationSystemSite baseline = Site("site-1", "Port", body: 1, buildType: "outpost");
+        ColonizationSystemSite latest = baseline with
         {
             MarketId = 42,
             ExtensionData = new Dictionary<string, JsonElement>
@@ -17,12 +17,16 @@ public sealed class ColonizationSystemSiteReconcilerTests
                 ["remoteFuture"] = JsonSerializer.SerializeToElement(true),
             },
         };
-        var edited = baseline with { BodyNumber = 2 };
+        ColonizationSystemSite edited = baseline with { BodyNumber = 2 };
 
-        var plan = ColonizationSystemSiteReconciler.CreatePlan([baseline], [latest], [edited]);
+        ColonizationSystemSiteReconciliationPlan plan = ColonizationSystemSiteReconciler.CreatePlan(
+            [baseline],
+            [latest],
+            [edited]
+        );
 
         Assert.True(plan.CanPublish);
-        var update = Assert.Single(plan.Update.UpdatedSites);
+        ColonizationSystemSite update = Assert.Single(plan.Update.UpdatedSites);
         Assert.Equal(2, update.BodyNumber);
         Assert.Equal(42, update.MarketId);
         Assert.True(update.ExtensionData["remoteFuture"].GetBoolean());
@@ -32,13 +36,17 @@ public sealed class ColonizationSystemSiteReconcilerTests
     [Fact]
     public void SameFieldConcurrentEditProducesConflictInsteadOfOverwrite()
     {
-        var baseline = Site("site-1", "Port", body: 1);
-        var latest = baseline with { BodyNumber = 2 };
-        var edited = baseline with { BodyNumber = 3 };
+        ColonizationSystemSite baseline = Site("site-1", "Port", body: 1);
+        ColonizationSystemSite latest = baseline with { BodyNumber = 2 };
+        ColonizationSystemSite edited = baseline with { BodyNumber = 3 };
 
-        var plan = ColonizationSystemSiteReconciler.CreatePlan([baseline], [latest], [edited]);
+        ColonizationSystemSiteReconciliationPlan plan = ColonizationSystemSiteReconciler.CreatePlan(
+            [baseline],
+            [latest],
+            [edited]
+        );
 
-        var conflict = Assert.Single(plan.Conflicts);
+        ColonizationSystemSiteConflict conflict = Assert.Single(plan.Conflicts);
         Assert.Equal("bodyNum", conflict.Field);
         Assert.Empty(plan.Update.UpdatedSites);
         Assert.False(plan.CanPublish);
@@ -47,12 +55,12 @@ public sealed class ColonizationSystemSiteReconcilerTests
     [Fact]
     public void DeletionRequiresStableRemoteSiteAndPersistedId()
     {
-        var stable = Site("stable", "Stable", body: 1);
-        var changed = Site("changed", "Changed", body: 2);
-        var latestChanged = changed with { BuildType = "orbis" };
-        var noId = Site(string.Empty, "No Id", body: 3);
+        ColonizationSystemSite stable = Site("stable", "Stable", body: 1);
+        ColonizationSystemSite changed = Site("changed", "Changed", body: 2);
+        ColonizationSystemSite latestChanged = changed with { BuildType = "orbis" };
+        ColonizationSystemSite noId = Site(string.Empty, "No Id", body: 3);
 
-        var plan = ColonizationSystemSiteReconciler.CreatePlan(
+        ColonizationSystemSiteReconciliationPlan plan = ColonizationSystemSiteReconciler.CreatePlan(
             [stable, changed, noId],
             [stable, latestChanged, noId],
             []
@@ -67,11 +75,11 @@ public sealed class ColonizationSystemSiteReconcilerTests
     [Fact]
     public void RemoteOnlySitesAreUntouchedAndNewLocalSiteIsAdded()
     {
-        var baseline = Site("known", "Known", body: 1);
-        var remoteOnly = Site("remote", "Remote", body: 2);
-        var localNew = Site("y123", "Local", body: 3);
+        ColonizationSystemSite baseline = Site("known", "Known", body: 1);
+        ColonizationSystemSite remoteOnly = Site("remote", "Remote", body: 2);
+        ColonizationSystemSite localNew = Site("y123", "Local", body: 3);
 
-        var plan = ColonizationSystemSiteReconciler.CreatePlan(
+        ColonizationSystemSiteReconciliationPlan plan = ColonizationSystemSiteReconciler.CreatePlan(
             [baseline],
             [baseline, remoteOnly],
             [baseline, localNew]
@@ -85,7 +93,7 @@ public sealed class ColonizationSystemSiteReconcilerTests
     [Fact]
     public void DuplicateNamesAreRejectedBeforePlanning()
     {
-        var exception = Assert.Throws<InvalidDataException>(() =>
+        InvalidDataException exception = Assert.Throws<InvalidDataException>(() =>
             ColonizationSystemSiteReconciler.CreatePlan(
                 [],
                 [],

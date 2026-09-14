@@ -27,7 +27,7 @@ public sealed class MainWindowPlacementTests
     [Fact]
     public void PreferredMonitorCentersScaledWindowInItsWorkingArea()
     {
-        var result = MainWindowPlacement.Resolve([Primary, Secondary], "DISPLAY2", 125);
+        MainWindowPlacementResult result = MainWindowPlacement.Resolve([Primary, Secondary], "DISPLAY2", 125);
 
         Assert.Same(Secondary, result.Monitor);
         Assert.True(result.UsedPreferredMonitor);
@@ -40,7 +40,7 @@ public sealed class MainWindowPlacementTests
     [Fact]
     public void MissingPreferredMonitorFallsBackToPrimaryAndStaysVisible()
     {
-        var result = MainWindowPlacement.Resolve([Secondary, Primary], "DISPLAY3", 100);
+        MainWindowPlacementResult result = MainWindowPlacement.Resolve([Secondary, Primary], "DISPLAY3", 100);
 
         Assert.Same(Primary, result.Monitor);
         Assert.False(result.UsedPreferredMonitor);
@@ -50,7 +50,7 @@ public sealed class MainWindowPlacementTests
     [Fact]
     public void LastConnectedPositionIsRestoredBeforeDefaultMonitor()
     {
-        var result = MainWindowPlacement.Resolve(
+        MainWindowPlacementResult result = MainWindowPlacement.Resolve(
             [Primary, Secondary],
             preferredMonitorId: "DISPLAY1",
             applicationScalePercent: 100,
@@ -65,7 +65,7 @@ public sealed class MainWindowPlacementTests
     [Fact]
     public void RestoredPositionIsClampedAfterWorkingAreaShrinks()
     {
-        var result = MainWindowPlacement.Resolve(
+        MainWindowPlacementResult result = MainWindowPlacement.Resolve(
             [Primary],
             preferredMonitorId: null,
             applicationScalePercent: 100,
@@ -78,7 +78,7 @@ public sealed class MainWindowPlacementTests
     [Fact]
     public void DisconnectedLastMonitorUsesConfiguredDefaultMonitor()
     {
-        var result = MainWindowPlacement.Resolve(
+        MainWindowPlacementResult result = MainWindowPlacement.Resolve(
             [Primary],
             preferredMonitorId: "DISPLAY1",
             applicationScalePercent: 100,
@@ -93,7 +93,7 @@ public sealed class MainWindowPlacementTests
     [Fact]
     public void DisconnectedLastMonitorWithAutomaticPreferenceCentersOnPrimary()
     {
-        var result = MainWindowPlacement.Resolve(
+        MainWindowPlacementResult result = MainWindowPlacement.Resolve(
             [Primary],
             preferredMonitorId: null,
             applicationScalePercent: 100,
@@ -107,7 +107,7 @@ public sealed class MainWindowPlacementTests
     [Fact]
     public void AutomaticMonitorDoesNotOverrideOperatingSystemPosition()
     {
-        var result = MainWindowPlacement.Resolve(
+        MainWindowPlacementResult result = MainWindowPlacement.Resolve(
             [Primary, Secondary],
             preferredMonitorId: null,
             applicationScalePercent: 110,
@@ -122,13 +122,13 @@ public sealed class MainWindowPlacementTests
     [Fact]
     public void OversizedScaleIsReducedToFitWorkingArea()
     {
-        var smallMonitor = Primary with
+        MainWindowMonitor smallMonitor = Primary with
         {
             Bounds = new PixelRect(0, 0, 1280, 720),
             WorkingArea = new PixelRect(0, 0, 1280, 680),
         };
 
-        var result = MainWindowPlacement.Resolve([smallMonitor], "DISPLAY1", 150);
+        MainWindowPlacementResult result = MainWindowPlacement.Resolve([smallMonitor], "DISPLAY1", 150);
 
         Assert.Equal(632.0 / 760.0, result.ApplicationScale, precision: 10);
         Assert.Equal(new PixelPoint(149, 24), result.Position);
@@ -139,7 +139,7 @@ public sealed class MainWindowPlacementTests
     [Fact]
     public void MissingScreenDataStillAppliesRequestedApplicationScale()
     {
-        var result = MainWindowPlacement.Resolve([], "DISPLAY2", 90);
+        MainWindowPlacementResult result = MainWindowPlacement.Resolve([], "DISPLAY2", 90);
 
         Assert.Null(result.Monitor);
         Assert.Null(result.Position);

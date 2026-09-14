@@ -20,14 +20,14 @@ public sealed partial class QuestView : UserControl
             return;
         }
 
-        var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(
+        IReadOnlyList<IStorageFolder> folders = await topLevel.StorageProvider.OpenFolderPickerAsync(
             new FolderPickerOpenOptions
             {
                 Title = "Select folder containing quest definition files",
                 AllowMultiple = false,
             }
         );
-        var folder = folders.Count > 0 ? folders[0] : null;
+        IStorageFolder? folder = folders.Count > 0 ? folders[0] : null;
         if (folder is not null)
         {
             await viewModel.QuestWorkspace.Developer.ImportFolderAsync(folder.Path.LocalPath);

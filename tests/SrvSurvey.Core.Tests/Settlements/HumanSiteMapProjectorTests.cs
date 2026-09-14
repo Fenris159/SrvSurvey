@@ -10,7 +10,9 @@ public sealed class HumanSiteMapProjectorTests
         var catalog = HumanSiteTemplateCatalog.LoadEmbedded();
         var projector = new HumanSiteMapProjector();
 
-        var projections = catalog.Templates.Select(template => projector.Project(template)).ToArray();
+        HumanSiteMapProjection[] projections = catalog
+            .Templates.Select(template => projector.Project(template))
+            .ToArray();
 
         Assert.Equal(28, projections.Length);
         Assert.Equal(48, projections.Sum(projection => projection.LandingPads.Count));
@@ -40,10 +42,10 @@ public sealed class HumanSiteMapProjectorTests
     [Fact]
     public void DisplayOptionsMatchLegacyPoiTogglesAndWarState()
     {
-        var template = HumanSiteTemplateCatalog.LoadEmbedded().Find(HumanSiteEconomy.Agriculture, 1)!;
+        HumanSiteTemplate template = HumanSiteTemplateCatalog.LoadEmbedded().Find(HumanSiteEconomy.Agriculture, 1)!;
         var projector = new HumanSiteMapProjector();
 
-        var hidden = projector.Project(
+        HumanSiteMapProjection hidden = projector.Project(
             template,
             new HumanSiteMapDisplayOptions(
                 ShowMedkits: false,
@@ -61,7 +63,7 @@ public sealed class HumanSiteMapProjectorTests
     [Fact]
     public void ConvertsGdiLineAndCubicPathTypesWithoutSystemDrawing()
     {
-        var template = CreateTemplate(
+        HumanSiteTemplate template = CreateTemplate(
             new HumanSiteBuildingPath(
                 [
                     new HumanSiteMapPoint(0, 0),
@@ -75,8 +77,8 @@ public sealed class HumanSiteMapProjectorTests
             )
         );
 
-        var projection = new HumanSiteMapProjector().Project(template);
-        var path = Assert.Single(Assert.Single(projection.Buildings).Paths);
+        HumanSiteMapProjection projection = new HumanSiteMapProjector().Project(template);
+        HumanSiteProjectedPath path = Assert.Single(Assert.Single(projection.Buildings).Paths);
 
         Assert.Equal(HumanSitePathFillRule.NonZero, path.FillRule);
         Assert.Equal(
@@ -95,7 +97,7 @@ public sealed class HumanSiteMapProjectorTests
     [Fact]
     public void RejectsIncompleteCubicPath()
     {
-        var template = CreateTemplate(
+        HumanSiteTemplate template = CreateTemplate(
             new HumanSiteBuildingPath([new HumanSiteMapPoint(0, 0), new HumanSiteMapPoint(1, 1)], [0, 3], 0)
         );
 

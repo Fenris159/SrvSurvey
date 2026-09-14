@@ -47,7 +47,7 @@ public sealed class LegacyQuestStateStore
             throw new ArgumentException("The Frontier ID cannot contain path separators.", nameof(frontierId));
         }
 
-        var statePath = Path.Combine(questDirectory, frontierId + JsonExtension);
+        string statePath = Path.Combine(questDirectory, frontierId + JsonExtension);
 
         try
         {
@@ -63,15 +63,15 @@ public sealed class LegacyQuestStateStore
                 );
             }
 
-            var root = ParseObject(statePath);
+            JsonObject root = ParseObject(statePath);
             var warnings = new List<string>();
-            var storedFrontierId = GetString(root, "fid") ?? frontierId;
+            string storedFrontierId = GetString(root, "fid") ?? frontierId;
             if (!string.Equals(storedFrontierId, frontierId, StringComparison.OrdinalIgnoreCase))
             {
                 warnings.Add($"Quest state FID '{storedFrontierId}' does not match '{frontierId}'.");
             }
 
-            var reference = ParseReference(root["devRef"], warnings);
+            LegacyQuestReference? reference = ParseReference(root["devRef"], warnings);
             LegacyQuestProgress? devQuest = null;
             if (root[DevQuestProperty] is JsonObject progress)
             {
@@ -81,8 +81,14 @@ public sealed class LegacyQuestStateStore
                 }
                 else
                 {
-                    var portableDefinition = ParsePortableDefinition(progress["quest"], reference, warnings);
-                    var definition = portableDefinition is null ? LoadDefinition(reference, warnings) : null;
+                    RavenQuestDefinition? portableDefinition = ParsePortableDefinition(
+                        progress["quest"],
+                        reference,
+                        warnings
+                    );
+                    LegacyQuestDefinition? definition = portableDefinition is null
+                        ? LoadDefinition(reference, warnings)
+                        : null;
                     devQuest = ParseProgress(reference, definition, progress, warnings) with
                     {
                         PortableDefinition = portableDefinition,
@@ -169,7 +175,8 @@ public sealed class LegacyQuestStateStore
         try
         {
             Directory.CreateDirectory(questDirectory);
-            var path = FindFile(frontierId + JsonExtension) ?? Path.Combine(questDirectory, frontierId + JsonExtension);
+            string path =
+                FindFile(frontierId + JsonExtension) ?? Path.Combine(questDirectory, frontierId + JsonExtension);
             JsonObject root;
             if (File.Exists(path))
             {
@@ -204,11 +211,11 @@ public sealed class LegacyQuestStateStore
             else
             {
                 root["devRef"] = progress.Reference.ToString();
-                var questRoot = replaceExistingProgress
-                    ? new JsonObject()
+                JsonObject questRoot = replaceExistingProgress
+                    ? []
                     : root[DevQuestProperty] switch
                     {
-                        null => new JsonObject(),
+                        null => [],
                         JsonObject existing => existing,
                         _ => throw new InvalidDataException(
                             "The legacy development quest state is not a JSON object and was not overwritten."
@@ -218,7 +225,7 @@ public sealed class LegacyQuestStateStore
                 MergeProgress(questRoot, progress);
             }
 
-            var backupPath = File.Exists(path)
+            string? backupPath = File.Exists(path)
                 ? await CreateVerifiedBackupAsync(path, frontierId, cancellationToken).ConfigureAwait(false)
                 : null;
             await WriteVerifiedAsync(path, root, cancellationToken).ConfigureAwait(false);
@@ -315,7 +322,7 @@ public sealed class LegacyQuestStateStore
         root["id"] = route.Id;
         root["w"] = route.Width;
         var waypoints = new JsonArray();
-        foreach (var waypoint in route.Waypoints)
+        foreach (double[] waypoint in route.Waypoints)
         {
             waypoints.Add(new JsonArray(waypoint.Select(value => (JsonNode?)JsonValue.Create(value)).ToArray()));
         }
@@ -334,7 +341,7 @@ public sealed class LegacyQuestStateStore
         var unidentified = new List<JsonNode>();
         if (existing is JsonArray array)
         {
-            foreach (var item in array)
+            foreach (JsonNode? item in array)
             {
                 if (item is JsonObject child && GetString(child, "id") is { } id && !existingById.ContainsKey(id))
                 {
@@ -348,16 +355,16 @@ public sealed class LegacyQuestStateStore
         }
 
         var result = new JsonArray();
-        foreach (var value in values)
+        foreach (T? value in values)
         {
-            var id = getId(value);
+            string id = getId(value);
             ArgumentException.ThrowIfNullOrWhiteSpace(id);
-            var child = existingById.TryGetValue(id, out var prior) ? prior.DeepClone().AsObject() : new JsonObject();
+            JsonObject child = existingById.TryGetValue(id, out JsonObject? prior) ? prior.DeepClone().AsObject() : [];
             merge(child, value);
             result.Add(child);
         }
 
-        foreach (var child in unidentified)
+        foreach (JsonNode child in unidentified)
         {
             result.Add(child);
         }
@@ -368,7 +375,7 @@ public sealed class LegacyQuestStateStore
     private static JsonObject ToStringObject(IReadOnlyDictionary<string, string> values)
     {
         var result = new JsonObject();
-        foreach (var pair in values)
+        foreach (KeyValuePair<string, string> pair in values)
         {
             result[pair.Key] = pair.Value;
         }
@@ -379,7 +386,7 @@ public sealed class LegacyQuestStateStore
     private static JsonObject ToJsonObject(IReadOnlyDictionary<string, JsonElement> values)
     {
         var result = new JsonObject();
-        foreach (var pair in values)
+        foreach (KeyValuePair<string, JsonElement> pair in values)
         {
             result[pair.Key] = JsonNode.Parse(pair.Value.GetRawText());
         }
@@ -389,7 +396,7 @@ public sealed class LegacyQuestStateStore
 
     private static void MergeExtensionData(JsonObject root, IReadOnlyDictionary<string, JsonElement> extensionData)
     {
-        foreach (var pair in extensionData)
+        foreach (KeyValuePair<string, JsonElement> pair in extensionData)
         {
             root[pair.Key] = JsonNode.Parse(pair.Value.GetRawText());
         }
@@ -413,20 +420,20 @@ public sealed class LegacyQuestStateStore
         CancellationToken cancellationToken
     )
     {
-        var backupDirectory = Path.Combine(questDirectory, "quest-state-backups");
+        string backupDirectory = Path.Combine(questDirectory, "quest-state-backups");
         Directory.CreateDirectory(backupDirectory);
-        var safeFrontierId = string.Concat(
+        string safeFrontierId = string.Concat(
             frontierId.Select(character => Path.GetInvalidFileNameChars().Contains(character) ? '_' : character)
         );
-        var backupPath = Path.Combine(
+        string backupPath = Path.Combine(
             backupDirectory,
             $"{safeFrontierId}-{DateTimeOffset.UtcNow:yyyyMMddTHHmmssfffffffZ}-{Guid.NewGuid():N}.json"
         );
         File.Copy(path, backupPath, false);
         try
         {
-            var sourceHash = await ComputeSha256Async(path, cancellationToken).ConfigureAwait(false);
-            var backupHash = await ComputeSha256Async(backupPath, cancellationToken).ConfigureAwait(false);
+            byte[] sourceHash = await ComputeSha256Async(path, cancellationToken).ConfigureAwait(false);
+            byte[] backupHash = await ComputeSha256Async(backupPath, cancellationToken).ConfigureAwait(false);
             if (!CryptographicOperations.FixedTimeEquals(sourceHash, backupHash))
             {
                 throw new IOException("The legacy quest state backup did not match its source.");
@@ -456,7 +463,7 @@ public sealed class LegacyQuestStateStore
 
     private static async Task WriteVerifiedAsync(string path, JsonObject root, CancellationToken cancellationToken)
     {
-        var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
+        string temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
         try
         {
             await using (
@@ -479,7 +486,7 @@ public sealed class LegacyQuestStateStore
                 await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
             }
 
-            var verified = ParseObject(temporaryPath);
+            JsonObject verified = ParseObject(temporaryPath);
             if (!JsonNode.DeepEquals(root, verified))
             {
                 throw new InvalidDataException("The legacy quest state could not be verified before saving.");
@@ -528,8 +535,8 @@ public sealed class LegacyQuestStateStore
             return null;
         }
 
-        var fileName = $"dev-{reference.Id}.json";
-        var path = FindFile(fileName);
+        string fileName = $"dev-{reference.Id}.json";
+        string? path = FindFile(fileName);
         if (path is null)
         {
             warnings.Add($"Development quest definition '{fileName}' is missing.");
@@ -538,10 +545,10 @@ public sealed class LegacyQuestStateStore
 
         try
         {
-            var root = ParseObject(path);
-            var publisher = GetRequiredString(root, "publisher", path);
-            var id = GetRequiredString(root, "id", path);
-            var version = GetRequiredDouble(root, "ver", path);
+            JsonObject root = ParseObject(path);
+            string publisher = GetRequiredString(root, "publisher", path);
+            string id = GetRequiredString(root, "id", path);
+            double version = GetRequiredDouble(root, "ver", path);
             if (
                 !string.Equals(publisher, reference.Publisher, StringComparison.Ordinal)
                 || !string.Equals(id, reference.Id, StringComparison.Ordinal)
@@ -601,7 +608,7 @@ public sealed class LegacyQuestStateStore
 
         try
         {
-            var definition = node.Deserialize<RavenQuestDefinition>(PortableJsonOptions);
+            RavenQuestDefinition? definition = node.Deserialize<RavenQuestDefinition>(PortableJsonOptions);
             if (definition is null)
             {
                 warnings.Add("The embedded development quest definition contains JSON null.");
@@ -639,12 +646,12 @@ public sealed class LegacyQuestStateStore
         var objectives = new Dictionary<string, LegacyQuestObjective>(StringComparer.Ordinal);
         if (root["objectives"] is JsonObject objectiveRoot)
         {
-            foreach (var entry in objectiveRoot)
+            foreach (KeyValuePair<string, JsonNode?> entry in objectiveRoot)
             {
                 if (
                     entry.Value is not JsonValue value
-                    || !value.TryGetValue<string>(out var text)
-                    || !TryParseObjective(text, out var objective)
+                    || !value.TryGetValue<string>(out string? text)
+                    || !TryParseObjective(text, out LegacyQuestObjective? objective)
                 )
                 {
                     warnings.Add($"Quest objective '{entry.Key}' has an invalid state and was ignored.");
@@ -655,8 +662,8 @@ public sealed class LegacyQuestStateStore
             }
         }
 
-        var messages = ParseDeliveredMessages(root["msgs"], definition, warnings);
-        var chapters = ParseChapters(root[ChaptersProperty], warnings);
+        List<LegacyQuestMessage> messages = ParseDeliveredMessages(root["msgs"], definition, warnings);
+        List<LegacyQuestChapter> chapters = ParseChapters(root[ChaptersProperty], warnings);
         return new LegacyQuestProgress(
             reference,
             definition,
@@ -686,7 +693,7 @@ public sealed class LegacyQuestStateStore
         }
 
         var messages = new List<LegacyQuestMessage>();
-        foreach (var item in array)
+        foreach (JsonNode? item in array)
         {
             if (item is not JsonObject root || GetString(root, "id") is not { } id)
             {
@@ -694,7 +701,7 @@ public sealed class LegacyQuestStateStore
                 continue;
             }
 
-            var declared = definition?.Messages.FirstOrDefault(message =>
+            LegacyQuestMessageDefinition? declared = definition?.Messages.FirstOrDefault(message =>
                 string.Equals(message.Id, id, StringComparison.Ordinal)
             );
             messages.Add(
@@ -723,7 +730,7 @@ public sealed class LegacyQuestStateStore
         }
 
         var messages = new List<LegacyQuestMessageDefinition>();
-        foreach (var item in array)
+        foreach (JsonNode? item in array)
         {
             if (
                 item is not JsonObject root
@@ -759,7 +766,7 @@ public sealed class LegacyQuestStateStore
         }
 
         var chapters = new List<LegacyQuestChapter>();
-        foreach (var item in array)
+        foreach (JsonNode? item in array)
         {
             if (item is not JsonObject root || GetString(root, "id") is not { } id)
             {
@@ -788,20 +795,20 @@ public sealed class LegacyQuestStateStore
             return locations;
         }
 
-        foreach (var entry in root)
+        foreach (KeyValuePair<string, JsonNode?> entry in root)
         {
-            if (entry.Value is not JsonValue value || !value.TryGetValue<string>(out var text))
+            if (entry.Value is not JsonValue value || !value.TryGetValue<string>(out string? text))
             {
                 warnings.Add($"Quest body location '{entry.Key}' is invalid and was ignored.");
                 continue;
             }
 
-            var parts = text.Split(',', StringSplitOptions.TrimEntries);
+            string[] parts = text.Split(',', StringSplitOptions.TrimEntries);
             if (
                 parts.Length != 3
-                || !double.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var latitude)
-                || !double.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var longitude)
-                || !double.TryParse(parts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out var radius)
+                || !double.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out double latitude)
+                || !double.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out double longitude)
+                || !double.TryParse(parts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out double radius)
                 || !double.IsFinite(latitude)
                 || !double.IsFinite(longitude)
                 || !double.IsFinite(radius)
@@ -825,9 +832,9 @@ public sealed class LegacyQuestStateStore
         }
 
         var routes = new List<LegacyQuestRoute>();
-        foreach (var item in array)
+        foreach (JsonNode? item in array)
         {
-            if (!TryParseRoute(item, out var route) || route is null)
+            if (!TryParseRoute(item, out LegacyQuestRoute? route) || route is null)
             {
                 warnings.Add("A quest route is invalid and was ignored.");
                 continue;
@@ -860,9 +867,12 @@ public sealed class LegacyQuestStateStore
     private static List<IReadOnlyList<double>> ParseWaypoints(JsonArray waypointArray)
     {
         var waypoints = new List<IReadOnlyList<double>>(waypointArray.Count);
-        foreach (var waypoint in waypointArray)
+        foreach (JsonNode? waypoint in waypointArray)
         {
-            if (waypoint is not JsonArray coordinates || !TryReadWaypoint(coordinates, out var values))
+            if (
+                waypoint is not JsonArray coordinates
+                || !TryReadWaypoint(coordinates, out IReadOnlyList<double>? values)
+            )
             {
                 continue;
             }
@@ -876,10 +886,10 @@ public sealed class LegacyQuestStateStore
     private static bool TryReadWaypoint(JsonArray coordinates, out IReadOnlyList<double> values)
     {
         values = [];
-        var parsed = coordinates
+        double?[] parsed = coordinates
             .Select(value =>
                 value is JsonValue number
-                && number.TryGetValue<double>(out var coordinate)
+                && number.TryGetValue<double>(out double coordinate)
                 && double.IsFinite(coordinate)
                     ? (double?)coordinate
                     : null
@@ -901,12 +911,12 @@ public sealed class LegacyQuestStateStore
             return null;
         }
 
-        if (node is JsonValue value && value.TryGetValue<string>(out var text))
+        if (node is JsonValue value && value.TryGetValue<string>(out string? text))
         {
-            var parts = text.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            string[] parts = text.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             if (
                 parts.Length == 3
-                && double.TryParse(parts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out var version)
+                && double.TryParse(parts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out double version)
                 && double.IsFinite(version)
             )
             {
@@ -939,7 +949,7 @@ public sealed class LegacyQuestStateStore
             return null;
         }
 
-        var exact = Path.Combine(questDirectory, fileName);
+        string exact = Path.Combine(questDirectory, fileName);
         if (File.Exists(exact))
         {
             return exact;
@@ -968,17 +978,21 @@ public sealed class LegacyQuestStateStore
     private static bool TryParseObjective(string value, out LegacyQuestObjective? objective)
     {
         objective = null;
-        var parts = value.Split(',', StringSplitOptions.TrimEntries);
+        string[] parts = value.Split(',', StringSplitOptions.TrimEntries);
         if (
             parts.Length is not 1 and not 3
-            || !Enum.TryParse<LegacyQuestObjectiveState>(parts[0], ignoreCase: false, out var state)
+            || !Enum.TryParse<LegacyQuestObjectiveState>(
+                parts[0],
+                ignoreCase: false,
+                out LegacyQuestObjectiveState state
+            )
         )
         {
             return false;
         }
 
-        var current = 0;
-        var total = 0;
+        int current = 0;
+        int total = 0;
         if (
             parts.Length == 3
             && (
@@ -1002,9 +1016,9 @@ public sealed class LegacyQuestStateStore
             return result;
         }
 
-        foreach (var entry in root)
+        foreach (KeyValuePair<string, JsonNode?> entry in root)
         {
-            if (entry.Value is JsonValue value && value.TryGetValue<string>(out var text))
+            if (entry.Value is JsonValue value && value.TryGetValue<string>(out string? text))
             {
                 result[entry.Key] = text;
             }
@@ -1017,7 +1031,7 @@ public sealed class LegacyQuestStateStore
     {
         return node is JsonArray array
             ? array
-                .Select(value => value is JsonValue item && item.TryGetValue<string>(out var text) ? text : null)
+                .Select(value => value is JsonValue item && item.TryGetValue<string>(out string? text) ? text : null)
                 .Where(value => !string.IsNullOrWhiteSpace(value))
                 .Select(value => value!)
                 .ToHashSet(StringComparer.Ordinal)
@@ -1032,9 +1046,13 @@ public sealed class LegacyQuestStateStore
         }
 
         var result = new List<string>();
-        foreach (var item in array)
+        foreach (JsonNode? item in array)
         {
-            if (item is JsonValue value && value.TryGetValue<string>(out var text) && !string.IsNullOrWhiteSpace(text))
+            if (
+                item is JsonValue value
+                && value.TryGetValue<string>(out string? text)
+                && !string.IsNullOrWhiteSpace(text)
+            )
             {
                 result.Add(text);
             }
@@ -1051,7 +1069,7 @@ public sealed class LegacyQuestStateStore
             return result;
         }
 
-        foreach (var entry in root)
+        foreach (KeyValuePair<string, JsonNode?> entry in root)
         {
             result[entry.Key] = JsonSerializer.SerializeToElement(entry.Value);
         }
@@ -1068,8 +1086,8 @@ public sealed class LegacyQuestStateStore
 
         if (
             node is JsonValue value
-            && value.TryGetValue<string>(out var text)
-            && Enum.TryParse<LegacyQuestDuration>(text, true, out var duration)
+            && value.TryGetValue<string>(out string? text)
+            && Enum.TryParse<LegacyQuestDuration>(text, true, out LegacyQuestDuration duration)
         )
         {
             return duration;
@@ -1098,7 +1116,7 @@ public sealed class LegacyQuestStateStore
     {
         return
             root[name] is JsonValue value
-            && value.TryGetValue<string>(out var result)
+            && value.TryGetValue<string>(out string? result)
             && !string.IsNullOrWhiteSpace(result)
             ? result
             : null;
@@ -1106,19 +1124,22 @@ public sealed class LegacyQuestStateStore
 
     private static bool? GetBoolean(JsonObject root, string name)
     {
-        return root[name] is JsonValue value && value.TryGetValue<bool>(out var result) ? result : null;
+        return root[name] is JsonValue value && value.TryGetValue<bool>(out bool result) ? result : null;
     }
 
     private static double? GetDouble(JsonObject root, string name)
     {
-        return root[name] is JsonValue value && value.TryGetValue<double>(out var result) && double.IsFinite(result)
+        return root[name] is JsonValue value && value.TryGetValue<double>(out double result) && double.IsFinite(result)
             ? result
             : null;
     }
 
     private static DateTimeOffset? GetDateTimeOffset(JsonObject root, string name)
     {
-        return root[name] is JsonValue value && value.TryGetValue<DateTimeOffset>(out var result) ? result : null;
+        return
+            root[name] is JsonValue value && value.TryGetValue<DateTimeOffset>(out global::System.DateTimeOffset result)
+            ? result
+            : null;
     }
 }
 

@@ -26,7 +26,7 @@ public sealed class PublishedReferenceVersionStoreTests : IDisposable
             """
         );
 
-        var result = new PublishedReferenceVersionStore().Load(root);
+        PublishedReferenceVersions result = new PublishedReferenceVersionStore().Load(root);
 
         Assert.Equal(10, result.CodexReference);
         Assert.Equal(7, result.BiologyCriteria);
@@ -42,14 +42,14 @@ public sealed class PublishedReferenceVersionStoreTests : IDisposable
     public async Task CrossPlatformManifestTakesPrecedenceWithoutChangingLegacySettings()
     {
         Directory.CreateDirectory(root);
-        var settingsPath = Path.Combine(root, "settings.json");
+        string settingsPath = Path.Combine(root, "settings.json");
         const string legacy = "{\"pubCodexRef\":1,\"unknown\":42}";
         await File.WriteAllTextAsync(settingsPath, legacy);
         var versions = new PublishedReferenceVersions(10, 7, 4, 48, 68, 15, 2, 3);
         var store = new PublishedReferenceVersionStore();
 
         await store.WriteAsync(Path.Combine(root, "pub"), versions);
-        var result = store.Load(root);
+        PublishedReferenceVersions result = store.Load(root);
 
         Assert.Equal(versions, result);
         Assert.Equal(legacy, await File.ReadAllTextAsync(settingsPath));

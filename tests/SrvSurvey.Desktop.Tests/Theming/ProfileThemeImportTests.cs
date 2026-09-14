@@ -17,20 +17,20 @@ public sealed class ProfileThemeImportTests : IDisposable
     [Fact]
     public async Task ImportPreservesOverlayThemeAndLayoutIndependentlyOfAppTheme()
     {
-        var source = Path.Combine(temporaryDirectory, "legacy");
-        var data = Path.Combine(temporaryDirectory, "data");
-        var config = Path.Combine(temporaryDirectory, "config");
-        var backups = Path.Combine(temporaryDirectory, "backups");
+        string source = Path.Combine(temporaryDirectory, "legacy");
+        string data = Path.Combine(temporaryDirectory, "data");
+        string config = Path.Combine(temporaryDirectory, "config");
+        string backups = Path.Combine(temporaryDirectory, "backups");
         Directory.CreateDirectory(source);
         Directory.CreateDirectory(config);
-        var themeBytes =
+        byte[] themeBytes =
             """
             {
               "orange": [128, 10, 20, 30],
               "future": "orange"
             }
             """u8.ToArray();
-        var layoutBytes =
+        byte[] layoutBytes =
             """
             {
               "PlotBodyInfo": "left:8, top:12, 0.75 { s: 10, p: <1, 2, 3>, r: <4, 5, 6>}",
@@ -44,18 +44,18 @@ public sealed class ProfileThemeImportTests : IDisposable
             "{\"darkTheme\":false,\"plotterOpacity\":55}"
         );
         var paths = new AppDataPaths(config, data, Path.Combine(temporaryDirectory, "cache"), []);
-        var import = await new LegacyProfileImporter().ImportAsync(source, data, backups);
+        ProfileImportResult import = await new LegacyProfileImporter().ImportAsync(source, data, backups);
 
-        var migration = new LegacyUiSettingsMigrator().MigrateIfNeeded(paths);
-        var importedOverlay = new LegacyOverlayThemeStore(Path.Combine(data, "theme.json")).Load();
-        var importedLayout = new LegacyOverlayLayoutStore(data).Load();
+        LegacyUiSettingsMigrationResult migration = new LegacyUiSettingsMigrator().MigrateIfNeeded(paths);
+        LegacyOverlayTheme importedOverlay = new LegacyOverlayThemeStore(Path.Combine(data, "theme.json")).Load();
+        LegacyOverlayLayout importedLayout = new LegacyOverlayLayoutStore(data).Load();
         var application = new Application();
         var themePreferences = new ThemePreferenceStore(paths.UiSettingsPath);
         Assert.True(migration.Migrated);
         Assert.Equal("blue-light", themePreferences.LoadThemeKey());
         var service = new RavenThemeService(application, themePreferences, importedOverlay);
         service.ApplyCurrent();
-        var overlayAccentBefore = Assert
+        Color overlayAccentBefore = Assert
             .IsType<SolidColorBrush>(application.Resources["RavenOverlayAccentBrush"])
             .Color;
 

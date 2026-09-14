@@ -33,8 +33,8 @@ public sealed class CanonnLogoControl : Control
             return;
         }
 
-        var bitmap = Logo.Value;
-        var scale = Math.Min(destination.Width / bitmap.Size.Width, destination.Height / bitmap.Size.Height);
+        Bitmap bitmap = Logo.Value;
+        double scale = Math.Min(destination.Width / bitmap.Size.Width, destination.Height / bitmap.Size.Height);
         var size = new Size(bitmap.Size.Width * scale, bitmap.Size.Height * scale);
         var target = new Rect(
             destination.Center.X - size.Width / 2,
@@ -47,7 +47,7 @@ public sealed class CanonnLogoControl : Control
 
     private static Bitmap CreateLogo()
     {
-        var bytes = GetOriginalPngBytes();
+        byte[] bytes = GetOriginalPngBytes();
         return new Bitmap(new MemoryStream(bytes, writable: false));
     }
 }

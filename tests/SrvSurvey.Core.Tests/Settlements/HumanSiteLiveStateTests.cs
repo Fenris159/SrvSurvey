@@ -8,12 +8,12 @@ public sealed class HumanSiteLiveStateTests
     [Fact]
     public void ApproachSettlementCapturesCompatibleOdysseySite()
     {
-        var state = CreateState();
+        HumanSiteLiveState state = CreateState();
 
-        var changed = state.Apply(Parse(ApproachJson));
+        bool changed = state.Apply(Parse(ApproachJson));
 
         Assert.True(changed);
-        var site = Assert.IsType<HumanSiteLiveSnapshot>(state.CurrentSite);
+        HumanSiteLiveSnapshot site = Assert.IsType<HumanSiteLiveSnapshot>(state.CurrentSite);
         Assert.Equal("Haberlandt Survey", site.Name);
         Assert.Equal(12_345, site.MarketId);
         Assert.Equal(42, site.SystemAddress);
@@ -33,7 +33,7 @@ public sealed class HumanSiteLiveStateTests
     [Fact]
     public void IncompatibleSettlementsDoNotBecomeHumanSites()
     {
-        var state = CreateState();
+        HumanSiteLiveState state = CreateState();
 
         Assert.False(state.Apply(Parse(ApproachJson.Replace("Haberlandt Survey", "$Ancient:#index=1;"))));
         Assert.False(state.Apply(Parse(ApproachJson.Replace("\"dock\",\"refuel\"", "\"dock\",\"socialspace\""))));
@@ -53,7 +53,7 @@ public sealed class HumanSiteLiveStateTests
     [Fact]
     public void DockingEventsInferUniqueTemplateAndTrackProgress()
     {
-        var state = CreateState();
+        HumanSiteLiveState state = CreateState();
         state.Apply(Parse(ApproachJson));
 
         Assert.True(
@@ -97,7 +97,7 @@ public sealed class HumanSiteLiveStateTests
     [Fact]
     public void AmbiguousPadsDoNotGuessSettlementSubtype()
     {
-        var state = CreateState();
+        HumanSiteLiveState state = CreateState();
         state.Apply(Parse(ApproachJson));
 
         state.Apply(
@@ -115,7 +115,7 @@ public sealed class HumanSiteLiveStateTests
     [Fact]
     public void DenialCancellationAndDepartureFollowCurrentMarket()
     {
-        var state = CreateState();
+        HumanSiteLiveState state = CreateState();
         state.Apply(Parse(ApproachJson));
 
         Assert.False(state.Apply(Parse("""{"event":"DockingDenied","MarketID":999,"Reason":"NoSpace"}""")));
@@ -136,7 +136,7 @@ public sealed class HumanSiteLiveStateTests
     [InlineData("Shutdown")]
     public void SessionExitClearsCurrentSite(string eventName)
     {
-        var state = CreateState();
+        HumanSiteLiveState state = CreateState();
         state.Apply(Parse(ApproachJson));
 
         Assert.True(state.Apply(Parse($$"""{"event":"{{eventName}}"}""")));
@@ -147,7 +147,7 @@ public sealed class HumanSiteLiveStateTests
     [Fact]
     public void MainMenuMusicClearsCurrentSite()
     {
-        var state = CreateState();
+        HumanSiteLiveState state = CreateState();
         state.Apply(Parse(ApproachJson));
 
         Assert.True(state.Apply(Parse("""{"event":"Music","MusicTrack":"MainMenu"}""")));
@@ -158,7 +158,7 @@ public sealed class HumanSiteLiveStateTests
     [Fact]
     public void RepeatedApproachRetainsLearnedTemplateAndFirstVisit()
     {
-        var state = CreateState();
+        HumanSiteLiveState state = CreateState();
         state.Apply(Parse(ApproachJson));
         state.Apply(
             Parse(
@@ -185,11 +185,11 @@ public sealed class HumanSiteLiveStateTests
     [Fact]
     public void InferredGeometryUpdatesTemplateAndNormalizesHeading()
     {
-        var state = CreateState();
-        var template = HumanSiteTemplateCatalog.LoadEmbedded().Find(HumanSiteEconomy.Agriculture, 4)!;
+        HumanSiteLiveState state = CreateState();
+        HumanSiteTemplate template = HumanSiteTemplateCatalog.LoadEmbedded().Find(HumanSiteEconomy.Agriculture, 4)!;
         state.Apply(Parse(ApproachJson));
 
-        var changed = state.ApplyGeometry(new HumanSiteGeometrySolution(4, template, -10, 1, 0.5));
+        bool changed = state.ApplyGeometry(new HumanSiteGeometrySolution(4, template, -10, 1, 0.5));
 
         Assert.True(changed);
         Assert.Equal(4, state.CurrentSite!.SubType);
@@ -200,7 +200,7 @@ public sealed class HumanSiteLiveStateTests
     [Fact]
     public void SavedKnowledgeRestoresPriorGeometryForCurrentSiteOnly()
     {
-        var state = CreateState();
+        HumanSiteLiveState state = CreateState();
         state.Apply(Parse(ApproachJson));
         var knowledge = new HumanSiteKnowledge(
             "Haberlandt Survey",
@@ -226,7 +226,7 @@ public sealed class HumanSiteLiveStateTests
     [Fact]
     public void ExternalKnowledgeFillsMissingFieldsWithoutReplacingLocalGeometry()
     {
-        var state = CreateState();
+        HumanSiteLiveState state = CreateState();
         state.Apply(Parse(ApproachJson));
         var local = new HumanSiteKnowledge(
             "Haberlandt Survey",
@@ -241,7 +241,7 @@ public sealed class HumanSiteLiveStateTests
             HumanSiteLandingPads.Empty,
             HumanSiteGeometrySource.AutoDock
         );
-        var external = local with
+        HumanSiteKnowledge external = local with
         {
             SubType = 1,
             Heading = 90,
@@ -264,7 +264,7 @@ public sealed class HumanSiteLiveStateTests
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var value, out var error), error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? value, out string? error), error);
         return Assert.IsType<JournalEventEnvelope>(value);
     }
 

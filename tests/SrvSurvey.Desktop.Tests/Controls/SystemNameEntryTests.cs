@@ -47,7 +47,7 @@ public sealed class SystemNameEntryTests
 
     private static async Task WaitUntilAsync(Func<bool> condition)
     {
-        var deadline = DateTimeOffset.UtcNow.AddSeconds(2);
+        DateTimeOffset deadline = DateTimeOffset.UtcNow.AddSeconds(2);
         while (!condition() && DateTimeOffset.UtcNow < deadline)
         {
             await Task.Delay(10);

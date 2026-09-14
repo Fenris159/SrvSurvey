@@ -52,12 +52,12 @@ public sealed class BiologyRewardSettingsStore
             return fallback;
         }
 
-        if (value.TryGetValue<double>(out var result))
+        if (value.TryGetValue<double>(out double result))
         {
             return result;
         }
 
-        return value.TryGetValue<int>(out var integer) ? integer : fallback;
+        return value.TryGetValue<int>(out int integer) ? integer : fallback;
     }
 }
 
@@ -75,9 +75,9 @@ public sealed record BiologyRewardThresholds(
         double bucketThreeMillions
     )
     {
-        var one = NormalizeValue(bucketOneMillions, 3);
-        var two = Math.Max(one, NormalizeValue(bucketTwoMillions, 7));
-        var three = Math.Max(two, NormalizeValue(bucketThreeMillions, 12));
+        double one = NormalizeValue(bucketOneMillions, 3);
+        double two = Math.Max(one, NormalizeValue(bucketTwoMillions, 7));
+        double three = Math.Max(two, NormalizeValue(bucketThreeMillions, 12));
         return new BiologyRewardThresholds(one, two, three);
     }
 

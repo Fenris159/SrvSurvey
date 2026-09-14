@@ -17,9 +17,9 @@ public sealed class GuardianArtifactInventoryState
     public bool Reset(CargoSnapshot? cargo)
     {
         var replacement = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        foreach (var item in cargo?.Inventory ?? [])
+        foreach (CargoItem item in cargo?.Inventory ?? [])
         {
-            if (TryResolve(item.Name, out var definition) && item.Count > 0)
+            if (TryResolve(item.Name, out ArtifactDefinition? definition) && item.Count > 0)
             {
                 replacement[definition.CommodityName] = item.Count;
             }
@@ -34,7 +34,7 @@ public sealed class GuardianArtifactInventoryState
         }
 
         counts.Clear();
-        foreach (var entry in replacement)
+        foreach (KeyValuePair<string, int> entry in replacement)
         {
             counts[entry.Key] = entry.Value;
         }
@@ -46,7 +46,7 @@ public sealed class GuardianArtifactInventoryState
     public bool Apply(JournalEventEnvelope journalEvent, bool isInSrv = false)
     {
         ArgumentNullException.ThrowIfNull(journalEvent);
-        var changed = journalEvent.EventName switch
+        bool changed = journalEvent.EventName switch
         {
             "CollectCargo" => ApplyDelta(GetString(journalEvent.Payload, "Type"), 1),
             "EjectCargo" => ApplyDelta(
@@ -76,7 +76,9 @@ public sealed class GuardianArtifactInventoryState
     public int GetCount(string itemCodeOrName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(itemCodeOrName);
-        return TryResolve(itemCodeOrName, out var definition) ? counts.GetValueOrDefault(definition.CommodityName) : 0;
+        return TryResolve(itemCodeOrName, out ArtifactDefinition? definition)
+            ? counts.GetValueOrDefault(definition.CommodityName)
+            : 0;
     }
 
     public IReadOnlyList<GuardianArtifactRequirement> GetRequirements(IEnumerable<string> itemCodes)
@@ -85,13 +87,15 @@ public sealed class GuardianArtifactInventoryState
         return itemCodes
             .Where(code => !string.IsNullOrWhiteSpace(code))
             .Select(code =>
-                TryResolve(code, out var definition) ? definition : new ArtifactDefinition(code, code, code, [])
+                TryResolve(code, out ArtifactDefinition? definition)
+                    ? definition
+                    : new ArtifactDefinition(code, code, code, [])
             )
             .GroupBy(definition => definition.CommodityName, StringComparer.OrdinalIgnoreCase)
             .Select(group =>
             {
-                var definition = group.First();
-                var required = group.Count();
+                ArtifactDefinition definition = group.First();
+                int required = group.Count();
                 return new GuardianArtifactRequirement(
                     definition.ShortCode,
                     definition.CommodityName,
@@ -111,17 +115,17 @@ public sealed class GuardianArtifactInventoryState
 
     private bool ApplyCargoEvent(JsonElement root)
     {
-        if (!root.TryGetProperty("Inventory", out var inventory) || inventory.ValueKind != JsonValueKind.Array)
+        if (!root.TryGetProperty("Inventory", out JsonElement inventory) || inventory.ValueKind != JsonValueKind.Array)
         {
             return false;
         }
 
         var replacement = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        foreach (var item in inventory.EnumerateArray())
+        foreach (JsonElement item in inventory.EnumerateArray())
         {
-            var name = GetString(item, "Name");
-            var count = GetInt32(item, CountPropertyName) ?? 0;
-            if (TryResolve(name, out var definition) && count > 0)
+            string? name = GetString(item, "Name");
+            int count = GetInt32(item, CountPropertyName) ?? 0;
+            if (TryResolve(name, out ArtifactDefinition? definition) && count > 0)
             {
                 replacement[definition.CommodityName] = (int)
                     Math.Min(int.MaxValue, (long)replacement.GetValueOrDefault(definition.CommodityName) + count);
@@ -137,7 +141,7 @@ public sealed class GuardianArtifactInventoryState
         }
 
         counts.Clear();
-        foreach (var entry in replacement)
+        foreach (KeyValuePair<string, int> entry in replacement)
         {
             counts[entry.Key] = entry.Value;
         }
@@ -147,13 +151,13 @@ public sealed class GuardianArtifactInventoryState
 
     private bool ApplyDelta(string? itemName, int delta)
     {
-        if (delta == 0 || !TryResolve(itemName, out var definition))
+        if (delta == 0 || !TryResolve(itemName, out ArtifactDefinition? definition))
         {
             return false;
         }
 
-        var previous = counts.GetValueOrDefault(definition.CommodityName);
-        var next = (int)Math.Clamp((long)previous + delta, 0, int.MaxValue);
+        int previous = counts.GetValueOrDefault(definition.CommodityName);
+        int next = (int)Math.Clamp((long)previous + delta, 0, int.MaxValue);
         if (next == previous)
         {
             return false;
@@ -173,22 +177,22 @@ public sealed class GuardianArtifactInventoryState
 
     private bool ApplyTransfers(JsonElement root, bool isInSrv)
     {
-        if (!root.TryGetProperty("Transfers", out var transfers) || transfers.ValueKind != JsonValueKind.Array)
+        if (!root.TryGetProperty("Transfers", out JsonElement transfers) || transfers.ValueKind != JsonValueKind.Array)
         {
             return false;
         }
 
-        var changed = false;
-        foreach (var transfer in transfers.EnumerateArray())
+        bool changed = false;
+        foreach (JsonElement transfer in transfers.EnumerateArray())
         {
-            var count = GetInt32(transfer, CountPropertyName) ?? 0;
-            var direction = GetString(transfer, "Direction");
+            int count = GetInt32(transfer, CountPropertyName) ?? 0;
+            string? direction = GetString(transfer, "Direction");
             if (count <= 0)
             {
                 continue;
             }
 
-            var delta = isInSrv
+            int delta = isInSrv
                 ? direction switch
                 {
                     "tosrv" => count,
@@ -214,7 +218,7 @@ public sealed class GuardianArtifactInventoryState
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+        return root.TryGetProperty(propertyName, out JsonElement value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
     }
@@ -222,16 +226,16 @@ public sealed class GuardianArtifactInventoryState
     private static int? GetInt32(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind == JsonValueKind.Number
-            && value.TryGetInt32(out var number)
+            && value.TryGetInt32(out int number)
             ? number
             : null;
     }
 
     private static Dictionary<string, ArtifactDefinition> BuildDefinitions()
     {
-        var definitions = new[]
+        ArtifactDefinition[] definitions = new[]
         {
             new ArtifactDefinition("ca", "ancientcasket", "Guardian Casket", ["casket"]),
             new ArtifactDefinition("or", "ancientorb", "Guardian Orb", ["orb"]),
@@ -247,12 +251,12 @@ public sealed class GuardianArtifactInventoryState
             new ArtifactDefinition("me", "thargoidtissuesampletype3", "Medusa Tissue Sample", ["medusa"]),
         };
         var result = new Dictionary<string, ArtifactDefinition>(StringComparer.OrdinalIgnoreCase);
-        foreach (var definition in definitions)
+        foreach (ArtifactDefinition? definition in definitions)
         {
             result[definition.ShortCode] = definition;
             result[definition.CommodityName] = definition;
             result[definition.DisplayName] = definition;
-            foreach (var alias in definition.Aliases)
+            foreach (string alias in definition.Aliases)
             {
                 result[alias] = definition;
             }

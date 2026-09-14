@@ -8,18 +8,18 @@ public sealed class GuardianSurveyCompletionCalculator(GuardianSiteTemplateCatal
     public GuardianSurveyCompletion Calculate(GuardianSurveyData survey, GuardianPublishedSite? published = null)
     {
         ArgumentNullException.ThrowIfNull(survey);
-        var siteType = ResolveSiteType(survey, published);
-        var template = templates.Find(siteType);
+        string? siteType = ResolveSiteType(survey, published);
+        GuardianSiteTemplate? template = templates.Find(siteType);
         if (template is null)
         {
             return GuardianSurveyCompletion.Empty;
         }
 
-        var isRuins = IsRuins(siteType);
-        var points = CollectSurveyPoints(survey, template);
-        var tallies = TallyPoints(survey, published, points, isRuins);
-        var (score, maxScore) = ScoreSurvey(survey, published, points.Count, tallies, isRuins);
-        var progress = maxScore == 0 ? 0 : (int)(100d / maxScore * score);
+        bool isRuins = IsRuins(siteType);
+        IReadOnlyList<GuardianPointOfInterest> points = CollectSurveyPoints(survey, template);
+        PointTallies tallies = TallyPoints(survey, published, points, isRuins);
+        (int score, int maxScore) = ScoreSurvey(survey, published, points.Count, tallies, isRuins);
+        int progress = maxScore == 0 ? 0 : (int)(100d / maxScore * score);
         return new GuardianSurveyCompletion(
             score,
             maxScore,
@@ -60,13 +60,13 @@ public sealed class GuardianSurveyCompletionCalculator(GuardianSiteTemplateCatal
         bool isRuins
     )
     {
-        var siteHeading = survey.SiteHeading != -1 ? survey.SiteHeading : published?.SiteHeading ?? -1;
-        var score = (siteHeading != -1 ? 1 : 0) + tallies.Confirmed;
-        var maxScore = pointCount + 1;
+        int siteHeading = survey.SiteHeading != -1 ? survey.SiteHeading : published?.SiteHeading ?? -1;
+        int score = (siteHeading != -1 ? 1 : 0) + tallies.Confirmed;
+        int maxScore = pointCount + 1;
         if (isRuins)
         {
             maxScore++;
-            var relicTowerHeading =
+            int relicTowerHeading =
                 survey.RelicTowerHeading != -1 ? survey.RelicTowerHeading : published?.RelicTowerHeading ?? -1;
             if (relicTowerHeading != -1)
             {
@@ -90,7 +90,7 @@ public sealed class GuardianSurveyCompletionCalculator(GuardianSiteTemplateCatal
     )
     {
         var tallies = new PointTallies();
-        foreach (var point in points)
+        foreach (GuardianPointOfInterest point in points)
         {
             TallyPoint(survey, published, point, isRuins, tallies);
         }
@@ -106,7 +106,7 @@ public sealed class GuardianSurveyCompletionCalculator(GuardianSiteTemplateCatal
         PointTallies tallies
     )
     {
-        var status = GetStatus(survey, published, point.Name);
+        GuardianPoiStatus status = GetStatus(survey, published, point.Name);
         if (status != GuardianPoiStatus.Unknown)
         {
             tallies.Confirmed++;
@@ -145,7 +145,7 @@ public sealed class GuardianSurveyCompletionCalculator(GuardianSiteTemplateCatal
     public bool IsSurveyComplete(GuardianSurveyData survey, GuardianPublishedSite? published = null)
     {
         ArgumentNullException.ThrowIfNull(survey);
-        var siteType = string.Equals(survey.SiteType, "Unknown", StringComparison.OrdinalIgnoreCase)
+        string? siteType = string.Equals(survey.SiteType, "Unknown", StringComparison.OrdinalIgnoreCase)
             ? published?.SiteType
             : survey.SiteType;
         if (templates.Find(siteType) is null || survey.Location is null)
@@ -153,13 +153,13 @@ public sealed class GuardianSurveyCompletionCalculator(GuardianSiteTemplateCatal
             return false;
         }
 
-        var siteHeading = survey.SiteHeading != -1 ? survey.SiteHeading : published?.SiteHeading ?? -1;
+        int siteHeading = survey.SiteHeading != -1 ? survey.SiteHeading : published?.SiteHeading ?? -1;
         if (siteHeading == -1)
         {
             return false;
         }
 
-        var relicTowerHeading =
+        int relicTowerHeading =
             survey.RelicTowerHeading != -1 ? survey.RelicTowerHeading : published?.RelicTowerHeading ?? -1;
         if (IsRuins(siteType) && relicTowerHeading == -1)
         {
@@ -171,7 +171,7 @@ public sealed class GuardianSurveyCompletionCalculator(GuardianSiteTemplateCatal
 
     private static GuardianPoiStatus GetStatus(GuardianSurveyData survey, GuardianPublishedSite? published, string name)
     {
-        if (survey.PoiStatuses.TryGetValue(name, out var local))
+        if (survey.PoiStatuses.TryGetValue(name, out GuardianPoiStatus local))
         {
             return local;
         }
@@ -186,12 +186,12 @@ public sealed class GuardianSurveyCompletionCalculator(GuardianSiteTemplateCatal
 
     private static int? GetRelicHeading(GuardianSurveyData survey, GuardianPublishedSite? published, string name)
     {
-        if (survey.RelicHeadings.TryGetValue(name, out var local))
+        if (survey.RelicHeadings.TryGetValue(name, out int local))
         {
             return local;
         }
 
-        var raw = survey.RawPointsOfInterest?.FirstOrDefault(point =>
+        GuardianPointOfInterest? raw = survey.RawPointsOfInterest?.FirstOrDefault(point =>
             string.Equals(point.Name, name, StringComparison.Ordinal)
         );
         if (raw is not null)
@@ -199,7 +199,7 @@ public sealed class GuardianSurveyCompletionCalculator(GuardianSiteTemplateCatal
             return (int)raw.Rotation;
         }
 
-        return published?.RelicHeadings.TryGetValue(name, out var publishedHeading) == true ? publishedHeading : null;
+        return published?.RelicHeadings.TryGetValue(name, out int publishedHeading) == true ? publishedHeading : null;
     }
 
     private static bool IsRuins(string? siteType)

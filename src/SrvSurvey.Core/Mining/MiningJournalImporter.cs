@@ -11,12 +11,12 @@ public static class MiningJournalImporter
     )
     {
         var result = new MiningWorkspaceState(new MiningCommanderData());
-        foreach (var path in paths.Order(StringComparer.OrdinalIgnoreCase))
+        foreach (string? path in paths.Order(StringComparer.OrdinalIgnoreCase))
         {
             var context = new JournalSessionState();
-            await foreach (var line in File.ReadLinesAsync(path, cancellationToken))
+            await foreach (string line in File.ReadLinesAsync(path, cancellationToken))
             {
-                if (!JournalEventEnvelope.TryParse(line, out var entry, out _) || entry is null)
+                if (!JournalEventEnvelope.TryParse(line, out JournalEventEnvelope? entry, out _) || entry is null)
                 {
                     continue;
                 }

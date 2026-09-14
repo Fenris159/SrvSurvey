@@ -26,25 +26,25 @@ public sealed class OverlayCatalogPresentationRenderingTests
         var mining = new MiningWarningOverlayWindow();
         try
         {
-            var model = Assert.IsType<SurfaceMiningOverlayViewModel>(mining.DataContext);
+            SurfaceMiningOverlayViewModel model = Assert.IsType<SurfaceMiningOverlayViewModel>(mining.DataContext);
             Assert.All(
                 model.SurfaceMining.Rigs.Where(rig => rig.IsSet),
                 rig => Assert.Equal(78, rig.Marker!.RadiusMeters)
             );
             flight.Show();
             mining.Show();
-            var flightTexts = flight.GetVisualDescendants().OfType<TextBlock>().ToArray();
-            var miningTexts = mining.GetVisualDescendants().OfType<TextBlock>().ToArray();
-            var flightTitle = Assert.Single(flightTexts, text => text.Text == "FLIGHT WARNING");
-            var miningTitle = Assert.Single(miningTexts, text => text.Text == "WARNING");
+            TextBlock[] flightTexts = flight.GetVisualDescendants().OfType<TextBlock>().ToArray();
+            TextBlock[] miningTexts = mining.GetVisualDescendants().OfType<TextBlock>().ToArray();
+            TextBlock flightTitle = Assert.Single(flightTexts, text => text.Text == "FLIGHT WARNING");
+            TextBlock miningTitle = Assert.Single(miningTexts, text => text.Text == "WARNING");
             Assert.Equal(
                 ((ISolidColorBrush)flightTitle.Foreground!).Color,
                 ((ISolidColorBrush)miningTitle.Foreground!).Color
             );
             Assert.Equal(flightTitle.FontSize, miningTitle.FontSize);
             Assert.Equal(flightTitle.FontWeight, miningTitle.FontWeight);
-            var flightIcon = Assert.Single(flightTexts, text => text.Text == "!");
-            var miningIcon = Assert.Single(miningTexts, text => text.Text == "!");
+            TextBlock flightIcon = Assert.Single(flightTexts, text => text.Text == "!");
+            TextBlock miningIcon = Assert.Single(miningTexts, text => text.Text == "!");
             Assert.Equal(flightIcon.FontSize, miningIcon.FontSize);
             Assert.Contains(miningTexts, text => text.Text == "TOO FAR FROM RIGS");
             Assert.Contains(miningTexts, text => text.Text == "Moving beyond 4.5Km will Destroy Rigs");
@@ -68,19 +68,19 @@ public sealed class OverlayCatalogPresentationRenderingTests
     [AvaloniaFact]
     public void MonochromeCompanionRendersMiningAndStatusPanels()
     {
-        var app = Assert.IsType<Application>(Application.Current, exactMatch: false);
+        Application app = Assert.IsType<Application>(Application.Current, exactMatch: false);
         var service = new RavenThemeService(
             app,
             new ThemePreferenceStore(
                 Path.Combine(Path.GetTempPath(), $"SrvSurvey-theme-preview-{Guid.NewGuid():N}.json")
             )
         );
-        Assert.True(OverlayThemePresetCatalog.TryGet("Monochrome Companion", out var preset));
+        Assert.True(OverlayThemePresetCatalog.TryGet("Monochrome Companion", out OverlayThemePreset? preset));
         service.ApplyOverlayTheme(new LegacyOverlayTheme(preset.Colors, true, null));
         try
         {
             foreach (
-                var name in new[]
+                string? name in new[]
                 {
                     "PlotSurfaceMining",
                     "PlotMiningWarning",
@@ -97,14 +97,14 @@ public sealed class OverlayCatalogPresentationRenderingTests
                     OverlayThemeResources.Apply(preview);
                     preview.ApplyRuntimePresentationTheme();
                     preview.Show();
-                    using var frame = preview.CaptureRenderedFrame();
+                    using WriteableBitmap? frame = preview.CaptureRenderedFrame();
                     Assert.NotNull(frame);
                     Assert.True(frame.PixelSize.Width > 100);
-                    var output = Environment.GetEnvironmentVariable("SRVSURVEY_OVERLAY_RENDER_OUTPUT");
+                    string? output = Environment.GetEnvironmentVariable("SRVSURVEY_OVERLAY_RENDER_OUTPUT");
                     if (!string.IsNullOrWhiteSpace(output))
                     {
                         Directory.CreateDirectory(output);
-                        using var stream = File.Create(Path.Combine(output, $"{name}-monochrome.png"));
+                        using FileStream stream = File.Create(Path.Combine(output, $"{name}-monochrome.png"));
                         frame.Save(stream, PngBitmapEncoderOptions.Default);
                     }
                 }
@@ -125,10 +125,10 @@ public sealed class OverlayCatalogPresentationRenderingTests
     {
         var emptyFrames = new List<string>();
         var dimensions = new List<string> { "plotter,expected_width,expected_height,rendered_width,rendered_height" };
-        var outputDirectory = Environment.GetEnvironmentVariable("SRVSURVEY_OVERLAY_RENDER_OUTPUT");
-        var opacityText = Environment.GetEnvironmentVariable("SRVSURVEY_OVERLAY_RENDER_OPACITY");
-        var previewOpacity =
-            double.TryParse(opacityText, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsedOpacity)
+        string? outputDirectory = Environment.GetEnvironmentVariable("SRVSURVEY_OVERLAY_RENDER_OUTPUT");
+        string? opacityText = Environment.GetEnvironmentVariable("SRVSURVEY_OVERLAY_RENDER_OPACITY");
+        double previewOpacity =
+            double.TryParse(opacityText, NumberStyles.Float, CultureInfo.InvariantCulture, out double parsedOpacity)
             && parsedOpacity is >= 0 and <= 1
                 ? parsedOpacity
                 : 1d;
@@ -137,7 +137,7 @@ public sealed class OverlayCatalogPresentationRenderingTests
             Directory.CreateDirectory(outputDirectory);
         }
 
-        foreach (var definition in OverlayLayoutCatalog.Supported)
+        foreach (OverlayLayoutDefinition definition in OverlayLayoutCatalog.Supported)
         {
             var preview = new OverlayPositionPreviewWindow(definition);
             try
@@ -149,7 +149,7 @@ public sealed class OverlayCatalogPresentationRenderingTests
                 Assert.Equal(1, preview.MinWidth);
                 Assert.Equal(new Thickness(0), preview.PreviewBodyControl.Padding);
                 Assert.Same(Avalonia.Media.Brushes.Transparent, preview.PreviewBodyControl.Background);
-                var frame = preview.CaptureRenderedFrame();
+                WriteableBitmap? frame = preview.CaptureRenderedFrame();
                 Assert.NotNull(frame);
                 // Content-driven hosts expand/contract with presentation
                 // content instead of a fixed catalog box. Assert a usable
@@ -159,7 +159,7 @@ public sealed class OverlayCatalogPresentationRenderingTests
                     emptyFrames.Add($"{definition.Name}: rendered {frame.PixelSize}");
                 }
 
-                var expected = preview.GetExpectedPixelSize(preview.RenderScaling);
+                PixelSize expected = preview.GetExpectedPixelSize(preview.RenderScaling);
                 dimensions.Add(
                     string.Join(
                         ',',
@@ -173,7 +173,7 @@ public sealed class OverlayCatalogPresentationRenderingTests
 
                 if (!string.IsNullOrWhiteSpace(outputDirectory))
                 {
-                    using var stream = File.Create(Path.Combine(outputDirectory, $"{definition.Name}.png"));
+                    using FileStream stream = File.Create(Path.Combine(outputDirectory, $"{definition.Name}.png"));
                     frame.Save(stream, PngBitmapEncoderOptions.Default);
                 }
             }
@@ -194,15 +194,15 @@ public sealed class OverlayCatalogPresentationRenderingTests
     [AvaloniaFact]
     public void EveryStatefulEditorPreviewStateRendersThroughItsSharedTemplate()
     {
-        var outputDirectory = Environment.GetEnvironmentVariable("SRVSURVEY_OVERLAY_RENDER_OUTPUT");
+        string? outputDirectory = Environment.GetEnvironmentVariable("SRVSURVEY_OVERLAY_RENDER_OUTPUT");
         if (!string.IsNullOrWhiteSpace(outputDirectory))
         {
             Directory.CreateDirectory(outputDirectory);
         }
 
-        foreach (var definition in OverlayLayoutCatalog.Supported)
+        foreach (OverlayLayoutDefinition definition in OverlayLayoutCatalog.Supported)
         {
-            var plotterName = definition.Name;
+            string plotterName = definition.Name;
             var preview = new OverlayPositionPreviewWindow(definition);
             try
             {
@@ -215,19 +215,19 @@ public sealed class OverlayCatalogPresentationRenderingTests
                 preview.ApplyRuntimePresentationTheme();
                 preview.Show();
 
-                var presentation = Assert.IsType<Control>(preview.RuntimePresentation, exactMatch: false);
-                for (var index = 0; index < preview.EditorPreviewStateCount; index++)
+                Control presentation = Assert.IsType<Control>(preview.RuntimePresentation, exactMatch: false);
+                for (int index = 0; index < preview.EditorPreviewStateCount; index++)
                 {
                     Assert.Same(presentation, preview.RuntimePresentation);
                     Assert.NotNull(presentation.DataContext);
-                    var frame = preview.CaptureRenderedFrame();
+                    WriteableBitmap? frame = preview.CaptureRenderedFrame();
                     Assert.NotNull(frame);
                     Assert.True(frame.PixelSize.Width >= 8, $"{plotterName} state {index + 1} rendered too narrowly.");
                     Assert.True(frame.PixelSize.Height >= 8, $"{plotterName} state {index + 1} rendered too short.");
 
                     if (!string.IsNullOrWhiteSpace(outputDirectory))
                     {
-                        using var stream = File.Create(
+                        using FileStream stream = File.Create(
                             Path.Combine(outputDirectory, $"{plotterName}-state-{index + 1}.png")
                         );
                         frame.Save(stream, PngBitmapEncoderOptions.Default);
@@ -285,17 +285,19 @@ public sealed class OverlayCatalogPresentationRenderingTests
         {
             OverlayThemeResources.Apply(window, layout, "PlotBuildCommodities");
             window.Show();
-            var frame = window.CaptureRenderedFrame();
+            WriteableBitmap? frame = window.CaptureRenderedFrame();
 
             Assert.NotNull(frame);
             // Content-driven width: at least catalog floor, may grow for rows.
             Assert.InRange(frame.PixelSize.Width, 200, 900);
             Assert.InRange(frame.PixelSize.Height, 80, 699);
-            var outputDirectory = Environment.GetEnvironmentVariable("SRVSURVEY_OVERLAY_RENDER_OUTPUT");
+            string? outputDirectory = Environment.GetEnvironmentVariable("SRVSURVEY_OVERLAY_RENDER_OUTPUT");
             if (!string.IsNullOrWhiteSpace(outputDirectory))
             {
                 Directory.CreateDirectory(outputDirectory);
-                using var stream = File.Create(Path.Combine(outputDirectory, "PlotBuildCommodities-runtime.png"));
+                using FileStream stream = File.Create(
+                    Path.Combine(outputDirectory, "PlotBuildCommodities-runtime.png")
+                );
                 frame.Save(stream, PngBitmapEncoderOptions.Default);
             }
         }

@@ -30,7 +30,7 @@ internal sealed record ApplicationInstanceDiscovery(
 {
     public void Dispose()
     {
-        foreach (var process in Confirmed)
+        foreach (IApplicationInstanceProcess process in Confirmed)
         {
             process.Dispose();
         }
@@ -85,21 +85,26 @@ internal sealed class ApplicationInstanceManager : IApplicationInstanceManager, 
 
     public async Task<ApplicationInstanceScan> ScanOtherInstancesAsync(CancellationToken cancellationToken = default)
     {
-        using var discovery = await DiscoverOtherInstancesAsync(cancellationToken).ConfigureAwait(false);
+        using ApplicationInstanceDiscovery discovery = await DiscoverOtherInstancesAsync(cancellationToken)
+            .ConfigureAwait(false);
         return new ApplicationInstanceScan(discovery.Confirmed.Count, discovery.UnverifiedCount);
     }
 
     public async Task<int> CountOtherInstancesAsync(CancellationToken cancellationToken = default)
     {
-        var scan = await ScanOtherInstancesAsync(cancellationToken).ConfigureAwait(false);
+        ApplicationInstanceScan scan = await ScanOtherInstancesAsync(cancellationToken).ConfigureAwait(false);
         return scan.TotalCount;
     }
 
     public async Task CloseOtherInstancesAsync(CancellationToken cancellationToken = default)
     {
-        using (var discovery = await DiscoverOtherInstancesAsync(cancellationToken).ConfigureAwait(false))
+        using (
+            ApplicationInstanceDiscovery discovery = await DiscoverOtherInstancesAsync(cancellationToken)
+                .ConfigureAwait(false)
+        )
         {
-            var graceful = await RequestGracefulExitAsync(discovery.Confirmed, cancellationToken).ConfigureAwait(false);
+            HashSet<int> graceful = await RequestGracefulExitAsync(discovery.Confirmed, cancellationToken)
+                .ConfigureAwait(false);
             ForceTerminate(discovery.Confirmed.Where(instance => !graceful.Contains(instance.Id)));
             await WaitForExitAsync(discovery.Confirmed, gracefulExitTimeout, cancellationToken).ConfigureAwait(false);
 
@@ -107,8 +112,9 @@ internal sealed class ApplicationInstanceManager : IApplicationInstanceManager, 
             await WaitForExitAsync(discovery.Confirmed, forcedExitTimeout, cancellationToken).ConfigureAwait(false);
         }
 
-        using var verification = await DiscoverOtherInstancesAsync(cancellationToken).ConfigureAwait(false);
-        var remaining = verification.Confirmed.Count(instance => !instance.HasExited);
+        using ApplicationInstanceDiscovery verification = await DiscoverOtherInstancesAsync(cancellationToken)
+            .ConfigureAwait(false);
+        int remaining = verification.Confirmed.Count(instance => !instance.HasExited);
         if (verification.UnverifiedCount > 0)
         {
             throw new IOException(
@@ -146,7 +152,7 @@ internal sealed class ApplicationInstanceManager : IApplicationInstanceManager, 
     )
     {
         var requested = new HashSet<int>();
-        foreach (var instance in instances.Where(instance => !instance.HasExited))
+        foreach (IApplicationInstanceProcess? instance in instances.Where(instance => !instance.HasExited))
         {
             if (await instance.RequestGracefulExitAsync(cancellationToken).ConfigureAwait(false))
             {
@@ -159,7 +165,7 @@ internal sealed class ApplicationInstanceManager : IApplicationInstanceManager, 
 
     private static void ForceTerminate(IEnumerable<IApplicationInstanceProcess> instances)
     {
-        foreach (var instance in instances)
+        foreach (IApplicationInstanceProcess instance in instances)
         {
             instance.ForceTerminate();
         }
@@ -171,7 +177,7 @@ internal sealed class ApplicationInstanceManager : IApplicationInstanceManager, 
         CancellationToken cancellationToken
     )
     {
-        var active = instances.Where(instance => !instance.HasExited).ToArray();
+        IApplicationInstanceProcess[] active = instances.Where(instance => !instance.HasExited).ToArray();
         if (active.Length == 0)
         {
             return;
@@ -231,23 +237,23 @@ internal sealed class SystemApplicationInstanceProcessSource : IApplicationInsta
     public ApplicationInstanceDiscovery DiscoverOtherInstances()
     {
         using var current = Process.GetCurrentProcess();
-        var currentPath = ResolveCurrentPath();
-        var restartManagerProcessIds = FindRestartManagerProcesses(currentPath);
-        var records = registry?.ReadOtherRecords() ?? [];
+        string? currentPath = ResolveCurrentPath();
+        IReadOnlySet<int> restartManagerProcessIds = FindRestartManagerProcesses(currentPath);
+        IReadOnlyList<ApplicationInstanceRecord> records = registry?.ReadOtherRecords() ?? [];
         var recordsByProcess = records
             .GroupBy(record => record.ProcessId)
             .ToDictionary(group => group.Key, group => group.ToArray());
-        var processes = CollectCandidateProcesses(current, records, restartManagerProcessIds);
+        Dictionary<int, Process> processes = CollectCandidateProcesses(current, records, restartManagerProcessIds);
 
         var confirmed = new List<IApplicationInstanceProcess>();
-        var unverified = 0;
+        int unverified = 0;
         try
         {
-            foreach (var processId in processes.Keys.ToArray())
+            foreach (int processId in processes.Keys.ToArray())
             {
-                var process = processes[processId];
-                var processRecords = recordsByProcess.GetValueOrDefault(process.Id) ?? [];
-                var classification = ClassifyProcess(
+                Process process = processes[processId];
+                ApplicationInstanceRecord[] processRecords = recordsByProcess.GetValueOrDefault(process.Id) ?? [];
+                ProcessClassification classification = ClassifyProcess(
                     process,
                     currentPath,
                     current.ProcessName,
@@ -283,12 +289,12 @@ internal sealed class SystemApplicationInstanceProcessSource : IApplicationInsta
         }
         catch
         {
-            foreach (var process in confirmed)
+            foreach (IApplicationInstanceProcess process in confirmed)
             {
                 process.Dispose();
             }
 
-            foreach (var process in processes.Values)
+            foreach (Process process in processes.Values)
             {
                 process.Dispose();
             }
@@ -326,7 +332,7 @@ internal sealed class SystemApplicationInstanceProcessSource : IApplicationInsta
 
     private static void AddNamedProcesses(Dictionary<int, Process> processes, Process current)
     {
-        foreach (var process in Process.GetProcessesByName(current.ProcessName))
+        foreach (Process process in Process.GetProcessesByName(current.ProcessName))
         {
             if (process.Id != current.Id && processes.TryAdd(process.Id, process))
             {
@@ -343,14 +349,14 @@ internal sealed class SystemApplicationInstanceProcessSource : IApplicationInsta
         int currentProcessId
     )
     {
-        foreach (var record in records)
+        foreach (ApplicationInstanceRecord record in records)
         {
             if (record.ProcessId == currentProcessId || processes.ContainsKey(record.ProcessId))
             {
                 continue;
             }
 
-            if (TryOpenProcess(record.ProcessId, out var process))
+            if (TryOpenProcess(record.ProcessId, out Process? process))
             {
                 processes.Add(record.ProcessId, process!);
             }
@@ -367,14 +373,14 @@ internal sealed class SystemApplicationInstanceProcessSource : IApplicationInsta
         int currentProcessId
     )
     {
-        foreach (var processId in processIds)
+        foreach (int processId in processIds)
         {
             if (processId == currentProcessId || processes.ContainsKey(processId))
             {
                 continue;
             }
 
-            if (TryOpenProcess(processId, out var process))
+            if (TryOpenProcess(processId, out Process? process))
             {
                 processes.Add(processId, process!);
             }
@@ -389,21 +395,21 @@ internal sealed class SystemApplicationInstanceProcessSource : IApplicationInsta
         bool restartManagerMatch
     )
     {
-        var record = ValidateRecord(process, records);
-        var resolved = ApplicationProcessPathResolver.TryResolve(
+        ApplicationInstanceRecord? record = ValidateRecord(process, records);
+        bool resolved = ApplicationProcessPathResolver.TryResolve(
             process,
-            out var candidatePath,
-            out var method,
-            out var error
+            out string? candidatePath,
+            out string? method,
+            out string? error
         );
-        var actualMatch = resolved && PathsMatch(candidatePath, currentPath, OperatingSystem.IsWindows());
-        var registeredMatch =
+        bool actualMatch = resolved && PathsMatch(candidatePath, currentPath, OperatingSystem.IsWindows());
+        bool registeredMatch =
             !resolved
             && record is not null
             && PathsMatch(record.ExecutablePath, currentPath, OperatingSystem.IsWindows());
-        var sameProcessName = HasProcessName(process, currentProcessName);
-        var confirmed = actualMatch || registeredMatch || (!resolved && sameProcessName && restartManagerMatch);
-        var unverified = !confirmed && ((!resolved && sameProcessName) || restartManagerMatch);
+        bool sameProcessName = HasProcessName(process, currentProcessName);
+        bool confirmed = actualMatch || registeredMatch || (!resolved && sameProcessName && restartManagerMatch);
+        bool unverified = !confirmed && ((!resolved && sameProcessName) || restartManagerMatch);
         return new ProcessClassification(confirmed, unverified, record, candidatePath, method, error);
     }
 
@@ -466,7 +472,7 @@ internal sealed class SystemApplicationInstanceProcessSource : IApplicationInsta
         }
 
         ApplicationInstanceRecord? validated = null;
-        foreach (var record in records)
+        foreach (ApplicationInstanceRecord record in records)
         {
             if (Math.Abs(record.ProcessStartTimeUtcTicks - startTicks) <= TimeSpan.FromSeconds(1).Ticks)
             {

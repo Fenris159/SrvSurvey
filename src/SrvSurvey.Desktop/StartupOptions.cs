@@ -9,15 +9,15 @@ internal static class StartupOptions
 
     public static string? GetJournalDirectory(IReadOnlyList<string> args)
     {
-        for (var index = 0; index < args.Count; index++)
+        for (int index = 0; index < args.Count; index++)
         {
-            var argument = args[index];
+            string argument = args[index];
             if (argument.Equals(JournalDirectoryOption, StringComparison.OrdinalIgnoreCase))
             {
                 return index + 1 < args.Count ? args[index + 1] : null;
             }
 
-            var prefix = $"{JournalDirectoryOption}=";
+            string prefix = $"{JournalDirectoryOption}=";
             if (argument.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             {
                 return argument[prefix.Length..];
@@ -29,9 +29,9 @@ internal static class StartupOptions
 
     public static string? GetFrontierId(IReadOnlyList<string> args)
     {
-        for (var index = 0; index < args.Count; index++)
+        for (int index = 0; index < args.Count; index++)
         {
-            var argument = args[index];
+            string argument = args[index];
             if (
                 argument.Equals(FrontierIdOption, StringComparison.OrdinalIgnoreCase)
                 || argument.Equals(LegacyFrontierIdOption, StringComparison.OrdinalIgnoreCase)
@@ -40,7 +40,7 @@ internal static class StartupOptions
                 return NormalizeFrontierId(index + 1 < args.Count ? args[index + 1] : null);
             }
 
-            var prefix = $"{FrontierIdOption}=";
+            string prefix = $"{FrontierIdOption}=";
             if (argument.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             {
                 return NormalizeFrontierId(argument[prefix.Length..]);
@@ -52,15 +52,15 @@ internal static class StartupOptions
 
     public static string? GetDiagnosticReplayManifest(IReadOnlyList<string> args)
     {
-        for (var index = 0; index < args.Count; index++)
+        for (int index = 0; index < args.Count; index++)
         {
-            var argument = args[index];
+            string argument = args[index];
             if (argument.Equals(DiagnosticReplayOption, StringComparison.OrdinalIgnoreCase))
             {
                 return index + 1 < args.Count ? NormalizePath(args[index + 1]) : null;
             }
 
-            var prefix = $"{DiagnosticReplayOption}=";
+            string prefix = $"{DiagnosticReplayOption}=";
             if (argument.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             {
                 return NormalizePath(argument[prefix.Length..]);
@@ -80,7 +80,7 @@ internal static class StartupOptions
 
     private static string? NormalizeFrontierId(string? value)
     {
-        var normalized = value?.Trim();
+        string? normalized = value?.Trim();
         return
             normalized is not null
             && normalized.Length > 1
@@ -92,7 +92,7 @@ internal static class StartupOptions
 
     private static string? NormalizePath(string? value)
     {
-        var normalized = value?.Trim();
+        string? normalized = value?.Trim();
         return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
     }
 }

@@ -55,7 +55,7 @@ public sealed class ErrorReportWindowCoordinator : IDisposable
         }
 
         disposed = true;
-        var errorWindow = window;
+        ErrorReportWindow? errorWindow = window;
         window = null;
         if (errorWindow is not null)
         {
@@ -89,7 +89,7 @@ public sealed class ErrorReportWindowCoordinator : IDisposable
             return;
         }
 
-        var version = typeof(ErrorReportWindowCoordinator).Assembly.GetName().Version?.ToString() ?? "unknown";
+        string version = typeof(ErrorReportWindowCoordinator).Assembly.GetName().Version?.ToString() ?? "unknown";
         var viewModel = new ErrorReportViewModel(exception, version, applicationLog, getJournalPath());
         var errorWindow = new ErrorReportWindow(viewModel, showLogs);
         errorWindow.Closed += OnWindowClosed;

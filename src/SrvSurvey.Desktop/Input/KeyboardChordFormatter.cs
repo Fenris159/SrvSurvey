@@ -6,7 +6,7 @@ public static class KeyboardChordFormatter
 {
     public static string? Format(KeyCode keyCode, EventMask eventMask)
     {
-        var key = GetKeyName(keyCode);
+        string? key = GetKeyName(keyCode);
         if (key is null)
         {
             return null;
@@ -50,13 +50,13 @@ public static class KeyboardChordFormatter
             return null;
         }
 
-        var name = keyCode.ToString();
+        string name = keyCode.ToString();
         if (!name.StartsWith("Vc", StringComparison.Ordinal))
         {
             return null;
         }
 
-        var token = name[2..];
+        string token = name[2..];
         if (token.Length == 1 && char.IsDigit(token[0]))
         {
             return $"D{token}";

@@ -74,7 +74,7 @@ public sealed class BookmarkCatalogTests
     [Fact]
     public void SurfaceMiningCoordinatesRoundTripThroughSharedBookmarkJson()
     {
-        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         try
         {
             var center = new SurfaceCoordinate(12.345, -67.89);
@@ -121,7 +121,7 @@ public sealed class BookmarkCatalogTests
             Assert.True(restoredBookmark.IsFavorite);
             Assert.Equal(center, restored.Center);
             Assert.Equal(markerLocation, Assert.Single(restored.Markers).Location);
-            var json = File.ReadAllText(Path.Combine(directory, "bookmarks.json"));
+            string json = File.ReadAllText(Path.Combine(directory, "bookmarks.json"));
             Assert.Contains("\"MineralAmount\": \"High\"", json);
             Assert.Contains("\"LocationRadiusMeters\": 6440", json);
             Assert.Contains("\"IsFavorite\": true", json);
@@ -245,12 +245,12 @@ public sealed class BookmarkCatalogTests
     [Fact]
     public void ImportRetainsDistinctSurfaceSignalsOnTheSameBody()
     {
-        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         try
         {
             var catalog = new BookmarkCatalog(directory);
-            var first = SurfaceBookmark(Guid.NewGuid(), 4, new SurfaceCoordinate(1, 2));
-            var second = SurfaceBookmark(Guid.NewGuid(), 5, new SurfaceCoordinate(1.01, 2.01));
+            GalacticBookmark first = SurfaceBookmark(Guid.NewGuid(), 4, new SurfaceCoordinate(1, 2));
+            GalacticBookmark second = SurfaceBookmark(Guid.NewGuid(), 5, new SurfaceCoordinate(1.01, 2.01));
             catalog.Save(first);
 
             catalog.Import(JsonSerializer.Serialize(new[] { second }));
@@ -271,12 +271,12 @@ public sealed class BookmarkCatalogTests
     [Fact]
     public void RejectsInvalidNestedSurfaceMapWithoutChangingCatalog()
     {
-        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         try
         {
             var catalog = new BookmarkCatalog(directory);
             catalog.Save(new GalacticBookmark { System = "Sol" });
-            var invalid = SurfaceBookmark(Guid.NewGuid(), 4, new SurfaceCoordinate(1, 2)) with
+            GalacticBookmark invalid = SurfaceBookmark(Guid.NewGuid(), 4, new SurfaceCoordinate(1, 2)) with
             {
                 SurfaceMiningMap = SurfaceBookmark(Guid.NewGuid(), 4, new SurfaceCoordinate(1, 2)).SurfaceMiningMap,
             };
@@ -296,12 +296,12 @@ public sealed class BookmarkCatalogTests
     [Fact]
     public void ParseReportsInvalidSurfaceCoordinatesAsJsonErrors()
     {
-        var bookmark = SurfaceBookmark(Guid.NewGuid(), 4, new SurfaceCoordinate(1, 2));
-        var json = JsonSerializer
+        GalacticBookmark bookmark = SurfaceBookmark(Guid.NewGuid(), 4, new SurfaceCoordinate(1, 2));
+        string json = JsonSerializer
             .Serialize(new[] { bookmark })
             .Replace("\"Latitude\":1", "\"Latitude\":91", StringComparison.Ordinal);
 
-        var exception = Assert.Throws<JsonException>(() => BookmarkCatalog.Parse(json));
+        JsonException exception = Assert.Throws<JsonException>(() => BookmarkCatalog.Parse(json));
 
         Assert.IsType<ArgumentOutOfRangeException>(exception.InnerException);
     }
@@ -309,7 +309,7 @@ public sealed class BookmarkCatalogTests
     [Fact]
     public void ValidationMessageDescribesCurrentRequirements()
     {
-        var exception = Assert.Throws<JsonException>(() => BookmarkCatalog.Parse("[{\"Rating\":6}]"));
+        JsonException exception = Assert.Throws<JsonException>(() => BookmarkCatalog.Parse("[{\"Rating\":6}]"));
 
         Assert.Contains("system and rating between 0 and 5", exception.Message);
         Assert.DoesNotContain("category", exception.Message, StringComparison.OrdinalIgnoreCase);
@@ -318,13 +318,13 @@ public sealed class BookmarkCatalogTests
     [Fact]
     public void RestoreRecoversBackedUpEditsAndRetainsPreviousCatalogOnDisk()
     {
-        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         try
         {
             var catalog = new BookmarkCatalog(directory);
             var bookmark = new GalacticBookmark { System = "Sol", Notes = "Original" };
             catalog.Save(bookmark);
-            var backup = catalog.Export();
+            string backup = catalog.Export();
             catalog.Save(bookmark with { Notes = "Edited" });
             catalog.Restore(backup);
             Assert.Equal("Original", Assert.Single(catalog.Items).Notes);
@@ -342,7 +342,7 @@ public sealed class BookmarkCatalogTests
     [Fact]
     public void ImportsReferenceBookmarksAndRejectsNonObjectsWithoutChangingCatalog()
     {
-        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         try
         {
             var catalog = new BookmarkCatalog(directory);
@@ -365,7 +365,7 @@ public sealed class BookmarkCatalogTests
     [Fact]
     public void CategoriesSurviveRestartAndImportMergesWithoutDuplicatingLocations()
     {
-        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         try
         {
             var catalog = new BookmarkCatalog(directory);
@@ -380,7 +380,7 @@ public sealed class BookmarkCatalogTests
                 }
             );
             catalog.Save(new GalacticBookmark { System = "Achenar", Category = "Location" });
-            var backup = catalog.Export();
+            string backup = catalog.Export();
             var restored = new BookmarkCatalog(directory);
             restored.Import(backup);
             Assert.Equal(2, restored.Items.Count);
@@ -402,7 +402,7 @@ public sealed class BookmarkCatalogTests
     [Fact]
     public void OneBookmarkCanAppearInEveryAssignedFixedCategory()
     {
-        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         try
         {
             var catalog = new BookmarkCatalog(directory);
@@ -411,7 +411,7 @@ public sealed class BookmarkCatalogTests
             Assert.Single(catalog.Filter("Mining", string.Empty));
             Assert.Single(catalog.Filter("POI", string.Empty));
             Assert.Empty(catalog.Filter("Location", string.Empty));
-            var restored = Assert.Single(new BookmarkCatalog(directory).Items);
+            GalacticBookmark restored = Assert.Single(new BookmarkCatalog(directory).Items);
             Assert.Equal(["Mining", "POI"], restored.EffectiveCategoryAssignments);
             Assert.Equal(BookmarkCategoryCatalog.All, catalog.Categories);
         }
@@ -427,7 +427,7 @@ public sealed class BookmarkCatalogTests
     [Fact]
     public void BodyAndRingPersistSeparatelyWhileLegacyCombinedNamesStillDisplayCorrectly()
     {
-        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        string directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         try
         {
             var catalog = new BookmarkCatalog(directory);
@@ -440,7 +440,7 @@ public sealed class BookmarkCatalogTests
                 }
             );
 
-            var restored = Assert.Single(new BookmarkCatalog(directory).Items);
+            GalacticBookmark restored = Assert.Single(new BookmarkCatalog(directory).Items);
             Assert.Equal("7", restored.DisplayBody);
             Assert.Equal("A Ring", restored.DisplayRing);
 

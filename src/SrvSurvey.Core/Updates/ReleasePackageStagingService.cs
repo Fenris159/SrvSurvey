@@ -63,9 +63,10 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
     {
         ValidateArguments(version, package, archivePath, dataDirectory);
         await VerifyArchiveAsync(package, archivePath, cancellationToken).ConfigureAwait(false);
-        var archive = await InspectArchiveAsync(version, package, archivePath, cancellationToken).ConfigureAwait(false);
-        var stageRoot = ResolveStageRoot(dataDirectory, version, package.RuntimeIdentifier);
-        var readyDirectory = Path.Combine(stageRoot, "ready");
+        InspectedArchive archive = await InspectArchiveAsync(version, package, archivePath, cancellationToken)
+            .ConfigureAwait(false);
+        string stageRoot = ResolveStageRoot(dataDirectory, version, package.RuntimeIdentifier);
+        string readyDirectory = Path.Combine(stageRoot, "ready");
         if (
             await IsReadyAsync(readyDirectory, archive.Manifest, archive.ManifestBytes, cancellationToken)
                 .ConfigureAwait(false)
@@ -75,7 +76,7 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
         }
 
         Directory.CreateDirectory(stageRoot);
-        var candidateDirectory = Path.Combine(stageRoot, $"candidate-{Guid.NewGuid():N}");
+        string candidateDirectory = Path.Combine(stageRoot, $"candidate-{Guid.NewGuid():N}");
         try
         {
             Directory.CreateDirectory(candidateDirectory);
@@ -119,22 +120,22 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
             throw new InvalidDataException("The ready-package verification metadata is invalid.");
         }
 
-        var manifestPath = Path.Combine(Path.GetFullPath(readyDirectory), ManifestName);
+        string manifestPath = Path.Combine(Path.GetFullPath(readyDirectory), ManifestName);
         var info = new FileInfo(manifestPath);
         if (!info.Exists || info.Length is <= 0 or > MaximumManifestBytes)
         {
             throw new InvalidDataException("The ready update has no bounded package manifest.");
         }
 
-        var bytes = await File.ReadAllBytesAsync(manifestPath, cancellationToken).ConfigureAwait(false);
-        var actualManifestHash = Convert.ToHexString(SHA256.HashData(bytes));
+        byte[] bytes = await File.ReadAllBytesAsync(manifestPath, cancellationToken).ConfigureAwait(false);
+        string actualManifestHash = Convert.ToHexString(SHA256.HashData(bytes));
         if (!HashesMatch(actualManifestHash, manifestSha256))
         {
             throw new InvalidDataException("The ready update manifest no longer matches the verified archive.");
         }
 
-        var archiveType = runtimeIdentifier == RuntimeWinX64 ? ArchiveTypeZip : ArchiveTypeTarGz;
-        var suffix = archiveType == ArchiveTypeZip ? ".zip" : ".tar.gz";
+        string archiveType = runtimeIdentifier == RuntimeWinX64 ? ArchiveTypeZip : ArchiveTypeTarGz;
+        string suffix = archiveType == ArchiveTypeZip ? ".zip" : ".tar.gz";
         var package = new CrossPlatformReleasePackage(
             runtimeIdentifier,
             $"SrvSurvey-XP-{version}-{runtimeIdentifier}{suffix}",
@@ -143,7 +144,7 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
             new string('0', 64),
             WellKnownUris.ExampleInvalidPackage
         );
-        var manifest = ParseManifest(bytes, version, package);
+        ReleasePackageManifest manifest = ParseManifest(bytes, version, package);
         if (!await IsReadyAsync(readyDirectory, manifest, bytes, cancellationToken).ConfigureAwait(false))
         {
             throw new InvalidDataException("The ready update files no longer match their package manifest.");
@@ -176,7 +177,7 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
         CancellationToken cancellationToken
     )
     {
-        await using var input = OpenRead(archivePath);
+        await using FileStream input = OpenRead(archivePath);
         using var zip = new ZipArchive(input, ZipArchiveMode.Read, leaveOpen: false);
         if (zip.Entries.Count > MaximumArchiveEntryCount)
         {
@@ -185,12 +186,12 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
 
         var entries = new Dictionary<string, ArchiveEntryInfo>(StringComparer.Ordinal);
         byte[]? manifestBytes = null;
-        foreach (var entry in zip.Entries)
+        foreach (ZipArchiveEntry entry in zip.Entries)
         {
             cancellationToken.ThrowIfCancellationRequested();
             RejectZipLink(entry);
-            var isDirectory = entry.FullName.EndsWith('/');
-            var path = NormalizeArchivePath(entry.FullName, isDirectory);
+            bool isDirectory = entry.FullName.EndsWith('/');
+            string path = NormalizeArchivePath(entry.FullName, isDirectory);
             if (isDirectory)
             {
                 continue;
@@ -203,13 +204,13 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
 
             if (path == ManifestName)
             {
-                await using var stream = await entry.OpenAsync(cancellationToken);
+                await using Stream stream = await entry.OpenAsync(cancellationToken);
                 manifestBytes = await ReadBoundedAsync(stream, MaximumManifestBytes, cancellationToken)
                     .ConfigureAwait(false);
             }
         }
 
-        var manifest = ParseManifest(manifestBytes, version, package);
+        ReleasePackageManifest manifest = ParseManifest(manifestBytes, version, package);
         ValidateEntrySet(entries, manifest);
         return new InspectedArchive(manifest, manifestBytes!);
     }
@@ -221,12 +222,12 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
         CancellationToken cancellationToken
     )
     {
-        await using var input = OpenRead(archivePath);
+        await using FileStream input = OpenRead(archivePath);
         await using var gzip = new GZipStream(input, CompressionMode.Decompress, leaveOpen: false);
         using var reader = new TarReader(gzip, leaveOpen: false);
         var entries = new Dictionary<string, ArchiveEntryInfo>(StringComparer.Ordinal);
         byte[]? manifestBytes = null;
-        var count = 0;
+        int count = 0;
         while (await reader.GetNextEntryAsync(copyData: false, cancellationToken).ConfigureAwait(false) is { } entry)
         {
             count++;
@@ -239,7 +240,7 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
                 .ConfigureAwait(false);
         }
 
-        var manifest = ParseManifest(manifestBytes, version, package);
+        ReleasePackageManifest manifest = ParseManifest(manifestBytes, version, package);
         ValidateEntrySet(entries, manifest);
         return new InspectedArchive(manifest, manifestBytes!);
     }
@@ -251,14 +252,14 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
         CancellationToken cancellationToken
     )
     {
-        var isDirectory = entry.EntryType == TarEntryType.Directory;
+        bool isDirectory = entry.EntryType == TarEntryType.Directory;
         if (isDirectory && entry.Name is "." or "./")
         {
             return manifestBytes;
         }
 
         EnsureSupportedTarEntry(entry, isDirectory);
-        var path = NormalizeArchivePath(entry.Name, isDirectory);
+        string path = NormalizeArchivePath(entry.Name, isDirectory);
         if (isDirectory)
         {
             return manifestBytes;
@@ -296,7 +297,7 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
             return manifestBytes;
         }
 
-        var stream =
+        Stream stream =
             entry.DataStream ?? throw new InvalidDataException("The update package manifest has no data stream.");
         return await ReadBoundedAsync(stream, MaximumManifestBytes, cancellationToken).ConfigureAwait(false);
     }
@@ -333,11 +334,14 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
     )
     {
         using var document = JsonDocument.Parse(bytes);
-        var root = document.RootElement;
-        var manifestVersion = ValidateManifestHeader(root, version, package);
-        var runtimeIdentifier = ReadString(root, "runtimeIdentifier");
-        var entryPoint = ValidateEntryPoint(root, runtimeIdentifier);
-        var (files, expandedBytes) = ParseManifestFiles(root, runtimeIdentifier);
+        JsonElement root = document.RootElement;
+        ReleaseVersion manifestVersion = ValidateManifestHeader(root, version, package);
+        string runtimeIdentifier = ReadString(root, "runtimeIdentifier");
+        string entryPoint = ValidateEntryPoint(root, runtimeIdentifier);
+        (Dictionary<string, ReleasePackageManifestFile>? files, long expandedBytes) = ParseManifestFiles(
+            root,
+            runtimeIdentifier
+        );
         if (files.Count == 0 || !files.ContainsKey(entryPoint))
         {
             throw new InvalidDataException("The update package manifest does not contain its entry point.");
@@ -361,13 +365,13 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
             throw new InvalidDataException("The update package manifest has an incompatible schema or product.");
         }
 
-        var versionText = ReadString(root, "version");
-        if (!ReleaseVersion.TryParse(versionText, out var manifestVersion) || manifestVersion != version)
+        string versionText = ReadString(root, "version");
+        if (!ReleaseVersion.TryParse(versionText, out ReleaseVersion manifestVersion) || manifestVersion != version)
         {
             throw new InvalidDataException("The update package manifest version does not match the release.");
         }
 
-        var runtimeIdentifier = ReadString(root, "runtimeIdentifier");
+        string runtimeIdentifier = ReadString(root, "runtimeIdentifier");
         if (!string.Equals(runtimeIdentifier, package.RuntimeIdentifier, StringComparison.Ordinal))
         {
             throw new InvalidDataException("The update package manifest runtime does not match the release.");
@@ -378,8 +382,8 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
 
     private static string ValidateEntryPoint(JsonElement root, string runtimeIdentifier)
     {
-        var expectedEntryPoint = runtimeIdentifier == RuntimeWinX64 ? "SrvSurvey.Desktop.exe" : "SrvSurvey.Desktop";
-        var entryPoint = ReadString(root, "entryPoint");
+        string expectedEntryPoint = runtimeIdentifier == RuntimeWinX64 ? "SrvSurvey.Desktop.exe" : "SrvSurvey.Desktop";
+        string entryPoint = ReadString(root, "entryPoint");
         if (
             !string.Equals(entryPoint, expectedEntryPoint, StringComparison.Ordinal)
             || NormalizeArchivePath(entryPoint, isDirectory: false) != entryPoint
@@ -396,7 +400,10 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
         string runtimeIdentifier
     )
     {
-        if (!root.TryGetProperty("files", out var filesElement) || filesElement.ValueKind != JsonValueKind.Array)
+        if (
+            !root.TryGetProperty("files", out JsonElement filesElement)
+            || filesElement.ValueKind != JsonValueKind.Array
+        )
         {
             throw new InvalidDataException("The update package manifest has no file array.");
         }
@@ -404,7 +411,7 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
         var files = new Dictionary<string, ReleasePackageManifestFile>(StringComparer.Ordinal);
         var caseInsensitivePaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         long expandedBytes = 0;
-        foreach (var fileElement in filesElement.EnumerateArray())
+        foreach (JsonElement fileElement in filesElement.EnumerateArray())
         {
             expandedBytes = AddManifestFile(fileElement, files, caseInsensitivePaths, runtimeIdentifier, expandedBytes);
         }
@@ -425,18 +432,18 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
             throw new InvalidDataException("The update package manifest contains too many files.");
         }
 
-        var path = ReadManifestPath(fileElement);
-        var size = ReadManifestSize(fileElement, path);
+        string path = ReadManifestPath(fileElement);
+        long size = ReadManifestSize(fileElement, path);
         expandedBytes = checked(expandedBytes + size);
         EnsureExpandedSizeWithinLimit(expandedBytes);
-        var sha256 = ReadManifestSha256(fileElement, path);
+        string sha256 = ReadManifestSha256(fileElement, path);
         RegisterManifestFile(files, caseInsensitivePaths, runtimeIdentifier, path, size, sha256);
         return expandedBytes;
     }
 
     private static string ReadManifestPath(JsonElement fileElement)
     {
-        var path = ReadString(fileElement, "path");
+        string path = ReadString(fileElement, "path");
         if (NormalizeArchivePath(path, isDirectory: false) != path || path == ManifestName)
         {
             throw new InvalidDataException($"The update package manifest has invalid path '{path}'.");
@@ -447,7 +454,7 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
 
     private static long ReadManifestSize(JsonElement fileElement, string path)
     {
-        var size = ReadInt64(fileElement, "size");
+        long size = ReadInt64(fileElement, "size");
         if (size is < 0 or > MaximumSingleFileBytes)
         {
             throw new InvalidDataException($"The update package file '{path}' has an invalid size.");
@@ -466,7 +473,7 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
 
     private static string ReadManifestSha256(JsonElement fileElement, string path)
     {
-        var sha256 = ReadString(fileElement, "sha256").ToLowerInvariant();
+        string sha256 = ReadString(fileElement, "sha256").ToLowerInvariant();
         if (sha256.Length != 64 || sha256.Any(character => !Uri.IsHexDigit(character)))
         {
             throw new InvalidDataException($"The update package file '{path}' has an invalid SHA-256.");
@@ -503,9 +510,9 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
             throw new InvalidDataException("The update archive file set does not match its manifest.");
         }
 
-        foreach (var file in manifest.Files.Values)
+        foreach (ReleasePackageManifestFile file in manifest.Files.Values)
         {
-            if (!entries.TryGetValue(file.Path, out var entry) || entry.Size != file.Size)
+            if (!entries.TryGetValue(file.Path, out ArchiveEntryInfo? entry) || entry.Size != file.Size)
             {
                 throw new InvalidDataException(
                     $"The update archive entry '{file.Path}' does not match its manifest size."
@@ -522,7 +529,7 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
         CancellationToken cancellationToken
     )
     {
-        var manifestPath = ResolveDestination(candidateDirectory, ManifestName);
+        string manifestPath = ResolveDestination(candidateDirectory, ManifestName);
         await File.WriteAllBytesAsync(manifestPath, archive.ManifestBytes, cancellationToken).ConfigureAwait(false);
         if (archiveType == ArchiveTypeZip)
         {
@@ -543,15 +550,15 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
         CancellationToken cancellationToken
     )
     {
-        await using var input = OpenRead(archivePath);
+        await using FileStream input = OpenRead(archivePath);
         using var zip = new ZipArchive(input, ZipArchiveMode.Read, leaveOpen: false);
         var entries = zip
             .Entries.Where(entry => !entry.FullName.EndsWith('/'))
             .ToDictionary(entry => NormalizeArchivePath(entry.FullName, isDirectory: false), StringComparer.Ordinal);
-        foreach (var file in manifest.Files.Values)
+        foreach (ReleasePackageManifestFile file in manifest.Files.Values)
         {
-            var entry = entries[file.Path];
-            await using var source = await entry.OpenAsync(cancellationToken);
+            ZipArchiveEntry entry = entries[file.Path];
+            await using Stream source = await entry.OpenAsync(cancellationToken);
             await ExtractFileAsync(source, candidateDirectory, file, mode: null, cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -564,7 +571,7 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
         CancellationToken cancellationToken
     )
     {
-        await using var input = OpenRead(archivePath);
+        await using FileStream input = OpenRead(archivePath);
         await using var gzip = new GZipStream(input, CompressionMode.Decompress, leaveOpen: false);
         using var reader = new TarReader(gzip, leaveOpen: false);
         var extracted = new HashSet<string>(StringComparer.Ordinal);
@@ -575,18 +582,18 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
                 continue;
             }
 
-            var path = NormalizeArchivePath(entry.Name, isDirectory: false);
+            string path = NormalizeArchivePath(entry.Name, isDirectory: false);
             if (path == ManifestName)
             {
                 continue;
             }
 
-            if (!manifest.Files.TryGetValue(path, out var file) || !extracted.Add(path))
+            if (!manifest.Files.TryGetValue(path, out ReleasePackageManifestFile? file) || !extracted.Add(path))
             {
                 throw new InvalidDataException($"The update archive contains unexpected file '{path}'.");
             }
 
-            var source =
+            Stream source =
                 entry.DataStream
                 ?? throw new InvalidDataException($"The update archive entry '{path}' has no data stream.");
             await ExtractFileAsync(source, candidateDirectory, file, entry.Mode, cancellationToken)
@@ -607,7 +614,7 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
         CancellationToken cancellationToken
     )
     {
-        var destination = ResolveDestination(candidateDirectory, file.Path);
+        string destination = ResolveDestination(candidateDirectory, file.Path);
         Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
         await using var output = new FileStream(
             destination,
@@ -618,7 +625,7 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
             FileOptions.Asynchronous | FileOptions.SequentialScan
         );
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
-        var total = await CopyAndHashAsync(source, output, hash, file, cancellationToken).ConfigureAwait(false);
+        long total = await CopyAndHashAsync(source, output, hash, file, cancellationToken).ConfigureAwait(false);
         ValidateExtractedFile(file, total, hash);
         await output.FlushAsync(cancellationToken).ConfigureAwait(false);
         output.Close();
@@ -633,11 +640,11 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
         CancellationToken cancellationToken
     )
     {
-        var buffer = new byte[128 * 1024];
+        byte[] buffer = new byte[128 * 1024];
         long total = 0;
         while (true)
         {
-            var read = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+            int read = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
             if (read == 0)
             {
                 return total;
@@ -661,7 +668,7 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
             throw new InvalidDataException($"The update archive entry '{file.Path}' ended before its manifest size.");
         }
 
-        var actualHash = Convert.ToHexString(hash.GetHashAndReset());
+        string actualHash = Convert.ToHexString(hash.GetHashAndReset());
         if (!HashesMatch(actualHash, file.Sha256))
         {
             throw new InvalidDataException($"The update archive entry '{file.Path}' failed SHA-256 verification.");
@@ -690,7 +697,7 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
 
         try
         {
-            var manifest = await LoadReadyManifestAsync(
+            ReleasePackageManifest? manifest = await LoadReadyManifestAsync(
                     directory,
                     expectedManifest,
                     expectedManifestBytes,
@@ -719,14 +726,14 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
         CancellationToken cancellationToken
     )
     {
-        var manifestPath = Path.Combine(directory, ManifestName);
+        string manifestPath = Path.Combine(directory, ManifestName);
         var manifestInfo = new FileInfo(manifestPath);
         if (!manifestInfo.Exists || manifestInfo.Length is <= 0 or > MaximumManifestBytes)
         {
             return null;
         }
 
-        var bytes = await File.ReadAllBytesAsync(manifestPath, cancellationToken).ConfigureAwait(false);
+        byte[] bytes = await File.ReadAllBytesAsync(manifestPath, cancellationToken).ConfigureAwait(false);
         if (!bytes.AsSpan().SequenceEqual(expectedManifestBytes))
         {
             return null;
@@ -740,7 +747,7 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
             new string('0', 64),
             WellKnownUris.ExampleInvalidPackage
         );
-        var manifest = ParseManifest(bytes, expectedManifest.Version, package);
+        ReleasePackageManifest manifest = ParseManifest(bytes, expectedManifest.Version, package);
         if (
             manifest.Files.Count != expectedManifest.Files.Count
             || manifest.ExpandedBytes != expectedManifest.ExpandedBytes
@@ -759,7 +766,7 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
         CancellationToken cancellationToken
     )
     {
-        if (!TryEnumerateReadyFiles(directory, out var actualFiles))
+        if (!TryEnumerateReadyFiles(directory, out HashSet<string>? actualFiles))
         {
             return false;
         }
@@ -770,9 +777,12 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
             return false;
         }
 
-        foreach (var expected in expectedManifest.Files.Values)
+        foreach (ReleasePackageManifestFile expected in expectedManifest.Files.Values)
         {
-            if (!manifest.Files.TryGetValue(expected.Path, out var staged) || staged != expected)
+            if (
+                !manifest.Files.TryGetValue(expected.Path, out ReleasePackageManifestFile? staged)
+                || staged != expected
+            )
             {
                 return false;
             }
@@ -783,7 +793,7 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
             }
         }
 
-        var entryPoint = ResolveDestination(directory, expectedManifest.EntryPoint);
+        string entryPoint = ResolveDestination(directory, expectedManifest.EntryPoint);
         return OperatingSystem.IsWindows()
             || expectedManifest.RuntimeIdentifier != RuntimeLinuxX64
             || (File.GetUnixFileMode(entryPoint) & UnixFileMode.UserExecute) != 0;
@@ -795,15 +805,15 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
         CancellationToken cancellationToken
     )
     {
-        var path = ResolveDestination(directory, expected.Path);
+        string path = ResolveDestination(directory, expected.Path);
         var info = new FileInfo(path);
         if (!info.Exists || info.Length != expected.Size)
         {
             return false;
         }
 
-        await using var stream = OpenRead(path);
-        var hash = await SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false);
+        await using FileStream stream = OpenRead(path);
+        byte[] hash = await SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false);
         return HashesMatch(Convert.ToHexString(hash), expected.Sha256);
     }
 
@@ -815,7 +825,7 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
             return;
         }
 
-        var priorDirectory = Path.Combine(stageRoot, $"prior-{Guid.NewGuid():N}");
+        string priorDirectory = Path.Combine(stageRoot, $"prior-{Guid.NewGuid():N}");
         Directory.Move(readyDirectory, priorDirectory);
         try
         {
@@ -863,8 +873,8 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
             throw new InvalidDataException("The cached update archive size no longer matches the release index.");
         }
 
-        await using var stream = OpenRead(archivePath);
-        var hash = await SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false);
+        await using FileStream stream = OpenRead(archivePath);
+        byte[] hash = await SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false);
         if (!HashesMatch(Convert.ToHexString(hash), package.Sha256))
         {
             throw new InvalidDataException("The cached update archive SHA-256 no longer matches the release index.");
@@ -878,10 +888,10 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
     )
     {
         using var output = new MemoryStream();
-        var buffer = new byte[16 * 1024];
+        byte[] buffer = new byte[16 * 1024];
         while (true)
         {
-            var read = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+            int read = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
             if (read == 0)
             {
                 break;
@@ -915,7 +925,7 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
             value = value.TrimEnd('/');
         }
 
-        var segments = value.Split('/');
+        string[] segments = value.Split('/');
         if (
             segments.Length == 0
             || segments.Any(segment =>
@@ -935,12 +945,14 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
 
     private static string ResolveDestination(string root, string relativePath)
     {
-        var fullRoot = Path.GetFullPath(root);
-        var destination = Path.GetFullPath(
+        string fullRoot = Path.GetFullPath(root);
+        string destination = Path.GetFullPath(
             Path.Combine(fullRoot, relativePath.Replace('/', Path.DirectorySeparatorChar))
         );
-        var rootPrefix = Path.TrimEndingDirectorySeparator(fullRoot) + Path.DirectorySeparatorChar;
-        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        string rootPrefix = Path.TrimEndingDirectorySeparator(fullRoot) + Path.DirectorySeparatorChar;
+        StringComparison comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
         if (!destination.StartsWith(rootPrefix, comparison))
         {
             throw new InvalidDataException($"The update file '{relativePath}' escaped the staging directory.");
@@ -951,12 +963,14 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
 
     private static string ResolveStageRoot(string dataDirectory, ReleaseVersion version, string runtimeIdentifier)
     {
-        var dataRoot = Path.GetFullPath(dataDirectory);
-        var stageRoot = Path.GetFullPath(
+        string dataRoot = Path.GetFullPath(dataDirectory);
+        string stageRoot = Path.GetFullPath(
             Path.Combine(dataRoot, "updates", "staged", version.ToString(), runtimeIdentifier)
         );
-        var prefix = Path.TrimEndingDirectorySeparator(dataRoot) + Path.DirectorySeparatorChar;
-        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        string prefix = Path.TrimEndingDirectorySeparator(dataRoot) + Path.DirectorySeparatorChar;
+        StringComparison comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
         if (!stageRoot.StartsWith(prefix, comparison))
         {
             throw new InvalidDataException("The update staging path escaped the application data directory.");
@@ -969,7 +983,7 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
     {
         const int UnixFileTypeMask = 0xF000;
         const int UnixSymbolicLink = 0xA000;
-        var unixMode = (entry.ExternalAttributes >> 16) & UnixFileTypeMask;
+        int unixMode = (entry.ExternalAttributes >> 16) & UnixFileTypeMask;
         var windowsAttributes = (FileAttributes)(entry.ExternalAttributes & 0xFFFF);
         if (unixMode == UnixSymbolicLink || (windowsAttributes & FileAttributes.ReparsePoint) != 0)
         {
@@ -988,9 +1002,9 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
         }
 
         pending.Push(rootDirectory);
-        while (pending.TryPop(out var directory))
+        while (pending.TryPop(out DirectoryInfo? directory))
         {
-            foreach (var child in directory.EnumerateDirectories())
+            foreach (DirectoryInfo child in directory.EnumerateDirectories())
             {
                 if ((child.Attributes & FileAttributes.ReparsePoint) != 0)
                 {
@@ -1000,7 +1014,7 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
                 pending.Push(child);
             }
 
-            foreach (var file in directory.EnumerateFiles())
+            foreach (FileInfo file in directory.EnumerateFiles())
             {
                 if ((file.Attributes & FileAttributes.ReparsePoint) != 0)
                 {
@@ -1021,7 +1035,7 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
             return true;
         }
 
-        var stem = segment.Split('.')[0];
+        string stem = segment.Split('.')[0];
         if (
             stem.Equals("CON", StringComparison.OrdinalIgnoreCase)
             || stem.Equals("PRN", StringComparison.OrdinalIgnoreCase)
@@ -1081,7 +1095,7 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
 
     private static int ReadInt32(JsonElement element, string propertyName)
     {
-        if (!element.TryGetProperty(propertyName, out var property) || !property.TryGetInt32(out var value))
+        if (!element.TryGetProperty(propertyName, out JsonElement property) || !property.TryGetInt32(out int value))
         {
             throw new InvalidDataException($"The update package manifest has invalid '{propertyName}'.");
         }
@@ -1091,7 +1105,7 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
 
     private static long ReadInt64(JsonElement element, string propertyName)
     {
-        if (!element.TryGetProperty(propertyName, out var property) || !property.TryGetInt64(out var value))
+        if (!element.TryGetProperty(propertyName, out JsonElement property) || !property.TryGetInt64(out long value))
         {
             throw new InvalidDataException($"The update package manifest has invalid '{propertyName}'.");
         }
@@ -1102,7 +1116,7 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
     private static string ReadString(JsonElement element, string propertyName)
     {
         if (
-            !element.TryGetProperty(propertyName, out var property)
+            !element.TryGetProperty(propertyName, out JsonElement property)
             || property.ValueKind != JsonValueKind.String
             || string.IsNullOrWhiteSpace(property.GetString())
         )
@@ -1123,14 +1137,14 @@ public sealed class ReleasePackageStagingService : IReleasePackageStagingService
         ArgumentNullException.ThrowIfNull(package);
         ArgumentException.ThrowIfNullOrWhiteSpace(archivePath);
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
-        var archiveType = package.RuntimeIdentifier switch
+        string archiveType = package.RuntimeIdentifier switch
         {
             RuntimeWinX64 => ArchiveTypeZip,
             RuntimeLinuxX64 => ArchiveTypeTarGz,
             _ => string.Empty,
         };
-        var suffix = archiveType == ArchiveTypeZip ? ".zip" : ".tar.gz";
-        var expectedArchiveName = $"SrvSurvey-XP-{version}-{package.RuntimeIdentifier}{suffix}";
+        string suffix = archiveType == ArchiveTypeZip ? ".zip" : ".tar.gz";
+        string expectedArchiveName = $"SrvSurvey-XP-{version}-{package.RuntimeIdentifier}{suffix}";
         if (
             version.Build < 0
             || string.IsNullOrEmpty(archiveType)

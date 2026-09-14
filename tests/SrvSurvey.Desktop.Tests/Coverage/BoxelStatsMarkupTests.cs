@@ -10,12 +10,12 @@ public sealed class BoxelStatsMarkupTests
         var document = XDocument.Load(
             Path.Combine(FindRepositoryRoot(), "src", "SrvSurvey.Desktop", "BoxelStatsWindow.axaml")
         );
-        var row = document
+        XElement row = document
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Grid" && element.Attribute("Classes")?.Value == "boxel-stats-browser-row"
             );
-        var prefix = row.Elements()
+        XElement prefix = row.Elements()
             .Single(element =>
                 element.Name.LocalName == "TextBlock" && element.Attribute("Text")?.Value == "{Binding Prefix}"
             );

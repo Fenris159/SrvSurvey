@@ -25,7 +25,7 @@ public sealed class FrontierAccountServiceTests
             },
         };
         string? tokenBody = null;
-        using var service = CreateService(
+        using FrontierAccountService service = CreateService(
             store,
             request =>
             {
@@ -67,8 +67,8 @@ public sealed class FrontierAccountServiceTests
                 ),
             },
         };
-        var requestCount = 0;
-        using var service = CreateService(
+        int requestCount = 0;
+        using FrontierAccountService service = CreateService(
             store,
             request =>
             {
@@ -88,7 +88,7 @@ public sealed class FrontierAccountServiceTests
     [Fact]
     public async Task RefreshFetchesProfileAndCarrierThenEnforcesCooldown()
     {
-        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-service-{Guid.NewGuid():N}");
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-service-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
         try
         {
@@ -98,7 +98,7 @@ public sealed class FrontierAccountServiceTests
             );
             var store = new MemoryCredentialStore { Document = LinkedCredential(now) };
             var requests = new List<string>();
-            using var service = CreateService(
+            using FrontierAccountService service = CreateService(
                 store,
                 request =>
                 {
@@ -115,14 +115,16 @@ public sealed class FrontierAccountServiceTests
                 () => now
             );
 
-            var snapshot = await service.RefreshAsync();
+            FrontierAccountSnapshot snapshot = await service.RefreshAsync();
 
             Assert.Equal("Fenris", snapshot.CommanderName);
             Assert.Equal(["/profile", "/fleetcarrier", "/market", "/shipyard", "/communitygoals"], requests);
             FrontierAccountCredential credential = store.Document.Accounts["F123"];
             Assert.NotNull(credential.LastCapiRefreshAt);
             Assert.NotNull(credential.LastCapiAttemptAt);
-            var cooldown = await Assert.ThrowsAsync<FrontierRefreshCooldownException>(() => service.RefreshAsync());
+            FrontierRefreshCooldownException cooldown = await Assert.ThrowsAsync<FrontierRefreshCooldownException>(() =>
+                service.RefreshAsync()
+            );
             Assert.True(cooldown.Remaining > TimeSpan.FromSeconds(50));
             Assert.Equal(5, requests.Count);
         }
@@ -135,7 +137,7 @@ public sealed class FrontierAccountServiceTests
     [Fact]
     public async Task RefreshEnrichesCommunityGoalsWithGenericInaraReadData()
     {
-        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-inara-{Guid.NewGuid():N}");
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-inara-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
         try
         {
@@ -169,7 +171,7 @@ public sealed class FrontierAccountServiceTests
                     string.Empty
                 )
             );
-            using var service = CreateService(
+            using FrontierAccountService service = CreateService(
                 store,
                 request =>
                     request.RequestUri!.AbsolutePath switch
@@ -189,15 +191,17 @@ public sealed class FrontierAccountServiceTests
                 inara
             );
 
-            var snapshot = await service.RefreshAsync();
+            FrontierAccountSnapshot snapshot = await service.RefreshAsync();
 
-            var goal = Assert.Single(snapshot.CommunityGoals!);
+            FrontierCommunityGoalSnapshot goal = Assert.Single(snapshot.CommunityGoals!);
             Assert.Equal("Expanded global briefing", goal.Description);
             Assert.Equal("Tier 2 / 5", goal.TierReached);
             Assert.Equal(1_234, goal.Contributors);
             Assert.Equal(now, snapshot.InaraCommunityGoalsFetchedAt);
             Assert.Equal(1, inara.RequestCount);
-            var cached = await new FrontierProfileCacheStore(Path.Combine(root, "cache.json")).LoadAsync();
+            FrontierAccountSnapshot? cached = await new FrontierProfileCacheStore(
+                Path.Combine(root, "cache.json")
+            ).LoadAsync();
             Assert.Equal("Tier 2 / 5", Assert.Single(cached!.CommunityGoals!).TierReached);
         }
         finally
@@ -209,7 +213,7 @@ public sealed class FrontierAccountServiceTests
     [Fact]
     public async Task CarrierAbsenceIsCachedForFifteenMinutes()
     {
-        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-carrier-cadence-{Guid.NewGuid():N}");
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-carrier-cadence-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
         try
         {
@@ -219,7 +223,7 @@ public sealed class FrontierAccountServiceTests
             );
             var store = new MemoryCredentialStore { Document = LinkedCredential(now) };
             var requests = new List<string>();
-            using var service = CreateService(
+            using FrontierAccountService service = CreateService(
                 store,
                 request =>
                 {
@@ -232,13 +236,13 @@ public sealed class FrontierAccountServiceTests
                 () => now
             );
 
-            var first = await service.RefreshAsync();
+            FrontierAccountSnapshot first = await service.RefreshAsync();
             Assert.Null(first.Carrier);
             Assert.Equal(now, first.CarrierFetchedAt);
 
             now = now.AddMinutes(2);
             requests.Clear();
-            var second = await service.RefreshAsync();
+            FrontierAccountSnapshot second = await service.RefreshAsync();
 
             Assert.Null(second.Carrier);
             Assert.Equal(first.CarrierFetchedAt, second.CarrierFetchedAt);
@@ -254,7 +258,7 @@ public sealed class FrontierAccountServiceTests
     [Fact]
     public async Task ForcedCarrierRefreshBypassesFifteenMinuteCarrierCadence()
     {
-        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-carrier-force-{Guid.NewGuid():N}");
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-carrier-force-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
         try
         {
@@ -263,9 +267,9 @@ public sealed class FrontierAccountServiceTests
                 global::System.Globalization.CultureInfo.InvariantCulture
             );
             var store = new MemoryCredentialStore { Document = LinkedCredential(now) };
-            var currentJump = "None";
+            string currentJump = "None";
             var requests = new List<string>();
-            using var service = CreateService(
+            using FrontierAccountService service = CreateService(
                 store,
                 request =>
                 {
@@ -289,13 +293,13 @@ public sealed class FrontierAccountServiceTests
                 () => now
             );
 
-            var first = await service.RefreshAsync();
+            FrontierAccountSnapshot first = await service.RefreshAsync();
             Assert.Empty(first.Carrier!.CurrentJump);
 
             now = now.AddMinutes(2);
             currentJump = "Honoto";
             requests.Clear();
-            var second = await service.RefreshAsync(forceCarrierRefresh: true);
+            FrontierAccountSnapshot second = await service.RefreshAsync(forceCarrierRefresh: true);
 
             Assert.Equal("Honoto", second.Carrier!.CurrentJump);
             Assert.Contains("/fleetcarrier", requests);
@@ -310,7 +314,7 @@ public sealed class FrontierAccountServiceTests
     [Fact]
     public async Task CarrierEnvelopeMetadataIsCachedWithoutInventingCarrier()
     {
-        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-carrier-envelope-{Guid.NewGuid():N}");
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-carrier-envelope-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
         try
         {
@@ -319,7 +323,7 @@ public sealed class FrontierAccountServiceTests
                 global::System.Globalization.CultureInfo.InvariantCulture
             );
             var store = new MemoryCredentialStore { Document = LinkedCredential(now) };
-            using var service = CreateService(
+            using FrontierAccountService service = CreateService(
                 store,
                 request =>
                     request.RequestUri!.AbsolutePath switch
@@ -338,7 +342,7 @@ public sealed class FrontierAccountServiceTests
                 () => now
             );
 
-            var snapshot = await service.RefreshAsync();
+            FrontierAccountSnapshot snapshot = await service.RefreshAsync();
 
             Assert.Null(snapshot.Carrier);
             Assert.Equal(91, Assert.Single(snapshot.CommanderReputation!).Score);
@@ -347,7 +351,9 @@ public sealed class FrontierAccountServiceTests
                 point => point.Path == "fleetcarrier.accountMetadata.available" && point.Value == "Yes"
             );
 
-            var cached = await new FrontierProfileCacheStore(Path.Combine(root, "cache.json")).LoadAsync();
+            FrontierAccountSnapshot? cached = await new FrontierProfileCacheStore(
+                Path.Combine(root, "cache.json")
+            ).LoadAsync();
             Assert.Null(cached!.Carrier);
             Assert.Equal(91, Assert.Single(cached.CommanderReputation!).Score);
             Assert.Contains(
@@ -364,7 +370,7 @@ public sealed class FrontierAccountServiceTests
     [Fact]
     public async Task NoCarrierResponseRetainsIndependentCommanderReputation()
     {
-        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-carrier-removed-{Guid.NewGuid():N}");
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-carrier-removed-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
         try
         {
@@ -400,7 +406,7 @@ public sealed class FrontierAccountServiceTests
             );
             service.SetActiveCommander("F123", "Fenris");
 
-            var snapshot = await service.RefreshAsync();
+            FrontierAccountSnapshot snapshot = await service.RefreshAsync();
 
             Assert.Null(snapshot.Carrier);
             Assert.Equal(91, Assert.Single(snapshot.CommanderReputation!).Score);
@@ -416,7 +422,7 @@ public sealed class FrontierAccountServiceTests
     [Fact]
     public async Task MalformedCarrierDoesNotDiscardValidProfile()
     {
-        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-carrier-invalid-{Guid.NewGuid():N}");
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-carrier-invalid-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
         try
         {
@@ -425,7 +431,7 @@ public sealed class FrontierAccountServiceTests
                 global::System.Globalization.CultureInfo.InvariantCulture
             );
             var store = new MemoryCredentialStore { Document = LinkedCredential(now) };
-            using var service = CreateService(
+            using FrontierAccountService service = CreateService(
                 store,
                 request =>
                     request.RequestUri!.AbsolutePath switch
@@ -441,7 +447,7 @@ public sealed class FrontierAccountServiceTests
                 () => now
             );
 
-            var snapshot = await service.RefreshAsync();
+            FrontierAccountSnapshot snapshot = await service.RefreshAsync();
 
             Assert.Equal("Fenris", snapshot.CommanderName);
             Assert.Null(snapshot.Carrier);
@@ -456,7 +462,7 @@ public sealed class FrontierAccountServiceTests
     [Fact]
     public async Task FailedRefreshAttemptIsAlsoThrottled()
     {
-        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-failed-refresh-{Guid.NewGuid():N}");
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-failed-refresh-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
         try
         {
@@ -465,8 +471,8 @@ public sealed class FrontierAccountServiceTests
                 global::System.Globalization.CultureInfo.InvariantCulture
             );
             var store = new MemoryCredentialStore { Document = LinkedCredential(now) };
-            var requestCount = 0;
-            using var service = CreateService(
+            int requestCount = 0;
+            using FrontierAccountService service = CreateService(
                 store,
                 _ =>
                 {
@@ -492,7 +498,7 @@ public sealed class FrontierAccountServiceTests
     [Fact]
     public async Task SwitchingCommanderUsesIndependentCredentialsAndCaches()
     {
-        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-multi-account-{Guid.NewGuid():N}");
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-multi-account-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
         try
         {
@@ -516,7 +522,7 @@ public sealed class FrontierAccountServiceTests
                 new HttpClient(
                     new StubHandler(request =>
                     {
-                        var token = request.Headers.Authorization?.Parameter ?? string.Empty;
+                        string token = request.Headers.Authorization?.Parameter ?? string.Empty;
                         requestedTokens.Add(token);
                         now = now.AddSeconds(1);
                         if (request.RequestUri!.AbsolutePath != "/profile")
@@ -545,9 +551,9 @@ public sealed class FrontierAccountServiceTests
             );
 
             service.SetActiveCommander("F123", "Fenris");
-            var first = await service.RefreshAsync();
+            FrontierAccountSnapshot first = await service.RefreshAsync();
             service.SetActiveCommander("F456", "Second");
-            var second = await service.RefreshAsync();
+            FrontierAccountSnapshot second = await service.RefreshAsync();
 
             Assert.Equal("Fenris", first.CommanderName);
             Assert.Equal(100, first.Credits);
@@ -557,15 +563,15 @@ public sealed class FrontierAccountServiceTests
             Assert.Contains("access-b", requestedTokens);
 
             service.SetActiveCommander("F123", "Fenris");
-            var firstState = await service.GetStateAsync();
+            FrontierAccountState firstState = await service.GetStateAsync();
             service.SetActiveCommander("F456", "Second");
-            var secondState = await service.GetStateAsync();
+            FrontierAccountState secondState = await service.GetStateAsync();
             Assert.Equal("Fenris", firstState.Snapshot!.CommanderName);
             Assert.Equal("Second", secondState.Snapshot!.CommanderName);
             Assert.True(File.Exists(Path.Combine(root, "F123.json")));
             Assert.True(File.Exists(Path.Combine(root, "F456.json")));
 
-            var linkedCommanders = await service.GetLinkedCommandersAsync();
+            IReadOnlyList<FrontierLinkedCommander> linkedCommanders = await service.GetLinkedCommandersAsync();
             Assert.Collection(
                 linkedCommanders,
                 commander =>
@@ -589,7 +595,7 @@ public sealed class FrontierAccountServiceTests
     [Fact]
     public async Task JournalFidAndCapiCommanderIdAreIndependentIdentifiers()
     {
-        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-id-domains-{Guid.NewGuid():N}");
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-id-domains-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
         try
         {
@@ -628,7 +634,7 @@ public sealed class FrontierAccountServiceTests
             );
             service.SetActiveCommander("F472567", "Fenris Nihilus");
 
-            var snapshot = await service.RefreshAsync();
+            FrontierAccountSnapshot snapshot = await service.RefreshAsync();
 
             Assert.Equal(739749, snapshot.CommanderId);
             Assert.True(store.Document.Accounts.ContainsKey("F472567"));
@@ -644,7 +650,7 @@ public sealed class FrontierAccountServiceTests
     [Fact]
     public async Task MiskeyedCapiIdAliasIsRemovedWithoutMergingAnotherCommander()
     {
-        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-capi-alias-{Guid.NewGuid():N}");
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-capi-alias-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
         try
         {
@@ -700,7 +706,7 @@ public sealed class FrontierAccountServiceTests
             );
             service.SetActiveCommander("F472567", "Fenris Nihilus");
 
-            var linked = await service.GetLinkedCommandersAsync();
+            IReadOnlyList<FrontierLinkedCommander> linked = await service.GetLinkedCommandersAsync();
 
             Assert.Collection(
                 linked,
@@ -730,7 +736,7 @@ public sealed class FrontierAccountServiceTests
     [Fact]
     public async Task BlankCommanderNameDoesNotMatchOrMigrateMiskeyedAlias()
     {
-        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-blank-name-{Guid.NewGuid():N}");
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-blank-name-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
         try
         {
@@ -738,12 +744,12 @@ public sealed class FrontierAccountServiceTests
                 "2026-07-30T12:00:00Z",
                 global::System.Globalization.CultureInfo.InvariantCulture
             );
-            var snapshot = FrontierCapiSnapshotParser.Parse(
+            FrontierAccountSnapshot snapshot = FrontierCapiSnapshotParser.Parse(
                 "{\"commander\":{\"id\":739749,\"name\":\"Fenris Nihilus\",\"rank\":{}},\"ships\":[]}",
                 null,
                 now
             );
-            var identity = FrontierCommanderIdentity.Create("F472567", null)!;
+            FrontierCommanderIdentity identity = FrontierCommanderIdentity.Create("F472567", null)!;
             Assert.False(identity.Matches(snapshot));
 
             var store = new MemoryCredentialStore
@@ -769,9 +775,9 @@ public sealed class FrontierAccountServiceTests
             );
             service.SetActiveCommander("F472567", null);
 
-            var linked = await service.GetLinkedCommandersAsync();
+            IReadOnlyList<FrontierLinkedCommander> linked = await service.GetLinkedCommandersAsync();
 
-            var commander = Assert.Single(linked);
+            FrontierLinkedCommander commander = Assert.Single(linked);
             Assert.Equal("F739749", commander.FrontierId);
             Assert.True(store.Document.Accounts.ContainsKey("F739749"));
             Assert.False(store.Document.Accounts.ContainsKey("F472567"));
@@ -786,7 +792,7 @@ public sealed class FrontierAccountServiceTests
     [Fact]
     public async Task BlankCommanderNameDoesNotDeleteScopedCache()
     {
-        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-blank-name-cache-{Guid.NewGuid():N}");
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-blank-name-cache-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
         try
         {
@@ -804,7 +810,7 @@ public sealed class FrontierAccountServiceTests
                     },
                 },
             };
-            var cachePath = Path.Combine(root, "F472567.json");
+            string cachePath = Path.Combine(root, "F472567.json");
             await new FrontierProfileCacheStore(cachePath).SaveAsync(
                 FrontierCapiSnapshotParser.Parse(
                     "{\"commander\":{\"id\":739749,\"name\":\"Fenris Nihilus\",\"rank\":{}},\"ships\":[]}",
@@ -824,7 +830,7 @@ public sealed class FrontierAccountServiceTests
             );
             service.SetActiveCommander("F472567", null);
 
-            var state = await service.GetStateAsync();
+            FrontierAccountState state = await service.GetStateAsync();
 
             Assert.True(state.IsLinked);
             Assert.Null(state.Snapshot);
@@ -839,7 +845,7 @@ public sealed class FrontierAccountServiceTests
     [Fact]
     public async Task MiskeyedCapiIdCredentialMovesToJournalFidWhenItIsTheOnlyCopy()
     {
-        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-capi-alias-move-{Guid.NewGuid():N}");
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-capi-alias-move-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
         try
         {
@@ -876,7 +882,7 @@ public sealed class FrontierAccountServiceTests
             );
             service.SetActiveCommander("F472567", "Fenris Nihilus");
 
-            var state = await service.GetStateAsync();
+            FrontierAccountState state = await service.GetStateAsync();
 
             Assert.True(state.IsLinked);
             Assert.Equal("Fenris Nihilus", state.Snapshot!.CommanderName);
@@ -909,7 +915,7 @@ public sealed class FrontierAccountServiceTests
                 PendingAuthorization = new FrontierPendingAuthorization("state-b", "verifier-b", now, "F456", "Second"),
             },
         };
-        using var service = CreateService(
+        using FrontierAccountService service = CreateService(
             store,
             request =>
                 request.RequestUri!.AbsolutePath == "/token"
@@ -927,7 +933,9 @@ public sealed class FrontierAccountServiceTests
         await service.HandleCallbackAsync(new FrontierOAuthCallback("code-b", "state-b", string.Empty, string.Empty));
         service.SetActiveCommander("F456", "Second");
 
-        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => service.RefreshAsync());
+        InvalidOperationException error = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.RefreshAsync()
+        );
 
         Assert.Contains("active journal", error.Message);
         Assert.True(store.Document.Accounts.ContainsKey("F123"));
@@ -938,7 +946,7 @@ public sealed class FrontierAccountServiceTests
     [Fact]
     public async Task UnlinkRemovesOnlyTheActiveCommander()
     {
-        var now = DateTimeOffset.UtcNow;
+        DateTimeOffset now = DateTimeOffset.UtcNow;
         var store = new MemoryCredentialStore
         {
             Document = new FrontierCredentialDocument
@@ -950,7 +958,7 @@ public sealed class FrontierAccountServiceTests
                 },
             },
         };
-        using var service = CreateService(store, _ => Json(HttpStatusCode.OK, "{}"));
+        using FrontierAccountService service = CreateService(store, _ => Json(HttpStatusCode.OK, "{}"));
         service.SetActiveCommander("F456", "Second");
 
         await service.UnlinkAsync();
@@ -962,7 +970,7 @@ public sealed class FrontierAccountServiceTests
     [Fact]
     public async Task LegacySingleAccountAuthorizationMigratesToVerifiedFid()
     {
-        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-legacy-migration-{Guid.NewGuid():N}");
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-legacy-migration-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
         try
         {
@@ -971,7 +979,7 @@ public sealed class FrontierAccountServiceTests
                 global::System.Globalization.CultureInfo.InvariantCulture
             );
             var legacyCache = new FrontierProfileCacheStore(Path.Combine(root, "frontier-profile-cache.json"));
-            var snapshot = FrontierCapiSnapshotParser.Parse(
+            FrontierAccountSnapshot snapshot = FrontierCapiSnapshotParser.Parse(
                 "{\"commander\":{\"id\":739749,\"name\":\"Fenris\",\"rank\":{}},\"ships\":[]}",
                 null,
                 now
@@ -993,7 +1001,7 @@ public sealed class FrontierAccountServiceTests
             );
             service.SetActiveCommander("F123", "Fenris");
 
-            var state = await service.GetStateAsync();
+            FrontierAccountState state = await service.GetStateAsync();
 
             Assert.True(state.IsLinked);
             Assert.Equal("Fenris", state.Snapshot!.CommanderName);
@@ -1011,11 +1019,11 @@ public sealed class FrontierAccountServiceTests
     [Fact]
     public async Task RefreshLeaseSerializesIndependentServiceInstances()
     {
-        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-refresh-lease-{Guid.NewGuid():N}");
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-refresh-lease-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
         try
         {
-            var cachePath = Path.Combine(root, "cache.json");
+            string cachePath = Path.Combine(root, "cache.json");
             var firstStore = new FrontierProfileCacheStore(cachePath);
             var secondStore = new FrontierProfileCacheStore(cachePath);
             await using (await firstStore.AcquireRefreshLeaseAsync())
@@ -1026,7 +1034,7 @@ public sealed class FrontierAccountServiceTests
                 );
             }
 
-            await using var secondLease = await secondStore.AcquireRefreshLeaseAsync();
+            await using IAsyncDisposable secondLease = await secondStore.AcquireRefreshLeaseAsync();
         }
         finally
         {
@@ -1037,12 +1045,12 @@ public sealed class FrontierAccountServiceTests
     [Fact]
     public async Task UnlinkClearsCredentialsAndCachedProfile()
     {
-        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-unlink-{Guid.NewGuid():N}");
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-unlink-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
         try
         {
             var store = new MemoryCredentialStore { Document = LinkedCredential(DateTimeOffset.UtcNow) };
-            var cachePath = Path.Combine(root, "frontier-profile-cache.json");
+            string cachePath = Path.Combine(root, "frontier-profile-cache.json");
             await File.WriteAllTextAsync(cachePath, "{}");
             using var service = new FrontierAccountService(
                 new HttpClient(new StubHandler(_ => Json(HttpStatusCode.OK, "{}"))),
@@ -1070,12 +1078,12 @@ public sealed class FrontierAccountServiceTests
             return;
         }
 
-        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-credential-{Guid.NewGuid():N}");
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-credential-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
         try
         {
-            var store = FrontierCredentialStore.CreateCurrent(root);
-            var account = ScopedCredential("plain-access-token", DateTimeOffset.UtcNow) with
+            IFrontierCredentialStore store = FrontierCredentialStore.CreateCurrent(root);
+            FrontierAccountCredential account = ScopedCredential("plain-access-token", DateTimeOffset.UtcNow) with
             {
                 RefreshToken = "plain-refresh-token",
             };
@@ -1086,8 +1094,8 @@ public sealed class FrontierAccountServiceTests
 
             await store.SaveAsync(document);
 
-            var bytes = await File.ReadAllBytesAsync(Path.Combine(root, "frontier-auth.dat"));
-            var persistedText = Encoding.UTF8.GetString(bytes);
+            byte[] bytes = await File.ReadAllBytesAsync(Path.Combine(root, "frontier-auth.dat"));
+            string persistedText = Encoding.UTF8.GetString(bytes);
             Assert.DoesNotContain(account.AccessToken, persistedText);
             Assert.DoesNotContain(account.RefreshToken, persistedText);
             Assert.Equal(account.AccessToken, (await store.LoadAsync())!.Accounts["F123"].AccessToken);
@@ -1109,7 +1117,7 @@ public sealed class FrontierAccountServiceTests
         IInaraCommunityGoalClient? inaraCommunityGoals = null
     )
     {
-        var cachePath = root is null
+        string cachePath = root is null
             ? Path.Combine(Path.GetTempPath(), $"SrvSurvey-frontier-cache-{Guid.NewGuid():N}.json")
             : Path.Combine(root, "cache.json");
         if (root is not null)

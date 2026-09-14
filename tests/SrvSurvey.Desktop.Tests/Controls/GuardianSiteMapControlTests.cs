@@ -20,7 +20,7 @@ public sealed class GuardianSiteMapControlTests
         var proximity = new GuardianSiteProximitySnapshot(50, 40, -20, 40, -20, null, null);
         const double scale = 3;
 
-        var commander = GuardianSiteMapControl.TransformMapPoint(
+        Point commander = GuardianSiteMapControl.TransformMapPoint(
             proximity.MapX,
             proximity.MapY,
             proximity,
@@ -69,8 +69,8 @@ public sealed class GuardianSiteMapControlTests
         var proximity = new GuardianSiteProximitySnapshot(0, 0, 0, 0, 0, null, null);
         var center = new Point(100, 100);
 
-        var eastWhileFacingNorth = GuardianSiteMapControl.TransformMapPoint(10, 0, proximity, 0, center, 2);
-        var eastWhileFacingEast = GuardianSiteMapControl.TransformMapPoint(10, 0, proximity, 90, center, 2);
+        Point eastWhileFacingNorth = GuardianSiteMapControl.TransformMapPoint(10, 0, proximity, 0, center, 2);
+        Point eastWhileFacingEast = GuardianSiteMapControl.TransformMapPoint(10, 0, proximity, 90, center, 2);
 
         Assert.Equal(new Point(120, 100), eastWhileFacingNorth);
         Assert.Equal(100, eastWhileFacingEast.X, precision: 9);
@@ -84,13 +84,13 @@ public sealed class GuardianSiteMapControlTests
         var center = new Point(320, 240);
         const double heading = 73;
         const double scale = 1.7;
-        var matrix = GuardianSiteMapControl.CreateMapTransform(proximity, heading, center, scale);
+        Matrix matrix = GuardianSiteMapControl.CreateMapTransform(proximity, heading, center, scale);
         var mapPoint = new Point(41, -22);
         var transformedBackgroundPoint = new Point(
             (mapPoint.X * matrix.M11) + (mapPoint.Y * matrix.M21) + matrix.M31,
             (mapPoint.X * matrix.M12) + (mapPoint.Y * matrix.M22) + matrix.M32
         );
-        var transformedMarkerPoint = GuardianSiteMapControl.TransformMapPoint(
+        Point transformedMarkerPoint = GuardianSiteMapControl.TransformMapPoint(
             mapPoint.X,
             mapPoint.Y,
             proximity,
@@ -119,8 +119,8 @@ public sealed class GuardianSiteMapControlTests
         var ruins = new GuardianSiteMapProjection("Alpha", [], [], 1, IsRuins: true);
         var structure = new GuardianSiteMapProjection("Lacrosse", [], [], 1);
 
-        var ruinsLabels = GuardianSiteMapControl.CreateLegendLabels(ruins);
-        var structureLabels = GuardianSiteMapControl.CreateLegendLabels(structure);
+        IReadOnlyList<string> ruinsLabels = GuardianSiteMapControl.CreateLegendLabels(ruins);
+        IReadOnlyList<string> structureLabels = GuardianSiteMapControl.CreateLegendLabels(structure);
 
         Assert.Equal(
             [
@@ -213,7 +213,7 @@ public sealed class GuardianSiteMapControlTests
     public void SurveyMarkerCreatesVisibleDotsAroundTheWholeRing()
     {
         var center = new Point(25, 30);
-        var dots = GuardianSurveyMarkerDrawing.CreateDotCenters(center, ringRadius: 18, dotRadius: 1);
+        IReadOnlyList<Point> dots = GuardianSurveyMarkerDrawing.CreateDotCenters(center, ringRadius: 18, dotRadius: 1);
 
         Assert.True(dots.Count >= 8);
         Assert.All(
@@ -239,15 +239,21 @@ public sealed class GuardianSiteMapControlTests
             [GuardianPoiType.Urn] = (Color.FromRgb(163, 73, 164), Color.FromRgb(84, 37, 84)),
         };
 
-        foreach (var pair in expected)
+        foreach (KeyValuePair<GuardianPoiType, (Color Fill, Color Stroke)> pair in expected)
         {
-            var style = GuardianLegacyMapDrawing.GetPointStyle(pair.Key, GuardianPoiStatus.Present);
+            GuardianLegacyPointStyle style = GuardianLegacyMapDrawing.GetPointStyle(
+                pair.Key,
+                GuardianPoiStatus.Present
+            );
             Assert.Equal(pair.Value.Fill, style.Fill);
             Assert.Equal(pair.Value.Stroke, style.Stroke);
             Assert.True(style.HasFill);
         }
 
-        var empty = GuardianLegacyMapDrawing.GetPointStyle(GuardianPoiType.EmptyPuddle, GuardianPoiStatus.Empty);
+        GuardianLegacyPointStyle empty = GuardianLegacyMapDrawing.GetPointStyle(
+            GuardianPoiType.EmptyPuddle,
+            GuardianPoiStatus.Empty
+        );
         Assert.Equal(Colors.Gold, empty.Fill);
         Assert.Equal(Colors.Yellow, empty.Stroke);
     }
@@ -255,18 +261,27 @@ public sealed class GuardianSiteMapControlTests
     [Fact]
     public void StructureGlyphStatusStylesMatchLegacyGuardianMap()
     {
-        var activeObelisk = GuardianLegacyMapDrawing.GetPointStyle(
+        GuardianLegacyPointStyle activeObelisk = GuardianLegacyMapDrawing.GetPointStyle(
             GuardianPoiType.Obelisk,
             GuardianPoiStatus.Unknown,
             isActiveObelisk: true
         );
-        var inactiveObelisk = GuardianLegacyMapDrawing.GetPointStyle(
+        GuardianLegacyPointStyle inactiveObelisk = GuardianLegacyMapDrawing.GetPointStyle(
             GuardianPoiType.Obelisk,
             GuardianPoiStatus.Present
         );
-        var pylon = GuardianLegacyMapDrawing.GetPointStyle(GuardianPoiType.Pylon, GuardianPoiStatus.Present);
-        var component = GuardianLegacyMapDrawing.GetPointStyle(GuardianPoiType.Component, GuardianPoiStatus.Present);
-        var absent = GuardianLegacyMapDrawing.GetPointStyle(GuardianPoiType.Pylon, GuardianPoiStatus.Absent);
+        GuardianLegacyPointStyle pylon = GuardianLegacyMapDrawing.GetPointStyle(
+            GuardianPoiType.Pylon,
+            GuardianPoiStatus.Present
+        );
+        GuardianLegacyPointStyle component = GuardianLegacyMapDrawing.GetPointStyle(
+            GuardianPoiType.Component,
+            GuardianPoiStatus.Present
+        );
+        GuardianLegacyPointStyle absent = GuardianLegacyMapDrawing.GetPointStyle(
+            GuardianPoiType.Pylon,
+            GuardianPoiStatus.Absent
+        );
 
         Assert.Equal(GuardianLegacyMapDrawing.Cyan, activeObelisk.Stroke);
         Assert.Equal(GuardianLegacyMapDrawing.DarkCyan, inactiveObelisk.Stroke);
@@ -288,10 +303,15 @@ public sealed class GuardianSiteMapControlTests
             SiteHeading: 100,
             RelicTowerHeading: 210
         );
-        var obelisk = Point("A01", GuardianPoiType.Obelisk, rotation: 30);
-        var pylon = Point("P1", GuardianPoiType.Pylon, rotation: 30);
-        var component = Point("C1", GuardianPoiType.Component, rotation: 30);
-        var relic = Point("T1", GuardianPoiType.Relic, relicHeading: 240, hasIndividualRelicHeading: true);
+        GuardianProjectedPoint obelisk = Point("A01", GuardianPoiType.Obelisk, rotation: 30);
+        GuardianProjectedPoint pylon = Point("P1", GuardianPoiType.Pylon, rotation: 30);
+        GuardianProjectedPoint component = Point("C1", GuardianPoiType.Component, rotation: 30);
+        GuardianProjectedPoint relic = Point(
+            "T1",
+            GuardianPoiType.Relic,
+            relicHeading: 240,
+            hasIndividualRelicHeading: true
+        );
 
         Assert.Equal(
             157.5,
@@ -315,7 +335,11 @@ public sealed class GuardianSiteMapControlTests
         );
 
         Assert.Equal(4, GuardianLegacyMapDrawing.CreateGlyphPoints(GuardianPoiType.Obelisk, new Point(), 0).Count);
-        var broken = GuardianLegacyMapDrawing.CreateGlyphPoints(GuardianPoiType.BrokenObelisk, new Point(), 0);
+        IReadOnlyList<Point> broken = GuardianLegacyMapDrawing.CreateGlyphPoints(
+            GuardianPoiType.BrokenObelisk,
+            new Point(),
+            0
+        );
         Assert.Equal(new Point(-0.5, 2.5), broken[0]);
         Assert.Equal(new Point(2.5, -0.5), broken[2]);
         Assert.Equal(5, GuardianLegacyMapDrawing.CreateGlyphPoints(GuardianPoiType.Pylon, new Point(), 0).Count);
@@ -326,8 +350,18 @@ public sealed class GuardianSiteMapControlTests
     public void GuardianMarkersScaleWithTheMapLikeLegacyRenderer()
     {
         var center = new Point(20, 30);
-        var full = GuardianLegacyMapDrawing.CreateGlyphPoints(GuardianPoiType.Relic, center, rotation: 0, scale: 1);
-        var half = GuardianLegacyMapDrawing.CreateGlyphPoints(GuardianPoiType.Relic, center, rotation: 0, scale: 0.5);
+        IReadOnlyList<Point> full = GuardianLegacyMapDrawing.CreateGlyphPoints(
+            GuardianPoiType.Relic,
+            center,
+            rotation: 0,
+            scale: 1
+        );
+        IReadOnlyList<Point> half = GuardianLegacyMapDrawing.CreateGlyphPoints(
+            GuardianPoiType.Relic,
+            center,
+            rotation: 0,
+            scale: 0.5
+        );
         var ruins = new GuardianSiteMapProjection("Alpha", [], [], 1, IsRuins: true);
 
         Assert.Equal(center + new Vector(-8, -8), full[0]);
@@ -391,9 +425,9 @@ public sealed class GuardianSiteMapControlTests
             window.MouseDown(new Point(360, 320), MouseButton.Left, RawInputModifiers.None);
             window.MouseUp(new Point(360, 320), MouseButton.Left, RawInputModifiers.None);
             Assert.Equal("P1", control.SelectedPointName);
-            var frame = window.CaptureRenderedFrame();
+            WriteableBitmap? frame = window.CaptureRenderedFrame();
             Assert.NotNull(frame);
-            var outputPath = Environment.GetEnvironmentVariable("SRVSURVEY_GUARDIAN_MAP_SELECTION_RENDER_OUTPUT");
+            string? outputPath = Environment.GetEnvironmentVariable("SRVSURVEY_GUARDIAN_MAP_SELECTION_RENDER_OUTPUT");
             if (!string.IsNullOrWhiteSpace(outputPath))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
@@ -453,7 +487,7 @@ public sealed class GuardianSiteMapControlTests
     public void ComponentMaterialDotsStayScreenAlignedLikeLegacyRenderer()
     {
         var center = new Point(50, 60);
-        var dots = GuardianLegacyMapDrawing.CreateComponentMaterialCenters(center);
+        IReadOnlyList<Point> dots = GuardianLegacyMapDrawing.CreateComponentMaterialCenters(center);
 
         Assert.Equal(3, dots.Count);
         Assert.All(
@@ -508,7 +542,7 @@ public sealed class GuardianSiteMapControlTests
     public void RelicHeadingLinePassesThroughTowerAtRecordedAngle()
     {
         var center = new Point(25, 40);
-        var (start, end) = GuardianLegacyMapDrawing.CreateHeadingLine(center, 100, 90);
+        (Point start, Point end) = GuardianLegacyMapDrawing.CreateHeadingLine(center, 100, 90);
 
         Assert.Equal(center, new Point((start.X + end.X) / 2, (start.Y + end.Y) / 2));
         Assert.Equal(125, start.X, precision: 9);
@@ -521,7 +555,7 @@ public sealed class GuardianSiteMapControlTests
     public void ActiveObeliskWedgeRetainsLegacyNinetyDegreeArc()
     {
         var center = new Point(10, 15);
-        var wedge = GuardianLegacyMapDrawing.CreateWedge(center, radius: 30, rotation: 0, segments: 9);
+        IReadOnlyList<Point> wedge = GuardianLegacyMapDrawing.CreateWedge(center, radius: 30, rotation: 0, segments: 9);
 
         Assert.Equal(11, wedge.Count);
         Assert.Equal(center, wedge[0]);
@@ -530,8 +564,8 @@ public sealed class GuardianSiteMapControlTests
             Math.Sqrt(Math.Pow(wedge[1].X - center.X, 2) + Math.Pow(wedge[1].Y - center.Y, 2)),
             precision: 9
         );
-        var firstAngle = Math.Atan2(wedge[1].Y - center.Y, wedge[1].X - center.X) * 180 / Math.PI;
-        var lastAngle = Math.Atan2(wedge[^1].Y - center.Y, wedge[^1].X - center.X) * 180 / Math.PI;
+        double firstAngle = Math.Atan2(wedge[1].Y - center.Y, wedge[1].X - center.X) * 180 / Math.PI;
+        double lastAngle = Math.Atan2(wedge[^1].Y - center.Y, wedge[^1].X - center.X) * 180 / Math.PI;
         Assert.Equal(-120, firstAngle, precision: 9);
         Assert.Equal(-30, lastAngle, precision: 9);
     }
@@ -649,25 +683,25 @@ public sealed class GuardianSiteMapControlTests
         ];
         var templates = GuardianSiteTemplateCatalog.LoadEmbedded();
         var projector = new GuardianSiteMapProjector();
-        foreach (var siteType in mappedSiteTypes)
+        foreach (string siteType in mappedSiteTypes)
         {
-            var projection = projector.Project(
+            GuardianSiteMapProjection projection = projector.Project(
                 templates.Find(siteType) ?? throw new InvalidOperationException($"{siteType} template is missing.")
             );
 
             Assert.NotNull(GuardianMapImageCatalog.Find(projection));
         }
 
-        foreach (var siteType in new[] { "Squid", "Stickyhand" })
+        foreach (string? siteType in new[] { "Squid", "Stickyhand" })
         {
-            var projection = projector.Project(
+            GuardianSiteMapProjection projection = projector.Project(
                 templates.Find(siteType) ?? throw new InvalidOperationException($"{siteType} template is missing.")
             );
 
             Assert.Null(GuardianMapImageCatalog.Find(projection));
         }
 
-        var beta = projector.Project(
+        GuardianSiteMapProjection beta = projector.Project(
             templates.Find("Beta") ?? throw new InvalidOperationException("Beta template is missing.")
         );
         Assert.Equal("beta-background.png", GuardianMapImageCatalog.ResolveFileName(beta));
@@ -677,7 +711,7 @@ public sealed class GuardianSiteMapControlTests
     [AvaloniaFact]
     public void LocalDraftBackgroundImageCanBePreviewed()
     {
-        var path = Path.Combine(Path.GetTempPath(), $"SrvSurvey-guardian-map-{Guid.NewGuid():N}.png");
+        string path = Path.Combine(Path.GetTempPath(), $"SrvSurvey-guardian-map-{Guid.NewGuid():N}.png");
         try
         {
             File.WriteAllBytes(
@@ -747,7 +781,7 @@ public sealed class GuardianSiteMapControlTests
 
     private static bool Render(GuardianSiteMapControl control, Size? requestedSize = null, string? outputPath = null)
     {
-        var size = requestedSize ?? new Size(720, 640);
+        Size size = requestedSize ?? new Size(720, 640);
         var window = new Window
         {
             Width = size.Width,
@@ -758,7 +792,7 @@ public sealed class GuardianSiteMapControlTests
         try
         {
             window.Show();
-            var frame = window.CaptureRenderedFrame();
+            WriteableBitmap? frame = window.CaptureRenderedFrame();
             if (frame is not null && !string.IsNullOrWhiteSpace(outputPath))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
@@ -787,8 +821,8 @@ public sealed class GuardianSiteMapControlTests
         IReadOnlyList<GuardianComponentMaterial>? materials = null
     )
     {
-        var distance = Math.Sqrt(x * x + y * y);
-        var angle = Math.Atan2(y, x) * 180 / Math.PI;
+        double distance = Math.Sqrt(x * x + y * y);
+        double angle = Math.Atan2(y, x) * 180 / Math.PI;
         return new GuardianProjectedPoint(
             name,
             type,

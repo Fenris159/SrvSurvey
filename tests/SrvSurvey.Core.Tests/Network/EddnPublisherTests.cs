@@ -18,7 +18,7 @@ public sealed class EddnPublisherTests
     )
     {
         var requests = new List<RecordedRequest>();
-        using var publisher = CreatePublisher(requests);
+        using EddnPublisher publisher = CreatePublisher(requests);
         var subsequentEvents = new List<JournalEventEnvelope>
         {
             Event(
@@ -46,10 +46,10 @@ public sealed class EddnPublisherTests
         await publisher.ProcessPendingAsync();
 
         using var json = JsonDocument.Parse(Assert.Single(requests).Content);
-        var message = json.RootElement.GetProperty("message");
-        foreach (var name in new[] { "odyssey", "horizons" })
+        JsonElement message = json.RootElement.GetProperty("message");
+        foreach (string? name in new[] { "odyssey", "horizons" })
         {
-            Assert.Equal(expectedExpansion.HasValue, message.TryGetProperty(name, out var value));
+            Assert.Equal(expectedExpansion.HasValue, message.TryGetProperty(name, out JsonElement value));
             if (expectedExpansion.HasValue)
             {
                 Assert.Equal(expectedExpansion.Value, value.GetBoolean());
@@ -61,9 +61,9 @@ public sealed class EddnPublisherTests
     public async Task BootstrapBuildsContextAndLiveSchemasPublishThroughLiveGateway()
     {
         var requests = new List<RecordedRequest>();
-        var publisher = CreatePublisher(requests);
+        EddnPublisher publisher = CreatePublisher(requests);
 
-        var bootstrap = await publisher.ApplyAsync(
+        EddnPublicationResult bootstrap = await publisher.ApplyAsync(
             new EddnApplyRequest
             {
                 JournalEvents =
@@ -93,7 +93,7 @@ public sealed class EddnPublisherTests
                 AllowPublishing = false,
             }
         );
-        var live = await publisher.ApplyAsync(
+        EddnPublicationResult live = await publisher.ApplyAsync(
             new EddnApplyRequest
             {
                 JournalEvents =
@@ -117,11 +117,11 @@ public sealed class EddnPublisherTests
 
         Assert.Empty(bootstrap.Published);
         Assert.Empty(bootstrap.Warnings);
-        var published = Assert.Single(live.Published);
+        EddnPublishedEvent published = Assert.Single(live.Published);
         Assert.Equal("FSSBodySignals", published.EventName);
         Assert.Equal("https://eddn.edcd.io/schemas/fssbodysignals/1", published.SchemaReference);
         Assert.False(published.UsesTestSchemas);
-        var request = Assert.Single(requests);
+        RecordedRequest request = Assert.Single(requests);
         Assert.Equal("https://live.example.test/upload/", request.Uri.ToString());
         Assert.Equal(HttpVersion.Version11, request.Version);
         Assert.Equal(HttpMethod.Post, request.Method);
@@ -129,15 +129,15 @@ public sealed class EddnPublisherTests
         Assert.Equal("gzip", request.ContentEncoding);
         Assert.Null(request.Authorization);
         using var json = JsonDocument.Parse(request.Content);
-        var root = json.RootElement;
+        JsonElement root = json.RootElement;
         Assert.Equal(published.SchemaReference, root.GetProperty("$schemaRef").GetString());
-        var header = root.GetProperty("header");
+        JsonElement header = root.GetProperty("header");
         Assert.Equal("Test Cmdr", header.GetProperty("uploaderID").GetString());
         Assert.Equal("4.1.2.3", header.GetProperty("gameversion").GetString());
         Assert.Equal("r123/r0 ", header.GetProperty("gamebuild").GetString());
         Assert.Equal("SrvSurvey-XP", header.GetProperty("softwareName").GetString());
         Assert.Equal("2.0.95", header.GetProperty("softwareVersion").GetString());
-        var message = root.GetProperty("message");
+        JsonElement message = root.GetProperty("message");
         Assert.Equal("Test A", message.GetProperty("StarSystem").GetString());
         Assert.Equal(
             [1.5, -2, 3],
@@ -152,10 +152,10 @@ public sealed class EddnPublisherTests
     public async Task JournalMessageStripsCommanderSpecificFieldsRecursively()
     {
         var requests = new List<RecordedRequest>();
-        var publisher = CreatePublisher(requests);
+        EddnPublisher publisher = CreatePublisher(requests);
         await BootstrapAsync(publisher);
 
-        var result = await publisher.ApplyAsync(
+        EddnPublicationResult result = await publisher.ApplyAsync(
             new EddnApplyRequest
             {
                 JournalEvents =
@@ -179,14 +179,14 @@ public sealed class EddnPublisherTests
 
         Assert.Single(result.Published);
         using var json = JsonDocument.Parse(Assert.Single(requests).Content);
-        var root = json.RootElement;
+        JsonElement root = json.RootElement;
         Assert.Equal("https://eddn.edcd.io/schemas/journal/1", root.GetProperty("$schemaRef").GetString());
-        var message = root.GetProperty("message");
+        JsonElement message = root.GetProperty("message");
         Assert.False(message.TryGetProperty("Wanted", out _));
         Assert.False(message.TryGetProperty("FuelLevel", out _));
         Assert.False(message.TryGetProperty("FuelUsed", out _));
         Assert.False(message.TryGetProperty("JumpDist", out _));
-        var faction = message.GetProperty("Factions")[0];
+        JsonElement faction = message.GetProperty("Factions")[0];
         Assert.False(faction.TryGetProperty("MyReputation", out _));
         Assert.False(faction.TryGetProperty("HomeSystem", out _));
         Assert.False(faction.TryGetProperty("Government_Localised", out _));
@@ -196,10 +196,10 @@ public sealed class EddnPublisherTests
     public async Task JumpFlushesSignalBatchAgainstSourceSystem()
     {
         var requests = new List<RecordedRequest>();
-        using var publisher = CreatePublisher(requests);
+        using EddnPublisher publisher = CreatePublisher(requests);
         await BootstrapAsync(publisher);
 
-        var result = await publisher.ApplyAsync(
+        EddnPublicationResult result = await publisher.ApplyAsync(
             new EddnApplyRequest
             {
                 JournalEvents =
@@ -229,7 +229,7 @@ public sealed class EddnPublisherTests
         Assert.Equal(2, result.Published.Count);
         Assert.Equal(2, requests.Count);
         using var signalPayload = JsonDocument.Parse(requests[0].Content);
-        var signalMessage = signalPayload.RootElement.GetProperty("message");
+        JsonElement signalMessage = signalPayload.RootElement.GetProperty("message");
         Assert.Equal("FSSSignalDiscovered", signalMessage.GetProperty("event").GetString());
         Assert.Equal(123, signalMessage.GetProperty("SystemAddress").GetInt64());
         Assert.Equal("Test A", signalMessage.GetProperty("StarSystem").GetString());
@@ -242,7 +242,7 @@ public sealed class EddnPublisherTests
     public async Task CodexBodyIdentityOnlyUsesContextWhenStatusAndJournalAgree()
     {
         var requests = new List<RecordedRequest>();
-        var publisher = CreatePublisher(requests);
+        EddnPublisher publisher = CreatePublisher(requests);
         await BootstrapAsync(
             publisher,
             Event(
@@ -296,19 +296,19 @@ public sealed class EddnPublisherTests
 
         Assert.Equal(3, requests.Count);
         using var matching = JsonDocument.Parse(requests[0].Content);
-        var matchingMessage = matching.RootElement.GetProperty("message");
+        JsonElement matchingMessage = matching.RootElement.GetProperty("message");
         Assert.Equal("Test A 1", matchingMessage.GetProperty("BodyName").GetString());
         Assert.Equal(4, matchingMessage.GetProperty("BodyID").GetInt32());
         Assert.False(matchingMessage.TryGetProperty("IsNewEntry", out _));
         Assert.False(matchingMessage.TryGetProperty("NewTraitsDiscovered", out _));
 
         using var mismatched = JsonDocument.Parse(requests[1].Content);
-        var mismatchedMessage = mismatched.RootElement.GetProperty("message");
+        JsonElement mismatchedMessage = mismatched.RootElement.GetProperty("message");
         Assert.False(mismatchedMessage.TryGetProperty("BodyName", out _));
         Assert.Equal(4, mismatchedMessage.GetProperty("BodyID").GetInt32());
 
         using var absent = JsonDocument.Parse(requests[2].Content);
-        var absentMessage = absent.RootElement.GetProperty("message");
+        JsonElement absentMessage = absent.RootElement.GetProperty("message");
         Assert.False(absentMessage.TryGetProperty("BodyName", out _));
         Assert.Equal(4, absentMessage.GetProperty("BodyID").GetInt32());
     }
@@ -317,10 +317,10 @@ public sealed class EddnPublisherTests
     public async Task MismatchedSystemIsSkippedWithoutNetworkRequest()
     {
         var requests = new List<RecordedRequest>();
-        var publisher = CreatePublisher(requests);
+        EddnPublisher publisher = CreatePublisher(requests);
         await BootstrapAsync(publisher);
 
-        var result = await publisher.ApplyAsync(
+        EddnPublicationResult result = await publisher.ApplyAsync(
             new EddnApplyRequest
             {
                 JournalEvents =
@@ -350,10 +350,10 @@ public sealed class EddnPublisherTests
     public async Task MissingSchemaFieldIsSkippedWithoutNetworkRequest()
     {
         var requests = new List<RecordedRequest>();
-        var publisher = CreatePublisher(requests);
+        EddnPublisher publisher = CreatePublisher(requests);
         await BootstrapAsync(publisher);
 
-        var result = await publisher.ApplyAsync(
+        EddnPublicationResult result = await publisher.ApplyAsync(
             new EddnApplyRequest
             {
                 JournalEvents =
@@ -382,7 +382,7 @@ public sealed class EddnPublisherTests
     [Fact]
     public async Task FailedMessageIsBoundedAndDoesNotBlockNextMessage()
     {
-        var calls = 0;
+        int calls = 0;
         var requests = new List<RecordedRequest>();
         var handler = new StubHandler(async request =>
         {
@@ -395,10 +395,10 @@ public sealed class EddnPublisherTests
                 }
                 : new HttpResponseMessage(HttpStatusCode.OK);
         });
-        var publisher = CreatePublisher(requests, handler, recordInHandler: false);
+        EddnPublisher publisher = CreatePublisher(requests, handler, recordInHandler: false);
         await BootstrapAsync(publisher);
 
-        var result = await publisher.ApplyAsync(
+        EddnPublicationResult result = await publisher.ApplyAsync(
             new EddnApplyRequest
             {
                 JournalEvents =
@@ -434,7 +434,7 @@ public sealed class EddnPublisherTests
     [Fact]
     public async Task MatchingMarketCompanionFileIsQueuedWithoutBlockingJournalApply()
     {
-        var directory = Path.Combine(Path.GetTempPath(), "SrvSurvey-EddnCompanion-" + Guid.NewGuid().ToString("N"));
+        string directory = Path.Combine(Path.GetTempPath(), "SrvSurvey-EddnCompanion-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(directory);
         try
         {
@@ -445,7 +445,7 @@ public sealed class EddnPublisherTests
                 """
             );
             var requests = new List<RecordedRequest>();
-            using var publisher = CreatePublisher(requests);
+            using EddnPublisher publisher = CreatePublisher(requests);
             await publisher.ApplyAsync(
                 new EddnApplyRequest
                 {
@@ -472,7 +472,7 @@ public sealed class EddnPublisherTests
                 }
             );
 
-            var result = await publisher.ApplyAsync(
+            EddnPublicationResult result = await publisher.ApplyAsync(
                 new EddnApplyRequest
                 {
                     JournalEvents = [Event("""{"timestamp":"2026-07-25T12:01:00Z","event":"Market","MarketID":42}""")],
@@ -497,7 +497,7 @@ public sealed class EddnPublisherTests
                 "https://eddn.edcd.io/schemas/commodity/3",
                 payload.RootElement.GetProperty("$schemaRef").GetString()
             );
-            var message = payload.RootElement.GetProperty("message");
+            JsonElement message = payload.RootElement.GetProperty("message");
             Assert.Equal("Test A", message.GetProperty("systemName").GetString());
             Assert.Equal(42, message.GetProperty("marketId").GetInt64());
         }
@@ -511,10 +511,10 @@ public sealed class EddnPublisherTests
     public async Task MulticrewAndSharedCompanionInputsAreSuppressedIndependently()
     {
         var requests = new List<RecordedRequest>();
-        using var publisher = CreatePublisher(requests);
+        using EddnPublisher publisher = CreatePublisher(requests);
         await BootstrapAsync(publisher);
 
-        var crew = await publisher.ApplyAsync(
+        EddnPublicationResult crew = await publisher.ApplyAsync(
             new EddnApplyRequest
             {
                 JournalEvents =
@@ -533,7 +533,7 @@ public sealed class EddnPublisherTests
                 AllowPublishing = true,
             }
         );
-        var shared = await publisher.ApplyAsync(
+        EddnPublicationResult shared = await publisher.ApplyAsync(
             new EddnApplyRequest
             {
                 JournalEvents =
@@ -567,9 +567,9 @@ public sealed class EddnPublisherTests
     public async Task OptOutDiscardsQueuedMessagesBeforeNetworkDelivery()
     {
         var requests = new List<RecordedRequest>();
-        using var publisher = CreatePublisher(requests);
+        using EddnPublisher publisher = CreatePublisher(requests);
         await BootstrapAsync(publisher);
-        var queued = await publisher.ApplyAsync(
+        EddnPublicationResult queued = await publisher.ApplyAsync(
             new EddnApplyRequest
             {
                 JournalEvents =
@@ -601,9 +601,9 @@ public sealed class EddnPublisherTests
     public async Task OperationalSuspensionPreservesQueueAndBlocksNewMessages()
     {
         var requests = new List<RecordedRequest>();
-        using var publisher = CreatePublisher(requests);
+        using EddnPublisher publisher = CreatePublisher(requests);
         await BootstrapAsync(publisher);
-        var queued = await publisher.ApplyAsync(
+        EddnPublicationResult queued = await publisher.ApplyAsync(
             new EddnApplyRequest
             {
                 JournalEvents =
@@ -624,7 +624,7 @@ public sealed class EddnPublisherTests
         Assert.Single(queued.Published);
 
         publisher.SetSuspended(true);
-        var blocked = await publisher.ApplyAsync(
+        EddnPublicationResult blocked = await publisher.ApplyAsync(
             new EddnApplyRequest
             {
                 JournalEvents =
@@ -663,7 +663,7 @@ public sealed class EddnPublisherTests
     public async Task QueuedMessagesRetainTheirCapturedCommanderAcrossSessionSwitch()
     {
         var requests = new List<RecordedRequest>();
-        using var publisher = CreatePublisher(requests);
+        using EddnPublisher publisher = CreatePublisher(requests);
         await publisher.ApplyAsync(
             new EddnApplyRequest
             {
@@ -724,9 +724,9 @@ public sealed class EddnPublisherTests
     public async Task ContinuedJournalPartPreservesCommanderIdentityAndContext()
     {
         var requests = new List<RecordedRequest>();
-        using var publisher = CreatePublisher(requests);
-        var firstPath = Path.Combine(Path.GetTempPath(), "Journal.2026-07-25T120000.01.log");
-        var secondPath = Path.Combine(Path.GetTempPath(), "Journal.2026-07-25T120000.02.log");
+        using EddnPublisher publisher = CreatePublisher(requests);
+        string firstPath = Path.Combine(Path.GetTempPath(), "Journal.2026-07-25T120000.01.log");
+        string secondPath = Path.Combine(Path.GetTempPath(), "Journal.2026-07-25T120000.02.log");
         await publisher.ApplyAsync(
             new EddnApplyRequest
             {
@@ -773,7 +773,7 @@ public sealed class EddnPublisherTests
             }
         );
 
-        var result = await publisher.ApplyAsync(
+        EddnPublicationResult result = await publisher.ApplyAsync(
             new EddnApplyRequest
             {
                 JournalEvents =
@@ -796,7 +796,7 @@ public sealed class EddnPublisherTests
 
         Assert.Single(result.Published);
         using var payload = JsonDocument.Parse(Assert.Single(requests).Content);
-        var header = payload.RootElement.GetProperty("header");
+        JsonElement header = payload.RootElement.GetProperty("header");
         Assert.Equal("Test Cmdr", header.GetProperty("uploaderID").GetString());
         Assert.Equal("r123/r0 ", header.GetProperty("gamebuild").GetString());
         Assert.Equal("Test A", payload.RootElement.GetProperty("message").GetProperty("StarSystem").GetString());
@@ -808,7 +808,7 @@ public sealed class EddnPublisherTests
     public async Task UnrelatedJournalFileRequiresFreshCommanderIdentity(int part)
     {
         var requests = new List<RecordedRequest>();
-        using var publisher = CreatePublisher(requests);
+        using EddnPublisher publisher = CreatePublisher(requests);
         await publisher.ApplyAsync(
             new EddnApplyRequest
             {
@@ -847,7 +847,7 @@ public sealed class EddnPublisherTests
             }
         );
 
-        var result = await publisher.ApplyAsync(
+        EddnPublicationResult result = await publisher.ApplyAsync(
             new EddnApplyRequest
             {
                 JournalEvents =
@@ -871,12 +871,12 @@ public sealed class EddnPublisherTests
     [Fact]
     public async Task CompanionReadFromReplacedSessionCannotEnterOutbox()
     {
-        var directory = Path.Combine(Path.GetTempPath(), "SrvSurvey-EddnGeneration-" + Guid.NewGuid().ToString("N"));
+        string directory = Path.Combine(Path.GetTempPath(), "SrvSurvey-EddnGeneration-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(directory);
         try
         {
             var requests = new List<RecordedRequest>();
-            using var publisher = CreatePublisher(requests);
+            using EddnPublisher publisher = CreatePublisher(requests);
             await publisher.ApplyAsync(
                 new EddnApplyRequest
                 {
@@ -964,7 +964,7 @@ public sealed class EddnPublisherTests
             SynchronizationContext.SetSynchronizationContext(new NonPumpingSynchronizationContext());
             try
             {
-                using var publisher = CreatePublisher([]);
+                using EddnPublisher publisher = CreatePublisher([]);
             }
             catch (Exception exception)
             {
@@ -1036,7 +1036,7 @@ public sealed class EddnPublisherTests
 
     private static JournalEventEnvelope Event(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var result, out var error), error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? result, out string? error), error);
         return result!;
     }
 
@@ -1066,8 +1066,8 @@ public sealed class EddnPublisherTests
 
     private static async Task<RecordedRequest> RecordAsync(HttpRequestMessage request)
     {
-        var requestContent = request.Content!;
-        var bytes = await requestContent.ReadAsByteArrayAsync();
+        HttpContent requestContent = request.Content!;
+        byte[] bytes = await requestContent.ReadAsByteArrayAsync();
         string content;
         if (requestContent.Headers.ContentEncoding.Contains("gzip"))
         {

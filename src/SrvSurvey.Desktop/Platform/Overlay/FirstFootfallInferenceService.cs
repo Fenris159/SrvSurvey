@@ -40,18 +40,18 @@ public static class FirstFootfallColorDetector
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(preferences);
-        var pixelCount = checked(source.Width * source.Height);
+        int pixelCount = checked(source.Width * source.Height);
         if (pixelCount == 0)
         {
             return 0;
         }
 
-        var matches = 0;
-        for (var y = 0; y < source.Height; y++)
+        int matches = 0;
+        for (int y = 0; y < source.Height; y++)
         {
-            for (var x = 0; x < source.Width; x++)
+            for (int x = 0; x < source.Width; x++)
             {
-                var pixel = source.GetPixel(x, y);
+                FssRgbPixel pixel = source.GetPixel(x, y);
                 if (Matches(pixel, preferences))
                 {
                     matches++;
@@ -128,13 +128,13 @@ public sealed class FirstFootfallInferenceService : IFirstFootfallInferenceServi
         }
 
         var sampleInterval = TimeSpan.FromSeconds(1d / preferences.SamplesPerSecond);
-        var maximumSamples = checked(preferences.DurationSeconds * preferences.SamplesPerSecond);
-        var maximumRatio = 0d;
-        for (var sample = 0; sample < maximumSamples; sample++)
+        int maximumSamples = checked(preferences.DurationSeconds * preferences.SamplesPerSecond);
+        double maximumRatio = 0d;
+        for (int sample = 0; sample < maximumSamples; sample++)
         {
             await delay(sampleInterval, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
-            var window = windowTracker.GetSnapshot();
+            GameWindowSnapshot window = windowTracker.GetSnapshot();
             if (!window.IsAvailable || !window.IsVisible || !window.IsForeground)
             {
                 return new FirstFootfallInferenceResult(
@@ -146,9 +146,9 @@ public sealed class FirstFootfallInferenceService : IFirstFootfallInferenceServi
                 );
             }
 
-            var watchBounds = GetLegacyWatchBounds(window.ClientBounds);
-            var capture = screenCapture.Capture(watchBounds);
-            var ratio = FirstFootfallColorDetector.GetMatchRatio(capture, preferences);
+            PixelRect watchBounds = GetLegacyWatchBounds(window.ClientBounds);
+            CapturedPixelBuffer capture = screenCapture.Capture(watchBounds);
+            double ratio = FirstFootfallColorDetector.GetMatchRatio(capture, preferences);
             maximumRatio = Math.Max(maximumRatio, ratio);
             if (ratio > preferences.Threshold)
             {
@@ -183,8 +183,8 @@ public sealed class FirstFootfallInferenceService : IFirstFootfallInferenceServi
 
     internal static PixelRect GetLegacyWatchBounds(PixelRect clientBounds)
     {
-        var halfWidth = clientBounds.Width / 8;
-        var height = clientBounds.Height / 7;
+        int halfWidth = clientBounds.Width / 8;
+        int height = clientBounds.Height / 7;
         return new PixelRect(
             clientBounds.X + (clientBounds.Width / 2) - halfWidth,
             clientBounds.Y + (int)(clientBounds.Height * 0.17),

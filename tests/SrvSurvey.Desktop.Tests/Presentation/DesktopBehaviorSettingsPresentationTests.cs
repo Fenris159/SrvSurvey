@@ -23,8 +23,8 @@ public sealed class DesktopBehaviorSettingsPresentationTests : IDisposable
     public void MonitorAndApplicationScaleSelectorsRenderInsideDesktopCard()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var settingsPath = Path.Combine(temporaryDirectory, "config", "cross-platform-ui.json");
-        using var viewModel = MainWindowViewModelTestBuilder.Create(
+        string settingsPath = Path.Combine(temporaryDirectory, "config", "cross-platform-ui.json");
+        using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
             Path.Combine(temporaryDirectory, "journals"),
             builder =>
                 builder
@@ -57,9 +57,9 @@ public sealed class DesktopBehaviorSettingsPresentationTests : IDisposable
         try
         {
             window.Show();
-            var card = settings.FindControl<Border>("DesktopBehaviorCard");
-            var monitor = settings.FindControl<ComboBox>("DefaultMonitorComboBox");
-            var scale = settings.FindControl<ComboBox>("ApplicationWindowScaleComboBox");
+            Border? card = settings.FindControl<Border>("DesktopBehaviorCard");
+            ComboBox? monitor = settings.FindControl<ComboBox>("DefaultMonitorComboBox");
+            ComboBox? scale = settings.FindControl<ComboBox>("ApplicationWindowScaleComboBox");
             Assert.NotNull(card);
             Assert.NotNull(monitor);
             Assert.NotNull(scale);
@@ -70,8 +70,8 @@ public sealed class DesktopBehaviorSettingsPresentationTests : IDisposable
             Assert.Equal("125%", scale.SelectedItem?.ToString());
             Assert.InRange(monitor.Bounds.Width, 200, card.Bounds.Width);
             Assert.InRange(scale.Bounds.Width, 200, card.Bounds.Width);
-            var monitorOrigin = monitor.TranslatePoint(default, card);
-            var scaleOrigin = scale.TranslatePoint(default, card);
+            Point? monitorOrigin = monitor.TranslatePoint(default, card);
+            Point? scaleOrigin = scale.TranslatePoint(default, card);
             Assert.NotNull(monitorOrigin);
             Assert.NotNull(scaleOrigin);
             Assert.True(monitorOrigin.Value.X < scaleOrigin.Value.X);

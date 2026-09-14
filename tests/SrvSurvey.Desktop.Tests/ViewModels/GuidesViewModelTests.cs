@@ -1,3 +1,4 @@
+using System.Globalization;
 using SrvSurvey.Desktop.Presentation;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -8,11 +9,11 @@ public sealed class GuidesViewModelTests
     [Fact]
     public void CatalogCoversEveryWorkspaceAndIconFamily()
     {
-        var categories = GuideCatalog.Create();
+        IReadOnlyList<GuideCategoryViewModel> categories = GuideCatalog.Create();
 
         Assert.Equal(16, categories.Count);
         Assert.Equal(
-            Enumerable.Range(1, 16).Select(number => number.ToString("00")).ToArray(),
+            Enumerable.Range(1, 16).Select(number => number.ToString("00", CultureInfo.InvariantCulture)).ToArray(),
             categories.Select(category => category.Number).ToArray()
         );
         Assert.Equal(categories.Count, categories.Select(category => category.Key).Distinct().Count());
@@ -20,7 +21,7 @@ public sealed class GuidesViewModelTests
         Assert.All(categories, category => Assert.True(category.HasSections || category.HasIcons));
         Assert.True(categories.Sum(category => category.Sections.Count) >= 35);
 
-        var icons = categories.SelectMany(category => category.Icons).ToArray();
+        GuideIconViewModel[] icons = categories.SelectMany(category => category.Icons).ToArray();
         Assert.True(icons.Length >= 35);
         Assert.All(Enum.GetValues<GuideIconKind>(), kind => Assert.Contains(icons, icon => icon.Kind == kind));
     }
@@ -28,7 +29,11 @@ public sealed class GuidesViewModelTests
     [Fact]
     public void GlossaryDocumentsEveryBundledRouteAndBodyIcon()
     {
-        var icons = GuideCatalog.Create().SelectMany(category => category.Icons).Where(icon => icon.HasAsset).ToArray();
+        GuideIconViewModel[] icons = GuideCatalog
+            .Create()
+            .SelectMany(category => category.Icons)
+            .Where(icon => icon.HasAsset)
+            .ToArray();
 
         Assert.All(
             RouteBodyAssetResolver.SupportedVisuals,
@@ -55,7 +60,7 @@ public sealed class GuidesViewModelTests
     [Fact]
     public void GlossaryDocumentsCanonnSignalIndicatorBesideBiologyPips()
     {
-        var icon = GuideCatalog
+        GuideIconViewModel icon = GuideCatalog
             .Create()
             .SelectMany(category => category.Icons)
             .Single(icon => icon.Kind == GuideIconKind.CanonnSignals);
@@ -69,7 +74,7 @@ public sealed class GuidesViewModelTests
     [Fact]
     public void GlossaryDocumentsEveryBiologyRewardPipStateAndModifier()
     {
-        var icons = GuideCatalog.Create().SelectMany(category => category.Icons).ToArray();
+        GuideIconViewModel[] icons = GuideCatalog.Create().SelectMany(category => category.Icons).ToArray();
         GuideIconViewModel Icon(GuideIconKind kind) => icons.Single(icon => icon.Kind == kind);
 
         Assert.Contains(
@@ -122,7 +127,7 @@ public sealed class GuidesViewModelTests
     [Fact]
     public void GlossaryDocumentsDynamicNearAndFarBearingChevrons()
     {
-        var icon = GuideCatalog
+        GuideIconViewModel icon = GuideCatalog
             .Create()
             .SelectMany(category => category.Icons)
             .Single(icon => icon.Kind == GuideIconKind.DirectionalChevron);
@@ -135,7 +140,7 @@ public sealed class GuidesViewModelTests
     [Fact]
     public void GlossaryDocumentsLegacyGuardianRendererStates()
     {
-        var icons = GuideCatalog.Create().SelectMany(category => category.Icons).ToArray();
+        GuideIconViewModel[] icons = GuideCatalog.Create().SelectMany(category => category.Icons).ToArray();
         GuideIconViewModel Icon(GuideIconKind kind) => icons.Single(icon => icon.Kind == kind);
 
         Assert.Contains(
@@ -191,12 +196,12 @@ public sealed class GuidesViewModelTests
     [Fact]
     public void BoxelGuideMatchesTheImplementedProjectWorkflow()
     {
-        var categories = GuideCatalog.Create();
-        var travel = categories.Single(category => category.Key == "travel-search");
-        var boxel = categories.Single(category => category.Key == "boxel");
-        var guardian = categories.Single(category => category.Key == "guardian");
-        var boxelSections = boxel.Sections.ToArray();
-        var instructions = string.Join(
+        IReadOnlyList<GuideCategoryViewModel> categories = GuideCatalog.Create();
+        GuideCategoryViewModel travel = categories.Single(category => category.Key == "travel-search");
+        GuideCategoryViewModel boxel = categories.Single(category => category.Key == "boxel");
+        GuideCategoryViewModel guardian = categories.Single(category => category.Key == "guardian");
+        GuideSectionViewModel[] boxelSections = boxel.Sections.ToArray();
+        string instructions = string.Join(
             ' ',
             boxelSections.SelectMany(section => new[] { section.Summary }.Concat(section.Steps).Concat(section.Details))
         );
@@ -223,12 +228,12 @@ public sealed class GuidesViewModelTests
     [Fact]
     public void CatalogDocumentsCurrentRouteBoxelOverlayAndDesktopFeatures()
     {
-        var categories = GuideCatalog.Create();
-        var exploration = Instructions(categories, "exploration");
-        var travel = Instructions(categories, "travel-search");
-        var boxel = Instructions(categories, "boxel");
-        var overlays = Instructions(categories, "overlays");
-        var settings = Instructions(categories, "settings-migration");
+        IReadOnlyList<GuideCategoryViewModel> categories = GuideCatalog.Create();
+        string exploration = Instructions(categories, "exploration");
+        string travel = Instructions(categories, "travel-search");
+        string boxel = Instructions(categories, "boxel");
+        string overlays = Instructions(categories, "overlays");
+        string settings = Instructions(categories, "settings-migration");
 
         Assert.Contains("Show flight warnings", exploration, StringComparison.Ordinal);
         Assert.Contains("8 g", exploration, StringComparison.Ordinal);
@@ -258,8 +263,8 @@ public sealed class GuidesViewModelTests
     [Fact]
     public void GuardianGuideExplainsSelectionConfirmationAndOriginControls()
     {
-        var guardian = GuideCatalog.Create().Single(category => category.Key == "guardian");
-        var instructions = string.Join(
+        GuideCategoryViewModel guardian = GuideCatalog.Create().Single(category => category.Key == "guardian");
+        string instructions = string.Join(
             ' ',
             guardian.Sections.SelectMany(section => section.Steps.Concat(section.Details))
         );
@@ -273,13 +278,13 @@ public sealed class GuidesViewModelTests
     [Fact]
     public void CatalogDocumentsCurrentRedesignSharingAndGuardianEditorWorkflows()
     {
-        var categories = GuideCatalog.Create();
-        var gettingStarted = Instructions(categories, "getting-started");
-        var exploration = Instructions(categories, "exploration");
-        var guardian = Instructions(categories, "guardian");
-        var settings = Instructions(categories, "settings-migration");
-        var diagnostics = Instructions(categories, "diagnostics");
-        var expectedCoverage = new[]
+        IReadOnlyList<GuideCategoryViewModel> categories = GuideCatalog.Create();
+        string gettingStarted = Instructions(categories, "getting-started");
+        string exploration = Instructions(categories, "exploration");
+        string guardian = Instructions(categories, "guardian");
+        string settings = Instructions(categories, "settings-migration");
+        string diagnostics = Instructions(categories, "diagnostics");
+        (string, string)[] expectedCoverage = new[]
         {
             (gettingStarted, "Survey groups Exploration"),
             (gettingStarted, "Search settings"),

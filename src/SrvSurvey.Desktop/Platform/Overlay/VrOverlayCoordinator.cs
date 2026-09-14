@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Diagnostics;
+using Avalonia;
 using Avalonia.Threading;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -46,7 +47,7 @@ public sealed class VrOverlayCoordinator : IDisposable
             return false;
         }
 
-        var result = runtime.ResetOrientation();
+        VrRuntimeResult result = runtime.ResetOrientation();
         viewModel.SetRuntimeStatus(result.Message);
         return result.Succeeded;
     }
@@ -108,14 +109,14 @@ public sealed class VrOverlayCoordinator : IDisposable
             return;
         }
 
-        var registrations = registry.Snapshot();
+        IReadOnlyList<RegisteredOverlayWindow> registrations = registry.Snapshot();
         viewModel.SetCurrentRuntimeMode(modeProvider());
         if (!TryEnsureVrRuntimeReady())
         {
             return;
         }
 
-        var (active, lastError) = PublishRegistrations(registrations);
+        (HashSet<string>? active, string? lastError) = PublishRegistrations(registrations);
         RemoveStaleOverlays(active);
         published.Clear();
         published.UnionWith(active);
@@ -128,9 +129,9 @@ public sealed class VrOverlayCoordinator : IDisposable
     {
         var active = new HashSet<string>(StringComparer.Ordinal);
         string? lastError = null;
-        foreach (var registration in registrations)
+        foreach (RegisteredOverlayWindow registration in registrations)
         {
-            if (TryPublishRegistration(registration, active, out var error) && error is not null)
+            if (TryPublishRegistration(registration, active, out string? error) && error is not null)
             {
                 lastError = error;
             }
@@ -141,7 +142,7 @@ public sealed class VrOverlayCoordinator : IDisposable
 
     private void RemoveStaleOverlays(HashSet<string> active)
     {
-        foreach (var removed in published.Except(active).ToArray())
+        foreach (string? removed in published.Except(active).ToArray())
         {
             runtime.RemoveOverlay(removed);
         }
@@ -166,7 +167,7 @@ public sealed class VrOverlayCoordinator : IDisposable
 
         if (!runtime.IsInitialized)
         {
-            var initialization = runtime.Initialize();
+            VrRuntimeResult initialization = runtime.Initialize();
             if (!initialization.Succeeded)
             {
                 viewModel.SetRuntimeStatus(initialization.Message);
@@ -185,7 +186,7 @@ public sealed class VrOverlayCoordinator : IDisposable
             return false;
         }
 
-        var calibration = viewModel.GetCalibration(registration.PlotterName, modeProvider());
+        VrOverlayCalibration? calibration = viewModel.GetCalibration(registration.PlotterName, modeProvider());
         if (calibration is null)
         {
             return false;
@@ -193,13 +194,13 @@ public sealed class VrOverlayCoordinator : IDisposable
 
         try
         {
-            var renderSource = registration.RenderSource;
-            var frame = VrOverlayFrameRenderer.Render(
+            Visual renderSource = registration.RenderSource;
+            VrOverlayFrame frame = VrOverlayFrameRenderer.Render(
                 renderSource,
                 renderSource.Bounds.Size,
                 registration.Window.RenderScaling
             );
-            var result = runtime.PublishOverlay(
+            VrRuntimeResult result = runtime.PublishOverlay(
                 registration.PlotterName,
                 frame,
                 calibration,
@@ -231,14 +232,14 @@ public sealed class VrOverlayCoordinator : IDisposable
 
         try
         {
-            var processes = Process.GetProcessesByName(processName);
+            Process[] processes = Process.GetProcessesByName(processName);
             try
             {
                 return processes.Length > 0;
             }
             finally
             {
-                foreach (var process in processes)
+                foreach (Process process in processes)
                 {
                     process.Dispose();
                 }

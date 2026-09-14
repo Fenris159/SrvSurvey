@@ -11,7 +11,7 @@ public sealed class ColonizationCommodityOverlayViewModelTests
     public void AutoShowsForSupportedEliteContextsAndHidesForGalaxyMap()
     {
         var viewModel = new ColonizationCommodityOverlayViewModel();
-        var plan = Plan();
+        ColonizationCommodityPlan plan = Plan();
 
         viewModel.Apply(plan, Status(GuiFocus.StationServices), updatedHasMarketSinceDocking: true);
         Assert.True(viewModel.ShouldAutoShow);
@@ -63,7 +63,7 @@ public sealed class ColonizationCommodityOverlayViewModelTests
     public void DockedConstructionSiteShowsAtNormalCockpitFocus()
     {
         var viewModel = new ColonizationCommodityOverlayViewModel();
-        var plan = Plan() with { IsAtConstructionSite = true };
+        ColonizationCommodityPlan plan = Plan() with { IsAtConstructionSite = true };
 
         viewModel.Apply(plan, Status(GuiFocus.NoFocus));
 
@@ -74,7 +74,7 @@ public sealed class ColonizationCommodityOverlayViewModelTests
     public void CollapsesFleetCarrierCoveredGroupsAndShortcutExpandsThem()
     {
         var viewModel = new ColonizationCommodityOverlayViewModel();
-        var covered = Plan() with
+        ColonizationCommodityPlan covered = Plan() with
         {
             Rows =
             [
@@ -94,13 +94,13 @@ public sealed class ColonizationCommodityOverlayViewModelTests
         };
         viewModel.Apply(covered, Status(GuiFocus.InternalPanel));
 
-        var collapsed = Assert.Single(viewModel.Groups);
+        ColonizationCommodityGroupViewModel collapsed = Assert.Single(viewModel.Groups);
         Assert.True(collapsed.IsCollapsed);
         Assert.Empty(collapsed.Rows);
 
         viewModel.ToggleSatisfiedGroups();
 
-        var expanded = Assert.Single(viewModel.Groups);
+        ColonizationCommodityGroupViewModel expanded = Assert.Single(viewModel.Groups);
         Assert.False(expanded.IsCollapsed);
         Assert.Single(expanded.Rows);
     }
@@ -111,7 +111,7 @@ public sealed class ColonizationCommodityOverlayViewModelTests
         var viewModel = new ColonizationCommodityOverlayViewModel();
         viewModel.Apply(Plan(), Status(GuiFocus.InternalPanel));
 
-        var row = Assert.Single(Assert.Single(viewModel.Groups).Rows);
+        ColonizationCommodityOverlayRowViewModel row = Assert.Single(Assert.Single(viewModel.Groups).Rows);
         Assert.Equal("PIN", row.AssignmentText);
         Assert.Equal("100", row.NeededText);
         Assert.Equal("20", row.InShipText);
@@ -134,13 +134,13 @@ public sealed class ColonizationCommodityOverlayViewModelTests
 
         Assert.False(viewModel.ShouldAutoShow);
         Assert.False(viewModel.CanShowManually);
-        var deltaRow = Assert.Single(Assert.Single(viewModel.Groups).Rows);
+        ColonizationCommodityOverlayRowViewModel deltaRow = Assert.Single(Assert.Single(viewModel.Groups).Rows);
         Assert.Equal("-80", deltaRow.OnFleetCarriersText);
         Assert.Equal("FC Δ", viewModel.FleetCarrierColumnHeader);
 
         viewModel.ApplyPreferences(ColonizationOverlayPreferences.Default with { InlineFleetCarrierCargo = true });
 
-        var inlineRow = Assert.Single(Assert.Single(viewModel.Groups).Rows);
+        ColonizationCommodityOverlayRowViewModel inlineRow = Assert.Single(Assert.Single(viewModel.Groups).Rows);
         Assert.Equal("20", inlineRow.OnFleetCarriersText);
         Assert.Empty(inlineRow.InShipText);
         Assert.Equal("HAVE", viewModel.FleetCarrierColumnHeader);
@@ -151,7 +151,7 @@ public sealed class ColonizationCommodityOverlayViewModelTests
     public void MarketGuidanceDimsUnavailableRowsAndHighlightsCarrierLoads()
     {
         var viewModel = new ColonizationCommodityOverlayViewModel();
-        var plan = Plan() with
+        ColonizationCommodityPlan plan = Plan() with
         {
             Rows =
             [
@@ -193,9 +193,9 @@ public sealed class ColonizationCommodityOverlayViewModelTests
             }
         );
 
-        var rows = viewModel.Groups.SelectMany(group => group.Rows).ToArray();
-        var steel = rows.Single(row => row.Commodity == "steel");
-        var water = rows.Single(row => row.Commodity == "water");
+        ColonizationCommodityOverlayRowViewModel[] rows = viewModel.Groups.SelectMany(group => group.Rows).ToArray();
+        ColonizationCommodityOverlayRowViewModel steel = rows.Single(row => row.Commodity == "steel");
+        ColonizationCommodityOverlayRowViewModel water = rows.Single(row => row.Commodity == "water");
         Assert.True(steel.IsAlternateRow);
         Assert.False(water.IsAlternateRow);
         Assert.True(steel.IsFleetCarrierLoadHighlighted);
@@ -214,7 +214,7 @@ public sealed class ColonizationCommodityOverlayViewModelTests
 
         viewModel.ApplyPendingFleetCarrierCargo(["steel"]);
 
-        var pending = Assert.Single(Assert.Single(viewModel.Groups).Rows);
+        ColonizationCommodityOverlayRowViewModel pending = Assert.Single(Assert.Single(viewModel.Groups).Rows);
         Assert.True(viewModel.HasPendingCargo);
         Assert.True(pending.IsPending);
         Assert.Equal("...", pending.NeededText);
@@ -222,7 +222,7 @@ public sealed class ColonizationCommodityOverlayViewModelTests
 
         viewModel.ApplyPendingFleetCarrierCargo(null);
 
-        var complete = Assert.Single(Assert.Single(viewModel.Groups).Rows);
+        ColonizationCommodityOverlayRowViewModel complete = Assert.Single(Assert.Single(viewModel.Groups).Rows);
         Assert.False(viewModel.HasPendingCargo);
         Assert.False(complete.IsPending);
         Assert.Equal("100", complete.NeededText);

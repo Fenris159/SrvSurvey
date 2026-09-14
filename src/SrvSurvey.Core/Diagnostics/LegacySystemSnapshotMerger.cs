@@ -27,7 +27,7 @@ public static class LegacySystemSnapshotMerger
             );
         }
 
-        var root = existing?.DeepClone() as JsonObject ?? new JsonObject();
+        JsonObject root = existing?.DeepClone() as JsonObject ?? [];
         root["name"] = snapshot.SystemName;
         root["address"] = systemAddress;
         if (snapshot.StarPosition is { } position)
@@ -50,10 +50,10 @@ public static class LegacySystemSnapshotMerger
             root["population"] = snapshot.Population;
         }
 
-        var bodies = GetOrCreateArray(root, "bodies");
-        foreach (var bodySnapshot in snapshot.Bodies)
+        JsonArray bodies = GetOrCreateArray(root, "bodies");
+        foreach (SystemScanBodySnapshot bodySnapshot in snapshot.Bodies)
         {
-            var body = FindOrCreateBody(bodies, bodySnapshot);
+            JsonObject body = FindOrCreateBody(bodies, bodySnapshot);
             MergeBody(body, bodySnapshot);
         }
 
@@ -132,8 +132,8 @@ public static class LegacySystemSnapshotMerger
             return;
         }
 
-        var composition = GetOrCreateObject(owner, propertyName);
-        foreach (var pair in values)
+        JsonObject composition = GetOrCreateObject(owner, propertyName);
+        foreach (KeyValuePair<string, double> pair in values)
         {
             composition[pair.Key] ??= pair.Value;
         }
@@ -146,16 +146,16 @@ public static class LegacySystemSnapshotMerger
             return;
         }
 
-        var rings = GetOrCreateArray(body, "rings");
-        foreach (var snapshot in snapshots)
+        JsonArray rings = GetOrCreateArray(body, "rings");
+        foreach (SystemRingSnapshot snapshot in snapshots)
         {
-            var ring =
+            JsonObject ring =
                 rings
                     .OfType<JsonObject>()
                     .FirstOrDefault(candidate =>
                         string.Equals(ReadString(candidate["name"]), snapshot.Name, StringComparison.OrdinalIgnoreCase)
                     )
-                ?? new JsonObject();
+                ?? [];
             if (ring.Parent is null)
             {
                 rings.Add(ring);
@@ -175,10 +175,10 @@ public static class LegacySystemSnapshotMerger
             return;
         }
 
-        var organisms = GetOrCreateArray(body, "organisms");
-        foreach (var snapshot in snapshots)
+        JsonArray organisms = GetOrCreateArray(body, "organisms");
+        foreach (SystemOrganismSnapshot snapshot in snapshots)
         {
-            var organism = FindOrganism(organisms, snapshot) ?? new JsonObject();
+            JsonObject organism = FindOrganism(organisms, snapshot) ?? [];
             if (organism.Parent is null)
             {
                 organisms.Add(organism);
@@ -222,7 +222,7 @@ public static class LegacySystemSnapshotMerger
 
     private static JsonObject FindOrCreateBody(JsonArray bodies, SystemScanBodySnapshot snapshot)
     {
-        foreach (var node in bodies)
+        foreach (JsonNode? node in bodies)
         {
             if (
                 node is JsonObject candidate
@@ -288,7 +288,7 @@ public static class LegacySystemSnapshotMerger
 
     private static void WriteEarlierTimestamp(JsonObject owner, string propertyName, DateTimeOffset value)
     {
-        var existing = ReadTimestamp(owner[propertyName]);
+        DateTimeOffset? existing = ReadTimestamp(owner[propertyName]);
         if (existing is null || value < existing)
         {
             owner[propertyName] = value.ToString("O", CultureInfo.InvariantCulture);
@@ -297,7 +297,7 @@ public static class LegacySystemSnapshotMerger
 
     private static void WriteLaterTimestamp(JsonObject owner, string propertyName, DateTimeOffset value)
     {
-        var existing = ReadTimestamp(owner[propertyName]);
+        DateTimeOffset? existing = ReadTimestamp(owner[propertyName]);
         if (existing is null || value > existing)
         {
             owner[propertyName] = value.ToString("O", CultureInfo.InvariantCulture);
@@ -322,7 +322,7 @@ public static class LegacySystemSnapshotMerger
 
     private static void WriteMaximum(JsonObject owner, string propertyName, int value)
     {
-        var existing = ReadInt32(owner[propertyName]) ?? 0;
+        int existing = ReadInt32(owner[propertyName]) ?? 0;
         if (value > existing || owner[propertyName] is null)
         {
             owner[propertyName] = Math.Max(existing, value);
@@ -339,7 +339,7 @@ public static class LegacySystemSnapshotMerger
 
     private static string? ReadString(JsonNode? node)
     {
-        return node is JsonValue value && value.TryGetValue<string>(out var result) ? result : null;
+        return node is JsonValue value && value.TryGetValue<string>(out string? result) ? result : null;
     }
 
     private static int? ReadInt32(JsonNode? node)
@@ -349,13 +349,13 @@ public static class LegacySystemSnapshotMerger
             return null;
         }
 
-        if (value.TryGetValue<int>(out var result))
+        if (value.TryGetValue<int>(out int result))
         {
             return result;
         }
 
         return
-            value.TryGetValue<string>(out var text)
+            value.TryGetValue<string>(out string? text)
             && int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out result)
             ? result
             : null;
@@ -368,13 +368,13 @@ public static class LegacySystemSnapshotMerger
             return null;
         }
 
-        if (value.TryGetValue<long>(out var result))
+        if (value.TryGetValue<long>(out long result))
         {
             return result;
         }
 
         return
-            value.TryGetValue<string>(out var text)
+            value.TryGetValue<string>(out string? text)
             && long.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out result)
             ? result
             : null;
@@ -382,15 +382,20 @@ public static class LegacySystemSnapshotMerger
 
     private static bool? ReadBoolean(JsonNode? node)
     {
-        return node is JsonValue value && value.TryGetValue<bool>(out var result) ? result : null;
+        return node is JsonValue value && value.TryGetValue<bool>(out bool result) ? result : null;
     }
 
     private static DateTimeOffset? ReadTimestamp(JsonNode? node)
     {
         return
             node is JsonValue value
-            && value.TryGetValue<string>(out var text)
-            && DateTimeOffset.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var result)
+            && value.TryGetValue<string>(out string? text)
+            && DateTimeOffset.TryParse(
+                text,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.RoundtripKind,
+                out global::System.DateTimeOffset result
+            )
             ? result
             : null;
     }

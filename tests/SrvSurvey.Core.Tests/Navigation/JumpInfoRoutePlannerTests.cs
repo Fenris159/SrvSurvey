@@ -20,7 +20,7 @@ public sealed class JumpInfoRoutePlannerTests
             },
         };
 
-        var target = JumpInfoRoutePlanner.SelectTarget(new JumpTarget("Journal target", 11, "N"), status);
+        JumpTarget? target = JumpInfoRoutePlanner.SelectTarget(new JumpTarget("Journal target", 11, "N"), status);
 
         Assert.Equal(new JumpTarget("Journal target", 11, "N"), target);
     }
@@ -58,7 +58,7 @@ public sealed class JumpInfoRoutePlannerTests
             ]
         );
 
-        var plan = JumpInfoRoutePlanner.Create(
+        JumpInfoRoutePlan? plan = JumpInfoRoutePlanner.Create(
             new JumpInfoRoutePlannerRequest
             {
                 FsdTarget = new JumpTarget("Neutron", 3),
@@ -100,7 +100,7 @@ public sealed class JumpInfoRoutePlannerTests
             [Hop("Sol", 1, 0), Hop("Alpha", 2, 10), Hop("Jackson's Lighthouse", 3, 20, neutron: true)]
         );
 
-        var plan = JumpInfoRoutePlanner.Create(
+        JumpInfoRoutePlan? plan = JumpInfoRoutePlanner.Create(
             new JumpInfoRoutePlannerRequest
             {
                 FsdTarget = null,
@@ -132,7 +132,7 @@ public sealed class JumpInfoRoutePlannerTests
     [Fact]
     public void TargetOutsideRouteCreatesDirectPlanWhenCoordinatesAreUnknown()
     {
-        var plan = JumpInfoRoutePlanner.Create(
+        JumpInfoRoutePlan? plan = JumpInfoRoutePlanner.Create(
             new JumpInfoRoutePlannerRequest
             {
                 FsdTarget = new JumpTarget("Unlisted", 99, "A"),

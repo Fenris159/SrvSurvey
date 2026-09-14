@@ -34,7 +34,7 @@ public sealed class GlobalInputSettingsStore
 
     public GlobalInputSettings Load()
     {
-        var root = documentStore.Load();
+        JsonObject root = documentStore.Load();
         if (root["Input"] is not JsonObject input)
         {
             return GlobalInputSettings.Default;
@@ -43,12 +43,15 @@ public sealed class GlobalInputSettingsStore
         var bindings = GlobalInputSettings.Default.Bindings.ToDictionary();
         if (input["Bindings"] is JsonObject storedBindings)
         {
-            foreach (var entry in storedBindings)
+            foreach (KeyValuePair<string, JsonNode?> entry in storedBindings)
             {
                 if (
                     entry.Value is JsonValue value
-                    && value.TryGetValue<string>(out var chord)
-                    && GlobalInputActionCatalog.TryGetByLegacyName(entry.Key, out var definition)
+                    && value.TryGetValue<string>(out string? chord)
+                    && GlobalInputActionCatalog.TryGetByLegacyName(
+                        entry.Key,
+                        out GlobalInputActionDefinition? definition
+                    )
                     && definition is not null
                 )
                 {
@@ -86,13 +89,13 @@ public sealed class GlobalInputSettingsStore
                 input["Bindings"] = bindings;
             }
 
-            foreach (var definition in GlobalInputActionCatalog.All)
+            foreach (GlobalInputActionDefinition definition in GlobalInputActionCatalog.All)
             {
                 bindings[definition.LegacyName] =
                     settings.Bindings.GetValueOrDefault(definition.Action) ?? definition.DefaultChord;
             }
 
-            for (var number = 1; number <= 6; number++)
+            for (int number = 1; number <= 6; number++)
             {
                 bindings.Remove($"miningRig{number}");
             }
@@ -106,13 +109,13 @@ public sealed class GlobalInputSettingsStore
 
     private static void MigrateMiningBindings(JsonObject storedBindings, Dictionary<GlobalInputAction, string> bindings)
     {
-        for (var number = 1; number <= 6; number++)
+        for (int number = 1; number <= 6; number++)
         {
-            var action = GlobalInputAction.Track1 + number - 1;
-            var defaultChord = GlobalInputActionCatalog.Get(action).DefaultChord;
+            GlobalInputAction action = GlobalInputAction.Track1 + number - 1;
+            string defaultChord = GlobalInputActionCatalog.Get(action).DefaultChord;
             if (
                 storedBindings[$"miningRig{number}"] is JsonValue value
-                && value.TryGetValue<string>(out var chord)
+                && value.TryGetValue<string>(out string? chord)
                 && !string.Equals(chord, $"ALT {number}", StringComparison.OrdinalIgnoreCase)
                 && string.Equals(bindings[action], defaultChord, StringComparison.OrdinalIgnoreCase)
             )
@@ -126,11 +129,11 @@ public sealed class GlobalInputSettingsStore
 
     private static bool GetBoolean(JsonObject root, string name)
     {
-        return root[name] is JsonValue value && value.TryGetValue<bool>(out var result) && result;
+        return root[name] is JsonValue value && value.TryGetValue<bool>(out bool result) && result;
     }
 
     private static string? GetString(JsonObject root, string name)
     {
-        return root[name] is JsonValue value && value.TryGetValue<string>(out var result) ? result : null;
+        return root[name] is JsonValue value && value.TryGetValue<string>(out string? result) ? result : null;
     }
 }

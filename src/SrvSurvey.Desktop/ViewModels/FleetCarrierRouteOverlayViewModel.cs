@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using SrvSurvey.Core.Routes;
 using SrvSurvey.Desktop.Platform.Overlay;
 
@@ -70,7 +71,7 @@ public sealed class FleetCarrierRouteOverlayViewModel : IDisposable
                 return editorPreview.JumpSummary;
             }
 
-            var carrier = DisplayedHop?.Carrier;
+            FollowRouteCarrierHop? carrier = DisplayedHop?.Carrier;
             return $"{FormatNumber(carrier?.DistanceLy, 2)} LY JUMP  \u2022  "
                 + $"{FormatNumber(carrier?.RemainingLy, 2)} LY REMAINING";
         }
@@ -85,7 +86,7 @@ public sealed class FleetCarrierRouteOverlayViewModel : IDisposable
                 return editorPreview.JumpsLeft;
             }
 
-            var count = Math.Max(0, route.RouteCount - route.ReachedCount - 1);
+            int count = Math.Max(0, route.RouteCount - route.ReachedCount - 1);
             return $"{count:N0} {(count == 1 ? "JUMP" : "JUMPS")} LEFT";
         }
     }
@@ -241,7 +242,12 @@ public sealed class FleetCarrierRouteOverlayViewModel : IDisposable
 
     private static string FormatNumber(double? value, int decimals)
     {
-        return value is null ? "\u2014" : value.Value.ToString($"N{decimals}");
+        return value is null
+            ? "\u2014"
+            : value.Value.ToString(
+                string.Create(CultureInfo.InvariantCulture, $"N{decimals}"),
+                CultureInfo.CurrentCulture
+            );
     }
 }
 

@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -151,7 +152,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         }
 
         gameWindow = gameWindowTracker.GetSnapshot();
-        var platformReady =
+        bool platformReady =
             !isSuppressed
             && platform.Capabilities.SupportsPassiveOverlay
             && platform.Capabilities.SupportsClickThrough
@@ -238,7 +239,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
     private void PrepareZoomWindow(GuardianZoomOverlayWindow overlay)
     {
         PositionZoomWindow(overlay, gameWindow.ClientBounds);
-        var preparation = platform.PreparePassiveWindow(overlay);
+        OverlayPreparationResult preparation = platform.PreparePassiveWindow(overlay);
         if (!preparation.IsClickThrough)
         {
             zoomOverlayUnavailable = true;
@@ -246,7 +247,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
             return;
         }
 
-        var interaction = platform.SetInteractive(overlay, interactive: true);
+        OverlayInteractionResult interaction = platform.SetInteractive(overlay, interactive: true);
         if (!interaction.IsPrepared || !interaction.IsInteractive)
         {
             zoomOverlayUnavailable = true;
@@ -347,7 +348,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
     private void PrepareWindow(Window window, Action<Window, PixelRect> position)
     {
         position(window, gameWindow.ClientBounds);
-        var preparation = platform.PreparePassiveWindow(window);
+        OverlayPreparationResult preparation = platform.PreparePassiveWindow(window);
         viewModel.ApplyPreparation(preparation);
         if (!preparation.IsClickThrough)
         {
@@ -366,8 +367,8 @@ public sealed class GuardianOverlayCoordinator : IDisposable
 
     private void PositionZoomWindow(Window window, PixelRect gameBounds)
     {
-        var siteWindow = liveSiteWindow;
-        var screen =
+        GuardianOverlayWindow? siteWindow = liveSiteWindow;
+        Screen? screen =
             siteWindow?.Screens.ScreenFromBounds(gameBounds)
             ?? window.Screens.ScreenFromBounds(gameBounds)
             ?? window.Screens.Primary;
@@ -377,10 +378,15 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         }
 
         const int inset = 8;
-        var scale = screen.Scaling;
-        var siteSize = OverlayWindowMetrics.PrepareForPlacement(siteWindow, overlayLayout, GuardianPlotterName, scale);
-        var width = Math.Max(1, (int)Math.Ceiling(window.Width * scale));
-        var height = Math.Max(1, (int)Math.Ceiling(window.Height * scale));
+        double scale = screen.Scaling;
+        PixelSize siteSize = OverlayWindowMetrics.PrepareForPlacement(
+            siteWindow,
+            overlayLayout,
+            GuardianPlotterName,
+            scale
+        );
+        int width = Math.Max(1, (int)Math.Ceiling(window.Width * scale));
+        int height = Math.Max(1, (int)Math.Ceiling(window.Height * scale));
         var position = new PixelPoint(
             siteWindow.Position.X + siteSize.Width - width - (int)Math.Ceiling(inset * scale),
             siteWindow.Position.Y + siteSize.Height - height - (int)Math.Ceiling(inset * scale)
@@ -420,14 +426,15 @@ public sealed class GuardianOverlayCoordinator : IDisposable
     )
     {
         OverlayThemeResources.ApplyOpacity(window, overlayLayout, plotterName);
-        var screen = window.Screens.ScreenFromBounds(gameBounds) ?? window.Screens.Primary;
+        Screen? screen = window.Screens.ScreenFromBounds(gameBounds) ?? window.Screens.Primary;
         if (screen is null)
         {
             return;
         }
 
-        var size = OverlayWindowMetrics.PrepareForPlacement(window, overlayLayout, plotterName, screen.Scaling);
-        var position = overlayLayout.GetPosition(plotterName, gameBounds, size) ?? placement(gameBounds, size, margin);
+        PixelSize size = OverlayWindowMetrics.PrepareForPlacement(window, overlayLayout, plotterName, screen.Scaling);
+        PixelPoint position =
+            overlayLayout.GetPosition(plotterName, gameBounds, size) ?? placement(gameBounds, size, margin);
         if (window.Position != position)
         {
             window.Position = position;
@@ -437,7 +444,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
     private void CloseLiveSiteWindow()
     {
         CloseZoomWindow();
-        var overlay = liveSiteWindow;
+        GuardianOverlayWindow? overlay = liveSiteWindow;
         if (overlay is null)
         {
             return;
@@ -450,7 +457,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
 
     private void CloseZoomWindow()
     {
-        var overlay = zoomWindow;
+        GuardianZoomOverlayWindow? overlay = zoomWindow;
         if (overlay is null)
         {
             return;
@@ -462,7 +469,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
 
     private void CloseSystemSummaryWindow()
     {
-        var overlay = systemSummaryWindow;
+        GuardianSystemOverlayWindow? overlay = systemSummaryWindow;
         if (overlay is null)
         {
             return;
@@ -475,7 +482,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
 
     private void CloseGuardianStatusWindow()
     {
-        var overlay = guardianStatusWindow;
+        GuardianStatusOverlayWindow? overlay = guardianStatusWindow;
         if (overlay is null)
         {
             return;
@@ -488,7 +495,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
 
     private void CloseRamTahWindow()
     {
-        var overlay = ramTahWindow;
+        RamTahOverlayWindow? overlay = ramTahWindow;
         if (overlay is null)
         {
             return;

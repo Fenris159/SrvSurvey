@@ -76,7 +76,7 @@ public sealed class BiologyCodexWindowCoordinator : IDisposable
         viewModel.SetWindowOpener(null);
         imageSettings.PropertyChanged -= OnImageSettingsPropertyChanged;
         preDownloadCancellation?.Cancel();
-        var codexWindow = window;
+        BiologyCodexWindow? codexWindow = window;
         window = null;
         if (codexWindow is not null)
         {
@@ -131,14 +131,18 @@ public sealed class BiologyCodexWindowCoordinator : IDisposable
                     );
                 }
             });
-            var requests = imageSettings
+            IEnumerable<CodexImageRequest> requests = imageSettings
                 .BiologyEntries.Where(entry => !string.IsNullOrWhiteSpace(entry.ImageUrl))
                 .Select(entry => new CodexImageRequest(
                     entry.EntryId,
                     entry.ImageUrl!,
                     entry.GetLegacyLocalImageName()
                 ));
-            var result = await imageCache.PreDownloadAsync(requests, progress, cancellation.Token);
+            CodexImagePreDownloadResult result = await imageCache.PreDownloadAsync(
+                requests,
+                progress,
+                cancellation.Token
+            );
             imageSettings.SetPreDownloadStatus(
                 false,
                 $"Codex image cache ready: {result.Downloaded:N0} downloaded, "

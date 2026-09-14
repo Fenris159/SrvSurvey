@@ -17,7 +17,7 @@ public sealed class BiologyRewardBandScaleTests
     public void EmptyBrushPropertyRoundTripsThroughTheControl()
     {
         var control = new BiologyRewardBandControl();
-        var brush = Brushes.Gray;
+        IImmutableSolidColorBrush brush = Brushes.Gray;
 
         control.EmptyBrush = brush;
 
@@ -28,8 +28,8 @@ public sealed class BiologyRewardBandScaleTests
     public void UnknownGlyphHasASeparateBrushFromPredictionFill()
     {
         var control = new BiologyRewardBandControl();
-        var prediction = Brushes.Gold;
-        var unknownGlyph = Brushes.LightGray;
+        IImmutableSolidColorBrush prediction = Brushes.Gold;
+        IImmutableSolidColorBrush unknownGlyph = Brushes.LightGray;
 
         control.PredictionFilledBrush = prediction;
         control.UnknownGlyphBrush = unknownGlyph;
@@ -163,7 +163,7 @@ public sealed class BiologyRewardBandScaleTests
         try
         {
             window.Show();
-            var frame = window.CaptureRenderedFrame();
+            WriteableBitmap? frame = window.CaptureRenderedFrame();
 
             Assert.NotNull(frame);
             using var stream = new MemoryStream();
@@ -183,7 +183,7 @@ public sealed class BiologyRewardBandScaleTests
     [Fact]
     public void UnknownRewardUsesQuestionStateEvenWithMaximum()
     {
-        var state = BiologyRewardBandScale.Calculate(0, 20_000_000, BiologyRewardThresholds.Default);
+        BiologyRewardBandState state = BiologyRewardBandScale.Calculate(0, 20_000_000, BiologyRewardThresholds.Default);
 
         Assert.True(state.IsUnknown);
         Assert.Empty(state.Segments);
@@ -192,7 +192,11 @@ public sealed class BiologyRewardBandScaleTests
     [Fact]
     public void MinimumAndMaximumPreserveLegacyStrictBucketRules()
     {
-        var state = BiologyRewardBandScale.Calculate(3_000_000, 12_000_000, BiologyRewardThresholds.Default);
+        BiologyRewardBandState state = BiologyRewardBandScale.Calculate(
+            3_000_000,
+            12_000_000,
+            BiologyRewardThresholds.Default
+        );
 
         Assert.False(state.IsUnknown);
         Assert.Equal(
@@ -209,7 +213,11 @@ public sealed class BiologyRewardBandScaleTests
     [Fact]
     public void RewardAboveHighestThresholdFillsAllBands()
     {
-        var state = BiologyRewardBandScale.Calculate(12_000_001, 12_000_001, BiologyRewardThresholds.Default);
+        BiologyRewardBandState state = BiologyRewardBandScale.Calculate(
+            12_000_001,
+            12_000_001,
+            BiologyRewardThresholds.Default
+        );
 
         Assert.All(state.Segments, segment => Assert.Equal(BiologyRewardBandSegment.Filled, segment));
     }

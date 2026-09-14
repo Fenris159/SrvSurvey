@@ -44,11 +44,11 @@ public sealed class CanonnSystemPoiClient : ICanonnSystemPoiClient
                 + "&odyssey=Y&cmdr="
                 + Uri.EscapeDataString(commanderName?.Trim() ?? string.Empty)
         );
-        using var response = await client
+        using HttpResponseMessage response = await client
             .GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
-        using var document = await BoundedHttpContent
+        using JsonDocument document = await BoundedHttpContent
             .ReadJsonDocumentAsync(
                 response.Content,
                 MaximumResponseBytes,
@@ -56,13 +56,13 @@ public sealed class CanonnSystemPoiClient : ICanonnSystemPoiClient
                 cancellationToken
             )
             .ConfigureAwait(false);
-        var root = document.RootElement;
+        JsonElement root = document.RootElement;
         if (root.ValueKind != JsonValueKind.Object)
         {
             throw new JsonException("Canonn returned an invalid system POI response.");
         }
 
-        var returnedSystem = GetString(root, "system");
+        string? returnedSystem = GetString(root, "system");
         if (
             !string.IsNullOrWhiteSpace(returnedSystem)
             && !string.Equals(returnedSystem.Trim(), systemName.Trim(), StringComparison.OrdinalIgnoreCase)
@@ -74,11 +74,11 @@ public sealed class CanonnSystemPoiClient : ICanonnSystemPoiClient
         }
 
         var signals = new List<CanonnSurfaceBiologySignal>();
-        if (root.TryGetProperty("codex", out var codex) && codex.ValueKind == JsonValueKind.Array)
+        if (root.TryGetProperty("codex", out JsonElement codex) && codex.ValueKind == JsonValueKind.Array)
         {
-            foreach (var entry in codex.EnumerateArray())
+            foreach (JsonElement entry in codex.EnumerateArray())
             {
-                if (TryReadSignal(entry, out var signal))
+                if (TryReadSignal(entry, out CanonnSurfaceBiologySignal? signal))
                 {
                     signals.Add(signal);
                 }
@@ -102,10 +102,10 @@ public sealed class CanonnSystemPoiClient : ICanonnSystemPoiClient
             return false;
         }
 
-        var body = GetString(entry, "body")?.Trim();
-        var entryId = GetInt64(entry, "entryid");
-        var latitude = GetDouble(entry, "latitude");
-        var longitude = GetDouble(entry, "longitude");
+        string? body = GetString(entry, "body")?.Trim();
+        long? entryId = GetInt64(entry, "entryid");
+        double? latitude = GetDouble(entry, "latitude");
+        double? longitude = GetDouble(entry, "longitude");
         if (
             string.IsNullOrWhiteSpace(body)
             || entryId is not > 0
@@ -128,7 +128,7 @@ public sealed class CanonnSystemPoiClient : ICanonnSystemPoiClient
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        if (!root.TryGetProperty(propertyName, out var value))
+        if (!root.TryGetProperty(propertyName, out JsonElement value))
         {
             return null;
         }
@@ -143,12 +143,12 @@ public sealed class CanonnSystemPoiClient : ICanonnSystemPoiClient
 
     private static long? GetInt64(JsonElement root, string propertyName)
     {
-        if (!root.TryGetProperty(propertyName, out var value))
+        if (!root.TryGetProperty(propertyName, out JsonElement value))
         {
             return null;
         }
 
-        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out var number))
+        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out long number))
         {
             return number;
         }
@@ -162,12 +162,12 @@ public sealed class CanonnSystemPoiClient : ICanonnSystemPoiClient
 
     private static double? GetDouble(JsonElement root, string propertyName)
     {
-        if (!root.TryGetProperty(propertyName, out var value))
+        if (!root.TryGetProperty(propertyName, out JsonElement value))
         {
             return null;
         }
 
-        if (value.ValueKind == JsonValueKind.Number && value.TryGetDouble(out var number) && double.IsFinite(number))
+        if (value.ValueKind == JsonValueKind.Number && value.TryGetDouble(out double number) && double.IsFinite(number))
         {
             return number;
         }
@@ -182,7 +182,7 @@ public sealed class CanonnSystemPoiClient : ICanonnSystemPoiClient
 
     private static bool? GetBoolean(JsonElement root, string propertyName)
     {
-        if (!root.TryGetProperty(propertyName, out var value))
+        if (!root.TryGetProperty(propertyName, out JsonElement value))
         {
             return null;
         }
@@ -192,7 +192,7 @@ public sealed class CanonnSystemPoiClient : ICanonnSystemPoiClient
             return value.GetBoolean();
         }
 
-        return value.ValueKind == JsonValueKind.String && bool.TryParse(value.GetString(), out var parsed)
+        return value.ValueKind == JsonValueKind.String && bool.TryParse(value.GetString(), out bool parsed)
             ? parsed
             : null;
     }
@@ -213,7 +213,7 @@ public sealed class CanonnSystemPoiClient : ICanonnSystemPoiClient
 public sealed class CachingCanonnSystemPoiClient(ICanonnSystemPoiClient inner) : ICanonnSystemPoiClient
 {
     private readonly ICanonnSystemPoiClient inner = inner ?? throw new ArgumentNullException(nameof(inner));
-    private readonly object gate = new();
+    private readonly Lock gate = new();
     private readonly Dictionary<string, Task<CanonnSystemPoiResult>> requests = new(StringComparer.OrdinalIgnoreCase);
 
     public async Task<CanonnSystemPoiResult> GetAsync(
@@ -223,9 +223,9 @@ public sealed class CachingCanonnSystemPoiClient(ICanonnSystemPoiClient inner) :
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(systemName);
-        var normalizedSystem = systemName.Trim();
-        var normalizedCommander = commanderName?.Trim() ?? string.Empty;
-        var key = normalizedSystem + "\n" + normalizedCommander;
+        string normalizedSystem = systemName.Trim();
+        string normalizedCommander = commanderName?.Trim() ?? string.Empty;
+        string key = normalizedSystem + "\n" + normalizedCommander;
         Task<CanonnSystemPoiResult> request;
         lock (gate)
         {
@@ -252,12 +252,14 @@ public sealed class CachingCanonnSystemPoiClient(ICanonnSystemPoiClient inner) :
     {
         try
         {
-            var result = await inner.GetAsync(systemName, commanderName, CancellationToken.None).ConfigureAwait(false);
+            CanonnSystemPoiResult result = await inner
+                .GetAsync(systemName, commanderName, CancellationToken.None)
+                .ConfigureAwait(false);
             completion.TrySetResult(result);
             lock (gate)
             {
                 foreach (
-                    var oldKey in requests
+                    string? oldKey in requests
                         .Where(entry => entry.Key != key && entry.Value.IsCompletedSuccessfully)
                         .Select(entry => entry.Key)
                         .Take(Math.Max(0, requests.Count - 8))

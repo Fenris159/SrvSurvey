@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -131,8 +132,8 @@ public sealed class MultiGameCommanderOverlayCoordinator : IDisposable
         }
 
         gameWindow = gameWindowTracker.GetSnapshot();
-        var capabilities = platform.Capabilities;
-        var shouldShow = ShouldShow(
+        OverlayPlatformCapabilities capabilities = platform.Capabilities;
+        bool shouldShow = ShouldShow(
             new MultiGameOverlayVisibilityContext
             {
                 HasMultipleGameWindows = commanderInstances.HasMultipleGameWindows,
@@ -174,7 +175,7 @@ public sealed class MultiGameCommanderOverlayCoordinator : IDisposable
     private void PrepareWindow(MultiGameCommanderOverlayWindow overlay)
     {
         PositionWindow(overlay);
-        var preparation = platform.PreparePassiveWindow(overlay);
+        OverlayPreparationResult preparation = platform.PreparePassiveWindow(overlay);
         if (!preparation.IsClickThrough)
         {
             isSuppressed = true;
@@ -185,23 +186,23 @@ public sealed class MultiGameCommanderOverlayCoordinator : IDisposable
     private void PositionWindow(Window overlay)
     {
         OverlayThemeResources.ApplyOpacity(overlay, overlayLayout, "PlotMultiGameCommander");
-        var screen = overlay.Screens.ScreenFromBounds(gameWindow.ClientBounds) ?? overlay.Screens.Primary;
+        Screen? screen = overlay.Screens.ScreenFromBounds(gameWindow.ClientBounds) ?? overlay.Screens.Primary;
         if (screen is null)
         {
             return;
         }
 
-        var logicalWidth = overlay.Bounds.Width > 0 ? overlay.Bounds.Width : overlay.MinWidth;
-        var logicalHeight = overlay.Bounds.Height > 0 ? overlay.Bounds.Height : 32;
-        var width = Math.Max(1, (int)Math.Ceiling(logicalWidth * screen.Scaling));
-        var height = Math.Max(1, (int)Math.Ceiling(logicalHeight * screen.Scaling));
+        double logicalWidth = overlay.Bounds.Width > 0 ? overlay.Bounds.Width : overlay.MinWidth;
+        double logicalHeight = overlay.Bounds.Height > 0 ? overlay.Bounds.Height : 32;
+        int width = Math.Max(1, (int)Math.Ceiling(logicalWidth * screen.Scaling));
+        int height = Math.Max(1, (int)Math.Ceiling(logicalHeight * screen.Scaling));
         var size = new PixelSize(width, height);
-        var position = overlayLayout.GetPosition("PlotMultiGameCommander", gameWindow.ClientBounds, size);
+        PixelPoint? position = overlayLayout.GetPosition("PlotMultiGameCommander", gameWindow.ClientBounds, size);
         if (position is null)
         {
-            var x = gameWindow.ClientBounds.X + ((gameWindow.ClientBounds.Width - width) / 2);
-            var aboveClient = gameWindow.ClientBounds.Y - height - 2;
-            var y = aboveClient >= screen.WorkingArea.Y ? aboveClient : gameWindow.ClientBounds.Y;
+            int x = gameWindow.ClientBounds.X + ((gameWindow.ClientBounds.Width - width) / 2);
+            int aboveClient = gameWindow.ClientBounds.Y - height - 2;
+            int y = aboveClient >= screen.WorkingArea.Y ? aboveClient : gameWindow.ClientBounds.Y;
             position = new PixelPoint(x, y);
         }
 
@@ -213,7 +214,7 @@ public sealed class MultiGameCommanderOverlayCoordinator : IDisposable
 
     private void CloseWindow()
     {
-        var overlay = window;
+        MultiGameCommanderOverlayWindow? overlay = window;
         if (overlay is null)
         {
             return;

@@ -1,5 +1,6 @@
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Navigation;
+using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Exobiology;
 
@@ -18,13 +19,13 @@ public static class BiologyPredictionContextBuilder
     )
     {
         ArgumentNullException.ThrowIfNull(system);
-        var body = system.Bodies.FirstOrDefault(candidate => candidate.BodyId == bodyId);
+        SystemScanBodySnapshot? body = system.Bodies.FirstOrDefault(candidate => candidate.BodyId == bodyId);
         if (body is null || body.Kind != SystemBodyKind.LandablePlanet || body.Parents.Count == 0)
         {
             return null;
         }
 
-        var parentStars = GetParentStars(system.Bodies, body);
+        SystemScanBodySnapshot[] parentStars = GetParentStars(system.Bodies, body);
         var brightestStar = parentStars
             .Select(star => new { Star = star, Brightness = GetRelativeBrightness(system.Bodies, body, star) })
             .Where(candidate => candidate.Brightness > 0)
@@ -36,8 +37,8 @@ public static class BiologyPredictionContextBuilder
             return null;
         }
 
-        var primaryStar = system.Bodies.FirstOrDefault(IsMainStar);
-        var position = system.StarPosition;
+        SystemScanBodySnapshot? primaryStar = system.Bodies.FirstOrDefault(IsMainStar);
+        GalacticCoordinate? position = system.StarPosition;
         nebulaCatalog ??= DefaultNebulaCatalog.Value;
         var context = new BiologyPredictionContext
         {
@@ -100,7 +101,7 @@ public static class BiologyPredictionContextBuilder
             })
             .Where(organism => !string.IsNullOrWhiteSpace(organism.Genus))
             .ToArray();
-        var knownGenera = knownOrganisms
+        string[] knownGenera = knownOrganisms
             .Select(organism => organism.Genus!)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
@@ -122,7 +123,9 @@ public static class BiologyPredictionContextBuilder
         ExobiologyReferenceCatalog referenceCatalog
     )
     {
-        var reference = organism.EntryId is > 0 ? referenceCatalog.FindByEntryId(organism.EntryId.Value) : null;
+        ExobiologyReference? reference = organism.EntryId is > 0
+            ? referenceCatalog.FindByEntryId(organism.EntryId.Value)
+            : null;
         reference ??=
             referenceCatalog.FindByVariant(organism.Variant) ?? referenceCatalog.FindBySpecies(organism.Species);
         if (reference is not null)
@@ -144,11 +147,11 @@ public static class BiologyPredictionContextBuilder
     )
     {
         var result = new Dictionary<int, SystemScanBodySnapshot>();
-        foreach (var parent in body.Parents)
+        foreach (SystemBodyParentSnapshot parent in body.Parents)
         {
             if (parent.Kind == SystemBodyParentKind.Star)
             {
-                var star = bodies.FirstOrDefault(candidate =>
+                SystemScanBodySnapshot? star = bodies.FirstOrDefault(candidate =>
                     candidate.BodyId == parent.BodyId && candidate.Kind == SystemBodyKind.Star
                 );
                 if (star is not null)
@@ -159,7 +162,7 @@ public static class BiologyPredictionContextBuilder
             else if (parent.Kind == SystemBodyParentKind.Null)
             {
                 foreach (
-                    var star in bodies.Where(candidate =>
+                    SystemScanBodySnapshot? star in bodies.Where(candidate =>
                         candidate.Kind == SystemBodyKind.Star
                         && (candidate.BodyId == parent.BodyId || HasBarycentreParent(candidate, parent.BodyId))
                     )
@@ -175,7 +178,7 @@ public static class BiologyPredictionContextBuilder
 
     private static bool HasBarycentreParent(SystemScanBodySnapshot body, int targetBodyId)
     {
-        foreach (var parent in body.Parents)
+        foreach (SystemBodyParentSnapshot parent in body.Parents)
         {
             if (parent.BodyId == targetBodyId)
             {
@@ -197,21 +200,21 @@ public static class BiologyPredictionContextBuilder
         SystemScanBodySnapshot star
     )
     {
-        var commonParent = GetParentBodies(bodies, body)
+        SystemScanBodySnapshot? commonParent = GetParentBodies(bodies, body)
             .FirstOrDefault(parent =>
                 parent.BodyId == star.BodyId
                 || GetParentBodies(bodies, star).Any(starParent => starParent.BodyId == parent.BodyId)
             );
-        var bodyDistance = GetSquaredPathDistance(bodies, body, commonParent);
-        var starDistance = GetSquaredPathDistance(bodies, star, commonParent);
-        var distance = Math.Sqrt(bodyDistance + starDistance);
+        double bodyDistance = GetSquaredPathDistance(bodies, body, commonParent);
+        double starDistance = GetSquaredPathDistance(bodies, star, commonParent);
+        double distance = Math.Sqrt(bodyDistance + starDistance);
         if (distance <= 0 || star.RadiusMeters <= 0 || star.SurfaceTemperature <= 0)
         {
             return 0;
         }
 
-        var temperatureSquared = Math.Pow(star.SurfaceTemperature, 2);
-        var relativeRadiance = star.RadiusMeters * temperatureSquared / distance;
+        double temperatureSquared = Math.Pow(star.SurfaceTemperature, 2);
+        double relativeRadiance = star.RadiusMeters * temperatureSquared / distance;
         return Math.Pow(relativeRadiance, 2);
     }
 
@@ -226,8 +229,8 @@ public static class BiologyPredictionContextBuilder
             return 0;
         }
 
-        var distance = Math.Pow(body.SemiMajorAxis, 2);
-        foreach (var parent in GetParentBodies(bodies, body))
+        double distance = Math.Pow(body.SemiMajorAxis, 2);
+        foreach (SystemScanBodySnapshot parent in GetParentBodies(bodies, body))
         {
             if (parent.BodyId == target?.BodyId)
             {

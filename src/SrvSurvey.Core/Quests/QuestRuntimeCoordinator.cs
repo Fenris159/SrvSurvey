@@ -64,7 +64,7 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         try
         {
             ThrowIfDisposed();
-            var current = RequireRemoteConfiguration();
+            QuestRuntimeConfiguration current = RequireRemoteConfiguration();
             return await ravenClient
                 .GetCommanderQuestStatusesAsync(current.RavenApiKey!, cancellationToken)
                 .ConfigureAwait(false);
@@ -90,13 +90,13 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         ValidateConfiguration(nextConfiguration);
 
         var warnings = new List<string>();
-        var processedEvents = 0;
-        var snapshotChanged = false;
+        int processedEvents = 0;
+        bool snapshotChanged = false;
         await coordinatorLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             ThrowIfDisposed();
-            var identityChanged = !HasSameIdentity(configuration, nextConfiguration);
+            bool identityChanged = !HasSameIdentity(configuration, nextConfiguration);
             if (identityChanged)
             {
                 await ClearRuntimesAsync().ConfigureAwait(false);
@@ -105,7 +105,10 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
 
             configuration = nextConfiguration;
             contextTracker.Apply(journalEvents);
-            var context = contextTracker.CreateContext(nextConfiguration.CommanderName, nextConfiguration.Status);
+            QuestCommanderContext context = contextTracker.CreateContext(
+                nextConfiguration.CommanderName,
+                nextConfiguration.Status
+            );
 
             if (!nextConfiguration.Enabled)
             {
@@ -119,17 +122,17 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
                 await LoadRuntimesAsync(nextConfiguration, context, warnings, cancellationToken).ConfigureAwait(false);
             }
 
-            foreach (var registration in runtimes.Values)
+            foreach (RuntimeRegistration registration in runtimes.Values)
             {
                 registration.Runtime.CommanderContext = context;
             }
 
-            var shouldProcessEvents = !isBootstrap && nextConfiguration.Enabled && journalEvents.Count > 0;
+            bool shouldProcessEvents = !isBootstrap && nextConfiguration.Enabled && journalEvents.Count > 0;
             if (shouldProcessEvents)
             {
-                foreach (var journalEvent in journalEvents)
+                foreach (JournalEventEnvelope journalEvent in journalEvents)
                 {
-                    var resolved = await QuestJournalPayloadResolver
+                    QuestJournalPayloadResult resolved = await QuestJournalPayloadResolver
                         .ResolveAsync(journalDirectory, journalEvent, allowCargoFile, cancellationToken)
                         .ConfigureAwait(false);
                     AddWarning(warnings, resolved.Warning);
@@ -163,7 +166,7 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         try
         {
             ThrowIfDisposed();
-            var current =
+            QuestRuntimeConfiguration current =
                 configuration
                 ?? throw new InvalidOperationException("A commander journal session is required to refresh quests.");
             await ClearRuntimesAsync().ConfigureAwait(false);
@@ -203,7 +206,7 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         try
         {
             ThrowIfDisposed();
-            var current =
+            QuestRuntimeConfiguration current =
                 configuration
                 ?? throw new InvalidOperationException("A commander journal session is required to replay an event.");
             if (!current.Enabled)
@@ -211,7 +214,7 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
                 throw new InvalidOperationException("Quests must be enabled before replaying an event.");
             }
 
-            var resolved = await QuestJournalPayloadResolver
+            QuestJournalPayloadResult resolved = await QuestJournalPayloadResolver
                 .ResolveAsync(journalDirectory, journalEvent, allowCargoFile, cancellationToken)
                 .ConfigureAwait(false);
             AddWarning(warnings, resolved.Warning);
@@ -237,7 +240,7 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         try
         {
             ThrowIfDisposed();
-            var current =
+            QuestRuntimeConfiguration current =
                 configuration
                 ?? throw new InvalidOperationException(
                     "A commander journal session is required to change quest availability."
@@ -280,8 +283,8 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         try
         {
             ThrowIfDisposed();
-            var current = RequireRemoteConfiguration();
-            var definition = await ravenClient
+            QuestRuntimeConfiguration current = RequireRemoteConfiguration();
+            RavenQuestDefinition definition = await ravenClient
                 .ActivateQuestAsync(publisher, id, current.RavenApiKey!, cancellationToken)
                 .ConfigureAwait(false);
             var progress = new RavenCommanderQuest
@@ -338,7 +341,7 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         try
         {
             ThrowIfDisposed();
-            var current = RequireRemoteConfiguration();
+            QuestRuntimeConfiguration current = RequireRemoteConfiguration();
             if (
                 !await ravenClient
                     .SetQuestStateAsync(
@@ -523,7 +526,7 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
             reference,
             (runtime, token) =>
             {
-                var current = RequireRemoteConfiguration();
+                QuestRuntimeConfiguration current = RequireRemoteConfiguration();
                 return ravenClient.PublishQuestAsync(runtime.Definition, current.RavenApiKey!, token);
             },
             cancellationToken
@@ -535,13 +538,15 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         CancellationToken cancellationToken = default
     )
     {
-        var source = await developmentFolderLoader.LoadAsync(sourceDirectory, cancellationToken).ConfigureAwait(false);
+        QuestDevelopmentFolderLoadResult source = await developmentFolderLoader
+            .LoadAsync(sourceDirectory, cancellationToken)
+            .ConfigureAwait(false);
         QuestDevelopmentImportResult result;
         await coordinatorLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             ThrowIfDisposed();
-            var current =
+            QuestRuntimeConfiguration current =
                 configuration
                 ?? throw new InvalidOperationException("Quest runtime configuration has not been initialized.");
             if (!current.Enabled)
@@ -551,11 +556,13 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
                 );
             }
 
-            var priorRegistration = runtimes.Values.FirstOrDefault(registration => registration.IsDevelopment);
-            var prior = priorRegistration?.Runtime.Progress;
-            var imported = CreateImportedProgress(source.Definition, prior);
-            var hasMatchingPrior = prior is not null && HasSameQuest(prior.Reference, source.Definition.Reference);
-            var context = contextTracker.CreateContext(current.CommanderName, current.Status);
+            RuntimeRegistration? priorRegistration = runtimes.Values.FirstOrDefault(registration =>
+                registration.IsDevelopment
+            );
+            RavenCommanderQuest? prior = priorRegistration?.Runtime.Progress;
+            RavenCommanderQuest imported = CreateImportedProgress(source.Definition, prior);
+            bool hasMatchingPrior = prior is not null && HasSameQuest(prior.Reference, source.Definition.Reference);
+            QuestCommanderContext context = contextTracker.CreateContext(current.CommanderName, current.Status);
             await using (var validation = new QuestScriptRuntime(imported, context, log: log))
             {
                 await validation
@@ -564,7 +571,7 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
                 await validation.PrepareDevelopmentChaptersAsync(cancellationToken).ConfigureAwait(false);
             }
 
-            var saved = hasMatchingPrior
+            LegacyQuestStateSaveResult saved = hasMatchingPrior
                 ? await legacyStore
                     .SaveDevelopmentQuestAsync(current.FrontierId, current.CommanderName, imported, cancellationToken)
                     .ConfigureAwait(false)
@@ -589,7 +596,7 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
                 )
                 .ConfigureAwait(false);
             var identity = QuestIdentity.From(imported.Reference);
-            if (!runtimes.TryGetValue(identity, out var activated) || !activated.IsDevelopment)
+            if (!runtimes.TryGetValue(identity, out RuntimeRegistration? activated) || !activated.IsDevelopment)
             {
                 throw new InvalidDataException(
                     $"Development quest '{imported.Reference}' was saved but could not be initialized. "
@@ -597,7 +604,11 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
                 );
             }
 
-            foreach (var pair in runtimes.Where(pair => pair.Value.IsDevelopment && pair.Key != identity).ToArray())
+            foreach (
+                KeyValuePair<QuestIdentity, RuntimeRegistration> pair in runtimes
+                    .Where(pair => pair.Value.IsDevelopment && pair.Key != identity)
+                    .ToArray()
+            )
             {
                 runtimes.Remove(pair.Key);
                 await pair.Value.Runtime.DisposeAsync().ConfigureAwait(false);
@@ -653,10 +664,10 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         {
             try
             {
-                var remoteQuests = await ravenClient
+                IReadOnlyList<RavenCommanderQuest> remoteQuests = await ravenClient
                     .LoadCommanderQuestsAsync(RavenQuestState.active, current.RavenApiKey, cancellationToken)
                     .ConfigureAwait(false);
-                foreach (var progress in remoteQuests)
+                foreach (RavenCommanderQuest progress in remoteQuests)
                 {
                     await TryAddRemoteRuntimeAsync(progress, current, context, warnings, cancellationToken)
                         .ConfigureAwait(false);
@@ -668,8 +679,8 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
             }
         }
 
-        var legacy = legacyStore.Load(current.FrontierId);
-        foreach (var warning in legacy.Warnings)
+        LegacyQuestStateLoadResult legacy = legacyStore.Load(current.FrontierId);
+        foreach (string warning in legacy.Warnings)
         {
             AddWarning(warnings, warning);
         }
@@ -677,7 +688,7 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         AddWarning(warnings, legacy.Error is null ? null : "Legacy quest state could not be loaded: " + legacy.Error);
         if (legacy.Data?.DevelopmentQuest is { } developmentQuest)
         {
-            var progress = QuestProgressMapper.FromLegacy(developmentQuest);
+            RavenCommanderQuest progress = QuestProgressMapper.FromLegacy(developmentQuest);
             if (progress.Quest is null)
             {
                 AddWarning(warnings, $"Development quest '{progress.Reference}' has no usable definition.");
@@ -702,7 +713,7 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         {
             if (progress.Quest is null)
             {
-                var definition = await ravenClient
+                RavenQuestDefinition? definition = await ravenClient
                     .GetQuestAsync(progress.Reference, current.RavenApiKey, cancellationToken)
                     .ConfigureAwait(false);
                 if (definition is null)
@@ -760,7 +771,7 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
             await runtime.InitializeAsync(startFirstChapter, cancellationToken).ConfigureAwait(false);
 
             var identity = QuestIdentity.From(progress.Reference);
-            if (runtimes.Remove(identity, out var replaced))
+            if (runtimes.Remove(identity, out RuntimeRegistration? replaced))
             {
                 await replaced.Runtime.DisposeAsync().ConfigureAwait(false);
             }
@@ -787,7 +798,7 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         CancellationToken cancellationToken
     )
     {
-        foreach (var pair in runtimes.ToArray())
+        foreach (KeyValuePair<QuestIdentity, RuntimeRegistration> pair in runtimes.ToArray())
         {
             try
             {
@@ -841,7 +852,7 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         {
             ThrowIfDisposed();
             var identity = QuestIdentity.From(reference);
-            if (!runtimes.TryGetValue(identity, out var registration))
+            if (!runtimes.TryGetValue(identity, out RuntimeRegistration? registration))
             {
                 throw new KeyNotFoundException($"Quest '{reference}' is not active.");
             }
@@ -910,12 +921,12 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         {
             ThrowIfDisposed();
             var identity = QuestIdentity.From(reference);
-            if (!runtimes.TryGetValue(identity, out var registration))
+            if (!runtimes.TryGetValue(identity, out RuntimeRegistration? registration))
             {
                 throw new KeyNotFoundException($"Quest '{reference}' is not active.");
             }
 
-            var current =
+            QuestRuntimeConfiguration current =
                 configuration
                 ?? throw new InvalidOperationException("A commander journal session is required to change quests.");
             if (registration.IsDevelopment)
@@ -931,8 +942,8 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
             }
             else
             {
-                var remote = RequireRemoteConfiguration();
-                var changed = pause
+                QuestRuntimeConfiguration remote = RequireRemoteConfiguration();
+                bool changed = pause
                     ? await ravenClient
                         .SetQuestStateAsync(
                             reference.Publisher,
@@ -993,7 +1004,7 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         CancellationToken cancellationToken
     )
     {
-        var apiKey =
+        string apiKey =
             current.RavenApiKey
             ?? throw new InvalidOperationException("A Raven API key is required to change quest state.");
         if (
@@ -1011,7 +1022,7 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         return runtimes
             .Values.Select(registration =>
             {
-                var runtime = registration.Runtime;
+                QuestScriptRuntime runtime = registration.Runtime;
                 return new QuestRuntimeSnapshot(
                     runtime.Progress.Reference,
                     runtime.Definition.Title,
@@ -1045,11 +1056,11 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         RavenQuestMessage message
     )
     {
-        var definition = runtime.Definition.Messages.FirstOrDefault(candidate =>
+        RavenQuestMessageDefinition? definition = runtime.Definition.Messages.FirstOrDefault(candidate =>
             string.Equals(candidate.Id, message.Id, StringComparison.Ordinal)
         );
-        var actionIds = message.Actions ?? definition?.Actions?.Keys.ToArray() ?? [];
-        var actions = actionIds.ToDictionary(
+        string[] actionIds = message.Actions ?? definition?.Actions?.Keys.ToArray() ?? [];
+        Dictionary<string, string> actions = actionIds.ToDictionary(
             action => action,
             action => definition?.Actions?.GetValueOrDefault(action) ?? action,
             StringComparer.Ordinal
@@ -1071,7 +1082,7 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
 
     private async Task ClearRuntimesAsync()
     {
-        foreach (var registration in runtimes.Values)
+        foreach (RuntimeRegistration registration in runtimes.Values)
         {
             await registration.Runtime.DisposeAsync().ConfigureAwait(false);
         }
@@ -1100,11 +1111,11 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         RavenCommanderQuest? prior
     )
     {
-        var preserve = prior is not null && HasSameQuest(prior.Reference, definition.Reference);
+        bool preserve = prior is not null && HasSameQuest(prior.Reference, definition.Reference);
         var chapters = definition
             .Chapters.Keys.Select(chapterId =>
             {
-                var previous = preserve
+                RavenQuestChapterState? previous = preserve
                     ? prior!.Chapters.FirstOrDefault(chapter =>
                         string.Equals(chapter.Id, chapterId, StringComparison.Ordinal)
                     )
@@ -1173,7 +1184,7 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
 
     private QuestRuntimeConfiguration RequireRemoteConfiguration()
     {
-        var current =
+        QuestRuntimeConfiguration current =
             configuration
             ?? throw new InvalidOperationException("A commander journal session is required to use Raven quests.");
         if (!current.Enabled)

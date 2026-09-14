@@ -7,7 +7,7 @@ public sealed class InaraSettingsMarkupTests
     [Fact]
     public void InaraCardUsesCommanderKeyOptInAndWarnsAboutDuplicateUploads()
     {
-        var values = LoadSettingsView()
+        string[] values = LoadSettingsView()
             .Descendants()
             .SelectMany(element => element.Attributes())
             .Select(attribute => attribute.Value)

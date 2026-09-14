@@ -16,8 +16,8 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
     [Fact]
     public async Task AnalyzesSelectedCommanderWithoutChangingData()
     {
-        var viewModel = CreateViewModel(out var dataDirectory);
-        var originalProfile = await File.ReadAllBytesAsync(Path.Combine(dataDirectory, "F123-live.json"));
+        JournalPostProcessorViewModel viewModel = CreateViewModel(out string? dataDirectory);
+        byte[] originalProfile = await File.ReadAllBytesAsync(Path.Combine(dataDirectory, "F123-live.json"));
         await viewModel.RefreshCommandersAsync();
         viewModel.SetBeginningOfTime();
 
@@ -34,10 +34,10 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
     [Fact]
     public async Task CodexMergeRequiresConfirmationAndPreservesProfile()
     {
-        var viewModel = CreateViewModel(out var dataDirectory);
+        JournalPostProcessorViewModel viewModel = CreateViewModel(out string? dataDirectory);
         await viewModel.RefreshCommandersAsync();
-        var profilePath = Path.Combine(dataDirectory, "F123-live.json");
-        var originalProfile = await File.ReadAllBytesAsync(profilePath);
+        string profilePath = Path.Combine(dataDirectory, "F123-live.json");
+        byte[] originalProfile = await File.ReadAllBytesAsync(profilePath);
 
         await viewModel.RebuildCodexAsync();
 
@@ -58,10 +58,10 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
     [Fact]
     public async Task AnalyzesSystemBiologyWithoutChangingCopiedFiles()
     {
-        var viewModel = CreateViewModel(out var dataDirectory);
-        var systemDirectory = Path.Combine(dataDirectory, "systems", "F123");
+        JournalPostProcessorViewModel viewModel = CreateViewModel(out string? dataDirectory);
+        string systemDirectory = Path.Combine(dataDirectory, "systems", "F123");
         Directory.CreateDirectory(systemDirectory);
-        var systemPath = Path.Combine(systemDirectory, "Sol_42.json");
+        string systemPath = Path.Combine(systemDirectory, "Sol_42.json");
         await File.WriteAllTextAsync(
             systemPath,
             """
@@ -78,12 +78,12 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
             }
             """
         );
-        var original = await File.ReadAllBytesAsync(systemPath);
+        byte[] original = await File.ReadAllBytesAsync(systemPath);
         await viewModel.RefreshCommandersAsync();
 
         await viewModel.AnalyzeSystemsAsync();
 
-        var species = Assert.Single(viewModel.SystemSpecies);
+        JournalPostProcessorSpeciesViewModel species = Assert.Single(viewModel.SystemSpecies);
         Assert.Equal("Aleoida Arcus", species.Name);
         Assert.Equal("1 observation(s)", species.CountText);
         Assert.Equal("CarbonDioxide x1", species.AtmosphereSummary);
@@ -94,12 +94,12 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
     [Fact]
     public async Task HistoricalSystemRebuildRequiresConfirmationAndBacksUpOriginal()
     {
-        var viewModel = CreateViewModel(out var dataDirectory);
-        var systemDirectory = Path.Combine(dataDirectory, "systems", "F123");
+        JournalPostProcessorViewModel viewModel = CreateViewModel(out string? dataDirectory);
+        string systemDirectory = Path.Combine(dataDirectory, "systems", "F123");
         Directory.CreateDirectory(systemDirectory);
-        var systemPath = Path.Combine(systemDirectory, "Sol_42.json");
+        string systemPath = Path.Combine(systemDirectory, "Sol_42.json");
         await File.WriteAllTextAsync(systemPath, """{"name":"Sol","address":42,"future":7,"bodies":[]}""");
-        var original = await File.ReadAllBytesAsync(systemPath);
+        byte[] original = await File.ReadAllBytesAsync(systemPath);
         await viewModel.RefreshCommandersAsync();
         viewModel.SetBeginningOfTime();
 
@@ -115,8 +115,8 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
         Assert.Contains("updated 1", viewModel.StatusMessage);
         Assert.Contains("Verified backup:", viewModel.StatusMessage);
         Assert.Contains("\"future\": 7", await File.ReadAllTextAsync(systemPath));
-        var backupRoot = Path.Combine(temporaryDirectory, "rebuild-backups");
-        var backup = Assert.Single(Directory.GetDirectories(backupRoot));
+        string backupRoot = Path.Combine(temporaryDirectory, "rebuild-backups");
+        string backup = Assert.Single(Directory.GetDirectories(backupRoot));
         Assert.Equal(original, await File.ReadAllBytesAsync(Path.Combine(backup, "originals", "Sol_42.json")));
     }
 
@@ -124,10 +124,10 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
     public async Task HistoricalGreenGasGiantsRequireConsentAndConfirmation()
     {
         var client = new RecordingGreenGasGiantClient();
-        var enabled = false;
-        var viewModel = CreateViewModel(out var dataDirectory, client, () => enabled);
-        var profilePath = Path.Combine(dataDirectory, "F123-live.json");
-        var originalProfile = await File.ReadAllBytesAsync(profilePath);
+        bool enabled = false;
+        JournalPostProcessorViewModel viewModel = CreateViewModel(out string? dataDirectory, client, () => enabled);
+        string profilePath = Path.Combine(dataDirectory, "F123-live.json");
+        byte[] originalProfile = await File.ReadAllBytesAsync(profilePath);
         await viewModel.RefreshCommandersAsync();
         viewModel.SetBeginningOfTime();
 
@@ -145,7 +145,7 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
         enabled = true;
         await viewModel.PublishHistoricalGreenGasGiantsAsync();
 
-        var candidate = Assert.Single(client.Candidates);
+        GreenGasGiantCandidate candidate = Assert.Single(client.Candidates);
         Assert.Equal("Drew", candidate.CommanderName);
         Assert.Equal("potential", candidate.Tag);
         Assert.Equal(0, candidate.StarPosition.X);
@@ -169,7 +169,7 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
         Func<bool>? isGreenGasGiantPublicationEnabled = null
     )
     {
-        var journalDirectory = Path.Combine(temporaryDirectory, "journals");
+        string journalDirectory = Path.Combine(temporaryDirectory, "journals");
         dataDirectory = Path.Combine(temporaryDirectory, "data");
         Directory.CreateDirectory(journalDirectory);
         Directory.CreateDirectory(dataDirectory);

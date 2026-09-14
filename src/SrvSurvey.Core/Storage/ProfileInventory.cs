@@ -15,7 +15,7 @@ public sealed record ProfileInventory(
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(rootPath);
 
-        var root = Path.GetFullPath(rootPath);
+        string root = Path.GetFullPath(rootPath);
         if (!Directory.Exists(root))
         {
             throw new DirectoryNotFoundException($"The legacy profile directory does not exist: {root}");
@@ -31,9 +31,9 @@ public sealed record ProfileInventory(
         while (pendingDirectories.Count > 0)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var current = pendingDirectories.Pop();
+            string current = pendingDirectories.Pop();
 
-            foreach (var directory in Directory.EnumerateDirectories(current).Order())
+            foreach (string? directory in Directory.EnumerateDirectories(current).Order())
             {
                 var directoryInfo = new DirectoryInfo(directory);
                 RejectReparsePoint(directoryInfo);
@@ -41,7 +41,7 @@ public sealed record ProfileInventory(
                 pendingDirectories.Push(directory);
             }
 
-            foreach (var file in Directory.EnumerateFiles(current).Order())
+            foreach (string? file in Directory.EnumerateFiles(current).Order())
             {
                 var fileInfo = new FileInfo(file);
                 RejectReparsePoint(fileInfo);
@@ -53,11 +53,11 @@ public sealed record ProfileInventory(
         files.Sort(StringComparer.Ordinal);
 
         var entries = new List<ProfileInventoryEntry>(files.Count);
-        foreach (var file in files)
+        foreach (string file in files)
         {
             cancellationToken.ThrowIfCancellationRequested();
             var fileInfo = new FileInfo(file);
-            var hash = await ComputeSha256Async(file, cancellationToken).ConfigureAwait(false);
+            string hash = await ComputeSha256Async(file, cancellationToken).ConfigureAwait(false);
             fileInfo.Refresh();
             entries.Add(
                 new ProfileInventoryEntry(
@@ -82,7 +82,7 @@ public sealed record ProfileInventory(
             64 * 1024,
             FileOptions.Asynchronous | FileOptions.SequentialScan
         );
-        var hash = await SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false);
+        byte[] hash = await SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false);
         return Convert.ToHexStringLower(hash);
     }
 
@@ -93,13 +93,15 @@ public sealed record ProfileInventory(
             throw new InvalidDataException($"The profile contains an invalid relative path: {relativePath}");
         }
 
-        var platformRelativePath = relativePath.Replace('/', Path.DirectorySeparatorChar);
-        var resolvedRoot = Path.GetFullPath(rootPath);
-        var resolvedPath = Path.GetFullPath(Path.Combine(resolvedRoot, platformRelativePath));
-        var rootPrefix = Path.EndsInDirectorySeparator(resolvedRoot)
+        string platformRelativePath = relativePath.Replace('/', Path.DirectorySeparatorChar);
+        string resolvedRoot = Path.GetFullPath(rootPath);
+        string resolvedPath = Path.GetFullPath(Path.Combine(resolvedRoot, platformRelativePath));
+        string rootPrefix = Path.EndsInDirectorySeparator(resolvedRoot)
             ? resolvedRoot
             : resolvedRoot + Path.DirectorySeparatorChar;
-        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        StringComparison comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
 
         if (!resolvedPath.StartsWith(rootPrefix, comparison))
         {

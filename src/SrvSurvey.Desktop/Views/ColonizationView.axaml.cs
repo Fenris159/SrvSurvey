@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
 using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Network;
 using SrvSurvey.Desktop.Runtime;
@@ -27,7 +28,7 @@ public sealed partial class ColonizationView : UserControl
         try
         {
             DesktopExternalEffectPolicy.ThrowIfDisabled();
-            var launcher =
+            ILauncher launcher =
                 TopLevel.GetTopLevel(this)?.Launcher
                 ?? throw new InvalidOperationException(DesktopLinkLauncherUnavailable);
             if (!await launcher.LaunchUriAsync(new Uri(RavenColonialClient.WebsiteUri, "user")))
@@ -46,7 +47,7 @@ public sealed partial class ColonizationView : UserControl
         try
         {
             DesktopExternalEffectPolicy.ThrowIfDisabled();
-            var launcher =
+            ILauncher launcher =
                 TopLevel.GetTopLevel(this)?.Launcher
                 ?? throw new InvalidOperationException(DesktopLinkLauncherUnavailable);
             if (!await launcher.LaunchUriAsync(new Uri(RavenColonialClient.WebsiteUri, "build")))
@@ -77,10 +78,10 @@ public sealed partial class ColonizationView : UserControl
         try
         {
             DesktopExternalEffectPolicy.ThrowIfDisabled();
-            var launcher =
+            ILauncher launcher =
                 TopLevel.GetTopLevel(this)?.Launcher
                 ?? throw new InvalidOperationException(DesktopLinkLauncherUnavailable);
-            var buildId = Uri.EscapeDataString(viewModel.Colonization.ProjectEditor.CreatedProjectId);
+            string buildId = Uri.EscapeDataString(viewModel.Colonization.ProjectEditor.CreatedProjectId);
             if (!await launcher.LaunchUriAsync(new Uri(RavenColonialClient.WebsiteUri, $"#build={buildId}")))
             {
                 throw new InvalidOperationException(DefaultBrowserDeclined);
@@ -127,7 +128,7 @@ public sealed partial class ColonizationView : UserControl
         try
         {
             DesktopExternalEffectPolicy.ThrowIfDisabled();
-            var launcher =
+            ILauncher launcher =
                 TopLevel.GetTopLevel(this)?.Launcher
                 ?? throw new InvalidOperationException(DesktopLinkLauncherUnavailable);
             if (!await launcher.LaunchUriAsync(uri))

@@ -20,19 +20,19 @@ public sealed class QuestJournalCompatibilityTests : IDisposable
     [Fact]
     public async Task AuxiliaryEventUsesCompleteFileWithoutChangingIt()
     {
-        var path = Path.Combine(tempDirectory, "Cargo.json");
-        var source = """
+        string path = Path.Combine(tempDirectory, "Cargo.json");
+        string source = """
             {"timestamp":"2026-07-25T00:00:00Z","event":"Cargo","Vessel":"Ship","Inventory":[{"Name":"gold","Count":2}],"future":true}
             """;
         await File.WriteAllTextAsync(path, source);
-        var originalBytes = await File.ReadAllBytesAsync(path);
-        var journalEvent = Parse(
+        byte[] originalBytes = await File.ReadAllBytesAsync(path);
+        JournalEventEnvelope journalEvent = Parse(
             """
             {"timestamp":"2026-07-25T00:00:00Z","event":"Cargo"}
             """
         );
 
-        var result = await QuestJournalPayloadResolver.ResolveAsync(tempDirectory, journalEvent);
+        QuestJournalPayloadResult result = await QuestJournalPayloadResolver.ResolveAsync(tempDirectory, journalEvent);
 
         Assert.True(result.UsedAuxiliaryFile);
         Assert.Null(result.Warning);
@@ -44,21 +44,25 @@ public sealed class QuestJournalCompatibilityTests : IDisposable
     [Fact]
     public async Task MultipleGameWindowsRejectAmbiguousCargoFile()
     {
-        var path = Path.Combine(tempDirectory, "Cargo.json");
+        string path = Path.Combine(tempDirectory, "Cargo.json");
         await File.WriteAllTextAsync(
             path,
             """
             {"event":"Cargo","Vessel":"Wrong commander","Inventory":[{"Name":"gold","Count":99}]}
             """
         );
-        var originalBytes = await File.ReadAllBytesAsync(path);
-        var journalEvent = Parse(
+        byte[] originalBytes = await File.ReadAllBytesAsync(path);
+        JournalEventEnvelope journalEvent = Parse(
             """
             {"event":"Cargo","Vessel":"Journal commander","Inventory":[]}
             """
         );
 
-        var result = await QuestJournalPayloadResolver.ResolveAsync(tempDirectory, journalEvent, allowCargoFile: false);
+        QuestJournalPayloadResult result = await QuestJournalPayloadResolver.ResolveAsync(
+            tempDirectory,
+            journalEvent,
+            allowCargoFile: false
+        );
 
         Assert.False(result.UsedAuxiliaryFile);
         Assert.Contains("multiple Elite windows", result.Warning);
@@ -72,19 +76,19 @@ public sealed class QuestJournalCompatibilityTests : IDisposable
     [InlineData("NavRoute", "[]")]
     public async Task UnavailableAuxiliaryDataFallsBackToJournalEvent(string eventName, string? auxiliaryContents)
     {
-        var path = Path.Combine(tempDirectory, $"{eventName}.json");
+        string path = Path.Combine(tempDirectory, $"{eventName}.json");
         if (auxiliaryContents is not null)
         {
             await File.WriteAllTextAsync(path, auxiliaryContents);
         }
 
-        var journalEvent = Parse(
+        JournalEventEnvelope journalEvent = Parse(
             $$"""
             {"event":"{{eventName}}","fallback":42}
             """
         );
 
-        var result = await QuestJournalPayloadResolver.ResolveAsync(tempDirectory, journalEvent);
+        QuestJournalPayloadResult result = await QuestJournalPayloadResolver.ResolveAsync(tempDirectory, journalEvent);
 
         Assert.False(result.UsedAuxiliaryFile);
         Assert.NotNull(result.Warning);
@@ -99,9 +103,9 @@ public sealed class QuestJournalCompatibilityTests : IDisposable
     public async Task OrdinaryEventNeverReadsSameNamedFile()
     {
         await File.WriteAllTextAsync(Path.Combine(tempDirectory, "Scan.json"), "not-json");
-        var journalEvent = Parse("""{"event":"Scan","BodyName":"A 1"}""");
+        JournalEventEnvelope journalEvent = Parse("""{"event":"Scan","BodyName":"A 1"}""");
 
-        var result = await QuestJournalPayloadResolver.ResolveAsync(tempDirectory, journalEvent);
+        QuestJournalPayloadResult result = await QuestJournalPayloadResolver.ResolveAsync(tempDirectory, journalEvent);
 
         Assert.False(result.UsedAuxiliaryFile);
         Assert.Null(result.Warning);
@@ -153,14 +157,14 @@ public sealed class QuestJournalCompatibilityTests : IDisposable
             PlanetRadius = 1_000_000,
         };
 
-        var context = tracker.CreateContext("Test Cmdr", status);
+        QuestCommanderContext context = tracker.CreateContext("Test Cmdr", status);
 
         Assert.Equal("Test Cmdr", context.CommanderName);
         Assert.Equal(355, context.Surface?.Heading);
         Assert.Equal(12.5, context.Surface?.Latitude);
         Assert.Equal("Jameson Memorial", context.PriorJournalEvents!["Docked"].GetProperty("StationName").GetString());
         Assert.Equal("Shinrarta Dezhra", context.PriorJournalEvents["FSDJump"].GetProperty("StarSystem").GetString());
-        var faction = context.Factions["Pilots Federation"];
+        QuestFactionSnapshot faction = context.Factions["Pilots Federation"];
         Assert.Equal(100, faction.Reputation);
         Assert.Equal(0.75, faction.Influence);
         Assert.Equal(["Boom"], faction.ActiveStates);
@@ -201,7 +205,7 @@ public sealed class QuestJournalCompatibilityTests : IDisposable
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var result, out var error), error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? result, out string? error), error);
         return Assert.IsType<JournalEventEnvelope>(result);
     }
 }

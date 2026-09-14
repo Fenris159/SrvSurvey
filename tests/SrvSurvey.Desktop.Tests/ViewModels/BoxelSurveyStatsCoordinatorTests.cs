@@ -35,8 +35,8 @@ public sealed class BoxelSurveyStatsCoordinatorTests : IAsyncLifetime
         );
         await coordinator.FlushAsync();
 
-        var commanderA = Path.Combine(temporaryDirectory, BoxelSurveyStatsStore.StoreDirectoryName, "F-A");
-        var filesA = Directory.GetFiles(commanderA, "*.json");
+        string commanderA = Path.Combine(temporaryDirectory, BoxelSurveyStatsStore.StoreDirectoryName, "F-A");
+        string[] filesA = Directory.GetFiles(commanderA, "*.json");
         Assert.Contains(filesA, path => Path.GetFileName(path) == "index.json");
 
         await coordinator.SwitchCommanderAsync("F-B");
@@ -48,15 +48,15 @@ public sealed class BoxelSurveyStatsCoordinatorTests : IAsyncLifetime
         await coordinator.IngestSnapshotAsync(Snapshot("Praea Euq IL-P c5-0", 2001, [Planet(1, "Rocky body", 10, 20)]));
         await coordinator.FlushAsync();
 
-        var reloadedA = await store.LoadBoxelAsync("F-A", "Praea Euq IL-P c5-");
+        BoxelSurveyBoxelDocument? reloadedA = await store.LoadBoxelAsync("F-A", "Praea Euq IL-P c5-");
         Assert.NotNull(reloadedA);
         Assert.Equal(5, Assert.Single(reloadedA.Systems).Bodies.Count);
-        var indexB = Assert.Single(await store.ListIndexAsync("F-B"));
+        BoxelSurveyIndexEntry indexB = Assert.Single(await store.ListIndexAsync("F-B"));
         Assert.Equal("Praea Euq IL-P c5-", indexB.Prefix);
         Assert.Equal(1, indexB.VisitedSystemCount);
 
         await coordinator.SwitchCommanderAsync("F-A");
-        var restored = await coordinator.GetAsync("Praea Euq IL-P c5-");
+        BoxelSurveyBoxelSnapshot? restored = await coordinator.GetAsync("Praea Euq IL-P c5-");
         Assert.NotNull(restored);
         Assert.Equal(5, restored.CountsOf(BoxelPlanetClass.Icy).Count);
         await coordinator.IngestSnapshotAsync(Snapshot("Praea Euq IL-P c5-0", 2001, []));
@@ -80,7 +80,7 @@ public sealed class BoxelSurveyStatsCoordinatorTests : IAsyncLifetime
         Assert.Empty(coordinator.Index);
         await coordinator.IngestSnapshotAsync(Snapshot("Praea Euq IL-P c5-0", 2001, []));
         await coordinator.ApplyJournalEventsAsync([Parse("""{"event":"NavBeaconScan","SystemAddress":2001}""")]);
-        var snapshot = await coordinator.GetAsync("Praea Euq IL-P c5-");
+        BoxelSurveyBoxelSnapshot? snapshot = await coordinator.GetAsync("Praea Euq IL-P c5-");
         Assert.NotNull(snapshot);
         Assert.Equal(1, snapshot.Visited);
         Assert.Equal(1, snapshot.NavBeaconCount);
@@ -91,7 +91,7 @@ public sealed class BoxelSurveyStatsCoordinatorTests : IAsyncLifetime
     public async Task SearchViewModelReceivesTheSameCoordinator()
     {
         using var coordinator = new BoxelSurveyStatsCoordinator(new BoxelSurveyStatsStore(temporaryDirectory));
-        var viewModel = BoxelSearchViewModelTestFactory.Create(
+        BoxelSearchViewModel viewModel = BoxelSearchViewModelTestFactory.Create(
             new CommanderProfileStore(temporaryDirectory),
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),

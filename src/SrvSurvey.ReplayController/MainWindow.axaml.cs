@@ -16,7 +16,7 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        var managedRoot = Path.Combine(AppDataPaths.ResolveCurrent().DataDirectory, "diagnostic-replays");
+        string managedRoot = Path.Combine(AppDataPaths.ResolveCurrent().DataDirectory, "diagnostic-replays");
         var viewModel = new ReplayControllerViewModel(managedRoot);
         DataContext = viewModel;
         closeCoordinator = new ReplayControllerWindowCloseCoordinator(viewModel.DisposeAsync, CompleteClose);
@@ -25,7 +25,7 @@ public sealed partial class MainWindow : Window
 
     private async void ImportReplay_Click(object? sender, RoutedEventArgs eventArgs)
     {
-        var files = await StorageProvider.OpenFilePickerAsync(
+        IReadOnlyList<IStorageFile> files = await StorageProvider.OpenFilePickerAsync(
             new FilePickerOpenOptions
             {
                 Title = "Import an Elite journal or SrvSurvey replay package",
@@ -39,7 +39,7 @@ public sealed partial class MainWindow : Window
                 ],
             }
         );
-        var path = files.Count > 0 ? files[0].TryGetLocalPath() : null;
+        string? path = files.Count > 0 ? files[0].TryGetLocalPath() : null;
         if (!string.IsNullOrWhiteSpace(path))
         {
             await ViewModel.ImportAsync(path);
@@ -48,7 +48,7 @@ public sealed partial class MainWindow : Window
 
     private async void ChooseExecutable_Click(object? sender, RoutedEventArgs eventArgs)
     {
-        var files = await StorageProvider.OpenFilePickerAsync(
+        IReadOnlyList<IStorageFile> files = await StorageProvider.OpenFilePickerAsync(
             new FilePickerOpenOptions
             {
                 Title = "Choose the SrvSurvey desktop executable",
@@ -64,7 +64,7 @@ public sealed partial class MainWindow : Window
                 ],
             }
         );
-        var path = files.Count > 0 ? files[0].TryGetLocalPath() : null;
+        string? path = files.Count > 0 ? files[0].TryGetLocalPath() : null;
         if (!string.IsNullOrWhiteSpace(path))
         {
             ViewModel.SrvSurveyExecutablePath = path;

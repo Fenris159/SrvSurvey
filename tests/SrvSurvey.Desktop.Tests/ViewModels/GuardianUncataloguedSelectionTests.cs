@@ -10,7 +10,7 @@ public sealed class GuardianUncataloguedSelectionTests
     [Fact]
     public async Task DefaultDistanceUsesSolEvenWhileCommanderIsAtSelectedSite()
     {
-        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-guardian-selection-tests-{Guid.NewGuid():N}");
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-guardian-selection-tests-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
         try
         {
@@ -51,7 +51,10 @@ public sealed class GuardianUncataloguedSelectionTests
 
             viewModel.UpdateCurrentSystem("Diagnostic Uncatalogued", position);
 
-            var row = Assert.Single(viewModel.Rows, candidate => candidate.Reference.IsCommanderOnly);
+            GuardianSiteRowViewModel row = Assert.Single(
+                viewModel.Rows,
+                candidate => candidate.Reference.IsCommanderOnly
+            );
             Assert.Equal(5, row.Distance);
             Assert.Equal(5m, viewModel.SurveyEditor.DistanceLy);
             Assert.True(viewModel.SurveyEditor.CanEditDistanceLy);
@@ -65,13 +68,13 @@ public sealed class GuardianUncataloguedSelectionTests
     [Fact]
     public async Task InitialSiteTypeRevealsAndOpensActiveUncataloguedSurvey()
     {
-        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-guardian-selection-tests-{Guid.NewGuid():N}");
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-guardian-selection-tests-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
         try
         {
             var viewModel = new GuardianViewModel(root);
             await viewModel.LoadProfileAsync("F123", isOdyssey: true);
-            var previous = Assert.IsType<GuardianSiteRowViewModel>(viewModel.SelectedSite);
+            GuardianSiteRowViewModel previous = Assert.IsType<GuardianSiteRowViewModel>(viewModel.SelectedSite);
             viewModel.FilterText = previous.Reference.SystemName;
 
             await viewModel.ApplyJournalEventsAsync(
@@ -102,7 +105,7 @@ public sealed class GuardianUncataloguedSelectionTests
     [Fact]
     public async Task SavingHeadingPreservesSelectionAndEnablesLiveMapAuthoring()
     {
-        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-guardian-selection-tests-{Guid.NewGuid():N}");
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-guardian-selection-tests-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
         try
         {
@@ -148,7 +151,7 @@ public sealed class GuardianUncataloguedSelectionTests
     [Fact]
     public async Task NewLocalSiteUsesCurrentSystemPositionAndBodyArrivalDistance()
     {
-        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-guardian-selection-tests-{Guid.NewGuid():N}");
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-guardian-selection-tests-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
         try
         {
@@ -170,7 +173,7 @@ public sealed class GuardianUncataloguedSelectionTests
                 "Drew"
             );
 
-            var local = Assert.Single(viewModel.Rows, row => row.Reference.IsCommanderOnly);
+            GuardianSiteRowViewModel local = Assert.Single(viewModel.Rows, row => row.Reference.IsCommanderOnly);
             Assert.Equal(1234.5, local.Reference.DistanceToArrival);
             Assert.Equal(new GalacticCoordinate(100.5, 200.25, -300.75), local.Reference.Position);
         }
@@ -183,7 +186,7 @@ public sealed class GuardianUncataloguedSelectionTests
     [Fact]
     public async Task SameBatchUncataloguedSitesReceiveDistinctLocalIds()
     {
-        var root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-guardian-selection-tests-{Guid.NewGuid():N}");
+        string root = Path.Combine(Path.GetTempPath(), $"SrvSurvey-guardian-selection-tests-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);
         try
         {
@@ -204,7 +207,7 @@ public sealed class GuardianUncataloguedSelectionTests
                 "Drew"
             );
 
-            var localIds = viewModel
+            int[] localIds = viewModel
                 .Rows.Where(row => row.Reference.IsCommanderOnly)
                 .Select(row => row.Reference.SiteId)
                 .Order()
@@ -219,7 +222,7 @@ public sealed class GuardianUncataloguedSelectionTests
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var parsed, out var error), error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? parsed, out string? error), error);
         return Assert.IsType<JournalEventEnvelope>(parsed);
     }
 }

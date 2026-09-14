@@ -19,10 +19,10 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
             """{"PlotFlightWarning":"center:9, top:176, 0.7 { s: 13 }"}"""
         );
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
-        var layout = store.Load();
-        var original = layout.Placements["PlotFlightWarning"];
+        LegacyOverlayLayout layout = store.Load();
+        LegacyOverlayPlacement original = layout.Placements["PlotFlightWarning"];
         Assert.Equal(original, layout.Placements["PlotMiningWarning"]);
-        var custom = original with { HorizontalOffset = 75, VerticalOffset = 200 };
+        LegacyOverlayPlacement custom = original with { HorizontalOffset = 75, VerticalOffset = 200 };
         store.Save(new Dictionary<string, LegacyOverlayPlacement> { ["PlotMiningWarning"] = custom });
         store.Save(
             new Dictionary<string, LegacyOverlayPlacement>
@@ -50,7 +50,7 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
         );
         File.WriteAllText(Path.Combine(temporaryDirectory, "settings.json"), "{\"plotterOpacity\":55}");
 
-        var layout = new LegacyOverlayLayoutStore(temporaryDirectory).Load();
+        LegacyOverlayLayout layout = new LegacyOverlayLayoutStore(temporaryDirectory).Load();
 
         Assert.Null(layout.Error);
         Assert.Equal(3, layout.Placements.Count);
@@ -74,11 +74,11 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
     public void InvalidLayoutFallsBackWithoutChangingImportedFiles()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "plotters.json");
+        string path = Path.Combine(temporaryDirectory, "plotters.json");
         const string invalid = "{\"PlotBodyInfo\":\"diagonal:8,top:8\"}";
         File.WriteAllText(path, invalid);
 
-        var layout = new LegacyOverlayLayoutStore(temporaryDirectory).Load();
+        LegacyOverlayLayout layout = new LegacyOverlayLayoutStore(temporaryDirectory).Load();
 
         Assert.Empty(layout.Placements);
         Assert.NotNull(layout.Error);
@@ -89,7 +89,7 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
     [Fact]
     public void MissingFilesUseAvaloniaDefaults()
     {
-        var layout = new LegacyOverlayLayoutStore(temporaryDirectory).Load();
+        LegacyOverlayLayout layout = new LegacyOverlayLayoutStore(temporaryDirectory).Load();
 
         Assert.Empty(layout.Placements);
         Assert.Null(layout.DefaultOpacity);
@@ -102,7 +102,7 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
     public void SaveIsAtomicBackedUpAndPreservesUnknownEntriesAndVrCalibration()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "plotters.json");
+        string path = Path.Combine(temporaryDirectory, "plotters.json");
         const string original =
             "{\"FutureOverlay\":\"right:99,bottom:77\","
             + "\"PlotBodyInfo\":\"left:8,top:12,0.75 "
@@ -110,7 +110,7 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
         File.WriteAllText(path, original);
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
 
-        var result = store.Save(
+        LegacyOverlayLayoutSaveResult result = store.Save(
             new Dictionary<string, LegacyOverlayPlacement>
             {
                 ["PlotBodyInfo"] = new(LegacyHorizontalAnchor.Screen, -120, LegacyVerticalAnchor.Middle, 45, 0),
@@ -121,11 +121,11 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
         Assert.Equal(1, result.UpdatedPlacementCount);
         Assert.NotNull(result.BackupPath);
         Assert.Equal(original, File.ReadAllText(result.BackupPath));
-        var savedText = File.ReadAllText(path);
+        string savedText = File.ReadAllText(path);
         Assert.Contains("os:-120, middle:45, 0", savedText);
         Assert.Contains("{ s: 10, p: <1, 2, 3>, r: <4, 5, 6>}", savedText);
 
-        var layout = store.Load();
+        LegacyOverlayLayout layout = store.Load();
         Assert.Null(layout.Error);
         Assert.Equal(
             new LegacyOverlayPlacement(LegacyHorizontalAnchor.Right, 99, LegacyVerticalAnchor.Bottom, 77, null),
@@ -141,12 +141,12 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
     public void SaveRefusesMalformedInputWithoutChangingIt()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "plotters.json");
+        string path = Path.Combine(temporaryDirectory, "plotters.json");
         const string original = "{\"PlotBodyInfo\":\"diagonal:8,top:8\"}";
         File.WriteAllText(path, original);
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
 
-        var exception = Assert.Throws<InvalidDataException>(() =>
+        InvalidDataException exception = Assert.Throws<InvalidDataException>(() =>
             store.Save(
                 new Dictionary<string, LegacyOverlayPlacement>
                 {
@@ -165,7 +165,7 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
     {
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
 
-        var result = store.Save(
+        LegacyOverlayLayoutSaveResult result = store.Save(
             new Dictionary<string, LegacyOverlayPlacement>
             {
                 ["PlotJumpInfo"] = new(LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Top, 8, null),
@@ -183,12 +183,16 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
     public void GlobalOpacitySaveIsBackedUpAndPreservesUnknownSettings()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var settingsPath = Path.Combine(temporaryDirectory, "settings.json");
+        string settingsPath = Path.Combine(temporaryDirectory, "settings.json");
         const string original = "{\"futureSetting\":true,\"plotterOpacity\":55}";
         File.WriteAllText(settingsPath, original);
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
 
-        var result = store.Save(new Dictionary<string, LegacyOverlayPlacement>(), 0.42, updateDefaultOpacity: true);
+        LegacyOverlayLayoutSaveResult result = store.Save(
+            new Dictionary<string, LegacyOverlayPlacement>(),
+            0.42,
+            updateDefaultOpacity: true
+        );
 
         Assert.True(result.UpdatedDefaultOpacity);
         Assert.Equal(0, result.UpdatedPlacementCount);
@@ -203,7 +207,7 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
     {
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
 
-        var result = store.Save(
+        LegacyOverlayLayoutSaveResult result = store.Save(
             new Dictionary<string, LegacyOverlayPlacement>
             {
                 ["PlotRouteBio"] = new(
@@ -216,7 +220,7 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
                 ),
             }
         );
-        var layout = store.Load();
+        LegacyOverlayLayout layout = store.Load();
         layout.SetScaleIndex(24);
 
         Assert.Equal(1, result.UpdatedScaleOverrideCount);
@@ -260,7 +264,7 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
             null
         );
         active.SetScaleIndex(20);
-        var updated = original with { HorizontalOffset = 42 };
+        LegacyOverlayPlacement updated = original with { HorizontalOffset = 42 };
 
         Assert.True(active.SetPlacement("PlotJumpInfo", updated));
         Assert.False(active.SetPlacement("PlotJumpInfo", updated));
@@ -274,7 +278,7 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
     public void CustomOpacityVerificationAcceptsTheSerializedSliderPrecision()
     {
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
-        var opacity = Math.BitIncrement(0.43d);
+        double opacity = Math.BitIncrement(0.43d);
 
         store.Save(
             new Dictionary<string, LegacyOverlayPlacement>
@@ -290,7 +294,7 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
     public void EveryRuntimeLayoutMutationPublishesASettingsChange()
     {
         var layout = new LegacyOverlayLayout(new Dictionary<string, LegacyOverlayPlacement>(), null, null);
-        var changes = 0;
+        int changes = 0;
         layout.Changed += (_, _) => changes++;
 
         layout.SetScaleIndex(18);
@@ -319,7 +323,7 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
             null,
             null
         );
-        var changes = 0;
+        int changes = 0;
         layout.Changed += (_, _) => changes++;
 
         Assert.False(layout.SetPlacement("PlotBioSystem", placement));

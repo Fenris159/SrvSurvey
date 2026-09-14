@@ -24,8 +24,8 @@ public sealed class ColonizationBuildCatalogTests
     {
         var catalog = ColonizationBuildCatalog.LoadEmbedded();
 
-        var coriolis = catalog.FindByBuildType("NO_TRUSS");
-        var tellus = catalog.FindByLayout("Tellus");
+        ColonizationBuildCost? coriolis = catalog.FindByBuildType("NO_TRUSS");
+        IReadOnlyList<ColonizationBuildCost> tellus = catalog.FindByLayout("Tellus");
 
         Assert.NotNull(coriolis);
         Assert.Equal("Coriolis Starport", coriolis.DisplayName);
@@ -40,7 +40,7 @@ public sealed class ColonizationBuildCatalogTests
     {
         var catalog = ColonizationBuildCatalog.LoadEmbedded();
 
-        var orbital = catalog.ForLocation(ColonizationBuildLocation.Orbital);
+        IReadOnlyList<ColonizationBuildCost> orbital = catalog.ForLocation(ColonizationBuildLocation.Orbital);
 
         Assert.Equal(24, orbital.Count);
         Assert.True(orbital[0].Tier <= orbital[^1].Tier);
@@ -50,12 +50,12 @@ public sealed class ColonizationBuildCatalogTests
     [Fact]
     public void RejectsUnknownLocationAndIncompleteRows()
     {
-        using var unknownLocation = Json(
+        using MemoryStream unknownLocation = Json(
             """
             [{"buildType":"x","category":"X","tier":1,"location":"space","displayName":"X","layouts":["x"],"cargo":{"steel":1}}]
             """
         );
-        using var incomplete = Json(
+        using MemoryStream incomplete = Json(
             """
             [{"buildType":"x","category":"X","tier":1,"location":"orbital","displayName":"X","layouts":[],"cargo":{"steel":1}}]
             """

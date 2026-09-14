@@ -8,7 +8,7 @@ public sealed class ColonizationProjectTests
     [Fact]
     public void ReadsRavenProjectShapeAndCalculatesProgress()
     {
-        var project = JsonSerializer.Deserialize<ColonizationProject>(
+        ColonizationProject? project = JsonSerializer.Deserialize<ColonizationProject>(
             """
             {
               "buildId":"build-1",
@@ -49,7 +49,11 @@ public sealed class ColonizationProjectTests
             new() { BuildId = "shown-2", RemainingRequired = 199 },
         ];
 
-        var totals = ColonizationProjectCalculator.CalculateTotals(projects, ["HIDDEN"], shipCargoCapacity: 128);
+        ColonizationProjectTotals totals = ColonizationProjectCalculator.CalculateTotals(
+            projects,
+            ["HIDDEN"],
+            shipCargoCapacity: 128
+        );
 
         Assert.Equal(2, totals.SelectedProjectCount);
         Assert.Equal(300, totals.RemainingCargo);
@@ -61,7 +65,7 @@ public sealed class ColonizationProjectTests
     {
         var project = new ColonizationProject { MaximumRequired = 0, RemainingRequired = -10 };
 
-        var totals = ColonizationProjectCalculator.CalculateTotals(
+        ColonizationProjectTotals totals = ColonizationProjectCalculator.CalculateTotals(
             [project],
             hiddenBuildIds: null,
             shipCargoCapacity: 0

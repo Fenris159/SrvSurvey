@@ -42,16 +42,16 @@ namespace EliteDangerousRegionMap
         public static SrvSurvey.Core.Navigation.GalacticRegion? FindRegion(double x, double y, double z)
         {
             _ = y;
-            var pixelX = (int)((x - XOrigin) * 83 / 4096);
-            var pixelZ = (int)((z - ZOrigin) * 83 / 4096);
+            int pixelX = (int)((x - XOrigin) * 83 / 4096);
+            int pixelZ = (int)((z - ZOrigin) * 83 / 4096);
             if (pixelX < 0 || pixelZ < 0 || pixelZ >= RegionMapLines.Length)
             {
                 return null;
             }
 
-            var regionId = 0;
-            var runStart = 0;
-            foreach (var (runLength, value) in RegionMapLines[pixelZ])
+            int regionId = 0;
+            int runStart = 0;
+            foreach ((int runLength, int value) in RegionMapLines[pixelZ])
             {
                 if (pixelX < runStart + runLength)
                 {

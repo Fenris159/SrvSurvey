@@ -39,13 +39,13 @@ public sealed class InputBindingViewModel : INotifyPropertyChanged
         get => chord;
         set
         {
-            var candidate = value?.Trim() ?? string.Empty;
+            string candidate = value?.Trim() ?? string.Empty;
             if (string.Equals(chord, candidate, StringComparison.Ordinal))
             {
                 return;
             }
 
-            var normalized = string.Empty;
+            string? normalized = string.Empty;
             if (candidate.Length > 0 && !InputChord.TryNormalize(candidate, out normalized))
             {
                 chord = candidate;

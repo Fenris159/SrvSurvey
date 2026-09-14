@@ -50,10 +50,10 @@ internal sealed record EdsmSession(
     internal static EdsmSession? Create(EdsmPublicationOptions options, string? journalPath)
     {
         ArgumentNullException.ThrowIfNull(options);
-        var activeCommanderName = options.ActiveCommanderName?.Trim();
-        var frontierId = options.FrontierId?.Trim();
-        var gameVersion = options.GameVersion?.Trim();
-        var gameBuild = options.GameBuild?.Trim();
+        string? activeCommanderName = options.ActiveCommanderName?.Trim();
+        string? frontierId = options.FrontierId?.Trim();
+        string? gameVersion = options.GameVersion?.Trim();
+        string? gameBuild = options.GameBuild?.Trim();
         if (
             string.IsNullOrWhiteSpace(activeCommanderName)
             || string.IsNullOrWhiteSpace(frontierId)
@@ -77,7 +77,7 @@ internal sealed record EdsmSession(
 
     internal bool Matches(EdsmSession other)
     {
-        var pathComparison = OperatingSystem.IsWindows()
+        StringComparison pathComparison = OperatingSystem.IsWindows()
             ? StringComparison.OrdinalIgnoreCase
             : StringComparison.Ordinal;
         return string.Equals(ActiveCommanderName, other.ActiveCommanderName, StringComparison.OrdinalIgnoreCase)
@@ -91,8 +91,8 @@ internal sealed record EdsmSession(
 
     internal static EdsmCredentials? GetCredentials(string? edsmCommanderName, string? apiKey)
     {
-        var normalizedCommander = edsmCommanderName?.Trim();
-        var normalizedKey = apiKey?.Trim();
+        string? normalizedCommander = edsmCommanderName?.Trim();
+        string? normalizedKey = apiKey?.Trim();
         return string.IsNullOrWhiteSpace(normalizedCommander) || string.IsNullOrWhiteSpace(normalizedKey)
             ? null
             : new EdsmCredentials(normalizedCommander, normalizedKey);
@@ -130,7 +130,7 @@ internal sealed class EdsmJournalContext
 
     internal void Apply(JObject entry)
     {
-        var eventName = entry.Value<string>("event");
+        string? eventName = entry.Value<string>("event");
         UpdateMulticrew(eventName, entry);
         switch (eventName)
         {
@@ -239,7 +239,7 @@ internal sealed class EdsmJournalContext
 
     private static long? ReadInt64(JObject entry, string propertyName)
     {
-        var token = entry[propertyName];
+        JToken? token = entry[propertyName];
         if (token?.Type == JTokenType.Integer)
         {
             return token.Value<long>();
@@ -249,7 +249,7 @@ internal sealed class EdsmJournalContext
             token?.Value<string>(),
             System.Globalization.NumberStyles.Integer,
             System.Globalization.CultureInfo.InvariantCulture,
-            out var value
+            out long value
         )
             ? value
             : null;

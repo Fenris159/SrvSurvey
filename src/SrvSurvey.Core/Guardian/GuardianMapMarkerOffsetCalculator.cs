@@ -21,14 +21,14 @@ public static class GuardianMapMarkerOffsetCalculator
 
         var original = new SurfaceCoordinate(alignmentOrigin.Latitude, alignmentOrigin.Longitude);
         var corrected = new SurfaceCoordinate(correctedOrigin.Latitude, correctedOrigin.Longitude);
-        var distance = SurfaceNavigation.GetDistance(original, corrected, planetRadiusMeters);
+        double distance = SurfaceNavigation.GetDistance(original, corrected, planetRadiusMeters);
         if (distance == 0)
         {
             return default;
         }
 
-        var bearing = SurfaceNavigation.GetBearing(original, corrected);
-        var mapAngle = (bearing - siteHeading) * Math.PI / 180d;
+        double bearing = SurfaceNavigation.GetBearing(original, corrected);
+        double mapAngle = (bearing - siteHeading) * Math.PI / 180d;
         return new GuardianMapPoint(-Math.Sin(mapAngle) * distance, Math.Cos(mapAngle) * distance);
     }
 
@@ -42,7 +42,7 @@ public static class GuardianMapMarkerOffsetCalculator
             );
         }
 
-        var radians = siteHeading * Math.PI / 180d;
+        double radians = siteHeading * Math.PI / 180d;
         return new GuardianMapPoint(
             (-markerOffset.X * Math.Cos(radians)) + (markerOffset.Y * Math.Sin(radians)),
             (-markerOffset.X * Math.Sin(radians)) - (markerOffset.Y * Math.Cos(radians))
@@ -69,7 +69,7 @@ public static class GuardianMapMarkerOffsetCalculator
             throw new ArgumentOutOfRangeException(nameof(planetRadiusMeters), "The body radius must be positive.");
         }
 
-        var distance = Math.Sqrt((markerOffset.X * markerOffset.X) + (markerOffset.Y * markerOffset.Y));
+        double distance = Math.Sqrt((markerOffset.X * markerOffset.X) + (markerOffset.Y * markerOffset.Y));
         if (!double.IsFinite(distance))
         {
             throw new ArgumentOutOfRangeException(
@@ -83,8 +83,10 @@ public static class GuardianMapMarkerOffsetCalculator
             return correctedOrigin;
         }
 
-        var mapAngle = Math.Atan2(-markerOffset.X, markerOffset.Y);
-        var originalToCorrectedBearing = SurfaceNavigation.NormalizeDegrees((mapAngle * 180d / Math.PI) + siteHeading);
+        double mapAngle = Math.Atan2(-markerOffset.X, markerOffset.Y);
+        double originalToCorrectedBearing = SurfaceNavigation.NormalizeDegrees(
+            (mapAngle * 180d / Math.PI) + siteHeading
+        );
         return GetDestination(
             correctedOrigin,
             SurfaceNavigation.NormalizeDegrees(originalToCorrectedBearing + 180d),
@@ -100,15 +102,15 @@ public static class GuardianMapMarkerOffsetCalculator
         double planetRadiusMeters
     )
     {
-        var latitude = origin.Latitude * Math.PI / 180d;
-        var longitude = origin.Longitude * Math.PI / 180d;
-        var bearing = bearingDegrees * Math.PI / 180d;
-        var angularDistance = distanceMeters / planetRadiusMeters;
-        var destinationLatitude = Math.Asin(
+        double latitude = origin.Latitude * Math.PI / 180d;
+        double longitude = origin.Longitude * Math.PI / 180d;
+        double bearing = bearingDegrees * Math.PI / 180d;
+        double angularDistance = distanceMeters / planetRadiusMeters;
+        double destinationLatitude = Math.Asin(
             (Math.Sin(latitude) * Math.Cos(angularDistance))
                 + (Math.Cos(latitude) * Math.Sin(angularDistance) * Math.Cos(bearing))
         );
-        var destinationLongitude =
+        double destinationLongitude =
             longitude
             + Math.Atan2(
                 Math.Sin(bearing) * Math.Sin(angularDistance) * Math.Cos(latitude),

@@ -10,10 +10,10 @@ public sealed class BiologyPredictionEvaluatorTests
     {
         var evaluator = new BiologyPredictionEvaluator(BiologyCriteriaCatalog.LoadEmbedded());
 
-        var result = evaluator.Evaluate(CompleteAleoidaContext());
+        BiologyPredictionResult result = evaluator.Evaluate(CompleteAleoidaContext());
 
         Assert.Contains("Aleoida Coronamus - Lime", result.Predictions);
-        var prediction = Assert.Single(
+        BiologyPrediction prediction = Assert.Single(
             result.PredictionDetails,
             candidate => candidate.Name == "Aleoida Coronamus - Lime"
         );
@@ -27,7 +27,7 @@ public sealed class BiologyPredictionEvaluatorTests
     [Fact]
     public void CommonChildrenInheritGenusAndSpeciesQueries()
     {
-        var evaluator = CreateEvaluator(
+        BiologyPredictionEvaluator evaluator = CreateEvaluator(
             """
             {
               "genus": "Test",
@@ -52,7 +52,7 @@ public sealed class BiologyPredictionEvaluatorTests
             StarTypes = ["F"],
         };
 
-        var result = evaluator.Evaluate(context, targetVariant: "Test Plant - Blue");
+        BiologyPredictionResult result = evaluator.Evaluate(context, targetVariant: "Test Plant - Blue");
 
         Assert.Equal(["Test Plant - Blue"], result.Predictions);
         Assert.Equal(3, result.TargetClauses.Count);
@@ -61,13 +61,15 @@ public sealed class BiologyPredictionEvaluatorTests
     [Fact]
     public void CompositionAlternativesAreOrConditions()
     {
-        var evaluator = CreateEvaluator(LeafCriteria("atmosComp [Argon >= 100 | Nitrogen >= 0.5]"));
+        BiologyPredictionEvaluator evaluator = CreateEvaluator(
+            LeafCriteria("atmosComp [Argon >= 100 | Nitrogen >= 0.5]")
+        );
         var context = new BiologyPredictionContext
         {
             AtmosphereComposition = new Dictionary<string, double> { ["Argon"] = 20, ["Nitrogen"] = 0.5 },
         };
 
-        var result = evaluator.Evaluate(context);
+        BiologyPredictionResult result = evaluator.Evaluate(context);
 
         Assert.Equal(["Test Plant - Blue"], result.Predictions);
     }
@@ -75,13 +77,13 @@ public sealed class BiologyPredictionEvaluatorTests
     [Fact]
     public void SingleAtmosphereComponentIsNormalizedToOneHundredPercent()
     {
-        var evaluator = CreateEvaluator(LeafCriteria("atmosComp [CarbonDioxide >= 100]"));
+        BiologyPredictionEvaluator evaluator = CreateEvaluator(LeafCriteria("atmosComp [CarbonDioxide >= 100]"));
         var context = new BiologyPredictionContext
         {
             AtmosphereComposition = new Dictionary<string, double> { ["CarbonDioxide"] = 99.9 },
         };
 
-        var result = evaluator.Evaluate(context);
+        BiologyPredictionResult result = evaluator.Evaluate(context);
 
         Assert.Single(result.Predictions);
     }
@@ -89,12 +91,12 @@ public sealed class BiologyPredictionEvaluatorTests
     [Fact]
     public void MaterialsMustExceedLegacyPresenceThreshold()
     {
-        var evaluator = CreateEvaluator(LeafCriteria("mats [Iron]"));
+        BiologyPredictionEvaluator evaluator = CreateEvaluator(LeafCriteria("mats [Iron]"));
 
-        var atThreshold = evaluator.Evaluate(
+        BiologyPredictionResult atThreshold = evaluator.Evaluate(
             new BiologyPredictionContext { Materials = new Dictionary<string, double> { ["Iron"] = 0.25 } }
         );
-        var aboveThreshold = evaluator.Evaluate(
+        BiologyPredictionResult aboveThreshold = evaluator.Evaluate(
             new BiologyPredictionContext { Materials = new Dictionary<string, double> { ["Iron"] = 0.251 } }
         );
 
@@ -105,7 +107,7 @@ public sealed class BiologyPredictionEvaluatorTests
     [Fact]
     public void AllNotAndAnyQueriesRetainLegacySetSemantics()
     {
-        var evaluator = CreateEvaluator(
+        BiologyPredictionEvaluator evaluator = CreateEvaluator(
             """
             {
               "genus": "Test",
@@ -126,7 +128,7 @@ public sealed class BiologyPredictionEvaluatorTests
             Volcanism = "Minor Water Geysers",
         };
 
-        var result = evaluator.Evaluate(context);
+        BiologyPredictionResult result = evaluator.Evaluate(context);
 
         Assert.Equal(["Test Plant - Blue"], result.Predictions);
     }
@@ -134,9 +136,9 @@ public sealed class BiologyPredictionEvaluatorTests
     [Fact]
     public void MissingInputsAreReportedAndDoNotProducePredictions()
     {
-        var evaluator = CreateEvaluator(LeafCriteria("nebulae [ ~ 150]"));
+        BiologyPredictionEvaluator evaluator = CreateEvaluator(LeafCriteria("nebulae [ ~ 150]"));
 
-        var result = evaluator.Evaluate(new BiologyPredictionContext());
+        BiologyPredictionResult result = evaluator.Evaluate(new BiologyPredictionContext());
 
         Assert.Empty(result.Predictions);
         Assert.False(result.HasCompleteContext);
@@ -152,7 +154,7 @@ public sealed class BiologyPredictionEvaluatorTests
             KnownSpeciesByGenus = new Dictionary<string, string> { ["Aleoida"] = "Coronamus" },
         };
 
-        var result = evaluator.Evaluate(CompleteAleoidaContext(), knowledge);
+        BiologyPredictionResult result = evaluator.Evaluate(CompleteAleoidaContext(), knowledge);
 
         Assert.DoesNotContain(
             result.Predictions,
@@ -166,7 +168,7 @@ public sealed class BiologyPredictionEvaluatorTests
         var evaluator = new BiologyPredictionEvaluator(BiologyCriteriaCatalog.LoadEmbedded());
         var knowledge = new BiologyPredictionKnowledge { AllGeneraKnown = true, KnownGenera = ["Bacterium"] };
 
-        var result = evaluator.Evaluate(CompleteAleoidaContext(), knowledge);
+        BiologyPredictionResult result = evaluator.Evaluate(CompleteAleoidaContext(), knowledge);
 
         Assert.DoesNotContain(
             result.Predictions,

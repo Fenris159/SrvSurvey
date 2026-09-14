@@ -86,7 +86,7 @@ public sealed class QuestProgressMapperTests
             }
         );
 
-        var mapped = QuestProgressMapper.FromLegacy(progress);
+        RavenCommanderQuest mapped = QuestProgressMapper.FromLegacy(progress);
 
         Assert.Equal("publisher|sample|1.5", mapped.Reference.ToString());
         Assert.Equal("visible,1,3", mapped.Objectives["scan"]);

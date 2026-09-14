@@ -13,8 +13,8 @@ internal static class ReplayPresentationSnapshotStore
     public static ReplayPresentationSnapshot Capture(AppDataPaths paths, PixelRect? viewport)
     {
         ArgumentNullException.ThrowIfNull(paths);
-        var bounds = viewport is { Width: > 0, Height: > 0 } ? viewport.Value : DefaultViewport;
-        var layout = new LegacyOverlayLayoutStore(paths.DataDirectory).Load();
+        PixelRect bounds = viewport is { Width: > 0, Height: > 0 } ? viewport.Value : DefaultViewport;
+        LegacyOverlayLayout layout = new LegacyOverlayLayoutStore(paths.DataDirectory).Load();
         if (layout.Error is not null)
         {
             throw new InvalidDataException(layout.Error);
@@ -78,7 +78,7 @@ internal static class ReplayPresentationSnapshotStore
         Directory.CreateDirectory(session.ConfigDirectory);
         Directory.CreateDirectory(session.DataDirectory);
         var paths = new AppDataPaths(session.ConfigDirectory, session.DataDirectory, session.CacheDirectory, []);
-        var uiSettingsPath = paths.UiSettingsPath;
+        string uiSettingsPath = paths.UiSettingsPath;
         new OverlayPanelVisibilitySettingsStore(uiSettingsPath).Save(snapshot.OverlayEnablement);
         new OverlayScaleSettingsStore(uiSettingsPath).Save(new OverlayScalePreferences(snapshot.GlobalScaleIndex));
         var placements = snapshot.OverlayPlacements.ToDictionary(

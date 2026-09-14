@@ -12,7 +12,7 @@ public sealed class ReplaySessionManagerTests
         await using var source = new MemoryStream(new byte[17]);
         await using var destination = new MemoryStream();
 
-        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+        InvalidDataException exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
             ReplaySessionManager.CopyBoundedAsync(source, destination, maximumBytes: 16, CancellationToken.None)
         );
 
@@ -50,7 +50,7 @@ public sealed class ReplaySessionManagerTests
             []
         );
 
-        var exception = Assert.Throws<InvalidDataException>(() =>
+        InvalidDataException exception = Assert.Throws<InvalidDataException>(() =>
             ReplaySessionManager.ValidatePackageMetadata(package)
         );
 
@@ -81,7 +81,7 @@ public sealed class ReplaySessionManagerTests
             []
         );
 
-        var exception = Assert.Throws<InvalidDataException>(() =>
+        InvalidDataException exception = Assert.Throws<InvalidDataException>(() =>
             ReplaySessionManager.ValidatePackageMetadata(package)
         );
 
@@ -95,20 +95,20 @@ public sealed class ReplaySessionManagerTests
             "2026-08-23T10:00:00Z",
             global::System.Globalization.CultureInfo.InvariantCulture
         );
-        var journal = new[]
+        JournalReplayEvent[] journal = new[]
         {
             new JournalReplayEvent(0, ten, "First", "{}"),
             new JournalReplayEvent(1, null, "Missing", "{}"),
             new JournalReplayEvent(2, ten.AddMinutes(-1), "Regressing", "{}"),
             new JournalReplayEvent(3, ten.AddMinutes(2), "Last", "{}"),
         };
-        var companions = new[]
+        CompanionTimelineEntry[] companions = new[]
         {
             new CompanionTimelineEntry(ten.AddSeconds(30), ReplayInputKind.Status, "{}"),
             new CompanionTimelineEntry(ten.AddMinutes(1), ReplayInputKind.Cargo, "{}"),
         };
 
-        var merged = ReplaySessionManager.MergeTimeline(
+        IReadOnlyList<JournalReplayEvent> merged = ReplaySessionManager.MergeTimeline(
             journal,
             journalBootstrapCount: 0,
             companions,
@@ -125,7 +125,7 @@ public sealed class ReplaySessionManagerTests
     public async Task ImportCreatesAnIsolatedSessionFromACommanderJournal()
     {
         using var temp = new TemporaryDirectory();
-        var sourcePath = Path.Combine(temp.Path, "Journal.2026-08-21T180000.01.log");
+        string sourcePath = Path.Combine(temp.Path, "Journal.2026-08-21T180000.01.log");
         await File.WriteAllLinesAsync(
             sourcePath,
             [
@@ -135,7 +135,7 @@ public sealed class ReplaySessionManagerTests
             ]
         );
 
-        var session = await new ReplaySessionManager().ImportAsync(
+        DiagnosticReplaySession session = await new ReplaySessionManager().ImportAsync(
             sourcePath,
             Path.Combine(temp.Path, "managed"),
             CancellationToken.None
@@ -160,21 +160,21 @@ public sealed class ReplaySessionManagerTests
     public async Task LoadRejectsEvidenceChangedAfterImport()
     {
         using var temp = new TemporaryDirectory();
-        var sourcePath = Path.Combine(temp.Path, "Journal.01.log");
+        string sourcePath = Path.Combine(temp.Path, "Journal.01.log");
         await File.WriteAllLinesAsync(
             sourcePath,
             [
                 "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Commander\",\"Name\":\"Replay Cmdr\",\"FID\":\"F123456\"}",
             ]
         );
-        var imported = await new ReplaySessionManager().ImportAsync(
+        DiagnosticReplaySession imported = await new ReplaySessionManager().ImportAsync(
             sourcePath,
             Path.Combine(temp.Path, "managed"),
             CancellationToken.None
         );
         await File.AppendAllTextAsync(imported.SourceJournalPath, "{\"event\":\"Shutdown\"}\n");
 
-        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+        InvalidDataException exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
             DiagnosticReplaySession.LoadAsync(imported.ManifestPath, CancellationToken.None)
         );
 
@@ -185,7 +185,7 @@ public sealed class ReplaySessionManagerTests
     public async Task ImportAcceptsAVersionedReplayPackage()
     {
         using var temp = new TemporaryDirectory();
-        var journals = Path.Combine(temp.Path, "journals");
+        string journals = Path.Combine(temp.Path, "journals");
         Directory.CreateDirectory(journals);
         await File.WriteAllLinesAsync(
             Path.Combine(journals, "Journal.2026-08-21T180000.01.log"),
@@ -194,7 +194,7 @@ public sealed class ReplaySessionManagerTests
                 "{\"timestamp\":\"2026-08-21T18:00:01Z\",\"event\":\"LoadGame\",\"Commander\":\"Package Cmdr\",\"FID\":\"F777777\"}",
             ]
         );
-        var packagePath = Path.Combine(temp.Path, "incident.srvreplay");
+        string packagePath = Path.Combine(temp.Path, "incident.srvreplay");
         await new JournalReplayExporter().ExportAsync(
             journals,
             packagePath,
@@ -202,7 +202,7 @@ public sealed class ReplaySessionManagerTests
             CancellationToken.None
         );
 
-        var session = await new ReplaySessionManager().ImportAsync(
+        DiagnosticReplaySession session = await new ReplaySessionManager().ImportAsync(
             packagePath,
             Path.Combine(temp.Path, "managed"),
             CancellationToken.None
@@ -219,13 +219,13 @@ public sealed class ReplaySessionManagerTests
     public async Task ImportRejectsJournalWithoutCommanderIdentity()
     {
         using var temp = new TemporaryDirectory();
-        var sourcePath = Path.Combine(temp.Path, "Journal.01.log");
+        string sourcePath = Path.Combine(temp.Path, "Journal.01.log");
         await File.WriteAllTextAsync(
             sourcePath,
             "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Location\",\"StarSystem\":\"Sol\"}\n"
         );
 
-        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+        InvalidDataException exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
             new ReplaySessionManager().ImportAsync(
                 sourcePath,
                 Path.Combine(temp.Path, "managed"),
@@ -244,8 +244,8 @@ public sealed class ReplaySessionManagerTests
     public async Task LoadRejectsManifestPathThatEscapesTheSession()
     {
         using var temp = new TemporaryDirectory();
-        var session = await ImportCommanderJournalAsync(temp.Path);
-        var manifest = await File.ReadAllTextAsync(session.ManifestPath);
+        DiagnosticReplaySession session = await ImportCommanderJournalAsync(temp.Path);
+        string manifest = await File.ReadAllTextAsync(session.ManifestPath);
         await File.WriteAllTextAsync(
             session.ManifestPath,
             manifest.Replace(
@@ -255,7 +255,7 @@ public sealed class ReplaySessionManagerTests
             )
         );
 
-        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+        InvalidDataException exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
             DiagnosticReplaySession.LoadAsync(session.ManifestPath, CancellationToken.None)
         );
 
@@ -267,7 +267,7 @@ public sealed class ReplaySessionManagerTests
     {
         using var temp = new TemporaryDirectory();
         const long testJournalLimit = 1024;
-        var session = await ImportCommanderJournalAsync(temp.Path);
+        DiagnosticReplaySession session = await ImportCommanderJournalAsync(temp.Path);
         await using (
             var stream = new FileStream(session.SourceJournalPath, FileMode.Open, FileAccess.Write, FileShare.None)
         )
@@ -275,7 +275,7 @@ public sealed class ReplaySessionManagerTests
             stream.SetLength(testJournalLimit + 1);
         }
 
-        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+        InvalidDataException exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
             DiagnosticReplaySession.LoadAsync(session.ManifestPath, testJournalLimit, CancellationToken.None)
         );
 
@@ -288,12 +288,12 @@ public sealed class ReplaySessionManagerTests
     public async Task LoadRejectsManifestPathsThatAliasRetainedEvidence(string propertyName, string replacement)
     {
         using var temp = new TemporaryDirectory();
-        var session = await ImportCommanderJournalAsync(temp.Path);
-        var manifest = JsonNode.Parse(await File.ReadAllTextAsync(session.ManifestPath))!.AsObject();
+        DiagnosticReplaySession session = await ImportCommanderJournalAsync(temp.Path);
+        JsonObject manifest = JsonNode.Parse(await File.ReadAllTextAsync(session.ManifestPath))!.AsObject();
         manifest["paths"]!.AsObject()[propertyName] = replacement;
         await File.WriteAllTextAsync(session.ManifestPath, manifest.ToJsonString());
 
-        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+        InvalidDataException exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
             DiagnosticReplaySession.LoadAsync(session.ManifestPath, CancellationToken.None)
         );
 
@@ -307,12 +307,12 @@ public sealed class ReplaySessionManagerTests
     public async Task LoadRejectsMissingRequiredManifestObjects(string propertyName)
     {
         using var temp = new TemporaryDirectory();
-        var session = await ImportCommanderJournalAsync(temp.Path);
-        var manifest = JsonNode.Parse(await File.ReadAllTextAsync(session.ManifestPath))!.AsObject();
+        DiagnosticReplaySession session = await ImportCommanderJournalAsync(temp.Path);
+        JsonObject manifest = JsonNode.Parse(await File.ReadAllTextAsync(session.ManifestPath))!.AsObject();
         manifest[propertyName] = null;
         await File.WriteAllTextAsync(session.ManifestPath, manifest.ToJsonString());
 
-        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+        InvalidDataException exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
             DiagnosticReplaySession.LoadAsync(session.ManifestPath, CancellationToken.None)
         );
 
@@ -323,13 +323,13 @@ public sealed class ReplaySessionManagerTests
     public async Task ImportRejectsPackageWithMissingCommanderObject()
     {
         using var temp = new TemporaryDirectory();
-        var journals = Path.Combine(temp.Path, "journals");
+        string journals = Path.Combine(temp.Path, "journals");
         Directory.CreateDirectory(journals);
         await File.WriteAllTextAsync(
             Path.Combine(journals, "Journal.01.log"),
             "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Commander\",\"Name\":\"Package Cmdr\",\"FID\":\"F777777\"}\n"
         );
-        var packagePath = Path.Combine(temp.Path, "incident.srvreplay");
+        string packagePath = Path.Combine(temp.Path, "incident.srvreplay");
         await new JournalReplayExporter().ExportAsync(
             journals,
             packagePath,
@@ -338,7 +338,7 @@ public sealed class ReplaySessionManagerTests
         );
         using (ZipArchive archive = await ZipFile.OpenAsync(packagePath, ZipArchiveMode.Update))
         {
-            var entry = archive.GetEntry("replay-package.json")!;
+            ZipArchiveEntry entry = archive.GetEntry("replay-package.json")!;
             JsonObject manifest;
             using (var reader = new StreamReader(await entry.OpenAsync()))
             {
@@ -353,7 +353,7 @@ public sealed class ReplaySessionManagerTests
             await writer.WriteAsync(manifest.ToJsonString());
         }
 
-        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+        InvalidDataException exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
             new ReplaySessionManager().ImportAsync(
                 packagePath,
                 Path.Combine(temp.Path, "managed-package"),
@@ -368,10 +368,10 @@ public sealed class ReplaySessionManagerTests
     public async Task ImportRejectsOversizedLineBeforeMaterializingItAsAnEvent()
     {
         using var temp = new TemporaryDirectory();
-        var sourcePath = Path.Combine(temp.Path, "Journal.oversized.log");
+        string sourcePath = Path.Combine(temp.Path, "Journal.oversized.log");
         await File.WriteAllTextAsync(sourcePath, new string('x', (4 * 1024 * 1024) + 1));
 
-        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+        InvalidDataException exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
             new ReplaySessionManager().ImportAsync(
                 sourcePath,
                 Path.Combine(temp.Path, "managed-oversized"),
@@ -404,10 +404,10 @@ public sealed class ReplaySessionManagerTests
     public async Task ResetRejectsRuntimeDirectoryLinkWithoutTouchingTarget()
     {
         using var temp = new TemporaryDirectory();
-        var session = await ImportCommanderJournalAsync(temp.Path);
-        var outside = Path.Combine(temp.Path, "outside");
+        DiagnosticReplaySession session = await ImportCommanderJournalAsync(temp.Path);
+        string outside = Path.Combine(temp.Path, "outside");
         Directory.CreateDirectory(outside);
-        var marker = Path.Combine(outside, "must-survive.txt");
+        string marker = Path.Combine(outside, "must-survive.txt");
         await File.WriteAllTextAsync(marker, "personal data");
         Directory.Delete(session.ConfigDirectory);
         try
@@ -420,7 +420,7 @@ public sealed class ReplaySessionManagerTests
             return;
         }
 
-        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+        InvalidDataException exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
             session.ResetRuntimeAsync(CancellationToken.None)
         );
 
@@ -430,7 +430,7 @@ public sealed class ReplaySessionManagerTests
 
     private static async Task<DiagnosticReplaySession> ImportCommanderJournalAsync(string root)
     {
-        var sourcePath = Path.Combine(root, "Journal.01.log");
+        string sourcePath = Path.Combine(root, "Journal.01.log");
         await File.WriteAllTextAsync(
             sourcePath,
             "{\"timestamp\":\"2026-08-21T18:00:00Z\",\"event\":\"Commander\",\"Name\":\"Replay Cmdr\",\"FID\":\"F123456\"}\n"
@@ -478,7 +478,7 @@ public sealed class ReplaySessionManagerTests
         public override ValueTask<int> ReadAsync(Memory<char> buffer, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var count = Math.Min(buffer.Length, remaining);
+            int count = Math.Min(buffer.Length, remaining);
             buffer.Span[..count].Fill('x');
             remaining -= count;
             CharactersRead += count;

@@ -15,9 +15,9 @@ public sealed class SystemNotesViewModelTests : IDisposable
     [Fact]
     public async Task LoadsAndSavesCurrentSystemWithoutLosingSystemData()
     {
-        var systemsDirectory = Path.Combine(temporaryDirectory, "systems", "F123");
+        string systemsDirectory = Path.Combine(temporaryDirectory, "systems", "F123");
         Directory.CreateDirectory(systemsDirectory);
-        var path = Path.Combine(systemsDirectory, "Test System_42.json");
+        string path = Path.Combine(systemsDirectory, "Test System_42.json");
         await File.WriteAllTextAsync(
             path,
             """
@@ -29,19 +29,19 @@ public sealed class SystemNotesViewModelTests : IDisposable
             }
             """
         );
-        var viewModel = CreateViewModel();
+        SystemNotesViewModel viewModel = CreateViewModel();
         viewModel.UpdateContext("F123", "Drew", "Test System", 42, new GalacticCoordinate(1, 2, 3));
 
-        var loaded = await viewModel.LoadCurrentAsync();
+        bool loaded = await viewModel.LoadCurrentAsync();
         viewModel.Notes = "After";
-        var saved = await viewModel.SaveAsync();
+        bool saved = await viewModel.SaveAsync();
 
         Assert.True(loaded);
         Assert.True(saved);
         Assert.Equal("Test System", viewModel.SystemName);
         Assert.Equal("42", viewModel.SystemAddress);
         Assert.False(viewModel.IsDirty);
-        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        JsonObject root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.Equal("After", root["notes"]!.GetValue<string>());
         Assert.True(root["futureField"]!["enabled"]!.GetValue<bool>());
     }
@@ -50,14 +50,14 @@ public sealed class SystemNotesViewModelTests : IDisposable
     public async Task AlwaysOnTopUsesLosslessLegacySetting()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var settingsPath = Path.Combine(temporaryDirectory, "settings.json");
+        string settingsPath = Path.Combine(temporaryDirectory, "settings.json");
         await File.WriteAllTextAsync(settingsPath, "{\"systemNotesTopMost\":false,\"futureSetting\":42}");
-        var viewModel = CreateViewModel();
+        SystemNotesViewModel viewModel = CreateViewModel();
 
         await viewModel.SetAlwaysOnTopAsync(true);
 
         Assert.True(viewModel.AlwaysOnTop);
-        var root = JsonNode.Parse(await File.ReadAllTextAsync(settingsPath))!.AsObject();
+        JsonObject root = JsonNode.Parse(await File.ReadAllTextAsync(settingsPath))!.AsObject();
         Assert.True(root["systemNotesTopMost"]!.GetValue<bool>());
         Assert.Equal(42, root["futureSetting"]!.GetValue<int>());
     }
@@ -65,12 +65,12 @@ public sealed class SystemNotesViewModelTests : IDisposable
     [Fact]
     public async Task ProvidesEveryLegacyLinkAndSystemImagesAction()
     {
-        var screenshotRoot = Path.Combine(temporaryDirectory, "screenshots");
-        var imagesDirectory = Path.Combine(screenshotRoot, "Test- System");
+        string screenshotRoot = Path.Combine(temporaryDirectory, "screenshots");
+        string imagesDirectory = Path.Combine(screenshotRoot, "Test- System");
         Directory.CreateDirectory(imagesDirectory);
         var settings = new JsonObject { ["screenshotTargetFolder"] = screenshotRoot };
         await File.WriteAllTextAsync(Path.Combine(temporaryDirectory, "settings.json"), settings.ToJsonString());
-        var viewModel = CreateViewModel();
+        SystemNotesViewModel viewModel = CreateViewModel();
         var openedUris = new List<Uri>();
         DirectoryInfo? openedDirectory = null;
         viewModel.SetPlatformServices(
@@ -106,8 +106,8 @@ public sealed class SystemNotesViewModelTests : IDisposable
     [Fact]
     public async Task WindowCommandRequiresCurrentSystemAndConnectedWindow()
     {
-        var viewModel = CreateViewModel();
-        var opened = false;
+        SystemNotesViewModel viewModel = CreateViewModel();
+        bool opened = false;
         viewModel.SetWindowOpener(() =>
         {
             opened = true;
@@ -135,7 +135,7 @@ public sealed class SystemNotesViewModelTests : IDisposable
 
     private static async Task WaitUntilAsync(Func<bool> predicate)
     {
-        for (var attempt = 0; attempt < 50 && !predicate(); attempt++)
+        for (int attempt = 0; attempt < 50 && !predicate(); attempt++)
         {
             await Task.Delay(10);
         }

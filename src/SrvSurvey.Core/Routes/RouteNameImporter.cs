@@ -11,18 +11,20 @@ public sealed class RouteNameImporter(IStarSystemResolver resolver)
     )
     {
         ArgumentNullException.ThrowIfNull(names);
-        var normalizedNames = names
+        string[] normalizedNames = names
             .Where(name => !string.IsNullOrWhiteSpace(name))
             .Select(name => name.Trim())
             .ToArray();
         var hops = new List<FollowRouteHop>(normalizedNames.Length);
-        var resolvedCount = 0;
-        for (var index = 0; index < normalizedNames.Length; index++)
+        int resolvedCount = 0;
+        for (int index = 0; index < normalizedNames.Length; index++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var requestedName = normalizedNames[index];
-            var matches = await resolver.SearchAsync(requestedName, cancellationToken).ConfigureAwait(false);
-            var match = matches.Count > 0 ? matches[0] : null;
+            string requestedName = normalizedNames[index];
+            IReadOnlyList<StarSystemReference> matches = await resolver
+                .SearchAsync(requestedName, cancellationToken)
+                .ConfigureAwait(false);
+            StarSystemReference? match = matches.Count > 0 ? matches[0] : null;
             if (match is not null)
             {
                 resolvedCount++;

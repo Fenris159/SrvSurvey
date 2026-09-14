@@ -94,12 +94,12 @@ internal static class DirectionalChevronDrawing
             return;
         }
 
-        var maximumThickness = Math.Max(0.5, size / 3);
-        var thickness = double.IsFinite(strokeThickness) ? Math.Clamp(strokeThickness, 0.5, maximumThickness) : 1.75;
-        var usableSize = Math.Max(1, size - thickness);
-        var halfWidth = usableSize * 0.32;
-        var angle = double.IsFinite(bearingDegrees) ? bearingDegrees : 0;
-        var radians = angle * Math.PI / 180d;
+        double maximumThickness = Math.Max(0.5, size / 3);
+        double thickness = double.IsFinite(strokeThickness) ? Math.Clamp(strokeThickness, 0.5, maximumThickness) : 1.75;
+        double usableSize = Math.Max(1, size - thickness);
+        double halfWidth = usableSize * 0.32;
+        double angle = double.IsFinite(bearingDegrees) ? bearingDegrees : 0;
+        double radians = angle * Math.PI / 180d;
         var pen = new Pen(stroke, thickness, lineCap: PenLineCap.Round, lineJoin: PenLineJoin.Round);
 
         if (isFar)
@@ -122,15 +122,15 @@ internal static class DirectionalChevronDrawing
         double radians
     )
     {
-        var tip = Rotate(center, 0, tipY, radians);
+        Point tip = Rotate(center, 0, tipY, radians);
         context.DrawLine(pen, Rotate(center, -halfWidth, legY, radians), tip);
         context.DrawLine(pen, tip, Rotate(center, halfWidth, legY, radians));
     }
 
     private static Point Rotate(Point center, double x, double y, double radians)
     {
-        var cosine = Math.Cos(radians);
-        var sine = Math.Sin(radians);
+        double cosine = Math.Cos(radians);
+        double sine = Math.Sin(radians);
         return new Point(center.X + x * cosine - y * sine, center.Y + x * sine + y * cosine);
     }
 }

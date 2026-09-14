@@ -20,7 +20,7 @@ public sealed partial class FleetCarrierRouteOverlayWindow : Window
 
     private static FleetCarrierRouteOverlayViewModel CreateDesignViewModel()
     {
-        var temporaryDirectory = Path.Combine(Path.GetTempPath(), "SrvSurvey-Fleet-Carrier-Route-Overlay-Design");
+        string temporaryDirectory = Path.Combine(Path.GetTempPath(), "SrvSurvey-Fleet-Carrier-Route-Overlay-Design");
         return new FleetCarrierRouteOverlayViewModel(
             new RouteWorkspaceViewModel(
                 new FollowRouteService(new FollowRouteStore(temporaryDirectory, FollowRouteKind.FleetCarrier)),

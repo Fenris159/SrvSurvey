@@ -8,7 +8,7 @@ public sealed class OverlayGameWindowTrackerTests
     [Fact]
     public void KeepPreferenceOnlyOverridesForegroundForVisibleGameWindow()
     {
-        var keep = false;
+        bool keep = false;
         var inner = new StubTracker(
             new GameWindowSnapshot(
                 (nint)42,

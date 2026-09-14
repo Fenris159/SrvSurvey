@@ -19,7 +19,7 @@ public sealed class SystemNoteStore
         CancellationToken cancellationToken = default
     )
     {
-        var result = await fileStore
+        LegacySystemDataFileLoadResult result = await fileStore
             .LoadAsync(
                 new LegacySystemDataFileContext(frontierId, null, systemName, systemAddress, null),
                 cancellationToken
@@ -62,7 +62,7 @@ public sealed class SystemNoteStore
 
     private static string? GetString(JsonObject root, string propertyName)
     {
-        return root[propertyName] is JsonValue value && value.TryGetValue<string>(out var result) ? result : null;
+        return root[propertyName] is JsonValue value && value.TryGetValue<string>(out string? result) ? result : null;
     }
 }
 

@@ -28,7 +28,7 @@ public sealed class MiningDetectionViewModel(SurfaceMiningSettingsStore? store, 
 
             try
             {
-                var next = saved with { Enabled = value };
+                MiningDetectionSettings next = saved with { Enabled = value };
                 store?.SaveDetection(next);
                 saved = next;
                 if (draft is not null)
@@ -51,13 +51,13 @@ public sealed class MiningDetectionViewModel(SurfaceMiningSettingsStore? store, 
         get => Color.FromRgb((byte)(Settings.BarColor >> 16), (byte)(Settings.BarColor >> 8), (byte)Settings.BarColor);
         set
         {
-            var color = (uint)(value.R << 16 | value.G << 8 | value.B);
+            uint color = (uint)(value.R << 16 | value.G << 8 | value.B);
             if (Settings.BarColor == color)
             {
                 return;
             }
 
-            var next = Settings with { BarColor = color };
+            MiningDetectionSettings next = Settings with { BarColor = color };
             if (draft is not null)
             {
                 draft = next;

@@ -319,8 +319,8 @@ public sealed class HumanSiteMapControl : Control
     {
         base.Render(context);
         var bounds = new Rect(Bounds.Size);
-        var background = MapBackground ?? Brushes.Transparent;
-        var grid = GridBrush ?? Brushes.DimGray;
+        IBrush background = MapBackground ?? Brushes.Transparent;
+        IBrush grid = GridBrush ?? Brushes.DimGray;
         context.DrawRectangle(background, new Pen(grid, 1), bounds, 8, 8);
         if (
             Projection is not { } projection
@@ -332,8 +332,8 @@ public sealed class HumanSiteMapControl : Control
             return;
         }
 
-        var center = bounds.Center;
-        var scale = double.IsFinite(ScaleMultiplier) ? Math.Clamp(ScaleMultiplier, 0.1, 15) : 1;
+        Point center = bounds.Center;
+        double scale = double.IsFinite(ScaleMultiplier) ? Math.Clamp(ScaleMultiplier, 0.1, 15) : 1;
         // Keep settlement geometry inside the map frame so out-of-range
         // markers disappear at the border instead of painting over UI.
         using (context.PushClip(bounds))
@@ -355,22 +355,22 @@ public sealed class HumanSiteMapControl : Control
         DrawSiteGrid(context, bounds, center, commander, scale, grid);
         DrawBuildings(context, projection, center, commander, scale);
         DrawOuterLimit(context, center, commander, scale);
-        foreach (var pad in projection.LandingPads)
+        foreach (HumanSiteProjectedPoint pad in projection.LandingPads)
         {
             DrawLandingPad(context, pad, center, commander, scale);
         }
 
-        foreach (var door in projection.SecureDoors)
+        foreach (HumanSiteProjectedPoint door in projection.SecureDoors)
         {
             DrawDoor(context, door, center, commander, scale);
         }
 
-        foreach (var point in projection.NamedPoints)
+        foreach (HumanSiteProjectedPoint point in projection.NamedPoints)
         {
             DrawNamedPoint(context, point, center, commander, scale);
         }
 
-        for (var index = 0; index < projection.DataTerminals.Count; index++)
+        for (int index = 0; index < projection.DataTerminals.Count; index++)
         {
             DrawTerminal(
                 context,
@@ -382,7 +382,7 @@ public sealed class HumanSiteMapControl : Control
             );
         }
 
-        foreach (var point in projection.ConflictZonePoints)
+        foreach (HumanSiteProjectedPoint point in projection.ConflictZonePoints)
         {
             DrawConflictZonePoint(context, point, center, commander, scale);
         }
@@ -406,11 +406,11 @@ public sealed class HumanSiteMapControl : Control
         double scale
     )
     {
-        var x = point.X - commander.X;
-        var y = point.Y - commander.Y;
-        var radians = commanderHeading * Math.PI / 180;
-        var rotatedX = (x * Math.Cos(radians)) - (y * Math.Sin(radians));
-        var rotatedY = (y * Math.Cos(radians)) + (x * Math.Sin(radians));
+        double x = point.X - commander.X;
+        double y = point.Y - commander.Y;
+        double radians = commanderHeading * Math.PI / 180;
+        double rotatedX = (x * Math.Cos(radians)) - (y * Math.Sin(radians));
+        double rotatedY = (y * Math.Cos(radians)) + (x * Math.Sin(radians));
         return new Point(viewportCenter.X + (rotatedX * scale), viewportCenter.Y - (rotatedY * scale));
     }
 
@@ -424,10 +424,10 @@ public sealed class HumanSiteMapControl : Control
     )
     {
         var axis = new Pen(grid, 1, dashStyle: DashStyle.Dash);
-        var west = Transform(new HumanSiteMapPoint(-1_500, 0), center, commander, scale);
-        var east = Transform(new HumanSiteMapPoint(1_500, 0), center, commander, scale);
-        var south = Transform(new HumanSiteMapPoint(0, -1_500), center, commander, scale);
-        var north = Transform(new HumanSiteMapPoint(0, 1_500), center, commander, scale);
+        Point west = Transform(new HumanSiteMapPoint(-1_500, 0), center, commander, scale);
+        Point east = Transform(new HumanSiteMapPoint(1_500, 0), center, commander, scale);
+        Point south = Transform(new HumanSiteMapPoint(0, -1_500), center, commander, scale);
+        Point north = Transform(new HumanSiteMapPoint(0, 1_500), center, commander, scale);
         context.DrawLine(axis, Clamp(west, bounds), Clamp(east, bounds));
         context.DrawLine(axis, Clamp(south, bounds), Clamp(north, bounds));
         context.DrawLine(
@@ -445,12 +445,12 @@ public sealed class HumanSiteMapControl : Control
         double scale
     )
     {
-        foreach (var building in projection.Buildings)
+        foreach (HumanSiteProjectedBuilding building in projection.Buildings)
         {
-            var brush = GetBuildingBrush(building.Name);
-            foreach (var path in building.Paths)
+            IBrush brush = GetBuildingBrush(building.Name);
+            foreach (HumanSiteProjectedPath path in building.Paths)
             {
-                var geometry = CreatePath(path, center, commander, scale);
+                StreamGeometry geometry = CreatePath(path, center, commander, scale);
                 context.DrawGeometry(brush, new Pen(brush, 0.75), geometry);
             }
         }
@@ -464,9 +464,9 @@ public sealed class HumanSiteMapControl : Control
     )
     {
         var geometry = new StreamGeometry();
-        using var target = geometry.Open();
-        var figureOpen = false;
-        foreach (var segment in path.Segments)
+        using StreamGeometryContext target = geometry.Open();
+        bool figureOpen = false;
+        foreach (HumanSitePathSegment segment in path.Segments)
         {
             switch (segment.Kind)
             {
@@ -509,8 +509,8 @@ public sealed class HumanSiteMapControl : Control
 
     private void DrawOuterLimit(DrawingContext context, Point center, HumanSiteMapPoint commander, double scale)
     {
-        var origin = Transform(default, center, commander, scale);
-        var radius = HumanSiteViewModel.ShipCallLimitMeters * scale;
+        Point origin = Transform(default, center, commander, scale);
+        double radius = HumanSiteViewModel.ShipCallLimitMeters * scale;
         context.DrawEllipse(null, new Pen(DangerBrush ?? Brushes.OrangeRed, 1, DashStyle.Dash), origin, radius, radius);
     }
 
@@ -518,10 +518,10 @@ public sealed class HumanSiteMapControl : Control
     {
         if (ShipOffset is { } ship)
         {
-            var location = Transform(ship, center, commander, scale);
+            Point location = Transform(ship, center, commander, scale);
             if (ShowShipDismissalBoundary)
             {
-                var radius = HumanSiteViewModel.ShipDismissalLimitMeters * scale;
+                double radius = HumanSiteViewModel.ShipDismissalLimitMeters * scale;
                 context.DrawEllipse(
                     null,
                     new Pen(WarningBrush ?? Brushes.Gold, 1, DashStyle.Dash),
@@ -531,15 +531,15 @@ public sealed class HumanSiteMapControl : Control
                 );
             }
 
-            var brush = HasShipDeparted ? MutedBrush ?? Brushes.DimGray : AccentBrush ?? Brushes.Cyan;
+            IBrush brush = HasShipDeparted ? MutedBrush ?? Brushes.DimGray : AccentBrush ?? Brushes.Cyan;
             context.DrawEllipse(MapBackground, new Pen(brush, 2), location, 24, 24);
             DrawLabel(context, LocalizationCatalog.Translate("SHIP"), location, brush, 8);
         }
 
         if (SrvOffset is { } srv)
         {
-            var location = Transform(srv, center, commander, scale);
-            var brush = WarningBrush ?? Brushes.Gold;
+            Point location = Transform(srv, center, commander, scale);
+            IBrush brush = WarningBrush ?? Brushes.Gold;
             context.DrawRectangle(
                 MapBackground,
                 new Pen(brush, 2),
@@ -559,13 +559,13 @@ public sealed class HumanSiteMapControl : Control
         double scale
     )
     {
-        var size = pad.LandingPadSize switch
+        (double Width, double Height) size = pad.LandingPadSize switch
         {
             HumanSiteLandingPadSize.Small => (Width: 50d, Height: 70d),
             HumanSiteLandingPadSize.Medium => (Width: 70d, Height: 135d),
             _ => (Width: 90d, Height: 170d),
         };
-        var points = new[]
+        Point[] points = new[]
         {
             OrientedPoint(pad.Offset, -size.Width / 2, -size.Height / 2, pad.Rotation),
             OrientedPoint(pad.Offset, size.Width / 2, -size.Height / 2, pad.Rotation),
@@ -574,10 +574,10 @@ public sealed class HumanSiteMapControl : Control
         }
             .Select(point => Transform(point, center, commander, scale))
             .ToArray();
-        var geometry = CreatePolygon(points);
-        var brush = AccentBrush ?? Brushes.Cyan;
+        StreamGeometry geometry = CreatePolygon(points);
+        IBrush brush = AccentBrush ?? Brushes.Cyan;
         context.DrawGeometry(null, new Pen(brush, 1.5), geometry);
-        var location = Transform(pad.Offset, center, commander, scale);
+        Point location = Transform(pad.Offset, center, commander, scale);
         DrawLabel(context, pad.Name, location, brush, 10);
     }
 
@@ -589,9 +589,9 @@ public sealed class HumanSiteMapControl : Control
         double scale
     )
     {
-        var location = Transform(door.Offset, center, commander, scale);
-        var brush = GetSecurityBrush(door.SecurityLevel);
-        var radius = Math.Clamp(2 * scale, 2, 7);
+        Point location = Transform(door.Offset, center, commander, scale);
+        IBrush brush = GetSecurityBrush(door.SecurityLevel);
+        double radius = Math.Clamp(2 * scale, 2, 7);
         context.DrawRectangle(
             brush,
             new Pen(TextBrush ?? Brushes.White, 0.75),
@@ -607,8 +607,8 @@ public sealed class HumanSiteMapControl : Control
         double scale
     )
     {
-        var location = Transform(point.Offset, center, commander, scale);
-        var symbol = point.Name switch
+        Point location = Transform(point.Offset, center, commander, scale);
+        string symbol = point.Name switch
         {
             "Atmos" => "A",
             "Alarm" => "!",
@@ -637,11 +637,11 @@ public sealed class HumanSiteMapControl : Control
         double scale
     )
     {
-        var location = Transform(terminal.Offset, center, commander, scale);
-        var brush = processed
+        Point location = Transform(terminal.Offset, center, commander, scale);
+        IBrush brush = processed
             ? ProcessedBrush ?? MutedBrush ?? Brushes.DarkGreen
             : GetSecurityBrush(terminal.SecurityLevel);
-        var radius = Math.Clamp(3 * scale, 3, 9);
+        double radius = Math.Clamp(3 * scale, 3, 9);
         context.DrawRectangle(
             null,
             new Pen(brush, 1.5),
@@ -664,14 +664,14 @@ public sealed class HumanSiteMapControl : Control
             return;
         }
 
-        var brush = TextBrush ?? Brushes.White;
+        IBrush brush = TextBrush ?? Brushes.White;
         foreach (
-            var offset in CollectedMaterials
+            HumanSiteMapPoint offset in CollectedMaterials
                 .Where(material => material.Offset.IsFinite)
                 .Select(material => material.Offset)
         )
         {
-            var location = Transform(offset, center, commander, scale);
+            Point location = Transform(offset, center, commander, scale);
             context.DrawEllipse(MapBackground, new Pen(brush, 1.25), location, 2.5, 2.5);
         }
     }
@@ -683,8 +683,8 @@ public sealed class HumanSiteMapControl : Control
             return;
         }
 
-        var brush = QuestBrush ?? WarningBrush ?? Brushes.Gold;
-        foreach (var route in QuestRoutes)
+        IBrush brush = QuestBrush ?? WarningBrush ?? Brushes.Gold;
+        foreach (HumanSiteQuestRoute route in QuestRoutes)
         {
             if (route.Waypoints.Count < 2 || !double.IsFinite(route.Width) || route.Width < 0)
             {
@@ -697,10 +697,10 @@ public sealed class HumanSiteMapControl : Control
                 lineCap: PenLineCap.Round,
                 lineJoin: PenLineJoin.Round
             );
-            var prior = Transform(route.Waypoints[0], center, commander, scale);
-            for (var index = 1; index < route.Waypoints.Count; index++)
+            Point prior = Transform(route.Waypoints[0], center, commander, scale);
+            for (int index = 1; index < route.Waypoints.Count; index++)
             {
-                var next = Transform(route.Waypoints[index], center, commander, scale);
+                Point next = Transform(route.Waypoints[index], center, commander, scale);
                 context.DrawLine(pen, prior, next);
                 prior = next;
             }
@@ -720,16 +720,16 @@ public sealed class HumanSiteMapControl : Control
             return;
         }
 
-        foreach (var marker in QuestMarkers)
+        foreach (HumanSiteQuestMarker marker in QuestMarkers)
         {
             if (!marker.Offset.IsFinite || !double.IsFinite(marker.Radius) || marker.Radius < 0)
             {
                 continue;
             }
 
-            var location = Transform(marker.Offset, center, commander, scale);
-            var radius = Math.Clamp(marker.Radius * scale, 1, Math.Max(bounds.Width, bounds.Height) * 4);
-            var brush = marker.IsWithinTarget
+            Point location = Transform(marker.Offset, center, commander, scale);
+            double radius = Math.Clamp(marker.Radius * scale, 1, Math.Max(bounds.Width, bounds.Height) * 4);
+            IBrush brush = marker.IsWithinTarget
                 ? AccentBrush ?? Brushes.Cyan
                 : QuestBrush ?? WarningBrush ?? Brushes.Gold;
             context.DrawEllipse(null, new Pen(brush, 2), location, radius, radius);
@@ -744,10 +744,10 @@ public sealed class HumanSiteMapControl : Control
         double scale
     )
     {
-        var location = Transform(point.Offset, center, commander, scale);
+        Point location = Transform(point.Offset, center, commander, scale);
         if (string.Equals(point.Name, "P", StringComparison.OrdinalIgnoreCase))
         {
-            var power = PowerPostBrush ?? WarningBrush ?? Brushes.Gold;
+            IBrush power = PowerPostBrush ?? WarningBrush ?? Brushes.Gold;
             var pen = new Pen(power, 1.5);
             context.DrawEllipse(null, pen, location, 6, 6);
             context.DrawLine(pen, new Point(location.X + 2, location.Y - 5), new Point(location.X - 2, location.Y));
@@ -756,10 +756,10 @@ public sealed class HumanSiteMapControl : Control
             return;
         }
 
-        var dx = point.Offset.X - commander.X;
-        var dy = point.Offset.Y - commander.Y;
-        var isLocal = Math.Sqrt(dx * dx + dy * dy) < 5;
-        var brush = isLocal
+        double dx = point.Offset.X - commander.X;
+        double dy = point.Offset.Y - commander.Y;
+        bool isLocal = Math.Sqrt(dx * dx + dy * dy) < 5;
+        IBrush brush = isLocal
             ? LocalCheckpointBrush ?? SuccessBrush ?? Brushes.LimeGreen
             : CheckpointBrush ?? WarningBrush ?? Brushes.Gold;
         context.DrawEllipse(null, new Pen(brush, 1.5), location, 6, 6);
@@ -771,7 +771,7 @@ public sealed class HumanSiteMapControl : Control
 
     private void DrawCommander(DrawingContext context, Point center)
     {
-        var brush = SuccessBrush ?? Brushes.LimeGreen;
+        IBrush brush = SuccessBrush ?? Brushes.LimeGreen;
         context.DrawEllipse(MapBackground, new Pen(brush, 2), center, 6, 6);
         context.DrawLine(new Pen(brush, 2), center, new Point(center.X, center.Y - 14));
     }
@@ -784,20 +784,20 @@ public sealed class HumanSiteMapControl : Control
         double scale
     )
     {
-        var origin = Transform(default, center, commander, scale);
-        var dx = origin.X - center.X;
-        var dy = origin.Y - center.Y;
-        var distance = Math.Sqrt((dx * dx) + (dy * dy));
+        Point origin = Transform(default, center, commander, scale);
+        double dx = origin.X - center.X;
+        double dy = origin.Y - center.Y;
+        double distance = Math.Sqrt((dx * dx) + (dy * dy));
         if (distance <= 0)
         {
             return;
         }
 
-        var length = Math.Min(90, Math.Min(bounds.Width, bounds.Height) / 4);
-        var x = dx / distance;
-        var y = dy / distance;
+        double length = Math.Min(90, Math.Min(bounds.Width, bounds.Height) / 4);
+        double x = dx / distance;
+        double y = dy / distance;
         var end = new Point(center.X + (x * length), center.Y + (y * length));
-        var brush = DangerBrush ?? Brushes.OrangeRed;
+        IBrush brush = DangerBrush ?? Brushes.OrangeRed;
         var pen = new Pen(brush, 3);
         context.DrawLine(pen, center, end);
         context.DrawLine(pen, end, new Point(end.X - (x * 14) - (y * 8), end.Y - (y * 14) + (x * 8)));
@@ -855,13 +855,13 @@ public sealed class HumanSiteMapControl : Control
             return;
         }
 
-        var brush = TextBrush ?? Brushes.White;
+        IBrush brush = TextBrush ?? Brushes.White;
         DrawLabel(context, floor >= 3 ? "⌃⌃" : "⌃", new Point(location.X, location.Y + 8), brush, 7);
     }
 
     private static HumanSiteMapPoint OrientedPoint(HumanSiteMapPoint origin, double x, double y, double rotation)
     {
-        var radians = rotation * Math.PI / 180;
+        double radians = rotation * Math.PI / 180;
         return new HumanSiteMapPoint(
             origin.X + (x * Math.Cos(radians)) + (y * Math.Sin(radians)),
             origin.Y + (y * Math.Cos(radians)) - (x * Math.Sin(radians))
@@ -871,9 +871,9 @@ public sealed class HumanSiteMapControl : Control
     private static StreamGeometry CreatePolygon(Point[] points)
     {
         var geometry = new StreamGeometry();
-        using var target = geometry.Open();
+        using StreamGeometryContext target = geometry.Open();
         target.BeginFigure(points[0], isFilled: true);
-        for (var index = 1; index < points.Length; index++)
+        for (int index = 1; index < points.Length; index++)
         {
             target.LineTo(points[index]);
         }

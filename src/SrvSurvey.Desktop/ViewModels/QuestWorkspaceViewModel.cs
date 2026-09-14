@@ -261,13 +261,13 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
         {
             IsBusy = true;
             StatusMessage = "Refreshing quest communications...";
-            var runtime = await coordinator.RefreshAsync();
+            QuestRuntimeUpdateResult runtime = await coordinator.RefreshAsync();
             warnings.AddRange(runtime.Warnings);
             RebuildRuntimeRows(runtime.Quests);
 
             try
             {
-                var definitions = await coordinator.GetPublishedQuestsAsync();
+                IReadOnlyList<RavenQuestDefinition> definitions = await coordinator.GetPublishedQuestsAsync();
                 Catalog = definitions
                     .Where(definition => ActiveQuests.All(active => !SameQuest(active.Reference, definition.Reference)))
                     .Select(definition => new QuestCatalogRowViewModel(definition))
@@ -281,7 +281,7 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
 
             try
             {
-                var statuses = await coordinator.GetCommanderQuestStatusesAsync();
+                IReadOnlyList<RavenCommanderQuestStatus> statuses = await coordinator.GetCommanderQuestStatusesAsync();
                 History = statuses
                     .Where(status => status.State != RavenQuestState.active)
                     .Select(status => new QuestHistoryRowViewModel(status))
@@ -316,13 +316,13 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
 
     private async Task ToggleEnabledAsync()
     {
-        var enabled = !IsEnabled;
+        bool enabled = !IsEnabled;
         try
         {
             IsBusy = true;
             settingsStore.SaveEnabled(enabled);
             IsEnabled = enabled;
-            var result = await coordinator.SetEnabledAsync(enabled);
+            QuestRuntimeUpdateResult result = await coordinator.SetEnabledAsync(enabled);
             ApplyRuntimeResult(result, enabled);
         }
         catch (InvalidOperationException exception)
@@ -492,7 +492,7 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
     private void RebuildRuntimeRows(IReadOnlyList<QuestRuntimeSnapshot> snapshots)
     {
         appliedRuntimeSnapshots = snapshots;
-        var selectedReference = SelectedQuest?.Reference;
+        RavenQuestReference? selectedReference = SelectedQuest?.Reference;
         (RavenQuestReference Quest, string Id)? selectedMessageIdentity = SelectedMessage is null
             ? null
             : (SelectedMessage.Quest, SelectedMessage.Id);
@@ -503,7 +503,7 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
             .OrderByDescending(message => message.Received)
             .Select(message => new QuestMessageRowViewModel(message))
             .ToArray();
-        var firstActiveQuest = ActiveQuests.Count > 0 ? ActiveQuests[0] : null;
+        QuestCardViewModel? firstActiveQuest = ActiveQuests.Count > 0 ? ActiveQuests[0] : null;
         SelectedQuest = selectedReference is null
             ? firstActiveQuest
             : ActiveQuests.FirstOrDefault(quest => SameQuest(quest.Reference, selectedReference));
@@ -659,12 +659,12 @@ public sealed record QuestObjectiveRowViewModel(string Id, string Label, string 
 {
     public static QuestObjectiveRowViewModel Create(string id, string label, string value)
     {
-        var parts = value.Split(',', StringSplitOptions.TrimEntries);
-        var state = parts.FirstOrDefault() ?? "unknown";
-        var progress =
+        string[] parts = value.Split(',', StringSplitOptions.TrimEntries);
+        string state = parts.FirstOrDefault() ?? "unknown";
+        string progress =
             parts.Length >= 3
-            && int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var current)
-            && int.TryParse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out var total)
+            && int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int current)
+            && int.TryParse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out int total)
                 ? $"{current:N0} / {total:N0}"
                 : string.Empty;
         return new QuestObjectiveRowViewModel(

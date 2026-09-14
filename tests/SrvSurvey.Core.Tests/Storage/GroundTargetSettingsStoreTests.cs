@@ -16,7 +16,7 @@ public sealed class GroundTargetSettingsStoreTests : IDisposable
     {
         var store = new GroundTargetSettingsStore(temporaryDirectory);
 
-        var result = store.Load();
+        GroundTargetSettingsLoadResult result = store.Load();
 
         Assert.True(result.IsSuccess, result.Error);
         Assert.False(result.Exists);
@@ -28,7 +28,7 @@ public sealed class GroundTargetSettingsStoreTests : IDisposable
     public async Task LoadAndSaveUseLegacyFieldsAndPreserveUnknownData()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = System.IO.Path.Combine(temporaryDirectory, "settings.json");
+        string path = System.IO.Path.Combine(temporaryDirectory, "settings.json");
         await File.WriteAllTextAsync(
             path,
             """
@@ -41,7 +41,7 @@ public sealed class GroundTargetSettingsStoreTests : IDisposable
         );
         var store = new GroundTargetSettingsStore(temporaryDirectory);
 
-        var result = store.Load();
+        GroundTargetSettingsLoadResult result = store.Load();
 
         Assert.True(result.IsSuccess, result.Error);
         Assert.True(result.Snapshot!.IsActive);
@@ -49,7 +49,7 @@ public sealed class GroundTargetSettingsStoreTests : IDisposable
 
         await store.SaveAsync(new GroundTargetSnapshot(false, new SurfaceCoordinate(-1.5, 2.25)));
 
-        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        JsonObject root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.True(root["unknownSetting"]!["enabled"]!.GetValue<bool>());
         Assert.Equal(7, root["targetLatLong"]!["future"]!.GetValue<int>());
         Assert.Equal(-1.5, root["targetLatLong"]!["lat"]!.GetValue<double>());
@@ -60,7 +60,7 @@ public sealed class GroundTargetSettingsStoreTests : IDisposable
     public async Task SaveRefusesToOverwriteMalformedSettings()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = System.IO.Path.Combine(temporaryDirectory, "settings.json");
+        string path = System.IO.Path.Combine(temporaryDirectory, "settings.json");
         const string malformed = "{\"targetLatLong\":";
         await File.WriteAllTextAsync(path, malformed);
         var store = new GroundTargetSettingsStore(temporaryDirectory);
@@ -80,7 +80,7 @@ public sealed class GroundTargetSettingsStoreTests : IDisposable
         );
         var store = new GroundTargetSettingsStore(temporaryDirectory);
 
-        var result = store.Load();
+        GroundTargetSettingsLoadResult result = store.Load();
 
         Assert.False(result.IsSuccess);
         Assert.Contains("invalid", result.Error, StringComparison.OrdinalIgnoreCase);

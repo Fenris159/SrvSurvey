@@ -7,7 +7,7 @@ public sealed class GuardianMapMarkerOffsetCalculatorTests
     [Fact]
     public void CalculatesOppositeMapTranslationFromCorrectedOrigin()
     {
-        var offset = GuardianMapMarkerOffsetCalculator.Calculate(
+        GuardianMapPoint offset = GuardianMapMarkerOffsetCalculator.Calculate(
             new GuardianSurfaceLocation(0, 0),
             new GuardianSurfaceLocation(0, 90),
             siteHeading: 0,
@@ -21,7 +21,7 @@ public sealed class GuardianMapMarkerOffsetCalculatorTests
     [Fact]
     public void RotatesStoredMapOffsetIntoSurfaceCoordinatesForTargeting()
     {
-        var surfaceOffset = GuardianMapMarkerOffsetCalculator.ToSurfaceCoordinates(
+        GuardianMapPoint surfaceOffset = GuardianMapMarkerOffsetCalculator.ToSurfaceCoordinates(
             new GuardianMapPoint(0, 10),
             siteHeading: 90
         );
@@ -36,9 +36,14 @@ public sealed class GuardianMapMarkerOffsetCalculatorTests
         const double radius = 1_000_000;
         var original = new GuardianSurfaceLocation(10, 20);
         var corrected = new GuardianSurfaceLocation(10.01, 20.02);
-        var offset = GuardianMapMarkerOffsetCalculator.Calculate(original, corrected, siteHeading: 37, radius);
+        GuardianMapPoint offset = GuardianMapMarkerOffsetCalculator.Calculate(
+            original,
+            corrected,
+            siteHeading: 37,
+            radius
+        );
 
-        var recovered = GuardianMapMarkerOffsetCalculator.RecoverAlignmentOrigin(
+        GuardianSurfaceLocation recovered = GuardianMapMarkerOffsetCalculator.RecoverAlignmentOrigin(
             corrected,
             offset,
             siteHeading: 37,

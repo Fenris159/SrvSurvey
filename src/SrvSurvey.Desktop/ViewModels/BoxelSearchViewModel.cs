@@ -487,7 +487,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     public bool HasLastSystemAvailableError =>
         hasUnappliedLastSystemAvailableEdit
         && (
-            !TryParseLastSystemAvailable(LastSystemAvailable, out var parsed)
+            !TryParseLastSystemAvailable(LastSystemAvailable, out int parsed)
             || parsed < searchState.CurrentMaximumSystemNumber
         );
 
@@ -763,7 +763,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         BoxelSearchSnapshot snapshot
     )
     {
-        var outcome = await SwitchSessionProfileAsync(
+        BoxelSearchOutcome outcome = await SwitchSessionProfileAsync(
             new BoxelSearchProfile(profileFrontierId, profileCommanderName, profileIsOdyssey, snapshot)
         );
         ApplyOutcome(outcome);
@@ -824,7 +824,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     )
     {
         ArgumentNullException.ThrowIfNull(nextStatus);
-        var outcome = await ApplySessionUpdateAsync(
+        BoxelSearchOutcome outcome = await ApplySessionUpdateAsync(
             new BoxelSearchUpdate
             {
                 HasStatus = true,
@@ -841,18 +841,18 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     public async Task ActivateAsync()
     {
-        if (!TryParseBoxelInput(TopBoxelText, out var topBoxel))
+        if (!TryParseBoxelInput(TopBoxelText, out BoxelAddress? topBoxel))
         {
             StatusMessage = "Enter a valid generated system or boxel name.";
             return;
         }
 
-        var selectedMassCode = string.IsNullOrWhiteSpace(LowMassCode) ? '\0' : char.ToLowerInvariant(LowMassCode[0]);
+        char selectedMassCode = string.IsNullOrWhiteSpace(LowMassCode) ? '\0' : char.ToLowerInvariant(LowMassCode[0]);
         SetLastSystemAvailableEditState(false);
         isActivating = true;
         try
         {
-            var outcome = await ExecuteSessionActionAsync(
+            BoxelSearchOutcome outcome = await ExecuteSessionActionAsync(
                 new ActivateBoxelSearch(
                     new BoxelSearchActivationRequest
                     {
@@ -888,7 +888,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     public async Task<SaveBoxelProgressResult> SaveProgressAsync(string? name = null, string? notes = null)
     {
-        var outcome = await ExecuteSessionActionAsync(new SaveBoxelSearchToLibrary(name, notes));
+        BoxelSearchOutcome outcome = await ExecuteSessionActionAsync(new SaveBoxelSearchToLibrary(name, notes));
         ApplyOutcome(outcome);
         return outcome.Code switch
         {
@@ -924,14 +924,14 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     public async Task DeleteSavedSearchAsync(string fileName)
     {
-        var outcome = await ExecuteSessionActionAsync(new DeleteSavedBoxelSearch(fileName));
+        BoxelSearchOutcome outcome = await ExecuteSessionActionAsync(new DeleteSavedBoxelSearch(fileName));
         ApplyOutcome(outcome);
         ThrowForRejectedLibraryOutcome(outcome);
     }
 
     public async Task ResumeSavedSearchAsync(string fileName)
     {
-        var outcome = await ExecuteSessionActionAsync(new ResumeSavedBoxelSearch(fileName));
+        BoxelSearchOutcome outcome = await ExecuteSessionActionAsync(new ResumeSavedBoxelSearch(fileName));
         ApplyOutcome(outcome);
         ThrowForRejectedLibraryOutcome(outcome);
     }
@@ -943,7 +943,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return;
         }
 
-        var outcome = await ExecuteSessionActionAsync(new SetBoxelAutoCopy(false));
+        BoxelSearchOutcome outcome = await ExecuteSessionActionAsync(new SetBoxelAutoCopy(false));
         ApplyOutcome(outcome, competingAutoCopy: true);
     }
 
@@ -1017,14 +1017,14 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         }
 
         appliedSessionVersion = snapshot.Version;
-        var profileGeneration = snapshot.Context.Profile?.Generation ?? -1;
+        long profileGeneration = snapshot.Context.Profile?.Generation ?? -1;
         if (profileGeneration != appliedProfileGeneration)
         {
             navigationOptions.Clear();
             appliedProfileGeneration = profileGeneration;
         }
 
-        var searchChanged = !ReferenceEquals(searchState, snapshot.Search);
+        bool searchChanged = !ReferenceEquals(searchState, snapshot.Search);
         searchState = snapshot.Search;
         latestRoute = snapshot.Context.Route;
         status = snapshot.Context.Status;
@@ -1053,7 +1053,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
         UpdateDestinationStatus();
 
-        var activity = snapshot.Activity;
+        BoxelSearchActivitySnapshot activity = snapshot.Activity;
         IsAuditing = activity.Kind is BoxelSearchActivityKind.Auditing or BoxelSearchActivityKind.CancellingAudit;
         IsBusy = activity.Kind != BoxelSearchActivityKind.Idle;
         AuditProcessed = activity.Processed;
@@ -1302,21 +1302,22 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     private void UpdateStatsGlance()
     {
-        var snapshot = surveyStats?.Current;
+        BoxelSurveyBoxelSnapshot? snapshot = surveyStats?.Current;
         if (snapshot is null || string.IsNullOrWhiteSpace(snapshot.Prefix))
         {
             StatsGlanceText = string.Empty;
             return;
         }
 
-        var helium =
+        string helium =
             snapshot.MinHeliumPercent is null && snapshot.MaxHeliumPercent is null
                 ? Unavailable
                 : string.Create(
                     CultureInfo.CurrentCulture,
                     $"HE {snapshot.MinHeliumPercent ?? snapshot.MaxHeliumPercent:0.#}–{snapshot.MaxHeliumPercent ?? snapshot.MinHeliumPercent:0.#}%"
                 );
-        var highestSuffix = snapshot.HighestRecordedSuffix?.ToString("N0", CultureInfo.CurrentCulture) ?? Unavailable;
+        string highestSuffix =
+            snapshot.HighestRecordedSuffix?.ToString("N0", CultureInfo.CurrentCulture) ?? Unavailable;
         StatsGlanceText = string.Create(
             CultureInfo.CurrentCulture,
             $"{snapshot.Prefix}  ·  {snapshot.Visited:N0} recorded  ·  highest suffix {highestSuffix}  ·  {helium}"
@@ -1325,7 +1326,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     public async Task ApplyLastSystemAvailableAsync()
     {
-        if (!TryParseLastSystemAvailable(LastSystemAvailable, out var parsedLastSystemAvailable))
+        if (!TryParseLastSystemAvailable(LastSystemAvailable, out int parsedLastSystemAvailable))
         {
             StatusMessage = "Last system available must be a whole number from 0 to 99,999.";
             return;
@@ -1367,7 +1368,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     private async Task NavigateParentAsync()
     {
-        var parent = GetParent();
+        BoxelAddress? parent = GetParent();
         if (parent is not null)
         {
             await NavigateAsync(parent);
@@ -1376,7 +1377,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     private async Task NavigatePreviousAsync()
     {
-        var sibling = GetSibling(-1);
+        BoxelAddress? sibling = GetSibling(-1);
         if (sibling is not null)
         {
             await NavigateAsync(sibling);
@@ -1385,7 +1386,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     private async Task NavigateNextAsync()
     {
-        var sibling = GetSibling(1);
+        BoxelAddress? sibling = GetSibling(1);
         if (sibling is not null)
         {
             await NavigateAsync(sibling);
@@ -1421,7 +1422,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private async Task ExecuteSystemActionAsync(IBoxelSearchAction action)
     {
         showNextSystemPageOnUpdate = true;
-        var outcome = await ExecuteSessionActionAsync(action);
+        BoxelSearchOutcome outcome = await ExecuteSessionActionAsync(action);
         ApplyOutcome(outcome);
         if (
             outcome.Kind != BoxelSearchOutcomeKind.Rejected
@@ -1444,7 +1445,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return null;
         }
 
-        var parent = searchState.CurrentBoxel.Parent;
+        BoxelAddress parent = searchState.CurrentBoxel.Parent;
         return searchState.TopBoxel.Contains(parent) ? parent : null;
     }
 
@@ -1459,20 +1460,20 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return null;
         }
 
-        var siblings = searchState.CurrentBoxel.Parent.Children;
-        var index = siblings
+        IReadOnlyList<BoxelAddress> siblings = searchState.CurrentBoxel.Parent.Children;
+        int index = siblings
             .ToList()
             .FindIndex(sibling =>
                 string.Equals(sibling.Prefix, searchState.CurrentBoxel.Prefix, StringComparison.Ordinal)
             );
-        var targetIndex = index + offset;
+        int targetIndex = index + offset;
         return targetIndex >= 0 && targetIndex < siblings.Count ? siblings[targetIndex] : null;
     }
 
     private bool IsCurrentSystemInsideSearch()
     {
         return searchState.TopBoxel is not null
-            && TryParseBoxelInput(CurrentSystemName, out var currentSystem)
+            && TryParseBoxelInput(CurrentSystemName, out BoxelAddress? currentSystem)
             && searchState.TopBoxel.Contains(currentSystem);
     }
 
@@ -1497,7 +1498,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private bool CanApplyLastSystemAvailable()
     {
         return CanUseActiveSearch()
-            && TryParseLastSystemAvailable(LastSystemAvailable, out var parsedLastSystemAvailable)
+            && TryParseLastSystemAvailable(LastSystemAvailable, out int parsedLastSystemAvailable)
             && parsedLastSystemAvailable >= searchState.CurrentMaximumSystemNumber
             && parsedLastSystemAvailable != Math.Max(0, searchState.CurrentCount - 1);
     }
@@ -1563,14 +1564,14 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private void UpdateDestinationStatus()
     {
         BoxelAddress? destinationBoxel = null;
-        var routeDestination = latestRoute?.Route.Count > 1 ? latestRoute.Route[^1] : null;
+        NavRouteEntry? routeDestination = latestRoute?.Route.Count > 1 ? latestRoute.Route[^1] : null;
         if (routeDestination is not null)
         {
             destinationBoxel = routeDestination.ToBoxelObservation()?.Boxel;
         }
         else if (lastDestination is { Body: 0 } destination)
         {
-            var resolved =
+            bool resolved =
                 destination.System > 0
                     ? BoxelAddress.TryFromSystemAddress(
                         destination.System,
@@ -1637,7 +1638,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             systemPageTargetIndex = null;
             showNextSystemPageOnUpdate = false;
             orderedSystemNumbers = [];
-            systemNumberPositions = new Dictionary<int, int>();
+            systemNumberPositions = [];
             currentDeferredSystemCount = 0;
             SystemListNote = string.Empty;
             SystemPageText = "Page 1 of 1";
@@ -1647,18 +1648,18 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         }
 
         var systemsByNumber = searchState.Systems.ToDictionary(system => system.Boxel.N2);
-        var totalRowCount = Math.Max(1, GetSystemRowCount());
+        int totalRowCount = Math.Max(1, GetSystemRowCount());
         (orderedSystemNumbers, currentDeferredSystemCount) = GetOrderedSystemNumbers(totalRowCount);
         systemNumberPositions =
             currentDeferredSystemCount == 0
-                ? new Dictionary<int, int>()
+                ? []
                 : orderedSystemNumbers
                     .Select((number, position) => (number, position))
                     .ToDictionary(entry => entry.number, entry => entry.position);
-        var rowCount = orderedSystemNumbers.Length;
-        var presentedNextSystem = GetPresentedNextSystem();
-        var nextSystemPageIndex = GetNextSystemPageIndex();
-        var nextSystemLocationChanged =
+        int rowCount = orderedSystemNumbers.Length;
+        string? presentedNextSystem = GetPresentedNextSystem();
+        int nextSystemPageIndex = GetNextSystemPageIndex();
+        bool nextSystemLocationChanged =
             !string.Equals(systemPageTarget, presentedNextSystem, StringComparison.Ordinal)
             || systemPageTargetIndex != nextSystemPageIndex;
         if (
@@ -1677,27 +1678,27 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         systemPageTarget = presentedNextSystem;
         systemPageTargetIndex = nextSystemPageIndex;
         showNextSystemPageOnUpdate = false;
-        var pageCount = Math.Max(1, (rowCount + SystemsPerPage - 1) / SystemsPerPage);
+        int pageCount = Math.Max(1, (rowCount + SystemsPerPage - 1) / SystemsPerPage);
         systemPageIndex = Math.Clamp(systemPageIndex, 0, pageCount - 1);
-        var pageOffset = systemPageIndex * SystemsPerPage;
-        var rowsOnPage = Math.Min(SystemsPerPage, Math.Max(0, rowCount - pageOffset));
-        var rowNumbers = orderedSystemNumbers.Skip(pageOffset).Take(rowsOnPage).ToArray();
+        int pageOffset = systemPageIndex * SystemsPerPage;
+        int rowsOnPage = Math.Min(SystemsPerPage, Math.Max(0, rowCount - pageOffset));
+        int[] rowNumbers = orderedSystemNumbers.Skip(pageOffset).Take(rowsOnPage).ToArray();
         SystemListNote = FormatSystemListNote(totalRowCount, pageOffset, rowsOnPage, rowNumbers);
         SystemPageText = string.Create(CultureInfo.CurrentCulture, $"Page {systemPageIndex + 1:N0} of {pageCount:N0}");
-        var resolvedCurrentSystemName = TryParseBoxelInput(CurrentSystemName, out var currentSystem)
+        string? resolvedCurrentSystemName = TryParseBoxelInput(CurrentSystemName, out BoxelAddress? currentSystem)
             ? currentSystem?.Name
             : null;
-        var nextSystemName = presentedNextSystem;
+        string? nextSystemName = presentedNextSystem;
         Systems = rowNumbers
             .Select(number =>
             {
-                systemsByNumber.TryGetValue(number, out var system);
-                var boxel = system?.Boxel ?? searchState.CurrentBoxel.WithSystemNumber(number);
-                var distance =
+                systemsByNumber.TryGetValue(number, out BoxelSystemState? system);
+                BoxelAddress boxel = system?.Boxel ?? searchState.CurrentBoxel.WithSystemNumber(number);
+                string distance =
                     system?.Position is { } position && currentPosition is { } from
                         ? $"{from.DistanceTo(position):N2} ly"
                         : Unavailable;
-                var isCurrent = string.Equals(resolvedCurrentSystemName, boxel.Name, StringComparison.Ordinal);
+                bool isCurrent = string.Equals(resolvedCurrentSystemName, boxel.Name, StringComparison.Ordinal);
                 return new BoxelSystemRowViewModel(
                     new BoxelSystemRowOptions
                     {
@@ -1736,14 +1737,16 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     private (int[] Numbers, int DeferredCount) GetOrderedSystemNumbers(int rowCount)
     {
-        var numbers = SortDescending ? Enumerable.Range(0, rowCount).Reverse() : Enumerable.Range(0, rowCount);
-        var ordered = numbers.ToArray();
+        IEnumerable<int> numbers = SortDescending
+            ? Enumerable.Range(0, rowCount).Reverse()
+            : Enumerable.Range(0, rowCount);
+        int[] ordered = numbers.ToArray();
         if (searchState.CurrentBoxel is null)
         {
             return (ordered, 0);
         }
 
-        var deferredNumbers = ordered
+        int[] deferredNumbers = ordered
             .Where(number => searchState.IsSystemDeferred(searchState.CurrentBoxel.Prefix, number))
             .ToArray();
         if (ShowOnlyDeferred)
@@ -1751,8 +1754,8 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return (deferredNumbers, deferredNumbers.Length);
         }
 
-        var deferredSet = deferredNumbers.ToHashSet();
-        var result = ordered.Where(number => !deferredSet.Contains(number)).Concat(deferredNumbers).ToArray();
+        HashSet<int> deferredSet = deferredNumbers.ToHashSet();
+        int[] result = ordered.Where(number => !deferredSet.Contains(number)).Concat(deferredNumbers).ToArray();
         return (result, deferredNumbers.Length);
     }
 
@@ -1763,10 +1766,10 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return ShowOnlyDeferred ? "No deferred systems in this boxel." : "No systems are available in this boxel.";
         }
 
-        var visibleTotal = orderedSystemNumbers.Length;
-        var firstPosition = pageOffset + 1;
-        var lastPosition = pageOffset + rowsOnPage;
-        var suffixRange =
+        int visibleTotal = orderedSystemNumbers.Length;
+        int firstPosition = pageOffset + 1;
+        int lastPosition = pageOffset + rowsOnPage;
+        string suffixRange =
             rowNumbers.Length == 1
                 ? $"suffix {rowNumbers[0]:N0}"
                 : $"suffixes {rowNumbers[0]:N0}\u2013{rowNumbers[^1]:N0}";
@@ -1784,7 +1787,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                 : $"Showing systems {rowNumbers[0]:N0}\u2013{rowNumbers[^1]:N0} " + $"of {totalRowCount:N0}.";
         }
 
-        var direction = SortDescending ? " Descending order is active." : string.Empty;
+        string direction = SortDescending ? " Descending order is active." : string.Empty;
         return $"Showing systems {firstPosition:N0}\u2013{lastPosition:N0} "
             + $"of {totalRowCount:N0} ({suffixRange}). Deferred systems are grouped last."
             + direction;
@@ -1792,13 +1795,13 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     private int GetNextSystemPageIndex()
     {
-        var nextSystemName = GetPresentedNextSystem();
+        string? nextSystemName = GetPresentedNextSystem();
         if (searchState.CurrentBoxel is null || string.IsNullOrWhiteSpace(nextSystemName))
         {
             return 0;
         }
 
-        var known = searchState.Systems.FirstOrDefault(system =>
+        BoxelSystemState? known = searchState.Systems.FirstOrDefault(system =>
             string.Equals(system.Boxel.Name, nextSystemName, StringComparison.Ordinal)
             || string.Equals(system.Boxel.GeneratedName, nextSystemName, StringComparison.Ordinal)
         );
@@ -1808,7 +1811,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         }
 
         return
-            BoxelAddress.TryParse(nextSystemName, out var next)
+            BoxelAddress.TryParse(nextSystemName, out BoxelAddress? next)
             && next is not null
             && string.Equals(next.Prefix, searchState.CurrentBoxel.Prefix, StringComparison.Ordinal)
             ? GetSystemPageIndex(next.N2)
@@ -1819,12 +1822,12 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     {
         if (currentDeferredSystemCount == 0 && !ShowOnlyDeferred)
         {
-            var rowCount = GetSystemRowCount();
-            var calculatedPosition = SortDescending ? rowCount - systemNumber - 1 : systemNumber;
+            int rowCount = GetSystemRowCount();
+            int calculatedPosition = SortDescending ? rowCount - systemNumber - 1 : systemNumber;
             return calculatedPosition >= 0 && calculatedPosition < rowCount ? calculatedPosition / SystemsPerPage : 0;
         }
 
-        return systemNumberPositions.TryGetValue(systemNumber, out var cachedPosition)
+        return systemNumberPositions.TryGetValue(systemNumber, out int cachedPosition)
             ? cachedPosition / SystemsPerPage
             : 0;
     }
@@ -1847,7 +1850,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return string.Empty;
         }
 
-        if (!TryParseLastSystemAvailable(LastSystemAvailable, out var parsed))
+        if (!TryParseLastSystemAvailable(LastSystemAvailable, out int parsed))
         {
             return "Enter numbers only, from 0 to 99,999.";
         }
@@ -1919,14 +1922,14 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return;
         }
 
-        var path = GetBreadcrumbPath(searchState.TopBoxel, searchState.CurrentBoxel);
-        var breadcrumbs = path.Select(GetNavigationOption).ToArray();
+        List<BoxelAddress> path = GetBreadcrumbPath(searchState.TopBoxel, searchState.CurrentBoxel);
+        BoxelNavigationOptionViewModel[] breadcrumbs = path.Select(GetNavigationOption).ToArray();
         SetBreadcrumbBoxels(breadcrumbs);
         CurrentHierarchyBoxel = breadcrumbs[^1];
         ParentBoxel = breadcrumbs.Length > 1 ? breadcrumbs[^2] : null;
 
-        var siblings = Array.Empty<BoxelAddress>();
-        var siblingIndex = -1;
+        BoxelAddress[] siblings = Array.Empty<BoxelAddress>();
+        int siblingIndex = -1;
         if (ParentBoxel is not null)
         {
             siblings = searchState.CurrentBoxel.Parent.Children.ToArray();
@@ -1962,7 +1965,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     private BoxelNavigationOptionViewModel GetNavigationOption(BoxelAddress boxel)
     {
-        if (!navigationOptions.TryGetValue(boxel.Prefix, out var option))
+        if (!navigationOptions.TryGetValue(boxel.Prefix, out BoxelNavigationOptionViewModel? option))
         {
             option = new BoxelNavigationOptionViewModel(boxel.Prefix, () => NavigateAsync(boxel));
             navigationOptions.Add(boxel.Prefix, option);
@@ -1983,10 +1986,10 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         }
 
         var path = new List<BoxelAddress> { current };
-        var cursor = current;
+        BoxelAddress cursor = current;
         while (!string.Equals(cursor.Prefix, topBoxel.Prefix, StringComparison.Ordinal))
         {
-            var parent = cursor.Parent;
+            BoxelAddress parent = cursor.Parent;
             if (string.Equals(parent.Prefix, cursor.Prefix, StringComparison.Ordinal))
             {
                 break;
@@ -2021,7 +2024,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return false;
         }
 
-        for (var index = 0; index < left.Count; index++)
+        for (int index = 0; index < left.Count; index++)
         {
             if (!ReferenceEquals(left[index], right[index]))
             {
@@ -2035,7 +2038,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private void UpdateSearchSize()
     {
         if (
-            !TryParseBoxelInput(TopBoxelText, out var boxel)
+            !TryParseBoxelInput(TopBoxelText, out BoxelAddress? boxel)
             || boxel is null
             || string.IsNullOrWhiteSpace(LowMassCode)
             || !BoxelAddress.IsValidMassCode(char.ToLowerInvariant(LowMassCode[0]))
@@ -2046,7 +2049,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return;
         }
 
-        var count = BoxelAddress.GetTotalChildCount(boxel.MassCode - char.ToLowerInvariant(LowMassCode[0]));
+        int count = BoxelAddress.GetTotalChildCount(boxel.MassCode - char.ToLowerInvariant(LowMassCode[0]));
         SearchSize =
             $"{count:N0} boxel{(count == 1 ? string.Empty : "s")} "
             + $"from mass code {boxel.MassCode} through {LowMassCode}.";
@@ -2055,7 +2058,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private void ScheduleSystemSuggestions(string? value)
     {
         CancelSystemSuggestions();
-        var query = value?.Trim() ?? string.Empty;
+        string query = value?.Trim() ?? string.Empty;
         if (
             systemNameSuggestionClient is null
             || query.Length < 3
@@ -2078,7 +2081,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     private async Task LoadSystemSuggestionsAsync(string query, CancellationTokenSource cancellation)
     {
-        var suggestionClient = systemNameSuggestionClient;
+        ISystemNameSuggestionClient? suggestionClient = systemNameSuggestionClient;
         if (suggestionClient is null)
         {
             return;
@@ -2089,7 +2092,10 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             IsSearchingSystemSuggestions = true;
             SystemSuggestionStatus = "Searching for system suggestions…";
             await Task.Delay(systemSuggestionDelay, cancellation.Token);
-            var suggestions = await suggestionClient.SearchAsync(query, cancellation.Token);
+            IReadOnlyList<SystemNameSuggestion> suggestions = await suggestionClient.SearchAsync(
+                query,
+                cancellation.Token
+            );
             if (
                 !ReferenceEquals(systemSuggestionCancellation, cancellation)
                 || !string.Equals(TopBoxelText.Trim(), query, StringComparison.Ordinal)
@@ -2136,18 +2142,15 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return "No matching systems found.";
         }
 
-        var pluralSuffix = suggestions.Count == 1 ? string.Empty : "s";
+        string pluralSuffix = suggestions.Count == 1 ? string.Empty : "s";
         return $"{suggestions.Count:N0} system suggestion{pluralSuffix} " + $"from {suggestions[0].Source}.";
     }
 
     private void CancelSystemSuggestions()
     {
-        var cancellation = systemSuggestionCancellation;
+        CancellationTokenSource? cancellation = systemSuggestionCancellation;
         systemSuggestionCancellation = null;
-        if (cancellation is not null)
-        {
-            cancellation.Cancel();
-        }
+        cancellation?.Cancel();
     }
 
     private void RaiseCommandStates()
@@ -2170,8 +2173,8 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     private bool TryParseBoxelInput(string? value, out BoxelAddress? boxel)
     {
-        var systemName = value?.Trim();
-        var normalized = systemName;
+        string? systemName = value?.Trim();
+        string? normalized = systemName;
         if (normalized?.EndsWith('-') == true)
         {
             normalized += "0";
@@ -2191,7 +2194,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return true;
         }
 
-        return knownSystems.TryResolve(systemName, out var systemAddress)
+        return knownSystems.TryResolve(systemName, out long systemAddress)
             && BoxelAddress.TryFromSystemAddress(systemAddress, systemName, out boxel);
     }
 

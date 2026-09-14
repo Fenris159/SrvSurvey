@@ -39,7 +39,7 @@ internal static class OverlayGameModeResolver
             return OverlayGameMode.Offline;
         }
 
-        if (TryResolveGuiFocus(status.GuiFocus, out var guiMode))
+        if (TryResolveGuiFocus(status.GuiFocus, out OverlayGameMode guiMode))
         {
             return guiMode;
         }
@@ -49,7 +49,7 @@ internal static class OverlayGameModeResolver
             return OverlayGameMode.FsdJumping;
         }
 
-        if (TryResolveMusicTrack(musicTrack, out var musicMode))
+        if (TryResolveMusicTrack(musicTrack, out OverlayGameMode musicMode))
         {
             return musicMode;
         }
@@ -98,7 +98,7 @@ internal static class OverlayGameModeResolver
 
     private static OverlayGameMode ResolvePhysicalMode(EliteStatus status)
     {
-        var vehicle = ResolveVehicle(status);
+        OverlayVehicle vehicle = ResolveVehicle(status);
         if (vehicle == OverlayVehicle.Fighter)
         {
             return OverlayGameMode.InFighter;

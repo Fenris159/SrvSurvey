@@ -23,7 +23,7 @@ public sealed class ReleaseInstallationPlanCleaner
         Action<string> deleteDirectory
     )
     {
-        var resolvedMinimumAge = minimumAge ?? DefaultMinimumAge;
+        TimeSpan resolvedMinimumAge = minimumAge ?? DefaultMinimumAge;
         ArgumentOutOfRangeException.ThrowIfLessThan(resolvedMinimumAge, TimeSpan.Zero);
         this.timeProvider = timeProvider ?? TimeProvider.System;
         this.minimumAge = resolvedMinimumAge;
@@ -37,12 +37,12 @@ public sealed class ReleaseInstallationPlanCleaner
     {
         cancellationToken.ThrowIfCancellationRequested();
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
-        var root = Path.GetFullPath(Path.Combine(dataDirectory, "updates", "install-plans"));
+        string root = Path.GetFullPath(Path.Combine(dataDirectory, "updates", "install-plans"));
         var failures = new List<string>();
-        var candidates = FindCandidates(root, failures);
-        var deleted = 0;
-        var retained = 0;
-        foreach (var candidate in candidates)
+        DirectoryInfo[] candidates = FindCandidates(root, failures);
+        int deleted = 0;
+        int retained = 0;
+        foreach (DirectoryInfo candidate in candidates)
         {
             cancellationToken.ThrowIfCancellationRequested();
             try
@@ -96,7 +96,7 @@ public sealed class ReleaseInstallationPlanCleaner
             return rootDirectory
                 .EnumerateDirectories()
                 .Where(directory =>
-                    Guid.TryParseExact(directory.Name, "N", out var requestId) && requestId != Guid.Empty
+                    Guid.TryParseExact(directory.Name, "N", out Guid requestId) && requestId != Guid.Empty
                 )
                 .OrderBy(directory => directory.LastWriteTimeUtc)
                 .ThenBy(directory => directory.Name, StringComparer.Ordinal)

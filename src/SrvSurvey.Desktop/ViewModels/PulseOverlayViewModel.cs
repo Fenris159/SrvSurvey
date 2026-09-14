@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Desktop.Configuration;
 
@@ -61,7 +62,7 @@ public sealed class PulseOverlayViewModel : INotifyPropertyChanged
     {
         get
         {
-            var mode = OverlayGameModeResolver.Resolve(status, musicTrack: musicTrack);
+            OverlayGameMode mode = OverlayGameModeResolver.Resolve(status, musicTrack: musicTrack);
             return Enabled && mode is not OverlayGameMode.GalaxyMap and not OverlayGameMode.SystemMap;
         }
     }
@@ -75,7 +76,7 @@ public sealed class PulseOverlayViewModel : INotifyPropertyChanged
                 return 0;
             }
 
-            var remaining = (expires - timeProvider.GetUtcNow()).TotalSeconds;
+            double remaining = (expires - timeProvider.GetUtcNow()).TotalSeconds;
             return Math.Clamp(remaining / PulseDuration.TotalSeconds * 20, 0, 20);
         }
     }
@@ -95,7 +96,7 @@ public sealed class PulseOverlayViewModel : INotifyPropertyChanged
     {
         get
         {
-            var elapsed = GetScoElapsed()?.TotalSeconds ?? 0;
+            double elapsed = GetScoElapsed()?.TotalSeconds ?? 0;
             return Math.Clamp(elapsed * 2, 0, 20);
         }
     }
@@ -123,7 +124,7 @@ public sealed class PulseOverlayViewModel : INotifyPropertyChanged
     /// </summary>
     internal void InstallEditorPreview(PulseEditorPreviewState state = PulseEditorPreviewState.ScoCooling)
     {
-        var now = timeProvider.GetUtcNow();
+        DateTimeOffset now = timeProvider.GetUtcNow();
         pulseExpiresAtUtc = now + TimeSpan.FromSeconds(6);
         (bool isActive, DateTimeOffset? stoppedAtUtc) = state switch
         {
@@ -149,7 +150,7 @@ public sealed class PulseOverlayViewModel : INotifyPropertyChanged
     )
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
-        var now = timeProvider.GetUtcNow();
+        DateTimeOffset now = timeProvider.GetUtcNow();
         if (!isBootstrapRead && (journalEvents.Count > 0 || status is not null))
         {
             pulseExpiresAtUtc = now + PulseDuration;
@@ -157,7 +158,7 @@ public sealed class PulseOverlayViewModel : INotifyPropertyChanged
 
         if (status is not null)
         {
-            var nextOverdrive = status.SupercruiseOverdrive;
+            bool nextOverdrive = status.SupercruiseOverdrive;
             if (!isBootstrapRead && supercruiseOverdrive && !nextOverdrive)
             {
                 scoStoppedAtUtc = now;
@@ -171,7 +172,7 @@ public sealed class PulseOverlayViewModel : INotifyPropertyChanged
             this.status = status;
         }
 
-        foreach (var journalEvent in journalEvents)
+        foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
             if (journalEvent.EventName is "Fileheader" or "LoadGame")
             {
@@ -179,7 +180,7 @@ public sealed class PulseOverlayViewModel : INotifyPropertyChanged
             }
             else if (
                 journalEvent.EventName == "Music"
-                && journalEvent.Payload.TryGetProperty("MusicTrack", out var track)
+                && journalEvent.Payload.TryGetProperty("MusicTrack", out JsonElement track)
             )
             {
                 musicTrack = track.GetString();
@@ -191,7 +192,7 @@ public sealed class PulseOverlayViewModel : INotifyPropertyChanged
 
     public void Refresh()
     {
-        var now = timeProvider.GetUtcNow();
+        DateTimeOffset now = timeProvider.GetUtcNow();
         if (pulseExpiresAtUtc <= now)
         {
             pulseExpiresAtUtc = null;

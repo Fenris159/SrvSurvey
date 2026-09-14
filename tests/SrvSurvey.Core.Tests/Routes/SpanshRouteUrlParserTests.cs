@@ -41,7 +41,7 @@ public sealed class SpanshRouteUrlParserTests
     [InlineData("https://spansh.co.uk/trade/results/74FA2952-2048-11F1-8302-B948FF6DF5C1", SpanshRouteKind.Trade)]
     public void ParseRecognizesAllSpanshRouteFamilies(string url, SpanshRouteKind expectedKind)
     {
-        var parsed = SpanshRouteUrlParser.TryParse(url, out var route);
+        bool parsed = SpanshRouteUrlParser.TryParse(url, out SpanshRouteReference? route);
 
         Assert.True(parsed);
         Assert.NotNull(route);
@@ -53,9 +53,9 @@ public sealed class SpanshRouteUrlParserTests
     public void TouristSearchUsesTheJobIdAfterResults()
     {
         var searchId = Guid.Parse("55C5C3EC-FEC5-48B8-A7BC-83435559521D");
-        var parsed = SpanshRouteUrlParser.TryParse(
+        bool parsed = SpanshRouteUrlParser.TryParse(
             $"https://spansh.co.uk/tourist-search/{searchId:D}/results/{RouteId:D}",
-            out var route
+            out SpanshRouteReference? route
         );
 
         Assert.True(parsed);
@@ -65,7 +65,7 @@ public sealed class SpanshRouteUrlParserTests
     [Fact]
     public void ParseAcceptsAJobIdWithoutAUrl()
     {
-        var parsed = SpanshRouteUrlParser.TryParse(RouteId.ToString(), out var route);
+        bool parsed = SpanshRouteUrlParser.TryParse(RouteId.ToString(), out SpanshRouteReference? route);
 
         Assert.True(parsed);
         Assert.Equal(new SpanshRouteReference(RouteId, SpanshRouteKind.Generic), route);
@@ -79,7 +79,7 @@ public sealed class SpanshRouteUrlParserTests
     [InlineData("https://spansh.co.uk/bodies/search/74FA2952-2048-11F1-8302-B948FF6DF5C1/1")]
     public void ParseRejectsInvalidOrNonSpanshUrls(string? value)
     {
-        Assert.False(SpanshRouteUrlParser.TryParse(value, out var route));
+        Assert.False(SpanshRouteUrlParser.TryParse(value, out SpanshRouteReference? route));
         Assert.Null(route);
     }
 }

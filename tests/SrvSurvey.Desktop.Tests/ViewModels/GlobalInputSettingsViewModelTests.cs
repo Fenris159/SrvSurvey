@@ -15,17 +15,17 @@ public sealed class GlobalInputSettingsViewModelTests : IDisposable
     [Fact]
     public void EightSharedTrackersKeepSixMiningLabelsAndLiveBindings()
     {
-        var viewModel = Create(OverlayHostKind.Windows);
-        var trackers = viewModel
+        GlobalInputSettingsViewModel viewModel = Create(OverlayHostKind.Windows);
+        InputBindingViewModel[] trackers = viewModel
             .Bindings.Where(binding =>
                 binding.Definition.Action is >= GlobalInputAction.Track1 and <= GlobalInputAction.Track8
             )
             .ToArray();
         Assert.Equal(8, trackers.Length);
         Assert.Equal(6, viewModel.MiningBindings.Count);
-        for (var index = 0; index < trackers.Length; index++)
+        for (int index = 0; index < trackers.Length; index++)
         {
-            var expectedLabel = index < 6 ? $"Tracker/Mining Rig ({index + 1})" : $"Tracker ({index + 1})";
+            string expectedLabel = index < 6 ? $"Tracker/Mining Rig ({index + 1})" : $"Tracker ({index + 1})";
             Assert.Equal(expectedLabel, trackers[index].DisplayName);
             Assert.Equal($"ALT CTRL F{index + 1}", trackers[index].Chord);
             if (index < 6)
@@ -44,20 +44,20 @@ public sealed class GlobalInputSettingsViewModelTests : IDisposable
     [Fact]
     public void SavesKeyboardToggleAndNormalizedBinding()
     {
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         var store = new GlobalInputSettingsStore(path);
         var viewModel = new GlobalInputSettingsViewModel(
             store,
             OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows),
             new StubControllerDeviceProvider()
         );
-        var changed = 0;
+        int changed = 0;
         viewModel.SettingsChanged += (_, _) => changed++;
 
         viewModel.KeyboardEnabled = true;
         viewModel.Bindings[0].Chord = "ctrl alt x";
 
-        var loaded = store.Load();
+        GlobalInputSettings loaded = store.Load();
         Assert.True(loaded.KeyboardEnabled);
         Assert.Equal("ALT CTRL X", loaded.Bindings[GlobalInputAction.ToggleAllVisibility]);
         Assert.Equal(2, changed);
@@ -66,10 +66,10 @@ public sealed class GlobalInputSettingsViewModelTests : IDisposable
     [Fact]
     public void InvalidBindingDoesNotReplaceActiveSetting()
     {
-        var viewModel = Create(OverlayHostKind.Windows);
-        var binding = viewModel.Bindings[0];
-        var original = viewModel.CurrentSettings.Bindings[GlobalInputAction.ToggleAllVisibility];
-        var changed = 0;
+        GlobalInputSettingsViewModel viewModel = Create(OverlayHostKind.Windows);
+        InputBindingViewModel binding = viewModel.Bindings[0];
+        string original = viewModel.CurrentSettings.Bindings[GlobalInputAction.ToggleAllVisibility];
+        int changed = 0;
         viewModel.SettingsChanged += (_, _) => changed++;
 
         binding.Chord = "CTRL A B";
@@ -82,7 +82,7 @@ public sealed class GlobalInputSettingsViewModelTests : IDisposable
     [Fact]
     public void UnsupportedHostCannotEnableKeyboardHook()
     {
-        var viewModel = Create(OverlayHostKind.LinuxWayland);
+        GlobalInputSettingsViewModel viewModel = Create(OverlayHostKind.LinuxWayland);
 
         viewModel.KeyboardEnabled = true;
 
@@ -93,7 +93,7 @@ public sealed class GlobalInputSettingsViewModelTests : IDisposable
     [Fact]
     public void XWaylandCanEnableKeyboardHook()
     {
-        var viewModel = Create(OverlayHostKind.LinuxXWayland);
+        GlobalInputSettingsViewModel viewModel = Create(OverlayHostKind.LinuxXWayland);
 
         viewModel.KeyboardEnabled = true;
 
@@ -104,7 +104,7 @@ public sealed class GlobalInputSettingsViewModelTests : IDisposable
     [Fact]
     public void RestoreDefaultsUpdatesEditedBindings()
     {
-        var viewModel = Create(OverlayHostKind.Windows);
+        GlobalInputSettingsViewModel viewModel = Create(OverlayHostKind.Windows);
         viewModel.Bindings[0].Chord = "ALT X";
 
         viewModel.ResetBindingsCommand.Execute(parameter: null);
@@ -118,7 +118,7 @@ public sealed class GlobalInputSettingsViewModelTests : IDisposable
     [Fact]
     public void SelectsAndEnablesDiscoveredController()
     {
-        var path = Path.Combine(temporaryDirectory, "controller.json");
+        string path = Path.Combine(temporaryDirectory, "controller.json");
         var store = new GlobalInputSettingsStore(path);
         var provider = new StubControllerDeviceProvider(
             new ControllerDeviceInfo("path:controller-1", "Test HOTAS", "FlightStick - USB 1234:5678", 7)
@@ -132,7 +132,7 @@ public sealed class GlobalInputSettingsViewModelTests : IDisposable
         viewModel.SelectedController = Assert.Single(viewModel.ControllerDevices);
         viewModel.ControllerEnabled = true;
 
-        var loaded = store.Load();
+        GlobalInputSettings loaded = store.Load();
         Assert.True(loaded.ControllerEnabled);
         Assert.True(viewModel.CanEnableControllerInput);
         Assert.Equal("path:controller-1", loaded.ControllerDeviceId);
@@ -142,7 +142,7 @@ public sealed class GlobalInputSettingsViewModelTests : IDisposable
     [Fact]
     public void PreservesDisconnectedConfiguredControllerForReconnect()
     {
-        var path = Path.Combine(temporaryDirectory, "reconnect.json");
+        string path = Path.Combine(temporaryDirectory, "reconnect.json");
         var store = new GlobalInputSettingsStore(path);
         store.Save(
             GlobalInputSettings.Default with
@@ -158,7 +158,7 @@ public sealed class GlobalInputSettingsViewModelTests : IDisposable
             new StubControllerDeviceProvider()
         );
 
-        var device = Assert.Single(viewModel.ControllerDevices);
+        ControllerDeviceOptionViewModel device = Assert.Single(viewModel.ControllerDevices);
         Assert.False(device.IsConnected);
         Assert.Equal(device, viewModel.SelectedController);
         Assert.True(viewModel.ControllerEnabled);
@@ -167,7 +167,7 @@ public sealed class GlobalInputSettingsViewModelTests : IDisposable
     [Fact]
     public void ControllerCannotBeEnabledWithoutSelection()
     {
-        var viewModel = Create(OverlayHostKind.Windows);
+        GlobalInputSettingsViewModel viewModel = Create(OverlayHostKind.Windows);
 
         viewModel.ControllerEnabled = true;
 
@@ -178,7 +178,7 @@ public sealed class GlobalInputSettingsViewModelTests : IDisposable
     [Fact]
     public void UnhandledActionReportsContextInsteadOfAnUnportedFeature()
     {
-        var viewModel = Create(OverlayHostKind.Windows);
+        GlobalInputSettingsViewModel viewModel = Create(OverlayHostKind.Windows);
 
         viewModel.ReportAction(GlobalInputAction.CopyNextBoxel, handled: false);
 

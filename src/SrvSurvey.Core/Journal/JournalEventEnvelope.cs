@@ -23,7 +23,7 @@ public sealed record JournalEventEnvelope(
         try
         {
             using var document = JsonDocument.Parse(line);
-            var root = document.RootElement;
+            JsonElement root = document.RootElement;
             if (root.ValueKind != JsonValueKind.Object)
             {
                 error = "The journal line is not a JSON object.";
@@ -31,7 +31,7 @@ public sealed record JournalEventEnvelope(
             }
 
             if (
-                !root.TryGetProperty("event", out var eventProperty)
+                !root.TryGetProperty("event", out JsonElement eventProperty)
                 || eventProperty.ValueKind != JsonValueKind.String
                 || string.IsNullOrWhiteSpace(eventProperty.GetString())
             )
@@ -42,9 +42,9 @@ public sealed record JournalEventEnvelope(
 
             DateTimeOffset? timestamp = null;
             if (
-                root.TryGetProperty("timestamp", out var timestampProperty)
+                root.TryGetProperty("timestamp", out JsonElement timestampProperty)
                 && timestampProperty.ValueKind == JsonValueKind.String
-                && timestampProperty.TryGetDateTimeOffset(out var parsedTimestamp)
+                && timestampProperty.TryGetDateTimeOffset(out DateTimeOffset parsedTimestamp)
             )
             {
                 timestamp = parsedTimestamp;

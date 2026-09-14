@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Journal;
@@ -80,7 +81,7 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
     {
         get
         {
-            var trips = Plan.TripsInCurrentShip is long tripCount
+            string trips = Plan.TripsInCurrentShip is long tripCount
                 ? $" | {tripCount:N0} trips in this ship"
                 : string.Empty;
             return $"{Plan.TotalRemaining:N0} remaining{trips}";
@@ -96,8 +97,8 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
                 return string.Empty;
             }
 
-            var trips = Plan.FleetCarrierDeficitTrips is long tripCount ? $" | {tripCount:N0} trips" : string.Empty;
-            var names = string.Join(
+            string trips = Plan.FleetCarrierDeficitTrips is long tripCount ? $" | {tripCount:N0} trips" : string.Empty;
+            string names = string.Join(
                 "  •  ",
                 Plan.FleetCarriers.Select(carrier =>
                     string.IsNullOrWhiteSpace(carrier.DisplayName) ? carrier.Name : carrier.DisplayName
@@ -111,7 +112,7 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
     {
         get
         {
-            var mode = OverlayGameModeResolver.Resolve(status, musicTrack: musicTrack);
+            OverlayGameMode mode = OverlayGameModeResolver.Resolve(status, musicTrack: musicTrack);
             return preferences.AutoShow
                 && Plan.HasContent
                 && mode
@@ -134,7 +135,7 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
     {
         get
         {
-            var mode = OverlayGameModeResolver.Resolve(status, musicTrack: musicTrack);
+            OverlayGameMode mode = OverlayGameModeResolver.Resolve(status, musicTrack: musicTrack);
             return preferences.AutoShow
                 && Plan.HasContent
                 && mode
@@ -245,7 +246,7 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
             .Rows.GroupBy(row => row.Category)
             .Select(group =>
             {
-                var rows = group
+                ColonizationCommodityOverlayRowViewModel[] rows = group
                     .Select(
                         (row, rowIndex) =>
                             new ColonizationCommodityOverlayRowViewModel(
@@ -259,12 +260,12 @@ public sealed class ColonizationCommodityOverlayViewModel : INotifyPropertyChang
                             )
                     )
                     .ToArray();
-                var canCollapse =
+                bool canCollapse =
                     !Plan.IsAtConstructionSite
                     && preferences.ShowFleetCarrierCargo
                     && Plan.FleetCarriers.Count > 0
                     && rows.All(row => row.FleetCarriersHaveEnough && row.InShip == 0);
-                var isCollapsed = canCollapse && (preferences.CollapseCoveredGroups ^ showSatisfiedGroups);
+                bool isCollapsed = canCollapse && (preferences.CollapseCoveredGroups ^ showSatisfiedGroups);
                 return new ColonizationCommodityGroupViewModel(
                     group.Key,
                     isCollapsed ? [] : rows,
@@ -419,9 +420,10 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
 
     public double RowOpacity => IsUnavailableAtCurrentMarket ? 0.48 : 1;
 
-    public string NeededText => IsPending ? "..." : Needed.ToString("N0");
+    public string NeededText => IsPending ? "..." : Needed.ToString("N0", CultureInfo.CurrentCulture);
 
-    public string InShipText => !InlineFleetCarrierCargo && InShip > 0 ? InShip.ToString("N0") : string.Empty;
+    public string InShipText =>
+        !InlineFleetCarrierCargo && InShip > 0 ? InShip.ToString("N0", CultureInfo.CurrentCulture) : string.Empty;
 
     public string OnFleetCarriersText
     {
@@ -434,7 +436,7 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
 
             if (InlineFleetCarrierCargo && InShip > 0)
             {
-                return InShip.ToString("N0");
+                return InShip.ToString("N0", CultureInfo.CurrentCulture);
             }
 
             if (!ShowFleetCarrierCargo || OnFleetCarriers <= 0)
@@ -444,11 +446,13 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
 
             if (!ShowFleetCarrierDelta && !IsFleetCarrierLoadHighlighted)
             {
-                return OnFleetCarriers.ToString("N0");
+                return OnFleetCarriers.ToString("N0", CultureInfo.CurrentCulture);
             }
 
-            var difference = OnFleetCarriers - Needed;
-            return difference > 0 ? $"+{difference:N0}" : difference.ToString("N0");
+            int difference = OnFleetCarriers - Needed;
+            return difference > 0
+                ? string.Create(CultureInfo.CurrentCulture, $"+{difference:N0}")
+                : difference.ToString("N0", CultureInfo.CurrentCulture);
         }
     }
 

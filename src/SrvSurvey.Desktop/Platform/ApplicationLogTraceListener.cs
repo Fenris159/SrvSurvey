@@ -9,7 +9,7 @@ public sealed class ApplicationLogTraceListener(ApplicationLogService applicatio
     private const string ClosedPresentationSourceWarning =
         "[Control] PlatformImpl is null, couldn't handle input. (PresentationSource #";
 
-    private readonly object syncRoot = new();
+    private readonly Lock syncRoot = new();
     private readonly StringBuilder pending = new();
 
     public override void Write(string? message)
@@ -46,8 +46,8 @@ public sealed class ApplicationLogTraceListener(ApplicationLogService applicatio
         lock (syncRoot)
         {
             pending.Append(message);
-            var startIndex = 0;
-            for (var index = 0; index < pending.Length; index++)
+            int startIndex = 0;
+            for (int index = 0; index < pending.Length; index++)
             {
                 if (pending[index] != '\n')
                 {
@@ -70,7 +70,7 @@ public sealed class ApplicationLogTraceListener(ApplicationLogService applicatio
             }
         }
 
-        foreach (var line in completeLines)
+        foreach (string line in completeLines)
         {
             AppendLine(line);
         }

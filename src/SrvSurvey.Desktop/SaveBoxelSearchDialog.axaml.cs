@@ -23,7 +23,7 @@ public sealed partial class SaveBoxelSearchDialog : Window
 
     private void Confirm_Click(object? sender, RoutedEventArgs eventArgs)
     {
-        var name = SearchNameBox.Text?.Trim();
+        string? name = SearchNameBox.Text?.Trim();
         if (string.IsNullOrWhiteSpace(name))
         {
             ValidationText.IsVisible = true;

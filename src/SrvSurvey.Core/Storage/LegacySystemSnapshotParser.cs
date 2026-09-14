@@ -11,15 +11,15 @@ internal static class LegacySystemSnapshotParser
     public static SystemScanSnapshot Parse(JsonObject root)
     {
         ArgumentNullException.ThrowIfNull(root);
-        var systemName = ReadRequiredString(root, "name");
-        var systemAddress = ReadRequiredInt64(root, "address");
+        string systemName = ReadRequiredString(root, "name");
+        long systemAddress = ReadRequiredInt64(root, "address");
         if (systemAddress <= 0)
         {
             throw new InvalidDataException("The legacy system address is not positive.");
         }
 
-        var bodies = ReadBodies(root, systemName);
-        var expectedBodyCount = ReadOptionalInt32(root, "bodyCount") ?? 0;
+        List<SystemScanBodySnapshot> bodies = ReadBodies(root, systemName);
+        int expectedBodyCount = ReadOptionalInt32(root, "bodyCount") ?? 0;
         return new SystemScanSnapshot(
             systemName,
             systemAddress,
@@ -54,26 +54,26 @@ internal static class LegacySystemSnapshotParser
 
         var bodies = new List<SystemScanBodySnapshot>(array.Count);
         var bodyIds = new HashSet<int>();
-        foreach (var node in array)
+        foreach (JsonNode? node in array)
         {
             if (node is not JsonObject body)
             {
                 throw new InvalidDataException("A legacy system body is not an object.");
             }
 
-            var bodyId = ReadRequiredInt32(body, "id");
+            int bodyId = ReadRequiredInt32(body, "id");
             if (bodyId < 0 || !bodyIds.Add(bodyId))
             {
                 throw new InvalidDataException($"The legacy system body ID {bodyId} is invalid or duplicated.");
             }
 
-            var name = ReadRequiredString(body, "name");
-            var kind = ReadBodyKind(ReadOptionalString(body, "type"));
-            var parents = ReadParents(body);
-            var organisms = ReadOrganisms(body);
-            var geologicalSignals = ReadAnalyzedGeologicalSignals(body);
-            var biologicalSignalCount = Math.Max(ReadOptionalInt32(body, "bioSignalCount") ?? 0, organisms.Count);
-            var geologicalSignalCount = Math.Max(
+            string name = ReadRequiredString(body, "name");
+            SystemBodyKind kind = ReadBodyKind(ReadOptionalString(body, "type"));
+            List<SystemBodyParentSnapshot> parents = ReadParents(body);
+            List<SystemOrganismSnapshot> organisms = ReadOrganisms(body);
+            string[] geologicalSignals = ReadAnalyzedGeologicalSignals(body);
+            int biologicalSignalCount = Math.Max(ReadOptionalInt32(body, "bioSignalCount") ?? 0, organisms.Count);
+            int geologicalSignalCount = Math.Max(
                 ReadOptionalInt32(body, "geoSignalCount") ?? 0,
                 geologicalSignals.Length
             );
@@ -140,14 +140,14 @@ internal static class LegacySystemSnapshotParser
         }
 
         var organisms = new List<SystemOrganismSnapshot>(array.Count);
-        foreach (var node in array)
+        foreach (JsonNode? node in array)
         {
             if (node is not JsonObject organism)
             {
                 throw new InvalidDataException("A legacy system organism is not an object.");
             }
 
-            var genus = ReadRequiredString(organism, "genus");
+            string genus = ReadRequiredString(organism, "genus");
             organisms.Add(
                 new SystemOrganismSnapshot(
                     genus,
@@ -181,14 +181,14 @@ internal static class LegacySystemSnapshotParser
         }
 
         var names = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var node in array)
+        foreach (JsonNode? node in array)
         {
             if (node is not JsonObject signal)
             {
                 throw new InvalidDataException("A legacy geological signal is not an object.");
             }
 
-            var name = ReadOptionalString(signal, "nameLocalized") ?? ReadOptionalString(signal, "name");
+            string? name = ReadOptionalString(signal, "nameLocalized") ?? ReadOptionalString(signal, "name");
             if (!string.IsNullOrWhiteSpace(name))
             {
                 names.Add(name);
@@ -211,11 +211,11 @@ internal static class LegacySystemSnapshotParser
         }
 
         var result = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
-        foreach (var pair in values)
+        foreach (KeyValuePair<string, JsonNode?> pair in values)
         {
             if (
                 pair.Value is not JsonValue value
-                || !value.TryGetValue<double>(out var number)
+                || !value.TryGetValue<double>(out double number)
                 || !double.IsFinite(number)
             )
             {
@@ -241,7 +241,7 @@ internal static class LegacySystemSnapshotParser
         }
 
         var rings = new List<SystemRingSnapshot>(array.Count);
-        foreach (var node in array)
+        foreach (JsonNode? node in array)
         {
             if (node is not JsonObject ring)
             {
@@ -274,14 +274,14 @@ internal static class LegacySystemSnapshotParser
         }
 
         var parents = new List<SystemBodyParentSnapshot>(array.Count);
-        foreach (var node in array)
+        foreach (JsonNode? node in array)
         {
             if (node is not JsonObject parent)
             {
                 throw new InvalidDataException("A legacy system body parent is not an object.");
             }
 
-            if (TryReadStoredParent(parent, out var storedParent))
+            if (TryReadStoredParent(parent, out SystemBodyParentSnapshot? storedParent))
             {
                 parents.Add(storedParent);
                 continue;
@@ -292,11 +292,11 @@ internal static class LegacySystemSnapshotParser
                 throw new InvalidDataException("A legacy system body parent is invalid.");
             }
 
-            var pair = parent.GetAt(0);
+            KeyValuePair<string, JsonNode?> pair = parent.GetAt(0);
             if (
-                !Enum.TryParse<SystemBodyParentKind>(pair.Key, ignoreCase: true, out var kind)
+                !Enum.TryParse<SystemBodyParentKind>(pair.Key, ignoreCase: true, out SystemBodyParentKind kind)
                 || pair.Value is not JsonValue value
-                || !value.TryGetValue<int>(out var bodyId)
+                || !value.TryGetValue<int>(out int bodyId)
                 || bodyId < 0
             )
             {
@@ -317,9 +317,9 @@ internal static class LegacySystemSnapshotParser
             return false;
         }
 
-        var type = ReadRequiredString(parent, "type");
-        var bodyId = ReadRequiredInt32(parent, "id");
-        if (!Enum.TryParse<SystemBodyParentKind>(type, ignoreCase: true, out var kind) || bodyId < 0)
+        string type = ReadRequiredString(parent, "type");
+        int bodyId = ReadRequiredInt32(parent, "id");
+        if (!Enum.TryParse<SystemBodyParentKind>(type, ignoreCase: true, out SystemBodyParentKind kind) || bodyId < 0)
         {
             throw new InvalidDataException("A legacy system body parent is invalid.");
         }
@@ -356,10 +356,10 @@ internal static class LegacySystemSnapshotParser
             throw new InvalidDataException("The legacy system starPos value is not a coordinate array.");
         }
 
-        var coordinates = values
+        double[] coordinates = values
             .Take(3)
             .Select(value =>
-                value is JsonValue scalar && scalar.TryGetValue<double>(out var number) ? number : double.NaN
+                value is JsonValue scalar && scalar.TryGetValue<double>(out double number) ? number : double.NaN
             )
             .ToArray();
         if (coordinates.Any(value => !double.IsFinite(value)))
@@ -372,7 +372,7 @@ internal static class LegacySystemSnapshotParser
 
     private static string GetShortName(string bodyName, string systemName)
     {
-        var shortName = bodyName.StartsWith(systemName, StringComparison.Ordinal)
+        string shortName = bodyName.StartsWith(systemName, StringComparison.Ordinal)
             ? bodyName[systemName.Length..]
             : bodyName;
         return shortName.Replace(" ", string.Empty, StringComparison.Ordinal);
@@ -393,7 +393,7 @@ internal static class LegacySystemSnapshotParser
 
         if (
             owner[propertyName] is JsonValue value
-            && value.TryGetValue<string>(out var text)
+            && value.TryGetValue<string>(out string? text)
             && (allowEmpty || !string.IsNullOrWhiteSpace(text))
         )
         {
@@ -410,7 +410,7 @@ internal static class LegacySystemSnapshotParser
             return null;
         }
 
-        if (owner[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result))
+        if (owner[propertyName] is JsonValue value && value.TryGetValue<bool>(out bool result))
         {
             return result;
         }
@@ -426,7 +426,7 @@ internal static class LegacySystemSnapshotParser
 
     private static int? ReadOptionalInt32(JsonObject owner, string propertyName)
     {
-        var number = ReadOptionalInt64(owner, propertyName);
+        long? number = ReadOptionalInt64(owner, propertyName);
         if (number is null)
         {
             return null;
@@ -453,7 +453,7 @@ internal static class LegacySystemSnapshotParser
             return null;
         }
 
-        if (owner[propertyName] is JsonValue value && value.TryGetValue<long>(out var result))
+        if (owner[propertyName] is JsonValue value && value.TryGetValue<long>(out long result))
         {
             return result;
         }
@@ -470,7 +470,7 @@ internal static class LegacySystemSnapshotParser
 
         if (
             owner[propertyName] is JsonValue value
-            && value.TryGetValue<double>(out var result)
+            && value.TryGetValue<double>(out double result)
             && double.IsFinite(result)
         )
         {

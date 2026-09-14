@@ -19,7 +19,7 @@ public sealed class SphericalSearchOverlayViewModelTests : IAsyncLifetime
     public void WrapsAllThreeLegacySlicesAndReportsPreparation()
     {
         var sphere = new SphereLimitViewModel(new CommanderProfileStore(temporaryDirectory), new EmptyStarResolver());
-        var boxel = CreateBoxel(
+        BoxelSearchViewModel boxel = CreateBoxel(
             new CommanderProfileStore(temporaryDirectory),
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -58,12 +58,12 @@ public sealed class SphericalSearchOverlayViewModelTests : IAsyncLifetime
             new GlobalInputSettingsStore(Path.Combine(temporaryDirectory, "ui-settings.json")),
             capabilities
         );
-        var copyBinding = inputSettings.Bindings.Single(binding =>
+        InputBindingViewModel copyBinding = inputSettings.Bindings.Single(binding =>
             binding.Definition.Action == GlobalInputAction.CopyNextBoxel
         );
         copyBinding.Chord = "ALT X";
         var sphere = new SphereLimitViewModel(new CommanderProfileStore(temporaryDirectory), new EmptyStarResolver());
-        var boxel = CreateBoxel(
+        BoxelSearchViewModel boxel = CreateBoxel(
             new CommanderProfileStore(temporaryDirectory),
             new LegacySystemDataReader(temporaryDirectory),
             new EmptyBoxelStore(temporaryDirectory),
@@ -104,7 +104,7 @@ public sealed class SphericalSearchOverlayViewModelTests : IAsyncLifetime
 
     public async ValueTask DisposeAsync()
     {
-        foreach (var session in sessions.AsEnumerable().Reverse())
+        foreach (BoxelSearchSession? session in sessions.AsEnumerable().Reverse())
         {
             await session.DisposeAsync();
         }
@@ -122,12 +122,12 @@ public sealed class SphericalSearchOverlayViewModelTests : IAsyncLifetime
         IBoxelSystemResolver systemResolver
     )
     {
-        var viewModel = BoxelSearchViewModelTestFactory.Create(
+        BoxelSearchViewModel viewModel = BoxelSearchViewModelTestFactory.Create(
             profileStore,
             localSystemReader,
             emptyBoxelStore,
             systemResolver,
-            out var session
+            out BoxelSearchSession? session
         );
         sessions.Add(session);
         return viewModel;

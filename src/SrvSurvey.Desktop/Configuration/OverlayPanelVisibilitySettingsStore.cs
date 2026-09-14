@@ -34,7 +34,7 @@ public sealed class OverlayPanelVisibilitySettingsStore
                 root["OverlayPanelVisibility"] = settings;
             }
 
-            foreach (var plotterName in OverlayLayoutCatalog.Supported.Select(definition => definition.Name))
+            foreach (string? plotterName in OverlayLayoutCatalog.Supported.Select(definition => definition.Name))
             {
                 settings[plotterName] = visibility.GetValueOrDefault(plotterName, true);
             }
@@ -45,7 +45,7 @@ public sealed class OverlayPanelVisibilitySettingsStore
 
     private static bool GetBoolean(JsonObject? settings, string propertyName, bool fallback)
     {
-        return settings?[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result)
+        return settings?[propertyName] is JsonValue value && value.TryGetValue<bool>(out bool result)
             ? result
             : fallback;
     }

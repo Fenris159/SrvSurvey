@@ -12,7 +12,7 @@ namespace SrvSurvey.Desktop.Behaviors;
 public static class HorizontalScrollInputBehavior
 {
     private const double FallbackWheelStep = 50;
-    private static readonly ConditionalWeakTable<ScrollViewer, Subscription> Subscriptions = new();
+    private static readonly ConditionalWeakTable<ScrollViewer, Subscription> Subscriptions = [];
 
     public static readonly AttachedProperty<bool> EnabledProperty = AvaloniaProperty.RegisterAttached<
         ScrollViewer,
@@ -43,7 +43,7 @@ public static class HorizontalScrollInputBehavior
             return;
         }
 
-        if (Subscriptions.TryGetValue(scrollViewer, out var subscription))
+        if (Subscriptions.TryGetValue(scrollViewer, out Subscription? subscription))
         {
             subscription.Dispose();
             Subscriptions.Remove(scrollViewer);
@@ -79,8 +79,8 @@ public static class HorizontalScrollInputBehavior
 
         private void OnPointerWheelChanged(object? sender, PointerWheelEventArgs eventArgs)
         {
-            var horizontalDelta = eventArgs.Delta.X;
-            var usesShiftFallback = false;
+            double horizontalDelta = eventArgs.Delta.X;
+            bool usesShiftFallback = false;
             if (Math.Abs(horizontalDelta) < double.Epsilon && eventArgs.KeyModifiers.HasFlag(KeyModifiers.Shift))
             {
                 horizontalDelta = eventArgs.Delta.Y;
@@ -110,7 +110,7 @@ public static class HorizontalScrollInputBehavior
                 horizontalDelta = -horizontalDelta;
             }
 
-            var wheelStep = scrollViewer.SmallChange.Width > 0 ? scrollViewer.SmallChange.Width : FallbackWheelStep;
+            double wheelStep = scrollViewer.SmallChange.Width > 0 ? scrollViewer.SmallChange.Width : FallbackWheelStep;
             ForwardNestedHorizontalInput(eventArgs.Source, -horizontalDelta * wheelStep, eventArgs);
         }
 
@@ -128,7 +128,7 @@ public static class HorizontalScrollInputBehavior
                 return;
             }
 
-            var horizontalDelta =
+            double horizontalDelta =
                 scrollViewer.FlowDirection == FlowDirection.RightToLeft ? -eventArgs.Delta.X : eventArgs.Delta.X;
             ForwardNestedHorizontalInput(eventArgs.Source, horizontalDelta, eventArgs);
         }
@@ -144,13 +144,13 @@ public static class HorizontalScrollInputBehavior
                 return;
             }
 
-            var viewers = (
+            ScrollViewer[] viewers = (
                 source is ScrollViewer sourceScroller
                     ? new[] { sourceScroller }.Concat(source.GetVisualAncestors().OfType<ScrollViewer>())
                     : source.GetVisualAncestors().OfType<ScrollViewer>()
             ).ToArray();
-            var nearestViewer = viewers.FirstOrDefault();
-            var nearestHorizontalViewer = viewers.FirstOrDefault(CanScrollHorizontally);
+            ScrollViewer? nearestViewer = viewers.FirstOrDefault();
+            ScrollViewer? nearestHorizontalViewer = viewers.FirstOrDefault(CanScrollHorizontally);
             if (
                 nearestHorizontalViewer is null
                 || ReferenceEquals(nearestViewer, nearestHorizontalViewer)
@@ -160,9 +160,9 @@ public static class HorizontalScrollInputBehavior
                 return;
             }
 
-            var maximumOffset = Math.Max(0, scrollViewer.Extent.Width - scrollViewer.Viewport.Width);
-            var requestedOffset = Math.Clamp(scrollViewer.Offset.X + horizontalDelta, 0, maximumOffset);
-            var moved = Math.Abs(requestedOffset - scrollViewer.Offset.X) >= double.Epsilon;
+            double maximumOffset = Math.Max(0, scrollViewer.Extent.Width - scrollViewer.Viewport.Width);
+            double requestedOffset = Math.Clamp(scrollViewer.Offset.X + horizontalDelta, 0, maximumOffset);
+            bool moved = Math.Abs(requestedOffset - scrollViewer.Offset.X) >= double.Epsilon;
             scrollViewer.Offset = new Vector(requestedOffset, scrollViewer.Offset.Y);
             eventArgs.Handled = true;
             if (eventArgs is ScrollGestureEventArgs scrollGestureEventArgs)
@@ -186,31 +186,31 @@ public static class HorizontalScrollInputBehavior
                 return;
             }
 
-            var viewers = (
+            ScrollViewer[] viewers = (
                 source is ScrollViewer sourceScroller
                     ? new[] { sourceScroller }.Concat(source.GetVisualAncestors().OfType<ScrollViewer>())
                     : source.GetVisualAncestors().OfType<ScrollViewer>()
             ).ToArray();
-            var currentIndex = Array.IndexOf(viewers, scrollViewer);
+            int currentIndex = Array.IndexOf(viewers, scrollViewer);
             if (currentIndex < 0 || viewers.Take(currentIndex).Any(CanScrollVertically))
             {
                 return;
             }
 
-            var target = viewers.Skip(currentIndex + 1).FirstOrDefault(CanScrollVertically);
+            ScrollViewer? target = viewers.Skip(currentIndex + 1).FirstOrDefault(CanScrollVertically);
             if (target is null)
             {
                 return;
             }
 
-            var step = 1d;
+            double step = 1d;
             if (isWheel)
             {
                 step = target.SmallChange.Height > 0 ? target.SmallChange.Height : FallbackWheelStep;
             }
-            var maximumOffset = Math.Max(0, target.Extent.Height - target.Viewport.Height);
-            var requestedOffset = Math.Clamp(target.Offset.Y + (verticalDelta * step), 0, maximumOffset);
-            var moved = Math.Abs(requestedOffset - target.Offset.Y) >= double.Epsilon;
+            double maximumOffset = Math.Max(0, target.Extent.Height - target.Viewport.Height);
+            double requestedOffset = Math.Clamp(target.Offset.Y + (verticalDelta * step), 0, maximumOffset);
+            bool moved = Math.Abs(requestedOffset - target.Offset.Y) >= double.Epsilon;
             target.Offset = new Vector(target.Offset.X, requestedOffset);
             eventArgs.Handled = moved;
             if (eventArgs is ScrollGestureEventArgs scrollGestureEventArgs)

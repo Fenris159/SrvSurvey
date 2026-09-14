@@ -52,10 +52,10 @@ public sealed partial class BoxelStatsWindow : Window
                 return;
             }
 
-            var folders = await StorageProvider.OpenFolderPickerAsync(
+            IReadOnlyList<IStorageFolder> folders = await StorageProvider.OpenFolderPickerAsync(
                 new FolderPickerOpenOptions { Title = "Choose where to export boxel statistics", AllowMultiple = false }
             );
-            var directory = folders.Count > 0 ? folders[0].TryGetLocalPath() : null;
+            string? directory = folders.Count > 0 ? folders[0].TryGetLocalPath() : null;
             if (!string.IsNullOrWhiteSpace(directory))
             {
                 await viewModel.ExportAsync(directory);
@@ -108,7 +108,7 @@ public sealed partial class BoxelStatsWindow : Window
             return;
         }
 
-        var version = Interlocked.Increment(ref activationVersion);
+        int version = Interlocked.Increment(ref activationVersion);
         using var cancellation = new CancellationTokenSource();
         await ReplaceActivationAsync(cancellation);
         if (isClosed)
@@ -140,7 +140,7 @@ public sealed partial class BoxelStatsWindow : Window
 
     private async Task ReplaceActivationAsync(CancellationTokenSource next)
     {
-        var previous = Interlocked.Exchange(ref activationCancellation, next);
+        CancellationTokenSource? previous = Interlocked.Exchange(ref activationCancellation, next);
         if (previous is not null)
         {
             await previous.CancelAsync();
@@ -149,7 +149,7 @@ public sealed partial class BoxelStatsWindow : Window
 
     private void CancelActivation()
     {
-        var scheduled = Interlocked.Exchange(ref activationCancellation, null);
+        CancellationTokenSource? scheduled = Interlocked.Exchange(ref activationCancellation, null);
         if (scheduled is null)
         {
             return;

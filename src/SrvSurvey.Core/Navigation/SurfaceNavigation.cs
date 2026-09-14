@@ -16,10 +16,10 @@ public static class SurfaceNavigation
             return 0;
         }
 
-        var firstLatitude = DegreesToRadians(first.Latitude);
-        var secondLatitude = DegreesToRadians(second.Latitude);
-        var longitudeDelta = DegreesToRadians(second.Longitude - first.Longitude);
-        var cosine =
+        double firstLatitude = DegreesToRadians(first.Latitude);
+        double secondLatitude = DegreesToRadians(second.Latitude);
+        double longitudeDelta = DegreesToRadians(second.Longitude - first.Longitude);
+        double cosine =
             (Math.Sin(firstLatitude) * Math.Sin(secondLatitude))
             + (Math.Cos(firstLatitude) * Math.Cos(secondLatitude) * Math.Cos(longitudeDelta));
         return Math.Acos(Math.Clamp(cosine, -1, 1)) * radius;
@@ -32,11 +32,11 @@ public static class SurfaceNavigation
             return 0;
         }
 
-        var originLatitude = DegreesToRadians(origin.Latitude);
-        var targetLatitude = DegreesToRadians(target.Latitude);
-        var longitudeDelta = DegreesToRadians(target.Longitude - origin.Longitude);
-        var y = Math.Sin(longitudeDelta) * Math.Cos(targetLatitude);
-        var x =
+        double originLatitude = DegreesToRadians(origin.Latitude);
+        double targetLatitude = DegreesToRadians(target.Latitude);
+        double longitudeDelta = DegreesToRadians(target.Longitude - origin.Longitude);
+        double y = Math.Sin(longitudeDelta) * Math.Cos(targetLatitude);
+        double x =
             (Math.Cos(originLatitude) * Math.Sin(targetLatitude))
             - (Math.Sin(originLatitude) * Math.Cos(targetLatitude) * Math.Cos(longitudeDelta));
         return NormalizeDegrees(RadiansToDegrees(Math.Atan2(y, x)));

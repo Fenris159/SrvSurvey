@@ -25,7 +25,7 @@ public sealed class GuardianLiveSiteStateTests
             )
         );
 
-        var site = Assert.IsType<GuardianLiveSiteSnapshot>(state.CurrentSite);
+        GuardianLiveSiteSnapshot site = Assert.IsType<GuardianLiveSiteSnapshot>(state.CurrentSite);
         Assert.Equal(GuardianSiteKind.Ruins, site.Kind);
         Assert.Equal(1, site.Index);
         Assert.Equal("Beta", site.SiteType);
@@ -88,10 +88,10 @@ public sealed class GuardianLiveSiteStateTests
     public void RepeatedVisitPreservesFirstAndAdvancesLastTimestamp()
     {
         var state = new GuardianLiveSiteState(new GuardianSiteCatalog([]));
-        var first = Parse(
+        JournalEventEnvelope first = Parse(
             """{"timestamp":"2026-07-24T10:00:00Z","event":"ApproachSettlement","Name":"$Ancient:#index=12;","SystemAddress":42,"BodyID":7,"BodyName":"Test A 1","Latitude":1,"Longitude":2}"""
         );
-        var second = Parse(
+        JournalEventEnvelope second = Parse(
             """{"timestamp":"2026-07-24T11:00:00Z","event":"ApproachSettlement","Name":"$Ancient:#index=12;","Name_Localised":"Ancient Ruins (12)","SystemAddress":42,"BodyID":7,"BodyName":"Test A 1","Latitude":3,"Longitude":4}"""
         );
 
@@ -113,7 +113,7 @@ public sealed class GuardianLiveSiteStateTests
     {
         var state = new GuardianLiveSiteState(new GuardianSiteCatalog([]));
 
-        var applied = state.Apply(
+        bool applied = state.Apply(
             Parse(
                 $$"""
                 {"timestamp":"2026-07-24T10:00:00Z","event":"ApproachSettlement","Name":"{{name}}","SystemAddress":42,"BodyID":7,"BodyName":"Test A 1"}
@@ -182,8 +182,8 @@ public sealed class GuardianLiveSiteStateTests
         Assert.True(state.Apply(Parse("""{"event":"SupercruiseExit","StarSystem":"Test","SystemAddress":42}""")));
         Assert.NotNull(state.CurrentSite);
 
-        var near = SurfaceStatus(latitude: 0.01);
-        var far = SurfaceStatus(latitude: 0.5);
+        EliteStatus near = SurfaceStatus(latitude: 0.01);
+        EliteStatus far = SurfaceStatus(latitude: 0.5);
         Assert.False(state.SynchronizeProximity(near, retainDuringGlide: false));
         Assert.False(state.SynchronizeProximity(far, retainDuringGlide: false));
         Assert.NotNull(state.CurrentSite);
@@ -196,8 +196,8 @@ public sealed class GuardianLiveSiteStateTests
     [Fact]
     public void StatusRestoresAndSwitchesNearestCatalogSiteWithoutApproachEvent()
     {
-        var first = CreateReference(1, 0);
-        var second = CreateReference(2, 0.02);
+        GuardianSiteReference first = CreateReference(1, 0);
+        GuardianSiteReference second = CreateReference(2, 0.02);
         var state = new GuardianLiveSiteState(new GuardianSiteCatalog([]));
         state.SetRecoveryReferences([first, second]);
         state.Apply(Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"Body":"Test A 1"}"""));
@@ -272,7 +272,7 @@ public sealed class GuardianLiveSiteStateTests
             MapMarkerOffset = new GuardianMapPoint(4, -6),
         };
 
-        var survey = state.CreateOrUpdateSurvey("Drew", legacy: true, existing);
+        GuardianCommanderSiteSurvey survey = state.CreateOrUpdateSurvey("Drew", legacy: true, existing);
 
         Assert.Equal(existing.FirstVisited, survey.FirstVisited);
         Assert.Equal(state.CurrentSite?.LastVisited, survey.LastVisited);
@@ -390,7 +390,7 @@ public sealed class GuardianLiveSiteStateTests
 
     private static JournalEventEnvelope Parse(string json)
     {
-        var success = JournalEventEnvelope.TryParse(json, out var journalEvent, out var error);
+        bool success = JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error);
         Assert.True(success, error);
         return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }

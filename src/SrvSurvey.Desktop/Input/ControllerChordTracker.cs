@@ -30,7 +30,7 @@ public sealed class ControllerChordTracker
 
     public string? UpdateHat(ControllerHatDirection direction)
     {
-        var nextHat = direction == ControllerHatDirection.Centered ? null : $"Pov{GetHatSuffix(direction)}";
+        string? nextHat = direction == ControllerHatDirection.Centered ? null : $"Pov{GetHatSuffix(direction)}";
         if (string.Equals(activeHat, nextHat, StringComparison.Ordinal))
         {
             return null;
@@ -70,7 +70,7 @@ public sealed class ControllerChordTracker
         }
 
         string? chord = null;
-        if (!releasePending && InputChord.TryNormalize(string.Join(' ', pressed), out var normalized))
+        if (!releasePending && InputChord.TryNormalize(string.Join(' ', pressed), out string? normalized))
         {
             releasePending = true;
             chord = normalized;

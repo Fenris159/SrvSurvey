@@ -43,13 +43,13 @@ public sealed class JournalHistoryAnalyzer
         }
 
         var warnings = new List<string>();
-        var files = EnumerateJournalCandidates(startTime, warnings);
+        JournalFileCandidate[] files = EnumerateJournalCandidates(startTime, warnings);
         var totals = new MutableTotals(greenGasGiantCriteria);
         var counters = new AnalysisCounters();
-        for (var index = 0; index < files.Length; index++)
+        for (int index = 0; index < files.Length; index++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var candidate = files[index];
+            JournalFileCandidate candidate = files[index];
             await ProcessCandidateAsync(candidate, frontierId, totals, counters, warnings, cancellationToken)
                 .ConfigureAwait(false);
             Report(progress, index, files, candidate, totals);
@@ -87,7 +87,7 @@ public sealed class JournalHistoryAnalyzer
     {
         try
         {
-            var read = await ReadFileAsync(candidate.File, cancellationToken).ConfigureAwait(false);
+            JournalHistoryFileRead read = await ReadFileAsync(candidate.File, cancellationToken).ConfigureAwait(false);
             counters.MalformedLines += read.MalformedLineCount;
             if (!string.Equals(read.FrontierId, frontierId, StringComparison.OrdinalIgnoreCase))
             {
@@ -103,7 +103,7 @@ public sealed class JournalHistoryAnalyzer
 
             counters.ProcessedFiles++;
             counters.ParsedEvents += read.Events.Count;
-            foreach (var journalEvent in read.Events)
+            foreach (JournalEventEnvelope journalEvent in read.Events)
             {
                 totals.Apply(journalEvent);
             }
@@ -116,20 +116,20 @@ public sealed class JournalHistoryAnalyzer
 
     private bool ShouldSkipRecentActiveFile(JournalFileCandidate candidate, JournalHistoryFileRead read)
     {
-        var recentCutoff = currentTime().AddDays(-2);
+        DateTimeOffset recentCutoff = currentTime().AddDays(-2);
         return !read.IsShutdown && candidate.OpenedAt > recentCutoff;
     }
 
     public static bool TryGetJournalTimestamp(string fileName, out DateTimeOffset timestamp)
     {
         timestamp = default;
-        var parts = fileName.Split('.');
+        string[] parts = fileName.Split('.');
         if (parts.Length < 3 || !string.Equals(parts[0], "Journal", StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }
 
-        var format = parts[1].Contains('-', StringComparison.Ordinal) ? "yyyy-MM-ddTHHmmss" : "yyMMddHHmmss";
+        string format = parts[1].Contains('-', StringComparison.Ordinal) ? "yyyy-MM-ddTHHmmss" : "yyMMddHHmmss";
         return DateTimeOffset.TryParseExact(
             parts[1],
             format,
@@ -145,7 +145,7 @@ public sealed class JournalHistoryAnalyzer
             .EnumerateFiles("Journal.*.log", SearchOption.TopDirectoryOnly)
             .Select(file => new JournalFileCandidate(
                 file,
-                TryGetJournalTimestamp(file.Name, out var timestamp) ? timestamp : null
+                TryGetJournalTimestamp(file.Name, out DateTimeOffset timestamp) ? timestamp : null
             ))
             .Where(candidate =>
             {
@@ -165,9 +165,9 @@ public sealed class JournalHistoryAnalyzer
     private static async Task<JournalHistoryFileRead> ReadFileAsync(FileInfo file, CancellationToken cancellationToken)
     {
         var events = new List<JournalEventEnvelope>();
-        var malformed = 0;
+        int malformed = 0;
         string? frontierId = null;
-        var isShutdown = false;
+        bool isShutdown = false;
         await using var stream = new FileStream(
             file.FullName,
             FileMode.Open,
@@ -184,7 +184,10 @@ public sealed class JournalHistoryAnalyzer
                 continue;
             }
 
-            if (!JournalEventEnvelope.TryParse(line, out var journalEvent, out _) || journalEvent is null)
+            if (
+                !JournalEventEnvelope.TryParse(line, out JournalEventEnvelope? journalEvent, out _)
+                || journalEvent is null
+            )
             {
                 malformed++;
                 continue;
@@ -225,7 +228,7 @@ public sealed class JournalHistoryAnalyzer
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+        return root.TryGetProperty(propertyName, out JsonElement value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
     }
@@ -281,20 +284,21 @@ public sealed class JournalHistoryAnalyzer
 
         public void Apply(JournalEventEnvelope journalEvent)
         {
-            var timestamp = journalEvent.Timestamp;
+            DateTimeOffset? timestamp = journalEvent.Timestamp;
             if (timestamp is not null)
             {
                 firstEvent = firstEvent is null || timestamp < firstEvent ? timestamp : firstEvent;
                 lastEvent = lastEvent is null || timestamp > lastEvent ? timestamp : lastEvent;
             }
 
-            var root = journalEvent.Payload;
+            JsonElement root = journalEvent.Payload;
             if (journalEvent.EventName is "LoadGame" or "Location" or "FSDJump" or "CarrierJump")
             {
                 currentStarPosition = TryGetCoordinate(root, "StarPos");
             }
 
-            var trailblazers = timestamp < TrailblazersReleaseDate ? beforeTrailblazers : afterTrailblazers;
+            MutableCargoTransactions trailblazers =
+                timestamp < TrailblazersReleaseDate ? beforeTrailblazers : afterTrailblazers;
             switch (journalEvent.EventName)
             {
                 case "FSDJump":
@@ -302,7 +306,7 @@ public sealed class JournalHistoryAnalyzer
                     jumpDistance += GetDouble(root, "JumpDist") ?? 0;
                     break;
                 case "Scan":
-                    var tag = greenGasGiantCriteria.Match(
+                    string? tag = greenGasGiantCriteria.Match(
                         GetString(root, "PlanetClass"),
                         GetDouble(root, "SurfaceTemperature") ?? double.NaN
                     );
@@ -334,17 +338,17 @@ public sealed class JournalHistoryAnalyzer
                     OrganismCount++;
                     break;
                 case "MarketBuy":
-                    var bought = GetInt64(root, "Count") ?? 0;
+                    long bought = GetInt64(root, "Count") ?? 0;
                     cargoBought += bought;
                     trailblazers.Bought += bought;
                     break;
                 case "MarketSell":
-                    var sold = GetInt64(root, "Count") ?? 0;
+                    long sold = GetInt64(root, "Count") ?? 0;
                     cargoSold += sold;
                     trailblazers.Sold += sold;
                     break;
                 case "CargoTransfer":
-                    var transferred = SumArray(root, "Transfers", "Count");
+                    long transferred = SumArray(root, "Transfers", "Count");
                     cargoTransferred += transferred;
                     trailblazers.Transferred += transferred;
                     break;
@@ -393,7 +397,7 @@ public sealed class JournalHistoryAnalyzer
 
         private static long SumArray(JsonElement root, string arrayName, string valueName)
         {
-            if (!root.TryGetProperty(arrayName, out var array) || array.ValueKind != JsonValueKind.Array)
+            if (!root.TryGetProperty(arrayName, out JsonElement array) || array.ValueKind != JsonValueKind.Array)
             {
                 return 0;
             }
@@ -403,7 +407,7 @@ public sealed class JournalHistoryAnalyzer
 
         private static long? GetInt64(JsonElement root, string propertyName)
         {
-            return root.TryGetProperty(propertyName, out var value) && value.TryGetInt64(out var result)
+            return root.TryGetProperty(propertyName, out JsonElement value) && value.TryGetInt64(out long result)
                 ? result
                 : null;
         }
@@ -411,8 +415,8 @@ public sealed class JournalHistoryAnalyzer
         private static double? GetDouble(JsonElement root, string propertyName)
         {
             return
-                root.TryGetProperty(propertyName, out var value)
-                && value.TryGetDouble(out var result)
+                root.TryGetProperty(propertyName, out JsonElement value)
+                && value.TryGetDouble(out double result)
                 && double.IsFinite(result)
                 ? result
                 : null;
@@ -420,17 +424,17 @@ public sealed class JournalHistoryAnalyzer
 
         private static GalacticCoordinate? TryGetCoordinate(JsonElement root, string propertyName)
         {
-            if (!root.TryGetProperty(propertyName, out var value) || value.ValueKind != JsonValueKind.Array)
+            if (!root.TryGetProperty(propertyName, out JsonElement value) || value.ValueKind != JsonValueKind.Array)
             {
                 return null;
             }
 
-            var components = value.EnumerateArray().ToArray();
+            JsonElement[] components = value.EnumerateArray().ToArray();
             return
                 components.Length == 3
                 && components.All(component =>
                     component.ValueKind == JsonValueKind.Number
-                    && component.TryGetDouble(out var number)
+                    && component.TryGetDouble(out double number)
                     && double.IsFinite(number)
                 )
                 ? new GalacticCoordinate(

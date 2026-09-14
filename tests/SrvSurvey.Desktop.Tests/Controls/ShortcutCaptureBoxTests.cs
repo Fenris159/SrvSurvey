@@ -28,9 +28,9 @@ public sealed class ShortcutCaptureBoxTests
             Assert.Equal(220, capture.Bounds.Width);
             Assert.True(capture.Bounds.Height >= 20);
             Assert.Equal("CTRL K", capture.Text);
-            var frame = window.CaptureRenderedFrame();
+            WriteableBitmap? frame = window.CaptureRenderedFrame();
             Assert.NotNull(frame);
-            var outputPath = Environment.GetEnvironmentVariable("SRVSURVEY_SHORTCUT_CAPTURE_RENDER_OUTPUT");
+            string? outputPath = Environment.GetEnvironmentVariable("SRVSURVEY_SHORTCUT_CAPTURE_RENDER_OUTPUT");
             if (!string.IsNullOrWhiteSpace(outputPath))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
@@ -107,7 +107,7 @@ public sealed class ShortcutCaptureBoxTests
     [AvaloniaFact]
     public void CommittedChordWritesThroughTheTwoWayViewModelBinding()
     {
-        var saved = string.Empty;
+        string saved = string.Empty;
         var viewModel = new InputBindingViewModel(
             GlobalInputActionCatalog.Get(GlobalInputAction.MapZoomIn),
             "CTRL +",
@@ -132,7 +132,7 @@ public sealed class ShortcutCaptureBoxTests
     [AvaloniaFact]
     public void ControllerChordPreviewsAndWritesThroughTheBinding()
     {
-        var saved = string.Empty;
+        string saved = string.Empty;
         var viewModel = new InputBindingViewModel(
             GlobalInputActionCatalog.Get(GlobalInputAction.MapZoomIn),
             "CTRL +",

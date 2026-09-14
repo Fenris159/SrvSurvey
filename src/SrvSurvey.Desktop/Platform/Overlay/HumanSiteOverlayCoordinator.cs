@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -156,7 +157,7 @@ public sealed class HumanSiteOverlayCoordinator : IDisposable
         overlay.Opened += (_, _) =>
         {
             SizeAndPositionWindow(overlay, gameWindow.ClientBounds);
-            var preparation = platform.PreparePassiveWindow(overlay);
+            OverlayPreparationResult preparation = platform.PreparePassiveWindow(overlay);
             viewModel.ApplyPreparation(preparation);
             if (!preparation.IsClickThrough)
             {
@@ -180,21 +181,21 @@ public sealed class HumanSiteOverlayCoordinator : IDisposable
     private void SizeAndPositionWindow(Window overlay, PixelRect gameBounds)
     {
         OverlayThemeResources.ApplyOpacity(overlay, overlayLayout, "PlotHumanSite");
-        var screen = overlay.Screens.ScreenFromBounds(gameBounds) ?? overlay.Screens.Primary;
+        Screen? screen = overlay.Screens.ScreenFromBounds(gameBounds) ?? overlay.Screens.Primary;
         if (screen is null)
         {
             return;
         }
 
-        var logicalWidth = humanSite.IsHuge ? gameBounds.Width * 0.4 / screen.Scaling : humanSite.PreferredWidth;
-        var logicalHeight = humanSite.IsHuge ? gameBounds.Height * 0.9 / screen.Scaling : humanSite.PreferredHeight;
+        double logicalWidth = humanSite.IsHuge ? gameBounds.Width * 0.4 / screen.Scaling : humanSite.PreferredWidth;
+        double logicalHeight = humanSite.IsHuge ? gameBounds.Height * 0.9 / screen.Scaling : humanSite.PreferredHeight;
         OverlayThemeResources.SetBaseSize(overlay, overlayLayout, logicalWidth, logicalHeight);
 
         var pixelSize = new PixelSize(
             Math.Max(1, (int)Math.Ceiling(overlay.Width * screen.Scaling)),
             Math.Max(1, (int)Math.Ceiling(overlay.Height * screen.Scaling))
         );
-        var position =
+        PixelPoint position =
             overlayLayout.GetPosition("PlotHumanSite", gameBounds, pixelSize)
             ?? OverlayWindowPlacement.MiddleLeft(gameBounds, pixelSize, margin: 8);
         if (overlay.Position != position)
@@ -205,7 +206,7 @@ public sealed class HumanSiteOverlayCoordinator : IDisposable
 
     private void CloseWindow()
     {
-        var overlay = window;
+        HumanSiteOverlayWindow? overlay = window;
         if (overlay is null)
         {
             return;

@@ -17,7 +17,7 @@ public sealed class ApplicationUpdateInstanceWarningPresentationTests
             dialog.Show();
             Assert.NotNull(dialog.CaptureRenderedFrame());
 
-            var text = dialog
+            string?[] text = dialog
                 .GetVisualDescendants()
                 .OfType<TextBlock>()
                 .Select(block => block.Text)
@@ -27,7 +27,7 @@ public sealed class ApplicationUpdateInstanceWarningPresentationTests
             Assert.Contains("Are you sure you want to proceed? Doing so will close all instances.", text);
             Assert.Contains(text, value => value!.Contains("before downloading begins", StringComparison.Ordinal));
 
-            var buttons = dialog
+            string?[] buttons = dialog
                 .GetVisualDescendants()
                 .OfType<Button>()
                 .Select(button => button.Content?.ToString())
@@ -56,7 +56,7 @@ public sealed class ApplicationUpdateInstanceWarningPresentationTests
             dialog.Show();
             Assert.NotNull(dialog.CaptureRenderedFrame());
 
-            var text = dialog
+            string?[] text = dialog
                 .GetVisualDescendants()
                 .OfType<TextBlock>()
                 .Where(block => block.IsVisible)

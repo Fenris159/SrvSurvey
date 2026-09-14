@@ -11,7 +11,7 @@ public sealed class RavenQuestClientTests
     [Fact]
     public async Task LoadsPublishedDefinitionsWithOptionalApiKey()
     {
-        var client = Create(
+        RavenQuestClient client = Create(
             new StubHandler(request =>
             {
                 Assert.Equal(HttpMethod.Get, request.Method);
@@ -36,9 +36,9 @@ public sealed class RavenQuestClientTests
             })
         );
 
-        var quests = await client.GetPublishedQuestsAsync(" secret-key ");
+        IReadOnlyList<RavenQuestDefinition> quests = await client.GetPublishedQuestsAsync(" secret-key ");
 
-        var quest = Assert.Single(quests);
+        RavenQuestDefinition quest = Assert.Single(quests);
         Assert.Equal("sample", quest.Id);
         Assert.Equal(RavenQuestDuration.Long, quest.Duration);
         Assert.Equal("Scan a thing", quest.Objectives["scan"]);
@@ -48,7 +48,7 @@ public sealed class RavenQuestClientTests
     [Fact]
     public async Task LoadsSpecificDefinitionUsingEscapedInvariantIdentity()
     {
-        var client = Create(
+        RavenQuestClient client = Create(
             new StubHandler(request =>
             {
                 Assert.Equal(HttpMethod.Get, request.Method);
@@ -61,7 +61,9 @@ public sealed class RavenQuestClientTests
             })
         );
 
-        var quest = await client.GetQuestAsync(new RavenQuestReference("Publisher Name", "quest/one", 1.5));
+        RavenQuestDefinition? quest = await client.GetQuestAsync(
+            new RavenQuestReference("Publisher Name", "quest/one", 1.5)
+        );
 
         Assert.Equal("Quest", quest?.Title);
     }
@@ -69,7 +71,7 @@ public sealed class RavenQuestClientTests
     [Fact]
     public async Task LoadsCommanderProgressWithoutDroppingFutureFields()
     {
-        var client = Create(
+        RavenQuestClient client = Create(
             new StubHandler(request =>
             {
                 Assert.Equal(HttpMethod.Post, request.Method);
@@ -96,9 +98,12 @@ public sealed class RavenQuestClientTests
             })
         );
 
-        var quests = await client.LoadCommanderQuestsAsync(RavenQuestState.active, "secret-key");
+        IReadOnlyList<RavenCommanderQuest> quests = await client.LoadCommanderQuestsAsync(
+            RavenQuestState.active,
+            "secret-key"
+        );
 
-        var quest = Assert.Single(quests);
+        RavenCommanderQuest quest = Assert.Single(quests);
         Assert.Equal("visible,1,3", quest.Objectives["scan"]);
         Assert.Equal(42, quest.Variables["counter"].GetInt32());
         Assert.Equal("Docked", quest.KeptJournalEvents["Docked"].GetProperty("event").GetString());
@@ -110,7 +115,7 @@ public sealed class RavenQuestClientTests
     public async Task SavesCommanderProgressWithLegacyPropertyNamesAndApiKey()
     {
         string? body = null;
-        var client = Create(
+        RavenQuestClient client = Create(
             new StubHandler(async request =>
             {
                 Assert.Equal(HttpMethod.Post, request.Method);
@@ -143,7 +148,7 @@ public sealed class RavenQuestClientTests
         await client.SaveCommanderQuestAsync(quest, "secret-key");
 
         using var document = JsonDocument.Parse(body!);
-        var root = document.RootElement;
+        JsonElement root = document.RootElement;
         Assert.Equal("Raven", root.GetProperty("publisher").GetString());
         Assert.Equal(1.5, root.GetProperty("ver").GetDouble());
         Assert.Equal("visible,1,3", root.GetProperty("objectives").GetProperty("scan").GetString());
@@ -157,7 +162,7 @@ public sealed class RavenQuestClientTests
     public async Task CatalogStatusAndActivationUseLegacyEndpoints()
     {
         var requests = new List<(HttpMethod Method, string Path)>();
-        var client = Create(
+        RavenQuestClient client = Create(
             new StubHandler(request =>
             {
                 requests.Add((request.Method, request.RequestUri!.AbsolutePath));
@@ -175,8 +180,8 @@ public sealed class RavenQuestClientTests
             })
         );
 
-        var statuses = await client.GetCommanderQuestStatusesAsync("key");
-        var activated = await client.ActivateQuestAsync("Raven", "sample", "key");
+        IReadOnlyList<RavenCommanderQuestStatus> statuses = await client.GetCommanderQuestStatusesAsync("key");
+        RavenQuestDefinition activated = await client.ActivateQuestAsync("Raven", "sample", "key");
 
         Assert.Equal(RavenQuestState.paused, Assert.Single(statuses).State);
         Assert.Equal("Sample", activated.Title);
@@ -190,7 +195,7 @@ public sealed class RavenQuestClientTests
     public async Task MutationAndChapterEndpointsMatchLegacyContract()
     {
         var requests = new List<(HttpMethod Method, string Path)>();
-        var client = Create(
+        RavenQuestClient client = Create(
             new StubHandler(request =>
             {
                 requests.Add((request.Method, request.RequestUri!.AbsolutePath));
@@ -206,7 +211,7 @@ public sealed class RavenQuestClientTests
 
         Assert.True(await client.SetQuestStateAsync("Raven", "sample", RavenQuestState.complete, "key"));
         Assert.True(await client.DeleteQuestAsync("Raven", "sample", "key"));
-        var chapter = await client.GetQuestChapterAsync(reference, "start chapter", "key");
+        string? chapter = await client.GetQuestChapterAsync(reference, "start chapter", "key");
 
         Assert.Equal("function JournalEntry(entry) end", chapter);
         Assert.Equal(
@@ -223,7 +228,7 @@ public sealed class RavenQuestClientTests
     public async Task PublishSendsDefinitionAndPreservesLegacyDurationCasing()
     {
         string? body = null;
-        var client = Create(
+        RavenQuestClient client = Create(
             new StubHandler(async request =>
             {
                 Assert.Equal(HttpMethod.Post, request.Method);
@@ -234,7 +239,7 @@ public sealed class RavenQuestClientTests
             })
         );
 
-        var result = await client.PublishQuestAsync(
+        string result = await client.PublishQuestAsync(
             new RavenQuestDefinition
             {
                 Publisher = "Raven",
@@ -254,7 +259,7 @@ public sealed class RavenQuestClientTests
     [Fact]
     public async Task LegacyUnavailableResponsesRemainNonFatalForReadSurfaces()
     {
-        var client = Create(new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.Unauthorized)));
+        RavenQuestClient client = Create(new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.Unauthorized)));
 
         Assert.Empty(await client.GetPublishedQuestsAsync());
         Assert.Empty(await client.LoadCommanderQuestsAsync(RavenQuestState.active, "key"));
@@ -265,14 +270,14 @@ public sealed class RavenQuestClientTests
     [Fact]
     public async Task ServiceFailuresExposeStatusAndOperation()
     {
-        var client = Create(
+        RavenQuestClient client = Create(
             new StubHandler(_ => new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
             {
                 Content = new StringContent("maintenance"),
             })
         );
 
-        var exception = await Assert.ThrowsAsync<RavenColonialServiceException>(() =>
+        RavenColonialServiceException exception = await Assert.ThrowsAsync<RavenColonialServiceException>(() =>
             client.ActivateQuestAsync("Raven", "sample", "key")
         );
 

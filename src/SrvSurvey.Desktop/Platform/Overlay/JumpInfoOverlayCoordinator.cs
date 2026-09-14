@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -130,8 +131,8 @@ public sealed class JumpInfoOverlayCoordinator : IDisposable
             }
 
             JumpInfoOverlayWindow? overlay = null;
-            var presentationCompleted = false;
-            var presentationEnded = false;
+            bool presentationCompleted = false;
+            bool presentationEnded = false;
             try
             {
                 overlay = new JumpInfoOverlayWindow(viewModel);
@@ -139,7 +140,7 @@ public sealed class JumpInfoOverlayCoordinator : IDisposable
                 overlay.Opened += (_, _) =>
                 {
                     PositionWindow(overlay, gameWindow.ClientBounds);
-                    var preparation = platform.PreparePassiveWindow(overlay);
+                    OverlayPreparationResult preparation = platform.PreparePassiveWindow(overlay);
                     viewModel.ApplyPreparation(preparation);
                     if (!preparation.IsClickThrough)
                     {
@@ -184,14 +185,14 @@ public sealed class JumpInfoOverlayCoordinator : IDisposable
     private void PositionWindow(Window window, PixelRect gameBounds)
     {
         OverlayThemeResources.ApplyOpacity(window, overlayLayout, PlotterName);
-        var screen = window.Screens.ScreenFromBounds(gameBounds) ?? window.Screens.Primary;
+        Screen? screen = window.Screens.ScreenFromBounds(gameBounds) ?? window.Screens.Primary;
         if (screen is null)
         {
             return;
         }
 
-        var size = OverlayWindowMetrics.PrepareForPlacement(window, overlayLayout, PlotterName, screen.Scaling);
-        var position =
+        PixelSize size = OverlayWindowMetrics.PrepareForPlacement(window, overlayLayout, PlotterName, screen.Scaling);
+        PixelPoint position =
             overlayLayout.GetPosition(PlotterName, gameBounds, size)
             ?? OverlayWindowPlacement.TopCenter(gameBounds, size);
         if (window.Position != position)
@@ -202,7 +203,7 @@ public sealed class JumpInfoOverlayCoordinator : IDisposable
 
     private void CloseWindow()
     {
-        var overlay = window;
+        JumpInfoOverlayWindow? overlay = window;
         if (overlay is null)
         {
             return;

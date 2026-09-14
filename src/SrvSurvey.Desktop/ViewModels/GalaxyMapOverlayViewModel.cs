@@ -44,7 +44,7 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
         this.summaryClient = summaryClient ?? throw new ArgumentNullException(nameof(summaryClient));
         this.settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
         this.systemNicknames = systemNicknames ?? throw new ArgumentNullException(nameof(systemNicknames));
-        var preferences = settingsStore.Load();
+        GalaxyMapPreferences preferences = settingsStore.Load();
         autoShow = preferences.AutoShow;
         showFactions = preferences.ShowFactions;
         systemNicknames.NamesChanged += OnNamesChanged;
@@ -253,14 +253,14 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
             }
         }
 
-        var wasGalaxyMapOpen = IsGalaxyMapOpen;
+        bool wasGalaxyMapOpen = IsGalaxyMapOpen;
         if (nextStatus is not null)
         {
             status = nextStatus;
         }
         musicTrack = nextMusicTrack;
 
-        foreach (var journalEvent in journalEvents)
+        foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
             if (isBootstrapRead)
             {
@@ -270,7 +270,7 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
             switch (journalEvent.EventName)
             {
                 case "FSDTarget":
-                    var target = ParseTarget(journalEvent.Payload);
+                    GalaxyMapTarget? target = ParseTarget(journalEvent.Payload);
                     if (IsRouteNextHop(target))
                     {
                         break;
@@ -318,7 +318,7 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
 
     private void RefreshTargets()
     {
-        var targets = ResolveTargets();
+        (GalaxyMapTarget? Primary, GalaxyMapTarget? Secondary) targets = ResolveTargets();
         SetRouteFooter();
         if (
             targets.Primary == primaryTarget
@@ -350,8 +350,8 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
 
         if (navRoute is { Route.Count: > 1 } route)
         {
-            var final = route.Route[^1];
-            var next = route.Route[1];
+            NavRouteEntry final = route.Route[^1];
+            NavRouteEntry next = route.Route[1];
             return (
                 new GalaxyMapTarget(final.StarSystem, final.SystemAddress, "DESTINATION"),
                 final.SystemAddress != next.SystemAddress
@@ -392,12 +392,16 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
 
         try
         {
-            var primaryTask = summaryClient.GetAsync(primary.Name, primary.SystemAddress, cancellationToken);
-            var secondaryTask = secondary is null
+            Task<SystemSummaryLoadResult> primaryTask = summaryClient.GetAsync(
+                primary.Name,
+                primary.SystemAddress,
+                cancellationToken
+            );
+            Task<SystemSummaryLoadResult>? secondaryTask = secondary is null
                 ? null
                 : summaryClient.GetAsync(secondary.Name, secondary.SystemAddress, cancellationToken);
-            var primaryResult = await primaryTask;
-            var secondaryResult = secondaryTask is null ? null : await secondaryTask;
+            SystemSummaryLoadResult primaryResult = await primaryTask;
+            SystemSummaryLoadResult? secondaryResult = secondaryTask is null ? null : await secondaryTask;
             cancellationToken.ThrowIfCancellationRequested();
 
             PrimarySystem = Project(primary.Label, primaryResult.Summary);
@@ -409,7 +413,7 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
                     faction.State ?? string.Empty
                 ))
                 .ToArray();
-            var warnings = primaryResult.Warnings.Concat(secondaryResult?.Warnings ?? []).ToArray();
+            string[] warnings = primaryResult.Warnings.Concat(secondaryResult?.Warnings ?? []).ToArray();
             DataStatus = warnings.Length == 0 ? "Data from EDSM and Spansh" : string.Join(" · ", warnings);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -441,7 +445,7 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
 
     private GalaxyMapSystemViewModel Project(string label, SystemSummary summary)
     {
-        var discovery = summary.IsKnown switch
+        string discovery = summary.IsKnown switch
         {
             false => "Undiscovered system",
             null => "Discovery status unavailable",
@@ -450,22 +454,23 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
             _ when summary.TotalBodyCount > 0 => $"Fully scanned · {summary.TotalBodyCount:N0} bodies",
             _ => "Known system · body count unavailable",
         };
-        var discovered = !string.IsNullOrWhiteSpace(summary.DiscoveredBy)
+        string discovered = !string.IsNullOrWhiteSpace(summary.DiscoveredBy)
             ? "Discovered by "
                 + summary.DiscoveredBy
                 + (
                     summary.DiscoveredAt switch
                     {
-                        DateTimeOffset discoveredAt => " · " + discoveredAt.ToLocalTime().ToString("g"),
+                        DateTimeOffset discoveredAt => " · "
+                            + discoveredAt.ToLocalTime().ToString("g", CultureInfo.CurrentCulture),
                         null => string.Empty,
                     }
                 )
             : string.Empty;
-        var updated =
+        string updated =
             summary.LastUpdatedAt is { } updatedAt && (summary.DiscoveredAt is null || updatedAt > summary.DiscoveredAt)
-                ? "Last updated " + updatedAt.ToLocalTime().ToString("g")
+                ? "Last updated " + updatedAt.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)
                 : string.Empty;
-        var details =
+        string details =
             summary.PointsOfInterest.Genus > 0
                 ? $"{summary.PointsOfInterest.Genus:N0} biological genera"
                 : string.Empty;
@@ -484,11 +489,11 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
 
     private void SetRouteFooter()
     {
-        var value = string.Empty;
+        string value = string.Empty;
         if (selectedTarget is null && navRoute is { Route.Count: > 1 } route)
         {
-            var distance = 0d;
-            for (var index = 1; index < route.Route.Count; index++)
+            double distance = 0d;
+            for (int index = 1; index < route.Route.Count; index++)
             {
                 if (route.Route[index - 1].Position is { } from && route.Route[index].Position is { } to)
                 {
@@ -522,7 +527,7 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
     private static GalaxyMapTarget? ParseTarget(JsonElement payload)
     {
         if (
-            !payload.TryGetProperty("Name", out var nameValue)
+            !payload.TryGetProperty("Name", out JsonElement nameValue)
             || nameValue.ValueKind != JsonValueKind.String
             || string.IsNullOrWhiteSpace(nameValue.GetString())
         )
@@ -530,9 +535,9 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
             return null;
         }
 
-        var address =
-            payload.TryGetProperty("SystemAddress", out var addressValue)
-            && addressValue.TryGetInt64(out var parsedAddress)
+        long address =
+            payload.TryGetProperty("SystemAddress", out JsonElement addressValue)
+            && addressValue.TryGetInt64(out long parsedAddress)
                 ? parsedAddress
                 : 0;
         return new GalaxyMapTarget(nameValue.GetString()!, address, "SELECTED");

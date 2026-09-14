@@ -32,25 +32,25 @@ public sealed class QuestDevelopmentFolderLoader
     )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceDirectory);
-        var root = Path.GetFullPath(sourceDirectory);
+        string root = Path.GetFullPath(sourceDirectory);
         if (!Directory.Exists(root))
         {
             throw new DirectoryNotFoundException($"Quest development folder was not found: {root}");
         }
 
-        var questPath = Path.Combine(root, "quest.json");
+        string questPath = Path.Combine(root, "quest.json");
         if (!File.Exists(questPath))
         {
             throw new FileNotFoundException("The quest development folder does not contain quest.json.", questPath);
         }
 
-        var paths = EnumerateSourcePaths(root, questPath);
+        string[] paths = EnumerateSourcePaths(root, questPath);
         var loaded = new Dictionary<string, LoadedSourceFile>(PathComparer);
-        foreach (var path in paths)
+        foreach (string path in paths)
         {
             cancellationToken.ThrowIfCancellationRequested();
             RejectReparsePoint(path);
-            var bytes = await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false);
+            byte[] bytes = await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false);
             loaded.Add(
                 path,
                 new LoadedSourceFile(
@@ -63,14 +63,14 @@ public sealed class QuestDevelopmentFolderLoader
 
         await VerifySourcesUnchangedAsync(root, questPath, loaded, cancellationToken).ConfigureAwait(false);
 
-        var definition =
+        RavenQuestDefinition definition =
             Deserialize<RavenQuestDefinition>(loaded[questPath], "quest.json")
             ?? throw new InvalidDataException("quest.json contains JSON null.");
         definition = Normalize(definition);
         ValidateDefinitionIdentity(definition);
 
-        var stringsPath = Path.Combine(root, "strings.json");
-        if (loaded.TryGetValue(stringsPath, out var stringsFile))
+        string stringsPath = Path.Combine(root, "strings.json");
+        if (loaded.TryGetValue(stringsPath, out LoadedSourceFile? stringsFile))
         {
             definition = definition with
             {
@@ -82,7 +82,7 @@ public sealed class QuestDevelopmentFolderLoader
 
         var messages = definition.Messages.ToList();
         foreach (
-            var file in loaded
+            LoadedSourceFile? file in loaded
                 .Values.Where(file =>
                     string.Equals(Path.GetExtension(file.RelativePath), ".md", StringComparison.OrdinalIgnoreCase)
                 )
@@ -94,14 +94,14 @@ public sealed class QuestDevelopmentFolderLoader
 
         var chapters = definition.Chapters.ToDictionary(StringComparer.Ordinal);
         foreach (
-            var file in loaded
+            LoadedSourceFile? file in loaded
                 .Values.Where(file =>
                     string.Equals(Path.GetExtension(file.RelativePath), ".lua", StringComparison.OrdinalIgnoreCase)
                 )
                 .OrderBy(file => file.RelativePath, PathComparer)
         )
         {
-            var chapterId = Path.GetFileNameWithoutExtension(file.RelativePath);
+            string chapterId = Path.GetFileNameWithoutExtension(file.RelativePath);
             chapters[chapterId] = Decode(file, file.RelativePath);
         }
 
@@ -111,12 +111,12 @@ public sealed class QuestDevelopmentFolderLoader
         }
 
         definition = definition with { Messages = messages, Chapters = chapters };
-        var warnings = messages
+        string[] warnings = messages
             .GroupBy(message => message.Id, StringComparer.Ordinal)
             .Where(group => group.Count() > 1)
             .Select(group => $"Quest message ID '{group.Key}' is defined more than once.")
             .ToArray();
-        var inventory = loaded
+        QuestDevelopmentSourceFile[] inventory = loaded
             .Values.OrderBy(file => file.RelativePath, PathComparer)
             .Select(file => new QuestDevelopmentSourceFile(file.RelativePath, file.Bytes.LongLength, file.Sha256))
             .ToArray();
@@ -126,17 +126,17 @@ public sealed class QuestDevelopmentFolderLoader
     private static string[] EnumerateSourcePaths(string root, string questPath)
     {
         var paths = new HashSet<string>(PathComparer) { questPath };
-        var stringsPath = Path.Combine(root, "strings.json");
+        string stringsPath = Path.Combine(root, "strings.json");
         if (File.Exists(stringsPath))
         {
             paths.Add(stringsPath);
         }
 
-        foreach (var pattern in new[] { "*.md", "*.lua" })
+        foreach (string? pattern in new[] { "*.md", "*.lua" })
         {
-            foreach (var path in Directory.EnumerateFiles(root, pattern, SearchOption.TopDirectoryOnly))
+            foreach (string path in Directory.EnumerateFiles(root, pattern, SearchOption.TopDirectoryOnly))
             {
-                var fullPath = Path.GetFullPath(path);
+                string fullPath = Path.GetFullPath(path);
                 if (!string.Equals(Path.GetDirectoryName(fullPath), root, PathComparison))
                 {
                     throw new InvalidDataException($"Quest source path escapes its selected folder: {path}");
@@ -156,13 +156,13 @@ public sealed class QuestDevelopmentFolderLoader
         CancellationToken cancellationToken
     )
     {
-        var currentPaths = EnumerateSourcePaths(root, questPath);
+        string[] currentPaths = EnumerateSourcePaths(root, questPath);
         if (currentPaths.Length != loaded.Count || currentPaths.Any(path => !loaded.ContainsKey(path)))
         {
             throw new IOException("Quest source files changed while the folder was being read.");
         }
 
-        foreach (var pair in loaded)
+        foreach (KeyValuePair<string, LoadedSourceFile> pair in loaded)
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (!File.Exists(pair.Key))
@@ -170,7 +170,7 @@ public sealed class QuestDevelopmentFolderLoader
                 throw new IOException($"Quest source changed while it was being read: {pair.Value.RelativePath}");
             }
 
-            var current = await File.ReadAllBytesAsync(pair.Key, cancellationToken).ConfigureAwait(false);
+            byte[] current = await File.ReadAllBytesAsync(pair.Key, cancellationToken).ConfigureAwait(false);
             if (
                 current.LongLength != pair.Value.Bytes.LongLength
                 || !CryptographicOperations.FixedTimeEquals(
@@ -238,7 +238,7 @@ public sealed class QuestDevelopmentFolderLoader
 
     private static RavenQuestMessageDefinition ParseMessage(LoadedSourceFile file)
     {
-        var parsed = ParseMessageFields(file);
+        MessageFields parsed = ParseMessageFields(file);
         return new RavenQuestMessageDefinition
         {
             Id = Path.GetFileNameWithoutExtension(file.RelativePath),
@@ -261,7 +261,7 @@ public sealed class QuestDevelopmentFolderLoader
     private static MessageFields ParseMessageFields(LoadedSourceFile file)
     {
         var state = new MessageParseState();
-        foreach (var line in SplitLines(Decode(file, file.RelativePath)))
+        foreach (string line in SplitLines(Decode(file, file.RelativePath)))
         {
             if (TryParseMessageHeader(file, line, state))
             {
@@ -338,15 +338,15 @@ public sealed class QuestDevelopmentFolderLoader
 
     private static void ParseMessageAction(LoadedSourceFile file, string line, Dictionary<string, string> actions)
     {
-        var value = line["action:".Length..];
-        var separator = value.IndexOf(':', StringComparison.Ordinal);
+        string value = line["action:".Length..];
+        int separator = value.IndexOf(':', StringComparison.Ordinal);
         if (separator < 0)
         {
             throw new InvalidDataException($"{file.RelativePath} contains an action without an ID and label.");
         }
 
-        var id = value[..separator].Trim();
-        var label = value[(separator + 1)..].Trim();
+        string id = value[..separator].Trim();
+        string label = value[(separator + 1)..].Trim();
         if (id.Length == 0 || label.Length == 0)
         {
             throw new InvalidDataException($"{file.RelativePath} contains an action without an ID and label.");
@@ -369,8 +369,8 @@ public sealed class QuestDevelopmentFolderLoader
 
     private static string Decode(LoadedSourceFile file, string displayName)
     {
-        var bytes = file.Bytes.AsSpan();
-        var preamble = StrictUtf8.Preamble;
+        Span<byte> bytes = file.Bytes.AsSpan();
+        ReadOnlySpan<byte> preamble = StrictUtf8.Preamble;
         if (bytes.StartsWith(preamble))
         {
             bytes = bytes[preamble.Length..];

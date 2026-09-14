@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Journal;
@@ -53,7 +54,7 @@ public sealed class SystemScanState
     public bool Apply(JournalEventEnvelope journalEvent)
     {
         ArgumentNullException.ThrowIfNull(journalEvent);
-        var root = journalEvent.Payload;
+        JsonElement root = journalEvent.Payload;
 
         switch (journalEvent.EventName)
         {
@@ -140,12 +141,12 @@ public sealed class SystemScanState
             return SystemScanSnapshot.Empty;
         }
 
-        var bodySnapshots = bodies
+        SystemScanBodySnapshot[] bodySnapshots = bodies
             .Values.OrderBy(body => body.BodyId)
             .Select(body => body.CreateSnapshot(isOdyssey, SystemName))
             .ToArray();
-        var fssBodyCount = bodySnapshots.Count(body => body.CountsTowardFss);
-        var nonBodySignalCount = Math.Max(
+        int fssBodyCount = bodySnapshots.Count(body => body.CountsTowardFss);
+        int nonBodySignalCount = Math.Max(
             0,
             RawNonBodySignalCount
                 - bodySnapshots.Count(body => body.Kind == SystemBodyKind.Asteroid)
@@ -184,8 +185,8 @@ public sealed class SystemScanState
             return false;
         }
 
-        var changed = MergeKnownSystemFields(known);
-        foreach (var source in known.Bodies)
+        bool changed = MergeKnownSystemFields(known);
+        foreach (SystemScanBodySnapshot source in known.Bodies)
         {
             changed |= MergeKnownBody(source, includeBiologicalData);
         }
@@ -195,7 +196,7 @@ public sealed class SystemScanState
 
     private bool MergeKnownSystemFields(SystemScanSnapshot known)
     {
-        var changed = false;
+        bool changed = false;
         if (string.IsNullOrWhiteSpace(SystemName))
         {
             SystemName = known.SystemName;
@@ -236,8 +237,8 @@ public sealed class SystemScanState
             return false;
         }
 
-        var changed = false;
-        if (!bodies.TryGetValue(source.BodyId, out var target))
+        bool changed = false;
+        if (!bodies.TryGetValue(source.BodyId, out BodyState? target))
         {
             target = new BodyState(source.BodyId, source.Name);
             bodies.Add(source.BodyId, target);
@@ -249,7 +250,7 @@ public sealed class SystemScanState
             changed = true;
         }
 
-        var bodyChanged = MergeBody(target, source, includeBiologicalData);
+        bool bodyChanged = MergeBody(target, source, includeBiologicalData);
         return changed || bodyChanged;
     }
 
@@ -260,7 +261,7 @@ public sealed class SystemScanState
 
     public bool SetBodyFirstFootfall(int bodyId, bool value)
     {
-        if (!bodies.TryGetValue(bodyId, out var body))
+        if (!bodies.TryGetValue(bodyId, out BodyState? body))
         {
             return false;
         }
@@ -271,8 +272,8 @@ public sealed class SystemScanState
 
     private void ApplySystemLocation(JsonElement root)
     {
-        var address = GetInt64(root, nameof(SystemAddress));
-        var name = GetString(root, "StarSystem") ?? GetString(root, nameof(SystemName));
+        long? address = GetInt64(root, nameof(SystemAddress));
+        string? name = GetString(root, "StarSystem") ?? GetString(root, nameof(SystemName));
         if (address is not null)
         {
             SetSystem(address.Value, name);
@@ -284,7 +285,7 @@ public sealed class SystemScanState
 
         Population = GetInt64(root, nameof(Population)) ?? Population;
         StarPosition = GetGalacticCoordinate(root, "StarPos") ?? StarPosition;
-        var bodyId = GetInt32(root, BodyIdProperty);
+        int? bodyId = GetInt32(root, BodyIdProperty);
         if (bodyId is not null && GetString(root, "BodyType") == "Planet")
         {
             CurrentBodyId = bodyId;
@@ -325,13 +326,13 @@ public sealed class SystemScanState
             return;
         }
 
-        var bodyId = GetInt32(root, BodyIdProperty);
+        int? bodyId = GetInt32(root, BodyIdProperty);
         if (bodyId is null)
         {
             return;
         }
 
-        var body = GetOrCreateBody(bodyId.Value, GetString(root, BodyNameProperty));
+        BodyState body = GetOrCreateBody(bodyId.Value, GetString(root, BodyNameProperty));
         body.IsScanned = true;
         body.Name = GetString(root, BodyNameProperty) ?? body.Name;
         body.StarClass = GetString(root, "StarType");
@@ -339,7 +340,7 @@ public sealed class SystemScanState
         body.IsLandable = GetBoolean(root, "Landable") ?? false;
         body.Kind = GetBodyKind(body.Name, body.StarClass, body.PlanetClass, body.IsLandable);
         body.IsTerraformable = GetString(root, "TerraformState") == "Terraformable";
-        var planetMass = GetDouble(root, "MassEM");
+        double? planetMass = GetDouble(root, "MassEM");
         body.Mass = planetMass is > 0 ? planetMass.Value : GetDouble(root, "StellarMass") ?? 0;
         body.DistanceFromArrivalLs = GetDouble(root, "DistanceFromArrivalLS") ?? 0;
         body.RadiusMeters = GetDouble(root, "Radius") ?? 0;
@@ -355,7 +356,7 @@ public sealed class SystemScanState
         body.WasDiscovered = GetBoolean(root, "WasDiscovered") ?? false;
         body.WasMapped = GetBoolean(root, "WasMapped") ?? false;
         body.WasFootfalled = GetBoolean(root, "WasFootfalled");
-        var parents = ReadParents(root);
+        List<SystemBodyParentSnapshot>? parents = ReadParents(root);
         if (parents is not null)
         {
             body.Parents = parents;
@@ -367,7 +368,7 @@ public sealed class SystemScanState
         body.Rings = ReadRings(root);
         body.ScanSequence = ++scanSequence;
 
-        var isDetailedPlanet =
+        bool isDetailedPlanet =
             GetString(root, "ScanType") == "Detailed"
             && body.Kind is SystemBodyKind.GasGiant or SystemBodyKind.Planet or SystemBodyKind.LandablePlanet;
         if (isDetailedPlanet && !body.HasRingParent)
@@ -383,13 +384,13 @@ public sealed class SystemScanState
             return;
         }
 
-        var bodyId = GetInt32(root, BodyIdProperty);
+        int? bodyId = GetInt32(root, BodyIdProperty);
         if (bodyId is null)
         {
             return;
         }
 
-        var body = GetOrCreateBody(bodyId.Value, $"barycentre {bodyId.Value}");
+        BodyState body = GetOrCreateBody(bodyId.Value, $"barycentre {bodyId.Value}");
         body.IsScanned = true;
         body.Kind = SystemBodyKind.Barycentre;
         body.SemiMajorAxis = GetDouble(root, "SemiMajorAxis") ?? 0;
@@ -398,7 +399,7 @@ public sealed class SystemScanState
 
     private void ApplyDssComplete(JsonElement root)
     {
-        if (!TryGetBody(root, BodyIdProperty, BodyNameProperty, out var body))
+        if (!TryGetBody(root, BodyIdProperty, BodyNameProperty, out BodyState? body))
         {
             return;
         }
@@ -411,7 +412,7 @@ public sealed class SystemScanState
 
     private void ApplyBodySignals(JsonElement root)
     {
-        if (!TryGetBody(root, BodyIdProperty, BodyNameProperty, out var body))
+        if (!TryGetBody(root, BodyIdProperty, BodyNameProperty, out BodyState? body))
         {
             return;
         }
@@ -419,14 +420,14 @@ public sealed class SystemScanState
         body.BiologicalSignalCount = Math.Max(body.BiologicalSignalCount, GetSignalCount(root, BiologicalSignal));
         body.GeologicalSignalCount = Math.Max(body.GeologicalSignalCount, GetSignalCount(root, GeologicalSignal));
 
-        if (root.TryGetProperty("Genuses", out var genuses) && genuses.ValueKind == JsonValueKind.Array)
+        if (root.TryGetProperty("Genuses", out JsonElement genuses) && genuses.ValueKind == JsonValueKind.Array)
         {
-            foreach (var genus in genuses.EnumerateArray())
+            foreach (JsonElement genus in genuses.EnumerateArray())
             {
-                var name = GetString(genus, "Genus");
+                string? name = GetString(genus, "Genus");
                 if (!string.IsNullOrWhiteSpace(name))
                 {
-                    var organism = body.GetOrCreateOrganism(name);
+                    OrganismState organism = body.GetOrCreateOrganism(name);
                     organism.GenusLocalized = GetString(genus, "Genus_Localised") ?? organism.GenusLocalized;
                 }
             }
@@ -437,22 +438,22 @@ public sealed class SystemScanState
 
     private void ApplyOrganicScan(JsonElement root)
     {
-        if (!TryGetBody(root, "Body", null, out var body))
+        if (!TryGetBody(root, "Body", null, out BodyState? body))
         {
             return;
         }
 
-        var variant = GetString(root, "Variant");
-        var species = GetString(root, "Species");
-        var reference = bioCatalog.FindByVariant(variant) ?? bioCatalog.FindBySpecies(species);
-        var genus =
+        string? variant = GetString(root, "Variant");
+        string? species = GetString(root, "Species");
+        ExobiologyReference? reference = bioCatalog.FindByVariant(variant) ?? bioCatalog.FindBySpecies(species);
+        string? genus =
             GetString(root, "Genus") ?? (reference is null ? null : ExobiologyReferenceCatalog.GetGenusName(reference));
         if (string.IsNullOrWhiteSpace(genus))
         {
             return;
         }
 
-        var organism = body.GetOrCreateOrganism(genus, reference?.EntryId, variant, species);
+        OrganismState organism = body.GetOrCreateOrganism(genus, reference?.EntryId, variant, species);
         organism.Genus = genus;
         organism.GenusLocalized = GetString(root, "Genus_Localised") ?? organism.GenusLocalized;
         organism.Species = species ?? organism.Species;
@@ -472,16 +473,18 @@ public sealed class SystemScanState
 
     private void ApplyCodexEntry(JsonElement root)
     {
-        if (!TryGetBody(root, BodyIdProperty, null, out var body))
+        if (!TryGetBody(root, BodyIdProperty, null, out BodyState? body))
         {
             return;
         }
 
-        var category = GetString(root, "SubCategory");
+        string? category = GetString(root, "SubCategory");
         if (category == GeologicalCodexCategory)
         {
-            var name =
-                GetString(root, "Name_Localised") ?? GetString(root, "Name") ?? GetInt64(root, "EntryID")?.ToString();
+            string? name =
+                GetString(root, "Name_Localised")
+                ?? GetString(root, "Name")
+                ?? GetInt64(root, "EntryID")?.ToString(CultureInfo.InvariantCulture);
             if (!string.IsNullOrWhiteSpace(name))
             {
                 body.AnalyzedGeologicalSignals.Add(name);
@@ -504,8 +507,13 @@ public sealed class SystemScanState
             return;
         }
 
-        var genus = ExobiologyReferenceCatalog.GetGenusName(reference);
-        var organism = body.GetOrCreateOrganism(genus, reference.EntryId, reference.VariantName, reference.SpeciesName);
+        string genus = ExobiologyReferenceCatalog.GetGenusName(reference);
+        OrganismState organism = body.GetOrCreateOrganism(
+            genus,
+            reference.EntryId,
+            reference.VariantName,
+            reference.SpeciesName
+        );
         organism.Genus = genus;
         organism.GenusLocalized ??=
             body.Organisms.FirstOrDefault(candidate =>
@@ -530,7 +538,7 @@ public sealed class SystemScanState
             return;
         }
 
-        var name = GetString(root, "SignalName");
+        string? name = GetString(root, "SignalName");
         if (string.IsNullOrWhiteSpace(name))
         {
             return;
@@ -541,7 +549,7 @@ public sealed class SystemScanState
 
     private void ApplyBodyContext(JsonElement root, string eventName)
     {
-        if (!TryGetBody(root, BodyIdProperty, "Body", out var body))
+        if (!TryGetBody(root, BodyIdProperty, "Body", out BodyState? body))
         {
             return;
         }
@@ -567,7 +575,7 @@ public sealed class SystemScanState
             return false;
         }
 
-        var bodyId = GetInt32(root, bodyIdProperty);
+        int? bodyId = GetInt32(root, bodyIdProperty);
         if (bodyId is null)
         {
             return false;
@@ -579,7 +587,7 @@ public sealed class SystemScanState
 
     private bool EnsureSystem(JsonElement root)
     {
-        var address = GetInt64(root, nameof(SystemAddress));
+        long? address = GetInt64(root, nameof(SystemAddress));
         if (address is null)
         {
             return SystemAddress is not null;
@@ -621,7 +629,7 @@ public sealed class SystemScanState
 
     private static bool MergeBody(BodyState target, SystemScanBodySnapshot source, bool includeBiologicalData)
     {
-        var changed = MergeBodyClassification(target, source);
+        bool changed = MergeBodyClassification(target, source);
         changed |= MergeBodyFlags(target, source);
         changed |= MergeBodyScalars(target, source);
         changed |= MergeBodyCollections(target, source);
@@ -635,8 +643,8 @@ public sealed class SystemScanState
 
     private static bool MergeBodyOrganisms(BodyState target, SystemScanBodySnapshot source)
     {
-        var changed = false;
-        foreach (var sourceOrganism in source.Organisms)
+        bool changed = false;
+        foreach (SystemOrganismSnapshot sourceOrganism in source.Organisms)
         {
             changed |= MergeKnownOrganism(target, sourceOrganism);
         }
@@ -652,14 +660,14 @@ public sealed class SystemScanState
             return false;
         }
 
-        var organism = target.GetOrCreateOrganism(
+        OrganismState organism = target.GetOrCreateOrganism(
             sourceOrganism.Genus,
             sourceOrganism.EntryId,
             sourceOrganism.Variant,
             sourceOrganism.Species,
-            out var created
+            out bool created
         );
-        var changed = created;
+        bool changed = created;
         changed |= SetIfMissing(ref organism.GenusLocalized, sourceOrganism.GenusLocalized);
         changed |= SetIfMissing(ref organism.Species, sourceOrganism.Species);
         changed |= SetIfMissing(ref organism.SpeciesLocalized, sourceOrganism.SpeciesLocalized);
@@ -674,7 +682,7 @@ public sealed class SystemScanState
 
     private static bool MergeOrganismScalars(OrganismState organism, SystemOrganismSnapshot sourceOrganism)
     {
-        var changed = false;
+        bool changed = false;
         if (organism.EntryId is null && sourceOrganism.EntryId is > 0)
         {
             organism.EntryId = sourceOrganism.EntryId;
@@ -692,7 +700,7 @@ public sealed class SystemScanState
 
     private static bool MergeBodyClassification(BodyState target, SystemScanBodySnapshot source)
     {
-        var changed = false;
+        bool changed = false;
         if (target.Kind == SystemBodyKind.Unknown && source.Kind != SystemBodyKind.Unknown)
         {
             target.Kind = source.Kind;
@@ -711,8 +719,8 @@ public sealed class SystemScanState
 
     private static bool MergeBodyFlags(BodyState target, SystemScanBodySnapshot source)
     {
-        var changed = false;
-        var hasLiveScan = target.IsScanned;
+        bool changed = false;
+        bool hasLiveScan = target.IsScanned;
         changed |= SetTrue(ref target.IsLandable, source.IsLandable);
         changed |= SetTrue(ref target.IsTerraformable, source.IsTerraformable);
         changed |= SetTrue(ref target.IsScanned, source.IsScanned);
@@ -747,7 +755,7 @@ public sealed class SystemScanState
 
     private static bool MergeBodyScalars(BodyState target, SystemScanBodySnapshot source)
     {
-        var changed = SetIfZero(ref target.Mass, source.Mass);
+        bool changed = SetIfZero(ref target.Mass, source.Mass);
         changed |= SetIfZero(ref target.DistanceFromArrivalLs, source.DistanceFromArrivalLs);
         changed |= SetIfZero(ref target.RadiusMeters, source.RadiusMeters);
         changed |= SetIfZero(ref target.SurfaceGravity, source.SurfaceGravity);
@@ -765,7 +773,7 @@ public sealed class SystemScanState
 
     private static bool MergeBodyCollections(BodyState target, SystemScanBodySnapshot source)
     {
-        var changed = MergeDictionary(ref target.AtmosphereComposition, source.AtmosphereComposition);
+        bool changed = MergeDictionary(ref target.AtmosphereComposition, source.AtmosphereComposition);
         changed |= MergeDictionary(ref target.Materials, source.Materials);
         changed |= MergeRings(target, source.Rings);
         if (target.Parents.Count == 0 && source.Parents.Count > 0)
@@ -775,7 +783,7 @@ public sealed class SystemScanState
             changed = true;
         }
 
-        foreach (var signal in source.AnalyzedGeologicalSignals)
+        foreach (string signal in source.AnalyzedGeologicalSignals)
         {
             changed |= target.AnalyzedGeologicalSignals.Add(signal);
         }
@@ -794,8 +802,8 @@ public sealed class SystemScanState
         }
 
         var merged = new Dictionary<string, double>(target, StringComparer.OrdinalIgnoreCase);
-        var changed = false;
-        foreach (var pair in source.Where(pair => !merged.ContainsKey(pair.Key)))
+        bool changed = false;
+        foreach (KeyValuePair<string, double> pair in source.Where(pair => !merged.ContainsKey(pair.Key)))
         {
             merged[pair.Key] = pair.Value;
             changed = true;
@@ -817,10 +825,10 @@ public sealed class SystemScanState
         }
 
         var rings = target.Rings.ToList();
-        var changed = false;
-        foreach (var ring in source)
+        bool changed = false;
+        foreach (SystemRingSnapshot ring in source)
         {
-            var index = rings.FindIndex(existing =>
+            int index = rings.FindIndex(existing =>
                 string.Equals(existing.Name, ring.Name, StringComparison.OrdinalIgnoreCase)
             );
             if (index < 0)
@@ -830,8 +838,8 @@ public sealed class SystemScanState
                 continue;
             }
 
-            var existing = rings[index];
-            var merged = existing with
+            SystemRingSnapshot existing = rings[index];
+            SystemRingSnapshot merged = existing with
             {
                 RingClass = existing.RingClass ?? ring.RingClass,
                 InnerRadius = existing.InnerRadius == 0 ? ring.InnerRadius : existing.InnerRadius,
@@ -898,7 +906,7 @@ public sealed class SystemScanState
 
     private BodyState GetOrCreateBody(int bodyId, string? name)
     {
-        if (!bodies.TryGetValue(bodyId, out var body))
+        if (!bodies.TryGetValue(bodyId, out BodyState? body))
         {
             body = new BodyState(bodyId, name ?? $"Body {bodyId}");
             bodies[bodyId] = body;
@@ -945,27 +953,32 @@ public sealed class SystemScanState
 
     private static int GetSignalCount(JsonElement root, string type)
     {
-        if (!root.TryGetProperty("Signals", out var signalsElement) || signalsElement.ValueKind != JsonValueKind.Array)
+        if (
+            !root.TryGetProperty("Signals", out JsonElement signalsElement)
+            || signalsElement.ValueKind != JsonValueKind.Array
+        )
         {
             return 0;
         }
 
-        var signal = signalsElement.EnumerateArray().FirstOrDefault(signal => GetString(signal, "Type") == type);
+        JsonElement signal = signalsElement
+            .EnumerateArray()
+            .FirstOrDefault(signal => GetString(signal, "Type") == type);
         return signal.ValueKind == JsonValueKind.Undefined ? 0 : GetInt32(signal, "Count") ?? 0;
     }
 
     private static Dictionary<string, double> ReadComposition(JsonElement root, string propertyName)
     {
-        if (!root.TryGetProperty(propertyName, out var values) || values.ValueKind != JsonValueKind.Array)
+        if (!root.TryGetProperty(propertyName, out JsonElement values) || values.ValueKind != JsonValueKind.Array)
         {
             return new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
         }
 
         var result = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
-        foreach (var value in values.EnumerateArray())
+        foreach (JsonElement value in values.EnumerateArray())
         {
-            var name = GetString(value, "Name");
-            var percent = GetDouble(value, "Percent");
+            string? name = GetString(value, "Name");
+            double? percent = GetDouble(value, "Percent");
             if (!string.IsNullOrWhiteSpace(name) && percent is not null)
             {
                 result[name] = percent.Value;
@@ -977,7 +990,7 @@ public sealed class SystemScanState
 
     private static SystemRingSnapshot[] ReadRings(JsonElement root)
     {
-        if (!root.TryGetProperty("Rings", out var rings) || rings.ValueKind != JsonValueKind.Array)
+        if (!root.TryGetProperty("Rings", out JsonElement rings) || rings.ValueKind != JsonValueKind.Array)
         {
             return [];
         }
@@ -995,24 +1008,24 @@ public sealed class SystemScanState
 
     private static List<SystemBodyParentSnapshot>? ReadParents(JsonElement root)
     {
-        if (!root.TryGetProperty("Parents", out var parents) || parents.ValueKind != JsonValueKind.Array)
+        if (!root.TryGetProperty("Parents", out JsonElement parents) || parents.ValueKind != JsonValueKind.Array)
         {
             return null;
         }
 
         var result = new List<SystemBodyParentSnapshot>();
-        foreach (var parent in parents.EnumerateArray())
+        foreach (JsonElement parent in parents.EnumerateArray())
         {
             if (parent.ValueKind != JsonValueKind.Object)
             {
                 continue;
             }
 
-            var entry = parent.EnumerateObject().FirstOrDefault();
+            JsonProperty entry = parent.EnumerateObject().FirstOrDefault();
             if (
                 entry.Value.ValueKind != JsonValueKind.Number
-                || !entry.Value.TryGetInt32(out var bodyId)
-                || !Enum.TryParse<SystemBodyParentKind>(entry.Name, ignoreCase: false, out var kind)
+                || !entry.Value.TryGetInt32(out int bodyId)
+                || !Enum.TryParse<SystemBodyParentKind>(entry.Name, ignoreCase: false, out SystemBodyParentKind kind)
             )
             {
                 continue;
@@ -1026,7 +1039,7 @@ public sealed class SystemScanState
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+        return root.TryGetProperty(propertyName, out JsonElement value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
     }
@@ -1034,7 +1047,7 @@ public sealed class SystemScanState
     private static bool? GetBoolean(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind is JsonValueKind.True or JsonValueKind.False
             ? value.GetBoolean()
             : null;
@@ -1043,7 +1056,7 @@ public sealed class SystemScanState
     private static GalacticCoordinate? GetGalacticCoordinate(JsonElement root, string propertyName)
     {
         if (
-            !root.TryGetProperty(propertyName, out var value)
+            !root.TryGetProperty(propertyName, out JsonElement value)
             || value.ValueKind != JsonValueKind.Array
             || value.GetArrayLength() < 3
         )
@@ -1051,11 +1064,11 @@ public sealed class SystemScanState
             return null;
         }
 
-        var coordinates = value.EnumerateArray().Take(3).ToArray();
+        JsonElement[] coordinates = value.EnumerateArray().Take(3).ToArray();
         if (
             coordinates.Any(coordinate =>
                 coordinate.ValueKind != JsonValueKind.Number
-                || !coordinate.TryGetDouble(out var number)
+                || !coordinate.TryGetDouble(out double number)
                 || !double.IsFinite(number)
             )
         )
@@ -1073,9 +1086,9 @@ public sealed class SystemScanState
     private static double? GetDouble(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind == JsonValueKind.Number
-            && value.TryGetDouble(out var number)
+            && value.TryGetDouble(out double number)
             ? number
             : null;
     }
@@ -1083,9 +1096,9 @@ public sealed class SystemScanState
     private static long? GetInt64(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind == JsonValueKind.Number
-            && value.TryGetInt64(out var number)
+            && value.TryGetInt64(out long number)
             ? number
             : null;
     }
@@ -1093,9 +1106,9 @@ public sealed class SystemScanState
     private static int? GetInt32(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind == JsonValueKind.Number
-            && value.TryGetInt32(out var number)
+            && value.TryGetInt32(out int number)
             ? number
             : null;
     }
@@ -1180,8 +1193,8 @@ public sealed class SystemScanState
 
         public SystemScanBodySnapshot CreateSnapshot(bool isOdyssey, string? systemName)
         {
-            var bodyClass = Kind == SystemBodyKind.Star ? StarClass : PlanetClass;
-            var scanValue = IsScanned
+            string? bodyClass = Kind == SystemBodyKind.Star ? StarClass : PlanetClass;
+            int scanValue = IsScanned
                 ? ExplorationValueCalculator.Calculate(
                     new ExplorationValueRequest
                     {
@@ -1196,7 +1209,7 @@ public sealed class SystemScanState
                     }
                 )
                 : 0;
-            var mappedValue =
+            int mappedValue =
                 IsScanned && Kind != SystemBodyKind.Star
                     ? ExplorationValueCalculator.Calculate(
                         new ExplorationValueRequest
@@ -1212,7 +1225,7 @@ public sealed class SystemScanState
                         }
                     )
                     : scanValue;
-            var currentValue = IsDssComplete
+            int currentValue = IsDssComplete
                 ? ExplorationValueCalculator.Calculate(
                     new ExplorationValueRequest
                     {
@@ -1297,7 +1310,7 @@ public sealed class SystemScanState
             out bool created
         )
         {
-            var organism = FindOrganism(genus, entryId, variant, species);
+            OrganismState? organism = FindOrganism(genus, entryId, variant, species);
             if (organism is not null)
             {
                 created = false;
@@ -1321,7 +1334,7 @@ public sealed class SystemScanState
 
         private static string GetShortName(string bodyName, string? systemName)
         {
-            var shortName =
+            string shortName =
                 !string.IsNullOrWhiteSpace(systemName) && bodyName.StartsWith(systemName, StringComparison.Ordinal)
                     ? bodyName[systemName.Length..]
                     : bodyName;

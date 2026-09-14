@@ -3,6 +3,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using SrvSurvey.Core.Network;
 using SrvSurvey.Core.Search;
@@ -99,7 +100,7 @@ public sealed partial class BoxelView : UserControl
 
     private async Task WriteClipboardAsync(string text)
     {
-        var clipboard =
+        IClipboard clipboard =
             TopLevel.GetTopLevel(this)?.Clipboard
             ?? throw new InvalidOperationException("The desktop clipboard is not available.");
         await clipboard.SetTextAsync(text);
@@ -155,14 +156,14 @@ public sealed partial class BoxelView : UserControl
 
         try
         {
-            var result = await viewModel.BoxelSearch.SaveProgressAsync();
+            SaveBoxelProgressResult result = await viewModel.BoxelSearch.SaveProgressAsync();
             if (result != SaveBoxelProgressResult.RequiresDetails || TopLevel.GetTopLevel(this) is not Window owner)
             {
                 return;
             }
 
             var dialog = new SaveBoxelSearchDialog(viewModel.BoxelSearch.SuggestedSaveName);
-            var details = await dialog.ShowDialog<BoxelSearchSaveDialogResult?>(owner);
+            BoxelSearchSaveDialogResult? details = await dialog.ShowDialog<BoxelSearchSaveDialogResult?>(owner);
             if (details is not null)
             {
                 await viewModel.BoxelSearch.SaveProgressAsync(details.Name, details.Notes);
@@ -229,7 +230,7 @@ public sealed partial class BoxelView : UserControl
                 return;
             }
 
-            var (stats, window) = CreateStatsWindow(viewModel);
+            (BoxelSurveyStatsViewModel? stats, BoxelStatsWindow? window) = CreateStatsWindow(viewModel);
             await InitializeStatsWindowAsync(stats, () => stats.InitializeAsync());
             ShowStatsWindow(window, owner);
         }
@@ -253,7 +254,7 @@ public sealed partial class BoxelView : UserControl
             return;
         }
 
-        var (stats, window) = CreateStatsWindow(viewModel);
+        (BoxelSurveyStatsViewModel? stats, BoxelStatsWindow? window) = CreateStatsWindow(viewModel);
         await InitializeStatsWindowAsync(stats, () => stats.FocusPrefixesAsync(request.Prefixes, request.LowMassCode));
         ShowStatsWindow(window, owner);
     }
@@ -318,7 +319,7 @@ public sealed partial class BoxelView : UserControl
         try
         {
             DesktopExternalEffectPolicy.ThrowIfDisabled();
-            var launcher =
+            ILauncher launcher =
                 TopLevel.GetTopLevel(this)?.Launcher
                 ?? throw new InvalidOperationException("The desktop link launcher is not available.");
             if (!await launcher.LaunchUriAsync(WellKnownUris.VoxStellarWebsite))

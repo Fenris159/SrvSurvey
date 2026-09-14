@@ -14,13 +14,13 @@ public sealed class ReleasePackageDownloadServiceTests : IDisposable
     [Fact]
     public async Task DownloadAsyncVerifiesThenAtomicallyActivatesPackage()
     {
-        var bytes = Enumerable.Range(0, 300_000).Select(value => (byte)(value % 251)).ToArray();
+        byte[] bytes = Enumerable.Range(0, 300_000).Select(value => (byte)(value % 251)).ToArray();
         var handler = new StubHandler(_ => Response(bytes));
         var progress = new List<ReleasePackageDownloadProgress>();
-        var package = CreatePackage(bytes);
+        CrossPlatformReleasePackage package = CreatePackage(bytes);
         var service = new ReleasePackageDownloadService(new HttpClient(handler));
 
-        var result = await service.DownloadAsync(
+        ReleasePackageDownloadResult result = await service.DownloadAsync(
             new Version(2, 0, 95, 23),
             package,
             temporaryDirectory,
@@ -45,14 +45,18 @@ public sealed class ReleasePackageDownloadServiceTests : IDisposable
     public async Task DownloadAsyncReusesOnlyVerifiedCachedPackage()
     {
         byte[] bytes = [1, 2, 3, 4, 5];
-        var package = CreatePackage(bytes);
-        var archivePath = GetArchivePath(package);
+        CrossPlatformReleasePackage package = CreatePackage(bytes);
+        string archivePath = GetArchivePath(package);
         Directory.CreateDirectory(Path.GetDirectoryName(archivePath)!);
         await File.WriteAllBytesAsync(archivePath, bytes);
         var handler = new StubHandler(_ => throw new InvalidOperationException("Network should not be used."));
         var service = new ReleasePackageDownloadService(new HttpClient(handler));
 
-        var result = await service.DownloadAsync(new Version(2, 0, 95, 23), package, temporaryDirectory);
+        ReleasePackageDownloadResult result = await service.DownloadAsync(
+            new Version(2, 0, 95, 23),
+            package,
+            temporaryDirectory
+        );
 
         Assert.False(result.Downloaded);
         Assert.Equal(bytes, await File.ReadAllBytesAsync(archivePath));
@@ -62,11 +66,11 @@ public sealed class ReleasePackageDownloadServiceTests : IDisposable
     [Fact]
     public async Task FailedReplacementPreservesExistingCacheByteForByte()
     {
-        var expected = new byte[] { 1, 2, 3, 4 };
-        var existing = new byte[] { 9, 8, 7, 6 };
-        var downloaded = new byte[] { 4, 3, 2, 1 };
-        var package = CreatePackage(expected);
-        var archivePath = GetArchivePath(package);
+        byte[] expected = new byte[] { 1, 2, 3, 4 };
+        byte[] existing = new byte[] { 9, 8, 7, 6 };
+        byte[] downloaded = new byte[] { 4, 3, 2, 1 };
+        CrossPlatformReleasePackage package = CreatePackage(expected);
+        string archivePath = GetArchivePath(package);
         Directory.CreateDirectory(Path.GetDirectoryName(archivePath)!);
         await File.WriteAllBytesAsync(archivePath, existing);
         var service = new ReleasePackageDownloadService(new HttpClient(new StubHandler(_ => Response(downloaded))));
@@ -85,9 +89,9 @@ public sealed class ReleasePackageDownloadServiceTests : IDisposable
     [Fact]
     public async Task DownloadAsyncRejectsTruncatedResponse()
     {
-        var expected = new byte[] { 1, 2, 3, 4, 5 };
-        var response = new byte[] { 1, 2, 3, 4 };
-        var package = CreatePackage(expected);
+        byte[] expected = new byte[] { 1, 2, 3, 4, 5 };
+        byte[] response = new byte[] { 1, 2, 3, 4 };
+        CrossPlatformReleasePackage package = CreatePackage(expected);
         var content = new ByteArrayContent(response);
         content.Headers.ContentLength = null;
         var service = new ReleasePackageDownloadService(
@@ -104,8 +108,8 @@ public sealed class ReleasePackageDownloadServiceTests : IDisposable
     [Fact]
     public async Task DownloadAsyncRejectsMetadataBeforeNetworkOrDiskMutation()
     {
-        var bytes = new byte[] { 1, 2, 3 };
-        var package = CreatePackage(bytes) with { ArchiveName = "../escape.zip" };
+        byte[] bytes = new byte[] { 1, 2, 3 };
+        CrossPlatformReleasePackage package = CreatePackage(bytes) with { ArchiveName = "../escape.zip" };
         var handler = new StubHandler(_ => Response(bytes));
         var service = new ReleasePackageDownloadService(new HttpClient(handler));
 

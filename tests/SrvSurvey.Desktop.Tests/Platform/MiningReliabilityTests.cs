@@ -9,7 +9,7 @@ public sealed class MiningReliabilityTests
     [Fact]
     public void CalibrationIdentityPreservesEveryExplicitAdjustment()
     {
-        var settings = new MiningDetectionSettings().Normalize();
+        MiningDetectionSettings settings = new MiningDetectionSettings().Normalize();
         Assert.True(settings.HasSameCalibration(settings.Normalize()));
         Assert.False(settings.HasSameCalibration(settings with { X = double.BitIncrement(settings.X) }));
         Assert.False(

@@ -12,11 +12,11 @@ public sealed class DiagnosticReplayCommanderIntegrationTests
     public async Task ImportedJournalEstablishesTheApplicationCommander()
     {
         using var temp = new TemporaryDirectory();
-        var personalData = Path.Combine(temp.Path, "personal-profile");
+        string personalData = Path.Combine(temp.Path, "personal-profile");
         Directory.CreateDirectory(personalData);
-        var personalMarker = Path.Combine(personalData, "DO-NOT-LOAD.txt");
+        string personalMarker = Path.Combine(personalData, "DO-NOT-LOAD.txt");
         await File.WriteAllTextAsync(personalMarker, "Personal Cmdr");
-        var sourcePath = Path.Combine(temp.Path, "Journal.01.log");
+        string sourcePath = Path.Combine(temp.Path, "Journal.01.log");
         await File.WriteAllLinesAsync(
             sourcePath,
             [
@@ -24,14 +24,17 @@ public sealed class DiagnosticReplayCommanderIntegrationTests
                 "{\"timestamp\":\"2026-08-21T18:00:01Z\",\"event\":\"LoadGame\",\"Commander\":\"Imported Cmdr\",\"FID\":\"F987654\",\"Odyssey\":true}",
             ]
         );
-        var session = await new ReplaySessionManager().ImportAsync(
+        DiagnosticReplaySession session = await new ReplaySessionManager().ImportAsync(
             sourcePath,
             Path.Combine(temp.Path, "managed"),
             CancellationToken.None
         );
-        var context = await DiagnosticReplayContext.LoadAsync(session.ManifestPath, CancellationToken.None);
-        using var blockedNetwork = DiagnosticReplayContext.CreateNetworkClient();
-        using var viewModel = MainWindowViewModelTestBuilder.Create(
+        DiagnosticReplayContext context = await DiagnosticReplayContext.LoadAsync(
+            session.ManifestPath,
+            CancellationToken.None
+        );
+        using HttpClient blockedNetwork = DiagnosticReplayContext.CreateNetworkClient();
+        using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
             context.JournalDirectory,
             builder =>
                 builder
@@ -59,8 +62,8 @@ public sealed class DiagnosticReplayCommanderIntegrationTests
     public async Task PackageBootstrapEstablishesCompanionContextBeforeLaunch()
     {
         using var temp = new TemporaryDirectory();
-        var journals = Path.Combine(temp.Path, "journals");
-        var history = Path.Combine(temp.Path, "history");
+        string journals = Path.Combine(temp.Path, "journals");
+        string history = Path.Combine(temp.Path, "history");
         Directory.CreateDirectory(journals);
         await File.WriteAllLinesAsync(
             Path.Combine(journals, "Journal.2026-08-21T175000.01.log"),
@@ -135,7 +138,7 @@ public sealed class DiagnosticReplayCommanderIntegrationTests
             );
         }
 
-        var packagePath = Path.Combine(temp.Path, "incident.srvreplay");
+        string packagePath = Path.Combine(temp.Path, "incident.srvreplay");
         await new JournalReplayExporter().ExportAsync(
             journals,
             history,
@@ -148,16 +151,19 @@ public sealed class DiagnosticReplayCommanderIntegrationTests
             ),
             CancellationToken.None
         );
-        var session = await new ReplaySessionManager().ImportAsync(
+        DiagnosticReplaySession session = await new ReplaySessionManager().ImportAsync(
             packagePath,
             Path.Combine(temp.Path, "managed"),
             CancellationToken.None
         );
         var player = new JournalReplayPlayer(session);
         await player.SeekAsync(session.BootstrapInputCount, CancellationToken.None);
-        var context = await DiagnosticReplayContext.LoadAsync(session.ManifestPath, CancellationToken.None);
-        using var blockedNetwork = DiagnosticReplayContext.CreateNetworkClient();
-        using var viewModel = MainWindowViewModelTestBuilder.Create(
+        DiagnosticReplayContext context = await DiagnosticReplayContext.LoadAsync(
+            session.ManifestPath,
+            CancellationToken.None
+        );
+        using HttpClient blockedNetwork = DiagnosticReplayContext.CreateNetworkClient();
+        using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
             context.JournalDirectory,
             builder =>
                 builder
@@ -182,7 +188,7 @@ public sealed class DiagnosticReplayCommanderIntegrationTests
     public async Task LaterCommanderEventsTransitionApplicationWideIdentityInOrder()
     {
         using var temp = new TemporaryDirectory();
-        var sourcePath = Path.Combine(temp.Path, "Journal.01.log");
+        string sourcePath = Path.Combine(temp.Path, "Journal.01.log");
         await File.WriteAllLinesAsync(
             sourcePath,
             [
@@ -192,14 +198,17 @@ public sealed class DiagnosticReplayCommanderIntegrationTests
                 "{\"timestamp\":\"2026-08-21T18:10:01Z\",\"event\":\"LoadGame\",\"Commander\":\"Second Cmdr\",\"FID\":\"F222222\",\"Odyssey\":true}",
             ]
         );
-        var session = await new ReplaySessionManager().ImportAsync(
+        DiagnosticReplaySession session = await new ReplaySessionManager().ImportAsync(
             sourcePath,
             Path.Combine(temp.Path, "managed"),
             CancellationToken.None
         );
-        var context = await DiagnosticReplayContext.LoadAsync(session.ManifestPath, CancellationToken.None);
-        using var blockedNetwork = DiagnosticReplayContext.CreateNetworkClient();
-        using var viewModel = MainWindowViewModelTestBuilder.Create(
+        DiagnosticReplayContext context = await DiagnosticReplayContext.LoadAsync(
+            session.ManifestPath,
+            CancellationToken.None
+        );
+        using HttpClient blockedNetwork = DiagnosticReplayContext.CreateNetworkClient();
+        using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
             context.JournalDirectory,
             builder =>
                 builder
@@ -228,7 +237,7 @@ public sealed class DiagnosticReplayCommanderIntegrationTests
     public void DiagnosticJournalResolutionNeverFallsBackToLiveCandidates()
     {
         using var temp = new TemporaryDirectory();
-        var missingPlayback = Path.Combine(temp.Path, "missing-playback");
+        string missingPlayback = Path.Combine(temp.Path, "missing-playback");
         var paths = new SrvSurvey.Core.Storage.AppDataPaths(
             Path.Combine(temp.Path, "config"),
             Path.Combine(temp.Path, "data"),
@@ -236,7 +245,7 @@ public sealed class DiagnosticReplayCommanderIntegrationTests
             []
         );
 
-        using var viewModel = MainWindowViewModelTestBuilder.Create(
+        using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
             missingPlayback,
             builder => builder.WithAppDataPaths(paths).AsDiagnosticReplay("External effects disabled.")
         );
@@ -250,7 +259,7 @@ public sealed class DiagnosticReplayCommanderIntegrationTests
     public async Task DiagnosticModeRejectsLegacyProfileImport()
     {
         using var temp = new TemporaryDirectory();
-        var source = Path.Combine(temp.Path, "personal-profile");
+        string source = Path.Combine(temp.Path, "personal-profile");
         Directory.CreateDirectory(source);
         await File.WriteAllTextAsync(Path.Combine(source, "F123-live.json"), "personal commander");
         var paths = new SrvSurvey.Core.Storage.AppDataPaths(
@@ -260,7 +269,7 @@ public sealed class DiagnosticReplayCommanderIntegrationTests
             []
         );
 
-        using var viewModel = MainWindowViewModelTestBuilder.Create(
+        using MainWindowViewModel viewModel = MainWindowViewModelTestBuilder.Create(
             Path.Combine(temp.Path, "playback"),
             builder => builder.WithAppDataPaths(paths).AsDiagnosticReplay("External effects disabled.")
         );

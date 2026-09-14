@@ -5,6 +5,7 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SrvSurvey.Core.Diagnostics;
+using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Core.Edsm;
 
@@ -49,8 +50,8 @@ public sealed class EdsmPublisher : IEdsmPublisher
         Justification = "SemaphoreSlim has no wait handle here and can still have shutdown waiters."
     )]
     private readonly SemaphoreSlim lifecycleGate = new(1, 1);
-    private readonly object stateSync = new();
-    private readonly object stopSync = new();
+    private readonly Lock stateSync = new();
+    private readonly Lock stopSync = new();
     private readonly List<EdsmQueuedEvent> pending = [];
     private readonly CancellationTokenSource lifetimeCancellation = new();
     private readonly EdsmJournalContext journalContext = new();
@@ -131,14 +132,18 @@ public sealed class EdsmPublisher : IEdsmPublisher
     )
     {
         var warnings = new List<string>();
-        var sessionTransition = await EnsureSessionAsync(update.Options, update.JournalPath, cancellationToken)
+        EdsmPublicationResult sessionTransition = await EnsureSessionAsync(
+                update.Options,
+                update.JournalPath,
+                cancellationToken
+            )
             .ConfigureAwait(false);
         if (session is null)
         {
             return sessionTransition;
         }
 
-        var publicationAuthorized = PreparePublicationAuthorization(update.Options);
+        bool publicationAuthorized = PreparePublicationAuthorization(update.Options);
         HarvestDiscardList(warnings);
         if (publicationAuthorized)
         {
@@ -146,10 +151,10 @@ public sealed class EdsmPublisher : IEdsmPublisher
             HarvestDiscardList(warnings);
         }
 
-        var queuedNames = CollectJournalEvents(update, publicationAuthorized, warnings);
-        var completed = TakeCompletedSendResult();
+        List<string> queuedNames = CollectJournalEvents(update, publicationAuthorized, warnings);
+        EdsmPublicationResult completed = TakeCompletedSendResult();
         warnings.AddRange(completed.Warnings);
-        var forceFlush =
+        bool forceFlush =
             update.AllowPublishing
             && update.JournalEvents.Any(item => item.EventName.Equals("Shutdown", StringComparison.OrdinalIgnoreCase));
         if (forceFlush || IsSendDue())
@@ -183,7 +188,8 @@ public sealed class EdsmPublisher : IEdsmPublisher
                 return EdsmPublicationResult.Empty;
             }
 
-            var finalizedInvalidSession = await FinalizeCurrentSessionAsync(cancellationToken).ConfigureAwait(false);
+            EdsmPublicationResult finalizedInvalidSession = await FinalizeCurrentSessionAsync(cancellationToken)
+                .ConfigureAwait(false);
             ResetSession(next: null);
             return finalizedInvalidSession;
         }
@@ -193,7 +199,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
             return EdsmPublicationResult.Empty;
         }
 
-        var finalized = await FinalizeCurrentSessionAsync(cancellationToken).ConfigureAwait(false);
+        EdsmPublicationResult finalized = await FinalizeCurrentSessionAsync(cancellationToken).ConfigureAwait(false);
         ResetSession(candidate);
         return finalized;
     }
@@ -215,11 +221,11 @@ public sealed class EdsmPublisher : IEdsmPublisher
 
     private bool PreparePublicationAuthorization(EdsmPublicationOptions options)
     {
-        var credentials = session is { IsLive: true, IsBeta: false }
+        EdsmCredentials? credentials = session is { IsLive: true, IsBeta: false }
             ? EdsmSession.GetCredentials(options.EdsmCommanderName, options.ApiKey)
             : null;
-        var canPrepare = credentials is not null;
-        var normalized = credentials;
+        bool canPrepare = credentials is not null;
+        EdsmCredentials? normalized = credentials;
         CancellationTokenSource? cancellation;
         lock (stateSync)
         {
@@ -256,12 +262,12 @@ public sealed class EdsmPublisher : IEdsmPublisher
             generation = authorizationGeneration;
         }
 
-        foreach (var journalEvent in update.JournalEvents)
+        foreach (JournalEventEnvelope journalEvent in update.JournalEvents)
         {
             try
             {
                 var entry = JObject.Parse(journalEvent.RawJson);
-                var identityMatches = JournalIdentityMatchesSession(entry);
+                bool identityMatches = JournalIdentityMatchesSession(entry);
                 journalContext.Apply(entry);
                 if (!publicationAuthorized || !update.AllowPublishing || credentials is null)
                 {
@@ -281,13 +287,13 @@ public sealed class EdsmPublisher : IEdsmPublisher
                     continue;
                 }
 
-                var prepared = journalContext.AddTransientFields(entry);
+                JObject prepared = journalContext.AddTransientFields(entry);
                 var queued = new EdsmQueuedEvent(
                     generation,
                     journalEvent.EventName,
                     prepared.ToString(Formatting.None)
                 );
-                var dropped = Enqueue(queued);
+                int dropped = Enqueue(queued);
                 if (dropped > 0)
                 {
                     warnings.Add(
@@ -313,14 +319,14 @@ public sealed class EdsmPublisher : IEdsmPublisher
             return false;
         }
 
-        var eventName = entry.Value<string>("event");
-        var commander = eventName switch
+        string? eventName = entry.Value<string>("event");
+        string? commander = eventName switch
         {
             "Commander" => entry.Value<string>("Name"),
             "LoadGame" => entry.Value<string>("Commander"),
             _ => null,
         };
-        var frontierId = eventName is "Commander" or "LoadGame" ? entry.Value<string>("FID") : null;
+        string? frontierId = eventName is "Commander" or "LoadGame" ? entry.Value<string>("FID") : null;
         if (
             !string.IsNullOrWhiteSpace(commander)
             && !string.Equals(commander.Trim(), session.ActiveCommanderName, StringComparison.OrdinalIgnoreCase)
@@ -339,7 +345,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
         {
             pending.Add(queued);
             nextSendAt ??= timeProvider.GetUtcNow() + SendInterval;
-            var dropped = Math.Max(0, pending.Count - MaximumPendingEvents);
+            int dropped = Math.Max(0, pending.Count - MaximumPendingEvents);
             if (dropped > 0)
             {
                 pending.RemoveRange(0, dropped);
@@ -386,7 +392,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
 
         try
         {
-            var result = completed.GetAwaiter().GetResult();
+            HashSet<string> result = completed.GetAwaiter().GetResult();
             lock (stateSync)
             {
                 discardedEvents = result;
@@ -413,11 +419,11 @@ public sealed class EdsmPublisher : IEdsmPublisher
 
     private async Task<HashSet<string>> LoadDiscardedEventsAsync(CancellationToken cancellationToken)
     {
-        using var response = await httpClient
+        using HttpResponseMessage response = await httpClient
             .GetAsync(DiscardedEventsEndpoint, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
-        var body = await ReadBoundedTextAsync(
+        string body = await ReadBoundedTextAsync(
                 response.Content,
                 MaximumDiscardListBytes,
                 "EDSM discarded-event response",
@@ -472,12 +478,12 @@ public sealed class EdsmPublisher : IEdsmPublisher
                 return false;
             }
 
-            var generation = authorizationGeneration;
-            var sendCredentials = authorizedCredentials;
-            var sendSession = session;
-            var sendDiscardedEvents = discardedEvents;
+            long generation = authorizationGeneration;
+            EdsmCredentials sendCredentials = authorizedCredentials;
+            EdsmSession sendSession = session;
+            HashSet<string> sendDiscardedEvents = discardedEvents;
             activeSendCancellation = CancellationTokenSource.CreateLinkedTokenSource(lifetimeCancellation.Token);
-            var sendCancellation = activeSendCancellation;
+            CancellationTokenSource sendCancellation = activeSendCancellation;
             activeSendTask = Task.Run(
                 () =>
                     SendPendingAsync(
@@ -502,7 +508,12 @@ public sealed class EdsmPublisher : IEdsmPublisher
         CancellationToken cancellationToken
     )
     {
-        var batch = TakeBatch(generation, sendDiscardedEvents, out var discardedForCredentials, out _);
+        List<EdsmQueuedEvent> batch = TakeBatch(
+            generation,
+            sendDiscardedEvents,
+            out int discardedForCredentials,
+            out _
+        );
         lock (stateSync)
         {
             nextSendAt = null;
@@ -530,7 +541,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
                 return DiscardUnauthorizedBatch(batch, warnings);
             }
 
-            var payloadBytes = await BuildBoundedPayloadAsync(
+            byte[]? payloadBytes = await BuildBoundedPayloadAsync(
                     sendSession,
                     credentials,
                     batch,
@@ -554,7 +565,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
                 return DiscardUnauthorizedBatch(batch, warnings);
             }
 
-            using var response = await httpClient
+            using HttpResponseMessage response = await httpClient
                 .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                 .ConfigureAwait(false);
             return await InterpretResponseAsync(response, batch, warnings, cancellationToken).ConfigureAwait(false);
@@ -601,8 +612,8 @@ public sealed class EdsmPublisher : IEdsmPublisher
         {
             discardedForCredentials = pending.RemoveAll(item => item.AuthorizationGeneration != generation);
             discardedByEdsm = pending.RemoveAll(item => sendDiscardedEvents.Contains(item.EventName));
-            var count = Math.Min(pending.Count, MaximumEventsPerRequest);
-            var batch = pending.GetRange(0, count);
+            int count = Math.Min(pending.Count, MaximumEventsPerRequest);
+            List<EdsmQueuedEvent> batch = pending.GetRange(0, count);
             pending.RemoveRange(0, count);
             return batch;
         }
@@ -618,7 +629,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
     {
         while (true)
         {
-            var message = new JArray(batch.Select(item => JToken.Parse(item.RawJson))).ToString(Formatting.None);
+            string message = new JArray(batch.Select(item => JToken.Parse(item.RawJson))).ToString(Formatting.None);
             using var form = new FormUrlEncodedContent([
                 new("commanderName", credentials.CommanderName),
                 new("apiKey", credentials.ApiKey),
@@ -628,7 +639,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
                 new("fromGameBuild", sendSession.GameBuild),
                 new("message", message),
             ]);
-            var bytes = await form.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+            byte[] bytes = await form.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
             if (bytes.Length <= MaximumPayloadBytes)
             {
                 lock (stateSync)
@@ -648,8 +659,8 @@ public sealed class EdsmPublisher : IEdsmPublisher
                 return null;
             }
 
-            var splitAt = batch.Count / 2;
-            var tail = batch.Skip(splitAt).ToArray();
+            int splitAt = batch.Count / 2;
+            EdsmQueuedEvent[] tail = batch.Skip(splitAt).ToArray();
             batch.RemoveRange(splitAt, batch.Count - splitAt);
             Requeue(tail, warnings);
         }
@@ -662,7 +673,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
         CancellationToken cancellationToken
     )
     {
-        var rateLimitDelay = GetRateLimitDelay(response.Headers);
+        TimeSpan? rateLimitDelay = GetRateLimitDelay(response.Headers);
         if (IsTransient(response.StatusCode))
         {
             return DeferBatch(
@@ -682,7 +693,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
             return CreateSendResult(0, warnings);
         }
 
-        var body = await ReadBoundedTextAsync(
+        string body = await ReadBoundedTextAsync(
                 response.Content,
                 MaximumResponseBytes,
                 "EDSM Journal API response",
@@ -705,11 +716,11 @@ public sealed class EdsmPublisher : IEdsmPublisher
         }
 
         var result = JObject.Parse(body);
-        var topStatus =
+        int topStatus =
             result.Value<int?>("msgnum")
             ?? throw new InvalidDataException("EDSM returned a response without a status code.");
-        var topClass = topStatus / 100;
-        var topMessage = SafeStatusText(result.Value<string>("msg"));
+        int topClass = topStatus / 100;
+        string topMessage = SafeStatusText(result.Value<string>("msg"));
         if (topClass == 2)
         {
             warnings.Add($"EDSM rejected a batch of {batch.Count} event(s) with API status {topStatus}: {topMessage}.");
@@ -740,7 +751,10 @@ public sealed class EdsmPublisher : IEdsmPublisher
             throw new InvalidDataException("EDSM returned an incomplete per-event response.");
         }
 
-        var (accepted, retryable, failures) = ProcessEventResponses(responseEvents, batch);
+        (int accepted, List<EdsmQueuedEvent>? retryable, List<string>? failures) = ProcessEventResponses(
+            responseEvents,
+            batch
+        );
 
         const int maximumReportedFailures = 10;
         warnings.AddRange(failures.Take(maximumReportedFailures));
@@ -770,17 +784,17 @@ public sealed class EdsmPublisher : IEdsmPublisher
         List<EdsmQueuedEvent> batch
     )
     {
-        var accepted = 0;
+        int accepted = 0;
         var retryable = new List<EdsmQueuedEvent>();
         var failures = new List<string>();
-        for (var index = 0; index < responseEvents.Count; index++)
+        for (int index = 0; index < responseEvents.Count; index++)
         {
             if (responseEvents[index] is not JObject eventResult || eventResult.Value<int?>("msgnum") is not { } status)
             {
                 throw new InvalidDataException("EDSM returned an invalid per-event response.");
             }
 
-            var statusClass = status / 100;
+            int statusClass = status / 100;
             if (statusClass is 1 or 5)
             {
                 accepted++;
@@ -834,7 +848,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
         lock (stateSync)
         {
             pending.InsertRange(0, batch);
-            var dropped = Math.Max(0, pending.Count - MaximumPendingEvents);
+            int dropped = Math.Max(0, pending.Count - MaximumPendingEvents);
             if (dropped > 0)
             {
                 pending.RemoveRange(0, dropped);
@@ -854,14 +868,16 @@ public sealed class EdsmPublisher : IEdsmPublisher
                 return;
             }
 
-            var exponent = Math.Min(Math.Max(consecutiveTransientFailures - 1, 0), 4);
-            var delay = transientFailure ? TimeSpan.FromTicks(SendInterval.Ticks * (1L << exponent)) : SendInterval;
+            int exponent = Math.Min(Math.Max(consecutiveTransientFailures - 1, 0), 4);
+            TimeSpan delay = transientFailure
+                ? TimeSpan.FromTicks(SendInterval.Ticks * (1L << exponent))
+                : SendInterval;
             if (minimumDelay is { } requestedDelay && requestedDelay > delay)
             {
                 delay = requestedDelay;
             }
 
-            var candidate = timeProvider.GetUtcNow() + delay;
+            DateTimeOffset candidate = timeProvider.GetUtcNow() + delay;
             if (nextSendAt is null || candidate > nextSendAt.Value)
             {
                 nextSendAt = candidate;
@@ -882,9 +898,9 @@ public sealed class EdsmPublisher : IEdsmPublisher
     private TimeSpan? GetRateLimitDelay(HttpResponseHeaders headers)
     {
         if (
-            !TryGetHeaderInt64(headers, "X-Rate-Limit-Remaining", out var remaining)
+            !TryGetHeaderInt64(headers, "X-Rate-Limit-Remaining", out long remaining)
             || remaining > 0
-            || !TryGetHeaderInt64(headers, "X-Rate-Limit-Reset", out var reset)
+            || !TryGetHeaderInt64(headers, "X-Rate-Limit-Reset", out long reset)
         )
         {
             return null;
@@ -900,14 +916,14 @@ public sealed class EdsmPublisher : IEdsmPublisher
             return null;
         }
 
-        var delay = resetAt - timeProvider.GetUtcNow();
+        TimeSpan delay = resetAt - timeProvider.GetUtcNow();
         return delay > TimeSpan.Zero ? delay : TimeSpan.Zero;
     }
 
     private static bool TryGetHeaderInt64(HttpResponseHeaders headers, string name, out long value)
     {
         value = 0;
-        return headers.TryGetValues(name, out var values)
+        return headers.TryGetValues(name, out IEnumerable<string>? values)
             && long.TryParse(values.FirstOrDefault(), NumberStyles.Integer, CultureInfo.InvariantCulture, out value);
     }
 
@@ -923,7 +939,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
             return null;
         }
 
-        var delay = date - timeProvider.GetUtcNow();
+        TimeSpan delay = date - timeProvider.GetUtcNow();
         return delay > TimeSpan.Zero ? delay : TimeSpan.Zero;
     }
 
@@ -1009,7 +1025,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
 
     private async Task<EdsmPublicationResult> FlushCoreAsync(CancellationToken cancellationToken)
     {
-        var result = await WaitForActiveSendAsync(cancellationToken).ConfigureAwait(false);
+        EdsmPublicationResult result = await WaitForActiveSendAsync(cancellationToken).ConfigureAwait(false);
         EnsureDiscardListLoadStarted();
         Task<HashSet<string>>? discardLoad;
         lock (stateSync)
@@ -1036,7 +1052,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
 
         if (TryStartBackgroundSend(force: true, out _))
         {
-            var sent = await WaitForActiveSendAsync(cancellationToken).ConfigureAwait(false);
+            EdsmPublicationResult sent = await WaitForActiveSendAsync(cancellationToken).ConfigureAwait(false);
             result = Combine(result, sent);
         }
 
@@ -1048,7 +1064,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
 
     private async Task<EdsmPublicationResult> WaitForActiveSendAsync(CancellationToken cancellationToken)
     {
-        var completed = TakeCompletedSendResult();
+        EdsmPublicationResult completed = TakeCompletedSendResult();
         Task<EdsmPublicationResult>? active;
         lock (stateSync)
         {
@@ -1060,7 +1076,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
             return completed;
         }
 
-        var sent = await active.WaitAsync(cancellationToken).ConfigureAwait(false);
+        EdsmPublicationResult sent = await active.WaitAsync(cancellationToken).ConfigureAwait(false);
         CancellationTokenSource? completedCancellation = null;
         lock (stateSync)
         {
@@ -1083,7 +1099,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
             return EdsmPublicationResult.Empty;
         }
 
-        var completed = await WaitForActiveSendAsync(cancellationToken).ConfigureAwait(false);
+        EdsmPublicationResult completed = await WaitForActiveSendAsync(cancellationToken).ConfigureAwait(false);
         Task<HashSet<string>>? discardLoad;
         lock (stateSync)
         {
@@ -1116,7 +1132,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
 
         if (TryStartBackgroundSend(force: true, out _))
         {
-            var sent = await WaitForActiveSendAsync(cancellationToken).ConfigureAwait(false);
+            EdsmPublicationResult sent = await WaitForActiveSendAsync(cancellationToken).ConfigureAwait(false);
             completed = Combine(completed, sent);
         }
 
@@ -1194,7 +1210,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
     {
         if (accepted > 0 && successfulUploads.Record(accepted) is { } completedCount)
         {
-            var eventLabel = completedCount == 1 ? "journal event" : "journal events";
+            string eventLabel = completedCount == 1 ? "journal event" : "journal events";
             WriteLog($"EDSM uploaded {completedCount:N0} {eventLabel} in the previous 15-minute activity window.");
         }
 
@@ -1261,8 +1277,10 @@ public sealed class EdsmPublisher : IEdsmPublisher
             return false;
         }
 
-        var numeric = new string(gameVersion.TakeWhile(character => character is (>= '0' and <= '9') or '.').ToArray());
-        return Version.TryParse(numeric.TrimEnd('.'), out var version) && version.Major >= 4;
+        string numeric = new string(
+            gameVersion.TakeWhile(character => character is (>= '0' and <= '9') or '.').ToArray()
+        );
+        return Version.TryParse(numeric.TrimEnd('.'), out Version? version) && version.Major >= 4;
     }
 
     private static bool IsTransient(HttpStatusCode statusCode)
@@ -1278,7 +1296,7 @@ public sealed class EdsmPublisher : IEdsmPublisher
             return "no status text supplied";
         }
 
-        var normalized = string.Join(
+        string normalized = string.Join(
             " ",
             value.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
         );
@@ -1297,12 +1315,12 @@ public sealed class EdsmPublisher : IEdsmPublisher
             throw new InvalidDataException($"{responseName} exceeded {maximumBytes:N0} bytes.");
         }
 
-        await using var input = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        await using Stream input = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         using var output = new MemoryStream();
-        var buffer = new byte[16 * 1024];
+        byte[] buffer = new byte[16 * 1024];
         while (true)
         {
-            var read = await input.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+            int read = await input.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
             if (read == 0)
             {
                 break;

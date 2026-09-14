@@ -79,8 +79,8 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
 
     public async Task<InaraCommunityGoalsResult> GetRecentAsync(CancellationToken cancellationToken = default)
     {
-        var now = utcNow();
-        var cached = await TryLoadCacheAsync(cancellationToken).ConfigureAwait(false);
+        DateTimeOffset now = utcNow();
+        InaraCommunityGoalCache? cached = await TryLoadCacheAsync(cancellationToken).ConfigureAwait(false);
         if (cached is not null && now - cached.FetchedAt < cacheAge)
         {
             return ToResult(cached, isStale: false, string.Empty);
@@ -98,13 +98,13 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
 
             try
             {
-                var fetched = await FetchAsync(now, cancellationToken).ConfigureAwait(false);
+                InaraCommunityGoalCache fetched = await FetchAsync(now, cancellationToken).ConfigureAwait(false);
                 await SaveCacheAsync(fetched, cancellationToken).ConfigureAwait(false);
                 return ToResult(fetched, isStale: false, string.Empty);
             }
             catch (Exception exception) when (IsRecoverable(exception, cancellationToken))
             {
-                var warning = "Inara Community Goal enrichment could not be refreshed: " + exception.Message;
+                string warning = "Inara Community Goal enrichment could not be refreshed: " + exception.Message;
                 return cached is null
                     ? new InaraCommunityGoalsResult([], now, false, warning)
                     : ToResult(cached, isStale: true, warning);
@@ -121,7 +121,7 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
         CancellationToken cancellationToken
     )
     {
-        var payload = JsonSerializer.SerializeToUtf8Bytes(
+        byte[] payload = JsonSerializer.SerializeToUtf8Bytes(
             new
             {
                 header = new
@@ -147,7 +147,7 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
             Content = new ByteArrayContent(payload),
         };
         request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" };
-        using var response = await httpClient
+        using HttpResponseMessage response = await httpClient
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
@@ -159,15 +159,15 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
             );
         }
 
-        var content = await ReadBoundedTextAsync(response.Content, cancellationToken).ConfigureAwait(false);
+        string content = await ReadBoundedTextAsync(response.Content, cancellationToken).ConfigureAwait(false);
         return ParseResponse(content, fetchedAt);
     }
 
     internal static InaraCommunityGoalCache ParseResponse(string content, DateTimeOffset fetchedAt)
     {
         using var document = JsonDocument.Parse(content);
-        var root = document.RootElement;
-        var headerStatus = GetInt32(GetProperty(root, "header"), "eventStatus");
+        JsonElement root = document.RootElement;
+        int? headerStatus = GetInt32(GetProperty(root, "header"), "eventStatus");
         if (headerStatus is null or < 200 or >= 300)
         {
             throw new InvalidDataException(
@@ -175,14 +175,14 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
             );
         }
 
-        var events = GetProperty(root, "events");
+        JsonElement? events = GetProperty(root, "events");
         if (events is not { ValueKind: JsonValueKind.Array } || events.Value.GetArrayLength() == 0)
         {
             throw new InvalidDataException("Inara returned no Community Goal response event.");
         }
 
-        var responseEvent = events.Value[0];
-        var eventStatus = GetInt32(responseEvent, "eventStatus");
+        JsonElement responseEvent = events.Value[0];
+        int? eventStatus = GetInt32(responseEvent, "eventStatus");
         if (eventStatus is null or < 200 or >= 300)
         {
             throw new InvalidDataException(
@@ -190,13 +190,13 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
             );
         }
 
-        var eventData = GetProperty(responseEvent, "eventData");
+        JsonElement? eventData = GetProperty(responseEvent, "eventData");
         if (eventData is not { ValueKind: JsonValueKind.Array })
         {
             throw new InvalidDataException("Inara returned malformed Community Goal data.");
         }
 
-        var goals = eventData
+        InaraCommunityGoalSnapshot[] goals = eventData
             .Value.EnumerateArray()
             .Where(item => item.ValueKind == JsonValueKind.Object)
             .Take(100)
@@ -255,11 +255,11 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
 
     private async Task SaveCacheAsync(InaraCommunityGoalCache cache, CancellationToken cancellationToken)
     {
-        var directory =
+        string directory =
             Path.GetDirectoryName(cachePath)
             ?? throw new InvalidOperationException("Inara Community Goal cache has no parent directory.");
         Directory.CreateDirectory(directory);
-        var temporaryPath = cachePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
+        string temporaryPath = cachePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try
         {
             await using (
@@ -310,12 +310,12 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
 
     private static async Task<string> ReadBoundedTextAsync(HttpContent content, CancellationToken cancellationToken)
     {
-        await using var source = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        await using Stream source = await content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         using var destination = new MemoryStream();
-        var buffer = new byte[8192];
+        byte[] buffer = new byte[8192];
         while (true)
         {
-            var read = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+            int read = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
             if (read == 0)
             {
                 break;
@@ -348,12 +348,12 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
             return null;
         }
 
-        if (value.TryGetProperty(name, out var exact))
+        if (value.TryGetProperty(name, out JsonElement exact))
         {
             return exact;
         }
 
-        foreach (var property in value.EnumerateObject())
+        foreach (JsonProperty property in value.EnumerateObject())
         {
             if (string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase))
             {
@@ -366,7 +366,7 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
 
     private static string GetString(JsonElement owner, string name)
     {
-        var value = GetProperty(owner, name);
+        JsonElement? value = GetProperty(owner, name);
         return value is { ValueKind: JsonValueKind.String }
             ? value.Value.GetString()?.Trim() ?? string.Empty
             : string.Empty;
@@ -374,19 +374,19 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
 
     private static int? GetInt32(JsonElement? owner, string name)
     {
-        var value = GetProperty(owner, name);
-        return value is { ValueKind: JsonValueKind.Number } && value.Value.TryGetInt32(out var number) ? number : null;
+        JsonElement? value = GetProperty(owner, name);
+        return value is { ValueKind: JsonValueKind.Number } && value.Value.TryGetInt32(out int number) ? number : null;
     }
 
     private static long? GetInt64(JsonElement owner, string name)
     {
-        var value = GetProperty(owner, name);
-        return value is { ValueKind: JsonValueKind.Number } && value.Value.TryGetInt64(out var number) ? number : null;
+        JsonElement? value = GetProperty(owner, name);
+        return value is { ValueKind: JsonValueKind.Number } && value.Value.TryGetInt64(out long number) ? number : null;
     }
 
     private static bool? GetBoolean(JsonElement owner, string name)
     {
-        var value = GetProperty(owner, name);
+        JsonElement? value = GetProperty(owner, name);
         return value?.ValueKind switch
         {
             JsonValueKind.True => true,
@@ -397,8 +397,10 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
 
     private static DateTimeOffset? GetDateTimeOffset(JsonElement owner, string name)
     {
-        var value = GetProperty(owner, name);
-        return value is { ValueKind: JsonValueKind.String } && value.Value.TryGetDateTimeOffset(out var timestamp)
+        JsonElement? value = GetProperty(owner, name);
+        return
+            value is { ValueKind: JsonValueKind.String }
+            && value.Value.TryGetDateTimeOffset(out DateTimeOffset timestamp)
             ? timestamp
             : null;
     }

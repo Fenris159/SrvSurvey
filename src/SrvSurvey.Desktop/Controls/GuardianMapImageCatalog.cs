@@ -9,7 +9,7 @@ internal static class GuardianMapImageCatalog
 {
     private const string ResourceRoot = "avares://SrvSurvey.Desktop/Assets/GuardianMaps/";
     private static readonly Dictionary<string, Bitmap?> Images = new(StringComparer.OrdinalIgnoreCase);
-    private static readonly object SyncRoot = new();
+    private static readonly Lock SyncRoot = new();
 
     public static IImage? Find(GuardianSiteMapProjection projection)
     {
@@ -19,7 +19,7 @@ internal static class GuardianMapImageCatalog
             return FindCached("file:" + localPath, () => LoadFile(localPath));
         }
 
-        var fileName = ResolveFileName(projection);
+        string fileName = ResolveFileName(projection);
         return FindCached("asset:" + fileName, () => LoadAsset(fileName));
     }
 
@@ -27,7 +27,7 @@ internal static class GuardianMapImageCatalog
     {
         lock (SyncRoot)
         {
-            if (!Images.TryGetValue(key, out var image))
+            if (!Images.TryGetValue(key, out Bitmap? image))
             {
                 image = load();
                 Images[key] = image;
@@ -40,7 +40,7 @@ internal static class GuardianMapImageCatalog
     internal static string ResolveFileName(GuardianSiteMapProjection projection)
     {
         ArgumentNullException.ThrowIfNull(projection);
-        var configuredName = Path.GetFileName(projection.BackgroundImage);
+        string configuredName = Path.GetFileName(projection.BackgroundImage);
         return string.IsNullOrWhiteSpace(configuredName)
             ? $"{projection.SiteType.ToLowerInvariant()}-background.png"
             : configuredName;
@@ -55,7 +55,7 @@ internal static class GuardianMapImageCatalog
 
         try
         {
-            var path = Path.GetFullPath(configuredPath);
+            string path = Path.GetFullPath(configuredPath);
             return File.Exists(path) ? path : null;
         }
         catch (Exception exception)
@@ -75,7 +75,7 @@ internal static class GuardianMapImageCatalog
                 return null;
             }
 
-            using var stream = AssetLoader.Open(uri);
+            using Stream stream = AssetLoader.Open(uri);
             return new Bitmap(stream);
         }
         catch (IOException)
@@ -92,7 +92,7 @@ internal static class GuardianMapImageCatalog
     {
         try
         {
-            using var stream = File.OpenRead(path);
+            using FileStream stream = File.OpenRead(path);
             return new Bitmap(stream);
         }
         catch (Exception exception)

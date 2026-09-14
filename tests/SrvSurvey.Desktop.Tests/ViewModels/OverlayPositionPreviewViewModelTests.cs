@@ -11,7 +11,7 @@ public sealed class OverlayPositionPreviewViewModelTests
     [Fact]
     public void FssPreviewUsesOverlaySpecificSimulatedSystemData()
     {
-        var definition = OverlayLayoutCatalog.Supported.Single(item => item.Name == "PlotFSSInfo");
+        OverlayLayoutDefinition definition = OverlayLayoutCatalog.Supported.Single(item => item.Name == "PlotFSSInfo");
 
         var preview = OverlayPositionPreviewViewModel.Create(definition);
 
@@ -25,7 +25,9 @@ public sealed class OverlayPositionPreviewViewModelTests
     [Fact]
     public void BiologySystemPreviewContainsSignalRewardBars()
     {
-        var definition = OverlayLayoutCatalog.Supported.Single(item => item.Name == "PlotBioSystem");
+        OverlayLayoutDefinition definition = OverlayLayoutCatalog.Supported.Single(item =>
+            item.Name == "PlotBioSystem"
+        );
 
         var preview = OverlayPositionPreviewViewModel.Create(definition);
 
@@ -40,7 +42,9 @@ public sealed class OverlayPositionPreviewViewModelTests
     [Fact]
     public void RowsWithoutProgressExposeANumericBindingFallback()
     {
-        var definition = OverlayLayoutCatalog.Supported.Single(item => item.Name == "PlotBioSystem");
+        OverlayLayoutDefinition definition = OverlayLayoutCatalog.Supported.Single(item =>
+            item.Name == "PlotBioSystem"
+        );
 
         var preview = OverlayPositionPreviewViewModel.Create(definition);
 
@@ -51,7 +55,7 @@ public sealed class OverlayPositionPreviewViewModelTests
     [Fact]
     public void RouteBodyPreviewUsesCheckboxesAndBodyArtworkInsteadOfProgressBars()
     {
-        var definition = OverlayLayoutCatalog.Supported.Single(item => item.Name == "PlotRouteBio");
+        OverlayLayoutDefinition definition = OverlayLayoutCatalog.Supported.Single(item => item.Name == "PlotRouteBio");
 
         var preview = OverlayPositionPreviewViewModel.Create(definition);
 
@@ -96,8 +100,8 @@ public sealed class OverlayPositionPreviewViewModelTests
     [Fact]
     public void PreviewUsesTheLegacyPlotterWidth()
     {
-        var jump = OverlayLayoutCatalog.Supported.Single(item => item.Name == "PlotJumpInfo");
-        var biology = OverlayLayoutCatalog.Supported.Single(item => item.Name == "PlotBioSystem");
+        OverlayLayoutDefinition jump = OverlayLayoutCatalog.Supported.Single(item => item.Name == "PlotJumpInfo");
+        OverlayLayoutDefinition biology = OverlayLayoutCatalog.Supported.Single(item => item.Name == "PlotBioSystem");
 
         var jumpPreview = OverlayPositionPreviewViewModel.Create(jump);
         var biologyPreview = OverlayPositionPreviewViewModel.Create(biology);
@@ -112,9 +116,11 @@ public sealed class OverlayPositionPreviewViewModelTests
     [Fact]
     public void SimulatedStateIncludesLegacySemanticGlyphs()
     {
-        var definitions = LegacyGlyphs.Select(name => OverlayLayoutCatalog.Supported.Single(item => item.Name == name));
+        IEnumerable<OverlayLayoutDefinition> definitions = LegacyGlyphs.Select(name =>
+            OverlayLayoutCatalog.Supported.Single(item => item.Name == name)
+        );
 
-        var glyphs = definitions
+        OverlayPositionPreviewRowViewModel[] glyphs = definitions
             .SelectMany(definition => OverlayPositionPreviewViewModel.Create(definition).Rows)
             .Where(row => row.HasGlyph)
             .ToArray();
@@ -127,7 +133,7 @@ public sealed class OverlayPositionPreviewViewModelTests
     [Fact]
     public void EverySupportedOverlayProjectsFromTheSimulatedSession()
     {
-        foreach (var definition in OverlayLayoutCatalog.Supported)
+        foreach (OverlayLayoutDefinition definition in OverlayLayoutCatalog.Supported)
         {
             var preview = OverlayPositionPreviewViewModel.Create(definition);
 
@@ -140,8 +146,13 @@ public sealed class OverlayPositionPreviewViewModelTests
     [Fact]
     public void SimulatedSessionCanBeReplacedWithoutChangingDefaultState()
     {
-        var definition = OverlayLayoutCatalog.Supported.Single(item => item.Name == "PlotStationInfo");
-        var simulation = OverlayPreviewSimulationState.Default with { StationName = "Test Preview Orbital" };
+        OverlayLayoutDefinition definition = OverlayLayoutCatalog.Supported.Single(item =>
+            item.Name == "PlotStationInfo"
+        );
+        OverlayPreviewSimulationState simulation = OverlayPreviewSimulationState.Default with
+        {
+            StationName = "Test Preview Orbital",
+        };
 
         var preview = OverlayPositionPreviewViewModel.Create(definition, simulation);
 
@@ -152,7 +163,7 @@ public sealed class OverlayPositionPreviewViewModelTests
     [Fact]
     public void CompactPreviewKeepsItsTruePlacementSizeWithoutOverflowRows()
     {
-        var definition = OverlayLayoutCatalog.Supported.Single(item => item.Name == "PlotPulse");
+        OverlayLayoutDefinition definition = OverlayLayoutCatalog.Supported.Single(item => item.Name == "PlotPulse");
 
         var preview = OverlayPositionPreviewViewModel.Create(definition);
 
@@ -167,7 +178,9 @@ public sealed class OverlayPositionPreviewViewModelTests
     [Fact]
     public void SystemStatusPreviewShowsDssAndBiologicalContentNotJustCompactStub()
     {
-        var definition = OverlayLayoutCatalog.Supported.Single(item => item.Name == "PlotSysStatus");
+        OverlayLayoutDefinition definition = OverlayLayoutCatalog.Supported.Single(item =>
+            item.Name == "PlotSysStatus"
+        );
 
         var preview = OverlayPositionPreviewViewModel.Create(definition);
 

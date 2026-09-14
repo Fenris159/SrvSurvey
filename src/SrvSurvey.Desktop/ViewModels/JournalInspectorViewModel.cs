@@ -125,8 +125,8 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
         ArgumentNullException.ThrowIfNull(journalEvents);
         if (journalEvents.Count > 0)
         {
-            var firstRetainedIndex = Math.Max(0, journalEvents.Count - MaximumEventCount);
-            for (var index = firstRetainedIndex; index < journalEvents.Count; index++)
+            int firstRetainedIndex = Math.Max(0, journalEvents.Count - MaximumEventCount);
+            for (int index = firstRetainedIndex; index < journalEvents.Count; index++)
             {
                 events.Insert(0, new JournalInspectorEventViewModel(journalEvents[index]));
             }
@@ -160,7 +160,7 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
         }
 
         var rows = new List<JournalInspectorPropertyViewModel>();
-        foreach (var property in SelectedEvent.JournalEvent.Payload.EnumerateObject())
+        foreach (JsonProperty property in SelectedEvent.JournalEvent.Payload.EnumerateObject())
         {
             AddPropertyRows(rows, property.Name, AppendLuaPropertyAccess("entry", property.Name), property.Value, 0);
         }
@@ -177,7 +177,7 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
         int depth
     )
     {
-        var selectable = path != "event" && IsLuaScalar(value);
+        bool selectable = path != "event" && IsLuaScalar(value);
         rows.Add(
             new JournalInspectorPropertyViewModel(
                 path,
@@ -191,7 +191,7 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
         );
         if (value.ValueKind == JsonValueKind.Object)
         {
-            foreach (var property in value.EnumerateObject())
+            foreach (JsonProperty property in value.EnumerateObject())
             {
                 AddPropertyRows(
                     rows,
@@ -204,8 +204,8 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
         }
         else if (value.ValueKind == JsonValueKind.Array)
         {
-            var index = 0;
-            foreach (var item in value.EnumerateArray())
+            int index = 0;
+            foreach (JsonElement item in value.EnumerateArray())
             {
                 AddPropertyRows(rows, $"{path}[{index}]", $"{luaAccess}[{index + 1}]", item, depth + 1);
                 index++;
@@ -221,7 +221,7 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
             return;
         }
 
-        var clauses = Properties
+        string[] clauses = Properties
             .Where(property => property.IsIncluded && property.IsSelectable)
             .Select(property => $"{property.LuaAccess} == {ToLuaLiteral(property.Value)}")
             .ToArray();
@@ -290,10 +290,10 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
             return;
         }
 
-        var selected = SelectedEvent;
+        JournalInspectorEventViewModel selected = SelectedEvent;
         try
         {
-            var result = await replayEvent(selected.JournalEvent);
+            QuestRuntimeUpdateResult result = await replayEvent(selected.JournalEvent);
             ReplayConfirmed = false;
             StatusMessage =
                 result.Warnings.Count > 0
@@ -319,7 +319,8 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
     {
         try
         {
-            var writer = clipboardWriter ?? throw new InvalidOperationException("The clipboard is unavailable.");
+            Func<string, Task> writer =
+                clipboardWriter ?? throw new InvalidOperationException("The clipboard is unavailable.");
             await writer(text);
             StatusMessage = successMessage;
         }
@@ -391,10 +392,10 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
 
     private static string ToLuaStringLiteral(string value)
     {
-        var builder = new StringBuilder(value.Length + 2).Append('"');
-        foreach (var character in value)
+        StringBuilder builder = new StringBuilder(value.Length + 2).Append('"');
+        foreach (char character in value)
         {
-            var escaped = character switch
+            string? escaped = character switch
             {
                 '\\' => "\\\\",
                 '"' => "\\\"",

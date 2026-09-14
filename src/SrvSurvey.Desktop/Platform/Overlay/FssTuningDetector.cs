@@ -51,18 +51,18 @@ public static class FssTuningDetector
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(settings);
 
-        if (!TryFindWatchArea(source, settings, out var area, out var failure))
+        if (!TryFindWatchArea(source, settings, out FssPixelRegion area, out string? failure))
         {
             return new FssTuningAnalysis(previousState, null, 0, 0, failure);
         }
 
-        var white = 0;
-        var yellow = 0;
-        for (var y = area.Y; y < area.Bottom; y++)
+        int white = 0;
+        int yellow = 0;
+        for (int y = area.Y; y < area.Bottom; y++)
         {
-            for (var x = area.X; x < area.Right; x++)
+            for (int x = area.X; x < area.Right; x++)
             {
-                var pixel = source.GetPixel(x, y);
+                FssRgbPixel pixel = source.GetPixel(x, y);
                 if (Matches(pixel, settings.WhiteText))
                 {
                     white++;
@@ -75,7 +75,7 @@ public static class FssTuningDetector
             }
         }
 
-        var state = previousState;
+        FssTuningDetectionState state = previousState;
         if (yellow > white * 0.25f)
         {
             state = FssTuningDetectionState.Yellow;
@@ -103,36 +103,36 @@ public static class FssTuningDetector
             return false;
         }
 
-        var center = source.Width / 2;
-        if (!TryFindYellowBarY(source, settings, center, out var yellowY))
+        int center = source.Width / 2;
+        if (!TryFindYellowBarY(source, settings, center, out int yellowY))
         {
             failure = "The FSS tuning bar was not found.";
             return false;
         }
 
-        var horizontalYellow = settings.YellowBar with { Tolerance = settings.YellowHorizontalTolerance };
-        if (!TryFindBarLeft(source, horizontalYellow, center, yellowY, out var left))
+        FssPixelColor horizontalYellow = settings.YellowBar with { Tolerance = settings.YellowHorizontalTolerance };
+        if (!TryFindBarLeft(source, horizontalYellow, center, yellowY, out int left))
         {
             failure = "The left edge of the FSS tuning bar was not found.";
             return false;
         }
 
-        if (!TryFindBarRight(source, horizontalYellow, center, yellowY, out var right))
+        if (!TryFindBarRight(source, horizontalYellow, center, yellowY, out int right))
         {
             failure = "The right edge of the FSS tuning bar was not found.";
             return false;
         }
 
-        var width = (right - left) / 2;
-        var watchX = left + width;
-        var blackX = right - 30;
+        int width = (right - left) / 2;
+        int watchX = left + width;
+        int blackX = right - 30;
         if (width <= 0 || blackX < 0 || blackX >= source.Width)
         {
             failure = "The detected FSS tuning bar has invalid dimensions.";
             return false;
         }
 
-        if (!TryFindBlackAreaY(source, settings, blackX, yellowY, out var blackY))
+        if (!TryFindBlackAreaY(source, settings, blackX, yellowY, out int blackY))
         {
             failure = "The dark area below the FSS tuning bar was not found.";
             return false;
@@ -149,7 +149,7 @@ public static class FssTuningDetector
     )
     {
         yellowY = 0;
-        var y = source.Height - 1;
+        int y = source.Height - 1;
         while (y > 0)
         {
             if (Matches(source.GetPixel(x, y), settings.YellowBar))
@@ -173,7 +173,7 @@ public static class FssTuningDetector
     )
     {
         left = 0;
-        var x = center;
+        int x = center;
         while (x > 0)
         {
             if (!Matches(source.GetPixel(x, y), horizontalYellow))
@@ -197,7 +197,7 @@ public static class FssTuningDetector
     )
     {
         right = 0;
-        var x = center;
+        int x = center;
         while (x < source.Width)
         {
             if (!Matches(source.GetPixel(x, y), horizontalYellow))
@@ -221,7 +221,7 @@ public static class FssTuningDetector
     )
     {
         blackY = 0;
-        var y = startY;
+        int y = startY;
         while (y < source.Height)
         {
             if (Matches(source.GetPixel(blackX, y), settings.BlackArea))
@@ -248,9 +248,9 @@ public static class FssTuningDetector
     {
         area = default;
         failure = null;
-        var heightDelta = (blackY - yellowY) / 3;
-        var watchY = blackY + heightDelta;
-        var height = (source.Height - watchY - 1) / 2;
+        int heightDelta = (blackY - yellowY) / 3;
+        int watchY = blackY + heightDelta;
+        int height = (source.Height - watchY - 1) / 2;
         if (height <= 0 || watchX < 0 || watchY < 0 || watchX + width > source.Width || watchY + height > source.Height)
         {
             failure = "The detected FSS text area has invalid dimensions.";

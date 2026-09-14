@@ -14,7 +14,7 @@ public sealed class ScreenshotProcessingSettingsStoreTests : IDisposable
     public void SaveRoundTripsAndPreservesUnknownSettings()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         File.WriteAllText(path, "{\"Future\":42,\"Screenshots\":{\"FutureOption\":true}}");
         var store = new ScreenshotProcessingSettingsStore(path);
         var preferences = new ScreenshotProcessingPreferences(
@@ -35,7 +35,7 @@ public sealed class ScreenshotProcessingSettingsStoreTests : IDisposable
         store.Save(preferences);
 
         Assert.Equal(preferences, store.Load());
-        var root = Assert.IsType<JsonObject>(JsonNode.Parse(File.ReadAllText(path)));
+        JsonObject root = Assert.IsType<JsonObject>(JsonNode.Parse(File.ReadAllText(path)));
         Assert.Equal(42, root["Future"]?.GetValue<int>());
         Assert.True(root["Screenshots"]?["FutureOption"]?.GetValue<bool>());
     }
@@ -44,10 +44,10 @@ public sealed class ScreenshotProcessingSettingsStoreTests : IDisposable
     public void LegacyColorObjectIsTranslatedWithoutFailure()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        string path = Path.Combine(temporaryDirectory, "ui-settings.json");
         File.WriteAllText(path, "{\"Screenshots\":{\"BannerColor\":{\"A\":255," + "\"R\":18,\"G\":171,\"B\":239}}}");
 
-        var preferences = new ScreenshotProcessingSettingsStore(path).Load();
+        ScreenshotProcessingPreferences preferences = new ScreenshotProcessingSettingsStore(path).Load();
 
         Assert.Equal("#12ABEF", preferences.BannerColor);
     }

@@ -11,7 +11,7 @@ public sealed class InaraCommunityGoalClientTests
     [Fact]
     public async Task GenericReadUsesOnlyApplicationIdentityAndCachesResponse()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
             var now = DateTimeOffset.Parse(
@@ -27,13 +27,13 @@ public sealed class InaraCommunityGoalClientTests
                 () => now
             );
 
-            var first = await client.GetRecentAsync();
-            var second = await client.GetRecentAsync();
+            InaraCommunityGoalsResult first = await client.GetRecentAsync();
+            InaraCommunityGoalsResult second = await client.GetRecentAsync();
 
             Assert.Equal(1, handler.RequestCount);
             Assert.False(first.IsStale);
             Assert.False(second.IsStale);
-            var goal = Assert.Single(first.Goals);
+            InaraCommunityGoalSnapshot goal = Assert.Single(first.Goals);
             Assert.Equal("Carcosa Calls for Assistance", goal.Title);
             Assert.Equal(2_913, goal.Contributors);
             Assert.Equal(2_308_981, goal.ContributionsTotal);
@@ -41,7 +41,7 @@ public sealed class InaraCommunityGoalClientTests
             Assert.Equal("https://inara.cz/elite/communitygoals/855/", goal.InaraUrl);
 
             using var request = JsonDocument.Parse(Assert.Single(handler.Bodies));
-            var header = request.RootElement.GetProperty("header");
+            JsonElement header = request.RootElement.GetProperty("header");
             Assert.Equal("SrvSurvey", header.GetProperty("appName").GetString());
             Assert.Equal("application-key", header.GetProperty("APIkey").GetString());
             Assert.False(header.TryGetProperty("commanderName", out _));
@@ -60,7 +60,7 @@ public sealed class InaraCommunityGoalClientTests
     [Fact]
     public async Task ExpiredCacheIsReturnedWhenRefreshFails()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
             var now = DateTimeOffset.Parse(
@@ -80,9 +80,9 @@ public sealed class InaraCommunityGoalClientTests
                 () => now
             );
 
-            var fresh = await client.GetRecentAsync();
+            InaraCommunityGoalsResult fresh = await client.GetRecentAsync();
             now = now.AddMinutes(16);
-            var stale = await client.GetRecentAsync();
+            InaraCommunityGoalsResult stale = await client.GetRecentAsync();
 
             Assert.False(fresh.IsStale);
             Assert.True(stale.IsStale);
@@ -101,7 +101,7 @@ public sealed class InaraCommunityGoalClientTests
     {
         var primaryFailure = new InvalidOperationException("primary save failure");
         foreach (
-            var cleanupFailure in new Exception[]
+            Exception cleanupFailure in new Exception[]
             {
                 new IOException("cleanup I/O failure"),
                 new UnauthorizedAccessException("cleanup access failure"),
@@ -130,10 +130,15 @@ public sealed class InaraCommunityGoalClientTests
             "2026-07-31T12:00:00Z",
             global::System.Globalization.CultureInfo.InvariantCulture
         );
-        var frontier = Goal() with { Objective = "Frontier objective", CurrentTotal = 99, HasContributorData = false };
-        var inara = InaraResult(fetchedAt);
+        FrontierCommunityGoalSnapshot frontier = Goal() with
+        {
+            Objective = "Frontier objective",
+            CurrentTotal = 99,
+            HasContributorData = false,
+        };
+        InaraCommunityGoalsResult inara = InaraResult(fetchedAt);
 
-        var result = Assert.Single(InaraCommunityGoalEnricher.Enrich([frontier], inara));
+        FrontierCommunityGoalSnapshot result = Assert.Single(InaraCommunityGoalEnricher.Enrich([frontier], inara));
 
         Assert.Equal("Frontier objective", result.Objective);
         Assert.Equal(99, result.CurrentTotal);
@@ -147,9 +152,9 @@ public sealed class InaraCommunityGoalClientTests
     [Fact]
     public void ConflictingLocationDoesNotMergeSameNamedGoals()
     {
-        var frontier = Goal() with { System = "Sol" };
+        FrontierCommunityGoalSnapshot frontier = Goal() with { System = "Sol" };
 
-        var results = InaraCommunityGoalEnricher.Enrich(
+        IReadOnlyList<FrontierCommunityGoalSnapshot> results = InaraCommunityGoalEnricher.Enrich(
             [frontier],
             InaraResult(
                 DateTimeOffset.Parse("2026-07-31T12:00:00Z", global::System.Globalization.CultureInfo.InvariantCulture)
@@ -171,7 +176,7 @@ public sealed class InaraCommunityGoalClientTests
             )
         );
 
-        var second = InaraCommunityGoalEnricher.Enrich(
+        IReadOnlyList<FrontierCommunityGoalSnapshot> second = InaraCommunityGoalEnricher.Enrich(
             first,
             new InaraCommunityGoalsResult(
                 [],
@@ -237,7 +242,7 @@ public sealed class InaraCommunityGoalClientTests
 
     private static string CreateTemporaryDirectory()
     {
-        var path = Path.Combine(Path.GetTempPath(), $"SrvSurvey-inara-community-goals-{Guid.NewGuid():N}");
+        string path = Path.Combine(Path.GetTempPath(), $"SrvSurvey-inara-community-goals-{Guid.NewGuid():N}");
         Directory.CreateDirectory(path);
         return path;
     }

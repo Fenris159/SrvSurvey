@@ -33,7 +33,7 @@ public static class OverlayPresentationModeSelector
     )
     {
         ArgumentNullException.ThrowIfNull(capabilities);
-        var requested = hostOverride?.Trim();
+        string? requested = hostOverride?.Trim();
         if (IsMultipleWindowOverride(requested))
         {
             return new OverlayPresentationDecision(

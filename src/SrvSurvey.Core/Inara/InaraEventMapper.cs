@@ -86,7 +86,7 @@ internal sealed class InaraEventMapper
 
     public IReadOnlyList<InaraEvent> Process(JObject entry, InaraContext context, bool collectEvents)
     {
-        var name = entry.Value<string>(EventKey);
+        string? name = entry.Value<string>(EventKey);
         if (string.IsNullOrWhiteSpace(name))
         {
             return [];
@@ -97,7 +97,7 @@ internal sealed class InaraEventMapper
             Reset();
         }
 
-        var wasInMulticrew = InMulticrew;
+        bool wasInMulticrew = InMulticrew;
         updateMulticrewState(name, entry);
         if (wasInMulticrew != InMulticrew)
         {
@@ -105,7 +105,9 @@ internal sealed class InaraEventMapper
         }
 
         creditTracker.Observe(entry, InMulticrew);
-        var inventoryChanged = InMulticrew ? (cargo: false, materials: false) : updateInventoryState(name, entry);
+        (bool cargo, bool materials) inventoryChanged = InMulticrew
+            ? (cargo: false, materials: false)
+            : updateInventoryState(name, entry);
         updateRankState(name, entry);
 
         if (!collectEvents || InMulticrew || (wasInMulticrew && name == "QuitACrew"))
@@ -114,9 +116,9 @@ internal sealed class InaraEventMapper
             return [];
         }
 
-        var timestamp = entry.Value<string>(TimestampKey) ?? DateTime.UtcNow.ToString("O");
+        string timestamp = entry.Value<string>(TimestampKey) ?? DateTime.UtcNow.ToString("O");
         var events = new List<InaraEvent>();
-        var sessionStarting =
+        bool sessionStarting =
             !sessionStarted || !string.Equals(sessionCommander, context.Commander, StringComparison.OrdinalIgnoreCase);
 
         if (sessionStarting)
@@ -125,7 +127,7 @@ internal sealed class InaraEventMapper
             sessionCommander = context.Commander;
             events.Add(new("getCommanderProfile", timestamp, new JObject(), "profile"));
 
-            var ship = currentShip(context);
+            JObject? ship = currentShip(context);
             if (ship != null)
             {
                 events.Add(new(SetCommanderShipEvent, timestamp, ship, $"ship:{context.ShipId}"));
@@ -140,11 +142,11 @@ internal sealed class InaraEventMapper
         // The common Statistics event supplies the authoritative assets value.
         // Otherwise, coalesce transaction deltas to Inara's recommended hourly
         // cadence and flush any remaining change at session shutdown.
-        var forceCreditReport =
+        bool forceCreditReport =
             sessionStarting
             || (name == StatisticsEvent && creditTracker.HasUnreportedChanges)
             || (name == "Shutdown" && creditTracker.HasUnreportedChanges);
-        var creditReport = creditTracker.CreateReport(timestamp, forceCreditReport, name == StatisticsEvent);
+        InaraEvent? creditReport = creditTracker.CreateReport(timestamp, forceCreditReport, name == StatisticsEvent);
         if (creditReport != null)
         {
             events.Add(creditReport);
@@ -280,7 +282,7 @@ internal sealed class InaraEventMapper
                 mapShipyard(timestamp, entry, context, events);
                 break;
             case "SetUserShipName":
-                var namedShip = currentShip(context);
+                JObject? namedShip = currentShip(context);
                 if (namedShip != null)
                 {
                     events.Add(new(SetCommanderShipEvent, timestamp, namedShip, $"ship:{context.ShipId}"));
@@ -406,8 +408,8 @@ internal sealed class InaraEventMapper
 
     private (bool cargo, bool materials) updateInventoryState(string name, JObject entry)
     {
-        var cargoChanged = false;
-        var materialsChanged = false;
+        bool cargoChanged = false;
+        bool materialsChanged = false;
 
         if (
             name == "Cargo"
@@ -416,7 +418,7 @@ internal sealed class InaraEventMapper
         )
         {
             cargo.Clear();
-            foreach (var item in inventory.OfType<JObject>())
+            foreach (JObject item in inventory.OfType<JObject>())
             {
                 setCount(cargo, item.Value<string>("Name"), item.Value<int?>(CountProperty) ?? 0);
             }
@@ -432,14 +434,14 @@ internal sealed class InaraEventMapper
         if (name == "Materials")
         {
             materials.Clear();
-            foreach (var category in materialCategories)
+            foreach (string category in materialCategories)
             {
                 if (entry[category] is not JArray items)
                 {
                     continue;
                 }
 
-                foreach (var item in items.OfType<JObject>())
+                foreach (JObject item in items.OfType<JObject>())
                 {
                     setCount(materials, item.Value<string>("Name"), item.Value<int?>(CountProperty) ?? 0);
                 }
@@ -470,7 +472,7 @@ internal sealed class InaraEventMapper
             return;
         }
 
-        foreach (var property in entry.Properties().Where(p => p.Name is not TimestampKey and not EventKey))
+        foreach (JProperty? property in entry.Properties().Where(p => p.Name is not TimestampKey and not EventKey))
         {
             if (property.Value.Type == JTokenType.Integer)
             {
@@ -493,17 +495,17 @@ internal sealed class InaraEventMapper
             case "SellDrones":
                 return changeCount(cargo, itemName(entry), -itemCount(entry, 1));
             case "CargoTransfer":
-                var transferred = false;
-                foreach (var item in (entry["Transfers"] as JArray)?.OfType<JObject>() ?? [])
+                bool transferred = false;
+                foreach (JObject item in (entry["Transfers"] as JArray)?.OfType<JObject>() ?? [])
                 {
-                    var direction = item.Value<string>("Direction");
-                    var amount = itemCount(item, 0);
+                    string? direction = item.Value<string>("Direction");
+                    int amount = itemCount(item, 0);
                     transferred |= changeCount(cargo, itemName(item), direction == ToShipDirection ? amount : -amount);
                 }
                 return transferred;
             case "SearchAndRescue":
-                var changed = false;
-                foreach (var item in (entry["Items"] as JArray)?.OfType<JObject>() ?? [])
+                bool changed = false;
+                foreach (JObject item in (entry["Items"] as JArray)?.OfType<JObject>() ?? [])
                 {
                     changed |= changeCount(cargo, itemName(item), -itemCount(item, 1));
                 }
@@ -514,7 +516,7 @@ internal sealed class InaraEventMapper
             case "EngineerContribution":
                 return changeCount(cargo, entry.Value<string>("Commodity"), -entry.Value<int?>("Quantity") ?? 0);
             case "TechnologyBroker":
-                var brokerCargoChanged = changeMany(cargo, entry["Ingredients"] as JArray, -1);
+                bool brokerCargoChanged = changeMany(cargo, entry["Ingredients"] as JArray, -1);
                 return changeMany(cargo, entry["Commodities"] as JArray, -1) || brokerCargoChanged;
             default:
                 return false;
@@ -541,10 +543,10 @@ internal sealed class InaraEventMapper
 
                 return changeMany(materials, entry["Ingredients"] as JArray, -1);
             case "MaterialTrade":
-                var changed = changeItem(materials, entry["Paid"] as JObject, -1);
+                bool changed = changeItem(materials, entry["Paid"] as JObject, -1);
                 return changeItem(materials, entry["Received"] as JObject, 1) || changed;
             case "TechnologyBroker":
-                var brokerMaterialsChanged = changeMany(materials, entry["Ingredients"] as JArray, -1);
+                bool brokerMaterialsChanged = changeMany(materials, entry["Ingredients"] as JArray, -1);
                 return changeMany(materials, entry["Materials"] as JArray, -1) || brokerMaterialsChanged;
             case "MissionCompleted":
                 return changeMany(materials, entry["MaterialsReward"] as JArray, 1);
@@ -584,11 +586,11 @@ internal sealed class InaraEventMapper
     private void mapProgress(string timestamp, JObject entry, List<InaraEvent> events)
     {
         var values = new JArray();
-        foreach (var property in entry.Properties().Where(p => p.Name is not TimestampKey and not EventKey))
+        foreach (JProperty? property in entry.Properties().Where(p => p.Name is not TimestampKey and not EventKey))
         {
-            var rankName = normalizeRank(property.Name);
-            var data = obj(("rankName", rankName), ("rankProgress", property.Value.Value<double>() / 100d));
-            if (ranks.TryGetValue(property.Name, out var rank))
+            string rankName = normalizeRank(property.Name);
+            JObject data = obj(("rankName", rankName), ("rankProgress", property.Value.Value<double>() / 100d));
+            if (ranks.TryGetValue(property.Name, out int rank))
             {
                 data[RankValueKey] = rank;
             }
@@ -603,9 +605,9 @@ internal sealed class InaraEventMapper
 
     private void mapPromotion(string timestamp, JObject entry, List<InaraEvent> events)
     {
-        foreach (var property in entry.Properties().Where(p => p.Name is not TimestampKey and not EventKey))
+        foreach (JProperty? property in entry.Properties().Where(p => p.Name is not TimestampKey and not EventKey))
         {
-            var value = property.Value.Value<int>();
+            int value = property.Value.Value<int>();
             ranks[property.Name] = value;
             events.Add(
                 new(
@@ -636,7 +638,7 @@ internal sealed class InaraEventMapper
 
     private static void mapMajorFactionReputation(string timestamp, JObject entry, List<InaraEvent> events)
     {
-        var reputation = entry
+        JObject[] reputation = entry
             .Properties()
             .Where(property =>
                 property.Name is not TimestampKey and not EventKey
@@ -659,7 +661,7 @@ internal sealed class InaraEventMapper
 
     private static void mapDocked(string timestamp, JObject entry, InaraContext context, List<InaraEvent> events)
     {
-        var data = obj(
+        JObject data = obj(
             (StarSystemNameKey, entry[StarSystemProperty] ?? context.SystemName),
             (StationNameKey, entry[StationNameRawKey] ?? context.StationName),
             (MarketIdKey, entry[MarketIdProperty])
@@ -676,7 +678,7 @@ internal sealed class InaraEventMapper
         List<InaraEvent> events
     )
     {
-        var data = obj(
+        JObject data = obj(
             (StarSystemNameKey, entry[StarSystemProperty]),
             ("starsystemCoords", entry["StarPos"]),
             ("jumpDistance", entry["JumpDist"]),
@@ -689,7 +691,7 @@ internal sealed class InaraEventMapper
 
     private static void mapLocation(string timestamp, JObject entry, List<InaraEvent> events)
     {
-        var data = obj((StarSystemNameKey, entry[StarSystemProperty]), ("starsystemCoords", entry["StarPos"]));
+        JObject data = obj((StarSystemNameKey, entry[StarSystemProperty]), ("starsystemCoords", entry["StarPos"]));
         if (entry.Value<bool?>("Docked") == true)
         {
             copy(data, entry, (StationNameKey, StationNameRawKey), (MarketIdKey, MarketIdProperty));
@@ -711,7 +713,7 @@ internal sealed class InaraEventMapper
 
     private static void mapSupercruiseExit(string timestamp, JObject entry, List<InaraEvent> events)
     {
-        var data = obj((StarSystemNameKey, entry[StarSystemProperty]));
+        JObject data = obj((StarSystemNameKey, entry[StarSystemProperty]));
         if (entry.Value<string>(BodyTypeKey) == PlanetBodyType)
         {
             copy(data, entry, (StarSystemBodyNameKey, BodyKey));
@@ -721,7 +723,7 @@ internal sealed class InaraEventMapper
 
     private static void mapSettlement(string timestamp, JObject entry, InaraContext context, List<InaraEvent> events)
     {
-        var data = obj(
+        JObject data = obj(
             (StarSystemNameKey, entry[StarSystemProperty] ?? context.SystemName),
             (StationNameKey, entry["Name"]),
             (StarSystemBodyNameKey, entry["BodyName"]),
@@ -745,7 +747,7 @@ internal sealed class InaraEventMapper
             return;
         }
 
-        var data = obj(
+        JObject data = obj(
             (StarSystemNameKey, entry[StarSystemProperty] ?? context.SystemName),
             (StarSystemBodyNameKey, entry[BodyKey] ?? context.BodyName)
         );
@@ -768,7 +770,7 @@ internal sealed class InaraEventMapper
             return;
         }
 
-        var reputation = factions
+        JObject[] reputation = factions
             .OfType<JObject>()
             .Where(f => f["Name"] != null && f["MyReputation"] != null)
             .Select(f =>
@@ -829,7 +831,7 @@ internal sealed class InaraEventMapper
 
     private static void mapStoredShips(string timestamp, JObject entry, List<InaraEvent> events)
     {
-        foreach (var ship in (entry["ShipsHere"] as JArray)?.OfType<JObject>() ?? [])
+        foreach (JObject ship in (entry["ShipsHere"] as JArray)?.OfType<JObject>() ?? [])
         {
             addRequired(
                 events,
@@ -847,7 +849,7 @@ internal sealed class InaraEventMapper
                 $"ship:{ship[ShipIdProperty]}"
             );
         }
-        foreach (var ship in (entry["ShipsRemote"] as JArray)?.OfType<JObject>() ?? [])
+        foreach (JObject ship in (entry["ShipsRemote"] as JArray)?.OfType<JObject>() ?? [])
         {
             addRequired(
                 events,
@@ -868,10 +870,10 @@ internal sealed class InaraEventMapper
 
     private static void mapLoadout(string timestamp, JObject entry, InaraContext context, List<InaraEvent> events)
     {
-        var shipType = entry["Ship"] ?? context.ShipType;
-        var shipId = entry[ShipIdProperty] ?? context.ShipId;
+        JToken shipType = entry["Ship"] ?? context.ShipType;
+        JToken shipId = entry[ShipIdProperty] ?? context.ShipId;
         var modules = new JArray();
-        foreach (var module in (entry["Modules"] as JArray)?.OfType<JObject>() ?? [])
+        foreach (JObject module in (entry["Modules"] as JArray)?.OfType<JObject>() ?? [])
         {
             modules.Add(mapModule(module));
         }
@@ -884,7 +886,7 @@ internal sealed class InaraEventMapper
             $"loadout:{shipId}"
         );
 
-        var ship = obj(
+        JObject ship = obj(
             (ShipTypeKey, shipType),
             (ShipGameIdKey, shipId),
             (ShipNameKey, entry["ShipName"] ?? context.ShipName),
@@ -901,7 +903,7 @@ internal sealed class InaraEventMapper
 
     private static JObject mapModule(JObject module)
     {
-        var data = obj(
+        JObject data = obj(
             ("slotName", module["Slot"]),
             (ItemNameKey, module["Item"]),
             ("itemHealth", module["Health"]),
@@ -914,7 +916,7 @@ internal sealed class InaraEventMapper
         );
         if (module["Engineering"] is JObject engineering)
         {
-            var mapped = obj(
+            JObject mapped = obj(
                 (BlueprintNameKey, engineering["BlueprintName"]),
                 ("blueprintLevel", engineering["Level"]),
                 ("blueprintQuality", engineering["Quality"]),
@@ -943,10 +945,10 @@ internal sealed class InaraEventMapper
     private static void mapStoredModules(string timestamp, JObject entry, List<InaraEvent> events)
     {
         var modules = new JArray();
-        var storedModules = (entry["Items"] as JArray)?.OfType<JObject>() ?? [];
-        foreach (var item in storedModules.OrderBy(i => i.Value<int?>("StorageSlot")))
+        IEnumerable<JObject> storedModules = (entry["Items"] as JArray)?.OfType<JObject>() ?? [];
+        foreach (JObject? item in storedModules.OrderBy(i => i.Value<int?>("StorageSlot")))
         {
-            var module = obj(
+            JObject module = obj(
                 (ItemNameKey, item["Name"]),
                 ("itemValue", item["BuyPrice"]),
                 (IsHotKey, item["Hot"]),
@@ -974,7 +976,7 @@ internal sealed class InaraEventMapper
         List<InaraEvent> events
     )
     {
-        var data = obj(
+        JObject data = obj(
             ("missionName", entry["Name"]),
             (MissionGameIdKey, entry[MissionIdKey]),
             ("influenceGain", entry["Influence"]),
@@ -1005,7 +1007,7 @@ internal sealed class InaraEventMapper
 
     private static void mapMissionCompleted(string timestamp, JObject entry, List<InaraEvent> events)
     {
-        var data = obj(
+        JObject data = obj(
             (MissionGameIdKey, entry[MissionIdKey]),
             ("donationCredits", entry["Donation"]),
             ("rewardCredits", entry["Reward"])
@@ -1013,7 +1015,7 @@ internal sealed class InaraEventMapper
         if (entry["PermitsAwarded"] is JArray permits)
         {
             data["rewardPermits"] = new JArray(permits.Select(permit => obj((StarSystemNameKey, permit))));
-            foreach (var permit in permits)
+            foreach (JToken permit in permits)
             {
                 events.Add(new("addCommanderPermit", timestamp, obj((StarSystemNameKey, permit))));
             }
@@ -1031,10 +1033,13 @@ internal sealed class InaraEventMapper
         if (entry["FactionEffects"] is JArray factionEffects)
         {
             var effects = new JArray();
-            foreach (var faction in factionEffects.OfType<JObject>())
+            foreach (JObject faction in factionEffects.OfType<JObject>())
             {
-                var effect = obj(("minorfactionName", faction[FactionKey]), ("reputationGain", faction["Reputation"]));
-                var influence = (faction["Influence"] as JArray)
+                JObject effect = obj(
+                    ("minorfactionName", faction[FactionKey]),
+                    ("reputationGain", faction["Reputation"])
+                );
+                string? influence = (faction["Influence"] as JArray)
                     ?.OfType<JObject>()
                     .Select(value => value.Value<string>("Influence"))
                     .Where(value => value != null)
@@ -1076,7 +1081,7 @@ internal sealed class InaraEventMapper
         List<InaraEvent> events
     )
     {
-        var data = obj((StarSystemNameKey, entry[StarSystemProperty] ?? context.SystemName));
+        JObject data = obj((StarSystemNameKey, entry[StarSystemProperty] ?? context.SystemName));
         string eventName;
         switch (name)
         {
@@ -1115,7 +1120,7 @@ internal sealed class InaraEventMapper
                 break;
         }
 
-        var hasOpponent =
+        bool hasOpponent =
             !string.IsNullOrWhiteSpace(data.Value<string>(OpponentNameKey))
             || data["wingOpponentNames"] is JArray { Count: > 0 };
         if (hasOpponent)
@@ -1151,7 +1156,7 @@ internal sealed class InaraEventMapper
 
     private static void mapShipLocker(string timestamp, JObject entry, List<InaraEvent> events)
     {
-        var types = new[] { "Items", "Components", "Data", "Consumables" };
+        string[] types = new[] { "Items", "Components", "Data", "Consumables" };
         if (types.Any(type => entry[type] is not JArray))
         {
             return;
@@ -1166,9 +1171,9 @@ internal sealed class InaraEventMapper
             )
         );
         var data = new JArray();
-        foreach (var type in types)
+        foreach (string? type in types)
         {
-            foreach (var item in ((JArray)entry[type]!).OfType<JObject>())
+            foreach (JObject item in ((JArray)entry[type]!).OfType<JObject>())
             {
                 data.Add(
                     obj(
@@ -1186,7 +1191,7 @@ internal sealed class InaraEventMapper
     private static void mapSuitLoadout(string eventName, string timestamp, JObject entry, List<InaraEvent> events)
     {
         var modules = new JArray();
-        foreach (var module in (entry["Modules"] as JArray)?.OfType<JObject>() ?? [])
+        foreach (JObject module in (entry["Modules"] as JArray)?.OfType<JObject>() ?? [])
         {
             modules.Add(
                 obj(
@@ -1219,7 +1224,7 @@ internal sealed class InaraEventMapper
 
     private static void mapSuitModule(string timestamp, JObject entry, List<InaraEvent> events)
     {
-        var module = obj(
+        JObject module = obj(
             ("slotName", entry["SlotName"]),
             (ItemNameKey, entry["ModuleName"]),
             ("itemClass", entry["Class"]),
@@ -1246,10 +1251,10 @@ internal sealed class InaraEventMapper
 
     private static void mapCommunityGoals(string timestamp, JObject entry, List<InaraEvent> events)
     {
-        foreach (var goal in (entry["CurrentGoals"] as JArray)?.OfType<JObject>() ?? [])
+        foreach (JObject goal in (entry["CurrentGoals"] as JArray)?.OfType<JObject>() ?? [])
         {
-            var id = goal["CGID"];
-            var data = obj(
+            JToken? id = goal["CGID"];
+            JObject data = obj(
                 ("communitygoalGameID", id),
                 ("communitygoalName", goal["Title"]),
                 (StarSystemNameKey, goal["SystemName"]),
@@ -1262,7 +1267,7 @@ internal sealed class InaraEventMapper
             );
             events.Add(new("setCommunityGoal", timestamp, data, $"community-goal:{id}"));
 
-            var progress = obj(
+            JObject progress = obj(
                 ("communitygoalGameID", id),
                 ("contribution", goal["PlayerContribution"]),
                 ("percentileBand", goal["PlayerPercentileBand"]),
@@ -1275,8 +1280,8 @@ internal sealed class InaraEventMapper
 
     private static void mapFriend(string timestamp, JObject entry, List<InaraEvent> events)
     {
-        var status = entry.Value<string>("Status");
-        var eventName = status is "Added" or "Online"
+        string? status = entry.Value<string>("Status");
+        string? eventName = status is "Added" or "Online"
             ? "addCommanderFriend"
             : (status is "Declined" or "Lost") switch
             {
@@ -1354,7 +1359,7 @@ internal sealed class InaraEventMapper
     private static JObject obj(params (string name, object? value)[] properties)
     {
         var result = new JObject();
-        foreach (var (name, value) in properties)
+        foreach ((string? name, object? value) in properties)
         {
             if (value == null)
             {
@@ -1378,7 +1383,7 @@ internal sealed class InaraEventMapper
 
     private static void copy(JObject target, JObject source, params (string target, string source)[] properties)
     {
-        foreach (var (targetName, sourceName) in properties)
+        foreach ((string? targetName, string? sourceName) in properties)
         {
             if (source[sourceName] is JToken value && value.Type is not JTokenType.Null and not JTokenType.Undefined)
             {
@@ -1423,8 +1428,8 @@ internal sealed class InaraEventMapper
             return false;
         }
 
-        var oldCount = inventory.GetValueOrDefault(name);
-        var newCount = Math.Max(0, oldCount + delta);
+        int oldCount = inventory.GetValueOrDefault(name);
+        int newCount = Math.Max(0, oldCount + delta);
         if (oldCount == newCount)
         {
             return false;
@@ -1446,8 +1451,8 @@ internal sealed class InaraEventMapper
 
     private static bool changeMany(Dictionary<string, int> inventory, JArray? items, int direction)
     {
-        var changed = false;
-        foreach (var item in items?.OfType<JObject>() ?? [])
+        bool changed = false;
+        foreach (JObject item in items?.OfType<JObject>() ?? [])
         {
             changed |= changeItem(inventory, item, direction);
         }

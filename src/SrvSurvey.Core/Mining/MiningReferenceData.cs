@@ -9,10 +9,10 @@ public static class MiningReferenceData
 
     private static Dictionary<string, string[]> LoadCommodities()
     {
-        using var stream = typeof(MiningReferenceData).Assembly.GetManifestResourceStream(
+        using Stream stream = typeof(MiningReferenceData).Assembly.GetManifestResourceStream(
             "SrvSurvey.Core.Resources.mining-commodities.json"
         )!;
-        return JsonSerializer.Deserialize<Dictionary<string, string[]>>(stream) ?? new();
+        return JsonSerializer.Deserialize<Dictionary<string, string[]>>(stream) ?? [];
     }
 
     private static readonly Lazy<IReadOnlyList<MiningRing>> Data = new(Load);
@@ -20,7 +20,7 @@ public static class MiningReferenceData
 
     private static MiningRing[] Load()
     {
-        using var resource = typeof(MiningReferenceData).Assembly.GetManifestResourceStream(
+        using Stream resource = typeof(MiningReferenceData).Assembly.GetManifestResourceStream(
             "SrvSurvey.Core.Resources.mining-rings.json.gz"
         )!;
         using var gzip = new GZipStream(resource, CompressionMode.Decompress);

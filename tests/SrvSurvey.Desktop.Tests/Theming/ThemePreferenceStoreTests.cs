@@ -13,7 +13,7 @@ public sealed class ThemePreferenceStoreTests : IDisposable
     [Fact]
     public void SaveAndLoadRoundTrip()
     {
-        var settingsPath = Path.Combine(temporaryDirectory, "ui.json");
+        string settingsPath = Path.Combine(temporaryDirectory, "ui.json");
         var store = new ThemePreferenceStore(settingsPath);
 
         store.SaveThemeKey("green-light");
@@ -25,7 +25,7 @@ public sealed class ThemePreferenceStoreTests : IDisposable
     public void CorruptSettingsAreIgnored()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var settingsPath = Path.Combine(temporaryDirectory, "ui.json");
+        string settingsPath = Path.Combine(temporaryDirectory, "ui.json");
         File.WriteAllText(settingsPath, "{not json");
 
         var store = new ThemePreferenceStore(settingsPath);
@@ -37,7 +37,7 @@ public sealed class ThemePreferenceStoreTests : IDisposable
     public void WrongSettingTypesAreIgnored()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var settingsPath = Path.Combine(temporaryDirectory, "ui.json");
+        string settingsPath = Path.Combine(temporaryDirectory, "ui.json");
         File.WriteAllText(settingsPath, """{"Version":"one","Theme":42}""");
 
         Assert.Null(new ThemePreferenceStore(settingsPath).LoadThemeKey());
@@ -47,7 +47,7 @@ public sealed class ThemePreferenceStoreTests : IDisposable
     public void SavingThemePreservesOtherUiSettings()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var settingsPath = Path.Combine(temporaryDirectory, "ui.json");
+        string settingsPath = Path.Combine(temporaryDirectory, "ui.json");
         File.WriteAllText(
             settingsPath,
             """

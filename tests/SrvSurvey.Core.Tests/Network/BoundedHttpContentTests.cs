@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using SrvSurvey.Core.Network;
 
 namespace SrvSurvey.Core.Tests.Network;
@@ -11,7 +12,7 @@ public sealed class BoundedHttpContentTests
     {
         using var content = new ByteArrayContent(new byte[17]);
 
-        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+        InvalidDataException exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
             BoundedHttpContent.ReadBytesAsync(content, 16, "Test response")
         );
 
@@ -33,10 +34,14 @@ public sealed class BoundedHttpContentTests
     public async Task JsonAndTextReadersPreserveValidContent()
     {
         using var jsonContent = new StringContent("{\"value\":42}", Encoding.UTF8, "application/json");
-        using var document = await BoundedHttpContent.ReadJsonDocumentAsync(jsonContent, 1_024, "JSON response");
+        using JsonDocument document = await BoundedHttpContent.ReadJsonDocumentAsync(
+            jsonContent,
+            1_024,
+            "JSON response"
+        );
         using var textContent = new StringContent("raven", Encoding.Unicode, "text/plain");
 
-        var text = await BoundedHttpContent.ReadStringAsync(textContent, 1_024, "Text response");
+        string text = await BoundedHttpContent.ReadStringAsync(textContent, 1_024, "Text response");
 
         Assert.Equal(42, document.RootElement.GetProperty("value").GetInt32());
         Assert.Equal("raven", text);
@@ -47,7 +52,7 @@ public sealed class BoundedHttpContentTests
     {
         using var content = new UnknownLengthContent(Encoding.UTF8.GetBytes("0123456789"));
 
-        var text = await BoundedHttpContent.ReadStringPrefixAsync(content, 5);
+        string text = await BoundedHttpContent.ReadStringPrefixAsync(content, 5);
 
         Assert.Equal("01234...", text);
     }

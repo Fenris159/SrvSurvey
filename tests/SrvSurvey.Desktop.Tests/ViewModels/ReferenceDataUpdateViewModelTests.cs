@@ -59,7 +59,7 @@ public sealed class ReferenceDataUpdateViewModelTests
             null
         );
         var viewModel = new ReferenceDataUpdateViewModel(new StubService(result), Path.GetTempPath(), "Ready");
-        var restarted = false;
+        bool restarted = false;
         viewModel.SetRestartHandler(() =>
         {
             restarted = true;
@@ -97,7 +97,7 @@ public sealed class ReferenceDataUpdateViewModelTests
 
     private static async Task WaitUntilAsync(Func<bool> predicate)
     {
-        var timeout = DateTime.UtcNow.AddSeconds(2);
+        DateTime timeout = DateTime.UtcNow.AddSeconds(2);
         while (!predicate() && DateTime.UtcNow < timeout)
         {
             await Task.Delay(10);

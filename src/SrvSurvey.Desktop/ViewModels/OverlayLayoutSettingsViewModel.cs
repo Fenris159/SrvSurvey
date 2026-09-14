@@ -67,9 +67,9 @@ public sealed class OverlayLayoutSettingsViewModel : INotifyPropertyChanged
 
     private void Reload()
     {
-        var layout = store.Load();
+        LegacyOverlayLayout layout = store.Load();
         hasLoadError = layout.Error is not null;
-        var inheritedOpacity = (layout.DefaultOpacity ?? 1d) * 100d;
+        double inheritedOpacity = (layout.DefaultOpacity ?? 1d) * 100d;
         Overlays = OverlayLayoutCatalog
             .Supported.Select(definition => new OverlayPlacementEditorViewModel(
                 definition,
@@ -86,7 +86,7 @@ public sealed class OverlayLayoutSettingsViewModel : INotifyPropertyChanged
 
     private void Save()
     {
-        var dirty = Overlays.Where(overlay => overlay.IsDirty).ToArray();
+        OverlayPlacementEditorViewModel[] dirty = Overlays.Where(overlay => overlay.IsDirty).ToArray();
         if (dirty.Length == 0 || hasLoadError)
         {
             return;
@@ -94,13 +94,13 @@ public sealed class OverlayLayoutSettingsViewModel : INotifyPropertyChanged
 
         try
         {
-            var latest = store.Load();
+            LegacyOverlayLayout latest = store.Load();
             if (latest.Error is not null)
             {
                 throw new InvalidDataException(latest.Error);
             }
 
-            var changed = dirty.ToDictionary(
+            Dictionary<string, LegacyOverlayPlacement> changed = dirty.ToDictionary(
                 overlay => overlay.Name,
                 overlay =>
                     overlay.HasPositionChanges
@@ -108,15 +108,15 @@ public sealed class OverlayLayoutSettingsViewModel : INotifyPropertyChanged
                         : overlay.ApplyOpacityTo(latest.Placements.GetValueOrDefault(overlay.Name, overlay.Placement)),
                 StringComparer.Ordinal
             );
-            var result = store.Save(changed);
-            var updated = store.Load();
+            LegacyOverlayLayoutSaveResult result = store.Save(changed);
+            LegacyOverlayLayout updated = store.Load();
             if (updated.Error is not null)
             {
                 throw new InvalidDataException(updated.Error);
             }
 
             activeLayout.ReplaceWith(updated);
-            foreach (var overlay in Overlays)
+            foreach (OverlayPlacementEditorViewModel overlay in Overlays)
             {
                 overlay.AcceptChanges();
             }
@@ -294,7 +294,7 @@ public sealed class OverlayPlacementEditorViewModel : INotifyPropertyChanged
 
     public void ResetToDefault()
     {
-        var placement = definition.DefaultPlacement;
+        LegacyOverlayPlacement placement = definition.DefaultPlacement;
         HorizontalAnchor = placement.Horizontal;
         HorizontalOffset = placement.HorizontalOffset;
         VerticalAnchor = placement.Vertical;

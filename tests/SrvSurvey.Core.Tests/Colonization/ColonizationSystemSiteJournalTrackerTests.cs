@@ -8,11 +8,11 @@ public sealed class ColonizationSystemSiteJournalTrackerTests
     [Fact]
     public void SignalsCreateMappedSitesAndSkipNonStationSignals()
     {
-        var nextId = 10L;
-        var tracker = Tracker(() => nextId++);
+        long nextId = 10L;
+        ColonizationSystemSiteJournalTracker tracker = Tracker(() => nextId++);
         var sites = new List<ColonizationSystemSite>();
 
-        var changed = tracker.ApplyJournalEvents(
+        int changed = tracker.ApplyJournalEvents(
             sites,
             [
                 Event(
@@ -31,7 +31,7 @@ public sealed class ColonizationSystemSiteJournalTrackerTests
         );
 
         Assert.Equal(1, changed);
-        var site = Assert.Single(sites);
+        ColonizationSystemSite site = Assert.Single(sites);
         Assert.Equal("y10", site.Id);
         Assert.Equal("Alpha Hub", site.Name);
         Assert.Equal(-1, site.BodyNumber);
@@ -42,10 +42,10 @@ public sealed class ColonizationSystemSiteJournalTrackerTests
     [Fact]
     public void OtherSystemEventsAreRejected()
     {
-        var tracker = Tracker();
+        ColonizationSystemSiteJournalTracker tracker = Tracker();
         var sites = new List<ColonizationSystemSite>();
 
-        var changed = tracker.ApplyJournalEvent(
+        bool changed = tracker.ApplyJournalEvent(
             sites,
             Event(
                 """{"event":"FSSSignalDiscovered","SystemAddress":99,"SignalName":"Wrong Port","SignalType":"Outpost"}"""
@@ -59,7 +59,7 @@ public sealed class ColonizationSystemSiteJournalTrackerTests
     [Fact]
     public void ScanProgressCombinesDiscoveryAndBodyScans()
     {
-        var tracker = Tracker();
+        ColonizationSystemSiteJournalTracker tracker = Tracker();
         var sites = new List<ColonizationSystemSite>();
 
         tracker.ApplyJournalEvents(
@@ -82,8 +82,8 @@ public sealed class ColonizationSystemSiteJournalTrackerTests
     [Fact]
     public void StatusRequiresExplicitCaptureBeforeCreatingSurfaceSite()
     {
-        var nextId = 20L;
-        var tracker = Tracker(() => nextId++);
+        long nextId = 20L;
+        ColonizationSystemSiteJournalTracker tracker = Tracker(() => nextId++);
         var sites = new List<ColonizationSystemSite>();
         var status = new EliteStatus
         {
@@ -98,7 +98,7 @@ public sealed class ColonizationSystemSiteJournalTrackerTests
         Assert.False(tracker.ApplyStatusDestination(sites, status, captureUnknownSurfaceSite: false));
         Assert.True(tracker.ApplyStatusDestination(sites, status, captureUnknownSurfaceSite: true));
 
-        var site = Assert.Single(sites);
+        ColonizationSystemSite site = Assert.Single(sites);
         Assert.Equal("y20", site.Id);
         Assert.Equal(2, site.BodyNumber);
         Assert.Equal("settlement?", site.BuildType);
@@ -107,7 +107,7 @@ public sealed class ColonizationSystemSiteJournalTrackerTests
     [Fact]
     public void StatusUpdatesKnownSignalWithoutCaptureMode()
     {
-        var tracker = Tracker();
+        ColonizationSystemSiteJournalTracker tracker = Tracker();
         var sites = new List<ColonizationSystemSite>();
         tracker.ApplyJournalEvent(
             sites,
@@ -116,7 +116,7 @@ public sealed class ColonizationSystemSiteJournalTrackerTests
             )
         );
 
-        var changed = tracker.ApplyStatusDestination(
+        bool changed = tracker.ApplyStatusDestination(
             sites,
             new EliteStatus
             {
@@ -137,7 +137,7 @@ public sealed class ColonizationSystemSiteJournalTrackerTests
     [Fact]
     public void ApproachAndDockedEnrichExistingSite()
     {
-        var tracker = Tracker();
+        ColonizationSystemSiteJournalTracker tracker = Tracker();
         var sites = new List<ColonizationSystemSite> { Site("one", "Odyssey Point", body: -1) };
 
         Assert.True(
@@ -157,7 +157,7 @@ public sealed class ColonizationSystemSiteJournalTrackerTests
             )
         );
 
-        var site = Assert.Single(sites);
+        ColonizationSystemSite site = Assert.Single(sites);
         Assert.Equal(2, site.BodyNumber);
         Assert.Equal(456, site.MarketId);
         Assert.Equal("aphrodite?", site.BuildType);
@@ -172,9 +172,9 @@ public sealed class ColonizationSystemSiteJournalTrackerTests
     [InlineData(1, 1, "$economy_Service;", "dysnomia")]
     public void DockedOutpostUsesLegacyPadAndEconomyMappings(int small, int medium, string economy, string expected)
     {
-        var tracker = Tracker();
+        ColonizationSystemSiteJournalTracker tracker = Tracker();
         var sites = new List<ColonizationSystemSite> { Site("one", "Orbital One", body: 1) };
-        var json = $$"""
+        string json = $$"""
             {"event":"Docked","SystemAddress":42,"StationName":"Orbital One","MarketID":12,"StationType":"Outpost","StationEconomy":"{{economy}}","LandingPads":{"Small":{{small}},"Medium":{{medium}},"Large":0},"StationEconomies":[{"Name":"{{economy}}","Proportion":100.0}]}
             """;
 
@@ -201,7 +201,7 @@ public sealed class ColonizationSystemSiteJournalTrackerTests
 
     private static JournalEventEnvelope Event(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var result, out var error), error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? result, out string? error), error);
         return result!;
     }
 }

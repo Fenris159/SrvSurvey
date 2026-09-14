@@ -16,8 +16,8 @@ public sealed class SurfaceMiningGeometryTests
     {
         const double radius = 1_000_000;
         var cockpit = new SurfaceCoordinate(latitude, longitude);
-        var center = SurfaceMiningGeometry.VehicleCenter(cockpit, heading, radius);
-        var rig = SurfaceMiningGeometry.DeployedRig(cockpit, heading, radius);
+        SurfaceCoordinate center = SurfaceMiningGeometry.VehicleCenter(cockpit, heading, radius);
+        SurfaceCoordinate rig = SurfaceMiningGeometry.DeployedRig(cockpit, heading, radius);
 
         Assert.Equal(4, SurfaceNavigation.GetDistance(cockpit, center, radius), 4);
         Assert.Equal(7, SurfaceNavigation.GetDistance(cockpit, rig, radius), 4);

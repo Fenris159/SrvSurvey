@@ -18,11 +18,11 @@ public sealed class LocalizationSettingsStore
 
     public string Load()
     {
-        var root = documentStore.Load();
+        JsonObject root = documentStore.Load();
         if (
             root["Localization"] is JsonObject settings
             && settings["Language"] is JsonValue language
-            && language.TryGetValue<string>(out var selected)
+            && language.TryGetValue<string>(out string? selected)
         )
         {
             return LocalizationCatalog.NormalizeLanguage(selected);
@@ -47,7 +47,7 @@ public sealed class LocalizationSettingsStore
 
     public void Save(string language)
     {
-        var normalized = LocalizationCatalog.NormalizeLanguage(language);
+        string normalized = LocalizationCatalog.NormalizeLanguage(language);
         documentStore.Update(root =>
         {
             var settings = root["Localization"] as JsonObject;

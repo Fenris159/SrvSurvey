@@ -24,22 +24,22 @@ public sealed partial class ReleaseWorkflowContractTests
     [InlineData("2.1.3.0-rc.44.5.1", false)]
     public void WorkflowAndPackageValidatorsAgreeOnCandidateRevisions(string version, bool expected)
     {
-        var root = FindRepositoryRoot();
-        var workflow = File.ReadAllText(Path.Combine(root, ".github", "workflows", "build-srvsurvey-xp.yml"));
-        var workflowPattern = WorkflowVersionPattern().Match(workflow);
+        string root = FindRepositoryRoot();
+        string workflow = File.ReadAllText(Path.Combine(root, ".github", "workflows", "build-srvsurvey-xp.yml"));
+        Match workflowPattern = WorkflowVersionPattern().Match(workflow);
         Assert.True(workflowPattern.Success);
         Assert.Equal(expected, System.Text.RegularExpressions.Regex.IsMatch(version, workflowPattern.Groups[1].Value));
-        foreach (var file in new[] { "New-CrossPlatformPackageManifest.ps1", "New-CrossPlatformReleaseIndex.ps1" })
+        foreach (string? file in new[] { "New-CrossPlatformPackageManifest.ps1", "New-CrossPlatformReleaseIndex.ps1" })
         {
-            var script = File.ReadAllText(Path.Combine(root, "scripts", file));
-            var pattern = PackageVersionPattern().Match(script);
+            string script = File.ReadAllText(Path.Combine(root, "scripts", file));
+            Match pattern = PackageVersionPattern().Match(script);
             Assert.True(pattern.Success);
             Assert.Equal(expected, System.Text.RegularExpressions.Regex.IsMatch(version, pattern.Groups[1].Value));
         }
 
         if (expected)
         {
-            var prereleasePattern = WorkflowPrereleasePattern().Match(workflow);
+            Match prereleasePattern = WorkflowPrereleasePattern().Match(workflow);
             Assert.True(prereleasePattern.Success);
             Assert.Equal(
                 version.Contains("-rc.", StringComparison.Ordinal),
@@ -51,7 +51,7 @@ public sealed partial class ReleaseWorkflowContractTests
     [Fact]
     public void DispatchedReleasesUseTheDesktopProjectVersion()
     {
-        var workflow = File.ReadAllText(
+        string workflow = File.ReadAllText(
             Path.Combine(FindRepositoryRoot(), ".github", "workflows", "build-srvsurvey-xp.yml")
         );
 
@@ -75,7 +75,7 @@ public sealed partial class ReleaseWorkflowContractTests
     [Fact]
     public void ReleasePackagesIncludeTheReplayController()
     {
-        var workflow = File.ReadAllText(
+        string workflow = File.ReadAllText(
             Path.Combine(FindRepositoryRoot(), ".github", "workflows", "build-srvsurvey-xp.yml")
         );
 
@@ -85,7 +85,10 @@ public sealed partial class ReleaseWorkflowContractTests
             StringComparison.Ordinal
         );
         Assert.Contains("SrvSurvey.ReplayController.exe", workflow, StringComparison.Ordinal);
-        var normalizedWorkflow = string.Join(' ', workflow.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+        string normalizedWorkflow = string.Join(
+            ' ',
+            workflow.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)
+        );
         Assert.Contains(
             "Get-ChildItem -LiteralPath $controllerOutput -File ` "
                 + "-Filter 'SrvSurvey.ReplayController*' | "
@@ -103,7 +106,7 @@ public sealed partial class ReleaseWorkflowContractTests
     [Fact]
     public void LinuxAppImageExposesReplayControllerDispatch()
     {
-        var appRun = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "packaging", "linux", "AppRun"));
+        string appRun = File.ReadAllText(Path.Combine(FindRepositoryRoot(), "packaging", "linux", "AppRun"));
 
         Assert.Contains("--replay-controller", appRun, StringComparison.Ordinal);
         Assert.Contains("SrvSurvey.ReplayController", appRun, StringComparison.Ordinal);

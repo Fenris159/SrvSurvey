@@ -7,7 +7,7 @@ public sealed class FrontierCommunityGoalOrderingTests
     [Fact]
     public void ActiveGoalsComeFirstAndCompletedGoalsAreNewestFirst()
     {
-        var goals = new[]
+        FrontierCommunityGoalSnapshot[] goals = new[]
         {
             Goal("Older completion", true, "2026-03-01T00:00:00Z"),
             Goal("Active later", false, "2026-08-08T00:00:00Z"),
@@ -15,7 +15,7 @@ public sealed class FrontierCommunityGoalOrderingTests
             Goal("Active sooner", false, "2026-08-01T00:00:00Z"),
         };
 
-        var ordered = FrontierCommunityGoalOrdering.Order(goals);
+        IReadOnlyList<FrontierCommunityGoalSnapshot> ordered = FrontierCommunityGoalOrdering.Order(goals);
 
         Assert.Equal(
             ["Active sooner", "Active later", "Newest completion", "Older completion"],

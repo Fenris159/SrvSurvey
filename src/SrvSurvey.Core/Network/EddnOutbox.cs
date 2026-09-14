@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using Newtonsoft.Json;
@@ -31,8 +32,8 @@ internal sealed class EddnOutbox : IDisposable
     private readonly bool automaticProcessing;
     private readonly int maximumPendingMessages;
     private readonly long maximumStoreBytes;
-    private readonly object sync = new();
-    private readonly object sharedConsentSync = new();
+    private readonly Lock sync = new();
+    private readonly Lock sharedConsentSync = new();
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Usage",
@@ -160,21 +161,21 @@ internal sealed class EddnOutbox : IDisposable
             }
 
             writeLogs(markerLogs);
-            var sharedDisabled = isSharedConsentDisabled();
+            bool sharedDisabled = isSharedConsentDisabled();
             applyEnabledState(value && !sharedDisabled, discardPendingWhenDisabled || sharedDisabled);
         }
     }
 
     private void applyEnabledState(bool value, bool discardPendingWhenDisabled)
     {
-        var changed = false;
+        bool changed = false;
         string? persistenceLog = null;
         string? sharingLog = null;
         CancellationTokenSource? cancellation = null;
         List<string> ownershipLogs = [];
-        var canSchedule = false;
-        var acquiredOwnership = false;
-        var shouldReleaseOwnership = false;
+        bool canSchedule = false;
+        bool acquiredOwnership = false;
+        bool shouldReleaseOwnership = false;
         lock (sync)
         {
             if (disposed)
@@ -184,7 +185,7 @@ internal sealed class EddnOutbox : IDisposable
 
             if (value || (discardPendingWhenDisabled && enabled))
             {
-                var hadOwnership = ownershipLease is not null;
+                bool hadOwnership = ownershipLease is not null;
                 tryAcquireOwnershipLocked(ownershipLogs);
                 acquiredOwnership = !hadOwnership && ownershipLease is not null;
             }
@@ -223,21 +224,21 @@ internal sealed class EddnOutbox : IDisposable
         bool discardPendingWhenDisabled
     )
     {
-        var cancellation = replaceActivityCancellationLocked();
+        CancellationTokenSource cancellation = replaceActivityCancellationLocked();
         if (!discardPendingWhenDisabled || ownershipLease is null || (pending.Count == 0 && !loadingTruncated))
         {
             return (cancellation, null, null);
         }
 
-        var count = pending.Count;
-        var includedUnloadedFiles = loadingTruncated;
+        int count = pending.Count;
+        bool includedUnloadedFiles = loadingTruncated;
         pending.Clear();
         persistedBytes.Clear();
         loadCycleIds.Clear();
         storeBytes = 0;
         loadingTruncated = false;
-        var persistenceLog = deleteStore();
-        var sharingLog = includedUnloadedFiles
+        string? persistenceLog = deleteStore();
+        string sharingLog = includedUnloadedFiles
             ? "EDDN discarded all pending uploads because sharing was disabled."
             : $"EDDN discarded {count:N0} pending upload(s) because sharing was disabled.";
         return (cancellation, persistenceLog, sharingLog);
@@ -247,7 +248,7 @@ internal sealed class EddnOutbox : IDisposable
     {
         CancellationTokenSource? cancellation = null;
         List<string> ownershipLogs = [];
-        var shouldSchedule = false;
+        bool shouldSchedule = false;
         lock (sync)
         {
             if (disposed || suspended == value)
@@ -289,7 +290,7 @@ internal sealed class EddnOutbox : IDisposable
         }
 
         string? persistenceLog = null;
-        var queued = false;
+        bool queued = false;
         lock (sync)
         {
             if (!enabled || (suspended && !allowWhileSuspended) || disposed || ownershipLease is null)
@@ -358,12 +359,22 @@ internal sealed class EddnOutbox : IDisposable
             return false;
         }
 
-        if (!TryDequeueReadyMessage(cancellationToken, out var next, out var combinedCancellation))
+        if (
+            !TryDequeueReadyMessage(
+                cancellationToken,
+                out EddnQueuedMessage? next,
+                out CancellationTokenSource? combinedCancellation
+            )
+        )
         {
             return false;
         }
 
-        var (result, failure) = await UploadOnceAsync(next!, combinedCancellation!, cancellationToken)
+        (EddnUploadResult? result, Exception? failure) = await UploadOnceAsync(
+                next!,
+                combinedCancellation!,
+                cancellationToken
+            )
             .ConfigureAwait(false);
         return ApplyUploadOutcome(next!, result, failure, failure != null || result?.isRetryable == true);
     }
@@ -383,7 +394,7 @@ internal sealed class EddnOutbox : IDisposable
                 return false;
             }
 
-            var now = utcNow();
+            DateTimeOffset now = utcNow();
             next = nextDueLocked(now);
             if (next == null)
             {
@@ -419,7 +430,9 @@ internal sealed class EddnOutbox : IDisposable
         {
             using (combinedCancellation)
             {
-                var result = await transport.upload(next, combinedCancellation.Token).ConfigureAwait(false);
+                EddnUploadResult result = await transport
+                    .upload(next, combinedCancellation.Token)
+                    .ConfigureAwait(false);
                 return (result, null);
             }
         }
@@ -438,7 +451,7 @@ internal sealed class EddnOutbox : IDisposable
         string? persistenceLog = null;
         string? resultLog = null;
         List<string> reloadLogs = [];
-        var continueProcessing = true;
+        bool continueProcessing = true;
         lock (sync)
         {
             if (!enabled || suspended || disposed)
@@ -476,11 +489,11 @@ internal sealed class EddnOutbox : IDisposable
     )
     {
         next.attempts++;
-        var retryAt = utcNow() + getRetryDelay(next.attempts);
+        DateTimeOffset retryAt = utcNow() + getRetryDelay(next.attempts);
         next.nextAttempt = retryAt;
-        persistMessage(next, out var persistenceLog);
-        var detail = failure?.Message ?? result?.responseDetail ?? result?.reasonPhrase ?? "request failed";
-        var resultLog = $"EDDN upload for {eventName(next)} will retry after {retryAt:u}: {singleLine(detail)}";
+        persistMessage(next, out string? persistenceLog);
+        string detail = failure?.Message ?? result?.responseDetail ?? result?.reasonPhrase ?? "request failed";
+        string resultLog = $"EDDN upload for {eventName(next)} will retry after {retryAt:u}: {singleLine(detail)}";
         scheduleNextLocked(utcNow());
         return (persistenceLog, resultLog);
     }
@@ -492,7 +505,7 @@ internal sealed class EddnOutbox : IDisposable
     )
     {
         pending.RemoveAll(item => item.id == next.id);
-        var persistenceLog = deleteMessage(next);
+        string? persistenceLog = deleteMessage(next);
         if (pending.Count == 0)
         {
             if (loadingTruncated)
@@ -507,8 +520,8 @@ internal sealed class EddnOutbox : IDisposable
 
         if (result?.isSuccess == true)
         {
-            var completedCount = successfulUploads.Record(1);
-            var messageLabel = completedCount == 1 ? "journal message" : "journal messages";
+            long? completedCount = successfulUploads.Record(1);
+            string messageLabel = completedCount == 1 ? "journal message" : "journal messages";
             return (
                 persistenceLog,
                 completedCount is { } count
@@ -517,7 +530,7 @@ internal sealed class EddnOutbox : IDisposable
             );
         }
 
-        var detail = result?.skipReason ?? result?.responseDetail ?? result?.reasonPhrase ?? "request was rejected";
+        string detail = result?.skipReason ?? result?.responseDetail ?? result?.reasonPhrase ?? "request was rejected";
         return (persistenceLog, $"EDDN dropped {eventName(next)} without retry: {singleLine(detail)}");
     }
 
@@ -678,9 +691,9 @@ internal sealed class EddnOutbox : IDisposable
         persistedBytes.Clear();
         storeBytes = 0;
         loadingTruncated = false;
-        var loaded = loadMessageFiles(messages, loadCycleIds);
+        List<EddnQueuedMessage> loaded = loadMessageFiles(messages, loadCycleIds);
         migrateLegacyStore(loaded, messages);
-        foreach (var item in loaded)
+        foreach (EddnQueuedMessage item in loaded)
         {
             loadCycleIds.Add(item.id);
         }
@@ -713,7 +726,7 @@ internal sealed class EddnOutbox : IDisposable
         }
 
         List<EddnQueuedMessage> loaded = [];
-        foreach (var path in Directory.EnumerateFiles(storeFolder, "*.json"))
+        foreach (string path in Directory.EnumerateFiles(storeFolder, "*.json"))
         {
             if (loaded.Count >= maximumPendingMessages)
             {
@@ -726,7 +739,7 @@ internal sealed class EddnOutbox : IDisposable
 
             try
             {
-                var length = new FileInfo(path).Length;
+                long length = new FileInfo(path).Length;
                 if (length > maximumStoreBytes - storeBytes)
                 {
                     loadingTruncated = true;
@@ -741,7 +754,7 @@ internal sealed class EddnOutbox : IDisposable
                     throw new InvalidDataException("the queue contained an empty entry");
                 }
 
-                var item = JsonConvert.DeserializeObject<EddnQueuedMessage>(File.ReadAllText(path));
+                EddnQueuedMessage? item = JsonConvert.DeserializeObject<EddnQueuedMessage>(File.ReadAllText(path));
                 normalize(item);
                 if (!isValid(item) || !ids.Add(item!.id))
                 {
@@ -777,7 +790,8 @@ internal sealed class EddnOutbox : IDisposable
                 throw new InvalidDataException($"the queue exceeded {maximumStoreBytes / 1024 / 1024:N0} MiB");
             }
 
-            var legacy = JsonConvert.DeserializeObject<List<EddnQueuedMessage>>(File.ReadAllText(filepath)) ?? [];
+            List<EddnQueuedMessage> legacy =
+                JsonConvert.DeserializeObject<List<EddnQueuedMessage>>(File.ReadAllText(filepath)) ?? [];
             if (legacy.Count + loaded.Count > maximumPendingMessages)
             {
                 throw new InvalidDataException("the queue contained excessive entries");
@@ -803,8 +817,8 @@ internal sealed class EddnOutbox : IDisposable
     )
     {
         var ids = loaded.Select(item => item.id).ToHashSet();
-        var migrated = true;
-        foreach (var item in legacy)
+        bool migrated = true;
+        foreach (EddnQueuedMessage item in legacy)
         {
             normalize(item);
             if (!isValid(item))
@@ -817,7 +831,7 @@ internal sealed class EddnOutbox : IDisposable
                 continue;
             }
 
-            if (persistMessage(item, out var error))
+            if (persistMessage(item, out string? error))
             {
                 loaded.Add(item);
             }
@@ -840,17 +854,17 @@ internal sealed class EddnOutbox : IDisposable
         try
         {
             Directory.CreateDirectory(storeFolder);
-            var json = JsonConvert.SerializeObject(message, Formatting.None);
-            var bytes = Encoding.UTF8.GetByteCount(json);
-            var previousBytes = persistedBytes.GetValueOrDefault(message.id);
+            string json = JsonConvert.SerializeObject(message, Formatting.None);
+            int bytes = Encoding.UTF8.GetByteCount(json);
+            long previousBytes = persistedBytes.GetValueOrDefault(message.id);
             if (storeBytes - previousBytes + bytes > maximumStoreBytes)
             {
                 errorLog = $"EDDN did not grow its local queue beyond {maximumStoreBytes / 1024 / 1024:N0} MiB.";
                 return false;
             }
 
-            var path = messagePath(message.id);
-            var temporary = path + ".tmp";
+            string path = messagePath(message.id);
+            string temporary = path + ".tmp";
             File.WriteAllText(temporary, json);
             File.Move(temporary, path, true);
             persistedBytes[message.id] = bytes;
@@ -868,13 +882,13 @@ internal sealed class EddnOutbox : IDisposable
     {
         try
         {
-            var path = messagePath(message.id);
+            string path = messagePath(message.id);
             if (File.Exists(path))
             {
                 File.Delete(path);
             }
 
-            var temporary = path + ".tmp";
+            string temporary = path + ".tmp";
             if (File.Exists(temporary))
             {
                 File.Delete(temporary);
@@ -899,7 +913,7 @@ internal sealed class EddnOutbox : IDisposable
                 File.Delete(filepath);
             }
 
-            var temporary = filepath + ".tmp";
+            string temporary = filepath + ".tmp";
             if (File.Exists(temporary))
             {
                 File.Delete(temporary);
@@ -934,7 +948,12 @@ internal sealed class EddnOutbox : IDisposable
 
     private static void quarantine(string path, List<string> messages)
     {
-        var backup = path + ".bad-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss") + "-" + Guid.NewGuid().ToString("N");
+        string backup =
+            path
+            + ".bad-"
+            + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture)
+            + "-"
+            + Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
         try
         {
             File.Move(path, backup);
@@ -965,7 +984,7 @@ internal sealed class EddnOutbox : IDisposable
 
     private void writeLogs(IEnumerable<string> messages)
     {
-        foreach (var message in messages)
+        foreach (string message in messages)
         {
             writeLog(message);
         }
@@ -988,7 +1007,7 @@ internal sealed class EddnOutbox : IDisposable
 
         try
         {
-            var folder = Path.GetDirectoryName(ownershipPath);
+            string? folder = Path.GetDirectoryName(ownershipPath);
             if (!string.IsNullOrEmpty(folder))
             {
                 Directory.CreateDirectory(folder);
@@ -1018,7 +1037,7 @@ internal sealed class EddnOutbox : IDisposable
 
     private CancellationTokenSource replaceActivityCancellationLocked()
     {
-        var previous = activityCancellation;
+        CancellationTokenSource previous = activityCancellation;
         activityCancellation = new CancellationTokenSource();
         return previous;
     }
@@ -1052,13 +1071,13 @@ internal sealed class EddnOutbox : IDisposable
 
     private static string getOwnershipPath(string filepath)
     {
-        var normalizedPath = Path.GetFullPath(filepath);
+        string normalizedPath = Path.GetFullPath(filepath);
         if (OperatingSystem.IsWindows())
         {
             normalizedPath = normalizedPath.ToUpperInvariant();
         }
 
-        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(normalizedPath)));
+        string hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(normalizedPath)));
         return Path.Combine(Path.GetTempPath(), "SrvSurvey", "eddn-outbox-locks", hash + ".lock");
     }
 
@@ -1066,7 +1085,7 @@ internal sealed class EddnOutbox : IDisposable
     {
         try
         {
-            var folder = Path.GetDirectoryName(sharedDisablePath);
+            string? folder = Path.GetDirectoryName(sharedDisablePath);
             if (string.IsNullOrWhiteSpace(folder))
             {
                 return null;
@@ -1107,7 +1126,7 @@ internal sealed class EddnOutbox : IDisposable
                 shouldEnable = requestedEnabled == true;
             }
 
-            var sharedDisabled = isSharedConsentDisabled();
+            bool sharedDisabled = isSharedConsentDisabled();
             applyEnabledState(shouldEnable && !sharedDisabled, discardPendingWhenDisabled: sharedDisabled);
         }
     }
@@ -1121,7 +1140,7 @@ internal sealed class EddnOutbox : IDisposable
     {
         try
         {
-            var folder = Path.GetDirectoryName(sharedDisablePath);
+            string? folder = Path.GetDirectoryName(sharedDisablePath);
             if (!string.IsNullOrWhiteSpace(folder))
             {
                 Directory.CreateDirectory(folder);
@@ -1145,7 +1164,7 @@ internal sealed class EddnOutbox : IDisposable
 
         try
         {
-            var folder = Path.GetDirectoryName(sharedDisableLeasePath);
+            string? folder = Path.GetDirectoryName(sharedDisableLeasePath);
             if (!string.IsNullOrWhiteSpace(folder))
             {
                 Directory.CreateDirectory(folder);
@@ -1181,7 +1200,7 @@ internal sealed class EddnOutbox : IDisposable
         FileStream activeOptOutProbe;
         try
         {
-            var folder = Path.GetDirectoryName(sharedDisableLeasePath);
+            string? folder = Path.GetDirectoryName(sharedDisableLeasePath);
             if (!string.IsNullOrWhiteSpace(folder))
             {
                 Directory.CreateDirectory(folder);
@@ -1244,7 +1263,7 @@ internal sealed class EddnOutbox : IDisposable
 
     private static TimeSpan getRetryDelay(int attempts)
     {
-        var multiplier = Math.Pow(2, Math.Clamp(attempts - 1, 0, 10));
+        double multiplier = Math.Pow(2, Math.Clamp(attempts - 1, 0, 10));
         var delay = TimeSpan.FromTicks((long)(minimumRetryDelay.Ticks * multiplier));
         return delay > maximumRetryDelay ? maximumRetryDelay : delay;
     }
@@ -1263,7 +1282,7 @@ internal sealed class EddnOutbox : IDisposable
             return "request failed";
         }
 
-        var text = value.Replace('\r', ' ').Replace('\n', ' ').Trim();
+        string text = value.Replace('\r', ' ').Replace('\n', ' ').Trim();
         return text.Length <= EddnTransport.MaximumResponseDetailBytes
             ? text
             : text[..EddnTransport.MaximumResponseDetailBytes];

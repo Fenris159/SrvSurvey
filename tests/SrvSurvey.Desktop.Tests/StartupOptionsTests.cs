@@ -30,7 +30,7 @@ public sealed class StartupOptionsTests
     [InlineData("--diagnostic-replay=C:\\replays\\session.json", null)]
     public void ReadsDiagnosticReplayManifest(string option, string? separateValue)
     {
-        var arguments = separateValue is null ? new[] { option } : new[] { option, separateValue };
+        string[] arguments = separateValue is null ? new[] { option } : new[] { option, separateValue };
 
         Assert.Equal("C:\\replays\\session.json", StartupOptions.GetDiagnosticReplayManifest(arguments));
     }
@@ -38,7 +38,7 @@ public sealed class StartupOptionsTests
     [Fact]
     public void DiagnosticReplayIsDistinctFromJournalDirectoryOverride()
     {
-        var arguments = new[] { "--journal-directory", "C:\\journals" };
+        string[] arguments = new[] { "--journal-directory", "C:\\journals" };
 
         Assert.Null(StartupOptions.GetDiagnosticReplayManifest(arguments));
     }
@@ -49,7 +49,7 @@ public sealed class StartupOptionsTests
     [InlineData("--journal-directory", "normal startup")]
     public void StartupFailureMessageIdentifiesTheRequestedMode(string argument, string expectedMode)
     {
-        var message = Program.GetStartupFailureMessage([argument], new InvalidDataException("test failure"));
+        string message = Program.GetStartupFailureMessage([argument], new InvalidDataException("test failure"));
 
         Assert.Equal($"SrvSurvey {expectedMode} could not start: test failure", message);
     }

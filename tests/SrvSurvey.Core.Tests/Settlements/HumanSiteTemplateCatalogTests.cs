@@ -11,16 +11,16 @@ public sealed class HumanSiteTemplateCatalogTests
         var catalog = HumanSiteTemplateCatalog.LoadEmbedded();
 
         Assert.Equal(28, catalog.Count);
-        var totalLandingPads = 0;
-        var totalSecureDoors = 0;
-        var totalNamedPoints = 0;
-        var totalDataTerminals = 0;
-        var totalConflictZonePoints = 0;
-        var totalBuildings = 0;
-        var totalBuildingPaths = 0;
-        var totalPathPoints = 0;
+        int totalLandingPads = 0;
+        int totalSecureDoors = 0;
+        int totalNamedPoints = 0;
+        int totalDataTerminals = 0;
+        int totalConflictZonePoints = 0;
+        int totalBuildings = 0;
+        int totalBuildingPaths = 0;
+        int totalPathPoints = 0;
 
-        foreach (var template in catalog.Templates)
+        foreach (HumanSiteTemplate template in catalog.Templates)
         {
             totalLandingPads += template.LandingPads.Count;
             totalSecureDoors += template.SecureDoors.Count;
@@ -29,11 +29,11 @@ public sealed class HumanSiteTemplateCatalogTests
             totalConflictZonePoints += template.ConflictZonePoints.Count;
             totalBuildings += template.Buildings.Count;
 
-            foreach (var building in template.Buildings)
+            foreach (HumanSiteBuilding building in template.Buildings)
             {
                 totalBuildingPaths += building.Paths.Count;
 
-                foreach (var path in building.Paths)
+                foreach (HumanSiteBuildingPath path in building.Paths)
                 {
                     totalPathPoints += path.Points.Count;
                 }
@@ -55,11 +55,11 @@ public sealed class HumanSiteTemplateCatalogTests
     {
         var catalog = HumanSiteTemplateCatalog.LoadEmbedded();
 
-        var agriculture = catalog.ForEconomy(HumanSiteEconomy.Agriculture);
-        var picumnus = catalog.Find(HumanSiteEconomy.Agriculture, 1);
+        IReadOnlyList<HumanSiteTemplate> agriculture = catalog.ForEconomy(HumanSiteEconomy.Agriculture);
+        HumanSiteTemplate? picumnus = catalog.Find(HumanSiteEconomy.Agriculture, 1);
 
         var subtypes = new List<int>(5);
-        foreach (var template in agriculture)
+        foreach (HumanSiteTemplate template in agriculture)
         {
             subtypes.Add(template.SubType);
         }
@@ -69,8 +69,8 @@ public sealed class HumanSiteTemplateCatalogTests
         Assert.Equal("Picumnus", picumnus.Name);
         Assert.Equal(HumanSiteLandingPadSize.Small, picumnus.LandingPads[0].Size);
         Assert.Equal(new HumanSiteMapPoint(149.1648, -122.47405), picumnus.LandingPads[0].Offset);
-        var hasAlarm = false;
-        foreach (var point in picumnus.NamedPoints)
+        bool hasAlarm = false;
+        foreach (HumanSiteNamedPointOfInterest point in picumnus.NamedPoints)
         {
             if (point.Name == "Alarm" && point.SecurityLevel == 1)
             {
@@ -86,21 +86,21 @@ public sealed class HumanSiteTemplateCatalogTests
     {
         var catalog = HumanSiteTemplateCatalog.LoadEmbedded();
         var allPoints = new List<HumanSiteMapPoint>();
-        foreach (var template in catalog.Templates)
+        foreach (HumanSiteTemplate template in catalog.Templates)
         {
-            foreach (var point in template.NamedPoints)
+            foreach (HumanSiteNamedPointOfInterest point in template.NamedPoints)
             {
                 allPoints.Add(point.Offset);
             }
         }
 
-        foreach (var point in allPoints)
+        foreach (HumanSiteMapPoint point in allPoints)
         {
             Assert.True(point.IsFinite);
         }
 
-        var hasImprobableOffset = false;
-        foreach (var point in allPoints)
+        bool hasImprobableOffset = false;
+        foreach (HumanSiteMapPoint point in allPoints)
         {
             if (!point.IsPlausibleMapOffset())
             {
@@ -114,12 +114,12 @@ public sealed class HumanSiteTemplateCatalogTests
     [Fact]
     public void RejectsUnknownEconomyAndMismatchedBuildingPaths()
     {
-        using var unknownEconomy = Json(
+        using MemoryStream unknownEconomy = Json(
             """
             [{"economy":"Mystery","subType":1,"name":"X","landingPads":[{"size":"Small","offset":{"X":0,"Y":0}}],"buildings":[{"name":"HAB","paths":[{"PathPoints":[{"X":0,"Y":0}],"PathTypes":"AA==","FillMode":0}]}]}]
             """
         );
-        using var mismatchedPath = Json(
+        using MemoryStream mismatchedPath = Json(
             """
             [{"economy":"Agriculture","subType":1,"name":"X","landingPads":[{"size":"Small","offset":{"X":0,"Y":0}}],"buildings":[{"name":"HAB","paths":[{"PathPoints":[{"X":0,"Y":0},{"X":1,"Y":1}],"PathTypes":"AA==","FillMode":0}]}]}]
             """

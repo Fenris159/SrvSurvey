@@ -21,7 +21,7 @@ public sealed class OverlayThemePresetCatalogTests
             OverlayThemePresetCatalog.Presets.Select(preset => preset.Name)
         );
 
-        var defaults = LegacyOverlayThemeStore.CreateDefault().Colors;
+        IReadOnlyDictionary<string, Color> defaults = LegacyOverlayThemeStore.CreateDefault().Colors;
         Assert.True(defaults.All(entry => OverlayThemePresetCatalog.Default.Colors[entry.Key] == entry.Value));
         Assert.Equal(Color.Parse("#CC0003"), defaults["header"]);
         Assert.Equal(Color.Parse("#99AFBF"), defaults["grey"]);
@@ -77,8 +77,8 @@ public sealed class OverlayThemePresetCatalogTests
         string values
     )
     {
-        Assert.True(OverlayThemePresetCatalog.TryGet(name, out var preset));
-        var required = LegacyOverlayThemeStore.CreateDefault().Colors;
+        Assert.True(OverlayThemePresetCatalog.TryGet(name, out OverlayThemePreset? preset));
+        IReadOnlyDictionary<string, Color> required = LegacyOverlayThemeStore.CreateDefault().Colors;
 
         Assert.Equal(required.Count, preset.Colors.Count);
         Assert.All(required.Keys, key => Assert.True(preset.Colors.ContainsKey(key)));

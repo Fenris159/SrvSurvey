@@ -71,7 +71,7 @@ public sealed class GroundTargetViewModelTests : IDisposable
 
         Assert.Equal("12.5", viewModel.TargetLatitude);
         Assert.Equal("-45.25", viewModel.TargetLongitude);
-        var saved = store.Load();
+        GroundTargetSettingsLoadResult saved = store.Load();
         Assert.Equal(new SurfaceCoordinate(12.5, -45.25), saved.Snapshot!.Target);
 
         await viewModel.ClearTargetAsync();
@@ -185,8 +185,8 @@ public sealed class GroundTargetViewModelTests : IDisposable
         Assert.True(
             JournalEventEnvelope.TryParse(
                 $$"""{"event":"SendText","Message":"{{message}}"}""",
-                out var journalEvent,
-                out var error
+                out JournalEventEnvelope? journalEvent,
+                out string? error
             ),
             error
         );

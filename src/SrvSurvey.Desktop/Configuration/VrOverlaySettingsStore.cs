@@ -40,7 +40,7 @@ public sealed class VrOverlaySettingsStore
 
     private static bool GetBoolean(JsonObject? settings, string propertyName, bool fallback)
     {
-        return settings?[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result)
+        return settings?[propertyName] is JsonValue value && value.TryGetValue<bool>(out bool result)
             ? result
             : fallback;
     }
@@ -49,7 +49,7 @@ public sealed class VrOverlaySettingsStore
     {
         return
             settings?[propertyName] is JsonValue value
-            && value.TryGetValue<string>(out var result)
+            && value.TryGetValue<string>(out string? result)
             && !string.IsNullOrWhiteSpace(result)
             ? result.Trim()
             : fallback;

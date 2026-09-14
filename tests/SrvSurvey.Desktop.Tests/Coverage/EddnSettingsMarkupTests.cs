@@ -7,8 +7,8 @@ public sealed class EddnSettingsMarkupTests
     [Fact]
     public void ConfigureButtonIsImmediatelyBeforeInaraAndSchemaModeIsNotAChoice()
     {
-        var document = LoadMarkup("Views", "SettingsView.axaml");
-        var values = document
+        XDocument document = LoadMarkup("Views", "SettingsView.axaml");
+        string[] values = document
             .Descendants()
             .SelectMany(element => element.Attributes())
             .Select(attribute => attribute.Value)
@@ -17,7 +17,7 @@ public sealed class EddnSettingsMarkupTests
         Assert.Contains("Configure EDDN Sharing", values);
         Assert.DoesNotContain(values, value => value.Contains("EddnUseTestSchemas", StringComparison.Ordinal));
 
-        var cardTitles = document
+        string[] cardTitles = document
             .Descendants()
             .Where(element => element.Name.LocalName == "TextBlock")
             .Select(element => element.Attribute("Text")?.Value)
@@ -30,12 +30,12 @@ public sealed class EddnSettingsMarkupTests
     [Fact]
     public void DialogExplainsIdentityStorageLiveSchemasAndDuplicateUploaders()
     {
-        var values = LoadMarkup("EddnIntegrationDialog.axaml")
+        string[] values = LoadMarkup("EddnIntegrationDialog.axaml")
             .Descendants()
             .SelectMany(element => element.Attributes())
             .Select(attribute => attribute.Value)
             .ToArray();
-        var text = string.Join('\n', values);
+        string text = string.Join('\n', values);
 
         Assert.Contains("Commander name", text, StringComparison.Ordinal);
         Assert.Contains("no account, personal API key", text, StringComparison.Ordinal);

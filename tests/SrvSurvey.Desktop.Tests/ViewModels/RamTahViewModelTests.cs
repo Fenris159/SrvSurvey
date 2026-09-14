@@ -15,7 +15,7 @@ public sealed class RamTahViewModelTests : IDisposable
     [Fact]
     public void ExposesEveryLegacyChecklistGroupAndLog()
     {
-        var viewModel = CreateViewModel();
+        RamTahViewModel viewModel = CreateViewModel();
 
         Assert.Equal(
             ["Biology", "Culture", "History", "Language", "Technology"],
@@ -45,7 +45,7 @@ public sealed class RamTahViewModelTests : IDisposable
 
         Assert.True(viewModel.IsLogCompleted(RamTahMission.AncientRuins, "B2"));
         Assert.Contains("2 of 101", viewModel.AncientRuinsProgressText);
-        var loaded = await store.LoadAsync("F123", true);
+        CommanderProfileLoadResult loaded = await store.LoadAsync("F123", true);
         Assert.Equal(["B1", "B2"], loaded.Data?.RamTah.AncientRuinsLogs);
     }
 
@@ -65,7 +65,7 @@ public sealed class RamTahViewModelTests : IDisposable
         ]);
 
         Assert.Equal("Active", viewModel.GuardianLogsMissionStatus);
-        var loaded = await store.LoadAsync("F123", true);
+        CommanderProfileLoadResult loaded = await store.LoadAsync("F123", true);
         Assert.Equal(RamTahMissionStatus.Active, loaded.Data?.RamTah.GuardianLogsMissionStatus);
     }
 
@@ -85,7 +85,7 @@ public sealed class RamTahViewModelTests : IDisposable
         Assert.False(await viewModel.SetLogCompletedAsync(RamTahMission.AncientRuins, "H1", true));
         Assert.True(viewModel.IsLogCompleted(RamTahMission.AncientRuins, "H1"));
 
-        var loaded = await store.LoadAsync("F123", true);
+        CommanderProfileLoadResult loaded = await store.LoadAsync("F123", true);
         Assert.Contains("H1", loaded.Data!.RamTah.AncientRuinsLogs);
     }
 
@@ -111,7 +111,7 @@ public sealed class RamTahViewModelTests : IDisposable
         Assert.False(viewModel.IsAncientRuinsResetPending);
         Assert.False(viewModel.IsLogCompleted(RamTahMission.AncientRuins, "B1"));
         Assert.True(viewModel.IsLogCompleted(RamTahMission.GuardianLogs, "#1"));
-        var loaded = await store.LoadAsync("F123", true);
+        CommanderProfileLoadResult loaded = await store.LoadAsync("F123", true);
         Assert.Empty(loaded.Data!.RamTah.AncientRuinsLogs);
         Assert.Equal(["#1"], loaded.Data.RamTah.GuardianLogs);
     }
@@ -131,7 +131,10 @@ public sealed class RamTahViewModelTests : IDisposable
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
+        Assert.True(
+            JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error),
+            error
+        );
         return journalEvent!;
     }
 }

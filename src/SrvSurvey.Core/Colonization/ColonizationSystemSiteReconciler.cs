@@ -20,14 +20,14 @@ public static class ColonizationSystemSiteReconciler
         var updates = new List<ColonizationSystemSite>();
         var deletes = new List<string>();
         var conflicts = new List<ColonizationSystemSiteConflict>();
-        var unchanged = 0;
+        int unchanged = 0;
 
-        foreach (var local in edited)
+        foreach (ColonizationSystemSite local in edited)
         {
             ApplyEditedSite(local, baseline, latest, updates, conflicts, ref unchanged);
         }
 
-        foreach (var original in baseline)
+        foreach (ColonizationSystemSite original in baseline)
         {
             ApplyDeletedBaselineSite(original, latest, edited, deletes, conflicts, ref unchanged);
         }
@@ -46,8 +46,8 @@ public static class ColonizationSystemSiteReconciler
     )
     {
         var conflicts = new List<string>();
-        var changed = false;
-        var merged = MergeKnownSiteFields(original, remote, local, conflicts, ref changed);
+        bool changed = false;
+        ColonizationSystemSite merged = MergeKnownSiteFields(original, remote, local, conflicts, ref changed);
         return new MergeResult(merged, changed, conflicts);
     }
 
@@ -129,14 +129,14 @@ public static class ColonizationSystemSiteReconciler
         ref int unchanged
     )
     {
-        var original = FindMatch(baseline, local);
+        ColonizationSystemSite? original = FindMatch(baseline, local);
         if (original is null)
         {
             ApplyNewEditedSite(local, latest, updates, conflicts, ref unchanged);
             return;
         }
 
-        var remote = FindMatch(latest, original) ?? FindMatch(latest, local);
+        ColonizationSystemSite? remote = FindMatch(latest, original) ?? FindMatch(latest, local);
         if (remote is null)
         {
             conflicts.Add(
@@ -149,7 +149,7 @@ public static class ColonizationSystemSiteReconciler
             return;
         }
 
-        var merge = MergeChangedFields(original, remote, local);
+        MergeResult merge = MergeChangedFields(original, remote, local);
         if (merge.Conflicts.Count > 0)
         {
             conflicts.AddRange(
@@ -180,7 +180,7 @@ public static class ColonizationSystemSiteReconciler
         ref int unchanged
     )
     {
-        var concurrent = FindMatch(latest, local);
+        ColonizationSystemSite? concurrent = FindMatch(latest, local);
         if (concurrent is null)
         {
             updates.Add(Clone(local));
@@ -215,7 +215,7 @@ public static class ColonizationSystemSiteReconciler
             return;
         }
 
-        var remote = FindMatch(latest, original);
+        ColonizationSystemSite? remote = FindMatch(latest, original);
         if (remote is null)
         {
             unchanged++;
@@ -259,7 +259,7 @@ public static class ColonizationSystemSiteReconciler
         ref bool changed
     )
     {
-        var localChanged = !comparer.Equals(original, local);
+        bool localChanged = !comparer.Equals(original, local);
         if (!localChanged)
         {
             return remote;
@@ -281,7 +281,9 @@ public static class ColonizationSystemSiteReconciler
     {
         if (!string.IsNullOrWhiteSpace(target.Id))
         {
-            var byId = sites.FirstOrDefault(site => string.Equals(site.Id, target.Id, StringComparison.Ordinal));
+            ColonizationSystemSite? byId = sites.FirstOrDefault(site =>
+                string.Equals(site.Id, target.Id, StringComparison.Ordinal)
+            );
             if (byId is not null)
             {
                 return byId;
@@ -295,13 +297,13 @@ public static class ColonizationSystemSiteReconciler
 
     private static void ValidateUniqueSites(IReadOnlyList<ColonizationSystemSite> sites, string source)
     {
-        var unnamedSite = sites.FirstOrDefault(site => string.IsNullOrWhiteSpace(site.Name));
+        ColonizationSystemSite? unnamedSite = sites.FirstOrDefault(site => string.IsNullOrWhiteSpace(site.Name));
         if (unnamedSite is not null)
         {
             throw new InvalidDataException($"A {source} colonisation site has no name.");
         }
 
-        var duplicateId = sites
+        IGrouping<string, ColonizationSystemSite>? duplicateId = sites
             .Where(site => !string.IsNullOrWhiteSpace(site.Id))
             .GroupBy(site => site.Id, StringComparer.Ordinal)
             .FirstOrDefault(group => group.Count() > 1);
@@ -310,7 +312,7 @@ public static class ColonizationSystemSiteReconciler
             throw new InvalidDataException($"The {source} sites contain duplicate ID '{duplicateId.Key}'.");
         }
 
-        var duplicateName = sites
+        IGrouping<string, ColonizationSystemSite>? duplicateName = sites
             .GroupBy(site => site.Name, StringComparer.OrdinalIgnoreCase)
             .FirstOrDefault(group => group.Count() > 1);
         if (duplicateName is not null)
@@ -342,9 +344,9 @@ public static class ColonizationSystemSiteReconciler
             return false;
         }
 
-        foreach (var pair in left)
+        foreach (KeyValuePair<string, JsonElement> pair in left)
         {
-            if (!right.TryGetValue(pair.Key, out var value) || !JsonElement.DeepEquals(pair.Value, value))
+            if (!right.TryGetValue(pair.Key, out JsonElement value) || !JsonElement.DeepEquals(pair.Value, value))
             {
                 return false;
             }

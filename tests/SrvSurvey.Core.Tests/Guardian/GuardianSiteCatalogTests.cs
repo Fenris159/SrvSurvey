@@ -15,7 +15,7 @@ public sealed class GuardianSiteCatalogTests
         Assert.Equal(163, catalog.Sites.Count(site => site.Kind == GuardianSiteKind.Structure));
         Assert.Equal(30, catalog.Sites.Count(site => site.Kind == GuardianSiteKind.Beacon));
 
-        var ruin = Assert.Single(catalog.Sites, site => site.DisplayId == "GR 1");
+        GuardianSiteReference ruin = Assert.Single(catalog.Sites, site => site.DisplayId == "GR 1");
         Assert.Equal("Synuefe XR-H d11-102", ruin.SystemName);
         Assert.Equal("1 b", ruin.BodyName);
         Assert.Equal("Beta", ruin.SiteType);
@@ -33,8 +33,8 @@ public sealed class GuardianSiteCatalogTests
     {
         var catalog = GuardianSiteCatalog.LoadEmbedded();
 
-        var byAddress = catalog.Search(new GuardianSiteQuery(Text: "3515254557027"));
-        var onlyGamma = catalog.Search(
+        IReadOnlyList<GuardianSiteMatch> byAddress = catalog.Search(new GuardianSiteQuery(Text: "3515254557027"));
+        IReadOnlyList<GuardianSiteMatch> onlyGamma = catalog.Search(
             new GuardianSiteQuery(
                 Text: "Synuefe",
                 Kinds: new HashSet<GuardianSiteKind> { GuardianSiteKind.Ruins },
@@ -61,7 +61,7 @@ public sealed class GuardianSiteCatalogTests
     {
         var catalog = GuardianSiteCatalog.LoadEmbedded();
 
-        var matches = catalog.Search(
+        IReadOnlyList<GuardianSiteMatch> matches = catalog.Search(
             new GuardianSiteQuery(
                 Kinds: new HashSet<GuardianSiteKind> { GuardianSiteKind.Ruins },
                 Origin: new GalacticCoordinate(357.34375, -49.34375, -74.75)
@@ -77,12 +77,12 @@ public sealed class GuardianSiteCatalogTests
     public void FindBySystemAddressReturnsAllSiteKindsInSystem()
     {
         var catalog = GuardianSiteCatalog.LoadEmbedded();
-        var address = catalog
+        long address = catalog
             .Sites.GroupBy(site => site.SystemAddress)
             .First(group => group.Select(site => site.Kind).Distinct().Count() > 1)
             .Key;
 
-        var matches = catalog.FindBySystemAddress(address);
+        IReadOnlyList<GuardianSiteReference> matches = catalog.FindBySystemAddress(address);
 
         Assert.True(matches.Count > 1);
         Assert.True(matches.Select(site => site.Kind).Distinct().Count() > 1);

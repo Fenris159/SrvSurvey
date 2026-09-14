@@ -16,10 +16,10 @@ public sealed partial class StreamOverlayWindow : Window
     public void ReplaceFrames(IReadOnlyList<StreamOverlayRenderedFrame> renderedFrames)
     {
         ArgumentNullException.ThrowIfNull(renderedFrames);
-        var previous = frames;
+        IReadOnlyList<RenderTargetBitmap> previous = frames;
         frames = renderedFrames.Select(frame => frame.Bitmap).ToArray();
         OverlayCanvas.Children.Clear();
-        foreach (var renderedFrame in renderedFrames)
+        foreach (StreamOverlayRenderedFrame renderedFrame in renderedFrames)
         {
             var image = new Image
             {
@@ -33,7 +33,7 @@ public sealed partial class StreamOverlayWindow : Window
             OverlayCanvas.Children.Add(image);
         }
 
-        foreach (var bitmap in previous)
+        foreach (RenderTargetBitmap bitmap in previous)
         {
             bitmap.Dispose();
         }

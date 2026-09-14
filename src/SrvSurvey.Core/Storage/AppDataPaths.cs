@@ -17,7 +17,7 @@ public sealed record AppDataPaths(
 
     public static AppDataPaths ResolveCurrent()
     {
-        var platform = OperatingSystem.IsWindows()
+        DesktopPlatform platform = OperatingSystem.IsWindows()
             ? DesktopPlatform.Windows
             : (OperatingSystem.IsLinux()) switch
             {
@@ -45,9 +45,9 @@ public sealed record AppDataPaths(
         ArgumentException.ThrowIfNullOrWhiteSpace(homeDirectory);
         getEnvironmentVariable ??= _ => null;
 
-        var home = NormalizeRoot(platform, homeDirectory);
-        var roaming = ResolveOptionalRoot(roamingApplicationDataDirectory, Combine(platform, home, ".config"));
-        var local = ResolveOptionalRoot(localApplicationDataDirectory, Combine(platform, home, ".local", "share"));
+        string home = NormalizeRoot(platform, homeDirectory);
+        string roaming = ResolveOptionalRoot(roamingApplicationDataDirectory, Combine(platform, home, ".config"));
+        string local = ResolveOptionalRoot(localApplicationDataDirectory, Combine(platform, home, ".local", "share"));
 
         string configDirectory;
         string dataDirectory;
@@ -75,7 +75,7 @@ public sealed record AppDataPaths(
             cacheDirectory = Combine(platform, local, ApplicationDirectoryName, "cache");
         }
 
-        var candidates =
+        IReadOnlyList<LegacyProfileCandidate> candidates =
             platform == DesktopPlatform.Windows
                 ? BuildWindowsLegacyCandidates(roaming, local)
                 : Array.Empty<LegacyProfileCandidate>();
@@ -90,14 +90,14 @@ public sealed record AppDataPaths(
 
     private static IReadOnlyList<LegacyProfileCandidate> BuildWindowsLegacyCandidates(string roaming, string local)
     {
-        var normal = Combine(
+        string normal = Combine(
             DesktopPlatform.Windows,
             roaming,
             ApplicationDirectoryName,
             ApplicationDirectoryName,
             LegacyVersionDirectoryName
         );
-        var redirectedRoot = Combine(
+        string redirectedRoot = Combine(
             DesktopPlatform.Windows,
             local,
             "Packages",

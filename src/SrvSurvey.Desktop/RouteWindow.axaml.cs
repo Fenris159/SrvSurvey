@@ -63,7 +63,7 @@ public sealed partial class RouteWindow : Window
     {
         try
         {
-            var files = await StorageProvider.OpenFilePickerAsync(
+            IReadOnlyList<IStorageFile> files = await StorageProvider.OpenFilePickerAsync(
                 new FilePickerOpenOptions
                 {
                     Title = "Choose a system-name text file",
@@ -79,7 +79,7 @@ public sealed partial class RouteWindow : Window
                 return;
             }
 
-            await using var stream = await files[0].OpenReadAsync();
+            await using Stream stream = await files[0].OpenReadAsync();
             using var reader = new StreamReader(stream);
             await viewModel.ImportNamesTextAsync(await reader.ReadToEndAsync());
         }
@@ -108,7 +108,7 @@ public sealed partial class RouteWindow : Window
 
     private static RouteWorkspaceViewModel CreateDesignViewModel()
     {
-        var temporaryDirectory = Path.Combine(Path.GetTempPath(), "SrvSurvey-Route-Design");
+        string temporaryDirectory = Path.Combine(Path.GetTempPath(), "SrvSurvey-Route-Design");
         return new RouteWorkspaceViewModel(
             new FollowRouteService(new FollowRouteStore(temporaryDirectory)),
             new RouteNameImporter(new EmptySystemResolver()),

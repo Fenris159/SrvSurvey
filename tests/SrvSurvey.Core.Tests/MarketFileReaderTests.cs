@@ -13,7 +13,7 @@ public sealed class MarketFileReaderTests : IDisposable
     public async Task ReadAsyncPortsLegacyMarketFieldsAndCommodityNames()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, MarketFileReader.FileName);
+        string path = Path.Combine(temporaryDirectory, MarketFileReader.FileName);
         await File.WriteAllTextAsync(
             path,
             """
@@ -50,17 +50,17 @@ public sealed class MarketFileReaderTests : IDisposable
             """
         );
 
-        var result = await MarketFileReader.ReadAsync(path);
+        MarketReadResult result = await MarketFileReader.ReadAsync(path);
 
         Assert.True(result.IsSuccess, result.Error);
-        var snapshot = Assert.IsType<MarketSnapshot>(result.Snapshot);
+        MarketSnapshot snapshot = Assert.IsType<MarketSnapshot>(result.Snapshot);
         Assert.Equal("Market", snapshot.EventName);
         Assert.Equal(3700123456, snapshot.MarketId);
         Assert.Equal("Raven's Rest", snapshot.StationName);
         Assert.Equal("FleetCarrier", snapshot.StationType);
         Assert.Equal("all", snapshot.CarrierDockingAccess);
         Assert.Equal("Facece", snapshot.StarSystem);
-        var item = Assert.Single(snapshot.Items);
+        MarketItem item = Assert.Single(snapshot.Items);
         Assert.Equal("steel", item.Commodity);
         Assert.Equal("Steel", item.LocalizedName);
         Assert.Equal("Metals", item.LocalizedCategory);
@@ -74,10 +74,10 @@ public sealed class MarketFileReaderTests : IDisposable
     public async Task ReadAsyncRetriesMalformedPartialWrite()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, MarketFileReader.FileName);
+        string path = Path.Combine(temporaryDirectory, MarketFileReader.FileName);
         await File.WriteAllTextAsync(path, "{\"event\":\"Market\"");
 
-        var result = await MarketFileReader.ReadAsync(path, maximumAttempts: 2, retryDelay: TimeSpan.Zero);
+        MarketReadResult result = await MarketFileReader.ReadAsync(path, maximumAttempts: 2, retryDelay: TimeSpan.Zero);
 
         Assert.False(result.IsSuccess);
         Assert.Equal(2, result.Attempts);

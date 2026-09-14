@@ -11,8 +11,8 @@ public sealed class HumanSiteNavigationTests
         var site = new SurfaceCoordinate(32.5, -117.25);
         var expected = new HumanSiteMapPoint(149.25, -82.5);
 
-        var location = HumanSiteNavigation.GetSurfaceLocation(site, expected, 6_000_000, 73);
-        var actual = HumanSiteNavigation.GetSiteOffset(site, location, 6_000_000, 73);
+        SurfaceCoordinate location = HumanSiteNavigation.GetSurfaceLocation(site, expected, 6_000_000, 73);
+        HumanSiteMapPoint actual = HumanSiteNavigation.GetSiteOffset(site, location, 6_000_000, 73);
 
         Assert.Equal(expected.X, actual.X, precision: 4);
         Assert.Equal(expected.Y, actual.Y, precision: 4);
@@ -24,14 +24,18 @@ public sealed class HumanSiteNavigationTests
         const double radius = 6_000_000;
         const double heading = 231;
         var catalog = HumanSiteTemplateCatalog.LoadEmbedded();
-        var template = catalog.Find(HumanSiteEconomy.Extraction, 5)!;
+        HumanSiteTemplate template = catalog.Find(HumanSiteEconomy.Extraction, 5)!;
         var origin = new SurfaceCoordinate(-12.5, 44.25);
-        var pad = Assert.Single(template.LandingPads);
-        var observerHeading = SurfaceNavigation.NormalizeDegrees(heading + pad.Rotation);
-        var location = HumanSiteNavigation.GetSurfaceLocation(origin, pad.Offset, radius, heading);
-        var site = CreateSite(origin, HumanSiteEconomy.Extraction, HumanSiteLandingPads.From(template));
+        HumanSiteLandingPad pad = Assert.Single(template.LandingPads);
+        double observerHeading = SurfaceNavigation.NormalizeDegrees(heading + pad.Rotation);
+        SurfaceCoordinate location = HumanSiteNavigation.GetSurfaceLocation(origin, pad.Offset, radius, heading);
+        HumanSiteLiveSnapshot site = CreateSite(
+            origin,
+            HumanSiteEconomy.Extraction,
+            HumanSiteLandingPads.From(template)
+        );
 
-        var solution = new HumanSiteNavigation(catalog).InferGeometry(
+        HumanSiteGeometrySolution? solution = new HumanSiteNavigation(catalog).InferGeometry(
             site,
             location,
             observerHeading,
@@ -55,21 +59,25 @@ public sealed class HumanSiteNavigationTests
         const double heading = 125;
         const string vehicle = "sidewinder";
         var catalog = HumanSiteTemplateCatalog.LoadEmbedded();
-        var template = catalog.Find(HumanSiteEconomy.Extraction, 5)!;
+        HumanSiteTemplate template = catalog.Find(HumanSiteEconomy.Extraction, 5)!;
         var origin = new SurfaceCoordinate(5, 6);
-        var pad = Assert.Single(template.LandingPads);
-        var observerHeading = SurfaceNavigation.NormalizeDegrees(heading + pad.Rotation);
-        var center = HumanSiteNavigation.GetSurfaceLocation(origin, pad.Offset, radius, heading);
-        var cockpitCorrection = HumanSiteVehicleOffsets.Find(vehicle);
-        var observed = HumanSiteNavigation.GetSurfaceLocation(
+        HumanSiteLandingPad pad = Assert.Single(template.LandingPads);
+        double observerHeading = SurfaceNavigation.NormalizeDegrees(heading + pad.Rotation);
+        SurfaceCoordinate center = HumanSiteNavigation.GetSurfaceLocation(origin, pad.Offset, radius, heading);
+        HumanSiteMapPoint cockpitCorrection = HumanSiteVehicleOffsets.Find(vehicle);
+        SurfaceCoordinate observed = HumanSiteNavigation.GetSurfaceLocation(
             center,
             new HumanSiteMapPoint(-cockpitCorrection.X, -cockpitCorrection.Y),
             radius,
             observerHeading
         );
-        var site = CreateSite(origin, HumanSiteEconomy.Extraction, HumanSiteLandingPads.From(template));
+        HumanSiteLiveSnapshot site = CreateSite(
+            origin,
+            HumanSiteEconomy.Extraction,
+            HumanSiteLandingPads.From(template)
+        );
 
-        var solution = new HumanSiteNavigation(catalog).InferGeometry(
+        HumanSiteGeometrySolution? solution = new HumanSiteNavigation(catalog).InferGeometry(
             site,
             observed,
             observerHeading,
@@ -87,13 +95,18 @@ public sealed class HumanSiteNavigationTests
     public void WrongPadConfigurationDoesNotInferGeometry()
     {
         var catalog = HumanSiteTemplateCatalog.LoadEmbedded();
-        var site = CreateSite(
+        HumanSiteLiveSnapshot site = CreateSite(
             new SurfaceCoordinate(0, 0),
             HumanSiteEconomy.Extraction,
             new HumanSiteLandingPads(9, 9, 9)
         );
 
-        var solution = new HumanSiteNavigation(catalog).InferGeometry(site, new SurfaceCoordinate(0, 0), 0, 6_000_000);
+        HumanSiteGeometrySolution? solution = new HumanSiteNavigation(catalog).InferGeometry(
+            site,
+            new SurfaceCoordinate(0, 0),
+            0,
+            6_000_000
+        );
 
         Assert.Null(solution);
     }

@@ -13,7 +13,7 @@ public sealed class OverlayScaleSettingsStoreTests : IDisposable
     [Fact]
     public void CatalogMatchesEveryLegacyScaleIndex()
     {
-        var expected = new double?[]
+        double?[] expected = new double?[]
         {
             null,
             1,
@@ -44,7 +44,7 @@ public sealed class OverlayScaleSettingsStoreTests : IDisposable
         };
 
         Assert.Equal(expected.Length, OverlayScaleCatalog.Options.Count);
-        for (var index = 0; index < expected.Length; index++)
+        for (int index = 0; index < expected.Length; index++)
         {
             Assert.Equal(index, OverlayScaleCatalog.Options[index].Index);
             Assert.Equal(expected[index], OverlayScaleCatalog.Options[index].AbsoluteScale);
@@ -63,7 +63,7 @@ public sealed class OverlayScaleSettingsStoreTests : IDisposable
     public async Task LoadSavePreservesUnknownFieldsAndAcceptsLegacyFloatIndex()
     {
         Directory.CreateDirectory(directory);
-        var path = Path.Combine(directory, "ui-settings.json");
+        string path = Path.Combine(directory, "ui-settings.json");
         await File.WriteAllTextAsync(
             path,
             """
@@ -93,11 +93,11 @@ public sealed class OverlayScaleSettingsStoreTests : IDisposable
     public async Task UnsupportedOrMalformedIndexFallsBackWithoutRewriting()
     {
         Directory.CreateDirectory(directory);
-        var path = Path.Combine(directory, "ui-settings.json");
+        string path = Path.Combine(directory, "ui-settings.json");
         const string content = "{\"Version\":1,\"OverlayScale\":{\"Index\":26.5}}";
         await File.WriteAllTextAsync(path, content);
 
-        var loaded = new OverlayScaleSettingsStore(path).Load();
+        OverlayScalePreferences loaded = new OverlayScaleSettingsStore(path).Load();
 
         Assert.Equal(OverlayScalePreferences.Default, loaded);
         Assert.Equal(content, await File.ReadAllTextAsync(path));

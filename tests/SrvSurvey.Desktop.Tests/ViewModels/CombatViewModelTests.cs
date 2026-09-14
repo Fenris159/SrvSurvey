@@ -16,7 +16,7 @@ public sealed class CombatViewModelTests : IDisposable
     [Fact]
     public async Task FootCombatMatchesLegacyWarAltitudeAndVehicleGates()
     {
-        var viewModel = CreateViewModel();
+        CombatViewModel viewModel = CreateViewModel();
         viewModel.AutoShowFootCombat = true;
 
         await viewModel.ApplyUpdateAsync(
@@ -87,7 +87,7 @@ public sealed class CombatViewModelTests : IDisposable
     [Fact]
     public async Task HistoricalBootstrapDoesNotRecountFootOrMissionProgress()
     {
-        var viewModel = CreateViewModel();
+        CombatViewModel viewModel = CreateViewModel();
         viewModel.AutoShowFootCombat = true;
         viewModel.AutoShowMassacreMissions = true;
         viewModel.LoadProfile("F123", "Drew", true, new CombatSnapshot([Mission(123, remaining: 4)]));
@@ -122,7 +122,7 @@ public sealed class CombatViewModelTests : IDisposable
     [Fact]
     public async Task MassacreProgressPersistsAndMatchesLegacyModes()
     {
-        var viewModel = CreateViewModel();
+        CombatViewModel viewModel = CreateViewModel();
         viewModel.AutoShowMassacreMissions = true;
         viewModel.LoadProfile("F123", "Drew", true, CombatSnapshot.Empty);
 
@@ -145,7 +145,7 @@ public sealed class CombatViewModelTests : IDisposable
 
         Assert.True(viewModel.ShouldShowMassacreMissions);
         Assert.Equal(1, Assert.Single(viewModel.MassacreMissions).Remaining);
-        var saved = await new CommanderProfileStore(temporaryDirectory).LoadAsync("F123", true);
+        CommanderProfileLoadResult saved = await new CommanderProfileStore(temporaryDirectory).LoadAsync("F123", true);
         Assert.Equal(1, Assert.Single(saved.Data!.Combat.MassacreMissions).Remaining);
 
         await viewModel.ApplyUpdateAsync(
@@ -166,7 +166,7 @@ public sealed class CombatViewModelTests : IDisposable
     [Fact]
     public async Task ActiveBuildProjectCanSuppressBothCombatOverlays()
     {
-        var viewModel = CreateViewModel();
+        CombatViewModel viewModel = CreateViewModel();
         viewModel.AutoShowFootCombat = true;
         viewModel.SuppressForActiveBuildProjects = true;
         await viewModel.ApplyUpdateAsync(
@@ -190,7 +190,7 @@ public sealed class CombatViewModelTests : IDisposable
     [Fact]
     public async Task DisabledLegacyTestSettingDoesNotStartMissionTracking()
     {
-        var viewModel = CreateViewModel();
+        CombatViewModel viewModel = CreateViewModel();
 
         await viewModel.ApplyUpdateAsync(
             [
@@ -231,7 +231,7 @@ public sealed class CombatViewModelTests : IDisposable
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var value, out var error), error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? value, out string? error), error);
         return value!;
     }
 

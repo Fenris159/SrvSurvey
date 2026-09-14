@@ -34,10 +34,10 @@ public sealed class CanonnCodexChallengeClientTests : IDisposable
         );
         var challengeClient = new CanonnCodexChallengeClient(client, new Uri("https://example.test/challenge/status"));
 
-        var result = await challengeClient.GetAsync("Cmdr Test/One");
+        CanonnCodexChallengeLoadResult result = await challengeClient.GetAsync("Cmdr Test/One");
 
         Assert.True(result.IsSuccess);
-        var group = Assert.Single(result.Groups);
+        CanonnCodexChallengeGroup group = Assert.Single(result.Groups);
         Assert.Equal("Biology", group.HudCategory);
         Assert.Equal("Aleoida Arcus - Green", Assert.Single(group.FoundTypes));
         Assert.Equal("?cmdr=Cmdr%20Test%2FOne", requestedUri!.Query);
@@ -95,15 +95,15 @@ public sealed class CanonnCodexChallengeClientTests : IDisposable
             catalog
         );
 
-        var first = await importer.ImportAsync("F123", "Cmdr Test");
-        var second = await importer.ImportAsync("F123", "Cmdr Test");
+        CanonnCodexImportResult first = await importer.ImportAsync("F123", "Cmdr Test");
+        CanonnCodexImportResult second = await importer.ImportAsync("F123", "Cmdr Test");
 
         Assert.True(first.IsSuccess);
         Assert.Equal(2, first.MatchedEntryCount);
         Assert.Equal(1, first.AddedEntryCount);
         Assert.Equal(1, first.UnmatchedEntryCount);
         Assert.Equal(0, second.AddedEntryCount);
-        var loaded = await store.LoadAsync("F123", null);
+        CommanderCodexLoadResult loaded = await store.LoadAsync("F123", null);
         Assert.Equal(42, loaded.Data!.Firsts[2310101].SystemAddress);
         Assert.Equal(-1, loaded.Data.Firsts[2310206].SystemAddress);
     }
@@ -118,7 +118,7 @@ public sealed class CanonnCodexChallengeClientTests : IDisposable
             TimeSpan.FromMilliseconds(25)
         );
 
-        var result = await challengeClient.GetAsync("Cmdr Test");
+        CanonnCodexChallengeLoadResult result = await challengeClient.GetAsync("Cmdr Test");
 
         Assert.False(result.IsSuccess);
         Assert.Contains("timed out", result.Error, StringComparison.OrdinalIgnoreCase);

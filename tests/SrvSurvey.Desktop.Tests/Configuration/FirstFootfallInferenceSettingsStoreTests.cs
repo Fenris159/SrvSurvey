@@ -13,7 +13,9 @@ public sealed class FirstFootfallInferenceSettingsStoreTests : IDisposable
     [Fact]
     public void LoadUsesLegacyCompatibleDefaults()
     {
-        var preferences = new FirstFootfallInferenceSettingsStore(Path.Combine(directory, "ui-settings.json")).Load();
+        FirstFootfallInferencePreferences preferences = new FirstFootfallInferenceSettingsStore(
+            Path.Combine(directory, "ui-settings.json")
+        ).Load();
 
         Assert.Equal(FirstFootfallInferencePreferences.Default, preferences);
     }
@@ -22,7 +24,7 @@ public sealed class FirstFootfallInferenceSettingsStoreTests : IDisposable
     public void SaveNormalizesValuesAndPreservesUnknownProperties()
     {
         Directory.CreateDirectory(directory);
-        var path = Path.Combine(directory, "ui-settings.json");
+        string path = Path.Combine(directory, "ui-settings.json");
         File.WriteAllText(
             path,
             """
@@ -39,7 +41,7 @@ public sealed class FirstFootfallInferenceSettingsStoreTests : IDisposable
 
         store.Save(new FirstFootfallInferencePreferences(false, -1, 500, 64, 500, double.NaN, 0, 100));
 
-        var preferences = store.Load();
+        FirstFootfallInferencePreferences preferences = store.Load();
         Assert.False(preferences.Enabled);
         Assert.Equal(0, preferences.Red);
         Assert.Equal(255, preferences.Green);
@@ -48,7 +50,7 @@ public sealed class FirstFootfallInferenceSettingsStoreTests : IDisposable
         Assert.Equal(0.002, preferences.Threshold);
         Assert.Equal(1, preferences.DurationSeconds);
         Assert.Equal(60, preferences.SamplesPerSecond);
-        var root = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
+        JsonObject root = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
         Assert.True(root["FutureRoot"]!.GetValue<bool>());
         Assert.Equal("keep", root["FirstFootfallInference"]!["FutureSetting"]!.GetValue<string>());
         Assert.Equal(7, root["FirstFootfallInference"]!["Color"]!["FutureColor"]!.GetValue<int>());

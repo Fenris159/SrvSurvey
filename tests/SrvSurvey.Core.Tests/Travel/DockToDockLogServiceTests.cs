@@ -13,9 +13,9 @@ public sealed class DockToDockLogServiceTests : IDisposable
     [Fact]
     public void LiveTripRetainsLegacyColumnsAndEscapesCsvWithoutReplayingHistory()
     {
-        var path = Path.Combine(temporaryDirectory, DockToDockCsvWriter.FileName);
+        string path = Path.Combine(temporaryDirectory, DockToDockCsvWriter.FileName);
         var service = new DockToDockLogService(path);
-        var bootstrap = service.Apply(
+        DockToDockApplyResult bootstrap = service.Apply(
             [
                 Event(
                     "2026-07-25T11:00:00Z",
@@ -50,7 +50,7 @@ public sealed class DockToDockLogServiceTests : IDisposable
             3,
             [new CargoItem("gold", "Gold", 2, 0), new CargoItem("silver", "Silver", 1, 0)]
         );
-        var result = service.Apply(
+        DockToDockApplyResult result = service.Apply(
             [
                 Event("2026-07-25T12:00:00Z", "Undocked", "\"MarketID\":100,\"StationName\":\"Alpha, Hub\""),
                 Event("2026-07-25T12:05:00Z", "StartJump", "\"JumpType\":\"Hyperspace\""),
@@ -83,7 +83,7 @@ public sealed class DockToDockLogServiceTests : IDisposable
 
         Assert.Equal(1, result.WrittenCount);
         Assert.Null(result.Error);
-        var entry = Assert.Single(result.Entries);
+        DockToDockLogEntry entry = Assert.Single(result.Entries);
         Assert.Equal(TimeSpan.FromMinutes(40), entry.Duration);
         Assert.Equal(TimeSpan.FromMinutes(5), entry.EgressDuration);
         Assert.Equal(TimeSpan.FromMinutes(10), entry.IngressDuration);
@@ -103,7 +103,7 @@ public sealed class DockToDockLogServiceTests : IDisposable
         Assert.Equal(31.75, entry.ShipMaximumJump);
         Assert.Equal(2, entry.Cargo["gold"]);
 
-        var lines = File.ReadAllLines(path);
+        string[] lines = File.ReadAllLines(path);
         Assert.Equal(2, lines.Length);
         Assert.Equal(30, lines[0].Split(',').Length);
         Assert.Contains("\"Alpha, Hub\"", lines[1]);
@@ -116,17 +116,17 @@ public sealed class DockToDockLogServiceTests : IDisposable
     public void ExistingIncompatibleOrPartialCsvIsNeverModified()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, DockToDockCsvWriter.FileName);
+        string path = Path.Combine(temporaryDirectory, DockToDockCsvWriter.FileName);
         const string incompatible = "different,header\r\nexisting,row\r\n";
         File.WriteAllText(path, incompatible);
         var writer = new DockToDockCsvWriter(path);
 
-        var exception = Assert.Throws<InvalidDataException>(() => writer.Append(CreateEntry()));
+        InvalidDataException exception = Assert.Throws<InvalidDataException>(() => writer.Append(CreateEntry()));
 
         Assert.Contains("header", exception.Message);
         Assert.Equal(incompatible, File.ReadAllText(path));
 
-        var validHeader = File.ReadLines(WriteValidFile()).First();
+        string validHeader = File.ReadLines(WriteValidFile()).First();
         File.WriteAllText(path, validHeader + "\r\npartial");
         exception = Assert.Throws<InvalidDataException>(() => writer.Append(CreateEntry()));
         Assert.Contains("incomplete", exception.Message);
@@ -136,13 +136,13 @@ public sealed class DockToDockLogServiceTests : IDisposable
     [Fact]
     public void ClearingAmbiguousCargoPreventsItEnteringNewTrip()
     {
-        var path = Path.Combine(temporaryDirectory, DockToDockCsvWriter.FileName);
+        string path = Path.Combine(temporaryDirectory, DockToDockCsvWriter.FileName);
         var service = new DockToDockLogService(path);
         var cargo = new CargoSnapshot(DateTimeOffset.UtcNow, "Cargo", "Ship", 2, [new CargoItem("gold", "Gold", 2, 0)]);
         service.Apply([], cargo, enabled: true, isBootstrapRead: false);
 
         service.ClearCargo();
-        var result = service.Apply(
+        DockToDockApplyResult result = service.Apply(
             [
                 Event("2026-07-25T12:00:00Z", "Undocked", "\"MarketID\":100,\"StationName\":\"Start\""),
                 Event("2026-07-25T12:10:00Z", "Docked", "\"MarketID\":200,\"StationName\":\"End\""),
@@ -165,7 +165,7 @@ public sealed class DockToDockLogServiceTests : IDisposable
 
     private string WriteValidFile()
     {
-        var path = Path.Combine(temporaryDirectory, "valid.csv");
+        string path = Path.Combine(temporaryDirectory, "valid.csv");
         new DockToDockCsvWriter(path).Append(CreateEntry());
         return path;
     }
@@ -211,7 +211,7 @@ public sealed class DockToDockLogServiceTests : IDisposable
 
     private static JournalEventEnvelope Event(string timestamp, string eventName, string properties)
     {
-        var json =
+        string json =
             "{\"timestamp\":\""
             + timestamp
             + "\",\"event\":\""
@@ -219,7 +219,7 @@ public sealed class DockToDockLogServiceTests : IDisposable
             + "\""
             + (string.IsNullOrEmpty(properties) ? string.Empty : "," + properties)
             + "}";
-        Assert.True(JournalEventEnvelope.TryParse(json, out var result, out var error), error);
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? result, out string? error), error);
         return result!;
     }
 }

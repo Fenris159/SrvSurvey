@@ -28,7 +28,7 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
         );
         Assert.Equal(new("adjustVR", "ALT V"), GetLegacyBinding(GlobalInputAction.AdjustVr));
         Assert.Equal(new("resetVR", string.Empty), GetLegacyBinding(GlobalInputAction.ResetVr));
-        var panelToggles = GlobalInputActionCatalog
+        GlobalInputActionDefinition[] panelToggles = GlobalInputActionCatalog
             .All.Where(definition => definition.OverlayPlotterName is not null)
             .ToArray();
         Assert.Equal(36, panelToggles.Length);
@@ -58,7 +58,7 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
     )
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui.json");
+        string path = Path.Combine(temporaryDirectory, "ui.json");
         var root = new System.Text.Json.Nodes.JsonObject
         {
             ["Input"] = new System.Text.Json.Nodes.JsonObject
@@ -72,7 +72,7 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
         };
         File.WriteAllText(path, root.ToJsonString());
         var store = new GlobalInputSettingsStore(path);
-        var loaded = store.Load();
+        GlobalInputSettings loaded = store.Load();
         Assert.Equal(expectedChord, loaded.Bindings[GlobalInputAction.Track1]);
         store.Save(loaded);
         Assert.Equal(expectedChord, store.Load().Bindings[GlobalInputAction.Track1]);
@@ -85,7 +85,7 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
     public void SaveAndLoadRoundTripPreservesThemeAndBindings()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui.json");
+        string path = Path.Combine(temporaryDirectory, "ui.json");
         File.WriteAllText(
             path,
             """
@@ -107,7 +107,7 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
                 bindings
             )
         );
-        var loaded = store.Load();
+        GlobalInputSettings loaded = store.Load();
 
         Assert.True(loaded.KeyboardEnabled);
         Assert.True(loaded.ControllerEnabled);
@@ -120,7 +120,7 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
     public void LoadMergesMissingActionsAndIgnoresUnknownEntries()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui.json");
+        string path = Path.Combine(temporaryDirectory, "ui.json");
         File.WriteAllText(
             path,
             """
@@ -137,7 +137,7 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
             """
         );
 
-        var loaded = new GlobalInputSettingsStore(path).Load();
+        GlobalInputSettings loaded = new GlobalInputSettingsStore(path).Load();
 
         Assert.Equal("SHIFT C", loaded.Bindings[GlobalInputAction.CopyNextBoxel]);
         Assert.Equal("ALT F2", loaded.Bindings[GlobalInputAction.ToggleAllVisibility]);
@@ -148,7 +148,7 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
     public void SavePreservesUnknownFutureInputSettings()
     {
         Directory.CreateDirectory(temporaryDirectory);
-        var path = Path.Combine(temporaryDirectory, "ui.json");
+        string path = Path.Combine(temporaryDirectory, "ui.json");
         File.WriteAllText(
             path,
             """
@@ -165,7 +165,7 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
         );
 
         new GlobalInputSettingsStore(path).Save(GlobalInputSettings.Default);
-        var json = File.ReadAllText(path);
+        string json = File.ReadAllText(path);
 
         Assert.Contains("\"FutureOption\": 42", json);
         Assert.Contains("\"futureAction\": \"ALT Z\"", json);
@@ -181,7 +181,7 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
 
     private static KeyValuePair<string, string> GetLegacyBinding(GlobalInputAction action)
     {
-        var definition = GlobalInputActionCatalog.Get(action);
+        GlobalInputActionDefinition definition = GlobalInputActionCatalog.Get(action);
         return new KeyValuePair<string, string>(definition.LegacyName, definition.DefaultChord);
     }
 }

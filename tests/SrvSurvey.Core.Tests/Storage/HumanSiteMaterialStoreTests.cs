@@ -15,7 +15,7 @@ public sealed class HumanSiteMaterialStoreTests : IDisposable
     [Fact]
     public async Task AppendWritesLegacyCompatibleSurveyAndPreservesUnknownFields()
     {
-        var path = SurveyPath("2026-07-24 120000");
+        string path = SurveyPath("2026-07-24 120000");
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         await File.WriteAllTextAsync(
             path,
@@ -25,7 +25,7 @@ public sealed class HumanSiteMaterialStoreTests : IDisposable
         );
         var store = new HumanSiteMaterialStore(temporaryDirectory);
 
-        var result = await store.AppendAsync(
+        HumanSiteMaterialMutationResult result = await store.AppendAsync(
             Context(),
             [
                 new HumanSiteCollectedMaterial(
@@ -44,7 +44,7 @@ public sealed class HumanSiteMaterialStoreTests : IDisposable
         Assert.Equal(2, result.Survey.CountByMaterial["graphene"]);
         Assert.Equal(2, result.Survey.CountByMaterial["opinionpolls"]);
         Assert.Equal(2, result.Survey.Materials.Count);
-        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        JsonObject root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.True(root["future"]!["keep"]!.GetValue<bool>());
         Assert.Equal("opinionpolls_Data_3.25_4.5", root["matLocations"]![1]!.GetValue<string>());
     }
@@ -52,7 +52,7 @@ public sealed class HumanSiteMaterialStoreTests : IDisposable
     [Fact]
     public async Task CompletedSurveyStartsNewTimestampedFile()
     {
-        var oldPath = SurveyPath("2026-07-24 120000");
+        string oldPath = SurveyPath("2026-07-24 120000");
         Directory.CreateDirectory(Path.GetDirectoryName(oldPath)!);
         await File.WriteAllTextAsync(
             oldPath,
@@ -63,7 +63,10 @@ public sealed class HumanSiteMaterialStoreTests : IDisposable
         );
         var store = new HumanSiteMaterialStore(temporaryDirectory, time);
 
-        var result = await store.AppendAsync(Context(), [Material("new", "Component", 5, 6)]);
+        HumanSiteMaterialMutationResult result = await store.AppendAsync(
+            Context(),
+            [Material("new", "Component", 5, 6)]
+        );
 
         Assert.NotEqual(oldPath, result.Path);
         Assert.EndsWith("42-12345-2026-07-25 131415.json", result.Path);
@@ -77,8 +80,8 @@ public sealed class HumanSiteMaterialStoreTests : IDisposable
         var store = new HumanSiteMaterialStore(temporaryDirectory);
         await store.AppendAsync(Context(), [Material("graphene", "Component", 1, 2)]);
 
-        var completed = await store.CompleteAsync(Context());
-        var loaded = await store.LoadActiveAsync(Context());
+        HumanSiteMaterialMutationResult completed = await store.CompleteAsync(Context());
+        HumanSiteMaterialLoadResult loaded = await store.LoadActiveAsync(Context());
 
         Assert.True(completed.Survey.Completed);
         Assert.False(loaded.Exists);
@@ -89,13 +92,13 @@ public sealed class HumanSiteMaterialStoreTests : IDisposable
     [Fact]
     public async Task CorruptLatestSurveyIsNotOverwritten()
     {
-        var path = SurveyPath("2026-07-24 120000");
+        string path = SurveyPath("2026-07-24 120000");
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         const string corrupt = "{ not json";
         await File.WriteAllTextAsync(path, corrupt);
         var store = new HumanSiteMaterialStore(temporaryDirectory);
 
-        var load = await store.LoadActiveAsync(Context());
+        HumanSiteMaterialLoadResult load = await store.LoadActiveAsync(Context());
         await Assert.ThrowsAsync<InvalidDataException>(() =>
             store.AppendAsync(Context(), [Material("graphene", "Component", 1, 2)])
         );
@@ -114,7 +117,7 @@ public sealed class HumanSiteMaterialStoreTests : IDisposable
             store.AppendAsync(Context(), [Material("graphene", "Component", 1, 2)]),
             store.AppendAsync(Context(), [Material("opinionpolls", "Data", 3, 4)])
         );
-        var loaded = await store.LoadActiveAsync(Context());
+        HumanSiteMaterialLoadResult loaded = await store.LoadActiveAsync(Context());
 
         Assert.NotNull(loaded.Survey);
         Assert.Equal(2, loaded.Survey.TotalMaterialCount);
@@ -128,14 +131,14 @@ public sealed class HumanSiteMaterialStoreTests : IDisposable
     {
         var store = new HumanSiteMaterialStore(temporaryDirectory);
 
-        var first = await store.SetThreatLevelAsync(Context(), 2);
-        var second = await store.SetThreatLevelAsync(Context(), 1);
-        var loaded = await store.LoadActiveAsync(Context());
+        HumanSiteMaterialMutationResult first = await store.SetThreatLevelAsync(Context(), 2);
+        HumanSiteMaterialMutationResult second = await store.SetThreatLevelAsync(Context(), 1);
+        HumanSiteMaterialLoadResult loaded = await store.LoadActiveAsync(Context());
 
         Assert.Equal(first.Path, second.Path);
         Assert.Equal(1, second.Survey.ThreatLevel);
         Assert.Equal(1, loaded.Survey!.ThreatLevel);
-        var root = JsonNode.Parse(await File.ReadAllTextAsync(second.Path))!.AsObject();
+        JsonObject root = JsonNode.Parse(await File.ReadAllTextAsync(second.Path))!.AsObject();
         Assert.Equal(1, root["threatLevel"]!.GetValue<int>());
         Assert.Equal("Test Settlement", root["name"]!.GetValue<string>());
     }

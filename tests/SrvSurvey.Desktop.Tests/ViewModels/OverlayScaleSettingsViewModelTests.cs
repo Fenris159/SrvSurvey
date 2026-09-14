@@ -15,7 +15,7 @@ public sealed class OverlayScaleSettingsViewModelTests : IDisposable
     public void SelectionPersistsAndUpdatesTheActiveOverlayContext()
     {
         Directory.CreateDirectory(directory);
-        var path = Path.Combine(directory, "ui-settings.json");
+        string path = Path.Combine(directory, "ui-settings.json");
         var store = new OverlayScaleSettingsStore(path);
         var layout = new LegacyOverlayLayout(new Dictionary<string, LegacyOverlayPlacement>(), null, null);
         var viewModel = new OverlayScaleSettingsViewModel(store, layout, new OverlayWindowRegistry());
@@ -32,7 +32,7 @@ public sealed class OverlayScaleSettingsViewModelTests : IDisposable
     public void ConstructionAppliesPersistedScaleToActiveLayout()
     {
         Directory.CreateDirectory(directory);
-        var path = Path.Combine(directory, "ui-settings.json");
+        string path = Path.Combine(directory, "ui-settings.json");
         var store = new OverlayScaleSettingsStore(path);
         store.Save(new OverlayScalePreferences(24));
         var layout = new LegacyOverlayLayout(new Dictionary<string, LegacyOverlayPlacement>(), null, null);

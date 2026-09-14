@@ -51,7 +51,7 @@ public sealed partial class DiagnosticsView : UserControl
 
     private async Task WriteClipboardAsync(string text)
     {
-        var clipboard =
+        IClipboard clipboard =
             TopLevel.GetTopLevel(this)?.Clipboard
             ?? throw new InvalidOperationException("The desktop clipboard is not available.");
         await clipboard.SetTextAsync(text);
@@ -60,7 +60,7 @@ public sealed partial class DiagnosticsView : UserControl
 
     private Task<bool> LaunchDirectoryAsync(DirectoryInfo directory)
     {
-        var launcher =
+        ILauncher launcher =
             TopLevel.GetTopLevel(this)?.Launcher
             ?? throw new InvalidOperationException("The desktop launcher is not available.");
         return launcher.LaunchDirectoryInfoAsync(directory);
@@ -68,7 +68,7 @@ public sealed partial class DiagnosticsView : UserControl
 
     private Task<bool> LaunchUriAsync(Uri uri)
     {
-        var launcher =
+        ILauncher launcher =
             TopLevel.GetTopLevel(this)?.Launcher
             ?? throw new InvalidOperationException("The desktop launcher is not available.");
         return launcher.LaunchUriAsync(uri);
@@ -100,7 +100,7 @@ public sealed partial class DiagnosticsView : UserControl
             return;
         }
 
-        var files = await topLevel.StorageProvider.OpenFilePickerAsync(
+        IReadOnlyList<IStorageFile> files = await topLevel.StorageProvider.OpenFilePickerAsync(
             new FilePickerOpenOptions
             {
                 Title = "Choose Elite VisitedStarsCache.dat",
@@ -111,7 +111,7 @@ public sealed partial class DiagnosticsView : UserControl
                 ],
             }
         );
-        var file = files.Count > 0 ? files[0] : null;
+        IStorageFile? file = files.Count > 0 ? files[0] : null;
         if (file is not null)
         {
             viewModel.VisitedStarsCache.TargetPath = file.Path.LocalPath;
@@ -130,7 +130,7 @@ public sealed partial class DiagnosticsView : UserControl
             return;
         }
 
-        var file = await topLevel.StorageProvider.SaveFilePickerAsync(
+        IStorageFile? file = await topLevel.StorageProvider.SaveFilePickerAsync(
             new FilePickerSaveOptions
             {
                 Title = "Export diagnostic journal replay",
@@ -146,7 +146,7 @@ public sealed partial class DiagnosticsView : UserControl
                 ],
             }
         );
-        var path = file?.TryGetLocalPath();
+        string? path = file?.TryGetLocalPath();
         if (!string.IsNullOrWhiteSpace(path))
         {
             await viewModel.JournalHistory.ExportAsync(path);
@@ -160,7 +160,7 @@ public sealed partial class DiagnosticsView : UserControl
             return;
         }
 
-        var launcher = TopLevel.GetTopLevel(this)?.Launcher;
+        ILauncher? launcher = TopLevel.GetTopLevel(this)?.Launcher;
         if (launcher is not null)
         {
             await launcher.LaunchUriAsync(WellKnownUris.EdGalaxyVisitedStars);

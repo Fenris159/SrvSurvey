@@ -8,7 +8,7 @@ namespace SrvSurvey.Desktop.Localization;
 
 public static class LocalizationBehavior
 {
-    private static readonly ConditionalWeakTable<AvaloniaObject, TranslationState> States = new();
+    private static readonly ConditionalWeakTable<AvaloniaObject, TranslationState> States = [];
 
     public static readonly AttachedProperty<bool> EnabledProperty = AvaloniaProperty.RegisterAttached<
         AvaloniaObject,
@@ -55,7 +55,7 @@ public static class LocalizationBehavior
 
     private static void EnableTranslation(AvaloniaObject target)
     {
-        var state = States.GetValue(target, _ => new TranslationState());
+        TranslationState state = States.GetValue(target, _ => new TranslationState());
         WatchObjectProperty(target, ToolTip.TipProperty, state);
         WatchStringProperty(target, AutomationProperties.NameProperty, state);
 
@@ -92,7 +92,7 @@ public static class LocalizationBehavior
 
     private static void DisableTranslation(AvaloniaObject target)
     {
-        if (!States.TryGetValue(target, out var state))
+        if (!States.TryGetValue(target, out TranslationState? state))
         {
             return;
         }
@@ -153,7 +153,7 @@ public static class LocalizationBehavior
             return;
         }
 
-        var translated = LocalizationCatalog.Translate(current);
+        string translated = LocalizationCatalog.Translate(current);
         if (!string.Equals(current, translated, StringComparison.Ordinal))
         {
             state.IsApplying = true;
@@ -193,7 +193,7 @@ public static class LocalizationBehavior
             return;
         }
 
-        var translated = LocalizationCatalog.Translate(current);
+        string translated = LocalizationCatalog.Translate(current);
         if (!string.Equals(current, translated, StringComparison.Ordinal))
         {
             state.IsApplying = true;
@@ -218,7 +218,7 @@ public static class LocalizationBehavior
 
         public void Dispose()
         {
-            foreach (var subscription in Subscriptions)
+            foreach (IDisposable subscription in Subscriptions)
             {
                 subscription.Dispose();
             }

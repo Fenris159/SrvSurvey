@@ -10,34 +10,37 @@ public static class SpanshRouteUrlParser
             return false;
         }
 
-        var candidate = text.Trim();
-        if (Guid.TryParse(candidate, out var directId))
+        string candidate = text.Trim();
+        if (Guid.TryParse(candidate, out Guid directId))
         {
             route = new SpanshRouteReference(directId, SpanshRouteKind.Generic);
             return true;
         }
 
-        if (!Uri.TryCreate(candidate, UriKind.Absolute, out var uri) || !IsSpanshHost(uri.Host))
+        if (!Uri.TryCreate(candidate, UriKind.Absolute, out Uri? uri) || !IsSpanshHost(uri.Host))
         {
             return false;
         }
 
-        var parts = uri.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        var resultsIndex = Array.FindLastIndex(
+        string[] parts = uri.AbsolutePath.Split(
+            '/',
+            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
+        );
+        int resultsIndex = Array.FindLastIndex(
             parts,
             part => string.Equals(part, "results", StringComparison.OrdinalIgnoreCase)
         );
         if (
             resultsIndex < 0
             || resultsIndex + 1 >= parts.Length
-            || !Guid.TryParse(parts[resultsIndex + 1], out var routeId)
+            || !Guid.TryParse(parts[resultsIndex + 1], out Guid routeId)
         )
         {
             return false;
         }
 
-        var routeParts = parts.Take(resultsIndex).ToArray();
-        var kind = Classify(routeParts);
+        string[] routeParts = parts.Take(resultsIndex).ToArray();
+        SpanshRouteKind kind = Classify(routeParts);
         route = new SpanshRouteReference(routeId, kind);
         return true;
     }

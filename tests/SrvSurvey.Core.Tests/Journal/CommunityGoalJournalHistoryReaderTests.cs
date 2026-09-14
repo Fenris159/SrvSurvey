@@ -1,3 +1,4 @@
+using SrvSurvey.Core.Frontier;
 using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Core.Tests.Journal;
@@ -7,7 +8,7 @@ public sealed class CommunityGoalJournalHistoryReaderTests
     [Fact]
     public async Task ReturnsLatestProgressForRequestedCommanderOnly()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
             await File.WriteAllTextAsync(
@@ -27,9 +28,9 @@ public sealed class CommunityGoalJournalHistoryReaderTests
             );
             var reader = new CommunityGoalJournalHistoryReader(root);
 
-            var result = await reader.ReadAsync("111");
+            CommunityGoalJournalHistoryReadResult result = await reader.ReadAsync("111");
 
-            var goal = Assert.Single(result.Goals);
+            FrontierCommunityGoalSnapshot goal = Assert.Single(result.Goals);
             Assert.Equal(850, goal.Id);
             Assert.True(goal.IsComplete);
             Assert.Equal(2, goal.PlayerContribution);
@@ -53,7 +54,7 @@ public sealed class CommunityGoalJournalHistoryReaderTests
     [Fact]
     public async Task ReportsMalformedRelevantEntriesWithoutLosingValidHistory()
     {
-        var root = CreateTemporaryDirectory();
+        string root = CreateTemporaryDirectory();
         try
         {
             await File.WriteAllTextAsync(
@@ -66,7 +67,7 @@ public sealed class CommunityGoalJournalHistoryReaderTests
             );
             var reader = new CommunityGoalJournalHistoryReader(root);
 
-            var result = await reader.ReadAsync("F111");
+            CommunityGoalJournalHistoryReadResult result = await reader.ReadAsync("F111");
 
             Assert.Single(result.Goals);
             Assert.Contains("1 malformed entry", result.Warning);
@@ -79,7 +80,7 @@ public sealed class CommunityGoalJournalHistoryReaderTests
 
     private static string CreateTemporaryDirectory()
     {
-        var path = Path.Combine(Path.GetTempPath(), $"SrvSurvey-community-goal-history-{Guid.NewGuid():N}");
+        string path = Path.Combine(Path.GetTempPath(), $"SrvSurvey-community-goal-history-{Guid.NewGuid():N}");
         Directory.CreateDirectory(path);
         return path;
     }

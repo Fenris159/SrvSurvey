@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -34,14 +35,26 @@ public interface IOverlayPositionEditorHost : IDisposable
     void Close(bool restoreRuntimeWindows = true);
 }
 
-public sealed record OverlayPreviewMovedEventArgs(
-    string PlotterName,
-    PixelPoint Position,
-    PixelSize PreviewSize,
-    PixelRect HostBounds
-);
+public sealed class OverlayPreviewMovedEventArgs(
+    string plotterName,
+    PixelPoint position,
+    PixelSize previewSize,
+    PixelRect hostBounds
+) : EventArgs
+{
+    public string PlotterName { get; } = plotterName;
 
-public sealed record OverlayPreviewSettingsRequestedEventArgs(string PlotterName);
+    public PixelPoint Position { get; } = position;
+
+    public PixelSize PreviewSize { get; } = previewSize;
+
+    public PixelRect HostBounds { get; } = hostBounds;
+}
+
+public sealed class OverlayPreviewSettingsRequestedEventArgs(string plotterName) : EventArgs
+{
+    public string PlotterName { get; } = plotterName;
+}
 
 public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHost
 {
@@ -95,10 +108,10 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         this.viewModel = viewModel;
         toolbar.Show();
 
-        var preferred = preferredHostBounds is { Width: > 0, Height: > 0 }
+        PixelRect? preferred = preferredHostBounds is { Width: > 0, Height: > 0 }
             ? preferredHostBounds.Value
             : (PixelRect?)null;
-        var screen = preferred is { } gameBounds
+        Screen? screen = preferred is { } gameBounds
             ? toolbar.Screens.ScreenFromBounds(gameBounds) ?? toolbar.Screens.Primary
             : toolbar.Screens.Primary;
         if (screen is null)
@@ -110,7 +123,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         hostBounds = preferred ?? screen.Bounds;
         hostScaling = screen.Scaling;
         editSession = session;
-        var keepRuntimeOverlaysVisible = viewModel.IsLiveInteractionEnabled;
+        bool keepRuntimeOverlaysVisible = viewModel.IsLiveInteractionEnabled;
         toolbar.SizeChanged += OnEditorSizeChanged;
         toolbar.Screens.Changed += OnScreensChanged;
         PositionEditorToolbar(toolbar);
@@ -142,13 +155,13 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             miningCalibration.Show();
             _ = platform.PrepareInteractiveWindow(miningCalibration);
         }
-        foreach (var definition in OverlayLayoutCatalog.ForCategory(category))
+        foreach (OverlayLayoutDefinition definition in OverlayLayoutCatalog.ForCategory(category))
         {
             var preview = new OverlayPositionPreviewWindow(definition);
             OverlayThemeResources.Apply(preview);
             preview.ApplyRuntimePresentationTheme();
             preview.ConfigureScale(session.ScaleIndex, session.GetPlacement(definition.Name).ScaleIndex, hostScaling);
-            var previewSize = preview.GetExpectedPixelSize(hostScaling);
+            PixelSize previewSize = preview.GetExpectedPixelSize(hostScaling);
             preview.Position = session.GetPosition(definition.Name, hostBounds, previewSize);
             preview.ConfigureOpacity(session.DefaultOpacity, session.GetPlacement(definition.Name).Opacity);
             preview.PointerPressed += OnPreviewPointerPressed;
@@ -166,7 +179,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
     public void RefreshPreviewOpacities(OverlayPositionEditSession session)
     {
         ArgumentNullException.ThrowIfNull(session);
-        foreach (var preview in previews)
+        foreach (OverlayPositionPreviewWindow preview in previews)
         {
             preview.ConfigureOpacity(session.DefaultOpacity, session.GetPlacement(preview.Definition.Name).Opacity);
         }
@@ -178,7 +191,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         updatingPreviewLayout = true;
         try
         {
-            foreach (var preview in previews)
+            foreach (OverlayPositionPreviewWindow preview in previews)
             {
                 preview.ConfigureScale(
                     session.ScaleIndex,
@@ -200,7 +213,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         updatingPreviewLayout = true;
         try
         {
-            foreach (var preview in previews)
+            foreach (OverlayPositionPreviewWindow preview in previews)
             {
                 PositionPreview(preview, session);
             }
@@ -222,10 +235,10 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         updatingPreviewLayout = true;
         try
         {
-            foreach (var preview in previews)
+            foreach (OverlayPositionPreviewWindow preview in previews)
             {
-                var metrics = preview.GetPanelMetrics(preview.RenderScaling);
-                var referenceSize = GetReferenceSize(preview, metrics);
+                OverlayPreviewPanelMetrics metrics = preview.GetPanelMetrics(preview.RenderScaling);
+                PixelSize referenceSize = GetReferenceSize(preview, metrics);
                 var center = new PixelPoint(
                     hostBounds.X + ((hostBounds.Width - referenceSize.Width) / 2),
                     hostBounds.Y + ((hostBounds.Height - referenceSize.Height) / 2)
@@ -278,7 +291,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         closing = true;
         registry.Changed -= OnRegistryChanged;
         ClosePreviews();
-        var toolbar = editor;
+        OverlayPositionEditorWindow? toolbar = editor;
         editor = null;
         if (toolbar is not null)
         {
@@ -341,7 +354,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             return;
         }
 
-        var metrics = preview.GetPanelMetrics(preview.RenderScaling);
+        OverlayPreviewPanelMetrics metrics = preview.GetPanelMetrics(preview.RenderScaling);
         var panelPosition = new PixelPoint(
             eventArgs.Point.X + metrics.OriginOffset.X,
             eventArgs.Point.Y + metrics.OriginOffset.Y
@@ -392,7 +405,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
 
         miningCalibration?.Close();
         miningCalibration = null;
-        foreach (var preview in previews)
+        foreach (OverlayPositionPreviewWindow preview in previews)
         {
             preview.PointerPressed -= OnPreviewPointerPressed;
             preview.PositionChanged -= OnPreviewPositionChanged;
@@ -411,8 +424,8 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             return;
         }
 
-        var testing = viewModel?.MiningDetection?.IsCalibrationTesting == true;
-        foreach (var preview in previews)
+        bool testing = viewModel?.MiningDetection?.IsCalibrationTesting == true;
+        foreach (OverlayPositionPreviewWindow preview in previews)
         {
             if (testing)
             {
@@ -481,15 +494,15 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             return;
         }
 
-        var screen = toolbar.Screens.ScreenFromBounds(hostBounds) ?? toolbar.Screens.Primary;
+        Screen? screen = toolbar.Screens.ScreenFromBounds(hostBounds) ?? toolbar.Screens.Primary;
         if (screen is null)
         {
             return;
         }
 
-        var usableBounds = OverlayWindowPlacement.GetUsableBounds(hostBounds, screen.WorkingArea);
-        var logicalWidth = toolbar.Bounds.Width > 0 ? toolbar.Bounds.Width : toolbar.Width;
-        var logicalHeight = toolbar.Bounds.Height > 0 ? toolbar.Bounds.Height : toolbar.MinHeight;
+        PixelRect usableBounds = OverlayWindowPlacement.GetUsableBounds(hostBounds, screen.WorkingArea);
+        double logicalWidth = toolbar.Bounds.Width > 0 ? toolbar.Bounds.Width : toolbar.Width;
+        double logicalHeight = toolbar.Bounds.Height > 0 ? toolbar.Bounds.Height : toolbar.MinHeight;
         var toolbarSize = new PixelSize(
             Math.Max(1, (int)Math.Ceiling(logicalWidth * screen.Scaling)),
             Math.Max(1, (int)Math.Ceiling(logicalHeight * screen.Scaling))
@@ -513,19 +526,19 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             return;
         }
 
-        var snapshot = registry.Snapshot();
+        IReadOnlyList<RegisteredOverlayWindow> snapshot = registry.Snapshot();
         CaptureVisibleRuntimePlacements(snapshot);
     }
 
     private void PositionPreview(OverlayPositionPreviewWindow preview, OverlayPositionEditSession session)
     {
-        var metrics = preview.GetPanelMetrics(preview.RenderScaling);
-        var hasRuntimeReference = runtimePlacementReferences.TryGetValue(
+        OverlayPreviewPanelMetrics metrics = preview.GetPanelMetrics(preview.RenderScaling);
+        bool hasRuntimeReference = runtimePlacementReferences.TryGetValue(
             preview.Definition.Name,
-            out var runtimeReference
+            out RuntimeOverlayGeometry runtimeReference
         );
-        var referenceSize = hasRuntimeReference ? runtimeReference.Size : metrics.PanelSize;
-        var panelPosition =
+        PixelSize referenceSize = hasRuntimeReference ? runtimeReference.Size : metrics.PanelSize;
+        PixelPoint panelPosition =
             hasRuntimeReference && !HasPositionChange(session, preview.Definition.Name)
                 ? runtimeReference.Position
                 : session.GetPosition(preview.Definition.Name, hostBounds, referenceSize);
@@ -552,7 +565,10 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             return;
         }
 
-        var placement = session.GetPlacement(definition.Name) with { Vertical = definition.MoveVerticalAnchor };
+        LegacyOverlayPlacement placement = session.GetPlacement(definition.Name) with
+        {
+            Vertical = definition.MoveVerticalAnchor,
+        };
         session.SetPlacement(
             definition.Name,
             OverlayInteractionViewModel.CreatePlacement(placement, panelPosition, referenceSize, bounds)
@@ -561,19 +577,24 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
 
     private PixelSize GetReferenceSize(OverlayPositionPreviewWindow preview, OverlayPreviewPanelMetrics metrics)
     {
-        return runtimePlacementReferences.TryGetValue(preview.Definition.Name, out var runtimeReference)
+        return runtimePlacementReferences.TryGetValue(
+            preview.Definition.Name,
+            out RuntimeOverlayGeometry runtimeReference
+        )
             ? runtimeReference.Size
             : metrics.PanelSize;
     }
 
     private void CaptureVisibleRuntimePlacements(IReadOnlyList<RegisteredOverlayWindow> snapshot)
     {
-        var placementOwners = snapshot.Where(registered => registered.ParticipatesInPlacement).ToArray();
+        RegisteredOverlayWindow[] placementOwners = snapshot
+            .Where(registered => registered.ParticipatesInPlacement)
+            .ToArray();
         var currentPlotters = placementOwners
             .Select(registered => registered.PlotterName)
             .ToHashSet(StringComparer.Ordinal);
         foreach (
-            var stale in runtimePlacementReferences
+            string? stale in runtimePlacementReferences
                 .Keys.Where(plotterName => !currentPlotters.Contains(plotterName))
                 .ToArray()
         )
@@ -581,7 +602,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             runtimePlacementReferences.Remove(stale);
         }
 
-        foreach (var registered in placementOwners.Where(candidate => candidate.IsVisible))
+        foreach (RegisteredOverlayWindow? registered in placementOwners.Where(candidate => candidate.IsVisible))
         {
             CaptureRuntimePlacement(registered);
         }
@@ -597,8 +618,8 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
 
     private static bool HasPositionChange(OverlayPositionEditSession session, string plotterName)
     {
-        var current = session.GetPlacement(plotterName);
-        var original = session.GetOriginalPlacement(plotterName);
+        LegacyOverlayPlacement current = session.GetPlacement(plotterName);
+        LegacyOverlayPlacement original = session.GetOriginalPlacement(plotterName);
         return current.Horizontal != original.Horizontal
             || current.HorizontalOffset != original.HorizontalOffset
             || current.Vertical != original.Vertical

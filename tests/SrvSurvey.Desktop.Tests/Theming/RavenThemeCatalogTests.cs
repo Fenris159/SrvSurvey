@@ -24,7 +24,7 @@ public sealed class RavenThemeCatalogTests
     [InlineData("monochrome-dark", "#E6D59A", "#0A0A0A")]
     public void CatalogPreservesRavenPrimaryAndWindowColors(string key, string primary, string window)
     {
-        var theme = RavenThemeCatalog.Get(key);
+        RavenThemeDefinition theme = RavenThemeCatalog.Get(key);
 
         Assert.Equal(primary, theme.AccentColor);
         Assert.Equal(window, theme.WindowColor);
@@ -33,7 +33,7 @@ public sealed class RavenThemeCatalogTests
     [Fact]
     public void MonochromeThemeUsesTheRequestedLowGlarePaletteWithSoftAccent()
     {
-        var theme = RavenThemeCatalog.Get("monochrome-dark");
+        RavenThemeDefinition theme = RavenThemeCatalog.Get("monochrome-dark");
 
         Assert.Equal("#0A0A0A", theme.WindowColor);
         Assert.Equal("#141414", theme.SidebarColor);

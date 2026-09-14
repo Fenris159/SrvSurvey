@@ -6,9 +6,9 @@ namespace SrvSurvey.Desktop.Input;
 
 public sealed class GlobalKeyboardHookService : IAsyncDisposable
 {
-    private readonly object callbackLock = new();
-    private readonly object lifecycleLock = new();
-    private readonly object statusLock = new();
+    private readonly Lock callbackLock = new();
+    private readonly Lock lifecycleLock = new();
+    private readonly Lock statusLock = new();
     private readonly Func<IGlobalHook> hookFactory;
     private readonly IGameWindowTracker gameWindowTracker;
     private readonly Func<bool> isApplicationActive;
@@ -81,7 +81,7 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
         Volatile.Write(ref settings, updatedSettings);
         router.Update(updatedSettings);
 
-        var version = Interlocked.Increment(ref lifecycleVersion);
+        long version = Interlocked.Increment(ref lifecycleVersion);
         if (updatedSettings.KeyboardEnabled)
         {
             Start(version);
@@ -104,7 +104,7 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
 
     private void Start(long version)
     {
-        var currentSettings = Volatile.Read(ref settings);
+        GlobalInputSettings currentSettings = Volatile.Read(ref settings);
         if (!currentSettings.KeyboardEnabled)
         {
             SetStatus("Global keyboard input is disabled.");
@@ -201,14 +201,14 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
     {
         lock (callbackLock)
         {
-            var currentSettings = Volatile.Read(ref settings);
+            GlobalInputSettings currentSettings = Volatile.Read(ref settings);
             if (disposed || !currentSettings.KeyboardEnabled || eventArgs.IsEventSimulated || !IsInputContextActive())
             {
                 return;
             }
 
-            var chord = KeyboardChordFormatter.Format(eventArgs.Data.KeyCode, eventArgs.RawEvent.Mask);
-            if (chord is not null && router.TryResolve(chord, out var action))
+            string? chord = KeyboardChordFormatter.Format(eventArgs.Data.KeyCode, eventArgs.RawEvent.Mask);
+            if (chord is not null && router.TryResolve(chord, out GlobalInputAction action))
             {
                 ActionTriggered?.Invoke(this, new GlobalInputActionTriggeredEventArgs(action, chord));
             }
@@ -380,4 +380,9 @@ public sealed class GlobalKeyboardHookService : IAsyncDisposable
     }
 }
 
-public sealed record GlobalInputActionTriggeredEventArgs(GlobalInputAction Action, string Chord);
+public sealed class GlobalInputActionTriggeredEventArgs(GlobalInputAction action, string chord) : EventArgs
+{
+    public GlobalInputAction Action { get; } = action;
+
+    public string Chord { get; } = chord;
+}

@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace SrvSurvey.Desktop.Input;
@@ -14,7 +15,7 @@ public static partial class InputChord
             return false;
         }
 
-        var tokens = value.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        string[] tokens = value.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         if (tokens.Length == 0 || tokens.Distinct(StringComparer.OrdinalIgnoreCase).Count() != tokens.Length)
         {
             return false;
@@ -26,13 +27,15 @@ public static partial class InputChord
             return true;
         }
 
-        var keyTokens = tokens.Where(token => !IsModifier(token)).ToArray();
+        string[] keyTokens = tokens.Where(token => !IsModifier(token)).ToArray();
         if (keyTokens.Length != 1 || IsControllerToken(keyTokens[0]) || ControllerLikePattern().IsMatch(keyTokens[0]))
         {
             return false;
         }
 
-        var modifiers = ModifierOrder.Where(modifier => tokens.Contains(modifier, StringComparer.OrdinalIgnoreCase));
+        IEnumerable<string> modifiers = ModifierOrder.Where(modifier =>
+            tokens.Contains(modifier, StringComparer.OrdinalIgnoreCase)
+        );
         normalized = string.Join(' ', modifiers.Append(NormalizeKeyboardToken(keyTokens[0])));
         return true;
     }
@@ -54,7 +57,7 @@ public static partial class InputChord
     {
         if (token.StartsWith("B", StringComparison.OrdinalIgnoreCase))
         {
-            return $"B{int.Parse(token[1..])}";
+            return "B" + int.Parse(token[1..], CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture);
         }
 
         if (token.StartsWith("Pov", StringComparison.OrdinalIgnoreCase))

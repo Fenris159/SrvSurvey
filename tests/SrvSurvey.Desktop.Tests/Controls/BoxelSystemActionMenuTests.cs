@@ -4,6 +4,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Headless.XUnit;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.Media;
 using SrvSurvey.Desktop.Controls;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -15,14 +16,14 @@ public sealed class BoxelSystemActionMenuTests
     [AvaloniaFact]
     public void LauncherOpensPopupWithCommandsFromTheRow()
     {
-        var row = CreateRow();
+        BoxelSystemRowViewModel row = CreateRow();
         var control = new BoxelSystemActionMenu { DataContext = row };
         var window = new Window { Content = control };
         window.Show();
 
         control.FindControl<Button>("Launcher")!.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
 
-        var popup = control.FindControl<Popup>("MenuPopup");
+        Popup? popup = control.FindControl<Popup>("MenuPopup");
         Assert.False(popup?.IsOpen);
         Assert.True(control.IsRevealPending);
         Assert.Contains("engaged", control.FindControl<Button>("Launcher")!.Classes);
@@ -42,7 +43,7 @@ public sealed class BoxelSystemActionMenuTests
         Assert.Same(row.DeferCommand, control.FindControl<Button>("DeferActionButton")?.Command);
         Assert.Same(row.StartHereCommand, control.FindControl<Button>("StartHereActionButton")?.Command);
         Assert.Equal(1, control.FindControl<Button>("ReopenActionButton")!.Opacity);
-        var actionButtons = new[]
+        Button[] actionButtons = new[]
         {
             control.FindControl<Button>("CompleteActionButton")!,
             control.FindControl<Button>("ReopenActionButton")!,
@@ -70,10 +71,10 @@ public sealed class BoxelSystemActionMenuTests
         var window = new Window { Content = control };
         window.Show();
 
-        var complete = control.FindControl<Button>("CompleteActionButton")!;
-        var reopen = control.FindControl<Button>("ReopenActionButton")!;
-        var defer = control.FindControl<Button>("DeferActionButton")!;
-        var startHere = control.FindControl<Button>("StartHereActionButton")!;
+        Button complete = control.FindControl<Button>("CompleteActionButton")!;
+        Button reopen = control.FindControl<Button>("ReopenActionButton")!;
+        Button defer = control.FindControl<Button>("DeferActionButton")!;
+        Button startHere = control.FindControl<Button>("StartHereActionButton")!;
 
         Assert.Equal(106, complete.GetValue(Canvas.LeftProperty));
         Assert.Equal(12, complete.GetValue(Canvas.TopProperty));
@@ -211,19 +212,19 @@ public sealed class BoxelSystemActionMenuTests
 
     private static void AssertDirectionalClip(Button button, Point labelPoint, Point inwardCutoutPoint)
     {
-        var clip = Assert.IsType<Avalonia.Media.Geometry>(button.Clip, exactMatch: false);
+        Geometry clip = Assert.IsType<Avalonia.Media.Geometry>(button.Clip, exactMatch: false);
         Assert.True(clip.FillContains(labelPoint));
         Assert.False(clip.FillContains(inwardCutoutPoint));
     }
 
     private static void AssertMirroredSideGeometry(Button left, Button right)
     {
-        var leftClip = Assert.IsType<Avalonia.Media.Geometry>(left.Clip, exactMatch: false);
-        var rightClip = Assert.IsType<Avalonia.Media.Geometry>(right.Clip, exactMatch: false);
+        Geometry leftClip = Assert.IsType<Avalonia.Media.Geometry>(left.Clip, exactMatch: false);
+        Geometry rightClip = Assert.IsType<Avalonia.Media.Geometry>(right.Clip, exactMatch: false);
 
-        for (var y = 1; y < left.Height; y += 4)
+        for (int y = 1; y < left.Height; y += 4)
         {
-            for (var x = 1; x < left.Width; x += 4)
+            for (int x = 1; x < left.Width; x += 4)
             {
                 Assert.Equal(
                     leftClip.FillContains(new Point(x, y)),
@@ -236,15 +237,15 @@ public sealed class BoxelSystemActionMenuTests
     private static void AssertSideButtonsFitTopWedgeRadius(Button top, Button left, Button right)
     {
         Assert.IsType<Avalonia.Media.Geometry>(top.Clip, exactMatch: false);
-        var leftClip = Assert.IsType<Avalonia.Media.Geometry>(left.Clip, exactMatch: false);
-        var rightClip = Assert.IsType<Avalonia.Media.Geometry>(right.Clip, exactMatch: false);
+        Geometry leftClip = Assert.IsType<Avalonia.Media.Geometry>(left.Clip, exactMatch: false);
+        Geometry rightClip = Assert.IsType<Avalonia.Media.Geometry>(right.Clip, exactMatch: false);
         const double centerX = 165;
         const double centerY = 93;
-        var topOuterX = top.GetValue(Canvas.LeftProperty) + 4;
-        var topOuterY = top.GetValue(Canvas.TopProperty) + 22;
-        var guideRadius = Math.Sqrt(Math.Pow(centerX - topOuterX, 2) + Math.Pow(centerY - topOuterY, 2));
-        var leftReach = centerX - (left.GetValue(Canvas.LeftProperty) + leftClip.Bounds.Left);
-        var rightReach = right.GetValue(Canvas.LeftProperty) + rightClip.Bounds.Right - centerX;
+        double topOuterX = top.GetValue(Canvas.LeftProperty) + 4;
+        double topOuterY = top.GetValue(Canvas.TopProperty) + 22;
+        double guideRadius = Math.Sqrt(Math.Pow(centerX - topOuterX, 2) + Math.Pow(centerY - topOuterY, 2));
+        double leftReach = centerX - (left.GetValue(Canvas.LeftProperty) + leftClip.Bounds.Left);
+        double rightReach = right.GetValue(Canvas.LeftProperty) + rightClip.Bounds.Right - centerX;
 
         Assert.InRange(leftReach, guideRadius - 1, guideRadius);
         Assert.InRange(rightReach, guideRadius - 1, guideRadius);

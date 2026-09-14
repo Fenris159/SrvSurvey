@@ -18,7 +18,7 @@ public static class UriPath
     public static Uri EnsureTrailingSeparator(Uri uri)
     {
         ArgumentNullException.ThrowIfNull(uri);
-        var text = uri.AbsoluteUri;
+        string text = uri.AbsoluteUri;
         if (text.Length > 0 && text[^1] == Separator)
         {
             return uri;
@@ -30,14 +30,14 @@ public static class UriPath
     public static bool HasTrailingSeparator(Uri uri)
     {
         ArgumentNullException.ThrowIfNull(uri);
-        var text = uri.IsAbsoluteUri ? uri.AbsoluteUri : uri.OriginalString;
+        string text = uri.IsAbsoluteUri ? uri.AbsoluteUri : uri.OriginalString;
         return text.Length > 0 && text[^1] == Separator;
     }
 
     public static bool AbsolutePathHasTrailingSeparator(Uri uri)
     {
         ArgumentNullException.ThrowIfNull(uri);
-        var path = uri.AbsolutePath;
+        string path = uri.AbsolutePath;
         return path.Length > 0 && path[^1] == Separator;
     }
 }

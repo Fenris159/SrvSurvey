@@ -26,18 +26,20 @@ public sealed class BoxelCompletionAuditor
         ArgumentNullException.ThrowIfNull(request.RouteSystems);
         var entries = new List<BoxelCompletionAuditEntry>();
         var errors = new List<string>();
-        var processed = 0;
+        int processed = 0;
 
         try
         {
-            var local = await localSystemReader
+            LegacySystemDataReadResult local = await localSystemReader
                 .ReadAllAsync(request.FrontierId, cancellationToken)
                 .ConfigureAwait(false);
             errors.AddRange(local.Errors);
-            var localByPrefix = GroupByPrefix(local.Systems);
-            var routeByPrefix = GroupByPrefix(request.RouteSystems);
+            Dictionary<string, IReadOnlyList<BoxelSystemObservation>> localByPrefix = GroupByPrefix(local.Systems);
+            Dictionary<string, IReadOnlyList<BoxelSystemObservation>> routeByPrefix = GroupByPrefix(
+                request.RouteSystems
+            );
 
-            foreach (var boxel in request.Boxels)
+            foreach (BoxelAddress boxel in request.Boxels)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 BoxelCompletionAuditEntry? entry = null;
@@ -90,7 +92,9 @@ public sealed class BoxelCompletionAuditor
         Merge(systems, routeSystems, AuditObservationSource.NavRoute, request);
         try
         {
-            var spanshSystems = await systemResolver.SearchAsync(boxel, cancellationToken).ConfigureAwait(false);
+            IReadOnlyList<BoxelSystemObservation> spanshSystems = await systemResolver
+                .SearchAsync(boxel, cancellationToken)
+                .ConfigureAwait(false);
             Merge(systems, spanshSystems, AuditObservationSource.Spansh, request);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -103,7 +107,7 @@ public sealed class BoxelCompletionAuditor
             errors.Add($"Spansh audit failed for {boxel.Prefix}: {exception.Message}");
         }
 
-        var systemCount = systems.Count == 0 ? 0 : systems.Values.Max(system => system.Boxel.N2) + 1;
+        int systemCount = systems.Count == 0 ? 0 : systems.Values.Max(system => system.Boxel.N2) + 1;
         return new BoxelCompletionAuditEntry(
             boxel,
             systemCount,
@@ -132,10 +136,10 @@ public sealed class BoxelCompletionAuditor
         BoxelCompletionAuditRequest request
     )
     {
-        foreach (var observation in observations)
+        foreach (BoxelSystemObservation observation in observations)
         {
-            systems.TryGetValue(observation.Boxel.GeneratedName, out var existing);
-            var isComplete = existing?.IsComplete ?? false;
+            systems.TryGetValue(observation.Boxel.GeneratedName, out AuditedSystem? existing);
+            bool isComplete = existing?.IsComplete ?? false;
             if (source == AuditObservationSource.LocalProfile)
             {
                 isComplete |=

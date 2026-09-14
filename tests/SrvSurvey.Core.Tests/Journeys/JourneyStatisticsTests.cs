@@ -8,7 +8,7 @@ public sealed class JourneyStatisticsTests
     [Fact]
     public void CalculatesDistanceDistinctSystemsAndLegacyCounters()
     {
-        var journey = CreateJourney([
+        JourneyDocument journey = CreateJourney([
             Visit(
                 "Sol",
                 1,
@@ -39,7 +39,7 @@ public sealed class JourneyStatisticsTests
             Visit("Sol", 1, new GalacticCoordinate(0, 0, 0), JourneyCounts.Empty),
         ]);
 
-        var result = JourneyStatistics.Calculate(journey);
+        JourneyQuickStatistics result = JourneyStatistics.Calculate(journey);
 
         Assert.Equal(3, result.JumpCount);
         Assert.Equal(10, result.TotalDistance);
@@ -56,7 +56,7 @@ public sealed class JourneyStatisticsTests
     [Fact]
     public void EmptyJourneyReturnsZeroStatistics()
     {
-        var result = JourneyStatistics.Calculate(CreateJourney([]));
+        JourneyQuickStatistics result = JourneyStatistics.Calculate(CreateJourney([]));
 
         Assert.Equal(0, result.JumpCount);
         Assert.Equal(0, result.TotalDistance);

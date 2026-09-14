@@ -14,7 +14,7 @@ public sealed class HumanSiteSettingsStore
     public HumanSitePreferences Load()
     {
         var settings = documentStore.Load()["HumanSite"] as JsonObject;
-        var defaults = HumanSitePreferences.Default;
+        HumanSitePreferences defaults = HumanSitePreferences.Default;
         return new HumanSitePreferences(
             GetBoolean(settings, "AutoShow", defaults.AutoShow),
             GetInt32(settings, "Width", defaults.Width, 320, 1600),
@@ -69,12 +69,12 @@ public sealed class HumanSiteSettingsStore
 
     private static bool GetBoolean(JsonObject? source, string propertyName, bool fallback)
     {
-        return source?[propertyName] is JsonValue value && value.TryGetValue<bool>(out var result) ? result : fallback;
+        return source?[propertyName] is JsonValue value && value.TryGetValue<bool>(out bool result) ? result : fallback;
     }
 
     private static int GetInt32(JsonObject? source, string propertyName, int fallback, int minimum, int maximum)
     {
-        return source?[propertyName] is JsonValue value && value.TryGetValue<int>(out var result)
+        return source?[propertyName] is JsonValue value && value.TryGetValue<int>(out int result)
             ? Math.Clamp(result, minimum, maximum)
             : fallback;
     }
@@ -89,7 +89,7 @@ public sealed class HumanSiteSettingsStore
     {
         return
             source?[propertyName] is JsonValue value
-            && value.TryGetValue<double>(out var result)
+            && value.TryGetValue<double>(out double result)
             && double.IsFinite(result)
             ? Math.Clamp(result, minimum, maximum)
             : fallback;

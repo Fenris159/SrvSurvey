@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
@@ -23,8 +24,8 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         var window = new OverlayPositionEditorWindow();
         try
         {
-            var settings = window.FindControl<Border>("OverlaySettingsPanel");
-            var toolbar = window.FindControl<Grid>("EditorToolbarPanel");
+            Border? settings = window.FindControl<Border>("OverlaySettingsPanel");
+            Grid? toolbar = window.FindControl<Grid>("EditorToolbarPanel");
 
             Assert.NotNull(settings);
             Assert.NotNull(toolbar);
@@ -64,7 +65,7 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         registry.Register(runtimeWindow, "PlotJumpInfo");
         runtimeWindow.Show();
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
-        var activeLayout = store.Load();
+        LegacyOverlayLayout activeLayout = store.Load();
         var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
         using var viewModel = new OverlayInteractionViewModel(
             platform,
@@ -125,9 +126,9 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         };
         registry.Register(runtimeWindow, "PlotBioSystem");
         runtimeWindow.Show();
-        var runtimeSize = OverlayWindowMetrics.GetPixelSize(registry.Snapshot().Single());
+        PixelSize runtimeSize = OverlayWindowMetrics.GetPixelSize(registry.Snapshot().Single());
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
-        var activeLayout = store.Load();
+        LegacyOverlayLayout activeLayout = store.Load();
         var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
         using var viewModel = new OverlayInteractionViewModel(
             platform,
@@ -151,7 +152,9 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
 
         Assert.True(viewModel.Begin());
 
-        var preview = host.PreviewWindows.Single(candidate => candidate.Definition.Name == "PlotBioSystem");
+        OverlayPositionPreviewWindow preview = host.PreviewWindows.Single(candidate =>
+            candidate.Definition.Name == "PlotBioSystem"
+        );
         Assert.False(runtimeWindow.IsVisible);
         Assert.Equal(new PixelPoint(420, 310), preview.GetPanelScreenOrigin(preview.RenderScaling));
         Assert.True(preview.Position.Y < 310);
@@ -159,7 +162,7 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
 
         OverlayPreviewMovedEventArgs? moved = null;
         host.PreviewMoved += (_, eventArgs) => moved = eventArgs;
-        var metrics = preview.GetPanelMetrics(preview.RenderScaling);
+        OverlayPreviewPanelMetrics metrics = preview.GetPanelMetrics(preview.RenderScaling);
         var movedPanelOrigin = new PixelPoint(510, 430);
         preview.Position = new PixelPoint(
             movedPanelOrigin.X - metrics.OriginOffset.X,
@@ -198,7 +201,7 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         owner.Show();
         child.Show();
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
-        var activeLayout = store.Load();
+        LegacyOverlayLayout activeLayout = store.Load();
         var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
         using var viewModel = new OverlayInteractionViewModel(
             platform,
@@ -222,7 +225,9 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
 
         Assert.True(viewModel.Begin());
 
-        var preview = host.PreviewWindows.Single(candidate => candidate.Definition.Name == "PlotGuardians");
+        OverlayPositionPreviewWindow preview = host.PreviewWindows.Single(candidate =>
+            candidate.Definition.Name == "PlotGuardians"
+        );
         Assert.Equal(owner.Position, preview.GetPanelScreenOrigin(preview.RenderScaling));
 
         viewModel.Cancel();
@@ -261,9 +266,9 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         };
         registry.Register(runtimeWindow, plotterName);
         runtimeWindow.Show();
-        var runtimeSize = OverlayWindowMetrics.GetPixelSize(registry.Snapshot().Single());
+        PixelSize runtimeSize = OverlayWindowMetrics.GetPixelSize(registry.Snapshot().Single());
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
-        var activeLayout = store.Load();
+        LegacyOverlayLayout activeLayout = store.Load();
         var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
         using var viewModel = new OverlayInteractionViewModel(
             platform,
@@ -285,13 +290,15 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
 
         Assert.True(viewModel.Begin());
 
-        var preview = host.PreviewWindows.Single(candidate => candidate.Definition.Name == plotterName);
+        OverlayPositionPreviewWindow preview = host.PreviewWindows.Single(candidate =>
+            candidate.Definition.Name == plotterName
+        );
         Assert.Equal(runtimeWindow.Position, preview.GetPanelScreenOrigin(preview.RenderScaling));
 
         viewModel.Save();
 
-        var persisted = store.Load();
-        var placement = persisted.Placements[preview.Definition.Name];
+        LegacyOverlayLayout persisted = store.Load();
+        LegacyOverlayPlacement placement = persisted.Placements[preview.Definition.Name];
         Assert.Equal(LegacyVerticalAnchor.Top, placement.Vertical);
         Assert.Equal(
             runtimeWindow.Position,
@@ -315,7 +322,7 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
     {
         Directory.CreateDirectory(temporaryDirectory);
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
-        var activeLayout = store.Load();
+        LegacyOverlayLayout activeLayout = store.Load();
         var platform = new FakeOverlayPlatform();
         var registry = new OverlayWindowRegistry();
         var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
@@ -336,10 +343,12 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
 
         Assert.True(viewModel.Begin());
 
-        var preview = host.PreviewWindows.Single(candidate => candidate.Definition.Name == "PlotBioSystem");
+        OverlayPositionPreviewWindow preview = host.PreviewWindows.Single(candidate =>
+            candidate.Definition.Name == "PlotBioSystem"
+        );
         preview.SetRenderScaling(2d);
-        var currentMetrics = preview.GetPanelMetrics(preview.RenderScaling);
-        var openingDisplayMetrics = preview.GetPanelMetrics(1d);
+        OverlayPreviewPanelMetrics currentMetrics = preview.GetPanelMetrics(preview.RenderScaling);
+        OverlayPreviewPanelMetrics openingDisplayMetrics = preview.GetPanelMetrics(1d);
         var movedPanelOrigin = new PixelPoint(510, 430);
 
         Assert.Equal(2d, preview.RenderScaling);
@@ -351,7 +360,7 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         );
         viewModel.Save();
 
-        var persisted = store.Load();
+        LegacyOverlayLayout persisted = store.Load();
         Assert.Equal(
             movedPanelOrigin,
             persisted.GetPosition(preview.Definition.Name, hostBounds, currentMetrics.PanelSize)
@@ -384,14 +393,14 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         var registry = new OverlayWindowRegistry();
         var hostBounds = new PixelRect(100, 200, 1600, 1200);
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
-        var activeLayout = store.Load();
-        var miningModel = OverlayEditorPreviewFactories.CreateSurfaceMining();
-        using var mining = miningModel.SurfaceMining;
+        LegacyOverlayLayout activeLayout = store.Load();
+        SurfaceMiningOverlayViewModel miningModel = OverlayEditorPreviewFactories.CreateSurfaceMining();
+        using SurfaceMiningViewModel mining = miningModel.SurfaceMining;
         mining.InstallEditorPreview([]);
         var runtimeWindow = new SurfaceMiningOverlayWindow(miningModel);
         OverlayThemeResources.Apply(runtimeWindow, activeLayout, "PlotSurfaceMining", registry);
         runtimeWindow.Show();
-        using var initialFrame = runtimeWindow.CaptureRenderedFrame();
+        using WriteableBitmap? initialFrame = runtimeWindow.CaptureRenderedFrame();
         runtimeWindow.Position = new PixelPoint(420, 310);
         var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
         using var viewModel = new OverlayInteractionViewModel(
@@ -410,11 +419,11 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         try
         {
             Assert.True(viewModel.Begin());
-            var preview = Assert.Single(
+            OverlayPositionPreviewWindow preview = Assert.Single(
                 host.PreviewWindows,
                 candidate => candidate.Definition.Name == "PlotSurfaceMining"
             );
-            using var previewFrame = preview.CaptureRenderedFrame();
+            using WriteableBitmap? previewFrame = preview.CaptureRenderedFrame();
             Assert.Equal(runtimeWindow.Position, preview.GetPanelScreenOrigin(preview.RenderScaling));
             viewModel.OpenOverlaySettings("PlotSurfaceMining");
             viewModel.SelectedOverlayScaleOrdinal = OverlayScaleCatalog
@@ -423,17 +432,17 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
                 .Select((option, index) => (option, index))
                 .Single(pair => pair.option.Index == 13)
                 .index;
-            using var scaledFrame = preview.CaptureRenderedFrame();
-            var metrics = preview.GetPanelMetrics(preview.RenderScaling);
+            using WriteableBitmap? scaledFrame = preview.CaptureRenderedFrame();
+            OverlayPreviewPanelMetrics metrics = preview.GetPanelMetrics(preview.RenderScaling);
             var placedTopLeft = new PixelPoint(510, 430);
             preview.Position = new PixelPoint(
                 placedTopLeft.X - metrics.OriginOffset.X,
                 placedTopLeft.Y - metrics.OriginOffset.Y
             );
             viewModel.Save();
-            using var savedFrame = runtimeWindow.CaptureRenderedFrame();
+            using WriteableBitmap? savedFrame = runtimeWindow.CaptureRenderedFrame();
             Assert.Equal(placedTopLeft, runtimeWindow.Position);
-            var runtimeSize = OverlayWindowMetrics.GetPixelSize(registry.Snapshot().Single());
+            PixelSize runtimeSize = OverlayWindowMetrics.GetPixelSize(registry.Snapshot().Single());
             Assert.Equal(metrics.PanelSize.Width, runtimeSize.Width);
             Assert.Equal(placedTopLeft, store.Load().GetPosition("PlotSurfaceMining", hostBounds, runtimeSize));
 
@@ -465,7 +474,7 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         registry.Register(runtimeWindow, "PlotPulse");
         runtimeWindow.Show();
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
-        var activeLayout = store.Load();
+        LegacyOverlayLayout activeLayout = store.Load();
         var host = new AvaloniaOverlayPositionEditorHost(platform, registry);
         using var viewModel = new OverlayInteractionViewModel(
             platform,
@@ -482,8 +491,10 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         );
 
         Assert.True(viewModel.Begin());
-        var preview = host.PreviewWindows.Single(candidate => candidate.Definition.Name == "PlotPulse");
-        var metrics = preview.GetPanelMetrics(preview.RenderScaling);
+        OverlayPositionPreviewWindow preview = host.PreviewWindows.Single(candidate =>
+            candidate.Definition.Name == "PlotPulse"
+        );
+        OverlayPreviewPanelMetrics metrics = preview.GetPanelMetrics(preview.RenderScaling);
         var movedPanelOrigin = new PixelPoint(510, 430);
         preview.Position = new PixelPoint(
             movedPanelOrigin.X - metrics.OriginOffset.X,
@@ -526,8 +537,8 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         };
         vm.SelectedCategory = vm.Categories.Single(c => c.Category == OverlayLayoutCategory.Mining);
         Assert.True(vm.Begin());
-        var calibration = Assert.IsType<MiningCalibrationWindow>(host.MiningCalibration);
-        var expected = detection.Settings.GetBounds(viewport);
+        MiningCalibrationWindow calibration = Assert.IsType<MiningCalibrationWindow>(host.MiningCalibration);
+        PixelRect expected = detection.Settings.GetBounds(viewport);
         Assert.Equal(expected.Position, calibration.Position);
         Assert.Equal(expected.Width, (int)Math.Round(calibration.Width * calibration.RenderScaling));
         Assert.Equal(expected.Height, (int)Math.Round(calibration.Height * calibration.RenderScaling));
@@ -545,7 +556,7 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
                 .OfType<Button>()
                 .Single(b => Equals(b.Content, content))
                 .RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
-        var original = detection.Settings;
+        MiningDetectionSettings original = detection.Settings;
         Click("Size+");
         Assert.Equal(original.CircleWidth * expected.Width + 2, detection.Settings.CircleWidth * expected.Width, 6);
         Click("R+");
@@ -567,18 +578,18 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
             calibration.ToolsWindow.GetVisualDescendants().OfType<TextBlock>(),
             block => block.Text?.Contains("Rotation -6°", StringComparison.Ordinal) == true
         );
-        using (var frame = calibration.CaptureRenderedFrame())
+        using (WriteableBitmap? frame = calibration.CaptureRenderedFrame())
         {
             Assert.NotNull(frame);
-            var output = Environment.GetEnvironmentVariable("SRVSURVEY_OVERLAY_RENDER_OUTPUT");
+            string? output = Environment.GetEnvironmentVariable("SRVSURVEY_OVERLAY_RENDER_OUTPUT");
             if (!string.IsNullOrWhiteSpace(output))
             {
                 Directory.CreateDirectory(output);
-                using var stream = File.Create(Path.Combine(output, "mining-calibration.png"));
+                using FileStream stream = File.Create(Path.Combine(output, "mining-calibration.png"));
                 frame.Save(stream, Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
-                using var toolsFrame = calibration.ToolsWindow.CaptureRenderedFrame();
+                using WriteableBitmap? toolsFrame = calibration.ToolsWindow.CaptureRenderedFrame();
                 Assert.NotNull(toolsFrame);
-                using var toolsStream = File.Create(Path.Combine(output, "mining-calibration-controls.png"));
+                using FileStream toolsStream = File.Create(Path.Combine(output, "mining-calibration-controls.png"));
                 toolsFrame.Save(toolsStream, Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
             }
         }
@@ -590,7 +601,7 @@ public sealed class OverlayPositionEditorHostTests : IDisposable
         Assert.All(host.PreviewWindows, preview => Assert.False(preview.IsVisible));
         detection.StopCalibrationTest();
         Assert.All(host.PreviewWindows, preview => Assert.True(preview.IsVisible));
-        var markers = detection.Settings.Markers.ToArray();
+        MiningDetectionPoint[] markers = detection.Settings.Markers.ToArray();
         markers[0] = new(.25, .35);
         detection.UpdateCalibration(detection.Settings with { Markers = markers });
         vm.Save();

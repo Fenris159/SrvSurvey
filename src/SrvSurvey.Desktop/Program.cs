@@ -25,7 +25,7 @@ internal static class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        var updateStartup = ApplicationUpdateBootstrap.ParseStartupArguments(args);
+        ApplicationUpdateStartup updateStartup = ApplicationUpdateBootstrap.ParseStartupArguments(args);
         if (TryRunUpdateHelper(updateStartup))
         {
             return;
@@ -38,14 +38,14 @@ internal static class Program
         ApplicationUpdateBootstrap.SetPendingOutcome(
             updateStartup.Mode == ApplicationUpdateStartupMode.Result ? updateStartup.PlanPath : null
         );
-        if (!TryResolveStartupContext(out var startupContext))
+        if (!TryResolveStartupContext(out DesktopStartupContext? startupContext))
         {
             return;
         }
 
         StartupContext = startupContext;
-        var appDataPaths = startupContext.AppDataPaths;
-        var language = LocalizationSettingsStore.ResolveCurrent(appDataPaths);
+        AppDataPaths appDataPaths = startupContext.AppDataPaths;
+        string language = LocalizationSettingsStore.ResolveCurrent(appDataPaths);
         LocalizationCatalog.Initialize(language);
         LocalizationCatalog.ApplyCulture(language);
         var applicationLog = new ApplicationLogService(
@@ -58,7 +58,7 @@ internal static class Program
         }
 
         var displayCapabilities = OverlayPlatformCapabilities.DetectCurrent();
-        var x11ThreadingInitialized = displayCapabilities.UsesX11Compatibility
+        bool? x11ThreadingInitialized = displayCapabilities.UsesX11Compatibility
             ? X11Native.TryInitializeThreading()
             : (bool?)null;
         applicationLog.Append($"SrvSurvey {typeof(Program).Assembly.GetName().Version}");
@@ -84,7 +84,7 @@ internal static class Program
             );
         }
 
-        var useSoftwareRendering = IsSoftwareRenderingRequested(
+        bool useSoftwareRendering = IsSoftwareRenderingRequested(
             Environment.GetEnvironmentVariable(SoftwareRenderingEnvironmentVariable)
         );
         applicationLog.Append(
@@ -153,7 +153,9 @@ internal static class Program
     {
         ArgumentNullException.ThrowIfNull(arguments);
         ArgumentNullException.ThrowIfNull(exception);
-        var startupMode = StartupOptions.HasDiagnosticReplayOption(arguments) ? "diagnostic replay" : "normal startup";
+        string startupMode = StartupOptions.HasDiagnosticReplayOption(arguments)
+            ? "diagnostic replay"
+            : "normal startup";
         return $"SrvSurvey {startupMode} could not start: {exception.Message}";
     }
 
@@ -163,7 +165,9 @@ internal static class Program
         ApplicationLogService applicationLog
     )
     {
-        var frontierCallback = startupContext.IsDiagnosticReplay ? null : FrontierOAuthCallback.Find(StartupArguments);
+        FrontierOAuthCallback? frontierCallback = startupContext.IsDiagnosticReplay
+            ? null
+            : FrontierOAuthCallback.Find(StartupArguments);
         if (frontierCallback is null)
         {
             return false;
@@ -173,7 +177,7 @@ internal static class Program
         {
             using var frontier = FrontierAccountService.CreateCurrent(appDataPaths.DataDirectory);
             frontier.HandleCallbackAsync(frontierCallback).GetAwaiter().GetResult();
-            var activated = DesktopApplicationActivator.TryActivateExistingInstance();
+            bool activated = DesktopApplicationActivator.TryActivateExistingInstance();
             applicationLog.Append("Frontier authorization callback completed securely.");
             applicationLog.Append(
                 activated
@@ -212,7 +216,7 @@ internal static class Program
 
     private static AppBuilder BuildAvaloniaApp(bool useSoftwareRendering)
     {
-        var builder = AppBuilder.Configure<App>().UsePlatformDetect();
+        AppBuilder builder = AppBuilder.Configure<App>().UsePlatformDetect();
         if (useSoftwareRendering && OperatingSystem.IsWindows())
         {
             builder = builder.With(new Win32PlatformOptions { RenderingMode = [Win32RenderingMode.Software] });

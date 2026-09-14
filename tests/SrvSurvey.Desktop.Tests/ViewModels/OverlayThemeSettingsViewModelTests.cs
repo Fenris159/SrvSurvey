@@ -15,7 +15,7 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
     [Fact]
     public void BuiltInPresetsAreAlwaysAvailableAndLoadWhenSelected()
     {
-        var viewModel = CreateViewModel();
+        OverlayThemeSettingsViewModel viewModel = CreateViewModel();
 
         Assert.Equal(
             OverlayThemePresetCatalog.Presets.Select(preset => preset.Name),
@@ -39,7 +39,8 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
     [Fact]
     public void GeneralHeaderEditorPrecedesPrimaryAccent()
     {
-        var general = CreateViewModel().Categories.Single(candidate => candidate.Name == "General");
+        OverlayThemeCategoryViewModel general = CreateViewModel()
+            .Categories.Single(candidate => candidate.Name == "General");
 
         Assert.Equal("header", general.Colors[0].Key);
         Assert.Equal("Header", general.Colors[0].DisplayName);
@@ -49,9 +50,9 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
     [Fact]
     public void ColorCategoriesBehaveAsASingleOpenAccordion()
     {
-        var viewModel = CreateViewModel();
-        var general = viewModel.Categories.Single(category => category.Name == "General");
-        var guardian = viewModel.Categories.Single(category => category.Name == "Guardian");
+        OverlayThemeSettingsViewModel viewModel = CreateViewModel();
+        OverlayThemeCategoryViewModel general = viewModel.Categories.Single(category => category.Name == "General");
+        OverlayThemeCategoryViewModel guardian = viewModel.Categories.Single(category => category.Name == "Guardian");
 
         Assert.True(general.IsExpanded);
         Assert.Single(viewModel.Categories, category => category.IsExpanded);
@@ -66,14 +67,14 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
     [Fact]
     public void TypographyUsesExistingRoleSizesAndHalfPointSteps()
     {
-        var viewModel = CreateViewModel();
+        OverlayThemeSettingsViewModel viewModel = CreateViewModel();
 
         Assert.Equal(
             [("header", 10d), ("title", 15d), ("value", 12d), ("body", 11d), ("detail", 10d), ("caption", 9d)],
             viewModel.Typography.Select(editor => (editor.Key, editor.FontSize))
         );
 
-        var header = GetTypographyEditor(viewModel, "header");
+        OverlayTypographyEditorViewModel header = GetTypographyEditor(viewModel, "header");
         header.FontSize = 10.26;
 
         Assert.Equal(10.5, header.FontSize);
@@ -84,7 +85,8 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
     [Fact]
     public void ExobiologyEditorsNameEveryRewardPipStatePrecisely()
     {
-        var category = CreateViewModel().Categories.Single(candidate => candidate.Name == "Exobiology");
+        OverlayThemeCategoryViewModel category = CreateViewModel()
+            .Categories.Single(candidate => candidate.Name == "Exobiology");
 
         Assert.Equal(
             [
@@ -134,14 +136,14 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
     [Fact]
     public void LoadDefaultsRestoresEveryColorAndReselectsDefault()
     {
-        var viewModel = CreateViewModel();
+        OverlayThemeSettingsViewModel viewModel = CreateViewModel();
         viewModel.SelectedSavedState = "Crimson Wake";
         GetEditor(viewModel, "orange").HexValue = "#010203";
         GetTypographyEditor(viewModel, "header").FontSize = 20;
 
         viewModel.RestoreDefaultsCommand.Execute(null);
 
-        var defaults = LegacyOverlayThemeStore.CreateDefault().Colors;
+        IReadOnlyDictionary<string, Color> defaults = LegacyOverlayThemeStore.CreateDefault().Colors;
         Assert.Equal(OverlayThemePresetCatalog.DefaultName, viewModel.SelectedSavedState);
         Assert.All(defaults, entry => Assert.Equal(entry.Value, GetColor(viewModel, entry.Key)));
         Assert.Equal(OverlayTypographySettings.Default.Header, GetTypographyEditor(viewModel, "header").FontSize);
@@ -153,7 +155,7 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
     {
         var stateStore = new OverlayThemeStateStore(Path.Combine(temporaryDirectory, "states.json"));
         _ = stateStore.SaveState("My custom theme", LegacyOverlayThemeStore.CreateDefault().Colors);
-        var viewModel = CreateViewModel(stateStore);
+        OverlayThemeSettingsViewModel viewModel = CreateViewModel(stateStore);
 
         Assert.Equal("My custom theme", viewModel.SavedStates[^1]);
 
@@ -167,7 +169,7 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
     [Fact]
     public void BuiltInPresetNamesCannotBeOverwrittenByNamedStates()
     {
-        var viewModel = CreateViewModel();
+        OverlayThemeSettingsViewModel viewModel = CreateViewModel();
         viewModel.StateName = " default ";
 
         Assert.False(viewModel.CanSaveState);
@@ -180,12 +182,12 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
     [Fact]
     public void LoadingBuiltInPresetAutomaticallyRefreshesPreviewWithoutSaving()
     {
-        var themePath = Path.Combine(temporaryDirectory, "theme.json");
+        string themePath = Path.Combine(temporaryDirectory, "theme.json");
         var activeStore = new LegacyOverlayThemeStore(themePath);
-        var activeTheme = LegacyOverlayThemeStore.CreateDefault();
+        LegacyOverlayTheme activeTheme = LegacyOverlayThemeStore.CreateDefault();
         _ = activeStore.Save(activeTheme);
-        var originalBytes = File.ReadAllBytes(themePath);
-        var service = CreateThemeService(activeTheme);
+        byte[] originalBytes = File.ReadAllBytes(themePath);
+        RavenThemeService service = CreateThemeService(activeTheme);
         var viewModel = new OverlayThemeSettingsViewModel(
             activeStore,
             new OverlayThemeStateStore(Path.Combine(temporaryDirectory, "states.json")),
@@ -207,21 +209,21 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
     [Fact]
     public void LoadingSavedStateAutomaticallyRefreshesPreviewWithoutSaving()
     {
-        var themePath = Path.Combine(temporaryDirectory, "theme.json");
+        string themePath = Path.Combine(temporaryDirectory, "theme.json");
         var activeStore = new LegacyOverlayThemeStore(themePath);
-        var activeTheme = LegacyOverlayThemeStore.CreateDefault();
+        LegacyOverlayTheme activeTheme = LegacyOverlayThemeStore.CreateDefault();
         _ = activeStore.Save(activeTheme);
-        var originalBytes = File.ReadAllBytes(themePath);
+        byte[] originalBytes = File.ReadAllBytes(themePath);
         var customColors = activeTheme.Colors.ToDictionary(
             entry => entry.Key,
             entry => entry.Value,
             StringComparer.Ordinal
         );
         customColors["orange"] = Color.Parse("#010203");
-        var customTypography = OverlayTypographySettings.Default with { Value = 13.5 };
+        OverlayTypographySettings customTypography = OverlayTypographySettings.Default with { Value = 13.5 };
         var stateStore = new OverlayThemeStateStore(Path.Combine(temporaryDirectory, "states.json"));
         _ = stateStore.SaveState("My custom theme", customColors, customTypography);
-        var service = CreateThemeService(activeTheme);
+        RavenThemeService service = CreateThemeService(activeTheme);
         var viewModel = new OverlayThemeSettingsViewModel(activeStore, stateStore, service, activeTheme);
         viewModel.SelectedSavedState = "My custom theme";
 
@@ -236,11 +238,11 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
     [Fact]
     public void PreviewRefreshesThemeWithoutSavingAndReloadRestoresActiveFile()
     {
-        var themePath = Path.Combine(temporaryDirectory, "theme.json");
+        string themePath = Path.Combine(temporaryDirectory, "theme.json");
         var activeStore = new LegacyOverlayThemeStore(themePath);
-        var activeTheme = LegacyOverlayThemeStore.CreateDefault();
+        LegacyOverlayTheme activeTheme = LegacyOverlayThemeStore.CreateDefault();
         _ = activeStore.Save(activeTheme);
-        var originalBytes = File.ReadAllBytes(themePath);
+        byte[] originalBytes = File.ReadAllBytes(themePath);
         var application = new Application();
         var service = new RavenThemeService(
             application,
@@ -254,10 +256,10 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
             service,
             activeTheme
         );
-        var primary = viewModel
+        OverlayThemeColorEditorViewModel primary = viewModel
             .Categories.SelectMany(category => category.Colors)
             .Single(color => color.Key == "orange");
-        var header = GetTypographyEditor(viewModel, "header");
+        OverlayTypographyEditorViewModel header = GetTypographyEditor(viewModel, "header");
 
         primary.HexValue = "#010203";
         header.FontSize = 11.5;

@@ -33,11 +33,11 @@ public sealed class FrontierProfileCacheStore(string path)
     public async Task SaveAsync(FrontierAccountSnapshot snapshot, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
-        var directory =
+        string directory =
             Path.GetDirectoryName(path)
             ?? throw new InvalidOperationException("Frontier profile cache has no parent directory.");
         Directory.CreateDirectory(directory);
-        var temporaryPath = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
+        string temporaryPath = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try
         {
             await using (
@@ -80,11 +80,11 @@ public sealed class FrontierProfileCacheStore(string path)
 
     public async Task<IAsyncDisposable> AcquireRefreshLeaseAsync(CancellationToken cancellationToken = default)
     {
-        var directory =
+        string directory =
             Path.GetDirectoryName(path)
             ?? throw new InvalidOperationException("Frontier profile cache has no parent directory.");
         Directory.CreateDirectory(directory);
-        var leasePath = path + ".refresh.lock";
+        string leasePath = path + ".refresh.lock";
         while (true)
         {
             cancellationToken.ThrowIfCancellationRequested();

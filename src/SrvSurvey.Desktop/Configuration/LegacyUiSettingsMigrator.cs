@@ -29,8 +29,8 @@ public sealed class LegacyUiSettingsMigrator
     public LegacyUiSettingsMigrationResult MigrateIfNeeded(AppDataPaths paths)
     {
         ArgumentNullException.ThrowIfNull(paths);
-        var manifestPath = Path.Combine(paths.DataDirectory, LegacyProfileImporter.ManifestFileName);
-        var legacySettingsPath = Path.Combine(paths.DataDirectory, "settings.json");
+        string manifestPath = Path.Combine(paths.DataDirectory, LegacyProfileImporter.ManifestFileName);
+        string legacySettingsPath = Path.Combine(paths.DataDirectory, "settings.json");
         if (!File.Exists(manifestPath) || !File.Exists(legacySettingsPath))
         {
             return LegacyUiSettingsMigrationResult.NotRequired;
@@ -38,21 +38,21 @@ public sealed class LegacyUiSettingsMigrator
 
         try
         {
-            var manifest =
+            ProfileImportManifest manifest =
                 JsonSerializer.Deserialize<ProfileImportManifest>(File.ReadAllText(manifestPath))
                 ?? throw new InvalidDataException("The legacy import manifest is empty.");
-            var legacy =
+            JsonObject legacy =
                 JsonNode.Parse(File.ReadAllText(legacySettingsPath)) as JsonObject
                 ?? throw new InvalidDataException("The imported legacy settings file is not a JSON object.");
             var store = new UiSettingsDocumentStore(paths.UiSettingsPath);
-            var existing = store.Load();
+            JsonObject existing = store.Load();
             if (HasMigrationMarker(existing, manifest))
             {
                 return MigrateNewPreferencesIfMissing(legacy, existing, store);
             }
 
-            var backupPath = BackupExistingSettings(paths.UiSettingsPath, manifest);
-            var mappedCount = 0;
+            string? backupPath = BackupExistingSettings(paths.UiSettingsPath, manifest);
+            int mappedCount = 0;
             store.Update(root =>
             {
                 root["Version"] = 1;
@@ -315,12 +315,12 @@ public sealed class LegacyUiSettingsMigrator
 
     private static int MapTheme(JsonObject legacy, JsonObject target)
     {
-        if (!TryGetBoolean(legacy, "darkTheme", out var dark))
+        if (!TryGetBoolean(legacy, "darkTheme", out bool dark))
         {
             return 0;
         }
 
-        var black = TryGetBoolean(legacy, "themeMainBlack", out var blackValue) && blackValue;
+        bool black = TryGetBoolean(legacy, "themeMainBlack", out bool blackValue) && blackValue;
         target["Theme"] = black
             ? "orange-dark"
             : (dark) switch
@@ -348,16 +348,16 @@ public sealed class LegacyUiSettingsMigrator
             ("RavenService", "buildProjectsUrl_TEST", "ServiceUri"),
             ("JumpInfo", "useLastUpdatedFromSpanshNotEDSM", "UseSpanshLastUpdated"),
         };
-        var pending = mappings
+        (string Section, string Legacy, string Current)[] pending = mappings
             .Where(mapping =>
                 legacy[mapping.Legacy] is not null
                 && (existing[mapping.Section] is not JsonObject section || !section.ContainsKey(mapping.Current))
             )
             .ToArray();
-        var shouldMapColor =
+        bool shouldMapColor =
             legacy["inferColor"] is JsonObject
             && (existing[FirstFootfallInferenceSection] is not JsonObject inference || !inference.ContainsKey("Color"));
-        var shouldMapOverlayScale =
+        bool shouldMapOverlayScale =
             legacy["plotterScale"] is not null
             && (existing["OverlayScale"] is not JsonObject overlayScale || !overlayScale.ContainsKey("Index"));
         if (pending.Length == 0 && !shouldMapColor && !shouldMapOverlayScale)
@@ -365,10 +365,10 @@ public sealed class LegacyUiSettingsMigrator
             return LegacyUiSettingsMigrationResult.NotRequired;
         }
 
-        var mappedCount = 0;
+        int mappedCount = 0;
         store.Update(root =>
         {
-            foreach (var mapping in pending)
+            foreach ((string Section, string Legacy, string Current) mapping in pending)
             {
                 mappedCount += Copy(legacy, mapping.Legacy, GetOrCreateObject(root, mapping.Section), mapping.Current);
             }
@@ -390,8 +390,8 @@ public sealed class LegacyUiSettingsMigrator
 
     private static int MapFirstFootfallInference(JsonObject legacy, JsonObject target)
     {
-        var section = GetOrCreateObject(target, FirstFootfallInferenceSection);
-        var count = Copy(legacy, "inferTolerance", section, "Tolerance");
+        JsonObject section = GetOrCreateObject(target, FirstFootfallInferenceSection);
+        int count = Copy(legacy, "inferTolerance", section, "Tolerance");
         count += Copy(legacy, "inferThreshold", section, "Threshold");
         count += MapFirstFootfallColor(legacy, target);
         return count;
@@ -399,7 +399,7 @@ public sealed class LegacyUiSettingsMigrator
 
     private static int MapOverlayScale(JsonObject legacy, JsonObject target)
     {
-        if (!TryGetOverlayScaleIndex(legacy["plotterScale"], out var index) || !OverlayScaleCatalog.IsSupported(index))
+        if (!TryGetOverlayScaleIndex(legacy["plotterScale"], out int index) || !OverlayScaleCatalog.IsSupported(index))
         {
             return 0;
         }
@@ -422,7 +422,7 @@ public sealed class LegacyUiSettingsMigrator
         }
 
         if (
-            !value.TryGetValue<double>(out var numeric)
+            !value.TryGetValue<double>(out double numeric)
             || !double.IsFinite(numeric)
             || !double.IsInteger(numeric)
             || numeric is < int.MinValue or > int.MaxValue
@@ -442,9 +442,9 @@ public sealed class LegacyUiSettingsMigrator
             return 0;
         }
 
-        var section = GetOrCreateObject(target, FirstFootfallInferenceSection);
-        var color = GetOrCreateObject(section, "Color");
-        var count = Copy(source, "R", color, "Red");
+        JsonObject section = GetOrCreateObject(target, FirstFootfallInferenceSection);
+        JsonObject color = GetOrCreateObject(section, "Color");
+        int count = Copy(source, "R", color, "Red");
         count += Copy(source, "G", color, "Green");
         count += Copy(source, "B", color, "Blue");
         return count;
@@ -452,8 +452,8 @@ public sealed class LegacyUiSettingsMigrator
 
     private static int MapCodexImages(JsonObject legacy, JsonObject target, ProfileImportManifest manifest)
     {
-        var section = GetOrCreateObject(target, "CodexImages");
-        var count = Copy(legacy, "preDownloadCodexImages", section, "PreDownload");
+        JsonObject section = GetOrCreateObject(target, "CodexImages");
+        int count = Copy(legacy, "preDownloadCodexImages", section, "PreDownload");
         count += MapImportedDirectory(
             legacy,
             "downloadCodexImageFolder",
@@ -477,7 +477,7 @@ public sealed class LegacyUiSettingsMigrator
     {
         if (
             source[sourceName] is not JsonValue value
-            || !value.TryGetValue<string>(out var configuredPath)
+            || !value.TryGetValue<string>(out string? configuredPath)
             || string.IsNullOrWhiteSpace(configuredPath)
         )
         {
@@ -494,11 +494,11 @@ public sealed class LegacyUiSettingsMigrator
         string? conventionalImportedDirectory
     )
     {
-        var configured = configuredPath.Trim();
-        var relative = GetImportedRelativePath(configured, manifest.SourceDirectory);
+        string configured = configuredPath.Trim();
+        string? relative = GetImportedRelativePath(configured, manifest.SourceDirectory);
         if (relative is not null)
         {
-            var relocated = Path.GetFullPath(Path.Combine(manifest.DestinationDirectory, relative));
+            string relocated = Path.GetFullPath(Path.Combine(manifest.DestinationDirectory, relative));
             if (IsSameOrChildPath(relocated, manifest.DestinationDirectory))
             {
                 return relocated;
@@ -514,7 +514,7 @@ public sealed class LegacyUiSettingsMigrator
             )
         )
         {
-            var imported = Path.Combine(manifest.DestinationDirectory, conventionalImportedDirectory);
+            string imported = Path.Combine(manifest.DestinationDirectory, conventionalImportedDirectory);
             if (Directory.Exists(imported))
             {
                 return Path.GetFullPath(imported);
@@ -526,20 +526,20 @@ public sealed class LegacyUiSettingsMigrator
 
     private static string? GetImportedRelativePath(string configuredPath, string sourceDirectory)
     {
-        var configured = NormalizeDirectory(configuredPath);
-        var source = NormalizeDirectory(sourceDirectory);
+        string configured = NormalizeDirectory(configuredPath);
+        string source = NormalizeDirectory(sourceDirectory);
         if (string.Equals(configured, source, StringComparison.OrdinalIgnoreCase))
         {
             return string.Empty;
         }
 
-        var prefix = source + "/";
+        string prefix = source + "/";
         if (!configured.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
         {
             return null;
         }
 
-        var relative = configured[prefix.Length..];
+        string relative = configured[prefix.Length..];
         return string.Join(
             Path.DirectorySeparatorChar,
             relative.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
@@ -553,29 +553,31 @@ public sealed class LegacyUiSettingsMigrator
 
     private static string GetCrossPlatformFileName(string path)
     {
-        var normalized = NormalizeDirectory(path);
-        var separator = normalized.LastIndexOf('/');
+        string normalized = NormalizeDirectory(path);
+        int separator = normalized.LastIndexOf('/');
         return separator >= 0 ? normalized[(separator + 1)..] : normalized;
     }
 
     private static bool IsSameOrChildPath(string path, string root)
     {
-        var fullPath = Path.GetFullPath(path).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-        var fullRoot = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        string fullPath = Path.GetFullPath(path).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        string fullRoot = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        StringComparison comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
         return string.Equals(fullPath, fullRoot, comparison)
             || fullPath.StartsWith(fullRoot + Path.DirectorySeparatorChar, comparison);
     }
 
     private static int MapFssTuningDetector(JsonObject legacy, JsonObject target)
     {
-        if (!legacy.TryGetPropertyValue("watchFssSettings_TEST", out var legacyDetector))
+        if (!legacy.TryGetPropertyValue("watchFssSettings_TEST", out JsonNode? legacyDetector))
         {
             return 0;
         }
 
-        var systemSurvey = GetOrCreateObject(target, "SystemSurvey");
-        var detector = GetOrCreateObject(systemSurvey, "FssTuningDetector");
+        JsonObject systemSurvey = GetOrCreateObject(target, "SystemSurvey");
+        JsonObject detector = GetOrCreateObject(systemSurvey, "FssTuningDetector");
         if (legacyDetector is not JsonObject source)
         {
             detector[EnabledProperty] = false;
@@ -583,7 +585,7 @@ public sealed class LegacyUiSettingsMigrator
         }
 
         detector[EnabledProperty] = true;
-        var count = 1;
+        int count = 1;
         count += Copy(source, "saveDebugImages", detector, "SaveDiagnosticImages");
         count += Copy(source, "yellowHorizontalTolerance", detector, "YellowHorizontalTolerance");
         count += MapFssPixelColor(source, "yellowBar", detector, "YellowBar");
@@ -600,8 +602,8 @@ public sealed class LegacyUiSettingsMigrator
             return 0;
         }
 
-        var mapped = GetOrCreateObject(target, targetName);
-        var count = Copy(watchColor, "t", mapped, "Tolerance");
+        JsonObject mapped = GetOrCreateObject(target, targetName);
+        int count = Copy(watchColor, "t", mapped, "Tolerance");
         count += Copy(color, "R", mapped, "Red");
         count += Copy(color, "G", mapped, "Green");
         count += Copy(color, "B", mapped, "Blue");
@@ -610,11 +612,11 @@ public sealed class LegacyUiSettingsMigrator
 
     private static int MapColonization(JsonObject legacy, JsonObject target)
     {
-        var count = 0;
-        var section = GetOrCreateObject(target, "Colonization");
+        int count = 0;
+        JsonObject section = GetOrCreateObject(target, "Colonization");
         count += Copy(legacy, "buildProjects_TEST", section, EnabledProperty);
         count += Copy(legacy, "buildProjectsTrackShipCargo", section, "ShipCargoPublishingEnabled");
-        var overlay = GetOrCreateObject(section, "Overlay");
+        JsonObject overlay = GetOrCreateObject(section, "Overlay");
         count += Copy(legacy, "autoShowPlotBuildCommodities", overlay, AutoShowProperty);
         count += Copy(legacy, "buildProjectsOnRightScreen", overlay, "ShowOnRightPanel");
         count += Copy(legacy, "buildProjectsShowSumFC_TEST", overlay, "ShowFleetCarrierCargo");
@@ -632,8 +634,8 @@ public sealed class LegacyUiSettingsMigrator
 
     private static int MapNotifications(JsonObject legacy, JsonObject target)
     {
-        var section = GetOrCreateObject(target, "Notifications");
-        var count = Copy(legacy, "autoShowFloatie_TEST", section, EnabledProperty);
+        JsonObject section = GetOrCreateObject(target, "Notifications");
+        int count = Copy(legacy, "autoShowFloatie_TEST", section, EnabledProperty);
         if (legacy["allowNotifications"] is not JsonObject notifications)
         {
             return count;
@@ -649,15 +651,15 @@ public sealed class LegacyUiSettingsMigrator
 
     private static int MapInput(JsonObject legacy, JsonObject target)
     {
-        var count = 0;
-        var input = GetOrCreateObject(target, "Input");
+        int count = 0;
+        JsonObject input = GetOrCreateObject(target, "Input");
         count += Copy(legacy, "keyhook_TEST", input, "KeyboardEnabled");
         count += Copy(legacy, "hookDirectX_TEST", input, "ControllerEnabled");
         count += Copy(legacy, "hookDirectXDeviceId_TEST", input, "ControllerDeviceId");
         if (legacy["keyActions_TEST"] is JsonObject bindings)
         {
-            var targetBindings = GetOrCreateObject(input, "Bindings");
-            foreach (var binding in bindings)
+            JsonObject targetBindings = GetOrCreateObject(input, "Bindings");
+            foreach (KeyValuePair<string, JsonNode?> binding in bindings)
             {
                 targetBindings[binding.Key] = binding.Value?.DeepClone();
                 count++;
@@ -669,7 +671,7 @@ public sealed class LegacyUiSettingsMigrator
 
     private static int MapPulseOverlay(JsonObject legacy, JsonObject target)
     {
-        if (!TryGetBoolean(legacy, "hideJournalWriteTimer", out var hidden))
+        if (!TryGetBoolean(legacy, "hideJournalWriteTimer", out bool hidden))
         {
             return 0;
         }
@@ -685,9 +687,9 @@ public sealed class LegacyUiSettingsMigrator
         IReadOnlyList<(string Legacy, string Current, int Offset)> mappings
     )
     {
-        var section = GetOrCreateObject(target, sectionName);
-        var count = 0;
-        foreach (var mapping in mappings)
+        JsonObject section = GetOrCreateObject(target, sectionName);
+        int count = 0;
+        foreach ((string Legacy, string Current, int Offset) mapping in mappings)
         {
             count += Copy(legacy, mapping.Legacy, section, mapping.Current, mapping.Offset);
         }
@@ -723,7 +725,7 @@ public sealed class LegacyUiSettingsMigrator
             return 0;
         }
 
-        if (numericOffset != 0 && value is JsonValue numeric && numeric.TryGetValue<int>(out var number))
+        if (numericOffset != 0 && value is JsonValue numeric && numeric.TryGetValue<int>(out int number))
         {
             target[targetName] = number + numericOffset;
         }
@@ -757,7 +759,7 @@ public sealed class LegacyUiSettingsMigrator
     {
         return settings["LegacyImport"] is JsonObject marker
             && marker["ImportedAtUtc"] is JsonValue importedAt
-            && importedAt.TryGetValue<DateTimeOffset>(out var value)
+            && importedAt.TryGetValue<DateTimeOffset>(out DateTimeOffset value)
             && value == manifest.ImportedAtUtc;
     }
 
@@ -769,14 +771,14 @@ public sealed class LegacyUiSettingsMigrator
         }
 
         Directory.CreateDirectory(manifest.BackupDirectory);
-        var backupPath = Path.Combine(manifest.BackupDirectory, BackupFileName);
+        string backupPath = Path.Combine(manifest.BackupDirectory, BackupFileName);
         if (!File.Exists(backupPath))
         {
             File.Copy(settingsPath, backupPath, false);
         }
 
-        var sourceHash = ComputeSha256(settingsPath);
-        var backupHash = ComputeSha256(backupPath);
+        string sourceHash = ComputeSha256(settingsPath);
+        string backupHash = ComputeSha256(backupPath);
         if (!string.Equals(sourceHash, backupHash, StringComparison.Ordinal))
         {
             throw new IOException("The current Avalonia settings backup did not match its source.");

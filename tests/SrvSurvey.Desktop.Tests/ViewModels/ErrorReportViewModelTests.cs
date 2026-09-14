@@ -15,15 +15,15 @@ public sealed class ErrorReportViewModelTests : IDisposable
     public async Task CapturesErrorRecentLogsAndExistingJournalAtCreationTime()
     {
         var log = new ApplicationLogService(temporaryDirectory);
-        for (var index = 0; index < 25; index++)
+        for (int index = 0; index < 25; index++)
         {
             log.Append($"Entry {index:00}");
         }
 
-        var journalPath = Path.Combine(temporaryDirectory, "Journal.test.log");
+        string journalPath = Path.Combine(temporaryDirectory, "Journal.test.log");
         Directory.CreateDirectory(temporaryDirectory);
         await File.WriteAllTextAsync(journalPath, "journal");
-        var exception = CaptureException();
+        Exception exception = CaptureException();
 
         var viewModel = new ErrorReportViewModel(exception, "2.0.0", log, journalPath);
 
@@ -40,13 +40,13 @@ public sealed class ErrorReportViewModelTests : IDisposable
     [Fact]
     public void BuildsLegacyCrashReportTemplateUrlWithCurrentSteps()
     {
-        var exception = CaptureException();
+        Exception exception = CaptureException();
         var viewModel = new ErrorReportViewModel(exception, "2.0.0") { Steps = "Jumped to Sol & opened the map" };
 
         Uri uri = viewModel.BuildIssueUri(
             DateTimeOffset.Parse("2026-07-25T13:14:15-05:00", global::System.Globalization.CultureInfo.InvariantCulture)
         );
-        var decodedQuery = WebUtility.UrlDecode(uri.Query);
+        string decodedQuery = WebUtility.UrlDecode(uri.Query);
 
         Assert.Equal("github.com", uri.Host);
         Assert.Equal("/Fenris159/SrvSurvey/issues/new", uri.AbsolutePath);
@@ -64,7 +64,7 @@ public sealed class ErrorReportViewModelTests : IDisposable
     [Fact]
     public async Task ClipboardAndLaunchActionsReportTheirOutcome()
     {
-        var journalPath = Path.Combine(temporaryDirectory, "Journal.test.log");
+        string journalPath = Path.Combine(temporaryDirectory, "Journal.test.log");
         Directory.CreateDirectory(temporaryDirectory);
         await File.WriteAllTextAsync(journalPath, "journal");
         var viewModel = new ErrorReportViewModel(CaptureException(), "2.0.0", journalPath: journalPath);
@@ -77,12 +77,12 @@ public sealed class ErrorReportViewModelTests : IDisposable
             copied = text;
             return Task.CompletedTask;
         });
-        var issueOpened = await viewModel.OpenIssueAsync(uri =>
+        bool issueOpened = await viewModel.OpenIssueAsync(uri =>
         {
             launchedUri = uri;
             return Task.FromResult(true);
         });
-        var journalOpened = await viewModel.OpenJournalAsync(file =>
+        bool journalOpened = await viewModel.OpenJournalAsync(file =>
         {
             launchedFile = file;
             return Task.FromResult(true);
@@ -104,9 +104,9 @@ public sealed class ErrorReportViewModelTests : IDisposable
             "2.0.0",
             journalPath: Path.Combine(temporaryDirectory, "missing.log")
         );
-        var launcherCalled = false;
+        bool launcherCalled = false;
 
-        var launched = await viewModel.OpenJournalAsync(_ =>
+        bool launched = await viewModel.OpenJournalAsync(_ =>
         {
             launcherCalled = true;
             return Task.FromResult(true);

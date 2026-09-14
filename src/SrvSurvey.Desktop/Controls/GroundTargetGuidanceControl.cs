@@ -98,13 +98,13 @@ public sealed class GroundTargetGuidanceControl : Control
             return;
         }
 
-        var grid = GridBrush ?? Brushes.DimGray;
-        var accent = AccentBrush ?? Brushes.Cyan;
-        var warning = WarningBrush ?? Brushes.Orange;
-        var danger = DangerBrush ?? Brushes.Red;
-        var muted = MutedBrush ?? Brushes.Gray;
+        IBrush grid = GridBrush ?? Brushes.DimGray;
+        IBrush accent = AccentBrush ?? Brushes.Cyan;
+        IBrush warning = WarningBrush ?? Brushes.Orange;
+        IBrush danger = DangerBrush ?? Brushes.Red;
+        IBrush muted = MutedBrush ?? Brushes.Gray;
         var center = new Point(Bounds.Width / 2, 45);
-        var radius = Math.Max(10, Math.Min(Bounds.Width - 16, 82) / 2);
+        double radius = Math.Max(10, Math.Min(Bounds.Width - 16, 82) / 2);
 
         context.DrawEllipse(null, new Pen(grid, 1), center, radius, radius);
         context.DrawLine(
@@ -128,7 +128,7 @@ public sealed class GroundTargetGuidanceControl : Control
             new Point(center.X - radius + 7, center.Y)
         );
 
-        var bearingRadians = RelativeBearingDegrees * Math.PI / 180d;
+        double bearingRadians = RelativeBearingDegrees * Math.PI / 180d;
         var target = new Point(
             center.X + Math.Sin(bearingRadians) * (radius - 9),
             center.Y - Math.Cos(bearingRadians) * (radius - 9)
@@ -137,13 +137,13 @@ public sealed class GroundTargetGuidanceControl : Control
         context.DrawEllipse(accent, null, target, 4, 4);
         RingedPointerDrawing.Draw(context, center, 20, bearingDegrees: 0, accent, strokeThickness: 1.5);
 
-        var baselineY = Math.Max(94, Bounds.Height - 12);
+        double baselineY = Math.Max(94, Bounds.Height - 12);
         var origin = new Point(10, baselineY);
-        var length = Math.Max(20, Math.Min(70, Bounds.Width - 22));
+        double length = Math.Max(20, Math.Min(70, Bounds.Width - 22));
         context.DrawLine(new Pen(grid, 1), origin, new Point(origin.X + length, origin.Y));
-        var attackAngle = Math.Clamp(AttackAngleDegrees, 0, 89);
-        var attackRadians = attackAngle * Math.PI / 180d;
-        var attackBrush = attackAngle switch
+        double attackAngle = Math.Clamp(AttackAngleDegrees, 0, 89);
+        double attackRadians = attackAngle * Math.PI / 180d;
+        IBrush attackBrush = attackAngle switch
         {
             <= 5 => muted,
             <= 30 => warning,

@@ -7,7 +7,7 @@ public sealed class ControllerDeviceProviderTests
     [Fact]
     public void BundledSdlRuntimeCanEnumerateWithoutHardware()
     {
-        var result = new SdlControllerDeviceProvider().Discover();
+        ControllerDeviceDiscoveryResult result = new SdlControllerDeviceProvider().Discover();
 
         Assert.True(result.IsAvailable, result.ErrorMessage);
     }

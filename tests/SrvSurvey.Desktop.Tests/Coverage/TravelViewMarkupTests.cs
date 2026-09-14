@@ -7,8 +7,8 @@ public sealed class TravelViewMarkupTests
     [Fact]
     public void TravelUsesRouteManagerSurfaceNavigationAndFleetCarrierTabs()
     {
-        var document = LoadTravelView();
-        var tabs = document.Descendants().Where(element => element.Name.LocalName == "TabItem").ToArray();
+        XDocument document = LoadTravelView();
+        XElement[] tabs = document.Descendants().Where(element => element.Name.LocalName == "TabItem").ToArray();
 
         Assert.Equal(
             ["Route Manager", "Surface Navigation", "FC Routes", "Distance"],
@@ -28,14 +28,14 @@ public sealed class TravelViewMarkupTests
     [Fact]
     public void ThemeSelectorTabsReuseFrontierCommanderTabStateBehavior()
     {
-        var document = LoadRavenStyles();
+        XDocument document = LoadRavenStyles();
         var styles = document
             .Descendants()
             .Where(element => element.Name.LocalName == "Style")
             .ToDictionary(element => element.Attribute("Selector")?.Value ?? string.Empty, StringComparer.Ordinal);
 
-        var commanderSetters = ReadSetters(styles["TabItem.commander-profile-tab"]);
-        var themeSetters = ReadSetters(styles["TabItem.theme-selector"]);
+        Dictionary<string, string> commanderSetters = ReadSetters(styles["TabItem.commander-profile-tab"]);
+        Dictionary<string, string> themeSetters = ReadSetters(styles["TabItem.theme-selector"]);
 
         Assert.Equal(commanderSetters, themeSetters);
         Assert.DoesNotContain("Background", themeSetters.Keys);
@@ -47,10 +47,10 @@ public sealed class TravelViewMarkupTests
     [Fact]
     public void TravelTabsAreUnboundedAndSharedPanelsRemainBelowThem()
     {
-        var document = LoadTravelView();
-        var tabControl = FindNamedElement(document, "TravelModeTabs");
-        var separator = FindNamedElement(document, "TravelTabsSeparator");
-        var sharedPanels = FindNamedElement(document, "TravelSharedPanels");
+        XDocument document = LoadTravelView();
+        XElement tabControl = FindNamedElement(document, "TravelModeTabs");
+        XElement separator = FindNamedElement(document, "TravelTabsSeparator");
+        XElement sharedPanels = FindNamedElement(document, "TravelSharedPanels");
 
         Assert.Equal("TabControl", tabControl.Name.LocalName);
         Assert.NotEqual("Border", tabControl.Parent?.Name.LocalName);
@@ -59,14 +59,14 @@ public sealed class TravelViewMarkupTests
         Assert.True(GetSiblingIndex(tabControl) < GetSiblingIndex(separator));
         Assert.True(GetSiblingIndex(separator) < GetSiblingIndex(sharedPanels));
 
-        var tabText = string.Join(
+        string tabText = string.Join(
             " ",
             tabControl.Descendants().Select(element => element.Attribute("Text")?.Value).Where(text => text is not null)
         );
         Assert.DoesNotContain("System notes", tabText, StringComparison.Ordinal);
         Assert.DoesNotContain("Commander journeys", tabText, StringComparison.Ordinal);
 
-        var sharedText = string.Join(
+        string sharedText = string.Join(
             " ",
             sharedPanels
                 .Descendants()
@@ -80,18 +80,18 @@ public sealed class TravelViewMarkupTests
     [Fact]
     public void RouteManagerOffersStableRowsFavoritesAndRequestedFileActions()
     {
-        var document = LoadTravelView();
-        var routeManagerTab = document
+        XDocument document = LoadTravelView();
+        XElement routeManagerTab = document
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "TabItem" && element.Attribute("Header")?.Value == "Route Manager"
             );
-        var bindings = routeManagerTab
+        string[] bindings = routeManagerTab
             .Descendants()
             .SelectMany(element => element.Attributes())
             .Select(attribute => attribute.Value)
             .ToArray();
-        var buttonContent = routeManagerTab
+        string[] buttonContent = routeManagerTab
             .Descendants()
             .Where(element => element.Name.LocalName == "Button")
             .Select(element => element.Attribute("Content")?.Value)
@@ -113,21 +113,21 @@ public sealed class TravelViewMarkupTests
         Assert.Contains("Activate", buttonContent);
         Assert.Contains("Deactivate", buttonContent);
 
-        var autoCopyToggle = FindNamedElement(document, "AutoCopyNextHopToggle");
-        var nextSystemReadout = FindNamedElement(document, "NextSystemReadout");
+        XElement autoCopyToggle = FindNamedElement(document, "AutoCopyNextHopToggle");
+        XElement nextSystemReadout = FindNamedElement(document, "NextSystemReadout");
         Assert.Equal("{Binding RouteManager.ToggleAutoCopyCommand}", autoCopyToggle.Attribute("Command")?.Value);
         Assert.Equal("{Binding RouteManager.AutoCopy, Mode=OneWay}", autoCopyToggle.Attribute("IsChecked")?.Value);
         Assert.Equal("Auto-copy the next hop", autoCopyToggle.Attribute("Content")?.Value);
         Assert.Same(nextSystemReadout.Parent, autoCopyToggle.Parent);
         Assert.True(GetSiblingIndex(nextSystemReadout) < GetSiblingIndex(autoCopyToggle));
 
-        var deactivateButton = routeManagerTab
+        XElement deactivateButton = routeManagerTab
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Button"
                 && element.Attribute("Command")?.Value == "{Binding RouteManager.DeactivateCommand}"
             );
-        var openWorkspaceButton = routeManagerTab
+        XElement openWorkspaceButton = routeManagerTab
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Button"
@@ -136,13 +136,13 @@ public sealed class TravelViewMarkupTests
         Assert.Same(deactivateButton.Parent, openWorkspaceButton.Parent);
         Assert.True(GetSiblingIndex(deactivateButton) < GetSiblingIndex(openWorkspaceButton));
 
-        var notesButton = routeManagerTab
+        XElement notesButton = routeManagerTab
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Button"
                 && element.Attribute("Command")?.Value == "{Binding EditNotesCommand}"
             );
-        var activateButton = routeManagerTab
+        XElement activateButton = routeManagerTab
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Button" && element.Attribute("Command")?.Value == "{Binding ActivateCommand}"
@@ -150,7 +150,7 @@ public sealed class TravelViewMarkupTests
         Assert.Same(notesButton.Parent, activateButton.Parent);
         Assert.True(GetSiblingIndex(notesButton) < GetSiblingIndex(activateButton));
 
-        var favoriteButton = routeManagerTab
+        XElement favoriteButton = routeManagerTab
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Button"
@@ -178,17 +178,17 @@ public sealed class TravelViewMarkupTests
     [Fact]
     public void FleetCarrierTabUsesIndependentManagerWorkspaceAndFileActions()
     {
-        var document = LoadTravelView();
-        var tab = document
+        XDocument document = LoadTravelView();
+        XElement tab = document
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "TabItem" && element.Attribute("Header")?.Value == "FC Routes"
             );
-        var bindings = tab.Descendants()
+        string[] bindings = tab.Descendants()
             .SelectMany(element => element.Attributes())
             .Select(attribute => attribute.Value)
             .ToArray();
-        var clickHandlers = tab.Descendants()
+        string[] clickHandlers = tab.Descendants()
             .Select(element => element.Attribute("Click")?.Value)
             .OfType<string>()
             .ToArray();
@@ -206,10 +206,10 @@ public sealed class TravelViewMarkupTests
         Assert.Contains("ExportCsvFleetCarrierRoutes_Click", clickHandlers);
         Assert.Contains("{Binding RenameCommand}", bindings);
 
-        var currentRoute = tab.Descendants()
+        XElement currentRoute = tab.Descendants()
             .First(element => element.Attribute("Text")?.Value == "{Binding FleetCarrierRoute.RouteName}");
-        var nextSystem = FindNamedElement(document, "FleetCarrierNextSystemReadout");
-        var countdown = FindNamedElement(document, "FleetCarrierJumpCountdownReadout");
+        XElement nextSystem = FindNamedElement(document, "FleetCarrierNextSystemReadout");
+        XElement countdown = FindNamedElement(document, "FleetCarrierJumpCountdownReadout");
         Assert.Same(currentRoute.Parent?.Parent, nextSystem.Parent);
         Assert.Same(nextSystem.Parent, countdown.Parent);
         Assert.True(GetSiblingIndex(currentRoute.Parent!) < GetSiblingIndex(nextSystem));

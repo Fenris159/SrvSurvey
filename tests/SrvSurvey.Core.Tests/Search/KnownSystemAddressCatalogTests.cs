@@ -13,9 +13,9 @@ public sealed class KnownSystemAddressCatalogTests : IDisposable
     [Fact]
     public void ImportedCatalogResolvesScalarAndArrayEntriesWithoutMutation()
     {
-        var published = Path.Combine(temporaryDirectory, "pub");
+        string published = Path.Combine(temporaryDirectory, "pub");
         Directory.CreateDirectory(published);
-        var path = Path.Combine(published, KnownSystemAddressCatalog.LegacyFileName);
+        string path = Path.Combine(published, KnownSystemAddressCatalog.LegacyFileName);
         const string source = """
             # source comment
             known_systems = {
@@ -28,14 +28,14 @@ public sealed class KnownSystemAddressCatalogTests : IDisposable
             ]
             """;
         File.WriteAllText(path, source, new UTF8Encoding(false));
-        var before = File.ReadAllBytes(path);
+        byte[] before = File.ReadAllBytes(path);
 
         var catalog = KnownSystemAddressCatalog.Load(temporaryDirectory);
 
         Assert.Equal(2, catalog.Count);
-        Assert.True(catalog.TryResolve(" Sol ", out var sol));
+        Assert.True(catalog.TryResolve(" Sol ", out long sol));
         Assert.Equal(10477373803, sol);
-        Assert.True(catalog.TryResolve("V782 PERSEI", out var persei));
+        Assert.True(catalog.TryResolve("V782 PERSEI", out long persei));
         Assert.Equal(5579933946338, persei);
         Assert.False(catalog.TryResolve("ambiguous", out _));
         Assert.Equal(before, File.ReadAllBytes(path));
@@ -49,9 +49,9 @@ public sealed class KnownSystemAddressCatalogTests : IDisposable
     [InlineData("known_systems = {\n}\nknown_missing = [\n]")]
     public void IncompleteCatalogIsPreservedAndFailsClosed(string source)
     {
-        var published = Path.Combine(temporaryDirectory, "pub");
+        string published = Path.Combine(temporaryDirectory, "pub");
         Directory.CreateDirectory(published);
-        var path = Path.Combine(published, KnownSystemAddressCatalog.LegacyFileName);
+        string path = Path.Combine(published, KnownSystemAddressCatalog.LegacyFileName);
         File.WriteAllText(path, source);
 
         var catalog = KnownSystemAddressCatalog.Load(temporaryDirectory);

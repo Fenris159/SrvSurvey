@@ -414,7 +414,7 @@ public sealed class ScrollViewerBehaviorTests
         {
             window.Show();
             inner.Offset = new Vector(0, inner.Extent.Height - inner.Viewport.Height);
-            var outerOffset = outer.Offset;
+            Vector outerOffset = outer.Offset;
 
             window.MouseWheel(new Point(80, 90), new Vector(0, -1));
 
@@ -489,7 +489,7 @@ public sealed class ScrollViewerBehaviorTests
             window.Show();
             Assert.NotNull(window.CaptureRenderedFrame());
             Assert.True(ListBoxBringIntoViewBehavior.GetContain(listBox));
-            var listScroller = listBox.GetVisualDescendants().OfType<ScrollViewer>().Single();
+            ScrollViewer listScroller = listBox.GetVisualDescendants().OfType<ScrollViewer>().Single();
 
             listBox.SelectedIndex = 29;
             Assert.NotNull(window.CaptureRenderedFrame());
@@ -528,9 +528,9 @@ public sealed class ScrollViewerBehaviorTests
         try
         {
             window.Show();
-            var scrollViewer = nestedScroller.GetVisualDescendants().OfType<ScrollViewer>().Single();
+            ScrollViewer scrollViewer = nestedScroller.GetVisualDescendants().OfType<ScrollViewer>().Single();
             scrollViewer.Offset = new Vector(0, scrollViewer.Extent.Height - scrollViewer.Viewport.Height);
-            var outerOffset = outer.Offset;
+            Vector outerOffset = outer.Offset;
 
             Assert.False(ScrollViewer.GetIsScrollChainingEnabled(nestedScroller));
             window.MouseWheel(new Point(80, 90), new Vector(0, -1));

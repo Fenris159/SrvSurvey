@@ -10,7 +10,7 @@ public sealed class QuestIndicatorViewModelTests
     public void IndicatorShowsVisibleObjectivesUnreadMessagesAndSurfaceTargets()
     {
         var viewModel = new QuestIndicatorViewModel();
-        var snapshot = CreateSnapshot();
+        QuestRuntimeSnapshot snapshot = CreateSnapshot();
         var status = new EliteStatus
         {
             Flags = StatusFlags.HasLatLong,
@@ -27,10 +27,10 @@ public sealed class QuestIndicatorViewModelTests
         Assert.Equal("Indicator Quest", viewModel.QuestTitle);
         Assert.True(viewModel.HasUnreadMessages);
         Assert.Equal("2 unread messages", viewModel.UnreadMessageText);
-        var objective = Assert.Single(viewModel.Objectives);
+        QuestObjectiveRowViewModel objective = Assert.Single(viewModel.Objectives);
         Assert.Equal("Scan the beacon", objective.Label);
         Assert.Equal("1 / 3", objective.Progress);
-        var location = Assert.Single(viewModel.Locations);
+        QuestIndicatorLocationViewModel location = Assert.Single(viewModel.Locations);
         Assert.Equal("Beacon", location.Label);
         Assert.Equal("111 m", location.Distance);
         Assert.Equal("90° relative", location.Bearing);
@@ -42,7 +42,7 @@ public sealed class QuestIndicatorViewModelTests
     public void GuiFocusedMenusUseLegacyQuestVisibilityModes()
     {
         var viewModel = new QuestIndicatorViewModel();
-        var snapshot = CreateSnapshot();
+        QuestRuntimeSnapshot snapshot = CreateSnapshot();
         var status = new EliteStatus
         {
             Flags = StatusFlags.InMainShip | StatusFlags.Supercruise,
@@ -71,7 +71,7 @@ public sealed class QuestIndicatorViewModelTests
     public void DisabledOrEmptyIndicatorIsHiddenAndInvalidTargetsAreIgnored()
     {
         var viewModel = new QuestIndicatorViewModel();
-        var snapshot = CreateSnapshot() with
+        QuestRuntimeSnapshot snapshot = CreateSnapshot() with
         {
             BodyLocations = new Dictionary<string, string> { ["bad"] = "not-coordinates" },
         };

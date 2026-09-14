@@ -25,20 +25,22 @@ public sealed class HumanSiteKnowledgeStore
         ValidateContext(context);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(marketId);
 
-        var result = await fileStore.LoadAsync(ToFileContext(context), cancellationToken).ConfigureAwait(false);
+        LegacySystemDataFileLoadResult result = await fileStore
+            .LoadAsync(ToFileContext(context), cancellationToken)
+            .ConfigureAwait(false);
         if (result.Root is null)
         {
             return new HumanSiteKnowledgeLoadResult(result.Path, result.Exists, false, null, result.Error, []);
         }
 
         var warnings = new List<string>();
-        var station = FindStation(result.Root, marketId);
+        JsonObject? station = FindStation(result.Root, marketId);
         if (station is null)
         {
             return new HumanSiteKnowledgeLoadResult(result.Path, true, false, null, null, warnings);
         }
 
-        var knowledge = ReadKnowledge(station, context, warnings);
+        HumanSiteKnowledge? knowledge = ReadKnowledge(station, context, warnings);
         return new HumanSiteKnowledgeLoadResult(
             result.Path,
             true,
@@ -75,14 +77,14 @@ public sealed class HumanSiteKnowledgeStore
         HumanSiteGeometrySource geometrySource
     )
     {
-        var stations = GetOrCreateArray(root, "stations");
-        var station = stations
+        JsonArray stations = GetOrCreateArray(root, "stations");
+        JsonObject? station = stations
             .OfType<JsonObject>()
             .FirstOrDefault(candidate => ReadInt64(candidate, "marketId") == site.MarketId);
-        var isNew = station is null;
+        bool isNew = station is null;
         if (station is null)
         {
-            station = new JsonObject();
+            station = [];
             stations.Add(station);
         }
 
@@ -114,13 +116,13 @@ public sealed class HumanSiteKnowledgeStore
             };
         }
 
-        var existingSubType = ReadInt32(station, "subType") ?? 0;
+        int existingSubType = ReadInt32(station, "subType") ?? 0;
         if (site.SubType > 0 || isNew && existingSubType <= 0)
         {
             station["subType"] = Math.Max(0, site.SubType);
         }
 
-        var existingHeading = ReadDouble(station, HeadingProperty);
+        double? existingHeading = ReadDouble(station, HeadingProperty);
         if (site.Heading is { } heading && double.IsFinite(heading))
         {
             station[HeadingProperty] = heading;
@@ -146,14 +148,14 @@ public sealed class HumanSiteKnowledgeStore
         List<string> warnings
     )
     {
-        var marketId = ReadInt64(station, "marketId") ?? 0;
-        var systemAddress = ReadInt64(station, "systemAddress") ?? context.SystemAddress;
-        var bodyId = ReadInt32(station, "bodyId") ?? -1;
-        var name = ReadString(station, "name");
-        var economyToken = ReadString(station, "stationEconomy");
-        var economy = HumanSiteEconomyParser.ParseJournalValue(economyToken);
-        var latitude = ReadDouble(station, "lat");
-        var longitude = ReadDouble(station, "long");
+        long marketId = ReadInt64(station, "marketId") ?? 0;
+        long systemAddress = ReadInt64(station, "systemAddress") ?? context.SystemAddress;
+        int bodyId = ReadInt32(station, "bodyId") ?? -1;
+        string? name = ReadString(station, "name");
+        string? economyToken = ReadString(station, "stationEconomy");
+        HumanSiteEconomy economy = HumanSiteEconomyParser.ParseJournalValue(economyToken);
+        double? latitude = ReadDouble(station, "lat");
+        double? longitude = ReadDouble(station, "long");
         if (
             marketId <= 0
             || systemAddress <= 0
@@ -167,8 +169,8 @@ public sealed class HumanSiteKnowledgeStore
             return null;
         }
 
-        var subType = Math.Max(0, ReadInt32(station, "subType") ?? 0);
-        var heading = ReadDouble(station, HeadingProperty);
+        int subType = Math.Max(0, ReadInt32(station, "subType") ?? 0);
+        double? heading = ReadDouble(station, HeadingProperty);
         if (heading is not null && (!double.IsFinite(heading.Value) || heading < 0))
         {
             heading = null;
@@ -178,7 +180,7 @@ public sealed class HumanSiteKnowledgeStore
             heading = SrvSurvey.Core.Navigation.SurfaceNavigation.NormalizeDegrees(heading.Value);
         }
 
-        var pads = ReadLandingPads(station);
+        HumanSiteLandingPads pads = ReadLandingPads(station);
         if (subType == 0 && heading is not null)
         {
             warnings.Add($"Settlement {marketId} has a heading but no known subtype.");
@@ -201,15 +203,15 @@ public sealed class HumanSiteKnowledgeStore
 
     private static HumanSiteGeometrySource ReadGeometrySource(JsonObject station)
     {
-        var value = ReadString(station, CalcMethodProperty);
-        return Enum.TryParse<HumanSiteGeometrySource>(value, ignoreCase: true, out var source)
+        string? value = ReadString(station, CalcMethodProperty);
+        return Enum.TryParse<HumanSiteGeometrySource>(value, ignoreCase: true, out HumanSiteGeometrySource source)
             ? source
             : HumanSiteGeometrySource.Unknown;
     }
 
     private static HumanSiteLandingPads ReadLandingPads(JsonObject station)
     {
-        var pads =
+        JsonObject? pads =
             GetProperty(station, "availblePads") as JsonObject ?? GetProperty(station, "availablePads") as JsonObject;
         return pads is null
             ? HumanSiteLandingPads.Empty
@@ -248,14 +250,14 @@ public sealed class HumanSiteKnowledgeStore
 
     private static string? ReadString(JsonObject root, string propertyName)
     {
-        return GetProperty(root, propertyName) is JsonValue value && value.TryGetValue<string>(out var result)
+        return GetProperty(root, propertyName) is JsonValue value && value.TryGetValue<string>(out string? result)
             ? result
             : null;
     }
 
     private static int? ReadInt32(JsonObject root, string propertyName)
     {
-        var value = ReadInt64(root, propertyName);
+        long? value = ReadInt64(root, propertyName);
         return value is >= int.MinValue and <= int.MaxValue ? (int)value.Value : null;
     }
 
@@ -266,12 +268,12 @@ public sealed class HumanSiteKnowledgeStore
             return null;
         }
 
-        if (value.TryGetValue<long>(out var number))
+        if (value.TryGetValue<long>(out long number))
         {
             return number;
         }
 
-        return value.TryGetValue<string>(out var text) && long.TryParse(text, out number) ? number : null;
+        return value.TryGetValue<string>(out string? text) && long.TryParse(text, out number) ? number : null;
     }
 
     private static double? ReadDouble(JsonObject root, string propertyName)
@@ -281,13 +283,13 @@ public sealed class HumanSiteKnowledgeStore
             return null;
         }
 
-        if (value.TryGetValue<double>(out var number))
+        if (value.TryGetValue<double>(out double number))
         {
             return number;
         }
 
         return
-            value.TryGetValue<string>(out var text)
+            value.TryGetValue<string>(out string? text)
             && double.TryParse(
                 text,
                 System.Globalization.NumberStyles.Float,

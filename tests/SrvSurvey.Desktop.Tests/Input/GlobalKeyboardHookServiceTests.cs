@@ -41,7 +41,7 @@ public sealed class GlobalKeyboardHookServiceTests
             isApplicationActive: () => false,
             hookFactory: () => testHook
         );
-        var triggerCount = 0;
+        int triggerCount = 0;
         service.ActionTriggered += (_, _) => triggerCount++;
 
         service.Start();
@@ -53,7 +53,7 @@ public sealed class GlobalKeyboardHookServiceTests
     [Fact]
     public async Task DoesNotCreateHookOnUnsupportedHost()
     {
-        var factoryCalls = 0;
+        int factoryCalls = 0;
         await using var service = new GlobalKeyboardHookService(
             EnabledSettings(),
             OverlayHostKind.LinuxWayland,
@@ -123,7 +123,7 @@ public sealed class GlobalKeyboardHookServiceTests
 
         testHook.SimulateKeyRelease(KeyCode.VcX);
         await tracker.SnapshotEntered.WaitAsync(TimeSpan.FromSeconds(2));
-        var disposal = service.DisposeAsync().AsTask();
+        Task disposal = service.DisposeAsync().AsTask();
 
         Assert.False(disposal.IsCompleted);
         Assert.False(tracker.IsDisposed);
@@ -140,7 +140,7 @@ public sealed class GlobalKeyboardHookServiceTests
         using var secondHook = new TestGlobalHook(TestThreadingMode.Simple);
         var tracker = new BlockingGameWindowTracker();
         var secondHookCreated = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var factoryCalls = 0;
+        int factoryCalls = 0;
         await using var service = new GlobalKeyboardHookService(
             EnabledSettings(),
             OverlayHostKind.LinuxX11,

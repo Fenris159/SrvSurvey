@@ -90,11 +90,11 @@ public sealed class MiningCommunityListener : IDisposable
         socket.Options.MaxMsgSize = 2 * 1024 * 1024;
         socket.Connect("tcp://eddn.edcd.io:9500");
         socket.SubscribeToAnyTopic();
-        var lastSave = DateTimeOffset.UtcNow;
+        DateTimeOffset lastSave = DateTimeOffset.UtcNow;
         status = "Listening for community observations…";
         while (enabled && !stop.IsCancellationRequested)
         {
-            if (!socket.TryReceiveFrameBytes(TimeSpan.FromMilliseconds(250), out var bytes))
+            if (!socket.TryReceiveFrameBytes(TimeSpan.FromMilliseconds(250), out byte[]? bytes))
             {
                 continue;
             }
@@ -126,7 +126,7 @@ public sealed class MiningCommunityListener : IDisposable
     private void Save()
     {
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        var temporary = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
+        string temporary = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
         File.WriteAllText(temporary, Cache.Export());
         File.Move(temporary, path, true);
     }
@@ -141,7 +141,7 @@ public sealed class MiningCommunityListener : IDisposable
         using var input = new MemoryStream(bytes, false);
         using var compressed = new ZLibStream(input, CompressionMode.Decompress);
         using var output = new MemoryStream();
-        var buffer = new byte[8192];
+        byte[] buffer = new byte[8192];
         int count;
         while ((count = compressed.Read(buffer)) > 0)
         {

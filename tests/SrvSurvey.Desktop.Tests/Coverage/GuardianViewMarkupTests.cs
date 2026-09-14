@@ -7,18 +7,18 @@ public sealed class GuardianViewMarkupTests
     [Fact]
     public void DistanceOriginActionsLeaveTheAutocompleteFullWidth()
     {
-        var document = LoadGuardianView();
-        var layout = FindNamedElement(document, "GuardianOriginAndCatalog");
-        var header = FindNamedElement(document, "GuardianOriginHeader");
-        var actions = FindNamedElement(document, "GuardianOriginActions");
-        var ramTahOptions = FindNamedElement(document, "GuardianRamTahOptions");
-        var entry = document
+        XDocument document = LoadGuardianView();
+        XElement layout = FindNamedElement(document, "GuardianOriginAndCatalog");
+        XElement header = FindNamedElement(document, "GuardianOriginHeader");
+        XElement actions = FindNamedElement(document, "GuardianOriginActions");
+        XElement ramTahOptions = FindNamedElement(document, "GuardianRamTahOptions");
+        XElement entry = document
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "SystemNameEntry"
                 && element.Attribute("Text")?.Value == "{Binding Guardian.OriginSystemName, Mode=TwoWay}"
             );
-        var buttons = header.Descendants().Where(element => element.Name.LocalName == "Button").ToArray();
+        XElement[] buttons = header.Descendants().Where(element => element.Name.LocalName == "Button").ToArray();
 
         Assert.Equal("*,*", layout.Attribute("ColumnDefinitions")?.Value);
         Assert.Equal("Auto,*", header.Attribute("ColumnDefinitions")?.Value);
@@ -28,7 +28,7 @@ public sealed class GuardianViewMarkupTests
         Assert.Equal("Stretch", entry.Attribute("HorizontalAlignment")?.Value);
         Assert.Equal("Vertical", ramTahOptions.Attribute("Orientation")?.Value);
         Assert.Equal(2, ramTahOptions.Elements().Count(element => element.Name.LocalName == "CheckBox"));
-        var originSection = layout.Elements().Single(element => element.Descendants().Contains(entry));
+        XElement originSection = layout.Elements().Single(element => element.Descendants().Contains(entry));
         Assert.DoesNotContain(
             entry.Ancestors().TakeWhile(ancestor => ancestor != layout),
             element =>
@@ -42,32 +42,32 @@ public sealed class GuardianViewMarkupTests
     [Fact]
     public void SurveyMapKeepsContextCardsBesideMapInRequestedOrder()
     {
-        var document = LoadGuardianView();
-        var top = FindNamedElement(document, "GuardianSurveyMapTop");
-        var sidebar = FindNamedElement(document, "GuardianSurveyMapSidebar");
-        var map = top.Descendants()
+        XDocument document = LoadGuardianView();
+        XElement top = FindNamedElement(document, "GuardianSurveyMapTop");
+        XElement sidebar = FindNamedElement(document, "GuardianSurveyMapSidebar");
+        XElement map = top.Descendants()
             .Single(element =>
                 element.Name.LocalName == "GuardianSiteMapControl" && element.Attribute("IsLegendOnly") is null
             );
-        var zoom = top.Descendants()
+        XElement zoom = top.Descendants()
             .Single(element =>
                 element.Name.LocalName == "Slider"
                 && element.Attribute("Value")?.Value
                     == "{Binding ViewportZoom, ElementName=GuardianSurveyMap, Mode=TwoWay}"
             );
-        var selectedMap = FindNamedElement(document, "GuardianSelectedMap");
-        var selectedPoint = FindNamedElement(document, "GuardianSelectedMapPointEditor");
-        var startMapDraft = document
+        XElement selectedMap = FindNamedElement(document, "GuardianSelectedMap");
+        XElement selectedPoint = FindNamedElement(document, "GuardianSelectedMapPointEditor");
+        XElement startMapDraft = document
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Button" && element.Attribute("Content")?.Value == "Start map draft"
             );
-        var editCurrentMap = document
+        XElement editCurrentMap = document
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Button" && element.Attribute("Content")?.Value == "Edit Current Map"
             );
-        var cardNames = sidebar.Elements().Select(GetName).OfType<string>().ToArray();
+        string[] cardNames = sidebar.Elements().Select(GetName).OfType<string>().ToArray();
 
         Assert.Equal("3*,2*", top.Attribute("ColumnDefinitions")?.Value);
         Assert.Equal("False", map.Attribute("ShowLegend")?.Value);
@@ -101,7 +101,7 @@ public sealed class GuardianViewMarkupTests
         Assert.Contains(editCurrentMap, selectedMap.Descendants());
         Assert.Equal(startMapDraft.Parent, editCurrentMap.Parent);
         Assert.DoesNotContain(startMapDraft, selectedPoint.Descendants());
-        var selectedContent = selectedPoint
+        XElement selectedContent = selectedPoint
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "ContentControl"
@@ -126,10 +126,10 @@ public sealed class GuardianViewMarkupTests
     [Fact]
     public void SharedMapAndPerSiteSurveyEditorsExplainSeparateSaveScopes()
     {
-        var document = LoadGuardianView();
-        var draftTools = FindNamedElement(document, "GuardianMapDraftTools");
-        var catalogDetails = FindNamedElement(document, "GuardianMapCatalogDetails");
-        var surveyEditor = FindNamedElement(document, "GuardianSurveyEditor");
+        XDocument document = LoadGuardianView();
+        XElement draftTools = FindNamedElement(document, "GuardianMapDraftTools");
+        XElement catalogDetails = FindNamedElement(document, "GuardianMapCatalogDetails");
+        XElement surveyEditor = FindNamedElement(document, "GuardianSurveyEditor");
 
         Assert.Contains(
             draftTools.Descendants(),
@@ -174,23 +174,23 @@ public sealed class GuardianViewMarkupTests
     [Fact]
     public void SurveyEditorExposesRepairAndPrecisionAuthoringFields()
     {
-        var document = LoadGuardianView();
-        var editor = FindNamedElement(document, "GuardianSurveyEditor");
-        var siteType = FindNamedElement(document, "GuardianSurveySiteType");
-        var latitude = FindNamedElement(document, "GuardianSurveyLatitude");
-        var longitude = FindNamedElement(document, "GuardianSurveyLongitude");
-        var activeObelisks = FindNamedElement(document, "GuardianActiveObeliskEditor");
-        var activeObeliskDetails = activeObelisks
+        XDocument document = LoadGuardianView();
+        XElement editor = FindNamedElement(document, "GuardianSurveyEditor");
+        XElement siteType = FindNamedElement(document, "GuardianSurveySiteType");
+        XElement latitude = FindNamedElement(document, "GuardianSurveyLatitude");
+        XElement longitude = FindNamedElement(document, "GuardianSurveyLongitude");
+        XElement activeObelisks = FindNamedElement(document, "GuardianActiveObeliskEditor");
+        XElement activeObeliskDetails = activeObelisks
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "ContentControl"
                 && element.Attribute("Content")?.Value == "{Binding Guardian.SurveyEditor.SelectedActiveObelisk}"
             );
-        var rawPrecision = FindNamedElement(document, "GuardianRawPointPrecisionEditor");
-        var rawFields = FindNamedElement(document, "GuardianRawPointGeometryFields");
-        var templatePointEditor = FindNamedElement(document, "GuardianSelectedTemplatePointEditor");
-        var templatePointFields = FindNamedElement(document, "GuardianSelectedTemplatePointFields");
-        var templateIdentityFields = FindNamedElement(document, "GuardianSelectedTemplateIdentityFields");
+        XElement rawPrecision = FindNamedElement(document, "GuardianRawPointPrecisionEditor");
+        XElement rawFields = FindNamedElement(document, "GuardianRawPointGeometryFields");
+        XElement templatePointEditor = FindNamedElement(document, "GuardianSelectedTemplatePointEditor");
+        XElement templatePointFields = FindNamedElement(document, "GuardianSelectedTemplatePointFields");
+        XElement templateIdentityFields = FindNamedElement(document, "GuardianSelectedTemplateIdentityFields");
 
         Assert.Contains(siteType, editor.Descendants());
         Assert.Equal("{Binding Guardian.SurveyEditor.SiteTypeOptions}", siteType.Attribute("ItemsSource")?.Value);
@@ -210,7 +210,7 @@ public sealed class GuardianViewMarkupTests
         Assert.Equal("{Binding IsRaw}", rawPrecision.Attribute("IsVisible")?.Value);
         Assert.Equal("StackPanel", rawFields.Name.LocalName);
         Assert.Null(rawFields.Attribute("Orientation"));
-        var rawCoordinateInputs = rawFields
+        XElement[] rawCoordinateInputs = rawFields
             .Descendants()
             .Where(element => element.Name.LocalName == "NumericUpDown")
             .ToArray();
@@ -233,7 +233,7 @@ public sealed class GuardianViewMarkupTests
         );
         Assert.Equal("StackPanel", templateIdentityFields.Name.LocalName);
         Assert.Null(templateIdentityFields.Attribute("Orientation"));
-        var coordinateInputs = templatePointFields
+        XElement[] coordinateInputs = templatePointFields
             .Descendants()
             .Where(element => element.Name.LocalName == "NumericUpDown")
             .ToArray();
@@ -264,12 +264,12 @@ public sealed class GuardianViewMarkupTests
     [Fact]
     public void SurveyMapProvidesBottomZoomBarForInteractiveViewport()
     {
-        var document = LoadGuardianView();
-        var map = FindNamedElement(document, "GuardianSurveyMap");
-        var mapGrid = map.Parent ?? throw new InvalidDataException("Survey map viewport grid is missing.");
-        var slider = mapGrid.Descendants().Single(element => element.Name.LocalName == "Slider");
-        var zoomBar = slider.Parent ?? throw new InvalidDataException("Survey map zoom bar is missing.");
-        var orientation = zoomBar
+        XDocument document = LoadGuardianView();
+        XElement map = FindNamedElement(document, "GuardianSurveyMap");
+        XElement mapGrid = map.Parent ?? throw new InvalidDataException("Survey map viewport grid is missing.");
+        XElement slider = mapGrid.Descendants().Single(element => element.Name.LocalName == "Slider");
+        XElement zoomBar = slider.Parent ?? throw new InvalidDataException("Survey map zoom bar is missing.");
+        XElement orientation = zoomBar
             .Elements()
             .Single(element =>
                 element.Name.LocalName == "StackPanel"
@@ -279,8 +279,10 @@ public sealed class GuardianViewMarkupTests
                         candidate.Name.LocalName == "TextBlock" && candidate.Attribute("Text")?.Value == "Orientation"
                     )
             );
-        var orientationHelp = orientation.Descendants().Single(element => element.Name.LocalName == "Button");
-        var orientationIcon = orientationHelp.Descendants().Single(element => element.Name.LocalName == "PathIcon");
+        XElement orientationHelp = orientation.Descendants().Single(element => element.Name.LocalName == "Button");
+        XElement orientationIcon = orientationHelp
+            .Descendants()
+            .Single(element => element.Name.LocalName == "PathIcon");
 
         Assert.Equal("640,Auto", mapGrid.Attribute("RowDefinitions")?.Value);
         Assert.Equal("Auto,*,Auto,Auto", zoomBar.Attribute("ColumnDefinitions")?.Value);
@@ -300,10 +302,10 @@ public sealed class GuardianViewMarkupTests
     [Fact]
     public void OperationalEditorsSpanRowsBelowTheMap()
     {
-        var document = LoadGuardianView();
-        var top = FindNamedElement(document, "GuardianSurveyMapTop");
-        var mapDraftTools = FindNamedElement(document, "GuardianMapDraftTools");
-        var surveyEditor = FindNamedElement(document, "GuardianSurveyEditor");
+        XDocument document = LoadGuardianView();
+        XElement top = FindNamedElement(document, "GuardianSurveyMapTop");
+        XElement mapDraftTools = FindNamedElement(document, "GuardianMapDraftTools");
+        XElement surveyEditor = FindNamedElement(document, "GuardianSurveyEditor");
 
         Assert.Same(top.Parent, mapDraftTools.Parent);
         Assert.Same(top.Parent, surveyEditor.Parent);
@@ -315,63 +317,63 @@ public sealed class GuardianViewMarkupTests
     [Fact]
     public void SurveyPointsSitDirectlyBelowSelectedMapInSidebar()
     {
-        var document = LoadGuardianView();
-        var sidebar = FindNamedElement(document, "GuardianSurveyMapSidebar");
-        var selectedMap = FindNamedElement(document, "GuardianSelectedMap");
-        var surveyPoints = FindNamedElement(document, "GuardianSurveyPoints");
-        var sidebarChildren = sidebar.Elements().ToArray();
-        var selectedMapIndex = Array.IndexOf(sidebarChildren, selectedMap);
+        XDocument document = LoadGuardianView();
+        XElement sidebar = FindNamedElement(document, "GuardianSurveyMapSidebar");
+        XElement selectedMap = FindNamedElement(document, "GuardianSelectedMap");
+        XElement surveyPoints = FindNamedElement(document, "GuardianSurveyPoints");
+        XElement[] sidebarChildren = sidebar.Elements().ToArray();
+        int selectedMapIndex = Array.IndexOf(sidebarChildren, selectedMap);
 
         Assert.Same(sidebar, surveyPoints.Parent);
         Assert.Equal(selectedMapIndex + 1, Array.IndexOf(sidebarChildren, surveyPoints));
         Assert.Equal("{Binding Guardian.SurveyEditor.IsMapSummaryVisible}", surveyPoints.Attribute("IsVisible")?.Value);
 
-        var list = surveyPoints.Descendants().Single(element => element.Name.LocalName == "ListBox");
+        XElement list = surveyPoints.Descendants().Single(element => element.Name.LocalName == "ListBox");
         Assert.Equal("{Binding Guardian.SurveyEditor.Points}", list.Attribute("ItemsSource")?.Value);
         Assert.Equal(
             "{Binding Guardian.SurveyEditor.SelectedPoint, Mode=TwoWay}",
             list.Attribute("SelectedItem")?.Value
         );
 
-        var editor = FindNamedElement(document, "GuardianSurveyEditor");
+        XElement editor = FindNamedElement(document, "GuardianSurveyEditor");
         Assert.DoesNotContain(editor.Descendants(), element => element.Attribute("Text")?.Value == "SURVEY POINTS");
     }
 
     [Fact]
     public void ExternalLegendUsesOneRenderedCardWithRoomForAllStates()
     {
-        var document = LoadGuardianView();
-        var legend = FindNamedElement(document, "GuardianSurveyMapLegend");
-        var expander = FindNamedElement(document, "GuardianSurveyMapLegendExpander");
-        var headerStyle = document
+        XDocument document = LoadGuardianView();
+        XElement legend = FindNamedElement(document, "GuardianSurveyMapLegend");
+        XElement expander = FindNamedElement(document, "GuardianSurveyMapLegendExpander");
+        XElement headerStyle = document
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Style"
                 && element.Attribute("Selector")?.Value
                     == "Expander.guardian-map-legend /template/ ToggleButton /template/ Border#ToggleButtonBackground"
             );
-        var monochromeHeaderStyle = document
+        XElement monochromeHeaderStyle = document
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Style"
                 && element.Attribute("Selector")?.Value
                     == "Expander.guardian-map-legend.monochrome /template/ ToggleButton /template/ Border#ToggleButtonBackground"
             );
-        var expanderContentStyle = document
+        XElement expanderContentStyle = document
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Style"
                 && element.Attribute("Selector")?.Value
                     == "Expander.guardian-map-legend /template/ Border#ExpanderContent"
             );
-        var expandedContentStyle = document
+        XElement expandedContentStyle = document
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Style"
                 && element.Attribute("Selector")?.Value
                     == "Expander.guardian-map-legend:expanded /template/ Border#ExpanderContent"
             );
-        var monochromeContentStyle = document
+        XElement monochromeContentStyle = document
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Style"
@@ -388,13 +390,13 @@ public sealed class GuardianViewMarkupTests
                         ?? throw new InvalidDataException("Map legend template setter is missing its property."),
                     element => element.Attribute("Value")?.Value
                 );
-        var headerSetters = GetSetters(headerStyle);
-        var monochromeHeaderSetters = GetSetters(monochromeHeaderStyle);
-        var expanderContentSetters = GetSetters(expanderContentStyle);
-        var expandedContentSetters = GetSetters(expandedContentStyle);
-        var monochromeContentSetters = GetSetters(monochromeContentStyle);
-        var mapLegend = legend.Descendants().Single(element => element.Name.LocalName == "GuardianSiteMapControl");
-        var labels = legend
+        Dictionary<string, string?> headerSetters = GetSetters(headerStyle);
+        Dictionary<string, string?> monochromeHeaderSetters = GetSetters(monochromeHeaderStyle);
+        Dictionary<string, string?> expanderContentSetters = GetSetters(expanderContentStyle);
+        Dictionary<string, string?> expandedContentSetters = GetSetters(expandedContentStyle);
+        Dictionary<string, string?> monochromeContentSetters = GetSetters(monochromeContentStyle);
+        XElement mapLegend = legend.Descendants().Single(element => element.Name.LocalName == "GuardianSiteMapControl");
+        string[] labels = legend
             .Descendants()
             .Where(element => element.Name.LocalName == "TextBlock")
             .Select(element => element.Attribute("Text")?.Value)
@@ -437,16 +439,16 @@ public sealed class GuardianViewMarkupTests
     [Fact]
     public void SitesTableKeepsHeaderFixedAndColumnsAlignedWhileRowsScroll()
     {
-        var document = LoadGuardianView();
-        var scroller = FindNamedElement(document, "GuardianSitesTableScroller");
-        var header = FindNamedElement(document, "GuardianSitesTableHeader");
-        var rows = scroller
+        XDocument document = LoadGuardianView();
+        XElement scroller = FindNamedElement(document, "GuardianSitesTableScroller");
+        XElement header = FindNamedElement(document, "GuardianSitesTableHeader");
+        XElement rows = scroller
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "ListBox"
                 && element.Attribute("ItemsSource")?.Value == "{Binding Guardian.Rows}"
             );
-        var rowGrid = rows.Descendants()
+        XElement rowGrid = rows.Descendants()
             .Single(element => element.Name.LocalName == "DataTemplate")
             .Elements()
             .Single(element => element.Name.LocalName == "Grid");
@@ -480,8 +482,8 @@ public sealed class GuardianViewMarkupTests
     [Fact]
     public void SitesTableSortHeadersMatchRouteManagerPresentation()
     {
-        var document = LoadGuardianView();
-        var expectedParameters = new[]
+        XDocument document = LoadGuardianView();
+        string[] expectedParameters = new[]
         {
             "Id",
             "System",
@@ -496,7 +498,7 @@ public sealed class GuardianViewMarkupTests
             "RamTah",
             "Notes",
         };
-        var sortHeaders = document
+        XElement[] sortHeaders = document
             .Descendants()
             .Where(element =>
                 element.Name.LocalName == "Button"
@@ -520,11 +522,14 @@ public sealed class GuardianViewMarkupTests
                 Assert.Equal("0", header.Attribute("Padding")?.Value);
                 Assert.Equal("Left", header.Attribute("HorizontalContentAlignment")?.Value);
 
-                var content = Assert.Single(header.Elements(), element => element.Name.LocalName == "StackPanel");
+                XElement content = Assert.Single(header.Elements(), element => element.Name.LocalName == "StackPanel");
                 Assert.Equal("Horizontal", content.Attribute("Orientation")?.Value);
-                var textBlocks = content.Elements().Where(element => element.Name.LocalName == "TextBlock").ToArray();
+                XElement[] textBlocks = content
+                    .Elements()
+                    .Where(element => element.Name.LocalName == "TextBlock")
+                    .ToArray();
                 Assert.Equal(2, textBlocks.Length);
-                var label = textBlocks[0];
+                XElement label = textBlocks[0];
                 Assert.Contains(
                     "table-heading",
                     (label.Attribute("Classes")?.Value ?? string.Empty).Split(

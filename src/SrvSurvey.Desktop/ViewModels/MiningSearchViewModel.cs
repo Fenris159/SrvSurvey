@@ -326,7 +326,7 @@ public sealed class MiningSearchViewModel(
         Run(async token =>
         {
             var candidates = new List<MiningRing>();
-            var offline = false;
+            bool offline = false;
             if (Source != "Local")
             {
                 try
@@ -356,7 +356,7 @@ public sealed class MiningSearchViewModel(
                 await AddLocalRingsAsync(candidates, token);
             }
 
-            var annotated = candidates
+            MiningRing[] annotated = candidates
                 .Select(AnnotateRing)
                 .Where(r =>
                     (!OnlyOverlaps || r.Overlaps.Length > 0) && (!OnlyRes || r.ResourceExtractionSites.Length > 0)
@@ -375,10 +375,10 @@ public sealed class MiningSearchViewModel(
 
     private async Task AddLocalRingsAsync(List<MiningRing> candidates, CancellationToken token)
     {
-        var origin = await ResolveOriginAsync(token);
-        foreach (var ring in MiningReferenceData.Rings.Concat(localRings()))
+        GalacticCoordinate? origin = await ResolveOriginAsync(token);
+        foreach (MiningRing? ring in MiningReferenceData.Rings.Concat(localRings()))
         {
-            var distance = RingDistance(ring, origin);
+            double? distance = RingDistance(ring, origin);
             if (distance is null || distance > Radius || !MatchesRing(ring))
             {
                 continue;
@@ -390,7 +390,7 @@ public sealed class MiningSearchViewModel(
 
     private async Task<GalacticCoordinate?> ResolveOriginAsync(CancellationToken token)
     {
-        var origin =
+        GalacticCoordinate? origin =
             community?.Position(Reference)
             ?? localRings()
                 .Concat(MiningReferenceData.Rings)
@@ -440,14 +440,14 @@ public sealed class MiningSearchViewModel(
 
     private static void MergeRing(List<MiningRing> candidates, MiningRing ring, double distance)
     {
-        var observed = candidates.Find(r => Same(r.System, ring.System) && Same(r.Body, ring.Body));
+        MiningRing? observed = candidates.Find(r => Same(r.System, ring.System) && Same(r.Body, ring.Body));
         if (observed is null)
         {
             candidates.Add(ring with { DistanceLy = distance });
             return;
         }
-        var newer = observed.Scanned >= ring.Scanned ? observed : ring;
-        var older = ReferenceEquals(newer, observed) ? ring : observed;
+        MiningRing newer = observed.Scanned >= ring.Scanned ? observed : ring;
+        MiningRing older = ReferenceEquals(newer, observed) ? ring : observed;
         candidates.Remove(observed);
         candidates.Add(
             newer with
@@ -463,12 +463,12 @@ public sealed class MiningSearchViewModel(
 
     private MiningRing AnnotateRing(MiningRing ring)
     {
-        var bookmark = bookmarks.All.FirstOrDefault(b =>
+        GalacticBookmark? bookmark = bookmarks.All.FirstOrDefault(b =>
             b.HasCategory(BookmarkCategoryCatalog.Mining)
             && Same(b.System, ring.System)
             && Same(b.CombinedBodyAndRing, ring.Body)
         );
-        var power = community?.Power(ring.System);
+        MiningPowerObservation? power = community?.Power(ring.System);
         return ring with
         {
             Overlaps = Prefer(bookmark?.Overlaps, ring.Overlaps),
@@ -501,7 +501,7 @@ public sealed class MiningSearchViewModel(
                 SystemOnly
             );
             IReadOnlyList<MiningMarketResult> result;
-            var source = query.SystemOnly && !query.GalaxyWide ? "Spansh" : "Ardent";
+            string source = query.SystemOnly && !query.GalaxyWide ? "Spansh" : "Ardent";
             try
             {
                 result = await client.FindMarketsAsync(query, token);
@@ -511,8 +511,9 @@ public sealed class MiningSearchViewModel(
                 source = "Spansh fallback";
                 result = await client.FindSpanshMarketsAsync(query, token);
             }
-            var origin = community is not null && !query.GalaxyWide ? await ResolveOriginAsync(token) : null;
-            var merged = result
+            GalacticCoordinate? origin =
+                community is not null && !query.GalaxyWide ? await ResolveOriginAsync(token) : null;
+            IEnumerable<MiningMarketResult> merged = result
                 .Concat(community?.Markets(query, origin, DateTimeOffset.UtcNow) ?? [])
                 .GroupBy(r => (r.System, r.Station))
                 .Select(g => g.OrderByDescending(r => r.Updated).First());
@@ -551,7 +552,7 @@ public sealed class MiningSearchViewModel(
                 Page
             );
             IReadOnlyList<MiningSystemResult> online = [];
-            var source = "Spansh + local Powerplay observations";
+            string source = "Spansh + local Powerplay observations";
             if (PowerState is ExpansionState or "Contested")
             {
                 source = "Local Powerplay observations; this state is not indexed by Spansh";
@@ -561,8 +562,8 @@ public sealed class MiningSearchViewModel(
                 online = await client.FindSystemsAsync(query, token);
             }
 
-            var local = community?.FindSystems(query, DateTimeOffset.UtcNow) ?? [];
-            var result = local
+            IReadOnlyList<MiningSystemResult> local = community?.FindSystems(query, DateTimeOffset.UtcNow) ?? [];
+            MiningSystemResult[] result = local
                 .Concat(online)
                 .DistinctBy(s => s.System, StringComparer.OrdinalIgnoreCase)
                 .Where(MatchesObjective)
@@ -577,7 +578,13 @@ public sealed class MiningSearchViewModel(
     public Task SearchTradersAsync() =>
         Run(async token =>
         {
-            var result = await client.FindTradersAsync(Reference, TraderType, Radius, Page, token);
+            IReadOnlyList<MiningMarketResult> result = await client.FindTradersAsync(
+                Reference,
+                TraderType,
+                Radius,
+                Page,
+                token
+            );
             token.ThrowIfCancellationRequested();
             Traders = result;
             Status = $"{result.Count} {TraderType.ToLowerInvariant()} material traders · Spansh.";
@@ -654,7 +661,7 @@ public sealed class MiningSearchViewModel(
         }
 
         miningOrigin = ring.System;
-        var hasPlan = planningTarget.Length > 0 && planningObjective == Objective;
+        bool hasPlan = planningTarget.Length > 0 && planningObjective == Objective;
         Reference = hasPlan && Objective == "Acquire" ? planningTarget : ring.System;
         SystemOnly = hasPlan;
         Changed(nameof(PlanningContext));
@@ -743,12 +750,12 @@ public sealed class MiningSearchViewModel(
 
     private async Task Run(Func<CancellationToken, Task> action)
     {
-        var previous = pending;
+        CancellationTokenSource? previous = pending;
         using var current = new CancellationTokenSource(TimeSpan.FromSeconds(40));
         pending = current;
         IsBusy = true;
         Status = "Searching…";
-        var token = current.Token;
+        CancellationToken token = current.Token;
         try
         {
             if (previous is not null)

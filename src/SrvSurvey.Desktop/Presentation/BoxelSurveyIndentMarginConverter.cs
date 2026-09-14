@@ -8,7 +8,7 @@ public sealed class BoxelSurveyIndentMarginConverter : IValueConverter
 {
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        var indent = value is int amount ? amount : 0;
+        int indent = value is int amount ? amount : 0;
         return new Thickness(indent == 0 ? 0 : 24, 0, 0, 0);
     }
 

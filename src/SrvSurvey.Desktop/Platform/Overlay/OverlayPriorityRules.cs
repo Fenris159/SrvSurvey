@@ -44,7 +44,7 @@ internal static class OverlayPriorityRules
     internal static bool IsObscured(OverlayId target, Func<OverlayId, bool> isPresented, OverlayPriorityFacts facts)
     {
         ArgumentNullException.ThrowIfNull(isPresented);
-        var rule = rules.SingleOrDefault(candidate => candidate.Target == target);
+        OverlayPriorityRule? rule = rules.SingleOrDefault(candidate => candidate.Target == target);
         if (rule is null)
         {
             return false;
@@ -67,7 +67,7 @@ internal static class OverlayPriorityRules
         var visited = new HashSet<OverlayId>();
         var visiting = new HashSet<OverlayId>();
         foreach (
-            var overlay in rules
+            OverlayId overlay in rules
                 .Select(rule => rule.Target)
                 .Concat(rules.SelectMany(rule => rule.PresentedBlockers))
                 .Distinct()
@@ -94,9 +94,9 @@ internal static class OverlayPriorityRules
             throw new InvalidOperationException($"Overlay priority rules contain a cycle at '{overlay}'.");
         }
 
-        if (edges.TryGetValue(overlay, out var targets))
+        if (edges.TryGetValue(overlay, out OverlayId[]? targets))
         {
-            foreach (var target in targets)
+            foreach (OverlayId target in targets)
             {
                 Visit(target, edges, visiting, visited);
             }

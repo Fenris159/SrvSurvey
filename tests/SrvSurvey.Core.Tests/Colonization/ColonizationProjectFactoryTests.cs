@@ -9,10 +9,10 @@ public sealed class ColonizationProjectFactoryTests
     [Fact]
     public void CreatesLegacyCompatiblePayloadFromLiveDepot()
     {
-        var result = factory.Create(Draft(), Dock(), Depot());
+        ColonizationProjectCreateResult result = factory.Create(Draft(), Dock(), Depot());
 
         Assert.True(result.IsValid);
-        var project = Assert.IsType<ColonizationProjectCreate>(result.Project);
+        ColonizationProjectCreate project = Assert.IsType<ColonizationProjectCreate>(result.Project);
         Assert.Equal("no_truss", project.BuildType);
         Assert.Equal("Primary port", project.BuildName);
         Assert.Equal(42, project.MarketId);
@@ -29,7 +29,7 @@ public sealed class ColonizationProjectFactoryTests
     [Fact]
     public void CombinesDuplicateCommodityRowsWithoutLosingRemainingCargo()
     {
-        var depot = Depot() with
+        ColonizationConstructionDepotSnapshot depot = Depot() with
         {
             Resources =
             [
@@ -38,7 +38,7 @@ public sealed class ColonizationProjectFactoryTests
             ],
         };
 
-        var result = factory.Create(Draft(), Dock(), depot);
+        ColonizationProjectCreateResult result = factory.Create(Draft(), Dock(), depot);
 
         Assert.True(result.IsValid);
         Assert.Equal(115, result.Project?.Commodities["steel"]);
@@ -48,10 +48,14 @@ public sealed class ColonizationProjectFactoryTests
     [Fact]
     public void RejectsStaleDepotUnknownLayoutAndInvalidPosition()
     {
-        var draft = Draft() with { BuildType = "unknown-layout", StarPosition = [double.NaN, 2, 3] };
-        var depot = Depot() with { MarketId = 999 };
+        ColonizationProjectDraft draft = Draft() with
+        {
+            BuildType = "unknown-layout",
+            StarPosition = [double.NaN, 2, 3],
+        };
+        ColonizationConstructionDepotSnapshot depot = Depot() with { MarketId = 999 };
 
-        var result = factory.Create(draft, Dock(), depot);
+        ColonizationProjectCreateResult result = factory.Create(draft, Dock(), depot);
 
         Assert.False(result.IsValid);
         Assert.Null(result.Project);
@@ -63,7 +67,14 @@ public sealed class ColonizationProjectFactoryTests
     [Fact]
     public void RejectsMissingDockDepotAndCommander()
     {
-        var result = factory.Create(Draft() with { CommanderName = string.Empty }, dock: null, depot: null);
+        ColonizationProjectCreateResult result = factory.Create(
+            Draft() with
+            {
+                CommanderName = string.Empty,
+            },
+            dock: null,
+            depot: null
+        );
 
         Assert.False(result.IsValid);
         Assert.Equal(3, result.Errors.Count);
@@ -72,7 +83,15 @@ public sealed class ColonizationProjectFactoryTests
     [Fact]
     public void RejectsCompletedOrFailedDepot()
     {
-        var result = factory.Create(Draft(), Dock(), Depot() with { IsComplete = true, IsFailed = true });
+        ColonizationProjectCreateResult result = factory.Create(
+            Draft(),
+            Dock(),
+            Depot() with
+            {
+                IsComplete = true,
+                IsFailed = true,
+            }
+        );
 
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, error => error.Contains("complete"));

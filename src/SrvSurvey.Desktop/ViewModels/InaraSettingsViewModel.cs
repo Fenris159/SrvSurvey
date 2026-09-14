@@ -140,7 +140,7 @@ public sealed class InaraSettingsViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(HasCommanderProfile));
         OnPropertyChanged(nameof(HasStoredApiKey));
         OnPropertyChanged(nameof(CommanderDisplayName));
-        var noCommanderText = "Load a commander profile to configure an Inara API key.";
+        string noCommanderText = "Load a commander profile to configure an Inara API key.";
         if (profileFrontierId is null)
         {
             CredentialStatus = noCommanderText;
@@ -198,11 +198,11 @@ public sealed class InaraSettingsViewModel : INotifyPropertyChanged
             return;
         }
 
-        var normalized = string.IsNullOrWhiteSpace(apiKey) ? null : apiKey.Trim();
-        var saveGeneration = profileGeneration;
-        var saveFrontierId = profileFrontierId;
-        var saveCommanderName = commanderName;
-        var saveIsOdyssey = profileIsOdyssey;
+        string? normalized = string.IsNullOrWhiteSpace(apiKey) ? null : apiKey.Trim();
+        int saveGeneration = profileGeneration;
+        string saveFrontierId = profileFrontierId;
+        string? saveCommanderName = commanderName;
+        bool saveIsOdyssey = profileIsOdyssey;
         try
         {
             await saveInaraApiKeyAsync(
@@ -244,7 +244,7 @@ public sealed class InaraSettingsViewModel : INotifyPropertyChanged
 
     private bool CanSaveApiKey()
     {
-        var normalized = string.IsNullOrWhiteSpace(ApiKey) ? null : ApiKey.Trim();
+        string? normalized = string.IsNullOrWhiteSpace(ApiKey) ? null : ApiKey.Trim();
         return profileFrontierId is not null
             && normalized is not null
             && !string.Equals(normalized, storedApiKey, StringComparison.Ordinal);

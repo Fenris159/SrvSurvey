@@ -236,11 +236,11 @@ public sealed class MineMapService : IDisposable
         }
 
         var results = new List<MineMapCommandResult>();
-        foreach (var journalEvent in journalEvents)
+        foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
             if (
                 journalEvent.EventName != "SendText"
-                || !journalEvent.Payload.TryGetProperty("Message", out var value)
+                || !journalEvent.Payload.TryGetProperty("Message", out JsonElement value)
                 || value.ValueKind != JsonValueKind.String
                 || value.GetString() is not { } message
                 || !IsMineMapCommand(message)
@@ -313,7 +313,7 @@ public sealed class MineMapService : IDisposable
 
     public bool SelectSurvey(Guid surveyId)
     {
-        var selected = surveys.FirstOrDefault(survey => survey.Id == surveyId);
+        MineMapSurvey? selected = surveys.FirstOrDefault(survey => survey.Id == surveyId);
         if (selected is null)
         {
             return false;
@@ -329,7 +329,7 @@ public sealed class MineMapService : IDisposable
         await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            var survey = surveys.FirstOrDefault(candidate => candidate.Id == surveyId);
+            MineMapSurvey? survey = surveys.FirstOrDefault(candidate => candidate.Id == surveyId);
             if (survey is null)
             {
                 return false;
@@ -358,43 +358,11 @@ public sealed class MineMapService : IDisposable
         CancellationToken cancellationToken
     )
     {
-        var parts = Split(command);
-        if (
-            parts.Length == 2
-            && parts[0].Equals(MiningCommand, StringComparison.OrdinalIgnoreCase)
-            && parts[1].Equals("survey", StringComparison.OrdinalIgnoreCase)
-        )
+        string[] parts = Split(command);
+        MineMapCommandResult? controlResult = TryHandleSurveyControlCommand(parts, context, cancellationToken);
+        if (controlResult is not null)
         {
-            return StartSurveyGuide(context);
-        }
-
-        if (
-            parts.Length == 3
-            && parts[0].Equals(MiningCommand, StringComparison.OrdinalIgnoreCase)
-            && parts[1].Equals("survey", StringComparison.OrdinalIgnoreCase)
-            && parts[2].Equals("complete", StringComparison.OrdinalIgnoreCase)
-        )
-        {
-            return CompleteSurveyGuide(context);
-        }
-
-        if (
-            parts.Length == 3
-            && parts[0].Equals(MiningCommand, StringComparison.OrdinalIgnoreCase)
-            && parts[1].Equals("waypoint", StringComparison.OrdinalIgnoreCase)
-        )
-        {
-            return MoveSurveyWaypoint(parts[2], context);
-        }
-
-        if (
-            parts.Length == 3
-            && parts[0].Equals(MiningCommand, StringComparison.OrdinalIgnoreCase)
-            && parts[1].Equals("center", StringComparison.OrdinalIgnoreCase)
-            && parts[2].Equals("here", StringComparison.OrdinalIgnoreCase)
-        )
-        {
-            return RecenterSurvey(context, cancellationToken);
+            return controlResult;
         }
 
         if (
@@ -423,8 +391,8 @@ public sealed class MineMapService : IDisposable
             );
         }
 
-        var now = DateTimeOffset.UtcNow;
-        var existing = surveys.FirstOrDefault(survey =>
+        DateTimeOffset now = DateTimeOffset.UtcNow;
+        MineMapSurvey? existing = surveys.FirstOrDefault(survey =>
             MatchesContext(survey, context) && survey.LocationSignal == signal
         );
         SurfaceCoordinate center = GetDestination(
@@ -466,6 +434,53 @@ public sealed class MineMapService : IDisposable
         }
         Changed?.Invoke(this, EventArgs.Empty);
         return Success($"{survey.Name} center saved at bearing {bearing:0}° with a {radiusKm:0.##} km border.", survey);
+    }
+
+    private MineMapCommandResult? TryHandleSurveyControlCommand(
+        string[] parts,
+        MineMapCommandContext context,
+        CancellationToken cancellationToken
+    )
+    {
+        if (
+            parts.Length == 2
+            && parts[0].Equals(MiningCommand, StringComparison.OrdinalIgnoreCase)
+            && parts[1].Equals("survey", StringComparison.OrdinalIgnoreCase)
+        )
+        {
+            return StartSurveyGuide(context);
+        }
+
+        if (
+            parts.Length == 3
+            && parts[0].Equals(MiningCommand, StringComparison.OrdinalIgnoreCase)
+            && parts[1].Equals("survey", StringComparison.OrdinalIgnoreCase)
+            && parts[2].Equals("complete", StringComparison.OrdinalIgnoreCase)
+        )
+        {
+            return CompleteSurveyGuide(context);
+        }
+
+        if (
+            parts.Length == 3
+            && parts[0].Equals(MiningCommand, StringComparison.OrdinalIgnoreCase)
+            && parts[1].Equals("waypoint", StringComparison.OrdinalIgnoreCase)
+        )
+        {
+            return MoveSurveyWaypoint(parts[2], context);
+        }
+
+        if (
+            parts.Length == 3
+            && parts[0].Equals(MiningCommand, StringComparison.OrdinalIgnoreCase)
+            && parts[1].Equals("center", StringComparison.OrdinalIgnoreCase)
+            && parts[2].Equals("here", StringComparison.OrdinalIgnoreCase)
+        )
+        {
+            return RecenterSurvey(context, cancellationToken);
+        }
+
+        return null;
     }
 
     private MineMapCommandResult RecenterSurvey(MineMapCommandContext context, CancellationToken cancellationToken)
@@ -885,7 +900,7 @@ public sealed class MineMapService : IDisposable
         CancellationToken cancellationToken
     )
     {
-        var parts = Split(command);
+        string[] parts = Split(command);
         if (parts.Length < 2 || !parts[0].Equals(".mine", StringComparison.OrdinalIgnoreCase))
         {
             return Failure(
@@ -893,7 +908,7 @@ public sealed class MineMapService : IDisposable
             );
         }
 
-        var active = ResolveActiveSurvey(context);
+        MineMapSurvey? active = ResolveActiveSurvey(context);
         if (active is null)
         {
             return Failure("Move inside a saved Surface Mining map or create one with .mining before adding markers.");
@@ -926,7 +941,7 @@ public sealed class MineMapService : IDisposable
         {
             return Failure("Enter a mineral or metal name for the map marker.");
         }
-        if (!SurfaceMiningCommodityCatalog.TryResolve(material, out var commodity))
+        if (!SurfaceMiningCommodityCatalog.TryResolve(material, out SurfaceMiningCommodity? commodity))
         {
             return Failure(
                 $"'{material}' is not a supported surface-mining commodity. See Surface Mining > Hotspot List for accepted names."
@@ -967,7 +982,11 @@ public sealed class MineMapService : IDisposable
             Location = markerPlacement.Location,
             CreatedAt = DateTimeOffset.UtcNow,
         };
-        var updated = active with { Markers = [.. active.Markers, marker], UpdatedAt = DateTimeOffset.UtcNow };
+        MineMapSurvey updated = active with
+        {
+            Markers = [.. active.Markers, marker],
+            UpdatedAt = DateTimeOffset.UtcNow,
+        };
         SaveAndReplace(updated, cancellationToken);
         ActiveSurvey = updated;
         Changed?.Invoke(this, EventArgs.Empty);
@@ -1315,7 +1334,7 @@ public sealed class MineMapService : IDisposable
             return Failure("No mine marker is within 0.5 km of your current position.");
         }
 
-        var updated = active with
+        MineMapSurvey updated = active with
         {
             Markers = active.Markers.Where(marker => marker.Id != nearest.Marker.Id).ToArray(),
             UpdatedAt = DateTimeOffset.UtcNow,
@@ -1444,7 +1463,7 @@ public sealed class MineMapService : IDisposable
     private void SaveAndReplace(MineMapSurvey survey, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var existing = bookmarks.Items.FirstOrDefault(item => item.Id == survey.Id);
+        GalacticBookmark? existing = bookmarks.Items.FirstOrDefault(item => item.Id == survey.Id);
         SaveBookmark(survey, existing);
     }
 
@@ -1504,28 +1523,28 @@ public sealed class MineMapService : IDisposable
             throw new ArgumentOutOfRangeException(nameof(planetRadiusMeters));
         }
 
-        var latitude = DegreesToRadians(origin.Latitude);
-        var longitude = DegreesToRadians(origin.Longitude);
-        var bearing = DegreesToRadians(SurfaceNavigation.NormalizeDegrees(bearingDegrees));
-        var angularDistance = distanceMeters / planetRadiusMeters;
-        var targetLatitude = Math.Asin(
+        double latitude = DegreesToRadians(origin.Latitude);
+        double longitude = DegreesToRadians(origin.Longitude);
+        double bearing = DegreesToRadians(SurfaceNavigation.NormalizeDegrees(bearingDegrees));
+        double angularDistance = distanceMeters / planetRadiusMeters;
+        double targetLatitude = Math.Asin(
             Math.Sin(latitude) * Math.Cos(angularDistance)
                 + Math.Cos(latitude) * Math.Sin(angularDistance) * Math.Cos(bearing)
         );
-        var targetLongitude =
+        double targetLongitude =
             longitude
             + Math.Atan2(
                 Math.Sin(bearing) * Math.Sin(angularDistance) * Math.Cos(latitude),
                 Math.Cos(angularDistance) - Math.Sin(latitude) * Math.Sin(targetLatitude)
             );
-        var longitudeDegrees = RadiansToDegrees(targetLongitude);
+        double longitudeDegrees = RadiansToDegrees(targetLongitude);
         longitudeDegrees = ((longitudeDegrees + 540) % 360) - 180;
         return new SurfaceCoordinate(RadiansToDegrees(targetLatitude), longitudeDegrees);
     }
 
     private void OnBookmarksChanged(object? sender, EventArgs eventArgs)
     {
-        var activeId = ActiveSurvey?.Id;
+        Guid? activeId = ActiveSurvey?.Id;
         surveys = ReadSurveys();
         ActiveSurvey = activeId is { } id ? surveys.FirstOrDefault(survey => survey.Id == id) : ActiveSurvey;
         if (SurveyGuide?.SurveyId is { } guidedSurveyId && !surveys.Any(survey => survey.Id == guidedSurveyId))
@@ -1680,14 +1699,17 @@ public sealed class MineMapService : IDisposable
 
     private void MigrateLegacySurveys()
     {
-        var markerPath = Path.Combine(legacyDirectory, ".bookmarks-migrated");
+        string markerPath = Path.Combine(legacyDirectory, ".bookmarks-migrated");
         if (File.Exists(markerPath) || !Directory.Exists(legacyDirectory))
         {
             return;
         }
 
         var importedIds = bookmarks.Items.Select(bookmark => bookmark.Id).ToHashSet();
-        foreach (var survey in LoadLegacySurveys(legacyDirectory).Where(survey => !importedIds.Contains(survey.Id)))
+        foreach (
+            MineMapSurvey? survey in LoadLegacySurveys(legacyDirectory)
+                .Where(survey => !importedIds.Contains(survey.Id))
+        )
         {
             try
             {
@@ -1732,11 +1754,11 @@ public sealed class MineMapService : IDisposable
         }
 
         var loaded = new List<MineMapSurvey>();
-        foreach (var path in Directory.EnumerateFiles(directory, "*.json"))
+        foreach (string path in Directory.EnumerateFiles(directory, "*.json"))
         {
             try
             {
-                var survey = JsonSerializer.Deserialize<MineMapSurvey>(File.ReadAllText(path), JsonOptions);
+                MineMapSurvey? survey = JsonSerializer.Deserialize<MineMapSurvey>(File.ReadAllText(path), JsonOptions);
                 if (survey is not null && survey.Id != Guid.Empty)
                 {
                     loaded.Add(survey);
@@ -1753,7 +1775,7 @@ public sealed class MineMapService : IDisposable
 
     private static bool IsMineMapCommand(string command)
     {
-        var trimmed = command.Trim();
+        string trimmed = command.Trim();
         return trimmed.Equals(MiningCommand, StringComparison.OrdinalIgnoreCase)
             || trimmed.StartsWith(".mining ", StringComparison.OrdinalIgnoreCase)
             || trimmed.Equals(".mine", StringComparison.OrdinalIgnoreCase)
@@ -1772,7 +1794,7 @@ public sealed class MineMapService : IDisposable
     {
         mineralAmount = default;
         density = default;
-        var values = value.Split('/', StringSplitOptions.TrimEntries);
+        string[] values = value.Split('/', StringSplitOptions.TrimEntries);
         return values.Length == 2 && TryRating(values[0], out mineralAmount) && TryRating(values[1], out density);
     }
 

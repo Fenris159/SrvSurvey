@@ -14,7 +14,7 @@ public sealed class GuardianCommanderBeaconStoreTests : IDisposable
     public async Task SavePreservesUnknownFieldsAndRoundTripsWithCommanderReader()
     {
         var store = new GuardianCommanderBeaconStore(temporaryDirectory);
-        var path = store.GetBeaconPath("F123", true, "Test System");
+        string path = store.GetBeaconPath("F123", true, "Test System");
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         await File.WriteAllTextAsync(path, """{"futureOption":42}""");
         var scannedAt = DateTimeOffset.Parse(
@@ -38,12 +38,15 @@ public sealed class GuardianCommanderBeaconStoreTests : IDisposable
         );
 
         Assert.Equal(path, await store.SaveAsync("F123", true, beacon));
-        var json = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        JsonObject json = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.Equal(42, json["futureOption"]!.GetValue<int>());
         Assert.NotNull(json["scannedLocations"]);
 
-        var result = await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync("F123", isOdyssey: true);
-        var saved = Assert.Single(result.Beacons);
+        GuardianCommanderDataReadResult result = await new GuardianCommanderDataReader(temporaryDirectory).ReadAsync(
+            "F123",
+            isOdyssey: true
+        );
+        GuardianCommanderBeaconVisit saved = Assert.Single(result.Beacons);
         Assert.Equal("Test System", saved.SystemName);
         Assert.Equal(new GuardianSurfaceLocation(1.25, -2.5), Assert.Single(saved.ScannedLocations).Value);
     }
@@ -52,7 +55,7 @@ public sealed class GuardianCommanderBeaconStoreTests : IDisposable
     public async Task SaveRecoversFromMalformedExistingBeaconFile()
     {
         var store = new GuardianCommanderBeaconStore(temporaryDirectory);
-        var path = store.GetBeaconPath("F123", true, "Test System");
+        string path = store.GetBeaconPath("F123", true, "Test System");
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         await File.WriteAllTextAsync(path, "{bad-json");
         var beacon = new GuardianCommanderBeaconVisit(
@@ -70,7 +73,7 @@ public sealed class GuardianCommanderBeaconStoreTests : IDisposable
 
         Assert.Equal(path, await store.SaveAsync("F123", true, beacon));
         Assert.NotEqual("{bad-json", await File.ReadAllTextAsync(path));
-        var loaded = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        JsonObject loaded = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.Equal(beacon.SystemName, loaded["systemName"]!.GetValue<string>());
         Assert.True(
             Directory.EnumerateFiles(Path.GetDirectoryName(path)!, "Test System-beacon.json.*.corrupt.json").Any()

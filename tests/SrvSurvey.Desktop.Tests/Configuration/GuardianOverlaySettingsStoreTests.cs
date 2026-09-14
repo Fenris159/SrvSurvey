@@ -54,7 +54,7 @@ public sealed class GuardianOverlaySettingsStoreTests : IDisposable
         store.Save(expected);
 
         Assert.Equal(expected, store.Load());
-        var root = JsonNode.Parse(File.ReadAllText(SettingsPath))!.AsObject();
+        JsonObject root = JsonNode.Parse(File.ReadAllText(SettingsPath))!.AsObject();
         Assert.Equal("raven-dark", root["Theme"]!["Key"]!.GetValue<string>());
         Assert.Equal(42, root["Future"]!.GetValue<int>());
     }

@@ -51,8 +51,8 @@ public sealed class OverlayPresentationSession : IDisposable
         ArgumentNullException.ThrowIfNull(overlayLayout);
         ArgumentNullException.ThrowIfNull(keepWhenGameLosesFocus);
         var capabilities = OverlayPlatformCapabilities.DetectCurrent();
-        var trackerFactory = gameWindowTrackerFactory ?? GameWindowTracker.CreateCurrent;
-        var decision = OverlayPresentationModeSelector.DetectCurrent(capabilities);
+        Func<IGameWindowTracker> trackerFactory = gameWindowTrackerFactory ?? GameWindowTracker.CreateCurrent;
+        OverlayPresentationDecision decision = OverlayPresentationModeSelector.DetectCurrent(capabilities);
         if (decision.Mode != OverlayPresentationMode.CombinedWindow)
         {
             gameWindowTracker?.Dispose();
@@ -70,7 +70,7 @@ public sealed class OverlayPresentationSession : IDisposable
             );
         }
 
-        var nativePlatform = OverlayPlatformService.CreateCurrent();
+        IOverlayPlatformService nativePlatform = OverlayPlatformService.CreateCurrent();
         if (nativePlatform is not ICombinedOverlayNativeService)
         {
             nativePlatform.Dispose();
@@ -172,7 +172,7 @@ public sealed class OverlayPresentationSession : IDisposable
         Exception? disposalFailure = null;
         try
         {
-            foreach (var hosted in hostedWindows.ToArray())
+            foreach (HostedOverlayWindow? hosted in hostedWindows.ToArray())
             {
                 try
                 {

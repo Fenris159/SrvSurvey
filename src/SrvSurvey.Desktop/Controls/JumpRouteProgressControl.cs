@@ -99,28 +99,28 @@ public sealed class JumpRouteProgressControl : Control
             return;
         }
 
-        var left = 8d;
-        var right = Bounds.Width - 8;
-        var y = Bounds.Height / 2;
-        var width = right - left;
-        var totalDistance = legs.Sum(leg => leg.DistanceLy);
+        double left = 8d;
+        double right = Bounds.Width - 8;
+        double y = Bounds.Height / 2;
+        double width = right - left;
+        double totalDistance = legs.Sum(leg => leg.DistanceLy);
         if (totalDistance <= 0)
         {
             return;
         }
 
-        var background = BackgroundLineBrush ?? Brushes.DimGray;
-        var behind = BehindBrush ?? Brushes.Gray;
-        var ahead = AheadBrush ?? Brushes.Orange;
-        var target = TargetBrush ?? Brushes.Cyan;
-        var boost = BoostBrush ?? Brushes.Gold;
+        IBrush background = BackgroundLineBrush ?? Brushes.DimGray;
+        IBrush behind = BehindBrush ?? Brushes.Gray;
+        IBrush ahead = AheadBrush ?? Brushes.Orange;
+        IBrush target = TargetBrush ?? Brushes.Cyan;
+        IBrush boost = BoostBrush ?? Brushes.Gold;
         context.DrawLine(new Pen(background, 2), new Point(left, y), new Point(right, y));
         context.DrawEllipse(behind, null, new Point(left, y), 3, 3);
 
         var layout = new LegLayout(left, right, y, width, totalDistance);
         var brushes = new LegBrushes(behind, ahead, target, boost);
-        var x = left;
-        for (var index = 0; index < legs.Count; index++)
+        double x = left;
+        for (int index = 0; index < legs.Count; index++)
         {
             x = DrawLeg(context, legs, index, x, layout, brushes);
         }
@@ -135,9 +135,10 @@ public sealed class JumpRouteProgressControl : Control
         LegBrushes brushes
     )
     {
-        var leg = legs[index];
-        var nextX = index == legs.Count - 1 ? layout.Right : x + layout.Width * (leg.DistanceLy / layout.TotalDistance);
-        var brush = ResolveLegBrush(index, brushes);
+        JumpInfoRouteLeg leg = legs[index];
+        double nextX =
+            index == legs.Count - 1 ? layout.Right : x + layout.Width * (leg.DistanceLy / layout.TotalDistance);
+        IBrush brush = ResolveLegBrush(index, brushes);
         DrawLegSegments(
             new LegSegmentDraw
             {
@@ -205,7 +206,7 @@ public sealed class JumpRouteProgressControl : Control
         IBrush brush
     )
     {
-        var radius = index == TargetLegIndex ? 5d : 3.5;
+        double radius = index == TargetLegIndex ? 5d : 3.5;
         context.DrawEllipse(brush, null, new Point(nextX, layout.Y), radius, radius);
         if (leg.IsScoopable)
         {

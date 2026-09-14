@@ -20,7 +20,7 @@ public sealed partial class MiniTrackOverlayWindow : Window
 
     private static SurfaceSurveyOverlayViewModel CreateDesignViewModel()
     {
-        var root = Path.Combine(
+        string root = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "SrvSurvey",
             "DesignTime"

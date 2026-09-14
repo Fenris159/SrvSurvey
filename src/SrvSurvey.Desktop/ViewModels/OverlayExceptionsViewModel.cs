@@ -40,7 +40,7 @@ public sealed class OverlayExceptionsViewModel
 
     public void UpdateBoardedVehicle(JournalSessionState journal, EliteStatus? status)
     {
-        var next = OverlayVehicleCatalog.Resolve(journal, status);
+        string next = OverlayVehicleCatalog.Resolve(journal, status);
         if (next == boarded)
         {
             return;
@@ -88,7 +88,7 @@ public sealed class OverlayExceptionCategoryViewModel : WorkspaceObservable
         Category = category;
         this.store = store;
         this.apply = apply;
-        var saved = store.Load(category);
+        IReadOnlySet<string>? saved = store.Load(category);
         Groups = OverlayVehicleCatalog
             .ForCategory(category)
             .GroupBy(v => v.Group)
@@ -108,7 +108,7 @@ public sealed class OverlayExceptionCategoryViewModel : WorkspaceObservable
         batching = true;
         try
         {
-            foreach (var entry in Entries)
+            foreach (OverlayExceptionEntryViewModel entry in Entries)
             {
                 entry.IsAllowed = allowed;
             }

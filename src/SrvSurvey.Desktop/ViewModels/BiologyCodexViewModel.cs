@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
+using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Network;
 
 namespace SrvSurvey.Desktop.ViewModels;
@@ -196,7 +197,9 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
 
     public Task<bool> OpenEntryAsync(long entryId)
     {
-        var body = Bodies.FirstOrDefault(candidate => candidate.Organisms.Any(organism => organism.EntryId == entryId));
+        BiologyCodexBodyViewModel? body = Bodies.FirstOrDefault(candidate =>
+            candidate.Organisms.Any(organism => organism.EntryId == entryId)
+        );
         if (body is not null)
         {
             SelectBody(body, entryId);
@@ -212,7 +215,7 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
             return Task.FromResult(false);
         }
 
-        var commander = commanderNameProvider() ?? string.Empty;
+        string commander = commanderNameProvider() ?? string.Empty;
         var uri = new Uri(
             WellKnownUris.CodexMissingForm.AbsoluteUri
                 + "?entry.987977054="
@@ -286,10 +289,10 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
 
     private void Refresh()
     {
-        var previousBodyId = SelectedBody?.BodyId;
-        var previousEntryId = SelectedOrganism?.EntryId;
-        var snapshot = survey.Snapshot;
-        var nextBodies = snapshot
+        int? previousBodyId = SelectedBody?.BodyId;
+        long? previousEntryId = SelectedOrganism?.EntryId;
+        SystemScanSnapshot snapshot = survey.Snapshot;
+        BiologyCodexBodyViewModel[] nextBodies = snapshot
             .Bodies.Where(body => body.BiologicalSignalCount > 0)
             .OrderBy(body => body.BodyId)
             .Select(CreateBody)
@@ -300,8 +303,9 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(HasSystemAddress));
         OnPropertyChanged(nameof(SystemAddressText));
 
-        var preferredBodyId = previousBodyId ?? ResolveCurrentBodyId(snapshot);
-        var nextBody = nextBodies.FirstOrDefault(body => body.BodyId == preferredBodyId) ?? nextBodies.FirstOrDefault();
+        int? preferredBodyId = previousBodyId ?? ResolveCurrentBodyId(snapshot);
+        BiologyCodexBodyViewModel? nextBody =
+            nextBodies.FirstOrDefault(body => body.BodyId == preferredBodyId) ?? nextBodies.FirstOrDefault();
         SelectBody(nextBody, previousEntryId);
         RaiseCommands();
     }
@@ -309,7 +313,7 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
     private BiologyCodexBodyViewModel CreateBody(SystemScanBodySnapshot body)
     {
         var entries = new Dictionary<long, BiologyCodexOrganismViewModel>();
-        var inputs = BiologyPredictionContextBuilder.Build(survey.Snapshot, body.BodyId);
+        BiologyPredictionInputs? inputs = BiologyPredictionContextBuilder.Build(survey.Snapshot, body.BodyId);
         AddObservedOrganisms(body, inputs, entries);
         AddPredictedOrganisms(body, inputs, entries);
         return new BiologyCodexBodyViewModel(
@@ -327,9 +331,9 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
         Dictionary<long, BiologyCodexOrganismViewModel> entries
     )
     {
-        foreach (var organism in body.Organisms)
+        foreach (SystemOrganismSnapshot organism in body.Organisms)
         {
-            var reference = ResolveOrganismReference(organism);
+            ExobiologyReference? reference = ResolveOrganismReference(organism);
             if (reference is null)
             {
                 continue;
@@ -372,10 +376,10 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
-        var result = evaluator.Evaluate(inputs.Context, inputs.Knowledge);
-        foreach (var prediction in result.PredictionDetails)
+        BiologyPredictionResult result = evaluator.Evaluate(inputs.Context, inputs.Knowledge);
+        foreach (BiologyPrediction prediction in result.PredictionDetails)
         {
-            var reference = catalog.FindByDisplayName(prediction.Name);
+            ExobiologyReference? reference = catalog.FindByDisplayName(prediction.Name);
             if (reference is null || entries.ContainsKey(reference.EntryId))
             {
                 continue;
@@ -405,9 +409,9 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
                 );
         }
 
-        var temperatureRange = FormatTemperatureRange(temperatureClause);
-        var temperatureWarning = FormatTemperatureWarning(body, temperatureClause);
-        var genusName = ExobiologyReferenceCatalog.GetGenusName(reference);
+        string temperatureRange = FormatTemperatureRange(temperatureClause);
+        string temperatureWarning = FormatTemperatureWarning(body, temperatureClause);
+        string genusName = ExobiologyReferenceCatalog.GetGenusName(reference);
         return new BiologyCodexOrganismViewModel(
             reference.EntryId,
             reference.DisplayName ?? reference.VariantName,
@@ -424,7 +428,7 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
 
     private string FormatTemperatureWarning(SystemScanBodySnapshot body, BiologyCriteriaClause? clause)
     {
-        var status = survey.CurrentStatus;
+        EliteStatus? status = survey.CurrentStatus;
         if (status?.OnFoot != true || status.Temperature <= 0 || clause is null || !IsCurrentBody(body, status))
         {
             return string.Empty;
@@ -442,8 +446,8 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
 
     private int? ResolveCurrentBodyId(SystemScanSnapshot snapshot)
     {
-        var status = survey.CurrentStatus;
-        var body = !string.IsNullOrWhiteSpace(status?.BodyName)
+        EliteStatus? status = survey.CurrentStatus;
+        SystemScanBodySnapshot? body = !string.IsNullOrWhiteSpace(status?.BodyName)
             ? snapshot.Bodies.FirstOrDefault(candidate =>
                 string.Equals(candidate.Name, status.BodyName, StringComparison.OrdinalIgnoreCase)
             )
@@ -475,8 +479,8 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
 
     private void SelectBody(BiologyCodexBodyViewModel? value, long? preferredEntryId)
     {
-        var bodyChanged = SetField(ref selectedBody, value, nameof(SelectedBody));
-        var organism = preferredEntryId is { } entryId
+        bool bodyChanged = SetField(ref selectedBody, value, nameof(SelectedBody));
+        BiologyCodexOrganismViewModel? organism = preferredEntryId is { } entryId
             ? value?.Organisms.FirstOrDefault(candidate => candidate.EntryId == entryId)
             : null;
         organism ??= value?.Organisms is { Count: > 0 } organisms ? organisms[0] : null;
@@ -498,7 +502,7 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
-        var index = Bodies.IndexOf(SelectedBody);
+        int index = Bodies.IndexOf(SelectedBody);
         SelectedBody = Bodies[(index + delta + Bodies.Count) % Bodies.Count];
     }
 
@@ -509,7 +513,7 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
-        var index = body.Organisms.IndexOf(SelectedOrganism);
+        int index = body.Organisms.IndexOf(SelectedOrganism);
         SelectedOrganism = body.Organisms[(index + delta + body.Organisms.Count) % body.Organisms.Count];
     }
 
@@ -538,7 +542,7 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
 
         try
         {
-            var launched = await uriLauncher(uri);
+            bool launched = await uriLauncher(uri);
             LaunchStatus = launched ? $"Opened {label}." : $"The platform could not open {label}.";
             return launched;
         }
@@ -709,7 +713,7 @@ internal static class BiologyCodexListExtensions
 {
     public static int IndexOf<T>(this IReadOnlyList<T> source, T value)
     {
-        for (var index = 0; index < source.Count; index++)
+        for (int index = 0; index < source.Count; index++)
         {
             if (EqualityComparer<T>.Default.Equals(source[index], value))
             {

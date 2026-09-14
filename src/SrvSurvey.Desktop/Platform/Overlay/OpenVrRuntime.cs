@@ -47,7 +47,7 @@ public sealed class OpenVrRuntime : IOpenVrRuntime
         try
         {
             OpenVrNativeLibraryResolver.Register();
-            var error = EVRInitError.None;
+            EVRInitError error = EVRInitError.None;
             system = OpenVR.Init(ref error, EVRApplicationType.VRApplication_Overlay);
             overlay = OpenVR.Overlay;
             if (error != EVRInitError.None || system is null || overlay is null)
@@ -96,7 +96,7 @@ public sealed class OpenVrRuntime : IOpenVrRuntime
 
         try
         {
-            var handle = GetOrCreateHandle(plotterName);
+            ulong handle = GetOrCreateHandle(plotterName);
             Check(overlay.SetOverlayAlpha(handle, Math.Clamp(alpha, 0, 1)));
             Check(overlay.SetOverlayWidthInMeters(handle, calibration.Scale / 10));
             var matrix = VrOverlayTransform
@@ -132,7 +132,7 @@ public sealed class OpenVrRuntime : IOpenVrRuntime
 
     public void RemoveOverlay(string plotterName)
     {
-        if (overlay is null || !handles.Remove(plotterName, out var handle))
+        if (overlay is null || !handles.Remove(plotterName, out ulong handle))
         {
             return;
         }
@@ -164,7 +164,7 @@ public sealed class OpenVrRuntime : IOpenVrRuntime
     {
         if (overlay is not null)
         {
-            foreach (var handle in handles.Values)
+            foreach (ulong handle in handles.Values)
             {
                 _ = overlay.HideOverlay(handle);
                 _ = overlay.DestroyOverlay(handle);
@@ -190,13 +190,13 @@ public sealed class OpenVrRuntime : IOpenVrRuntime
 
     private ulong GetOrCreateHandle(string plotterName)
     {
-        if (handles.TryGetValue(plotterName, out var handle))
+        if (handles.TryGetValue(plotterName, out ulong handle))
         {
             return handle;
         }
 
-        var hash = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(plotterName)))[..16];
-        var error = overlay!.CreateOverlay(
+        string hash = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(plotterName)))[..16];
+        EVROverlayError error = overlay!.CreateOverlay(
             $"com.ravencolonial.srvsurvey.{hash}",
             $"SrvSurvey {plotterName}",
             ref handle

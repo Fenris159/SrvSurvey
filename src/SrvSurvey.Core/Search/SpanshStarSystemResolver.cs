@@ -29,11 +29,11 @@ public sealed class SpanshStarSystemResolver : IStarSystemResolver
             apiBaseUri,
             "systems/field_values/system_names?q=" + Uri.EscapeDataString(query.Trim())
         );
-        using var response = await client
+        using HttpResponseMessage response = await client
             .GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
-        var payload = await BoundedHttpContent
+        SpanshSystemResponse? payload = await BoundedHttpContent
             .ReadFromJsonAsync<SpanshSystemResponse>(
                 response.Content,
                 MaximumResponseBytes,
@@ -48,7 +48,7 @@ public sealed class SpanshStarSystemResolver : IStarSystemResolver
 
         var results = new List<StarSystemReference>(payload.Systems.Count);
         var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var system in payload.Systems)
+        foreach (SpanshSystem system in payload.Systems)
         {
             if (
                 string.IsNullOrWhiteSpace(system.Name)

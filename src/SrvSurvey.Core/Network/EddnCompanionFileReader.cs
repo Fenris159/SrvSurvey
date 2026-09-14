@@ -29,7 +29,7 @@ internal static class EddnCompanionFileReader
         ArgumentException.ThrowIfNullOrWhiteSpace(journalFolder);
         ArgumentNullException.ThrowIfNull(journalEvent);
 
-        var eventName = journalEvent.Value<string>("event");
+        string? eventName = journalEvent.Value<string>("event");
         if (!EddnMessageSanitizer.isCompanionEvent(eventName))
         {
             return new EddnCompanionReadResult(null, "the journal event does not identify a supported companion file");
@@ -54,10 +54,15 @@ internal static class EddnCompanionFileReader
     )
     {
         string? lastError = null;
-        for (var attempt = 0; attempt <= delays.Count; attempt++)
+        for (int attempt = 0; attempt <= delays.Count; attempt++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var attemptResult = await tryReadAttempt(filepath, eventName, journalEvent, cancellationToken)
+            EddnCompanionReadResult attemptResult = await tryReadAttempt(
+                    filepath,
+                    eventName,
+                    journalEvent,
+                    cancellationToken
+                )
                 .ConfigureAwait(false);
             if (attemptResult.isSuccess)
             {
@@ -107,7 +112,7 @@ internal static class EddnCompanionFileReader
         using var stream = new FileStream(filepath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         using var reader = new StreamReader(stream);
         using var jsonReader = new JsonTextReader(reader);
-        var content = await JObject.LoadAsync(jsonReader, cancellationToken).ConfigureAwait(false);
+        JObject content = await JObject.LoadAsync(jsonReader, cancellationToken).ConfigureAwait(false);
         if (content.Value<string>("event") != eventName)
         {
             return new EddnCompanionReadResult(null, $"{eventName}.json contained a different event");
@@ -128,7 +133,7 @@ internal static class EddnCompanionFileReader
 
     private static bool matchesMarket(JObject journalEvent, JObject content)
     {
-        var expected = journalEvent.Value<long?>("MarketID");
+        long? expected = journalEvent.Value<long?>("MarketID");
         return !expected.HasValue || expected <= 0 || content.Value<long?>("MarketID") == expected;
     }
 
@@ -139,13 +144,13 @@ internal static class EddnCompanionFileReader
                 journalEvent.Value<string>("timestamp"),
                 CultureInfo.InvariantCulture,
                 DateTimeStyles.AssumeUniversal,
-                out var eventTimestamp
+                out DateTimeOffset eventTimestamp
             )
             || !DateTimeOffset.TryParse(
                 content.Value<string>("timestamp"),
                 CultureInfo.InvariantCulture,
                 DateTimeStyles.AssumeUniversal,
-                out var fileTimestamp
+                out DateTimeOffset fileTimestamp
             )
         )
         {

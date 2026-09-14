@@ -53,7 +53,7 @@ public sealed class FollowRouteService(FollowRouteStore store)
     )
     {
         ArgumentNullException.ThrowIfNull(route);
-        var updated = PrepareActivation(route, currentSystemAddress: null);
+        FollowRouteDocument updated = PrepareActivation(route, currentSystemAddress: null);
         await store.SaveProgressAsync(updated, cancellationToken).ConfigureAwait(false);
         return updated;
     }
@@ -166,7 +166,7 @@ public sealed class FollowRouteService(FollowRouteStore store)
     {
         ArgumentNullException.ThrowIfNull(route);
         ArgumentNullException.ThrowIfNull(hops);
-        var updated = route with
+        FollowRouteDocument updated = route with
         {
             Hops = hops.ToArray(),
             LastReachedIndex = NormalizeLastIndex(lastReachedIndex, hops.Count),
@@ -186,7 +186,7 @@ public sealed class FollowRouteService(FollowRouteStore store)
     )
     {
         ArgumentNullException.ThrowIfNull(route);
-        var updated = isActive
+        FollowRouteDocument updated = isActive
             ? PrepareActivation(route with { IsActive = true }, currentSystemAddress)
             : route with
             {
@@ -203,7 +203,7 @@ public sealed class FollowRouteService(FollowRouteStore store)
     )
     {
         ArgumentNullException.ThrowIfNull(route);
-        var updated = route with { AutoCopy = autoCopy };
+        FollowRouteDocument updated = route with { AutoCopy = autoCopy };
         await store.SaveAsync(updated, cancellationToken).ConfigureAwait(false);
         return updated;
     }
@@ -215,8 +215,8 @@ public sealed class FollowRouteService(FollowRouteStore store)
     )
     {
         ArgumentNullException.ThrowIfNull(route);
-        var normalizedIndex = NormalizeLastIndex(lastReachedIndex, route.Hops.Count);
-        var updated = route with
+        int normalizedIndex = NormalizeLastIndex(lastReachedIndex, route.Hops.Count);
+        FollowRouteDocument updated = route with
         {
             LastReachedIndex = normalizedIndex,
             IsActive = route.Hops.Count > 0 && normalizedIndex < route.Hops.Count - 1 && route.IsActive,
@@ -239,7 +239,7 @@ public sealed class FollowRouteService(FollowRouteStore store)
             throw new ArgumentOutOfRangeException(nameof(hopIndex));
         }
 
-        var hop = route.Hops[hopIndex];
+        FollowRouteHop hop = route.Hops[hopIndex];
         if (targetIndex < 0 || targetIndex >= hop.BioTargets.Count)
         {
             throw new ArgumentOutOfRangeException(nameof(targetIndex));
@@ -250,11 +250,11 @@ public sealed class FollowRouteService(FollowRouteStore store)
             return route;
         }
 
-        var targets = hop.BioTargets.ToArray();
+        FollowRouteBioTarget[] targets = hop.BioTargets.ToArray();
         targets[targetIndex] = targets[targetIndex] with { IsCompleted = isCompleted };
-        var hops = route.Hops.ToArray();
+        FollowRouteHop[] hops = route.Hops.ToArray();
         hops[hopIndex] = hop with { Bio = targets };
-        var updated = route with { Hops = hops };
+        FollowRouteDocument updated = route with { Hops = hops };
         await store.SaveProgressAsync(updated, cancellationToken).ConfigureAwait(false);
         return updated;
     }
@@ -272,21 +272,25 @@ public sealed class FollowRouteService(FollowRouteStore store)
             return new FollowRouteArrivalResult(route, false, null);
         }
 
-        var startIndex = Math.Clamp(route.LastReachedIndex, 0, route.Hops.Count);
-        var reachedIndex = FindHopIndex(route.Hops, startIndex, systemName, systemAddress);
+        int startIndex = Math.Clamp(route.LastReachedIndex, 0, route.Hops.Count);
+        int reachedIndex = FindHopIndex(route.Hops, startIndex, systemName, systemAddress);
         if (reachedIndex < 0 || (reachedIndex != route.Hops.Count - 1 && reachedIndex != route.LastReachedIndex + 1))
         {
             return new FollowRouteArrivalResult(route, false, null);
         }
 
-        var updated = route with { LastReachedIndex = reachedIndex, IsActive = reachedIndex < route.Hops.Count - 1 };
+        FollowRouteDocument updated = route with
+        {
+            LastReachedIndex = reachedIndex,
+            IsActive = reachedIndex < route.Hops.Count - 1,
+        };
         await store.SaveAsync(updated, cancellationToken).ConfigureAwait(false);
         return new FollowRouteArrivalResult(updated, true, reachedIndex);
     }
 
     private static FollowRouteDocument PrepareActivation(FollowRouteDocument route, long? currentSystemAddress)
     {
-        var lastReachedIndex = NormalizeLastIndex(route.LastReachedIndex, route.Hops.Count);
+        int lastReachedIndex = NormalizeLastIndex(route.LastReachedIndex, route.Hops.Count);
         if (!route.IsActive || route.Hops.Count == 0 || lastReachedIndex >= route.Hops.Count - 1)
         {
             return route with { LastReachedIndex = lastReachedIndex, IsActive = false };
@@ -321,9 +325,9 @@ public sealed class FollowRouteService(FollowRouteStore store)
         long? systemAddress
     )
     {
-        for (var index = startIndex; index < hops.Count; index++)
+        for (int index = startIndex; index < hops.Count; index++)
         {
-            var hop = hops[index];
+            FollowRouteHop hop = hops[index];
             if (
                 (systemAddress is not null && hop.SystemAddress == systemAddress)
                 || string.Equals(hop.Name, systemName, StringComparison.OrdinalIgnoreCase)

@@ -27,8 +27,8 @@ public sealed class BiologyCriteriaCatalog
 
     public static BiologyCriteriaCatalog LoadEmbedded()
     {
-        var assembly = typeof(BiologyCriteriaCatalog).Assembly;
-        var resourceNames = assembly
+        Assembly assembly = typeof(BiologyCriteriaCatalog).Assembly;
+        string[] resourceNames = assembly
             .GetManifestResourceNames()
             .Where(name => name.StartsWith(EmbeddedResourcePrefix, StringComparison.Ordinal))
             .Where(name => name.EndsWith(".json", StringComparison.Ordinal))
@@ -42,9 +42,9 @@ public sealed class BiologyCriteriaCatalog
         }
 
         var roots = new List<BiologyCriteriaNode>(resourceNames.Length);
-        foreach (var resourceName in resourceNames)
+        foreach (string? resourceName in resourceNames)
         {
-            using var stream =
+            using Stream stream =
                 assembly.GetManifestResourceStream(resourceName)
                 ?? throw new InvalidOperationException($"The embedded biology criteria {resourceName} is missing.");
             roots.Add(ParseRoot(stream, resourceName));
@@ -62,8 +62,8 @@ public sealed class BiologyCriteriaCatalog
     public static BiologyCriteriaCatalog LoadDirectory(string directoryPath)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(directoryPath);
-        var directory = Path.GetFullPath(directoryPath);
-        var paths = Directory.Exists(directory)
+        string directory = Path.GetFullPath(directoryPath);
+        string[] paths = Directory.Exists(directory)
             ? Directory
                 .GetFiles(directory, "*.json", SearchOption.TopDirectoryOnly)
                 .Order(StringComparer.Ordinal)
@@ -75,9 +75,9 @@ public sealed class BiologyCriteriaCatalog
         }
 
         var roots = new List<BiologyCriteriaNode>(paths.Length);
-        foreach (var path in paths)
+        foreach (string? path in paths)
         {
-            using var stream = File.OpenRead(path);
+            using FileStream stream = File.OpenRead(path);
             roots.Add(ParseRoot(stream, path));
         }
 
@@ -104,10 +104,10 @@ public sealed class BiologyCriteriaCatalog
             throw new InvalidDataException($"Biology criteria '{sourceName}' contains a non-object node.");
         }
 
-        var query = ParseQuery(element, sourceName);
-        var children = ParseChildren(element, "children", sourceName);
-        var commonChildren = ParseOptionalChildren(element, "commonChildren", sourceName);
-        var useCommonChildren = GetBoolean(element, "useCommonChildren", sourceName);
+        List<BiologyCriteriaClause> query = ParseQuery(element, sourceName);
+        BiologyCriteriaNode[] children = ParseChildren(element, "children", sourceName);
+        BiologyCriteriaNode[]? commonChildren = ParseOptionalChildren(element, "commonChildren", sourceName);
+        bool useCommonChildren = GetBoolean(element, "useCommonChildren", sourceName);
         if (useCommonChildren && children.Length > 0)
         {
             throw new InvalidDataException(
@@ -128,7 +128,7 @@ public sealed class BiologyCriteriaCatalog
 
     private static List<BiologyCriteriaClause> ParseQuery(JsonElement element, string sourceName)
     {
-        if (!element.TryGetProperty("query", out var query))
+        if (!element.TryGetProperty("query", out JsonElement query))
         {
             return [];
         }
@@ -139,7 +139,7 @@ public sealed class BiologyCriteriaCatalog
         }
 
         var clauses = new List<BiologyCriteriaClause>();
-        foreach (var value in query.EnumerateArray())
+        foreach (JsonElement value in query.EnumerateArray())
         {
             if (value.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(value.GetString()))
             {
@@ -154,7 +154,7 @@ public sealed class BiologyCriteriaCatalog
 
     private static BiologyCriteriaNode[] ParseChildren(JsonElement element, string propertyName, string sourceName)
     {
-        if (!element.TryGetProperty(propertyName, out var children))
+        if (!element.TryGetProperty(propertyName, out JsonElement children))
         {
             return [];
         }
@@ -178,7 +178,7 @@ public sealed class BiologyCriteriaCatalog
 
     private static string? GetString(JsonElement element, string propertyName, string sourceName)
     {
-        if (!element.TryGetProperty(propertyName, out var value))
+        if (!element.TryGetProperty(propertyName, out JsonElement value))
         {
             return null;
         }
@@ -193,7 +193,7 @@ public sealed class BiologyCriteriaCatalog
 
     private static bool GetBoolean(JsonElement element, string propertyName, string sourceName)
     {
-        if (!element.TryGetProperty(propertyName, out var value))
+        if (!element.TryGetProperty(propertyName, out JsonElement value))
         {
             return false;
         }
@@ -333,25 +333,25 @@ public sealed class BiologyCriteriaClause
 
     private static BiologyCriteriaClause ParseCore(string text)
     {
-        var trimmed = text.Trim();
+        string trimmed = text.Trim();
         if (trimmed.StartsWith('#'))
         {
             return new BiologyCriteriaClause(trimmed, string.Empty, BiologyCriteriaOperator.Comment);
         }
 
-        var match = ClausePattern.Match(trimmed);
+        Match match = ClausePattern.Match(trimmed);
         if (!match.Success)
         {
             throw new InvalidDataException($"Invalid biology criterion: {text}");
         }
 
-        var property = match.Groups["property"].Value;
+        string property = match.Groups["property"].Value;
         if (!SupportedProperties.Contains(property))
         {
             throw new InvalidDataException($"Unsupported biology criteria property: {property}");
         }
 
-        var valueText = match.Groups["value"].Value.Trim();
+        string valueText = match.Groups["value"].Value.Trim();
         if (valueText.Contains('~'))
         {
             return ParseRange(trimmed, property, valueText);
@@ -362,13 +362,13 @@ public sealed class BiologyCriteriaClause
             return ParseComposition(trimmed, property, valueText);
         }
 
-        var @operator = match.Groups["operator"].Value switch
+        BiologyCriteriaOperator @operator = match.Groups["operator"].Value switch
         {
             "&" => BiologyCriteriaOperator.All,
             "!" => BiologyCriteriaOperator.Not,
             _ => BiologyCriteriaOperator.Is,
         };
-        var values = valueText
+        string[] values = valueText
             .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
             .SelectMany(value => ExpandValue(property, value))
             .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -385,14 +385,14 @@ public sealed class BiologyCriteriaClause
 
     private static BiologyCriteriaClause ParseRange(string rawText, string property, string valueText)
     {
-        var parts = valueText.Split('~', StringSplitOptions.TrimEntries);
+        string[] parts = valueText.Split('~', StringSplitOptions.TrimEntries);
         if (parts.Length != 2)
         {
             throw new InvalidDataException($"Invalid biology criteria range: {rawText}");
         }
 
-        var minimum = ParseOptionalDouble(parts[0], rawText);
-        var maximum = ParseOptionalDouble(parts[1], rawText);
+        double? minimum = ParseOptionalDouble(parts[0], rawText);
+        double? maximum = ParseOptionalDouble(parts[1], rawText);
         if (minimum is null && maximum is null)
         {
             throw new InvalidDataException($"Invalid biology criteria range: {rawText}");
@@ -411,17 +411,17 @@ public sealed class BiologyCriteriaClause
     {
         var compositions = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
         foreach (
-            var part in valueText.Split('|', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+            string part in valueText.Split('|', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
         )
         {
-            var match = CompositionPattern.Match(part);
+            Match match = CompositionPattern.Match(part);
             if (
                 !match.Success
                 || !double.TryParse(
                     match.Groups["amount"].Value,
                     NumberStyles.Float,
                     CultureInfo.InvariantCulture,
-                    out var amount
+                    out double amount
                 )
             )
             {
@@ -451,7 +451,7 @@ public sealed class BiologyCriteriaClause
             return null;
         }
 
-        if (!double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var result))
+        if (!double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out double result))
         {
             throw new InvalidDataException($"Invalid biology criteria number: {rawText}");
         }
@@ -463,12 +463,12 @@ public sealed class BiologyCriteriaClause
     {
         if (property == "regions")
         {
-            if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var regionId))
+            if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int regionId))
             {
                 return [regionId.ToString(CultureInfo.InvariantCulture)];
             }
 
-            if (!RegionAliases.TryGetValue(value, out var regionIds))
+            if (!RegionAliases.TryGetValue(value, out int[]? regionIds))
             {
                 throw new InvalidDataException($"Unknown biology criteria region alias: {value}");
             }

@@ -29,8 +29,8 @@ internal sealed class ProcessDiagnosticInstanceLauncher : IDiagnosticInstanceLau
     )
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var fullExecutablePath = Path.GetFullPath(executablePath);
-        var fullManifestPath = Path.GetFullPath(manifestPath);
+        string fullExecutablePath = Path.GetFullPath(executablePath);
+        string fullManifestPath = Path.GetFullPath(manifestPath);
         var startInfo = new ProcessStartInfo
         {
             FileName = fullExecutablePath,
@@ -39,7 +39,7 @@ internal sealed class ProcessDiagnosticInstanceLauncher : IDiagnosticInstanceLau
         };
         startInfo.ArgumentList.Add("--diagnostic-replay");
         startInfo.ArgumentList.Add(fullManifestPath);
-        var process =
+        Process process =
             Process.Start(startInfo)
             ?? throw new InvalidOperationException("The diagnostic SrvSurvey process could not be started.");
         return Task.FromResult<IDiagnosticInstance>(new ProcessDiagnosticInstance(process));

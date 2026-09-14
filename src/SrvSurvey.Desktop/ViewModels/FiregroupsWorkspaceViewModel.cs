@@ -24,8 +24,8 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
     private string configurationName = "";
     private int groupNumber;
     private bool loading;
-    private readonly SortedDictionary<int, FiregroupAssignment> groups = new();
-    private readonly Dictionary<string, EditorDraft> drafts = new();
+    private readonly SortedDictionary<int, FiregroupAssignment> groups = [];
+    private readonly Dictionary<string, EditorDraft> drafts = [];
 
     public FiregroupsWorkspaceViewModel(string directory)
     {
@@ -54,7 +54,7 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
         get => GroupLetters[groupNumber];
         set
         {
-            var number = GroupLetters.ToList().IndexOf(value);
+            int number = GroupLetters.ToList().IndexOf(value);
             if (number >= 0 && number != groupNumber)
             {
                 ChangeGroup(number);
@@ -109,8 +109,8 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
 
     public void Apply(JournalMonitorUpdate update, JournalSessionState journal, EliteStatus? currentStatus)
     {
-        var previousCommander = commander;
-        var nextCommander = journal.FrontierId;
+        string? previousCommander = commander;
+        string? nextCommander = journal.FrontierId;
         if (update.IsAwaitingCommanderIdentity || journal.IsShutdown)
         {
             nextCommander = null;
@@ -129,13 +129,13 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
             return;
         }
 
-        var loadouts = ReadLoadouts(update.JournalEvents, previousCommander);
-        var updatedDocument = UpdateLoadouts(loadouts);
+        List<FiregroupShip> loadouts = ReadLoadouts(update.JournalEvents, previousCommander);
+        FiregroupDocument? updatedDocument = UpdateLoadouts(loadouts);
         if (updatedDocument is not null && Persist(updatedDocument, "Equipped loadout updated."))
         {
             document = updatedDocument;
         }
-        var nextShip = document.Ships.LastOrDefault(s =>
+        FiregroupShip? nextShip = document.Ships.LastOrDefault(s =>
             s.Type.Equals(journal.ShipType, StringComparison.OrdinalIgnoreCase)
             && (journal.ShipId is null || s.Id == journal.ShipId)
         );
@@ -161,9 +161,9 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
     private FiregroupDocument? UpdateLoadouts(List<FiregroupShip> loadouts)
     {
         var ships = document.Ships.ToList();
-        foreach (var ship in loadouts)
+        foreach (FiregroupShip ship in loadouts)
         {
-            var old = ships.FirstOrDefault(s => s.Key == ship.Key);
+            FiregroupShip? old = ships.FirstOrDefault(s => s.Key == ship.Key);
             if (old is not null && old.Name == ship.Name && old.Modules.SequenceEqual(ship.Modules))
             {
                 continue;
@@ -203,12 +203,12 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
     private List<FiregroupShip> ReadLoadouts(IReadOnlyList<JournalEventEnvelope> entries, string? previousCommander)
     {
         var loadouts = new List<FiregroupShip>();
-        var eventCommander = previousCommander ?? commander;
-        foreach (var entry in entries)
+        string? eventCommander = previousCommander ?? commander;
+        foreach (JournalEventEnvelope entry in entries)
         {
             if (
                 entry.EventName is "LoadGame" or "Commander"
-                && entry.Payload.TryGetProperty("FID", out var fid)
+                && entry.Payload.TryGetProperty("FID", out JsonElement fid)
                 && fid.ValueKind == JsonValueKind.String
             )
             {
@@ -272,7 +272,7 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
 
         try
         {
-            var legacy = legacyStore.Load(commander).Settings.Firegroups;
+            List<MiningFiregroup> legacy = legacyStore.Load(commander).Settings.Firegroups;
             if (legacy.Count > 0)
             {
                 var profile = new FiregroupProfile(
@@ -317,17 +317,17 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
         ConfigurationName = profile?.Name ?? "";
         if (profile is not null)
         {
-            foreach (var group in profile.Groups)
+            foreach (FiregroupAssignment group in profile.Groups)
             {
                 groups[group.Number] = group;
             }
         }
 
-        if (drafts.TryGetValue(DraftKey, out var draft))
+        if (drafts.TryGetValue(DraftKey, out EditorDraft? draft))
         {
             ConfigurationName = draft.Name;
             groups.Clear();
-            foreach (var group in draft.Groups)
+            foreach (FiregroupAssignment group in draft.Groups)
             {
                 groups[group.Number] = group;
             }
@@ -392,7 +392,7 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
         }
 
         Status = $"Group {GroupLetter} added to the draft. Save the named configuration when ready.";
-        var next = Enumerable
+        int next = Enumerable
             .Range(1, 8)
             .Select(offset => (groupNumber + offset) % 8)
             .FirstOrDefault(n => !groups.ContainsKey(n), groupNumber);
@@ -419,7 +419,7 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
 
     private bool CommitCurrent(bool requireModules)
     {
-        var current = Capture();
+        FiregroupAssignment current = Capture();
         if (current.Primary.Count + current.Secondary.Count == 0)
         {
             if (requireModules)
@@ -452,12 +452,12 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
         {
             Primary.Clear();
             Secondary.Clear();
-            foreach (var module in group?.Primary ?? [])
+            foreach (FiregroupModule module in group?.Primary ?? [])
             {
                 AddRow(Primary, module);
             }
 
-            foreach (var module in group?.Secondary ?? [])
+            foreach (FiregroupModule module in group?.Secondary ?? [])
             {
                 AddRow(Secondary, module);
             }
@@ -501,7 +501,7 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
 
     private void RefreshOptions()
     {
-        foreach (var row in Primary.Concat(Secondary))
+        foreach (FiregroupSelectionRow? row in Primary.Concat(Secondary))
         {
             row.UpdateOptions(editorShip?.Modules ?? []);
         }
@@ -510,7 +510,7 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
     private void RefreshPreview()
     {
         var preview = new SortedDictionary<int, FiregroupAssignment>(groups);
-        var current = Capture();
+        FiregroupAssignment current = Capture();
         if (current.Primary.Count + current.Secondary.Count > 0)
         {
             preview[groupNumber] = current;
@@ -521,7 +521,7 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
         }
 
         GroupPreview.Clear();
-        foreach (var group in preview.Values)
+        foreach (FiregroupAssignment group in preview.Values)
         {
             GroupPreview.Add(FiregroupTreeNode.From(group));
         }
@@ -549,7 +549,7 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
             Status = "Add at least one configured group before saving.";
             return;
         }
-        var name = ConfigurationName.Trim();
+        string name = ConfigurationName.Trim();
         if (
             document.Profiles.Any(p =>
                 p.Ship.Key == editorShip.Key
@@ -567,7 +567,7 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
             editorShip,
             groups.Values.ToArray()
         );
-        var candidate = document with
+        FiregroupDocument candidate = document with
         {
             Profiles = document.Profiles.Where(p => p.Id != profile.Id).Append(profile).ToList(),
             ActiveProfiles = new(document.ActiveProfiles) { [editorShip.Key] = profile.Id },
@@ -605,12 +605,12 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
             return;
         }
 
-        var candidate = document with
+        FiregroupDocument candidate = document with
         {
             Profiles = document.Profiles.Where(p => p.Id != target.Id).ToList(),
             ActiveProfiles = new(document.ActiveProfiles),
         };
-        foreach (var key in candidate.ActiveProfiles.Where(p => p.Value == target.Id).Select(p => p.Key).ToArray())
+        foreach (string? key in candidate.ActiveProfiles.Where(p => p.Value == target.Id).Select(p => p.Key).ToArray())
         {
             candidate.ActiveProfiles.Remove(key);
         }
@@ -633,8 +633,11 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
 
     private void Select(FiregroupProfile profile)
     {
-        var ship = document.Ships.FirstOrDefault(s => s.Key == profile.Ship.Key) ?? profile.Ship;
-        var candidate = document with { ActiveProfiles = new(document.ActiveProfiles) { [ship.Key] = profile.Id } };
+        FiregroupShip ship = document.Ships.FirstOrDefault(s => s.Key == profile.Ship.Key) ?? profile.Ship;
+        FiregroupDocument candidate = document with
+        {
+            ActiveProfiles = new(document.ActiveProfiles) { [ship.Key] = profile.Id },
+        };
         if (Persist(candidate, $"Editing {profile.Name}. Changes are saved only when you select Save."))
         {
             document = candidate;
@@ -670,7 +673,7 @@ public sealed class FiregroupsWorkspaceViewModel : WorkspaceObservable
     private void RefreshSaved()
     {
         SavedProfiles.Clear();
-        foreach (var profile in document.Profiles.OrderBy(p => p.Ship.Display).ThenBy(p => p.Name))
+        foreach (FiregroupProfile? profile in document.Profiles.OrderBy(p => p.Ship.Display).ThenBy(p => p.Name))
         {
             SavedProfiles.Add(
                 new(profile, new WorkspaceCommand(() => Select(profile)), new WorkspaceCommand(() => Remove(profile)))
@@ -756,7 +759,7 @@ public sealed class FiregroupSelectionRow : WorkspaceObservable
     public void UpdateOptions(IReadOnlyList<FiregroupModule> modules)
     {
         equipped = modules.Where(module => !FiregroupLoadout.IsExcluded(module)).ToArray();
-        var selection = selected;
+        FiregroupModule? selection = selected;
         Options =
             selection is not null && !FiregroupLoadout.IsExcluded(selection) && !equipped.Contains(selection)
                 ? equipped.Append(selection).ToArray()

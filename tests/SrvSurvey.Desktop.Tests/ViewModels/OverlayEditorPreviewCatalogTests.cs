@@ -1,3 +1,4 @@
+using Avalonia.Media;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -8,7 +9,7 @@ public sealed class OverlayEditorPreviewCatalogTests
     [Fact]
     public async Task SphericalPreviewRejectsSessionMutationsWithoutFaulting()
     {
-        using var preview = Assert.IsType<SphericalSearchOverlayViewModel>(
+        using SphericalSearchOverlayViewModel preview = Assert.IsType<SphericalSearchOverlayViewModel>(
             OverlayEditorPreviewCatalog.Create("PlotSphericalSearch", 0)
         );
         EventHandler<BoxelSearchSessionChangedEventArgs> handler = (_, _) =>
@@ -16,13 +17,15 @@ public sealed class OverlayEditorPreviewCatalogTests
         preview.Boxel.Session.Changed += handler;
         try
         {
-            var outcome = await preview.Boxel.Session.ExecuteAsync(StopBoxelSearch.Instance);
-            var cleared = await preview.Boxel.Session.ClearProfileAsync(BoxelSearchMessageCode.ProfileUnavailable);
-            var switched = await preview.Boxel.Session.SwitchProfileAsync(
+            BoxelSearchOutcome outcome = await preview.Boxel.Session.ExecuteAsync(StopBoxelSearch.Instance);
+            BoxelSearchOutcome cleared = await preview.Boxel.Session.ClearProfileAsync(
+                BoxelSearchMessageCode.ProfileUnavailable
+            );
+            BoxelSearchOutcome switched = await preview.Boxel.Session.SwitchProfileAsync(
                 new BoxelSearchProfile("F123", "Preview", true, BoxelSearchSnapshot.Empty)
             );
-            var applied = await preview.Boxel.Session.ApplyAsync(new BoxelSearchUpdate());
-            var library = await preview.Boxel.Session.GetLibraryAsync();
+            BoxelSearchOutcome applied = await preview.Boxel.Session.ApplyAsync(new BoxelSearchUpdate());
+            BoxelSearchLibrarySnapshot library = await preview.Boxel.Session.GetLibraryAsync();
 
             Assert.Equal(BoxelSearchOutcomeKind.Rejected, outcome.Kind);
             Assert.Equal(BoxelSearchMessageCode.SearchNotConfigured, outcome.Code);
@@ -42,7 +45,9 @@ public sealed class OverlayEditorPreviewCatalogTests
     [Fact]
     public void FlightWarningPreviewStatesUseDifficultyNames()
     {
-        var states = OverlayEditorPreviewCatalog.GetStates("PlotFlightWarning");
+        IReadOnlyList<OverlayEditorPreviewStateDefinition> states = OverlayEditorPreviewCatalog.GetStates(
+            "PlotFlightWarning"
+        );
 
         Assert.Equal(
             ["Noticeable", "Challenging", "High risk", "Expert only"],
@@ -63,11 +68,11 @@ public sealed class OverlayEditorPreviewCatalogTests
         bool expectedExtreme
     )
     {
-        var overlay = Assert.IsType<SystemSurveyOverlayViewModel>(
+        SystemSurveyOverlayViewModel overlay = Assert.IsType<SystemSurveyOverlayViewModel>(
             OverlayEditorPreviewCatalog.Create("PlotFlightWarning", stateIndex)
         );
 
-        var brush = Assert.IsType<Avalonia.Media.ISolidColorBrush>(
+        ISolidColorBrush brush = Assert.IsType<Avalonia.Media.ISolidColorBrush>(
             overlay.Survey.FlightWarningBrush,
             exactMatch: false
         );
@@ -78,7 +83,7 @@ public sealed class OverlayEditorPreviewCatalogTests
     [Fact]
     public void SystemBiologyOverviewDemonstratesAlternativePredictionPips()
     {
-        var overlay = Assert.IsType<SystemSurveyOverlayViewModel>(
+        SystemSurveyOverlayViewModel overlay = Assert.IsType<SystemSurveyOverlayViewModel>(
             OverlayEditorPreviewCatalog.Create("PlotBioSystem", 0)
         );
 
@@ -91,10 +96,10 @@ public sealed class OverlayEditorPreviewCatalogTests
     [Fact]
     public void SystemBiologyOverviewUsesCompactLeftColumnRewardText()
     {
-        var overlay = Assert.IsType<SystemSurveyOverlayViewModel>(
+        SystemSurveyOverlayViewModel overlay = Assert.IsType<SystemSurveyOverlayViewModel>(
             OverlayEditorPreviewCatalog.Create("PlotBioSystem", 0)
         );
-        var biology = overlay.Survey.BiologySurveyDisplay;
+        BiologySurveyViewModel biology = overlay.Survey.BiologySurveyDisplay;
 
         Assert.Equal("10.89–\n34.34 M", biology.Bodies.Single(body => body.Name == "A4").RewardText);
         Assert.Equal("20.70 M", biology.Bodies.Single(body => body.Name == "BC3").RewardText);
@@ -104,10 +109,10 @@ public sealed class OverlayEditorPreviewCatalogTests
     [Fact]
     public void BodyPredictionsUsesCompactHeadingAndRewardSummary()
     {
-        var overlay = Assert.IsType<SystemSurveyOverlayViewModel>(
+        SystemSurveyOverlayViewModel overlay = Assert.IsType<SystemSurveyOverlayViewModel>(
             OverlayEditorPreviewCatalog.Create("PlotBioSystem", 1)
         );
-        var biology = overlay.Survey.BiologySurveyDisplay;
+        BiologySurveyViewModel biology = overlay.Survey.BiologySurveyDisplay;
 
         Assert.Equal("BODY PREDICTIONS", biology.Title);
         Assert.Equal(OverlayPreviewSimulationState.Default.CurrentBody, biology.Heading);
@@ -118,10 +123,10 @@ public sealed class OverlayEditorPreviewCatalogTests
     [Fact]
     public void IdentifiedBioUsesCompactHeadingStatusAndRewardRows()
     {
-        var overlay = Assert.IsType<SystemSurveyOverlayViewModel>(
+        SystemSurveyOverlayViewModel overlay = Assert.IsType<SystemSurveyOverlayViewModel>(
             OverlayEditorPreviewCatalog.Create("PlotBioSystem", 2)
         );
-        var biology = overlay.Survey.BiologySurveyDisplay;
+        BiologySurveyViewModel biology = overlay.Survey.BiologySurveyDisplay;
 
         Assert.Equal("IDENTIFIED BIO", biology.Title);
         Assert.Equal(OverlayPreviewSimulationState.Default.CurrentBody, biology.Heading);

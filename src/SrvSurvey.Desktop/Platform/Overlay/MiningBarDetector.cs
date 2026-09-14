@@ -49,7 +49,7 @@ public sealed class MiningBarConfirmation(TimeProvider? timeProvider = null)
 
     public void Apply(MiningBarAnalysis analysis)
     {
-        var now = time.GetTimestamp();
+        long now = time.GetTimestamp();
         // A capture stall does not prove the HUD stayed empty throughout the gap.
         if (lastReading is { } last && time.GetElapsedTime(last, now) > TimeSpan.FromSeconds(1.5))
         {
@@ -67,7 +67,7 @@ public sealed class MiningBarConfirmation(TimeProvider? timeProvider = null)
             Array.Clear(stable);
             return;
         }
-        for (var i = 0; i < 6; i++)
+        for (int i = 0; i < 6; i++)
         {
             switch (analysis.Slots[i])
             {

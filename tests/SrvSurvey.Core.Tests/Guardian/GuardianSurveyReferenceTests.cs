@@ -10,7 +10,7 @@ public sealed class GuardianSurveyReferenceTests
         var catalog = GuardianSiteTemplateCatalog.LoadEmbedded();
 
         Assert.Equal(13, catalog.Templates.Count);
-        var beta = Assert.IsType<GuardianSiteTemplate>(catalog.Find("beta"));
+        GuardianSiteTemplate beta = Assert.IsType<GuardianSiteTemplate>(catalog.Find("beta"));
         Assert.Equal("Beta", beta.Name);
         Assert.Equal(new GuardianMapPoint(487, 556), beta.ImageOffset);
         Assert.Equal(390, beta.PointsOfInterest.Count);
@@ -31,7 +31,7 @@ public sealed class GuardianSurveyReferenceTests
             site => Assert.NotNull(published.Find(site))
         );
 
-        var gr1 = published.Find(GuardianSiteKind.Ruins, 1);
+        GuardianPublishedSite? gr1 = published.Find(GuardianSiteKind.Ruins, 1);
         Assert.NotNull(gr1);
         Assert.Equal("Beta", gr1.SiteType);
         Assert.Equal(332, gr1.SiteHeading);
@@ -50,15 +50,15 @@ public sealed class GuardianSurveyReferenceTests
         var sites = GuardianSiteCatalog.LoadEmbedded();
         var templates = GuardianSiteTemplateCatalog.LoadEmbedded();
 
-        var structure = Assert.Single(
+        GuardianSiteReference structure = Assert.Single(
             sites.Sites,
             site => site.Kind == GuardianSiteKind.Structure && site.SiteId == 91
         );
         Assert.Equal(66, structure.SurveyProgress);
         Assert.False(structure.IsSurveyComplete);
 
-        var gamma = Assert.IsType<GuardianSiteTemplate>(templates.Find("Gamma"));
-        var tower = Assert.Single(gamma.PointsOfInterest, point => point.Name == "t9");
+        GuardianSiteTemplate gamma = Assert.IsType<GuardianSiteTemplate>(templates.Find("Gamma"));
+        GuardianPointOfInterest tower = Assert.Single(gamma.PointsOfInterest, point => point.Name == "t9");
         Assert.Equal(44.2413149429353, tower.Angle, precision: 12);
     }
 
@@ -70,10 +70,10 @@ public sealed class GuardianSurveyReferenceTests
         var calculator = new GuardianSurveyCompletionCalculator(GuardianSiteTemplateCatalog.LoadEmbedded());
 
         var differences = new List<string>();
-        foreach (var reference in sites.Sites.Where(site => site.Kind != GuardianSiteKind.Beacon))
+        foreach (GuardianSiteReference? reference in sites.Sites.Where(site => site.Kind != GuardianSiteKind.Beacon))
         {
-            var publicSurvey = Assert.IsType<GuardianPublishedSite>(published.Find(reference));
-            var completion = calculator.Calculate(
+            GuardianPublishedSite publicSurvey = Assert.IsType<GuardianPublishedSite>(published.Find(reference));
+            GuardianSurveyCompletion completion = calculator.Calculate(
                 new GuardianSurveyData { SiteType = reference.SiteType, Location = publicSurvey.Location },
                 publicSurvey
             );
@@ -90,9 +90,9 @@ public sealed class GuardianSurveyReferenceTests
     public void LocalSurveyValuesOverridePublishedFallbacks()
     {
         var templates = GuardianSiteTemplateCatalog.LoadEmbedded();
-        var published = GuardianPublishedSiteCatalog.LoadEmbedded().Find(GuardianSiteKind.Ruins, 1);
+        GuardianPublishedSite? published = GuardianPublishedSiteCatalog.LoadEmbedded().Find(GuardianSiteKind.Ruins, 1);
         var calculator = new GuardianSurveyCompletionCalculator(templates);
-        var firstKnownPoint = published!.PoiStatuses.Keys.First();
+        string firstKnownPoint = published!.PoiStatuses.Keys.First();
         var survey = new GuardianSurveyData
         {
             SiteType = "Beta",
@@ -102,7 +102,7 @@ public sealed class GuardianSurveyReferenceTests
             PoiStatuses = new Dictionary<string, GuardianPoiStatus> { [firstKnownPoint] = GuardianPoiStatus.Unknown },
         };
 
-        var completion = calculator.Calculate(survey, published);
+        GuardianSurveyCompletion completion = calculator.Calculate(survey, published);
 
         Assert.Equal(98, completion.Progress);
         Assert.False(completion.IsComplete);
@@ -131,7 +131,7 @@ public sealed class GuardianSurveyReferenceTests
         };
         var calculator = new GuardianSurveyCompletionCalculator(new GuardianSiteTemplateCatalog([template]));
 
-        var completion = calculator.Calculate(survey);
+        GuardianSurveyCompletion completion = calculator.Calculate(survey);
 
         Assert.Equal(1, completion.ConfirmedPointCount);
         Assert.Equal(1, completion.PresentPuddleCount);

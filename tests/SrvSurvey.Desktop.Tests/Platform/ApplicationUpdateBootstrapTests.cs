@@ -14,7 +14,7 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
     [Fact]
     public void ConfirmationModeStripsOnlyInternalArguments()
     {
-        var startup = ApplicationUpdateBootstrap.ParseStartupArguments([
+        ApplicationUpdateStartup startup = ApplicationUpdateBootstrap.ParseStartupArguments([
             "--journal-directory",
             "C:\\Elite Journals",
             ApplicationUpdateBootstrap.ConfirmArgument,
@@ -34,7 +34,7 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
     [Fact]
     public void ApplyModeRequiresOnlyOnePlanArgument()
     {
-        var startup = ApplicationUpdateBootstrap.ParseStartupArguments([
+        ApplicationUpdateStartup startup = ApplicationUpdateBootstrap.ParseStartupArguments([
             ApplicationUpdateBootstrap.ApplyArgument,
             "C:\\Data\\plan.json",
         ]);
@@ -47,7 +47,7 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
     [Fact]
     public void ResultModeStripsPlanAndPreservesApplicationArguments()
     {
-        var startup = ApplicationUpdateBootstrap.ParseStartupArguments([
+        ApplicationUpdateStartup startup = ApplicationUpdateBootstrap.ParseStartupArguments([
             "--frontier-id",
             "F123",
             ApplicationUpdateBootstrap.ResultArgument,
@@ -72,11 +72,11 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
     [Fact]
     public void HelperAndReplacementStartInfoUseArgumentLists()
     {
-        var helper = ApplicationUpdateHandoffService.CreateHelperStartInfo(
+        ProcessStartInfo helper = ApplicationUpdateHandoffService.CreateHelperStartInfo(
             Path.Combine(temporaryDirectory, "staged", "SrvSurvey.Desktop.exe"),
             Path.Combine(temporaryDirectory, "plans", "plan.json")
         );
-        var replacement = ApplicationUpdateBootstrap.CreateReplacementStartInfo(
+        ProcessStartInfo replacement = ApplicationUpdateBootstrap.CreateReplacementStartInfo(
             Path.Combine(temporaryDirectory, "install", "SrvSurvey.Desktop.exe"),
             ["--journal-directory", "C:\\Elite Journals"],
             Path.Combine(temporaryDirectory, "plans", "plan.json")
@@ -105,7 +105,7 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
     [Fact]
     public void ProtectedWindowsHelperUsesRunAsVerb()
     {
-        var helper = ApplicationUpdateHandoffService.CreateHelperStartInfo(
+        ProcessStartInfo helper = ApplicationUpdateHandoffService.CreateHelperStartInfo(
             Path.Combine(temporaryDirectory, "staged", "SrvSurvey.Desktop.exe"),
             Path.Combine(temporaryDirectory, "plans", "plan.json"),
             requiresElevation: true
@@ -125,15 +125,15 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
     [Fact]
     public void ElevatedHelperValidatesInstalledParentProcess()
     {
-        var plan = CreatePlan();
-        var expectedPath = Path.Combine(plan.Preparation.InstallationDirectory, plan.Preparation.EntryPoint);
+        ReleaseInstallationHandoffPlan plan = CreatePlan();
+        string expectedPath = Path.Combine(plan.Preparation.InstallationDirectory, plan.Preparation.EntryPoint);
         ApplicationUpdateBootstrap.ValidateElevatedParentProcess(
             plan,
             plan.ParentProcessStartTimeUtcTicks,
             expectedPath
         );
 
-        var tampered = plan with
+        ReleaseInstallationHandoffPlan tampered = plan with
         {
             Preparation = plan.Preparation with { InstallationDirectory = Path.Combine(temporaryDirectory, "wrong") },
         };
@@ -149,8 +149,8 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
     [Fact]
     public void HealthConfirmationRequiresInstalledProcessAndBaseDirectory()
     {
-        var plan = CreatePlan();
-        var expectedProcess = Path.Combine(plan.Preparation.InstallationDirectory, plan.Preparation.EntryPoint);
+        ReleaseInstallationHandoffPlan plan = CreatePlan();
+        string expectedProcess = Path.Combine(plan.Preparation.InstallationDirectory, plan.Preparation.EntryPoint);
 
         ApplicationUpdateBootstrap.ValidateConfirmationProcess(
             plan,
@@ -176,7 +176,7 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
     [Fact]
     public async Task HandoffWritesPlanBeforeStartingStagedHelper()
     {
-        var stagedEntryPoint = Path.Combine(temporaryDirectory, "staged", "SrvSurvey.Desktop.exe");
+        string stagedEntryPoint = Path.Combine(temporaryDirectory, "staged", "SrvSurvey.Desktop.exe");
         Directory.CreateDirectory(Path.GetDirectoryName(stagedEntryPoint)!);
         await File.WriteAllTextAsync(stagedEntryPoint, "helper");
         ProcessStartInfo? captured = null;
@@ -188,25 +188,32 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
                 return Process.GetCurrentProcess();
             }
         );
-        var preparation = CreatePlan().Preparation;
+        ReleaseInstallationPreparation preparation = CreatePlan().Preparation;
 
         IApplicationUpdateHandoff handoff = service;
-        var result = await handoff.StartHelperAttemptAsync(temporaryDirectory, preparation, stagedEntryPoint);
-        var plan = Assert.IsType<ReleaseInstallationHandoffPlan>(result.Plan);
+        ApplicationUpdateHandoffResult result = await handoff.StartHelperAttemptAsync(
+            temporaryDirectory,
+            preparation,
+            stagedEntryPoint
+        );
+        ReleaseInstallationHandoffPlan plan = Assert.IsType<ReleaseInstallationHandoffPlan>(result.Plan);
 
         Assert.Equal(ApplicationUpdateHandoffStatus.Started, result.Status);
         Assert.True(File.Exists(plan.PlanPath));
         Assert.NotNull(captured);
         Assert.Equal(Path.GetFullPath(stagedEntryPoint), captured.FileName);
         Assert.Equal([ApplicationUpdateBootstrap.ApplyArgument, plan.PlanPath], captured.ArgumentList);
-        var loaded = await new ReleaseInstallationPlanStore().LoadAsync(temporaryDirectory, plan.PlanPath);
+        ReleaseInstallationHandoffPlan loaded = await new ReleaseInstallationPlanStore().LoadAsync(
+            temporaryDirectory,
+            plan.PlanPath
+        );
         Assert.Equal(preparation.RequestId, loaded.Preparation.RequestId);
     }
 
     [Fact]
     public async Task ElevatedHandoffWaitsForHelperReadyMarker()
     {
-        var stagedEntryPoint = Path.Combine(temporaryDirectory, "staged-elevated", "SrvSurvey.Desktop.exe");
+        string stagedEntryPoint = Path.Combine(temporaryDirectory, "staged-elevated", "SrvSurvey.Desktop.exe");
         Directory.CreateDirectory(Path.GetDirectoryName(stagedEntryPoint)!);
         await File.WriteAllTextAsync(stagedEntryPoint, "helper");
         var store = new ReleaseInstallationPlanStore();
@@ -216,20 +223,24 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
             startInfo =>
             {
                 captured = startInfo;
-                var planPath = startInfo.ArgumentList[1];
+                string planPath = startInfo.ArgumentList[1];
                 _ = Task.Run(async () =>
                 {
-                    var loaded = await store.LoadAsync(temporaryDirectory, planPath);
+                    ReleaseInstallationHandoffPlan loaded = await store.LoadAsync(temporaryDirectory, planPath);
                     await ReleaseInstallationPlanStore.WriteHelperReadyMarkerAsync(loaded);
                 });
                 return Process.GetCurrentProcess();
             }
         );
-        var preparation = CreatePlan().Preparation with { RequiresElevation = true };
+        ReleaseInstallationPreparation preparation = CreatePlan().Preparation with { RequiresElevation = true };
 
         IApplicationUpdateHandoff handoff = service;
-        var result = await handoff.StartHelperAttemptAsync(temporaryDirectory, preparation, stagedEntryPoint);
-        var plan = Assert.IsType<ReleaseInstallationHandoffPlan>(result.Plan);
+        ApplicationUpdateHandoffResult result = await handoff.StartHelperAttemptAsync(
+            temporaryDirectory,
+            preparation,
+            stagedEntryPoint
+        );
+        ReleaseInstallationHandoffPlan plan = Assert.IsType<ReleaseInstallationHandoffPlan>(result.Plan);
 
         Assert.Equal(ApplicationUpdateHandoffStatus.Started, result.Status);
         Assert.NotNull(captured);
@@ -241,13 +252,13 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
     public void ElevatedHelperRejectsAParentFromAnotherExecutable()
     {
         using var current = Process.GetCurrentProcess();
-        var plan = CreatePlan() with
+        ReleaseInstallationHandoffPlan plan = CreatePlan() with
         {
             ParentProcessId = current.Id,
             ParentProcessStartTimeUtcTicks = current.StartTime.ToUniversalTime().Ticks,
         };
 
-        var exception = Assert.Throws<InvalidDataException>(() =>
+        InvalidDataException exception = Assert.Throws<InvalidDataException>(() =>
             ApplicationUpdateBootstrap.OpenValidatedParentProcess(plan)
         );
 
@@ -257,9 +268,9 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
     [Fact]
     public void ElevatedHelperRejectsAMissingParentProcess()
     {
-        var plan = CreatePlan() with { ParentProcessId = int.MaxValue };
+        ReleaseInstallationHandoffPlan plan = CreatePlan() with { ParentProcessId = int.MaxValue };
 
-        var exception = Assert.Throws<InvalidDataException>(() =>
+        InvalidDataException exception = Assert.Throws<InvalidDataException>(() =>
             ApplicationUpdateBootstrap.OpenValidatedParentProcess(plan)
         );
 
@@ -270,7 +281,7 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
     public void ParentIdentityCheckRecognizesCurrentStaleAndMissingProcesses()
     {
         using var current = Process.GetCurrentProcess();
-        var currentPlan = CreatePlan() with
+        ReleaseInstallationHandoffPlan currentPlan = CreatePlan() with
         {
             ParentProcessId = current.Id,
             ParentProcessStartTimeUtcTicks = current.StartTime.ToUniversalTime().Ticks,
@@ -295,20 +306,20 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
     public async Task ParentWaitReturnsForStaleAndMissingProcesses()
     {
         using var current = Process.GetCurrentProcess();
-        var currentPlan = CreatePlan() with
+        ReleaseInstallationHandoffPlan currentPlan = CreatePlan() with
         {
             ParentProcessId = current.Id,
             ParentProcessStartTimeUtcTicks = current.StartTime.ToUniversalTime().Ticks + TimeSpan.FromSeconds(2).Ticks,
         };
 
-        var staleException = await Record.ExceptionAsync(() =>
+        Exception? staleException = await Record.ExceptionAsync(() =>
             ApplicationUpdateBootstrap.WaitForParentExitAsync(
                 currentPlan,
                 validatedParent: null,
                 CancellationToken.None
             )
         );
-        var missingException = await Record.ExceptionAsync(() =>
+        Exception? missingException = await Record.ExceptionAsync(() =>
             ApplicationUpdateBootstrap.WaitForParentExitAsync(
                 currentPlan with
                 {
@@ -328,17 +339,17 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
     {
         using var current = Process.GetCurrentProcess();
         var store = new ReleaseInstallationPlanStore();
-        var preparation = CreatePlan().Preparation;
+        ReleaseInstallationPreparation preparation = CreatePlan().Preparation;
         Directory.CreateDirectory(preparation.CandidateDirectory);
         await File.WriteAllTextAsync(Path.Combine(preparation.CandidateDirectory, "candidate.txt"), "candidate");
-        var plan = await store.CreateAsync(
+        ReleaseInstallationHandoffPlan plan = await store.CreateAsync(
             temporaryDirectory,
             preparation,
             current.Id,
             current.StartTime.ToUniversalTime()
         );
 
-        var exitCode = await ApplicationUpdateBootstrap.RunHelperAsync(
+        int exitCode = await ApplicationUpdateBootstrap.RunHelperAsync(
             temporaryDirectory,
             plan.PlanPath,
             parentExitTimeout: TimeSpan.Zero,
@@ -347,7 +358,7 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
 
         Assert.Equal(2, exitCode);
         Assert.False(Directory.Exists(preparation.CandidateDirectory));
-        var outcome = await store.ReadOutcomeAsync(plan);
+        ReleaseInstallationOutcome outcome = await store.ReadOutcomeAsync(plan);
         Assert.Equal(ReleaseInstallationOutcomeStatus.Aborted, outcome.Status);
         Assert.Contains("did not exit", outcome.Error);
         Assert.DoesNotContain("cleanup also failed", outcome.Error);
@@ -358,18 +369,18 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
     {
         using var current = Process.GetCurrentProcess();
         var store = new ReleaseInstallationPlanStore();
-        var preparation = CreatePlan().Preparation with { RequiresElevation = true };
-        var plan = await store.CreateAsync(
+        ReleaseInstallationPreparation preparation = CreatePlan().Preparation with { RequiresElevation = true };
+        ReleaseInstallationHandoffPlan plan = await store.CreateAsync(
             temporaryDirectory,
             preparation,
             current.Id,
             current.StartTime.ToUniversalTime()
         );
 
-        var exitCode = await ApplicationUpdateBootstrap.RunHelperAsync(temporaryDirectory, plan.PlanPath);
+        int exitCode = await ApplicationUpdateBootstrap.RunHelperAsync(temporaryDirectory, plan.PlanPath);
 
         Assert.Equal(2, exitCode);
-        var outcome = await store.ReadOutcomeAsync(plan);
+        ReleaseInstallationOutcome outcome = await store.ReadOutcomeAsync(plan);
         Assert.NotNull(outcome);
         Assert.Equal(ReleaseInstallationOutcomeStatus.Aborted, outcome.Status);
         Assert.Contains("did not come from the installed SrvSurvey process", outcome.Error);
@@ -378,7 +389,7 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
     [Fact]
     public async Task HelperFailureBeforePlanLoadReturnsAnErrorCode()
     {
-        var exitCode = await ApplicationUpdateBootstrap.RunHelperAsync(
+        int exitCode = await ApplicationUpdateBootstrap.RunHelperAsync(
             Path.Combine(temporaryDirectory, "missing-plan.json")
         );
 
@@ -388,20 +399,24 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
     [Fact]
     public async Task TypedHandoffPreservesOwnershipWhenStartedHelperIsUnconfirmed()
     {
-        var stagedEntryPoint = Path.Combine(temporaryDirectory, "staged-unconfirmed", "SrvSurvey.Desktop.exe");
+        string stagedEntryPoint = Path.Combine(temporaryDirectory, "staged-unconfirmed", "SrvSurvey.Desktop.exe");
         Directory.CreateDirectory(Path.GetDirectoryName(stagedEntryPoint)!);
         await File.WriteAllTextAsync(stagedEntryPoint, "helper");
         IApplicationUpdateHandoff handoff = new ApplicationUpdateHandoffService(
             new ReleaseInstallationPlanStore(),
             _ => StartExitedProcess()
         );
-        var preparation = CreatePlan().Preparation with { RequiresElevation = true };
+        ReleaseInstallationPreparation preparation = CreatePlan().Preparation with { RequiresElevation = true };
 
-        var result = await handoff.StartHelperAttemptAsync(temporaryDirectory, preparation, stagedEntryPoint);
+        ApplicationUpdateHandoffResult result = await handoff.StartHelperAttemptAsync(
+            temporaryDirectory,
+            preparation,
+            stagedEntryPoint
+        );
 
         Assert.Equal(ApplicationUpdateHandoffStatus.StartedReadinessUnconfirmed, result.Status);
         Assert.NotNull(result.Plan);
-        var error = Assert.IsType<InvalidOperationException>(result.Error);
+        InvalidOperationException error = Assert.IsType<InvalidOperationException>(result.Error);
         Assert.Contains("exited before validating", error.Message);
     }
 
@@ -418,9 +433,9 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
     private ReleaseInstallationHandoffPlan CreatePlan()
     {
         var requestId = Guid.NewGuid();
-        var parent = Path.Combine(temporaryDirectory, "install-parent");
-        var installation = Path.Combine(parent, "SrvSurvey");
-        var planDirectory = Path.Combine(temporaryDirectory, "updates", "install-plans", requestId.ToString("N"));
+        string parent = Path.Combine(temporaryDirectory, "install-parent");
+        string installation = Path.Combine(parent, "SrvSurvey");
+        string planDirectory = Path.Combine(temporaryDirectory, "updates", "install-plans", requestId.ToString("N"));
         var preparation = new ReleaseInstallationPreparation(
             requestId,
             new Version(2, 0, 95, 23),
@@ -451,12 +466,13 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
 
     private static Process StartExitedProcess()
     {
-        var startInfo = OperatingSystem.IsWindows()
+        ProcessStartInfo startInfo = OperatingSystem.IsWindows()
             ? new ProcessStartInfo("cmd.exe", "/c exit 0")
             : new ProcessStartInfo("/bin/sh", "-c true");
         startInfo.UseShellExecute = false;
         startInfo.CreateNoWindow = true;
-        var process = Process.Start(startInfo) ?? throw new InvalidOperationException("Test process did not start.");
+        Process process =
+            Process.Start(startInfo) ?? throw new InvalidOperationException("Test process did not start.");
         process.WaitForExit();
         return process;
     }

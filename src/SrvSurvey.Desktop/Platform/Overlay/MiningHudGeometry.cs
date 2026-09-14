@@ -29,13 +29,13 @@ internal readonly struct MiningHudGeometry
             xy = yx = 0;
             return;
         }
-        var angle = settings.RotationDegrees * Math.PI / 180;
-        var reference = MiningDetectionSettings.ReferenceRotationDegrees * Math.PI / 180;
-        var c = Math.Cos(angle);
-        var s = Math.Sin(angle);
-        var cb = Math.Cos(reference);
-        var sb = Math.Sin(reference);
-        var height = settings.CircleAspectRatio / .65;
+        double angle = settings.RotationDegrees * Math.PI / 180;
+        double reference = MiningDetectionSettings.ReferenceRotationDegrees * Math.PI / 180;
+        double c = Math.Cos(angle);
+        double s = Math.Sin(angle);
+        double cb = Math.Cos(reference);
+        double sb = Math.Sin(reference);
+        double height = settings.CircleAspectRatio / .65;
         xx = c * cb + s * height * sb;
         xy = c * sb - s * height * cb;
         yx = s * cb - c * height * sb;
@@ -49,9 +49,9 @@ internal readonly struct MiningHudGeometry
 
     internal Vector RingPoint(double angle, double radius)
     {
-        var reference = MiningDetectionSettings.ReferenceRotationDegrees * Math.PI / 180;
-        var x = Math.Cos(angle);
-        var y = .65 * Math.Sin(angle);
+        double reference = MiningDetectionSettings.ReferenceRotationDegrees * Math.PI / 180;
+        double x = Math.Cos(angle);
+        double y = .65 * Math.Sin(angle);
         return Transform(
             x * Math.Cos(reference) - y * Math.Sin(reference),
             x * Math.Sin(reference) + y * Math.Cos(reference),
@@ -61,12 +61,12 @@ internal readonly struct MiningHudGeometry
 
     internal double RingDistance(double x, double y, double radius)
     {
-        var determinant = xx * yy - xy * yx;
-        var rx = (yy * x - xy * y) / determinant / radius;
-        var ry = (-yx * x + xx * y) / determinant / radius;
-        var reference = MiningDetectionSettings.ReferenceRotationDegrees * Math.PI / 180;
-        var horizontal = rx * Math.Cos(reference) + ry * Math.Sin(reference);
-        var vertical = -rx * Math.Sin(reference) + ry * Math.Cos(reference);
+        double determinant = xx * yy - xy * yx;
+        double rx = (yy * x - xy * y) / determinant / radius;
+        double ry = (-yx * x + xx * y) / determinant / radius;
+        double reference = MiningDetectionSettings.ReferenceRotationDegrees * Math.PI / 180;
+        double horizontal = rx * Math.Cos(reference) + ry * Math.Sin(reference);
+        double vertical = -rx * Math.Sin(reference) + ry * Math.Cos(reference);
         return Math.Sqrt(horizontal * horizontal + vertical * vertical / (.65 * .65));
     }
 }

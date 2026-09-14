@@ -14,7 +14,7 @@ public sealed class InaraSettingsViewModelTests : IDisposable
     [Fact]
     public async Task PersonalKeyIsSavedOnlyToTheCommanderProfile()
     {
-        var viewModel = CreateViewModel();
+        InaraSettingsViewModel viewModel = CreateViewModel();
         viewModel.SetCommanderProfile("F123", "Test Commander", isOdyssey: true, inaraApiKey: null);
         viewModel.ApiKey = "  personal-key  ";
 
@@ -22,7 +22,10 @@ public sealed class InaraSettingsViewModelTests : IDisposable
         viewModel.SaveApiKeyCommand.Execute(null);
         await WaitForAsync(() => viewModel.HasStoredApiKey);
 
-        var profile = await new CommanderProfileStore(temporaryDirectory).LoadAsync("F123", isOdyssey: true);
+        CommanderProfileLoadResult profile = await new CommanderProfileStore(temporaryDirectory).LoadAsync(
+            "F123",
+            isOdyssey: true
+        );
         Assert.Equal("personal-key", profile.Data?.InaraApiKey);
         Assert.False(File.Exists(Path.Combine(temporaryDirectory, "ui-settings.json")));
     }
@@ -30,9 +33,9 @@ public sealed class InaraSettingsViewModelTests : IDisposable
     [Fact]
     public async Task ClearingAKeyRequiresConfirmationAndRaisesAChange()
     {
-        var viewModel = CreateViewModel();
+        InaraSettingsViewModel viewModel = CreateViewModel();
         viewModel.SetCommanderProfile("F123", "Test Commander", isOdyssey: true, inaraApiKey: "personal-key");
-        var changes = 0;
+        int changes = 0;
         viewModel.ApiKeyChanged += (_, _) => changes++;
 
         viewModel.RequestClearApiKeyCommand.Execute(null);
@@ -43,7 +46,10 @@ public sealed class InaraSettingsViewModelTests : IDisposable
         viewModel.ConfirmClearApiKeyCommand.Execute(null);
         await WaitForAsync(() => !viewModel.HasStoredApiKey);
 
-        var profile = await new CommanderProfileStore(temporaryDirectory).LoadAsync("F123", isOdyssey: true);
+        CommanderProfileLoadResult profile = await new CommanderProfileStore(temporaryDirectory).LoadAsync(
+            "F123",
+            isOdyssey: true
+        );
         Assert.Null(profile.Data?.InaraApiKey);
         Assert.Equal(1, changes);
         Assert.False(viewModel.IsClearKeyConfirmationVisible);
@@ -70,8 +76,8 @@ public sealed class InaraSettingsViewModelTests : IDisposable
             await releaseSave.Task.WaitAsync(cancellationToken);
         }
 
-        var viewModel = CreateViewModel(SaveAsync);
-        var changes = 0;
+        InaraSettingsViewModel viewModel = CreateViewModel(SaveAsync);
+        int changes = 0;
         viewModel.ApiKeyChanged += (_, _) => changes++;
         viewModel.SetCommanderProfile("F123", "First Commander", isOdyssey: true, inaraApiKey: null);
         viewModel.ApiKey = "first-key";
@@ -96,7 +102,7 @@ public sealed class InaraSettingsViewModelTests : IDisposable
     [Fact]
     public void PublicationResultIsPresentedWithoutExposingCredentials()
     {
-        var viewModel = CreateViewModel();
+        InaraSettingsViewModel viewModel = CreateViewModel();
 
         viewModel.ReportPublicationResult(
             new InaraPublicationResult(
@@ -129,7 +135,7 @@ public sealed class InaraSettingsViewModelTests : IDisposable
 
     private static async Task WaitForAsync(Func<bool> predicate)
     {
-        var timeout = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(5);
+        DateTimeOffset timeout = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(5);
         while (!predicate())
         {
             Assert.True(DateTimeOffset.UtcNow < timeout, "The asynchronous command did not complete.");

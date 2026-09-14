@@ -1,3 +1,4 @@
+using System.Reflection;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Updates;
@@ -13,7 +14,7 @@ public sealed class LegacyReferenceCatalogLoaderTests : IDisposable
     {
         WriteCompleteLegacyReferenceLayout();
 
-        var result = LegacyReferenceCatalogLoader.Load(root);
+        LegacyReferenceCatalogLoadResult result = LegacyReferenceCatalogLoader.Load(root);
 
         Assert.Equal(7, result.LocalCatalogCount);
         Assert.Empty(result.Warnings);
@@ -45,10 +46,10 @@ public sealed class LegacyReferenceCatalogLoaderTests : IDisposable
             """
         );
 
-        var result = LegacyReferenceCatalogLoader.Load(root);
+        LegacyReferenceCatalogLoadResult result = LegacyReferenceCatalogLoader.Load(root);
 
         Assert.Equal(0, result.LocalCatalogCount);
-        var warning = Assert.Single(result.Warnings);
+        string warning = Assert.Single(result.Warnings);
         Assert.Contains("coverage", warning);
         Assert.Contains("Embedded reference data remains active", warning);
         Assert.Equal(ExobiologyReferenceCatalog.LoadEmbedded().Count, result.Exobiology.Count);
@@ -57,13 +58,13 @@ public sealed class LegacyReferenceCatalogLoaderTests : IDisposable
     [Fact]
     public void LoadRejectsMalformedArchiveWithoutChangingIt()
     {
-        var published = Path.Combine(root, "pub");
+        string published = Path.Combine(root, "pub");
         Directory.CreateDirectory(published);
-        var archivePath = Path.Combine(published, "guardian.zip");
-        var original = new byte[] { 1, 2, 3, 4, 5 };
+        string archivePath = Path.Combine(published, "guardian.zip");
+        byte[] original = new byte[] { 1, 2, 3, 4, 5 };
         File.WriteAllBytes(archivePath, original);
 
-        var result = LegacyReferenceCatalogLoader.Load(root);
+        LegacyReferenceCatalogLoadResult result = LegacyReferenceCatalogLoader.Load(root);
 
         Assert.Contains(
             result.Warnings,
@@ -78,16 +79,19 @@ public sealed class LegacyReferenceCatalogLoaderTests : IDisposable
     {
         WriteCompleteLegacyReferenceLayout();
         var catalog = GuardianSiteTemplateCatalog.LoadEmbedded();
-        var beta = catalog.Find("Beta")!;
+        GuardianSiteTemplate beta = catalog.Find("Beta")!;
         await new GuardianSiteTemplateCatalogExporter().ExportAsync(
             catalog.WithTemplate(beta with { Name = "Local Beta override" }),
             Path.Combine(root, "guardianSiteTemplates.json")
         );
 
-        var result = LegacyReferenceCatalogLoader.Load(root);
+        LegacyReferenceCatalogLoadResult result = LegacyReferenceCatalogLoader.Load(root);
 
         Assert.Equal("Local Beta override", result.GuardianTemplates.Find("Beta")?.Name);
-        var source = Assert.Single(result.Sources, candidate => candidate.Catalog == "Guardian site templates");
+        ReferenceCatalogSource source = Assert.Single(
+            result.Sources,
+            candidate => candidate.Catalog == "Guardian site templates"
+        );
         Assert.Equal(Path.Combine(root, "guardianSiteTemplates.json"), source.LocalPath);
     }
 
@@ -101,9 +105,9 @@ public sealed class LegacyReferenceCatalogLoaderTests : IDisposable
 
     private void WriteCompleteLegacyReferenceLayout()
     {
-        var published = Path.Combine(root, "pub");
-        var criteria = Path.Combine(published, "bio-criteria");
-        var settlements = Path.Combine(published, "settlements");
+        string published = Path.Combine(root, "pub");
+        string criteria = Path.Combine(published, "bio-criteria");
+        string settlements = Path.Combine(published, "settlements");
         Directory.CreateDirectory(criteria);
         Directory.CreateDirectory(settlements);
 
@@ -121,10 +125,10 @@ public sealed class LegacyReferenceCatalogLoaderTests : IDisposable
         );
         CopyResource("SrvSurvey.Core.Resources.ggg.json", Path.Combine(published, "ggg.json"));
 
-        var assembly = typeof(ExobiologyReferenceCatalog).Assembly;
+        Assembly assembly = typeof(ExobiologyReferenceCatalog).Assembly;
         const string prefix = "SrvSurvey.Core.Resources.bio-criteria.";
         foreach (
-            var resourceName in assembly
+            string? resourceName in assembly
                 .GetManifestResourceNames()
                 .Where(name => name.StartsWith(prefix, StringComparison.Ordinal))
                 .Where(name => name.EndsWith(".json", StringComparison.Ordinal))
@@ -136,11 +140,11 @@ public sealed class LegacyReferenceCatalogLoaderTests : IDisposable
 
     private static void CopyResource(string resourceName, string destination)
     {
-        var assembly = typeof(ExobiologyReferenceCatalog).Assembly;
-        using var source =
+        Assembly assembly = typeof(ExobiologyReferenceCatalog).Assembly;
+        using Stream source =
             assembly.GetManifestResourceStream(resourceName)
             ?? throw new InvalidOperationException($"Test resource {resourceName} was not found.");
-        using var target = File.Create(destination);
+        using FileStream target = File.Create(destination);
         source.CopyTo(target);
     }
 }

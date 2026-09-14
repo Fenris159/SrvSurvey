@@ -39,7 +39,7 @@ public sealed class ExobiologyState
     public int UnclaimedScanCount => scannedBioEntryIds.Count;
 
     public bool? CurrentBodyFirstFootfall =>
-        currentBodyKey is not null && bodies.TryGetValue(currentBodyKey.Value, out var body)
+        currentBodyKey is not null && bodies.TryGetValue(currentBodyKey.Value, out BodyState? body)
             ? body.FirstFootfall
             : null;
 
@@ -74,7 +74,7 @@ public sealed class ExobiologyState
     public bool Apply(JournalEventEnvelope journalEvent)
     {
         ArgumentNullException.ThrowIfNull(journalEvent);
-        var root = journalEvent.Payload;
+        JsonElement root = journalEvent.Payload;
         switch (journalEvent.EventName)
         {
             case "Location":
@@ -132,7 +132,7 @@ public sealed class ExobiologyState
         ScanTwo = seed.ScanTwo;
         OrganicRewards = seed.OrganicRewards;
         CountRadicoidaUnica = seed.CountRadicoidaUnica;
-        var activeSample = seed.ScanTwo ?? seed.ScanOne;
+        BioSampleSnapshot? activeSample = seed.ScanTwo ?? seed.ScanOne;
         ActiveSpeciesDisplayName = null;
         if (activeSample is not null)
         {
@@ -168,18 +168,20 @@ public sealed class ExobiologyState
     public void SetFirstFootfall(long systemAddress, int bodyId, bool value)
     {
         var key = new BodyKey(systemAddress, bodyId);
-        var body = bodies.GetValueOrDefault(key) ?? new BodyState();
-        var bodyChanged = body.FirstFootfall != value;
+        BodyState body = bodies.GetValueOrDefault(key) ?? new BodyState();
+        bool bodyChanged = body.FirstFootfall != value;
         body.FirstFootfall = value;
         bodies[key] = body;
 
-        var prefix = $"{systemAddress}_{bodyId}_";
-        var changed = false;
+        string prefix = $"{systemAddress}_{bodyId}_";
+        bool changed = false;
         foreach (
-            var entry in scannedBioEntryIds.Where(entry => entry.StartsWith(prefix, StringComparison.Ordinal)).ToArray()
+            string? entry in scannedBioEntryIds
+                .Where(entry => entry.StartsWith(prefix, StringComparison.Ordinal))
+                .ToArray()
         )
         {
-            if (!ScannedBioEntry.TryParse(entry, out var parsed) || parsed.FirstFootfall == value)
+            if (!ScannedBioEntry.TryParse(entry, out ScannedBioEntry? parsed) || parsed.FirstFootfall == value)
             {
                 continue;
             }
@@ -223,13 +225,13 @@ public sealed class ExobiologyState
 
     private void ApplyBodyScan(JsonElement root)
     {
-        var key = GetBodyKey(root);
+        BodyKey? key = GetBodyKey(root);
         if (key is null)
         {
             return;
         }
 
-        var body = bodies.GetValueOrDefault(key.Value) ?? new BodyState();
+        BodyState body = bodies.GetValueOrDefault(key.Value) ?? new BodyState();
         if (GetBoolean(root, "WasFootfalled") is bool wasFootfalled)
         {
             body.WasFootfalled = wasFootfalled;
@@ -251,13 +253,13 @@ public sealed class ExobiologyState
             return;
         }
 
-        var key = GetBodyKey(root);
+        BodyKey? key = GetBodyKey(root);
         if (key is null)
         {
             return;
         }
 
-        var body = bodies.GetValueOrDefault(key.Value) ?? new BodyState();
+        BodyState body = bodies.GetValueOrDefault(key.Value) ?? new BodyState();
         if (currentSystemPopulation == 0 && body.WasFootfalled == false)
         {
             body.FirstFootfall = true;
@@ -269,12 +271,12 @@ public sealed class ExobiologyState
 
     private bool ApplyOrganicScan(JsonElement root)
     {
-        var variant = GetString(root, "Variant");
-        var species = GetString(root, "Species");
-        var reference = catalog.FindByVariant(variant) ?? catalog.FindBySpecies(species);
-        var systemAddress = GetInt64(root, "SystemAddress");
-        var bodyId = GetInt32(root, "Body");
-        var scanType = GetString(root, "ScanType");
+        string? variant = GetString(root, "Variant");
+        string? species = GetString(root, "Species");
+        ExobiologyReference? reference = catalog.FindByVariant(variant) ?? catalog.FindBySpecies(species);
+        long? systemAddress = GetInt64(root, "SystemAddress");
+        int? bodyId = GetInt32(root, "Body");
+        string? scanType = GetString(root, "ScanType");
         if (
             reference is null
             || systemAddress is null
@@ -286,7 +288,7 @@ public sealed class ExobiologyState
             return false;
         }
 
-        var activeHash = $"{systemAddress}|{bodyId}|{species}";
+        string activeHash = $"{systemAddress}|{bodyId}|{species}";
         if (LastOrganicScan is not null && !string.Equals(LastOrganicScan, activeHash, StringComparison.Ordinal))
         {
             ScanOne = null;
@@ -297,7 +299,7 @@ public sealed class ExobiologyState
         currentBodyKey = new BodyKey(systemAddress.Value, bodyId.Value);
         ActiveSpeciesDisplayName =
             GetString(root, "Variant_Localised") ?? GetString(root, "Species_Localised") ?? reference.DisplayName;
-        var genus = GetString(root, "Genus") ?? string.Empty;
+        string genus = GetString(root, "Genus") ?? string.Empty;
         var sample = new BioSampleSnapshot(
             currentLocation,
             GetGenusRange(genus),
@@ -335,7 +337,7 @@ public sealed class ExobiologyState
                 CountRadicoidaUnica++;
             }
 
-            var body = bodies.GetValueOrDefault(new BodyKey(systemAddress.Value, bodyId.Value));
+            BodyState? body = bodies.GetValueOrDefault(new BodyKey(systemAddress.Value, bodyId.Value));
             var entry = new ScannedBioEntry(
                 systemAddress.Value,
                 bodyId.Value,
@@ -343,8 +345,8 @@ public sealed class ExobiologyState
                 reference.Reward,
                 body?.FirstFootfall ?? false
             );
-            var prefix = entry.ToString()[..entry.ToString().LastIndexOf('_')];
-            var prior = scannedBioEntryIds.FirstOrDefault(candidate =>
+            string prefix = entry.ToString()[..entry.ToString().LastIndexOf('_')];
+            string? prior = scannedBioEntryIds.FirstOrDefault(candidate =>
                 candidate.StartsWith(prefix, StringComparison.Ordinal)
             );
             if (prior is not null)
@@ -363,30 +365,30 @@ public sealed class ExobiologyState
 
     private void ApplySale(JsonElement root)
     {
-        if (!root.TryGetProperty("BioData", out var bioData) || bioData.ValueKind != JsonValueKind.Array)
+        if (!root.TryGetProperty("BioData", out JsonElement bioData) || bioData.ValueKind != JsonValueKind.Array)
         {
             return;
         }
 
-        var changed = false;
-        foreach (var item in bioData.EnumerateArray())
+        bool changed = false;
+        foreach (JsonElement item in bioData.EnumerateArray())
         {
-            var species = GetString(item, "Species");
+            string? species = GetString(item, "Species");
             if (species == RadicoidaUnicaSpecies)
             {
                 CountRadicoidaUnica = 0;
                 changed = true;
             }
 
-            var reference = catalog.FindBySpecies(species);
-            var value = GetInt64(item, "Value");
+            ExobiologyReference? reference = catalog.FindBySpecies(species);
+            long? value = GetInt64(item, "Value");
             if (reference is null || value is null)
             {
                 continue;
             }
 
-            var rewardText = value.Value.ToString(CultureInfo.InvariantCulture);
-            var match = scannedBioEntryIds.FirstOrDefault(candidate =>
+            string rewardText = value.Value.ToString(CultureInfo.InvariantCulture);
+            string? match = scannedBioEntryIds.FirstOrDefault(candidate =>
                 candidate.Contains(reference.EntryIdPrefix, StringComparison.Ordinal)
                 && candidate.Contains(rewardText, StringComparison.Ordinal)
             );
@@ -424,7 +426,7 @@ public sealed class ExobiologyState
             return;
         }
 
-        var activeSamples = new[] { ScanOne, ScanTwo }
+        BioSampleSnapshot[] activeSamples = new[] { ScanOne, ScanTwo }
             .Where(sample => sample is not null)
             .Cast<BioSampleSnapshot>()
             .ToArray();
@@ -451,7 +453,7 @@ public sealed class ExobiologyState
     {
         OrganicRewards = scannedBioEntryIds.Sum(entry =>
         {
-            if (!ScannedBioEntry.TryParse(entry, out var parsed))
+            if (!ScannedBioEntry.TryParse(entry, out ScannedBioEntry? parsed))
             {
                 return 0;
             }
@@ -462,8 +464,8 @@ public sealed class ExobiologyState
 
     private static BodyKey? GetBodyKey(JsonElement root)
     {
-        var systemAddress = GetInt64(root, "SystemAddress");
-        var bodyId = GetInt32(root, "BodyID");
+        long? systemAddress = GetInt64(root, "SystemAddress");
+        int? bodyId = GetInt32(root, "BodyID");
         return systemAddress is null || bodyId is null ? null : new BodyKey(systemAddress.Value, bodyId.Value);
     }
 
@@ -499,7 +501,7 @@ public sealed class ExobiologyState
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+        return root.TryGetProperty(propertyName, out JsonElement value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
     }
@@ -507,7 +509,7 @@ public sealed class ExobiologyState
     private static bool? GetBoolean(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind is JsonValueKind.True or JsonValueKind.False
             ? value.GetBoolean()
             : null;
@@ -516,9 +518,9 @@ public sealed class ExobiologyState
     private static long? GetInt64(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind == JsonValueKind.Number
-            && value.TryGetInt64(out var number)
+            && value.TryGetInt64(out long number)
             ? number
             : null;
     }
@@ -526,9 +528,9 @@ public sealed class ExobiologyState
     private static int? GetInt32(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind == JsonValueKind.Number
-            && value.TryGetInt32(out var number)
+            && value.TryGetInt32(out int number)
             ? number
             : null;
     }
@@ -552,14 +554,14 @@ public sealed class ExobiologyState
         public static bool TryParse(string value, out ScannedBioEntry result)
         {
             result = null!;
-            var parts = value.Split('_', StringSplitOptions.TrimEntries);
+            string[] parts = value.Split('_', StringSplitOptions.TrimEntries);
             if (
                 parts.Length < 5
-                || !long.TryParse(parts[0], out var systemAddress)
-                || !int.TryParse(parts[1], out var bodyId)
-                || !long.TryParse(parts[2], out var entryId)
-                || !long.TryParse(parts[3], out var reward)
-                || !bool.TryParse(parts[4], out var firstFootfall)
+                || !long.TryParse(parts[0], out long systemAddress)
+                || !int.TryParse(parts[1], out int bodyId)
+                || !long.TryParse(parts[2], out long entryId)
+                || !long.TryParse(parts[3], out long reward)
+                || !bool.TryParse(parts[4], out bool firstFootfall)
             )
             {
                 return false;

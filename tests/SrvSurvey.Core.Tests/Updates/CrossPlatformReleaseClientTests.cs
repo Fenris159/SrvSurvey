@@ -14,13 +14,13 @@ public sealed class CrossPlatformReleaseClientTests
     [Fact]
     public async Task GetLatestAsyncSelectsChecksumIndexedPackageForRuntime()
     {
-        var payload = CreatePayload();
+        ReleasePayload payload = CreatePayload();
         var handler = new StubHandler(
             new Dictionary<Uri, string> { [ReleasesUri] = payload.Releases, [IndexUri] = payload.Index }
         );
         var client = new CrossPlatformReleaseClient(new HttpClient(handler), ReleasesUri, ReleasesUri);
 
-        var result = await client.GetLatestAsync("win-x64", ReleaseChannel.Development);
+        CrossPlatformRelease? result = await client.GetLatestAsync("win-x64", ReleaseChannel.Development);
 
         Assert.NotNull(result);
         Assert.Equal(ReleaseVersion.Parse("2.0.95.23"), result.Version);
@@ -45,7 +45,7 @@ public sealed class CrossPlatformReleaseClientTests
     [InlineData("missing-package")]
     public async Task GetLatestAsyncRejectsInconsistentReleaseIndex(string mutation)
     {
-        var payload = CreatePayload(mutation);
+        ReleasePayload payload = CreatePayload(mutation);
         var client = new CrossPlatformReleaseClient(
             new HttpClient(
                 new StubHandler(
@@ -63,7 +63,7 @@ public sealed class CrossPlatformReleaseClientTests
     [Fact]
     public async Task GetLatestAsyncIgnoresLegacyAndPrereleaseAssets()
     {
-        var releases = JsonSerializer.Serialize(
+        string releases = JsonSerializer.Serialize(
             new object[]
             {
                 new
@@ -95,7 +95,7 @@ public sealed class CrossPlatformReleaseClientTests
         var handler = new StubHandler(new Dictionary<Uri, string> { [ReleasesUri] = releases });
         var client = new CrossPlatformReleaseClient(new HttpClient(handler), ReleasesUri, ReleasesUri);
 
-        var result = await client.GetLatestAsync("win-x64", ReleaseChannel.Stable);
+        CrossPlatformRelease? result = await client.GetLatestAsync("win-x64", ReleaseChannel.Stable);
 
         Assert.Null(result);
         Assert.Equal([ReleasesUri], handler.RequestUris);
@@ -118,13 +118,13 @@ public sealed class CrossPlatformReleaseClientTests
     public async Task DevelopmentChannelSelectsXpReleaseCandidate()
     {
         const string version = "2.1.4.0-rc.3";
-        var payload = CreatePayload(version: version, prerelease: true);
+        ReleasePayload payload = CreatePayload(version: version, prerelease: true);
         var handler = new StubHandler(
             new Dictionary<Uri, string> { [ReleasesUri] = payload.Releases, [IndexUri] = payload.Index }
         );
         var client = new CrossPlatformReleaseClient(new HttpClient(handler), ReleasesUri, ReleasesUri);
 
-        var development = await client.GetLatestAsync("linux-x64", ReleaseChannel.Development);
+        CrossPlatformRelease? development = await client.GetLatestAsync("linux-x64", ReleaseChannel.Development);
 
         Assert.NotNull(development);
         Assert.Equal(ReleaseVersion.Parse(version), development.Version);
@@ -134,11 +134,11 @@ public sealed class CrossPlatformReleaseClientTests
     [Fact]
     public async Task StableChannelDoesNotSelectXpReleaseCandidate()
     {
-        var payload = CreatePayload(version: "2.1.4.0-rc.3", prerelease: true);
+        ReleasePayload payload = CreatePayload(version: "2.1.4.0-rc.3", prerelease: true);
         var handler = new StubHandler(new Dictionary<Uri, string> { [ReleasesUri] = payload.Releases });
         var client = new CrossPlatformReleaseClient(new HttpClient(handler), ReleasesUri, ReleasesUri);
 
-        var stable = await client.GetLatestAsync("win-x64", ReleaseChannel.Stable);
+        CrossPlatformRelease? stable = await client.GetLatestAsync("win-x64", ReleaseChannel.Stable);
 
         Assert.Null(stable);
         Assert.Equal([ReleasesUri], handler.RequestUris);
@@ -151,7 +151,7 @@ public sealed class CrossPlatformReleaseClientTests
         var handler = new StubHandler(new Dictionary<Uri, string> { [stableReleasesUri] = "[]" });
         var client = new CrossPlatformReleaseClient(new HttpClient(handler), ReleasesUri, stableReleasesUri);
 
-        var stable = await client.GetLatestAsync("win-x64", ReleaseChannel.Stable);
+        CrossPlatformRelease? stable = await client.GetLatestAsync("win-x64", ReleaseChannel.Stable);
 
         Assert.Null(stable);
         Assert.Equal([stableReleasesUri], handler.RequestUris);
@@ -163,7 +163,7 @@ public sealed class CrossPlatformReleaseClientTests
         bool prerelease = false
     )
     {
-        var indexNode = JsonSerializer
+        JsonObject indexNode = JsonSerializer
             .SerializeToNode(
                 new
                 {
@@ -192,7 +192,7 @@ public sealed class CrossPlatformReleaseClientTests
                 }
             )!
             .AsObject();
-        var packages = indexNode["packages"]!.AsArray();
+        JsonArray packages = indexNode["packages"]!.AsArray();
         switch (mutation)
         {
             case "version":
@@ -209,8 +209,8 @@ public sealed class CrossPlatformReleaseClientTests
                 break;
         }
 
-        var index = indexNode.ToJsonString();
-        var releases = JsonSerializer.Serialize(
+        string index = indexNode.ToJsonString();
+        string releases = JsonSerializer.Serialize(
             new[]
             {
                 new
@@ -274,7 +274,7 @@ public sealed class CrossPlatformReleaseClientTests
             CancellationToken cancellationToken
         )
         {
-            var uri = request.RequestUri ?? throw new InvalidOperationException("Request URI was missing.");
+            Uri uri = request.RequestUri ?? throw new InvalidOperationException("Request URI was missing.");
             if (RequestUris.Count == 0)
             {
                 FirstRequestDisabledCache = request.Headers.CacheControl?.NoCache == true;
@@ -282,7 +282,7 @@ public sealed class CrossPlatformReleaseClientTests
 
             RequestUris.Add(uri);
             UserAgents.Add(request.Headers.UserAgent.ToString());
-            if (!responses.TryGetValue(uri, out var payload))
+            if (!responses.TryGetValue(uri, out string? payload))
             {
                 return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound));
             }

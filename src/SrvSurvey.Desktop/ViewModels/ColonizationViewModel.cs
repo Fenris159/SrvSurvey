@@ -32,7 +32,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     private readonly AsyncCommand publishFleetCarrierCommand;
     private readonly AsyncCommand syncFleetCarrierCargoCommand;
     private readonly Func<TimeSpan, CancellationToken, Task> delayAsync;
-    private readonly object buildSiteRepairLock = new();
+    private readonly Lock buildSiteRepairLock = new();
     private readonly Queue<ColonizationBuildSiteRepairVisit> buildSiteRepairVisits = new();
     private readonly HashSet<ColonizationBuildSiteRepairVisit> buildSiteRepairVisitSet = [];
     private readonly HashSet<(long SystemAddress, long MarketId, string StationKey)> buildSiteRepairsInFlight = [];
@@ -102,7 +102,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         fleetCarrierCargoSyncEnabled = settingsStore.LoadFleetCarrierCargoSyncEnabled();
         shipCargoPublishingEnabled = settingsStore.LoadShipCargoPublishingEnabled();
         isEnabled = settingsStore.LoadEnabled();
-        foreach (var visit in settingsStore.LoadBuildSiteRepairVisits())
+        foreach (ColonizationBuildSiteRepairVisit visit in settingsStore.LoadBuildSiteRepairVisits())
         {
             buildSiteRepairVisits.Enqueue(visit);
             buildSiteRepairVisitSet.Add(visit);
@@ -493,7 +493,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         storedRavenApiKey = string.IsNullOrWhiteSpace(apiKey) ? null : apiKey.Trim();
         RavenApiKey = storedRavenApiKey ?? string.Empty;
         lastSyncedMarket = null;
-        var apiKeyStatus = storedRavenApiKey is null
+        string apiKeyStatus = storedRavenApiKey is null
             ? "No Raven API key is saved for this commander."
             : "A Raven API key is saved for this commander.";
         RavenCredentialStatus = profileFrontierId is null
@@ -521,7 +521,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
     public async Task SetCommanderAsync(string? value)
     {
-        var normalized = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        string? normalized = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
         if (string.Equals(CommanderName, normalized, StringComparison.OrdinalIgnoreCase))
         {
             return;
@@ -554,15 +554,15 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     )
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
-        var owner = journalCommanderName ?? CommanderName;
+        string? owner = journalCommanderName ?? CommanderName;
         if (!string.Equals(detectedSquadronCommander, owner, StringComparison.OrdinalIgnoreCase))
         {
             detectedSquadronCarrierMarketId = null;
             detectedSquadronCommander = owner;
         }
         SystemEditor.ApplyJournalEvents(journalEvents);
-        var before = constructionState.Version;
-        foreach (var journalEvent in journalEvents)
+        long before = constructionState.Version;
+        foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
             constructionState.Apply(journalEvent);
             if (
@@ -604,11 +604,11 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
         // When ship cargo is not current (or suppressed), squadron carriers use
         // journal transfer adjustments. Otherwise use the full GetDiff path.
-        var preferSquadronCargoDiff = cargoInventory is not null && preferShipCargoDiffForSquadron;
+        bool preferSquadronCargoDiff = cargoInventory is not null && preferShipCargoDiffForSquadron;
         var messages = new List<string>();
-        foreach (var journalEvent in journalEvents)
+        foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
-            var message = await TrySynchronizeLiveJournalEventAsync(
+            string? message = await TrySynchronizeLiveJournalEventAsync(
                 journalEvent,
                 preferSquadronCargoDiff,
                 cargoInventory
@@ -621,7 +621,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
         if (cargoInventory is { } squadronCargoInventory && preferSquadronCargoDiff)
         {
-            var squadronMessage = await TrySynchronizeSquadronCargoDiffAsync(squadronCargoInventory, cargoActivity);
+            string? squadronMessage = await TrySynchronizeSquadronCargoDiffAsync(squadronCargoInventory, cargoActivity);
             if (!string.IsNullOrWhiteSpace(squadronMessage))
             {
                 messages.Add(squadronMessage);
@@ -740,7 +740,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
     private void CancelDockingRefresh()
     {
-        var cancellation = dockingRefreshCancellation;
+        CancellationTokenSource? cancellation = dockingRefreshCancellation;
         dockingRefreshCancellation = null;
         if (cancellation is null)
         {
@@ -847,24 +847,27 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         }
 
         // Compute diff while inventory is stable; network I/O stays outside GetDiff's lock.
-        var shipDiff = cargo.GetDiff();
+        Dictionary<string, int> shipDiff = cargo.GetDiff();
         if (shipDiff.Count == 0)
         {
             return null;
         }
 
-        var adjustments = ColonizationFleetCarrierCargoSynchronizer.CreateSquadronCargoDiffAdjustment(shipDiff);
+        IReadOnlyDictionary<string, int> adjustments =
+            ColonizationFleetCarrierCargoSynchronizer.CreateSquadronCargoDiffAdjustment(shipDiff);
 
         CommodityOverlay.ApplyPendingFleetCarrierCargo(adjustments.Keys);
         try
         {
-            var updatedCargo = await client.AdjustFleetCarrierCargoAsync(
+            IReadOnlyDictionary<string, int> updatedCargo = await client.AdjustFleetCarrierCargoAsync(
                 dock.MarketId,
                 adjustments,
                 storedRavenApiKey,
                 CancellationToken.None
             );
-            var localCarrier = fleetCarriers.FirstOrDefault(carrier => carrier.MarketId == dock.MarketId);
+            ColonizationFleetCarrier? localCarrier = fleetCarriers.FirstOrDefault(carrier =>
+                carrier.MarketId == dock.MarketId
+            );
             if (localCarrier is not null)
             {
                 ReplaceLocalFleetCarrier(
@@ -903,12 +906,13 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return null;
         }
 
-        var adjustments = ColonizationFleetCarrierCargoSynchronizer.CreateJournalAdjustment(
-            journalEvent,
-            dock,
-            latestStatus?.InMainShip == true,
-            preferShipCargoDiffForSquadron
-        );
+        IReadOnlyDictionary<string, int> adjustments =
+            ColonizationFleetCarrierCargoSynchronizer.CreateJournalAdjustment(
+                journalEvent,
+                dock,
+                latestStatus?.InMainShip == true,
+                preferShipCargoDiffForSquadron
+            );
         if (adjustments.Count == 0)
         {
             return null;
@@ -917,7 +921,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         CommodityOverlay.ApplyPendingFleetCarrierCargo(adjustments.Keys);
         try
         {
-            var updatedCargo = await client.AdjustFleetCarrierCargoAsync(
+            IReadOnlyDictionary<string, int> updatedCargo = await client.AdjustFleetCarrierCargoAsync(
                 dock.MarketId,
                 adjustments,
                 storedRavenApiKey,
@@ -927,7 +931,9 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             {
                 cargoInventory?.ClearPreservedSnapshot();
             }
-            var localCarrier = fleetCarriers.FirstOrDefault(carrier => carrier.MarketId == dock.MarketId);
+            ColonizationFleetCarrier? localCarrier = fleetCarriers.FirstOrDefault(carrier =>
+                carrier.MarketId == dock.MarketId
+            );
             if (localCarrier is not null)
             {
                 ReplaceLocalFleetCarrier(
@@ -976,7 +982,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return null;
         }
 
-        var project = await FindOrLoadProjectAsync(dock.SystemAddress, dock.MarketId);
+        ColonizationProject? project = await FindOrLoadProjectAsync(dock.SystemAddress, dock.MarketId);
         if (project is null)
         {
             return null;
@@ -992,7 +998,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                 : null;
         }
 
-        var updated = await client.UpdateProjectAsync(
+        ColonizationProject updated = await client.UpdateProjectAsync(
             new ColonizationProjectUpdate { BuildId = project.BuildId, FactionName = dock.FactionName },
             CancellationToken.None
         );
@@ -1007,12 +1013,12 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return null;
         }
 
-        var root = journalEvent.Payload;
-        var stationName = GetJournalString(root, "StationName");
-        var stationType = GetJournalString(root, "StationType");
-        var systemAddress = GetJournalInt64(root, "SystemAddress");
-        var marketId = GetJournalInt64(root, "MarketID");
-        var isConstructionShip = stationName?.Contains("ColonisationShip", StringComparison.Ordinal) == true;
+        JsonElement root = journalEvent.Payload;
+        string? stationName = GetJournalString(root, "StationName");
+        string? stationType = GetJournalString(root, "StationType");
+        long? systemAddress = GetJournalInt64(root, "SystemAddress");
+        long? marketId = GetJournalInt64(root, "MarketID");
+        bool isConstructionShip = stationName?.Contains("ColonisationShip", StringComparison.Ordinal) == true;
         if (
             systemAddress is not > 0
             || marketId is not > 0
@@ -1024,14 +1030,14 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return null;
         }
 
-        var stationKey = ColonizationBuildSiteRepair.NormalizeDockStationName(stationName).ToLowerInvariant();
+        string stationKey = ColonizationBuildSiteRepair.NormalizeDockStationName(stationName).ToLowerInvariant();
         if (stationKey.Length == 0)
         {
             return null;
         }
 
         var visit = new ColonizationBuildSiteRepairVisit(marketId.Value, stationKey);
-        var inFlight = (systemAddress.Value, marketId.Value, stationKey);
+        (long, long, string stationKey) inFlight = (systemAddress.Value, marketId.Value, stationKey);
         lock (buildSiteRepairLock)
         {
             if (buildSiteRepairVisitSet.Contains(visit) || !buildSiteRepairsInFlight.Add(inFlight))
@@ -1042,8 +1048,12 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
         try
         {
-            var sites = await GetSystemSitesForRepairAsync(systemAddress.Value);
-            var plan = ColonizationBuildSiteRepair.CreatePlan(sites, stationName, marketId.Value);
+            IReadOnlyList<ColonizationSystemSite> sites = await GetSystemSitesForRepairAsync(systemAddress.Value);
+            ColonizationBuildSiteRepairPlan? plan = ColonizationBuildSiteRepair.CreatePlan(
+                sites,
+                stationName,
+                marketId.Value
+            );
             if (plan is null || string.IsNullOrWhiteSpace(plan.Site.Id))
             {
                 return null;
@@ -1072,7 +1082,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
     private async Task<IReadOnlyList<ColonizationSystemSite>> GetSystemSitesForRepairAsync(long systemAddress)
     {
-        var attempt = 0;
+        int attempt = 0;
         while (true)
         {
             try
@@ -1119,15 +1129,15 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
     private async Task<string?> SynchronizeContributionAsync(JournalEventEnvelope journalEvent)
     {
-        var marketId = GetJournalInt64(journalEvent.Payload, "MarketID");
-        var contributions = ReadJournalContributions(journalEvent.Payload);
+        long? marketId = GetJournalInt64(journalEvent.Payload, "MarketID");
+        Dictionary<string, int> contributions = ReadJournalContributions(journalEvent.Payload);
         if (marketId is not > 0 || contributions.Count == 0)
         {
             return null;
         }
 
-        var dock = constructionState.CurrentDock;
-        var project = await FindOrLoadProjectAsync(
+        ColonizationDockingSnapshot? dock = constructionState.CurrentDock;
+        ColonizationProject? project = await FindOrLoadProjectAsync(
             dock?.MarketId == marketId ? dock.SystemAddress : currentSystemAddress,
             marketId.Value
         );
@@ -1148,8 +1158,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return null;
         }
 
-        var dock = constructionState.CurrentDock;
-        var project = await FindOrLoadProjectAsync(
+        ColonizationDockingSnapshot? dock = constructionState.CurrentDock;
+        ColonizationProject? project = await FindOrLoadProjectAsync(
             dock?.MarketId == depot.MarketId ? dock.SystemAddress : currentSystemAddress,
             depot.MarketId
         );
@@ -1163,14 +1173,14 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             resource => resource.RemainingAmount,
             StringComparer.OrdinalIgnoreCase
         );
-        var maximumRequiredLong = depot.Resources.Sum(resource => (long)resource.RequiredAmount);
+        long maximumRequiredLong = depot.Resources.Sum(resource => (long)resource.RequiredAmount);
         if (maximumRequiredLong > int.MaxValue)
         {
             return "Raven project sync rejected construction requirements above the supported total.";
         }
 
-        var maximumRequired = (int)maximumRequiredLong;
-        var updated = project;
+        int maximumRequired = (int)maximumRequiredLong;
+        ColonizationProject updated = project;
         if (
             project.MaximumRequired != maximumRequired
             || !DictionariesEqual(project.Commodities, remaining)
@@ -1208,7 +1218,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
     private async Task<ColonizationProject?> FindOrLoadProjectAsync(long? systemAddress, long marketId)
     {
-        var project =
+        ColonizationProject? project =
             Projects.Select(row => row.Project).FirstOrDefault(candidate => candidate.MarketId == marketId)
             ?? (localUntrackedProject?.MarketId == marketId ? localUntrackedProject : null);
         if (project is not null || systemAddress is not > 0)
@@ -1246,22 +1256,22 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
     private static Dictionary<string, int> ReadJournalContributions(JsonElement root)
     {
-        if (!root.TryGetProperty("Contributions", out var rows) || rows.ValueKind != JsonValueKind.Array)
+        if (!root.TryGetProperty("Contributions", out JsonElement rows) || rows.ValueKind != JsonValueKind.Array)
         {
-            return new Dictionary<string, int>();
+            return [];
         }
 
         var result = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        foreach (var row in rows.EnumerateArray())
+        foreach (JsonElement row in rows.EnumerateArray())
         {
-            var name = ColonizationConstructionState.NormalizeCommodityName(GetJournalString(row, "Name"));
-            var amount = GetJournalInt32(row, "Amount");
+            string name = ColonizationConstructionState.NormalizeCommodityName(GetJournalString(row, "Name"));
+            int? amount = GetJournalInt32(row, "Amount");
             if (name.Length > 0 && amount is > 0)
             {
-                var existing = result.GetValueOrDefault(name);
+                int existing = result.GetValueOrDefault(name);
                 if (existing > int.MaxValue - amount.Value)
                 {
-                    return new Dictionary<string, int>();
+                    return [];
                 }
 
                 result[name] = existing + amount.Value;
@@ -1274,7 +1284,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     private static bool DictionariesEqual(Dictionary<string, int> left, Dictionary<string, int> right)
     {
         return left.Count == right.Count
-            && left.All(pair => right.TryGetValue(pair.Key, out var value) && value == pair.Value);
+            && left.All(pair => right.TryGetValue(pair.Key, out int value) && value == pair.Value);
     }
 
     public async Task UpdateCargoAsync(CargoSnapshot? cargo, bool publishCurrentShipCargo = true)
@@ -1299,7 +1309,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
-        var blockReason = GetShipCargoPublishingBlockReason();
+        string? blockReason = GetShipCargoPublishingBlockReason();
         if (blockReason is not null)
         {
             ShipCargoPublishingStatus = blockReason;
@@ -1384,9 +1394,9 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
     public void UpdateSystemContext(string? systemName, GalacticCoordinate? position, long? systemAddress = null)
     {
-        var nextSystemName = string.IsNullOrWhiteSpace(systemName) ? null : systemName.Trim();
-        var nextSystemAddress = systemAddress is > 0 ? systemAddress : null;
-        var samePosition = position is GalacticCoordinate coordinate
+        string? nextSystemName = string.IsNullOrWhiteSpace(systemName) ? null : systemName.Trim();
+        long? nextSystemAddress = systemAddress is > 0 ? systemAddress : null;
+        bool samePosition = position is GalacticCoordinate coordinate
             ? currentStarPosition.Count == 3
                 && Math.Abs(currentStarPosition[0] - coordinate.X) <= 0.0000001d
                 && Math.Abs(currentStarPosition[1] - coordinate.Y) <= 0.0000001d
@@ -1453,7 +1463,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
     private async Task PersistRavenApiKeyAsync()
     {
-        var normalized = string.IsNullOrWhiteSpace(RavenApiKey) ? null : RavenApiKey.Trim();
+        string? normalized = string.IsNullOrWhiteSpace(RavenApiKey) ? null : RavenApiKey.Trim();
         string? validatedCommander = null;
         if (
             normalized is not null
@@ -1463,9 +1473,9 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
-        var store =
+        CommanderProfileStore store =
             commanderProfileStore ?? throw new InvalidOperationException("Commander profile storage is not available.");
-        var frontierId =
+        string frontierId =
             profileFrontierId ?? throw new InvalidOperationException("No commander frontier id is available.");
         await store.SaveRavenColonialApiKeyAsync(
             frontierId,
@@ -1508,7 +1518,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         }
 
         RavenCredentialStatus = "Validating the Raven API key without saving it...";
-        var validatedCommander = await client.GetCommanderByApiKeyAsync(normalized, CancellationToken.None);
+        string? validatedCommander = await client.GetCommanderByApiKeyAsync(normalized, CancellationToken.None);
         setValidatedCommander(validatedCommander);
         if (validatedCommander is null)
         {
@@ -1538,12 +1548,12 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
-        var published = false;
+        bool published = false;
         IsFleetCarrierSyncBusy = true;
         FleetCarrierSyncStatus = $"Publishing {dock.StationName} to Raven Colonial...";
         try
         {
-            var registered = await client.PublishFleetCarrierAsync(
+            ColonizationFleetCarrier registered = await client.PublishFleetCarrierAsync(
                 new ColonizationFleetCarrierRegistration
                 {
                     MarketId = dock.MarketId,
@@ -1560,7 +1570,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             };
             ReplaceLocalFleetCarrier(registered);
 
-            var market = GetFreshFleetCarrierMarket(dock);
+            MarketSnapshot? market = GetFreshFleetCarrierMarket(dock);
             if (market is null)
             {
                 FleetCarrierSyncStatus =
@@ -1569,7 +1579,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                 return;
             }
 
-            var replacements = ColonizationFleetCarrierCargoSynchronizer.CreateMarketReplacement(market, registered);
+            IReadOnlyDictionary<string, int> replacements =
+                ColonizationFleetCarrierCargoSynchronizer.CreateMarketReplacement(market, registered);
             if (replacements.Count == 0)
             {
                 lastSyncedMarket = (market.MarketId, market.Timestamp);
@@ -1579,7 +1590,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             }
 
             CommodityOverlay.ApplyPendingFleetCarrierCargo(replacements.Keys);
-            var updatedCargo = await client.ReplaceFleetCarrierCargoAsync(
+            IReadOnlyDictionary<string, int> updatedCargo = await client.ReplaceFleetCarrierCargoAsync(
                 dock.MarketId,
                 replacements,
                 storedRavenApiKey,
@@ -1624,10 +1635,10 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         if (
             !TryBeginFleetCarrierCargoSync(
                 force,
-                out var market,
-                out var apiKey,
-                out var identity,
-                out var localCarrier
+                out MarketSnapshot? market,
+                out string? apiKey,
+                out (long MarketId, DateTimeOffset Timestamp) identity,
+                out ColonizationFleetCarrier? localCarrier
             )
         )
         {
@@ -1685,7 +1696,9 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return false;
         }
 
-        var carrier = fleetCarriers.FirstOrDefault(candidate => candidate.MarketId == currentMarket.MarketId);
+        ColonizationFleetCarrier? carrier = fleetCarriers.FirstOrDefault(candidate =>
+            candidate.MarketId == currentMarket.MarketId
+        );
         if (carrier is null)
         {
             if (force)
@@ -1708,7 +1721,10 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         (long MarketId, DateTimeOffset Timestamp) identity
     )
     {
-        var serverCarrier = await client.GetFleetCarrierAsync(market.MarketId, CancellationToken.None);
+        ColonizationFleetCarrier? serverCarrier = await client.GetFleetCarrierAsync(
+            market.MarketId,
+            CancellationToken.None
+        );
         if (serverCarrier is null)
         {
             FleetCarrierSyncStatus = "Raven Colonial does not have this Fleet Carrier.";
@@ -1716,9 +1732,12 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         }
 
         // Re-resolve after await: the local list may have changed while waiting.
-        var localCarrier = fleetCarriers.FirstOrDefault(carrier => carrier.MarketId == market.MarketId);
+        ColonizationFleetCarrier? localCarrier = fleetCarriers.FirstOrDefault(carrier =>
+            carrier.MarketId == market.MarketId
+        );
 
-        var replacements = ColonizationFleetCarrierCargoSynchronizer.CreateMarketReplacement(market, serverCarrier);
+        IReadOnlyDictionary<string, int> replacements =
+            ColonizationFleetCarrierCargoSynchronizer.CreateMarketReplacement(market, serverCarrier);
         if (replacements.Count == 0)
         {
             if (localCarrier is not null)
@@ -1734,7 +1753,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         CommodityOverlay.ApplyPendingFleetCarrierCargo(replacements.Keys);
         FleetCarrierSyncStatus =
             $"Updating {replacements.Count:N0} cargo entries for " + GetCarrierName(serverCarrier) + "...";
-        var updatedCargo = await client.ReplaceFleetCarrierCargoAsync(
+        IReadOnlyDictionary<string, int> updatedCargo = await client.ReplaceFleetCarrierCargoAsync(
             market.MarketId,
             replacements,
             apiKey,
@@ -1772,7 +1791,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
-        var commander = CommanderName;
+        string commander = CommanderName;
 
         if (Projects.Count == 0)
         {
@@ -1783,7 +1802,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         StatusMessage = "Fetching active projects from Raven Colonial...";
         try
         {
-            var result = await client.GetCommanderProjectsAsync(commander, cancellationToken);
+            ColonizationCommanderProjects result = await client.GetCommanderProjectsAsync(commander, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             if (!string.Equals(CommanderName, commander, StringComparison.OrdinalIgnoreCase))
             {
@@ -1830,7 +1849,10 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
-        var result = await legacyProfileStore.LoadAsync(profileFrontierId, CancellationToken.None);
+        LegacyColonizationProfileLoadResult result = await legacyProfileStore.LoadAsync(
+            profileFrontierId,
+            CancellationToken.None
+        );
         if (result.Error is not null)
         {
             StatusMessage = "The imported colonization cache could not be read: " + result.Error;
@@ -1852,7 +1874,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             .ToArray();
         HasUnsavedProjectVisibility = false;
         UpdateProjectSummary();
-        var warning =
+        string warning =
             result.Warnings.Count == 0 ? string.Empty : $" Ignored {result.Warnings.Count:N0} invalid cached item(s).";
         StatusMessage =
             $"Restored {Projects.Count:N0} imported colonization "
@@ -1870,9 +1892,13 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         StatusMessage = "Saving project visibility to Raven Colonial...";
         try
         {
-            var saved = await client.SaveHiddenProjectIdsAsync(CommanderName, hiddenProjectIds, CancellationToken.None);
+            IReadOnlyList<string> saved = await client.SaveHiddenProjectIdsAsync(
+                CommanderName,
+                hiddenProjectIds,
+                CancellationToken.None
+            );
             hiddenProjectIds = saved.ToHashSet(StringComparer.OrdinalIgnoreCase);
-            foreach (var row in Projects)
+            foreach (ColonizationProjectRowViewModel row in Projects)
             {
                 row.UpdateShown(!hiddenProjectIds.Contains(row.Project.BuildId));
             }
@@ -1894,14 +1920,11 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
     private ColonizationProjectRowViewModel CreateRow(ColonizationProject project)
     {
-        var matchingBuilds = buildCatalog.FindByLayout(project.BuildType);
-        var build = matchingBuilds.Count > 0 ? matchingBuilds[0] : null;
-        if (build is null)
-        {
-            build = buildCatalog.FindByBuildType(project.BuildType);
-        }
-        var fleetCarrierType = project.IsFleetCarrierLoading ? "Fleet Carrier loading" : project.BuildType;
-        var type = build is null ? fleetCarrierType : $"{build.DisplayName} ({project.BuildType})";
+        IReadOnlyList<ColonizationBuildCost> matchingBuilds = buildCatalog.FindByLayout(project.BuildType);
+        ColonizationBuildCost? build =
+            (matchingBuilds.Count > 0 ? matchingBuilds[0] : null) ?? buildCatalog.FindByBuildType(project.BuildType);
+        string fleetCarrierType = project.IsFleetCarrierLoading ? "Fleet Carrier loading" : project.BuildType;
+        string type = build is null ? fleetCarrierType : $"{build.DisplayName} ({project.BuildType})";
         return new ColonizationProjectRowViewModel(
             project,
             type,
@@ -1920,7 +1943,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
-        var nextPrimaryId = row.IsPrimary ? null : row.Project.BuildId;
+        string? nextPrimaryId = row.IsPrimary ? null : row.Project.BuildId;
         IsBusy = true;
         StatusMessage = nextPrimaryId is null
             ? "Clearing the primary Raven Colonial project..."
@@ -1971,7 +1994,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
     private void UpdateProjectEditorContext()
     {
-        var snapshot = constructionState.CreateSnapshot();
+        ColonizationConstructionSnapshot snapshot = constructionState.CreateSnapshot();
         ProjectEditor.UpdateContext(
             new ColonizationProjectEditorContext(
                 IsEnabled,
@@ -2015,12 +2038,12 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
     private void UpdateProjectSummary()
     {
-        var totals = ColonizationProjectCalculator.CalculateTotals(
+        ColonizationProjectTotals totals = ColonizationProjectCalculator.CalculateTotals(
             Projects.Select(row => row.Project),
             hiddenProjectIds,
             constructionState.ShipCargoCapacity
         );
-        var trips = totals.TripsInCurrentShip is long tripCount
+        string trips = totals.TripsInCurrentShip is long tripCount
             ? $" | {tripCount:N0} trips in current ship"
             : string.Empty;
         ProjectSummary = $"Cargo required: {totals.RemainingCargo:N0}" + trips;
@@ -2029,7 +2052,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
     private void UpdateConstructionDisplay()
     {
-        var snapshot = constructionState.CreateSnapshot();
+        ColonizationConstructionSnapshot snapshot = constructionState.CreateSnapshot();
         if (snapshot.CurrentDock is null)
         {
             ConstructionTitle = "No construction depot active";
@@ -2048,7 +2071,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
-        var depot = snapshot.CurrentDepot;
+        ColonizationConstructionDepotSnapshot depot = snapshot.CurrentDepot;
         ConstructionStatus = depot.IsComplete
             ? "Construction complete."
             : (depot.IsFailed) switch
@@ -2085,9 +2108,9 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     {
         OnPropertyChanged(nameof(LinkedFleetCarriers));
         OnPropertyChanged(nameof(DetectedSquadronCarrierMarketId));
-        var construction = constructionState.CreateSnapshot();
-        var dock = construction.CurrentDock;
-        var hasMarketSinceDocking =
+        ColonizationConstructionSnapshot construction = constructionState.CreateSnapshot();
+        ColonizationDockingSnapshot? dock = construction.CurrentDock;
+        bool hasMarketSinceDocking =
             currentMarket is not null
             && dock?.Timestamp is not null
             && dock.MarketId == currentMarket.MarketId
@@ -2136,7 +2159,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
     private bool CanSaveRavenApiKey()
     {
-        var normalized = string.IsNullOrWhiteSpace(RavenApiKey) ? null : RavenApiKey.Trim();
+        string? normalized = string.IsNullOrWhiteSpace(RavenApiKey) ? null : RavenApiKey.Trim();
         return commanderProfileStore is not null
             && profileFrontierId is not null
             && !IsFleetCarrierSyncBusy
@@ -2194,7 +2217,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return false;
         }
 
-        var dock = constructionState.CurrentDock;
+        ColonizationDockingSnapshot? dock = constructionState.CurrentDock;
         return dock?.Timestamp is not null
             && dock.MarketId == currentMarket.MarketId
             && currentMarket.Timestamp > dock.Timestamp;
@@ -2267,7 +2290,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
     private void ApplyShipIdentity(JournalEventEnvelope journalEvent)
     {
-        var root = journalEvent.Payload;
+        JsonElement root = journalEvent.Payload;
         switch (journalEvent.EventName)
         {
             case "LoadGame":
@@ -2286,7 +2309,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     private static string? GetJournalString(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind == JsonValueKind.String
             && !string.IsNullOrWhiteSpace(value.GetString())
             ? value.GetString()!.Trim()
@@ -2296,16 +2319,16 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     private static long? GetJournalInt64(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind == JsonValueKind.Number
-            && value.TryGetInt64(out var result)
+            && value.TryGetInt64(out long result)
             ? result
             : null;
     }
 
     private static bool? GetJournalBoolean(JsonElement root, string propertyName)
     {
-        if (!root.TryGetProperty(propertyName, out var value))
+        if (!root.TryGetProperty(propertyName, out JsonElement value))
         {
             return null;
         }
@@ -2320,16 +2343,16 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
     private static string? CombineMessages(params string?[] messages)
     {
-        var present = messages.Where(message => !string.IsNullOrWhiteSpace(message)).ToArray();
+        string?[] present = messages.Where(message => !string.IsNullOrWhiteSpace(message)).ToArray();
         return present.Length == 0 ? null : string.Join(Environment.NewLine, present);
     }
 
     private static int? GetJournalInt32(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind == JsonValueKind.Number
-            && value.TryGetInt32(out var result)
+            && value.TryGetInt32(out int result)
             ? result
             : null;
     }

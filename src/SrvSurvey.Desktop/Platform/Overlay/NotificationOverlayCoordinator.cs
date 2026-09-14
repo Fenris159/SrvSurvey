@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -96,7 +97,7 @@ public sealed class NotificationOverlayCoordinator : IDisposable
         }
 
         gameWindow = gameWindowTracker.GetSnapshot();
-        var shouldShow =
+        bool shouldShow =
             !isSuppressed
             && viewModel.ShouldShow
             && platform.Capabilities.SupportsPassiveOverlay
@@ -134,7 +135,7 @@ public sealed class NotificationOverlayCoordinator : IDisposable
     private void PrepareWindow(NotificationOverlayWindow overlay)
     {
         PositionWindow(overlay);
-        var preparation = platform.PreparePassiveWindow(overlay);
+        OverlayPreparationResult preparation = platform.PreparePassiveWindow(overlay);
         if (!preparation.IsClickThrough)
         {
             isSuppressed = true;
@@ -145,14 +146,14 @@ public sealed class NotificationOverlayCoordinator : IDisposable
     private void PositionWindow(Window overlay)
     {
         OverlayThemeResources.ApplyOpacity(overlay, overlayLayout, PlotterName);
-        var screen = overlay.Screens.ScreenFromBounds(gameWindow.ClientBounds) ?? overlay.Screens.Primary;
+        Screen? screen = overlay.Screens.ScreenFromBounds(gameWindow.ClientBounds) ?? overlay.Screens.Primary;
         if (screen is null)
         {
             return;
         }
 
-        var size = OverlayWindowMetrics.PrepareForPlacement(overlay, overlayLayout, PlotterName, screen.Scaling);
-        var position =
+        PixelSize size = OverlayWindowMetrics.PrepareForPlacement(overlay, overlayLayout, PlotterName, screen.Scaling);
+        PixelPoint position =
             overlayLayout.GetPosition(PlotterName, gameWindow.ClientBounds, size)
             ?? OverlayWindowPlacement.BottomCenter(gameWindow.ClientBounds, size, margin: 24);
         if (overlay.Position != position)
@@ -163,7 +164,7 @@ public sealed class NotificationOverlayCoordinator : IDisposable
 
     private void CloseWindow()
     {
-        var overlay = window;
+        NotificationOverlayWindow? overlay = window;
         if (overlay is null)
         {
             return;

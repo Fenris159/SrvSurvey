@@ -40,7 +40,7 @@ public sealed partial class TravelView : UserControl
         string? text = null;
         try
         {
-            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+            IClipboard? clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
             if (clipboard is not null)
             {
                 text = await clipboard.TryGetTextAsync();
@@ -69,7 +69,7 @@ public sealed partial class TravelView : UserControl
 
         try
         {
-            var files = await storage.OpenFilePickerAsync(
+            IReadOnlyList<IStorageFile> files = await storage.OpenFilePickerAsync(
                 new FilePickerOpenOptions
                 {
                     Title = "Import saved routes",
@@ -84,7 +84,7 @@ public sealed partial class TravelView : UserControl
                     ],
                 }
             );
-            var paths = files
+            string[] paths = files
                 .Select(file => file.TryGetLocalPath())
                 .Where(path => !string.IsNullOrWhiteSpace(path))
                 .Select(path => path!)
@@ -115,10 +115,10 @@ public sealed partial class TravelView : UserControl
 
         try
         {
-            var folders = await storage.OpenFolderPickerAsync(
+            IReadOnlyList<IStorageFolder> folders = await storage.OpenFolderPickerAsync(
                 new FolderPickerOpenOptions { Title = "Export selected routes", AllowMultiple = false }
             );
-            var path = folders.Count > 0 ? folders[0].TryGetLocalPath() : null;
+            string? path = folders.Count > 0 ? folders[0].TryGetLocalPath() : null;
             if (!string.IsNullOrWhiteSpace(path))
             {
                 await viewModel.RouteManager.ExportSelectedAsync(path);
@@ -174,7 +174,7 @@ public sealed partial class TravelView : UserControl
 
         try
         {
-            var files = await storage.OpenFilePickerAsync(
+            IReadOnlyList<IStorageFile> files = await storage.OpenFilePickerAsync(
                 new FilePickerOpenOptions
                 {
                     Title = "Import saved fleet-carrier routes",
@@ -189,7 +189,7 @@ public sealed partial class TravelView : UserControl
                     ],
                 }
             );
-            var paths = files
+            string[] paths = files
                 .Select(file => file.TryGetLocalPath())
                 .Where(path => !string.IsNullOrWhiteSpace(path))
                 .Select(path => path!)
@@ -220,10 +220,10 @@ public sealed partial class TravelView : UserControl
 
         try
         {
-            var folders = await storage.OpenFolderPickerAsync(
+            IReadOnlyList<IStorageFolder> folders = await storage.OpenFolderPickerAsync(
                 new FolderPickerOpenOptions { Title = "Export selected fleet-carrier routes", AllowMultiple = false }
             );
-            var path = folders.Count > 0 ? folders[0].TryGetLocalPath() : null;
+            string? path = folders.Count > 0 ? folders[0].TryGetLocalPath() : null;
             if (!string.IsNullOrWhiteSpace(path))
             {
                 await viewModel.FleetCarrierRouteManager.ExportSelectedAsync(path);
@@ -281,10 +281,10 @@ public sealed partial class TravelView : UserControl
 
         try
         {
-            var folders = await storage.OpenFolderPickerAsync(
+            IReadOnlyList<IStorageFolder> folders = await storage.OpenFolderPickerAsync(
                 new FolderPickerOpenOptions { Title = title, AllowMultiple = false }
             );
-            var path = folders.Count > 0 ? folders[0].TryGetLocalPath() : null;
+            string? path = folders.Count > 0 ? folders[0].TryGetLocalPath() : null;
             if (!string.IsNullOrWhiteSpace(path))
             {
                 await export(path);
@@ -304,7 +304,7 @@ public sealed partial class TravelView : UserControl
 
     private async Task WriteClipboardAsync(string text)
     {
-        var clipboard =
+        IClipboard clipboard =
             TopLevel.GetTopLevel(this)?.Clipboard
             ?? throw new InvalidOperationException("The desktop clipboard is not available.");
         await clipboard.SetTextAsync(text);

@@ -23,8 +23,8 @@ public sealed class GuardianGestureSettingsStore
     public void Save(GuardianGesturePreferences preferences)
     {
         ArgumentNullException.ThrowIfNull(preferences);
-        var trigger = NormalizeTrigger(preferences.BlinkTrigger);
-        var duration = NormalizeDuration(preferences.BlinkDurationMilliseconds);
+        StatusFlags trigger = NormalizeTrigger(preferences.BlinkTrigger);
+        int duration = NormalizeDuration(preferences.BlinkDurationMilliseconds);
         documentStore.Update(root =>
         {
             root["Version"] = 1;
@@ -47,31 +47,33 @@ public sealed class GuardianGestureSettingsStore
             return StatusFlags.HudInAnalysisMode;
         }
 
-        if (value.TryGetValue<uint>(out var unsigned))
+        if (value.TryGetValue<uint>(out uint unsigned))
         {
             return NormalizeTrigger((StatusFlags)unsigned);
         }
 
-        if (value.TryGetValue<int>(out var signed) && signed >= 0)
+        if (value.TryGetValue<int>(out int signed) && signed >= 0)
         {
             return NormalizeTrigger((StatusFlags)(uint)signed);
         }
 
-        return value.TryGetValue<string>(out var text) && Enum.TryParse<StatusFlags>(text, true, out var parsed)
+        return
+            value.TryGetValue<string>(out string? text)
+            && Enum.TryParse<StatusFlags>(text, true, out StatusFlags parsed)
             ? NormalizeTrigger(parsed)
             : StatusFlags.HudInAnalysisMode;
     }
 
     private static int GetDuration(JsonObject? settings)
     {
-        return settings?["BlinkDurationMilliseconds"] is JsonValue value && value.TryGetValue<int>(out var duration)
+        return settings?["BlinkDurationMilliseconds"] is JsonValue value && value.TryGetValue<int>(out int duration)
             ? NormalizeDuration(duration)
             : DefaultBlinkDurationMilliseconds;
     }
 
     private static StatusFlags NormalizeTrigger(StatusFlags value)
     {
-        var raw = (uint)value;
+        uint raw = (uint)value;
         return raw != 0 && (raw & (raw - 1)) == 0 ? value : StatusFlags.HudInAnalysisMode;
     }
 

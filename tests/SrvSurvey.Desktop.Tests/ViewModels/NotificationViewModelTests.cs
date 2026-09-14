@@ -18,18 +18,18 @@ public sealed class NotificationViewModelTests : IDisposable
     public void JournalNotificationsUseLiveStateAndNeverReplayBootstrapMessages()
     {
         var time = new MutableTimeProvider(new DateTimeOffset(2026, 7, 25, 12, 0, 0, TimeSpan.Zero));
-        var viewModel = CreateViewModel(time);
-        var materials = Parse(
+        NotificationViewModel viewModel = CreateViewModel(time);
+        JournalEventEnvelope materials = Parse(
             """
             {"event":"Materials","Raw":[],"Manufactured":[],"Encoded":[{"Name":"ancienttechnologicaldata","Name_Localised":"Pattern Epsilon Obelisk Data","Count":4}]}
             """
         );
-        var collected = Parse(
+        JournalEventEnvelope collected = Parse(
             """
             {"event":"MaterialCollected","Category":"Encoded","Name":"ancienttechnologicaldata","Name_Localised":"Pattern Epsilon Obelisk Data","Count":3}
             """
         );
-        var cargo = Parse(
+        JournalEventEnvelope cargo = Parse(
             """
             {"event":"CargoDepot","UpdateType":"Deliver","CargoType":"Bertrandite","ItemsDelivered":736,"TotalItemsToDeliver":912}
             """
@@ -59,7 +59,7 @@ public sealed class NotificationViewModelTests : IDisposable
     public void DuplicateMessagesResetTheirLifetimeWithoutAddingRows()
     {
         var time = new MutableTimeProvider(DateTimeOffset.UtcNow);
-        var viewModel = CreateViewModel(time);
+        NotificationViewModel viewModel = CreateViewModel(time);
 
         viewModel.ShowMessage("same");
         time.Advance(TimeSpan.FromSeconds(5));
@@ -75,7 +75,7 @@ public sealed class NotificationViewModelTests : IDisposable
     [Fact]
     public void OverlayInteractionReportsBothModeTransitions()
     {
-        var viewModel = CreateViewModel(new MutableTimeProvider(DateTimeOffset.UtcNow));
+        NotificationViewModel viewModel = CreateViewModel(new MutableTimeProvider(DateTimeOffset.UtcNow));
 
         viewModel.ShowOverlayInteraction(enabled: true);
         viewModel.ShowOverlayInteraction(enabled: false);
@@ -90,7 +90,7 @@ public sealed class NotificationViewModelTests : IDisposable
     [Fact]
     public void MaterialTradesAndTechnologyBrokerKeepPickupTotalsAccurate()
     {
-        var viewModel = CreateViewModel(new MutableTimeProvider(DateTimeOffset.UtcNow));
+        NotificationViewModel viewModel = CreateViewModel(new MutableTimeProvider(DateTimeOffset.UtcNow));
         viewModel.ApplyJournalEvents(
             [
                 Parse(
@@ -144,7 +144,7 @@ public sealed class NotificationViewModelTests : IDisposable
     [Fact]
     public void MalformedMaterialTradeDoesNotPartiallyChangeInventory()
     {
-        var viewModel = CreateViewModel(new MutableTimeProvider(DateTimeOffset.UtcNow));
+        NotificationViewModel viewModel = CreateViewModel(new MutableTimeProvider(DateTimeOffset.UtcNow));
         viewModel.ApplyJournalEvents(
             [
                 Parse(
@@ -178,7 +178,7 @@ public sealed class NotificationViewModelTests : IDisposable
     [Fact]
     public void BoxelScreenshotUploadAndBannerMessagesMatchLegacyWording()
     {
-        var viewModel = CreateViewModel(new MutableTimeProvider(DateTimeOffset.UtcNow));
+        NotificationViewModel viewModel = CreateViewModel(new MutableTimeProvider(DateTimeOffset.UtcNow));
         var before = new BoxelSearchNotificationState(
             true,
             BoxelCompletionMode.FssAllBodies,
@@ -187,7 +187,7 @@ public sealed class NotificationViewModelTests : IDisposable
             false,
             "Synuefe AA-A b1-2"
         );
-        var after = before with
+        BoxelSearchNotificationState after = before with
         {
             CompletedSystems = 4,
             CurrentSystemsComplete = true,
@@ -235,7 +235,10 @@ public sealed class NotificationViewModelTests : IDisposable
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
+        Assert.True(
+            JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error),
+            error
+        );
         return journalEvent!;
     }
 

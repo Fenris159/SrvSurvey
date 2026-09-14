@@ -22,7 +22,7 @@ public sealed class GuardianCommanderDataReader
     )
     {
         ValidateFrontierId(frontierId);
-        var folder = Path.Combine(dataDirectory, "guardian", frontierId);
+        string folder = Path.Combine(dataDirectory, "guardian", frontierId);
         if (!isOdyssey)
         {
             folder = Path.Combine(folder, "legacy");
@@ -36,13 +36,18 @@ public sealed class GuardianCommanderDataReader
         var surveys = new List<GuardianCommanderSiteSurvey>();
         var beacons = new List<GuardianCommanderBeaconVisit>();
         var errors = new List<string>();
-        foreach (var path in Directory.EnumerateFiles(folder, "*.json", SearchOption.TopDirectoryOnly))
+        foreach (string path in Directory.EnumerateFiles(folder, "*.json", SearchOption.TopDirectoryOnly))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var filename = Path.GetFileName(path);
+            string filename = Path.GetFileName(path);
             if (filename.EndsWith("-beacon.json", StringComparison.OrdinalIgnoreCase))
             {
-                var beacon = await ReadBeaconAsync(path, errors, isLegacy: !isOdyssey, cancellationToken)
+                GuardianCommanderBeaconVisit? beacon = await ReadBeaconAsync(
+                        path,
+                        errors,
+                        isLegacy: !isOdyssey,
+                        cancellationToken
+                    )
                     .ConfigureAwait(false);
                 if (beacon is not null)
                 {
@@ -54,7 +59,12 @@ public sealed class GuardianCommanderDataReader
                 || filename.Contains("-structure-", StringComparison.OrdinalIgnoreCase)
             )
             {
-                var survey = await ReadSurveyAsync(path, errors, isLegacy: !isOdyssey, cancellationToken)
+                GuardianCommanderSiteSurvey? survey = await ReadSurveyAsync(
+                        path,
+                        errors,
+                        isLegacy: !isOdyssey,
+                        cancellationToken
+                    )
                     .ConfigureAwait(false);
                 if (survey is not null)
                 {
@@ -81,7 +91,7 @@ public sealed class GuardianCommanderDataReader
         CancellationToken cancellationToken
     )
     {
-        var document = await ReadDocumentAsync(path, errors, cancellationToken).ConfigureAwait(false);
+        JsonDocument? document = await ReadDocumentAsync(path, errors, cancellationToken).ConfigureAwait(false);
         if (document is null)
         {
             return null;
@@ -91,7 +101,7 @@ public sealed class GuardianCommanderDataReader
         {
             try
             {
-                var root = document.RootElement;
+                JsonElement root = document.RootElement;
                 if (root.ValueKind != JsonValueKind.Object)
                 {
                     throw new InvalidDataException("The Guardian survey root is not an object.");
@@ -145,7 +155,7 @@ public sealed class GuardianCommanderDataReader
     private static GalacticCoordinate? ReadStarPosition(JsonElement root)
     {
         if (
-            !root.TryGetProperty("starPos", out var value)
+            !root.TryGetProperty("starPos", out JsonElement value)
             || value.ValueKind != JsonValueKind.Array
             || value.GetArrayLength() < 3
         )
@@ -153,7 +163,7 @@ public sealed class GuardianCommanderDataReader
             return null;
         }
 
-        var coordinates = value.EnumerateArray().Take(3).Select(ReadFiniteDouble).ToArray();
+        double?[] coordinates = value.EnumerateArray().Take(3).Select(ReadFiniteDouble).ToArray();
         return coordinates.All(coordinate => coordinate is not null)
             ? new GalacticCoordinate(coordinates[0]!.Value, coordinates[1]!.Value, coordinates[2]!.Value)
             : null;
@@ -161,13 +171,13 @@ public sealed class GuardianCommanderDataReader
 
     private static GuardianMapPoint ReadMapPoint(JsonElement root, string propertyName)
     {
-        if (!root.TryGetProperty(propertyName, out var value) || value.ValueKind != JsonValueKind.Object)
+        if (!root.TryGetProperty(propertyName, out JsonElement value) || value.ValueKind != JsonValueKind.Object)
         {
             return default;
         }
 
-        var x = GetDouble(value, "x");
-        var y = GetDouble(value, "y");
+        double? x = GetDouble(value, "x");
+        double? y = GetDouble(value, "y");
         return x is not null && y is not null ? new GuardianMapPoint(x.Value, y.Value) : default;
     }
 
@@ -178,7 +188,7 @@ public sealed class GuardianCommanderDataReader
         CancellationToken cancellationToken
     )
     {
-        var document = await ReadDocumentAsync(path, errors, cancellationToken).ConfigureAwait(false);
+        JsonDocument? document = await ReadDocumentAsync(path, errors, cancellationToken).ConfigureAwait(false);
         if (document is null)
         {
             return null;
@@ -188,7 +198,7 @@ public sealed class GuardianCommanderDataReader
         {
             try
             {
-                var root = document.RootElement;
+                JsonElement root = document.RootElement;
                 if (root.ValueKind != JsonValueKind.Object)
                 {
                     throw new InvalidDataException("The Guardian beacon root is not an object.");
@@ -243,9 +253,12 @@ public sealed class GuardianCommanderDataReader
     private static Dictionary<string, GuardianPoiStatus> ReadPoiStatuses(JsonElement root)
     {
         var statuses = new Dictionary<string, GuardianPoiStatus>(StringComparer.Ordinal);
-        if (root.TryGetProperty("poiStatus", out var oldStatuses) && oldStatuses.ValueKind == JsonValueKind.Object)
+        if (
+            root.TryGetProperty("poiStatus", out JsonElement oldStatuses)
+            && oldStatuses.ValueKind == JsonValueKind.Object
+        )
         {
-            foreach (var property in oldStatuses.EnumerateObject())
+            foreach (JsonProperty property in oldStatuses.EnumerateObject())
             {
                 statuses[property.Name] = ParsePoiStatus(property.Value);
             }
@@ -260,12 +273,12 @@ public sealed class GuardianCommanderDataReader
 
         if (
             statuses.Count == 0
-            && root.TryGetProperty("confirmedPOI", out var confirmed)
+            && root.TryGetProperty("confirmedPOI", out JsonElement confirmed)
             && confirmed.ValueKind == JsonValueKind.Object
         )
         {
             foreach (
-                var property in confirmed
+                JsonProperty property in confirmed
                     .EnumerateObject()
                     .Where(property => property.Value.ValueKind is JsonValueKind.True or JsonValueKind.False)
             )
@@ -283,7 +296,7 @@ public sealed class GuardianCommanderDataReader
     {
         if (
             value.ValueKind == JsonValueKind.Number
-            && value.TryGetInt32(out var number)
+            && value.TryGetInt32(out int number)
             && Enum.IsDefined(typeof(GuardianPoiStatus), number)
         )
         {
@@ -292,7 +305,7 @@ public sealed class GuardianCommanderDataReader
 
         if (
             value.ValueKind == JsonValueKind.String
-            && Enum.TryParse<GuardianPoiStatus>(value.GetString(), ignoreCase: true, out var status)
+            && Enum.TryParse<GuardianPoiStatus>(value.GetString(), ignoreCase: true, out GuardianPoiStatus status)
         )
         {
             return status;
@@ -308,13 +321,15 @@ public sealed class GuardianCommanderDataReader
         Dictionary<string, GuardianPoiStatus> statuses
     )
     {
-        var encoded = GetString(root, propertyName);
+        string? encoded = GetString(root, propertyName);
         if (string.IsNullOrWhiteSpace(encoded))
         {
             return;
         }
 
-        foreach (var name in encoded.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+        foreach (
+            string name in encoded.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+        )
         {
             statuses[name] = status;
         }
@@ -324,7 +339,7 @@ public sealed class GuardianCommanderDataReader
     {
         var headings = new Dictionary<string, int>(StringComparer.Ordinal);
         if (
-            !root.TryGetProperty("relicHeadings", out var value)
+            !root.TryGetProperty("relicHeadings", out JsonElement value)
             || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined
         )
         {
@@ -336,9 +351,9 @@ public sealed class GuardianCommanderDataReader
             throw new InvalidDataException("Guardian relic headings are not an object.");
         }
 
-        foreach (var property in value.EnumerateObject())
+        foreach (JsonProperty property in value.EnumerateObject())
         {
-            if (!property.Value.TryGetInt32(out var heading))
+            if (!property.Value.TryGetInt32(out int heading))
             {
                 throw new InvalidDataException($"Guardian relic heading {property.Name} is invalid.");
             }
@@ -353,7 +368,7 @@ public sealed class GuardianCommanderDataReader
     {
         var components = new Dictionary<string, GuardianComponentLoadout>(StringComparer.Ordinal);
         if (
-            !root.TryGetProperty("components", out var value)
+            !root.TryGetProperty("components", out JsonElement value)
             || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined
         )
         {
@@ -365,11 +380,11 @@ public sealed class GuardianCommanderDataReader
             return components;
         }
 
-        foreach (var item in value.EnumerateArray())
+        foreach (JsonElement item in value.EnumerateArray())
         {
             if (
                 item.ValueKind == JsonValueKind.String
-                && GuardianComponentLoadout.TryParseLegacy(item.GetString(), out var loadout)
+                && GuardianComponentLoadout.TryParseLegacy(item.GetString(), out GuardianComponentLoadout? loadout)
             )
             {
                 components[loadout.Name] = loadout;
@@ -382,7 +397,7 @@ public sealed class GuardianCommanderDataReader
     private static GuardianPointOfInterest[]? ReadRawPoints(JsonElement root)
     {
         if (
-            !root.TryGetProperty("rawPoi", out var value)
+            !root.TryGetProperty("rawPoi", out JsonElement value)
             || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined
         )
         {
@@ -400,7 +415,7 @@ public sealed class GuardianCommanderDataReader
     private GuardianObelisk[] ReadActiveObelisks(JsonElement root)
     {
         if (
-            !root.TryGetProperty("activeObelisks", out var value)
+            !root.TryGetProperty("activeObelisks", out JsonElement value)
             || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined
         )
         {
@@ -421,7 +436,7 @@ public sealed class GuardianCommanderDataReader
                 .EnumerateObject()
                 .Select(property =>
                 {
-                    var old = property.Value;
+                    JsonElement old = property.Value;
                     return new GuardianObelisk(
                         property.Name,
                         GetString(old, "msg") ?? string.Empty,
@@ -437,14 +452,14 @@ public sealed class GuardianCommanderDataReader
 
     private static HashSet<char> ReadObeliskGroups(JsonElement root)
     {
-        if (!root.TryGetProperty("obeliskGroups", out var value))
+        if (!root.TryGetProperty("obeliskGroups", out JsonElement value))
         {
-            return new HashSet<char>();
+            return [];
         }
 
         if (value.ValueKind == JsonValueKind.String)
         {
-            return value.GetString()?.ToHashSet() ?? new HashSet<char>();
+            return value.GetString()?.ToHashSet() ?? [];
         }
 
         if (value.ValueKind == JsonValueKind.Array)
@@ -466,7 +481,7 @@ public sealed class GuardianCommanderDataReader
     {
         var locations = new Dictionary<DateTimeOffset, GuardianSurfaceLocation>();
         if (
-            !root.TryGetProperty("scannedLocations", out var value)
+            !root.TryGetProperty("scannedLocations", out JsonElement value)
             || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined
         )
         {
@@ -478,14 +493,14 @@ public sealed class GuardianCommanderDataReader
             throw new InvalidDataException("Guardian beacon scanned locations are not an object.");
         }
 
-        foreach (var property in value.EnumerateObject())
+        foreach (JsonProperty property in value.EnumerateObject())
         {
             if (
                 !DateTimeOffset.TryParse(
                     property.Name,
                     CultureInfo.InvariantCulture,
                     DateTimeStyles.RoundtripKind,
-                    out var timestamp
+                    out DateTimeOffset timestamp
                 ) || ReadLocationValue(property.Value) is not { } location
             )
             {
@@ -500,7 +515,7 @@ public sealed class GuardianCommanderDataReader
 
     private static GuardianSurfaceLocation? ReadLocation(JsonElement root)
     {
-        return root.TryGetProperty("location", out var value) ? ReadLocationValue(value) : null;
+        return root.TryGetProperty("location", out JsonElement value) ? ReadLocationValue(value) : null;
     }
 
     private static GuardianSurfaceLocation? ReadLocationValue(JsonElement value)
@@ -510,8 +525,8 @@ public sealed class GuardianCommanderDataReader
             return null;
         }
 
-        var latitude = GetDouble(value, "lat");
-        var longitude = GetDouble(value, "long");
+        double? latitude = GetDouble(value, "lat");
+        double? longitude = GetDouble(value, "long");
         return latitude is not null && longitude is not null
             ? new GuardianSurfaceLocation(latitude.Value, longitude.Value)
             : null;
@@ -519,7 +534,7 @@ public sealed class GuardianCommanderDataReader
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+        return root.TryGetProperty(propertyName, out JsonElement value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
     }
@@ -527,7 +542,7 @@ public sealed class GuardianCommanderDataReader
     private static bool? GetBoolean(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind is JsonValueKind.True or JsonValueKind.False
             ? value.GetBoolean()
             : null;
@@ -536,9 +551,9 @@ public sealed class GuardianCommanderDataReader
     private static int? GetInt32(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind == JsonValueKind.Number
-            && value.TryGetInt32(out var number)
+            && value.TryGetInt32(out int number)
             ? number
             : null;
     }
@@ -546,9 +561,9 @@ public sealed class GuardianCommanderDataReader
     private static long? GetInt64(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind == JsonValueKind.Number
-            && value.TryGetInt64(out var number)
+            && value.TryGetInt64(out long number)
             ? number
             : null;
     }
@@ -556,9 +571,9 @@ public sealed class GuardianCommanderDataReader
     private static double? GetDouble(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
+            root.TryGetProperty(propertyName, out JsonElement value)
             && value.ValueKind == JsonValueKind.Number
-            && value.TryGetDouble(out var number)
+            && value.TryGetDouble(out double number)
             && double.IsFinite(number)
             ? number
             : null;
@@ -566,7 +581,8 @@ public sealed class GuardianCommanderDataReader
 
     private static double? ReadFiniteDouble(JsonElement value)
     {
-        return value.ValueKind == JsonValueKind.Number && value.TryGetDouble(out var number) && double.IsFinite(number)
+        return
+            value.ValueKind == JsonValueKind.Number && value.TryGetDouble(out double number) && double.IsFinite(number)
             ? number
             : null;
     }
@@ -579,7 +595,7 @@ public sealed class GuardianCommanderDataReader
                 value,
                 CultureInfo.InvariantCulture,
                 DateTimeStyles.RoundtripKind,
-                out var timestamp
+                out global::System.DateTimeOffset timestamp
             )
             ? timestamp
             : null;

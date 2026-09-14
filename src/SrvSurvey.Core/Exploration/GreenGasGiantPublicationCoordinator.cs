@@ -27,7 +27,7 @@ public sealed class GreenGasGiantPublicationCoordinator
         ArgumentNullException.ThrowIfNull(journalEvents);
         var published = new List<GreenGasGiantCandidate>();
         var warnings = new List<string>();
-        foreach (var journalEvent in journalEvents)
+        foreach (JournalEventEnvelope journalEvent in journalEvents)
         {
             cancellationToken.ThrowIfCancellationRequested();
             UpdateContext(journalEvent);
@@ -54,7 +54,7 @@ public sealed class GreenGasGiantPublicationCoordinator
         CancellationToken cancellationToken
     )
     {
-        var candidate = TryCreateCandidate(journalEvent, warnings);
+        GreenGasGiantCandidate? candidate = TryCreateCandidate(journalEvent, warnings);
         if (candidate is null)
         {
             return;
@@ -65,10 +65,10 @@ public sealed class GreenGasGiantPublicationCoordinator
 
     private GreenGasGiantCandidate? TryCreateCandidate(JournalEventEnvelope journalEvent, List<string> warnings)
     {
-        var root = journalEvent.Payload;
-        var planetClass = GetString(root, "PlanetClass");
-        var temperature = GetDouble(root, "SurfaceTemperature");
-        var tag = temperature is double value ? criteria.Match(planetClass, value) : null;
+        JsonElement root = journalEvent.Payload;
+        string? planetClass = GetString(root, "PlanetClass");
+        double? temperature = GetDouble(root, "SurfaceTemperature");
+        string? tag = temperature is double value ? criteria.Match(planetClass, value) : null;
         if (tag is null)
         {
             return null;
@@ -115,7 +115,7 @@ public sealed class GreenGasGiantPublicationCoordinator
 
     private void UpdateContext(JournalEventEnvelope journalEvent)
     {
-        var root = journalEvent.Payload;
+        JsonElement root = journalEvent.Payload;
         if (journalEvent.EventName == "Commander")
         {
             commanderName = GetString(root, "Name") ?? commanderName;
@@ -133,7 +133,7 @@ public sealed class GreenGasGiantPublicationCoordinator
 
     private static string? GetString(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
+        return root.TryGetProperty(propertyName, out JsonElement value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
     }
@@ -141,8 +141,8 @@ public sealed class GreenGasGiantPublicationCoordinator
     private static double? GetDouble(JsonElement root, string propertyName)
     {
         return
-            root.TryGetProperty(propertyName, out var value)
-            && value.TryGetDouble(out var result)
+            root.TryGetProperty(propertyName, out JsonElement value)
+            && value.TryGetDouble(out double result)
             && double.IsFinite(result)
             ? result
             : null;
@@ -150,15 +150,15 @@ public sealed class GreenGasGiantPublicationCoordinator
 
     private static GalacticCoordinate? GetCoordinate(JsonElement root, string propertyName)
     {
-        if (!root.TryGetProperty(propertyName, out var value) || value.ValueKind != JsonValueKind.Array)
+        if (!root.TryGetProperty(propertyName, out JsonElement value) || value.ValueKind != JsonValueKind.Array)
         {
             return null;
         }
 
-        var components = value
+        double[] components = value
             .EnumerateArray()
             .Select(component =>
-                component.TryGetDouble(out var number) && double.IsFinite(number) ? number : double.NaN
+                component.TryGetDouble(out double number) && double.IsFinite(number) ? number : double.NaN
             )
             .ToArray();
         return components.Length == 3 && components.All(double.IsFinite)

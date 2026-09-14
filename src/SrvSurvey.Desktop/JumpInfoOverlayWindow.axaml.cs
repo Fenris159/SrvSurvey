@@ -20,7 +20,7 @@ public sealed partial class JumpInfoOverlayWindow : Window
 
     private static JumpInfoOverlayViewModel CreateDesignViewModel()
     {
-        var settingsPath = Path.Combine(Path.GetTempPath(), "SrvSurvey-JumpInfo-Overlay-Design", "ui-settings.json");
+        string settingsPath = Path.Combine(Path.GetTempPath(), "SrvSurvey-JumpInfo-Overlay-Design", "ui-settings.json");
         return new JumpInfoOverlayViewModel(
             new JumpInfoViewModel(new EmptySystemSummaryClient(), new JumpInfoSettingsStore(settingsPath)),
             OverlayPlatformCapabilities.DetectCurrent()

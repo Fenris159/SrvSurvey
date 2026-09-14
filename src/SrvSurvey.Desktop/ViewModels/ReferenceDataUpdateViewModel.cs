@@ -107,7 +107,7 @@ public sealed class ReferenceDataUpdateViewModel : INotifyPropertyChanged
         StatusMessage = "Checking and validating published reference data...";
         try
         {
-            var result = await service.RefreshAsync(dataDirectory);
+            PublishedReferenceUpdateResult result = await service.RefreshAsync(dataDirectory);
             if (result.UpdatedCatalogs.Count == 0)
             {
                 UpdatedCatalogs = CatalogStatusPrefix + "None needed; already current.";

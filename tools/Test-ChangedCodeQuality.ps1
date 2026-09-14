@@ -108,7 +108,7 @@ try {
         foreach ($line in Get-Content -LiteralPath $sonarLogPath) {
             if (
                 $line -notmatch
-                '^(?<Path>[A-Za-z]:\\.+?)\((?<Line>\d+),(?<Column>\d+)\): warning (?<Rule>S\d+): (?<Message>.+?) \['
+                '^(?<Path>[A-Za-z]:\\.+?)\((?<Line>\d+),(?<Column>\d+)\): warning (?<Rule>(?:S|CA|IDE)\d+): (?<Message>.+?) \['
             ) {
                 continue
             }

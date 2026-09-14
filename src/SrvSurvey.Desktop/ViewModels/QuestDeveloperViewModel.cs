@@ -28,7 +28,7 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
     private readonly AsyncCommand publishCommand;
     private readonly AsyncCommand reloadSavedCommand;
     private readonly AsyncCommand removeCommand;
-    private readonly object watcherSync = new();
+    private readonly Lock watcherSync = new();
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Usage",
@@ -241,14 +241,14 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
     public void ApplyRuntimeSnapshots(IReadOnlyList<QuestRuntimeSnapshot> snapshots)
     {
         ArgumentNullException.ThrowIfNull(snapshots);
-        var development = snapshots.FirstOrDefault(snapshot => snapshot.IsDevelopment);
+        QuestRuntimeSnapshot? development = snapshots.FirstOrDefault(snapshot => snapshot.IsDevelopment);
         if (development is null)
         {
             ClearQuest();
             return;
         }
 
-        var changed =
+        bool changed =
             reference is null
             || !SameQuest(reference, development.Reference)
             || reference.Version.CompareTo(development.Reference.Version) != 0;
@@ -277,9 +277,12 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
         {
             IsBusy = true;
             StatusMessage = "Validating and importing development quest...";
-            var result = await coordinator.ImportDevelopmentQuestAsync(path, CancellationToken.None);
+            QuestDevelopmentImportResult result = await coordinator.ImportDevelopmentQuestAsync(
+                path,
+                CancellationToken.None
+            );
             reference = result.Reference;
-            var restartWatcher =
+            bool restartWatcher =
                 WatchSource
                 && !string.Equals(SourceDirectory, result.SourceDirectory, StringComparison.OrdinalIgnoreCase);
             if (restartWatcher)
@@ -348,8 +351,9 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
 
     private async Task LoadStateCoreAsync()
     {
-        var currentReference = reference ?? throw new InvalidOperationException("No development quest is active.");
-        var selected = SelectedView;
+        RavenQuestReference currentReference =
+            reference ?? throw new InvalidOperationException("No development quest is active.");
+        QuestDevelopmentViewOption? selected = SelectedView;
         state = await coordinator.GetDevelopmentStateAsync(currentReference, CancellationToken.None);
         Views =
         [
@@ -361,7 +365,7 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
             )),
             new QuestDevelopmentViewOption(QuestDevelopmentViewKind.Messages, "Messages", null),
         ];
-        var firstView = Views.Count > 0 ? Views[0] : null;
+        QuestDevelopmentViewOption? firstView = Views.Count > 0 ? Views[0] : null;
         SelectedView = selected is null
             ? firstView
             : Views.FirstOrDefault(view =>
@@ -468,7 +472,7 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
         try
         {
             IsBusy = true;
-            var result = await coordinator.RunDevelopmentDebugAsync(
+            JsonElement result = await coordinator.RunDevelopmentDebugAsync(
                 reference,
                 chapterId,
                 DebugCode,
@@ -500,7 +504,7 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
         try
         {
             IsBusy = true;
-            var status = await coordinator.PublishDevelopmentQuestAsync(
+            string status = await coordinator.PublishDevelopmentQuestAsync(
                 reference,
                 PublishConfirmed,
                 CancellationToken.None
@@ -523,7 +527,7 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
         try
         {
             IsBusy = true;
-            var result = await coordinator.RefreshAsync(CancellationToken.None);
+            QuestRuntimeUpdateResult result = await coordinator.RefreshAsync(CancellationToken.None);
             ApplyRuntimeSnapshots(result.Quests);
             if (reference is not null)
             {
@@ -562,7 +566,7 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
             return;
         }
 
-        var removing = reference;
+        RavenQuestReference removing = reference;
         removePending = false;
         OnPropertyChanged(nameof(RemoveButtonText));
         try
@@ -786,8 +790,8 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
 
     private static bool IsRelevantSource(string path)
     {
-        var name = Path.GetFileName(path);
-        var extension = Path.GetExtension(path);
+        string name = Path.GetFileName(path);
+        string extension = Path.GetExtension(path);
         return string.Equals(name, "quest.json", StringComparison.OrdinalIgnoreCase)
             || string.Equals(name, "strings.json", StringComparison.OrdinalIgnoreCase)
             || string.Equals(extension, ".lua", StringComparison.OrdinalIgnoreCase)

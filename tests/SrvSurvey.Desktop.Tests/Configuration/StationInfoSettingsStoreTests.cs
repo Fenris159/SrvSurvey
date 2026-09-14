@@ -28,7 +28,7 @@ public sealed class StationInfoSettingsStoreTests : IDisposable
         store.Save(new StationInfoPreferences(AutoShow: false));
 
         Assert.False(store.Load().AutoShow);
-        var root = JsonNode.Parse(File.ReadAllText(SettingsPath))!.AsObject();
+        JsonObject root = JsonNode.Parse(File.ReadAllText(SettingsPath))!.AsObject();
         Assert.Equal("raven-dark", root["Theme"]!["Key"]!.GetValue<string>());
     }
 

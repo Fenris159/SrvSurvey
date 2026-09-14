@@ -30,7 +30,7 @@ public sealed class CargoInventoryStateTests
             )
         );
 
-        var snapshot = Assert.IsType<CargoSnapshot>(state.CreateSnapshot());
+        CargoSnapshot snapshot = Assert.IsType<CargoSnapshot>(state.CreateSnapshot());
         Assert.Equal(3, snapshot.GetCount("gold"));
         Assert.Equal(2, snapshot.GetCount("water"));
         Assert.Equal(0, snapshot.GetCount("silver"));
@@ -56,7 +56,7 @@ public sealed class CargoInventoryStateTests
             )
         );
 
-        var snapshot = Assert.IsType<CargoSnapshot>(state.CreateSnapshot());
+        CargoSnapshot snapshot = Assert.IsType<CargoSnapshot>(state.CreateSnapshot());
         Assert.Equal(1, snapshot.GetCount("ancientrelic"));
         Assert.Equal(3, snapshot.GetCount("ancientorb"));
     }
@@ -69,7 +69,7 @@ public sealed class CargoInventoryStateTests
 
         Assert.True(state.Reset(Snapshot("Ship", new CargoItem("silver", "Silver", 4, 0))));
 
-        var snapshot = Assert.IsType<CargoSnapshot>(state.CreateSnapshot());
+        CargoSnapshot snapshot = Assert.IsType<CargoSnapshot>(state.CreateSnapshot());
         Assert.Equal(0, snapshot.GetCount("gold"));
         Assert.Equal(4, snapshot.GetCount("silver"));
     }
@@ -92,8 +92,8 @@ public sealed class CargoInventoryStateTests
         );
         Assert.False(state.Apply(Event("MarketBuy", "\"Type\":\"gold\",\"Count\":1")));
 
-        var snapshot = Assert.IsType<CargoSnapshot>(state.CreateSnapshot());
-        var gold = Assert.Single(snapshot.Inventory);
+        CargoSnapshot snapshot = Assert.IsType<CargoSnapshot>(state.CreateSnapshot());
+        CargoItem gold = Assert.Single(snapshot.Inventory);
         Assert.Equal(int.MaxValue, gold.Count);
         Assert.Equal(3, gold.Stolen);
         Assert.Equal(int.MaxValue, snapshot.Count);
@@ -133,7 +133,7 @@ public sealed class CargoInventoryStateTests
         Assert.True(state.HasPreservedSnapshot);
         Assert.Equal(40, state.CreateSnapshot()!.GetCount("steel"));
 
-        var shipDiff = state.GetDiff();
+        Dictionary<string, int> shipDiff = state.GetDiff();
         Assert.False(state.HasPreservedSnapshot);
         Assert.Equal(-10, shipDiff["steel"]);
         Assert.Single(shipDiff);
@@ -159,7 +159,7 @@ public sealed class CargoInventoryStateTests
                 Event("CargoTransfer", "\"Transfers\":[{\"Type\":\"water\",\"Count\":1,\"Direction\":\"tocarrier\"}]")
             )
         );
-        var first = state.GetDiff();
+        Dictionary<string, int> first = state.GetDiff();
         Assert.Equal(-1, first["water"]);
         Assert.Single(first);
         // Second call rebased after the first; no further change.
@@ -187,7 +187,7 @@ public sealed class CargoInventoryStateTests
             )
         );
 
-        var shipDiff = state.GetDiff();
+        Dictionary<string, int> shipDiff = state.GetDiff();
         Assert.Equal(-15, shipDiff["steel"]);
         Assert.Empty(state.GetDiff());
     }
@@ -205,8 +205,8 @@ public sealed class CargoInventoryStateTests
 
     private static JournalEventEnvelope Event(string eventName, string properties)
     {
-        var json = "{\"timestamp\":\"2026-07-25T12:05:00Z\"," + $"\"event\":\"{eventName}\",{properties}}}";
-        Assert.True(JournalEventEnvelope.TryParse(json, out var result, out var error), error);
+        string json = "{\"timestamp\":\"2026-07-25T12:05:00Z\"," + $"\"event\":\"{eventName}\",{properties}}}";
+        Assert.True(JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? result, out string? error), error);
         return Assert.IsType<JournalEventEnvelope>(result);
     }
 }

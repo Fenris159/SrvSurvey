@@ -28,14 +28,14 @@ public sealed record GuardianComponentLoadout(string Name, IReadOnlyList<Guardia
             return false;
         }
 
-        var parts = value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        string[] parts = value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length < 2 || string.IsNullOrWhiteSpace(parts[0]))
         {
             return false;
         }
 
         var items = new GuardianComponentMaterial[parts.Length - 1];
-        for (var index = 1; index < parts.Length; index++)
+        for (int index = 1; index < parts.Length; index++)
         {
             if (!TryParseMaterial(parts[index], out items[index - 1]))
             {

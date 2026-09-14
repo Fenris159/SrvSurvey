@@ -7,7 +7,7 @@ public sealed class ExplorationValueCalculatorTests
     [Fact]
     public void StarValueMatchesLegacyFormula()
     {
-        var value = ExplorationValueCalculator.Calculate(
+        int value = ExplorationValueCalculator.Calculate(
             new ExplorationValueRequest
             {
                 BodyClass = "NS",
@@ -26,7 +26,7 @@ public sealed class ExplorationValueCalculatorTests
     [Fact]
     public void OdysseyMappingAndEfficiencyBonusesMatchLegacyFormula()
     {
-        var scan = ExplorationValueCalculator.Calculate(
+        int scan = ExplorationValueCalculator.Calculate(
             new ExplorationValueRequest
             {
                 BodyClass = "High metal content body",
@@ -38,7 +38,7 @@ public sealed class ExplorationValueCalculatorTests
                 IsOdyssey = true,
             }
         );
-        var efficientMapping = ExplorationValueCalculator.Calculate(
+        int efficientMapping = ExplorationValueCalculator.Calculate(
             new ExplorationValueRequest
             {
                 BodyClass = "High metal content body",
@@ -50,7 +50,7 @@ public sealed class ExplorationValueCalculatorTests
                 IsOdyssey = true,
             }
         );
-        var inefficientMapping = ExplorationValueCalculator.Calculate(
+        int inefficientMapping = ExplorationValueCalculator.Calculate(
             new ExplorationValueRequest
             {
                 BodyClass = "High metal content body",
@@ -83,7 +83,7 @@ public sealed class ExplorationValueCalculatorTests
     [Fact]
     public void MetalRichTerraformableScanUsesCombinedBaseValue()
     {
-        var value = ExplorationValueCalculator.Calculate(
+        int value = ExplorationValueCalculator.Calculate(
             new ExplorationValueRequest
             {
                 BodyClass = "Metal rich body",

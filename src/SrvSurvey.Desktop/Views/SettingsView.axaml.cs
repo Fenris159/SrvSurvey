@@ -69,7 +69,7 @@ public sealed partial class SettingsView : UserControl
                 break;
             case Key.Enter:
             {
-                var result = viewModel.SettingsWorkspace.SelectedSearchResult;
+                SettingsSearchResultViewModel? result = viewModel.SettingsWorkspace.SelectedSearchResult;
                 if (result is not null)
                 {
                     await OpenSearchResultAsync(result);
@@ -101,8 +101,8 @@ public sealed partial class SettingsView : UserControl
             ShortcutBindingsExpander.IsExpanded = true;
         }
 
-        var target = this.FindControl<Control>(result.TargetControlName);
-        var highlight = this.FindControl<Control>(result.HighlightControlName);
+        Control? target = this.FindControl<Control>(result.TargetControlName);
+        Control? highlight = this.FindControl<Control>(result.HighlightControlName);
         target?.BringIntoView();
         target?.Focus();
         if (highlight is null)
@@ -111,7 +111,7 @@ public sealed partial class SettingsView : UserControl
         }
 
         ClearSearchHighlight();
-        var highlightVersion = searchHighlightVersion;
+        int highlightVersion = searchHighlightVersion;
         highlightedControl = highlight;
         highlight.Classes.Add(SearchHighlightClass);
         await Task.Delay(TimeSpan.FromSeconds(1.4), CancellationToken.None);
@@ -141,14 +141,14 @@ public sealed partial class SettingsView : UserControl
             return;
         }
 
-        var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(
+        IReadOnlyList<IStorageFolder> folders = await topLevel.StorageProvider.OpenFolderPickerAsync(
             new FolderPickerOpenOptions
             {
                 Title = "Choose the original SrvSurvey profile folder",
                 AllowMultiple = false,
             }
         );
-        var folder = folders.Count > 0 ? folders[0] : null;
+        IStorageFolder? folder = folders.Count > 0 ? folders[0] : null;
         if (folder is not null)
         {
             viewModel.LegacyProfileSourcePath = folder.Path.LocalPath;
@@ -157,7 +157,7 @@ public sealed partial class SettingsView : UserControl
 
     private async void ChooseJournalFolder_Click(object? sender, RoutedEventArgs eventArgs)
     {
-        var folder = await ChooseFolderAsync("Choose the Elite Dangerous journal folder");
+        string? folder = await ChooseFolderAsync("Choose the Elite Dangerous journal folder");
         if (folder is not null && DataContext is MainWindowViewModel viewModel)
         {
             viewModel.JournalSettings.DirectoryPath = folder;
@@ -166,7 +166,7 @@ public sealed partial class SettingsView : UserControl
 
     private async void ChooseScreenshotSourceFolder_Click(object? sender, RoutedEventArgs eventArgs)
     {
-        var folder = await ChooseFolderAsync("Choose the Elite Dangerous screenshot folder");
+        string? folder = await ChooseFolderAsync("Choose the Elite Dangerous screenshot folder");
         if (folder is not null && DataContext is MainWindowViewModel viewModel)
         {
             viewModel.ScreenshotProcessing.SourceFolder = folder;
@@ -175,7 +175,7 @@ public sealed partial class SettingsView : UserControl
 
     private async void ChooseScreenshotTargetFolder_Click(object? sender, RoutedEventArgs eventArgs)
     {
-        var folder = await ChooseFolderAsync("Choose the converted screenshot folder");
+        string? folder = await ChooseFolderAsync("Choose the converted screenshot folder");
         if (folder is not null && DataContext is MainWindowViewModel viewModel)
         {
             viewModel.ScreenshotProcessing.TargetFolder = folder;
@@ -184,7 +184,7 @@ public sealed partial class SettingsView : UserControl
 
     private async void ChooseCodexCacheFolder_Click(object? sender, RoutedEventArgs eventArgs)
     {
-        var folder = await ChooseFolderAsync("Choose the Codex image cache folder");
+        string? folder = await ChooseFolderAsync("Choose the Codex image cache folder");
         if (folder is not null && DataContext is MainWindowViewModel viewModel)
         {
             viewModel.CodexImages.CacheDirectory = folder;
@@ -193,7 +193,7 @@ public sealed partial class SettingsView : UserControl
 
     private async void ChooseLocalFloraFolder_Click(object? sender, RoutedEventArgs eventArgs)
     {
-        var folder = await ChooseFolderAsync("Choose the local flora image folder");
+        string? folder = await ChooseFolderAsync("Choose the local flora image folder");
         if (folder is not null && DataContext is MainWindowViewModel viewModel)
         {
             viewModel.CodexImages.LocalFloraDirectory = folder;
@@ -208,7 +208,7 @@ public sealed partial class SettingsView : UserControl
             return null;
         }
 
-        var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(
+        IReadOnlyList<IStorageFolder> folders = await topLevel.StorageProvider.OpenFolderPickerAsync(
             new FolderPickerOpenOptions { Title = title, AllowMultiple = false }
         );
         return folders.Count > 0 ? folders[0].Path.LocalPath : null;
@@ -253,10 +253,10 @@ public sealed partial class SettingsView : UserControl
         try
         {
             DesktopExternalEffectPolicy.ThrowIfDisabled();
-            var launcher =
+            ILauncher launcher =
                 TopLevel.GetTopLevel(this)?.Launcher
                 ?? throw new InvalidOperationException("The desktop link launcher is not available.");
-            var launched = await launcher.LaunchUriAsync(uri);
+            bool launched = await launcher.LaunchUriAsync(uri);
             viewModel.ReportSettingsLinkResult(description, launched);
         }
         catch (Exception exception) when (exception is InvalidOperationException or NotSupportedException)

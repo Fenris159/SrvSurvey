@@ -19,14 +19,14 @@ public sealed class BoxelSurveyStatsStateTests
     {
         var state = new BoxelSurveyStatsState();
         Jump(state, SystemA, SystemAAddress);
-        var bodyId = 1;
-        foreach (var pair in BoxelPlanetClassifierTests.JournalPlanetClasses)
+        int bodyId = 1;
+        foreach (object[]? pair in BoxelPlanetClassifierTests.JournalPlanetClasses)
         {
-            var planetClass = Assert.IsType<string>(pair[0]);
-            var classified = Assert.IsType<BoxelPlanetClass>(pair[1]);
+            string planetClass = Assert.IsType<string>(pair[0]);
+            BoxelPlanetClass classified = Assert.IsType<BoxelPlanetClass>(pair[1]);
             ScanPlanet(state, SystemAAddress, bodyId, planetClass);
             bodyId++;
-            Assert.True(state.TryGet(Prefix(SystemA), out var snapshot));
+            Assert.True(state.TryGet(Prefix(SystemA), out BoxelSurveyBoxelSnapshot? snapshot));
             Assert.Equal(1, snapshot.CountsOf(classified).Count);
         }
 
@@ -49,12 +49,12 @@ public sealed class BoxelSurveyStatsStateTests
             )
         );
 
-        Assert.True(state.TryGet(Prefix(SystemB), out var boxelB));
-        Assert.True(state.TryGet(Prefix(SystemA), out var boxelA));
+        Assert.True(state.TryGet(Prefix(SystemB), out BoxelSurveyBoxelSnapshot? boxelB));
+        Assert.True(state.TryGet(Prefix(SystemA), out BoxelSurveyBoxelSnapshot? boxelA));
         Assert.Equal(28.5, boxelB.MinHeliumPercent);
         Assert.Equal(28.5, boxelB.MaxHeliumPercent);
         Assert.Null(boxelA.MinHeliumPercent);
-        var systemB = Assert.Single(boxelB.Systems);
+        BoxelSurveySystemContribution systemB = Assert.Single(boxelB.Systems);
         Assert.Equal(SystemB, systemB.GeneratedName);
         Assert.Equal(28.5, systemB.MinHeliumPercent);
     }
@@ -75,7 +75,7 @@ public sealed class BoxelSurveyStatsStateTests
         );
 
         Assert.Equal(1, state.BoxelCount);
-        Assert.True(state.TryGet(Prefix(SystemA), out var snapshot));
+        Assert.True(state.TryGet(Prefix(SystemA), out BoxelSurveyBoxelSnapshot? snapshot));
         Assert.Null(snapshot.MinHeliumPercent);
         Assert.Equal(0, snapshot.CountsOf(BoxelPlanetClass.Earthlike).Count);
     }
@@ -85,7 +85,7 @@ public sealed class BoxelSurveyStatsStateTests
     {
         var state = new BoxelSurveyStatsState();
         Jump(state, SystemA, SystemAAddress, "2026-07-10T12:00:00Z");
-        var bodies = Enumerable
+        SystemScanBodySnapshot[] bodies = Enumerable
             .Range(1, 5)
             .Select(id =>
                 PlanetBody(
@@ -105,7 +105,7 @@ public sealed class BoxelSurveyStatsStateTests
         Jump(state, SystemA, SystemAAddress, "2026-07-10T12:10:00Z");
         Assert.True(state.IngestSnapshot(Snapshot(SystemA, SystemAAddress, [], expectedBodyCount: 0)));
 
-        Assert.True(state.TryGet(Prefix(SystemA), out var snapshot));
+        Assert.True(state.TryGet(Prefix(SystemA), out BoxelSurveyBoxelSnapshot? snapshot));
         Assert.Equal(5, snapshot.CountsOf(BoxelPlanetClass.Icy).Count);
         Assert.Equal(11, snapshot.MinHeliumPercent);
         Assert.Equal(15, snapshot.MaxHeliumPercent);
@@ -120,14 +120,14 @@ public sealed class BoxelSurveyStatsStateTests
     {
         var state = new BoxelSurveyStatsState();
         Jump(state, SystemA, SystemAAddress);
-        var body = PlanetBody(1, "Icy body", scanValue: 100, mappedValue: 200, currentValue: 100);
+        SystemScanBodySnapshot body = PlanetBody(1, "Icy body", scanValue: 100, mappedValue: 200, currentValue: 100);
         Assert.True(state.IngestSnapshot(Snapshot(SystemA, SystemAAddress, [body])));
 
         Assert.True(
             state.IngestSystemFile(Snapshot(SystemA, SystemAAddress, [], allBodiesFound: true), DateTimeOffset.UtcNow)
         );
 
-        Assert.True(state.TryGet(Prefix(SystemA), out var snapshot));
+        Assert.True(state.TryGet(Prefix(SystemA), out BoxelSurveyBoxelSnapshot? snapshot));
         Assert.Equal(1, snapshot.CountsOf(BoxelPlanetClass.Icy).Count);
     }
 
@@ -196,12 +196,12 @@ public sealed class BoxelSurveyStatsStateTests
             )
         );
 
-        Assert.True(state.TryGet(Prefix(SystemA), out var snapshot));
+        Assert.True(state.TryGet(Prefix(SystemA), out BoxelSurveyBoxelSnapshot? snapshot));
         Assert.Equal(1, snapshot.CountsOf(BoxelPlanetClass.Rocky).Count);
         Assert.Equal(1, snapshot.CountsOf(BoxelPlanetClass.Rocky).Atmospheric);
         Assert.Equal(1, snapshot.NavBeaconCount);
         Assert.Equal(0, snapshot.FssCompleteCount);
-        var body = Assert.Single(Assert.Single(snapshot.Systems).Bodies);
+        BoxelSurveyBodyContribution body = Assert.Single(Assert.Single(snapshot.Systems).Bodies);
         Assert.True(body.DssComplete);
         Assert.True(body.CurrentValue > body.ScanValue);
     }
@@ -212,7 +212,7 @@ public sealed class BoxelSurveyStatsStateTests
         var state = new BoxelSurveyStatsState();
         Jump(state, SystemA, SystemAAddress);
         Jump(state, SystemA4, 2014);
-        Assert.True(state.TryGet(Prefix(SystemA), out var snapshot));
+        Assert.True(state.TryGet(Prefix(SystemA), out BoxelSurveyBoxelSnapshot? snapshot));
         Assert.Equal(2, snapshot.Visited);
         Assert.Equal(5, snapshot.ImpliedPopulation);
         Assert.Equal(4, snapshot.HighestRecordedSuffix);
@@ -225,7 +225,7 @@ public sealed class BoxelSurveyStatsStateTests
         Jump(state, SystemA, SystemAAddress);
         Jump(state, SystemA, 9001);
         Jump(state, SystemA4, 2014);
-        Assert.True(state.TryGet(Prefix(SystemA), out var snapshot));
+        Assert.True(state.TryGet(Prefix(SystemA), out BoxelSurveyBoxelSnapshot? snapshot));
         Assert.Equal(2, snapshot.Visited);
         Assert.Contains(snapshot.Systems, system => system.SystemAddress == 9001);
         Assert.DoesNotContain(snapshot.Systems, system => system.SystemAddress == SystemAAddress);
@@ -244,7 +244,7 @@ public sealed class BoxelSurveyStatsStateTests
         Jump(state, SystemA4, 2014);
         state.Apply(Parse($$"""{"event":"NavBeaconScan","SystemAddress":2014}"""));
 
-        Assert.True(state.TryGet(Prefix(SystemA), out var snapshot));
+        Assert.True(state.TryGet(Prefix(SystemA), out BoxelSurveyBoxelSnapshot? snapshot));
         Assert.Equal(1, snapshot.FssCompleteCount);
         Assert.Equal(1, snapshot.NavBeaconCount);
         Assert.Equal(2, snapshot.Visited);
@@ -261,10 +261,10 @@ public sealed class BoxelSurveyStatsStateTests
         Jump(state, SystemA, SystemAAddress);
         state.Apply(Parse($$"""{"event":"FSSDiscoveryScan","SystemAddress":{{SystemAAddress}},"BodyCount":12}"""));
         state.Apply(Parse($$"""{"event":"FSSDiscoveryScan","SystemAddress":{{SystemAAddress}},"BodyCount":7}"""));
-        var planet = PlanetBody(1, "Rocky body", scanValue: 10, mappedValue: 20, currentValue: 10);
+        SystemScanBodySnapshot planet = PlanetBody(1, "Rocky body", scanValue: 10, mappedValue: 20, currentValue: 10);
         state.IngestSnapshot(Snapshot(SystemA, SystemAAddress, [planet], expectedBodyCount: 4, fssBodyCount: 1));
 
-        Assert.True(state.TryGet(Prefix(SystemA), out var snapshot));
+        Assert.True(state.TryGet(Prefix(SystemA), out BoxelSurveyBoxelSnapshot? snapshot));
         Assert.Equal(12, snapshot.FssDiscoveryBodyCountSum);
     }
 
@@ -284,10 +284,10 @@ public sealed class BoxelSurveyStatsStateTests
         );
         ScanPlanet(state, SystemAAddress, 1, "Water world", mass: 1);
 
-        Assert.True(state.TryGet(Prefix(SystemA), out var snapshot));
+        Assert.True(state.TryGet(Prefix(SystemA), out BoxelSurveyBoxelSnapshot? snapshot));
         Assert.Equal(0, snapshot.CountsOf(BoxelPlanetClass.Unknown).Count);
         Assert.Equal(1, snapshot.CountsOf(BoxelPlanetClass.WaterWorld).Count);
-        var expected = ExplorationValueCalculator.Calculate(
+        int expected = ExplorationValueCalculator.Calculate(
             new ExplorationValueRequest
             {
                 BodyClass = "Water world",
@@ -309,7 +309,7 @@ public sealed class BoxelSurveyStatsStateTests
         Jump(state, SystemA, SystemAAddress);
         ScanPlanet(state, SystemAAddress, 5, "Earthlike body", mass: 1);
         ScanPlanet(state, SystemAAddress, 5, "Earthlike body", mass: 1);
-        Assert.True(state.TryGet(Prefix(SystemA), out var snapshot));
+        Assert.True(state.TryGet(Prefix(SystemA), out BoxelSurveyBoxelSnapshot? snapshot));
         Assert.Equal(1, snapshot.CountsOf(BoxelPlanetClass.Earthlike).Count);
         Assert.Single(Assert.Single(snapshot.Systems).Bodies);
     }
@@ -319,11 +319,18 @@ public sealed class BoxelSurveyStatsStateTests
     {
         var state = new BoxelSurveyStatsState();
         Jump(state, SystemA, SystemAAddress);
-        var body = PlanetBody(1, "Icy body", mass: 1, scanValue: 100, mappedValue: 200, currentValue: 100);
-        var snapshot = Snapshot(SystemA, SystemAAddress, [body], expectedBodyCount: 3);
+        SystemScanBodySnapshot body = PlanetBody(
+            1,
+            "Icy body",
+            mass: 1,
+            scanValue: 100,
+            mappedValue: 200,
+            currentValue: 100
+        );
+        SystemScanSnapshot snapshot = Snapshot(SystemA, SystemAAddress, [body], expectedBodyCount: 3);
         Assert.True(state.IngestSnapshot(snapshot));
-        var version = state.Version;
-        var dirty = state.GetDirtyPrefixes().Count;
+        int version = state.Version;
+        int dirty = state.GetDirtyPrefixes().Count;
         Assert.True(state.IngestSnapshot(snapshot));
         Assert.Equal(version, state.Version);
         Assert.Equal(dirty, state.GetDirtyPrefixes().Count);
@@ -334,15 +341,28 @@ public sealed class BoxelSurveyStatsStateTests
     {
         var state = new BoxelSurveyStatsState();
         Jump(state, SystemA, SystemAAddress);
-        var body = PlanetBody(1, "Icy body", mass: 1, scanValue: 100, mappedValue: 200, currentValue: 100);
-        var snapshot = Snapshot(SystemA, SystemAAddress, [body], expectedBodyCount: 3, allBodiesFound: true);
+        SystemScanBodySnapshot body = PlanetBody(
+            1,
+            "Icy body",
+            mass: 1,
+            scanValue: 100,
+            mappedValue: 200,
+            currentValue: 100
+        );
+        SystemScanSnapshot snapshot = Snapshot(
+            SystemA,
+            SystemAAddress,
+            [body],
+            expectedBodyCount: 3,
+            allBodiesFound: true
+        );
         Assert.True(state.IngestSnapshot(snapshot));
-        var version = state.Version;
-        var dirty = state.GetDirtyPrefixes().Count;
+        int version = state.Version;
+        int dirty = state.GetDirtyPrefixes().Count;
         Assert.True(state.IngestSnapshot(snapshot));
         Assert.Equal(version, state.Version);
         Assert.Equal(dirty, state.GetDirtyPrefixes().Count);
-        Assert.True(state.TryGet(Prefix(SystemA), out var stored));
+        Assert.True(state.TryGet(Prefix(SystemA), out BoxelSurveyBoxelSnapshot? stored));
         Assert.Equal(1, stored.CountsOf(BoxelPlanetClass.Icy).Count);
     }
 
@@ -351,7 +371,7 @@ public sealed class BoxelSurveyStatsStateTests
     {
         var state = new BoxelSurveyStatsState();
         Jump(state, SystemA, SystemAAddress);
-        var efficient = BoxelSurveyValueCalculator.Calculate(
+        (int Scan, int Current, int Mapped) efficient = BoxelSurveyValueCalculator.Calculate(
             new BoxelSurveyValueRequest(
                 "Rocky body",
                 Terraformable: false,
@@ -363,7 +383,7 @@ public sealed class BoxelSurveyStatsStateTests
                 IsOdyssey: true
             )
         );
-        var inefficient = BoxelSurveyValueCalculator.Calculate(
+        (int Scan, int Current, int Mapped) inefficient = BoxelSurveyValueCalculator.Calculate(
             new BoxelSurveyValueRequest(
                 "Rocky body",
                 Terraformable: false,
@@ -376,7 +396,7 @@ public sealed class BoxelSurveyStatsStateTests
             )
         );
         Assert.True(efficient.Current > inefficient.Current);
-        var body = PlanetBody(
+        SystemScanBodySnapshot body = PlanetBody(
             3,
             "Rocky body",
             mass: 0.2,
@@ -388,8 +408,8 @@ public sealed class BoxelSurveyStatsStateTests
         Assert.True(state.IngestSnapshot(Snapshot(SystemA, SystemAAddress, [body])));
         ScanPlanet(state, SystemAAddress, 3, "Rocky body", mass: 0.2);
 
-        Assert.True(state.TryGet(Prefix(SystemA), out var snapshot));
-        var stored = Assert.Single(Assert.Single(snapshot.Systems).Bodies);
+        Assert.True(state.TryGet(Prefix(SystemA), out BoxelSurveyBoxelSnapshot? snapshot));
+        BoxelSurveyBodyContribution stored = Assert.Single(Assert.Single(snapshot.Systems).Bodies);
         Assert.True(stored.DssComplete);
         Assert.False(stored.DssEfficiencyBonus);
         Assert.Equal(inefficient.Current, stored.CurrentValue);
@@ -401,7 +421,7 @@ public sealed class BoxelSurveyStatsStateTests
         var state = new BoxelSurveyStatsState();
         Jump(state, SystemA, SystemAAddress);
         ScanPlanet(state, SystemAAddress, 2, "Water world", mass: 1);
-        var tf = PlanetBody(
+        SystemScanBodySnapshot tf = PlanetBody(
             2,
             "Water world",
             terraformable: true,
@@ -412,7 +432,7 @@ public sealed class BoxelSurveyStatsStateTests
         );
         state.IngestSnapshot(Snapshot(SystemA, SystemAAddress, [tf]));
 
-        Assert.True(state.TryGet(Prefix(SystemA), out var snapshot));
+        Assert.True(state.TryGet(Prefix(SystemA), out BoxelSurveyBoxelSnapshot? snapshot));
         Assert.Equal(1, snapshot.CountsOf(BoxelPlanetClass.WaterWorld).Count);
         Assert.Equal(1, snapshot.CountsOf(BoxelPlanetClass.WaterWorld).Terraformable);
     }
@@ -431,14 +451,14 @@ public sealed class BoxelSurveyStatsStateTests
                 )
             )
         );
-        Assert.True(state.TryGet(Prefix(SystemA), out var before));
+        Assert.True(state.TryGet(Prefix(SystemA), out BoxelSurveyBoxelSnapshot? before));
         Assert.Equal(0, before.CountsOf(BoxelPlanetClass.HighMetalContent).Count);
         Assert.Single(Assert.Single(before.Systems).Bodies);
 
         ScanPlanet(state, SystemAAddress, 8, "High metal content body", mass: 0.4);
-        Assert.True(state.TryGet(Prefix(SystemA), out var after));
+        Assert.True(state.TryGet(Prefix(SystemA), out BoxelSurveyBoxelSnapshot? after));
         Assert.Equal(1, after.CountsOf(BoxelPlanetClass.HighMetalContent).Count);
-        var body = Assert.Single(Assert.Single(after.Systems).Bodies);
+        BoxelSurveyBodyContribution body = Assert.Single(Assert.Single(after.Systems).Bodies);
         Assert.True(body.DssComplete);
         Assert.Equal(BoxelPlanetClass.HighMetalContent, body.Class);
         Assert.True(body.CurrentValue > 0);
@@ -453,7 +473,7 @@ public sealed class BoxelSurveyStatsStateTests
         state.Apply(Parse($$"""{"event":"Fileheader","Odyssey":{{isLive.ToString().ToLowerInvariant()}}}"""));
         Jump(state, SystemA, SystemAAddress);
         ScanPlanet(state, SystemAAddress, 1, "Rocky body", mass: 0.2, terraformable: true);
-        Assert.True(state.TryGet(Prefix(SystemA), out var expected));
+        Assert.True(state.TryGet(Prefix(SystemA), out BoxelSurveyBoxelSnapshot? expected));
 
         state.Apply(Parse($$"""{"event":"LoadGame","Odyssey":{{(!isLive).ToString().ToLowerInvariant()}}}"""));
         state.Apply(
@@ -462,7 +482,7 @@ public sealed class BoxelSurveyStatsStateTests
             )
         );
 
-        Assert.True(state.TryGet(Prefix(SystemA), out var actual));
+        Assert.True(state.TryGet(Prefix(SystemA), out BoxelSurveyBoxelSnapshot? actual));
         Assert.Equal(expected.MappedPotentialValue, actual.MappedPotentialValue);
         Assert.Equal(expected.MappedPotentialValue, actual.CurrentValue);
     }
@@ -473,13 +493,13 @@ public sealed class BoxelSurveyStatsStateTests
         var withDefault = new BoxelSurveyStatsState();
         Jump(withDefault, SystemA, SystemAAddress);
         ScanPlanet(withDefault, SystemAAddress, 1, "Rocky body", mass: 0.2, terraformable: true);
-        Assert.True(withDefault.TryGet(Prefix(SystemA), out var odysseySnapshot));
+        Assert.True(withDefault.TryGet(Prefix(SystemA), out BoxelSurveyBoxelSnapshot? odysseySnapshot));
 
         var horizons = new BoxelSurveyStatsState();
         Assert.True(horizons.Apply(Parse("""{"event":"Fileheader","Odyssey":false}""")));
         Jump(horizons, SystemA, SystemAAddress);
         ScanPlanet(horizons, SystemAAddress, 1, "Rocky body", mass: 0.2, terraformable: true);
-        Assert.True(horizons.TryGet(Prefix(SystemA), out var horizonsSnapshot));
+        Assert.True(horizons.TryGet(Prefix(SystemA), out BoxelSurveyBoxelSnapshot? horizonsSnapshot));
 
         Assert.True(odysseySnapshot.MappedPotentialValue > horizonsSnapshot.MappedPotentialValue);
     }
@@ -488,7 +508,7 @@ public sealed class BoxelSurveyStatsStateTests
     public void IngestSystemFileRecomputesValuesAndIgnoresReward()
     {
         var state = new BoxelSurveyStatsState();
-        var expected = BoxelSurveyValueCalculator.Calculate(
+        (int Scan, int Current, int Mapped) expected = BoxelSurveyValueCalculator.Calculate(
             new BoxelSurveyValueRequest(
                 "Water world",
                 Terraformable: true,
@@ -500,7 +520,7 @@ public sealed class BoxelSurveyStatsStateTests
                 IsOdyssey: true
             )
         );
-        var body = PlanetBody(
+        SystemScanBodySnapshot body = PlanetBody(
             1,
             "Water world",
             terraformable: true,
@@ -517,7 +537,7 @@ public sealed class BoxelSurveyStatsStateTests
             )
         );
 
-        Assert.True(state.TryGet(Prefix(SystemA), out var snapshot));
+        Assert.True(state.TryGet(Prefix(SystemA), out BoxelSurveyBoxelSnapshot? snapshot));
         Assert.Equal(expected.Scan, snapshot.ScanValue);
         Assert.Equal(expected.Current, snapshot.CurrentValue);
         Assert.Equal(expected.Mapped, snapshot.MappedPotentialValue);
@@ -531,7 +551,7 @@ public sealed class BoxelSurveyStatsStateTests
         Jump(state, SystemA, SystemAAddress);
         Jump(state, SystemA4, 2014);
         Jump(state, SystemB, SystemBAddress);
-        var rollup = state.Rollup([Prefix(SystemA), Prefix(SystemB)]);
+        BoxelSurveyBoxelSnapshot rollup = state.Rollup([Prefix(SystemA), Prefix(SystemB)]);
         Assert.Equal(3, rollup.Visited);
         Assert.Equal(6, rollup.ImpliedPopulation);
     }
@@ -551,7 +571,7 @@ public sealed class BoxelSurveyStatsStateTests
             )
         );
 
-        var rollup = state.Rollup(["First prefix", "Second prefix"]);
+        BoxelSurveyBoxelSnapshot rollup = state.Rollup(["First prefix", "Second prefix"]);
 
         Assert.Equal("First prefix", rollup.Prefix);
         Assert.Equal('c', rollup.MassCode);
@@ -564,12 +584,12 @@ public sealed class BoxelSurveyStatsStateTests
         var source = new BoxelSurveyStatsState();
         Jump(source, SystemA, SystemAAddress);
         ScanPlanet(source, SystemAAddress, 1, "Ammonia world", mass: 0.8);
-        Assert.True(source.TryCreateDocument(Prefix(SystemA), out var document));
+        Assert.True(source.TryCreateDocument(Prefix(SystemA), out BoxelSurveyBoxelDocument? document));
 
         var restored = new BoxelSurveyStatsState();
         Assert.True(restored.ImportDocument(document));
         Assert.True(restored.HasLoadedDocument(Prefix(SystemA)));
-        Assert.True(restored.TryGet(Prefix(SystemA), out var snapshot));
+        Assert.True(restored.TryGet(Prefix(SystemA), out BoxelSurveyBoxelSnapshot? snapshot));
         Assert.Equal(1, snapshot.CountsOf(BoxelPlanetClass.AmmoniaWorld).Count);
     }
 
@@ -600,7 +620,7 @@ public sealed class BoxelSurveyStatsStateTests
         bool terraformable = false
     )
     {
-        var tf = terraformable ? "Terraformable" : "";
+        string tf = terraformable ? "Terraformable" : "";
         Assert.True(
             state.Apply(
                 Parse(
@@ -709,13 +729,16 @@ public sealed class BoxelSurveyStatsStateTests
 
     private static string Prefix(string generatedName)
     {
-        Assert.True(BoxelAddress.TryParse(generatedName, out var boxel));
+        Assert.True(BoxelAddress.TryParse(generatedName, out BoxelAddress? boxel));
         return boxel!.Prefix;
     }
 
     private static JournalEventEnvelope Parse(string json)
     {
-        Assert.True(JournalEventEnvelope.TryParse(json, out var journalEvent, out var error), error);
+        Assert.True(
+            JournalEventEnvelope.TryParse(json, out JournalEventEnvelope? journalEvent, out string? error),
+            error
+        );
         return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }
 }
