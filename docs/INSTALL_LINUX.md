@@ -249,6 +249,7 @@ Common launch and library problems are listed below. For a fuller set of issues
 
 - [Linux Troubleshooting](Linux_Troubleshooting.md)
 - [Overlay Troubleshooting (KDE Plasma automatic handling and fallback rule)](Overlay_Troubleshooting.md)
+- [CachyOS, KDE Plasma, and Gamescope setup](CACHYOS_GAMESCOPE.md)
 - [Frontier account linking and local data](FRONTIER.md)
 - [Avalonia Linux platform behavior](https://docs.avaloniaui.net/docs/platform-specific-guides/linux)
 - [Avalonia Linux runtime dependencies](https://docs.avaloniaui.net/docs/deployment/linux)

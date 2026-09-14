@@ -8,6 +8,9 @@ This page collects common problems and fixes for the Linux AppImage / portable b
 
 → See the dedicated **[Overlay Troubleshooting](Overlay_Troubleshooting.md)** guide for behavior details and a manual KDE Plasma Layer rule if the automatic path is insufficient.
 
+For CachyOS, Gamescope mouse confinement, and the same-session SrvSurvey
+launcher, use the dedicated **[CachyOS and Gamescope guide](CACHYOS_GAMESCOPE.md)**.
+
 ## Permission denied when launching the AppImage or binary
 
 ```bash
@@ -38,6 +41,7 @@ Install the X11 runtime packages listed in [INSTALL_LINUX.md](INSTALL_LINUX.md#d
 - Confirm `DISPLAY` is set and both programs are on the same display.
 - Both must run as the same desktop user (never start SrvSurvey with `sudo`).
 - If Elite is inside a nested Gamescope session, first test both programs in a normal X11/XWayland desktop session.
+- On CachyOS, follow the [same-session Gamescope setup](CACHYOS_GAMESCOPE.md#5-launch-elite-and-srvsurvey-in-the-same-gamescope-session) so Elite and SrvSurvey inherit the same nested display.
 - Pure Wayland without XWayland is not a supported full-functionality mode.
 
 ## DISPLAY is empty under Wayland
